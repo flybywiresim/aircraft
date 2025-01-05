@@ -42,25 +42,4 @@
             </BUTTON_CODE>
         </UseTemplate>
     </Template>
-
-    <Template Name="FBW_AIRBUS_Push_EFIS_Option">
-        <DefaultTemplateParameters>
-            <OPTION_ID>0</OPTION_ID>
-            <TOOLTIPID>#BASE_NAME#</TOOLTIPID>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Button_Template">
-            <INDICATOR_CODE>
-                #OPTION_ID# sp0
-                l0 (L:A32NX_EFIS_#SIDE#_OPTION, enum) ==
-            </INDICATOR_CODE>
-            <BUTTON_CODE>
-                (L:A32NX_EFIS_#SIDE#_OPTION, enum) #OPTION_ID# == if{
-                  0 (&gt;L:A32NX_EFIS_#SIDE#_OPTION, enum)
-                } els{
-                  #OPTION_ID# (&gt;L:A32NX_EFIS_#SIDE#_OPTION, enum)
-                }
-            </BUTTON_CODE>
-        </UseTemplate>
-    </Template>
 </ModelBehaviors>

@@ -1,4 +1,1 @@
-export { FailuresConsumer } from './failures-consumer';
-export { FailuresOrchestrator } from './failures-orchestrator';
-export type { Failure } from './failures-orchestrator';
-export { A320Failure } from './a320';
+export { A380Failure, A380FailureDefinitions } from './a380';

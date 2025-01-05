@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_ElacComputer_h_
-#define RTW_HEADER_ElacComputer_h_
+#ifndef ElacComputer_h_
+#define ElacComputer_h_
 #include "rtwtypes.h"
 #include "ElacComputer_types.h"
 #include "LateralNormalLaw.h"
@@ -62,7 +62,7 @@ class ElacComputer final
     real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
-    real_T eventTime_g;
+    real_T eventTime_p;
     real_T on_ground_time;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
@@ -81,7 +81,7 @@ class ElacComputer final
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
     boolean_T sProtActive_f;
-    boolean_T eventTime_not_empty_a;
+    boolean_T eventTime_not_empty_i;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_fb;
@@ -190,8 +190,8 @@ class ElacComputer final
     real_T RateLimiterGenericVariableTs1_lo;
     real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterVariableTs3_lo;
-    real_T RateLimiterGenericVariableTs_lo_k;
     real_T RateLimiterGenericVariableTs1_lo_c;
+    real_T RateLimiterGenericVariableTs_lo_k;
     real_T HysteresisNode2_lowTrigger;
     real_T HysteresisNode1_lowTrigger;
     real_T HysteresisNode3_lowTrigger;
@@ -209,8 +209,8 @@ class ElacComputer final
     real_T RateLimiterGenericVariableTs1_up;
     real_T RateLimiterVariableTs2_up;
     real_T RateLimiterVariableTs3_up;
-    real_T RateLimiterGenericVariableTs_up_b;
     real_T RateLimiterGenericVariableTs1_up_g;
+    real_T RateLimiterGenericVariableTs_up_b;
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
     lateral_efcs_law EnumeratedConstant2_Value;
@@ -275,17 +275,17 @@ class ElacComputer final
     real_T Constant7_Value_g;
     real_T Constant8_Value_h;
     real_T Gain1_Gain;
-    real_T uDLookupTable_tableData[4];
-    real_T uDLookupTable_bp01Data[4];
     real_T uDLookupTable1_tableData[4];
     real_T uDLookupTable1_bp01Data[4];
     real_T uDLookupTable2_tableData[4];
     real_T uDLookupTable2_bp01Data[4];
+    real_T uDLookupTable_tableData[4];
+    real_T uDLookupTable_bp01Data[4];
     real_T Constant_Value_c;
-    real_T Saturation2_UpperSat;
-    real_T Saturation2_LowerSat;
     real_T Saturation1_UpperSat_g;
     real_T Saturation1_LowerSat_n;
+    real_T Saturation2_UpperSat;
+    real_T Saturation2_LowerSat;
     real_T Gain1_Gain_b;
     real_T Constant_Value_a;
     real_T Delay_InitialCondition;
@@ -351,6 +351,7 @@ class ElacComputer final
   static void ElacComputer_LagFilter_Reset(rtDW_LagFilter_ElacComputer_T *localDW);
   static void ElacComputer_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_ElacComputer_T *localDW);
+  static void ElacComputer_MATLABFunction_g(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void ElacComputer_MATLABFunction_g5_Reset(rtDW_MATLABFunction_ElacComputer_kz_T *localDW);
   static void ElacComputer_MATLABFunction_c(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_ElacComputer_kz_T *localDW);
@@ -361,8 +362,8 @@ class ElacComputer final
   static void ElacComputer_RateLimiter_d_Reset(rtDW_RateLimiter_ElacComputer_b_T *localDW);
   static void ElacComputer_RateLimiter_n(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, boolean_T rtu_reset,
     real_T *rty_Y, rtDW_RateLimiter_ElacComputer_b_T *localDW);
-  static void ElacComputer_MATLABFunction_ax_Reset(rtDW_MATLABFunction_ElacComputer_b_T *localDW);
-  static void ElacComputer_MATLABFunction_g(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+  static void ElacComputer_MATLABFunction_h_Reset(rtDW_MATLABFunction_ElacComputer_b_T *localDW);
+  static void ElacComputer_MATLABFunction_g4(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_ElacComputer_b_T *localDW);
   static void ElacComputer_MATLABFunction_cw(const boolean_T rtu_u[19], real32_T *rty_y);
   static void ElacComputer_LateralLawCaptoBits(lateral_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2);

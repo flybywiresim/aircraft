@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUAtcAtisMenu {
     static CreateDataBlock(mcdu) {
         const airports = [
@@ -7,16 +11,20 @@ class CDUAtcAtisMenu {
             { icao: "", type: AtsuCommon.AtisType.Arrival, requested: false, autoupdate: false }
         ];
 
-        if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
-            airports[0].icao = mcdu.flightPlanManager.getPersistentOrigin().ident;
+        const activePlan = mcdu.flightPlanService.active;
+
+        if (activePlan.originAirport) {
+            airports[0].icao = activePlan.originAirport.ident;
             airports[0].autoupdate = mcdu.atsu.atisAutoUpdateActive(airports[0].icao);
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            airports[1].icao = mcdu.flightPlanManager.getDestination().ident;
+
+        if (activePlan.destinationAirport) {
+            airports[1].icao = activePlan.destinationAirport.ident;
             airports[1].autoupdate = mcdu.atsu.atisAutoUpdateActive(airports[1].icao);
         }
-        if (mcdu.altDestination && mcdu.altDestination.ident) {
-            airports[2].icao = mcdu.altDestination.ident;
+
+        if (activePlan.alternateDestinationAirport) {
+            airports[2].icao = activePlan.alternateDestinationAirport.ident;
             airports[2].autoupdate = mcdu.atsu.atisAutoUpdateActive(airports[2].icao);
         }
 
@@ -62,7 +70,7 @@ class CDUAtcAtisMenu {
             }
 
             // validate the airport
-            mcdu.dataManager.GetAirportByIdent(entries[0]).then((airport) => {
+            mcdu.navigationDatabaseService.activeDatabase.searchAirport(entries[0]).then((airport) => {
                 if (airport) {
                     airports[idx].autoupdate = mcdu.atsu.atisAutoUpdateActive(entries[0]);
                     airports[idx].icao = entries[0];

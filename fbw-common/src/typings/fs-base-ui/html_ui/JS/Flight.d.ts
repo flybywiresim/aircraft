@@ -14,12 +14,6 @@ declare global {
         Free
     }
 
-    class AirportInfos {
-    }
-
-    class WaypointInfos {
-    }
-
     class POIInfos {
     }
 
@@ -43,9 +37,13 @@ declare global {
         });
 
         lla: LatLongAlt;
+
         image: string;
+
         icao: string;
+
         name: string;
+
         weather: WeatherData;
 
         toString(): string;
@@ -56,13 +54,21 @@ declare global {
         static getDebugValue(): WeatherData;
 
         locked: boolean;
+
         index: any;
+
         name: string;
+
         icon: string;
+
         weatherImage: string;
+
         weatherImageLayered: any;
+
         live: boolean;
+
         visibility: string;
+
         wind: string;
     }
 
@@ -78,15 +84,20 @@ declare global {
         static getDebugValue(): TimeData;
 
         timeImage: string;
+
         live: boolean;
+
         timeLocal: TimeDataValue;
+
         timeUTC: TimeDataValue;
+
         dateLocal: TimeDataValue;
+
         dateUTC: TimeDataValue;
     }
 
     class ATC_FLIGHTPLAN_TYPE {
-        static getName(obj: any): "" | "TT:GAME.ATC_ROUTE_IFR" | "TT:GAME.ATC_ROUTE_VFR";
+        static getName(obj: any): '' | 'TT:GAME.ATC_ROUTE_IFR' | 'TT:GAME.ATC_ROUTE_VFR';
 
         constructor(value: any);
 
@@ -94,8 +105,8 @@ declare global {
     }
 
     class ATC_ROUTE_TYPE {
-        static getName(obj: any): "" | "TT:GAME.ATC_ROUTE_GPS" | "TT:GAME.ATC_ROUTE_VOR_TO_VOR"
-            | "TT:GAME.ATC_ROUTE_LOW_AIRWAYS" | "TT:GAME.ATC_ROUTE_HIGH_AIRWAYS" | "TT:GAME.ATC_ROUTE_UNAVAILABLE";
+        static getName(obj: any): '' | 'TT:GAME.ATC_ROUTE_GPS' | 'TT:GAME.ATC_ROUTE_VOR_TO_VOR'
+            | 'TT:GAME.ATC_ROUTE_LOW_AIRWAYS' | 'TT:GAME.ATC_ROUTE_HIGH_AIRWAYS' | 'TT:GAME.ATC_ROUTE_UNAVAILABLE';
 
         constructor(value: any);
 
@@ -118,9 +129,13 @@ declare global {
         constructor(data: any);
 
         canBeResumed: boolean;
+
         nextWaypoints: LatLongAlt[];
+
         leaderboardWorld: LeaderboardEntry[];
+
         leaderboardFriends: LeaderboardEntry[];
+
         leaderboardAroundPlayer: LeaderboardEntry[];
     }
 

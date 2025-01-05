@@ -1,0 +1,118 @@
+﻿{
+    "imagesDir": "/Pages/VCockpit/Instruments/Shared/Map/Images/Outlined/",
+
+    "runwayFillColor": "white",
+    "runwayStrokeColor": "gray",
+    "runwayStrokeWidth": 3,
+    "runwayCornerRadius": 8,
+    "runwayMinimalWidth": 16,
+
+    "latLonStrokeColor": "gray",
+    "latLonStrokeWidth": 1,
+    "latLonLabelFontFamily": "Consolas",
+    "latLonLabelFontSize": 14,
+    "latLonLabelColor": "white",
+    "latLonLabelStrokeColor": "none",
+    "latLonLabelStrokeWidth": 0,
+
+    "roadMotorWayColor": "#7a7a7a",
+    "roadMotorWayWidth": 1,
+    "roadTrunkColor": "#7a7a7a",
+    "roadTrunkWidth": 1,
+    "roadPrimaryColor": "#7a7a7a",
+    "roadPrimaryWidth": 1,
+
+    "railwayStrokeColor": "gray",
+    "railwayWidth": 2,
+    "railwayDashLength": 6,
+
+    "netBingTextureResolution": 2048,
+    "netBingAltitudeColors1": [],
+    "netBingWaterColor1": "#103B70",
+    "netBingHeightColor1": [
+        {
+            "alt": 500,
+            "color": "#2B5027"
+        },
+        {
+            "alt": 1000,
+            "color": "#385D31"
+        },
+        {
+            "alt": 2000,
+            "color": "#557536"
+        },
+        {
+            "alt": 3000,
+            "color": "#668248"
+        },
+        {
+            "alt": 4000,
+            "color": "#7C8C4D"
+        },
+        {
+            "alt": 5000,
+            "color": "#798442"
+        },
+        {
+            "alt": 6000,
+            "color": "#767E4B"
+        },
+        {
+            "alt": 7000,
+            "color": "#686F3C"
+        },
+        {
+            "alt": 8000,
+            "color": "#726539"
+        },
+        {
+            "alt": 9000,
+            "color": "#675A2E"
+        },
+        {
+            "alt": 9000,
+            "color": "#686F3C"
+        },
+        {
+            "alt": 9000,
+            "color": "#686F3C"
+        },
+        {
+            "alt": 10000,
+            "color": "#57401E"
+        },
+        {
+            "alt": 11000,
+            "color": "#46361C"
+        },
+        {
+            "alt": 12000,
+            "color": "#4F4D41"
+        },
+        {
+            "alt": 13000,
+            "color": "#5A6159"
+        },
+        {
+            "alt": 15000,
+            "color": "#6D746D"
+        },
+        {
+            "alt": 17000,
+            "color": "#7A7B75"
+        },
+        {
+            "alt": 19000,
+            "color": "#828685"
+        },
+        {
+            "alt": 21000,
+            "color": "#828C8D"
+        },
+        {
+            "alt": 33000,
+            "color": "#8E9899"
+        }
+    ]
+}

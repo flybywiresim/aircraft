@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380PitchAlternateLaw_h_
-#define RTW_HEADER_A380PitchAlternateLaw_h_
+#ifndef A380PitchAlternateLaw_h_
+#define A380PitchAlternateLaw_h_
 #include "rtwtypes.h"
 #include "A380PitchAlternateLaw_types.h"
 #include <cstring>
@@ -38,8 +38,8 @@ class A380PitchAlternateLaw final
     real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_o;
     real_T pY;
-    uint8_T is_active_c7_A380PitchAlternateLaw;
-    uint8_T is_c7_A380PitchAlternateLaw;
+    uint8_T is_active_c1_A380PitchAlternateLaw;
+    uint8_T is_c1_A380PitchAlternateLaw;
     uint8_T is_active_c8_A380PitchAlternateLaw;
     uint8_T is_c8_A380PitchAlternateLaw;
     uint8_T is_active_c9_A380PitchAlternateLaw;
@@ -76,8 +76,8 @@ class A380PitchAlternateLaw final
     real_T DiscreteDerivativeVariableTs_Gain_p;
     real_T DiscreteDerivativeVariableTs2_Gain_a;
     real_T DiscreteTimeIntegratorVariableTs_Gain;
-    real_T RateLimiterVariableTs2_InitialCondition;
     real_T DiscreteDerivativeVariableTs1_InitialCondition;
+    real_T RateLimiterVariableTs2_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T DiscreteDerivativeVariableTs2_InitialCondition;
     real_T DiscreteDerivativeVariableTs1_InitialCondition_j;
@@ -111,20 +111,20 @@ class A380PitchAlternateLaw final
     real_T Gain1_Gain;
     real_T Constant_Value_n;
     real_T Gain_Gain;
+    real_T Gain3_Gain;
     real_T Gain1_Gain_c;
     real_T Gain1_Gain_l;
+    real_T Gain1_Gain_o;
+    real_T Vm_currentms_Value;
+    real_T Gain_Gain_a;
     real_T uDLookupTable_tableData_e[7];
     real_T uDLookupTable_bp01Data_o[7];
     real_T Saturation3_UpperSat;
     real_T Saturation3_LowerSat;
     real_T Gain5_Gain;
     real_T Bias_Bias;
-    real_T Gain1_Gain_o;
-    real_T Vm_currentms_Value;
-    real_T Gain_Gain_a;
     real_T PLUT_tableData[2];
     real_T PLUT_bp01Data[2];
-    real_T Gain3_Gain;
     real_T DLUT_tableData[2];
     real_T DLUT_bp01Data[2];
     real_T SaturationV_dot_UpperSat;

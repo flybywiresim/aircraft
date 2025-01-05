@@ -34,14 +34,9 @@ class Math {
    */
   static double angleAdd(double a, double b) {
     double r = a + b;
-    while (r > 360.0) {
-      r -= 360.0;
-    }
-    while (r < 0.0) {
-      r += 360.0;
-    }
+    r        = fmod(fmod(r, 360.0) + 360.0, 360.0);
     return r;
-  };
+  }
 
   /**
    * Returns the signum (sign) of the given value.
@@ -53,7 +48,6 @@ class Math {
   static inline int sign(T x) {
     return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
   }
-
 };
 
 }  // namespace helper

@@ -2,22 +2,31 @@
 
 declare global {
     interface Document {
-        createElement(tagName: "ui-button"): ButtonElement;
-        createElement(tagName: "ui-navigation-bloc"): UINavigationBlocElement;
-        createElement(tagName: "external-link"): ExternalLink;
-        createElement(tagName: "internal-link"): InternalLink;
+        createElement(tagName: 'ui-button'): ButtonElement;
+        createElement(tagName: 'ui-navigation-bloc'): UINavigationBlocElement;
+        createElement(tagName: 'external-link'): ExternalLink;
+        createElement(tagName: 'internal-link'): InternalLink;
     }
 
     class ButtonElement extends TemplateElement {
         onClick: (e: Event) => void;
+
         onMouseEnter: () => void;
+
         onMouseLeave: () => void;
+
         onMouseDown: () => void;
+
         onMouseUp: () => void;
+
         privateOnKeysMode: () => void;
+
         keydownRouter: (e: Event) => void;
+
         keyupRouter: (e: Event) => void;
+
         OnNavigationModeChanged: () => void;
+
         OnLockButtonChanged: () => void;
 
         get childActiveClass(): string;
@@ -64,7 +73,9 @@ declare global {
 
     class UINavigationBlocElement extends ButtonElement {
         onMouseMode: () => void;
+
         onActiveElementChanged: () => void;
+
         exitInside: () => void;
 
         focusByKeys(keycode: number): void;

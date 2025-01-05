@@ -21,139 +21,6 @@ import {
 } from './enums';
 
 declare global {
-    class WayPoint {
-        constructor(_baseInstrument: BaseInstrument);
-
-        icao: string;
-
-        ident: string;
-
-        endsInDiscontinuity?: boolean;
-
-        discontinuityCanBeCleared?: boolean;
-
-        isVectors?: boolean;
-
-        isRunway?: boolean;
-
-        isTurningPoint?: boolean;
-
-        infos: WayPointInfo;
-
-        type: string;
-
-        bearingInFP: number;
-
-        distanceInFP: number;
-
-        distanceInMinutes: number;
-
-        cumulativeDistanceInFP: number;
-
-        waypointReachedAt: number;
-
-        instrument: BaseInstrument;
-
-        /**
-         * These are the default MS types but for some reason we changed
-         altDesc: number;
-
-         altitude1: number;
-
-         altitude2: number;
-         */
-
-        legAltitudeDescription: AltitudeDescriptor;
-
-        legAltitude1: number;
-
-        legAltitude2: number;
-
-        speedConstraint: number;
-
-        constraintType: WaypointConstraintType;
-
-        additionalData: { [key: string]: any }
-
-        turnDirection: TurnDirection;
-
-        verticalAngle?: number;
-
-        _svgElements: any;
-
-        static formatIdentFromIcao(icao: string): string;
-    }
-
-    class WayPointInfo {
-        constructor(_instrument: BaseInstrument);
-
-        coordinates: LatLongAlt;
-
-        icao: string;
-
-        ident: string;
-
-        airwayIn: string;
-
-        airwayOut: string;
-
-        routes: any[];
-
-        instrument: BaseInstrument;
-
-        magneticVariation?: number;
-
-        _svgElements: any;
-
-        UpdateInfos(_CallBack?, loadFacilitiesTransitively?);
-
-        CopyBaseInfosFrom(_WP: WayPoint);
-    }
-
-    class AirportInfo extends WayPointInfo {
-        constructor(_instrument: BaseInstrument);
-
-        frequencies: any[];
-
-        namedFrequencies: any[];
-
-        departures: RawDeparture[];
-
-        approaches: RawApproach[];
-
-        arrivals: RawArrival[];
-
-        runways: any[];
-
-        oneWayRunways: OneWayRunway[];
-
-        elevation: number | undefined;
-
-        UpdateNamedFrequencies(icao?: string): Promise<void>
-    }
-
-    class IntersectionInfo extends WayPointInfo {
-        constructor(_instrument: BaseInstrument);
-    }
-
-    class VORInfo extends WayPointInfo {
-        constructor(_instrument: BaseInstrument);
-        type: VorType;
-
-        frequencyMHz: number;
-
-        frequencyBcd16: number;
-
-        vorClass: VorClass;
-    }
-
-    class NDBInfo extends WayPointInfo {
-        constructor(_instrument: BaseInstrument);
-        type: NdbType;
-
-        frequencyMHz: number;
-    }
-
     interface OneWayRunway {
         designation: string;
         designator: RunwayDesignatorChar;
@@ -371,27 +238,38 @@ declare global {
     }
 
     interface RawRunway {
-        // denotes the subclass of this instance
-        __Type: string;
-        // [0-9]{2}[LCR](\-[0-9]{2}[LCR])?
-        designation: string;
-        designatorCharPrimary: RunwayDesignatorChar;
-        designatorCharSecondary: RunwayDesignatorChar;
-        // degrees
-        direction: number;
-        // metres
-        elevation: number;
-        latitude: number;
-        // metres
-        length: number;
-        lighting: RunwayLighting;
-        longitude: number;
-        // these don't seem to be filled on almost all runways, but a curious few are...
-        primaryILSFrequency: RawFrequency;
-        secondaryILSFrequency: RawFrequency;
-        surface: RunwaySurface;
-        // metres
-        width: number;
+        __Type: 'JS_Runway',
+        /** runway designation numbers only, split by - */
+        designation: string,
+        designatorCharPrimary: RunwayDesignatorChar,
+        designatorCharSecondary: RunwayDesignatorChar,
+        /** runway bearing in true degrees */
+        direction: number,
+        /** runway elevation in metres */
+        elevation: number,
+        /** latitude of the centre of the runway */
+        latitude: number,
+        /** runway length in metres */
+        length: number,
+        /** seems to always be 0 */
+        lighting: RunwayLighting,
+        /** longitude of the centre of the runway */
+        longitude: number,
+        /** primary elevation in metres... not sure if threshold or end */
+        primaryElevation: number,
+        /** ils frequency for the primary end... not always filled */
+        primaryILSFrequency: JS_Frequency,
+        /** offset of the primary end threshold in metres */
+        primaryThresholdLength: number,
+        /** secondary elevation in metres... not sure if threshold or end */
+        secondaryElevation: number,
+        /** ils frequency for the secondary end... not always filled */
+        secondaryILSFrequency: JS_Frequency,
+        /** offset of the secondary end threshold in metres */
+        secondaryThresholdLength: number,
+        surface: RunwaySurface,
+        /** runway width in metres */
+        width: number,
     }
 
     interface NearestSearch {

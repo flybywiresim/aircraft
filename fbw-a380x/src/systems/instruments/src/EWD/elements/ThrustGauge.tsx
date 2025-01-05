@@ -1,270 +1,546 @@
 import {
-    GaugeComponent,
-    GaugeMarkerComponent, GaugeThrustComponent, splitDecimals, ThrottlePositionDonutComponent,
-} from '@instruments/common/gauges';
-import { useSimVar } from '@instruments/common/simVars';
-import { Position, EngineNumber, FadecActive, n1Degraded } from '@instruments/common/types';
-import React from 'react';
+  DisplayComponent,
+  Subscribable,
+  VNode,
+  FSComponent,
+  EventBus,
+  MappedSubject,
+  Subject,
+  ConsumerSubject,
+  SubscribableMapFunctions,
+} from '@microsoft/msfs-sdk';
+import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
 
-const ThrustGauge: React.FC<Position & EngineNumber & FadecActive & n1Degraded> = ({ x, y, engine, active, n1Degraded }) => {
-    const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
-    const [N1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 1000);
-    const [Thrust] = useSimVar(`TURB ENG JET THRUST:${engine}`, 'pounds');
-    const ThrustPercent = Math.round(((Thrust / 30000) * 100) * 2.8125 * 10) / 100; // Hack for now until real thrust values available
-    const ThrustPercentSplit = splitDecimals(ThrustPercent);
+import {
+  GaugeComponent,
+  GaugeMarkerComponent,
+  GaugeThrustComponent,
+  splitDecimals,
+  ThrottlePositionDonutComponent,
+  ThrustTransientComponent,
+} from 'instruments/src/MsfsAvionicsCommon/gauges';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
-    const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engine}`, 'bool', 500);
-    const [throttlePosition] = useSimVar(`L:A32NX_AUTOTHRUST_TLA:${engine}`, 'number', 100);
-    // const [thrustLimit] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT', 'number', 100);
-    // const [thrustLimitIdle] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE', 'number', 100);
+interface ThrustGaugeProps {
+  bus: EventBus;
+  x: number;
+  y: number;
+  engine: number;
+  active: Subscribable<boolean>;
+  n1Degraded: Subscribable<boolean>;
+}
 
-    const availVisible = !!(N1Percent > Math.floor(N1Idle) && engineState === 2); // N1Percent sometimes does not reach N1Idle by .005 or so
-    const [revVisible] = useSimVar(`L:A32NX_AUTOTHRUST_REVERSE:${engine}`, 'bool', 500);
-    // Reverse cowl > 5% is treated like fully open, otherwise REV will not turn green for idle reverse
-    const [revDoorOpenPercentage] = useSimVar(`A:TURB ENG REVERSE NOZZLE PERCENT:${engine}`, 'percent', 100);
-    const availRevVisible = availVisible || (revVisible && [2, 3].includes(engine));
-    const availRevText = availVisible ? 'AVAIL' : 'REV';
+const METOTS_N1_LIMIT = 76.5;
 
-    const radius = 64;
-    const startAngle = 230;
-    const endAngle = 90;
-    const min = 0;
-    const max = 10;
-    const revStartAngle = 130;
-    const revEndAngle = 230;
-    const revRadius = 58;
-    const revMin = 0;
-    const revMax = 3;
+export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & EwdSimvars>();
 
+  private readonly n1 = ConsumerSubject.create(
+    this.sub.on(`n1_${this.props.engine}`).withPrecision(2).whenChanged(),
+    0,
+  );
+
+  private readonly engineState = ConsumerSubject.create(
+    this.sub.on(`engine_state_${this.props.engine}`).whenChanged(),
+    0,
+  );
+
+  private readonly throttlePositionN1 = ConsumerSubject.create(
+    this.sub.on(`throttle_position_n1_${this.props.engine}`).withPrecision(2).whenChanged(),
+    0,
+  );
+
+  private readonly n1Commanded = ConsumerSubject.create(
+    this.sub.on(`n1_commanded_${this.props.engine}`).withPrecision(2).whenChanged(),
+    0,
+  );
+
+  private readonly athrEngaged = ConsumerSubject.create(
+    this.sub.on('autothrustStatus').withPrecision(2).whenChanged(),
+    0,
+  ).map((it) => it !== 0);
+
+  private readonly thrustLimitIdle = ConsumerSubject.create(this.sub.on('thrust_limit_idle').whenChanged(), 0);
+  private readonly thrustLimitToga = ConsumerSubject.create(this.sub.on('thrust_limit_toga').whenChanged(), 0);
+  private readonly thrustLimitRev = ConsumerSubject.create(this.sub.on('thrust_limit_rev').whenChanged(), 0);
+
+  private readonly cpiomBAgsDiscrete = Arinc429ConsumerSubject.create(undefined);
+
+  private readonly revDeploying = ConsumerSubject.create(
+    this.sub.on(`reverser_deploying_${this.props.engine}`).whenChanged(),
+    false,
+  );
+  private readonly revDeployed = ConsumerSubject.create(
+    this.sub.on(`reverser_deployed_${this.props.engine}`).whenChanged(),
+    false,
+  );
+  private readonly revSelected = ConsumerSubject.create(
+    this.sub.on(`thrust_reverse_${this.props.engine}`).whenChanged(),
+    false,
+  );
+
+  private readonly revVisible = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.revDeployed,
+    this.revDeploying,
+    this.revSelected,
+  );
+
+  private readonly thrustLimitMax = MappedSubject.create(
+    ([cpiomB, thrustLimitToga]) =>
+      !cpiomB.bitValueOr(13, false) && !cpiomB.bitValueOr(14, false) ? thrustLimitToga : thrustLimitToga + 0.6,
+    this.cpiomBAgsDiscrete,
+    this.thrustLimitToga,
+  );
+
+  private readonly thrIdleOffset = this.engineState.map((es) => (es === 1 ? 0.042 : 0));
+
+  private readonly throttleTarget = MappedSubject.create(
+    ([throttlePositionN1, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      ((throttlePositionN1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) +
+      thrIdleOffset,
+    this.throttlePositionN1,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+    this.thrIdleOffset,
+  );
+
+  private readonly autoThrottleTarget = MappedSubject.create(
+    ([n1Commanded, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      ((n1Commanded - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
+    this.n1Commanded,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+    this.thrIdleOffset,
+  );
+
+  private readonly throttleTargetReverse = MappedSubject.create(
+    ([throttlePositionN1, thrustLimitIdle, thrustLimitRev]) =>
+      (throttlePositionN1 - thrustLimitIdle) / (-thrustLimitRev - thrustLimitIdle),
+    this.throttlePositionN1,
+    this.thrustLimitIdle,
+    this.thrustLimitRev,
+  );
+
+  private readonly thrustPercent = MappedSubject.create(
+    ([n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      ThrustGauge.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
+    this.n1,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+    this.thrIdleOffset,
+  );
+
+  /** Expects values in percent 0-100, returns 0-100 */
+  public static thrustPercentFromN1(
+    n1: number,
+    thrustLimitIdle: number,
+    thrustLimitMax: number,
+    thrIdleOffset: number,
+  ) {
     return (
-        <>
-            <g id={`Thrust-indicator-${engine}`}>
-                {(!active || n1Degraded)
-                    && (
-                        <>
-                            <GaugeComponent x={x} y={y + 20} radius={radius} startAngle={320} endAngle={40} visible largeArc={0} sweep={0} className='GaugeComponent SW2 AmberLine' />
-                            <text className='F26 End Amber Spread' x={x + 55} y={y - 48}>THR XX</text>
-                        </>
-                    )}
-                {active && !n1Degraded
-                && (
-                    <>
-                        {(!revVisible || [1, 4].includes(engine))
-                    && (
-                        <>
-                            <text className='F26 End Green' x={x + 48} y={y + 47}>{ThrustPercentSplit[0]}</text>
-                            <text className='F26 End Green' x={x + 62} y={y + 47}>.</text>
-                            <text className='F20 End Green' x={x + 78} y={y + 47}>{ThrustPercentSplit[1]}</text>
-                            <GaugeThrustComponent
-                                x={x}
-                                y={y}
-                                // TODO valueIdle={thrustLimitIdle / 10}
-                                // TODO valueMax={thrustLimit / 10}
-                                valueIdle={0.3}
-                                valueMax={10}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                min={min}
-                                max={max}
-                                visible={availVisible || engineState === 1}
-                                className='GaugeComponent GaugeThrustFill'
-                            />
-                            <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpenPercentage} />
-                            <ThrottlePositionDonutComponent
-                                value={throttlePosition < 3 ? 3 / 10 : throttlePosition / 10}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='DonutThrottleIndicator'
-                            />
-                        </>
-                    )}
-                        <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
-                            <GaugeMarkerComponent
-                                value={0}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='GaugeText Gauge'
-                                showValue
-                                textNudgeY={-5}
-                                textNudgeX={13}
-                                multiplierInner={0.9}
-                            />
-                            <GaugeMarkerComponent
-                                value={2.5}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='GaugeText Gauge'
-                                textNudgeY={6}
-                                textNudgeX={13}
-                                multiplierInner={0.9}
-                            />
-                            <GaugeMarkerComponent
-                                value={5}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='GaugeText Gauge'
-                                showValue
-                                textNudgeX={7}
-                                textNudgeY={11}
-                                multiplierInner={0.9}
-                            />
-                            <GaugeMarkerComponent
-                                value={7.5}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='GaugeText Gauge'
-                                multiplierInner={0.9}
-                            />
-                            <GaugeMarkerComponent
-                                value={10}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='GaugeText Gauge'
-                                showValue
-                                textNudgeY={0}
-                                textNudgeX={-13}
-                                multiplierInner={0.9}
-                            />
-                            {(!revVisible || [1, 4].includes(engine))
-                    && (
-                        <>
-                            <rect x={x - 11} y={y + 21} width={96} height={30} className='DarkGreyBox' />
-                            <GaugeMarkerComponent
-                                value={ThrustPercent / 10}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='GaugeIndicator Gauge'
-                                multiplierOuter={1.10}
-                                indicator
-                            />
-                        </>
-                    )}
-                        </GaugeComponent>
-
-                    </>
-                )}
-                {active && revVisible && [2, 3].includes(engine)
-                && (
-                    <>
-                        <GaugeThrustComponent
-                            x={x}
-                            y={y}
-                            valueIdle={0.04}
-                            valueMax={2.6}
-                            radius={revRadius}
-                            startAngle={revStartAngle}
-                            endAngle={revEndAngle}
-                            min={revMin}
-                            max={revMax}
-                            visible={revVisible || engineState === 1}
-                            className='GaugeComponent GaugeThrustFill'
-                            reverse
-                        />
-                        {/* reverse */}
-                        <GaugeComponent x={x} y={y} radius={revRadius} startAngle={revStartAngle} endAngle={revEndAngle} visible className='GaugeComponent Gauge'>
-                            <AvailRev x={x - 18} y={y - 14} mesg={availRevText} visible={availRevVisible} revDoorOpen={revDoorOpenPercentage} />
-                            <GaugeMarkerComponent
-                                value={0}
-                                x={x}
-                                y={y}
-                                min={revMin}
-                                max={revMax}
-                                radius={revRadius}
-                                startAngle={revStartAngle}
-                                endAngle={revEndAngle}
-                                className='GaugeText Gauge'
-                                textNudgeY={0}
-                                textNudgeX={-13}
-                                multiplierInner={1.1}
-                            />
-                            <GaugeMarkerComponent
-                                value={ThrustPercent / 10}
-                                x={x}
-                                y={y}
-                                min={revMin}
-                                max={revMax}
-                                radius={revRadius}
-                                startAngle={revStartAngle}
-                                endAngle={revEndAngle}
-                                className='GaugeIndicator Gauge'
-                                multiplierOuter={1.10}
-                                indicator
-                                reverse
-                            />
-                        </GaugeComponent>
-                        <ThrottlePositionDonutComponent
-                            value={throttlePosition / 10}
-                            x={x}
-                            y={y}
-                            min={revMin}
-                            max={revMax}
-                            radius={revRadius}
-                            startAngle={revStartAngle}
-                            endAngle={revEndAngle}
-                            className='DonutThrottleIndicator'
-                        />
-
-                    </>
-                )}
-            </g>
-        </>
+      Math.min(
+        1,
+        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
+      ) * 100
     );
-};
+  }
 
-export default ThrustGauge;
+  private readonly thrustPercentReverse = MappedSubject.create(
+    ([n1, thrustLimitIdle, thrustLimitRev]) =>
+      Math.min(1, Math.max(0, (n1 - thrustLimitIdle) / (-thrustLimitRev - thrustLimitIdle))) * 100,
+    this.n1,
+    this.thrustLimitIdle,
+    this.thrustLimitRev,
+  );
 
-type AvailRevProps = {
-    x: number,
-    y: number,
-    mesg: string,
-    visible: boolean,
-    revDoorOpen: number,
-};
+  private thrustPercentSplit1 = this.thrustPercent.map((thr) => splitDecimals(thr)[0]);
+  private thrustPercentSplit2 = this.thrustPercent.map((thr) => splitDecimals(thr)[1]);
 
-const AvailRev: React.FC<AvailRevProps> = ({ x, y, mesg, visible, revDoorOpen }) => (
-    <>
-        <g className={visible ? 'Show' : 'Hide'}>
-            <rect x={x - 28} y={y - 13} width={90} height={24} className='DarkGreyBox BackgroundFill' />
-            {mesg === 'REV'
-            && <text className={`F26 Spread Centre ${Math.round(revDoorOpen) > 5 ? 'Green' : 'Amber'}`} x={x - 8} y={y + 9}>REV</text>}
-            {mesg === 'AVAIL'
-            && <text className='F26 Spread Centre Green' x={x - 26} y={y + 9}>AVAIL</text>}
+  private readonly availVisible = MappedSubject.create(
+    ([n1, thrustLimitIdle, engineState]) => n1 > Math.floor(thrustLimitIdle) && engineState === 2,
+    this.n1,
+    this.thrustLimitIdle,
+    this.engineState,
+  );
+
+  private readonly availRevVisible = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.availVisible,
+    this.revDeployed,
+    this.revDeploying,
+  );
+
+  private readonly availRevText = this.availVisible.map((it) => (it ? 'AVAIL' : 'REV'));
+
+  private readonly cas1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_1'));
+
+  // FIXME replace with actual available thrust when ACUTE is implemented
+  private readonly maxThrustAvail = MappedSubject.create(
+    ([cas, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      cas.isNoComputedData() || cas.valueOr(100) < 35
+        ? Math.max(
+            thrIdleOffset * 100,
+            ThrustGauge.thrustPercentFromN1(METOTS_N1_LIMIT, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
+          ) / 10
+        : 10,
+    this.cas1,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+    this.thrIdleOffset,
+  );
+
+  private radius = 64;
+  private startAngle = 230;
+  private endAngle = 90;
+  private min = 0;
+  private max = 10;
+  private revStartAngle = 130;
+  private revEndAngle = 230;
+  private revRadius = 58;
+  private revMin = 0;
+  private revMax = 3;
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.cpiomBAgsDiscrete.setConsumer(this.sub.on('cpiomBAgsDiscrete'));
+  }
+
+  render() {
+    return (
+      <>
+        <g id={`Thrust-indicator-${this.props.engine}`}>
+          <g
+            visibility={MappedSubject.create(
+              ([a, n1d]) => (!a || n1d ? 'inherit' : 'hidden'),
+              this.props.active,
+              this.props.n1Degraded,
+            )}
+          >
+            <GaugeComponent
+              x={this.props.x}
+              y={this.props.y + 20}
+              radius={this.radius}
+              startAngle={320}
+              endAngle={40}
+              visible={Subject.create(true)}
+              largeArc={0}
+              sweep={0}
+              class="GaugeComponent SW2 AmberLine"
+            />
+            <text class="F26 End Amber Spread" x={this.props.x + 55} y={this.props.y - 48}>
+              THR XX
+            </text>
+          </g>
+          <g
+            visibility={MappedSubject.create(
+              ([a, n1d]) => (a && !n1d ? 'inherit' : 'hidden'),
+              this.props.active,
+              this.props.n1Degraded,
+            )}
+          >
+            <g visibility={this.revVisible.map((it) => (!it ? 'inherit' : 'hidden'))}>
+              <text class="F26 End Green" x={this.props.x + 48} y={this.props.y + 47}>
+                {this.thrustPercentSplit1}
+              </text>
+              <text class="F26 End Green" x={this.props.x + 62} y={this.props.y + 47}>
+                .
+              </text>
+              <text class="F20 End Green" x={this.props.x + 78} y={this.props.y + 47}>
+                {this.thrustPercentSplit2}
+              </text>
+              <GaugeThrustComponent
+                x={this.props.x}
+                y={this.props.y}
+                valueIdle={Subject.create(0.42)}
+                valueMax={this.maxThrustAvail}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                min={this.min}
+                max={this.max}
+                visible={MappedSubject.create(
+                  ([availVis, es]) => availVis || es === 1,
+                  this.availVisible,
+                  this.engineState,
+                )}
+                class="GaugeComponent GaugeThrustFill"
+              />
+              <AvailRev
+                x={this.props.x - 18}
+                y={this.props.y - 14}
+                mesg={this.availRevText}
+                engineNumber={this.props.engine}
+                visible={this.availRevVisible}
+                revDoorOpen={this.revDeployed}
+              />
+              <ThrustTransientComponent
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min / 10}
+                max={this.max / 10}
+                thrustActual={this.thrustPercent.map((it) => it / 100)}
+                thrustTarget={this.autoThrottleTarget}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                visible={this.athrEngaged}
+                class="TransientIndicator"
+              />
+            </g>
+            <GaugeComponent
+              x={this.props.x}
+              y={this.props.y}
+              radius={this.radius}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
+              visible={Subject.create(true)}
+              class="GaugeComponent Gauge"
+            >
+              <GaugeMarkerComponent
+                value={Subject.create(0)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="GaugeText Gauge"
+                showValue
+                textNudgeX={10}
+                textNudgeY={-2}
+                multiplierInner={0.9}
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(2.5)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="GaugeText Gauge"
+                textNudgeY={6}
+                textNudgeX={13}
+                multiplierInner={0.9}
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(5)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="GaugeText Gauge"
+                showValue
+                textNudgeX={5}
+                textNudgeY={15}
+                multiplierInner={0.9}
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(7.5)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="GaugeText Gauge"
+                multiplierInner={0.9}
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(10)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="GaugeText Gauge"
+                showValue
+                textNudgeY={7}
+                textNudgeX={-27}
+                multiplierInner={0.9}
+              />
+              <g visibility={this.revVisible.map((it) => (!it ? 'inherit' : 'hidden'))}>
+                <rect x={this.props.x - 11} y={this.props.y + 21} width={96} height={30} class="DarkGreyBox" />
+                <GaugeMarkerComponent
+                  value={this.thrustPercent.map((it) => it / 10)}
+                  x={this.props.x}
+                  y={this.props.y}
+                  min={this.min}
+                  max={this.max}
+                  radius={this.radius}
+                  startAngle={this.startAngle}
+                  endAngle={this.endAngle}
+                  class="GaugeIndicator Gauge"
+                  multiplierOuter={1.1}
+                  indicator
+                />
+              </g>
+            </GaugeComponent>
+            <g visibility={this.revSelected.map((it) => (!it ? 'inherit' : 'hidden'))}>
+              <ThrottlePositionDonutComponent
+                value={this.throttleTarget.map((it) => it * 10)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="DonutThrottleIndicator"
+              />
+            </g>
+            <g visibility={this.revSelected.map((it) => (it ? 'inherit' : 'hidden'))}>
+              <ThrottlePositionDonutComponent
+                value={this.throttleTargetReverse.map((it) => this.revMax - it * 3)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.revMin}
+                max={this.revMax}
+                radius={this.revRadius}
+                startAngle={this.revStartAngle}
+                endAngle={this.revEndAngle}
+                class="DonutThrottleIndicator"
+              />
+            </g>
+          </g>
+          <g
+            visibility={MappedSubject.create(
+              ([active, revVisible, n1Degraded]) => active && revVisible && !n1Degraded,
+              this.props.active,
+              this.revVisible,
+              this.props.n1Degraded,
+            ).map((it) => (it ? 'inherit' : 'hidden'))}
+          >
+            <GaugeThrustComponent
+              x={this.props.x}
+              y={this.props.y}
+              valueIdle={Subject.create(0.04)}
+              valueMax={Subject.create(2.6)}
+              radius={this.revRadius}
+              startAngle={this.revStartAngle}
+              endAngle={this.revEndAngle}
+              min={this.revMin}
+              max={this.revMax}
+              visible={MappedSubject.create(
+                ([revDeploying, revDeployed, engineState]) => revDeploying || revDeployed || engineState === 1,
+                this.revDeploying,
+                this.revDeploying,
+                this.engineState,
+              )}
+              class="GaugeComponent GaugeThrustFill"
+              reverse
+            />
+            {/* reverse */}
+            <GaugeComponent
+              x={this.props.x}
+              y={this.props.y}
+              radius={this.revRadius}
+              startAngle={this.revStartAngle}
+              endAngle={this.revEndAngle}
+              visible={Subject.create(true)}
+              class="GaugeComponent Gauge"
+            >
+              <AvailRev
+                x={this.props.x - 18}
+                y={this.props.y - 14}
+                mesg={this.availRevText}
+                engineNumber={this.props.engine}
+                visible={this.availRevVisible}
+                revDoorOpen={this.revDeployed}
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(0)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.revMin}
+                max={this.revMax}
+                radius={this.revRadius}
+                startAngle={this.revStartAngle}
+                endAngle={this.revEndAngle}
+                class="GaugeText Gauge"
+                textNudgeX={-24}
+                textNudgeY={-6}
+                multiplierInner={1.1}
+                showValue
+                overrideText="MAX"
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(this.revMax / 2)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.revMin}
+                max={this.revMax}
+                radius={this.revRadius}
+                startAngle={this.revStartAngle}
+                endAngle={this.revEndAngle}
+                class="GaugeText Gauge"
+                multiplierInner={1.1}
+              />
+              <GaugeMarkerComponent
+                value={this.thrustPercentReverse.map((thr) => this.revMax - thr * 0.03)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.revMin}
+                max={this.revMax}
+                radius={this.revRadius}
+                startAngle={this.revStartAngle}
+                endAngle={this.revEndAngle}
+                class="GaugeIndicator Gauge"
+                multiplierOuter={1.1}
+                indicator
+              />
+            </GaugeComponent>
+          </g>
         </g>
-    </>
-);
+      </>
+    );
+  }
+}
+
+interface AvailRevProps {
+  x: number;
+  y: number;
+  mesg: Subscribable<'AVAIL' | 'REV'>;
+  engineNumber: number;
+  visible: Subscribable<boolean>;
+  revDoorOpen: Subscribable<boolean>;
+}
+
+class AvailRev extends DisplayComponent<AvailRevProps> {
+  public onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+  }
+
+  render() {
+    return (
+      <g visibility={this.props.visible.map((it) => (it ? 'inherit' : 'hidden'))}>
+        <rect x={this.props.x - 28} y={this.props.y - 13} width={90} height={24} class="DarkGreyBox BackgroundFill" />
+        <g visibility={this.props.mesg.map((mesg) => (mesg === 'REV' ? 'inherit' : 'hidden'))}>
+          <text
+            class={this.props.revDoorOpen.map((it) => `F26 Spread Centre ${it ? 'Green' : 'Amber'}`)}
+            x={this.props.x - 25}
+            y={this.props.y + 9}
+          >
+            {`REV ${this.props.engineNumber}`}
+          </text>
+        </g>
+        <g visibility={this.props.mesg.map((mesg) => (mesg === 'AVAIL' ? 'inherit' : 'hidden'))}>
+          <text class="F26 Spread Centre Green" x={this.props.x - 26} y={this.props.y + 9}>
+            AVAIL
+          </text>
+        </g>
+      </g>
+    );
+  }
+}

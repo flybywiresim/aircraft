@@ -5,16 +5,14 @@
 #ifndef FLYBYWIRE_AIRCRAFT_FINGERPRINT_HPP
 #define FLYBYWIRE_AIRCRAFT_FINGERPRINT_HPP
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 /**
  * This class provides a fingerprint function for vectors of values.
  */
 class Fingerprint {
-
-public:
-
+ public:
   /**
    * Fowler-Noll-Vo hash function
    * @tparam T the type of the values in the provided vector
@@ -24,11 +22,11 @@ public:
   template <typename T>
   static uint64_t fingerPrintFVN(const std::vector<T>& vec) {
     const uint64_t FNV_OFFSET_BASIS = 0xcbf29ce484222325ULL;
-    const uint64_t FNV_PRIME = 0x100000001b3ULL;
-    uint64_t fp = 0;
+    const uint64_t FNV_PRIME        = 0x100000001b3ULL;
+    uint64_t       fp               = 0;
     for (const auto& elem : vec) {
-      const T& value = elem;
-      uint64_t hash = FNV_OFFSET_BASIS;
+      const T&             value = elem;
+      uint64_t             hash  = FNV_OFFSET_BASIS;
       const unsigned char* bytes = reinterpret_cast<const unsigned char*>(&value);
       for (size_t i = 0; i < sizeof(T); i++) {
         hash ^= static_cast<uint64_t>(bytes[i]);
@@ -40,8 +38,6 @@ public:
     }
     return fp;
   }
-
 };
 
-
-#endif //FLYBYWIRE_AIRCRAFT_FINGERPRINT_HPP
+#endif  // FLYBYWIRE_AIRCRAFT_FINGERPRINT_HPP

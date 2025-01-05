@@ -1,0 +1,28 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Include ModelBehaviorFile="ASOBO\Inputs\Helpers.xml"/>
+
+    <!-- A380X_OVHD_ELEC Input Event definition - as it uses the ASOBO_GIE_Anim_Handling -->
+    <!-- behavior, it is very simpel to define the input event. -->
+    <InputEvent ID="A380X_OVHD_ELEC">
+        <Presets>
+            <Extend Target="ASOBO_GIE_Anim_Handling">
+                <Parameters Type="Default">
+                    <INPUT_EVENT_ID_SOURCE>A380X_OVHD_ELEC</INPUT_EVENT_ID_SOURCE>
+                </Parameters>
+            </Extend>
+        </Presets>
+    </InputEvent>
+
+    <InputEvent ID="A380X_OVHD_RMP_3">
+        <Presets>
+            <Extend Target="ASOBO_GIE_Anim_Handling">
+                <Parameters Type="Default">
+                    <INPUT_EVENT_ID_SOURCE>A380X_OVHD_RMP_3</INPUT_EVENT_ID_SOURCE>
+                </Parameters>
+            </Extend>
+        </Presets>
+    </InputEvent>
+</ModelBehaviors>

@@ -474,8 +474,8 @@ fn empty() {
     println!("ZFW CG MAC: {}", zero_fuel_weight_center_of_gravity);
     println!("GW CG MAC: {}", gross_weight_center_of_gravity);
 
-    assert_eq!(zero_fuel_weight_center_of_gravity, 36.2);
-    assert_eq!(gross_weight_center_of_gravity, 36.2);
+    assert_eq!(zero_fuel_weight_center_of_gravity, 36.23);
+    assert_eq!(gross_weight_center_of_gravity, 36.23);
     // Equal when fuel is empty
     assert_eq!(
         zero_fuel_weight_center_of_gravity,
@@ -502,8 +502,8 @@ fn low_fuel_half_pax() {
     println!("ZFW CG MAC: {}", zero_fuel_weight_center_of_gravity);
     println!("GW CG MAC: {}", gross_weight_center_of_gravity);
 
-    assert!(zero_fuel_weight_center_of_gravity > 36.);
-    assert!(zero_fuel_weight_center_of_gravity < 37.);
+    assert!(zero_fuel_weight_center_of_gravity > 37.);
+    assert!(zero_fuel_weight_center_of_gravity < 38.);
     assert!(gross_weight_center_of_gravity > 37.);
     assert!(gross_weight_center_of_gravity < 38.);
 }
@@ -527,10 +527,10 @@ fn high_fuel_full_pax_full_cargo() {
     println!("ZFW CG MAC: {}", zero_fuel_weight_center_of_gravity);
     println!("GW CG MAC: {}", gross_weight_center_of_gravity);
 
-    assert!(zero_fuel_weight_center_of_gravity > 38.);
-    assert!(zero_fuel_weight_center_of_gravity < 39.);
-    assert!(gross_weight_center_of_gravity > 39.);
-    assert!(gross_weight_center_of_gravity < 40.);
+    assert!(zero_fuel_weight_center_of_gravity > 39.);
+    assert!(zero_fuel_weight_center_of_gravity < 40.);
+    assert!(gross_weight_center_of_gravity > 41.);
+    assert!(gross_weight_center_of_gravity < 42.);
 }
 
 #[test]
@@ -565,11 +565,11 @@ fn half_pax_cargo_target_full() {
 
     assert!(zero_fuel_weight_center_of_gravity > 37.);
     assert!(zero_fuel_weight_center_of_gravity < 38.);
-    assert!(gross_weight_center_of_gravity > 37.5);
-    assert!(gross_weight_center_of_gravity < 38.);
+    assert!(gross_weight_center_of_gravity > 38.);
+    assert!(gross_weight_center_of_gravity < 39.);
 
-    assert!(target_zero_fuel_weight_center_of_gravity > 38.);
-    assert!(target_zero_fuel_weight_center_of_gravity < 39.);
-    assert!(target_gross_weight_center_of_gravity > 38.);
-    assert!(target_gross_weight_center_of_gravity < 39.);
+    assert!(target_zero_fuel_weight_center_of_gravity > 39.);
+    assert!(target_zero_fuel_weight_center_of_gravity < 40.);
+    assert!(target_gross_weight_center_of_gravity > 39.);
+    assert!(target_gross_weight_center_of_gravity < 40.);
 }

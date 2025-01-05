@@ -7,19 +7,19 @@
  * WASM: src/presets/src/Aircraft/AircraftProcedures.h
  */
 export class AircraftPresetsList {
-    private static list: { index: number, name: string }[] = [
-        { index: 1, name: 'Cold & Dark' },
-        { index: 2, name: 'Powered' },
-        { index: 3, name: 'Ready for Pushback' },
-        { index: 4, name: 'Ready for Taxi' },
-        { index: 5, name: 'Ready for Takeoff' },
-    ];
+  private static list: { index: number; name: string }[] = [
+    { index: 1, name: 'Cold & Dark' },
+    { index: 2, name: 'Powered' },
+    { index: 3, name: 'Ready for Pushback' },
+    { index: 4, name: 'Ready for Taxi' },
+    { index: 5, name: 'Ready for Takeoff' },
+  ];
 
-    public static getPresetName(presetID: number): string {
-        const index = presetID - 1;
-        if (index < 0 || index > AircraftPresetsList.list.length) {
-            return '';
-        }
-        return AircraftPresetsList.list[index].name;
+  public static getPresetName(presetID: number): string {
+    const index = presetID - 1;
+    if (index < 0 || index > AircraftPresetsList.list.length) {
+      return '';
     }
+    return AircraftPresetsList.list[index].name;
+  }
 }

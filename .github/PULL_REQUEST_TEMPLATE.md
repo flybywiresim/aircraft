@@ -30,9 +30,9 @@ Discord username (if different from GitHub):
 <!-- DO NOT DELETE THIS -->
 ## How to download the PR for QA
 
-Every new commit to this PR will cause a new A32NX artifact to be created, built, and uploaded.
+Every new commit to this PR will cause new A32NX and A380X artifacts to be created, built, and uploaded.
 
 1. Make sure you are signed in to GitHub
 1. Click on the **Checks** tab on the PR
-1. On the left side, click on the bottom **PR** tab
-1. Click on the **A32NX** download link at the bottom of the page
+1. On the left side, find and click on the **PR Build** tab
+1. Click on either **flybywire-aircraft-a320-neo**, **flybywire-aircraft-a380-842 (4K)** or **flybywire-aircraft-a380-842 (8K)** download link at the bottom of the page

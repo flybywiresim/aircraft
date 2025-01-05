@@ -10,7 +10,7 @@ set(FBW_COMMON ${FBW_ROOT}/fbw-common/src/wasm)
 include("${FBW_COMMON}/cpp-msfs-framework/cmake/TargetDefinition.cmake")
 
 # compiler refinement
-set(COMPILER_FLAGS "-Wall -Wextra -Wno-unused-function -Wno-unused-command-line-argument -Wno-ignored-attributes -Wno-macro-redefined -target wasm32-unknown-wasi --sysroot \"${MSFS_SDK}/WASM/wasi-sysroot\" -mthread-model single -fno-exceptions -fms-extensions -fvisibility=hidden -ffunction-sections -fdata-sections -fno-stack-protector")
+set(COMPILER_FLAGS "-Wall -Wextra -Wno-unused-function -Wno-unused-command-line-argument -Wno-ignored-attributes -Wno-macro-redefined -target wasm32-unknown-wasi --sysroot \"${MSFS_SDK}/WASM/wasi-sysroot\" -mthread-model single -fno-exceptions -fms-extensions -fvisibility=hidden -ffunction-sections -fdata-sections -Werror=return-type -fno-stack-protector -fstack-size-section -mbulk-memory")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILER_FLAGS}")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto -O2 -DNDEBUG")
@@ -47,6 +47,10 @@ add_definitions(
     -DNO_EXAMPLES
     #PROFILING | NO_PROFILING - for logging of profiling information of pre-, post-, update() calls
     -DNO_PROFILING
+    # disable MSFS header min/max macros which clobber std::min/max
+    -DNOMINMAX
+    # MSFS stdlib uses 64-bit off_t for lseek etc.
+    -D_FILE_OFFSET_BITS=64
 )
 
 # add the common components

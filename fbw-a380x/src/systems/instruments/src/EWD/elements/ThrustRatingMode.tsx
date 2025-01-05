@@ -1,55 +1,125 @@
-import { useArinc429Var } from '@instruments/common/arinc429';
-import { splitDecimals } from '@instruments/common/gauges';
-import { useSimVar } from '@instruments/common/simVars';
-import { Arinc429Word } from '@shared/arinc429';
-import React from 'react';
+import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { splitDecimals } from '../../MsfsAvionicsCommon/gauges';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subscribable,
+  VNode,
+} from '@microsoft/msfs-sdk';
+import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
+import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { ThrustGauge } from 'instruments/src/EWD/elements/ThrustGauge';
 
-type N1LimitProps = {
-    x: number,
-    y: number,
-    active: boolean,
-};
+export class N1Limit extends DisplayComponent<{
+  x: number;
+  y: number;
+  active: Subscribable<boolean>;
+  hidden: Subscribable<boolean>;
+  bus: ArincEventBus;
+}> {
+  private readonly sub = this.props.bus.getArincSubscriber<EwdSimvars & Arinc429Values>();
+  private readonly N1LimitType = ConsumerSubject.create(this.sub.on('thrust_limit_type'), 0);
+  private readonly N1ThrustLimit = ConsumerSubject.create(this.sub.on('thrust_limit'), 0);
+  private readonly flexTemp = ConsumerSubject.create(this.sub.on('flex'), 0);
+  private readonly sat = Arinc429ConsumerSubject.create(this.sub.on('sat').withArinc429Precision(0));
+  private readonly thrustLimitTypeArray = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
 
-const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
-    const [N1LimitType] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'enum', 500);
-    const [N1ThrustLimit] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT', 'number', 100);
-    const N1ThrustLimitSplit = splitDecimals(N1ThrustLimit);
-    const thrustLimitTypeArray = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
-    const [flexTemp] = useSimVar('L:AIRLINER_TO_FLEX_TEMP', 'number', 1000);
-    const sat: Arinc429Word = useArinc429Var('L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE', 500);
-    const displayFlexTemp: boolean = flexTemp !== 0 && (flexTemp >= (sat.value - 10)) && N1LimitType === 3;
+  private readonly displayFlexTemp = MappedSubject.create(
+    ([flexTemp, sat, N1LimitType, active]) => {
+      return active && flexTemp !== 0 && flexTemp >= sat.value - 10 && N1LimitType === 3;
+    },
+    this.flexTemp,
+    this.sat,
+    this.N1LimitType,
+    this.props.active,
+  );
 
+  private readonly cpiomBAgsDiscrete = Arinc429ConsumerSubject.create(undefined);
+  private readonly thrustLimitIdle = ConsumerSubject.create(this.sub.on('thrust_limit_idle').whenChanged(), 0);
+  private readonly thrustLimitToga = ConsumerSubject.create(this.sub.on('thrust_limit_toga').whenChanged(), 0);
+  private readonly thrustLimitMax = MappedSubject.create(
+    ([cpiomB, thrustLimitToga]) =>
+      !cpiomB.bitValueOr(13, false) && !cpiomB.bitValueOr(14, false) ? thrustLimitToga : thrustLimitToga + 0.6,
+    this.cpiomBAgsDiscrete,
+    this.thrustLimitToga,
+  );
+
+  private readonly thrustLimitTHR = MappedSubject.create(
+    ([n1, thrustLimitIdle, thrustLimitMax]) =>
+      ThrustGauge.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitMax, 0.042),
+    this.N1ThrustLimit,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+  );
+
+  public onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+  }
+
+  render(): VNode {
     return (
-        <>
-            <g id='Thrust-Rating-Mode'>
-                {!active
-                && (
-                    <>
-                        <text className='F26 Center Amber' x={x - 18} y={y}>XX</text>
-                    </>
-                )}
-                {active
-                && (
-                    <>
-                        <text className='Huge End Cyan' x={x} y={y}>{thrustLimitTypeArray[N1LimitType]}</text>
-                        <text className='F26 End Green Spread' x={x + 69} y={y - 2}>{N1ThrustLimitSplit[0]}</text>
-                        <text className='F26 End Green' x={x + 86} y={y - 2}>.</text>
-                        <text className='F20 End Green' x={x + 101} y={y - 2}>{N1ThrustLimitSplit[1]}</text>
-                        <text className='F20 End Cyan' x={x + 117} y={y - 2}>%</text>
-                    </>
-                )}
-                {active && displayFlexTemp
-                && (
-                    <>
-                        <text className='F20 Cyan' x={x + 154} y={y}>
-                            {Math.round(flexTemp)}
-                            &deg;C
-                        </text>
-                    </>
-                )}
-            </g>
-        </>
-    );
-};
+      <g id="Thrust-Rating-Mode" style={{ display: this.props.hidden.map((v) => (v ? 'none' : '')) }}>
+        <text
+          class="F26 Center Amber"
+          x={this.props.x - 18}
+          y={this.props.y}
+          style={{ display: this.props.active.map((a) => (a ? 'none' : '')) }}
+        >
+          XX
+        </text>
 
-export default N1Limit;
+        <text
+          class="Huge End Cyan"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x}
+          y={this.props.y}
+        >
+          {this.N1LimitType.map((t) => this.thrustLimitTypeArray[t])}
+        </text>
+        <text
+          class="F26 End Green Spread"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x + 69}
+          y={this.props.y - 2}
+        >
+          {this.thrustLimitTHR.map((l) => splitDecimals(l)[0])}
+        </text>
+        <text
+          class="F26 End Green"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x + 86}
+          y={this.props.y - 2}
+        >
+          .
+        </text>
+        <text
+          class="F20 End Green"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x + 101}
+          y={this.props.y - 2}
+        >
+          {this.thrustLimitTHR.map((l) => splitDecimals(l)[1])}
+        </text>
+        <text
+          class="F20 End Cyan"
+          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          x={this.props.x + 117}
+          y={this.props.y - 2}
+        >
+          %
+        </text>
+
+        <text
+          class={{ F20: true, Cyan: true, HiddenElement: this.displayFlexTemp.map((v) => !v) }}
+          x={this.props.x + 154}
+          y={this.props.y}
+        >
+          {this.flexTemp.map((t) => Math.round(t))}
+          &deg;C
+        </text>
+      </g>
+    );
+  }
+}

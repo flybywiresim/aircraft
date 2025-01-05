@@ -115,6 +115,9 @@
                 <HELPID>HELPID_GAUGE_THROTTLE_THROTTLE</HELPID>
                 <STEPS_NUMBER>4</STEPS_NUMBER>
                 <DRAG_CODE>
+                    (L:#POSITION_VAR#, number) 1 &lt; if{
+                      1 (&gt;L:#POSITION_VAR#)
+                    }
                     (L:#POSITION_VAR#, number) sp0
                     0 sp1
                     l0 1 &lt; if{
@@ -146,7 +149,7 @@
     <Template Name="FBW_Airbus_Engine_Lights">
         <UseTemplate Name="FBW_Push_Toggle">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_CODE>(L:A32NX_FIRE_TEST_ENG#ID#, bool)</SEQ1_CODE>
+            <SEQ1_CODE>(L:A32NX_FIRE_DETECTED_ENG#ID#, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(A:ENG FAILED:#ID#, bool)</SEQ2_CODE>
         </UseTemplate>
     </Template>

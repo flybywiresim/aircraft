@@ -1,108 +1,179 @@
-import React from 'react';
-import { GaugeComponent, GaugeMarkerComponent, GaugeMaxEGTComponent } from '@instruments/common/gauges';
-import { useSimVar } from '@instruments/common/simVars';
-import { EGTProps } from '@instruments/common/types';
+import {
+  DisplayComponent,
+  Subscribable,
+  VNode,
+  FSComponent,
+  EventBus,
+  ConsumerSubject,
+  Subject,
+  MappedSubject,
+} from '@microsoft/msfs-sdk';
+import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { GaugeComponent, GaugeMarkerComponent, GaugeMaxEGTComponent } from '../../MsfsAvionicsCommon/gauges';
 
-const getModeEGTMax = () => {
-    const [throttleMode] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number', 500);
-    const [togaWarning] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'boolean', 500);
+interface EGTProps {
+  bus: EventBus;
+  x: number;
+  y: number;
+  engine: number;
+  active: Subscribable<boolean>;
+}
 
-    switch (throttleMode) {
-    case 4:
-        return togaWarning ? 1060 : 1025;
+export class EGT extends DisplayComponent<EGTProps> {
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
 
-    case 1:
-    case 2:
-    case 3:
-    case 5:
-        return 1025;
+  private readonly throttlePosition = ConsumerSubject.create(
+    this.sub.on(`throttle_position_${this.props.engine}`).whenChanged(),
+    0,
+  );
 
-    default:
-        return 750;
+  private readonly egt = ConsumerSubject.create(
+    this.sub.on(`egt_${this.props.engine}`).withPrecision(1).whenChanged(),
+    0,
+  );
+
+  private radius = 68;
+  private startAngle = 270;
+  private endAngle = 90;
+  private min = 0;
+  private max = 1000;
+
+  private warningEGTColor = (EGTemperature: number, throttleMode: number) => {
+    if (EGTemperature >= 900) {
+      return 'Red';
     }
-};
-
-const warningEGTColor = (EGTemperature: number) => {
-    if (EGTemperature > 1060) {
-        return 'Red';
-    }
-    if (EGTemperature > getModeEGTMax()) {
-        return 'Amber';
+    if (EGTemperature > 850 && throttleMode < 3) {
+      return 'Amber';
     }
     return 'Green';
-};
+  };
 
-const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
-    const [EGTemperature] = useSimVar(`L:A32NX_ENGINE_EGT:${engine}`, 'celsius');
-    const radius = 68;
-    const startAngle = 270;
-    const endAngle = 90;
-    const min = 0;
-    const max = 1200;
+  private readonly amberVisible = this.throttlePosition.map((tm) => tm < 33);
 
-    const modeEGTMax = getModeEGTMax();
-    const EGTColour = warningEGTColor(EGTemperature);
+  private readonly egtColour = MappedSubject.create(
+    ([egt, tm]) => this.warningEGTColor(egt, tm),
+    this.egt,
+    this.throttlePosition,
+  );
 
+  // EEC trims EGT to a max value
+  private readonly trimmedEGT = MappedSubject.create(
+    ([egt, throttleMode]) => Math.min([3, 4].includes(throttleMode) ? 900 : 850, egt),
+    this.egt,
+    this.throttlePosition,
+  );
+
+  public onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+  }
+
+  render() {
     return (
-        <>
-            <g id={`EGT-indicator-${engine}`}>
-                {!active
-                    && (
-                        <>
-                            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent WhiteLine SW2' />
-                            <text className='F26 End Amber' x={x + 17} y={y + 11.7}>XX</text>
-                        </>
-                    )}
-                {active && (
-                    <>
-                        <text className={`Large End ${EGTColour}`} x={x + 33} y={y + 11.7}>{Math.round(EGTemperature)}</text>
-                        <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className='GaugeComponent Gauge'>
-                            <GaugeComponent x={x} y={y} radius={radius - 2} startAngle={endAngle - 20} endAngle={endAngle} visible className='GaugeComponent Gauge ThickRedLine' />
-                            <GaugeMarkerComponent
-                                value={min}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='GaugeText Gauge Medium'
-                            />
-                            <GaugeMarkerComponent value={600} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className='GaugeText Gauge' />
-                            <GaugeMarkerComponent value={max} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className='GaugeText Gauge RedLine' />
-                            <GaugeMaxEGTComponent
-                                value={modeEGTMax}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className='GaugeThrustLimitIndicatorFill Gauge'
-                            />
-                            <rect x={x - 36} y={y - 11} width={72} height={26} className='DarkGreyBox' />
-                            <GaugeMarkerComponent
-                                value={EGTemperature}
-                                x={x}
-                                y={y}
-                                min={min}
-                                max={max}
-                                radius={radius}
-                                startAngle={startAngle}
-                                endAngle={endAngle}
-                                className={`GaugeIndicator Gauge ${EGTColour}`}
-                                multiplierInner={0.75}
-                                indicator
-                                halfIndicator
-                            />
-                        </GaugeComponent>
-                    </>
-                )}
-            </g>
-        </>
+      <>
+        <g id={`EGT-indicator-${this.props.engine}`}>
+          <g visibility={this.props.active.map((it) => (!it ? 'inherit' : 'hidden'))}>
+            <GaugeComponent
+              x={this.props.x}
+              y={this.props.y}
+              radius={this.radius}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
+              visible={Subject.create(true)}
+              class="GaugeComponent WhiteLine SW2"
+            />
+            <text class="F26 End Amber" x={this.props.x + 17} y={this.props.y + 11.7}>
+              XX
+            </text>
+          </g>
+          <g visibility={this.props.active.map((it) => (it ? 'inherit' : 'hidden'))}>
+            <text class={this.egtColour.map((col) => `Large End ${col}`)} x={this.props.x + 33} y={this.props.y + 11.7}>
+              {this.egt.map((egt) =>
+                Math.min([3, 4].includes(this.throttlePosition.get()) ? 900 : 850, Math.round(egt)),
+              )}
+            </text>
+            <GaugeComponent
+              x={this.props.x}
+              y={this.props.y}
+              radius={this.radius}
+              startAngle={this.startAngle}
+              endAngle={this.endAngle}
+              visible={Subject.create(true)}
+              class="GaugeComponent Gauge"
+            >
+              <GaugeComponent
+                x={this.props.x}
+                y={this.props.y}
+                radius={this.radius - 2}
+                startAngle={this.endAngle - 20}
+                endAngle={this.endAngle}
+                visible={Subject.create(true)}
+                class="GaugeComponent Gauge ThickRedLine"
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(this.min)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="GaugeText Gauge Medium"
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(500)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="GaugeText Gauge"
+              />
+              <GaugeMarkerComponent
+                value={Subject.create(this.max)}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class="GaugeText Gauge RedLine"
+              />
+              <g visibility={this.amberVisible.map((it) => (it ? 'inherit' : 'hidden'))}>
+                <GaugeMaxEGTComponent
+                  value={Subject.create(850)}
+                  x={this.props.x}
+                  y={this.props.y}
+                  min={this.min}
+                  max={this.max}
+                  radius={this.radius}
+                  startAngle={this.startAngle}
+                  endAngle={this.endAngle}
+                  class="GaugeThrustLimitIndicatorFill Gauge"
+                />
+              </g>
+              <rect x={this.props.x - 36} y={this.props.y - 11} width={72} height={26} class="DarkGreyBox" />
+              <GaugeMarkerComponent
+                value={this.trimmedEGT}
+                x={this.props.x}
+                y={this.props.y}
+                min={this.min}
+                max={this.max}
+                radius={this.radius}
+                startAngle={this.startAngle}
+                endAngle={this.endAngle}
+                class={this.egtColour.map((col) => `${col}GaugeIndicator Gauge`)}
+                multiplierInner={0.75}
+                indicator
+                halfIndicator
+              />
+            </GaugeComponent>
+          </g>
+        </g>
+      </>
     );
-};
-
-export default EGT;
+  }
+}

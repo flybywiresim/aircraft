@@ -1,6 +1,8 @@
-use crate::shared::local_acceleration_at_plane_coordinate;
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::shared::update_iterator::MaxStepLoop;
+use crate::shared::{
+    height_over_ground, local_acceleration_at_plane_coordinate, DelayedTrueLogicGate,
+};
 
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
@@ -13,17 +15,17 @@ use uom::si::{
     f64::*,
     force::newton,
     length::meter,
-    mass::kilogram,
+    mass::{kilogram, pound},
     ratio::percent,
     ratio::ratio,
-    velocity::{knot, meter_per_second},
+    velocity::meter_per_second,
 };
 
 use std::time::Duration;
 
 use nalgebra::{Vector2, Vector3};
 
-enum GearStrutId {
+pub enum GearStrutId {
     Nose = 0,
     LeftBody = 1,
     RightBody = 2,
@@ -46,21 +48,41 @@ struct LandingGearWeightOnWheelsEstimator {
     right_body_compression: Ratio,
 }
 impl LandingGearWeightOnWheelsEstimator {
-    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:0";
+    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
     const GEAR_LEFT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
     const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
     const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
     const GEAR_RIGHT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:4";
 
+    // For now allowing to select between guesstimate and msfs methods
+    const USE_MSFS_METHOD: bool = true;
+
+    // Method 1 msfs formula. Sadly we don't know exact msfs spring constants
+    // MSFS spring formula
+    const MSFS_SPRING_EXPONENT: f64 = 4.;
+
+    const NOSE_SPRING_RATIO: f64 = 0.477;
+    const NOSE_SPRING_CONSTANT: f64 = 80538.6;
+    const NOSE_MAX_COMPRESSION_FT: f64 = 1.560;
+
+    const WING_SPRING_RATIO: f64 = 0.575;
+    const WING_SPRING_CONSTANT: f64 = 175675.7;
+    const WING_MAX_COMPRESSION_FT: f64 = 1.643;
+
+    const BODY_SPRING_RATIO: f64 = 0.412;
+    const BODY_SPRING_CONSTANT: f64 = 196507.5;
+    const BODY_MAX_COMPRESSION_FT: f64 = 1.724;
+
+    // Method 2 guesstimate fit curve
     // Weight estimation is in the form of weight = X * compression_percent^(Y)
-    const NOSE_GEAR_X_COEFF: f64 = 2.22966;
-    const NOSE_GEAR_Y_POW: f64 = 2.2953179884;
+    const NOSE_GEAR_X_COEFF: f64 = 0.005;
+    const NOSE_GEAR_Y_POW: f64 = 3.6;
 
-    const WING_GEAR_X_COEFF: f64 = 5.5;
-    const WING_GEAR_Y_POW: f64 = 2.6;
+    const WING_GEAR_X_COEFF: f64 = 0.006;
+    const WING_GEAR_Y_POW: f64 = 3.85;
 
-    const BODY_GEAR_X_COEFF: f64 = 7.5;
-    const BODY_GEAR_Y_POW: f64 = 2.5;
+    const BODY_GEAR_X_COEFF: f64 = 0.0055;
+    const BODY_GEAR_Y_POW: f64 = 3.85;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -83,11 +105,27 @@ impl LandingGearWeightOnWheelsEstimator {
     }
 
     fn total_weight_on_wheels(&self) -> Mass {
+        if Self::USE_MSFS_METHOD {
+            self.new_total_weight_on_wheels()
+        } else {
+            self.old_total_weight_on_wheels()
+        }
+    }
+
+    fn old_total_weight_on_wheels(&self) -> Mass {
         self.weight_on_wheel(GearStrutId::Nose)
             + self.weight_on_wheel(GearStrutId::LeftWing)
             + self.weight_on_wheel(GearStrutId::RightWing)
             + self.weight_on_wheel(GearStrutId::LeftBody)
             + self.weight_on_wheel(GearStrutId::RightBody)
+    }
+
+    fn new_total_weight_on_wheels(&self) -> Mass {
+        self.new_weight_on_wheel(GearStrutId::Nose)
+            + self.new_weight_on_wheel(GearStrutId::LeftWing)
+            + self.new_weight_on_wheel(GearStrutId::RightWing)
+            + self.new_weight_on_wheel(GearStrutId::LeftBody)
+            + self.new_weight_on_wheel(GearStrutId::RightBody)
     }
 
     fn weight_on_wheel(&self, wheel_id: GearStrutId) -> Mass {
@@ -121,14 +159,61 @@ impl LandingGearWeightOnWheelsEstimator {
 
         Mass::new::<kilogram>(coeff * compression.get::<percent>().powf(exponent))
     }
+
+    fn new_weight_on_wheel(&self, wheel_id: GearStrutId) -> Mass {
+        let (spring_ratio, spring_constant, max_compression_ft, current_compression) =
+            match wheel_id {
+                GearStrutId::Nose => (
+                    Self::NOSE_SPRING_RATIO,
+                    Self::NOSE_SPRING_CONSTANT,
+                    Self::NOSE_MAX_COMPRESSION_FT,
+                    self.center_compression,
+                ),
+                GearStrutId::LeftWing => (
+                    Self::WING_SPRING_RATIO,
+                    Self::WING_SPRING_CONSTANT,
+                    Self::WING_MAX_COMPRESSION_FT,
+                    self.left_wing_compression,
+                ),
+                GearStrutId::RightWing => (
+                    Self::WING_SPRING_RATIO,
+                    Self::WING_SPRING_CONSTANT,
+                    Self::WING_MAX_COMPRESSION_FT,
+                    self.right_wing_compression,
+                ),
+                GearStrutId::LeftBody => (
+                    Self::BODY_SPRING_RATIO,
+                    Self::BODY_SPRING_CONSTANT,
+                    Self::BODY_MAX_COMPRESSION_FT,
+                    self.left_body_compression,
+                ),
+                GearStrutId::RightBody => (
+                    Self::BODY_SPRING_RATIO,
+                    Self::BODY_SPRING_CONSTANT,
+                    Self::BODY_MAX_COMPRESSION_FT,
+                    self.right_body_compression,
+                ),
+            };
+
+        let current_compression_ft = max_compression_ft * current_compression.get::<ratio>();
+
+        let msfs_ratio = 1. / Self::MSFS_SPRING_EXPONENT
+            + (spring_ratio * current_compression_ft.powf(Self::MSFS_SPRING_EXPONENT - 1.)
+                - 1. / Self::MSFS_SPRING_EXPONENT)
+                * current_compression.get::<ratio>();
+
+        let nose_weight_lbs = spring_constant * msfs_ratio * current_compression_ft;
+
+        Mass::new::<pound>(nose_weight_lbs)
+    }
 }
 impl SimulationElement for LandingGearWeightOnWheelsEstimator {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.center_compression = reader.read(&self.center_compression_id);
-        self.left_wing_compression = reader.read(&self.left_body_compression_id);
-        self.right_wing_compression = reader.read(&self.right_body_compression_id);
-        self.left_body_compression = reader.read(&self.left_wing_compression_id);
-        self.right_body_compression = reader.read(&self.right_wing_compression_id);
+        self.left_wing_compression = reader.read(&self.left_wing_compression_id);
+        self.right_wing_compression = reader.read(&self.right_wing_compression_id);
+        self.left_body_compression = reader.read(&self.left_body_compression_id);
+        self.right_body_compression = reader.read(&self.right_body_compression_id);
     }
 }
 
@@ -139,17 +224,35 @@ pub struct WingLift {
     total_lift: Force,
 
     ground_weight_ratio: Ratio,
+
+    ground_wow_filtered: LowPassFilter<f64>,
+
+    elevator_force_filtered: LowPassFilter<f64>,
+    elevator_to_cg_offset: Length,
+
+    allow_flight_blending_mode: DelayedTrueLogicGate,
 }
 impl WingLift {
-    pub fn new(context: &mut InitContext) -> Self {
+    // Part of the total weight from which ground mode lift is blended into flight mode lift
+    const COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE: f64 = 0.7;
+
+    pub fn new(context: &mut InitContext, elevator_to_cg_offset: Length) -> Self {
         Self {
             gear_weight_on_wheels: LandingGearWeightOnWheelsEstimator::new(context),
             total_lift: Force::default(),
             ground_weight_ratio: Ratio::default(),
+
+            ground_wow_filtered: LowPassFilter::new(Duration::from_millis(700)),
+            elevator_force_filtered: LowPassFilter::new(Duration::from_millis(700)),
+            elevator_to_cg_offset,
+
+            allow_flight_blending_mode: DelayedTrueLogicGate::new(Duration::from_millis(350)),
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
+        self.update_elevator_lift(context);
+
         let total_weight_on_wheels = self.gear_weight_on_wheels.total_weight_on_wheels();
 
         let raw_accel_no_grav = context.vert_accel().get::<meter_per_second_squared>();
@@ -157,22 +260,56 @@ impl WingLift {
 
         let lift_delta_from_accel_n = raw_accel_no_grav * cur_weight_kg;
         let lift_1g = 9.8 * cur_weight_kg;
-        let lift_wow = -9.8 * total_weight_on_wheels.get::<kilogram>();
+        let lift_weight_on_wheels = -9.8 * total_weight_on_wheels.get::<kilogram>();
 
-        let lift = if total_weight_on_wheels.get::<kilogram>() > 500. {
-            // Assuming no lift at low wind speed avoids glitches with ground when braking hard for a full stop
-            if context.true_airspeed().get::<knot>().abs() < 20. {
-                0.
+        self.ground_wow_filtered
+            .update(context.delta(), lift_weight_on_wheels);
+
+        // We allow blending ground to flight only after some time on ground
+        // This is because at touchdown, we don't want any flight mode lift active at first or else it would cause
+        //  the system to think there's a massive lift increase due to plane accelerating up at impact
+        self.allow_flight_blending_mode
+            .update(context, total_weight_on_wheels.get::<kilogram>() > 1.);
+
+        let ground_mode_lift = (lift_1g + self.ground_wow_filtered.output()
+            - self.elevator_force_filtered.output().min(0.))
+        .max(0.);
+        let flight_mode_lift =
+            lift_1g + lift_delta_from_accel_n - self.elevator_force_filtered.output();
+
+        let lift_mode_blending_coeff = (total_weight_on_wheels.get::<kilogram>()
+            / (context.total_weight().get::<kilogram>()
+                * Self::COEFF_OF_TOTAL_WEIGHT_TO_START_BLENDING_MODE))
+            .clamp(0., 1.);
+
+        // Blending calculated lift between ground and flight mode lift
+        let blended_ground_flight_lift = (ground_mode_lift * lift_mode_blending_coeff)
+            + ((1. - lift_mode_blending_coeff) * flight_mode_lift);
+
+        let final_lift = if total_weight_on_wheels.get::<kilogram>() > 1. {
+            if self.allow_flight_blending_mode.output() {
+                blended_ground_flight_lift
             } else {
-                (lift_1g + lift_wow).max(0.)
+                ground_mode_lift
             }
         } else {
-            lift_1g + lift_delta_from_accel_n
+            flight_mode_lift
         };
 
-        self.total_lift = Force::new::<newton>(lift);
+        self.total_lift = Force::new::<newton>(final_lift);
 
         self.ground_weight_ratio = total_weight_on_wheels / context.total_weight();
+    }
+
+    fn update_elevator_lift(&mut self, context: &UpdateContext) {
+        let pitch_accel = context.rotation_acceleration_rad_s2()[0];
+        let pitch_inertia = context.total_pitch_inertia_kg_m2();
+
+        let elevator_force =
+            pitch_accel * pitch_inertia / self.elevator_to_cg_offset.get::<meter>();
+
+        self.elevator_force_filtered
+            .update(context.delta(), elevator_force);
     }
 
     pub fn total_plane_lift(&self) -> Force {
@@ -183,6 +320,10 @@ impl WingLift {
     //      0-> Plane not on ground  0.5-> half the weight of the plane on ground ...
     pub fn ground_weight_ratio(&self) -> Ratio {
         Ratio::new::<ratio>(self.ground_weight_ratio.get::<ratio>().clamp(0., 1.))
+    }
+
+    pub fn ground_weight_per_wheel(&self, wheel_id: GearStrutId) -> Mass {
+        self.gear_weight_on_wheels.new_weight_on_wheel(wheel_id)
     }
 
     pub fn total_lift(&self) -> Force {
@@ -337,11 +478,16 @@ struct WingSectionNode {
     position: Length,
     acceleration: Acceleration,
 
+    min_position: Length,
+
     external_position_offset: Length,
 
     sum_of_forces: Force,
 }
 impl WingSectionNode {
+    const ABSOLUTE_MIN_POSITION: f64 = -10.;
+    const ABSOLUTE_MAX_POSITION: f64 = 10.;
+
     fn new(empty_mass: Mass) -> Self {
         Self {
             empty_mass,
@@ -349,11 +495,17 @@ impl WingSectionNode {
             speed: Velocity::default(),
             position: Length::default(),
             acceleration: Acceleration::default(),
+            min_position: Length::new::<meter>(Self::ABSOLUTE_MIN_POSITION),
 
             external_position_offset: Length::default(),
 
             sum_of_forces: Force::default(),
         }
+    }
+
+    pub fn set_min_position(&mut self, min_pos: Length) {
+        let new_min = min_pos.max(Length::new::<meter>(Self::ABSOLUTE_MIN_POSITION));
+        self.min_position = new_min;
     }
 
     fn update(&mut self, context: &UpdateContext) {
@@ -389,6 +541,14 @@ impl WingSectionNode {
             self.speed += self.acceleration * context.delta_as_time();
 
             self.position += self.speed * context.delta_as_time();
+
+            if self.position < self.min_position {
+                self.position = self.min_position;
+                self.speed = Velocity::default();
+            } else if self.position > Length::new::<meter>(Self::ABSOLUTE_MAX_POSITION) {
+                self.position = Length::new::<meter>(Self::ABSOLUTE_MAX_POSITION);
+                self.speed = Velocity::default();
+            }
         }
 
         self.sum_of_forces = Force::default();
@@ -429,6 +589,8 @@ pub struct FlexPhysicsNG<const NODE_NUMBER: usize, const LINK_NUMBER: usize> {
     nodes: [WingSectionNode; NODE_NUMBER],
     flex_constraints: [FlexibleConstraint; LINK_NUMBER],
 
+    height_limit_absolute_coordinate: [Option<Vector3<f64>>; NODE_NUMBER],
+
     // DEV simvars to adjust parameters ingame
     wing_dev_spring_1_id: VariableIdentifier,
     wing_dev_spring_2_id: VariableIdentifier,
@@ -461,6 +623,7 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         empty_mass: [Mass; NODE_NUMBER],
         springness: [f64; LINK_NUMBER],
         damping: [f64; LINK_NUMBER],
+        height_limit_absolute_coordinate: [Option<Vector3<f64>>; NODE_NUMBER],
     ) -> Self {
         let nodes_array = empty_mass.map(WingSectionNode::new);
 
@@ -485,6 +648,8 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
                 },
             ),
 
+            height_limit_absolute_coordinate,
+
             wing_dev_spring_1_id: context.get_identifier("WING_FLEX_DEV_SPRING_1".to_owned()),
             wing_dev_spring_2_id: context.get_identifier("WING_FLEX_DEV_SPRING_2".to_owned()),
             wing_dev_spring_3_id: context.get_identifier("WING_FLEX_DEV_SPRING_3".to_owned()),
@@ -501,6 +666,15 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         }
     }
 
+    fn update_ground_collision_constraints(&mut self, context: &UpdateContext) {
+        for (node_idx, coordinate) in self.height_limit_absolute_coordinate.iter().enumerate() {
+            if coordinate.is_some() {
+                let min_height = -height_over_ground(context, coordinate.unwrap());
+                self.nodes[node_idx].set_min_position(min_height);
+            }
+        }
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -509,6 +683,8 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         external_acceleration_from_plane_body: Acceleration,
     ) {
         self.updater_max_step.update(context);
+
+        self.update_ground_collision_constraints(context);
 
         for cur_time_step in &mut self.updater_max_step {
             self.external_accelerations_filtered

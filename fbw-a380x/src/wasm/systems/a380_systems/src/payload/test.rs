@@ -1681,7 +1681,7 @@ fn gsx_deboarding_full_pax() {
         .deboard_gsx_cargo_half()
         .and_run()
         .and_stabilize()
-        .deboard_gsx_pax(519)
+        .deboard_gsx_pax(484)
         .deboard_gsx_cargo_full()
         .and_run()
         .gsx_complete_deboard_state();

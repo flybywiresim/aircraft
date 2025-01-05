@@ -1,69 +1,32 @@
-const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+const DB_MONTHS = Object.freeze({
+    '01': "JAN",
+    '02': "FEB",
+    '03': "MAR",
+    '04': "APR",
+    '05': "MAY",
+    '06': "JUN",
+    '07': "JUL",
+    '08': "AUG",
+    '09': "SEP",
+    '10': "OCT",
+    '11': "NOV",
+    '12': "DEC"
+});
+
 // Honeywell H4+ feature only
 const confirmDataBaseSwitch = false;
 
-function findNewMonthIndex(index) {
-    if (index === 0) {
-        return 11;
-    } else {
-        return index - 1;
-    }
-}
+function calculateActiveDate(dbIdent) {
+    const effDay = dbIdent.effectiveFrom.substring(8);
+    const effMonth = dbIdent.effectiveFrom.substring(5, 7);
+    const expDay = dbIdent.effectiveTo.substring(8);
+    const expMonth = dbIdent.effectiveTo.substring(5, 7);
 
-function lessThan10(num) {
-    if (num < 10) {
-        return `0${num}`;
-    } else {
-        return num;
-    }
-}
-
-function calculateActiveDate(date) {
-    if (date.length === 13) {
-        const startMonth = date.slice(0, 3);
-        const startDay = date.slice(3, 5);
-
-        const endMonth = date.slice(5, 8);
-        const endDay = date.slice(8, 10);
-
-        return `${startDay}${startMonth}-${endDay}${endMonth}`;
-    } else {
-        return date;
-    }
-}
-
-function calculateSecDate(date) {
-    if (date.length === 13) {
-        const primStartMonth = date.slice(0, 3);
-        const primStartDay = date.slice(3, 5);
-
-        const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
-
-        if (primStartMonthIndex === -1) {
-            return "ERR";
-        }
-
-        let newEndMonth = primStartMonth;
-        let newEndDay = primStartDay - 1;
-
-        let newStartDay = newEndDay - 27;
-        let newStartMonth = primStartMonth;
-
-        if (newEndDay === 0) {
-            newEndMonth = months[findNewMonthIndex(primStartMonthIndex)];
-            newEndDay = monthLength[findNewMonthIndex(primStartMonthIndex)];
-        }
-
-        if (newStartDay <= 0) {
-            newStartMonth = months[findNewMonthIndex(primStartMonthIndex)];
-            newStartDay = monthLength[findNewMonthIndex(primStartMonthIndex)] + newStartDay;
-        }
-
-        return `${lessThan10(newStartDay)}${newStartMonth}-${lessThan10(newEndDay)}${newEndMonth}`;
-    } else {
-        return "ERR";
-    }
+    return `${effDay}${DB_MONTHS[effMonth]}-${expDay}${DB_MONTHS[expMonth]}`;
 }
 
 async function switchDataBase(mcdu) {
@@ -74,7 +37,7 @@ const ConfirmType = {
     NoConfirm : 0,
     DeleteStored : 1,
     SwitchDataBase : 2,
-}
+};
 
 class CDUIdentPage {
     static ShowPage(mcdu, confirmType = ConfirmType.NoConfirm) {
@@ -82,7 +45,6 @@ class CDUIdentPage {
         mcdu.page.Current = mcdu.page.IdentPage;
         mcdu.activeSystem = "FMGC";
 
-        const date = mcdu.getNavDataDateRange();
         const stored = mcdu.dataManager.numberOfStoredElements();
 
         let storedTitleCell = "";
@@ -120,33 +82,37 @@ class CDUIdentPage {
             // DELETE ALL
             mcdu.onRightInput[4] = () => {
                 if (confirmType == ConfirmType.DeleteStored) {
-                    const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
-                    if (!allDeleted) {
-                        mcdu.setScratchpadMessage(
-                            NXSystemMessages.fplnElementRetained
-                        );
-                    }
-                    CDUIdentPage.ShowPage(mcdu);
+                    mcdu.dataManager.deleteAllStoredWaypoints().then((allDeleted) => {
+                        if (!allDeleted) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
+                        }
+
+                        CDUIdentPage.ShowPage(mcdu);
+                    });
                 } else {
                     CDUIdentPage.ShowPage(mcdu, ConfirmType.DeleteStored);
                 }
             };
         }
 
+        const dbCycle = mcdu.getNavDatabaseIdent();
+        const navCycleDates = dbCycle === null ? '' : calculateActiveDate(dbCycle);
+        const navSerial = dbCycle === null ? '' : `${dbCycle.provider.substring(0, 2).toUpperCase()}${dbCycle.airacCycle}0001`;
+
         // H4+ only confirm prompt
         if (confirmDataBaseSwitch) {
             secondaryDBTopLine =
                 confirmType === ConfirmType.SwitchDataBase
-                    ? "{amber}{small} " + calculateActiveDate(date) + "{end}"
-                    : "\xa0SECOND NAV DATA BASE";
+                    ? `{amber}{small}\xa0${navCycleDates}{end}`
+                    : "\xa0SECOND\xa0NAV\xa0DATA\xa0BASE";
             secondaryDBSubLine =
                 confirmType === ConfirmType.SwitchDataBase
-                    ? "{amber}{CANCEL    SWAP CONFIRM*{end}"
-                    : "{small}{" + calculateActiveDate(date) + "{end}[color]cyan";
+                    ? "{amber}{CANCEL\xa0\xa0\xa0\xa0SWAP\xa0CONFIRM*{end}"
+                    : `{small}{cyan}{${navCycleDates}{end}{end}`;
         } else {
-            secondaryDBTopLine = "\xa0SECOND NAV DATA BASE";
+            secondaryDBTopLine = "\xa0SECOND\xa0NAV\xa0DATA\xa0BASE";
             secondaryDBSubLine =
-                "{small}{" + calculateActiveDate(date) + "{end}[color]cyan";
+                `{small}{cyan}{${navCycleDates}{end}{end}`;
         }
 
         mcdu.leftInputDelay[2] = () => {
@@ -185,8 +151,8 @@ class CDUIdentPage {
             ["LEAP-1A26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
             [
-                "\xa0" + calculateActiveDate(date) + "[color]cyan",
-                "AIRAC[color]green",
+                `{cyan}\xa0${navCycleDates}{end}`,
+                `{green}${navSerial}{end}`,
             ],
             [secondaryDBTopLine],
             [secondaryDBSubLine],

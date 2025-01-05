@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUAtcAtisAutoUpdate {
     static ToggleAutoUpdate(mcdu, icao, reloadPage) {
         if (mcdu.atsu.atisAutoUpdateActive(icao)) {
@@ -24,15 +28,18 @@ class CDUAtcAtisAutoUpdate {
     static ShowPage(mcdu, updateInProgress = false) {
         mcdu.clearDisplay();
 
+        const activeDestinationAirport = mcdu.flightPlanService.active.destinationAirport;
+        const activeAlternateAirport = mcdu.flightPlanService.active.alternateDestinationAirport;
+
         let arrAtis = "{inop}\xa0[  ]/[ ]{end}";
         let arrAtisState = "";
         let arrAtisButton = "{cyan}ON\xa0{end}";
         let altAtis = "{inop}\xa0[  ]/[ ]{end}";
         let altAtisState = "";
         let altAtisButton = "{cyan}ON\xa0{end}";
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            arrAtis = `{cyan}\xa0${mcdu.flightPlanManager.getDestination().ident}/ARR{end}`;
-            if (mcdu.atsu.atisAutoUpdateActive(mcdu.flightPlanManager.getDestination().ident)) {
+        if (activeDestinationAirport) {
+            arrAtis = `{cyan}\xa0${activeDestinationAirport.ident}/ARR{end}`;
+            if (mcdu.atsu.atisAutoUpdateActive(activeDestinationAirport.ident)) {
                 arrAtisState = "\x3a ON";
                 arrAtisButton = `{cyan}OFF${updateInProgress ? '\xa0' : '*'}{end}`;
             } else {
@@ -40,9 +47,9 @@ class CDUAtcAtisAutoUpdate {
                 arrAtisButton = `{cyan}ON${updateInProgress ? '\xa0' : '*'}{end}`;
             }
         }
-        if (mcdu.altDestination && mcdu.altDestination.ident) {
-            altAtis = `{cyan}\xa0${mcdu.altDestination.ident}/ARR{end}`;
-            if (mcdu.atsu.atisAutoUpdateActive(mcdu.altDestination.ident)) {
+        if (activeAlternateAirport && activeAlternateAirport.ident) {
+            altAtis = `{cyan}\xa0${activeAlternateAirport.ident}/ARR{end}`;
+            if (mcdu.atsu.atisAutoUpdateActive(activeAlternateAirport.ident)) {
                 altAtisState = "\x3a ON";
                 altAtisButton = "{cyan}OFF*{end}";
             } else {
@@ -78,8 +85,10 @@ class CDUAtcAtisAutoUpdate {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = () => {
-            if (updateInProgress === false && mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, mcdu.flightPlanManager.getDestination().ident, true);
+            const activeDestinationAirport = mcdu.flightPlanService.active.destinationAirport;
+
+            if (updateInProgress === false && activeDestinationAirport) {
+                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, activeDestinationAirport.ident, true);
                 CDUAtcAtisAutoUpdate.ShowPage(mcdu, true);
             }
         };
@@ -87,8 +96,10 @@ class CDUAtcAtisAutoUpdate {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[2] = () => {
-            if (updateInProgress === false && mcdu.flightPlanManager.getDestination() && mcdu.altDestination.ident) {
-                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, mcdu.altDestination.ident, true);
+            const activeAlternateAirport = mcdu.flightPlanService.active.alternateDestinationAirport;
+
+            if (updateInProgress === false && activeAlternateAirport) {
+                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, activeAlternateAirport.ident, true);
                 CDUAtcAtisAutoUpdate.ShowPage(mcdu, true);
             }
         };

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUAocRequestsAtis {
     static CreateDataBlock(mcdu) {
         const retval = {
@@ -10,14 +14,19 @@ class CDUAocRequestsAtis {
             sendStatus: ""
         };
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-            retval.departure = mcdu.flightPlanManager.getOrigin().ident;
+        const activePlan = mcdu.flightPlanService.active;
+
+        if (activePlan.originAirport) {
+            retval.departure = activePlan.originAirport.ident;
+
             if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.departure;
             }
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            retval.arrival = mcdu.flightPlanManager.getDestination().ident;
+
+        if (activePlan.destinationAirport) {
+            retval.arrival = activePlan.destinationAirport.ident;
+
             if (mcdu.flightPhaseManager.phase !== FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.arrival;
             }
@@ -92,7 +101,7 @@ class CDUAocRequestsAtis {
                 store.selected = "";
                 CDUAocRequestsAtis.ShowPage(mcdu, store);
             } else if (value) {
-                mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
+                mcdu.navigationDatabaseService.activeDatabase.searchAirport(value).then((airport) => {
                     if (airport) {
                         store.selected = value;
                         store.manual = true;
@@ -170,7 +179,7 @@ class CDUAocRequestsAtis {
 
             mcdu.atsu.receiveAocAtis(store.selected, store.requestId, onRequestSent).then((retval) => {
                 if (retval[0] === AtsuCommon.AtsuStatusCodes.Ok) {
-                    retval[1].Confirmed = store.formatID === 0
+                    retval[1].Confirmed = store.formatID === 0;
                     mcdu.atsu.registerMessages([retval[1]]);
                     store.sendStatus = "";
                     if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {

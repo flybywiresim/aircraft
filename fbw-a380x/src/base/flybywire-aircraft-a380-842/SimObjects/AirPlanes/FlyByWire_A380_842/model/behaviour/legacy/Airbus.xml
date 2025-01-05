@@ -1081,4 +1081,15 @@
             </Condition>
         </UseTemplate>
     </Template>
+
+    <Template Name="FBW_GT_Interaction_NoInteraction">
+        <DefaultTemplateParameters>
+            <DISABLE_MOUSERECT>True</DISABLE_MOUSERECT>
+            <CURSOR>Hand</CURSOR>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_MouseRect">
+            <CALLBACKCODE>0</CALLBACKCODE>
+        </UseTemplate>
+    </Template>
 </ModelBehaviors>

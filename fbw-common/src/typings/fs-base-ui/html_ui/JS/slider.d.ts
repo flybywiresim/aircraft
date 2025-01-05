@@ -27,26 +27,39 @@ declare global {
 
     class SliderConfig {
         CurrentElement: number;
+
         SelectedElement: number;
+
         CarrouselLoop: boolean;
+
         CreateFn: ((elementIndex: number, index: number) => void) | null;
+
         UpdatePageFn: ((startIndex: number, arg1: number, arg2: number) => void) | void;
+
         leftElement?: Element;
+
         rightElement?: Element;
+
         parentElement?: ParentNode;
+
         querySelector?: string;
+
         NbElementPerPage?: number;
     }
 
     class slider {
         config: SliderConfig;
+
         CurrentPage: number;
+
         init(config: SliderConfig): void;
         updateItems(nbElements: number): void;
         itemsElement: NodeListOf<Element>;
+
         NbElement: number;
+
         NbPage: number;
-        scroll(direction: "left" | "right", onlyMove?: boolean): void;
+        scroll(direction: 'left' | 'right', onlyMove?: boolean): void;
         CreateCurrentView(activeElement: number, force: boolean): void;
         scrollLeft(): void;
         scrollRight(): void;

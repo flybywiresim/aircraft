@@ -1,3 +1,7 @@
+use super::{
+    AvionicsDataCommunicationNetworkEndpoint, AvionicsDataCommunicationNetworkMessage,
+    AvionicsDataCommunicationNetworkMessageIdentifier,
+};
 use crate::{
     shared::{power_supply_relay::PowerSupplyRelay, ElectricalBusType, ElectricalBuses},
     simulation::{
@@ -5,13 +9,15 @@ use crate::{
         SimulatorWriter, VariableIdentifier, Write,
     },
 };
+use fxhash::FxHashMap;
+use std::{cell::RefCell, rc::Rc};
 
 enum PowerSupply {
     Single(ElectricalBusType),
     Relay(PowerSupplyRelay),
 }
 
-pub struct AvionicsFullDuplexSwitch {
+pub struct AvionicsFullDuplexSwitch<MessageData: Clone + Eq + PartialEq> {
     power_supply: PowerSupply,
     last_is_powered: bool,
     is_powered: bool,
@@ -20,9 +26,17 @@ pub struct AvionicsFullDuplexSwitch {
     failure_indication: bool,
     available_id: VariableIdentifier,
     routing_update_required: bool,
+    adcn_messages: Rc<
+        RefCell<
+            FxHashMap<
+                AvionicsDataCommunicationNetworkMessageIdentifier,
+                AvionicsDataCommunicationNetworkMessage<MessageData>,
+            >,
+        >,
+    >,
 }
 
-impl AvionicsFullDuplexSwitch {
+impl<MessageData: Clone + Eq + PartialEq> AvionicsFullDuplexSwitch<MessageData> {
     pub fn new_single_power_supply(
         context: &mut InitContext,
         id: u8,
@@ -37,6 +51,7 @@ impl AvionicsFullDuplexSwitch {
             failure_indication: false,
             available_id: context.get_identifier(format!("AFDX_SWITCH_{}_AVAIL", id)),
             routing_update_required: false,
+            adcn_messages: Rc::new(FxHashMap::default().into()),
         }
     }
 
@@ -58,6 +73,7 @@ impl AvionicsFullDuplexSwitch {
             failure_indication: false,
             available_id: context.get_identifier(format!("AFDX_SWITCH_{}_AVAIL", id)),
             routing_update_required: false,
+            adcn_messages: Rc::new(FxHashMap::default().into()),
         }
     }
 
@@ -81,9 +97,72 @@ impl AvionicsFullDuplexSwitch {
     pub fn routing_update_required(&self) -> bool {
         self.routing_update_required
     }
-}
 
-impl SimulationElement for AvionicsFullDuplexSwitch {
+    pub fn get_adcn_messages(
+        &self,
+    ) -> Rc<
+        RefCell<
+            FxHashMap<
+                AvionicsDataCommunicationNetworkMessageIdentifier,
+                AvionicsDataCommunicationNetworkMessage<MessageData>,
+            >,
+        >,
+    > {
+        self.adcn_messages.clone()
+    }
+
+    pub fn set_adcn_messages(
+        &mut self,
+        adcn_messages: Rc<
+            RefCell<
+                FxHashMap<
+                    AvionicsDataCommunicationNetworkMessageIdentifier,
+                    AvionicsDataCommunicationNetworkMessage<MessageData>,
+                >,
+            >,
+        >,
+    ) {
+        self.adcn_messages = adcn_messages;
+    }
+}
+impl<MessageData: Clone + Eq + PartialEq> AvionicsDataCommunicationNetworkEndpoint
+    for AvionicsFullDuplexSwitch<MessageData>
+{
+    type MessageData = MessageData;
+
+    fn recv_value(
+        &self,
+        id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+    ) -> Option<AvionicsDataCommunicationNetworkMessage<Self::MessageData>> {
+        self.adcn_messages.borrow().get(id).cloned()
+    }
+
+    fn recv_value_and_then<
+        F: FnOnce(&AvionicsDataCommunicationNetworkMessage<Self::MessageData>),
+    >(
+        &self,
+        id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+        f: F,
+    ) -> Option<F> {
+        if let Some(value) = self.adcn_messages.borrow().get(id) {
+            f(value);
+            None
+        } else {
+            Some(f)
+        }
+    }
+
+    fn send_value(
+        &self,
+        id: &AvionicsDataCommunicationNetworkMessageIdentifier,
+        value: AvionicsDataCommunicationNetworkMessage<Self::MessageData>,
+    ) {
+        self.adcn_messages.borrow_mut().insert(*id, value);
+    }
+}
+impl<MessageData: Clone + Eq + PartialEq> SimulationElement
+    for AvionicsFullDuplexSwitch<MessageData>
+{
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         if let PowerSupply::Relay(ref mut power_supply_relay) = self.power_supply {
             power_supply_relay.accept(visitor);

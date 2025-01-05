@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 export interface Waypoint {
-    ident: string;
-    altitude: number;
-    utc: number;
+  ident: string;
+  altitude: number;
+  utc: number;
 }

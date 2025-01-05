@@ -1,0 +1,80 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+// =======================================================================================
+// This is the base airframe configuration file for A380-842
+// Any keys prefixed by underscore (_) should be considered read-only and not overwritable.
+//
+// NOTE: * This is currently a WIP * ! The override functionality has not been completed yet !
+//
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+//
+// Please follow the instructions in the documentation to create a new configuration file!
+// =======================================================================================
+// Last updated: 2 April 2024
+{
+    "configMajorVersion": 0,
+    "configMinorVersion": 1,
+    "_variant": "A380-842",
+    "_icao": "A388",
+    "_name": "FBW A380X",
+    "_engines": "972B-84",
+    "_developer": "FBW",
+    "msnReference": "MSN 225",
+    "weightVariant": "WV003",
+    "designLimits": {
+        "weights": {
+            "maxGw": 512000,   // kg
+            "maxZfw": 373000,  // kg
+            "minZfw": 300007,  // kg
+            "maxGwCg": 43,     // %CG MAC
+            "maxZfwCg": 43,    // %CG MAC
+            "maxCargo": 51400, // kg
+            "maxFuel": 323546, // kg
+        },
+        "endurance": {
+            "range": 8000,   // nm
+            "mmo": "0.89",        // mach
+        },
+        "performanceEnvelope": {
+            "mlw": [
+                [ 29, 270000 ],
+                [ 29, 375000 ],
+                [ 29.75, 385000 ],
+                [ 31.5, 395000 ],
+                [ 43, 395000 ],
+                [ 43, 270000 ]
+            ],
+            "mzfw": [
+                [ 29, 270000 ],
+                [ 29, 360000 ],
+                [ 31.5, 365000 ],
+                [ 43, 365000 ],
+                [ 43, 270000 ],
+                [ 29, 270000 ]
+            ],
+            "mtow": [
+                [ 29, 270000 ],
+                [ 29, 375000 ],
+                [ 35.75, 510000 ],
+                [ 43, 510000 ],
+                [ 43, 270000 ]
+            ],
+            "flight": [
+                [ 29, 270000 ],
+                [ 28, 270000 ],
+                [ 28, 375000 ],
+                [ 35, 510000 ],
+                [ 44, 510000 ],
+                [ 44, 270000 ],
+                [ 43, 270000 ]
+            ]
+        }
+    },
+    "_dimensions": {
+        "aircraftWheelBase":  31.9,
+        "aircraftLengthMeter": 72.72
+    }
+}

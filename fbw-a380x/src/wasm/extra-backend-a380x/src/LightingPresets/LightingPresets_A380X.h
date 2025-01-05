@@ -18,8 +18,8 @@ struct LightingValues_A380X {
   FLOAT64 efbBrightness;  // A32NX_EFB_BRIGHTNESS
 
   // OVHD
-  FLOAT64 readingLightCptLevel;          // 96
-  FLOAT64 readingLightFoLevel;           // 97
+  FLOAT64 readingLightCptLevel;  // 96
+  FLOAT64 readingLightFoLevel;   // 97
 
   // Glareshield
   FLOAT64 glareshieldIntegralLightLevel;  // 84
@@ -34,23 +34,23 @@ struct LightingValues_A380X {
   FLOAT64 mfdBrtCptLevel;        // 98
   FLOAT64 consoleLightCptLevel;  // 8 (0, 50, 100)
 
-  FLOAT64 pfdBrtFoLevel;         // 90
-  FLOAT64 ndBrtFoLevel;          // 91
-  FLOAT64 wxTerrainBrtFoLevel;   // 95
-  FLOAT64 mfdBrtFoLevel;         // 99
-  FLOAT64 consoleLightFoLevel;   // 9 (0, 50, 100)
+  FLOAT64 pfdBrtFoLevel;        // 90
+  FLOAT64 ndBrtFoLevel;         // 91
+  FLOAT64 wxTerrainBrtFoLevel;  // 95
+  FLOAT64 mfdBrtFoLevel;        // 99
+  FLOAT64 consoleLightFoLevel;  // 9 (0, 50, 100)
 
   // Pedestal
-  FLOAT64 rmpCptLightLevel;            // 80
-  FLOAT64 rmpFoLightLevel;             // 81
-  FLOAT64 rmpOvhdLightLevel;           // 82
-  FLOAT64 ecamUpperLightLevel;         // 92
-  FLOAT64 ecamLowerLightLevel;         // 93
+  FLOAT64 rmpCptLightLevel;     // 80
+  FLOAT64 rmpFoLightLevel;      // 81
+  FLOAT64 rmpOvhdLightLevel;    // 82
+  FLOAT64 ecamUpperLightLevel;  // 92
+  FLOAT64 ecamLowerLightLevel;  // 93
 
-  FLOAT64 pedFloodLightLevel;          // 76
-  FLOAT64 mainPnlFloodLightLevel;      // 83
-  FLOAT64 integralLightLevel;          // 85
-  FLOAT64 ambientLightLevel;           // 7
+  FLOAT64 pedFloodLightLevel;      // 76
+  FLOAT64 mainPnlFloodLightLevel;  // 83
+  FLOAT64 integralLightLevel;      // 85
+  FLOAT64 ambientLightLevel;       // 7
 };
 
 /**
@@ -137,8 +137,8 @@ class LightingPresets_A380X : public LightingPresets {
   void loadFromIni(const mINI::INIStructure& ini, const std::string& iniSectionName) override;
   void saveToIni(mINI::INIStructure& ini, const std::string& iniSectionName) const override;
 
-  const LightingValues_A380X DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                                     50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0};
+  const LightingValues_A380X DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+                                           50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0};
 };
 
 inline bool operator==(const LightingValues_A380X& p1, const LightingValues_A380X& p2) {

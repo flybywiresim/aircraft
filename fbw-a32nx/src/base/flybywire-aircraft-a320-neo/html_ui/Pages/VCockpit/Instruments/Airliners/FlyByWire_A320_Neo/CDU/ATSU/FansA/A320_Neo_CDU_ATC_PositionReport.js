@@ -346,10 +346,10 @@ class CDUAtcPositionReport {
                 data.passedWaypoint[0] = null;
                 data.passedWaypoint[3] = true;
             } else if (value) {
-                if (mcdu.isLatLonFormat(value)) {
+                if (Fmgc.WaypointEntryUtils.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
-                        mcdu.parseLatLon(value);
+                        Fmgc.WaypointEntryUtils.parseLatLon(value);
                         data.passedWaypoint[0] = value;
                         data.passedWaypoint[3] = true;
                     } catch (err) {
@@ -382,10 +382,10 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.currentPosition[0] = null;
                 data.currentPosition[1] = true;
-            } else if (value && mcdu.isLatLonFormat(value)) {
+            } else if (value && Fmgc.WaypointEntryUtils.isLatLonFormat(value)) {
                 // format: DDMM.MB/EEEMM.MC
                 try {
-                    mcdu.parseLatLon(value);
+                    Fmgc.WaypointEntryUtils.parseLatLon(value);
                     data.currentPosition[0] = value;
                     data.currentPosition[1] = true;
                 } catch (err) {
@@ -408,10 +408,10 @@ class CDUAtcPositionReport {
                 data.activeWaypoint[0] = null;
                 data.activeWaypoint[2] = true;
             } else if (value) {
-                if (mcdu.isLatLonFormat(value)) {
+                if (Fmgc.WaypointEntryUtils.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
-                        mcdu.parseLatLon(value);
+                        Fmgc.WaypointEntryUtils.parseLatLon(value);
                         data.activeWaypoint[0] = value;
                         data.activeWaypoint[2] = true;
                     } catch (err) {
@@ -445,10 +445,10 @@ class CDUAtcPositionReport {
                 data.nextWaypoint[0] = null;
                 data.nextWaypoint[1] = true;
             } else if (value) {
-                if (mcdu.isLatLonFormat(value)) {
+                if (Fmgc.WaypointEntryUtils.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
-                        mcdu.parseLatLon(value);
+                        Fmgc.WaypointEntryUtils.parseLatLon(value);
                         data.nextWaypoint[0] = value;
                         data.nextWaypoint[1] = true;
                     } catch (err) {

@@ -1,86 +1,101 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightArea } from '@fmgc/flightplanning/FlightPlanManager';
-import { FlightPlanManager } from '@fmgc/index';
+import { EventBus, FlightPlanService } from '@fmgc/index';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightArea } from './FlightArea';
+import { ConsumerValue } from '@microsoft/msfs-sdk';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 
 const rnpDefaults: Record<FlightArea, number> = {
-    [FlightArea.Takeoff]: 1,
-    [FlightArea.Terminal]: 1,
-    [FlightArea.Enroute]: 2,
-    [FlightArea.Oceanic]: 2,
-    [FlightArea.VorApproach]: 0.5,
-    [FlightArea.GpsApproach]: 0.3,
-    [FlightArea.PrecisionApproach]: 0.5,
-    [FlightArea.NonPrecisionApproach]: 0.5,
+  [FlightArea.Takeoff]: 1,
+  [FlightArea.Terminal]: 1,
+  [FlightArea.Enroute]: 2,
+  [FlightArea.Oceanic]: 2,
+  [FlightArea.VorApproach]: 0.5,
+  [FlightArea.GpsApproach]: 0.3,
+  [FlightArea.PrecisionApproach]: 0.5,
+  [FlightArea.NonPrecisionApproach]: 0.5,
 };
 
 // FIXME RNP-related scratchpad messages
 
 export class RequiredPerformance {
-    activeRnp: number | undefined;
+  activeRnp: number | undefined;
 
-    requestLDev = false;
+  requestLDev = false;
 
-    manualRnp = false;
+  manualRnp = false;
 
-    constructor(private flightPlanManager: FlightPlanManager) {}
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
 
-    update(_deltaTime: number): void {
-        this.updateAutoRnp();
+  constructor(
+    private readonly bus: EventBus,
+    private flightPlanService: FlightPlanService,
+  ) {}
 
-        this.updateLDev();
+  update(_deltaTime: number): void {
+    this.updateAutoRnp();
+
+    this.updateLDev();
+  }
+
+  setPilotRnp(rnp): void {
+    this.manualRnp = true;
+    this.setActiveRnp(rnp);
+  }
+
+  clearPilotRnp(): void {
+    this.manualRnp = false;
+    this.updateAutoRnp();
+  }
+
+  private updateAutoRnp(): void {
+    if (this.manualRnp) {
+      return;
     }
 
-    setPilotRnp(rnp): void {
-        this.manualRnp = true;
-        this.setActiveRnp(rnp);
-    }
+    const plan = this.flightPlanService.active;
 
-    clearPilotRnp(): void {
-        this.manualRnp = false;
-        this.updateAutoRnp();
-    }
+    if (plan && plan.activeLeg && plan.activeLeg.isDiscontinuity === false) {
+      const legRnp = plan.activeLeg.rnp;
 
-    private updateAutoRnp(): void {
-        if (this.manualRnp) {
-            return;
+      if (legRnp !== undefined) {
+        if (legRnp !== this.activeRnp) {
+          this.setActiveRnp(legRnp);
         }
-
-        const plan = this.flightPlanManager.activeFlightPlan;
-        if (plan && plan.activeWaypoint) {
-            const legRnp = plan.activeWaypoint.additionalData.rnp;
-            if (legRnp !== undefined) {
-                if (legRnp !== this.activeRnp) {
-                    this.setActiveRnp(legRnp);
-                }
-                return;
-            }
-        }
-
-        const area = this.flightPlanManager.activeArea;
-        const rnp = rnpDefaults[area];
-
-        if (rnp !== this.activeRnp) {
-            this.setActiveRnp(rnp);
-        }
+        return;
+      }
     }
 
-    private setActiveRnp(rnp: number): void {
-        this.activeRnp = rnp;
-        SimVar.SetSimVarValue('L:A32NX_FMGC_L_RNP', 'number', rnp ?? 0);
-        SimVar.SetSimVarValue('L:A32NX_FMGC_R_RNP', 'number', rnp ?? 0);
-    }
+    const area = this.flightPlanService.active.calculateActiveArea();
+    const rnp = rnpDefaults[area];
 
-    private updateLDev(): void {
-        const area = this.flightPlanManager.activeArea;
-        const ldev = area !== FlightArea.Enroute
-            && area !== FlightArea.Oceanic
-            && this.activeRnp < 0.305;
-        if (ldev !== this.requestLDev) {
-            this.requestLDev = ldev;
-            SimVar.SetSimVarValue('L:A32NX_FMGC_L_LDEV_REQUEST', 'bool', this.requestLDev);
-            SimVar.SetSimVarValue('L:A32NX_FMGC_R_LDEV_REQUEST', 'bool', this.requestLDev);
-        }
+    if (rnp !== this.activeRnp) {
+      this.setActiveRnp(rnp);
     }
+  }
+
+  private setActiveRnp(rnp: number): void {
+    this.activeRnp = rnp;
+    SimVar.SetSimVarValue('L:A32NX_FMGC_L_RNP', 'number', rnp ?? 0);
+    SimVar.SetSimVarValue('L:A32NX_FMGC_R_RNP', 'number', rnp ?? 0);
+  }
+
+  private updateLDev(): void {
+    const area = this.flightPlanService.active.calculateActiveArea();
+    const ldev =
+      area !== FlightArea.Enroute &&
+      area !== FlightArea.Oceanic &&
+      this.activeRnp < 0.305 &&
+      this.flightPhase.get() >= FmgcFlightPhase.Takeoff;
+    if (ldev !== this.requestLDev) {
+      this.requestLDev = ldev;
+      SimVar.SetSimVarValue('L:A32NX_FMGC_L_LDEV_REQUEST', 'bool', this.requestLDev);
+      SimVar.SetSimVarValue('L:A32NX_FMGC_R_LDEV_REQUEST', 'bool', this.requestLDev);
+    }
+  }
 }

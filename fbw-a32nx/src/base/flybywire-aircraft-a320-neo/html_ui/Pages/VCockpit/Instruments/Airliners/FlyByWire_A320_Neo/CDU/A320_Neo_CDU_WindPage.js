@@ -105,6 +105,8 @@ class CDUWindPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.DescentWind;
 
+        const alternateAirport = mcdu.flightPlanService.active ? mcdu.flightPlanService.active.alternateDestinationAirport : undefined;
+
         let requestButton = "REQUEST*[color]amber";
         let requestEnable = true;
         if (mcdu.simbrief.sendStatus === "REQUESTING") {
@@ -116,7 +118,7 @@ class CDUWindPage {
         let alternateCell = "";
         let altFLightlevel = "";
 
-        if (mcdu.altDestination) {
+        if (alternateAirport) {
             alternateHeader = "ALTN WIND";
             alternateCell = "[ ]°/[ ][color]cyan";
             altFLightlevel = "{green}{small}FL100{end}{end}";
@@ -142,7 +144,7 @@ class CDUWindPage {
 
         mcdu.setTemplate(CDUWindPage.ShowWinds(template, mcdu, CDUWindPage.ShowDESPage, mcdu.winds.des, offset, 5));
 
-        if (mcdu.altDestination) {
+        if (alternateAirport) {
             mcdu.onRightInput[0] = (value, scratchpadCallback) => {
                 if (value == FMCMainDisplay.clrValue) {
                     mcdu.winds.alternate = null;

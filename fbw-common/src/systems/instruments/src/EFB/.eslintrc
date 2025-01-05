@@ -1,0 +1,10 @@
+// Override our default settings just for this directory
+{
+  "ignorePatterns": [
+    "web/**"
+  ],
+  "rules": {
+        "no-console": "off",
+        "jsx-a11y/control-has-associated-label": "off"
+  }
+}

@@ -3,28 +3,36 @@
 ## Contents
 
 - [A380 Local SimVars](#a380-local-simvars)
+  - [Contents](#contents)
   - [Uncategorized](#uncategorized)
-  - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Air Conditioning Pressurisation Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
+  - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
+  - [Flight Management System ATA 22](#flight-management-system-ata-22)
   - [Electrical ATA 24](#electrical-ata-24)
-  - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
-  - [ECAM Control Panel ATA 34](#ecam-control-panel-ata-34)
-  - [EFIS Control Panel ATA 34](#efis-control-panel-ata-34)
+  - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
+  - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
+  - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
+  - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
+  - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
+  - [Engines ATA 70](#engines-ata-70)
   - [Hydraulics](#hydraulics)
   - [Sound Variables](#sound-variables)
+  - [Autobrakes](#autobrakes)
+  - [Non-Systems Related](#non-systems-related)
 
 ## Uncategorized
 
 - A380X_OVHD_ANN_LT_POSITION
     - Enum
     - Represents the state of the ANN LT switch
-    - State    | Value
-      -------- | ----
-      TEST     | 0
-      BRT      | 1
-      DIM      | 2
+    - | State | Value |
+      |-------|-------|
+      | TEST  | 0     |
+      | BRT   | 1     |
+      | DIM   | 2     |
 
 - A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
@@ -93,6 +101,13 @@
     - Bool
     - True when the AC ESS FEED push button is NORMAL
 
+- A380X_OVHD_ELEC_BAT_SELECTOR_KNOB
+    - Number
+    - The position of the battery display knob from left to right
+    - ESS=0, APU=1, OFF=2, BAT1=3, BAT2=4
+    - Mapped to battery voltage indexes: {bat_index} = ESS=4 | APU=3 | OFF=0 | BAT1=1 | BAT2=2
+        - A32NX_ELEC_BAT_{bat_index}_POTENTIAL is used to get the voltage
+
 - A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE
     - Degrees
     - Angular position of left nose wheel (in wheel axis not steering)
@@ -101,8 +116,131 @@
     - Degrees
     - Angular position of right nose wheel (in wheel axis not steering)
 
+- A32NX_BRAKE_TEMPERATURE_{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+    - celsius
+    - represents the brake temperature of the main wheels
+
+- A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+    - celsius
+    - represents the reported brake temperature of the main wheels by the sensor.
+    - Since no CPIOM G is implemented yet these are the values directly reported by the sensor.
+
+
+- A32NX_LIGHTING_PRESET_LOAD
+    - Number
+    - ID for preset
+    - When set to >0 the corresponding preset will be loaded if defined
+    - Will be reset to 0 after loading is done
+
+- A32NX_LIGHTING_PRESET_SAVE
+    - Number
+    - ID for preset
+    - When set to >0 the corresponding preset will be overwritten and saved to an ini file
+    - Will be reset to 0 after saving is done
+
+- A32NX_AIRCRAFT_PRESET_LOAD
+    - Number
+    - ID for preset (1..5)
+    - When set to >0 the corresponding preset will be loaded if defined
+    - Will be reset to 0 after loading is done
+    - When set to 0 during loading will stop and cancel the loading process
+    - | Value | Meaning            |
+            |-------|--------------------|
+      | 1     | Cold & Dark        |
+      | 2     | Powered            |
+      | 3     | Ready for Pushback |
+      | 4     | Ready for Taxi     |
+      | 5     | Ready for Takeoff  |
+
+- A32NX_AIRCRAFT_PRESET_LOAD_PROGRESS
+    - Number (0.0..1.0)
+    - While loading a preset this will contain the percentage of the total progress of loading
+
+- A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE
+    - Bool
+    - When set to true the loading process will be expedited and the loading will be done as fast as possible
+
+- A32NX_PUSHBACK_SYSTEM_ENABLED
+    - Bool
+    - Read/Write
+    - 0 when pushback system is completely disabled, 1 when system is enabled
+    - When disabled pushback UI in the flyPadOS 3 is disabled and movement updates are suspended.
+    - This prevents conflicts with other pushback add-ons
+
+- A32NX_PUSHBACK_SPD_FACTOR
+    - Number -1.0..1.0
+    - Read/Write
+    - Speed factor for pushback
+    - 0.0 is stopped, 1.0 is full speed forward, -1.0 is full speed backward
+
+- A32NX_PUSHBACK_HDG_FACTOR
+    - Number -1.0..1.0
+    - Read/Write
+    - Turn factor for pushback
+    - -1.0 is full left, 0.0 is straight, 1.0 is full right
+
 
 ## Air Conditioning Pressurisation Ventilation ATA 21
+
+- A32NX_COND_CPIOM_B{id}_AGS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the AGS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | AGS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | Pack 1 operating                                     |
+      | 14  | Pack 2 operating                                     |
+
+- A32NX_COND_CPIOM_B{id}_TCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the TCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | TCS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | Hot Air 1 position disagrees                         |
+      | 14  | Hot Air 2 position disagrees                         |
+      | 15  | Trim Air Pressure Regulating Valve 1 is open         |
+      | 16  | Trim Air Pressure Regulating Valve 2 is open         |
+
+- A32NX_COND_CPIOM_B{id}_VCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the VCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | VCS Application INOP                                 |
+      | 12  | Unused                                               |
+      | 13  | FWD Extraction fan is on                             |
+      | 14  | FWD isolation valve is open                          |
+      | 15  | Bulk Extraction fan is on                            |
+      | 16  | Bulk isolation valve is open                         |
+      | 17  | Primary fans are enabled                             |
+      | 18  | Primary Fan 1 Fault                                  |
+      | 19  | Primary Fan 2 Fault                                  |
+      | 20  | Primary Fan 3 Fault                                  |
+      | 21  | Primary Fan 4 Fault                                  |
+      | 22  | Bulk Heater Fault                                    |
+      | 23  | FWD isolation valve Fault                            |
+      | 24  | Bulk isolation valve Fault                           |
+
+- A32NX_COND_CPIOM_B{id}_CPCS_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the CPCS Application in the CPIOM B (assumed)
+    - {id} 1, 2, 3 or 4
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | CPCS Application INOP                                |
+      | 12  | Unused                                               |
+      | 13  | Excessive cabin altitude - warn                      |
+      | 14  | Excessive differential pressure - warn               |
+      | 15  | Excessive negative differential pressure - warn      |
+      | 16  | High differential pressure - warn                    |
+      | 17  | Low differential pressure - warn                     |
+      | 18  | Excessive residual pressure - warn                   |
 
 - A32NX_COND_{id}_TEMP
     - Degree Celsius
@@ -127,16 +265,21 @@
         - CARGO_FWD
         - CARGO_BULK
 
+- A32NX_COND_FDAC_{id1}_CHANNEL_{id2}_FAILURE
+    - Bool
+    - True if the channel is failed
+    - {id - both}
+        - 1 or 2
+
 - A32NX_COND_{id}_DUCT_TEMP
     - Degree Celsius
     - Temperature of trim air coming out of the ducts in the cabin and cockpit
     - {id}
         - Same as A32NX_COND_{id}_TEMP
 
-- A32NX_COND_PACK_{id}_IS_OPERATING
-    - Bool
-    - True when the pack operates normally (at least one FCV is open)
-    - {id} 1 or 2
+- A32NX_COND_PURS_SEL_TEMPERATURE
+    - Degree Celsius
+    - Temperature selected by the crew using the FAP (Flight Attendant Panel). For us, this is selected in the EFB.
 
 - A32NX_COND_PACK_{id}_OUTLET_TEMPERATURE
     - Degree Celsius
@@ -149,73 +292,88 @@
     - {id}
         - Same as A32NX_COND_{id}_TEMP
 
-- A32NX_COND_HOT_AIR_VALVE_{id}_IS_ENABLED
+- A32NX_COND_TADD_CHANNEL_{id}_FAILURE
     - Bool
-    - True if the hot air valve {1 or 2} is enabled
-
-- A32NX_COND_HOT_AIR_VALVE_{id}_IS_OPEN
-    - Bool
-    - True if the hot air valve {1 or 2} is open
-
-- A32NX_COND_TADD_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
-
-- A32NX_VENT_PRIMARY_FANS_ENABLED
-    - Bool
-    - True if the primary (high pressure) fans are enabled and operating normally
-
-- A32NX_VENT_{id}_EXTRACTION_FAN_ON
-    - Bool
-    - True when the the extraction fans of the fwd/bulk cargo compartment operate normally
+    - True if the channel is failed
     - {id}
-        - FWD
-        - BULK
+        - 1 or 2
 
-- A32NX_VENT_{id}_ISOLATION_VALVE_OPEN
+- A32NX_VENT_{id1}_VCM_CHANNEL_{id2}_FAILURE
     - Bool
-    - True when the isolation valves of the fwd/bulk cargo compartment are open
-    - {id}
-        - FWD
-        - BULK
-
-- A32NX_VENT_{id}_VCM_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
-    - {id}
+    - True if the channel is failed
+    - {id1}
         - FWD
         - AFT
+    - {id2}
+        - 1 or 2
 
 - A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN
     - Bool
     - True when the Overpressure Relief Valve Dumps are open. There are two valves but just one variable for now as they (mostly) always open and close at the same time.
 
-- A32NX_PRESS_CABIN_ALTITUDE_TARGET
+- A32NX_PRESS_CABIN_ALTITUDE_{cpiom_id}
+    - Arinc429Word<Feet>
+    - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
+
+- A32NX_PRESS_CABIN_ALTITUDE_TARGET_{cpiom_id}
     - Feet
     - Target cabin altitude as calculated by the pressurization system or manually selected on the overhead panel
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
 
-- A32NX_PRESS_{id}_OCSM_CHANNEL_FAILURE
-    - Number
-        - 0 if no failure
-        - 1 or 2 if single channel failure (for failed channel id)
-        - 3 if dual channel failure
-    - {id} 1 to 4
+- A32NX_PRESS_CABIN_VS_{cpiom_id}
+    - Arinc429Word<FPM>
+    - Rate of pressurization or depressurization of the cabin expressed as altitude change
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
 
-- A32NX_PRESS_DIFF_PRESS_HI
+- A32NX_PRESS_CABIN_VS_TARGET_{cpiom_id}
+    - Arinc429Word<FPM>
+    - Target cabin vertical speed by the pressurization system
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
+
+- A32NX_PRESS_CABIN_DELTA_PRESSURE_{cpiom_id}
+    - Arinc429Word<PSI>
+    - The difference in pressure between the cabin interior and the exterior air.
+      Positive when cabin pressure is higher than external pressure.
+    - (cpiom_id)
+        - B1
+        - B2
+        - B3
+        - B4
+
+- A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE
+    - PSI
+    - As above, but analog system transmitted by the manual partition of CPC1
+
+- A32NX_PRESS_OCSM_{id1}_CHANNEL_{id2}_FAILURE
     - Bool
-    - True when FWC condition for "DIFF PRESS HI" is met (differential pressure between 8.92 and 9.2 PSI)
+    - True if the channel is failed
+    - {id1}
+        - 1 to 4
+    - {id2}
+        - 1 or 2
 
-- A32NX_PRESS_DIFF_PRESS_EXCESSIVE
+- A32NX_PRESS_OCSM_{id}_AUTO_PARTITION_FAILURE
     - Bool
-    - True when FWC condition for "EXCESS DIFF PRESS" is met (differential pressure over 9.65 PSI)
-
-- A32NX_PRESS_NEGATIVE_DIFF_PRESS_EXCESSIVE
-    - Bool
-    - True when FWC condition for "EXCESS NEGATIVE DIFF PRESS" is met (differential pressure lower than -0.72 PSI)
+    - True if the the automatic outflow valve control is failed
+    - {id}
+        - 1 to 4
 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Number (0 to 300)
@@ -282,6 +440,27 @@
     - Bool
     - True if the overhead manual extract vent override pushbutton is on (illuminated)
 
+## Auto Flight System ATA 22
+
+- A380X_MFD_{side}_ACTIVE_PAGE
+    - String
+    - URI of activate page on respective MFD (e.g. fms/active/init)
+    - {side} = L or R
+
+- A32NX_FMS_PAX_NUMBER
+    - Number
+    - Number of passengers entered on FMS/ACTIVE/FUEL&LOAD page
+
+- A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD
+    - Number
+    - The short term managed speed displayed on the PFD
+
+## Flight Management System ATA 22
+
+- A32NX_FMS_SWITCHING_KNOB
+    - FMS used
+    - Position (0-2)
+    - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
 ## Electrical ATA 24
 
@@ -490,7 +669,156 @@
         - 3
         - 4
 
-## Indicating/Recording ATA 31
+## Fire and Smoke Protection ATA 26
+
+- A32NX_FIRE_FDU_DISCRETE_WORD
+    - Arinc429<Discrete>
+    - Discrete Data word of the Fire Detection Unit (assumed)
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | Fire detected ENG 1                                  |
+      | 12  | Fire detected ENG 2                                  |
+      | 13  | Fire detected ENG 3                                  |
+      | 14  | Fire detected ENG 4                                  |
+      | 15  | Fire detected APU                                    |
+      | 16  | Fire detected MLG                                    |
+      | 17  | Not used                                             |
+      | 18  | ENG 1 LOOP A fault                                   |
+      | 19  | ENG 1 LOOP B fault                                   |
+      | 20  | ENG 2 LOOP A fault                                   |
+      | 21  | ENG 2 LOOP B fault                                   |
+      | 22  | ENG 3 LOOP A fault                                   |
+      | 23  | ENG 3 LOOP B fault                                   |
+      | 24  | ENG 4 LOOP A fault                                   |
+      | 25  | ENG 4 LOOP B fault                                   |
+      | 26  | APU LOOP A fault                                     |
+      | 27  | APU LOOP B fault                                     |
+      | 28  | MLG LOOP A fault                                     |
+      | 29  | MLG LOOP B fault                                     |
+
+- A32NX_{zone}_ON_FIRE
+    - Bool
+    - True when a fire is present in the APU or MLG
+    - {zone}
+        - APU
+        - MLG
+
+- A32NX_FIRE_DETECTED_ENG{number}
+    - Bool
+    - True when fire is detected on engine
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_FIRE_DETECTED_{zone}
+    - Bool
+    - True when fire is detected in the APU or MLG
+    - {zone}
+        - APU
+        - MLG
+
+- A32NX_OVHD_FIRE_AGENT_{bottle}_{zone}_{number}_IS_PRESSED
+    - Bool
+    - True when the overhead pushbutton for the corresponding fire extinguishing bottle agent is pressed. Momentary PB. Note APU uses 1_APU_1
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_OVHD_FIRE_SQUIB_{bottle}_{zone}_{number}_IS_ARMED
+    - Bool
+    - True when the the corresponding fire extinguishing bottle squibs are armed.
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_OVHD_FIRE_SQUIB_{bottle}_{zone}_{number}_IS_DISCHARGED
+    - Bool
+    - True when the the corresponding fire extinguishing bottle has been discharged into the engine.
+    - {bottle}
+        - 1
+        - 2
+    - {zone}
+        - APU
+        - ENG
+    - {number}
+        - 1
+        - 2
+        - 3
+        - 4
+
+- A32NX_FIRE_BUTTON_ENG{number}
+    - Bool
+    - True when the overhead fire pushbutton has been released
+
+- A32NX_FIRE_BUTTON_APU
+    - Bool
+    - True when the overhead apu pushbutton has been released
+
+- A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED
+    - Bool
+    - True when the overhead fire test pushbutton is pressed
+
+
+## Flaps / Slats (ATA 27)
+
+- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - Slat/Flap actual position discrete word of the SFCC bus output
+    - Arinc429<Discrete>
+    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
+    - | Bit |      Description A380X, if different     |
+      |:---:|:----------------------------------------:|
+      | 11  | Slat Data Valid                          |
+      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
+      | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
+      | 14  | Slats >= 22 (337° > FPPU > 272.2°)       |
+      | 15  | Slats Extended 23° (337° > FPPU > 280°)  |
+      | 16  | Slat WTB Engaged                         |
+      | 17  | Slat Fault                               |
+      | 18  | Flap Data Valid                          |
+      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |
+      | 20  | Flaps >= 7° (254° > FPPU > 102.1°)       |
+      | 21  | Flaps >= 16° (254° > FPPU > 150.0°)      |
+      | 22  | Flaps >= 25° (254° > FPPU > 189.8°)      |
+      | 23  | Flaps Extended 32° (254° > FPPU > 218°)  |
+      | 24  | Flap WTB engaged                         |
+      | 25  | Flap Fault                               |
+      | 26  | Spoiler Lift Demand                      |
+      | 27  | Spoiler Limit Demand                     |
+      | 28  | Slat System Jam                          |
+      | 29  | Flap System Jam                          |
+
+- A32NX_FLAPS_CONF_INDEX
+  - Number
+  - Indicates the desired flap configuration index according to the table
+  - Value | Meaning
+            --- | ---
+      0 | Conf0
+      1 | Conf1
+      2 | Conf1F
+      3 | Conf2
+      4 | Conf2S
+      5 | Conf3
+      6 | Conf4
+
+## Indicating-Recording ATA 31
 
 - A32NX_CDS_CAN_BUS_1_1_AVAIL
   - Bool
@@ -544,29 +872,51 @@
   - ArincWord852<>
   - Second CAN bus of the CDS on the first officer's side
 
-## ECAM Control Panel ATA 34
+## ECAM Control Panel ATA 31
 
-- A380X_ECAM_CP_SELECTED_PAGE
+- A32NX_BTN_{button_name}
+    - Number
+    - Button state of the ECAM CP buttons
+        - 0: Not pressed, 1: Pressed
+    - {button_name}
+        - ALL
+        - ABNPROC
+        - CHECK_LH
+        - CHECK_RH
+        - CL
+        - CLR
+        - CLR2
+        - DOWN
+        - EMERCANC
+        - MORE
+        - RCL
+        - TOCONFIG
+        - UP
+
+- A32NX_ECAM_SD_CURRENT_PAGE_INDEX
     - Enum
-    - Currently requested page on the ECAM CP
-    - State    | Value
-      -------- | ----
-      ENG      | 0
-      BLEED    | 1
-      PRESS    | 2
-      EL/AC    | 3
-      FUEL     | 4
-      HYD      | 5
-      C/B      | 6
-      APU      | 7
-      COND     | 8
-      DOOR     | 9
-      EL/DC    | 10
-      WHEEL    | 11
-      F/CTL    | 12
-      VIDEO    | 13
+- Currently requested page on the ECAM CP
+    - | State | Value |
+      |-------|-------|
+      | ENG   | 0     |
+      | APU   | 1     |
+      | BLEED | 2     |
+      | COND  | 3     |
+      | PRESS | 4     |
+      | DOOR  | 5     |
+      | EL/AC | 6     |
+      | EL/DC | 7     |
+      | FUEL  | 8     |
+      | WHEEL | 9     |
+      | HYD   | 10    |
+      | F/CTL | 11    |
+      | C/B   | 12    |
+      | CRZ   | 13    |
+      | STS   | 14    |
+      | VIDEO | 15    |
 
-## EFIS Control Panel ATA 34
+
+## EFIS Control Panel ATA 31
 
 - A380X_EFIS_{side}_LS_BUTTON_IS_ON
     - Boolean
@@ -587,20 +937,20 @@
     - Boolean
     - Indicates which waypoint filter is selected
     - {side} = L or R
-    - State    | Value
-      -------- | ----
-      WPT      | 0
-      VORD     | 1
-      NDB      | 2
+    - | State | Value |
+      |-------|-------|
+      | WPT   | 1     |
+      | VORD  | 2     |
+      | NDB   | 3     |
 
 - A380X_EFIS_{side}_ACTIVE_OVERLAY
     - Boolean
     - Indicates which waypoint filter is selected
     - {side} = L or R
-    - State    | Value
-      -------- | ----
-      WX       | 0
-      TERR     | 1
+    - | State | Value |
+      |-------|-------|
+      | WX    | 0     |
+      | TERR  | 1     |
 
 - A380X_EFIS_{side}_ARPT_BUTTON_IS_ON
     - Boolean
@@ -610,6 +960,11 @@
 - A380X_EFIS_{side}_TRAF_BUTTON_IS_ON
     - Boolean
     - Whether the TRAF button is activated
+    - {side} = L or R
+
+- A380X_EFIS_{side}_BARO_PRESELECTED
+    - Number (hPa or inHg)
+    - Pre-selected QNH when in STD mode
     - {side} = L or R
 
 ## Bleed Air ATA 36
@@ -658,6 +1013,11 @@
   - `Arinc429Word<Mass>`
   - The APU fuel used, in kilograms
 
+## Engines ATA 70
+  - L:A32NX_OVHD_FADEC_{ENG}
+  - The powered status of the associated engine's FADEC dependant on the button on the OVHD
+  - {ENG} = 1, 2, 3, 4
+
 ## Hydraulics
 
 - A32NX_OVHD_HYD_ENG_{ENG}AB_PUMP_DISC_PB_IS_AUTO
@@ -680,3 +1040,54 @@
 - A380X_SOUND_COCKPIT_WINDOW_RATIO
     - Number
     - Ratio between 0-1 of the cockpit windows being physically open
+
+## Autobrakes
+
+- A32NX_AUTOBRAKES_SELECTED_MODE
+    - Number
+    - Indicates position of the autobrake selection knob
+    -   | State  | Number |
+        |--------|--------|
+        | DISARM | 0      |
+        | BTV    | 1      |
+        | LOW    | 2      |
+        | L2     | 3      |
+        | L3     | 4      |
+        | HIGH   | 5      |
+
+- A32NX_AUTOBRAKES_ARMED_MODE
+    - Number
+    - Indicates actual armed mode of autobrake system
+    -   | State  | Number |
+        |--------|--------|
+        | DISARM | 0      |
+        | BTV    | 1      |
+        | LOW    | 2      |
+        | L2     | 3      |
+        | L3     | 4      |
+        | HIGH   | 5      |
+        | RTO    | 6      |
+
+- A32NX_AUTOBRAKES_DISARM_KNOB_REQ
+    - Boolean
+    - True when autobrake knob solenoid resets knob position to DISARM
+
+- A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED
+    - Boolean
+    - RTO autobrake button is pressed
+
+## Non-Systems Related
+
+- `L:FBW_PILOT_SEAT`
+  - Enum
+  - Which seat the user/pilot occupies in the flight deck.
+  - | Value | Description |
+    |-------|-------------|
+    | 0     | Left Seat   |
+    | 1     | Right Seat  |
+
+- `L:A32NX_EXT_PWR_AVAIL:{number}`
+  - Bool
+  - If ground power is avail or not
+  - {number}
+        - 1 - 4

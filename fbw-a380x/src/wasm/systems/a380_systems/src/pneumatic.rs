@@ -179,22 +179,22 @@ impl A380Pneumatic {
                 context,
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(2.5),
-                    Pressure::new::<psi>(52.),
+                    Volume::new::<gallon>(14.),
+                    Pressure::new::<psi>(65.3),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
-                Pressure::new::<psi>(75.),
+                Pressure::new::<psi>(75.42),
                 6e-2,
             ),
             yellow_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 context,
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(1.7),
+                    Volume::new::<gallon>(14.),
                     Pressure::new::<psi>(65.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
-                Pressure::new::<psi>(75.),
+                Pressure::new::<psi>(75.42),
                 6e-2,
             ),
             packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
@@ -1445,6 +1445,7 @@ mod tests {
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::trent_engine::TrentEngine,
         failures::FailureType,
+        payload::NumberOfPassengers,
         pneumatic::{
             ControllablePneumaticValve, CrossBleedValveSelectorMode, EngineState,
             PneumaticContainer, PneumaticValveSignal, TargetPressureTemperatureSignal,
@@ -1482,6 +1483,7 @@ mod tests {
         adcn: A380AvionicsDataCommunicationNetwork,
         adirs: TestAdirs,
         dsms: TestDsms,
+        payload: TestPayload,
         pressurization_overhead: A380PressurizationOverheadPanel,
     }
     impl TestAirConditioning {
@@ -1491,6 +1493,7 @@ mod tests {
                 adcn: A380AvionicsDataCommunicationNetwork::new(context),
                 adirs: TestAdirs::new(),
                 dsms: TestDsms {},
+                payload: TestPayload {},
                 pressurization_overhead: A380PressurizationOverheadPanel::new(context),
             }
         }
@@ -1510,6 +1513,7 @@ mod tests {
                 &self.adcn,
                 engines,
                 engine_fire_push_buttons,
+                &self.payload,
                 pneumatic,
                 pneumatic_overhead,
                 &self.pressurization_overhead,
@@ -1567,6 +1571,13 @@ mod tests {
         }
         fn fwd_cargo_door_locked(&self) -> bool {
             true
+        }
+    }
+
+    struct TestPayload;
+    impl NumberOfPassengers for TestPayload {
+        fn number_of_passengers(&self, _ps: usize) -> i8 {
+            0
         }
     }
 

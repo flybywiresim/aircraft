@@ -65,6 +65,8 @@ class MsfsHandler {
    */
   struct BaseSimData {
     FLOAT64 simulationTime;
+    FLOAT64 simulationRate;
+    FLOAT64 simOnGround;
     FLOAT64 aircraftIsReady;
     FLOAT64 aircraftDevelopmentState;
   };
@@ -81,12 +83,19 @@ class MsfsHandler {
    */
   // Pause detection
   NamedVariablePtr a32nxPauseDetected;
-  ClientEventPtr pauseDetectedEvent;
+  ClientEventPtr   pauseDetectedEvent;
 
   /**
    * Current simulation time used for pause detection and time stamping variable updates
    */
   FLOAT64 timeStamp{};
+
+  /**
+   * The difference in sim time since the last update, in seconds accounting for sim rate.
+   * As the sim only provides the delta time since the last update, independent of the sim rate,
+   * this value is calculated by the MsfsHandler.
+   */
+  FLOAT64 simulationDeltaTime{};
 
   /**
    * Counts the number of ticks since start instance creation (calls to update). Used to
@@ -100,7 +109,10 @@ class MsfsHandler {
   // Allows immediate view on runtime performance issue. Add additional instances into
   // Modules while developing and profiling a module's performance.
 #ifdef PROFILING
-  SimpleProfiler profiler{"MsfsHandler::update()", 120};
+  SimpleProfiler preUpdate{"MsfsHandler::preUpdate()", 100};
+  SimpleProfiler mainUpdate{"MsfsHandler::mainUpdate()", 100};
+  SimpleProfiler postUpdate{"MsfsHandler::postUpdate()", 100};
+  SimpleProfiler profiler{"MsfsHandler::update()", 100};
 #endif
 
  public:
@@ -153,15 +165,39 @@ class MsfsHandler {
   DataManager& getDataManager() { return dataManager; }
 
   /**
+   * @return current simulation time in seconds
+   */
+  [[nodiscard]] FLOAT64 getSimulationTime() const { return baseSimData->data().simulationTime; }
+
+  /**
+   * @brief The difference in sim time since the last update, in seconds accounting for sim rate.
+   *        As the sim only provides the delta time since the last update, independent of the sim rate,
+   *        this value is calculated by the MsfsHandler.
+   * @return The difference in sim time (accounting for sim rate) since the last update, in seconds.
+   * @note This can return 0, and will return 0 when paused.
+   */
+  [[nodiscard]] FLOAT64 getSimulationDeltaTime() const { return simulationDeltaTime; }
+
+  /**
+   * @return current simulation rate
+   */
+  [[nodiscard]] FLOAT64 getSimulationRate() const { return baseSimData->data().simulationRate; }
+
+  /**
+   * @return value of SimOnGround simvar
+   */
+  [[nodiscard]] bool getSimOnGround() const { return baseSimData->data().simOnGround != 0.0; }
+
+  /**
    * @return value of LVAR A32NX_IS_READY
    */
-  [[nodiscard]] bool getAircraftIsReadyVar() const;
+  [[nodiscard]] bool getAircraftIsReadyVar() const { return baseSimData->data().aircraftIsReady != 0.0; }
 
   /**
    *
    * @return value of LVAR A32NX_DEVELOPMENT_STATE
    */
-  [[nodiscard]] FLOAT64 getAircraftDevelopmentStateVar() const;
+  [[nodiscard]] FLOAT64 getAircraftDevelopmentStateVar() const { return baseSimData->data().aircraftDevelopmentState; }
 
   /**
    * @return the current simulation time

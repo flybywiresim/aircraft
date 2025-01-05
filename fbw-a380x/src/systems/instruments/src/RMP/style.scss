@@ -1,0 +1,128 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../MsfsAvionicsCommon/definitions.scss";
+
+@font-face {
+  font-family: "RMP-10";
+  src: url("/Fonts/fbw-a380x/FBW-Display-RMP-10.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "RMP-11";
+  src: url("/Fonts/fbw-a380x/FBW-Display-RMP-11.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "RMP-13";
+  src: url("/Fonts/fbw-a380x/FBW-Display-RMP-13.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "RMP-16";
+  src: url("/Fonts/fbw-a380x/FBW-Display-RMP-16.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "RMP-19";
+  src: url("/Fonts/fbw-a380x/FBW-Display-RMP-19.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "A1000";
+  src: url("/Fonts/A1000/a1000.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+#RMP_CONTENT {
+  position: absolute;
+  top: 1%;
+  left: 1%;
+  width: 98%;
+  height: 98%;
+  box-sizing: border-box;
+
+  color: $display-white;
+  font-family: 'RMP-19';
+  font-size: 120px;
+}
+
+.rmp-content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.font-10 {
+  font-family: "RMP-10";
+  font-size: 60px;
+}
+
+.font-11 {
+  font-family: "RMP-11";
+  font-size: 60px;
+}
+
+.font-13 {
+  font-size: 80px;
+  font-family: "RMP-13";
+}
+
+.font-16 {
+  font-size: 96px;
+  font-family: "RMP-16";
+}
+
+.font-19 {
+  font-family: 'RMP-19';
+  font-size: 120px;
+}
+
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.cyan {
+  color: $display-cyan;
+}
+
+.white {
+  color: $display-white;
+}
+
+.green {
+  color: $display-green;
+}
+
+.amber {
+  color: $display-amber;
+}
+
+.rmp-pages {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: calc(100% - 94px);
+}
+
+.rmp-messages {
+  position: absolute;
+  bottom: 0;
+  height: 94px;
+  width: 100%;
+  padding: 32px 0 0 32px;
+
+  border-top: 4px solid $display-white;
+}

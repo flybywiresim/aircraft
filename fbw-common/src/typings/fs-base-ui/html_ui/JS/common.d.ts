@@ -2,16 +2,16 @@
 
 declare global {
     interface Document {
-        createElement(tagName: "import-template"): ImportTemplateElement;
-        createElement(tagName: "import-script"): ImportScriptElement;
-        createElement(tagName: "ui-element"): UIElement;
-        createElement(tagName: "template-element"): TemplateElement;
-        createElement(tagName: "ui-marquee"): UIMarquee;
-        createElement(tagName: "l10n-label"): LabelizeElement;
-        createElement(tagName: "ui-image"): UIImageElement;
-        createElement(tagName: "icon-text"): IconTextElement;
-        createElement(tagName: "device-button"): DeviceButtonElement;
-        createElement(tagName: "icon-element"): IconElement;
+        createElement(tagName: 'import-template'): ImportTemplateElement;
+        createElement(tagName: 'import-script'): ImportScriptElement;
+        createElement(tagName: 'ui-element'): UIElement;
+        createElement(tagName: 'template-element'): TemplateElement;
+        createElement(tagName: 'ui-marquee'): UIMarquee;
+        createElement(tagName: 'l10n-label'): LabelizeElement;
+        createElement(tagName: 'ui-image'): UIImageElement;
+        createElement(tagName: 'icon-text'): IconTextElement;
+        createElement(tagName: 'device-button'): DeviceButtonElement;
+        createElement(tagName: 'icon-element'): IconElement;
     }
 
     let bDebugKeyNavigation: boolean;
@@ -45,10 +45,10 @@ declare global {
     function SUBMISSION(): boolean;
 
     enum GAME_CONFIGURATION {
-        DEBUG = "DEBUG",
-        RELEASE = "RELEASE",
-        MASTER = "MASTER",
-        SUBMISSION = "SUBMISSION"
+        DEBUG = 'DEBUG',
+        RELEASE = 'RELEASE',
+        MASTER = 'MASTER',
+        SUBMISSION = 'SUBMISSION'
     }
 
     const GAME_CONFIGURATION_ORDER: GAME_CONFIGURATION[];
@@ -399,9 +399,11 @@ declare global {
     function SetBlurredBackground(bVal: boolean): void;
 
     class SoundManager {
-        static SND_VALID: "VALID";
-        static SND_OVER: "SELECT";
-        static SND_INVALID: "INVALID";
+        static SND_VALID: 'VALID';
+
+        static SND_OVER: 'SELECT';
+
+        static SND_INVALID: 'INVALID';
 
         /**
          * Registers sounds to be played on interactions with the element.
@@ -418,7 +420,7 @@ declare global {
         OnMouseLeaveElement(elem: Element, type: string | void, event: Event): void;
         OnMouseDownOnElement(elem: Element, type: string | void, event: Event): void;
         OnClickOnElement(elem: Element, type: string | void, event: Event): void;
-        PlaySound(sndNType: "SND_VALID" | "SELECT" | "INVALID", type: string | void): void;
+        PlaySound(sndNType: 'SND_VALID' | 'SELECT' | 'INVALID', type: string | void): void;
     }
 
     const g_SoundMgr: SoundManager;
@@ -469,8 +471,11 @@ declare global {
         static getUIElement(elem: UIElement | void): UIElement | null;
         static get observedAttributes(): string[];
         onDefaultKeyDown: (e: KeyboardEvent) => void;
+
         onDefaultKeyUp: (e: KeyboardEvent) => void;
+
         sendSizeUpdate: () => void;
+
         previousButton: UIElement | null;
         disconnectedCallback(): void;
         get childActiveClass(): string;
@@ -554,7 +559,9 @@ declare global {
         static callNoBinding(obj: Element, fn: () => void): void;
 
         created: boolean;
+
         instantciatePopupToolbar: () => void;
+
         callbackCreated: () => void;
         get templateID(): string;
         Instanciate(): null | void;
@@ -567,8 +574,11 @@ declare global {
     class UIMarquee extends UIElement {
         constructor(...args: any[]);
         updateScrollBehaviour: () => void;
+
         updateScrollAnimation: () => void;
+
         startScrollAnimation: () => void;
+
         stopScrollAnimation: () => void;
         needsTooltip(): boolean;
         needsEllipsis(): boolean;
@@ -587,7 +597,9 @@ declare global {
 
     class UIImageElement extends TemplateElement {
         onImageLoaded: () => void;
+
         onImageError: () => void;
+
         updateBackground: () => void;
         get transition(): boolean;
         LoadContentURL(srcImage: string, urlContent: string, contentTag: string, contentData: any): void;
@@ -603,14 +615,18 @@ declare global {
             constructor(name: string);
 
             connected: boolean;
+
             CheckCoherentEvent: (listenerName: string, ...args: any[]) => void;
+
             unregister: () => void;
+
             onEventToAllSubscribers: (eventName: string, ...args: any[]) => void;
             onGlobalEvent(eventName: string, ...args: any[]): void;
             off(name: string, callback: (...args: any[]) => void, context?: any): void;
             on(name: string, callback: (...args: any[]) => void, context?: any): void;
             trigger(name: string, ...args: any[]): void;
             triggerToAllSubscribers(event: any, ...args: any[]): void;
+            call(arg0: string, arg1: string, arg2: string);
         }
 
         class ViewListenerMgr {
@@ -625,7 +641,7 @@ declare global {
 
     function RegisterViewListenerT<T>(name: string, callback: (() => void) | void, type: new() => T,
                                       requiresSingleton?: boolean): T;
-    function RegisterViewListener(name: string, callback?: () => void,
+    function RegisterViewListener(name: string, callback?: (listener: ViewListener.ViewListener) => void,
                                   requiresSingleton?: boolean): ViewListener.ViewListener;
 
     class Name_Z {
@@ -634,8 +650,11 @@ declare global {
         static compareStr(a: Name_Z | void, b: string): boolean;
         constructor(str: string, eventHandler?: () => void);
         idLow: number;
+
         idHigh: number;
+
         originalStr: string;
+
         refresh(): void;
         RequestNameZ(eventHandler?: () => void): void;
         str: string;
@@ -659,14 +678,21 @@ declare global {
     class ResizeHandler {
         constructor(element: Node, handleByGame: boolean);
         handleMouseOut: () => void;
+
         startResize: (e: MouseEvent) => void;
+
         resizing: boolean;
+
         resizeUpdate: (e: MouseEvent) => void;
+
         updateResizeX: (e: MouseEvent) => void;
+
         updateResizeY: (e: MouseEvent) => void;
+
         resizeEnd: (e: MouseEvent) => void;
+
         element: Node;
-        setResizeType(direction: "x" | "y" | "none" | "both" | string): void;
+        setResizeType(direction: 'x' | 'y' | 'none' | 'both' | string): void;
         initResizeX(): void;
         removeResize(): void;
         initResizeY(): void;
@@ -684,13 +710,21 @@ declare global {
             boundByHeight: boolean;
         } | void);
         canBeDragged: boolean;
+
         onResize: () => void;
+
         checkCanDrag: (e: Event) => void;
+
         leaveDrag: () => void;
+
         startDrag: (e: MouseEvent) => void;
+
         dragUpdate: (e: MouseEvent) => void;
+
         dragEnd: (e: MouseEvent) => void;
+
         element: Element;
+
         dragElement: Element;
         release(): void;
         OnDragStart(callback: (e: MouseEvent) => void): void;
@@ -751,9 +785,13 @@ declare global {
         static set(name: string, value: number | void, unit: any, valueStr?: string): DataValue;
 
         name: string;
+
         value: number | void;
+
         unit: any;
+
         valueStr: string | null;
+
         html: string;
     }
 
@@ -777,6 +815,7 @@ declare global {
         constructor(x?: number, y?: number);
 
         x: number;
+
         y: number;
 
         VectorTo(pt2: Vec2 | void): Vec2;
@@ -790,13 +829,15 @@ declare global {
     class Vec3 {
         constructor(x: number, y: number, z: number);
         x: number;
+
         y: number;
+
         z: number;
         toString(): string;
     }
 
     class IconTextElement extends UIElement {
-        static CLASS_NAME: "IconTextElement";
+        static CLASS_NAME: 'IconTextElement';
 
         get basePath(): string;
         get subPath(): string | null;
@@ -813,6 +854,7 @@ declare global {
 
     class AtlasItemInfos {
         elem: Element;
+
         rect: DOMRect;
     }
 
@@ -826,25 +868,25 @@ declare global {
     let g_AtlasMgr: AltasElementsMgr;
 
     namespace InputBar {
-        const MENU_BUTTON_A: "MENU_VALID";
-        const MENU_BUTTON_B: "MENU_BACK";
-        const MENU_BUTTON_X: "MENU_VALI2";
-        const MENU_BUTTON_Y: "MENU_CANCEL";
-        const MENU_BUTTON_START: "MENU_START";
-        const MENU_BUTTON_SELECT: "MENU_SELECT";
-        const MENU_BUTTON_OPEN: "MENU_OPEN";
-        const MENU_BUTTON_RESET: "MENU_RESET";
-        const MENU_BUTTON_APPLY: "MENU_APPLY";
-        const MENU_BUTTON_PRESET_MANAGER: "MENU_PRESET_MANAGER";
-        const MENU_BUTTON_QUIT: "MENU_QUIT_GAME";
-        const MENU_BUTTON_CLOSE: "MENU_CLOSE";
-        const MENU_BUTTON_BACK: "MENU_BACK";
-        const MENU_BUTTON_WM_FILTERS: "MENU_WM_FILTERS";
-        const MENU_BUTTON_WM_LEGEND: "MENU_WM_LEGEND";
-        const MENU_BUTTON_CUSTOMIZE: "MENU_CUSTOMIZE";
-        const MENU_BUTTON_FLY: "MENU_FLY";
-        const MENU_BUTTON_TAB_LEFT: "MENU_L1";
-        const MENU_BUTTON_TAB_RIGHT: "MENU_R1";
+        const MENU_BUTTON_A: 'MENU_VALID';
+        const MENU_BUTTON_B: 'MENU_BACK';
+        const MENU_BUTTON_X: 'MENU_VALI2';
+        const MENU_BUTTON_Y: 'MENU_CANCEL';
+        const MENU_BUTTON_START: 'MENU_START';
+        const MENU_BUTTON_SELECT: 'MENU_SELECT';
+        const MENU_BUTTON_OPEN: 'MENU_OPEN';
+        const MENU_BUTTON_RESET: 'MENU_RESET';
+        const MENU_BUTTON_APPLY: 'MENU_APPLY';
+        const MENU_BUTTON_PRESET_MANAGER: 'MENU_PRESET_MANAGER';
+        const MENU_BUTTON_QUIT: 'MENU_QUIT_GAME';
+        const MENU_BUTTON_CLOSE: 'MENU_CLOSE';
+        const MENU_BUTTON_BACK: 'MENU_BACK';
+        const MENU_BUTTON_WM_FILTERS: 'MENU_WM_FILTERS';
+        const MENU_BUTTON_WM_LEGEND: 'MENU_WM_LEGEND';
+        const MENU_BUTTON_CUSTOMIZE: 'MENU_CUSTOMIZE';
+        const MENU_BUTTON_FLY: 'MENU_FLY';
+        const MENU_BUTTON_TAB_LEFT: 'MENU_L1';
+        const MENU_BUTTON_TAB_RIGHT: 'MENU_R1';
 
         function isContainer(elem: any): boolean;
 
@@ -854,11 +896,17 @@ declare global {
             constructor(id: string, text: string, inputActionName: string, event: any, inputActionContext?: string, alsoToGlobalFlow?: boolean, disabled?: boolean);
 
             inputContextName: string;
+
             enabled: boolean;
+
             alsoToGlobalFlow: boolean;
+
             id: string;
+
             text: string;
+
             inputActionName: string;
+
             eventToView: any;
 
             release(): void;
@@ -884,10 +932,15 @@ declare global {
         constructor(title?: string, event?: string, close?: boolean, theme?: string, toGlobalFlow?: boolean);
 
         toGlobalFlow: boolean;
+
         close: boolean;
+
         enabled: boolean;
+
         title: string;
+
         event: string;
+
         theme: any;
     }
 
@@ -899,7 +952,9 @@ declare global {
 
         class NotiticationParams {
             buttons: any[];
+
             style: string;
+
             displayGlobalPopup: boolean;
         }
 
@@ -908,6 +963,7 @@ declare global {
 
     class ComponentRegister {
         imported: boolean;
+
         import: any;
         addImport(): void;
     }
@@ -966,14 +1022,14 @@ declare global {
     }
 
     enum COLOR_PRESETS {
-        DEFAULT = "--color-cyan/--color-yellow",
-        HIGH_CONTRAST = "#1900FF/#F0C808",
-        PROTANOPIA = "#5a81df/#e4ca14",
-        PROTANOPIA_HIGH_CONTRAST = "#0011FF/#FFDF00",
-        DEUTERANOPIA = "#2f86e5/#ffbf32",
-        DEUTERANOPIA_HIGH_CONTRAST = "#002ECD/#ffce83",
-        TRITANOPIA = "#d53031/#00929c",
-        TRITANOPIA_HIGH_CONTRAST = "#fd1700/#00edff"
+        DEFAULT = '--color-cyan/--color-yellow',
+        HIGH_CONTRAST = '#1900FF/#F0C808',
+        PROTANOPIA = '#5a81df/#e4ca14',
+        PROTANOPIA_HIGH_CONTRAST = '#0011FF/#FFDF00',
+        DEUTERANOPIA = '#2f86e5/#ffbf32',
+        DEUTERANOPIA_HIGH_CONTRAST = '#002ECD/#ffce83',
+        TRITANOPIA = '#d53031/#00929c',
+        TRITANOPIA_HIGH_CONTRAST = '#fd1700/#00edff'
     }
 
     function updateColorPreset(preset: COLOR_PRESETS): void;
@@ -1122,9 +1178,13 @@ declare global {
 
     class IconElement extends UIElement {
         iconsPath: string;
+
         image: HTMLImageElement;
+
         onIconLoaded: (found: boolean, svgAsString: string) => void;
+
         svgAsString: string;
+
         imagePaths: string[];
 
         set iconUrl(value: string);

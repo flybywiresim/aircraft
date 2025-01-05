@@ -1,0 +1,277 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../../Common/definitions";
+
+$display-mfd-dark-grey: rgb(128, 128, 128);
+$display-dropdown-handle: rgb(160, 160, 160);
+
+.oanc-control-panel-container {
+  width: 768px;
+
+  display: flex;
+
+  position: absolute;
+  right: 0;
+  bottom: 0;
+
+  z-index: 9999;
+}
+
+.oanc-control-panel-tabs {
+  width: 123px;
+  height: 130px;
+
+  display: flex;
+  flex-direction: column;
+
+  margin-top: auto;
+}
+
+.oanc-control-panel {
+  width: 645px;
+  height: 130px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  padding: 5px;
+
+  background-color: rgb(128, 128, 128);
+  border: solid 3px white;
+  border-left: none;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+
+  button {
+    font-family: "Ecam", monospace;
+    font-size: 17px;
+
+    color: white;
+    background-color: rgb(128, 128, 128);
+
+    border: outset 2px white;
+
+    &:not(:last-child) {
+      margin-bottom: 8px;
+    }
+
+    &:hover {
+      border-style: solid;
+      border-color: $display-cyan;
+    }
+  }
+}
+
+.oanc-control-panel-tabs-dummy {
+  width: 123px;
+  height: calc(100% / 4 + 2px);
+
+  border-right: 3px solid rgb(255, 255, 255);
+}
+
+.oanc-control-panel-tab-button {
+  width: 123px;
+  height: calc(100% / 4);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 18px;
+  color: white;
+
+  border-top: 2px solid rgb(100, 100, 100);
+  border-right: 3px solid rgb(255, 255, 255);
+  border-bottom: 2px solid rgb(100, 100, 100);
+  border-left: 2px solid rgb(100, 100, 100);
+
+  background-color: rgb(20, 20, 20);
+}
+
+.oanc-control-panel-tab-button:not(.oanc-control-panel-tab-button-selected):hover {
+  border-top: 2px solid $display-cyan !important;
+  border-right: 3px solid $display-cyan !important;
+  border-bottom: 2px solid $display-cyan !important;
+  border-left: 2px solid $display-cyan !important;
+
+  background-color: rgb(128, 128, 128);
+}
+
+.oanc-control-panel-tab-button:nth-child(3) {
+  border-top: none;
+  border-bottom: none;
+}
+
+.oanc-control-panel-tabs[data-active-tab-index="2"] .oanc-control-panel-tab-button:nth-child(2) {
+  border-bottom: none;
+  padding-bottom: 1px;
+}
+
+.oanc-control-panel-tabs[data-active-tab-index="2"] .oanc-control-panel-tab-button:nth-child(4) {
+  border-top: none;
+  padding-top: 2px;
+}
+
+.oanc-control-panel-tab-button.oanc-control-panel-tab-button-selected {
+  border-top: 3px solid white;
+  border-left: 3px solid white;
+  border-bottom: 2px solid white;
+  border-right: none;
+  padding-right: 2px;
+
+  background-color: rgb(128, 128, 128);
+  color: $display-cyan;
+}
+
+.oanc-control-panel form {
+  width: 200px;
+}
+
+.oanc-control-panel .mfd-radio-button {
+  font-size: 19px;
+
+  margin-left: 22px;
+}
+
+.oanc-control-panel .mfd-radio-button:not(:last-child) {
+  margin-bottom: 5px;
+}
+
+.oanc-control-panel .mfd-radio-button input[type="radio"] {
+  margin-right: 1em;
+}
+
+.oanc-control-panel .mfd-dropdown-container {
+  .mfd-input-field-text-input {
+    font-size: 17px;
+  }
+
+  .mfd-dropdown-menu-element {
+    font-size: 17px !important;
+
+    padding: 2px 6px;
+  }
+
+  .mfd-dropdown-menu {
+    max-height: 87px;
+
+    &::-webkit-scrollbar-track {
+      background: $display-mfd-dark-grey;
+      border-left: solid 1px $display-dropdown-handle;
+      padding-left: 1px;
+      padding-right: 1px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $display-dropdown-handle;
+    }
+  }
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-left-dropdowns {
+  display: flex;
+  flex-direction: row;
+
+  margin-top: 2px;
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-left-letter-dropdown {
+  width: 60px;
+  height: 30px;
+
+  margin-left: 26px;
+  margin-right: 24px;
+  margin-bottom: 5px;
+
+  background-color: magenta;
+
+  .mfd-dropdown-inner {
+    height: 30px;
+
+    .mfd-input-field-container {
+      height: 27px;
+    }
+  }
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-left-airport-dropdown {
+  width: 150px;
+  height: 30px;
+
+  margin-bottom: 3px;
+
+  background-color: magenta;
+
+  .mfd-dropdown-inner {
+    height: 30px;
+
+    .mfd-input-field-container {
+      height: 27px;
+    }
+  }
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-center {
+  flex-grow: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .oanc-control-panel-arpt-sel-center-info {
+    color: $display-green;
+
+    white-space: pre;
+    font-size: 17px;
+  }
+
+  .oanc-control-panel-arpt-sel-center-info:not(:last-child) {
+    margin-bottom: 6px;
+  }
+
+  button {
+    width: 150px;
+    height: 35px;
+  }
+}
+
+.oanc-control-panel.oanc-control-panel-tmpy {
+  .oanc-control-panel-arpt-sel-center-info {
+    color: $display-yellow;
+  }
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-right {
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  margin-left: auto;
+
+  padding: 4px 0 4px 9px;
+  border-left: 2px solid $display-white;
+
+  button {
+    width: 100px;
+    height: 27px;
+  }
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-close {
+  width: 32px;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  button {
+    width: 27px;
+    height: 27px;
+  }
+}

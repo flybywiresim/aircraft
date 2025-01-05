@@ -4,161 +4,123 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { Fix, MathUtils, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { courseToFixDistanceToGo, fixToFixGuidance, getIntermediatePoint } from '@fmgc/guidance/lnav/CommonGeometry';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { bearingTo } from 'msfs-geo';
+import { bearingTo, distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class TFLeg extends XFLeg {
-    from: WayPoint;
+  private readonly course: Degrees;
 
-    to: WayPoint;
+  private computedPath: PathVector[] = [];
 
-    constraintType: WaypointConstraintType;
+  constructor(
+    public from: Fix,
+    public to: Fix,
+    public readonly metadata: Readonly<LegMetadata>,
+    segment: SegmentType,
+  ) {
+    super(to);
 
-    private readonly course: Degrees;
+    this.from = from;
+    this.to = to;
+    this.segment = segment;
+    this.course = bearingTo(this.from.location, this.to.location);
 
-    private computedPath: PathVector[] = [];
+    // FIXME this is not how the real plane decides to show/hide runway/airport legs
+    // Do not display on map if this is an airport or runway leg
+    const { waypointDescriptor } = this.metadata.flightPlanLegDefinition;
 
-    constructor(
-        from: WayPoint,
-        to: WayPoint,
-        public readonly metadata: Readonly<LegMetadata>,
-        segment: SegmentType,
-    ) {
-        super(to);
+    this.displayedOnMap =
+      waypointDescriptor !== WaypointDescriptor.Airport && waypointDescriptor !== WaypointDescriptor.Runway;
+  }
 
-        this.from = from;
-        this.to = to;
-        this.segment = segment;
-        this.constraintType = to.additionalData.constraintType;
-        this.course = Avionics.Utils.computeGreatCircleHeading(
-            this.from.infos.coordinates,
-            this.to.infos.coordinates,
-        );
+  get inboundCourse(): DegreesTrue {
+    return bearingTo(this.from.location, this.to.location);
+  }
+
+  get outboundCourse(): DegreesTrue {
+    return bearingTo(this.from.location, this.to.location);
+  }
+
+  get predictedPath(): PathVector[] {
+    return this.computedPath;
+  }
+
+  getPathStartPoint(): Coordinates | undefined {
+    return this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.from.location;
+  }
+
+  recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
+    const startPoint = this.getPathStartPoint();
+    const endPoint = this.getPathEndPoint();
+
+    this.computedPath.length = 0;
+
+    if (this.overshot) {
+      this.computedPath.push({
+        type: PathVectorType.Line,
+        startPoint: endPoint,
+        endPoint,
+      });
+    } else {
+      this.computedPath.push({
+        type: PathVectorType.Line,
+        startPoint,
+        endPoint,
+      });
     }
 
-    get inboundCourse(): DegreesTrue {
-        return bearingTo(this.from.infos.coordinates, this.to.infos.coordinates);
+    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+      this.computedPath.push({
+        type: PathVectorType.DebugPoint,
+        startPoint: endPoint,
+        annotation: 'TF END',
+      });
     }
 
-    get outboundCourse(): DegreesTrue {
-        return bearingTo(this.from.infos.coordinates, this.to.infos.coordinates);
+    this.isComputed = true;
+  }
+
+  getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
+    return getIntermediatePoint(
+      this.getPathStartPoint(),
+      this.getPathEndPoint(),
+      (this.distance - distanceBeforeTerminator) / this.distance,
+    );
+  }
+
+  getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | null {
+    return fixToFixGuidance(ppos, trueTrack, this.from.location, this.to.location);
+  }
+
+  getNominalRollAngle(_gs: Knots): Degrees {
+    return 0;
+  }
+
+  getDistanceToGo(ppos: LatLongData): NauticalMiles {
+    return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
+  }
+
+  isAbeam(ppos: LatLongAlt): boolean {
+    const bearingAC = bearingTo(this.from.location, ppos);
+    const headingAC = Math.abs(MathUtils.diffAngle(this.inboundCourse, bearingAC));
+    if (headingAC > 90) {
+      // if we're even not abeam of the starting point
+      return false;
     }
+    const distanceAC = distanceTo(this.from.location, ppos);
+    const distanceAX = Math.cos(headingAC * MathUtils.DEGREES_TO_RADIANS) * distanceAC;
+    // if we're too far away from the starting point to be still abeam of the ending point
+    return distanceAX <= this.distance;
+  }
 
-    get predictedPath(): PathVector[] {
-        return this.computedPath;
-    }
-
-    getPathStartPoint(): Coordinates | undefined {
-        return this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.from.infos.coordinates;
-    }
-
-    recomputeWithParameters(
-        _isActive: boolean,
-        _tas: Knots,
-        _gs: Knots,
-        _ppos: Coordinates,
-        _trueTrack: DegreesTrue,
-    ) {
-        const startPoint = this.getPathStartPoint();
-        const endPoint = this.getPathEndPoint();
-
-        this.computedPath.length = 0;
-
-        if (this.overshot) {
-            this.computedPath.push({
-                type: PathVectorType.Line,
-                startPoint: endPoint,
-                endPoint,
-            });
-        } else {
-            this.computedPath.push({
-                type: PathVectorType.Line,
-                startPoint,
-                endPoint,
-            });
-        }
-
-        if (LnavConfig.DEBUG_PREDICTED_PATH) {
-            this.computedPath.push({
-                type: PathVectorType.DebugPoint,
-                startPoint: endPoint,
-                annotation: 'TF END',
-            });
-        }
-
-        this.isComputed = true;
-    }
-
-    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
-        return getIntermediatePoint(
-            this.getPathStartPoint(),
-            this.getPathEndPoint(),
-            (this.distance - distanceBeforeTerminator) / this.distance,
-        );
-    }
-
-    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | null {
-        return fixToFixGuidance(ppos, trueTrack, this.from.infos.coordinates, this.to.infos.coordinates);
-    }
-
-    getNominalRollAngle(_gs: Knots): Degrees {
-        return 0;
-    }
-
-    /**
-     * Calculates the angle between the leg and the aircraft PPOS.
-     *
-     * This effectively returns the angle ABC in the figure shown below:
-     *
-     * ```
-     * * A
-     * |
-     * * B (TO)
-     * |\
-     * | \
-     * |  \
-     * |   \
-     * |    \
-     * |     \
-     * |      \
-     * * FROM  * C (PPOS)
-     * ```
-     *
-     * @param ppos {LatLong} the current position of the aircraft
-     */
-    getAircraftToLegBearing(ppos: LatLongData): number {
-        const aircraftToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(ppos, this.to.infos.coordinates);
-        const aircraftLegBearing = MathUtils.smallCrossingAngle(this.outboundCourse, aircraftToTerminationBearing);
-
-        return aircraftLegBearing;
-    }
-
-    getDistanceToGo(ppos: LatLongData): NauticalMiles {
-        return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
-    }
-
-    isAbeam(ppos: LatLongAlt): boolean {
-        const bearingAC = Avionics.Utils.computeGreatCircleHeading(this.from.infos.coordinates, ppos);
-        const headingAC = Math.abs(MathUtils.diffAngle(this.inboundCourse, bearingAC));
-        if (headingAC > 90) {
-            // if we're even not abeam of the starting point
-            return false;
-        }
-        const distanceAC = Avionics.Utils.computeDistance(this.from.infos.coordinates, ppos);
-        const distanceAX = Math.cos(headingAC * Avionics.Utils.DEG2RAD) * distanceAC;
-        // if we're too far away from the starting point to be still abeam of the ending point
-        return distanceAX <= this.distance;
-    }
-
-    get repr(): string {
-        return `TF FROM ${this.from.ident} TO ${this.to.ident}`;
-    }
+  get repr(): string {
+    return `TF FROM ${this.from.ident} TO ${this.to.ident}`;
+  }
 }

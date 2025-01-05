@@ -1,10 +1,10 @@
-@import "shared/definitions";
+@import "../Common/definitions";
 @import "animations";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -111,12 +111,20 @@
   font-size: 5.5px;
 }
 
+.FontMediumSmaller {
+  font-size: 5.4px;
+}
+
 .FontSmall {
   font-size: 5px;
 }
 
 .FontSmallest {
   font-size: 4.5px;
+}
+
+.FontTinyToSmallest {
+  font-size: 4.3px;
 }
 
 .FontTiny {
@@ -143,6 +151,13 @@
 text.Magenta {
   fill: $display-magenta;
   stroke: none;
+}
+tspan.Magenta {
+  fill: $display-magenta;
+  stroke: none;
+}
+.Fill.Magenta {
+  fill: $display-magenta;
 }
 
 .Cyan {
@@ -183,6 +198,31 @@ text.White {
   fill: $display-white;
   stroke: none;
 }
+tspan.White {
+  fill: $display-white;
+  stroke: none;
+}
+
+.Black {
+  fill: none;
+  stroke: $display-background;
+}
+.Black.Fill {
+  fill: $display-background;
+  stroke: none;
+}
+.Black.Fill.Stroke {
+  fill: $display-background;
+  stroke: $display-background;
+}
+text.Black {
+  fill: $display-background;
+  stroke: none;
+}
+tspan.Black {
+  fill: $display-background;
+  stroke: none;
+}
 
 .Green {
   stroke: $display-green;
@@ -198,12 +238,20 @@ text.Green {
   fill: $display-green;
   stroke: none;
 }
+tspan.Green {
+  fill: $display-green;
+  stroke: none;
+}
 
 .Amber {
   stroke: $display-amber;
   fill: none;
 }
 text.Amber {
+  fill: $display-amber;
+  stroke: none;
+}
+tspan.Amber {
   fill: $display-amber;
   stroke: none;
 }
@@ -220,6 +268,10 @@ text.Yellow {
   fill: $display-yellow;
   stroke: none;
 }
+tspan.Yellow {
+  fill: $display-yellow;
+  stroke: none;
+}
 
 .Red {
   stroke: $display-red;
@@ -233,6 +285,10 @@ text.Red {
   fill: $display-red;
   stroke: none;
 }
+tspan.Red {
+  fill: $display-red;
+  stroke: none;
+}
 
 .Grey {
   stroke: $display-grey;
@@ -240,10 +296,10 @@ text.Red {
 }
 
 .EarthFill {
-  fill: #9c480c;
+  fill: #5D2518;
 }
 .SkyFill {
-  fill: #0698ff;
+  fill: #0073DE;
 }
 .BlackFill {
   fill: $display-background;
@@ -253,6 +309,7 @@ text.Red {
   fill: $display-grey;
   stroke: none;
 }
+
 .BackgroundFill {
   fill: $display-background;
   stroke: none;
@@ -267,12 +324,33 @@ text.Red {
   display: none;
 }
 
-/* .BacklightBleed {
-  width: 100%;
-  height: 100%;
+.GreenPulse {
+  animation: green-pulse 1s step-end infinite;
+  stroke: 1px !important;
+
+  @keyframes green-pulse {
+      0%, 100% {
+        fill: $display-green;
+      }
+      50% {
+          fill: hsl(120, 100%, 20%)
+      }
+  }
+}
+
+.TrimIndicatorSvg {
   position: absolute;
-  z-index: 998;
-  opacity: 0.75;
-  background-color: rgba(0, 0, 255, 0.025);
-  box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
-} */
+  top: 765px;
+  left: 326px;
+  width: 433px;
+  height: 252px;
+  font-family: "Ecam", monospace !important;
+}
+
+.TrimIndicatorImage {
+  position: absolute;
+  top: 765px;
+  left: 580px;
+  width: 100px;
+  height: 257px;
+}

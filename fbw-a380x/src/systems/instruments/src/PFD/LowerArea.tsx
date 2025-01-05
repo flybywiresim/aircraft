@@ -1,289 +1,724 @@
-import { Arinc429Values, ArincValueProvider } from 'instruments/src/PFD/shared/ArincValueProvider';
+import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
+import {
+  ClockEvents,
+  ConsumerSubject,
+  DisplayComponent,
+  EventSubscriber,
+  FSComponent,
+  HEvent,
+  MappedSubject,
+  Subject,
+  Subscribable,
+  VNode,
+} from '@microsoft/msfs-sdk';
+import {
+  Arinc429ConsumerSubject,
+  Arinc429LocalVarConsumerSubject,
+  ArincEventBus,
+  MathUtils,
+} from '@flybywiresim/fbw-sdk';
+import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
+import { MemoFormatter } from 'instruments/src/PFD/MemoFormatter';
+import { FwcDataEvents, SecDataEvents } from '@flybywiresim/msfs-avionics-common';
 
-export class LowerArea extends DisplayComponent<{ bus: EventBus }> {
-    render(): VNode {
-        return (
-            <g>
-                <path class='ThickStroke White' d='M 2.1 157.7 h 154.4' />
-                <path class='ThickStroke White' d='M 67 158 v 51.8' />
+export class LowerArea extends DisplayComponent<{
+  bus: ArincEventBus;
+  pitchTrimIndicatorVisible: Subscribable<boolean>;
+}> {
+  render(): VNode {
+    return (
+      <g>
+        <path class="ThickStroke White" d="M 2.1 157.7 h 154.4" />
+        <path class="ThickStroke White" d="M 67 158 v 51.8" />
 
-                <Memos />
-                <Limitations />
-                <FlapsIndicator bus={this.props.bus} />
-            </g>
-        );
-    }
+        <Memos bus={this.props.bus} />
+        <SlatsFlapsDisplay bus={this.props.bus} />
+
+        <Limitations bus={this.props.bus} visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
+      </g>
+    );
+  }
 }
 
-const circlePath = (r: number, cx: number, cy: number) => `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
+const circlePath = (r: number, cx: number, cy: number) =>
+  `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
 
-class FlapsIndicator extends DisplayComponent<{ bus: EventBus }> {
-    private targetClass = Subject.create('');
+const SPOILERS_HIDE_DEFLECTION_BELOW_DEG = 5.15;
 
-    private targetText = Subject.create('');
+class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values & PFDSimvars & FwcDataEvents>();
 
-    private targetVisible = Subject.create('hidden');
+  private targetClass = Subject.create('');
 
-    private flapSlatIndexClass = Subject.create('');
+  private targetText = Subject.create('');
 
-    private targetBoxVisible = Subject.create('hidden');
+  private readonly targetVisible = Subject.create('hidden');
 
-    private slatsClass = Subject.create('');
+  private readonly slatExtensionVisible = Subject.create('hidden');
 
-    private slatsLineClass = Subject.create('');
+  private readonly flapExtensionVisible = Subject.create('hidden');
 
-    private slatsTargetPos = Subject.create(0);
+  // FIXME don't use commanded position from just one spoiler + figure out whether it's averaged, or max-ed
+  private readonly spoilersCommandedPosition = ConsumerSubject.create(
+    this.sub.on('spoilersCommanded').whenChanged(),
+    0,
+  );
 
-    private flapsTargetPos = Subject.create(0);
+  private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
 
-    private slatsPath = Subject.create('');
+  private readonly spoilerExtensionVisible = MappedSubject.create(
+    ([pos, armed]) => (pos > SPOILERS_HIDE_DEFLECTION_BELOW_DEG || armed ? 'visible' : 'hidden'),
+    this.spoilersCommandedPosition,
+    this.spoilersArmed,
+  );
 
-    private slatsLinePath = Subject.create('');
+  private readonly speedBrakesStillExtended = Subject.create(false);
 
-    private flapsLinePath = Subject.create('');
+  private readonly speedBrakesPosDisagree = Subject.create(false);
 
-    private flapsPath = Subject.create('');
+  private slatIndexClass = Subject.create('');
 
-    private alphaLockEngaged = Subject.create(false);
+  private flapIndexClass = Subject.create('');
 
-    private configClean: boolean = false;
+  private targetBoxVisible = Subject.create('hidden');
 
-    private config1: boolean = false;
+  private slatsTargetPos = Subject.create(0);
 
-    private config2: boolean = false;
+  private flapsTargetPos = Subject.create(0);
 
-    private config3: boolean = false;
+  private slatsPath = Subject.create('');
 
-    private configFull: boolean = false;
+  private slatsLinePath = Subject.create('');
 
-    private flaps1AutoRetract: boolean = false;
+  private flapsLinePath = Subject.create('');
 
-    private slatsOut: boolean = false;
+  private flapsPath = Subject.create('');
 
-    private flapsOut: boolean = false;
+  private readonly alphaLockEngaged = Subject.create(false);
 
-    onAfterRender(node: VNode): void {
-        super.onAfterRender(node);
+  private readonly flapReliefEngaged = Subject.create(false);
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & Arinc429Values>();
+  private readonly flapsFault = Subject.create(false);
 
-        sub.on('slatsFlapsStatus').whenChanged().handle((s) => {
-            this.configClean = s.getBitValue(17);
-            this.config1 = s.getBitValue(18);
-            this.config2 = s.getBitValue(19);
-            this.config3 = s.getBitValue(20);
-            this.configFull = s.getBitValue(21);
-            this.flaps1AutoRetract = s.getBitValue(26);
+  private readonly flapsDataValid = Subject.create(true);
 
-            const alphaLockEngaged = s.getBitValue(24);
-            this.alphaLockEngaged.set(alphaLockEngaged);
+  private readonly slatsFault = Subject.create(false);
 
-            if (this.configClean) {
-                this.targetText.set('0');
-            } else if (this.config1 && this.flaps1AutoRetract) {
-                this.targetText.set('1');
-            } else if (this.config1) {
-                this.targetText.set('1+F');
-            } else if (this.config2) {
-                this.targetText.set('2');
-            } else if (this.config3) {
-                this.targetText.set('3');
-            } else if (this.configFull) {
-                this.targetText.set('FULL');
-            } else {
-                this.targetText.set('');
-            }
+  private readonly slatsDataValid = Subject.create(true);
 
-            if (alphaLockEngaged) {
-                this.slatsClass.set('Slats GreenPulseNoFill');
-                this.slatsLineClass.set('GreenLine GreenPulse');
-            } else {
-                this.slatsClass.set('Slats');
-                this.slatsLineClass.set('GreenPulse');
-            }
-        });
+  private configClean: boolean = false;
 
-        sub.on('slatsPosition').whenChanged().handle((s) => {
-            const slats = s.valueOr(0);
+  private config1: boolean = false;
 
-            this.slatsOut = slats > 6.1;
+  private config2: boolean = false;
 
-            const xFactor = -0.43;
-            const yFactor = 0.09;
-            const synchroFactor = 0.081;
+  private config3: boolean = false;
 
-            let synchroOffset = 0;
-            let positionFactor = 0;
-            let positionOffset = 0;
-            if (slats >= 0 && slats < 222.8) {
-                synchroOffset = 0;
-                positionFactor = 0.43;
-                positionOffset = 0;
-            } else if (slats >= 222.8 && slats < 272.8) {
-                synchroOffset = 18;
-                positionFactor = 1.8;
-                positionOffset = 7.71;
-            } else if (slats >= 272.8 && slats < 346) {
-                synchroOffset = 22;
-                positionFactor = 1.44;
-                positionOffset = 14.92;
-            }
+  private configFull: boolean = false;
 
-            const value = (slats * synchroFactor - synchroOffset) * positionFactor + positionOffset;
-            const x = xFactor * value + 15.2;
-            const y = yFactor * value + 195.3;
-            this.slatsPath.set(`M ${x},${y} a 0.2 0.2 0 0 1 -1.3 -1.9 l 1.4 -0.7 z`);
-            this.slatsLinePath.set(`M 15.2 195.4 L ${x},${y}`);
+  private flaps1AutoRetract: boolean = false;
 
-            if (this.configClean && slats > 6.1) {
-                this.slatsTargetPos.set(0);
-            } else if ((this.config1 || this.config2) && (slats < 209.9 || slats > 234.6)) {
-                this.slatsTargetPos.set(1);
-            } else if ((this.config3 || this.configFull) && (slats < 327.2 || slats > 339.5)) {
-                this.slatsTargetPos.set(2);
-            } else {
-                this.slatsTargetPos.set(null);
-            }
-        });
+  private slatsOut: boolean = false;
 
-        sub.on('flapsPosition').whenChanged().handle((s) => {
-            const flaps = s.valueOr(0);
+  private flapsOut: boolean = false;
 
-            this.flapsOut = flaps > 73.1;
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
 
-            const xFactor = 0.87;
-            const yFactor = 0.365;
-            const synchroFactor = 0.22;
-            const synchroConstant = 15.88;
+    this.sub
+      .on('slatsFlapsStatus')
+      .whenChanged()
+      .handle((s) => {
+        this.configClean = s.bitValue(17);
+        this.config1 = s.bitValue(18);
+        this.config2 = s.bitValue(19);
+        this.config3 = s.bitValue(20);
+        this.configFull = s.bitValue(21);
+        this.flaps1AutoRetract = s.bitValue(26);
 
-            let synchroOffset = 0;
-            let positionFactor = 0;
-            let positionOffset = 0;
-            if (flaps >= 0 && flaps < 120.5) {
-                synchroOffset = 0;
-                positionFactor = 0.97;
-                positionOffset = 0;
-            } else if (flaps >= 120.5 && flaps < 145.5) {
-                synchroOffset = 10.63;
-                positionFactor = 1.4;
-                positionOffset = 10.34;
-            } else if (flaps >= 145.5 && flaps < 168.3) {
-                synchroOffset = 16.3;
-                positionFactor = 1.62;
-                positionOffset = 18.27;
-            } else if (flaps >= 168.3 && flaps < 355) {
-                synchroOffset = 21.19;
-                positionFactor = 0.43;
-                positionOffset = 26.21;
-            }
+        this.flapReliefEngaged.set(s.bitValue(22));
+        this.alphaLockEngaged.set(s.bitValue(24));
 
-            const value = Math.max((flaps * synchroFactor - synchroConstant - synchroOffset) * positionFactor + positionOffset, 0);
-            const x = xFactor * value + 31.8;
-            const y = yFactor * value + 193.1;
-            this.flapsPath.set(`M${x},${y} v 2.6 h 3.9 z`);
-            this.flapsLinePath.set(`M 31.8 193.1 L ${x},${y}`);
+        this.slatsFault.set(s.bitValue(11));
+        this.flapsFault.set(s.bitValue(12));
 
-            if ((this.configClean || this.flaps1AutoRetract) && flaps > 73.1) {
-                this.flapsTargetPos.set(0);
-            } else if (this.config1 && !this.flaps1AutoRetract && (flaps < 113.1 || flaps > 122.2)) {
-                this.flapsTargetPos.set(1);
-            } else if (this.config2 && (flaps < 140.4 || flaps > 149.5)) {
-                this.flapsTargetPos.set(2);
-            } else if (this.config3 && (flaps < 163.1 || flaps > 172.2)) {
-                this.flapsTargetPos.set(3);
-            } else if (this.configFull && (flaps < 246.8 || flaps > 257.2)) {
-                this.flapsTargetPos.set(4);
-            } else {
-                this.flapsTargetPos.set(null);
-            }
-        });
+        this.slatsDataValid.set(s.bitValue(28));
+        this.flapsDataValid.set(s.bitValue(29));
 
-        sub.on('realTime').handle((_t) => {
-            const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
-            this.targetVisible.set((this.slatsOut || this.flapsOut || !this.configClean) ? 'visible' : 'hidden');
-            this.flapSlatIndexClass.set((this.slatsOut || this.flapsOut || !this.configClean) ? 'NormalStroke Green CornerRound' : 'NormalStroke White CornerRound');
-            this.targetClass.set(inMotion ? 'FontMedium Cyan MiddleAlign' : 'FontMedium Green MiddleAlign');
-            this.targetBoxVisible.set(inMotion ? 'visible' : 'hidden');
-        });
-    }
+        if (this.configClean) {
+          this.targetText.set('0');
+        } else if (this.config1 && this.flaps1AutoRetract) {
+          this.targetText.set('1');
+        } else if (this.config1) {
+          this.targetText.set('1+F');
+        } else if (this.config2) {
+          this.targetText.set('2');
+        } else if (this.config3) {
+          this.targetText.set('3');
+        } else if (this.configFull) {
+          this.targetText.set('FULL');
+        } else {
+          this.targetText.set('');
+        }
+      });
 
-    render(): VNode {
-        return (
-            <g>
-                <g visibility={this.targetVisible}>
-                    <path d={circlePath(0.8, 14.1, 194.5)} class='NormalStroke Stroke Fill Cyan' visibility={this.slatsTargetPos.map((i) => (i == 0 ? 'visible' : 'hidden'))} />
-                    <path d={circlePath(0.8, 9.6, 195.4)} class={this.slatsTargetPos.map((i) => (i == 1 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
-                    <path d={circlePath(0.8, 5, 196.4)} class={this.slatsTargetPos.map((i) => (i == 2 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))} />
+    this.sub
+      .on('slatsPosition')
+      .whenChanged()
+      .handle((s) => {
+        const slats = s.valueOr(0);
 
-                    <path d='M 32.3 193.7 v 1.7 h 1.9 z' class='Fill Stroke NormalStroke Cyan CornerRound' visibility={this.flapsTargetPos.map((i) => (i == 0 ? 'visible' : 'hidden'))} />
-                    <path d='M 39.9 196.8 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 1 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
-                    <path d='M 47.3 199.9 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 2 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
-                    <path d='M 54.7 203 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 3 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
-                    <path d='M 62.1 206.1 v 1.7 h 1.9 z' class={this.flapsTargetPos.map((i) => (i == 4 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound'))} />
+        this.slatsOut = slats > 6.1;
 
-                    <text x={23.7} y={202.3} class={this.targetClass}>{this.targetText}</text>
-                    <path visibility={this.targetBoxVisible} class='NormalStroke Cyan CornerRound' d='M 15.4 196.8 v 6.2 h 16.2 v -6.2 z' />
-                    <text x={3.8} y={191.1} class='FontSmall White'>S</text>
-                    <text x={47.2} y={210.8} class='FontSmall White'>F</text>
-                </g>
-                <text class='Green FontSmallest' x={0} y={190} visibility={this.alphaLockEngaged.map((v) => (v ? 'visible' : 'hidden'))}>A LOCK</text>
+        // Slats and flaps should align with future implementation; do not change
+        const xFactor = -0.43;
+        const yFactor = 0.09;
+        const synchroFactor = 0.081;
 
-                <path class={this.flapSlatIndexClass} d={this.slatsPath} />
-                <path class={this.flapSlatIndexClass} d={this.slatsLinePath} />
+        let synchroOffset = 0;
+        let positionFactor = 0;
+        let positionOffset = 0;
+        if (slats >= 0 && slats < 247.1) {
+          synchroOffset = 0;
+          positionFactor = 0.57;
+          positionOffset = 0;
+        } else if (slats >= 247.1 && slats < 355) {
+          synchroOffset = 20.02;
+          positionFactor = 3.7;
+          positionOffset = 11.5;
+        }
 
-                <path class={this.flapSlatIndexClass} d={this.flapsPath} />
-                <path class={this.flapSlatIndexClass} d={this.flapsLinePath} />
+        const value = (slats * synchroFactor - synchroOffset) * positionFactor + positionOffset;
+        const x = xFactor * value + 15.2;
+        const y = yFactor * value + 195.3;
+        this.slatsPath.set(`M ${x},${y} a 0.2 0.2 0 0 1 -1.3 -1.9 l 1.4 -0.7 z`);
+        this.slatsLinePath.set(`M 15.2 195.4 L ${x},${y}`);
 
-                <path class='NormalStroke White CornerRound' d='M 15.2 195.5 h 12.4 l 4.1 0.2 l -0.1 -2.6 l -4 -0.9 l -2 -0.3 l -3 -0.1 l -3.5 0.1 l -3.8 0.8 z' />
-            </g>
+        if (this.configClean && slats > 6.1) {
+          this.slatsTargetPos.set(0);
+        } else if ((this.config1 || this.config2) && (slats < 234.92 || slats > 259.62)) {
+          this.slatsTargetPos.set(1);
+        } else if ((this.config3 || this.configFull) && (slats < 272.3 || slats > 297.0)) {
+          this.slatsTargetPos.set(2);
+        } else {
+          this.slatsTargetPos.set(null);
+        }
+      });
+
+    this.sub
+      .on('flapsPosition')
+      .whenChanged()
+      .handle((s) => {
+        const flaps = s.valueOr(0);
+
+        this.flapsOut = flaps > 54.0;
+
+        // Slats and flaps should align with future implementation; do not change
+        const xFactor = 0.87;
+        const yFactor = 0.365;
+        const synchroFactor = 0.22;
+        const synchroConstant = 15.88;
+
+        let synchroOffset = 0;
+        let positionFactor = 0;
+        let positionOffset = 0;
+        if (flaps >= 0 && flaps < 108.2) {
+          synchroOffset = 0;
+          positionFactor = 1.1;
+          positionOffset = 0;
+        } else if (flaps >= 108.2 && flaps < 154.5) {
+          synchroOffset = 7.92;
+          positionFactor = 0.85;
+          positionOffset = 8.7;
+        } else if (flaps >= 154.5 && flaps < 194.0) {
+          synchroOffset = 18.11;
+          positionFactor = 1.0;
+          positionOffset = 17.4;
+        } else if (flaps >= 194.0 && flaps < 355) {
+          synchroOffset = 26.8;
+          positionFactor = 1.55;
+          positionOffset = 26.1;
+        }
+
+        const value = Math.max(
+          (flaps * synchroFactor - synchroConstant - synchroOffset) * positionFactor + positionOffset,
+          0,
         );
-    }
+        const x = xFactor * value + 31.8;
+        const y = yFactor * value + 193.1;
+        this.flapsPath.set(`M${x},${y} v 2.6 h 3.9 z`);
+        this.flapsLinePath.set(`M 31.8 193.1 L ${x},${y}`);
+
+        if ((this.configClean || this.flaps1AutoRetract) && flaps > 54.0) {
+          this.flapsTargetPos.set(0);
+        } else if (this.config1 && !this.flaps1AutoRetract && (flaps < 103.7 || flaps > 112.8)) {
+          this.flapsTargetPos.set(1);
+        } else if (this.config2 && (flaps < 150.1 || flaps > 159.2)) {
+          this.flapsTargetPos.set(2);
+        } else if (this.config3 && (flaps < 189.5 || flaps > 198.6)) {
+          this.flapsTargetPos.set(3);
+        } else if (this.configFull && (flaps < 214.3 || flaps > 223.4)) {
+          this.flapsTargetPos.set(4);
+        } else {
+          this.flapsTargetPos.set(null);
+        }
+      });
+
+    this.sub.on('realTime').handle((_t) => {
+      const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
+      this.targetVisible.set(this.slatsOut || this.flapsOut || !this.configClean ? 'visible' : 'hidden');
+      this.flapExtensionVisible.set(
+        (this.flapsOut || !this.configClean) && this.flapsDataValid.get() ? 'visible' : 'hidden',
+      );
+      this.slatExtensionVisible.set(
+        (this.slatsOut || !this.configClean) && this.flapsDataValid.get() ? 'visible' : 'hidden',
+      );
+
+      if (this.slatsFault.get()) {
+        this.slatIndexClass.set('NormalStroke Amber CornerRound');
+      } else if (this.slatsOut || this.flapsOut || !this.configClean) {
+        this.slatIndexClass.set('NormalStroke Green CornerRound');
+      } else {
+        this.slatIndexClass.set('NormalStroke White CornerRound');
+      }
+
+      if (this.flapsFault.get()) {
+        this.flapIndexClass.set('NormalStroke Amber CornerRound');
+      } else if (this.slatsOut || this.flapsOut || !this.configClean) {
+        this.flapIndexClass.set('NormalStroke Green CornerRound');
+      } else {
+        this.flapIndexClass.set('NormalStroke White CornerRound');
+      }
+
+      this.targetClass.set(inMotion ? 'FontMedium Cyan MiddleAlign' : 'FontMedium Green MiddleAlign');
+      this.targetBoxVisible.set(inMotion ? 'visible' : 'hidden');
+    });
+  }
+
+  spoilersLogFn(x: number) {
+    return Math.min(90, 90 / (1 + Math.exp(-x + 17) ** 0.28));
+  }
+
+  render(): VNode {
+    return (
+      <g>
+        <g visibility={this.targetVisible}>
+          <text x={23.7} y={202.3} class={this.targetClass}>
+            {this.targetText}
+          </text>
+          <path
+            visibility={this.targetBoxVisible}
+            class="NormalStroke Cyan CornerRound"
+            d="M 15.4 196.8 v 6.2 h 16.2 v -6.2 z"
+          />
+        </g>
+
+        <g visibility={this.slatExtensionVisible}>
+          <path
+            d={circlePath(0.8, 14.1, 194.5)}
+            class="NormalStroke Stroke Fill Cyan"
+            visibility={this.slatsTargetPos.map((i) => (i === 0 ? 'inherit' : 'hidden'))}
+          />
+          <path
+            d={circlePath(0.8, 9.6, 195.4)}
+            class={this.slatsTargetPos.map((i) => (i === 1 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))}
+          />
+          <path
+            d={circlePath(0.8, 5, 196.4)}
+            class={this.slatsTargetPos.map((i) => (i === 2 ? 'NormalStroke Stroke Fill Cyan' : 'NormalStroke White'))}
+          />
+
+          <text
+            x={3.8}
+            y={191.1}
+            class={this.slatsFault.get() ? 'FontSmall Amber' : 'FontSmall White'}
+            visibility={this.alphaLockEngaged.map((v) => (v ? 'hidden' : 'inherit'))}
+          >
+            S
+          </text>
+        </g>
+
+        <g visibility={this.flapExtensionVisible}>
+          <path
+            d="M 32.3 193.7 v 1.7 h 1.9 z"
+            class="Fill Stroke NormalStroke Cyan CornerRound"
+            visibility={this.flapsTargetPos.map((i) => (i === 0 ? 'inherit' : 'hidden'))}
+          />
+          <path
+            d="M 39.9 196.8 v 1.7 h 1.9 z"
+            class={this.flapsTargetPos.map((i) =>
+              i === 1 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound',
+            )}
+          />
+          <path
+            d="M 47.3 199.9 v 1.7 h 1.9 z"
+            class={this.flapsTargetPos.map((i) =>
+              i === 2 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound',
+            )}
+          />
+          <path
+            d="M 54.7 203 v 1.7 h 1.9 z"
+            class={this.flapsTargetPos.map((i) =>
+              i === 3 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound',
+            )}
+          />
+          <path
+            d="M 62.1 206.1 v 1.7 h 1.9 z"
+            class={this.flapsTargetPos.map((i) =>
+              i === 4 ? 'Fill Stroke NormalStroke Cyan CornerRound' : 'Fill Stroke NormalStroke White CornerRound',
+            )}
+          />
+
+          <text
+            x={47.2}
+            y={210.8}
+            class={this.flapsFault.get() ? 'FontSmall Amber' : 'FontSmall White'}
+            visibility={this.flapReliefEngaged.map((v) => (v ? 'hidden' : 'inherit'))}
+          >
+            F
+          </text>
+        </g>
+        <text
+          class="GreenPulse FontSmallest"
+          x={0}
+          y={190}
+          visibility={this.alphaLockEngaged.map((v) => (v ? 'inherit' : 'hidden'))}
+        >
+          A LOCK
+        </text>
+        <text
+          class="GreenPulse FontSmallest"
+          x={38}
+          y={190}
+          visibility={this.flapReliefEngaged.map((v) => (v ? 'inherit' : 'hidden'))}
+        >
+          F RELIEF
+        </text>
+
+        <text
+          class="Amber FontSmallest"
+          x={9}
+          y={195.5}
+          visibility={this.slatsDataValid.map((v) => (v ? 'hidden' : 'inherit'))}
+        >
+          XX
+        </text>
+        <text
+          class="Amber FontSmallest"
+          x={32.6}
+          y={195.5}
+          visibility={this.flapsDataValid.map((v) => (v ? 'hidden' : 'inherit'))}
+        >
+          XX
+        </text>
+
+        <path
+          class={this.slatIndexClass}
+          d={this.slatsPath}
+          visibility={this.slatsDataValid.map((v) => (v ? 'visible' : 'hidden'))}
+        />
+        <path class={this.slatIndexClass} d={this.slatsLinePath} />
+
+        <path
+          class={this.flapIndexClass}
+          d={this.flapsPath}
+          visibility={this.flapsDataValid.map((v) => (v ? 'visible' : 'hidden'))}
+        />
+        <path class={this.flapIndexClass} d={this.flapsLinePath} />
+
+        <path
+          class="NormalStroke White CornerRound"
+          d="M 15.2 195.5 h 12.4 l 4.1 0.2 l -0.1 -2.6 l -4 -0.9 l -2 -0.3 l -3 -0.1 l -3.5 0.1 l -3.8 0.8 z"
+        />
+
+        <g visibility={this.spoilerExtensionVisible}>
+          <path
+            d="M 25.3 187.5 l 2.1 -3"
+            class={this.speedBrakesPosDisagree.map((it) =>
+              it ? 'NormalStroke Amber CornerRound' : 'NormalStroke White CornerRound',
+            )}
+          />
+          <path
+            d="M 27.5 189 l 3.1 -1.8"
+            class={this.speedBrakesPosDisagree.map((it) =>
+              it ? 'NormalStroke Amber CornerRound' : 'NormalStroke White CornerRound',
+            )}
+          />
+          <path
+            d={this.spoilersCommandedPosition.map(
+              (p) =>
+                `M 23 191.6 l ${5 * Math.cos(this.spoilersLogFn(p) * MathUtils.DEGREES_TO_RADIANS)} ${-5 * Math.sin(this.spoilersLogFn(p) * MathUtils.DEGREES_TO_RADIANS)}`,
+            )}
+            class={this.speedBrakesStillExtended.map((it) =>
+              it ? 'NormalStroke Amber CornerRound' : 'NormalStroke Green CornerRound',
+            )}
+            visibility={this.spoilersCommandedPosition.map((p) =>
+              p >= SPOILERS_HIDE_DEFLECTION_BELOW_DEG ? 'inherit' : 'hidden',
+            )}
+          />
+          <path
+            d="M 21.6 183.5 h 3 l -1.5 3 z"
+            class="Fill Stroke NormalStroke Cyan CornerRound"
+            visibility={this.spoilersArmed.map((a) => (a ? 'inherit' : 'hidden'))}
+          />
+        </g>
+        <GearIndicator bus={this.props.bus} />
+        <RudderTrimIndicator bus={this.props.bus} />
+      </g>
+    );
+  }
 }
 
-// THS and gear indications waiting for systems implementations
-class GearIndicator extends DisplayComponent<{ bus: EventBus }> {
-    render(): VNode {
-        return (
-            <g>
-                <path class='NormalStroke Green CornerRound' d='M 18.4 204.3 h 10 l -5 5.5 z M 20.9 204.3 v 2.6 M 23.4 204.3 v 5.5 M 25.9 204.3 v 2.6' />
-            </g>
-        );
-    }
+class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private landingGearDownAndLocked = Subject.create('hidden');
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+
+    // TODO change to proper LGCIS input once LGCIS is implemented
+    sub.on('lgciuDiscreteWord1').handle((word) => {
+      const gearDownAndLocked = word.bitValue(23) && word.bitValue(24) && word.bitValue(25);
+      this.landingGearDownAndLocked.set(gearDownAndLocked ? 'visible' : 'hidden');
+    });
+  }
+
+  render(): VNode {
+    return (
+      <g visibility={this.landingGearDownAndLocked}>
+        <path
+          class="NormalStroke Green CornerRound"
+          d="M 18.4 204.3 h 10 l -5 5.5 z M 20.9 204.3 v 2.6 M 23.4 204.3 v 5.5 M 25.9 204.3 v 2.6"
+        />
+      </g>
+    );
+  }
 }
 
-class PitchTrimIndicator extends DisplayComponent<{ bus: EventBus }> {
-    render(): VNode {
-        return (
-            <>
-                <g>
-                    <text x={68.7} y={186.5} class='FontSmallest White'>T.O THS FOR</text>
-                    <text x={101} y={186.5} class='FontIntermediate White'>42.6</text>
-                    <text x={115} y={186.5} class='FontSmallest Cyan'>%</text>
-                    <image xlinkHref='/Images/TRIM_INDICATOR.png' x={106} y={158.6} width={49} height={52} />
-                </g>
-            </>
-        );
+class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & FwcDataEvents & SecDataEvents & ClockEvents & PFDSimvars & HEvent
+  >();
+
+  private readonly onGround = Arinc429LocalVarConsumerSubject.create(this.sub.on('fwc_discrete_word_126_1')).map((w) =>
+    w.bitValueOr(28, false),
+  );
+
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
+  private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+
+  private readonly engine1Running = ConsumerSubject.create(this.sub.on('engOneRunning'), true);
+  private readonly engine2Running = ConsumerSubject.create(this.sub.on('engTwoRunning'), true);
+  private readonly engine3Running = ConsumerSubject.create(this.sub.on('engThreeRunning'), true);
+  private readonly engine4Running = ConsumerSubject.create(this.sub.on('engFourRunning'), true);
+
+  private readonly rudderTrim1Engaged = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_status_word_1'),
+  ).map((w) => w.bitValueOr(28, false));
+
+  private readonly rudderTrim3Engaged = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_status_word_3'),
+  ).map((w) => w.bitValueOr(28, false));
+
+  private readonly rudderTrimAvailable = MappedSubject.create(
+    ([eng1, eng3]) => eng1 || eng3,
+    this.rudderTrim1Engaged,
+    this.rudderTrim3Engaged,
+  );
+
+  private readonly rudderTrim1Order = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_trim_actual_position_1'),
+  );
+
+  private readonly rudderTrim3Order = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_trim_actual_position_3'),
+  );
+
+  private readonly rudderTrimOrder = MappedSubject.create(
+    ([eng1, order1, order3]) => (eng1 ? order1.valueOr(0) : order3.valueOr(0)),
+    this.rudderTrim1Engaged,
+    this.rudderTrim1Order,
+    this.rudderTrim3Order,
+  );
+
+  private readonly rudderTrimOrderText = this.rudderTrimOrder.map(
+    (v) => `${v >= 0 || Math.abs(v) < 0.01 ? 'L' : 'R'}${Math.abs(v).toFixed(1).padStart(5, '\xa0')}`,
+  );
+
+  private readonly rudderTrimIndicatorVisibilityCondition = Subject.create(false);
+
+  private readonly rudderTrimIndicatorVisibilityStatus = Subject.create(false);
+
+  private readonly rudderTrimOrderTextClass = this.rudderTrimOrder.map((v) => {
+    const absTrim = Math.abs(v);
+    if (absTrim < 0.3) {
+      return 'HiddenElement';
+    } else if (absTrim < 3.6) {
+      return 'FontSmallest Amber';
+    } else {
+      return 'FontSmallest Red';
     }
+  });
+
+  private readonly rudderTrimOrderTextVisibility = this.rudderTrimOrder.map((t) =>
+    Math.abs(t) < 0.3 ? 'hidden' : 'inherit',
+  );
+
+  private readonly rudderTrimOrderPolygonPoints = this.rudderTrimOrder.map((v) => {
+    const xOffset = -11.5 * (v / 25.5);
+    return `${52.5 + xOffset},186.25 ${54 + xOffset},187.75 ${52.5 + xOffset},189.25 ${51 + xOffset},187.75`;
+  });
+
+  private rudderTrimWasMoved = false;
+
+  private engineHasFailed = false;
+
+  private delayStartTime: number = 0;
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.sub.on('hEvent').handle((ev) => {
+      if (ev === 'A32NX.RUDDER_TRIM_MANUALLY_MOVED') {
+        this.rudderTrimWasMoved = true;
+      }
+    });
+
+    this.sub
+      .on('simTime')
+      .atFrequency(4)
+      .handle((t) => {
+        const gnd = this.onGround.get();
+        const cas = this.speed.get();
+        const rt = this.rudderTrimOrder.get();
+
+        const inFlightOrGroundFaster60Exceeds1Deg = (!gnd || (gnd && cas.valueOr(0) > 60)) && Math.abs(rt) > 1;
+        const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(61) < 60 && Math.abs(rt) > 0.3;
+
+        if (
+          this.fwcFlightPhase.get() >= 2 &&
+          !gnd &&
+          (!this.engine1Running.get() ||
+            !this.engine2Running.get() ||
+            !this.engine3Running.get() ||
+            !this.engine4Running.get())
+        ) {
+          this.engineHasFailed = true;
+        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 2) {
+          this.engineHasFailed = false;
+        }
+
+        const visCondition =
+          this.rudderTrimWasMoved ||
+          onGroundSlower60Exceeds0p3 ||
+          inFlightOrGroundFaster60Exceeds1Deg ||
+          this.engineHasFailed;
+        this.rudderTrimWasMoved = false;
+
+        if (visCondition && !this.rudderTrimIndicatorVisibilityCondition.get()) {
+          this.rudderTrimIndicatorVisibilityStatus.set(true);
+        } else if (this.rudderTrimIndicatorVisibilityCondition.get() && !visCondition) {
+          this.delayStartTime = t;
+          this.rudderTrimIndicatorVisibilityStatus.set(true);
+        }
+        this.rudderTrimIndicatorVisibilityCondition.set(visCondition);
+
+        if (
+          !this.rudderTrimIndicatorVisibilityCondition.get() &&
+          t - this.delayStartTime > 7_000 &&
+          !this.engineHasFailed
+        ) {
+          this.rudderTrimIndicatorVisibilityStatus.set(false);
+        }
+      });
+  }
+
+  render(): VNode {
+    return (
+      <g
+        visibility={MappedSubject.create(
+          ([vis, avail]) => (vis && avail ? 'inherit' : 'hidden'),
+          this.rudderTrimIndicatorVisibilityStatus,
+          this.rudderTrimAvailable,
+        )}
+      >
+        <text x={41.2} y={184.7} class={'FontSmallest White'}>
+          RUD TRIM
+        </text>
+        <rect width="23" height="3.5" x="41" y="186" class="NormalOutline White" />
+        <line x1="52.5" y1="186" x2="52.5" y2="189.5" class="NormalOutline White" />
+        <polygon points={this.rudderTrimOrderPolygonPoints} class="Cyan Fill Stroke" />
+        <g visibility={this.rudderTrimOrderTextVisibility}>
+          <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
+            {this.rudderTrimOrderText}
+          </text>
+          <text x={57.5} y={194.5} class={'FontSmallest Cyan'}>
+            °
+          </text>
+        </g>
+      </g>
+    );
+  }
 }
 
-class Limitations extends DisplayComponent<{}> {
-    render(): VNode {
-        return (
-            <g>
-                <text x={76} y={184} class='FontIntermediate Amber'>LIMITATIONS NOT AVAIL</text>
-            </g>
-        );
-    }
+class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscribable<boolean> }> {
+  private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
+
+  private static lineSubject(index: number, sub: EventSubscriber<FwsPfdSimvars>) {
+    return ConsumerSubject.create(sub.on(`limitations_line_${index}`).whenChanged(), 0).map(
+      (it) => EcamLimitations[padMemoCode(it)] ?? '',
+    );
+  }
+
+  private readonly limitationsLine = [
+    Limitations.lineSubject(1, this.sub),
+    Limitations.lineSubject(2, this.sub),
+    Limitations.lineSubject(3, this.sub),
+    Limitations.lineSubject(4, this.sub),
+    Limitations.lineSubject(5, this.sub),
+    Limitations.lineSubject(6, this.sub),
+    Limitations.lineSubject(7, this.sub),
+    Limitations.lineSubject(8, this.sub),
+  ];
+
+  render(): VNode {
+    return (
+      <g visibility={this.props.visible.map((it) => (it ? 'visible' : 'hidden'))}>
+        {this.limitationsLine.map((line, index) => (
+          <MemoFormatter x={70} y={165 + index * 7} message={line} />
+        ))}
+      </g>
+    );
+  }
 }
 
-class Memos extends DisplayComponent<{}> {
-    render(): VNode {
-        return (
-            <g>
-                <text x={12} y={170} class='FontIntermediate Amber'>MEMO NOT AVAIL</text>
-            </g>
-        );
-    }
+const padMemoCode = (code: number) => code.toString().padStart(9, '0');
+class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
+
+  private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memo_line_1').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
+  private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memo_line_2').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
+  private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memo_line_3').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
+  render(): VNode {
+    return (
+      <g>
+        <MemoFormatter x={4} y={165} message={this.memoLine1} />
+        <MemoFormatter x={4} y={172} message={this.memoLine2} />
+        <MemoFormatter x={4} y={179} message={this.memoLine3} />
+      </g>
+    );
+  }
 }

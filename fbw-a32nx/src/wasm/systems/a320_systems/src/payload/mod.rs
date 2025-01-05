@@ -70,7 +70,7 @@ pub struct A320Payload {
 impl A320Payload {
     // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
     pub const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
-    const A320_PAX: [PaxInfo<'_>; 4] = [
+    const A320_PAX: [PaxInfo<'static>; 4] = [
         PaxInfo {
             max_pax: 36,
             position: (20.5, 0., 5.),
@@ -97,7 +97,7 @@ impl A320Payload {
         },
     ];
 
-    const A320_CARGO: [CargoInfo<'_>; 4] = [
+    const A320_CARGO: [CargoInfo<'static>; 4] = [
         CargoInfo {
             max_cargo_kg: 3402.,
             position: (17.3, 0., 0.),
@@ -152,22 +152,24 @@ impl A320Payload {
                 Mass::new::<kilogram>(c.max_cargo_kg),
             )
         });
+        let default_boarding_agent = BoardingAgent::new(None, [0, 1, 2, 3]);
+
         let boarding_agents = [
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:0".to_owned()),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:0".to_owned())),
                 [0, 1, 2, 3],
             ),
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:1".to_owned()),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:1".to_owned())),
                 [0, 1, 2, 3],
             ),
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:2".to_owned()),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:2".to_owned())),
                 [3, 2, 1, 0],
             ),
         ];
 
-        let passenger_deck = PassengerDeck::new(pax, boarding_agents);
+        let passenger_deck = PassengerDeck::new(pax, default_boarding_agent, boarding_agents);
         let cargo_deck = CargoDeck::new(cargo);
 
         A320Payload {

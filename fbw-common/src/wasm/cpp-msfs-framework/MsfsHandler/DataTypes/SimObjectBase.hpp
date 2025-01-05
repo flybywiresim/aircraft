@@ -49,24 +49,24 @@ class SimObjectBase : public ManagedDataObjectBase {
    * @param maxAgeTime The maximum age of the value in sim time before it is updated from the sim by the requestUpdateFromSim() method.
    * @param maxAgeTicks The maximum age of the value in ticks before it is updated from the sim by the requestUpdateFromSim() method.
    */
-  SimObjectBase(HANDLE hSimConnect,
+  SimObjectBase(HANDLE             hSimConnect,
                 const std::string& varName,
-                DWORD dataDefId,
-                DWORD requestId,
-                UpdateMode updateMode = UpdateMode::NO_AUTO_UPDATE,
-                FLOAT64 maxAgeTime = 0.0,
-                UINT64 maxAgeTicks = 0)
+                DWORD              dataDefId,
+                DWORD              requestId,
+                UpdateMode         updateMode  = UpdateMode::NO_AUTO_UPDATE,
+                FLOAT64            maxAgeTime  = 0.0,
+                UINT64             maxAgeTicks = 0)
       : ManagedDataObjectBase(varName, updateMode, maxAgeTime, maxAgeTicks),
         hSimConnect(hSimConnect),
         dataDefId(dataDefId),
         requestId(requestId) {}
 
  public:
-  SimObjectBase() = delete;                                 // no default constructor
-  SimObjectBase(const SimObjectBase&) = delete;             // no copy constructor
+  SimObjectBase()                                = delete;  // no default constructor
+  SimObjectBase(const SimObjectBase&)            = delete;  // no copy constructor
   SimObjectBase& operator=(const SimObjectBase&) = delete;  // no copy assignment
-  SimObjectBase(SimObjectBase&&) = delete;                  // no move constructor
-  SimObjectBase& operator=(SimObjectBase&&) = delete;       // no move assignment
+  SimObjectBase(SimObjectBase&&)                 = delete;  // no move constructor
+  SimObjectBase& operator=(SimObjectBase&&)      = delete;  // no move assignment
 
   /**
    * Sends a data request to the sim to have the sim prepare the requested data.

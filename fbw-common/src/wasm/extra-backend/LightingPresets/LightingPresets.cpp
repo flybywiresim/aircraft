@@ -13,7 +13,7 @@ bool LightingPresets::initialize() {
   // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
   loadLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
   saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
-  presetLoadTime = dataManager->make_named_var("LIGHTING_PRESET_LOAD_TIME", UNITS.Number, UpdateMode::AUTO_READ);
+  presetLoadTime            = dataManager->make_named_var("LIGHTING_PRESET_LOAD_TIME", UNITS.Number, UpdateMode::AUTO_READ);
 
   // reset to default values
   loadLightingPresetRequest->setAndWriteToSim(0.0);
@@ -33,7 +33,6 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     return false;
   }
   // only run when aircraft is ready
-  // FIXME: It appears the the IS_READY signal is not reliable on the A380X yet esp. when using Quick Reload).
   if (!msfsHandler.getAircraftIsReadyVar()) {
     LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not ready");
     return true;
@@ -47,7 +46,7 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
   // load has priority in case both vars are set.
   if (const INT64 presetRequest = loadLightingPresetRequest->getAsInt64()) {
     if (readIniFile) {
-      LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(presetRequest) + " is being loaded.");
+      LOG_INFO(fmt::format("LightingPresets_A32NX: Lighting Preset: {} is being loaded.", presetRequest));
     }
     // loading a preset happens over a number of frames to allow the animation to keep up
     // loadLightingPreset() returns true when the preset is fully loaded
@@ -55,7 +54,7 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     if (loadLightingPreset(presetRequest)) {
       readIniFile = true;
       loadLightingPresetRequest->setAsInt64(0);
-      LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(presetRequest) + " successfully loaded.");
+      LOG_INFO(fmt::format("LightingPresets_A32NX: Lighting Preset: {} successfully loaded.", presetRequest));
     }
   } else if (saveLightingPresetRequest->getAsBool()) {
     saveLightingPreset(saveLightingPresetRequest->getAsInt64());
@@ -84,8 +83,8 @@ bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
     return false;
   }
   const FLOAT64 partialLoad = presetLoadTime->get() / deltaTime;
-  FLOAT64 stepSize = std::clamp((100 / partialLoad), MIN_STEP_SIZE, MAX_STEP_SIZE);
-  lastUpdate = msfsHandler.getTimeStamp();
+  FLOAT64       stepSize    = std::clamp((100 / partialLoad), MIN_STEP_SIZE, MAX_STEP_SIZE);
+  lastUpdate                = msfsHandler.getTimeStamp();
 
   // Read current values to be able to calculate intermediate values which are then applied to the aircraft
   // Once the intermediate values are identical to the target values then the load is finished
@@ -95,7 +94,7 @@ bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
     applyToAircraft();
     return finished;
   }
-  LOG_WARN("LightingPresets_A32NX: Loading Lighting Preset: " + std::to_string(loadPresetRequest) + " failed.");
+  LOG_WARN(fmt::format("LightingPresets_A32NX: Loading Lighting Preset: {} failed.", loadPresetRequest));
   return true;
 }
 
@@ -103,10 +102,10 @@ void LightingPresets::saveLightingPreset(INT64 savePresetRequest) {
   std::cout << "LightingPresets_A32NX: Save to Lighting Preset: " << savePresetRequest << std::endl;
   readFromAircraft();
   if (saveToStore(savePresetRequest)) {
-    LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(savePresetRequest) + " successfully saved.");
+    LOG_INFO(fmt::format("LightingPresets_A32NX: Lighting Preset: {} successfully saved.", savePresetRequest));
     return;
   }
-  LOG_WARN("LightingPresets_A32NX: Saving Lighting Preset: " + std::to_string(savePresetRequest) + " failed.");
+  LOG_WARN(fmt::format("LightingPresets_A32NX: Saving Lighting Preset: {} failed.", savePresetRequest));
 }
 
 bool LightingPresets::readFromStore(INT64 presetNr) {
@@ -118,13 +117,13 @@ bool LightingPresets::readFromStore(INT64 presetNr) {
     };
     readIniFile = false;
   }
-  loadFromIni(ini, "preset " + std::to_string(presetNr));
+  loadFromIni(ini, fmt::format("preset {}", presetNr));
   return true;
 }
 
 bool LightingPresets::saveToStore(INT64 presetNr) {
   // add/update iniSectionName
-  const std::string iniSectionName = "preset " + std::to_string(presetNr);
+  const std::string iniSectionName = fmt::format("preset {}", presetNr);
   saveToIni(ini, iniSectionName);
   return iniFile.write(ini, true);
 }
@@ -134,9 +133,9 @@ AircraftVariablePtr LightingPresets::createLightPotentiometerVar(int index) cons
 }
 
 FLOAT64 LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
-                                         const std::string& section,
-                                         const std::string& key,
-                                         const double defaultValue) {
+                                         const std::string&        section,
+                                         const std::string&        key,
+                                         const double              defaultValue) {
   if (auto value = ini.get(section).get(key); !value.empty()) {
     // As MSFS wasm does not support exceptions (try/catch) we can't use
     // std::stof here. Workaround with std::stringstreams.
@@ -144,7 +143,7 @@ FLOAT64 LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
     if (double result; input >> result) {
       return result;
     }
-    LOG_WARN("LightingPresets: reading ini value for [" + section + "] " + key + " = " + ini.get(section).get(key) + " failed.");
+    LOG_WARN(fmt::format("LightingPresets: reading ini value for [{}] {} = {} failed.", section, key, ini.get(section).get(key)));
   }
   return defaultValue;
 }

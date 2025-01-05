@@ -7,9 +7,13 @@ import { OnboardInformationTerminal } from './OnboardInformationTerminal';
 import { render } from '../Common';
 
 if (renderTarget) {
-    render(<Router><OnboardInformationTerminal /></Router>);
+  render(
+    <Router>
+      <OnboardInformationTerminal />
+    </Router>,
+  );
 }
 
 getRootElement().addEventListener('unload', () => {
-    ReactDOM.unmountComponentAtNode(renderTarget ?? document.body);
+  ReactDOM.unmountComponentAtNode(renderTarget ?? document.body);
 });

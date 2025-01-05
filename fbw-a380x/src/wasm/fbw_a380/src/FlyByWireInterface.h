@@ -3,11 +3,8 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
-#include "AdditionalData.h"
 #include "Arinc429.h"
 #include "CalculatedRadioReceiver.h"
-#include "EngineData.h"
-#include "FlightDataRecorder.h"
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
@@ -19,6 +16,8 @@
 #include "model/AutopilotLaws.h"
 #include "model/AutopilotStateMachine.h"
 #include "model/Autothrust.h"
+#include "recording/FlightDataRecorder.h"
+#include "recording/RecordingDataTypes.h"
 // #include "fcdc/Fcdc.h"
 #include "prim/Prim.h"
 #include "sec/Sec.h"
@@ -36,8 +35,8 @@ class FlyByWireInterface {
  private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\ModelConfiguration.ini";
 
-  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = 0.11;
-  static constexpr uint32_t LOW_PERFORMANCE_TIMER_THRESHOLD = 10;
+  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = (1.0 / 6.0);
+  static constexpr uint32_t LOW_PERFORMANCE_TIMER_THRESHOLD = (3 * 6);
   uint32_t lowPerformanceTimer = 0;
 
   double previousSimulationTime = 0;
@@ -111,8 +110,8 @@ class FlyByWireInterface {
 
   FailuresConsumer failuresConsumer;
 
-  AutopilotStateMachineModelClass autopilotStateMachine;
-  AutopilotStateMachineModelClass::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
+  AutopilotStateMachine autopilotStateMachine;
+  AutopilotStateMachine::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
   ap_raw_laws_input autopilotStateMachineOutput;
 
   AutopilotLawsModelClass autopilotLaws;
@@ -161,6 +160,11 @@ class FlyByWireInterface {
   double simulationTimeReady = 0.0;
   std::unique_ptr<LocalVariable> idIsReady;
   std::unique_ptr<LocalVariable> idStartState;
+
+  std::unique_ptr<LocalVariable> idLeftWingWheelSpeed_rpm;
+  std::unique_ptr<LocalVariable> idRightWingWheelSpeed_rpm;
+  std::unique_ptr<LocalVariable> idLeftBodyWheelSpeed_rpm;
+  std::unique_ptr<LocalVariable> idRightBodyWheelSpeed_rpm;
 
   bool developmentLocalVariablesEnabled = false;
   bool useCalculatedLocalizerAndGlideSlope = false;
@@ -312,7 +316,9 @@ class FlyByWireInterface {
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
-  AdditionalData additionalData = {};
+  BaseData baseData = {};
+  AircraftSpecificData aircraftSpecificData = {};
+
   std::unique_ptr<LocalVariable> idParkBrakeLeverPos;
   std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
   std::unique_ptr<LocalVariable> idBrakePedalRightPos;
@@ -320,39 +326,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutobrakeDecelLight;
   std::unique_ptr<LocalVariable> idMasterWarning;
   std::unique_ptr<LocalVariable> idMasterCaution;
-
-  EngineData engineData = {};
-  std::unique_ptr<LocalVariable> engineEngine1N2;
-  std::unique_ptr<LocalVariable> engineEngine2N2;
-  std::unique_ptr<LocalVariable> engineEngine1N1;
-  std::unique_ptr<LocalVariable> engineEngine2N1;
-  std::unique_ptr<LocalVariable> engineEngineIdleN1;
-  std::unique_ptr<LocalVariable> engineEngineIdleN2;
-  std::unique_ptr<LocalVariable> engineEngineIdleFF;
-  std::unique_ptr<LocalVariable> engineEngineIdleEGT;
-  std::unique_ptr<LocalVariable> engineEngine1EGT;
-  std::unique_ptr<LocalVariable> engineEngine2EGT;
-  std::unique_ptr<LocalVariable> engineEngine1Oil;
-  std::unique_ptr<LocalVariable> engineEngine2Oil;
-  std::unique_ptr<LocalVariable> engineEngine1TotalOil;
-  std::unique_ptr<LocalVariable> engineEngine2TotalOil;
-  std::unique_ptr<LocalVariable> engineEngine1FF;
-  std::unique_ptr<LocalVariable> engineEngine2FF;
-  std::unique_ptr<LocalVariable> engineEngine1PreFF;
-  std::unique_ptr<LocalVariable> engineEngine2PreFF;
-  std::unique_ptr<LocalVariable> engineEngineImbalance;
-  std::unique_ptr<LocalVariable> engineFuelUsedLeft;
-  std::unique_ptr<LocalVariable> engineFuelUsedRight;
-  std::unique_ptr<LocalVariable> engineFuelLeftPre;
-  std::unique_ptr<LocalVariable> engineFuelRightPre;
-  std::unique_ptr<LocalVariable> engineFuelAuxLeftPre;
-  std::unique_ptr<LocalVariable> engineFuelAuxRightPre;
-  std::unique_ptr<LocalVariable> engineFuelCenterPre;
-  std::unique_ptr<LocalVariable> engineEngineCycleTime;
-  std::unique_ptr<LocalVariable> engineEngine1State;
-  std::unique_ptr<LocalVariable> engineEngine2State;
-  std::unique_ptr<LocalVariable> engineEngine1Timer;
-  std::unique_ptr<LocalVariable> engineEngine2Timer;
 
   std::unique_ptr<LocalVariable> idFlapsHandleIndex;
   std::unique_ptr<LocalVariable> idFlapsHandlePercent;
@@ -382,6 +355,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idIsisLsActive;
 
   std::unique_ptr<LocalVariable> idWingAntiIce;
+
+  std::unique_ptr<LocalVariable> idFmGrossWeight;
 
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[3];
@@ -466,17 +441,22 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcPriorityFoGreen[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoRed[2];
 
-  // ELAC discrete input Lvars
+  // PRIM discrete input Lvars
   std::unique_ptr<LocalVariable> idPrimPushbuttonPressed[3];
 
-  // ELAC discrete output Lvars
+  // PRIM discrete output Lvars
   std::unique_ptr<LocalVariable> idPrimHealthy[3];
+  std::unique_ptr<LocalVariable> idPrimApAuthorised[3];
+  std::unique_ptr<LocalVariable> idPrimFctlLawStatusWord[3];
+  std::unique_ptr<LocalVariable> idPrimFeStatusWord[3];
 
   // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonPressed[3];
 
   // SEC discrete output Lvars
   std::unique_ptr<LocalVariable> idSecHealthy[3];
+  std::unique_ptr<LocalVariable> idSecRudderStatusWord[3];
+  std::unique_ptr<LocalVariable> idSecRudderTrimActualPos[3];
 
   // Flight controls solenoid valve energization Lvars
   std::unique_ptr<LocalVariable> idLeftInboardAileronSolenoidEnergized[2];
@@ -513,6 +493,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLowerRudderCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRudderTrimActiveModeCommanded[2];
   std::unique_ptr<LocalVariable> idRudderTrimCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRudderTrimActualPosition;
 
   // FAC discrete input Lvars
   std::unique_ptr<LocalVariable> idFacPushbuttonPressed[2];
@@ -545,8 +526,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFacDiscreteWord3[2];
   std::unique_ptr<LocalVariable> idFacDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFacDiscreteWord5[2];
-  std::unique_ptr<LocalVariable> idFacDeltaRRudderTrim[2];
-  std::unique_ptr<LocalVariable> idFacRudderTrimPos[2];
 
   std::unique_ptr<LocalVariable> idLeftAileronInwardPosition;
   std::unique_ptr<LocalVariable> idLeftAileronMiddlePosition;
@@ -566,6 +545,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
   std::unique_ptr<LocalVariable> idElecDcEhaBusPowered;
   std::unique_ptr<LocalVariable> idElecDc1BusPowered;
+  std::unique_ptr<LocalVariable> idRatContactorClosed;
+  std::unique_ptr<LocalVariable> idRatPosition;
 
   std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
   std::unique_ptr<LocalVariable> idHydGreenSystemPressure;
@@ -587,8 +568,8 @@ class FlyByWireInterface {
 
   bool updateRadioReceiver(double sampleTime);
 
-  bool updateEngineData(double sampleTime);
-  bool updateAdditionalData(double sampleTime);
+  bool updateBaseData(double sampleTime);
+  bool updateAircraftSpecificData(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);

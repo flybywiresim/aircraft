@@ -2,15 +2,15 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 export enum DatalinkStatusCode {
-    DlkAvail = 2,
-    DlkNotAvail = 1,
-    Inop = -1,
-    NotInstalled = 0
+  DlkAvail = 2,
+  DlkNotAvail = 1,
+  Inop = -1,
+  NotInstalled = 0,
 }
 
 export enum DatalinkModeCode {
-    AtcAoc = 1,
-    Aoc = 2,
-    Atc = 3,
-    None = 0
+  AtcAoc = 1,
+  Aoc = 2,
+  Atc = 3,
+  None = 0,
 }

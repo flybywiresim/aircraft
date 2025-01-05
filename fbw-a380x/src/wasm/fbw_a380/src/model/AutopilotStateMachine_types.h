@@ -1,7 +1,6 @@
-#ifndef RTW_HEADER_AutopilotStateMachine_types_h_
-#define RTW_HEADER_AutopilotStateMachine_types_h_
+#ifndef AutopilotStateMachine_types_h_
+#define AutopilotStateMachine_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
 #define DEFINED_TYPEDEF_FOR_ap_raw_time_
 
@@ -100,14 +99,15 @@ struct ap_raw_data
 #ifndef DEFINED_TYPEDEF_FOR_fm_requested_vertical_mode_
 #define DEFINED_TYPEDEF_FOR_fm_requested_vertical_mode_
 
-typedef enum {
-  fm_requested_vertical_mode_NONE = 0,
-  fm_requested_vertical_mode_SPEED_THRUST,
-  fm_requested_vertical_mode_VPATH_THRUST,
-  fm_requested_vertical_mode_VPATH_SPEED,
-  fm_requested_vertical_mode_FPA_SPEED,
-  fm_requested_vertical_mode_VS_SPEED
-} fm_requested_vertical_mode;
+enum class fm_requested_vertical_mode
+  : int32_T {
+  NONE = 0,
+  SPEED_THRUST,
+  VPATH_THRUST,
+  VPATH_SPEED,
+  FPA_SPEED,
+  VS_SPEED
+};
 
 #endif
 
@@ -297,35 +297,37 @@ struct ap_sm_data_computed
 #ifndef DEFINED_TYPEDEF_FOR_lateral_mode_
 #define DEFINED_TYPEDEF_FOR_lateral_mode_
 
-typedef enum {
-  lateral_mode_NONE = 0,
-  lateral_mode_HDG = 10,
-  lateral_mode_TRACK = 11,
-  lateral_mode_NAV = 20,
-  lateral_mode_LOC_CPT = 30,
-  lateral_mode_LOC_TRACK = 31,
-  lateral_mode_LAND = 32,
-  lateral_mode_FLARE = 33,
-  lateral_mode_ROLL_OUT = 34,
-  lateral_mode_RWY = 40,
-  lateral_mode_RWY_TRACK = 41,
-  lateral_mode_GA_TRACK = 50
-} lateral_mode;
+enum class lateral_mode
+  : int32_T {
+  NONE = 0,
+  HDG = 10,
+  TRACK = 11,
+  NAV = 20,
+  LOC_CPT = 30,
+  LOC_TRACK = 31,
+  LAND = 32,
+  FLARE = 33,
+  ROLL_OUT = 34,
+  RWY = 40,
+  RWY_TRACK = 41,
+  GA_TRACK = 50
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_lateral_law_
 #define DEFINED_TYPEDEF_FOR_lateral_law_
 
-typedef enum {
-  lateral_law_NONE = 0,
-  lateral_law_HDG,
-  lateral_law_TRACK,
-  lateral_law_HPATH,
-  lateral_law_LOC_CPT,
-  lateral_law_LOC_TRACK,
-  lateral_law_ROLL_OUT
-} lateral_law;
+enum class lateral_law
+  : int32_T {
+  NONE = 0,
+  HDG,
+  TRACK,
+  HPATH,
+  LOC_CPT,
+  LOC_TRACK,
+  ROLL_OUT
+};
 
 #endif
 
@@ -346,70 +348,74 @@ struct ap_lateral_output
 #ifndef DEFINED_TYPEDEF_FOR_vertical_mode_
 #define DEFINED_TYPEDEF_FOR_vertical_mode_
 
-typedef enum {
-  vertical_mode_NONE = 0,
-  vertical_mode_ALT = 10,
-  vertical_mode_ALT_CPT = 11,
-  vertical_mode_OP_CLB = 12,
-  vertical_mode_OP_DES = 13,
-  vertical_mode_VS = 14,
-  vertical_mode_FPA = 15,
-  vertical_mode_ALT_CST = 20,
-  vertical_mode_ALT_CST_CPT = 21,
-  vertical_mode_CLB = 22,
-  vertical_mode_DES = 23,
-  vertical_mode_FINAL_DES = 24,
-  vertical_mode_GS_CPT = 30,
-  vertical_mode_GS_TRACK = 31,
-  vertical_mode_LAND = 32,
-  vertical_mode_FLARE = 33,
-  vertical_mode_ROLL_OUT = 34,
-  vertical_mode_SRS = 40,
-  vertical_mode_SRS_GA = 41,
-  vertical_mode_TCAS = 50
-} vertical_mode;
+enum class vertical_mode
+  : int32_T {
+  NONE = 0,
+  ALT = 10,
+  ALT_CPT = 11,
+  OP_CLB = 12,
+  OP_DES = 13,
+  VS = 14,
+  FPA = 15,
+  ALT_CST = 20,
+  ALT_CST_CPT = 21,
+  CLB = 22,
+  DES = 23,
+  FINAL_DES = 24,
+  GS_CPT = 30,
+  GS_TRACK = 31,
+  LAND = 32,
+  FLARE = 33,
+  ROLL_OUT = 34,
+  SRS = 40,
+  SRS_GA = 41,
+  TCAS = 50
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_requested_mode_
 #define DEFINED_TYPEDEF_FOR_athr_requested_mode_
 
-typedef enum {
-  athr_requested_mode_NONE = 0,
-  athr_requested_mode_SPEED,
-  athr_requested_mode_THRUST_IDLE,
-  athr_requested_mode_THRUST_CLB,
-  athr_requested_mode_RETARD
-} athr_requested_mode;
+enum class athr_requested_mode
+  : int32_T {
+  NONE = 0,
+  SPEED,
+  THRUST_IDLE,
+  THRUST_CLB,
+  RETARD
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_vertical_law_
 #define DEFINED_TYPEDEF_FOR_vertical_law_
 
-typedef enum {
-  vertical_law_NONE = 0,
-  vertical_law_ALT_HOLD,
-  vertical_law_ALT_ACQ,
-  vertical_law_SPD_MACH,
-  vertical_law_VS,
-  vertical_law_FPA,
-  vertical_law_GS,
-  vertical_law_FLARE,
-  vertical_law_SRS,
-  vertical_law_VPATH
-} vertical_law;
+enum class vertical_law
+  : int32_T {
+  NONE = 0,
+  ALT_HOLD,
+  ALT_ACQ,
+  SPD_MACH,
+  VS,
+  FPA,
+  GS,
+  FLARE,
+  SRS,
+  VPATH
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_tcas_sub_mode_
 #define DEFINED_TYPEDEF_FOR_tcas_sub_mode_
 
-typedef enum {
+enum class tcas_sub_mode
+  : int32_T {
   NONE = 0,
   ALT,
   ALT_CPT
-} tcas_sub_mode;
+};
 
 #endif
 

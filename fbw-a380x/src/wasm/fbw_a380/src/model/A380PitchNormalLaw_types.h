@@ -1,6 +1,31 @@
-#ifndef RTW_HEADER_A380PitchNormalLaw_types_h_
-#define RTW_HEADER_A380PitchNormalLaw_types_h_
+#ifndef A380PitchNormalLaw_types_h_
+#define A380PitchNormalLaw_types_h_
 #include "rtwtypes.h"
+#ifndef DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
+#define DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
+
+struct base_pitch_data_computed
+{
+  real_T eta_trim_deg_limit_lo;
+  real_T eta_trim_deg_limit_up;
+  real_T delta_eta_deg;
+  real_T in_flight;
+  real_T in_rotation;
+  real_T in_flare;
+  real_T in_flight_gain;
+  real_T in_rotation_gain;
+  real_T in_flare_gain;
+  real_T nz_limit_up_g;
+  real_T nz_limit_lo_g;
+  boolean_T eta_trim_deg_should_freeze;
+  boolean_T eta_trim_deg_reset;
+  real_T eta_trim_deg_reset_deg;
+  boolean_T eta_trim_deg_should_write;
+  real_T eta_trim_deg_rate_limit_up_deg_s;
+  real_T eta_trim_deg_rate_limit_lo_deg_s;
+};
+
+#endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
@@ -55,34 +80,6 @@ struct pitch_normal_input
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
-#define DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
-
-struct base_pitch_data_computed
-{
-  real_T eta_trim_deg_limit_lo;
-  real_T eta_trim_deg_limit_up;
-  real_T delta_eta_deg;
-  real_T in_flight;
-  real_T in_rotation;
-  real_T in_flare;
-  real_T in_flight_gain;
-  real_T in_rotation_gain;
-  real_T nz_limit_up_g;
-  real_T nz_limit_lo_g;
-  boolean_T eta_trim_deg_should_freeze;
-  boolean_T eta_trim_deg_reset;
-  real_T eta_trim_deg_reset_deg;
-  boolean_T eta_trim_deg_should_write;
-  real_T eta_trim_deg_rate_limit_up_deg_s;
-  real_T eta_trim_deg_rate_limit_lo_deg_s;
-  real_T flare_Theta_deg;
-  real_T flare_Theta_c_deg;
-  real_T flare_Theta_c_rate_deg_s;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_rotation_
 #define DEFINED_TYPEDEF_FOR_base_pitch_rotation_
 
@@ -104,6 +101,16 @@ struct base_pitch_normal
   real_T protection_alpha_c_deg;
   real_T protection_V_c_kn;
   real_T eta_dot_deg_s;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_pitch_flare_
+#define DEFINED_TYPEDEF_FOR_base_pitch_flare_
+
+struct base_pitch_flare
+{
+  real_T eta_deg;
 };
 
 #endif
@@ -150,6 +157,7 @@ struct pitch_normal_output
   base_pitch_data_computed data_computed;
   base_pitch_rotation law_rotation;
   base_pitch_normal law_normal;
+  base_pitch_flare law_flare;
   base_pitch_law_output vote;
   base_pitch_integrated integrated;
   base_pitch_output output;

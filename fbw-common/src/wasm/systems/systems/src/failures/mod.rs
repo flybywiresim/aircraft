@@ -1,12 +1,17 @@
-use crate::air_conditioning::{acs_controller::AcscId, ZoneType};
+use crate::air_conditioning::{
+    acs_controller::AcscId, cabin_pressure_controller::CpcId, Channel, VcmId, ZoneType,
+};
+use crate::air_conditioning::{FdacId, OcsmId};
+use crate::integrated_modular_avionics::core_processing_input_output_module::CpiomId;
 use crate::shared::{
-    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
-    HydraulicColor, LgciuId, ProximityDetectorId,
+    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, FireDetectionLoopID,
+    FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FailureType {
+    // ATA21
     Acsc(AcscId),
     CabinFan(usize),
     HotAir(usize),
@@ -14,23 +19,50 @@ pub enum FailureType {
     TrimAirFault(ZoneType),
     TrimAirHighPressure,
     GalleyFans,
+    CpcFault(CpcId),
+    OutflowValveFault,
+    SafetyValveFault,
+    RapidDecompression,
+    Fdac(FdacId, Channel),
+    Tadd(Channel),
+    Vcm(VcmId, Channel),
+    OcsmAutoPartition(OcsmId),
+    Ocsm(OcsmId, Channel),
+    AgsApp(CpiomId),
+    TcsApp(CpiomId),
+    VcsApp(CpiomId),
+    CpcsApp(CpiomId),
+    FwdIsolValve,
+    FwdExtractFan,
+    BulkIsolValve,
+    BulkExtractFan,
+    CargoHeater,
+    // ATA24
     Generator(usize),
     ApuGenerator(usize),
     TransformerRectifier(usize),
     StaticInverter,
     ElectricalBus(ElectricalBusType),
+    // ATA26
+    SetOnFire(FireDetectionZone),
+    FireDetectionLoop(FireDetectionLoopID, FireDetectionZone),
+    // ATA29
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),
     ReservoirReturnLeak(HydraulicColor),
     EnginePumpOverheat(AirbusEngineDrivenPumpId),
     ElecPumpOverheat(AirbusElectricPumpId),
+    // ATA32
     LgciuPowerSupply(LgciuId),
     LgciuInternalError(LgciuId),
     GearProxSensorDamage(ProximityDetectorId),
     GearActuatorJammed(GearActuatorId),
     BrakeHydraulicLeak(HydraulicColor),
     BrakeAccumulatorGasLeak,
+    // ATA34
     RadioAltimeter(usize),
+    RadioAntennaInterrupted(usize),
+    RadioAntennaDirectCoupling(usize),
 }
 
 pub struct Failure {
@@ -47,6 +79,10 @@ impl Failure {
 
     pub fn is_active(&self) -> bool {
         self.is_active
+    }
+
+    pub fn failure_type(&self) -> FailureType {
+        self.failure_type
     }
 }
 impl SimulationElement for Failure {

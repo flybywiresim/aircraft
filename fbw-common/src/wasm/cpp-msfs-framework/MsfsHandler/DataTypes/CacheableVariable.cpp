@@ -10,7 +10,7 @@
 
 FLOAT64 CacheableVariable::get() const {
   if (cachedValue.has_value()) {
-    if (dirty) {
+    if (_warnIfDirty && dirty) {
       LOG_WARN("CacheableVariable::get() called on " + name + " but the value is dirty");
     }
     return cachedValue.value();
@@ -26,7 +26,6 @@ FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) 
     return cachedValue.value();
   }
   LOG_TRACE("CacheableVariable::updateFromSim() - read from sim " + this->name + " " + str());
-  // update the value from the sim
   updateStamps(timeStamp, tickCounter);
   return readFromSim();
 }
@@ -34,7 +33,7 @@ FLOAT64 CacheableVariable::updateFromSim(FLOAT64 timeStamp, UINT64 tickCounter) 
 FLOAT64 CacheableVariable::readFromSim() {
   const FLOAT64 fromSim = rawReadFromSim();
   // compare the value from the sim with the cached value
-  bool changed = skipChangeCheckFlag || !cachedValue.has_value() || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
+  const bool changed = skipChangeCheckFlag || !cachedValue.has_value() || !helper::Math::almostEqual(fromSim, cachedValue.value(), epsilon);
   if (changed)
     cachedValue = fromSim;
   dirty = false;
@@ -47,7 +46,7 @@ void CacheableVariable::set(FLOAT64 value) {
     return;
   }
   cachedValue = value;
-  dirty = true;
+  dirty       = true;
   setChanged(true);
 }
 

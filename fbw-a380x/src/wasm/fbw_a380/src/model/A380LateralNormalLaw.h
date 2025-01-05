@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380LateralNormalLaw_h_
-#define RTW_HEADER_A380LateralNormalLaw_h_
+#ifndef A380LateralNormalLaw_h_
+#define A380LateralNormalLaw_h_
 #include "rtwtypes.h"
 #include "A380LateralNormalLaw_types.h"
 #include <cstring>
@@ -20,24 +20,24 @@ class A380LateralNormalLaw final
 
   struct D_Work_A380LateralNormalLaw_T {
     real_T Delay_DSTATE;
-    real_T Delay_DSTATE_d;
+    real_T Delay1_DSTATE;
+    real_T Delay_DSTATE_o;
     real_T pY;
     real_T pU;
-    real_T pY_f;
-    real_T pY_h;
+    real_T pY_m;
+    real_T pY_a;
     boolean_T icLoad;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-    boolean_T pY_not_empty_o;
-    boolean_T pY_not_empty_l;
+    boolean_T pY_not_empty_j;
+    boolean_T pY_not_empty_a;
     rtDW_TransportDelay_A380LateralNormalLaw_T sf_TransportDelay_p;
     rtDW_TransportDelay_A380LateralNormalLaw_T sf_TransportDelay;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_go;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_g;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_l;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_i;
-    rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_dw;
-    rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_n;
+    rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_k;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter;
   };
 
@@ -47,12 +47,13 @@ class A380LateralNormalLaw final
     real_T ScheduledGain_BreakpointsForDimension1[9];
     real_T ScheduledGain_BreakpointsForDimension1_a[7];
     real_T ScheduledGain1_BreakpointsForDimension1_j[7];
-    real_T ScheduledGain_BreakpointsForDimension1_j[5];
+    real_T ScheduledGain_BreakpointsForDimension1_b[5];
     real_T LagFilter_C1;
+    real_T DiscreteDerivativeVariableTs_Gain;
     real_T DiscreteTimeIntegratorVariableTs_Gain;
     real_T RateLimiterVariableTs_InitialCondition;
     real_T RateLimiterVariableTs1_InitialCondition;
-    real_T RateLimiterVariableTs_InitialCondition_m;
+    real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterVariableTs2_InitialCondition;
     real_T RateLimiterVariableTs1_InitialCondition_m;
     real_T RateLimiterVariableTs4_InitialCondition;
@@ -65,11 +66,10 @@ class A380LateralNormalLaw final
     real_T ScheduledGain_Table[9];
     real_T ScheduledGain_Table_e[7];
     real_T ScheduledGain1_Table_m[7];
-    real_T ScheduledGain_Table_i[5];
+    real_T ScheduledGain_Table_h[5];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs1_lo;
-    real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterVariableTs1_lo_n;
     real_T RateLimiterVariableTs4_lo;
@@ -78,7 +78,6 @@ class A380LateralNormalLaw final
     real_T RateLimiterVariableTs1_lo_k;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs1_up;
-    real_T RateLimiterVariableTs_up_m;
     real_T RateLimiterVariableTs2_up;
     real_T RateLimiterVariableTs1_up_j;
     real_T RateLimiterVariableTs4_up;
@@ -104,12 +103,10 @@ class A380LateralNormalLaw final
     real_T Gain1_Gain;
     real_T Constant_Value_l;
     real_T Constant_Value_m;
-    real_T Gain1_Gain_b;
-    real_T Saturation_UpperSat_a;
-    real_T Saturation_LowerSat_o;
-    real_T Delay_InitialCondition;
-    real_T Saturation_UpperSat_g;
-    real_T Saturation_LowerSat_e;
+    real_T Gain1_Gain_o;
+    real_T Saturation3_UpperSat;
+    real_T Saturation3_LowerSat;
+    real_T Delay1_InitialCondition;
     real_T Saturation_UpperSat_c;
     real_T Saturation_LowerSat_l;
     real_T Constant_Value_o;
@@ -143,15 +140,17 @@ class A380LateralNormalLaw final
     real_T Saturation_UpperSat_h;
     real_T Saturation_LowerSat_a;
     real_T Constant_Value_j;
-    real_T Gain1_Gain_n;
-    real_T Gain1_Gain_c;
-    real_T Gain1_Gain_bq;
-    real_T Gain_Gain_p;
+    real_T Gain1_Gain_j;
+    real_T Gain1_Gain_h;
+    real_T Gain1_Gain_d;
+    real_T Gain_Gain_cw;
+    real_T Limiterxi_UpperSat;
+    real_T Limiterxi_LowerSat;
     real_T Gain5_Gain;
     real_T Switch_Threshold;
-    real_T Saturation3_UpperSat;
-    real_T Saturation3_LowerSat;
-    real_T Saturation_UpperSat_ai;
+    real_T Saturation3_UpperSat_o;
+    real_T Saturation3_LowerSat_o;
+    real_T Saturation_UpperSat_a;
     real_T Saturation_LowerSat_m;
     real_T Gain1_Gain_m;
     real_T Saturation2_UpperSat_n;

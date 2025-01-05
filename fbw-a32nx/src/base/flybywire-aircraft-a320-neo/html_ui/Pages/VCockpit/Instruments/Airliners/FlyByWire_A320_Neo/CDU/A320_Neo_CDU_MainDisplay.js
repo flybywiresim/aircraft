@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     constructor() {
         super(...arguments);
@@ -51,7 +55,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             ATSU: false,
             CFDS: false,
             FMGC: false,
-        }
+        };
         this._lastAtsuMessageCount = 0;
         this.leftBrightness = 0;
         this.rightBrightness = 0;
@@ -531,7 +535,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.sendUpdate();
         }
     }
-
     checkAocTimes() {
         if (!this.aocTimes.off) {
             if (this.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF && !this.isOnGround()) {
@@ -550,7 +553,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         if (!this.aocTimes.on) {
-            if (this.aocTimes.off && !this.isOnGround()) {
+            if (this.aocTimes.off && this.isOnGround()) {
                 // On: remains blank until Landing time
                 this.aocTimes.on = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
@@ -800,7 +803,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (template[13]) {
             this.setScratchpadText(template[13][0]);
         }
-        SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.currentFlightPlanWaypointIndex).then();
+
         // Apply formatting helper to title page, lines and labels
         if (this._titleElement !== null) {
             this._titleElement.innerHTML = this._formatCell(this._titleElement.innerHTML);
@@ -1431,31 +1434,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
-     * Used for changes to the flight plan
-     * @returns {number} dynamic delay in ms between ~300 and up to +2000 (depending on additional conditions)
-     */
-    getDelayRouteChange() {
-        if (this._zeroFuelWeightZFWCGEntered && this._blockFuelEntered) {
-            return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
-        } else {
-            return 300 + this.flightPlanManager.getWaypointsCount() * Math.random() + this.flightPlanManager.getDestination().cumulativeDistanceInFP * Math.random();
-        }
-    }
-
-    /**
      * Used for calculation time for fuel pred page
      * @returns {number} dynamic delay in ms between 2000ms and 4000ms
      */
     getDelayFuelPred() {
-        return 225 * this.flightPlanManager.getWaypointsCount() + (this.flightPlanManager.getDestination().cumulativeDistanceInFP / 2);
+        return Math.max(2000, Math.min(4000, 225 * this.getActivePlanLegCount()));
     }
 
     /**
-     * Used to load wind data into fms
+     * Used to load wind data into sfms
      * @returns {number} dynamic delay in ms dependent on amount of waypoints
      */
     getDelayWindLoad() {
-        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2);
+        return Math.pow(this.getActivePlanLegCount(), 2);
     }
 
     /**

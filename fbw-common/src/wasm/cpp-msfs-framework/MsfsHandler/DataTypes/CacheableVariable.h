@@ -16,6 +16,8 @@
 /**
  * @brief Virtual base class for sim variables like named variables, aircraft variables that support value caching.
  *
+ * These variable are always stored as FLOAT64 values.
+ *
  * Specialized classes must implement the rawReadFromSim and rawWriteToSim methods and can
  * overwrite any other method if the default implementation is not sufficient.
  */
@@ -49,6 +51,13 @@ class CacheableVariable : public ManagedDataObjectBase {
   bool dirty = false;
 
   /**
+   * Flag to indicate if a warning should be printed to std::cerr if the variable is read via get()
+   * but is dirty (has been written to after read from sim) and has not been written to the sim yet.
+   */
+  bool _warnIfDirty = false;
+
+ protected:
+  /**
    * The epsilon required to change a variable after a read from the sim. This is used to
    * set the changed flag and cache the new value if it is different by >epsilon from the last
    * cached value.
@@ -59,7 +68,6 @@ class CacheableVariable : public ManagedDataObjectBase {
    * The sim's data ID for the variable
    */
   ID dataID = -1;
-
 
   /**
    * Constructor
@@ -73,11 +81,11 @@ class CacheableVariable : public ManagedDataObjectBase {
       : ManagedDataObjectBase(varName, updateMode, maxAgeTime, maxAgeTicks), unit(unit) {}
 
  public:
-  CacheableVariable() = delete;                                     // no default constructor
-  CacheableVariable(const CacheableVariable&) = delete;             // no copy constructor
+  CacheableVariable()                                    = delete;  // no default constructor
+  CacheableVariable(const CacheableVariable&)            = delete;  // no copy constructor
   CacheableVariable& operator=(const CacheableVariable&) = delete;  // no copy assignment
-  CacheableVariable(CacheableVariable&&) = delete;                  // no move constructor
-  CacheableVariable& operator=(CacheableVariable&&) = delete;       // no move assignment
+  CacheableVariable(CacheableVariable&&)                 = delete;  // no move constructor
+  CacheableVariable& operator=(CacheableVariable&&)      = delete;  // no move assignment
 
   /**
    * Returns the cached value or the default value (FLOAT64{}) if the cache is empty.<p/>
@@ -85,14 +93,14 @@ class CacheableVariable : public ManagedDataObjectBase {
    * Prints an error to std::cerr if the cache is empty.<p/>
    *
    * If the value has been set by the set() method since the last read from the sim (is dirty)
-   * but has not been written to the sim yet an error message is printed to std::cerr.
-   * (MSFS does not allow exceptions)
+   * but has not been written to the sim yet an error message is printed to std::cerr if warnIfDirty
+   * is true. (MSFS does not allow exceptions)
    * @return cached value or default value
    */
   [[nodiscard]] FLOAT64 get() const;
 
   /**
-   * Reads the value from the sim if the cached value is older than the max age (time and ticks).<p/>
+   * Reads the value from the sim if the cached value is older than the max age (time or ticks).<p/>
    *
    * If a value has already been read during one tick it will therefore not be read again as the
    * variable's timeStamp and tickStamp will not be older than the current time and tick.<p/>
@@ -134,6 +142,8 @@ class CacheableVariable : public ManagedDataObjectBase {
   /**
    * Sets the cache value and marks the variable as dirty.<p/>
    * Does not write the value to the sim or update the time and tick stamps.
+   * Check this variable's updateMode to see if the value will be written automatically to the sim or
+   * if you need to write it manually.
    * @param value the value to set
    */
   virtual void set(FLOAT64 value);
@@ -182,6 +192,20 @@ class CacheableVariable : public ManagedDataObjectBase {
    * @return true if the value has been changed via set() since the last read from the sim.
    */
   [[nodiscard]] bool isDirty() const { return dirty; }
+
+  /**
+   * @brief If true a warning will be printed to std::cerr if the variable is read via get()
+   *        but is dirty (has been written to after read from sim) and has not been written to the sim yet.
+   * @return true if a warning will be printed
+   */
+  [[nodiscard]] bool warnIfDirty() const { return _warnIfDirty; }
+
+  /**
+   * @brief If true a warning will be printed to std::cerr if the variable is read via get()
+   *        but is dirty (has been written to after read from sim) and has not been written to the sim yet.
+   * @param warnIfDirty true if a warning should be printed, false otherwise
+   */
+  void setWarnIfDirty(bool warnIfDirty) { CacheableVariable::_warnIfDirty = warnIfDirty; }
 
   /**
    * OBS: This method only does a simple static cast to a bool. Make sure that a cast from

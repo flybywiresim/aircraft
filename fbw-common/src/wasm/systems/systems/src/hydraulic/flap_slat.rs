@@ -18,6 +18,7 @@ use uom::si::{
 };
 
 use std::time::Duration;
+use uom::si::time::second;
 
 /// Simple hydraulic motor directly driven with a speed.
 /// Speed is smoothly rising or lowering to simulate transients states
@@ -53,7 +54,12 @@ impl FlapSlatHydraulicMotor {
 
     fn update_speed(&mut self, context: &UpdateContext, speed: AngularVelocity) {
         // Low pass filter to simulate motors spool up and down. Will ease pressure impact on transients
-        self.speed.update(context.delta(), speed);
+        if !context.aircraft_preset_quick_mode() {
+            self.speed.update(context.delta(), speed);
+        } else {
+            // This is for the Aircraft Presets to expedite the setting of a preset.
+            self.speed.update(Duration::from_secs(2), speed);
+        }
 
         // Forcing 0 speed at low speed to avoid endless spool down due to low pass filter
         if self.speed.output().get::<revolution_per_minute>() < Self::MIN_MOTOR_RPM
@@ -71,8 +77,14 @@ impl FlapSlatHydraulicMotor {
                 / 231.,
         );
 
-        self.total_volume_to_actuator += self.current_flow * context.delta_as_time();
-        self.total_volume_returned_to_reservoir += self.current_flow * context.delta_as_time();
+        if !context.aircraft_preset_quick_mode() {
+            self.total_volume_to_actuator += self.current_flow * context.delta_as_time();
+            self.total_volume_returned_to_reservoir += self.current_flow * context.delta_as_time();
+        } else {
+            // This is for the Aircraft Presets to expedite the setting of a preset.
+            self.total_volume_to_actuator += self.current_flow * Time::new::<second>(2.);
+            self.total_volume_returned_to_reservoir += self.current_flow * Time::new::<second>(2.);
+        }
     }
 
     fn torque(&self, pressure: Pressure) -> Torque {
@@ -112,8 +124,12 @@ impl Actuator for FlapSlatHydraulicMotor {
 pub struct FlapSlatAssembly {
     position_left_percent_id: VariableIdentifier,
     position_right_percent_id: VariableIdentifier,
+
     angle_left_id: VariableIdentifier,
     angle_right_id: VariableIdentifier,
+
+    animation_left_id: VariableIdentifier,
+    animation_right_id: VariableIdentifier,
     is_moving_id: VariableIdentifier,
 
     surface_control_arm_position: Angle,
@@ -170,6 +186,9 @@ impl FlapSlatAssembly {
 
             angle_left_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
             angle_right_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
+
+            animation_left_id: context.get_identifier(format!("LEFT_{}_ANIMATION_POSITION", id)),
+            animation_right_id: context.get_identifier(format!("RIGHT_{}_ANIMATION_POSITION", id)),
 
             is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
@@ -234,14 +253,26 @@ impl FlapSlatAssembly {
 
     fn update_speed_and_position(&mut self, context: &UpdateContext) {
         if self.final_requested_synchro_gear_position > self.position_feedback() {
-            self.surface_control_arm_position += Angle::new::<radian>(
-                self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
-            );
+            if !context.aircraft_preset_quick_mode() {
+                self.surface_control_arm_position += Angle::new::<radian>(
+                    self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
+                );
+            } else {
+                // This is for the Aircraft Presets to expedite the setting of a preset.
+                self.surface_control_arm_position +=
+                    Angle::new::<radian>(self.max_speed().get::<radian_per_second>() * 2.);
+            }
             self.speed = self.max_speed();
         } else if self.final_requested_synchro_gear_position < self.position_feedback() {
-            self.surface_control_arm_position -= Angle::new::<radian>(
-                self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
-            );
+            if !context.aircraft_preset_quick_mode() {
+                self.surface_control_arm_position -= Angle::new::<radian>(
+                    self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
+                );
+            } else {
+                // This is for the Aircraft Presets to expedite the setting of a preset.
+                self.surface_control_arm_position -=
+                    Angle::new::<radian>(self.max_speed().get::<radian_per_second>() * 2.);
+            }
             self.speed = -self.max_speed();
         } else {
             self.speed = AngularVelocity::new::<radian_per_second>(0.);
@@ -318,8 +349,14 @@ impl FlapSlatAssembly {
         }
 
         // Final max speed filtered to simulate smooth movements
-        self.current_max_speed
-            .update(context.delta(), new_theoretical_max_speed);
+        if !context.aircraft_preset_quick_mode() {
+            self.current_max_speed
+                .update(context.delta(), new_theoretical_max_speed);
+        } else {
+            // This is for the Aircraft Presets to expedite the setting of a preset.
+            self.current_max_speed
+                .update(Duration::from_secs(2), new_theoretical_max_speed);
+        }
     }
 
     fn max_speed_factor_from_pressure(
@@ -501,6 +538,11 @@ impl SimulationElement for FlapSlatAssembly {
         let flaps_surface_angle = self.flap_surface_angle();
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
         writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
+
+        let flaps_fppu_percent =
+            (self.position_feedback() / self.max_synchro_gear_position).get::<percent>();
+        writer.write(&self.animation_left_id, flaps_fppu_percent);
+        writer.write(&self.animation_right_id, flaps_fppu_percent);
 
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }

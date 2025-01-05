@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<svg id="Bisiness_Class" data-name="Bisiness Class" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2 {
+        stroke: #fff;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2 {
+        fill: #249700;
+      }
+    </style>
+  </defs>
+  <g id="Business_Shelf">
+    <polygon id="Seat" class="cls-2" points="51.42 36 51.42 65.35 6.11 65.35 6.11 6.65 65.89 6.65 65.89 36 51.42 36"/>
+    <path id="Shelf" class="cls-1" d="m6.11,36h45.31s-22.65.54-22.65,29.35"/>
+    <line id="Seat_Line" data-name="Seat Line" class="cls-1" x1="57.32" y1="36" x2="57.32" y2="6.65"/>
+  </g>
+</svg>

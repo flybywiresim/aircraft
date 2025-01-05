@@ -1,0 +1,129 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <!--
+    Template for the turbine engines
+
+    PROVIDE GLOBALLY:
+
+    -->
+    <Template Name="A380X_ENGINE_Turbine_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <MIN_N1_PCT_FOR_BLUR1>10</MIN_N1_PCT_FOR_BLUR1>
+            <MIN_N1_PCT_FOR_BLUR2>30</MIN_N1_PCT_FOR_BLUR2>
+            <MIN_N1_PCT_FOR_BLUR3>50</MIN_N1_PCT_FOR_BLUR3>
+            <MIN_N1_PCT_FOR_BLUR4>75</MIN_N1_PCT_FOR_BLUR4>
+            <FROSTED>False</FROSTED>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="A380X_ENGINE_Turbine_SubTemplate"/>
+    </Template>
+    <Template Name="A380X_ENGINE_Turbine_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>ENGINE_Turbine_#ID#</ANIM_NAME>
+            <STILL_1_NODE_ID>FAN_BLADE_STILL_#ID#</STILL_1_NODE_ID>
+            <BLURRED1_1_NODE_ID>FAN_BLADE_BLUR1_#ID#</BLURRED1_1_NODE_ID>
+            <BLURRED2_1_NODE_ID>FAN_BLADE_BLUR2_#ID#</BLURRED2_1_NODE_ID>
+            <BLURRED3_1_NODE_ID>FAN_BLADE_BLUR3_#ID#</BLURRED3_1_NODE_ID>
+            <BLURRED4_1_NODE_ID>FAN_BLADE_BLUR4_#ID#</BLURRED4_1_NODE_ID>
+            <STILL_2_NODE_ID>SPINNER_STILL_#ID#</STILL_2_NODE_ID>
+            <BLURRED1_2_NODE_ID>SPINNER_BLUR1_#ID#</BLURRED1_2_NODE_ID>
+            <BLURRED2_2_NODE_ID>SPINNER_BLUR2_#ID#</BLURRED2_2_NODE_ID>
+			<BLURRED3_2_NODE_ID>SPINNER_BLUR3_#ID#</BLURRED3_2_NODE_ID>
+			<BLURRED4_2_NODE_ID>SPINNER_BLUR4_#ID#</BLURRED4_2_NODE_ID>
+            <STILL_NODE_ID_COUNT>2</STILL_NODE_ID_COUNT>
+            <BLURRED1_NODE_ID_COUNT>2</BLURRED1_NODE_ID_COUNT>
+            <BLURRED2_NODE_ID_COUNT>2</BLURRED2_NODE_ID_COUNT>
+            <BLURRED3_NODE_ID_COUNT>2</BLURRED3_NODE_ID_COUNT>
+            <BLURRED4_NODE_ID_COUNT>2</BLURRED4_NODE_ID_COUNT>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Anim">
+            <!-- 385 is used for best visual appearance of the engine blur -->
+            <ANIM_CODE>0.01 385 (L:A32NX_ENGINE_N1:#ID#, Number) * *</ANIM_CODE>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+			<ANIM_LAG>0</ANIM_LAG>
+            <ANIM_WRAP>True</ANIM_WRAP>
+            <ANIM_DELTA>True</ANIM_DELTA>
+        </UseTemplate>
+        <Component ID="ENGINE_Turbine_#ID#_Visibility">
+            <OverrideTemplateParameters>
+                <PROCESS_PARAM1>True</PROCESS_PARAM1>
+                <PARAM1>NODE_ID</PARAM1>
+                <PARAM1_SUFFIX>_NODE_ID</PARAM1_SUFFIX>
+                <EXIT_TEMPLATE>A380X_ENGINE_Turbine_Visibility_Base_Template</EXIT_TEMPLATE>
+            </OverrideTemplateParameters>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#STILL_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Still</STATE>
+                <PARAM1_PREFIX>STILL_</PARAM1_PREFIX>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#BLURRED1_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Blurred1</STATE>
+                <PARAM1_PREFIX>BLURRED1_</PARAM1_PREFIX>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#BLURRED2_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Blurred2</STATE>
+                <PARAM1_PREFIX>BLURRED2_</PARAM1_PREFIX>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#BLURRED3_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Blurred3</STATE>
+                <PARAM1_PREFIX>BLURRED3_</PARAM1_PREFIX>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#BLURRED4_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Blurred4</STATE>
+                <PARAM1_PREFIX>BLURRED4_</PARAM1_PREFIX>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="A380X_ENGINE_Turbine_Still_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR1# &lt;</VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="A380X_ENGINE_Turbine_Blurred1_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR1# &gt;=
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR2# &lt; and
+            </VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="A380X_ENGINE_Turbine_Blurred2_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR2# &gt;=
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR3# &lt; and
+            </VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="A380X_ENGINE_Turbine_Blurred3_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR3# &gt;=
+                (L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR4# &lt; and
+            </VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="A380X_ENGINE_Turbine_Blurred4_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Number) #MIN_N1_PCT_FOR_BLUR4# &gt;=</VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <!-- Base visibility template for turbines -->
+    <Template Name="A380X_ENGINE_Turbine_Visibility_Base_Template">
+        <Condition NotEmpty="NODE_ID">
+            <True>
+                <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                    <UseTemplate Name="A380X_ENGINE_Turbine_#STATE#_Visibility_Template">
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+    </Template>
+</ModelBehaviors>

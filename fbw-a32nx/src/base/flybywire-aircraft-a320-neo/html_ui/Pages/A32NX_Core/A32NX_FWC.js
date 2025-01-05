@@ -53,10 +53,6 @@ class A32NX_FWC {
         // ESDL 1. 0.320
         this.memoLdgInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
 
-        // master warning & caution buttons
-        this.warningPressed = false;
-        this.cautionPressed = false;
-
         // altitude warning
         this.previousTargetAltitude = NaN;
         this._wasBellowThreshold = false;
@@ -75,17 +71,6 @@ class A32NX_FWC {
 
     _updateButtons(_deltaTime) {
         this.toConfigTest = SimVar.GetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean');
-
-        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
-            this.warningPressed = true;
-        } else {
-            this.warningPressed = false;
-        }
-        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_R", "Bool")) {
-            this.cautionPressed = true;
-        } else {
-            this.cautionPressed = false;
-        }
     }
 
     _updateFlightPhase(_deltaTime) {
@@ -118,7 +103,7 @@ class A32NX_FWC {
 
         // ESLD 1.0.79 + 1.0.80
         const eng1TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
-        const eng1TLAFTO = SimVar.GetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "number") !== 0; // is a flex temp is set?
+        const eng1TLAFTO = SimVar.GetSimVarValue("L:A32NX_AIRLINER_TO_FLEX_TEMP", "number") !== 0; // is a flex temp is set?
         const eng1MCT = eng1TLA > 33.3 && eng1TLA < 36.7;
         const eng1TLAFullPwr = eng1TLA > 43.3;
         const eng2TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number");
@@ -302,7 +287,8 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
         }
 
-        if (this.warningPressed === true) {
+        const warningPressed = SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool");
+        if (warningPressed) {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;

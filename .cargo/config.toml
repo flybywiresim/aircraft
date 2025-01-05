@@ -3,7 +3,19 @@ git-fetch-with-cli = true
 
 [target.wasm32-wasi]
 rustflags = [
+  "-Ctarget-feature=-crt-static,+bulk-memory",
+  "-Clink-self-contained=no",
+  "-Clink-arg=-l","-Clink-arg=c", "-Clink-arg=/workdir/MSFS_SDK/WASM/wasi-sysroot/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a",
+  "-Clink-arg=-L", "-Clink-arg=/workdir/MSFS_SDK/WASM/wasi-sysroot/lib/wasm32-wasi",
   "-Clink-arg=--export-table",
+  "-Clink-arg=--allow-undefined",
+  "-Clink-arg=--export-dynamic",
+  "-Clink-arg=--export=__wasm_call_ctors",
   "-Clink-arg=--export=malloc",
   "-Clink-arg=--export=free",
+  "-Clink-arg=--export=mark_decommit_pages",
+  "-Clink-arg=--export=mallinfo",
+  "-Clink-arg=--export=mchunkit_begin",
+  "-Clink-arg=--export=mchunkit_next",
+  "-Clink-arg=--export=get_pages_state"
 ]

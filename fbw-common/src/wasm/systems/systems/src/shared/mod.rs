@@ -7,15 +7,19 @@ use crate::{
 
 use arinc429::Arinc429Word;
 use nalgebra::Vector3;
+use ntest::MaxDifference;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
+    angle::radian,
     f64::*,
     length::meter,
     mass_rate::kilogram_per_second,
     pressure::{hectopascal, pascal},
     ratio::ratio,
     thermodynamic_temperature::{degree_celsius, kelvin},
+    velocity::knot,
+    Quantity,
 };
 
 pub mod low_pass_filter;
@@ -247,19 +251,22 @@ pub trait AdirsMeasurementOutputs {
     fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle>;
     fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
     fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length>;
+    fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle>;
 }
 
 pub trait AdirsDiscreteOutputs {
-    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_1(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_2(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_3(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_4(&self, adiru_number: usize) -> bool;
 }
 
 pub enum GearWheel {
     NOSE = 0,
     LEFT = 1,
     RIGHT = 2,
+    WINGLEFT = 3,
+    WINGRIGHT = 4,
 }
 
 pub trait SectionPressure {
@@ -707,6 +714,17 @@ pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
 }
 
+/// Normalise angle degrees value between 0 and 360
+pub fn normalise_angle(angle_degrees: f64) -> f64 {
+    let raw = angle_degrees % 360.;
+
+    if raw >= 0. {
+        raw
+    } else {
+        raw + 360.
+    }
+}
+
 /// Returns the height over the ground of any point of the plane considering its current attitude
 /// Offset parameter is the position of the point in plane reference with respect to datum reference point
 /// X positive from left to right
@@ -756,6 +774,23 @@ pub fn local_acceleration_at_plane_coordinate(
     centripetal_acceleration + tangential_acceleration_of_point
 }
 
+/// Gives the steering angle for a wheel that would freely caster if plane is rotating on yaw axis
+pub fn steering_angle_from_plane_yaw_rate(
+    context: &UpdateContext,
+    wheel_distance_to_rotation_center: Length,
+) -> Angle {
+    if context.local_velocity().to_ms_vector()[2].abs() > 0.01 {
+        Angle::new::<radian>(
+            (wheel_distance_to_rotation_center.get::<meter>()
+                * context.rotation_velocity_rad_s()[1]
+                / context.local_velocity().to_ms_vector()[2])
+                .atan(),
+        )
+    } else {
+        Angle::default()
+    }
+}
+
 pub struct InternationalStandardAtmosphere;
 impl InternationalStandardAtmosphere {
     const TEMPERATURE_LAPSE_RATE: f64 = 0.0065;
@@ -764,7 +799,8 @@ impl InternationalStandardAtmosphere {
     const GROUND_PRESSURE_PASCAL: f64 = 101325.;
     const GROUND_TEMPERATURE_KELVIN: f64 = 288.15;
 
-    fn ground_pressure() -> Pressure {
+    /// The sea level pressure on a standard day
+    pub fn ground_pressure() -> Pressure {
         Pressure::new::<pascal>(Self::GROUND_PRESSURE_PASCAL)
     }
 
@@ -791,6 +827,11 @@ impl InternationalStandardAtmosphere {
         ) / (-Self::TEMPERATURE_LAPSE_RATE)
     }
 
+    /// The sea level temperature on a standard day
+    pub fn ground_temperature() -> ThermodynamicTemperature {
+        ThermodynamicTemperature::new::<kelvin>(Self::GROUND_TEMPERATURE_KELVIN)
+    }
+
     pub fn temperature_at_altitude(altitude: Length) -> ThermodynamicTemperature {
         ThermodynamicTemperature::new::<kelvin>(
             Self::GROUND_TEMPERATURE_KELVIN
@@ -812,6 +853,80 @@ impl From<f64> for MachNumber {
 impl From<MachNumber> for f64 {
     fn from(value: MachNumber) -> Self {
         value.0
+    }
+}
+
+impl MaxDifference for MachNumber {
+    fn max_diff(self, other: Self) -> f64 {
+        (f64::from(self) - f64::from(other)).abs()
+    }
+}
+
+impl MachNumber {
+    // All formulas from Jet Transport Performance Methods by Boeing (March 2009 revision)
+
+    /// Get the ratio to standard sea level pressure for a given pressure
+    fn delta(air_pressure: Pressure) -> Ratio {
+        air_pressure / InternationalStandardAtmosphere::ground_pressure()
+    }
+
+    /// Get the ratio to standard sea level temperature for a given temperature
+    fn theta(temperature: ThermodynamicTemperature) -> Ratio {
+        temperature / InternationalStandardAtmosphere::ground_temperature()
+    }
+
+    /// Convert the mach number to a calibrated airspeed for a given atmospheric pressure.
+    pub fn to_cas(self, air_pressure: Pressure) -> Velocity {
+        Velocity::new::<knot>(
+            1479.1
+                * ((MachNumber::delta(air_pressure).get::<ratio>()
+                    * ((0.2 * self.0.powi(2) + 1.).powf(3.5) - 1.)
+                    + 1.)
+                    .powf(1. / 3.5)
+                    - 1.)
+                    .sqrt(),
+        )
+    }
+
+    /// Convert the mach number to an equivalent airspeed for a given atmospheric pressure.
+    pub fn to_eas(self, air_pressure: Pressure) -> Velocity {
+        Velocity::new::<knot>(
+            661.4786 * self.0 * MachNumber::delta(air_pressure).get::<ratio>().sqrt(),
+        )
+    }
+
+    /// Convert the mach number to a true airspeed for a given temperature.
+    pub fn to_tas(self, temperature: ThermodynamicTemperature) -> Velocity {
+        Velocity::new::<knot>(
+            661.4786 * self.0 * MachNumber::theta(temperature).get::<ratio>().sqrt(),
+        )
+    }
+
+    /// Convert a calibrated airspeed in a given atmosphere to a mach number
+    pub fn from_cas(cas: Velocity, air_pressure: Pressure) -> Self {
+        MachNumber(
+            (5. * ((((1. + 0.2 * (cas.get::<knot>() / 661.4786).powi(2)).powf(3.5) - 1.)
+                / MachNumber::delta(air_pressure).get::<ratio>()
+                + 1.)
+                .powf(1. / 3.5)
+                - 1.))
+                .sqrt(),
+        )
+    }
+
+    /// Convert an equivalent airspeed in a given atmosphere to a mach number
+    pub fn from_eas(eas: Velocity, air_pressure: Pressure) -> Self {
+        MachNumber(
+            eas.get::<knot>() / 661.4786
+                * (1. / MachNumber::delta(air_pressure).get::<ratio>()).sqrt(),
+        )
+    }
+
+    /// Convert a true airspeed in a given atmosphere to a mach number
+    pub fn from_tas(tas: Velocity, temperature: ThermodynamicTemperature) -> Self {
+        MachNumber(
+            tas.get::<knot>() / (661.4786 * MachNumber::theta(temperature).get::<ratio>().sqrt()),
+        )
     }
 }
 
@@ -934,6 +1049,73 @@ impl<'a> Average<&'a Ratio> for Ratio {
         I: Iterator<Item = &'a Ratio>,
     {
         iter.copied().average()
+    }
+}
+
+pub trait Resolution {
+    fn resolution(self, resolution: f64) -> f64;
+}
+
+impl Resolution for f64 {
+    fn resolution(self, resolution: f64) -> f64 {
+        (self / resolution).round() * resolution
+    }
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+pub enum FireDetectionZone {
+    Engine(usize),
+    Apu,
+    Mlg,
+}
+
+impl Display for FireDetectionZone {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FireDetectionZone::Apu => write!(f, "APU"),
+            FireDetectionZone::Mlg => write!(f, "MLG"),
+            FireDetectionZone::Engine(number) => write!(f, "{}", number),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+pub enum FireDetectionLoopID {
+    A,
+    B,
+}
+
+pub trait Clamp {
+    /// Restrict a value to a certain interval unless it is NaN.
+    ///
+    /// Returns `max` if `self` is greater than `max`, and `min` if `self` is
+    /// less than `min`. Otherwise this returns `self`.
+    ///
+    /// Note that this function returns NaN if the initial value was NaN as
+    /// well.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `min > max`, `min` is NaN, or `max` is NaN.
+    fn clamp(self, min: Self, max: Self) -> Self;
+}
+
+// TODO: remove when uom implements clamp on floating point quantities
+impl<D: uom::si::Dimension + ?Sized, U: uom::si::Units<f64> + ?Sized> Clamp
+    for Quantity<D, U, f64>
+{
+    fn clamp(mut self, min: Self, max: Self) -> Self {
+        assert!(
+            min <= max,
+            "min > max, or either was NaN. min = {min:?}, max = {max:?}"
+        );
+        if self < min {
+            self = min;
+        }
+        if self > max {
+            self = max;
+        }
+        self
     }
 }
 
@@ -1902,5 +2084,197 @@ mod local_acceleration_at_plane_coordinate {
 
         test_bed.run_with_delta(Duration::from_secs(0));
         assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(-1., -1., 0.)));
+    }
+}
+
+#[cfg(test)]
+mod mach_number_tests {
+    use ntest::assert_about_eq;
+    use uom::si::{
+        length::foot,
+        quantities::{Length, Velocity},
+        velocity::knot,
+    };
+
+    use crate::shared::{InternationalStandardAtmosphere, MachNumber};
+
+    // All of the test values are obtained from
+    // - https://aerotoolbox.com/airspeed-conversions/
+    // - https://aerotoolbox.com/atmcalc/
+
+    #[test]
+    fn cas_to_mach_conversions() {
+        let mach0 = MachNumber(0.);
+        let mach05 = MachNumber(0.5);
+        let sea_level_pressure = InternationalStandardAtmosphere::ground_pressure();
+        let fl350_pressure =
+            InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(35_000.));
+
+        assert_about_eq!(mach0.to_cas(sea_level_pressure).get::<knot>(), 0.);
+        assert_about_eq!(
+            mach05.to_cas(sea_level_pressure).get::<knot>(),
+            330.735,
+            0.1
+        );
+
+        assert_about_eq!(mach0.to_cas(fl350_pressure).get::<knot>(), 0.);
+        assert_about_eq!(mach05.to_cas(fl350_pressure).get::<knot>(), 164.225, 0.1);
+    }
+
+    #[test]
+    fn eas_to_mach_conversions() {
+        let mach0 = MachNumber(0.);
+        let mach05 = MachNumber(0.5);
+        let sea_level_pressure = InternationalStandardAtmosphere::ground_pressure();
+        let fl350_pressure =
+            InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(35_000.));
+
+        assert_about_eq!(mach0.to_eas(sea_level_pressure).get::<knot>(), 0.);
+        assert_about_eq!(
+            mach05.to_eas(sea_level_pressure).get::<knot>(),
+            330.739,
+            0.1
+        );
+
+        assert_about_eq!(mach0.to_eas(fl350_pressure).get::<knot>(), 0.);
+        assert_about_eq!(mach05.to_eas(fl350_pressure).get::<knot>(), 160.436, 0.1);
+    }
+
+    #[test]
+    fn tas_to_mach_conversions() {
+        let mach0 = MachNumber(0.);
+        let mach05 = MachNumber(0.5);
+        let sea_level_temperature = InternationalStandardAtmosphere::ground_temperature();
+        let fl350_temperature =
+            InternationalStandardAtmosphere::temperature_at_altitude(Length::new::<foot>(35_000.));
+
+        assert_about_eq!(mach0.to_tas(sea_level_temperature).get::<knot>(), 0.);
+        assert_about_eq!(
+            mach05.to_tas(sea_level_temperature).get::<knot>(),
+            330.739,
+            0.1
+        );
+
+        assert_about_eq!(mach0.to_tas(fl350_temperature).get::<knot>(), 0.);
+        assert_about_eq!(mach05.to_tas(fl350_temperature).get::<knot>(), 288.209, 0.1);
+    }
+
+    #[test]
+    fn mach_to_cas_conversions() {
+        let mach0_cas = Velocity::new::<knot>(0.);
+        let mach05_cas_sea_level = Velocity::new::<knot>(330.735);
+        let mach05_cas_fl350 = Velocity::new::<knot>(164.225);
+        let sea_level_pressure = InternationalStandardAtmosphere::ground_pressure();
+        let fl350_pressure =
+            InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(35_000.));
+
+        assert_about_eq!(
+            MachNumber::from_cas(mach0_cas, sea_level_pressure),
+            MachNumber(0.)
+        );
+        assert_about_eq!(
+            MachNumber::from_cas(mach05_cas_sea_level, sea_level_pressure),
+            MachNumber(0.5),
+            0.001
+        );
+
+        assert_about_eq!(
+            MachNumber::from_cas(mach0_cas, fl350_pressure),
+            MachNumber(0.)
+        );
+        assert_about_eq!(
+            MachNumber::from_cas(mach05_cas_fl350, fl350_pressure),
+            MachNumber(0.5),
+            0.001
+        );
+    }
+
+    #[test]
+    fn mach_to_eas_conversions() {
+        let mach0_eas = Velocity::new::<knot>(0.);
+        let mach05_eas_sea_level = Velocity::new::<knot>(330.739);
+        let mach05_eas_fl350 = Velocity::new::<knot>(160.436);
+        let sea_level_pressure = InternationalStandardAtmosphere::ground_pressure();
+        let fl350_pressure =
+            InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(35_000.));
+
+        assert_about_eq!(
+            MachNumber::from_eas(mach0_eas, sea_level_pressure),
+            MachNumber(0.)
+        );
+        assert_about_eq!(
+            MachNumber::from_eas(mach05_eas_sea_level, sea_level_pressure),
+            MachNumber(0.5),
+            0.001
+        );
+
+        assert_about_eq!(
+            MachNumber::from_eas(mach0_eas, fl350_pressure),
+            MachNumber(0.)
+        );
+        assert_about_eq!(
+            MachNumber::from_eas(mach05_eas_fl350, fl350_pressure),
+            MachNumber(0.5),
+            0.001
+        );
+    }
+
+    #[test]
+    fn mach_to_tas_conversions() {
+        let mach0_tas = Velocity::new::<knot>(0.);
+        let mach05_tas_sea_level = Velocity::new::<knot>(330.739);
+        let mach05_tas_fl350 = Velocity::new::<knot>(288.209);
+        let sea_level_temperature = InternationalStandardAtmosphere::ground_temperature();
+        let fl350_temperature =
+            InternationalStandardAtmosphere::temperature_at_altitude(Length::new::<foot>(35_000.));
+
+        assert_about_eq!(
+            MachNumber::from_tas(mach0_tas, sea_level_temperature),
+            MachNumber(0.)
+        );
+        assert_about_eq!(
+            MachNumber::from_tas(mach05_tas_sea_level, sea_level_temperature),
+            MachNumber(0.5),
+            0.001
+        );
+
+        assert_about_eq!(
+            MachNumber::from_tas(mach0_tas, fl350_temperature),
+            MachNumber(0.)
+        );
+        assert_about_eq!(
+            MachNumber::from_tas(mach05_tas_fl350, fl350_temperature),
+            MachNumber(0.5),
+            0.001
+        );
+    }
+}
+
+#[cfg(test)]
+mod resolution_tests {
+    use super::*;
+
+    #[test]
+    fn positive_values_are_returned_to_correct_resolution() {
+        let value: f64 = 22.;
+        let value_after_resolution = value.resolution(5.);
+
+        assert_eq!(value_after_resolution, 20.);
+    }
+
+    #[test]
+    fn negative_values_are_returned_to_correct_resolution() {
+        let value: f64 = -22.;
+        let value_after_resolution = value.resolution(5.);
+
+        assert_eq!(value_after_resolution, -20.);
+    }
+
+    #[test]
+    fn bigger_resolution_than_twice_value_returns_zero() {
+        let value: f64 = 22.;
+        let value_after_resolution = value.resolution(50.);
+
+        assert_eq!(value_after_resolution, 0.);
     }
 }

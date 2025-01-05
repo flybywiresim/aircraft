@@ -30,11 +30,12 @@ struct LightingValues_A32NX {
   FLOAT64 ndBrtFoLevel;          // 91
   FLOAT64 wxTerrainBrtFoLevel;   // 95
   FLOAT64 consoleLightFoLevel;   // 9 (0, 50, 100)
-  // ISIS display has automatic brightness adjustment.
-  FLOAT64 dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0..100
-  FLOAT64 dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0..100
-  FLOAT64 mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.5..8.0
-  FLOAT64 mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.5..8.0
+  // ISIS display has automatic brightness adjustment - this is just a manual offset
+  FLOAT64 isisManualOffsetLevel;  // A32NX_ISIS_MANUAL_BRIGHTNESS_OFFSET -1.0..1.0 but limited by min/max total brightness
+  FLOAT64 dcduLeftLightLevel;     // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
+  FLOAT64 dcduRightLightLevel;    // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
+  FLOAT64 mcduLeftLightLevel;     // A32NX_MCDU_L_BRIGHTNESS        0.5..8.0
+  FLOAT64 mcduRightLightLevel;    // A32NX_MCDU_R_BRIGHTNESS        0.5..8.0
   // Pedestal
   FLOAT64 ecamUpperLightLevel;         // 92
   FLOAT64 ecamLowerLightLevel;         // 93
@@ -59,6 +60,7 @@ class LightingPresets_A32NX : public LightingPresets {
  private:
   // Lighting LVARs
   NamedVariablePtr efbBrightness;
+  NamedVariablePtr isisManualOffsetLevel;
   NamedVariablePtr dcduLeftLightLevel;
   NamedVariablePtr dcduRightLightLevel;
   NamedVariablePtr mcduLeftLightLevel;
@@ -130,8 +132,33 @@ class LightingPresets_A32NX : public LightingPresets {
    */
   void setValidCabinLightValue(FLOAT64 level);
 
-  const LightingValues_A32NX DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                                     50.0, 50.0, 50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
+  const LightingValues_A32NX DEFAULT_50 = {
+      50.0,  // efbBrightness
+      50.0,  // cabinLightLevel
+      50.0,  // ovhdIntegralLightLevel
+      50.0,  // glareshieldIntegralLightLevel
+      50.0,  // glareshieldLcdLightLevel
+      50.0,  // tableLightCptLevel
+      50.0,  // tableLightFoLevel
+      50.0,  // pfdBrtCptLevel
+      50.0,  // ndBrtCptLevel
+      50.0,  // wxTerrainBrtCptLevel
+      50.0,  // consoleLightCptLevel
+      50.0,  // pfdBrtFoLevel
+      50.0,  // ndBrtFoLevel
+      50.0,  // wxTerrainBrtFoLevel
+      50.0,  // consoleLightFoLevel
+      0.0,   // isisManualOffsetLevel
+      0.5,   // dcduLeftLightLevel
+      0.5,   // dcduRightLightLevel
+      0.5,   // mcduLeftLightLevel
+      0.5,   // mcduRightLightLevel
+      50.0,  // ecamUpperLightLevel
+      50.0,  // ecamLowerLightLevel
+      50.0,  // floodPnlLightLevel
+      50.0,  // pedestalIntegralLightLevel
+      50.0   // floodPedLightLevel
+  };
 };
 
 inline bool operator==(const LightingValues_A32NX& p1, const LightingValues_A32NX& p2) {
@@ -151,6 +178,7 @@ inline bool operator==(const LightingValues_A32NX& p1, const LightingValues_A32N
          helper::Math::almostEqual(p1.ndBrtFoLevel, p2.ndBrtFoLevel, epsilon) &&
          helper::Math::almostEqual(p1.wxTerrainBrtFoLevel, p2.wxTerrainBrtFoLevel, epsilon) &&
          helper::Math::almostEqual(p1.consoleLightFoLevel, p2.consoleLightFoLevel, epsilon) &&
+         helper::Math::almostEqual(p1.isisManualOffsetLevel, p2.isisManualOffsetLevel, epsilon) &&
          helper::Math::almostEqual(p1.dcduLeftLightLevel, p2.dcduLeftLightLevel, epsilon) &&
          helper::Math::almostEqual(p1.dcduRightLightLevel, p2.dcduRightLightLevel, epsilon) &&
          helper::Math::almostEqual(p1.mcduLeftLightLevel, p2.mcduLeftLightLevel, epsilon) &&

@@ -1,0 +1,31 @@
+$colour-main: hsl(40, 100%, 50%);
+
+@font-face {
+  font-family: "AirbusRTPI";
+  src: url("/Fonts/fbw-a380x/AirbusRTPI.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+
+.rtpi-svg {
+  background-color: hsl(55, 82%, 2%);
+  box-shadow: inset 0px 0px 110px -20px rgba(255,175,0,0.5);
+  position: absolute;
+  width: 105%;
+  height: 100%;
+  /* TODO: Remove opacity when SAI/ISIS/CLOCK/BAT/ATC/RMP/RUD TRIM is split and not share the same emissive/mesh */
+  opacity: 0.5;
+}
+
+text {
+  font-family: AirbusRTPI;
+  font-size: 135px;
+  fill: $colour-main;
+  letter-spacing: 3px;
+}
+.direction {
+  text-anchor: start;
+}
+.value {
+  text-anchor: end;
+}

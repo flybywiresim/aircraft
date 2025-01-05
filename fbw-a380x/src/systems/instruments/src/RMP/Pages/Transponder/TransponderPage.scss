@@ -1,0 +1,33 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../../../MsfsAvionicsCommon/definitions.scss";
+
+.transponder-page {
+  height: 100%;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+}
+
+.transponder-ident {
+  position: absolute;
+  top: 640px;
+  left: 10px;
+}
+
+.transponder-code {
+  width: 530px;
+  height: 280px;
+  border: 4px solid $display-cyan;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.transponder-page .centred-row {
+  display: flex;
+  flex-direction: column ;
+  justify-content: center ;
+  align-items: center;
+}

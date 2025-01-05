@@ -1,0 +1,92 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+// =======================================================================================
+// This is the base airframe configuration file for A320-251N
+// Any keys prefixed by underscore (_) should be considered read-only and not overwritable.
+//
+// NOTE: * This is currently a WIP * ! The override functionality has not been completed yet !
+//
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+// ****** ! WARNING TO LIVERY MAKERS: DO NOT OVERRIDE THIS FILE ! **********
+//
+// Please follow the instructions in the documentation to create a new configuration file!
+// =======================================================================================
+// Last updated: 2 April 2024
+{
+    "configMajorVersion": 0,
+    "configMinorVersion": 1,
+    "_variant": "A320-251N",
+    "_icao": "A20N",
+    "_name": "Airbus A320neo",
+    "_engines": "CFM LEAP-1A26",
+    "_developer": "FBW",
+    "msnReference": "MSN 9XXX",
+    "weightVariant": "WV055",
+    "designLimits": {
+        "weights": {
+            "maxGw": 79000,     // kg
+            "maxZfw": 64300,    // kg
+            "minZfw": 42500,    // kg
+            "maxGwCg": 40,      // %CG MAC
+            "maxZfwCg": 40,     // %CG MAC
+            "maxCargo": 9435,   // kg
+            "maxFuel": 23721,   // kg
+        },
+        "endurance": {
+            "range": 3400,   // nm
+            "mmo": "0.82",        // mach
+        },
+        "performanceEnvelope": {
+            "mlw": [
+                [ 15, 42500 ],
+                [ 15, 53000 ],
+                [ 17, 63000 ],
+                [ 17, 67400 ],
+                [ 40, 67400 ],
+                [ 40, 67400 ],
+                [ 37, 50000 ],
+                [ 35, 46000 ],
+                [ 35, 42500 ]
+            ],
+            "mzfw": [
+                [ 17, 64300 ],
+                [ 39.5, 64300 ],
+                [ 37, 50000 ],
+                [ 35, 46000 ],
+                [ 35, 42500 ],
+                [ 15, 42500 ]
+            ],
+            "mtow": [
+                [ 15, 42500 ],
+                [ 15, 53000 ],
+                [ 17, 63000 ],
+                [ 17, 72000 ],
+                [ 27, 79000 ],
+                [ 36, 79000 ],
+                [ 40, 73500 ],
+                [ 40, 67400 ],
+                [ 37, 50000 ],
+                [ 33, 42500 ]
+            ],
+            "flight": [
+                [ 13, 42500 ],
+                [ 13, 52500 ],
+                [ 15, 63000 ],
+                [ 15, 72000 ],
+                [ 25, 79000 ],
+                [ 38, 79000 ],
+                [ 41, 74500 ],
+                [ 41, 51000 ],
+                [ 35, 46000 ],
+                [ 35, 42500 ],
+                [ 13, 42500 ]
+            ]
+        }
+    },
+    "_dimensions": {
+        "aircraftWheelBase": 12.64,
+        "aircraftLengthMeter": 37.57
+    }
+}

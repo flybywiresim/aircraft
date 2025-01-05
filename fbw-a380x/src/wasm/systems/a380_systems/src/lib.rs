@@ -5,6 +5,7 @@ mod airframe;
 mod avionics_data_communication_network;
 mod control_display_system;
 mod electrical;
+mod fire_and_smoke_protection;
 mod fuel;
 pub mod hydraulic;
 mod icing;
@@ -12,6 +13,7 @@ mod navigation;
 mod payload;
 mod pneumatic;
 mod power_consumption;
+mod reverser;
 mod structural_flex;
 
 use self::{
@@ -23,16 +25,19 @@ use self::{
     structural_flex::A380StructuralFlex,
 };
 use airframe::A380Airframe;
+use avionics_data_communication_network::A380AvionicsDataCommunicationNetworkSimvarTranslator;
 use electrical::{
     A380Electrical, A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
+use fire_and_smoke_protection::A380FireAndSmokeProtection;
 use fuel::FuelLevel;
-use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
+use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
-use navigation::A380RadioAltimeters;
+use navigation::{A380AirDataInertialReferenceSystemBuilder, A380RadioAltimeters};
 use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
+use reverser::{A380ReverserController, A380Reversers};
 use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
@@ -42,9 +47,8 @@ use systems::{
         AuxiliaryPowerUnitOverheadPanel, Pw980ApuGenerator, Pw980Constants, Pw980StartMotor,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
-    engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
+    engine::{reverser_thrust::ReverserForce, trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
-    hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
@@ -57,6 +61,7 @@ use systems::{
 
 pub struct A380 {
     adcn: A380AvionicsDataCommunicationNetwork,
+    adcn_simvar_translation: A380AvionicsDataCommunicationNetworkSimvarTranslator,
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
@@ -69,6 +74,7 @@ pub struct A380 {
     emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel,
     payload: A380Payload,
     airframe: A380Airframe,
+    fire_and_smoke_protection: A380FireAndSmokeProtection,
     fuel: A380Fuel,
     engine_1: TrentEngine,
     engine_2: TrentEngine,
@@ -81,7 +87,7 @@ pub struct A380 {
     lgcius: LandingGearControlInterfaceUnitSet,
     hydraulic: A380Hydraulic,
     hydraulic_overhead: A380HydraulicOverheadPanel,
-    autobrake_panel: AutobrakePanel,
+    autobrake_panel: A380AutobrakePanel,
     landing_gear: LandingGear,
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
@@ -89,12 +95,20 @@ pub struct A380 {
     egpwc: EnhancedGroundProximityWarningComputer,
     icing_simulation: Icing,
     structural_flex: A380StructuralFlex,
+
+    engine_reverser_control: [A380ReverserController; 2],
+    reversers_assembly: A380Reversers,
+    reverse_thrust: ReverserForce,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
+        let mut adcn = A380AvionicsDataCommunicationNetwork::new(context);
+        let adcn_simvar_translation =
+            A380AvionicsDataCommunicationNetworkSimvarTranslator::new(context, &mut adcn);
         A380 {
-            adcn: A380AvionicsDataCommunicationNetwork::new(context),
-            adirs: AirDataInertialReferenceSystem::new(context),
+            adcn,
+            adcn_simvar_translation,
+            adirs: A380AirDataInertialReferenceSystemBuilder::build(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_pw980(
@@ -111,6 +125,7 @@ impl A380 {
             emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel::new(context),
             payload: A380Payload::new(context),
             airframe: A380Airframe::new(context),
+            fire_and_smoke_protection: A380FireAndSmokeProtection::new(context),
             fuel: A380Fuel::new(context),
             engine_1: TrentEngine::new(context, 1),
             engine_2: TrentEngine::new(context, 2),
@@ -127,14 +142,14 @@ impl A380 {
             ),
             hydraulic: A380Hydraulic::new(context),
             hydraulic_overhead: A380HydraulicOverheadPanel::new(context),
-            autobrake_panel: AutobrakePanel::new(context),
-            landing_gear: LandingGear::new(context),
+            autobrake_panel: A380AutobrakePanel::new(context),
+            landing_gear: LandingGear::new(context, true),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             cds: A380ControlDisplaySystem::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
-                ElectricalBusType::DirectCurrent(1),
+                ElectricalBusType::AlternatingCurrentEssential,
                 vec![
                     Length::new::<nautical_mile>(0.0),
                     Length::new::<nautical_mile>(10.0),
@@ -150,6 +165,12 @@ impl A380 {
 
             icing_simulation: Icing::new(context),
             structural_flex: A380StructuralFlex::new(context),
+            engine_reverser_control: [
+                A380ReverserController::new(context, 2),
+                A380ReverserController::new(context, 3),
+            ],
+            reversers_assembly: A380Reversers::new(context),
+            reverse_thrust: ReverserForce::new(context),
         }
     }
 }
@@ -162,6 +183,7 @@ impl Aircraft for A380 {
         self.apu.update_before_electrical(
             context,
             &self.apu_overhead,
+            self.fire_and_smoke_protection.apu_fire_on_ground(),
             &self.apu_fire_overhead,
             self.pneumatic_overhead.apu_bleed_is_on(),
             // This will be replaced when integrating the whole electrical system.
@@ -215,11 +237,18 @@ impl Aircraft for A380 {
         self.apu_overhead.update_after_apu(&self.apu);
 
         self.adcn.update();
+        self.adcn_simvar_translation.update(&self.adcn);
         self.lgcius.update(
             context,
             &self.landing_gear,
             self.hydraulic.gear_system(),
             self.ext_pwrs[0].output_potential().is_powered(),
+        );
+
+        self.fire_and_smoke_protection.update(
+            context,
+            &self.engine_fire_overhead,
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
 
         self.radio_altimeters.update(context);
@@ -279,6 +308,7 @@ impl Aircraft for A380 {
                 &self.engine_4,
             ],
             &self.engine_fire_overhead,
+            &self.payload,
             &self.pneumatic,
             &self.pneumatic_overhead,
             &self.pressurization_overhead,
@@ -304,11 +334,33 @@ impl Aircraft for A380 {
         self.icing_simulation.update(context);
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+        self.fuel.update(context);
+
+        self.engine_reverser_control[0].update(
+            &self.engine_2,
+            self.lgcius.lgciu1(),
+            self.reversers_assembly.reverser_feedback(0),
+        );
+        self.engine_reverser_control[1].update(
+            &self.engine_3,
+            self.lgcius.lgciu2(),
+            self.reversers_assembly.reverser_feedback(1),
+        );
+
+        self.reversers_assembly
+            .update(context, &self.engine_reverser_control);
+
+        self.reverse_thrust.update(
+            context,
+            [&self.engine_2, &self.engine_3],
+            self.reversers_assembly.reversers_position(),
+        );
     }
 }
 impl SimulationElement for A380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adcn.accept(visitor);
+        self.adcn_simvar_translation.accept(visitor);
         self.adirs.accept(visitor);
         self.adirs_overhead.accept(visitor);
         self.air_conditioning.accept(visitor);
@@ -317,6 +369,7 @@ impl SimulationElement for A380 {
         self.apu_overhead.accept(visitor);
         self.electrical_overhead.accept(visitor);
         self.emergency_electrical_overhead.accept(visitor);
+        self.fire_and_smoke_protection.accept(visitor);
         self.fuel.accept(visitor);
         self.payload.accept(visitor);
         self.airframe.accept(visitor);
@@ -341,6 +394,10 @@ impl SimulationElement for A380 {
         self.egpwc.accept(visitor);
         self.icing_simulation.accept(visitor);
         self.structural_flex.accept(visitor);
+
+        accept_iterable!(self.engine_reverser_control, visitor);
+        self.reversers_assembly.accept(visitor);
+        self.reverse_thrust.accept(visitor);
 
         visitor.visit(self);
     }

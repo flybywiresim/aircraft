@@ -1,5 +1,6 @@
 use super::{Air, DuctTemperature, OutletAir, PressurizationConstants, VcmShared, ZoneType};
 use crate::{
+    failures::{Failure, FailureType},
     shared::{AverageExt, CabinSimulation},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -38,6 +39,7 @@ pub struct CabinAirSimulation<C, const ZONES: usize> {
 
     cabin_zones: [CabinZone<C>; ZONES],
 
+    hull_breach: Failure,
     constants: PhantomData<C>,
 }
 
@@ -67,6 +69,7 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
                     panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
                 }),
 
+            hull_breach: Failure::new(FailureType::RapidDecompression),
             constants: PhantomData,
         }
     }
@@ -313,7 +316,8 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
         let outflow_valve_area = C::OUTFLOW_VALVE_SIZE * outflow_valve_open_amount.get::<ratio>(); // sq m
         let leakage_area = C::CABIN_LEAKAGE_AREA
             + C::SAFETY_VALVE_SIZE * safety_valve_open_amount.get::<ratio>()
-            + number_of_open_doors as f64 * C::DOOR_OPENING_AREA; // sq m
+            + number_of_open_doors as f64 * C::DOOR_OPENING_AREA
+            + C::HULL_BREACH_AREA * self.hull_breach.is_active() as u32 as f64; // sq m
 
         let pressure_ratio =
             (self.filtered_exterior_pressure / self.internal_air.pressure()).get::<ratio>();
@@ -376,6 +380,7 @@ impl<C: PressurizationConstants, const ZONES: usize> SimulationElement
 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.cabin_zones, visitor);
+        self.hull_breach.accept(visitor);
 
         visitor.visit(self);
     }
@@ -784,6 +789,7 @@ mod cabin_air_tests {
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
         const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
         const DOOR_OPENING_AREA: f64 = 1.5; // m2
+        const HULL_BREACH_AREA: f64 = 0.02; // m2
 
         const MAX_CLIMB_RATE: f64 = 750.; // fpm
         const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm

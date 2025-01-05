@@ -54,18 +54,24 @@
         <Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
         <Include Path="A32NX\generated\A32NX_Exterior.xml"/>
         <Component ID="LIGHTING">
-            <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
-                <LIGHT_TYPE>LANDING</LIGHT_TYPE>
-                <ID>2</ID>
-                <ANIM_NAME>l_opening_landing_light</ANIM_NAME>
-                <ANIM_LAG>12</ANIM_LAG>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
-                <LIGHT_TYPE>LANDING</LIGHT_TYPE>
-                <ID>3</ID>
-                <ANIM_NAME>r_opening_landing_light</ANIM_NAME>
-                <ANIM_LAG>12</ANIM_LAG>
-            </UseTemplate>
+            <Component ID="LANDING_LIGHT_LEFT">
+                <UseTemplate Name="FBW_LIGHTING_Exterior_Retractable_Light_Template">
+                    <LIGHT_TYPE>LANDING</LIGHT_TYPE>
+                    <ID>2</ID>
+                    <ANIM_NAME>l_opening_landing_light</ANIM_NAME>
+                    <ANIM_LAG>12</ANIM_LAG>
+                    <FAILURE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</FAILURE>
+                </UseTemplate>
+            </Component>
+            <Component ID="LANDING_LIGHT_RIGHT">
+                <UseTemplate Name="FBW_LIGHTING_Exterior_Retractable_Light_Template">
+                    <LIGHT_TYPE>LANDING</LIGHT_TYPE>
+                    <ID>3</ID>
+                    <ANIM_NAME>r_opening_landing_light</ANIM_NAME>
+                    <ANIM_LAG>12</ANIM_LAG>
+                    <FAILURE>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED)</FAILURE>
+                </UseTemplate>
+            </Component>
         </Component>
         <Component ID="HANDLING">
             <UseTemplate Name="FBW_HANDLING_Elevator_Template">
@@ -216,6 +222,16 @@
                 <ANIM_CODE>(L:A32NX_NOSE_WHEEL_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>1</ANIM_LENGTH>
             </UseTemplate>
+            <!-- PARK BRK EXT LT -->
+            <Component ID="Ext_Park_Brake_Light">
+                <UseTemplate Name="FBW_Potentiometer_Toggle">
+                    <!-- FIXME should also get a discrete from the hydraulic valve limit switch -->
+                    <TOGGLE_CONDITION>(L:A32NX_PARK_BRAKE_LEVER_POS, bool) 1 ==</TOGGLE_CONDITION>
+                    <!-- C/B 70GG (121VU M36) fed from 601PP -->
+                    <TOGGLE_REQUISITE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</TOGGLE_REQUISITE>
+                    <POTENTIOMETER>99</POTENTIOMETER>
+                </UseTemplate>
+            </Component>
         </Component>
         <Component ID="ENGINE">
             <UseTemplate Name="A32NX_ENGINE_Turbine_Template">
@@ -538,7 +554,7 @@
                 <FREQUENCY>10</FREQUENCY>
                 <UPDATE_CODE>
                     (A:SURFACE RELATIVE GROUND SPEED, feet per second) 0.1 &gt; ! (&gt;L:A32NX_IS_STATIONARY, bool)
-                    (A:SIM ON GROUND, bool) (L:A32NX_ENGINE_N1:1, Number) 3.5 &lt; and (L:A32NX_ENGINE_N1:2, Number) 3.5 &lt; and (L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO, bool) 0 == and (A:LIGHT BEACON, bool) 0 == and (L:FSDT_GSX_DEPARTURE_STATE, number) 2 &lt;= (L:FSDT_GSX_DEPARTURE_STATE, number) 6 == or and (&gt;L:A32NX_GND_EQP_IS_VISIBLE, bool)
+                    (A:SIM ON GROUND, bool) (L:A32NX_ENGINE_N1:1, Number) 3.5 &lt; and (L:A32NX_ENGINE_N1:2, Number) 3.5 &lt; and (A:LIGHT BEACON, bool) 0 == and (L:FSDT_GSX_DEPARTURE_STATE, number) 5 != and (&gt;L:A32NX_GND_EQP_IS_VISIBLE, bool)
                 </UPDATE_CODE>
             </UseTemplate>
 

@@ -1,0 +1,14 @@
+{
+    "index": "./index.tsx",
+    "isInteractive": true,
+    "dimensions": {
+        "width": 1430,
+        "height": 1000
+    },
+    "additionalImports": [
+        "/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"
+    ],
+    "extraDeps": [
+        "/fbw-common/src/systems/instruments/src/EFB"
+    ]
+}

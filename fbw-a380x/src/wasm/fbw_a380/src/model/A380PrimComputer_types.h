@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380PrimComputer_types_h_
-#define RTW_HEADER_A380PrimComputer_types_h_
+#ifndef A380PrimComputer_types_h_
+#define A380PrimComputer_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
 #define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
@@ -30,15 +30,167 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
-#define DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
+#define DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
 
-struct base_prim_temporary_ap_input
+struct base_prim_discrete_inputs
 {
-  boolean_T ap_engaged;
-  real_T roll_command;
-  real_T pitch_command;
-  real_T yaw_command;
+  boolean_T prim_overhead_button_pressed;
+  boolean_T is_unit_1;
+  boolean_T is_unit_2;
+  boolean_T is_unit_3;
+  boolean_T capt_priority_takeover_pressed;
+  boolean_T fo_priority_takeover_pressed;
+  boolean_T ap_1_pushbutton_pressed;
+  boolean_T ap_2_pushbutton_pressed;
+  boolean_T fcu_healthy;
+  boolean_T athr_pushbutton;
+  boolean_T ir_3_on_capt;
+  boolean_T ir_3_on_fo;
+  boolean_T adr_3_on_capt;
+  boolean_T adr_3_on_fo;
+  boolean_T rat_deployed;
+  boolean_T rat_contactor_closed;
+  boolean_T pitch_trim_up_pressed;
+  boolean_T pitch_trim_down_pressed;
+  boolean_T green_low_pressure;
+  boolean_T yellow_low_pressure;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+
+struct base_prim_pitch_surface_positions
+{
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
+#define DEFINED_TYPEDEF_FOR_base_arinc_429_
+
+struct base_arinc_429
+{
+  uint32_T SSM;
+  real32_T Data;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+
+struct base_sec_out_bus
+{
+  base_arinc_429 left_sidestick_pitch_command_deg;
+  base_arinc_429 right_sidestick_pitch_command_deg;
+  base_arinc_429 left_sidestick_roll_command_deg;
+  base_arinc_429 right_sidestick_roll_command_deg;
+  base_arinc_429 rudder_pedal_position_deg;
+  base_arinc_429 aileron_status_word;
+  base_arinc_429 left_aileron_1_position_deg;
+  base_arinc_429 left_aileron_2_position_deg;
+  base_arinc_429 right_aileron_1_position_deg;
+  base_arinc_429 right_aileron_2_position_deg;
+  base_arinc_429 spoiler_status_word;
+  base_arinc_429 left_spoiler_1_position_deg;
+  base_arinc_429 right_spoiler_1_position_deg;
+  base_arinc_429 left_spoiler_2_position_deg;
+  base_arinc_429 right_spoiler_2_position_deg;
+  base_arinc_429 elevator_status_word;
+  base_arinc_429 elevator_1_position_deg;
+  base_arinc_429 elevator_2_position_deg;
+  base_arinc_429 elevator_3_position_deg;
+  base_arinc_429 ths_position_deg;
+  base_arinc_429 rudder_status_word;
+  base_arinc_429 rudder_1_position_deg;
+  base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 rudder_trim_actual_pos_deg;
+  base_arinc_429 fctl_law_status_word;
+  base_arinc_429 misc_data_status_word;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_prim_out_bus_
+
+struct base_prim_out_bus
+{
+  base_arinc_429 left_inboard_aileron_command_deg;
+  base_arinc_429 right_inboard_aileron_command_deg;
+  base_arinc_429 left_midboard_aileron_command_deg;
+  base_arinc_429 right_midboard_aileron_command_deg;
+  base_arinc_429 left_outboard_aileron_command_deg;
+  base_arinc_429 right_outboard_aileron_command_deg;
+  base_arinc_429 left_spoiler_1_command_deg;
+  base_arinc_429 right_spoiler_1_command_deg;
+  base_arinc_429 left_spoiler_2_command_deg;
+  base_arinc_429 right_spoiler_2_command_deg;
+  base_arinc_429 left_spoiler_3_command_deg;
+  base_arinc_429 right_spoiler_3_command_deg;
+  base_arinc_429 left_spoiler_4_command_deg;
+  base_arinc_429 right_spoiler_4_command_deg;
+  base_arinc_429 left_spoiler_5_command_deg;
+  base_arinc_429 right_spoiler_5_command_deg;
+  base_arinc_429 left_spoiler_6_command_deg;
+  base_arinc_429 right_spoiler_6_command_deg;
+  base_arinc_429 left_spoiler_7_command_deg;
+  base_arinc_429 right_spoiler_7_command_deg;
+  base_arinc_429 left_spoiler_8_command_deg;
+  base_arinc_429 right_spoiler_8_command_deg;
+  base_arinc_429 left_inboard_elevator_command_deg;
+  base_arinc_429 right_inboard_elevator_command_deg;
+  base_arinc_429 left_outboard_elevator_command_deg;
+  base_arinc_429 right_outboard_elevator_command_deg;
+  base_arinc_429 ths_command_deg;
+  base_arinc_429 upper_rudder_command_deg;
+  base_arinc_429 lower_rudder_command_deg;
+  base_arinc_429 left_sidestick_pitch_command_deg;
+  base_arinc_429 right_sidestick_pitch_command_deg;
+  base_arinc_429 left_sidestick_roll_command_deg;
+  base_arinc_429 right_sidestick_roll_command_deg;
+  base_arinc_429 rudder_pedal_position_deg;
+  base_arinc_429 aileron_status_word;
+  base_arinc_429 left_aileron_1_position_deg;
+  base_arinc_429 left_aileron_2_position_deg;
+  base_arinc_429 right_aileron_1_position_deg;
+  base_arinc_429 right_aileron_2_position_deg;
+  base_arinc_429 spoiler_status_word;
+  base_arinc_429 left_spoiler_position_deg;
+  base_arinc_429 right_spoiler_position_deg;
+  base_arinc_429 elevator_status_word;
+  base_arinc_429 elevator_1_position_deg;
+  base_arinc_429 elevator_2_position_deg;
+  base_arinc_429 elevator_3_position_deg;
+  base_arinc_429 ths_position_deg;
+  base_arinc_429 rudder_status_word;
+  base_arinc_429 rudder_1_position_deg;
+  base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 fctl_law_status_word;
+  base_arinc_429 discrete_status_word_1;
+  base_arinc_429 fe_status_word;
+  base_arinc_429 fg_status_word;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -65,33 +217,6 @@ struct base_sim_data
   boolean_T tracking_mode_on_override;
   boolean_T tailstrike_protection_on;
   boolean_T computer_running;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
-#define DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
-
-struct base_prim_discrete_inputs
-{
-  boolean_T prim_overhead_button_pressed;
-  boolean_T is_unit_1;
-  boolean_T is_unit_2;
-  boolean_T is_unit_3;
-  boolean_T capt_priority_takeover_pressed;
-  boolean_T fo_priority_takeover_pressed;
-  boolean_T ap_1_pushbutton_pressed;
-  boolean_T ap_2_pushbutton_pressed;
-  boolean_T fcu_healthy;
-  boolean_T athr_pushbutton;
-  boolean_T ir_3_on_capt;
-  boolean_T ir_3_on_fo;
-  boolean_T adr_3_on_capt;
-  boolean_T adr_3_on_fo;
-  boolean_T pitch_trim_up_pressed;
-  boolean_T pitch_trim_down_pressed;
-  boolean_T green_low_pressure;
-  boolean_T yellow_low_pressure;
 };
 
 #endif
@@ -135,17 +260,6 @@ struct base_prim_analog_inputs
   real_T left_wing_wheel_speed;
   real_T right_body_wheel_speed;
   real_T right_wing_wheel_speed;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
-#define DEFINED_TYPEDEF_FOR_base_arinc_429_
-
-struct base_arinc_429
-{
-  uint32_T SSM;
-  real32_T Data;
 };
 
 #endif
@@ -231,101 +345,6 @@ struct base_sfcc_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_out_bus_
-#define DEFINED_TYPEDEF_FOR_base_prim_out_bus_
-
-struct base_prim_out_bus
-{
-  base_arinc_429 left_inboard_aileron_command_deg;
-  base_arinc_429 right_inboard_aileron_command_deg;
-  base_arinc_429 left_midboard_aileron_command_deg;
-  base_arinc_429 right_midboard_aileron_command_deg;
-  base_arinc_429 left_outboard_aileron_command_deg;
-  base_arinc_429 right_outboard_aileron_command_deg;
-  base_arinc_429 left_spoiler_1_command_deg;
-  base_arinc_429 right_spoiler_1_command_deg;
-  base_arinc_429 left_spoiler_2_command_deg;
-  base_arinc_429 right_spoiler_2_command_deg;
-  base_arinc_429 left_spoiler_3_command_deg;
-  base_arinc_429 right_spoiler_3_command_deg;
-  base_arinc_429 left_spoiler_4_command_deg;
-  base_arinc_429 right_spoiler_4_command_deg;
-  base_arinc_429 left_spoiler_5_command_deg;
-  base_arinc_429 right_spoiler_5_command_deg;
-  base_arinc_429 left_spoiler_6_command_deg;
-  base_arinc_429 right_spoiler_6_command_deg;
-  base_arinc_429 left_spoiler_7_command_deg;
-  base_arinc_429 right_spoiler_7_command_deg;
-  base_arinc_429 left_spoiler_8_command_deg;
-  base_arinc_429 right_spoiler_8_command_deg;
-  base_arinc_429 left_inboard_elevator_command_deg;
-  base_arinc_429 right_inboard_elevator_command_deg;
-  base_arinc_429 left_outboard_elevator_command_deg;
-  base_arinc_429 right_outboard_elevator_command_deg;
-  base_arinc_429 ths_command_deg;
-  base_arinc_429 upper_rudder_command_deg;
-  base_arinc_429 lower_rudder_command_deg;
-  base_arinc_429 left_sidestick_pitch_command_deg;
-  base_arinc_429 right_sidestick_pitch_command_deg;
-  base_arinc_429 left_sidestick_roll_command_deg;
-  base_arinc_429 right_sidestick_roll_command_deg;
-  base_arinc_429 rudder_pedal_position_deg;
-  base_arinc_429 aileron_status_word;
-  base_arinc_429 left_aileron_1_position_deg;
-  base_arinc_429 left_aileron_2_position_deg;
-  base_arinc_429 right_aileron_1_position_deg;
-  base_arinc_429 right_aileron_2_position_deg;
-  base_arinc_429 spoiler_status_word;
-  base_arinc_429 left_spoiler_position_deg;
-  base_arinc_429 right_spoiler_position_deg;
-  base_arinc_429 elevator_status_word;
-  base_arinc_429 elevator_1_position_deg;
-  base_arinc_429 elevator_2_position_deg;
-  base_arinc_429 elevator_3_position_deg;
-  base_arinc_429 ths_position_deg;
-  base_arinc_429 rudder_status_word;
-  base_arinc_429 rudder_1_position_deg;
-  base_arinc_429 rudder_2_position_deg;
-  base_arinc_429 fctl_law_status_word;
-  base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
-#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
-
-struct base_sec_out_bus
-{
-  base_arinc_429 left_sidestick_pitch_command_deg;
-  base_arinc_429 right_sidestick_pitch_command_deg;
-  base_arinc_429 left_sidestick_roll_command_deg;
-  base_arinc_429 right_sidestick_roll_command_deg;
-  base_arinc_429 rudder_pedal_position_deg;
-  base_arinc_429 aileron_status_word;
-  base_arinc_429 left_aileron_1_position_deg;
-  base_arinc_429 left_aileron_2_position_deg;
-  base_arinc_429 right_aileron_1_position_deg;
-  base_arinc_429 right_aileron_2_position_deg;
-  base_arinc_429 spoiler_status_word;
-  base_arinc_429 left_spoiler_1_position_deg;
-  base_arinc_429 right_spoiler_1_position_deg;
-  base_arinc_429 left_spoiler_2_position_deg;
-  base_arinc_429 right_spoiler_2_position_deg;
-  base_arinc_429 elevator_status_word;
-  base_arinc_429 elevator_1_position_deg;
-  base_arinc_429 elevator_2_position_deg;
-  base_arinc_429 elevator_3_position_deg;
-  base_arinc_429 ths_position_deg;
-  base_arinc_429 rudder_status_word;
-  base_arinc_429 rudder_1_position_deg;
-  base_arinc_429 rudder_2_position_deg;
-  base_arinc_429 fctl_law_status_word;
-  base_arinc_429 misc_data_status_word;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_bus_inputs_
 #define DEFINED_TYPEDEF_FOR_base_prim_bus_inputs_
 
@@ -349,6 +368,8 @@ struct base_prim_bus_inputs
   base_ra_bus ra_2_bus;
   base_sfcc_bus sfcc_1_bus;
   base_sfcc_bus sfcc_2_bus;
+  base_lgciu_bus lgciu_1_bus;
+  base_lgciu_bus lgciu_2_bus;
   real_T irdc_1_bus;
   real_T irdc_2_bus;
   real_T irdc_3_bus;
@@ -361,6 +382,19 @@ struct base_prim_bus_inputs
   base_sec_out_bus sec_1_bus;
   base_sec_out_bus sec_2_bus;
   base_sec_out_bus sec_3_bus;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+
+struct base_prim_temporary_ap_input
+{
+  boolean_T ap_engaged;
+  real_T roll_command;
+  real_T pitch_command;
+  real_T yaw_command;
 };
 
 #endif
@@ -409,20 +443,6 @@ struct base_prim_lateral_surface_positions
   real_T right_spoiler_8_deg;
   real_T upper_rudder_deg;
   real_T lower_rudder_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-
-struct base_prim_pitch_surface_positions
-{
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
 };
 
 #endif
@@ -561,8 +581,11 @@ struct base_prim_logic_outputs
   boolean_T rudder_2_electric_mode_engaged;
   boolean_T aileron_droop_active;
   boolean_T aileron_antidroop_active;
+  boolean_T ths_automatic_mode_active;
+  real_T ths_manual_mode_c_deg_s;
   boolean_T is_yellow_hydraulic_power_avail;
   boolean_T is_green_hydraulic_power_avail;
+  boolean_T eha_ebha_elec_mode_inhibited;
   boolean_T left_sidestick_disabled;
   boolean_T right_sidestick_disabled;
   boolean_T left_sidestick_priority_locked;
@@ -573,6 +596,7 @@ struct base_prim_logic_outputs
   boolean_T ground_spoilers_armed;
   boolean_T ground_spoilers_out;
   boolean_T phased_lift_dumping_active;
+  boolean_T spoiler_lift_active;
   boolean_T ap_authorised;
   boolean_T protection_ap_disconnect;
   boolean_T high_alpha_prot_active;
@@ -592,6 +616,11 @@ struct base_prim_logic_outputs
   base_elac_ir_computation_data ir_computation_data;
   real_T ra_computation_data_ft;
   boolean_T dual_ra_failure;
+  boolean_T all_sfcc_lost;
+  real_T flap_handle_index;
+  real_T flap_angle_deg;
+  real_T slat_angle_deg;
+  real_T slat_flap_actual_pos;
 };
 
 #endif
@@ -655,351 +684,6 @@ struct prim_outputs
   base_prim_discrete_outputs discrete_outputs;
   base_prim_analog_outputs analog_outputs;
   base_prim_out_bus bus_outputs;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_roll_output_
-#define DEFINED_TYPEDEF_FOR_base_roll_output_
-
-struct base_roll_output
-{
-  real_T xi_inboard_deg;
-  real_T xi_midboard_deg;
-  real_T xi_outboard_deg;
-  real_T xi_spoiler_deg;
-  real_T zeta_upper_deg;
-  real_T zeta_lower_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_lateral_direct_input_
-#define DEFINED_TYPEDEF_FOR_lateral_direct_input_
-
-struct lateral_direct_input
-{
-  base_time time;
-  real_T delta_xi_pos;
-  real_T delta_zeta_pos;
-  boolean_T tracking_mode_on;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_lateral_normal_input_
-#define DEFINED_TYPEDEF_FOR_lateral_normal_input_
-
-struct lateral_normal_input
-{
-  base_time time;
-  real_T Theta_deg;
-  real_T Phi_deg;
-  real_T r_deg_s;
-  real_T pk_deg_s;
-  real_T beta_deg;
-  real_T V_ias_kn;
-  real_T V_tas_kn;
-  real_T H_radio_ft;
-  real_T delta_xi_pos;
-  real_T delta_zeta_pos;
-  boolean_T on_ground;
-  boolean_T tracking_mode_on;
-  boolean_T high_aoa_prot_active;
-  boolean_T high_speed_prot_active;
-  real_T ap_phi_c_deg;
-  real_T ap_beta_c_deg;
-  boolean_T any_ap_engaged;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_pitch_alternate_input_
-#define DEFINED_TYPEDEF_FOR_pitch_alternate_input_
-
-struct pitch_alternate_input
-{
-  base_time time;
-  real_T nz_g;
-  real_T Theta_deg;
-  real_T Phi_deg;
-  real_T qk_deg_s;
-  real_T eta_deg;
-  real_T eta_trim_deg;
-  real_T V_ias_kn;
-  real_T mach;
-  real_T V_tas_kn;
-  real_T CG_percent_MAC;
-  real_T total_weight_kg;
-  real_T flaps_handle_index;
-  real_T spoilers_left_pos;
-  real_T spoilers_right_pos;
-  real_T delta_eta_pos;
-  boolean_T on_ground;
-  boolean_T tracking_mode_on;
-  boolean_T stabilities_available;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_output_
-#define DEFINED_TYPEDEF_FOR_base_pitch_output_
-
-struct base_pitch_output
-{
-  real_T eta_deg;
-  real_T eta_trim_dot_deg_s;
-  real_T eta_trim_limit_lo;
-  real_T eta_trim_limit_up;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_pitch_direct_input_
-#define DEFINED_TYPEDEF_FOR_pitch_direct_input_
-
-struct pitch_direct_input
-{
-  base_time time;
-  real_T eta_deg;
-  real_T flaps_handle_index;
-  real_T delta_eta_pos;
-  boolean_T tracking_mode_on;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_pitch_normal_input_
-#define DEFINED_TYPEDEF_FOR_pitch_normal_input_
-
-struct pitch_normal_input
-{
-  base_time time;
-  real_T nz_g;
-  real_T Theta_deg;
-  real_T Phi_deg;
-  real_T qk_deg_s;
-  real_T qk_dot_deg_s2;
-  real_T eta_deg;
-  real_T eta_trim_deg;
-  real_T alpha_deg;
-  real_T V_ias_kn;
-  real_T V_tas_kn;
-  real_T H_radio_ft;
-  real_T CG_percent_MAC;
-  real_T total_weight_kg;
-  real_T flaps_handle_index;
-  real_T spoilers_left_pos;
-  real_T spoilers_right_pos;
-  real_T thrust_lever_1_pos;
-  real_T thrust_lever_2_pos;
-  boolean_T tailstrike_protection_on;
-  real_T VLS_kn;
-  real_T delta_eta_pos;
-  boolean_T on_ground;
-  boolean_T tracking_mode_on;
-  boolean_T high_aoa_prot_active;
-  boolean_T high_speed_prot_active;
-  real_T alpha_prot;
-  real_T alpha_max;
-  real_T high_speed_prot_high_kn;
-  real_T high_speed_prot_low_kn;
-  real_T ap_theta_c_deg;
-  boolean_T any_ap_engaged;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_roll_data_computed_
-#define DEFINED_TYPEDEF_FOR_base_roll_data_computed_
-
-struct base_roll_data_computed
-{
-  real_T delta_xi_deg;
-  real_T delta_zeta_deg;
-  real_T in_flight;
-  real_T in_flight_gain;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_roll_normal_
-#define DEFINED_TYPEDEF_FOR_base_roll_normal_
-
-struct base_roll_normal
-{
-  real_T pk_c_deg_s;
-  real_T Phi_c_deg;
-  real_T xi_deg;
-  real_T zeta_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_alternate_data_computed_
-#define DEFINED_TYPEDEF_FOR_base_pitch_alternate_data_computed_
-
-struct base_pitch_alternate_data_computed
-{
-  real_T eta_trim_deg_limit_lo;
-  real_T eta_trim_deg_limit_up;
-  real_T delta_eta_deg;
-  real_T in_flight;
-  real_T in_flare;
-  real_T in_flight_gain;
-  real_T nz_limit_up_g;
-  real_T nz_limit_lo_g;
-  boolean_T eta_trim_deg_should_freeze;
-  boolean_T eta_trim_deg_reset;
-  real_T eta_trim_deg_reset_deg;
-  boolean_T eta_trim_deg_should_write;
-  real_T eta_trim_deg_rate_limit_up_deg_s;
-  real_T eta_trim_deg_rate_limit_lo_deg_s;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_normal_
-#define DEFINED_TYPEDEF_FOR_base_pitch_normal_
-
-struct base_pitch_normal
-{
-  real_T nz_c_g;
-  real_T Cstar_g;
-  real_T protection_alpha_c_deg;
-  real_T protection_V_c_kn;
-  real_T eta_dot_deg_s;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_law_output_
-#define DEFINED_TYPEDEF_FOR_base_pitch_law_output_
-
-struct base_pitch_law_output
-{
-  real_T eta_dot_deg_s;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_integrated_
-#define DEFINED_TYPEDEF_FOR_base_pitch_integrated_
-
-struct base_pitch_integrated
-{
-  real_T eta_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
-#define DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
-
-struct base_pitch_data_computed
-{
-  real_T eta_trim_deg_limit_lo;
-  real_T eta_trim_deg_limit_up;
-  real_T delta_eta_deg;
-  real_T in_flight;
-  real_T in_rotation;
-  real_T in_flare;
-  real_T in_flight_gain;
-  real_T in_rotation_gain;
-  real_T nz_limit_up_g;
-  real_T nz_limit_lo_g;
-  boolean_T eta_trim_deg_should_freeze;
-  boolean_T eta_trim_deg_reset;
-  real_T eta_trim_deg_reset_deg;
-  boolean_T eta_trim_deg_should_write;
-  real_T eta_trim_deg_rate_limit_up_deg_s;
-  real_T eta_trim_deg_rate_limit_lo_deg_s;
-  real_T flare_Theta_deg;
-  real_T flare_Theta_c_deg;
-  real_T flare_Theta_c_rate_deg_s;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_rotation_
-#define DEFINED_TYPEDEF_FOR_base_pitch_rotation_
-
-struct base_pitch_rotation
-{
-  real_T qk_c_deg_s;
-  real_T eta_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
-#define DEFINED_TYPEDEF_FOR_struct_2OohiAWrazWy5wDS5iisgF_
-
-struct struct_2OohiAWrazWy5wDS5iisgF
-{
-  real_T SSM;
-  real_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_Tb3yuiM08uQe7QpDsuHA8B_
-#define DEFINED_TYPEDEF_FOR_struct_Tb3yuiM08uQe7QpDsuHA8B_
-
-struct struct_Tb3yuiM08uQe7QpDsuHA8B
-{
-  struct_2OohiAWrazWy5wDS5iisgF left_inboard_aileron_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_inboard_aileron_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_midboard_aileron_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_midboard_aileron_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_outboard_aileron_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_outboard_aileron_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_1_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_1_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_2_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_2_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_3_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_3_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_4_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_4_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_5_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_5_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_6_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_6_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_7_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_7_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_8_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_8_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_inboard_elevator_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_inboard_elevator_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_outboard_elevator_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_outboard_elevator_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF ths_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF upper_rudder_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF lower_rudder_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_sidestick_pitch_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_sidestick_pitch_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_sidestick_roll_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_sidestick_roll_command_deg;
-  struct_2OohiAWrazWy5wDS5iisgF rudder_pedal_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF aileron_status_word;
-  struct_2OohiAWrazWy5wDS5iisgF left_aileron_1_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF left_aileron_2_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_aileron_1_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_aileron_2_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF spoiler_status_word;
-  struct_2OohiAWrazWy5wDS5iisgF left_spoiler_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF right_spoiler_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF elevator_status_word;
-  struct_2OohiAWrazWy5wDS5iisgF elevator_1_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF elevator_2_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF elevator_3_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF ths_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF rudder_status_word;
-  struct_2OohiAWrazWy5wDS5iisgF rudder_1_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF rudder_2_position_deg;
-  struct_2OohiAWrazWy5wDS5iisgF fctl_law_status_word;
-  struct_2OohiAWrazWy5wDS5iisgF misc_data_status_word;
 };
 
 #endif

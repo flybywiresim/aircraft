@@ -1,145 +1,276 @@
-// Copyright (c) 2021 FlyByWire Simulations
-// Copyright (c) 2021 Synaptic Simulations
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
-import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 
 const UPDATE_TIMER = 2_500;
 
 export class EfisVectors {
-    private syncer: GenericDataListenerSync = new GenericDataListenerSync();
+  private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
-    constructor(
-        private guidanceController: GuidanceController,
-    ) {
+  private lastFpVersions = new Map<number, number>();
+
+  private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
+
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
+
+  constructor(
+    private readonly bus: EventBus,
+    private readonly flightPlanService: FlightPlanService,
+    private guidanceController: GuidanceController,
+    private efisInterfaces: Record<EfisSide, EfisInterface>,
+  ) {}
+
+  public forceUpdate() {
+    this.updateTimer = UPDATE_TIMER + 1;
+  }
+
+  private updateTimer = 0;
+
+  public update(deltaTime: number): void {
+    this.updateTimer += deltaTime;
+
+    if (this.updateTimer >= UPDATE_TIMER) {
+      this.updateSide('L', true);
+      this.updateSide('R', true);
+      this.updateTimer = 0;
+    } else {
+      this.updateSide('L');
+      this.updateSide('R');
+    }
+  }
+
+  private updateSide(side: EfisSide, force = false): void {
+    if (force || this.lastEfisInterfaceVersions[side] !== this.efisInterfaces[side].version) {
+      this.lastEfisInterfaceVersions[side] = this.efisInterfaces[side].version;
+
+      this.tryProcessFlightPlan(FlightPlanIndex.Active, side, true);
+      this.tryProcessFlightPlan(FlightPlanIndex.Temporary, side, true);
+      this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, side, true);
+
+      const activeFlightPlanVectors =
+        this.guidanceController.activeGeometry?.getAllPathVectors(this.guidanceController.activeLegIndex) ?? [];
+
+      const visibleActiveFlightPlanVectors = activeFlightPlanVectors.filter((vector) =>
+        EfisVectors.isVectorReasonable(vector),
+      );
+
+      if (visibleActiveFlightPlanVectors.length !== activeFlightPlanVectors.length) {
+        this.guidanceController.efisStateForSide[side].legsCulled = true;
+      } else {
+        this.guidanceController.efisStateForSide[side].legsCulled = false;
+      }
+    } else {
+      this.tryProcessFlightPlan(FlightPlanIndex.Active, side);
+      this.tryProcessFlightPlan(FlightPlanIndex.Temporary, side);
+      this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, side);
+    }
+  }
+
+  /**
+   * Protect against potential perf issues from immense vectors
+   */
+  private static isVectorReasonable(vector: PathVector): boolean {
+    if (!pathVectorValid(vector)) {
+      return false;
     }
 
-    private currentActiveVectors = [];
+    const length = pathVectorLength(vector);
 
-    private currentDashedVectors = [];
+    return length <= 5_000;
+  }
 
-    private currentTemporaryVectors = [];
+  private tryProcessFlightPlan(planIndex: FlightPlanIndex, side: EfisSide, force = false) {
+    const planExists = this.flightPlanService.has(planIndex);
 
-    public forceUpdate() {
-        this.updateTimer = UPDATE_TIMER + 1;
+    if (!planExists) {
+      this.lastFpVersions.delete(planIndex);
+
+      switch (planIndex) {
+        case FlightPlanIndex.Active:
+          this.transmit(null, EfisVectorsGroup.ACTIVE, side);
+          this.transmit(null, EfisVectorsGroup.DASHED, side);
+          this.transmit(null, EfisVectorsGroup.MISSED, side);
+          this.transmit(null, EfisVectorsGroup.ALTERNATE, side);
+          break;
+        case FlightPlanIndex.Temporary:
+          this.transmit(null, EfisVectorsGroup.TEMPORARY, side);
+          break;
+        case FlightPlanIndex.FirstSecondary:
+        case FlightPlanIndex.Uplink:
+        default:
+          this.transmit(null, EfisVectorsGroup.SECONDARY, side);
+          break;
+      }
+
+      return;
     }
 
-    private updateTimer = 0;
+    const plan = this.flightPlanService.get(planIndex);
 
-    public update(deltaTime: number): void {
-        this.updateTimer += deltaTime;
+    if (!force && this.lastFpVersions.get(planIndex) === plan.version) {
+      return;
+    }
 
-        if (this.updateTimer < UPDATE_TIMER) {
-            return;
-        }
+    this.lastFpVersions.set(planIndex, plan.version);
 
-        this.updateTimer = 0;
-
-        if (LnavConfig.DEBUG_PERF) {
-            console.time('vectors transmit');
-        }
-
-        const activeFlightPlanVectors = this.guidanceController.activeGeometry?.getAllPathVectors(this.guidanceController.activeLegIndex) ?? [];
-        const temporaryFlightPlanVectors = this.guidanceController.temporaryGeometry?.getAllPathVectors(this.guidanceController.temporaryLegIndex) ?? [];
-
-        const visibleActiveFlightPlanVectors = activeFlightPlanVectors
-            .filter((vector) => EfisVectors.isVectorReasonable(vector));
-        const visibleTemporaryFlightPlanVectors = temporaryFlightPlanVectors
-            .filter((vector) => EfisVectors.isVectorReasonable(vector));
-
-        if (visibleActiveFlightPlanVectors.length !== activeFlightPlanVectors.length) {
-            this.guidanceController.efisStateForSide.L.legsCulled = true;
-            this.guidanceController.efisStateForSide.R.legsCulled = true;
-        } else {
-            this.guidanceController.efisStateForSide.L.legsCulled = false;
-            this.guidanceController.efisStateForSide.R.legsCulled = false;
-        }
-
-        // ACTIVE
-
+    switch (planIndex) {
+      case FlightPlanIndex.Active: {
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
         const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
         const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
+        const flightPhase = this.flightPhase.get();
 
-        const transmitActive = engagedLateralMode === LateralMode.NAV || engagedLateralMode === LateralMode.LOC_CPT || engagedLateralMode === LateralMode.LOC_TRACK || navArmed;
-        const clearActive = !transmitActive && this.currentActiveVectors.length > 0;
+        // FIXME implement
+        const doesPreNavEngagePathExist = engagedLateralMode !== LateralMode.GA_TRACK;
+
+        const transmitActive =
+          // In preflight phase, the flight plan line is solid even when NAV is not armed
+          flightPhase === FmgcFlightPhase.Preflight ||
+          engagedLateralMode === LateralMode.NAV ||
+          engagedLateralMode === LateralMode.LOC_CPT ||
+          engagedLateralMode === LateralMode.LOC_TRACK ||
+          engagedLateralMode === LateralMode.LAND ||
+          engagedLateralMode === LateralMode.FLARE ||
+          engagedLateralMode === LateralMode.ROLL_OUT ||
+          (navArmed && doesPreNavEngagePathExist);
 
         if (transmitActive) {
-            this.currentActiveVectors = visibleActiveFlightPlanVectors;
-
-            this.transmitGroup(this.currentActiveVectors, EfisVectorsGroup.ACTIVE);
+          this.transmitFlightPlan(
+            plan,
+            side,
+            EfisVectorsGroup.ACTIVE,
+            EfisVectorsGroup.MISSED,
+            EfisVectorsGroup.ALTERNATE,
+          );
+          this.transmit(null, EfisVectorsGroup.DASHED, side);
+        } else {
+          this.transmit(null, EfisVectorsGroup.ACTIVE, side);
+          this.transmitFlightPlan(
+            plan,
+            side,
+            EfisVectorsGroup.DASHED,
+            EfisVectorsGroup.MISSED,
+            EfisVectorsGroup.ALTERNATE,
+          );
         }
-
-        if (clearActive) {
-            this.currentActiveVectors = [];
-
-            this.transmitGroup(this.currentActiveVectors, EfisVectorsGroup.ACTIVE);
+        break;
+      }
+      case FlightPlanIndex.Temporary:
+        this.transmitFlightPlan(plan, side, EfisVectorsGroup.TEMPORARY);
+        break;
+      default:
+        if (this.efisInterfaces[side].shouldTransmitSecondary()) {
+          this.transmitFlightPlan(plan, side, EfisVectorsGroup.SECONDARY);
+        } else {
+          this.transmit(null, EfisVectorsGroup.SECONDARY, side);
         }
+        break;
+    }
+  }
 
-        // DASHED
+  private transmitFlightPlan(
+    plan: ReadonlyFlightPlan,
+    side: EfisSide,
+    mainGroup: EfisVectorsGroup,
+    missedApproachGroup = mainGroup,
+    alternateGroup = mainGroup,
+  ) {
+    const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
+    const isPlanMode = mode === EfisNdMode.PLAN;
 
-        const transmitDashed = !transmitActive;
-        const clearDashed = !transmitDashed && this.currentDashedVectors.length > 0;
+    if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
+      this.transmit(null, mainGroup, side);
 
-        if (transmitDashed) {
-            this.currentDashedVectors = visibleActiveFlightPlanVectors;
+      if (missedApproachGroup !== mainGroup) {
+        this.transmit(null, missedApproachGroup, side);
+      }
 
-            this.transmitGroup(this.currentDashedVectors, EfisVectorsGroup.DASHED);
-        }
+      if (alternateGroup !== mainGroup) {
+        this.transmit(null, alternateGroup, side);
+      }
 
-        if (clearDashed) {
-            this.currentDashedVectors = [];
-
-            this.transmitGroup(this.currentDashedVectors, EfisVectorsGroup.DASHED);
-        }
-
-        // TEMPORARY
-
-        const transmitTemporary = this.guidanceController.hasTemporaryFlightPlan && this.guidanceController.temporaryGeometry?.legs?.size > 0;
-        const clearTemporary = !transmitTemporary && this.currentTemporaryVectors.length > 0;
-
-        if (transmitTemporary) {
-            this.currentTemporaryVectors = visibleTemporaryFlightPlanVectors;
-
-            this.transmitGroup(this.currentTemporaryVectors, EfisVectorsGroup.TEMPORARY);
-        }
-
-        if (clearTemporary) {
-            this.currentTemporaryVectors = [];
-
-            this.transmitGroup(this.currentTemporaryVectors, EfisVectorsGroup.TEMPORARY);
-        }
-
-        if (LnavConfig.DEBUG_PERF) {
-            console.timeEnd('vectors transmit');
-        }
+      return;
     }
 
-    /**
-     * Protect against potential perf issues from immense vectors
-     */
-    private static isVectorReasonable(vector: PathVector): boolean {
-        if (!pathVectorValid(vector)) {
-            return false;
+    // ACTIVE
+
+    const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
+
+    const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
+
+    // ACTIVE missed
+
+    const transmitMissed = this.efisInterfaces[side].shouldTransmitMissed(plan.index, isPlanMode);
+
+    if (transmitMissed) {
+      const missedVectors = geometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));
+
+      if (missedApproachGroup === mainGroup) {
+        vectors.push(...missedVectors);
+      } else {
+        this.transmit(missedVectors, missedApproachGroup, side);
+      }
+    } else if (missedApproachGroup !== mainGroup) {
+      this.transmit(null, missedApproachGroup, side);
+    }
+
+    this.transmit(vectors, mainGroup, side);
+
+    // ALTN
+
+    const transmitAlternate = this.efisInterfaces[side].shouldTransmitAlternate(plan.index, isPlanMode);
+
+    if (transmitAlternate) {
+      const alternateGeometry = this.guidanceController.getGeometryForFlightPlan(plan.index, true);
+
+      if (alternateGeometry) {
+        const alternateVectors = alternateGeometry
+          .getAllPathVectors(0)
+          .filter((it) => EfisVectors.isVectorReasonable(it));
+
+        // ALTN missed
+
+        const transmitAlternateMissed = this.efisInterfaces[side].shouldTransmitAlternateMissed(plan.index, isPlanMode);
+
+        if (transmitAlternateMissed) {
+          const missedVectors = alternateGeometry
+            .getAllPathVectors(0, true)
+            .filter((it) => EfisVectors.isVectorReasonable(it));
+
+          alternateVectors.push(...missedVectors);
         }
 
-        const length = pathVectorLength(vector);
-
-        return length <= 5_000;
+        if (alternateGroup === mainGroup) {
+          vectors.push(...alternateVectors);
+        } else {
+          this.transmit(alternateVectors, alternateGroup, side);
+        }
+      } else if (alternateGroup !== mainGroup) {
+        this.transmit(null, alternateGroup, side);
+      }
+    } else if (alternateGroup !== mainGroup) {
+      this.transmit(null, alternateGroup, side);
     }
+  }
 
-    private transmitGroup(vectors: PathVector[], group: EfisVectorsGroup): void {
-        this.transmit(vectors, group, 'L');
-        this.transmit(vectors, group, 'R');
-    }
-
-    private transmit(vectors: PathVector[], vectorsGroup: EfisVectorsGroup, side: EfisSide): void {
-        this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`, vectors);
-    }
+  private transmit(vectors: PathVector[], vectorsGroup: EfisVectorsGroup, side: EfisSide): void {
+    this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`, vectors);
+  }
 }

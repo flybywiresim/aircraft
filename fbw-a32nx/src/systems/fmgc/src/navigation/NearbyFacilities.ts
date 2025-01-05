@@ -1,170 +1,108 @@
-// Copyright (c) 2021 FlyByWire Simulations
+// Copyright (c) 2021, 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NearestSearchType } from '@flybywiresim/fbw-sdk';
+import { UpdateThrottler, Airport, NdbNavaid, VhfNavaid, Waypoint, RunwaySurfaceType } from '@flybywiresim/fbw-sdk';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Coordinates } from 'msfs-geo';
 
-// WARNING: this is a temporary implementation until the new nav database is complete
-// Do not write any code which depends on it
 export class NearbyFacilities {
-    private static instance: NearbyFacilities;
+  private static instance: NearbyFacilities;
 
-    private readonly nearbyAirports: Map<string, RawAirport> = new Map();
+  private nearbyAirports: readonly Airport[] = [];
 
-    private readonly nearbyNdbNavaids: Map<string, RawNdb> = new Map();
+  private nearbyNdbNavaids: readonly NdbNavaid[] = [];
 
-    private readonly nearbyVhfNavaids: Map<string, RawVor> = new Map();
+  private nearbyVhfNavaids: readonly VhfNavaid[] = [];
 
-    private readonly nearbyWaypoints: Map<string, RawIntersection> = new Map();
+  private nearbyWaypoints: readonly Waypoint[] = [];
 
-    version: number = 0;
+  version: number = 0;
 
-    private listener: ViewListener.ViewListener;
+  private ppos = { lat: 0, long: 0 };
 
-    private initDone = false;
+  private pposValid = false;
 
-    private airportSessionId: number;
+  private throttler = new UpdateThrottler(10000);
 
-    private ndbSessionId: number;
+  private radius = 381; // nautical miles
 
-    private vorSessionId: number;
+  private limit = 160;
 
-    private waypointSessionId: number;
+  private constructor(private filter: NearbyFacilitiesFilter = DefaultNearbyFacilitiesFilter) {}
 
-    private ppos = { lat: 0, long: 0 };
+  static getInstance(): NearbyFacilities {
+    if (!NearbyFacilities.instance) {
+      NearbyFacilities.instance = new NearbyFacilities();
+    }
+    return NearbyFacilities.instance;
+  }
 
-    private pposValid = false;
+  getAirports(): IterableIterator<Airport> {
+    return this.pposValid ? this.nearbyAirports.values() : [][Symbol.iterator]();
+  }
 
-    private throttler = new A32NX_Util.UpdateThrottler(10000);
+  getNdbNavaids(): IterableIterator<NdbNavaid> {
+    return this.pposValid ? this.nearbyNdbNavaids.values() : [][Symbol.iterator]();
+  }
 
-    private radius = 381 * 1852; // metres
+  getVhfNavaids(): IterableIterator<VhfNavaid> {
+    return this.pposValid ? this.nearbyVhfNavaids.values() : [][Symbol.iterator]();
+  }
 
-    private limit = 160;
+  getWaypoints(): IterableIterator<Waypoint> {
+    return this.pposValid ? this.nearbyWaypoints.values() : [][Symbol.iterator]();
+  }
 
-    private constructor() {
-        this.listener = RegisterViewListener('JS_LISTENER_FACILITY', async () => {
-            this.listener.on('SendAirport', this.addAirport.bind(this));
-            this.listener.on('SendIntersection', this.addWaypoint.bind(this));
-            this.listener.on('SendNdb', this.addNdbNavaid.bind(this));
-            this.listener.on('SendVor', this.addVhfNavaid.bind(this));
-            this.listener.on('NearestSearchCompleted', this.onSearchCompleted.bind(this));
+  init(): void {
+    // Do nothing for now
+  }
 
-            this.airportSessionId = await Coherent.call('START_NEAREST_SEARCH_SESSION', NearestSearchType.Airport);
-            this.ndbSessionId = await Coherent.call('START_NEAREST_SEARCH_SESSION', NearestSearchType.Ndb);
-            this.vorSessionId = await Coherent.call('START_NEAREST_SEARCH_SESSION', NearestSearchType.Vor);
-            this.waypointSessionId = await Coherent.call('START_NEAREST_SEARCH_SESSION', NearestSearchType.Intersection);
-            this.initDone = true;
-        });
+  async update(deltaTime: number): Promise<void> {
+    if (this.throttler.canUpdate(deltaTime) === -1) {
+      return;
     }
 
-    static getInstance(): NearbyFacilities {
-        if (!NearbyFacilities.instance) {
-            NearbyFacilities.instance = new NearbyFacilities();
-        }
-        return NearbyFacilities.instance;
+    const database = NavigationDatabaseService.activeDatabase.backendDatabase;
+
+    if (this.pposValid && database) {
+      // FIXME implement a more efficient diff-type interface in msfs-navdata
+      this.nearbyAirports = await database.getNearbyAirports(
+        this.ppos,
+        this.radius,
+        this.limit,
+        this.filter.airports.longestRunwaySurfaces,
+        this.filter.airports.longestRunwayLength,
+      );
+      this.nearbyNdbNavaids = await database.getNearbyNdbNavaids(this.ppos, this.radius, this.limit);
+      this.nearbyVhfNavaids = await database.getNearbyVhfNavaids(this.ppos, this.radius, this.limit);
+      // FIXME rename this method in msfs-navdata
+      this.nearbyWaypoints = await database.getWaypointsInRange(this.ppos, this.radius, this.limit);
     }
+  }
 
-    getAirports(): IterableIterator<RawAirport> {
-        return this.pposValid ? this.nearbyAirports.values() : [][Symbol.iterator]();
+  setPpos(ppos: Coordinates | null) {
+    if (ppos === null) {
+      this.pposValid = false;
+    } else if (!this.pposValid || Avionics.Utils.computeDistance(ppos, this.ppos) > 5) {
+      this.ppos.lat = ppos.lat;
+      this.ppos.long = ppos.long;
+      this.pposValid = true;
     }
-
-    getNdbNavaids(): IterableIterator<RawNdb> {
-        return this.pposValid ? this.nearbyNdbNavaids.values() : [][Symbol.iterator]();
-    }
-
-    getVhfNavaids(): IterableIterator<RawVor> {
-        return this.pposValid ? this.nearbyVhfNavaids.values() : [][Symbol.iterator]();
-    }
-
-    getWaypoints(): IterableIterator<RawIntersection> {
-        return this.pposValid ? this.nearbyWaypoints.values() : [][Symbol.iterator]();
-    }
-
-    init(): void {
-        // Do nothing for now
-    }
-
-    async update(deltaTime: number): Promise<void> {
-        if (!this.initDone || this.throttler.canUpdate(deltaTime) === -1) {
-            return;
-        }
-
-        if (this.pposValid) {
-            Coherent.call('SEARCH_NEAREST', this.airportSessionId, this.ppos.lat, this.ppos.long, this.radius, this.limit);
-            Coherent.call('SEARCH_NEAREST', this.vorSessionId, this.ppos.lat, this.ppos.long, this.radius, this.limit);
-            Coherent.call('SEARCH_NEAREST', this.ndbSessionId, this.ppos.lat, this.ppos.long, this.radius, this.limit);
-            Coherent.call('SEARCH_NEAREST', this.waypointSessionId, this.ppos.lat, this.ppos.long, this.radius, this.limit);
-        }
-    }
-
-    setPpos(ppos: Coordinates | null) {
-        if (ppos === null) {
-            this.pposValid = false;
-        } else if (!this.pposValid || Avionics.Utils.computeDistance(ppos, this.ppos) > 5) {
-            this.ppos.lat = ppos.lat;
-            this.ppos.long = ppos.long;
-            this.pposValid = true;
-        }
-    }
-
-    private onSearchCompleted(result: NearestSearch): void {
-        let nearestList: Map<string, RawAirport | RawNdb | RawVor | RawIntersection>;
-        let loadCall;
-        switch (result.sessionId) {
-        case this.airportSessionId:
-            nearestList = this.nearbyAirports;
-            loadCall = 'LOAD_AIRPORTS';
-            break;
-        case this.ndbSessionId:
-            nearestList = this.nearbyNdbNavaids;
-            loadCall = 'LOAD_NDBS';
-            break;
-        case this.vorSessionId:
-            nearestList = this.nearbyVhfNavaids;
-            loadCall = 'LOAD_VORS';
-            break;
-        case this.waypointSessionId:
-            nearestList = this.nearbyWaypoints;
-            loadCall = 'LOAD_INTERSECTIONS';
-            break;
-        default:
-            return;
-        }
-
-        for (const icao of result.removed) {
-            delete nearestList[icao];
-            this.version++;
-        }
-
-        const loadIcaos = [];
-        for (const icao of result.added) {
-            if (nearestList.has(icao)) {
-                continue;
-            }
-            loadIcaos.push(icao);
-        }
-        if (loadIcaos.length > 0) {
-            Coherent.call(loadCall, loadIcaos);
-        }
-    }
-
-    addAirport(airport: RawAirport): void {
-        this.nearbyAirports.set(airport.icao, airport);
-        this.version++;
-    }
-
-    addWaypoint(waypoint: RawIntersection): void {
-        this.nearbyWaypoints.set(waypoint.icao, waypoint);
-        this.version++;
-    }
-
-    addNdbNavaid(ndb: RawNdb): void {
-        this.nearbyNdbNavaids.set(ndb.icao, ndb);
-        this.version++;
-    }
-
-    addVhfNavaid(vor: RawVor): void {
-        this.nearbyVhfNavaids.set(vor.icao, vor);
-        this.version++;
-    }
+  }
 }
+
+interface NearbyFacilitiesFilter {
+  airports: NearbyAirportFilter;
+}
+
+interface NearbyAirportFilter {
+  longestRunwaySurfaces?: number;
+  longestRunwayLength?: number;
+}
+
+const DefaultNearbyFacilitiesFilter: NearbyFacilitiesFilter = {
+  airports: {
+    longestRunwaySurfaces: RunwaySurfaceType.Hard,
+    longestRunwayLength: 1500,
+  },
+};

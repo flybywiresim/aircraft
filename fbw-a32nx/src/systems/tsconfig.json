@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
     "baseUrl": ".",
     "resolveJsonModule" : true,
     "skipLibCheck": true,
     "typeRoots": [
-      "../../../fbw-common/src/typings"
+      "../../../fbw-common/src/typings",
+      "../../../node_modules/@types",
     ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
@@ -25,6 +26,10 @@
       "@tcas/*": ["./tcas/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
       "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
+      "@flybywiresim/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
+      "@flybywiresim/clock": ["../../../fbw-common/src/systems/instruments/src/Clock/index.ts"],
+      "@flybywiresim/bat": ["../../../fbw-common/src/systems/instruments/src/BAT/index.ts"],
+      "@flybywiresim/pfd": ["../../../fbw-common/src/systems/instruments/src/PFD/index.ts"]
     }
   },
 }
