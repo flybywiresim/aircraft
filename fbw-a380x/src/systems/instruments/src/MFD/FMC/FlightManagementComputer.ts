@@ -16,7 +16,16 @@ import {
   NavigationDatabaseService,
 } from '@fmgc/index';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
-import { ArraySubject, EventBus, SimVarValueType, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  ConsumerSubject,
+  EventBus,
+  MappedSubject,
+  SimVarValueType,
+  Subject,
+  Subscribable,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -48,6 +57,9 @@ import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { A380Failure } from '@failures';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
+import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
+import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/MfdUiService';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -139,6 +151,32 @@ export class FlightManagementComputer implements FmcInterface {
   // TODO remove this cyclic dependency, isWaypointInUse should be moved to DataInterface
   private dataManager: DataManager | null = null;
 
+  private readonly sub = this.bus.getSubscriber<FlightPhaseManagerEvents & MfdUIData>();
+
+  private readonly flightPhase = ConsumerSubject.create<FmgcFlightPhase>(
+    this.sub.on('fmgc_flight_phase'),
+    this.flightPhaseManager.phase,
+  );
+  private readonly activePage = ConsumerSubject.create<ActiveUriInformation | null>(
+    this.sub.on('mfd_active_uri'),
+    null,
+  );
+
+  private readonly isReset = Subject.create(true);
+
+  private readonly shouldBePreflightPhase = MappedSubject.create(
+    ([phase, page, isReset]) => {
+      const isPreflight =
+        phase === FmgcFlightPhase.Done &&
+        isReset &&
+        (page?.uri === 'fms/active/init' || page?.uri === 'fms/active/fuel-load' || page?.uri === 'fms/active/perf');
+      return isPreflight;
+    },
+    this.flightPhase,
+    this.activePage,
+    this.isReset,
+  );
+
   public getDataManager() {
     return this.dataManager;
   }
@@ -215,6 +253,12 @@ export class FlightManagementComputer implements FmcInterface {
       this.initSimVars();
 
       this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
+
+      this.shouldBePreflightPhase.sub((shouldBePreflight) => {
+        if (shouldBePreflight) {
+          this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
+        }
+      }, true);
 
       this.subs.push(
         this.enginesWereStarted.sub((val) => {
@@ -594,6 +638,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.acInterface.updateManagedSpeed();
 
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
+    this.isReset.set(false);
 
     switch (nextPhase) {
       case FmgcFlightPhase.Takeoff: {
@@ -756,8 +801,6 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Done:
-        this.mfdReference?.uiService.navigateTo('fms/data/status');
-
         this.flightPlanService
           .reset()
           .then(() => {
@@ -767,6 +810,7 @@ export class FlightManagementComputer implements FmcInterface {
             this.clearLatestFmsErrorMessage();
             SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
               this.mfdReference?.uiService.navigateTo('fms/data/status');
+              this.isReset.set(true);
             });
           })
           .catch(console.error);

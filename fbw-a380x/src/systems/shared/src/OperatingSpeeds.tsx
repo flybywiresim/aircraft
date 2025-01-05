@@ -116,9 +116,12 @@ export class SpeedsLookupTables {
   };
 
   static getApproachVls(conf: number, cg: number, weight: number): number {
-    if (conf === 1) {
+    if (conf === 0) {
       return SpeedsLookupTables.VLS_CONF_0.get(0, weight);
     } else {
+      if (conf > 5) {
+        throw new Error('Invalid flap config for approach VLS computation');
+      }
       return SpeedsLookupTables.VLS_APPR_CONF[conf].get(cg, weight);
     }
   }
@@ -512,13 +515,12 @@ export class A380OperatingSpeeds {
     this.f2 =
       fmgcFlightPhase <= FmgcFlightPhase.Takeoff
         ? Math.max(1.18 * vs1gConf1F, Vmcl + 5)
-        : SpeedsLookupTables.F2_SPEED.get(altitude, m);
+        : SpeedsLookupTables.F2_SPEED.get(cg, m);
     this.f3 =
       fmgcFlightPhase <= FmgcFlightPhase.Takeoff
         ? Math.max(1.18 * vs1gConf1F, Vmcl + 5)
-        : SpeedsLookupTables.F3_SPEED.get(altitude, m);
-    this.s =
-      fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? 1.21 * vs1gConf0 : SpeedsLookupTables.S_SPEED.get(altitude, m);
+        : SpeedsLookupTables.F3_SPEED.get(cg, m);
+    this.s = fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? 1.21 * vs1gConf0 : SpeedsLookupTables.S_SPEED.get(m);
   }
 }
 

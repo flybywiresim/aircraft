@@ -1850,6 +1850,27 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
+  221800008: {
+    title: '\x1b<4m\x1b4mT.O\x1bm SPEEDS TOO LOW',
+    sensed: true,
+    items: [
+      {
+        name: 'TOW & T.O DATA',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+    ],
+  },
+  221800009: {
+    title: '\x1b<4m\x1b4mT.O\x1bm V1/VR/V2 DISAGREE',
+    sensed: true,
+    items: [],
+  },
+  221800010: {
+    title: '\x1b<2m\x1b4mT.O\x1bm ACCELERATION DEGRADED',
+    sensed: true,
+    items: [],
+  },
   230800001: {
     title: '\x1b<4m\x1b4mCAB COM\x1bm CIDS 1+2+3 FAULT',
     sensed: true,

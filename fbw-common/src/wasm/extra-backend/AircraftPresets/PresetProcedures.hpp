@@ -5,6 +5,7 @@
 #define FLYBYWIRE_AIRCRAFT_PRESET_PROCEDURES
 
 #include <algorithm>
+#include <fstream>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -42,11 +43,11 @@ typedef std::vector<ProcedureStep*> Preset;
  */
 class PresetProcedures {
  private:
-  Preset coldAndDark;       // cold and dark preset - ID 1
-  Preset powered;           // powered preset - ID 2
-  Preset readyForPushback;  // ready for pushback preset - ID 3
-  Preset readyForTaxi;      // ready for taxi preset - ID 4
-  Preset readyForTakeoff;   // ready for takeoff preset - ID 5
+  Preset coldAndDark{};       // cold and dark preset - ID 1
+  Preset powered{};           // powered preset - ID 2
+  Preset readyForPushback{};  // ready for pushback preset - ID 3
+  Preset readyForTaxi{};      // ready for taxi preset - ID 4
+  Preset readyForTakeoff{};   // ready for takeoff preset - ID 5
 
   // The XML document containing the procedure definitions
   tinyxml2::XMLDocument presetProceduresXML;
@@ -65,7 +66,7 @@ class PresetProcedures {
    * @brief Construct a new PresetProcedures object
    * @param configFile the path to the XML file containing the procedure definitions in the MSFS VFS
    */
-  PresetProcedures(std::string&& configFile) : configFile{configFile} { initializeProcedureListMap(); }
+  explicit PresetProcedures(std::string&& configFile) : configFile{configFile} { initializeProcedureListMap(); }
 
   /**
    * @brief Get the procedure for the given configuration.
@@ -80,7 +81,7 @@ class PresetProcedures {
    */
   Preset* getProcedure(int pID) {
     if (pID < 1 || pID > 5) {
-      LOG_ERROR("AircraftPresets: The procedure ID " + std::to_string(pID) + " is not valid. Valid IDs are 1-5.");
+      LOG_ERROR(fmt::format("AircraftPresets: The procedure ID {} is not valid. Valid IDs are 1-5.", pID));
       return nullptr;
     }
     if (!loadXMLConfig(configFile)) {
@@ -102,11 +103,13 @@ class PresetProcedures {
   bool loadXMLConfig(const std::string& filePath) {
     presetProceduresXML.LoadFile(filePath.c_str());  // also clears the previous document
     if (presetProceduresXML.Error()) {
-      LOG_ERROR("AircraftPresets: XML config \"" + filePath +
-                "\" parsed with errors. Error description: " + presetProceduresXML.ErrorStr());
+      LOG_ERROR(fmt::format("AircraftPresets: XML config \"{}\" parsed with errors. Error description: {}", filePath,
+                            presetProceduresXML.ErrorStr()));
+      LOG_ERROR("AircraftPresets: XML config:");
+      printFileWithLineNumbers(filePath);
       return false;
     }
-    LOG_INFO("AircraftPresets: XML config \"" + filePath + "\" parsed without errors.");
+    LOG_INFO(fmt::format("AircraftPresets: XML config \"{}\" parsed without errors.", filePath));
     return true;
   }
 
@@ -127,7 +130,7 @@ class PresetProcedures {
 
       // Check if the procedure name is valid
       if (procedureListMap.find(procedureName) == procedureListMap.end()) {
-        LOG_ERROR("AircraftPresets: The procedure " + procedureName + " is not valid. Skipping the whole procedure.");
+        LOG_ERROR(fmt::format("AircraftPresets: The procedure {} is not valid. Skipping the whole procedure.", procedureName));
         continue;
       }
 
@@ -138,15 +141,15 @@ class PresetProcedures {
 
         // Check if the step type is valid
         if (typeItr == ProcedureStep::StepTypeMap.end()) {
-          LOG_ERROR("AircraftPresets: Invalid step. Skipping the Step.\n Procedure: " + procedureName +
-                    " Step: " + currentStep->Attribute("Name"));
+          LOG_ERROR(fmt::format("AircraftPresets: Invalid step. Skipping the Step.\n Procedure: {} Step: {}", procedureName,
+                                currentStep->Attribute("Name")));
           continue;
         }
 
         // Check if the delay is valid
         if (currentStep->IntAttribute("Delay") < 0) {
-          LOG_ERROR("AircraftPresets: Invalid delay. Skipping the Step.\n Procedure: " + procedureName +
-                    " Step: " + currentStep->Attribute("Name"));
+          LOG_ERROR(fmt::format("AircraftPresets: Invalid delay. Skipping the Step.\n Procedure: {} Step: {}", procedureName,
+                                currentStep->Attribute("Name")));
           continue;
         }
 
@@ -219,6 +222,25 @@ class PresetProcedures {
           back_inserter(dest),                        //
           [](auto& procedure) { return &procedure; }  //
       );                                              //
+    }
+  }
+
+  /**
+   * @brief Print the file with line numbers for debugging purposes
+   * @param filePath the path to the file to print
+   */
+  void printFileWithLineNumbers(const std::string& filePath) {
+    std::ifstream fileStream(filePath);
+    if (!fileStream.is_open()) {
+      std::cerr << "Failed to open file: " << filePath << std::endl;
+      return;
+    }
+
+    std::string line;
+    int         lineNumber = 1;
+    while (std::getline(fileStream, line)) {
+      std::cerr << lineNumber << ": " << line << std::endl;
+      ++lineNumber;
     }
   }
 };

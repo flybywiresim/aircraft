@@ -15,6 +15,7 @@ import { FlightArea } from '@fmgc/navigation/FlightArea';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { ImportedPerformanceData } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import {
+  DefaultPerformanceData,
   FlightPlanPerformanceData,
   FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
@@ -129,7 +130,18 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     this.alternateFlightPlan.allLegs.length = 0;
 
+    this.resetAlternatePerformanceData();
+
     this.alternateFlightPlan.incrementVersion();
+  }
+
+  private resetAlternatePerformanceData() {
+    this.setPerformanceData('alternateClimbSpeedLimitSpeed', DefaultPerformanceData.ClimbSpeedLimitSpeed);
+    this.setPerformanceData('alternateClimbSpeedLimitAltitude', DefaultPerformanceData.ClimbSpeedLimitAltitude);
+    this.setPerformanceData('isAlternateClimbSpeedLimitPilotEntered', false);
+    this.setPerformanceData('alternateDescentSpeedLimitSpeed', DefaultPerformanceData.DescentSpeedLimitSpeed);
+    this.setPerformanceData('alternateDescentSpeedLimitAltitude', DefaultPerformanceData.DescentSpeedLimitAltitude);
+    this.setPerformanceData('isAlternateDescentSpeedLimitPilotEntered', false);
   }
 
   directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
@@ -301,8 +313,21 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
     this.setPerformanceData('costIndex', 0);
+    this.setPerformanceData('climbSpeedLimitSpeed', this.performanceData.alternateClimbSpeedLimitSpeed);
+    this.setPerformanceData('climbSpeedLimitAltitude', this.performanceData.alternateClimbSpeedLimitAltitude);
+    this.setPerformanceData(
+      'isClimbSpeedLimitPilotEntered',
+      this.performanceData.isAlternateClimbSpeedLimitPilotEntered,
+    );
+    this.setPerformanceData('descentSpeedLimitSpeed', this.performanceData.alternateDescentSpeedLimitSpeed);
+    this.setPerformanceData('descentSpeedLimitAltitude', this.performanceData.alternateDescentSpeedLimitAltitude);
+    this.setPerformanceData(
+      'isDescentSpeedLimitPilotEntered',
+      this.performanceData.isAlternateDescentSpeedLimitPilotEntered,
+    );
 
     this.deleteAlternateFlightPlan();
+    this.resetAlternatePerformanceData();
 
     this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
     this.enqueueOperation(FlightPlanQueuedOperation.Restring);
