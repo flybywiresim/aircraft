@@ -19,7 +19,7 @@ export class FmcService implements FmcServiceInterface {
   protected fmc: FmcInterface[] = [];
 
   private readonly dcEssBusPowered = ConsumerSubject.create(this.sub.on('dcBusEss'), false);
-  private readonly fmcAReset = ConsumerSubject.create(this.sub.on('fmcAReset'), false);
+  private readonly fmcAReset = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fmc_a'), false);
   private readonly fmcAFailed = MappedSubject.create(
     ([powered, reset]) => !powered || reset,
     this.dcEssBusPowered,
@@ -27,7 +27,7 @@ export class FmcService implements FmcServiceInterface {
   );
 
   private readonly dc1BusPowered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
-  private readonly fmcBReset = ConsumerSubject.create(this.sub.on('fmcBReset'), false);
+  private readonly fmcBReset = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fmc_b'), false);
   private readonly fmcBFailed = MappedSubject.create(
     ([powered, reset]) => !powered || reset,
     this.dc1BusPowered,
@@ -35,7 +35,7 @@ export class FmcService implements FmcServiceInterface {
   );
 
   private readonly dc2BusPowered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
-  private readonly fmcCReset = ConsumerSubject.create(this.sub.on('fmcCReset'), false);
+  private readonly fmcCReset = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fmc_c'), false);
   private readonly fmcCFailed = MappedSubject.create(
     ([powered, reset]) => !powered || reset,
     this.dc2BusPowered,
