@@ -23,9 +23,10 @@ import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { Button } from '../../common/Button';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
-import './MfdFmsFplnFixInfo.scss';
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
 import { FlightPlanFooter } from '../../common/FlightPlanFooter';
+
+import './MfdFmsFplnFixInfo.scss';
 
 export class MfdFmsFplnFixInfo extends FmsPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
