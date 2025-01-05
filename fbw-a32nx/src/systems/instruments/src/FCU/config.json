@@ -1,4 +1,7 @@
 {
   "index": "./instrument.tsx",
-  "isInteractive": false
+  "isInteractive": false,
+  "extraDeps": [
+    "../../../shared/src/publishers"
+  ]
 }

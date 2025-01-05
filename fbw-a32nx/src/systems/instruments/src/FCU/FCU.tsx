@@ -9,31 +9,42 @@ import {
 } from '@microsoft/msfs-sdk';
 import { EisDisplay } from 'instruments/src/FCU/Components/EisDisplay';
 import { AfsDisplay } from 'instruments/src/FCU/Components/AfsDisplay';
+import { FcuSimvars } from 'instruments/src/FCU/shared/FcuSimvarPublisher';
+import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32NXElectricalSystemPublisher';
 
 import './style.scss';
-import { FcuSimvars } from 'instruments/src/FCU/shared/FcuSimvarPublisher';
 
 interface FCUProps extends ComponentProps {
   bus: EventBus;
 }
 
 export class FCUComponent extends DisplayComponent<FCUProps> {
-  private fcuHealthy = ConsumerSubject.create(null, false);
+  private readonly sub = this.props.bus.getSubscriber<A32NXElectricalSystemEvents & FcuSimvars>();
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
+  private readonly fcuHealthy = ConsumerSubject.create(this.sub.on('fcuHealthy'), false);
 
-    const sub = this.props.bus.getSubscriber<FcuSimvars>();
-
-    this.fcuHealthy.setConsumer(sub.on('fcuHealthy'));
-  }
+  private readonly isBacklightPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_ac_1_bus_is_powered'), false);
 
   render(): VNode {
     return (
       <>
-        <img id="fcu-background" src="coui://html_ui/Images/fbw-a32nx/FCU/fcu-background.png" />
-        <svg class="fcu-svg" version="1.1" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
-          <g class={{ Hide: this.fcuHealthy.map(SubscribableMapFunctions.not()) }}>
+        <img
+          id="fcu-background"
+          src="coui://html_ui/Images/fbw-a32nx/FCU/fcu-background.png"
+          class={{
+            Hide: this.isBacklightPowered.map(SubscribableMapFunctions.not()),
+          }}
+        />
+        <svg
+          class={{
+            'fcu-svg': true,
+            Hide: this.fcuHealthy.map(SubscribableMapFunctions.not()),
+          }}
+          version="1.1"
+          viewBox="0 0 1280 640"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g>
             <AfsDisplay bus={this.props.bus} />
             <EisDisplay isCaptSide x={0} y={438} bus={this.props.bus} />
             <EisDisplay isCaptSide={false} x={920} y={438} bus={this.props.bus} />
