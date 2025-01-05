@@ -97,8 +97,13 @@ export interface EngineModelParameters {
 
   /**
    * Maximum corrected N1 in CLB thrust
-   * @param i row index (tat) in steps of 4°C
-   * @param j col index (pressure altitude, ft)
+   * Each row represents a different altitude and the corresponding engine thrust
+   * limits. The columns in each row represent the following parameters:
+   * 1. Altitude (in feet)
+   * 2. Corner Point (CP) - the temperature below which the engine can operate at full thrust without any restrictions.
+   * 3. Limit Point (LP) - the temperature above which the engine thrust starts to be limited.
+   * 4. CN1 Flat - the engine's N1 fan speed limit at the CP temperature.
+   * 5. CN1 Last - the engine's N1 fan speed limit at the LP temperature.
    * @returns Corrected N1 (CN1)
    */
   cn1ClimbLimit: readonly (readonly number[])[];
