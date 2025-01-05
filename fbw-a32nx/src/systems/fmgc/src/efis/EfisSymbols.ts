@@ -813,8 +813,8 @@ export class EfisSymbols<T extends number> {
           ident: fixInfo.fix.ident,
           location: fixInfo.fix.location,
           type: NdSymbolTypeFlags.FixInfo,
-          radials: fixInfo?.radials.map((it) => it.trueBearing),
-          radii: fixInfo?.radii.map((it) => it.radius),
+          radials: fixInfo.radials.map((it) => it.trueBearing),
+          radii: fixInfo.radii.map((it) => it.radius),
         });
       }
     }
