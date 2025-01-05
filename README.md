@@ -37,9 +37,14 @@ The following aircraft configurations are currently simulated or targeted:
 ### A380-800 (Trent 900)
 
 ```
-Model           A380-842
-Engine          Rolls-Royce Trent 972B-84
-Weight Variant  WV03
+Model       A380-842
+Engines     Rolls-Royce Trent 972B-84
+APU         APU - Pratt & Whitney PW980
+WV          003
+TAWS        Honeywell AESS
+ACAS        Honeywell AESS
+ATC         Honeywell AESS
+WXR         Honeywell AESS
 ```
 
 Please note that this configuration may change in the future as the projects evolve and change.
