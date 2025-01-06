@@ -1,6 +1,13 @@
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
-import { ConsumerSubject, EventBus, MappedSubject, SimVarValueType, Subscription } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  EventBus,
+  MappedSubject,
+  SimVarValueType,
+  SubscribableMapFunctions,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { FlightManagementComputer } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FmcIndex, FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -42,6 +49,13 @@ export class FmcService implements FmcServiceInterface {
     this.fmcCReset,
   );
 
+  private readonly allFmcReset = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.fmcAReset,
+    this.fmcBReset,
+    this.fmcCReset,
+  );
+
   private readonly fmsDataKnob = ConsumerSubject.create(this.sub.on('fmsDataKnob'), 1);
 
   private readonly fmsCaptSideFailed = MappedSubject.create(
@@ -65,23 +79,6 @@ export class FmcService implements FmcServiceInterface {
     private readonly failuresConsumer: FailuresConsumer,
   ) {
     this.createFmc(this.mfdReference);
-
-    MappedSubject.create(
-      ([power1, power2, power3, reset1, reset2, reset3]) =>
-        (!power1 && !power2 && !power3) || (reset1 && reset2 && reset3),
-      this.dcEssBusPowered,
-      this.dc1BusPowered,
-      this.dc2BusPowered,
-      this.fmcAReset,
-      this.fmcBReset,
-      this.fmcCReset,
-    ).sub((v) => {
-      if (v) {
-        // Completely destroy FMCs, might help for bugs
-        this.fmc.length = 0;
-        this.createFmc(this.mfdReference);
-      }
-    });
 
     this.fmsCaptSideFailed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FMS_L_FAILED', SimVarValueType.Bool, f));
     this.fmsFoSideFailed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FMS_R_FAILED', SimVarValueType.Bool, f));
@@ -107,7 +104,8 @@ export class FmcService implements FmcServiceInterface {
         FmcIndex.FmcA,
         FmcOperatingModes.Master,
         this.bus,
-        MappedSubject.create(([power, reset]) => power && !reset, this.dcEssBusPowered, this.fmcAReset),
+        this.dcEssBusPowered,
+        this.allFmcReset,
         mfdReference,
         this.failuresConsumer,
       ),
@@ -119,7 +117,8 @@ export class FmcService implements FmcServiceInterface {
         FmcIndex.FmcB,
         FmcOperatingModes.Slave,
         this.bus,
-        MappedSubject.create(([power, reset]) => power && !reset, this.dc2BusPowered, this.fmcBReset),
+        this.dc2BusPowered,
+        this.allFmcReset,
         mfdReference,
         this.failuresConsumer,
       ),
@@ -131,7 +130,8 @@ export class FmcService implements FmcServiceInterface {
         FmcIndex.FmcC,
         FmcOperatingModes.Standby,
         this.bus,
-        MappedSubject.create(([power, reset]) => power && !reset, this.dc1BusPowered, this.fmcCReset),
+        this.dc1BusPowered,
+        this.allFmcReset,
         mfdReference,
         this.failuresConsumer,
       ),

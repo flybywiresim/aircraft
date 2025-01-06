@@ -212,6 +212,7 @@ export class FlightManagementComputer implements FmcInterface {
     operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
     private readonly isPowered: Subscribable<boolean>,
+    private readonly resetPulled: Subscribable<boolean>,
     mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
     private readonly failuresConsumer: FailuresConsumer,
   ) {
@@ -274,6 +275,11 @@ export class FlightManagementComputer implements FmcInterface {
           // FIXME some of the systems require the A320 FMS health bits, need to refactor/split FMS stuff
           SimVar.SetSimVarValue('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean', v);
           SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', v);
+        }, true),
+        this.resetPulled.sub((reset) => {
+          if (reset) {
+            this.reset();
+          }
         }, true),
       );
     }
@@ -899,29 +905,21 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private onUpdate(dt: number) {
-    if (!this.isPowered.get() || this.failuresConsumer.isActive(this.failureKey)) {
-      SimVar.SetSimVarValue(
-        `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
-        SimVarValueType.Bool,
-        false,
-      );
-      this.legacyFmsIsHealthy.set(false);
-    } else {
-      SimVar.SetSimVarValue(
-        `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
-        SimVarValueType.Bool,
-        true,
-      );
-      this.legacyFmsIsHealthy.set(true);
-    }
+    const isHealthy =
+      this.isPowered.get() && !this.failuresConsumer.isActive(this.failureKey) && !this.resetPulled.get();
+    SimVar.SetSimVarValue(
+      `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
+      SimVarValueType.Bool,
+      isHealthy,
+    );
+    this.legacyFmsIsHealthy.set(isHealthy);
 
     // Stop early, if not FmcA or if all FMCs failed
-    if (
-      this.instance !== FmcIndex.FmcA ||
-      (!SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', SimVarValueType.Bool) &&
-        !SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', SimVarValueType.Bool) &&
-        !SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', SimVarValueType.Bool))
-    ) {
+    const allFmcFailed =
+      !SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', SimVarValueType.Bool);
+    if (this.instance !== FmcIndex.FmcA || (this.instance === FmcIndex.FmcA && allFmcFailed)) {
       return;
     }
 
