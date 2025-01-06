@@ -987,6 +987,7 @@ struct BtvDecelScheduler {
 
     distance_to_rwy_end: Length,
 
+    exit_missed_confirmation: DelayedTrueLogicGate,
     exit_missed: bool,
 }
 impl BtvDecelScheduler {
@@ -1010,6 +1011,8 @@ impl BtvDecelScheduler {
     const MAX_DECEL_SAFETY_MARGIN_RATIO: f64 = 1.4;
     const MIN_DECEL_SAFETY_MARGIN_RATIO: f64 = 1.15;
     const DECEL_SAFETY_MARGIN_SHAPING_FACTOR: f64 = 0.4;
+
+    const EXIT_MISSED_CONFIRMATION_TIME_S: u64 = 5;
 
     const REMAINING_BRAKING_DISTANCE_END_OF_RUNWAY_OFFSET_METERS: f64 = 300.;
 
@@ -1055,6 +1058,9 @@ impl BtvDecelScheduler {
 
             distance_to_rwy_end: Length::default(),
 
+            exit_missed_confirmation: DelayedTrueLogicGate::new(Duration::from_secs(
+                Self::EXIT_MISSED_CONFIRMATION_TIME_S,
+            )),
             exit_missed: false,
         }
     }
@@ -1105,6 +1111,9 @@ impl BtvDecelScheduler {
 
         self.compute_decel(context);
 
+        self.exit_missed_confirmation
+            .update(context, self.exit_missed);
+
         self.state = self.update_state(context);
     }
 
@@ -1144,7 +1153,16 @@ impl BtvDecelScheduler {
                 let target_deceleration_safety_corrected =
                     target_deceleration_raw * self.safety_margin();
 
-                self.exit_missed = target_deceleration_safety_corrected < Self::MAX_DECEL_DRY_MS2;
+                // If EXIT MISSED already confirmed for 5s, keep until disengaged
+                if !self.exit_missed_confirmation.output() {
+                    // Target deceleration shoots up when nearing release speed, hence only check above twice the release speed
+                    self.exit_missed = target_deceleration_safety_corrected
+                        < Self::MAX_DECEL_DRY_MS2
+                        && delta_speed_to_achieve
+                            > Velocity::new::<meter_per_second>(
+                                Self::TARGET_SPEED_TO_RELEASE_BTV_M_S,
+                            );
+                }
 
                 self.deceleration_request = Acceleration::new::<meter_per_second_squared>(
                     target_deceleration_safety_corrected.clamp(
@@ -1155,6 +1173,7 @@ impl BtvDecelScheduler {
             }
             BTVState::Armed | BTVState::Disabled => {
                 self.deceleration_request = Acceleration::new::<meter_per_second_squared>(5.);
+                self.exit_missed = false;
             }
         }
     }
@@ -1350,7 +1369,7 @@ impl SimulationElement for BtvDecelScheduler {
             turnaround_time_estimated_in_minutes[0].ssm(),
         );
 
-        writer.write(&self.exit_missed_id, self.exit_missed);
+        writer.write(&self.exit_missed_id, self.exit_missed_confirmation.output());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {

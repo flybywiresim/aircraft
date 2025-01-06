@@ -167,6 +167,7 @@ export interface PFDSimvars {
   spoilersArmed: boolean;
   fcuLeftVelocityVectorOn: boolean;
   fcuRightVelocityVectorOn: boolean;
+  btvExitMissed: boolean;
 }
 
 export enum PFDVars {
@@ -334,6 +335,7 @@ export enum PFDVars {
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
   fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
   fcuRightVelocityVectorOn = 'L:A380X_EFIS_R_VV_BUTTON_IS_ON',
+  btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -500,6 +502,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
     ['fcuLeftVelocityVectorOn', { name: PFDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],
     ['fcuRightVelocityVectorOn', { name: PFDVars.fcuRightVelocityVectorOn, type: SimVarValueType.Bool }],
+    ['btvExitMissed', { name: PFDVars.btvExitMissed, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

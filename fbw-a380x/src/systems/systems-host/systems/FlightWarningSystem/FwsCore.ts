@@ -1176,6 +1176,8 @@ export class FwsCore {
 
   public autoBrakeOffMemoInhibited = false;
 
+  public btvExitMissedPulseNode = new NXLogicPulseNode();
+
   /* NAVIGATION */
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
@@ -2620,6 +2622,15 @@ export class FwsCore {
     if (autoBrakeOffShouldTrigger && this.autoBrakeOffAuralConfirmNode.read() && !this.autoBrakeOffAuralTriggered) {
       this.soundManager.enqueueSound('autoBrakeOff');
       this.autoBrakeOffAuralTriggered = true;
+    }
+
+    this.btvExitMissedPulseNode.write(
+      SimVar.GetSimVarValue('L:A32NX_BTV_EXIT_MISSED', SimVarValueType.Bool),
+      deltaTime,
+    );
+
+    if (this.btvExitMissedPulseNode.read()) {
+      this.soundManager.enqueueSound('tripleClick');
     }
 
     // Engine Logic
