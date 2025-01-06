@@ -37,7 +37,7 @@ export const Wheel: FC<WheelProps> = ({ x, y, number, isLeftSide, hasBrake, more
             d={`m ${negativeSign}15,18 v -36 M ${negativeSign}21,18 v -36 M ${negativeSign}27,18 v -36 M ${negativeSign}33,18 v -36`}
           />
           <path className="BackgroundFill" d={`m ${isLeftSide ? -18 : 70},-13 h -50 v -24 h 50 z`} />
-          <text className="F26 Green EndAlign" x={isLeftSide ? -16 : 72} y={-16}>
+          <text className={`F26 EndAlign ${brakeTemp > 300 ? 'Amber' : 'Green'}`} x={isLeftSide ? -16 : 72} y={-16}>
             {roundTemperature(brakeTemp)}
           </text>
         </>

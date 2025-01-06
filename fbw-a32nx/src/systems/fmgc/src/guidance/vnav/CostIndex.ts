@@ -35,7 +35,7 @@ export class CostIndex {
     const correctedThrust = thrust / delta2 / 2;
     // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
     const correctedN1 = EngineModel.reverseTableInterpolation(
-      EngineModel.table1506,
+      config.engineModelParameters.table1506,
       mach,
       correctedThrust / config.engineModelParameters.maxThrust,
     );

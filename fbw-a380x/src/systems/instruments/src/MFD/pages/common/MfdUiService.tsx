@@ -1,4 +1,5 @@
-import { FSComponent, Subject } from '@microsoft/msfs-sdk';
+import { EventBus, FSComponent, Publisher, Subject } from '@microsoft/msfs-sdk';
+import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
 
 export enum MfdSystem {
   None = '',
@@ -23,7 +24,14 @@ export interface ActiveUriInformation {
  * Handles navigation (and potentially other aspects) for MFD pages
  */
 export class MfdUiService {
-  constructor(public captOrFo: 'CAPT' | 'FO') {}
+  private readonly pub: Publisher<MfdUIData>;
+
+  constructor(
+    public captOrFo: 'CAPT' | 'FO',
+    private readonly bus: EventBus,
+  ) {
+    this.pub = this.bus.getPublisher<MfdUIData>();
+  }
 
   public readonly activeUri = Subject.create<ActiveUriInformation>({
     uri: '',
@@ -79,6 +87,7 @@ export class MfdUiService {
 
     const parsedUri = this.parseUri(nextUri);
     this.activeUri.set(parsedUri);
+    this.pub.pub('mfd_active_uri', parsedUri);
   }
 
   /*
