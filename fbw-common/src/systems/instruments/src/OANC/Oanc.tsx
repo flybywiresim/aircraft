@@ -35,7 +35,6 @@ import {
   Arinc429LocalVarConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 import {
-  BBox,
   bbox,
   bboxPolygon,
   booleanPointInPolygon,
@@ -62,6 +61,7 @@ import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
+import { LubberLine } from '../ND/pages/arc/LubberLine';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -182,8 +182,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   public labelContainerRef = FSComponent.createRef<HTMLDivElement>();
 
   public data: AmdbFeatureCollection | undefined;
-
-  private dataBbox: BBox | undefined;
 
   private arpCoordinates: Subject<Coordinates | undefined> = Subject.create(undefined);
 
@@ -1426,6 +1424,26 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 y={this.aircraftY}
                 rotation={this.aircraftRotation}
               />
+
+              <svg
+                class="nd-svg nd-top-layer"
+                viewBox="0 0 768 768"
+                style={this.efisNDModeSub.map(
+                  (mode) => `transform: translateY(${mode === EfisNdMode.ARC ? -236 : 0}px);`,
+                )}
+              >
+                <LubberLine
+                  bus={this.props.bus}
+                  visible={MappedSubject.create(
+                    ([ac, mode]) => ac && mode !== EfisNdMode.PLAN,
+                    this.showAircraft,
+                    this.efisNDModeSub,
+                  )}
+                  rotation={Subject.create(0)}
+                  ndMode={this.efisNDModeSub}
+                  colorClass="Magenta"
+                />
+              </svg>
             </div>
           </div>
 
