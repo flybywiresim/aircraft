@@ -35,7 +35,7 @@ import {
 } from '@flybywiresim/oanc';
 
 import { ContextMenu, ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
-import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
+import { MouseCursor, MouseCursorColor } from 'instruments/src/MFD/pages/common/MouseCursor';
 import { OansControlPanel } from './OansControlPanel';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -304,6 +304,7 @@ class NDInstrument implements FsInstrument {
             ref={this.mouseCursorRef}
             side={Subject.create(this.efisSide === 'L' ? 'CAPT' : 'FO')}
             visible={this.cursorVisible}
+            color={this.oansShown.map((it) => (it ? MouseCursorColor.MAGENTA : MouseCursorColor.YELLOW))}
           />
           <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
         </CdsDisplayUnit>
