@@ -60,7 +60,7 @@ MSFS_CALLBACK bool MapView3D_gauge_callback(FsContext ctx, int service_id, void*
       nvgCreateFont(g_MapView3DNVGcontext[ctx], "icons", "./data/entypo.ttf");
       nvgCreateFont(g_MapView3DNVGcontext[ctx], "sans-bold", "./data/Roboto-Bold.ttf");
 
-      mapViewTextureId = fsMapViewCreate(ctx, 768, 1024, 0);
+      mapViewTextureId = fsMapViewCreate(ctx, 768, 500, 0);
       if (mapViewTextureId == -1) {
         return false;
       }
