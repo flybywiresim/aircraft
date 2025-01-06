@@ -960,6 +960,7 @@ struct BtvDecelScheduler {
     rot_estimation_id: VariableIdentifier,
     turnaround_idle_reverse_estimation_id: VariableIdentifier,
     turnaround_max_reverse_estimation_id: VariableIdentifier,
+    exit_missed_id: VariableIdentifier,
 
     runway_length: Arinc429Word<Length>,
 
@@ -985,6 +986,8 @@ struct BtvDecelScheduler {
     wet_prediction: Length,
 
     distance_to_rwy_end: Length,
+
+    exit_missed: bool,
 }
 impl BtvDecelScheduler {
     // Target decel when optimizing runway time before braking
@@ -1022,6 +1025,7 @@ impl BtvDecelScheduler {
                 .get_identifier("BTV_TURNAROUND_IDLE_REVERSE".to_owned()),
             turnaround_max_reverse_estimation_id: context
                 .get_identifier("BTV_TURNAROUND_MAX_REVERSE".to_owned()),
+            exit_missed_id: context.get_identifier("BTV_EXIT_MISSED".to_owned()),
 
             runway_length: Arinc429Word::new(Length::default(), SignStatus::NoComputedData),
             rolling_distance: Length::default(),
@@ -1050,6 +1054,8 @@ impl BtvDecelScheduler {
             wet_prediction: Length::default(),
 
             distance_to_rwy_end: Length::default(),
+
+            exit_missed: false,
         }
     }
 
@@ -1137,6 +1143,8 @@ impl BtvDecelScheduler {
 
                 let target_deceleration_safety_corrected =
                     target_deceleration_raw * self.safety_margin();
+
+                self.exit_missed = target_deceleration_safety_corrected < Self::MAX_DECEL_DRY_MS2;
 
                 self.deceleration_request = Acceleration::new::<meter_per_second_squared>(
                     target_deceleration_safety_corrected.clamp(
@@ -1341,6 +1349,8 @@ impl SimulationElement for BtvDecelScheduler {
             turnaround_time_estimated_in_minutes[0].value(),
             turnaround_time_estimated_in_minutes[0].ssm(),
         );
+
+        writer.write(&self.exit_missed_id, self.exit_missed);
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
