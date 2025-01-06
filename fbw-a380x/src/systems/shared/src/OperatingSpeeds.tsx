@@ -511,7 +511,7 @@ export class A380OperatingSpeeds {
     }
 
     const vs1gConf0 = SpeedsLookupTables.VLS_CONF_0.get(altitude, m) / 1.23;
-    const vs1gConf1F = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_1, cg, m) / 1.23;
+    const vs1gConf1F = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_1F, cg, m) / 1.23;
     this.f2 =
       fmgcFlightPhase <= FmgcFlightPhase.Takeoff
         ? Math.max(1.18 * vs1gConf1F, Vmcl + 5)
@@ -613,15 +613,15 @@ export class A380SpeedsUtils {
    * Get Vs1g for the given config
    *
    * @param {number} mass mass of the aircraft in kg
-   * @param {number} conf 0 - CONF 1, 1 - CONF 1, 2 - CONF 1+F, 3 - CONF 2, 4 - CONF 3, 5 - CONF FULL.
-   * @param {boolean} takeof if VS1g should be calculated for takeoff
+   * @param {number} conf 0 - CONF CLEAN, 1 - CONF 1, 2 - CONF 1+F, 3 - CONF 2, 4 - CONF 3, 5 - CONF FULL.
+   * @param {boolean} takeoff if VS1g should be calculated for takeoff
    */
   static getVs1g(mass: number, conf: number, takeoff: boolean): Knots {
     // FIXME rough, dirty hack
     if (takeoff === true) {
       return SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.15;
     }
-    if (conf === 5) {
+    if (conf === ApproachConf.CONF_1) {
       return Math.max(
         SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.18,
         Vmcl,

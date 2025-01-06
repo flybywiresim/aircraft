@@ -208,7 +208,7 @@ export class FmgcData {
    */
   readonly v2ToBeConfirmed = Subject.create<Knots | null>(null);
 
-  public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
+  public readonly takeoffFlapsSetting = Subject.create<FlapConf | null>(FlapConf.CONF_1);
 
   public readonly flapRetractionSpeed = Subject.create<Knots | null>(141);
 
@@ -490,7 +490,7 @@ export class FmgcDataService implements Fmgc {
   }
 
   getTakeoffFlapsSetting(): FlapConf | undefined {
-    return this.data.takeoffFlapsSetting.get();
+    return this.data.takeoffFlapsSetting.get() ?? undefined;
   }
 
   /** in knots */
@@ -585,7 +585,8 @@ export class FmgcDataService implements Fmgc {
 
   /** in feet. null if not set */
   getDepartureElevation(): number | null {
-    return this.flightPlanService.has(FlightPlanIndex.Active)
+    return this.flightPlanService.has(FlightPlanIndex.Active) &&
+      this.flightPlanService?.active?.originRunway?.thresholdLocation?.alt !== undefined
       ? this.flightPlanService?.active?.originRunway?.thresholdLocation?.alt
       : null;
   }
