@@ -10,8 +10,8 @@
 #define DEMO_BUTTON_SX 150.f
 #define DEMO_BUTTON_SY 75.f
 
-#define MAP_VIEW_RES_X 1024
-#define MAP_VIEW_RES_Y 768
+#define MAP_VIEW_RES_X 768
+#define MAP_VIEW_RES_Y 500
 
 void  drawButton(struct NVGcontext* vg, int preicon, const char* text, float x, float y, float w, float h, NVGcolor col, float fontSize);
 char* cpToUTF8(int cp, char* str);
