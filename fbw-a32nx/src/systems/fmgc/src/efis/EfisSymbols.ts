@@ -282,6 +282,14 @@ export class EfisSymbols<T extends number> {
               symbol.radii = oldSymbol.radii;
             }
           }
+          if (oldSymbol.abeam) {
+            if (symbol.abeam) {
+              symbol.abeam.lat = oldSymbol.abeam.lat;
+              symbol.abeam.long = oldSymbol.abeam.long;
+            } else {
+              symbol.abeam = oldSymbol.abeam;
+            }
+          }
         }
         symbols.push(symbol);
       };
@@ -815,6 +823,7 @@ export class EfisSymbols<T extends number> {
           type: NdSymbolTypeFlags.FixInfo,
           radials: fixInfo.radials.map((it) => it.trueBearing),
           radii: fixInfo.radii.map((it) => it.radius),
+          abeam: fixInfo.abeam === null ? null : fixInfo.abeam.Coor,
         });
       }
     }

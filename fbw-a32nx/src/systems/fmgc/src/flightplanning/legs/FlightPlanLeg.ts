@@ -322,6 +322,26 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.clearAltitudeConstraints();
     this.clearSpeedConstraints();
   }
+  static getCFLeg(
+    segment: EnrouteSegment,
+    location: Coordinates,
+    magneticCourse: DegreesMagnetic,
+    newIdent: string,
+  ): FlightPlanLeg {
+    return new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.CF,
+        overfly: false,
+        waypoint: WaypointFactory.fromLocation(newIdent, location),
+        magneticCourse,
+      },
+      newIdent,
+      '',
+      undefined,
+    );
+  }
 
   static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
     return new FlightPlanLeg(
@@ -349,6 +369,21 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         waypoint,
       },
       waypoint.ident,
+      '',
+      undefined,
+    );
+  }
+
+  static newDFLeg(segment: EnrouteSegment, waypoint: Fix, newIdent: string, newCo: Coordinates): FlightPlanLeg {
+    return new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.DF,
+        overfly: false,
+        waypoint: WaypointFactory.fromLocation(newIdent, newCo),
+      },
+      newIdent,
       '',
       undefined,
     );

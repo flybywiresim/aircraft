@@ -5015,12 +5015,12 @@ class FMCMainDisplay extends BaseAirliners {
     getDistanceToDestination() {
         return this.guidanceController.alongTrackDistanceToDestination;
     }
-
     /**
-     * Modifies the active flight plan to go direct to a specific waypoint, not necessarily in the flight plan
+     * Modifies the active flight plan to go direct to a specific waypoint with Radial in, not necessarily in the flight plan
      * @param {import('msfs-navdata').Waypoint} waypoint
+     * * @param number radial
      */
-    async directToWaypoint(waypoint) {
+    async directToWaypointRadialIn(waypoint, radial) {
         // FIXME fm pos
         const adirLat = ADIRS.getLatitude();
         const adirLong = ADIRS.getLongitude();
@@ -5035,14 +5035,57 @@ class FMCMainDisplay extends BaseAirliners {
             long: adirLong.value,
         };
 
-        await this.flightPlanService.directToWaypoint(ppos, trueTrack.value, waypoint);
+        await this.flightPlanService.directToWaypointRadialIn(ppos, trueTrack.value, waypoint, radial);
+    }
+    /**
+     * Modifies the active flight plan to go direct to a specific waypoint with Radial in, not necessarily in the flight plan
+     * @param {import('msfs-navdata').Waypoint} waypoint
+     * * @param number radial
+     */
+    async directToWaypointRadialOut(waypoint, radial) {
+        // FIXME fm pos
+        const adirLat = ADIRS.getLatitude();
+        const adirLong = ADIRS.getLongitude();
+        const trueTrack = ADIRS.getTrueTrack();
+
+        if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+            return;
+        }
+
+        const ppos = {
+            lat: adirLat.value,
+            long: adirLong.value,
+        };
+
+        await this.flightPlanService.directToWaypointRadialOut(ppos, trueTrack.value, waypoint, radial);
+    }
+    /**
+     * Modifies the active flight plan to go direct to a specific waypoint, not necessarily in the flight plan
+     * @param {import('msfs-navdata').Waypoint} waypoint
+     */
+    async directToWaypoint(waypoint, withAbeam = false) {
+        // FIXME fm pos
+        const adirLat = ADIRS.getLatitude();
+        const adirLong = ADIRS.getLongitude();
+        const trueTrack = ADIRS.getTrueTrack();
+
+        if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+            return;
+        }
+
+        const ppos = {
+            lat: adirLat.value,
+            long: adirLong.value,
+        };
+
+        await this.flightPlanService.directToWaypoint(ppos, trueTrack.value, waypoint, withAbeam);
     }
 
     /**
      * Modifies the active flight plan to go direct to a specific leg
      * @param {number} legIndex index of leg to go direct to
      */
-    async directToLeg(legIndex) {
+    async directToLeg(legIndex, withAbeam = false) {
         // FIXME fm pos
         const adirLat = ADIRS.getLatitude();
         const adirLong = ADIRS.getLongitude();
@@ -5057,7 +5100,7 @@ class FMCMainDisplay extends BaseAirliners {
             long: adirLong.value,
         };
 
-        await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex);
+        await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex, withAbeam);
     }
 
     /**

@@ -26,6 +26,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
 
       const radials = symbol.radials;
       const radii = symbol.radii;
+      const abeam = symbol.abeam;
 
       context.setLineDash(FIX_INFO_DASHES);
       context.beginPath();
@@ -40,6 +41,14 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
         if (Number.isFinite(radius)) {
           this.drawFixInfoRadius(context, rx, ry, radius * mapParameters.nmToPx, '#000', 3.25);
         }
+      }
+
+      if (abeam) {
+        const [xx, yy] = mapParameters.coordinatesToXYy({ long: symbol.abeam.long, lat: symbol.abeam.lat });
+        const rxx = xx + mapWidth / 2;
+        const ryy = yy + mapHeight / 2;
+
+        this.drawFixInfoAbeam(context, rx, ry, rxx, ryy, mapParameters, '#000', 3.25);
       }
 
       context.stroke();
@@ -60,6 +69,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
 
       const radials = symbol.radials;
       const radii = symbol.radii;
+      const abeam = symbol.abeam;
 
       context.setLineDash(FIX_INFO_DASHES);
       context.beginPath();
@@ -74,6 +84,14 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
         if (Number.isFinite(radius)) {
           this.drawFixInfoRadius(context, rx, ry, radius * mapParameters.nmToPx, '#0ff', 1.75);
         }
+      }
+
+      if (abeam) {
+        const [xx, yy] = mapParameters.coordinatesToXYy({ long: symbol.abeam.long, lat: symbol.abeam.lat });
+        const rxx = xx + mapWidth / 2;
+        const ryy = yy + mapHeight / 2;
+
+        this.drawFixInfoAbeam(context, rx, ry, rxx, ryy, mapParameters, '#0ff', 1.75);
       }
 
       context.stroke();
@@ -101,6 +119,23 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
 
     context.moveTo(cx, cy);
     context.lineTo(cx + x2, cy + y2);
+  }
+
+  private drawFixInfoAbeam(
+    context: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    cxx: number,
+    cyy: number,
+    mapParameters: MapParameters,
+    color: string,
+    lineWidth: number,
+  ) {
+    context.strokeStyle = color;
+    context.lineWidth = lineWidth;
+
+    context.moveTo(cx, cy);
+    context.lineTo(cxx, cyy);
   }
 
   private drawFixInfoRadius(

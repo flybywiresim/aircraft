@@ -3,13 +3,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
+import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
-import { Coordinates, Degrees } from 'msfs-geo';
-import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { Coordinates, Degrees, distanceTo, placeBearingIntersection, bearingTo } from 'msfs-geo';
+import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
@@ -20,6 +21,7 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { outboundPointIdent } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -132,6 +134,215 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.alternateFlightPlan.incrementVersion();
   }
 
+  directToLegRadialIn(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, radial: Degrees) {
+    if (targetLegIndex >= this.firstMissedApproachLegIndex) {
+      throw new Error('[FPM] Cannot direct to a leg in the missed approach segment');
+    }
+
+    const targetLeg = this.legElementAt(targetLegIndex);
+    if (!targetLeg.isXF()) {
+      throw new Error('[FPM] Cannot direct to a non-XF leg');
+    }
+    let firstLeg: FlightPlanLeg = undefined;
+    let firstLegInex: number = undefined;
+
+    const magVar = MagVar.get(ppos.lat, ppos.long);
+    const trueRadial = A32NX_Util.magneticToTrue(radial, magVar);
+    const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
+    const [one, two] = placeBearingIntersection(ppos, trueTrack, targetLeg.terminationWaypoint().location, trueRadial);
+    const distanceOne = distanceTo(ppos, one);
+    const distanceTwo = distanceTo(ppos, two);
+
+    const wp: Waypoint = WaypointFactory.fromLocation('INTCPT', distanceOne < distanceTwo ? one : two);
+    const br: Degrees = A32NX_Util.trueToMagnetic(
+      bearingTo(wp.location, targetLeg.terminationWaypoint().location),
+      magVar,
+    );
+    if (Math.abs(br - ((radial + 180) % 360)) > 1) {
+      throw new Error('Intersection not found');
+    }
+    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+    const nl: FlightPlanLeg = FlightPlanLeg.newDFLeg(
+      this.enrouteSegment,
+      targetLeg.terminationWaypoint(),
+      'INTCPT',
+      wp.location,
+    );
+
+    const turnEnd = FlightPlanLeg.getCFLeg(
+      this.enrouteSegment,
+      targetLeg.terminationWaypoint().location,
+      (radial + 180) % 360,
+      targetLeg.terminationWaypoint().ident,
+    );
+
+    turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
+    if (this.index === FlightPlanIndex.Temporary) {
+      turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
+    }
+    turnEnd.ident = targetLeg.ident;
+
+    if (firstLeg === undefined) {
+      firstLeg = targetLeg;
+    }
+    if (firstLegInex === undefined) {
+      firstLegInex = this.activeLegIndex !== -1 ? this.activeLegIndex : targetLegIndex;
+    }
+
+    this.redistributeLegsAt(0);
+    this.redistributeLegsAt(firstLegInex);
+
+    const indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
+    if (indexInEnrouteSegment === -1) {
+      throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
+    }
+
+    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, nl, turnEnd);
+    this.incrementVersion();
+
+    const firstLegIndexInPlan = this.allLegs.findIndex((it) => it === turningPoint);
+
+    this.setActiveLegIndex(firstLegIndexInPlan);
+  }
+
+  directToWaypointRadialIn(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, radial: Degrees) {
+    const existingLegIndex = this.allLegs.findIndex(
+      (it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint),
+    );
+    if (existingLegIndex !== -1 && existingLegIndex < this.firstMissedApproachLegIndex) {
+      this.directToLegRadialIn(ppos, trueTrack, existingLegIndex, radial);
+      return;
+    }
+
+    const magVar = MagVar.get(ppos.lat, ppos.long);
+    const trueRadial = A32NX_Util.magneticToTrue(radial, magVar);
+    const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
+    const [one, two] = placeBearingIntersection(ppos, trueTrack, waypoint.location, trueRadial);
+    const distanceOne = distanceTo(ppos, one);
+    const distanceTwo = distanceTo(ppos, two);
+
+    const wp: Waypoint = WaypointFactory.fromLocation('INTCPT', distanceOne < distanceTwo ? one : two);
+    const br: Degrees = A32NX_Util.trueToMagnetic(bearingTo(wp.location, waypoint.location), magVar);
+    if (Math.abs(br - ((radial + 180) % 360)) > 1) {
+      throw new Error('Intersection not found');
+    }
+
+    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+    const nl: FlightPlanLeg = FlightPlanLeg.newDFLeg(this.enrouteSegment, waypoint, 'INTCPT', wp.location);
+    const turnEnd = FlightPlanLeg.getCFLeg(
+      this.enrouteSegment,
+      waypoint.location,
+      (radial + 180) % 360,
+      waypoint.ident,
+    );
+
+    // Move all legs before active one to the enroute segment
+    let indexInEnrouteSegment = 0;
+    this.redistributeLegsAt(0);
+    if (this.activeLegIndex >= 1) {
+      this.redistributeLegsAt(this.activeLegIndex);
+      indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === this.activeLeg);
+    }
+
+    // Remove legs before active on from enroute
+    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment, turningPoint, nl, turnEnd);
+    this.incrementVersion();
+
+    const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turningPoint);
+    if (this.maybeElementAt(turnEndLegIndexInPlan + 3)?.isDiscontinuity === false) {
+      this.enrouteSegment.allLegs.splice(turnEndLegIndexInPlan + 3, 0, { isDiscontinuity: true });
+      this.syncSegmentLegsChange(this.enrouteSegment);
+      this.incrementVersion();
+
+      // Since we added a discontinuity after the DIR TO leg, we want to make sure that the leg after it
+      // is a leg that can be after a disco (not something like a CI) and convert it to IF
+      this.cleanUpAfterDiscontinuity(turnEndLegIndexInPlan + 3);
+    }
+
+    this.setActiveLegIndex(turnEndLegIndexInPlan);
+  }
+
+  directToWaypointRadialOut(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, radial: Degrees) {
+    const magVar = MagVar.get(ppos.lat, ppos.long);
+    const trueRadial = A32NX_Util.magneticToTrue(radial, magVar);
+    const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
+    const [one, two] = placeBearingIntersection(ppos, trueTrack, waypoint.location, trueRadial);
+    const distanceOne = distanceTo(ppos, one);
+    const distanceTwo = distanceTo(ppos, two);
+
+    const wp: Waypoint = WaypointFactory.fromLocation('INTCPT', distanceOne < distanceTwo ? one : two);
+    const new_wp: Waypoint = WaypointFactory.fromPlaceBearingDistance(
+      outboundPointIdent,
+      waypoint.location,
+      100, //Arbitrary
+      trueRadial,
+    );
+    const br: Degrees = A32NX_Util.trueToMagnetic(bearingTo(wp.location, new_wp.location), magVar);
+    if (Math.abs(br - radial) > 1) {
+      throw new Error('Intersection not found');
+    }
+    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+    const nl: FlightPlanLeg = FlightPlanLeg.newDFLeg(this.enrouteSegment, waypoint, 'INTCPT', wp.location);
+    const turnEnd = FlightPlanLeg.getCFLeg(this.enrouteSegment, new_wp.location, radial, outboundPointIdent);
+
+    // Move all legs before active one to the enroute segment
+    let indexInEnrouteSegment = 0;
+    this.redistributeLegsAt(0);
+    if (this.activeLegIndex >= 1) {
+      this.redistributeLegsAt(this.activeLegIndex);
+      indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === this.activeLeg);
+    }
+
+    // Remove legs before active on from enroute
+    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment, turningPoint, nl, turnEnd);
+    this.incrementVersion();
+
+    const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turningPoint);
+    if (this.maybeElementAt(turnEndLegIndexInPlan + 3)?.isDiscontinuity === false) {
+      this.enrouteSegment.allLegs.splice(turnEndLegIndexInPlan + 3, 0, { isDiscontinuity: true });
+      this.syncSegmentLegsChange(this.enrouteSegment);
+      this.incrementVersion();
+
+      // Since we added a discontinuity after the DIR TO leg, we want to make sure that the leg after it
+      // is a leg that can be after a disco (not something like a CI) and convert it to IF
+      this.cleanUpAfterDiscontinuity(turnEndLegIndexInPlan + 3);
+    }
+
+    this.setActiveLegIndex(turnEndLegIndexInPlan);
+  }
+
+  /*static GetAbeamIntersection(ppos: Coordinates, fix: Coordinates, ab: Coordinates): Coordinates {
+    const co: Coordinates = { lat: undefined, long: undefined };
+
+    if (ppos.long - fix.long !== 0) {
+      const slope: number = (ppos.lat - fix.lat) / (ppos.long - fix.long);
+      if (slope !== 0) {
+        const m: number = -1 / slope;
+        if (m - slope !== 0) {
+          co.long = (m * ab.long - ab.lat - slope * ppos.long + ppos.lat) / (m - slope);
+          co.lat = m * co.long - m * ab.long + ab.lat;
+        }
+      }
+    }
+    if (
+      co.long >= Math.min(ppos.long, fix.long) &&
+      co.long <= Math.max(ppos.long, fix.long) &&
+      co.lat >= Math.min(ppos.lat, fix.lat) &&
+      co.lat <= Math.max(ppos.lat, fix.lat)
+    ) {
+      return co;
+    } else {
+      return null;
+    }
+  }*/
+
+  static GetAbeamIntersection(start: Coordinates, degrees: Degrees, fix: Coordinates): Coordinates {
+    const [one, two] = placeBearingIntersection(start, degrees, fix, (degrees - 90) % 360);
+    const distanceOne = distanceTo(start, one);
+    const distanceTwo = distanceTo(start, two);
+    return distanceOne < distanceTwo ? one : two;
+  }
+
   directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
     if (targetLegIndex >= this.firstMissedApproachLegIndex) {
       throw new Error('[FPM] Cannot direct to a leg in the missed approach segment');
@@ -141,13 +352,47 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (!targetLeg.isXF()) {
       throw new Error('[FPM] Cannot direct to a non-XF leg');
     }
+    let firstLeg: FlightPlanLeg = undefined;
+    let firstLegInex: number = undefined;
 
     const magVar = MagVar.get(ppos.lat, ppos.long);
     const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
     const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+    const newLegs: FlightPlanLeg[] = [];
+    if (_withAbeam) {
+      for (let i = this.activeLegIndex; i < targetLegIndex; i++) {
+        if (i !== -1) {
+          const e: FlightPlanElement = this.elementAt(i);
+          if (!e.isDiscontinuity) {
+            const l: FlightPlanLeg = this.legElementAt(i);
+            if (l.isXF() && l.ident !== 'T-P') {
+              const co: Coordinates = FlightPlan.GetAbeamIntersection(
+                ppos,
+                bearingTo(ppos, targetLeg.terminationWaypoint().location),
+                l.terminationWaypoint().location,
+              );
+              if (co !== null) {
+                if (firstLeg === undefined) {
+                  firstLeg = l;
+                  firstLegInex = i;
+                }
+                const nl: FlightPlanLeg = FlightPlanLeg.newDFLeg(
+                  this.enrouteSegment,
+                  l.terminationWaypoint(),
+                  l.ident.startsWith('AB.') ? l.ident : 'AB.' + l.ident,
+                  co,
+                );
+                nl.withDefinitionFrom(l).withPilotEnteredDataFrom(l);
+                nl.ident = nl.ident.startsWith('AB.') ? nl.ident : 'AB.' + nl.ident;
+                newLegs.push(nl);
+              }
+            }
+          }
+        }
+      }
+    }
     const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint());
-
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
     if (this.index === FlightPlanIndex.Temporary) {
       turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
@@ -156,20 +401,27 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
     turnEnd.ident = targetLeg.ident;
 
+    if (firstLeg === undefined) {
+      firstLeg = targetLeg;
+    }
+    if (firstLegInex === undefined) {
+      firstLegInex = targetLegIndex;
+    }
+
     this.redistributeLegsAt(0);
-    this.redistributeLegsAt(targetLegIndex);
+    this.redistributeLegsAt(firstLegInex);
 
     const indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
     if (indexInEnrouteSegment === -1) {
       throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
     }
 
-    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, turnEnd);
+    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, ...newLegs, turnEnd);
     this.incrementVersion();
 
-    const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+    const firstLegIndexInPlan = this.allLegs.findIndex((it) => it === (newLegs.length === 0 ? turnEnd : newLegs[0]));
 
-    this.setActiveLegIndex(turnEndLegIndexInPlan);
+    this.setActiveLegIndex(firstLegIndexInPlan);
   }
 
   directToWaypoint(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false) {
@@ -318,7 +570,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
     const planFixInfo = this.fixInfos as FixInfoEntry[];
 
-    planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo.radii, fixInfo.radials) : undefined;
+    planFixInfo[index] = fixInfo
+      ? new FixInfoEntry(fixInfo.fix, fixInfo.radii, fixInfo.radials, fixInfo.abeam)
+      : undefined;
 
     if (notify) {
       this.sendEvent('flightPlan.setFixInfoEntry', { planIndex: this.index, forAlternate: false, index, fixInfo });

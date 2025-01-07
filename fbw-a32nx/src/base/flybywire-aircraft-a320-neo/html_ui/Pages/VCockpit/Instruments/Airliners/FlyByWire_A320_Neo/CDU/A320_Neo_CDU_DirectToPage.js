@@ -4,7 +4,7 @@
 // TODO this whole thing is thales layout...
 
 class CDUDirectToPage {
-    static ShowPage(mcdu, directWaypoint, wptsListIndex = 0) {
+    static ShowPage(mcdu, directWaypoint, wptsListIndex = 0, RadialIn = "", RadialOut = "") {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.DirectToPage;
         mcdu.returnPageCallback = () => {
@@ -13,6 +13,14 @@ class CDUDirectToPage {
 
         mcdu.activeSystem = 'FMGC';
 
+        let RadialInCell = "";
+        if (RadialIn) {
+            RadialInCell = parseInt(RadialIn);
+        }
+        let RadialOutCell = "";
+        if (RadialOut) {
+            RadialOutCell = parseInt(RadialOut);
+        }
         let directWaypointCell = "";
         if (directWaypoint) {
             directWaypointCell = directWaypoint.ident;
@@ -78,15 +86,130 @@ class CDUDirectToPage {
                 mcdu.showFmsErrorMessage(err.type);
             });
         };
+        //DirectTo
+        mcdu.onRightInput[1] = () => {
+            Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, directWaypointCell, false).then((w) => {
+                if (w) {
+                    mcdu.eraseTemporaryFlightPlan(() => {
+                        mcdu.directToWaypoint(w,false).then(() => {
+                            CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
+                        }).catch(err => {
+                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                            console.error(err);
+                        });
+                    });
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                }
+            }).catch((err) => {
+                // Rethrow if error is not an FMS message to display
+                if (err.type === undefined) {
+                    throw err;
+                }
 
+                mcdu.showFmsErrorMessage(err.type);
+            });
+        };
+        //DirectToWithAbeam
         mcdu.onRightInput[2] = () => {
-            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+            Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, directWaypointCell, false).then((w) => {
+                if (w) {
+                    mcdu.eraseTemporaryFlightPlan(() => {
+                        mcdu.directToWaypoint(w,true).then(() => {
+                            CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
+                        }).catch(err => {
+                            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                            console.error(err);
+                        });
+                    });
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                }
+            }).catch((err) => {
+                // Rethrow if error is not an FMS message to display
+                if (err.type === undefined) {
+                    throw err;
+                }
+
+                mcdu.showFmsErrorMessage(err.type);
+            });
         };
-        mcdu.onRightInput[3] = () => {
-            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+        //RadialIn
+        mcdu.onRightInput[3] = (value) => {
+            if (value.match(/^[0-9]{1,3}$/)) {
+                const degrees = parseInt(value);
+                if (degrees <= 360) {
+                    RadialInCell = degrees.toString();
+                    Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, directWaypointCell, false).then((w) => {
+                        if (w) {
+                            mcdu.eraseTemporaryFlightPlan(() => {
+                                mcdu.directToWaypointRadialIn(w,degrees).then(() => {
+                                    CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex,degrees,"");
+                                }).catch(err => {
+                                    if (err.message === 'Intersection not found') {
+                                        mcdu.setScratchpadMessage(new TypeIMessage(err.message,true));
+                                    } else {
+                                        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                                    }
+                                });
+                            });
+                        } else {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                        }
+                    }).catch((err) => {
+                        // Rethrow if error is not an FMS message to display
+                        if (err.type === undefined) {
+                            throw err;
+                        }
+                        mcdu.showFmsErrorMessage(err.type);
+                    });
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    scratchpadCallback();
+                }
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                scratchpadCallback();
+            }
         };
-        mcdu.onRightInput[4] = () => {
-            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+        //RadialOut
+        mcdu.onRightInput[4] = (value) => {
+            if (value.match(/^[0-9]{1,3}$/)) {
+                const degrees = parseInt(value);
+                if (degrees <= 360) {
+                    RadialInCell = degrees.toString();
+                    Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, directWaypointCell, false).then((w) => {
+                        if (w) {
+                            mcdu.eraseTemporaryFlightPlan(() => {
+                                mcdu.directToWaypointRadialOut(w,degrees).then(() => {
+                                    CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex,"",degrees);
+                                }).catch(err => {
+                                    if (err.message === 'Intersection not found') {
+                                        mcdu.setScratchpadMessage(new TypeIMessage(err.message,true));
+                                    } else {
+                                        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                                    }
+                                    console.error(err);
+                                });
+                            });
+                        } else {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                        }
+                    }).catch((err) => {
+                        // Rethrow if error is not an FMS message to display
+                        if (err.type === undefined) {
+                            throw err;
+                        }
+                        mcdu.showFmsErrorMessage(err.type);
+                    });
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    scratchpadCallback();
+                }
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                scratchpadCallback();
+            }
         };
 
         const plan = mcdu.flightPlanService.active;
@@ -116,7 +239,7 @@ class CDUDirectToPage {
                 if (waypointsCell[cellIter]) {
                     mcdu.onLeftInput[cellIter + 1] = () => {
                         mcdu.eraseTemporaryFlightPlan(() => {
-                            mcdu.directToLeg(legIndex).then(() => {
+                            mcdu.directToLeg(legIndex,false).then(() => {
                                 CDUDirectToPage.ShowPage(mcdu, leg.terminationWaypoint(), wptsListIndex);
                             }).catch(err => {
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
@@ -160,9 +283,9 @@ class CDUDirectToPage {
             ["", "WITH\xa0"],
             [waypointsCell[1], "ABEAM PTS[color]cyan"],
             ["", "RADIAL IN\xa0"],
-            [waypointsCell[2], "[ ]°[color]cyan"],
+            [waypointsCell[2], "[" + RadialInCell + "]°[color]cyan"],
             ["", "RADIAL OUT\xa0"],
-            [waypointsCell[3], "[ ]°[color]cyan"],
+            [waypointsCell[3], "[" + RadialOutCell + "]°[color]cyan"],
             [eraseLabel, insertLabel],
             [eraseLine ? eraseLine : waypointsCell[4], insertLine]
         ]);

@@ -30,6 +30,7 @@ class CDUFixInfoPage {
                         fix: runway,
                         radii: [],
                         radials: [],
+                        abeam:null,
                     });
 
                     CDUFixInfoPage.ShowPage(mcdu, page);
@@ -165,10 +166,71 @@ class CDUFixInfoPage {
                 }
             };
 
-            template[10] = ['{inop}<ABEAM{end}'];
-            mcdu.onLeftInput[4] = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
-        }
+            // template[10] = ['{inop}<ABEAM{end}'];
+            //template[10] = ['{cyan}allo{end}'];
+            if (fixInfo.abeam !== undefined) {
+                template[10] = ['{cyan}<ABEAM{end}'];
+            } else {
+                template[10] = ['<ABEAM'];
+            }
 
+            // mcdu.onLeftInput[4] = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+            //mcdu.onLeftInput[4] = () => mcdu.setScratchpadMessage('Now implemented by SAMI');
+            mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
+                if (value === FMCMainDisplay.clrValue) {
+                    if (fixInfo.abeam !== undefined) {
+                        mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
+                            fixInfo.abeam = null;
+                        });
+
+                        CDUFixInfoPage.ShowPage(mcdu, page);
+                    } else {
+                        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                        scratchpadCallback();
+                    }
+                } else if (value === '') {
+                    const el = mcdu.flightPlanService.setAbeamFix(fixInfo);
+                    if (el !== null && el !== undefined) {
+                        mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
+                            fixInfo.abeam = {Coor:{ long:el.longY, lat:el.latY }};
+                        });
+                    };
+                    CDUFixInfoPage.ShowPage(mcdu, page);
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                    scratchpadCallback();
+                }
+            };
+        }
+        template[12] = ['<RETURN'];
+        /*mcdu.onLeftInput[5] = (value, scratchpadCallback) => {
+            if (value === FMCMainDisplay.clrValue) {
+                if (fixInfo.abeam !== undefined) {
+                    mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
+                        fixInfo.abeam = null;
+                    });
+
+                    CDUFixInfoPage.ShowPage(mcdu, page);
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                    scratchpadCallback();
+                }
+            } else if (value === '') {
+                const el = mcdu.flightPlanService.setAbeamFix2(fixInfo);
+                if (el !== null && el !== undefined) {
+                    mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
+                        fixInfo.abeam = {Coor:{ long:el.longY, lat:el.latY }};
+                    });
+                };
+                CDUFixInfoPage.ShowPage(mcdu, page);
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                scratchpadCallback();
+            }
+        };*/
+        mcdu.onLeftInput[5] = (value, scratchpadCallback) => {
+            CDUFlightPlanPage.ShowPage(mcdu);
+        };
         mcdu.setArrows(false, false, true, true);
         mcdu.setTemplate(template);
         mcdu.onPrevPage = () => {

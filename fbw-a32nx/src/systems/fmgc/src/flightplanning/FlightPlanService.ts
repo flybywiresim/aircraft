@@ -5,10 +5,10 @@
 
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
-import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
+import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { Fix, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
-import { Coordinates, Degrees } from 'msfs-geo';
+import { bearingTo, Coordinates, Degrees, distanceTo } from 'msfs-geo';
 import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
@@ -17,6 +17,7 @@ import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -398,6 +399,34 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.startAirwayEntry(at);
   }
 
+  async directToWaypointRadialIn(
+    ppos: Coordinates,
+    trueTrack: Degrees,
+    waypoint: Fix,
+    radial: DegreesMagnetic,
+    planIndex = FlightPlanIndex.Active,
+  ) {
+    const finalIndex = this.prepareDestructiveModification(planIndex);
+
+    const plan = this.flightPlanManager.get(finalIndex);
+
+    plan.directToWaypointRadialIn(ppos, trueTrack, waypoint, radial);
+  }
+
+  async directToWaypointRadialOut(
+    ppos: Coordinates,
+    trueTrack: Degrees,
+    waypoint: Fix,
+    radial: DegreesMagnetic,
+    planIndex = FlightPlanIndex.Active,
+  ) {
+    const finalIndex = this.prepareDestructiveModification(planIndex);
+
+    const plan = this.flightPlanManager.get(finalIndex);
+
+    plan.directToWaypointRadialOut(ppos, trueTrack, waypoint, radial);
+  }
+
   async directToWaypoint(
     ppos: Coordinates,
     trueTrack: Degrees,
@@ -637,5 +666,92 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const plan = this.flightPlanManager.get(planIndex);
 
     return plan.stringMissedApproach(onConstraintsDeleted);
+  }
+
+  setAbeamFix(fixInfo: FixInfoEntry, planIndex = FlightPlanIndex.Active) {
+    if (!this.config.ALLOW_NON_ACTIVE_FIX_INFOS && planIndex !== FlightPlanIndex.Active) {
+      throw new Error('FIX INFO can only be modified on the active flight plan');
+    }
+
+    const ppos = {
+      lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees'),
+      long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
+    };
+    const plan = this.flightPlanManager.get(planIndex);
+    //const trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+    const fpe: FlightPlanElement[] = plan.allLegs;
+    //const activeleg: FlightPlanElement = plan.activeLeg;
+    const fpef: FlightPlanElement[] = fpe.filter(
+      (item, index) => index >= plan.activeLegIndex - 1 && item.isDiscontinuity === false,
+    );
+
+    class abeamSearch {
+      A?: string;
+      latA?: number;
+      longA?: number;
+      B?: string;
+      latB?: number;
+      longB?: number;
+      Fix?: string;
+      latFix?: number;
+      longFix?: number;
+      latY?: number;
+      longY?: number;
+      distance?: number;
+    }
+
+    type abeamSearchs = abeamSearch[];
+
+    const abS: abeamSearchs = [];
+    let Coa, Cob: Coordinates;
+    fpef.forEach((value, i) => {
+      if (i < fpef.length - 1) {
+        const a: abeamSearch = new abeamSearch();
+        if (i !== 0) {
+          a.A = (fpef[i] as any).definition.waypoint.ident;
+          a.latA = (fpef[i] as any).definition.waypoint.location.lat;
+          a.longA = (fpef[i] as any).definition.waypoint.location.long;
+        } else {
+          a.A = 'ppos';
+          a.latA = ppos.lat;
+          a.longA = ppos.long;
+        }
+        Coa = { lat: a.latA, long: a.longA };
+        a.B = (fpef[i + 1] as any).definition.waypoint.ident;
+        a.latB = (fpef[i + 1] as any).definition.waypoint.location.lat;
+        a.longB = (fpef[i + 1] as any).definition.waypoint.location.long;
+        Cob = { lat: a.latB, long: a.longB };
+
+        a.Fix = fixInfo.fix.ident;
+        a.latFix = fixInfo.fix.location.lat;
+        a.longFix = fixInfo.fix.location.long;
+
+        a.longY = null;
+        a.latY = null;
+        const co: Coordinates = FlightPlan.GetAbeamIntersection(Coa, bearingTo(Coa, Cob), fixInfo.fix.location);
+        if (co) {
+          a.longY = co.long;
+          a.latY = co.lat;
+          a.distance = distanceTo(fixInfo.fix.location, co);
+          abS.push(a);
+        }
+      }
+    });
+    const el = abS.find(
+      (item) =>
+        item.distance ===
+        Math.min(
+          ...abS
+            .filter(
+              (item) =>
+                MathUtils.round(item.longY, 0.1) >= MathUtils.round(Math.min(item.longA, item.longB), 0.1) &&
+                MathUtils.round(item.longY, 0.1) <= MathUtils.round(Math.max(item.longA, item.longB), 0.1) &&
+                MathUtils.round(item.latY, 0.1) >= MathUtils.round(Math.min(item.latA, item.latB), 0.1) &&
+                MathUtils.round(item.latY, 0.1) <= MathUtils.round(Math.max(item.latA, item.latB), 0.1),
+            )
+            .map((x) => x.distance),
+        ),
+    );
+    return el;
   }
 }

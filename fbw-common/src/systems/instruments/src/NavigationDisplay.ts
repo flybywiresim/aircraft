@@ -76,6 +76,7 @@ export interface NdSymbol {
   constraints?: string[];
   radials?: number[];
   radii?: number[];
+  abeam?: Coordinates;
   distanceFromAirplane?: number;
 }
 
