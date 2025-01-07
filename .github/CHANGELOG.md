@@ -107,7 +107,7 @@
 1. [A380X/ANIM] Animation of flaps now from FPPU position. Interim fix for spoiler low end animation - @Crocket63 (crocket)
 1. [A380X/ENGINES] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
-1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
+1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - @donstim (donbikes#4084)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
@@ -115,6 +115,7 @@
 1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
+1. [A380X/FLIGHT MODEL] General flight model update plus fix auto-rotate issue - @donstim (donbikes#4084)
 
 ## 0.12.0
 
