@@ -87,6 +87,7 @@
 1. [A380X/COND] Fix wasm crash during rapid decompression - @mjuhe (Miquel Juhe)
 1. [A32NX/EWD] Corrected fuel flow step to 20kg/40lbs per hour - @BravoMike99 (bruno_pt99)
 1. [A380X] Fix EWD avail. thrust fill area & PFD rudder trim visibility on ground - @flogross89 (floridude)
+1. [A380X/OANS] Fix "BTV/FMS RWY DISAGREE" message for single-digit runway identifiers - @flogross89 (floridude)
 1. [A380X/FWS] Add automatic normal checklists reset on powerup, go around & shutdown - @BravoMike99 (bruno_pt99)
 1. [A32NX/PFD] Synchronize flashing/pulsing components across PFD - @lukecologne (luke)
 1. [A380X/LIGHTS] Fix function of FCU brightness knobs - @heclak (Heclak)
