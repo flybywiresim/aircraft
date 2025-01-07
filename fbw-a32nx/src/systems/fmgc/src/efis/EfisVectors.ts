@@ -133,19 +133,14 @@ export class EfisVectors {
     switch (planIndex) {
       case FlightPlanIndex.Active: {
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
-        const flightPhase = this.flightPhase.get();
 
         const doesPreNavEngagePathExist = this.guidanceController.doesPreNavModeEngagementPathExist();
 
         const transmitActive =
-          // In preflight phase, the flight plan line is solid even when NAV is not armed
-          flightPhase === FmgcFlightPhase.Preflight ||
-          engagedLateralMode === LateralMode.NAV ||
-          engagedLateralMode === LateralMode.LOC_CPT ||
-          engagedLateralMode === LateralMode.LOC_TRACK ||
-          engagedLateralMode === LateralMode.LAND ||
-          engagedLateralMode === LateralMode.FLARE ||
-          engagedLateralMode === LateralMode.ROLL_OUT ||
+          (engagedLateralMode !== LateralMode.HDG &&
+            engagedLateralMode !== LateralMode.TRACK &&
+            engagedLateralMode !== LateralMode.GA_TRACK &&
+            engagedLateralMode !== LateralMode.RWY_TRACK) ||
           doesPreNavEngagePathExist;
 
         if (transmitActive) {
