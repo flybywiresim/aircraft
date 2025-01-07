@@ -22,6 +22,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import {
   ControlPanelAirportSearchMode,
+  ControlPanelMapDataSearchMode,
   ControlPanelStore,
   ControlPanelUtils,
   FmsDataStore,
@@ -33,10 +34,10 @@ import {
 } from '@flybywiresim/oanc';
 import {
   AmdbAirportSearchResult,
+  AmdbProperties,
   Arinc429LocalVarConsumerSubject,
   BtvData,
   EfisSide,
-  FeatureType,
   FeatureTypeString,
   FmsOansData,
   MathUtils,
@@ -58,7 +59,7 @@ import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseServic
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
-import { Position } from '@turf/turf';
+import { Feature, Geometry, Position } from '@turf/turf';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -67,19 +68,14 @@ export interface OansProps extends ComponentProps {
   togglePanel: () => void;
 }
 
-export enum EntityTypes {
-  RWY,
-  TWY,
-  STAND,
-  OTHER,
-}
-
 const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
 
-  private readonly sub = this.props.bus.getSubscriber<ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData>();
+  private readonly sub = this.props.bus.getSubscriber<
+    ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData & OansControlEvents
+  >();
 
   /** If navigraph not available, this class will compute BTV features */
   private readonly navigraphAvailable = Subject.create(false);
@@ -106,19 +102,27 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly activeTabIndex = Subject.create<number>(2);
 
-  private readonly availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
+  private readonly availableEntityTypes = Object.values(ControlPanelMapDataSearchMode).filter(
+    (v) => typeof v === 'string',
+  ) as string[];
+
+  private mapDataFeatures: Feature<Geometry, AmdbProperties>[] | undefined = undefined;
 
   private readonly thresholdShift = Subject.create<number | null>(null);
 
   private readonly endShift = Subject.create<number | null>(null);
 
-  private readonly selectedEntityType = Subject.create<EntityTypes | null>(EntityTypes.RWY);
+  private readonly selectedEntityType = Subject.create<ControlPanelMapDataSearchMode | null>(
+    ControlPanelMapDataSearchMode.RWY,
+  );
 
   private readonly availableEntityList = ArraySubject.create(['']);
 
   private readonly selectedEntityIndex = Subject.create<number | null>(0);
 
   private readonly selectedEntityString = Subject.create<string | null>(null);
+
+  private selectedEntityCoordinate: Coordinates | null = null;
 
   private manualAirportSelection = false;
 
@@ -146,6 +150,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly runwayTora = Subject.create<string | null>(null);
 
   private readonly runwayLda = Subject.create<string | null>(null);
+
+  private readonly standCoordinateString = Subject.create<string>('');
 
   private readonly oansRequestedStoppingDistance = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('oansRequestedStoppingDistance'),
@@ -255,51 +261,56 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.fmsDataStore.landingRunway.sub(async (it) => {
       // Set control panel display
       if (it) {
-        this.availableEntityList.set([it.substring(4)]);
-        this.selectedEntityType.set(EntityTypes.RWY);
-        this.selectedEntityIndex.set(0);
-        this.selectedEntityString.set(it.substring(4));
-
         // Load runway data
         const destination = this.fmsDataStore.destination.get();
-        if (destination && this.navigraphAvailable.get() === true) {
-          const data = await this.amdbClient.getAirportData(destination, [FeatureTypeString.RunwayThreshold]);
-          const thresholdFeature = data.runwaythreshold?.features.filter(
-            (td) => td.properties.feattype === FeatureType.RunwayThreshold && td.properties?.idthr === it.substring(4),
-          );
-          if (thresholdFeature && thresholdFeature[0]?.properties.lda && thresholdFeature[0]?.properties.tora) {
-            this.runwayLda.set(
-              (thresholdFeature[0].properties.lda > 0 ? thresholdFeature[0].properties.lda : 0).toFixed(0),
-            );
-            this.runwayTora.set(
-              (thresholdFeature[0]?.properties.tora > 0 ? thresholdFeature[0].properties.tora : 0).toFixed(0),
-            );
-          } else {
-            this.runwayLda.set('N/A');
-            this.runwayTora.set('N/A');
-          }
-        } else if (destination && this.navigraphAvailable.get() === false) {
+        if (destination && this.navigraphAvailable.get() === false) {
           this.setBtvRunwayFromFmsRunway();
         }
       }
     });
 
-    this.sub
-      .on('realTime')
-      .atFrequency(1)
-      .handle((_) => this.autoLoadAirport());
+    this.subs.push(
+      this.sub
+        .on('realTime')
+        .atFrequency(1)
+        .handle((_) => this.autoLoadAirport()),
+    );
 
-    this.sub
-      .on('realTime')
-      .atFrequency(5)
-      .handle((_) => {
-        if (this.arpCoordinates && this.navigraphAvailable.get() === false) {
-          globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
-          this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
+    this.subs.push(
+      this.sub
+        .on('realTime')
+        .atFrequency(5)
+        .handle((_) => {
+          if (this.arpCoordinates && this.navigraphAvailable.get() === false) {
+            globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
+            this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
+          }
+        }),
+    );
+
+    this.subs.push(this.sub.on('oansDisplayAirport').handle((arpt) => this.handleSelectAirport(arpt)));
+
+    this.selectedEntityIndex.sub((val) => {
+      const searchMode = this.selectedEntityType.get();
+      if (searchMode !== null && this.mapDataFeatures && val !== null) {
+        const prop = ControlPanelUtils.getMapDataSearchModeProp(searchMode);
+        const idx = this.mapDataFeatures.findIndex((f) => f.properties[prop] === this.availableEntityList.get(val));
+        this.selectedEntityString.set(idx !== -1 ? this.mapDataFeatures[idx]?.properties[prop]?.toString() ?? '' : '');
+        this.selectedEntityCoordinate = {
+          lat: this.mapDataFeatures[idx].geometry.coordinates[0] as number,
+          long: this.mapDataFeatures[idx].geometry.coordinates[1] as number,
+        };
+        if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.RWY) {
+          this.runwayLda.set(this.mapDataFeatures[idx].properties.lda?.toFixed(0) ?? '');
+          this.runwayTora.set(this.mapDataFeatures[idx].properties.tora?.toFixed(0) ?? '');
         }
-      });
-
-    this.selectedEntityIndex.sub((val) => this.selectedEntityString.set(this.availableEntityList.get(val ?? 0)));
+      } else {
+        this.selectedEntityString.set('');
+        this.runwayLda.set('');
+        this.runwayTora.set('');
+      }
+    }, true);
+    this.selectedEntityType.sub((v) => this.handleSelectMapDataSearchMode(v ?? ControlPanelMapDataSearchMode.RWY));
 
     this.sub
       .on(this.props.side === 'L' ? 'kccuOnL' : 'kccuOnR')
@@ -344,7 +355,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.store.sortedAirports.set(array.filter((it) => it[prop] !== null));
   }
 
-  private handleSelectAirport = (icao: string, indexInSearchData?: number) => {
+  private handleSelectAirport = async (icao: string, indexInSearchData?: number) => {
     const airport = this.store.airports.getArray().find((it) => it.idarpt === icao);
     const prop = ControlPanelUtils.getSearchModeProp(
       this.store.airportSearchMode.get() ?? ControlPanelAirportSearchMode.Icao,
@@ -364,10 +375,48 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     this.store.airportSearchSelectedAirportIndex.set(airportIndexInSearchData);
     this.store.selectedAirport.set(airport);
+
+    this.handleSelectMapDataSearchMode(ControlPanelMapDataSearchMode.RWY);
+
     this.store.isAirportSelectionPending.set(true);
   };
 
-  private handleSelectSearchMode = (newSearchMode: ControlPanelAirportSearchMode) => {
+  private handleSelectMapDataSearchMode = async (newSearchMode: ControlPanelMapDataSearchMode) => {
+    const selectedAirport = this.store.selectedAirport.get();
+    this.selectedEntityIndex.set(null);
+
+    if (selectedAirport !== null) {
+      let featureType: FeatureTypeString = FeatureTypeString.RunwayThreshold;
+      switch (newSearchMode) {
+        case ControlPanelMapDataSearchMode.RWY:
+          featureType = FeatureTypeString.RunwayThreshold;
+          break;
+        case ControlPanelMapDataSearchMode.TWY:
+          featureType = FeatureTypeString.TaxiwayElement;
+          break;
+        case ControlPanelMapDataSearchMode.STAND:
+          featureType = FeatureTypeString.ParkingStandLocation;
+          break;
+        case ControlPanelMapDataSearchMode.OTHER:
+          featureType = FeatureTypeString.DeicingArea;
+          break;
+        default:
+          break;
+      }
+      // Populate MAP DATA
+      const data = await this.amdbClient.getAirportData(selectedAirport.idarpt, [featureType]);
+      this.mapDataFeatures = data[featureType]?.features;
+      if (this.mapDataFeatures) {
+        const prop = ControlPanelUtils.getMapDataSearchModeProp(newSearchMode);
+        const entityData = this.mapDataFeatures
+          .map((f) => f.properties[prop]?.toString().trim().substring(0, 6) ?? '')
+          .filter((it) => it);
+        this.availableEntityList.set([...new Set(entityData)].sort());
+      }
+    }
+  };
+
+  private handleSelectAirportSearchMode = (newSearchMode: ControlPanelAirportSearchMode) => {
     const selectedAirport = this.store.selectedAirport.get();
 
     this.store.airportSearchMode.set(newSearchMode);
@@ -426,7 +475,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       if (sortedAirports.length > 0) {
         const ap = sortedAirports[0];
         if (ap.idarpt !== this.store.loadedAirport.get()?.idarpt) {
-          this.handleSelectAirport(ap.idarpt);
           this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', ap.idarpt, true);
           this.store.loadedAirport.set(ap);
           this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
@@ -439,7 +487,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       const destArpt = this.store.airports.getArray().find((it) => it.idarpt === this.fmsDataStore.destination.get());
       if (destArpt && destArpt.idarpt !== this.store.loadedAirport.get()?.idarpt) {
         if (distanceTo(this.presentPos.get(), { lat: destArpt.coordinates.lat, long: destArpt.coordinates.lon }) < 50) {
-          this.handleSelectAirport(destArpt.idarpt);
           this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', destArpt.idarpt, true);
           this.store.loadedAirport.set(destArpt);
           this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
@@ -451,11 +498,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private async setBtvRunwayFromFmsRunway() {
     [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromFmsRunway(this.fmsDataStore);
-
-    if (this.landingRunwayNavdata) {
-      this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
-      this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
-    }
   }
 
   private async btvFallbackSetDistance(distance: number | null) {
@@ -502,14 +544,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       idPrefix="oanc-search-letter"
                       freeTextAllowed={false}
                       onModified={(i) => this.selectedEntityIndex.set(i)}
-                      inactive={Subject.create(true)}
                       hEventConsumer={this.hEventConsumer}
                       interactionMode={this.interactionMode}
                     />
                     <div class="oans-cp-map-data-entitytype">
                       <RadioButtonGroup
                         values={this.availableEntityTypes}
-                        valuesDisabled={Subject.create(Array(4).fill(true))}
+                        valuesDisabled={Subject.create(Array(4).fill(false))}
                         selectedIndex={this.selectedEntityType}
                         idPrefix="entityTypesRadio"
                       />
@@ -560,13 +601,25 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     <div class="oans-cp-map-data-main-2">
                       <Button
                         label="ADD CROSS"
-                        onClick={() => console.log('ADD CROSS')}
+                        onClick={() => {
+                          if (this.selectedEntityCoordinate) {
+                            this.props.bus
+                              .getPublisher<OansControlEvents>()
+                              .pub('oansAddCross', this.selectedEntityCoordinate, true);
+                          }
+                        }}
                         buttonStyle="flex: 1"
                         disabled={Subject.create(true)}
                       />
                       <Button
                         label="ADD FLAG"
-                        onClick={() => console.log('ADD FLAG')}
+                        onClick={() => {
+                          if (this.selectedEntityCoordinate) {
+                            this.props.bus
+                              .getPublisher<OansControlEvents>()
+                              .pub('oansAddFlag', this.selectedEntityCoordinate, true);
+                          }
+                        }}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"
                         disabled={Subject.create(true)}
                       />
@@ -579,12 +632,16 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div class="oans-cp-map-data-main-center">
                       <Button
-                        label={`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`}
-                        onClick={() =>
-                          console.log(
-                            `CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get() ?? 0)}`,
-                          )
-                        }
+                        label={this.selectedEntityString.map((s) => (
+                          <>`CENTER MAP ON ${s}`</>
+                        ))}
+                        onClick={() => {
+                          if (this.selectedEntityCoordinate) {
+                            this.props.bus
+                              .getPublisher<OansControlEvents>()
+                              .pub('oansCenterMapOn', this.selectedEntityCoordinate, true);
+                          }
+                        }}
                         disabled={Subject.create(true)}
                       />
                     </div>
@@ -680,13 +737,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         onModified={(newSelectedIndex) => {
                           switch (newSelectedIndex) {
                             case 0:
-                              this.handleSelectSearchMode(ControlPanelAirportSearchMode.Icao);
+                              this.handleSelectAirportSearchMode(ControlPanelAirportSearchMode.Icao);
                               break;
                             case 1:
-                              this.handleSelectSearchMode(ControlPanelAirportSearchMode.Iata);
+                              this.handleSelectAirportSearchMode(ControlPanelAirportSearchMode.Iata);
                               break;
                             default:
-                              this.handleSelectSearchMode(ControlPanelAirportSearchMode.City);
+                              this.handleSelectAirportSearchMode(ControlPanelAirportSearchMode.City);
                               break;
                           }
                         }}

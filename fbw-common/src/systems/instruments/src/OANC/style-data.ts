@@ -112,4 +112,5 @@ export const STYLE_DATA: Record<number, StyleRule[]> = {
     },
   ],
   7: [],
+  8: [],
 };

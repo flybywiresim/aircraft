@@ -93,11 +93,11 @@ export const a380EfisZoomRangeSettings: A380EfisZoomRangeValue[] = [0.2, 0.5, 1,
 const DEFAULT_SCALE_NM = 0.539957;
 
 const LAYER_VISIBILITY_RULES = [
-  [true, true, true, true, false, false, true, true],
-  [true, true, true, true, false, false, false, true],
-  [false, true, false, false, true, true, false, true],
-  [false, true, false, false, true, true, false, true],
-  [false, true, false, false, true, true, false, true],
+  [true, true, true, true, false, false, true, true, true],
+  [true, true, true, true, false, false, false, true, true],
+  [false, true, false, false, true, true, false, true, true],
+  [false, true, false, false, true, true, false, true, false],
+  [false, true, false, false, true, true, false, true, false],
 ];
 
 export const LABEL_VISIBILITY_RULES = [true, true, true, true, true];
@@ -166,9 +166,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
+    FSComponent.createRef<HTMLCanvasElement>(),
   ];
 
   private readonly layerCanvasScaleContainerRefs = [
+    FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
@@ -213,7 +215,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     featureCollection([]), // Layer 4: TAXIWAY GUIDANCE LINES (scaled width), HOLD SHORT LINES
     featureCollection([]), // Layer 5: TAXIWAY GUIDANCE LINES (unscaled width)
     featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
-    featureCollection([]), // Layer 7: DYNAMIC CONTENT (BTV PATH, STOP LINES)
+    featureCollection([]), // Layer 7: DYNAMIC BTV CONTENT (BTV PATH, STOP LINES)
+    featureCollection([]), // Layer 8: FLAGS & CROSSES
   ];
 
   public amdbClient = new NavigraphAmdbClient();
@@ -1416,6 +1419,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
               >
                 <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
+              </div>
+              <div
+                ref={this.layerCanvasScaleContainerRefs[8]}
+                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
+              >
+                <canvas ref={this.layerCanvasRefs[8]} width={this.canvasWidth} height={this.canvasHeight} />
               </div>
 
               <OancAircraftIcon
