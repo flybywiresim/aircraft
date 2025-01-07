@@ -290,6 +290,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly airportWithinRange = Subject.create(false);
 
+  private readonly airportTooFarAwayAndInArcNavMode = Subject.create(false);
+
   private readonly airportBearing = Subject.create(0);
 
   public readonly projectedPpos = MappedSubject.create(
@@ -396,6 +398,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     ([arptNavPosLostFlagVisible, airportLoading]) => !arptNavPosLostFlagVisible && airportLoading,
     this.arptNavPosLostFlagVisible,
     this.airportLoading,
+  );
+
+  private readonly setPlanModeFlagVisible = MappedSubject.create(
+    ([arptNavPosLostFlagVisible, airportLoading, tooFarAway]) =>
+      !arptNavPosLostFlagVisible && !airportLoading && tooFarAway,
+    this.arptNavPosLostFlagVisible,
+    this.airportLoading,
+    this.airportTooFarAwayAndInArcNavMode,
   );
 
   private readonly oansNotAvailable = ConsumerSubject.create(null, false);
@@ -950,16 +960,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
-    // This will always be false without ppos, otherwise it will be updated below
-    let airportTooFarAwayAndInArcMode = false;
-
     if (!this.pposNotAvailable.get()) {
       this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos.get(), bboxPolygon(bbox(this.data))));
 
       const distToArpt = this.arpCoordinates.get() ? distanceTo(this.ppos.get(), this.arpCoordinates.get()) : 9999;
 
       // If in ARC mode and airport more than 30nm away, apply a hack to not create a huge canvas (only shift airport a little bit out of view with a static offset)
-      airportTooFarAwayAndInArcMode = this.usingPposAsReference.get() && distToArpt > 30;
+      this.airportTooFarAwayAndInArcNavMode.set(
+        !this.pposNotAvailable.get() && this.usingPposAsReference.get() && distToArpt > 30,
+      );
 
       if (this.arpCoordinates.get()) {
         this.airportWithinRange.set(distToArpt < this.props.zoomValues[this.zoomLevelIndex.get()] + 3); // Add 3nm for airport dimension, FIXME better estimation
@@ -969,6 +978,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.airportBearing.set(0);
       }
     } else {
+      this.airportTooFarAwayAndInArcNavMode.set(false);
       this.aircraftWithinAirport.set(false);
       this.airportWithinRange.set(true);
     }
@@ -1034,7 +1044,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.arpReferencedMapParams.compute(this.arpCoordinates.get(), 0, 0.539957, 1_000, mapCurrentHeading);
 
     let [offsetX, offsetY]: [number, number] = [0, 0];
-    if (airportTooFarAwayAndInArcMode) {
+    if (this.airportTooFarAwayAndInArcNavMode.get()) {
       const shiftBy = 5 * Math.max(this.canvasWidth.get(), this.canvasHeight.get());
       [offsetX, offsetY] = [shiftBy, shiftBy];
     } else {
@@ -1323,6 +1333,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
           style={{ visibility: this.pleaseWaitFlagVisible.map((v) => (v ? 'inherit' : 'hidden')) }}
         >
           PLEASE WAIT
+        </div>
+        <div
+          class="oanc-flag-container FontSmall"
+          style={{ visibility: this.setPlanModeFlagVisible.map((v) => (v ? 'inherit' : 'hidden')) }}
+        >
+          SET PLAN MODE
         </div>
         <div
           class="oanc-flag-container amber FontLarge"
