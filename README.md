@@ -103,7 +103,7 @@ It's very likely that the feature you are awaiting is already under development!
 
 We have two mainline versions: stable and development. The stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time.
 
-You can read more about the differences between the versions we offer [on our documentation portal](https://docs.flybywiresim.com/fbw-a32nx/fbw-versions/).
+You can read more about the differences between the versions we offer [on our documentation portal](https://docs.flybywiresim.com/aircraft/install/fbw-versions/).
 
 ### Is there a list of features or a changelog available?
 
