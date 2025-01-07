@@ -115,6 +115,7 @@
 1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
+1. [A380X/MFD] Update font for MFD F-PLN page to use slashed zero font - @bulenteroglu (senolitam)
 
 ## 0.12.0
 
