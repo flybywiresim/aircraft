@@ -12,7 +12,6 @@ import {
   InstrumentBackplane,
   Subject,
   Subscribable,
-  Wait,
 } from '@microsoft/msfs-sdk';
 import {
   A380EfisNdRangeValue,
@@ -117,7 +116,7 @@ class NDInstrument implements FsInstrument {
   private oansContextMenuItems: Subscribable<ContextMenuElement[]> = Subject.create([
     {
       name: 'ADD CROSS',
-      disabled: true,
+      disabled: false,
       onPressed: () =>
         console.log(
           `ADD CROSS at (${this.contextMenuPositionTriggered.get().x}, ${this.contextMenuPositionTriggered.get().y})`,
@@ -125,7 +124,7 @@ class NDInstrument implements FsInstrument {
     },
     {
       name: 'ADD FLAG',
-      disabled: true,
+      disabled: false,
       onPressed: () =>
         console.log(
           `ADD FLAG at (${this.contextMenuPositionTriggered.get().x}, ${this.contextMenuPositionTriggered.get().y})`,
@@ -142,25 +141,19 @@ class NDInstrument implements FsInstrument {
     },
     {
       name: 'ERASE ALL CROSSES',
-      disabled: true,
+      disabled: false,
       onPressed: () => console.log('ERASE ALL CROSSES'),
     },
     {
       name: 'ERASE ALL FLAGS',
-      disabled: true,
+      disabled: false,
       onPressed: () => console.log('ERASE ALL FLAGS'),
     },
     {
       name: 'CENTER ON ACFT',
       disabled: false,
       onPressed: async () => {
-        if (this.oansRef.getOrDefault() !== null) {
-          await this.oansRef.instance.enablePanningTransitions();
-          this.oansRef.instance.panOffsetX.set(0);
-          this.oansRef.instance.panOffsetY.set(0);
-          await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
-          await this.oansRef.instance.disablePanningTransitions();
-        }
+        this.bus.getPublisher<OansControlEvents>().pub('oans_center_on_acft', true, true, false);
       },
     },
   ]);
@@ -343,7 +336,7 @@ class NDInstrument implements FsInstrument {
 
     const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents>();
 
-    this.oansNotAvailable.setConsumer(sub.on('oansNotAvail'));
+    this.oansNotAvailable.setConsumer(sub.on('oans_not_avail'));
 
     sub
       .on('ndMode')
@@ -364,10 +357,10 @@ class NDInstrument implements FsInstrument {
 
   private updateNdOansVisibility() {
     if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
-      this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', true);
+      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', true, true, false);
       this.oansShown.set(true);
     } else {
-      this.bus.getPublisher<OansControlEvents>().pub('ndShowOans', false);
+      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', false, true, false);
       this.oansShown.set(false);
     }
   }

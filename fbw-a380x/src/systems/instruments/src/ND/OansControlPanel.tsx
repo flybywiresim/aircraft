@@ -122,6 +122,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly selectedEntityString = Subject.create<string | null>(null);
 
+  private readonly entityIsNotSelected = this.selectedEntityIndex.map((i) => i === null);
+
   private selectedEntityCoordinate: Coordinates | null = null;
 
   private manualAirportSelection = false;
@@ -254,7 +256,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           this.mapDataBtvFallback.instance.style.display = v ? 'none' : 'block';
         }
         SimVar.SetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool, v);
-        this.props.bus.getPublisher<OansControlEvents>().pub('oansNotAvail', !v, true);
+        this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, true, false);
       }, true),
     );
 
@@ -288,7 +290,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         }),
     );
 
-    this.subs.push(this.sub.on('oansDisplayAirport').handle((arpt) => this.handleSelectAirport(arpt)));
+    this.subs.push(this.sub.on('oans_display_airport').handle((arpt) => this.handleSelectAirport(arpt)));
 
     this.selectedEntityIndex.sub((val) => {
       const searchMode = this.selectedEntityType.get();
@@ -442,7 +444,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
 
     this.manualAirportSelection = true;
-    this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', selectedArpt.idarpt, true);
+    this.props.bus.getPublisher<OansControlEvents>().pub('oans_display_airport', selectedArpt.idarpt, true);
     this.store.loadedAirport.set(selectedArpt);
     this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
   };
@@ -475,7 +477,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       if (sortedAirports.length > 0) {
         const ap = sortedAirports[0];
         if (ap.idarpt !== this.store.loadedAirport.get()?.idarpt) {
-          this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', ap.idarpt, true);
+          this.props.bus.getPublisher<OansControlEvents>().pub('oans_display_airport', ap.idarpt, true);
           this.store.loadedAirport.set(ap);
           this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
         }
@@ -487,7 +489,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       const destArpt = this.store.airports.getArray().find((it) => it.idarpt === this.fmsDataStore.destination.get());
       if (destArpt && destArpt.idarpt !== this.store.loadedAirport.get()?.idarpt) {
         if (distanceTo(this.presentPos.get(), { lat: destArpt.coordinates.lat, long: destArpt.coordinates.lon }) < 50) {
-          this.props.bus.getPublisher<OansControlEvents>().pub('oansDisplayAirport', destArpt.idarpt, true);
+          this.props.bus.getPublisher<OansControlEvents>().pub('oans_display_airport', destArpt.idarpt, true);
           this.store.loadedAirport.set(destArpt);
           this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
           return;
@@ -605,11 +607,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           if (this.selectedEntityCoordinate) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oansAddCross', this.selectedEntityCoordinate, true);
+                              .pub('oans_add_cross', this.selectedEntityCoordinate, true);
                           }
                         }}
                         buttonStyle="flex: 1"
-                        disabled={Subject.create(true)}
+                        disabled={this.entityIsNotSelected}
                       />
                       <Button
                         label="ADD FLAG"
@@ -617,11 +619,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           if (this.selectedEntityCoordinate) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oansAddFlag', this.selectedEntityCoordinate, true);
+                              .pub('oans_add_flag', this.selectedEntityCoordinate, true);
                           }
                         }}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"
-                        disabled={Subject.create(true)}
+                        disabled={this.entityIsNotSelected}
                       />
                       <Button
                         label="LDG SHIFT"
@@ -639,10 +641,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           if (this.selectedEntityCoordinate) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oansCenterMapOn', this.selectedEntityCoordinate, true);
+                              .pub('oans_center_map_on', this.selectedEntityCoordinate, true);
                           }
                         }}
-                        disabled={Subject.create(true)}
+                        disabled={this.entityIsNotSelected}
                       />
                     </div>
                     <OansRunwayInfoBox

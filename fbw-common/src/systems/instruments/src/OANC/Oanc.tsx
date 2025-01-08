@@ -62,6 +62,7 @@ import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
 import { LubberLine } from '../ND/pages/arc/LubberLine';
+import { OancMarkerManager } from 'instruments/src/OANC/OancMarkerManager';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -219,11 +220,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     featureCollection([]), // Layer 8: FLAGS & CROSSES
   ];
 
-  public amdbClient = new NavigraphAmdbClient();
+  public readonly amdbClient = new NavigraphAmdbClient();
 
-  private labelManager = new OancLabelManager<T>(this);
+  private readonly labelManager = new OancLabelManager<T>(this);
 
-  private positionComputer = new OancPositionComputer<T>(this);
+  private readonly markerManager = new OancMarkerManager<T>(this);
+
+  private readonly positionComputer = new OancPositionComputer<T>(this);
 
   public dataLoading = false;
 
@@ -429,8 +432,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelContainerRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
     this.labelContainerRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
-    this.oansVisible.setConsumer(this.sub.on('ndShowOans'));
-    this.oansNotAvailable.setConsumer(this.sub.on('oansNotAvail'));
+    this.oansVisible.setConsumer(this.sub.on('nd_show_oans'));
+    this.oansNotAvailable.setConsumer(this.sub.on('oans_not_avail'));
     this.efisNDModeSub.setConsumer(this.sub.on('ndMode'));
 
     this.efisNDModeSub.sub((mode) => {
@@ -443,11 +446,18 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.efisOansRangeSub.sub((range) => this.zoomLevelIndex.set(range), true);
 
     this.sub
-      .on('oansDisplayAirport')
+      .on('oans_display_airport')
       .whenChanged()
       .handle((airport) => {
         this.loadAirportMap(airport);
       });
+
+    this.sub.on('oans_center_on_acft').handle(() => this.centerOnAcft());
+    this.sub.on('oans_center_map_on').handle((coords) => this.centerMapOn(coords));
+    this.sub.on('oans_add_cross').handle((coords) => this.markerManager.addCross(coords));
+    this.sub.on('oans_add_flag').handle((coords) => this.markerManager.addFlag(coords));
+    this.sub.on('oans_erase_all_crosses').handle(() => this.markerManager.eraseAllCrosses());
+    this.sub.on('oans_erase_all_flags').handle(() => this.markerManager.eraseAllFlags());
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
@@ -1144,6 +1154,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     this.labelManager.clearLabels();
+    this.markerManager.eraseAllFlags();
+    this.markerManager.eraseAllCrosses();
   }
 
   private clearMap(): void {
@@ -1323,6 +1335,27 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     labelScreenY += this.modeAnimationOffsetY.get();
 
     return [labelScreenX, labelScreenY];
+  }
+
+  async centerOnAcft() {
+    await this.enablePanningTransitions();
+    this.panOffsetX.set(0);
+    this.panOffsetY.set(0);
+    await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
+    await this.disablePanningTransitions();
+  }
+
+  /**
+   * Centers map on point supplied in parameters
+   * @param x X position in local coordinate system
+   * @param y Y position in local coordinate system
+   */
+  async centerMapOn(coords: Coordinates) {
+    await this.enablePanningTransitions();
+    this.panOffsetX.set(coords[0]);
+    this.panOffsetY.set(coords[1]);
+    await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
+    await this.disablePanningTransitions();
   }
 
   render(): VNode | null {
