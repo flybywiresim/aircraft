@@ -59,7 +59,7 @@ import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseServic
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
-import { Feature, Geometry, Position } from '@turf/turf';
+import { Feature, Geometry, MultiLineString, Point, Position } from '@turf/turf';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -124,7 +124,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly entityIsNotSelected = this.selectedEntityIndex.map((i) => i === null);
 
-  private selectedEntityCoordinate: Coordinates | null = null;
+  private selectedEntityPosition: Position = [];
 
   private manualAirportSelection = false;
 
@@ -298,10 +298,22 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         const prop = ControlPanelUtils.getMapDataSearchModeProp(searchMode);
         const idx = this.mapDataFeatures.findIndex((f) => f.properties[prop] === this.availableEntityList.get(val));
         this.selectedEntityString.set(idx !== -1 ? this.mapDataFeatures[idx]?.properties[prop]?.toString() ?? '' : '');
-        this.selectedEntityCoordinate = {
-          lat: this.mapDataFeatures[idx].geometry.coordinates[0] as number,
-          long: this.mapDataFeatures[idx].geometry.coordinates[1] as number,
-        };
+
+        if (
+          (idx !== -1 && searchMode === ControlPanelMapDataSearchMode.RWY) ||
+          searchMode === ControlPanelMapDataSearchMode.STAND
+        ) {
+          const feature = this.mapDataFeatures[idx] as Feature<Point>;
+          this.selectedEntityPosition = feature.geometry.coordinates;
+        } else if (idx !== -1 && searchMode === ControlPanelMapDataSearchMode.TWY) {
+          const taxiway = this.mapDataFeatures[idx] as Feature<MultiLineString>;
+          const centerCoords = Math.min(
+            Math.max(Math.floor(taxiway.geometry.coordinates[0].length / 2), 0),
+            taxiway.geometry.coordinates[0].length - 1,
+          );
+          this.selectedEntityPosition = taxiway.geometry.coordinates[0][centerCoords];
+        }
+
         if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.RWY) {
           this.runwayLda.set(this.mapDataFeatures[idx].properties.lda?.toFixed(0) ?? '');
           this.runwayTora.set(this.mapDataFeatures[idx].properties.tora?.toFixed(0) ?? '');
@@ -604,10 +616,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       <Button
                         label="ADD CROSS"
                         onClick={() => {
-                          if (this.selectedEntityCoordinate) {
+                          if (this.selectedEntityPosition) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oans_add_cross', this.selectedEntityCoordinate, true);
+                              .pub('oans_add_cross', this.selectedEntityPosition, true);
                           }
                         }}
                         buttonStyle="flex: 1"
@@ -616,10 +628,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       <Button
                         label="ADD FLAG"
                         onClick={() => {
-                          if (this.selectedEntityCoordinate) {
+                          if (this.selectedEntityPosition) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oans_add_flag', this.selectedEntityCoordinate, true);
+                              .pub('oans_add_flag', this.selectedEntityPosition, true);
                           }
                         }}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"
@@ -638,10 +650,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           <>`CENTER MAP ON ${s}`</>
                         ))}
                         onClick={() => {
-                          if (this.selectedEntityCoordinate) {
+                          if (this.selectedEntityPosition) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oans_center_map_on', this.selectedEntityCoordinate, true);
+                              .pub('oans_center_map_on', this.selectedEntityPosition, true);
                           }
                         }}
                         disabled={this.entityIsNotSelected}

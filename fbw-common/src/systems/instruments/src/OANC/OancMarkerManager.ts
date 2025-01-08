@@ -1,22 +1,22 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { Position } from '@turf/turf';
 import { Oanc } from 'instruments/src/OANC';
-import { Coordinates } from 'msfs-geo';
 
 export class OancMarkerManager<T extends number> {
   constructor(public oanc: Oanc<T>) {}
 
-  private crosses: Coordinates[] = [];
+  private crosses: Position[] = [];
 
-  private flags: Coordinates[] = [];
+  private flags: Position[] = [];
 
-  addCross(coords: Coordinates) {
+  addCross(coords: Position) {
     this.crosses.push(coords);
   }
 
-  addFlag(coords: Coordinates) {
-    this.crosses.push(coords);
+  addFlag(coords: Position) {
+    this.flags.push(coords);
   }
 
   eraseAllCrosses() {

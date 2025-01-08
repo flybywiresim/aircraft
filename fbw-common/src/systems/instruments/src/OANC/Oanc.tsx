@@ -1337,6 +1337,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     return [labelScreenX, labelScreenY];
   }
 
+  public offsetToPoint(coordinates: Position): [number, number] {
+    const projected = this.projectPoint(coordinates);
+    const xOffset = -(projected[0] - this.panOffsetX.get() - OANC_RENDER_WIDTH / 2 - this.modeAnimationOffsetX.get());
+    const yOffset = -(projected[1] - this.panOffsetY.get() - OANC_RENDER_HEIGHT / 2 - this.modeAnimationOffsetY.get());
+
+    return [xOffset, yOffset];
+  }
+
   async centerOnAcft() {
     await this.enablePanningTransitions();
     this.panOffsetX.set(0);
@@ -1350,10 +1358,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
    * @param x X position in local coordinate system
    * @param y Y position in local coordinate system
    */
-  async centerMapOn(coords: Coordinates) {
+  async centerMapOn(pos: Position) {
+    const xy = this.offsetToPoint(pos);
     await this.enablePanningTransitions();
-    this.panOffsetX.set(coords[0]);
-    this.panOffsetY.set(coords[1]);
+    this.panOffsetX.set(xy[0]);
+    this.panOffsetY.set(xy[1]);
     await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
     await this.disablePanningTransitions();
   }
