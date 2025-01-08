@@ -914,7 +914,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   };
 
   private static readonly v2SecondSegBrakeThresholds: Record<number, [number, number]> = {
-    1: [-0.009368, 186.79],
+    1: [-0.01683, 210.52],
     2: [0.02346, 68.33],
     3: [0.022112, 83.141],
   };
