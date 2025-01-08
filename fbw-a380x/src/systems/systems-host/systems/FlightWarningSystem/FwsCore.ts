@@ -1552,7 +1552,9 @@ export class FwsCore {
     // Not a lot of references on which parts of the FWS to reset when
     this.shutDownFor50MinutesCheckListReset.sub((v) => {
       if (v) {
-        this.normalChecklists.reset(null);
+        if (!this.manualCheckListReset.get()) {
+          this.normalChecklists.reset(null);
+        }
         this.abnormalNonSensed.reset();
         this.activeDeferredProceduresList.clear();
       }
@@ -1973,14 +1975,11 @@ export class FwsCore {
     this.phase815MinConfNode.write(this.flightPhase.get() === 8, deltaTime);
     this.phase112.set(flightPhase112);
 
-    this.phase12ShutdownMemoryNode.write(this.flightPhase.get() == 12, !this.phase112.get());
+    this.phase12ShutdownMemoryNode.write(this.flightPhase.get() === 12, !this.phase112.get());
     this.flightPhase12Entered.set(this.flightPhase.get() === 12);
 
     this.shutDownFor50MinutesCheckListReset.set(
-      this.shutDownFor50MinutesClResetConfNode.write(
-        !this.manualCheckListReset.get() && this.phase12ShutdownMemoryNode.read(),
-        deltaTime,
-      ),
+      this.shutDownFor50MinutesClResetConfNode.write(this.phase12ShutdownMemoryNode.read(), deltaTime),
     );
 
     // TO CONFIG button
