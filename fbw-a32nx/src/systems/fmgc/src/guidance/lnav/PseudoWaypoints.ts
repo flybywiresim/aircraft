@@ -21,8 +21,6 @@ import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
 const PWP_IDENT_STEP_DESCENT = '(S/D)';
-const PWP_IDENT_SPD_LIM = '(LIM)';
-const PWP_IDENT_SPD_LIM_A380 = '(SPDLIM)';
 const PWP_IDENT_TOD = '(T/D)';
 const PWP_IDENT_DECEL = '(DECEL)';
 const PWP_IDENT_FLAP1 = '(FLAP1)';
@@ -371,9 +369,8 @@ export class PseudoWaypoints implements GuidanceComponent {
   ): PseudoWaypoint | undefined {
     let [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = [undefined, undefined, undefined];
 
-    const numberOfEngines = this.acConfig.engineModelParameters.numberOfEngines;
-    const isA380 = numberOfEngines === 4;
-    console.log('[FMS/PWP] Aircraft config:', this.acConfig);
+    const PWP_IDENT_SPD_LIM = this.acConfig.vnavConfig.LIM_PSEUDO_WPT_LABEL;
+    const PWP_SPD_LIM_HEADER = PWP_IDENT_SPD_LIM === '(LIM)' ? '\xa0(SPD)' : undefined;
 
     const isLatAutoControlArmedOrActive =
       this.guidanceController.vnavDriver.isLatAutoControlActive() ||
@@ -419,27 +416,27 @@ export class PseudoWaypoints implements GuidanceComponent {
         };
       case VerticalCheckpointReason.CrossingClimbSpeedLimit:
         return {
-          ident: isA380 ? PWP_IDENT_SPD_LIM_A380 : PWP_IDENT_SPD_LIM,
+          ident: PWP_IDENT_SPD_LIM,
           alongLegIndex,
           distanceFromLegTermination,
           efisSymbolFlag: 0, // Since this is not shown on the ND, it does not need a symbol
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          mcduHeader: isA380 ? null : '\xa0(SPD)',
+          mcduHeader: PWP_SPD_LIM_HEADER,
           flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
           displayedOnNd: false,
         };
       case VerticalCheckpointReason.CrossingDescentSpeedLimit:
         return {
-          ident: isA380 ? PWP_IDENT_SPD_LIM_A380 : PWP_IDENT_SPD_LIM,
+          ident: PWP_IDENT_SPD_LIM,
           alongLegIndex,
           distanceFromLegTermination,
           efisSymbolFlag: 0, // Since this is not shown on the ND, it does not need a symbol
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          mcduHeader: isA380 ? null : '\xa0(SPD)',
+          mcduHeader: PWP_SPD_LIM_HEADER,
           flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
           displayedOnNd: false,
         };
