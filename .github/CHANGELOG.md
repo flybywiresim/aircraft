@@ -112,7 +112,7 @@
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
 1. [A380X/ND] Remove leading zeros from terrain elevation display - @BravoMike99 (bruno_pt99)
-1. [A380X/FMA] Add FCU ALT ABOVE/BELOW A/C FMA messages - @Pruznak (Pruznak)
+1. [A380X/PFD] Add FCU ALT ABOVE/BELOW A/C FMA messages - @Pruznak (Pruznak)
 
 ## 0.12.0
 
