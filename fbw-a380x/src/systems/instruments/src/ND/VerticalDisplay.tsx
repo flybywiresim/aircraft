@@ -47,6 +47,8 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
     (r) => a380EfisRangeSettings[r],
   );
 
+  private readonly vdRangeChange = ConsumerSubject.create(this.sub.on('ndRangeSetting').whenChanged(), 0);
+
   private readonly visible = MappedSubject.create(
     ([mode, range]) =>
       [EfisNdMode.PLAN, EfisNdMode.ROSE_ILS, EfisNdMode.ROSE_VOR].includes(mode) || range === -1 ? 'none' : 'block',
@@ -187,6 +189,11 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
             visibility={this.baroMode.map((m) => (m === 'STD' ? 'visible' : 'hidden'))}
           >
             FL
+          </text>
+        </g>
+        <g visibility={this.vdRangeChange.map((value) => (value ? 'visible' : 'hidden'))}>
+          <text x="422" y="920" class="Green FontSmall MiddleAlign">
+            VD RANGE CHANGE
           </text>
         </g>
       </svg>
