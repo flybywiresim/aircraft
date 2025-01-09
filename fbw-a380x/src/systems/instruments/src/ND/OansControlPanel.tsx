@@ -619,7 +619,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           if (this.selectedEntityPosition) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oans_add_cross', this.selectedEntityPosition, true);
+                              .pub('oans_add_cross_at_position', this.selectedEntityPosition, true);
                           }
                         }}
                         buttonStyle="flex: 1"
@@ -631,7 +631,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           if (this.selectedEntityPosition) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oans_add_flag', this.selectedEntityPosition, true);
+                              .pub('oans_add_flag_at_position', this.selectedEntityPosition, true);
                           }
                         }}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"

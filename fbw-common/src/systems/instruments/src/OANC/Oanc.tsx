@@ -94,11 +94,11 @@ export const a380EfisZoomRangeSettings: A380EfisZoomRangeValue[] = [0.2, 0.5, 1,
 const DEFAULT_SCALE_NM = 0.539957;
 
 const LAYER_VISIBILITY_RULES = [
-  [true, true, true, true, false, false, true, true, true],
-  [true, true, true, true, false, false, false, true, true],
-  [false, true, false, false, true, true, false, true, true],
-  [false, true, false, false, true, true, false, true, false],
-  [false, true, false, false, true, true, false, true, false],
+  [true, true, true, true, false, false, true, true],
+  [true, true, true, true, false, false, false, true],
+  [false, true, false, false, true, true, false, true],
+  [false, true, false, false, true, true, false, true],
+  [false, true, false, false, true, true, false, true],
 ];
 
 export const LABEL_VISIBILITY_RULES = [true, true, true, true, true];
@@ -118,6 +118,8 @@ export enum LabelStyle {
   BtvStopLineAmber = 'btv-stop-line-amber',
   BtvStopLineRed = 'btv-stop-line-red',
   BtvStopLineGreen = 'btv-stop-line-green',
+  CrossSymbol = 'cross-symbol',
+  FlagSymbol = 'flag-symbol',
 }
 
 export interface Label {
@@ -167,11 +169,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
   ];
 
   private readonly layerCanvasScaleContainerRefs = [
-    FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
@@ -217,14 +217,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     featureCollection([]), // Layer 5: TAXIWAY GUIDANCE LINES (unscaled width)
     featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
     featureCollection([]), // Layer 7: DYNAMIC BTV CONTENT (BTV PATH, STOP LINES)
-    featureCollection([]), // Layer 8: FLAGS & CROSSES
   ];
 
   public readonly amdbClient = new NavigraphAmdbClient();
 
   private readonly labelManager = new OancLabelManager<T>(this);
-
-  private readonly markerManager = new OancMarkerManager<T>(this);
 
   private readonly positionComputer = new OancPositionComputer<T>(this);
 
@@ -347,6 +344,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.getZoomLevelInverseScale.bind(this),
   );
 
+  private readonly markerManager = new OancMarkerManager<T>(this, this.labelManager);
+
   private readonly airportNotInActiveFpln = MappedSubject.create(
     ([ndMode, arpt, origin, dest, altn]) => ndMode !== EfisNdMode.ARC && ![origin, dest, altn].includes(arpt),
     this.overlayNDModeSub,
@@ -453,9 +452,22 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       });
 
     this.sub.on('oans_center_on_acft').handle(() => this.centerOnAcft());
-    this.sub.on('oans_center_map_on').handle((coords) => this.centerMapOn(coords));
-    this.sub.on('oans_add_cross').handle((coords) => this.markerManager.addCross(coords));
-    this.sub.on('oans_add_flag').handle((coords) => this.markerManager.addFlag(coords));
+    this.sub.on('oans_center_map_on').handle((coords) => {
+      this.centerMapOn(coords);
+      console.log('center on', coords);
+    });
+    this.sub.on('oans_add_cross_at_position').handle((coords) => this.markerManager.addCross(coords));
+    this.sub.on('oans_add_flag_at_position').handle((coords) => this.markerManager.addFlag(coords));
+    this.sub.on('oans_add_cross_at_cursor').handle(([x, y]) => {
+      // console.log('pre', this.panOffsetX.get(), this.canvasCentreX.get(), x, this.getZoomLevelInverseScale());
+      const test = this.panOffsetX.get() + x / this.getZoomLevelInverseScale();
+      //console.log('test', test);
+      console.log(this.referencePos, this.projectPoint([0, 0]));
+      this.markerManager.addCross([
+        this.canvasCentreX.get() + this.panOffsetX.get() + x,
+        this.canvasCentreY.get() + this.panOffsetY.get() + y,
+      ]);
+    });
     this.sub.on('oans_erase_all_crosses').handle(() => this.markerManager.eraseAllCrosses());
     this.sub.on('oans_erase_all_flags').handle(() => this.markerManager.eraseAllFlags());
 
@@ -1499,12 +1511,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
                 style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
               >
                 <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[8]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[8]} width={this.canvasWidth} height={this.canvasHeight} />
               </div>
 
               <OancAircraftIcon

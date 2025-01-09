@@ -60,6 +60,8 @@ export function filterLabel(
       LabelStyle.BtvStopLineAmber,
       LabelStyle.BtvStopLineRed,
       LabelStyle.BtvStopLineGreen,
+      LabelStyle.CrossSymbol,
+      LabelStyle.FlagSymbol,
     ].includes(label.style)
   ) {
     return true;

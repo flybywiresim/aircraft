@@ -119,17 +119,23 @@ class NDInstrument implements FsInstrument {
       name: 'ADD CROSS',
       disabled: false,
       onPressed: () =>
-        console.log(
-          `ADD CROSS at (${this.contextMenuPositionTriggered.get().x}, ${this.contextMenuPositionTriggered.get().y})`,
-        ),
+        this.bus
+          .getPublisher<OansControlEvents>()
+          .pub('oans_add_cross_at_cursor', [
+            this.contextMenuPositionTriggered.get().x,
+            this.contextMenuPositionTriggered.get().y,
+          ]),
     },
     {
       name: 'ADD FLAG',
       disabled: false,
       onPressed: () =>
-        console.log(
-          `ADD FLAG at (${this.contextMenuPositionTriggered.get().x}, ${this.contextMenuPositionTriggered.get().y})`,
-        ),
+        this.bus
+          .getPublisher<OansControlEvents>()
+          .pub('oans_add_flag_at_cursor', [
+            this.contextMenuPositionTriggered.get().x,
+            this.contextMenuPositionTriggered.get().y,
+          ]),
     },
     {
       name: 'MAP DATA',
