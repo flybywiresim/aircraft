@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { FlapConf } from '@fmgc/guidance/vnav/common';
+
 export enum VnavDescentMode {
   NORMAL,
   CDA,
@@ -92,6 +94,50 @@ export interface EngineModelParameters {
 
   /** Fuel burn relative to A320 / base implementation */
   fuelBurnFactor: number;
+
+  /**
+   * Maximum corrected N1 in CLB thrust
+   * @param i row index (tat) in steps of 4°C
+   * @param j col index (pressure altitude, ft)
+   * @returns Corrected N1 (CN1)
+   */
+  cn1ClimbLimit: readonly (readonly number[])[];
+
+  /**
+   * Table 1502 - CN2 vs CN1 @ Mach 0, 0.2, 0.9
+   * n2_to_n1_table
+   * @param i row index (n2)
+   * @param j 1 = Mach 0, 2 = Mach 0.2, 3 = Mach 0.9
+   * @returns Corrected N1 (CN1)
+   */
+  table1502: readonly (readonly number[])[];
+
+  /**
+   * Table 1503 - Turbine LoMach (0) CN2 vs. Throttle @ IAP Ratio 1.00000000, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313
+   * mach_0_corrected_commanded_ne_table
+   * @param i row index (thrust lever position)
+   * @param j IAP ratio
+   * @returns Corrected N2 (CN2)
+   */
+  table1503: readonly (readonly number[])[];
+
+  /**
+   * Table 1504 - Turbine HiMach (0.9) CN2 vs. Throttle @ IAP Ratio 1.00000000, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313
+   * mach_hi_corrected_commanded_ne_table
+   * @param i row index (thrust lever position)
+   * @param j IAP ratio
+   * @returns Corrected N2 (CN2)
+   */
+  table1504: readonly (readonly number[])[];
+
+  /**
+   * Table 1506 - Corrected net Thrust vs CN1 @ Mach 0 to 0.9 in 0.1 steps
+   * n1_and_mach_on_thrust_table
+   * @param i row index (CN1)
+   * @param j mach
+   * @returns Corrected net thrust (pounds of force)
+   */
+  table1506: readonly (readonly number[])[];
 }
 
 export interface FlightModelParameters {
@@ -126,8 +172,11 @@ export interface FlightModelParameters {
   /** Drag coefficient increase due to extended speed brake */
   gearDrag: number;
 
-  /** Drag coefficient factor for tuning */
-  dragCoeffFactor: number;
+  /**
+   * Coefficents for the drag polar polynomial. The drag polar polynomial maps Cl to Cd.
+   * The coefficients are ordered in increasing powers of Cl.
+   */
+  dragPolarCoefficients: Record<FlapConf, number[]>;
 }
 
 export interface FMSymbolsConfig {
