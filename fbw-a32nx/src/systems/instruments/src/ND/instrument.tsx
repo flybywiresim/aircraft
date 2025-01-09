@@ -11,7 +11,7 @@ import {
   InstrumentBackplane,
   Subject,
 } from '@microsoft/msfs-sdk';
-import { a320EfisRangeSettings, ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { a320EfisRangeSettings, a320TerrainThresholdPadValue, ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -141,7 +141,12 @@ class NDInstrument implements FsInstrument {
         failed={this.displayFailed}
         normDmc={getDisplayIndex()}
       >
-        <NDComponent bus={this.bus} side={this.efisSide} rangeValues={a320EfisRangeSettings} />
+        <NDComponent
+          bus={this.bus}
+          side={this.efisSide}
+          rangeValues={a320EfisRangeSettings}
+          terrainThresholdPaddingText={a320TerrainThresholdPadValue}
+        />
       </DisplayUnit>,
       document.getElementById('ND_CONTENT'),
     );
