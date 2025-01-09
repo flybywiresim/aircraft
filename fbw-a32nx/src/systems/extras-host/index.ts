@@ -8,6 +8,7 @@
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import {
+  BaroUnitSelector,
   ExtrasSimVarPublisher,
   FlightDeckBounds,
   GPUManagement,
@@ -97,6 +98,11 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly lightSync: LightSync = new LightSync(this.bus);
 
+  private readonly baroUnitSelector = new BaroUnitSelector((isHpa) => {
+    SimVar.SetSimVarValue('L:A32NX_FCU_EFIS_L_BARO_IS_INHG', 'bool', !isHpa);
+    SimVar.SetSimVarValue('L:A32NX_FCU_EFIS_R_BARO_IS_INHG', 'bool', !isHpa);
+  });
+
   private readonly gsxSync = new GsxSyncA32NX(this.bus);
 
   /**
@@ -165,6 +171,8 @@ class ExtrasHost extends BaseInstrument {
     this.aircraftSync.connectedCallback();
 
     this.backplane.init();
+
+    this.baroUnitSelector.performSelection();
   }
 
   public parseXMLConfig(): void {

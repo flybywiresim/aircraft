@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import { Clock, EventBus, HEventPublisher, InstrumentBackplane, SimVarValueType } from '@microsoft/msfs-sdk';
 import {
   FlightDeckBounds,
   NotificationManager,
@@ -14,6 +14,7 @@ import {
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
   GroundSupportPublisher,
+  BaroUnitSelector,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
@@ -90,6 +91,11 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly lightSync: LightSync = new LightSync(this.bus);
 
+  private readonly baroUnitSelector = new BaroUnitSelector((isHpa) => {
+    SimVar.SetSimVarValue('L:XMLVAR_Baro_Selector_HPA_1', SimVarValueType.Bool, isHpa);
+    SimVar.SetSimVarValue('L:XMLVAR_Baro_Selector_HPA_2', SimVarValueType.Bool, isHpa);
+  });
+
   private readonly gsxSync = new GsxSyncA380X(this.bus);
 
   /**
@@ -153,6 +159,8 @@ class ExtrasHost extends BaseInstrument {
     this.aircraftSync.connectedCallback();
 
     this.backplane.init();
+
+    this.baroUnitSelector.performSelection();
   }
 
   public parseXMLConfig(): void {
