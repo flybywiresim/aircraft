@@ -21,6 +21,10 @@ export const a320TerrainThresholdPadValue = '0';
 
 export const a380TerrainThresholdPadValue = '\\xa0';
 
+export const a320NdRangeChange = 'RANGE CHANGE';
+
+export const a380NdRangeChange = 'ND RANGE CHANGE';
+
 export enum EfisNdMode {
   ROSE_ILS,
   ROSE_VOR,

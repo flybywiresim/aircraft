@@ -72,6 +72,8 @@ export interface NDProps<T extends number> {
   rangeValues: T[];
 
   terrainThresholdPaddingText: string;
+
+  rangeChangeMessage: string;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -450,7 +452,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             </Flag>
 
             <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
-              RANGE CHANGE
+              {this.props.rangeChangeMessage}
             </Flag>
             <Flag
               visible={MappedSubject.create(
