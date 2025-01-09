@@ -11,7 +11,8 @@ import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessag
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 

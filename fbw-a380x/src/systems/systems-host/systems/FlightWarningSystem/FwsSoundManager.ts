@@ -282,8 +282,9 @@ export class FwsSoundManager {
   private currentSoundPlayTimeRemaining = 0;
 
   constructor(
-    private bus: EventBus,
-    private startupCompleted: Subscribable<boolean>,
+    private readonly bus: EventBus,
+    private readonly startupCompleted: Subscribable<boolean>,
+    private readonly audioFunctionLost: Subscribable<boolean>,
   ) {
     // Stop all sounds
     Object.values(FwsAuralsList).forEach((a) => {
@@ -368,7 +369,7 @@ export class FwsSoundManager {
 
   /** Find most important sound from soundQueue and play */
   private selectAndPlayMostImportantSound(): keyof typeof FwsAuralsList | null {
-    if (!this.startupCompleted.get()) {
+    if (!this.startupCompleted.get() || this.audioFunctionLost.get()) {
       return;
     }
 
@@ -403,6 +404,13 @@ export class FwsSoundManager {
   }
 
   onUpdate(deltaTime: number) {
+    if (this.audioFunctionLost.get()) {
+      while (this.currentSoundPlaying) {
+        this.stopCurrentSound();
+      }
+      return;
+    }
+
     // Either wait for the current sound to finish, or schedule the next sound
     if (this.currentSoundPlaying && this.currentSoundPlayTimeRemaining > 0) {
       if (this.currentSoundPlayTimeRemaining - deltaTime / 1_000 > 0) {

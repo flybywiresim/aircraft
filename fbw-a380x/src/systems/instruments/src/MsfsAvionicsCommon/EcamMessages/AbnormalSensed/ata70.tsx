@@ -11,7 +11,8 @@ import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessag
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -559,22 +560,22 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800109: {
-    title: '\x1b<4m\x1b4mENG\x1bm 1 SHUT DOWN',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm1 SHUT DOWN\x1bm",
     sensed: true,
     items: [],
   },
   701800110: {
-    title: '\x1b<4m\x1b4mENG\x1bm 2 SHUT DOWN',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm2 SHUT DOWN\x1bm",
     sensed: true,
     items: [],
   },
   701800111: {
-    title: '\x1b<4m\x1b4mENG\x1bm 3 SHUT DOWN',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm3 SHUT DOWN\x1bm",
     sensed: true,
     items: [],
   },
   701800112: {
-    title: '\x1b<4m\x1b4mENG\x1bm 4 SHUT DOWN',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm4 SHUT DOWN\x1bm",
     sensed: true,
     items: [],
   },
@@ -809,12 +810,12 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800159: {
-    title: '\x1b<4m\x1b4mENG\x1bm TWO ENG OUT ON SAME SIDE',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE\x1bm",
     sensed: true,
     items: [],
   },
   701800160: {
-    title: '\x1b<4m\x1b4mENG\x1bm TWO ENG OUT ON OPPOSITE SIDE',
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE\x1bm",
     sensed: true,
     items: [],
   },
@@ -822,5 +823,15 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mENG\x1bm TYPE DISAGREE',
     sensed: true,
     items: [],
+  },
+  700900001: {
+    title: '\x1b<4m\x1b4mENG\x1bm RELIGHT IN FLIGHT',
+    sensed: false,
+    items: [], // TODO
+  },
+  700900002: {
+    title: '\x1b<4m\x1b4mENG\x1bm TAIL PIPE FIRE',
+    sensed: false,
+    items: [], // TODO
   },
 };

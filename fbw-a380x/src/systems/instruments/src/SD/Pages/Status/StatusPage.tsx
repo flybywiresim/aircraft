@@ -39,12 +39,17 @@ export const StatusPage: React.FC = () => {
 
   const statusNormal = !(limitationsVisible || maxInopLines > 0);
 
+  // Skip ADCN reachability check for now, add when ported to avionics framework
+  const [fws1IsHealthy] = useSimVar('L:A32NX_FWS1_IS_HEALTHY', 'number', 1000);
+  const [fws2IsHealthy] = useSimVar('L:A32NX_FWS1_IS_HEALTHY', 'number', 1000);
+  const statusNotAvailable = !fws1IsHealthy && !fws2IsHealthy;
+
   return (
     <>
       <PageTitle x={6} y={29}>
         STATUS
       </PageTitle>
-      {!statusNormal && (
+      {!statusNormal && !statusNotAvailable && (
         <>
           <g transform="translate(6 40)" visibility={limitationsVisible ? 'visible' : 'hidden'}>
             <FormattedFwcText x={0} y={50} message={'\x1b<5mLIMITATIONS'} />
@@ -92,9 +97,14 @@ export const StatusPage: React.FC = () => {
           </g>
         </>
       )}
-      {statusNormal && (
+      {statusNormal && !statusNotAvailable && (
         <text x={384} y={343} className="F26 Green MiddleAlign">
           NORMAL
+        </text>
+      )}
+      {statusNotAvailable && (
+        <text x={384} y={343} className="F26 Amber MiddleAlign">
+          STATUS NOT AVAILABLE
         </text>
       )}
     </>
