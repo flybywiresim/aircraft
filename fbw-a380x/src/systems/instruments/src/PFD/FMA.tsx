@@ -184,13 +184,13 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.disconnectApForLdg.sub(() => this.handleFMABorders());
-
-    this.unrestrictedClimbDescent.sub(() => {
+    this.props.isAttExcessive.sub(() => {
       this.handleFMABorders();
     });
 
-    this.props.isAttExcessive.sub(() => {
+    this.disconnectApForLdg.sub(() => this.handleFMABorders());
+
+    this.unrestrictedClimbDescent.sub(() => {
       this.handleFMABorders();
     });
 
