@@ -452,24 +452,25 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       });
 
     this.sub.on('oans_center_on_acft').handle(() => this.centerOnAcft());
-    this.sub.on('oans_center_map_on').handle((coords) => {
-      this.centerMapOn(coords);
-      console.log('center on', coords);
-    });
+    this.sub.on('oans_center_map_on').handle((coords) => this.centerMapOn(coords));
     this.sub.on('oans_add_cross_at_position').handle((coords) => this.markerManager.addCross(coords));
     this.sub.on('oans_add_flag_at_position').handle((coords) => this.markerManager.addFlag(coords));
-    this.sub.on('oans_add_cross_at_cursor').handle(([x, y]) => {
-      // console.log('pre', this.panOffsetX.get(), this.canvasCentreX.get(), x, this.getZoomLevelInverseScale());
-      const test = this.panOffsetX.get() + x / this.getZoomLevelInverseScale();
-      //console.log('test', test);
-      console.log(this.referencePos, this.projectPoint([0, 0]));
-      this.markerManager.addCross([
-        this.canvasCentreX.get() + this.panOffsetX.get() + x,
-        this.canvasCentreY.get() + this.panOffsetY.get() + y,
-      ]);
-    });
+    this.sub
+      .on('oans_add_cross_at_cursor')
+      .handle(([x, y]) => this.markerManager.addCross(this.unprojectPoint([x, y])));
+    this.sub.on('oans_add_flag_at_cursor').handle(([x, y]) => this.markerManager.addFlag(this.unprojectPoint([x, y])));
     this.sub.on('oans_erase_all_crosses').handle(() => this.markerManager.eraseAllCrosses());
     this.sub.on('oans_erase_all_flags').handle(() => this.markerManager.eraseAllFlags());
+    this.sub.on('oans_erase_cross_id').handle((index) => this.markerManager.removeCross(index));
+    this.sub.on('oans_erase_flag_id').handle((index) => this.markerManager.removeFlag(index));
+    this.sub.on('oans_query_symbols_at_cursor').handle((data) => {
+      const foundSymbols = this.markerManager.findSymbolAtCursor(this.unprojectPoint(data.cursorPosition));
+      this.props.bus.getPublisher<OansControlEvents>().pub('oans_answer_symbols_at_cursor', {
+        side: data.side,
+        cross: foundSymbols.cross,
+        flag: foundSymbols.flag,
+      });
+    });
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
@@ -480,7 +481,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.updateLabelClasses();
     });
 
-    this.labelManager.visibleLabels.sub((index, type, item) => {
+    this.labelManager.visibleLabels.sub((_index, type, item) => {
       switch (type) {
         case SubscribableArrayEventType.Added: {
           if (Array.isArray(item)) {
@@ -583,6 +584,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.clearData();
     this.clearMap();
     this.btvUtils.clearSelection();
+    this.markerManager.eraseAllCrosses();
+    this.markerManager.eraseAllFlags();
 
     const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce(
       (acc, it) => [
@@ -1369,6 +1372,40 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     labelScreenY += this.modeAnimationOffsetY.get();
 
     return [labelScreenX, labelScreenY];
+  }
+
+  public unprojectPoint(screenCoordinates: [number, number]): Position {
+    let [labelScreenX, labelScreenY] = screenCoordinates;
+
+    // Undo animation offsets
+    labelScreenX -= this.modeAnimationOffsetX.get() + OANC_RENDER_WIDTH / 2 + this.panOffsetX.get();
+    labelScreenY -= this.modeAnimationOffsetY.get() + OANC_RENDER_HEIGHT / 2 + this.panOffsetY.get();
+
+    const zoomLevelScale = this.getZoomLevelInverseScale();
+    const [offsetX, offsetY] = this.arpReferencedMapParams.coordinatesToXYy(this.referencePos);
+
+    // Undo scaling offsets
+    const scaledOffsetX = offsetX * zoomLevelScale;
+    const scaledOffsetY = -1 * (offsetY * zoomLevelScale);
+    labelScreenX += scaledOffsetX;
+    labelScreenY -= scaledOffsetY;
+
+    // Reverse rotation
+    const mapCurrentHeading = this.interpolatedMapHeading.get();
+    const rotate = -mapCurrentHeading; // Original rotation
+    const reverseRotate = -rotate; // Undo rotation
+
+    const hypotenuse = Math.sqrt(labelScreenX ** 2 + labelScreenY ** 2);
+    const angle = clampAngle(Math.atan2(-labelScreenY, labelScreenX) * MathUtils.RADIANS_TO_DEGREES);
+
+    const originalX = hypotenuse * Math.cos((angle - reverseRotate) * MathUtils.DEGREES_TO_RADIANS);
+    const originalY = hypotenuse * Math.sin((angle - reverseRotate) * MathUtils.DEGREES_TO_RADIANS);
+
+    // Scale back the original position
+    const labelX = originalX / zoomLevelScale;
+    const labelY = originalY / zoomLevelScale;
+
+    return [labelX, labelY];
   }
 
   public offsetToPoint(coordinates: Position): [number, number] {

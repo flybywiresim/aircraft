@@ -6,6 +6,7 @@ import { Position } from '@turf/turf';
 import { Label, LabelStyle, Oanc } from 'instruments/src/OANC';
 import { OancLabelManager } from 'instruments/src/OANC/OancLabelManager';
 
+const MAX_SYMBOL_DIST_NEIGHBORHOOD_SEARCH = 20;
 export class OancMarkerManager<T extends number> {
   constructor(
     public oanc: Oanc<T>,
@@ -120,11 +121,33 @@ export class OancMarkerManager<T extends number> {
     this.flags.insert(coords);
   }
 
+  removeCross(index: number) {
+    this.crosses.removeAt(index);
+  }
+
+  removeFlag(index: number) {
+    this.flags.removeAt(index);
+  }
+
   eraseAllCrosses() {
     this.crosses.clear();
   }
 
   eraseAllFlags() {
     this.flags.clear();
+  }
+
+  findSymbolAtCursor(position: Position): { cross: number | null; flag: number | null } {
+    const flagIndex = this.flags
+      .getArray()
+      .findIndex((pos) => Math.hypot(position[0] - pos[0], position[1] - pos[1]) < MAX_SYMBOL_DIST_NEIGHBORHOOD_SEARCH);
+    const crossIndex = this.crosses
+      .getArray()
+      .findIndex((pos) => Math.hypot(position[0] - pos[0], position[1] - pos[1]) < MAX_SYMBOL_DIST_NEIGHBORHOOD_SEARCH);
+
+    return {
+      cross: crossIndex === -1 ? null : crossIndex,
+      flag: flagIndex === -1 ? null : flagIndex,
+    };
   }
 }

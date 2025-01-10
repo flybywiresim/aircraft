@@ -874,3 +874,70 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     );
   }
 }
+
+interface EraseSymbolsDialogProps extends ComponentProps {
+  visible: Subscribable<boolean>;
+  confirmAction: () => void;
+  hideDialog: () => void;
+  /** True: Cross, false: flag */
+  isCross: boolean;
+}
+
+/*
+ * ERASE ALL xxx dialog
+ */
+export class EraseSymbolsDialog extends DisplayComponent<EraseSymbolsDialogProps> {
+  // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+  private subs = [] as Subscription[];
+
+  private topRef = FSComponent.createRef<HTMLDivElement>();
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subs.push(
+      this.props.visible.sub((val) => {
+        if (this.topRef.getOrDefault()) {
+          this.topRef.instance.style.display = val ? 'block' : 'none';
+        }
+      }, true),
+    );
+  }
+
+  public destroy(): void {
+    // Destroy all subscriptions to remove all references to this instance.
+    this.subs.forEach((x) => x.destroy());
+
+    super.destroy();
+  }
+
+  render(): VNode {
+    return (
+      <div ref={this.topRef}>
+        <div class="mfd-dialog" style="left: 209px; top: 350px; width: 350px;">
+          <div class="mfd-dialog-title" style="margin-bottom: 20px;">
+            <span class="mfd-label">{`ERASE ALL ${this.props.isCross ? 'CROSSES' : 'FLAGS'}`}</span>
+            <span>
+              <img
+                style="position: relative; top: -5px; left: 10px"
+                width="25px"
+                src={`/Images/fbw-a380x/oans/oans-${this.props.isCross ? 'cross' : 'flag'}.svg`}
+              />
+            </span>
+          </div>
+          <div class="mfd-dialog-buttons">
+            <Button label="CANCEL" onClick={() => this.props.hideDialog()} />
+            <Button
+              label="CONFIRM"
+              onClick={() => {
+                this.props.confirmAction();
+                this.props.hideDialog();
+              }}
+              buttonStyle="padding-right: 6px;"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+}

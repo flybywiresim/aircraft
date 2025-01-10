@@ -10,8 +10,8 @@ import {
   FsInstrument,
   HEventPublisher,
   InstrumentBackplane,
+  MappedSubject,
   Subject,
-  Subscribable,
 } from '@microsoft/msfs-sdk';
 import {
   A380EfisNdRangeValue,
@@ -26,17 +26,11 @@ import {
   FmsOansSimvarPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
-import {
-  a380EfisZoomRangeSettings,
-  A380EfisZoomRangeValue,
-  Oanc,
-  OansControlEvents,
-  ZOOM_TRANSITION_TIME_MS,
-} from '@flybywiresim/oanc';
+import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc, OansControlEvents } from '@flybywiresim/oanc';
 
 import { ContextMenu, ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
 import { MouseCursor, MouseCursorColor } from 'instruments/src/MFD/pages/common/MouseCursor';
-import { OansControlPanel } from './OansControlPanel';
+import { EraseSymbolsDialog, OansControlPanel } from './OansControlPanel';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
@@ -114,56 +108,15 @@ class NDInstrument implements FsInstrument {
 
   private readonly controlPanelVisible = Subject.create(false);
 
-  private oansContextMenuItems: Subscribable<ContextMenuElement[]> = Subject.create([
-    {
-      name: 'ADD CROSS',
-      disabled: false,
-      onPressed: () =>
-        this.bus
-          .getPublisher<OansControlEvents>()
-          .pub('oans_add_cross_at_cursor', [
-            this.contextMenuPositionTriggered.get().x,
-            this.contextMenuPositionTriggered.get().y,
-          ]),
-    },
-    {
-      name: 'ADD FLAG',
-      disabled: false,
-      onPressed: () =>
-        this.bus
-          .getPublisher<OansControlEvents>()
-          .pub('oans_add_flag_at_cursor', [
-            this.contextMenuPositionTriggered.get().x,
-            this.contextMenuPositionTriggered.get().y,
-          ]),
-    },
-    {
-      name: 'MAP DATA',
-      disabled: false,
-      onPressed: () => {
-        if (this.controlPanelRef.getOrDefault()) {
-          this.controlPanelVisible.set(!this.controlPanelVisible.get());
-        }
-      },
-    },
-    {
-      name: 'ERASE ALL CROSSES',
-      disabled: false,
-      onPressed: () => console.log('ERASE ALL CROSSES'),
-    },
-    {
-      name: 'ERASE ALL FLAGS',
-      disabled: false,
-      onPressed: () => console.log('ERASE ALL FLAGS'),
-    },
-    {
-      name: 'CENTER ON ACFT',
-      disabled: false,
-      onPressed: async () => {
-        this.bus.getPublisher<OansControlEvents>().pub('oans_center_on_acft', true, true, false);
-      },
-    },
-  ]);
+  private readonly eraseAllCrossesDialogVisible = Subject.create(false);
+
+  private readonly eraseAllFlagsDialogVisible = Subject.create(false);
+
+  private readonly eraseCrossIndex = Subject.create<number | null>(null);
+
+  private readonly eraseFlagIndex = Subject.create<number | null>(null);
+
+  private oansContextMenuItems = Subject.create(this.getOansContextMenu(false, false));
 
   private contextMenuRef = FSComponent.createRef<ContextMenu>();
 
@@ -292,6 +245,32 @@ class NDInstrument implements FsInstrument {
             idPrefix="contextMenu"
             values={this.oansContextMenuItems}
           />
+          <EraseSymbolsDialog
+            visible={MappedSubject.create(
+              ([crosses, flags, oans]) => crosses && !flags && oans,
+              this.eraseAllCrossesDialogVisible,
+              this.eraseAllFlagsDialogVisible,
+              this.oansShown,
+            )}
+            confirmAction={() =>
+              this.bus.getPublisher<OansControlEvents>().pub('oans_erase_all_crosses', true, true, false)
+            }
+            hideDialog={() => this.eraseAllCrossesDialogVisible.set(false)}
+            isCross={true}
+          />
+          <EraseSymbolsDialog
+            visible={MappedSubject.create(
+              ([crosses, flags, oans]) => !crosses && flags && oans,
+              this.eraseAllCrossesDialogVisible,
+              this.eraseAllFlagsDialogVisible,
+              this.oansShown,
+            )}
+            confirmAction={() =>
+              this.bus.getPublisher<OansControlEvents>().pub('oans_erase_all_flags', true, true, false)
+            }
+            hideDialog={() => this.eraseAllFlagsDialogVisible.set(false)}
+            isCross={false}
+          />
           <div
             style={{
               display: this.oansShown.map((v) => (v ? 'block' : 'none')),
@@ -330,13 +309,10 @@ class NDInstrument implements FsInstrument {
     });
 
     if (this.oansRef?.instance?.labelContainerRef?.instance) {
-      this.oansRef.instance.labelContainerRef.instance.addEventListener('contextmenu', (e) => {
-        // Not firing right now, use double click
-        this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
-        this.contextMenuRef.instance.display(e.clientX, e.clientY);
-      });
-
       this.oansRef.instance.labelContainerRef.instance.addEventListener('dblclick', (e) => {
+        this.bus
+          .getPublisher<OansControlEvents>()
+          .pub('oans_query_symbols_at_cursor', { side: this.efisSide, cursorPosition: [e.clientX, e.clientY] });
         this.contextMenuPositionTriggered.set({ x: e.clientX, y: e.clientY });
         this.contextMenuRef.instance.display(e.clientX, e.clientY);
       });
@@ -365,6 +341,14 @@ class NDInstrument implements FsInstrument {
         this.efisCpRange = a380EfisRangeSettings[range];
         this.updateNdOansVisibility();
       });
+
+    sub.on('oans_answer_symbols_at_cursor').handle((symbols) => {
+      if (symbols.side === this.efisSide) {
+        this.eraseCrossIndex.set(symbols.cross);
+        this.eraseFlagIndex.set(symbols.flag);
+        this.oansContextMenuItems.set(this.getOansContextMenu(symbols.cross !== null, symbols.flag !== null));
+      }
+    });
   }
 
   private updateNdOansVisibility() {
@@ -375,6 +359,65 @@ class NDInstrument implements FsInstrument {
       this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', false, true, false);
       this.oansShown.set(false);
     }
+  }
+
+  getOansContextMenu(hasCross: boolean, hasFlag: boolean): ContextMenuElement[] {
+    const crossIndex = this.eraseCrossIndex.get();
+    const flagIndex = this.eraseFlagIndex.get();
+    return [
+      {
+        name: hasCross ? 'DELETE CROSS' : 'ADD CROSS',
+        disabled: false,
+        onPressed: () =>
+          hasCross && crossIndex !== null
+            ? this.bus.getPublisher<OansControlEvents>().pub('oans_erase_cross_id', crossIndex)
+            : this.bus
+                .getPublisher<OansControlEvents>()
+                .pub('oans_add_cross_at_cursor', [
+                  this.contextMenuPositionTriggered.get().x,
+                  this.contextMenuPositionTriggered.get().y,
+                ]),
+      },
+      {
+        name: hasFlag ? 'DELETE FLAG' : 'ADD FLAG',
+        disabled: false,
+        onPressed: () =>
+          hasFlag && flagIndex !== null
+            ? this.bus.getPublisher<OansControlEvents>().pub('oans_erase_flag_id', flagIndex)
+            : this.bus
+                .getPublisher<OansControlEvents>()
+                .pub('oans_add_flag_at_cursor', [
+                  this.contextMenuPositionTriggered.get().x,
+                  this.contextMenuPositionTriggered.get().y,
+                ]),
+      },
+      {
+        name: 'MAP DATA',
+        disabled: false,
+        onPressed: () => {
+          if (this.controlPanelRef.getOrDefault()) {
+            this.controlPanelVisible.set(!this.controlPanelVisible.get());
+          }
+        },
+      },
+      {
+        name: 'ERASE ALL CROSSES',
+        disabled: false,
+        onPressed: () => this.eraseAllCrossesDialogVisible.set(true),
+      },
+      {
+        name: 'ERASE ALL FLAGS',
+        disabled: false,
+        onPressed: () => this.eraseAllFlagsDialogVisible.set(true),
+      },
+      {
+        name: 'CENTER ON ACFT',
+        disabled: false,
+        onPressed: async () => {
+          this.bus.getPublisher<OansControlEvents>().pub('oans_center_on_acft', true, true, false);
+        },
+      },
+    ];
   }
 
   /**
