@@ -175,7 +175,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     return (
       <CdsDisplayUnit
         bus={this.props.bus}
-        displayUnitId={DisplayUnitID.CaptPfd}
+        displayUnitId={getDisplayIndex() === 1 ? DisplayUnitID.CaptPfd : DisplayUnitID.FoPfd}
         test={Subject.create(-1)}
         failed={Subject.create(false)}
       >

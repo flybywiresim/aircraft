@@ -17,6 +17,7 @@ import {
 import {
   A380EfisNdRangeValue,
   a380EfisRangeSettings,
+  a380TerrainThresholdPadValue,
   ArincEventBus,
   BtvSimvarPublisher,
   EfisNdMode,
@@ -244,7 +245,7 @@ class NDInstrument implements FsInstrument {
       <div ref={this.topRef}>
         <CdsDisplayUnit
           bus={this.bus}
-          displayUnitId={DisplayUnitID.CaptNd}
+          displayUnitId={getDisplayIndex() === 1 ? DisplayUnitID.CaptNd : DisplayUnitID.FoNd}
           test={Subject.create(-1)}
           failed={Subject.create(false)}
         >
@@ -280,7 +281,12 @@ class NDInstrument implements FsInstrument {
               />
             </div>
           </div>
-          <NDComponent bus={this.bus} side={this.efisSide} rangeValues={a380EfisRangeSettings} />
+          <NDComponent
+            bus={this.bus}
+            side={this.efisSide}
+            rangeValues={a380EfisRangeSettings}
+            terrainThresholdPaddingText={a380TerrainThresholdPadValue}
+          />
           <ContextMenu
             ref={this.contextMenuRef}
             opened={this.contextMenuOpened}

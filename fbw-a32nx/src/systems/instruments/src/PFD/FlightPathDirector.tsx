@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
@@ -10,6 +10,7 @@ import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
@@ -48,11 +49,13 @@ export class FlightPathDirector extends DisplayComponent<{
 
   private needsUpdate = false;
 
-  private isVisible = false;
+  private readonly isVisible = Subject.create(false);
 
   private birdPath = FSComponent.createRef<SVGGElement>();
 
   private birdPathWings = FSComponent.createRef<SVGGElement>();
+
+  private readonly shouldFlash = Subject.create(false);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -133,7 +136,7 @@ export class FlightPathDirector extends DisplayComponent<{
 
     sub.on('realTime').handle((_t) => {
       this.handlePath();
-      if (this.needsUpdate && this.isVisible) {
+      if (this.needsUpdate && this.isVisible.get()) {
         this.moveBird();
       }
     });
@@ -159,15 +162,15 @@ export class FlightPathDirector extends DisplayComponent<{
       this.props.isAttExcessive.get()
     ) {
       this.birdPath.instance.style.visibility = 'hidden';
-      this.isVisible = false;
+      this.isVisible.set(false);
     } else {
       this.birdPath.instance.style.visibility = 'visible';
-      this.isVisible = true;
+      this.isVisible.set(true);
     }
   }
 
   private moveBird() {
-    if (this.isVisible) {
+    if (this.isVisible.get()) {
       const FDRollOrder = this.data.rollFdCommand.value;
       const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
       const FDPitchOrder = this.data.pitchFdCommand.value;
@@ -196,11 +199,7 @@ export class FlightPathDirector extends DisplayComponent<{
     const fdRollBarFlashing = this.fmgcDiscreteWord2.bitValueOr(28, false);
     const fdPitchBarFlashing = this.fmgcDiscreteWord5.bitValueOr(24, false);
 
-    if (fdRollBarFlashing || fdPitchBarFlashing) {
-      this.birdPathWings.instance.classList.add('BlinkInfinite');
-    } else {
-      this.birdPathWings.instance.classList.remove('BlinkInfinite');
-    }
+    this.shouldFlash.set(fdRollBarFlashing || fdPitchBarFlashing);
   }
 
   render(): VNode {
@@ -215,18 +214,25 @@ export class FlightPathDirector extends DisplayComponent<{
           viewBox="0 0 31 31"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <g ref={this.birdPathWings} class="CornerRound">
-            <path
-              class="NormalOutline"
-              // eslint-disable-next-line max-len
-              d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
-            />
-            <path
-              class="NormalStroke Green"
-              // eslint-disable-next-line max-len
-              d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
-            />
-          </g>
+          <FlashOneHertz
+            bus={this.props.bus}
+            flashDuration={Infinity}
+            visible={this.isVisible}
+            flashing={this.shouldFlash}
+          >
+            <g ref={this.birdPathWings} class="CornerRound">
+              <path
+                class="NormalOutline"
+                // eslint-disable-next-line max-len
+                d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
+              />
+              <path
+                class="NormalStroke Green"
+                // eslint-disable-next-line max-len
+                d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
+              />
+            </g>
+          </FlashOneHertz>
         </svg>
       </g>
     );

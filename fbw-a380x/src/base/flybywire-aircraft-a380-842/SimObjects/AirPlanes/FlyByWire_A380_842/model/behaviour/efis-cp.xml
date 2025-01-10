@@ -20,7 +20,7 @@
         <Component ID="RANGE_#SIMVAR_VALUE#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                    (#SIMVAR_NAME#, Enum) #SIMVAR_VALUE# == #INDICATOR_POWERED# and
+                    (#SIMVAR_NAME#, Enum) #SIMVAR_VALUE# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #INDICATOR_POWERED# and
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
