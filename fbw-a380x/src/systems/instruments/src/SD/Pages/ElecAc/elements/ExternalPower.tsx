@@ -25,10 +25,10 @@ export const ExternalPower: FC<ExternalPowerProps> = ({ x, y, bus }) => {
 
   const [lineContactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_990XG${bus}_IS_CLOSED`, 'number', 500);
 
-  const [extPwrConnected] = useSimVar(`EXTERNAL POWER AVAILABLE:${bus}`, 'number', 500);
+  const [extPwrConnected] = useSimVar(`L:A32NX_EXT_PWR_AVAIL:${bus}`, 'number', 500);
   let otherExtPwrConnected = false;
   if (bus % 2 === 1) {
-    [otherExtPwrConnected] = useSimVar(`EXTERNAL POWER AVAILABLE:${bus + 1}`, 'number', 500);
+    [otherExtPwrConnected] = useSimVar(`L:A32NX_EXT_PWR_AVAIL:${bus + 1}`, 'number', 500);
   }
 
   const [noseCompressed1] = useSimVar('L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED', 'number', 500);

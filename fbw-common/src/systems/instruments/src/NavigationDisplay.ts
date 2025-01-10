@@ -17,6 +17,10 @@ export const a320EfisOansRangeSettings: A320EfisOansNdRangeValue[] = [-1, 10, 20
 
 export const a380EfisRangeSettings: A380EfisNdRangeValue[] = [-1, 10, 20, 40, 80, 160, 320, 640];
 
+export const a320TerrainThresholdPadValue = '0';
+
+export const a380TerrainThresholdPadValue = '\\xa0';
+
 export enum EfisNdMode {
   ROSE_ILS,
   ROSE_VOR,

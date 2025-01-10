@@ -8,7 +8,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
@@ -303,6 +303,17 @@ export class FmgcData {
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
    */
   public readonly estimatedTakeoffTime = Subject.create<number | null>(null);
+
+  private static readonly DEFAULT_SETTINGS = new FmgcData();
+
+  public reset(): void {
+    for (const key in FmgcData.DEFAULT_SETTINGS) {
+      const prop = key as keyof FmgcData;
+      if (SubscribableUtils.isMutableSubscribable(this[prop])) {
+        this[prop].set((FmgcData.DEFAULT_SETTINGS[prop] as Subscribable<any>).get());
+      }
+    }
+  }
 }
 
 /**
@@ -553,7 +564,7 @@ export class FmgcDataService implements Fmgc {
     return this.data.approachTemperature.get() ?? 0;
   }
 
-  /** in kilograms */
+  /** in tons */
   getDestEFOB(useFob: boolean): number {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
@@ -563,7 +574,7 @@ export class FmgcDataService implements Fmgc {
     return 0;
   }
 
-  /** in kilograms */
+  /** in tons */
   getAltEFOB(useFOB = false): number {
     // TODO estimate alternate fuel
     if (this.getDestEFOB(useFOB) === 0) {

@@ -8,7 +8,7 @@ import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { AircraftConfiguration as AircraftCtlSurfcConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { UnitType } from '@microsoft/msfs-sdk';
-import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { AircraftConfig, EngineModelParameters } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { EngineModel } from '../EngineModel';
 import { Predictions, StepResults } from '../Predictions';
 import { AtmosphericConditions } from '../AtmosphericConditions';
@@ -132,14 +132,23 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
     headwindComponent: WindComponent,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
-    const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
+    const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
 
     const n1 =
       this.verticalSpeed > 0
-        ? getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, initialSpeed, managedClimbSpeedMach)
-        : EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+        ? getClimbThrustCorrectedN1Limit(
+            this.acConfig.engineModelParameters,
+            this.atmosphericConditions,
+            initialAltitude,
+          )
+        : EngineModel.getIdleCorrectedN1(
+            this.acConfig.engineModelParameters,
+            initialAltitude,
+            computedMach,
+            tropoPause,
+          ) + this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.verticalSpeedStepWithSpeedChange(
       this.acConfig,
@@ -250,13 +259,22 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     headwindComponent: WindComponent,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
-    const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
+    const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const predictedN1 =
       this.flightPathAngle > 0
-        ? getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, initialSpeed, managedClimbSpeedMach)
-        : EngineModel.getIdleN1(initialAltitude, computedMach, tropoPause) + this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+        ? getClimbThrustCorrectedN1Limit(
+            this.acConfig.engineModelParameters,
+            this.atmosphericConditions,
+            initialAltitude,
+          )
+        : EngineModel.getIdleCorrectedN1(
+            this.acConfig.engineModelParameters,
+            initialAltitude,
+            computedMach,
+            tropoPause,
+          ) + this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.speedChangeStep(
       this.acConfig,
@@ -297,7 +315,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     headwindComponent: WindComponent,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
-    const { zeroFuelWeight, tropoPause, perfFactor, managedClimbSpeedMach } = this.observer.get();
+    const { zeroFuelWeight, tropoPause, perfFactor } = this.observer.get();
 
     return Predictions.altitudeStep(
       this.acConfig,
@@ -305,11 +323,10 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       finalAltitude - initialAltitude,
       speed,
       mach,
-      getClimbThrustN1Limit(
+      getClimbThrustCorrectedN1Limit(
+        this.acConfig.engineModelParameters,
         this.atmosphericConditions,
         (initialAltitude + finalAltitude) / 2,
-        speed,
-        managedClimbSpeedMach,
       ),
       zeroFuelWeight,
       fuelOnBoard,
@@ -332,7 +349,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     headwindComponent: WindComponent,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
-    const { zeroFuelWeight, tropoPause, perfFactor, managedClimbSpeedMach } = this.observer.get();
+    const { zeroFuelWeight, tropoPause, perfFactor } = this.observer.get();
 
     return Predictions.distanceStep(
       this.acConfig,
@@ -340,7 +357,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       distance,
       speed,
       mach,
-      getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, speed, managedClimbSpeedMach),
+      getClimbThrustCorrectedN1Limit(this.acConfig.engineModelParameters, this.atmosphericConditions, initialAltitude),
       zeroFuelWeight,
       fuelOnBoard,
       headwindComponent.value,
@@ -362,7 +379,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     headwindComponent: WindComponent,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
-    const { zeroFuelWeight, perfFactor, tropoPause, managedClimbSpeedMach } = this.observer.get();
+    const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
 
     return Predictions.altitudeStepWithSpeedChange(
       this.acConfig,
@@ -370,7 +387,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       initialSpeed,
       finalSpeed,
       mach,
-      getClimbThrustN1Limit(this.atmosphericConditions, initialAltitude, initialSpeed, managedClimbSpeedMach),
+      getClimbThrustCorrectedN1Limit(this.acConfig.engineModelParameters, this.atmosphericConditions, initialAltitude),
       zeroFuelWeight,
       fuelOnBoard,
       headwindComponent.value,
@@ -384,14 +401,12 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
   }
 }
 
-function getClimbThrustN1Limit(
+function getClimbThrustCorrectedN1Limit(
+  engineModelParameters: EngineModelParameters,
   atmosphericConditions: AtmosphericConditions,
   altitude: Feet,
-  speed: Knots,
-  maxMach: Mach,
 ) {
-  const climbSpeedMach = Math.min(maxMach, atmosphericConditions.computeMachFromCas(altitude, speed));
-  const estimatedTat = atmosphericConditions.totalAirTemperatureFromMach(altitude, climbSpeedMach);
+  const staticAirTemperature = atmosphericConditions.predictStaticAirTemperatureAtAltitude(altitude);
 
-  return EngineModel.tableInterpolation(EngineModel.maxClimbThrustTableLeap, estimatedTat, altitude);
+  return EngineModel.getClimbThrustCorrectedN1(engineModelParameters, altitude, staticAirTemperature);
 }

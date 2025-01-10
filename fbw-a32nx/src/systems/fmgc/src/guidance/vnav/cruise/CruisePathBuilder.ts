@@ -262,6 +262,8 @@ export class CruisePathBuilder {
     const { zeroFuelWeight, cruiseAltitude, managedCruiseSpeedMach, tropoPause } =
       this.computationParametersObserver.get();
 
+    const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(cruiseAltitude);
+
     return Predictions.speedChangeStep(
       config,
       0,
@@ -270,7 +272,7 @@ export class CruisePathBuilder {
       finalSpeed,
       managedCruiseSpeedMach,
       managedCruiseSpeedMach,
-      this.getClimbThrustN1Limit(this.atmosphericConditions, cruiseAltitude, speed),
+      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, cruiseAltitude, staticAirTemperature),
       zeroFuelWeight,
       remainingFuelOnBoard,
       headwind.value,
@@ -291,14 +293,6 @@ export class CruisePathBuilder {
     }
 
     return altitude;
-  }
-
-  private getClimbThrustN1Limit(atmosphericConditions: AtmosphericConditions, altitude: Feet, speed: Knots) {
-    // This Mach number is the Mach number for the predicted climb speed, not the Mach to use after crossover altitude.
-    const climbSpeedMach = atmosphericConditions.computeMachFromCas(altitude, speed);
-    const estimatedTat = atmosphericConditions.totalAirTemperatureFromMach(altitude, climbSpeedMach);
-
-    return EngineModel.tableInterpolation(EngineModel.maxClimbThrustTableLeap, estimatedTat, altitude);
   }
 
   private ignoreCruiseStep(profile: NavGeometryProfile, step: GeographicCruiseStep) {
