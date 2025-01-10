@@ -82,7 +82,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** CONF 1+F runway limited weights at sea level/ISA/0 slope/no bleed/fwd cg/no wind/dry, MTOW [kg], runway length [metres] => lookup key = (runway length) */
   private static readonly runwayPerfLimitConf1 = new LerpLookupTable([
-    [54_000, 1000],
+    [53_950, 1000],
     [59_300, 1219],
     [68_700, 1604],
     [75_700, 1959],
@@ -916,7 +916,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly v2SecondSegBrakeThresholds: Record<number, [number, number]> = {
     1: [-0.011031, 189.0],
     2: [0.02346, 68.33],
-    3: [0.022112, 83.141],
+    3: [0.014175, 106.14],
   };
 
   private static readonly v2SecondSegBrakeBaseTable1: Record<number, [number, number]> = {
