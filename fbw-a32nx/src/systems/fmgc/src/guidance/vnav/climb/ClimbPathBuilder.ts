@@ -457,12 +457,7 @@ export class ClimbPathBuilder {
   ): StepResults {
     const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
 
-    const averageCas = (initialSpeed + speedTarget) / 2;
-    const averageClimbSpeedMach = Math.min(
-      managedClimbSpeedMach,
-      this.atmosphericConditions.computeMachFromCas(altitude, averageCas),
-    );
-    const totalAirTemperature = this.atmosphericConditions.totalAirTemperatureFromMach(altitude, averageClimbSpeedMach);
+    const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(altitude);
 
     return Predictions.speedChangeStep(
       config,
@@ -472,7 +467,7 @@ export class ClimbPathBuilder {
       speedTarget,
       managedClimbSpeedMach,
       managedClimbSpeedMach,
-      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, altitude, totalAirTemperature),
+      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, altitude, staticAirTemperature),
       zeroFuelWeight,
       fuelWeight,
       0,
