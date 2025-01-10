@@ -35,7 +35,6 @@ import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInte
 import {
   DatabaseItem,
   EfisSide,
-  FailuresConsumer,
   Fix,
   NXDataStore,
   UpdateThrottler,
@@ -213,10 +212,8 @@ export class FlightManagementComputer implements FmcInterface {
     private instance: FmcIndex,
     operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
-    private readonly isPowered: Subscribable<boolean>,
-    private readonly resetPulled: Subscribable<boolean>,
+    private readonly fmcInop: Subscribable<boolean>,
     mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
-    private readonly failuresConsumer: FailuresConsumer,
   ) {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
@@ -902,27 +899,27 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private onUpdate(dt: number) {
-    const isHealthy =
-      this.isPowered.get() && !this.failuresConsumer.isActive(this.failureKey) && !this.resetPulled.get();
+    const isHealthy = !this.fmcInop.get();
 
     SimVar.SetSimVarValue(
       `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
       SimVarValueType.Bool,
       isHealthy,
     );
-    this.legacyFmsIsHealthy.set(isHealthy);
 
     // Stop early, if not FmcA or if all FMCs failed
     const allFmcResetsPulled =
       SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_A', SimVarValueType.Bool) &&
       SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_B', SimVarValueType.Bool) &&
       SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_B', SimVarValueType.Bool);
-    const allFmcFailed =
+    const allFmcInop =
       !SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', SimVarValueType.Bool);
-    if (this.instance !== FmcIndex.FmcA || (this.instance === FmcIndex.FmcA && allFmcFailed)) {
-      if (this.instance === FmcIndex.FmcA && allFmcResetsPulled && this.wasReset === false) {
+
+    this.legacyFmsIsHealthy.set(!allFmcInop);
+    if (this.instance !== FmcIndex.FmcA || (this.instance === FmcIndex.FmcA && allFmcInop)) {
+      if (this.instance === FmcIndex.FmcA && (allFmcResetsPulled || allFmcInop) && this.wasReset === false) {
         this.reset();
       }
       return;

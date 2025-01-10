@@ -6,6 +6,7 @@ import {
   FsInstrument,
   FsBaseInstrument,
   ClockPublisher,
+  Subject,
 } from '@microsoft/msfs-sdk';
 import { FmcService } from 'instruments/src/MFD/FMC/FmcService';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -40,6 +41,10 @@ class MfdInstrument implements FsInstrument {
 
   private readonly fmcService: FmcServiceInterface;
 
+  private readonly fmcAFailed = Subject.create(false);
+  private readonly fmcBFailed = Subject.create(false);
+  private readonly fmcCFailed = Subject.create(false);
+
   private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
   constructor(public readonly instrument: BaseInstrument) {
@@ -50,7 +55,13 @@ class MfdInstrument implements FsInstrument {
     this.backplane.addPublisher('fms', this.fmsDataPublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
 
-    this.fmcService = new FmcService(this.bus, this.mfdCaptRef.getOrDefault(), this.failuresConsumer);
+    this.fmcService = new FmcService(
+      this.bus,
+      this.mfdCaptRef.getOrDefault(),
+      this.fmcAFailed,
+      this.fmcBFailed,
+      this.fmcCFailed,
+    );
 
     this.doInit();
   }
@@ -105,6 +116,9 @@ class MfdInstrument implements FsInstrument {
   public Update(): void {
     this.backplane.onUpdate();
     this.failuresConsumer.update();
+    this.fmcAFailed.set(this.failuresConsumer.isActive(A380Failure.FmcA));
+    this.fmcBFailed.set(this.failuresConsumer.isActive(A380Failure.FmcB));
+    this.fmcCFailed.set(this.failuresConsumer.isActive(A380Failure.FmcC));
   }
 
   public onInteractionEvent(args: string[]): void {

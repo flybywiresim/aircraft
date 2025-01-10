@@ -1,11 +1,10 @@
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import {
   ConsumerSubject,
   EventBus,
   MappedSubject,
   SimVarValueType,
-  SubscribableMapFunctions,
+  Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { FlightManagementComputer } from 'instruments/src/MFD/FMC/FlightManagementComputer';
@@ -27,56 +26,53 @@ export class FmcService implements FmcServiceInterface {
 
   private readonly dcEssBusPowered = ConsumerSubject.create(this.sub.on('dcBusEss'), false);
   private readonly fmcAReset = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fmc_a'), false);
-  private readonly fmcAFailed = MappedSubject.create(
-    ([powered, reset]) => !powered || reset,
+  private readonly fmcAInop = MappedSubject.create(
+    ([powered, reset, fail]) => !powered || reset || fail,
     this.dcEssBusPowered,
     this.fmcAReset,
+    this.fmcAFailed,
   );
 
   private readonly dc1BusPowered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
   private readonly fmcBReset = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fmc_b'), false);
-  private readonly fmcBFailed = MappedSubject.create(
-    ([powered, reset]) => !powered || reset,
+  private readonly fmcBInop = MappedSubject.create(
+    ([powered, reset, fail]) => !powered || reset || fail,
     this.dc1BusPowered,
     this.fmcBReset,
+    this.fmcBFailed,
   );
 
   private readonly dc2BusPowered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
   private readonly fmcCReset = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fmc_c'), false);
-  private readonly fmcCFailed = MappedSubject.create(
-    ([powered, reset]) => !powered || reset,
+  private readonly fmcCInop = MappedSubject.create(
+    ([powered, reset, fail]) => !powered || reset || fail,
     this.dc2BusPowered,
     this.fmcCReset,
+    this.fmcCFailed,
   );
-
-  private readonly allFmcReset = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.fmcAReset,
-    this.fmcBReset,
-    this.fmcCReset,
-  );
-
   private readonly fmsDataKnob = ConsumerSubject.create(this.sub.on('fmsDataKnob'), 1);
 
   private readonly fmsCaptSideFailed = MappedSubject.create(
     ([knob, fmcAFailed, fmcBFailed, fmcCFailed]) => (knob === 0 ? fmcBFailed && fmcCFailed : fmcAFailed && fmcCFailed),
     this.fmsDataKnob,
-    this.fmcAFailed,
-    this.fmcBFailed,
-    this.fmcCFailed,
+    this.fmcAInop,
+    this.fmcBInop,
+    this.fmcCInop,
   );
   private readonly fmsFoSideFailed = MappedSubject.create(
     ([knob, fmcAFailed, fmcBFailed, fmcCFailed]) => (knob === 2 ? fmcAFailed && fmcCFailed : fmcBFailed && fmcCFailed),
     this.fmsDataKnob,
-    this.fmcAFailed,
-    this.fmcBFailed,
-    this.fmcCFailed,
+    this.fmcAInop,
+    this.fmcBInop,
+    this.fmcCInop,
   );
 
   constructor(
     private readonly bus: EventBus,
     private readonly mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
-    private readonly failuresConsumer: FailuresConsumer,
+    private readonly fmcAFailed: Subscribable<boolean>,
+    private readonly fmcBFailed: Subscribable<boolean>,
+    private readonly fmcCFailed: Subscribable<boolean>,
   ) {
     this.createFmc(this.mfdReference);
 
@@ -100,41 +96,17 @@ export class FmcService implements FmcServiceInterface {
     // Only FMC-A is operative for now, this takes up enough resources already
     // Before more FMC can be added, they have to be synced
     this.fmc.push(
-      new FlightManagementComputer(
-        FmcIndex.FmcA,
-        FmcOperatingModes.Master,
-        this.bus,
-        this.dcEssBusPowered,
-        this.fmcAReset,
-        mfdReference,
-        this.failuresConsumer,
-      ),
+      new FlightManagementComputer(FmcIndex.FmcA, FmcOperatingModes.Master, this.bus, this.fmcAInop, mfdReference),
     );
     this.fmc[FmcIndex.FmcA].operatingMode = FmcOperatingModes.Master;
 
     this.fmc.push(
-      new FlightManagementComputer(
-        FmcIndex.FmcB,
-        FmcOperatingModes.Slave,
-        this.bus,
-        this.dc2BusPowered,
-        this.fmcBReset,
-        mfdReference,
-        this.failuresConsumer,
-      ),
+      new FlightManagementComputer(FmcIndex.FmcB, FmcOperatingModes.Slave, this.bus, this.fmcBInop, mfdReference),
     );
     this.fmc[FmcIndex.FmcB].operatingMode = FmcOperatingModes.Slave;
 
     this.fmc.push(
-      new FlightManagementComputer(
-        FmcIndex.FmcC,
-        FmcOperatingModes.Standby,
-        this.bus,
-        this.dc1BusPowered,
-        this.fmcCReset,
-        mfdReference,
-        this.failuresConsumer,
-      ),
+      new FlightManagementComputer(FmcIndex.FmcC, FmcOperatingModes.Standby, this.bus, this.fmcCInop, mfdReference),
     );
     this.fmc[FmcIndex.FmcC].operatingMode = FmcOperatingModes.Standby;
   }
