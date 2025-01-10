@@ -11,7 +11,7 @@ export interface BaseOancLabelFilter {
 
 export interface RunwayBtvSelectionLabelFilter extends BaseOancLabelFilter {
   type: 'runwayBtvSelection';
-  runwayIdent: string;
+  runwayIdent: string | null;
   showAdjacent: boolean;
 }
 
@@ -92,8 +92,8 @@ export function labelStyle(
   fmsDataStore: FmsDataStore,
   isFmsOrigin: boolean,
   isFmsDestination: boolean,
-  btvSelectedRunway: string,
-  btvSelectedExit: string,
+  btvSelectedRunway?: string,
+  btvSelectedExit?: string,
 ): LabelStyle {
   if (label.style === LabelStyle.RunwayEnd || label.style === LabelStyle.BtvSelectedRunwayEnd) {
     return btvSelectedRunway?.substring(4) === label.text ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd;

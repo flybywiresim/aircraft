@@ -127,7 +127,7 @@ export interface Label {
   style: LabelStyle;
   position: Position;
   rotation: number | undefined;
-  associatedFeature: Feature<Geometry, AmdbProperties>;
+  associatedFeature?: Feature<Geometry, AmdbProperties>;
 }
 
 export interface ContextMenuItemData {
@@ -186,7 +186,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public data: AmdbFeatureCollection | undefined;
 
-  private arpCoordinates: Subject<Coordinates | undefined> = Subject.create(undefined);
+  private arpCoordinates = Subject.create<Coordinates | undefined>(undefined);
 
   private canvasCenterCoordinates: Coordinates | undefined;
 
@@ -294,13 +294,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly airportBearing = Subject.create(0);
 
-  public readonly projectedPpos = MappedSubject.create(
-    ([ppos, arpCoordinates], previous: Position) => {
+  public readonly projectedPpos = MappedSubject.create<[Coordinates, Coordinates | undefined], Position>(
+    ([ppos, arpCoordinates], previous?: Position | undefined) => {
       if (arpCoordinates) {
         return globalToAirportCoordinates(arpCoordinates, ppos, [0, 0]);
       }
 
-      return previous;
+      return previous ?? [0, 0];
     },
     this.ppos,
     this.arpCoordinates,
@@ -503,8 +503,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
           if (Array.isArray(item)) {
             for (const label of item as Label[]) {
               const element = this.labelManager.visibleLabelElements.get(label);
-              this.labelContainerRef.instance.removeChild(element);
-              this.labelManager.visibleLabelElements.delete(label);
+              if (element) {
+                this.labelContainerRef.instance.removeChild(element);
+                this.labelManager.visibleLabelElements.delete(label);
+              }
             }
           } else {
             const element = this.labelManager.visibleLabelElements.get(item as Label);
@@ -526,11 +528,16 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.panContainerRef[0].instance.style.transform = `translate(${x}px, ${y}px)`;
       this.panContainerRef[1].instance.style.transform = `translate(${x}px, ${y}px)`;
 
+      const depRwy = this.fmsDataStore.departureRunway.get();
+      const ldgRwy = this.fmsDataStore.landingRunway.get();
+      const btvRwy = this.btvUtils.btvRunway.get();
+      const btvExit = this.btvUtils.btvExit.get();
+
       this.labelManager.reflowLabels(
-        this.fmsDataStore.departureRunway.get(),
-        this.fmsDataStore.landingRunway.get(),
-        this.btvUtils.btvRunway.get(),
-        this.btvUtils.btvExit.get(),
+        depRwy !== null ? depRwy : undefined,
+        ldgRwy !== null ? ldgRwy : undefined,
+        btvRwy !== null ? btvRwy : undefined,
+        btvExit !== null ? btvExit : undefined,
       );
     });
 
@@ -590,9 +597,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce(
       (acc, it) => [
         ...acc,
-        ...it.reduce((acc, it) => [...acc, ...(it?.dontFetchFromAmdb ? [] : it.forFeatureTypes)], []),
+        ...it.reduce(
+          (acc, it) => [
+            ...acc,
+            ...(it?.dontFetchFromAmdb || it.forFeatureTypes === undefined ? [] : it.forFeatureTypes),
+          ],
+          [] as FeatureType[],
+        ),
       ],
-      [],
+      [] as FeatureType[],
     );
     const includeLayers = includeFeatureTypes.map((it) => AmdbFeatureTypeStrings[it]);
 
@@ -638,7 +651,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     );
     const airportMap: AmdbFeatureCollection = featureCollection(features);
 
-    const wgs84ReferencePoint = wgs84ArpDat.aerodromereferencepoint.features[0];
+    const wgs84ReferencePoint = wgs84ArpDat.aerodromereferencepoint?.features[0];
 
     if (!wgs84ReferencePoint) {
       console.error('[OANC](loadAirportMap) Invalid airport data - aerodrome reference point not found');
@@ -659,9 +672,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.data = airportMap;
 
-    this.dataAirportName.set(wgs84ReferencePoint.properties.name);
-    this.dataAirportIcao.set(icao);
-    this.dataAirportIata.set(wgs84ReferencePoint.properties.iata);
+    if (wgs84ReferencePoint) {
+      this.dataAirportName.set(wgs84ReferencePoint?.properties?.name ?? '');
+      this.dataAirportIcao.set(icao);
+      this.dataAirportIata.set(wgs84ReferencePoint?.properties?.iata ?? '');
+    }
 
     // Figure out the boundaries of the map data
     const dataBbox = bbox(airportMap);
@@ -689,23 +704,27 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   private calculateCanvasCenterCoordinates() {
-    const pxDistanceToCanvasCentre = pointDistance(
-      this.canvasWidth.get() / 2,
-      this.canvasHeight.get() / 2,
-      this.canvasCentreX.get(),
-      this.canvasCentreY.get(),
-    );
-    const nmDistanceToCanvasCentre = UnitType.NMILE.convertFrom(pxDistanceToCanvasCentre / 1_000, UnitType.KILOMETER);
-    const angleToCanvasCentre = clampAngle(
-      pointAngle(
+    const arpCoordinates = this.arpCoordinates.get();
+
+    if (arpCoordinates) {
+      const pxDistanceToCanvasCentre = pointDistance(
         this.canvasWidth.get() / 2,
         this.canvasHeight.get() / 2,
         this.canvasCentreX.get(),
         this.canvasCentreY.get(),
-      ) + 90,
-    );
+      );
+      const nmDistanceToCanvasCentre = UnitType.NMILE.convertFrom(pxDistanceToCanvasCentre / 1_000, UnitType.KILOMETER);
+      const angleToCanvasCentre = clampAngle(
+        pointAngle(
+          this.canvasWidth.get() / 2,
+          this.canvasHeight.get() / 2,
+          this.canvasCentreX.get(),
+          this.canvasCentreY.get(),
+        ) + 90,
+      );
 
-    return placeBearingDistance(this.arpCoordinates.get(), reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
+      return placeBearingDistance(arpCoordinates, reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
+    }
   }
 
   private createLabelElement(label: Label): HTMLDivElement {
@@ -717,22 +736,26 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     if (label.style === LabelStyle.RunwayEnd) {
       element.addEventListener('click', () => {
-        const thresholdFeature = this.data.features.filter(
+        const thresholdFeature = this.data?.features.filter(
           (it) => it.properties.feattype === FeatureType.RunwayThreshold && it.properties?.idthr === label.text,
         );
-        this.btvUtils.selectRunwayFromOans(
-          `${this.dataAirportIcao.get()}${label.text}`,
-          label.associatedFeature,
-          thresholdFeature[0],
-        );
+        if (thresholdFeature && label.associatedFeature) {
+          this.btvUtils.selectRunwayFromOans(
+            `${this.dataAirportIcao.get()}${label.text}`,
+            label.associatedFeature,
+            thresholdFeature[0],
+          );
+        }
       });
     }
     if (
       label.style === LabelStyle.ExitLine &&
-      label.associatedFeature.properties.feattype === FeatureType.RunwayExitLine
+      label.associatedFeature?.properties.feattype === FeatureType.RunwayExitLine
     ) {
       element.addEventListener('click', () => {
-        this.btvUtils.selectExitFromOans(label.text, label.associatedFeature);
+        if (label.associatedFeature) {
+          this.btvUtils.selectExitFromOans(label.text, label.associatedFeature);
+        }
       });
     }
 
@@ -744,7 +767,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       const layer = this.layerFeatures[i];
 
       const layerFeatureTypes = STYLE_DATA[i].reduce(
-        (acc, rule) => [...acc, ...rule.forFeatureTypes],
+        (acc, rule) => [...acc, ...(rule.forFeatureTypes !== undefined ? rule.forFeatureTypes : [])],
         [] as FeatureType[],
       );
       const layerPolygonStructureTypes = STYLE_DATA[i].reduce(
@@ -755,6 +778,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         if (it.properties.feattype === FeatureType.VerticalPolygonalStructure) {
           return (
             layerFeatureTypes.includes(FeatureType.VerticalPolygonalStructure) &&
+            it.properties.plysttyp &&
             layerPolygonStructureTypes.includes(it.properties.plysttyp)
           );
         }
@@ -779,12 +803,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       // Only include "VerticalPolygonObject" features whose "plysttyp" property has what we want
       if (
         feature.properties.feattype === FeatureType.VerticalPolygonalStructure &&
+        feature.properties.plysttyp &&
         !LABEL_POLYGON_STRUCTURE_TYPES.includes(feature.properties.plysttyp)
       ) {
         continue;
       }
 
-      let labelPosition: Position;
+      let labelPosition: Position = [0, 0];
       switch (feature.geometry.type) {
         case 'Point': {
           const point = feature.geometry as Point;
@@ -841,9 +866,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
         const isFmsOrigin = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
         const isFmsDestination = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
+        const depRwy = this.fmsDataStore.departureRunway.get()?.substring(4);
+        const ldgRwy = this.fmsDataStore.landingRunway.get()?.substring(4);
         const isSelectedRunway =
-          (isFmsOrigin && designators.includes(this.fmsDataStore.departureRunway.get()?.substring(4))) ||
-          (isFmsDestination && designators.includes(this.fmsDataStore.landingRunway.get()?.substring(4)));
+          (isFmsOrigin && depRwy && designators.includes(depRwy)) ||
+          (isFmsDestination && ldgRwy && designators.includes(ldgRwy));
 
         const label1: Label = {
           text: designators[0],
@@ -969,7 +996,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
           if (
             (feature.properties.feattype === FeatureType.ParkingStandLocation &&
-              existing.some((it) => feature.properties.termref === it.associatedFeature.properties.termref)) ||
+              existing.some((it) => feature.properties.termref === it.associatedFeature?.properties.termref)) ||
             shortestDistance < 50
           ) {
             continue;
@@ -1007,10 +1034,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
-    if (!this.pposNotAvailable.get()) {
+    const arpCoordinates = this.arpCoordinates.get();
+    if (!this.pposNotAvailable.get() && arpCoordinates) {
       this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos.get(), bboxPolygon(bbox(this.data))));
 
-      const distToArpt = this.arpCoordinates.get() ? distanceTo(this.ppos.get(), this.arpCoordinates.get()) : 9999;
+      const distToArpt = this.arpCoordinates.get() ? distanceTo(this.ppos.get(), arpCoordinates) : 9999;
 
       // If in ARC mode and airport more than 30nm away, apply a hack to not create a huge canvas (only shift airport a little bit out of view with a static offset)
       this.airportTooFarAwayAndInArcNavMode.set(
@@ -1019,7 +1047,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
       if (this.arpCoordinates.get()) {
         this.airportWithinRange.set(distToArpt < this.props.zoomValues[this.zoomLevelIndex.get()] + 3); // Add 3nm for airport dimension, FIXME better estimation
-        this.airportBearing.set(bearingTo(this.ppos.get(), this.arpCoordinates.get()));
+        this.airportBearing.set(bearingTo(this.ppos.get(), arpCoordinates));
       } else {
         this.airportWithinRange.set(true);
         this.airportBearing.set(0);
@@ -1030,13 +1058,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.airportWithinRange.set(true);
     }
 
-    if (this.usingPposAsReference.get() || !this.arpCoordinates.get()) {
+    if (this.usingPposAsReference.get() || !arpCoordinates) {
       this.referencePos = this.ppos.get();
     } else {
-      this.referencePos = this.arpCoordinates.get();
+      this.referencePos = arpCoordinates;
     }
 
-    if (!this.pposNotAvailable.get()) {
+    if (!this.pposNotAvailable.get() && arpCoordinates) {
       const position = this.positionComputer.computePosition();
 
       if (position) {
@@ -1049,7 +1077,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos.get(), true);
       this.btvUtils.updateRwyAheadAdvisory(
         this.ppos.get(),
-        this.arpCoordinates.get(),
+        arpCoordinates,
         this.trueHeadingWord.get().value,
         this.layerFeatures[2],
       );
@@ -1087,8 +1115,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     const mapCurrentHeading = this.interpolatedMapHeading.get();
 
-    this.canvasCentreReferencedMapParams.compute(this.canvasCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
-    this.arpReferencedMapParams.compute(this.arpCoordinates.get(), 0, 0.539957, 1_000, mapCurrentHeading);
+    if (this.canvasCenterCoordinates) {
+      this.canvasCentreReferencedMapParams.compute(this.canvasCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
+    }
+    if (arpCoordinates) {
+      this.arpReferencedMapParams.compute(arpCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
+    }
 
     let [offsetX, offsetY]: [number, number] = [0, 0];
     if (this.airportTooFarAwayAndInArcNavMode.get()) {
@@ -1120,10 +1152,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       canvasScaleContainer.style.transform = `scale(${scale})`;
 
       const context = canvas.getContext('2d');
-
-      context.resetTransform();
-
-      context.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
+      if (context) {
+        context.resetTransform();
+        context.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
+      }
     }
 
     // Transform airplane
@@ -1146,20 +1178,24 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
       this.airportLoading.set(false);
 
-      this.labelManager.reflowLabels(
-        this.fmsDataStore.departureRunway.get(),
-        this.fmsDataStore.landingRunway.get(),
-        this.btvUtils.btvRunway.get(),
-        this.btvUtils.btvExit.get(),
-      );
+      const depRwy = this.fmsDataStore.departureRunway.get();
+      const ldgRwy = this.fmsDataStore.landingRunway.get();
+      const btvRwy = this.btvUtils.btvRunway.get();
+      const btvExit = this.btvUtils.btvExit.get();
 
+      this.labelManager.reflowLabels(
+        depRwy !== null ? depRwy : undefined,
+        ldgRwy !== null ? ldgRwy : undefined,
+        btvRwy !== null ? btvRwy : undefined,
+        btvExit !== null ? btvExit : undefined,
+      );
       return;
     }
 
     const layerFeatures = this.layerFeatures[this.lastLayerDrawnIndex];
     const layerCanvas = this.layerCanvasRefs[this.lastLayerDrawnIndex].instance.getContext('2d');
 
-    if (this.lastFeatureDrawnIndex < layerFeatures.features.length) {
+    if (this.lastFeatureDrawnIndex < layerFeatures.features.length && layerCanvas) {
       renderFeaturesToCanvas(
         this.lastLayerDrawnIndex,
         layerCanvas,
@@ -1176,12 +1212,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   private updateLabelClasses() {
+    const btvRwy = this.btvUtils.btvRunway.get();
+    const btvExit = this.btvUtils.btvExit.get();
     this.labelManager.updateLabelClasses(
       this.fmsDataStore,
       this.dataAirportIcao.get() === this.fmsDataStore.origin.get(),
       this.dataAirportIcao.get() === this.fmsDataStore.destination.get(),
-      this.btvUtils.btvRunway.get(),
-      this.btvUtils.btvExit.get(),
+      btvRwy !== null ? btvRwy : undefined,
+      btvExit !== null ? btvExit : undefined,
     );
   }
 
@@ -1204,7 +1242,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       const cw = this.canvasWidth.get();
       const ch = this.canvasHeight.get();
 
-      ctx.clearRect(0, 0, cw, ch);
+      if (ctx) {
+        ctx.clearRect(0, 0, cw, ch);
+      }
     }
 
     this.panOffsetX.set(0);
@@ -1679,12 +1719,13 @@ function renderFeaturesToCanvas(
     const matchingRule = styleRules.find((it) => {
       if (feature.properties.feattype === FeatureType.VerticalPolygonalStructure) {
         return (
-          it.forFeatureTypes.includes(feature.properties.feattype) &&
-          it.forPolygonStructureTypes.includes(feature.properties.plysttyp)
+          it.forFeatureTypes?.includes(feature.properties.feattype) &&
+          feature.properties.plysttyp &&
+          it.forPolygonStructureTypes?.includes(feature.properties.plysttyp)
         );
       }
 
-      return it.forFeatureTypes.includes(feature.properties.feattype);
+      return it.forFeatureTypes?.includes(feature.properties.feattype);
     });
 
     if (!matchingRule) {

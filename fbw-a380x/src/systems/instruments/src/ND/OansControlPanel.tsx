@@ -511,7 +511,15 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   }
 
   private async setBtvRunwayFromFmsRunway() {
-    [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromFmsRunway(this.fmsDataStore);
+    const destination = this.fmsDataStore.destination.get();
+    const rwyIdent = this.fmsDataStore.landingRunway.get();
+
+    if (destination && rwyIdent) {
+      [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromFmsRunway(
+        destination,
+        rwyIdent,
+      );
+    }
   }
 
   private async btvFallbackSetDistance(distance: number | null) {

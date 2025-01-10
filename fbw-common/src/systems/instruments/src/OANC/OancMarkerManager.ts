@@ -14,13 +14,13 @@ export class OancMarkerManager<T extends number> {
   ) {
     this.crosses.sub((index, type, item, _array) => {
       if (type === SubscribableArrayEventType.Added) {
-        if (!Array.isArray(item[0])) {
+        if (item && !Array.isArray(item[0])) {
           const crossSymbolLabel: Label = {
             text: index.toString(),
             style: LabelStyle.CrossSymbol,
             position: item as Position,
             rotation: 0,
-            associatedFeature: null,
+            associatedFeature: undefined,
           };
           this.labelManager.visibleLabels.insert(crossSymbolLabel);
           this.labelManager.labels.push(crossSymbolLabel);
@@ -31,14 +31,14 @@ export class OancMarkerManager<T extends number> {
               style: LabelStyle.CrossSymbol,
               position: pos,
               rotation: 0,
-              associatedFeature: null,
+              associatedFeature: undefined,
             };
             this.labelManager.visibleLabels.insert(crossSymbolLabel);
             this.labelManager.labels.push(crossSymbolLabel);
           });
         }
       } else if (type === SubscribableArrayEventType.Removed) {
-        if (!Array.isArray(item[0])) {
+        if (item && !Array.isArray(item[0])) {
           this.labelManager.visibleLabels.removeAt(
             this.labelManager.visibleLabels
               .getArray()
@@ -62,13 +62,13 @@ export class OancMarkerManager<T extends number> {
 
     this.flags.sub((index, type, item, _array) => {
       if (type === SubscribableArrayEventType.Added) {
-        if (!Array.isArray(item[0])) {
+        if (item && !Array.isArray(item[0])) {
           const flagSymbolLabel: Label = {
             text: index.toString(),
             style: LabelStyle.FlagSymbol,
             position: item as Position,
             rotation: 0,
-            associatedFeature: null,
+            associatedFeature: undefined,
           };
           this.labelManager.visibleLabels.insert(flagSymbolLabel);
           this.labelManager.labels.push(flagSymbolLabel);
@@ -79,14 +79,14 @@ export class OancMarkerManager<T extends number> {
               style: LabelStyle.FlagSymbol,
               position: pos,
               rotation: 0,
-              associatedFeature: null,
+              associatedFeature: undefined,
             };
             this.labelManager.visibleLabels.insert(flagSymbolLabel);
             this.labelManager.labels.push(flagSymbolLabel);
           });
         }
       } else if (type === SubscribableArrayEventType.Removed) {
-        if (!Array.isArray(item[0])) {
+        if (item && !Array.isArray(item[0])) {
           this.labelManager.visibleLabels.removeAt(
             this.labelManager.visibleLabels
               .getArray()

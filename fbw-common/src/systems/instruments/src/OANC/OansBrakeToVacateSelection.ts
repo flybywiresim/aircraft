@@ -17,7 +17,7 @@ import {
   Position,
 } from '@turf/turf';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
-import { FmsDataStore, Label, LabelStyle } from '.';
+import { Label, LabelStyle } from '.';
 import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
 import { OancLabelManager } from './OancLabelManager';
 import {
@@ -80,10 +80,10 @@ export class OansBrakeToVacateSelection<T extends number> {
   readonly btvRunwayBearingTrue = Subject.create<number | null>(null);
 
   /** Threshold, used for runway end distance calculation */
-  private btvThresholdPosition: Position;
+  private btvThresholdPosition: Position | undefined;
 
   /** Opposite threshold, used for runway end distance calculation */
-  private btvOppositeThresholdPosition: Position;
+  private btvOppositeThresholdPosition: Position | undefined;
 
   /** Selected exit */
   readonly btvExit = Subject.create<string | null>(null);
@@ -91,7 +91,7 @@ export class OansBrakeToVacateSelection<T extends number> {
   /** Distance to exit, in meters. Null if not set. */
   readonly btvExitDistance = Subject.create<number | null>(null);
 
-  private btvExitPosition: Position;
+  private btvExitPosition: Position | undefined;
 
   /** "runway ahead" advisory was triggered */
   private rwyAheadTriggered: boolean = false;
@@ -112,7 +112,7 @@ export class OansBrakeToVacateSelection<T extends number> {
 
   private readonly rwyAheadArinc = Arinc429Register.empty();
 
-  private btvPathGeometry: Position[];
+  private btvPathGeometry: Position[] = [];
 
   /** Stopping distance for dry rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
   private readonly dryStoppingDistance = ConsumerSubject.create(this.sub.on('dryStoppingDistance').whenChanged(), 0);
@@ -217,7 +217,7 @@ export class OansBrakeToVacateSelection<T extends number> {
   }
 
   selectExitFromOans(exit: string, feature: Feature<Geometry, AmdbProperties>) {
-    if (this.btvRunway.get() == null) {
+    if (this.btvRunway.get() == null || !this.btvThresholdPosition || !this.btvOppositeThresholdPosition) {
       return;
     }
 
@@ -242,17 +242,13 @@ export class OansBrakeToVacateSelection<T extends number> {
         ? pointDistance(thrLoc[0], thrLoc[1], exitLoc1[0], exitLoc1[1])
         : pointDistance(thrLoc[0], thrLoc[1], exitLoc2[0], exitLoc2[1]);
 
+    const geoCoords = feature.geometry.coordinates as Position[]; // trust me, bro
     const exitAngle =
       exitDistFromCenterLine1 < exitDistFromCenterLine2
         ? pointAngle(thrLoc[0], thrLoc[1], exitLoc1[0], exitLoc1[1]) -
-          pointAngle(exitLoc1[0], exitLoc1[1], feature.geometry.coordinates[1][0], feature.geometry.coordinates[1][1])
+          pointAngle(exitLoc1[0], exitLoc1[1], geoCoords[1][0], geoCoords[1][1])
         : pointAngle(thrLoc[0], thrLoc[1], exitLoc2[0], exitLoc2[1]) -
-          pointAngle(
-            exitLoc2[0],
-            exitLoc2[1],
-            feature.geometry.coordinates[exitLastIndex - 1][0],
-            feature.geometry.coordinates[exitLastIndex - 1][1],
-          );
+          pointAngle(exitLoc2[0], exitLoc2[1], geoCoords[exitLastIndex - 1][0], geoCoords[exitLastIndex - 1][1]);
     // Don't run backwards, don't start outside of runway, don't start before minimum touchdown distance
     if (
       Math.abs(exitAngle) > 120 ||
@@ -270,7 +266,9 @@ export class OansBrakeToVacateSelection<T extends number> {
       MIN_TOUCHDOWN_ZONE_DISTANCE;
 
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
-    this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/${exit}`, true);
+    this.bus
+      .getPublisher<FmsOansData>()
+      .pub('ndBtvMessage', `BTV ${this.btvRunway.get()?.substring(4) ?? ''}/${exit}`, true);
 
     this.btvPathGeometry = Array.from(feature.geometry.coordinates as Position[]);
     if (exitDistFromCenterLine1 < exitDistFromCenterLine2) {
@@ -313,37 +311,33 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
   }
 
-  public async setBtvRunwayFromFmsRunway(fmsDataStore: FmsDataStore): Promise<[Runway, Coordinates]> {
-    const destination = fmsDataStore.destination.get();
-    const rwyIdent = fmsDataStore.landingRunway.get();
-    if (destination && rwyIdent) {
-      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  public async setBtvRunwayFromFmsRunway(destination: string, rwyIdent: string): Promise<[Runway, Coordinates]> {
+    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-      const arps = await db.getAirports([destination]);
-      const arpCoordinates = arps[0].location;
+    const arps = await db.getAirports([destination]);
+    const arpCoordinates = arps[0].location;
 
-      const runways = await db.getRunways(destination);
-      const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
-      const oppositeThreshold = placeBearingDistance(
-        landingRunwayNavdata.thresholdLocation,
-        landingRunwayNavdata.bearing,
-        landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
-      );
-      const localThr: Position = [0, 0];
-      const localOppThr: Position = [0, 0];
-      globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
-      globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
+    const runways = await db.getRunways(destination);
+    const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
+    const oppositeThreshold = placeBearingDistance(
+      landingRunwayNavdata.thresholdLocation,
+      landingRunwayNavdata.bearing,
+      landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
+    );
+    const localThr: Position = [0, 0];
+    const localOppThr: Position = [0, 0];
+    globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
+    globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
 
-      this.selectRunwayFromNavdata(
-        rwyIdent,
-        landingRunwayNavdata.length,
-        landingRunwayNavdata.bearing,
-        localThr,
-        localOppThr,
-      );
+    this.selectRunwayFromNavdata(
+      rwyIdent,
+      landingRunwayNavdata.length,
+      landingRunwayNavdata.bearing,
+      localThr,
+      localOppThr,
+    );
 
-      return [landingRunwayNavdata, arpCoordinates];
-    }
+    return [landingRunwayNavdata, arpCoordinates];
   }
 
   selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {
@@ -356,7 +350,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     pub.pub('oansSelectedExit', 'N/A');
     pub.pub('oansExitPosition', this.btvExitPosition, true);
 
-    pub.pub('ndBtvMessage', `BTV ${this.btvRunway.get().substring(4)}/MANUAL`, true);
+    pub.pub('ndBtvMessage', `BTV ${this.btvRunway.get()?.substring(4) ?? ''}/MANUAL`, true);
 
     this.btvExitDistance.set(correctedStoppingDistance);
     this.btvExit.set('N/A');
@@ -392,13 +386,13 @@ export class OansBrakeToVacateSelection<T extends number> {
   }
 
   drawBtvPath() {
-    if (!this.btvPathGeometry.length || !this.canvasRef?.getOrDefault()) {
+    const ctx = this.canvasRef?.instance.getContext('2d');
+    if (!this.btvPathGeometry.length || !this.canvasRef?.getOrDefault() || !ctx) {
       return;
     }
 
-    const ctx = this.canvasRef.instance.getContext('2d');
     ctx.resetTransform();
-    ctx.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
+    ctx.translate(this.canvasCentreX?.get() ?? 0, this.canvasCentreY?.get() ?? 0);
 
     ctx.lineWidth = 5;
     ctx.strokeStyle = '#00ffff';
@@ -415,13 +409,25 @@ export class OansBrakeToVacateSelection<T extends number> {
   }
 
   drawStopLines() {
-    if (!this.btvThresholdPosition.length || !this.canvasRef?.getOrDefault()) {
+    const ctx = this.canvasRef?.instance.getContext('2d');
+    const aircraftPpos = this.aircraftPpos?.get();
+    const acOnGround = this.aircraftOnGround?.get();
+    const rwyBearingTrue = this.btvRunwayBearingTrue.get();
+    if (
+      !this.btvThresholdPosition?.length ||
+      !this.btvOppositeThresholdPosition ||
+      !this.canvasRef?.getOrDefault() ||
+      !ctx ||
+      !aircraftPpos ||
+      !this.getZoomLevelInverseScale ||
+      acOnGround === undefined ||
+      rwyBearingTrue === null
+    ) {
       return;
     }
 
-    const ctx = this.canvasRef.instance.getContext('2d');
     ctx.resetTransform();
-    ctx.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
+    ctx.translate(this.canvasCentreX?.get() ?? 0, this.canvasCentreY?.get() ?? 0);
 
     const radioAlt =
       this.radioAltitude1.get().isFailureWarning() || this.radioAltitude1.get().isNoComputedData()
@@ -432,53 +438,53 @@ export class OansBrakeToVacateSelection<T extends number> {
     const dryWetLinesAreUpdating = radioAlt.valueOr(1000) <= 600;
 
     // Aircraft distance after threshold
+
     const aircraftDistFromThreshold = pointDistance(
       this.btvThresholdPosition[0],
       this.btvThresholdPosition[1],
-      this.aircraftPpos.get()[0],
-      this.aircraftPpos.get()[1],
+      aircraftPpos[0],
+      aircraftPpos[1],
     );
     const aircraftDistFromRunwayEnd = pointDistance(
       this.btvOppositeThresholdPosition[0],
       this.btvOppositeThresholdPosition[1],
-      this.aircraftPpos.get()[0],
-      this.aircraftPpos.get()[1],
+      aircraftPpos[0],
+      aircraftPpos[1],
     );
-    const isPastThreshold = aircraftDistFromRunwayEnd < this.btvRunwayLda.get();
+    const rwyLda = this.btvRunwayLda.get() ?? 0;
+    const isPastThreshold = aircraftDistFromRunwayEnd < rwyLda;
     // As soon as aircraft passes the touchdown zone distance, draw DRY and WET stop bars from there
     const touchdownDistance =
       dryWetLinesAreUpdating && isPastThreshold && aircraftDistFromThreshold > MIN_TOUCHDOWN_ZONE_DISTANCE
         ? aircraftDistFromThreshold
         : MIN_TOUCHDOWN_ZONE_DISTANCE;
-    const dryRunoverCondition = touchdownDistance + this.dryStoppingDistance.get() > this.btvRunwayLda.get();
-    const wetRunoverCondition = touchdownDistance + this.wetStoppingDistance.get() > this.btvRunwayLda.get();
+    const dryRunoverCondition = touchdownDistance + this.dryStoppingDistance.get() > rwyLda;
+    const wetRunoverCondition = touchdownDistance + this.wetStoppingDistance.get() > rwyLda;
 
     const latDistance = 27.5 / this.getZoomLevelInverseScale();
     const strokeWidth = 3.5 / this.getZoomLevelInverseScale();
 
     // DRY stop line
-    if (this.dryStoppingDistance.get() > 0 && !this.aircraftOnGround.get()) {
+    if (this.dryStoppingDistance.get() > 0 && !acOnGround) {
       const distanceToDraw = Math.min(
         this.dryStoppingDistance.get(),
-        this.btvRunwayLda.get() - touchdownDistance + CLAMP_DRY_STOPBAR_DISTANCE,
+        rwyLda - touchdownDistance + CLAMP_DRY_STOPBAR_DISTANCE,
       );
       const dryStopLinePoint = fractionalPointAlongLine(
         this.btvThresholdPosition[0],
         this.btvThresholdPosition[1],
         this.btvOppositeThresholdPosition[0],
         this.btvOppositeThresholdPosition[1],
-        (touchdownDistance + distanceToDraw) / this.btvRunwayLda.get(),
+        (touchdownDistance + distanceToDraw) / rwyLda,
       );
 
       const dryP1 = [
-        latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) +
-          dryStopLinePoint[0],
-        latDistance * Math.sin((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) +
-          dryStopLinePoint[1],
+        latDistance * Math.cos((180 - rwyBearingTrue) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
+        latDistance * Math.sin((180 - rwyBearingTrue) * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[1],
       ];
       const dryP2 = [
-        latDistance * Math.cos(-this.btvRunwayBearingTrue.get() * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
-        latDistance * Math.sin(-this.btvRunwayBearingTrue.get() * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[1],
+        latDistance * Math.cos(-rwyBearingTrue * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[0],
+        latDistance * Math.sin(-rwyBearingTrue * MathUtils.DEGREES_TO_RADIANS) + dryStopLinePoint[1],
       ];
 
       ctx.beginPath();
@@ -501,35 +507,33 @@ export class OansBrakeToVacateSelection<T extends number> {
         style: dryRunoverCondition ? LabelStyle.BtvStopLineRed : LabelStyle.BtvStopLineMagenta,
         position: dryP2,
         rotation: 0,
-        associatedFeature: null,
+        associatedFeature: undefined,
       };
-      this.labelManager.visibleLabels.insert(dryLabel);
-      this.labelManager.labels.push(dryLabel);
+      this.labelManager?.visibleLabels.insert(dryLabel);
+      this.labelManager?.labels.push(dryLabel);
     }
 
     // WET stop line
-    if (this.wetStoppingDistance.get() > 0 && !this.aircraftOnGround.get()) {
+    if (this.wetStoppingDistance.get() > 0 && !acOnGround) {
       const distanceToDraw = Math.min(
         this.wetStoppingDistance.get(),
-        this.btvRunwayLda.get() - touchdownDistance + CLAMP_WET_STOPBAR_DISTANCE,
+        rwyLda - touchdownDistance + CLAMP_WET_STOPBAR_DISTANCE,
       );
       const wetStopLinePoint = fractionalPointAlongLine(
         this.btvThresholdPosition[0],
         this.btvThresholdPosition[1],
         this.btvOppositeThresholdPosition[0],
         this.btvOppositeThresholdPosition[1],
-        (touchdownDistance + distanceToDraw) / this.btvRunwayLda.get(),
+        (touchdownDistance + distanceToDraw) / rwyLda,
       );
 
       const wetP1 = [
-        latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) +
-          wetStopLinePoint[0],
-        latDistance * Math.sin((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) +
-          wetStopLinePoint[1],
+        latDistance * Math.cos((180 - rwyBearingTrue) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
+        latDistance * Math.sin((180 - rwyBearingTrue) * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[1],
       ];
       const wetP2 = [
-        latDistance * Math.cos(-this.btvRunwayBearingTrue.get() * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
-        latDistance * Math.sin(-this.btvRunwayBearingTrue.get() * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[1],
+        latDistance * Math.cos(-rwyBearingTrue * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[0],
+        latDistance * Math.sin(-rwyBearingTrue * MathUtils.DEGREES_TO_RADIANS) + wetStopLinePoint[1],
       ];
 
       ctx.beginPath();
@@ -562,17 +566,17 @@ export class OansBrakeToVacateSelection<T extends number> {
         style: labelStyle,
         position: wetP2,
         rotation: 0,
-        associatedFeature: null,
+        associatedFeature: undefined,
       };
-      this.labelManager.visibleLabels.insert(wetLabel);
-      this.labelManager.labels.push(wetLabel);
+      this.labelManager?.visibleLabels.insert(wetLabel);
+      this.labelManager?.labels.push(wetLabel);
     }
 
     // On ground & above 25kts: STOP line
     const distToRwyEnd = this.remaininingDistToRwyEnd.get();
     if (
       this.liveStoppingDistance.get() > 0 &&
-      this.aircraftOnGround.get() &&
+      acOnGround &&
       this.groundSpeed.get().value > 25 &&
       distToRwyEnd.ssm === Arinc429SignStatusMatrix.NormalOperation
     ) {
@@ -587,18 +591,16 @@ export class OansBrakeToVacateSelection<T extends number> {
         this.btvThresholdPosition[1],
         this.btvOppositeThresholdPosition[0],
         this.btvOppositeThresholdPosition[1],
-        (aircraftDistFromThreshold + distanceToDraw) / this.btvRunwayLda.get(),
+        (aircraftDistFromThreshold + distanceToDraw) / rwyLda,
       );
 
       const stopP1 = [
-        latDistance * Math.cos((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) +
-          stopLinePoint[0],
-        latDistance * Math.sin((180 - this.btvRunwayBearingTrue.get()) * MathUtils.DEGREES_TO_RADIANS) +
-          stopLinePoint[1],
+        latDistance * Math.cos((180 - rwyBearingTrue) * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[0],
+        latDistance * Math.sin((180 - rwyBearingTrue) * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[1],
       ];
       const stopP2 = [
-        latDistance * Math.cos(-this.btvRunwayBearingTrue.get() * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[0],
-        latDistance * Math.sin(-this.btvRunwayBearingTrue.get() * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[1],
+        latDistance * Math.cos(-rwyBearingTrue * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[0],
+        latDistance * Math.sin(-rwyBearingTrue * MathUtils.DEGREES_TO_RADIANS) + stopLinePoint[1],
       ];
 
       ctx.beginPath();
@@ -621,10 +623,10 @@ export class OansBrakeToVacateSelection<T extends number> {
         style: liveRunOverCondition ? LabelStyle.BtvStopLineRed : LabelStyle.BtvStopLineGreen,
         position: stopP1,
         rotation: 0,
-        associatedFeature: null,
+        associatedFeature: undefined,
       };
-      this.labelManager.visibleLabels.insert(stoplineLabel);
-      this.labelManager.labels.push(stoplineLabel);
+      this.labelManager?.visibleLabels.insert(stoplineLabel);
+      this.labelManager?.labels.push(stoplineLabel);
     }
   }
 
@@ -643,9 +645,9 @@ export class OansBrakeToVacateSelection<T extends number> {
 
     this.canvasRef.instance
       .getContext('2d')
-      .clearRect(0, 0, this.canvasRef.instance.width, this.canvasRef.instance.height);
-    while (this.labelManager.visibleLabels.getArray().findIndex((it) => isStopLineStyle(it.style)) !== -1) {
-      this.labelManager.visibleLabels.removeAt(
+      ?.clearRect(0, 0, this.canvasRef.instance.width, this.canvasRef.instance.height);
+    while (this.labelManager?.visibleLabels.getArray().findIndex((it) => isStopLineStyle(it.style)) !== -1) {
+      this.labelManager?.visibleLabels.removeAt(
         this.labelManager.visibleLabels.getArray().findIndex((it) => isStopLineStyle(it.style)),
       );
     }
@@ -675,11 +677,14 @@ export class OansBrakeToVacateSelection<T extends number> {
       return;
     }
 
+    const aircraftPpos = this.aircraftPpos?.get();
+
     if (
       this.onGround.get() === false ||
       this.groundSpeed.get().ssm !== Arinc429SignStatusMatrix.NormalOperation ||
       this.groundSpeed.get().value > 40 ||
-      this.groundSpeed.get().value < 1
+      this.groundSpeed.get().value < 1 ||
+      !aircraftPpos
     ) {
       // Transmit no advisory
       this.rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
@@ -746,10 +751,10 @@ export class OansBrakeToVacateSelection<T extends number> {
     // From here on comparing local to local coords
     const predictionVolume = polygon([this.rwyAheadPredictionVolumePoints]);
 
-    const insideRunways = [];
+    const insideRunways: string[] = [];
     runwayFeatures.features.forEach((feat) => {
       if (feat.properties.idrwy) {
-        const inside = booleanContains(feat.geometry as Polygon, point(this.aircraftPpos.get()));
+        const inside = booleanContains(feat.geometry as Polygon, point(aircraftPpos));
         if (inside) {
           insideRunways.push(feat.properties.idrwy.replace('.', ' - '));
         }

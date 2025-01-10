@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, EfisNdMode } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429SignStatusMatrix, EfisNdMode } from '@flybywiresim/fbw-sdk';
 
 import { OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './';
 import { ArcModeUnderlay } from './OancArcModeCompass';
@@ -51,7 +51,7 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
           bus={this.props.bus}
           visible={this.roseModeVisible}
           rotation={this.props.rotation.map((r) => {
-            const word = Arinc429Word.empty();
+            const word = Arinc429Register.empty();
 
             word.ssm = Arinc429SignStatusMatrix.NormalOperation;
             word.value = r;
@@ -66,7 +66,7 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
           bus={this.props.bus}
           visible={this.arcModeVisible}
           rotation={this.props.rotation.map((r) => {
-            const word = Arinc429Word.empty();
+            const word = Arinc429Register.empty();
 
             word.ssm = Arinc429SignStatusMatrix.NormalOperation;
             word.value = r;
@@ -109,7 +109,7 @@ export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps>
           bus={this.props.bus}
           visible={this.roseModeVisible}
           rotation={this.props.rotation.map((r) => {
-            const word = Arinc429Word.empty();
+            const word = Arinc429Register.empty();
 
             word.ssm = Arinc429SignStatusMatrix.NormalOperation;
             word.value = r;
@@ -124,7 +124,7 @@ export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps>
           bus={this.props.bus}
           visible={this.arcModeVisible}
           rotation={this.props.rotation.map((r) => {
-            const word = Arinc429Word.empty();
+            const word = Arinc429Register.empty();
 
             word.ssm = Arinc429SignStatusMatrix.NormalOperation;
             word.value = r;
