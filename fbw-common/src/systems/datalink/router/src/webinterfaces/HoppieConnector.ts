@@ -121,7 +121,7 @@ export class HoppieConnector {
     const body = {
       logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
       from: HoppieConnector.flightNumber,
-      to: 'ALL-CALLSIGNS',
+      to: 'SERVER', // Not needed as Hoppie ignores this field usually
       type: 'ping',
       packet: station,
     };
