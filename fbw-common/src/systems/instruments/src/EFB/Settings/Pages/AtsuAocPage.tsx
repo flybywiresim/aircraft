@@ -36,7 +36,7 @@ export const AtsuAocPage = () => {
       const body = {
         logon: value,
         from: 'FBWA32NX',
-        to: 'ALL-CALLSIGNS',
+        to: 'SERVER',
         type: 'ping',
         packet: '',
       };
