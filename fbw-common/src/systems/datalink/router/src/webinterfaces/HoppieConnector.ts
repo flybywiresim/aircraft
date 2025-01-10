@@ -43,7 +43,7 @@ export class HoppieConnector {
     const body = {
       logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
       from: 'FBWA32NX',
-      to: 'ALL-CALLSIGNS',
+      to: 'SERVER',
       type: 'ping',
       packet: '',
     };
@@ -90,13 +90,14 @@ export class HoppieConnector {
     const body = {
       logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
       from: station,
-      to: 'ALL-CALLSIGNS',
+      to: 'SERVER',
       type: 'ping',
       packet: station,
     };
     const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
-    if (text === 'error {callsign already in use}') {
+    if (text === 'error {callsign already in use}'
+        || text === `ok {${station}`) {
       return AtsuStatusCodes.CallsignInUse;
     }
     if (text.includes('error')) {
