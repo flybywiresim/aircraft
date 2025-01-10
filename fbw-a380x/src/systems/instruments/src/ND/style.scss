@@ -34,3 +34,9 @@
 .a380xInvisible {
   display: none;
 }
+
+.WaypointIndicator {
+  text-align: start;
+  text-anchor: start;
+  transform: translateX(-130px) translateY(0);
+}
