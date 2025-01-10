@@ -89,6 +89,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private readonly approachCapability = ConsumerSubject.create(this.sub.on('approachCapability'), 0);
 
+  private readonly btvExitMissed = ConsumerSubject.create(this.sub.on('btvExitMissed'), false);
+
   private disconnectApForLdg = MappedSubject.create(
     ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, approachCapability]) => {
       return (
@@ -130,6 +132,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.tcasRaInhibited.get(),
         this.tdReached,
         this.disconnectApForLdg.get(),
+        this.btvExitMissed.get(),
       )[0] !== null;
 
     const engineMessage = this.athrModeMessage;
@@ -163,6 +166,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
     super.onAfterRender(node);
 
     this.disconnectApForLdg.sub(() => this.handleFMABorders());
+
+    this.btvExitMissed.sub(() => this.handleFMABorders());
 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
@@ -235,6 +240,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
           bus={this.props.bus}
           isAttExcessive={this.props.isAttExcessive}
           disconnectApForLdg={this.disconnectApForLdg}
+          btvExitMissed={this.btvExitMissed}
           AB3Message={this.AB3Message}
         />
       </g>
@@ -395,6 +401,7 @@ class Row3 extends DisplayComponent<{
   bus: EventBus;
   isAttExcessive: Subscribable<boolean>;
   disconnectApForLdg: Subscribable<boolean>;
+  btvExitMissed: Subscribable<boolean>;
   AB3Message: Subscribable<boolean>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
@@ -422,6 +429,7 @@ class Row3 extends DisplayComponent<{
         <BC3Cell
           isAttExcessive={this.props.isAttExcessive}
           disconnectApForLdg={this.props.disconnectApForLdg}
+          btvExitMissed={this.props.btvExitMissed}
           bus={this.props.bus}
         />
         <E3Cell bus={this.props.bus} />
@@ -1351,6 +1359,7 @@ const getBC3Message = (
   tcasRaInhibited: boolean,
   tdReached: boolean,
   disconnectApForLdg: boolean,
+  exitMissed: boolean,
 ) => {
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
@@ -1392,7 +1401,7 @@ const getBC3Message = (
   } else if (setHoldSpeed) {
     text = 'SET HOLD SPD';
     className = 'FontMedium White';
-  } else if (false) {
+  } else if (exitMissed) {
     text = 'EXIT MISSED';
     className = 'White';
   } else {
@@ -1405,6 +1414,7 @@ const getBC3Message = (
 class BC3Cell extends DisplayComponent<{
   isAttExcessive: Subscribable<boolean>;
   disconnectApForLdg: Subscribable<boolean>;
+  btvExitMissed: Subscribable<boolean>;
   bus: EventBus;
 }> {
   private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
@@ -1434,6 +1444,7 @@ class BC3Cell extends DisplayComponent<{
       this.tcasRaInhibited,
       this.tdReached,
       this.props.disconnectApForLdg.get(),
+      this.props.btvExitMissed.get(),
     );
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
@@ -1452,6 +1463,10 @@ class BC3Cell extends DisplayComponent<{
     });
 
     this.props.disconnectApForLdg.sub(() => {
+      this.fillBC3Cell();
+    });
+
+    this.props.btvExitMissed.sub(() => {
       this.fillBC3Cell();
     });
 

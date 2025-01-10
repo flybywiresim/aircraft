@@ -100,13 +100,14 @@ export class OancLabelManager<T extends number> {
 
           element.style.left = `${labelScreenX}px`;
           element.style.top = `${labelScreenY}px`;
+          const labelRotation = label.rotation ?? 0;
 
           if (label.style === LabelStyle.RunwayEnd || label.style === LabelStyle.BtvSelectedRunwayEnd) {
-            element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, 50px)`;
+            element.style.transform = `translate(-50%, -50%) rotate(${labelRotation - mapCurrentHeading}deg) translate(0px, 50px)`;
           } else if (label.style === LabelStyle.BtvSelectedRunwayArrow) {
-            element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, -100px) rotate(-180deg)`;
+            element.style.transform = `translate(-50%, -50%) rotate(${labelRotation - mapCurrentHeading}deg) translate(0px, -100px) rotate(-180deg)`;
           } else if (label.style === LabelStyle.FmsSelectedRunwayEnd) {
-            element.style.transform = `translate(-50%, -50%) rotate(${label.rotation - mapCurrentHeading}deg) translate(0px, 82.5px)`;
+            element.style.transform = `translate(-50%, -50%) rotate(${labelRotation - mapCurrentHeading}deg) translate(0px, 82.5px)`;
           } else {
             element.style.transform = 'translate(-50%, -50%)';
           }
@@ -205,8 +206,8 @@ export class OancLabelManager<T extends number> {
     fmsDataStore: FmsDataStore,
     isFmsOrigin: boolean,
     isFmsDestination: boolean,
-    btvSelectedRunway: string,
-    btvSelectedExit: string,
+    btvSelectedRunway?: string,
+    btvSelectedExit?: string,
   ) {
     this.visibleLabelElements.forEach((val, key) => {
       const newLabelStyle = labelStyle(

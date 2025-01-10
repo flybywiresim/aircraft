@@ -2,12 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ArraySubject, ConsumerSubject, DmsFormatter2, EventBus, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { AmdbAirportSearchResult, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { AmdbAirportSearchResult, AmdbProperties, FmsOansData } from '@flybywiresim/fbw-sdk';
 
 export enum ControlPanelAirportSearchMode {
   Icao,
   Iata,
   City,
+}
+
+export enum ControlPanelMapDataSearchMode {
+  RWY,
+  TWY,
+  STAND,
+  OTHER,
 }
 
 export class ControlPanelUtils {
@@ -33,6 +40,26 @@ export class ControlPanelUtils {
     }
     return prop;
   }
+
+  static getMapDataSearchModeProp(mode: ControlPanelMapDataSearchMode): keyof AmdbProperties {
+    let prop: keyof AmdbProperties;
+    switch (mode) {
+      default:
+      case ControlPanelMapDataSearchMode.RWY:
+        prop = 'idthr';
+        break;
+      case ControlPanelMapDataSearchMode.TWY:
+        prop = 'idlin';
+        break;
+      case ControlPanelMapDataSearchMode.STAND:
+        prop = 'idstd';
+        break;
+      case ControlPanelMapDataSearchMode.OTHER:
+        prop = 'ident';
+        break;
+    }
+    return prop;
+  }
 }
 
 export class ControlPanelStore {
@@ -47,6 +74,10 @@ export class ControlPanelStore {
   public readonly airportSearchSelectedSearchLetterIndex = Subject.create<number | null>(null);
 
   public readonly airportSearchSelectedAirportIndex = Subject.create<number | null>(null);
+
+  public readonly mapDataSearchMode = Subject.create<number | null>(ControlPanelMapDataSearchMode.RWY);
+
+  public readonly mapDataSearchData = ArraySubject.create<string>();
 
   public readonly selectedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
 

@@ -114,6 +114,8 @@
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
 1. [A380X/MFD] Use slashed zero as default font for FMS pages - @bulenteroglu (senolitam)
 1. [A380X/ND] Remove leading zeros from terrain elevation display - @BravoMike99 (bruno_pt99)
+1. [A380X/BTV] Add EXIT MISSED indication on FMA and aural triple click - @flogross89 (floridude)
+1. [A380X/OANS] Add flags/crosses capability, change cursor to magenta, implement ARPT NAV reset button - @flogross89 (floridude)
 
 ## 0.12.0
 

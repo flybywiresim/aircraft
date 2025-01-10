@@ -199,6 +199,39 @@
   outline: 0px;
 }
 
+.oanc-label-style-cross-symbol {
+  font-size: 0.1px;
+  color: transparent;
+  width: 35px;
+  height: 35px;
+  background-color: transparent;
+  background-image: url(/Images/fbw-a380x/oans/oans-cross.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.oanc-label-style-cross-symbol:hover {
+  outline: 3px solid $display-cyan;
+  pointer-events: auto;
+  outline-offset: 0px !important;
+}
+
+.oanc-label-style-flag-symbol {
+  font-size: 0.1px;
+  color: transparent;
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  background-image: url(/Images/fbw-a380x/oans/oans-flag.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.oanc-label-style-flag-symbol:hover {
+  outline: 3px solid $display-cyan;
+  pointer-events: auto;
+  outline-offset: 0px !important;
+}
 
 .oanc-button {
   padding: 10px 6px;

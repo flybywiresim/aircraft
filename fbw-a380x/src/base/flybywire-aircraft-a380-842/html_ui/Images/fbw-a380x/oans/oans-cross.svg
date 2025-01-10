@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" version="1.1" viewBox="163.055 83.355 54.707 51.783">
+  <defs>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="327.5" cy="243.75" r="36.5" id="gradient-0">
+      <stop offset="0" style="stop-color: rgb(255, 182, 182);"/>
+      <stop offset="1" style="stop-color: rgb(255, 0, 0);"/>
+    </radialGradient>
+  </defs>
+  <circle style="stroke: rgb(0, 0, 0); fill: url(&quot;#gradient-0&quot;); fill-rule: nonzero; stroke-width: 3.16437px;" transform="matrix(0.65445, 0, 0, 0.609625, -37.958115, -49.774086)" cx="348.5" cy="262" r="36.5"/>
+  <polygon style="stroke: rgb(0, 0, 0); stroke-width: 0px; fill: rgb(255, 255, 255);" points="180.582 94.82 189.748 104.302 199.969 95.03 206.185 101.562 196.071 110.308 205.131 119.37 198.494 125.164 189.327 115.893 179.738 124.426 173.417 117.789 182.794 109.043 174.154 100.298"/>
+</svg>
