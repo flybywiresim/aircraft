@@ -100,6 +100,7 @@
 1. [ELEC] Improved elec system startup behaviour - @Gurgel100 (Pascal) - @saschl
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
 1. [A380X/EFIS] Illuminate ND range and mode selectors during light test - @BravoMike99 (bruno_pt99)
+1. [A380X/FCU] Automatically select LS on LOC mode arming - @BravoMike99 (bruno_pt99)
 1. [A380/PFD] Add DISCONNECT AP FOR LDG FMA message - @BravoMike99 (bruno_pt99)
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
@@ -111,6 +112,7 @@
 1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
+1. [A380X/MFD] Use slashed zero as default font for FMS pages - @bulenteroglu (senolitam)
 1. [A380X/ND] Remove leading zeros from terrain elevation display - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Fix autopilot instinctive disconnect button logic for 3D model - @flogross89 (floridude)
 
