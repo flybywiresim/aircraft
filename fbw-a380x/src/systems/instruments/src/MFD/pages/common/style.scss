@@ -21,7 +21,7 @@
   width: 768px;
   height: 1024px; /* 1:1.33 W:H  */
   background: $display-background;
-  font-family: "Ecam", monospace !important;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   display: flex;
   flex-direction: column;
 }
@@ -29,7 +29,7 @@
 .mfd-label {
   font-size: 20px;
   color: $display-white;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
 }
 
 .mfd-label.green {
@@ -99,7 +99,7 @@
   font-size: 22px;
   background-color: $display-mfd-darker-grey;
   color: $display-white;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   text-align: center;
   align-items: center;
   justify-content: center;
@@ -451,7 +451,7 @@
 }
 
 .mfd-context-menu {
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   background-color: $display-mfd-darker-grey;
   border: 2px outset $display-light-grey;
   position: absolute;
@@ -721,7 +721,7 @@
   margin-left: 15px;
   font-size: 26px;
   color: $display-background;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
 }
 
 .fr {
@@ -771,7 +771,7 @@
 .mfd-surv-label {
   font-size: 20px;
   color: $display-white;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   text-align: center;
   margin-bottom: 2px;
 }
@@ -797,7 +797,7 @@
   font-size: 22px;
   padding-top: 3px;
   color: $display-white;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
 }
 
 .mfd-surv-status-indicator {
