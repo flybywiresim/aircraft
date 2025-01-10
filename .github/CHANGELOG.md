@@ -104,7 +104,6 @@
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
 1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
-1. [A32NX/FWS] Fix autopilot instinctive disconnect button logic for 3D model - @flogross89 (floridude)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
@@ -113,6 +112,7 @@
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
 1. [A380X/ND] Remove leading zeros from terrain elevation display - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWS] Fix autopilot instinctive disconnect button logic for 3D model - @flogross89 (floridude)
 
 ## 0.12.0
 
