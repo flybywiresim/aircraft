@@ -176,7 +176,61 @@ export class EngineModel {
     return cn1;
   }
 
-  static getClimbThrustCorrectedN1(parameters: EngineModelParameters, altitude: Feet, totalAirTemperature: number) {
-    return EngineModel.tableInterpolation(parameters.cn1ClimbLimit, totalAirTemperature, altitude);
+  static getClimbThrustCorrectedN1(
+    parameters: EngineModelParameters,
+    pressureAltitude: Feet,
+    outsideTemperature: Celsius,
+  ): number {
+    let loAltRow = 0;
+    let hiAltRow = 0;
+
+    // Check for over/under flows. Else, find top row value
+    if (pressureAltitude >= parameters.cn1ClimbLimit[parameters.cn1ClimbLimit.length - 1][0]) {
+      hiAltRow = parameters.cn1ClimbLimit.length - 1;
+      loAltRow = parameters.cn1ClimbLimit.length - 1;
+    } else {
+      hiAltRow = parameters.cn1ClimbLimit.reduce((acc, val, idx) => {
+        return val[0] <= pressureAltitude ? idx + 1 : acc;
+      }, 0);
+      loAltRow = hiAltRow - 1;
+    }
+
+    // Define key table variables and interpolation
+    const cp = Common.interpolate(
+      pressureAltitude,
+      parameters.cn1ClimbLimit[loAltRow][0],
+      parameters.cn1ClimbLimit[hiAltRow][0],
+      parameters.cn1ClimbLimit[loAltRow][1],
+      parameters.cn1ClimbLimit[hiAltRow][1],
+    );
+    const lp = Common.interpolate(
+      pressureAltitude,
+      parameters.cn1ClimbLimit[loAltRow][0],
+      parameters.cn1ClimbLimit[hiAltRow][0],
+      parameters.cn1ClimbLimit[loAltRow][2],
+      parameters.cn1ClimbLimit[hiAltRow][2],
+    );
+    const cn1Flat = Common.interpolate(
+      pressureAltitude,
+      parameters.cn1ClimbLimit[loAltRow][0],
+      parameters.cn1ClimbLimit[hiAltRow][0],
+      parameters.cn1ClimbLimit[loAltRow][3],
+      parameters.cn1ClimbLimit[hiAltRow][3],
+    );
+    const cn1Last = Common.interpolate(
+      pressureAltitude,
+      parameters.cn1ClimbLimit[loAltRow][0],
+      parameters.cn1ClimbLimit[hiAltRow][0],
+      parameters.cn1ClimbLimit[loAltRow][4],
+      parameters.cn1ClimbLimit[hiAltRow][4],
+    );
+
+    if (outsideTemperature <= cp) {
+      return cn1Flat;
+    }
+
+    const m = (cn1Last - cn1Flat) / (lp - cp);
+    const b = cn1Last - m * lp;
+    return m * outsideTemperature + b;
   }
 }
