@@ -49,7 +49,7 @@ export class HoppieConnector {
     };
 
     Hoppie.sendRequest(body).then((resp) => {
-      if (resp.response !== 'error {illegal logon code}') {
+      if (resp.response !== 'error {invalid logon code}') {
         SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
         console.log('Activated Hoppie ID');
       } else {
@@ -96,7 +96,7 @@ export class HoppieConnector {
     };
     const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
-    if (text === 'error {callsign already in use}' || text === `ok {${station}`) {
+    if (text === 'error {callsign already in use}' || text === `ok {${station}}`) {
       return AtsuStatusCodes.CallsignInUse;
     }
     if (text.includes('error')) {
