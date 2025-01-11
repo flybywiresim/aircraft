@@ -9,6 +9,8 @@ interface FcuBaseEvents {
   fcu_trk_fpa_active: boolean;
   fcu_left_navaid_mode: NavAidMode;
   fcu_right_navaid_mode: NavAidMode;
+  fcu_loc_mode_active: boolean;
+  fcu_approach_mode_active: boolean;
 }
 
 type IndexedTopics = 'fcu_left_navaid_mode' | 'fcu_right_navaid_mode';
@@ -35,6 +37,20 @@ export class FcuPublisher extends SimVarPublisher<FcuEvents> {
       [
         'fcu_right_navaid_mode',
         { name: `L:A32NX_EFIS_R_NAVAID_#index#_MODE`, type: SimVarValueType.Enum, indexed: true },
+      ],
+      [
+        'fcu_loc_mode_active',
+        {
+          name: 'L:A32NX_FCU_LOC_MODE_ACTIVE',
+          type: SimVarValueType.Bool,
+        },
+      ],
+      [
+        'fcu_approach_mode_active',
+        {
+          name: 'L:A32NX_FCU_APPR_MODE_ACTIVE',
+          type: SimVarValueType.Bool,
+        },
       ],
     ]);
 
