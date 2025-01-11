@@ -74,6 +74,8 @@ export interface NDProps<T extends number> {
   terrainThresholdPaddingText: string;
 
   rangeChangeMessage: string;
+
+  modeChangeMessage: string;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -464,7 +466,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               y={320}
               class="Green FontIntermediate"
             >
-              MODE CHANGE
+              {this.props.modeChangeMessage}
             </Flag>
 
             <TerrainMapThresholds bus={this.props.bus} paddingText={this.props.terrainThresholdPaddingText} />

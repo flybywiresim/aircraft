@@ -25,6 +25,10 @@ export const a320NdRangeChange = 'RANGE CHANGE';
 
 export const a380NdRangeChange = 'ND RANGE CHANGE';
 
+export const a320NdModeChange = 'MODE CHANGE';
+
+export const a380NdModeChange = 'ND MODE CHANGE';
+
 export enum EfisNdMode {
   ROSE_ILS,
   ROSE_VOR,

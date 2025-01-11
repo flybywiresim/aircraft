@@ -13,6 +13,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import {
   a320EfisRangeSettings,
+  a320NdModeChange,
   a320NdRangeChange,
   a320TerrainThresholdPadValue,
   ArincEventBus,
@@ -153,6 +154,7 @@ class NDInstrument implements FsInstrument {
           rangeValues={a320EfisRangeSettings}
           terrainThresholdPaddingText={a320TerrainThresholdPadValue}
           rangeChangeMessage={a320NdRangeChange}
+          modeChangeMessage={a320NdModeChange}
         />
       </DisplayUnit>,
       document.getElementById('ND_CONTENT'),
