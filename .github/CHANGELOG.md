@@ -117,6 +117,7 @@
 1. [A32NX/FWS] Fix autopilot instinctive disconnect button logic for 3D model - @flogross89 (floridude)
 1. [A380X/EFIS] Fix VV pb indicator not turning on when TRK-FPA mode is selected - @heclak (Heclak)
 1. [EFB] Added troubleshooting page, under about page, for advanced support - @tracernz (Mike)
+1. [FMS] Transition altitude/level and RNP now come from navdata in MSFS2024 - @tracernz (Mike)
 
 ## 0.12.0
 
