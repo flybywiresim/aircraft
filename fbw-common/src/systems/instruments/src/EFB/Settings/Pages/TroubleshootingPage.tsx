@@ -7,12 +7,8 @@ import { SettingsPage } from '../Settings';
 // @ts-ignore
 import { useTroubleshooting } from '../../TroubleshootingContext';
 import { AiracCycleFormatter, FacilityLoader } from '@microsoft/msfs-sdk';
-import { AircraftGithubVersionChecker, BuildInfo } from 'shared/src';
-
-// TODO merge navdata PR and use the proper function
-function isMsfs2024() {
-  return (window.InputBar.MENU_BUTTON_A as any) === 'KEY_MENU_SR_VALID';
-}
+import { AircraftGithubVersionChecker, BuildInfo } from '../../../../../shared/src/AircraftGithubVersionChecker';
+import { isMsfs2024 } from '../../../../../shared/src/MsfsDetect';
 
 export const TroubleshootingPage = () => {
   const errorLog = useTroubleshooting();
