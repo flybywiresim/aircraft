@@ -11,7 +11,7 @@ import {
   SENTRY_CONSENT_KEY,
   useSimVar,
 } from '@flybywiresim/fbw-sdk';
-import { PageLink, pathify, t, TabRoutes, useEventBus } from '@flybywiresim/flypad';
+import { PageLink, pathify, t, TabRoutes } from '@flybywiresim/flypad';
 import { SettingsPage } from '../Settings';
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
@@ -78,8 +78,6 @@ export const AboutPage = () => {
   useEffect(() => {
     AircraftGithubVersionChecker.getBuildInfo(process.env.AIRCRAFT_PROJECT_PREFIX).then((info) => setBuildInfo(info));
   }, [process.env.AIRCRAFT_PROJECT_PREFIX]);
-
-  useEventBus().pub('troubleshooting_log_error', 'Rendered troubleshooting page!', true, false);
 
   return (
     <Switch>
