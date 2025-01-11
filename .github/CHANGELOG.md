@@ -110,6 +110,7 @@
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
 1. [A380X/EFB] Improved Aircraft Presets configuration for the A380X - @frankkopp (cdr_maverick)
 1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
+1. [A380X/FMS] Add basic FIX INFO functionality - @Benjozork (Benjamin Dupont)
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
 1. [A380X/MFD] Use slashed zero as default font for FMS pages - @bulenteroglu (senolitam)

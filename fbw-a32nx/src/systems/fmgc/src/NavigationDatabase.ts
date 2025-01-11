@@ -49,7 +49,7 @@ export class NavigationDatabase {
     return this.backendDatabase.getWaypoints([ident]);
   }
 
-  async searchAllFix(ident: string): Promise<(Waypoint | VhfNavaid | NdbNavaid)[]> {
+  async searchAllFix(ident: string): Promise<Fix[]> {
     return [
       ...(await this.backendDatabase.getWaypoints([ident])),
       ...(await this.backendDatabase.getNavaids([ident])),
