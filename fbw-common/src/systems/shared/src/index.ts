@@ -43,4 +43,5 @@ export * from './simbridge';
 export * from './simvar';
 export * from './units';
 export * from './GPUManagement';
+export * from './Troubleshooting';
 export * from './types';
