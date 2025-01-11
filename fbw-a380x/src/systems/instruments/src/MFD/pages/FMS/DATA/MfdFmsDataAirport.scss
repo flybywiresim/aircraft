@@ -1,0 +1,35 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-data-airport-input-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.mfd-data-airport-information-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.mfd-data-airport-pse-label {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 10px;
+  margin-bottom: 20px;
+}
+
+.mfd-data-airport-pse-value {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.mfd-data-airport-coords-label {
+  margin-top: 30px;
+}
