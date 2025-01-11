@@ -17,7 +17,7 @@ import { SettingsPage } from '../Settings';
 import FbwTail from '../../Assets/FBW-Tail.svg';
 import { useViewListenerEvent } from '../../Utils/listener';
 import { Link, Route, Switch } from 'react-router-dom';
-import { TroubleshootingPage } from 'instruments/src/EFB/Settings/Pages/TroubleshootingPage';
+import { TroubleshootingPage } from './TroubleshootingPage';
 
 const baseAboutRoute = `/settings/${pathify('About')}`;
 

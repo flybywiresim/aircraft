@@ -3,7 +3,7 @@
 
 import { EventBus } from '@microsoft/msfs-sdk';
 import React, { useContext, useState } from 'react';
-import { TroubleshootingEvents } from 'shared/src/Troubleshooting';
+import { TroubleshootingEvents } from '../../../shared/src/Troubleshooting';
 
 const TroubleshootingContext = React.createContext<string[]>(undefined as any);
 
