@@ -41,7 +41,7 @@ export const AtsuAocPage = () => {
         packet: '',
       };
       return Hoppie.sendRequest(body).then((resp) => {
-        if (resp.response === 'error {illegal logon code}') {
+        if (resp.response === 'error {invalid logon code}') {
           reject(new Error(`Error: Unknown user ID: ${resp.response}`));
         } else {
           resolve(value);
