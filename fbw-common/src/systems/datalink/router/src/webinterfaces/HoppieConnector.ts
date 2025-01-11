@@ -96,8 +96,7 @@ export class HoppieConnector {
     };
     const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
-    if (text === 'error {callsign already in use}'
-        || text === `ok {${station}`) {
+    if (text === 'error {callsign already in use}' || text === `ok {${station}`) {
       return AtsuStatusCodes.CallsignInUse;
     }
     if (text.includes('error')) {
