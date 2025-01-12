@@ -22,6 +22,7 @@ import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
 import { GpsPrimaryLost } from './GpsPrimaryLost';
 import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisplayed';
+import { TooSteepPathAhead } from '@fmgc/components/fms-messages/TooSteepPathAhead';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -63,6 +64,7 @@ export class FmsMessages implements FmgcComponent {
     new TdReached(),
     new StepAhead(),
     new StepDeleted(),
+    new TooSteepPathAhead(),
   ];
 
   init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {

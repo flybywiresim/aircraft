@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG, DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
+import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
-import { AircraftConfiguration as AircraftCtlSurfcConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
+import {
+  AircraftConfiguration as AircraftCtlSurfcConfiguration,
+  DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
+} from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { UnitType } from '@microsoft/msfs-sdk';
 import { AircraftConfig, EngineModelParameters } from '@fmgc/flightplanning/AircraftConfigTypes';
@@ -335,7 +338,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       tropoPause,
       config.speedbrakesExtended,
       config.flapConfig,
-      config.speedbrakesExtended,
+      config.gearExtended,
       perfFactor,
     );
   }

@@ -934,6 +934,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.updatePerfSpeeds();
         this.acInterface.updateWeights();
         this.acInterface.toSpeedsChecks();
+        this.acInterface.checkTooSteepPath();
 
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
         if (toFlaps) {

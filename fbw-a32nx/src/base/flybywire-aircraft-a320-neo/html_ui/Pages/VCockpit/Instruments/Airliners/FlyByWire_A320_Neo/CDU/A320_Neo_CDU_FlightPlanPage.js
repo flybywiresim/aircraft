@@ -146,6 +146,10 @@ class CDUFlightPlanPage {
 
             waypointsAndMarkers.push({ wp, fpIndex: i, inAlternate: false, inMissedApproach, distanceFromLastLine, isActive: isActiveLeg && pseudoWaypointsOnLeg.length === 0 });
 
+            if (wp.calculated && wp.calculated.endsInTooSteepPath) {
+                waypointsAndMarkers.push({ marker: Markers.TOO_STEEP_PATH, fpIndex: i, inAlternate: false, inMissedApproach });
+            }
+
             if (i === targetPlan.destinationLegIndex) {
                 destinationAirportOffset = Math.max(waypointsAndMarkers.length - 4, 0);
             }
@@ -579,7 +583,12 @@ class CDUFlightPlanPage {
                 scrollWindow[rowI] = waypointsAndMarkers[winI];
                 addLskAt(rowI, 0, (value, scratchpadCallback) => {
                     if (value === FMCMainDisplay.clrValue) {
-                        CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+                        if (marker.marker === Markers.FPLN_DISCONTINUITY) {
+                            CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+                        } else {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                            scratchpadCallback();
+                        }
                         return;
                     } else if (value === "") {
                         return;
