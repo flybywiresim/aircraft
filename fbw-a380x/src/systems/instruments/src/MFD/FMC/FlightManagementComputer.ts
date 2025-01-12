@@ -37,6 +37,7 @@ import {
   EfisSide,
   Fix,
   NXDataStore,
+  Units,
   UpdateThrottler,
   Waypoint,
   a380EfisRangeSettings,
@@ -388,7 +389,35 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTripFuel(): number | null {
-    return 25_000; // FIXME Dummy value
+    const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+    if (destPred) {
+      const fob = this.fmgc.getFOB() * 1_000;
+      const destFuelKg = Units.poundToKilogram(destPred.estimatedFuelOnBoard);
+      return fob - destFuelKg;
+    }
+    return null;
+  }
+
+  public getExtraFuel(): number | null {
+    const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+    if (destPred) {
+      if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
+        // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
+        return (
+          (this.enginesWereStarted.get() ? this.fmgc.getFOB() * 1_000 : (this.fmgc.data.blockFuel.get() ?? 0)) -
+          (this.fmgc.data.taxiFuel.get() ?? 0) -
+          (this.getTripFuel() ?? 0) -
+          (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
+          (this.fmgc.data.routeReserveFuelWeight.get() ?? 0)
+        );
+      } else {
+        return (
+          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0)
+        );
+      }
+    }
+
+    return null;
   }
 
   public getRecMaxFlightLevel(): number | null {

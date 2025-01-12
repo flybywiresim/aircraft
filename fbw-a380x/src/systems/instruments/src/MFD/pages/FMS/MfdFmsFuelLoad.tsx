@@ -29,7 +29,6 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
-import { Units } from '@flybywiresim/fbw-sdk';
 import { getEtaFromUtcOrPresent } from '../../shared/utils';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
@@ -166,14 +165,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           }
 
           const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
+          const tripFuel = this.props.fmcService.master.getTripFuel();
+          this.tripFuelWeight.set(tripFuel);
+          this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred?.secondsFromPresent, true));
+          this.extraFuelWeight.set(this.props.fmcService.master.getExtraFuel());
           if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {
-            // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
-            const fob = this.props.fmcService.master.fmgc.getFOB() * 1_000;
-            const tripFuel =
-              fob - (destPred?.estimatedFuelOnBoard ? Units.poundToKilogram(destPred?.estimatedFuelOnBoard) : fob);
-            this.tripFuelWeight.set(tripFuel);
-            this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred?.secondsFromPresent, true));
-
             // Calculate Rte Rsv fuel if not manually entered
             const pilotEnteredReserveFuel = this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered.get();
             this.props.fmcService.master.fmgc.data.routeReserveFuelWeightCalculated.set(
@@ -184,28 +180,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             if (!pilotEnteredReserveFuel) {
               this.props.fmcService.master.fmgc.data.routeReserveFuelWeightPilotEntry.set(null);
             }
-
-            const block = this.props.fmcService.master.fmgc.data.blockFuel.get() ?? 0;
-            this.extraFuelWeight.set(
-              (this.props.fmcService.master.enginesWereStarted.get() ? fob : block) -
-                (this.props.fmcService.master.fmgc.data.taxiFuel.get() ?? 0) -
-                (this.tripFuelWeight.get() ?? 0) -
-                (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
-                (this.props.fmcService.master.fmgc.data.routeReserveFuelWeight.get() ?? 0),
-            );
-          } else {
-            if (destPred) {
-              const fobKg = this.props.fmcService.master.fmgc.getFOB() * 1000;
-              const destFuelKg = Units.poundToKilogram(destPred?.estimatedFuelOnBoard);
-              const remainingTripFuel = fobKg - destFuelKg;
-              this.tripFuelWeight.set(remainingTripFuel);
-              this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred.secondsFromPresent, true));
-              this.extraFuelWeight.set(
-                destFuelKg - (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
-              );
-            }
           }
-
           this.updateDestAndAltnPredictions();
         }),
     );
@@ -311,7 +286,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   }
                   enteredByPilot={this.props.fmcService.master.fmgc.data.taxiFuelIsPilotEntered}
                   value={this.props.fmcService.master.fmgc.data.taxiFuel}
-                  inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                  disabled={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
