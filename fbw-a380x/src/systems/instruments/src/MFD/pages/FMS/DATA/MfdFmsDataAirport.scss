@@ -1,35 +1,85 @@
-﻿@import "../../../../MsfsAvionicsCommon/definitions";
+@import "../../../../MsfsAvionicsCommon/definitions";
 
-.mfd-data-airport-input-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 30px;
-}
+.mfd-data-airport {
+  &-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+  }
 
-.mfd-data-airport-information-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-top: 30px;
-}
+  &-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+    min-height: 100px;
+  }
 
-.mfd-data-airport-pse-label {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-right: 10px;
-  margin-bottom: 20px;
-}
+  &-container {
+    height: 450px;
+    margin: 0;
+    position: relative;
+  }
 
-.mfd-data-airport-pse-value {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 20px;
-}
+  &-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    padding: 15px 0;
+    height: 400px;
+  }
 
-.mfd-data-airport-coords-label {
-  margin-top: 30px;
+  &-runway {
+    position: relative;
+    background-color: black;
+    color: #00ff00;
+    padding: 20px 0 20px 130px;
+    box-sizing: border-box;
+
+    &-scroll-buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    &-field {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+      position: relative;
+
+
+      // Label part
+      &::before {
+        content: attr(data-label);
+        width: 120px;
+        text-align: right;
+        margin-right: 20px;
+      }
+
+      &-course {
+        position: absolute;
+        right: 100px;
+        display: flex;
+        align-items: center;
+
+        &::before {
+          content: 'CRS';
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+
+  &-coords {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 10px;
+    margin-bottom: 20px;
+  }
 }

@@ -11,7 +11,16 @@ import './style.scss';
 
 interface IconButtonProps extends ComponentProps {
   containerStyle?: string;
-  icon: 'double-up' | 'double-down' | 'ecl-single-up' | 'ecl-single-down' | 'ecl-check' | '' | null;
+  icon:
+    | 'double-up'
+    | 'double-down'
+    | 'double-left'
+    | 'double-right'
+    | 'ecl-single-up'
+    | 'ecl-single-down'
+    | 'ecl-check'
+    | ''
+    | null;
   disabled?: Subscribable<boolean>;
   onClick?: () => void;
 }
@@ -86,6 +95,22 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
         {this.props.icon === 'double-down' && (
           <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(180 17.5 17.5)">
+              <polygon points="0,17.5 17.5,0 35,17.5" />
+              <polygon points="0,35 17.5,17.5 35,35" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'double-left' && (
+          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(270 17.5 17.5)">
+              <polygon points="0,17.5 17.5,0 35,17.5" />
+              <polygon points="0,35 17.5,17.5 35,35" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'double-right' && (
+          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(90 17.5 17.5)">
               <polygon points="0,17.5 17.5,0 35,17.5" />
               <polygon points="0,35 17.5,17.5 35,35" />
             </g>
