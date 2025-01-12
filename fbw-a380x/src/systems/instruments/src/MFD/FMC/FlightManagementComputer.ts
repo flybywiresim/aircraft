@@ -374,7 +374,7 @@ export class FlightManagementComputer implements FmcInterface {
       // TOW before engine start: TOW = ZFW + BLOCK - TAXI
       const zfw = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw;
       if (this.fmgc.data.zeroFuelWeight.get() && this.fmgc.data.blockFuel.get() && this.fmgc.data.taxiFuel.get()) {
-        return zfw + (this.fmgc.data.blockFuel.get() ?? maxBlockFuel) - this.fmgc.data.taxiFuel.get();
+        return zfw + (this.fmgc.data.blockFuel.get() ?? maxBlockFuel) - (this.fmgc.data.taxiFuel.get() ?? 0);
       }
       return null;
     }
@@ -694,7 +694,8 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateThrustReductionAcceleration();
         }
 
-        pd.taxiFuelPilotEntry.set(null);
+        pd.taxiFuel.set(null);
+        pd.taxiFuelIsPilotEntered.set(false);
         pd.routeReserveFuelWeightPilotEntry.set(null);
         pd.routeReserveFuelPercentagePilotEntry.set(0);
         pd.routeReserveFuelWeightCalculated.set(0);
@@ -988,18 +989,14 @@ export class FlightManagementComputer implements FmcInterface {
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
 
-        if (!this.enginesWereStarted.get()) {
-          const flightPhase = this.fmgc.getFlightPhase();
-          const oneEngineWasStarted =
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'percent') > 20;
-          this.enginesWereStarted.set(
-            flightPhase >= FmgcFlightPhase.Takeoff ||
-              (flightPhase === FmgcFlightPhase.Preflight && oneEngineWasStarted),
-          );
-        }
+        const flightPhase = this.flightPhase.get();
+        this.enginesWereStarted.set(
+          flightPhase >= FmgcFlightPhase.Takeoff ||
+            (flightPhase == FmgcFlightPhase.Preflight && SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number') > 20) ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number') > 20 ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'number') > 20 ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20,
+        );
       }
       this.checkGWParams();
       this.updateMessageQueue();

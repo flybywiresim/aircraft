@@ -91,14 +91,9 @@ export class FmgcData {
   public readonly blockFuel = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly taxiFuelPilotEntry = Subject.create<number | null>(null);
+  public readonly taxiFuel = Subject.create<number | null>(AirlineModifiableInformation.EK.taxiFuel);
 
-  /** in kg */
-  public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) =>
-    it === null ? AirlineModifiableInformation.EK.taxiFuel : it,
-  );
-
-  public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((it) => it !== null);
+  public readonly taxiFuelIsPilotEntered = Subject.create(false);
 
   /** in kg. null if not set. */
   public readonly routeReserveFuelWeightPilotEntry = Subject.create<number | null>(null);
