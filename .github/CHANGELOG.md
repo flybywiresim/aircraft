@@ -118,6 +118,8 @@
 1. [A32NX/FWS] Fix autopilot instinctive disconnect button logic for 3D model - @flogross89 (floridude)
 1. [A380X/EFIS] Fix VV pb indicator not turning on when TRK-FPA mode is selected - @heclak (Heclak)
 1. [FMS] Transition altitude/level and RNP now come from navdata in MSFS2024 - @tracernz (Mike)
+1. [ATSU] Fixed issues with the ALL-CALLSIGNS recipient on Hoppie - @CronixZero (CronixZero)
+1. [A380X/MFD] Add ATCCOM D-ATIS page layout - @heclak (Heclak)
 
 ## 0.12.0
 
