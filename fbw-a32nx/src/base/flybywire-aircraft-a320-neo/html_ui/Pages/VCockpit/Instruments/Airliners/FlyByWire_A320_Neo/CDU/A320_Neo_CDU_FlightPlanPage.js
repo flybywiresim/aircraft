@@ -870,6 +870,7 @@ class CDUFlightPlanPage {
             console.log("deleting element");
         } catch (e) {
             console.error(e);
+            mcdu.logTroubleshootingError(e);
             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
             scratchpadCallback();
         }

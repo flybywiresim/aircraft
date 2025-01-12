@@ -732,6 +732,9 @@
       "ThrottleConfigurationReset": "Throttle Configuration Reset"
     },
     "Title": "Settings",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Unrealistic",
     "flyPad": {
       "AutoBrightness": "Auto Brightness",

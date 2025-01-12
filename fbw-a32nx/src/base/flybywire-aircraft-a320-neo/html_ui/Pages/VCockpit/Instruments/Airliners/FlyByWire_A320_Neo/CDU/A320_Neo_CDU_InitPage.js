@@ -159,6 +159,7 @@ class CDUInitPage {
                         }
                     } catch (error) {
                         console.error(error);
+                        mcdu.logTroubleshootingError(error);
                         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                     }
                 };
@@ -220,6 +221,7 @@ class CDUInitPage {
                             }
                         }).catch((error) => {
                             console.error(error);
+                            mcdu.logTroubleshootingError(error);
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                         });
                     });

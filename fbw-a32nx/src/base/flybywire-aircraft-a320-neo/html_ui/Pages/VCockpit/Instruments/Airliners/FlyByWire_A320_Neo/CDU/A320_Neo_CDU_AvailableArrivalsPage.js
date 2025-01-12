@@ -199,6 +199,7 @@ class CDUAvailableArrivalsPage {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                             } catch (e) {
                                 console.error(e);
+                                mcdu.logTroubleshootingError(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                 mcdu.eraseTemporaryFlightPlan(() => {
@@ -231,6 +232,7 @@ class CDUAvailableArrivalsPage {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                             } catch (e) {
                                 console.error(e);
+                                mcdu.logTroubleshootingError(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                 mcdu.eraseTemporaryFlightPlan(() => {
@@ -300,6 +302,7 @@ class CDUAvailableArrivalsPage {
                                 }
                             } catch (e) {
                                 console.error(e);
+                                mcdu.logTroubleshootingError(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                 mcdu.eraseTemporaryFlightPlan(() => {
@@ -343,6 +346,7 @@ class CDUAvailableArrivalsPage {
                                     }
                                 } catch (e) {
                                     console.error(e);
+                                    mcdu.logTroubleshootingError(e);
                                     mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                     mcdu.eraseTemporaryFlightPlan(() => {
@@ -373,6 +377,7 @@ class CDUAvailableArrivalsPage {
                             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
                         } catch (e) {
                             console.error(e);
+                            mcdu.logTroubleshootingError(e);
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                             mcdu.eraseTemporaryFlightPlan(() => {
@@ -400,6 +405,7 @@ class CDUAvailableArrivalsPage {
                                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
                                     } catch (e) {
                                         console.error(e);
+                                        mcdu.logTroubleshootingError(e);
                                         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                         mcdu.eraseTemporaryFlightPlan(() => {
@@ -563,6 +569,7 @@ class CDUAvailableArrivalsPage {
                             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                         } catch (e) {
                             console.error(e);
+                            mcdu.logTroubleshootingError(e);
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                             mcdu.eraseTemporaryFlightPlan(() => {
@@ -627,6 +634,7 @@ class CDUAvailableArrivalsPage {
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
             } catch (e) {
                 console.error(e);
+                mcdu.logTroubleshootingError(e);
                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                 mcdu.eraseTemporaryFlightPlan(() => {

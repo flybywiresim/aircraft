@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useContext, useEffect, useState } from 'react';
@@ -54,6 +54,9 @@ import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { setAircraftChecklists, addTrackingChecklists } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
+import { NavigraphAuthProvider } from '../react/navigraph';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { TroubleshootingContextProvider } from './TroubleshootingContext';
 
 // './Assets/Efb.scss' is imported by the aircraft EFB instrument the wraps this file
 import './Assets/Theme.css';
@@ -61,8 +64,6 @@ import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
-import { NavigraphAuthProvider } from '../react/navigraph';
-import { EventBus } from '@microsoft/msfs-sdk';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
@@ -523,16 +524,18 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraft
   const [err, setErr] = useState(false);
 
   return (
-    <FailuresOrchestratorProvider failures={failures}>
-      <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
-        <Router>
-          <ModalProvider>
-            <EventBusContextProvider eventBus={eventBus}>
-              <Efb aircraftChecklistsProp={aircraftChecklists} />
-            </EventBusContextProvider>
-          </ModalProvider>
-        </Router>
-      </ErrorBoundary>
-    </FailuresOrchestratorProvider>
+    <TroubleshootingContextProvider eventBus={eventBus}>
+      <FailuresOrchestratorProvider failures={failures}>
+        <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+          <Router>
+            <ModalProvider>
+              <EventBusContextProvider eventBus={eventBus}>
+                <Efb aircraftChecklistsProp={aircraftChecklists} />
+              </EventBusContextProvider>
+            </ModalProvider>
+          </Router>
+        </ErrorBoundary>
+      </FailuresOrchestratorProvider>
+    </TroubleshootingContextProvider>
   );
 };
