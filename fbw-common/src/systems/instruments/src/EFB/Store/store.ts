@@ -21,6 +21,7 @@ import tooltipReducer from './features/tooltip';
 import pushbackReducer from './features/pushback';
 import payloadReducer from './features/payload';
 import configReducer from './features/config';
+import temperatureCorrectionCalculatorReducer from './features/temperatureCorrectionCalculator';
 
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
@@ -43,6 +44,7 @@ const combinedReducer = combineReducers({
   pushback: pushbackReducer,
   payload: payloadReducer,
   config: configReducer,
+  temperatureCorrectionCalculator: temperatureCorrectionCalculatorReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {

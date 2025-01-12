@@ -406,6 +406,13 @@
       "Wind": "Wind",
       "WindMagnitudeUnit": "kts or °/kts"
     },
+    "TemperatureCorrection": {
+      "CorrectedAltitudes": "Corrected Altitudes",
+      "FieldElevation": "Field/THR Elevation",
+      "NoRunway": "Unknown",
+      "PublishedAltitudes": "Published Altitudes",
+      "Title": "Temperature Correction"
+    },
     "Title": "Performance",
     "TopOfDescent": {
       "Data": {
