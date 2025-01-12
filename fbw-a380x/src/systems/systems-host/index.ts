@@ -11,9 +11,9 @@ import {
   MappedSubject,
   SubscribableMapFunctions,
   WeightBalanceSimvarPublisher,
+  StallWarningPublisher,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
-import { LegacyFwc } from 'systems-host/systems/LegacyFwc';
 import { LegacyFuel } from 'systems-host/systems/LegacyFuel';
 import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
@@ -34,6 +34,7 @@ import { AtsuSystem } from 'systems-host/systems/atsu';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
+import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -49,9 +50,6 @@ class SystemsHost extends BaseInstrument {
   private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
   // TODO: Migrate PowerSupplyBusses, if needed
-
-  private fwc: LegacyFwc;
-
   private gpws: LegacyGpws;
 
   private soundManager: LegacySoundManager;
@@ -97,6 +95,10 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
+  private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
+
+  private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
+
   private readonly fwsCore = new FwsCore(1, this.bus);
 
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
@@ -129,12 +131,13 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('BtvPublisher', this.btvPublisher);
     this.backplane.addPublisher('Weightpublisher', this.weightAndBalancePublisher);
     this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
+    this.backplane.addPublisher('StallWarning', this.stallWarningPublisher);
+    this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
-    this.fwc = new LegacyFwc();
     this.soundManager = new LegacySoundManager();
-    this.gpws = new LegacyGpws(this.soundManager);
+    this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
     this.fwsCore.init();
 
@@ -149,7 +152,6 @@ class SystemsHost extends BaseInstrument {
         const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
         lastUpdateTime = now;
 
-        this.fwc.update(dt);
         this.soundManager.update(dt);
         this.gpws.update(dt);
         this.fwsCore.update(dt);

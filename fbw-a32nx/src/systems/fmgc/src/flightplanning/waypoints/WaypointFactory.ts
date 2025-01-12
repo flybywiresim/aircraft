@@ -58,6 +58,7 @@ export namespace WaypointFactory {
     return {
       ...runway,
       sectionCode: SectionCode.Airport,
+      // FIXME should be AirportSubsectionCode.Runways
       subSectionCode: AirportSubsectionCode.TerminalWaypoints,
       location: runway.thresholdLocation,
       area: WaypointArea.Terminal,
@@ -68,7 +69,9 @@ export namespace WaypointFactory {
     return {
       ...airport,
       sectionCode: SectionCode.Airport,
+      // FIXME should be AirportSubsectionCode.ReferencePoints, then we also don't need the airportIdent
       subSectionCode: AirportSubsectionCode.TerminalWaypoints,
+      airportIdent: airport.ident,
       area: WaypointArea.Terminal,
     };
   }

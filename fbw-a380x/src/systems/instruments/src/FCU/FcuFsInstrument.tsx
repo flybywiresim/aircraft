@@ -22,6 +22,7 @@ import { HeadingManager } from './Managers/HeadingManager';
 import { MsfsBaroManager } from './Managers/MsfsBaroManager';
 import { SpeedManager } from './Managers/SpeedManager';
 import { VerticalSpeedManager } from './Managers/VerticalSpeedManager';
+import { LsManager } from './Managers/LsManager';
 import { FcuPublisher } from './Publishers/FcuPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { OverheadPublisher } from '../MsfsAvionicsCommon/providers/OverheadPublisher';
@@ -87,8 +88,8 @@ export class FcuFsInstrument implements FsInstrument {
     this.backplane.addInstrument('HeadingManager', new HeadingManager(this.bus));
     this.backplane.addInstrument('SpeedManager', new SpeedManager(this.bus));
     this.backplane.addInstrument('VerticalSpeedManager', new VerticalSpeedManager(this.bus));
-    this.backplane.addInstrument('OoutputBusManager', new OutputBusManager(this.bus, this.isOperating));
-
+    this.backplane.addInstrument('OutputBusManager', new OutputBusManager(this.bus, this.isOperating));
+    this.backplane.addInstrument('LsManager', new LsManager(this.bus));
     this.backplane.addPublisher('FcuPublisher', new FcuPublisher(this.bus));
     this.backplane.addPublisher('FgBusPublisher', new FGDataPublisher(this.bus));
     this.backplane.addPublisher('OverheadPublisher', new OverheadPublisher(this.bus));
