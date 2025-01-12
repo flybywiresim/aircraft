@@ -10,9 +10,11 @@ import {
 interface MsfsFlightModelBaseEvents {
   /** Gets the openess in percent of an interactive point, usually doors */
   msfs_interactive_point_open: number;
+  /** Gets target in percent of an interactive point, usually doors */
+  msfs_interactive_point_goal: number;
 }
 
-type IndexedTopics = 'msfs_interactive_point_open';
+type IndexedTopics = 'msfs_interactive_point_open' | 'msfs_interactive_point_goal';
 
 type MsfsFlightModelIndexedEvents = {
   [P in keyof Pick<MsfsFlightModelBaseEvents, IndexedTopics> as IndexedEventType<P>]: MsfsFlightModelBaseEvents[P];
@@ -38,6 +40,10 @@ export class MsfsFlightModelPublisher extends SimVarPublisher<MsfsFlightModelEve
       [
         'msfs_interactive_point_open',
         { name: `INTERACTIVE POINT OPEN:#index#`, type: SimVarValueType.PercentOver100, indexed: true },
+      ],
+      [
+        'msfs_interactive_point_goal',
+        { name: `INTERACTIVE POINT GOAL:#index#`, type: SimVarValueType.PercentOver100, indexed: true },
       ],
     ]);
 
