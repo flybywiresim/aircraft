@@ -29,6 +29,7 @@ import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
 import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls';
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
+import { MfdFmsDataNavaid } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataNavaid';
 
 export function pageForUrl(
   url: string,
@@ -92,6 +93,8 @@ export function pageForUrl(
       return <MfdFmsDataStatus pageTitle="STATUS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/debug':
       return <MfdFmsDataDebug pageTitle="DEBUG" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fms/data/navaid':
+      return <MfdFmsDataNavaid pageTitle="NAVAID" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'surv/controls':
       return <MfdSurvControls pageTitle="CONTROLS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'surv/status-switching':

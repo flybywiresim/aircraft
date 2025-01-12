@@ -29,7 +29,7 @@ interface SelectedNavaid {
   class: Subject<string>;
 }
 
-const NAVAID_TYPE_STRINGS: Record<SelectedNavaidType, string> = {
+export const NAVAID_TYPE_STRINGS: Record<SelectedNavaidType, string> = {
   [SelectedNavaidType.None]: '',
   [SelectedNavaidType.Dme]: 'DME',
   [SelectedNavaidType.Vor]: 'VOR',

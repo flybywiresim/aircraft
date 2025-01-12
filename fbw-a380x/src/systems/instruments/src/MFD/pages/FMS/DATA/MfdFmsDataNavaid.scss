@@ -1,0 +1,61 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-data-navaid-input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    position: relative;
+    right: 20px;
+}
+
+.mfd-data-airport-information-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.mfd-data-airport-pse-label {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 10px;
+    margin-bottom: 20px;
+}
+
+.mfd-data-airport-pse-value {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.mfd-fms-data-apt-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height: 520px;
+    margin: 0px 0px 60px 0px;
+    border: 2px outset #c4c6cf;
+    padding: 15px;
+}
+
+.mfd-data-navaid-information-row {
+    font-size: 20px;
+    flex-direction: column;
+    justify-content: space-evenly;
+    display: flex;
+    height: 600px;
+    position: absolute;
+    left: 0px;
+    text-align: right;
+    width: 200px;
+}
+
+.mfd-data-navaid-information-row.right {
+    left: 230px;
+    text-align: left;
+}
