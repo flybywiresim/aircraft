@@ -269,6 +269,7 @@ export class FlightManagementComputer implements FmcInterface {
             !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
           ) {
             this.flightPlanService.active.setPerformanceData('costIndex', 0);
+            this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('0'));
           }
         }),
         this.legacyFmsIsHealthy.sub((v) => {
@@ -693,6 +694,7 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateThrustReductionAcceleration();
         }
 
+        pd.taxiFuelPilotEntry.set(null);
         pd.routeReserveFuelWeightPilotEntry.set(null);
         pd.routeReserveFuelPercentagePilotEntry.set(0);
         pd.routeReserveFuelWeightCalculated.set(0);
