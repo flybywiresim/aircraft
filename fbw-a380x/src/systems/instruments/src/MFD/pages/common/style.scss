@@ -855,3 +855,12 @@
   color: $display-dark-grey;
   font-family: "Ecam", monospace;
 }
+
+.mfd-amber-error-message {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  color: $display-amber;
+  font-size: 24px;
+}
