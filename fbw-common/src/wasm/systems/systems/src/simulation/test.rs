@@ -15,6 +15,7 @@ use uom::si::{
 use crate::{
     electrical::{Electricity, Potential},
     failures::FailureType,
+    shared::InternationalStandardAtmosphere,
 };
 
 use super::{
@@ -132,6 +133,7 @@ pub trait TestBed {
         self.test_bed_mut().set_ambient_pressure(ambient_pressure);
     }
 
+    #[deprecated(note = "Cannot directly set V/S. It is derived from change in static pressure.")]
     fn set_vertical_speed(&mut self, vertical_speed: Velocity) {
         self.test_bed_mut().set_vertical_speed(vertical_speed);
     }
@@ -368,7 +370,9 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     fn set_pressure_altitude(&mut self, pressure_altitude: Length) {
-        self.write_by_name(UpdateContext::PRESSURE_ALTITUDE_KEY, pressure_altitude);
+        let static_pressure =
+            InternationalStandardAtmosphere::pressure_at_altitude(pressure_altitude);
+        self.set_ambient_pressure(static_pressure);
     }
 
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
