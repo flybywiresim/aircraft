@@ -98,12 +98,6 @@
 1. [A380X/FCU] Add correct QFE label using the baro preselect display - @heclak (Heclak)
 1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)
 1. [A32NX/FWC] Add FCU faults - @tracernz (Mike)
-1. [ADR] Implement accurate altimetry computations - @tracernz (Mike)
-1. [A32NX] Split EIS baro corrections between captain and first officer side - @tracernz (Mike)
-1. [A32NX] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
-1. [A32NX/FWC] Add baro ref and altitude discrepancy warnings - @tracernz (Mike)
-1. [A32NX/PFD] Add CHECK ALT message - @tracernz (Mike)
-1. [A380X] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
 1. [ELEC] Improved elec system startup behaviour - @Gurgel100 (Pascal) - @saschl
 1. [A380X] Improve pilot and copilot camera positions - @heclak (Heclak)
 1. [A380X/EFIS] Illuminate ND range and mode selectors during light test - @BravoMike99 (bruno_pt99)
@@ -127,6 +121,12 @@
 1. [ATSU] Fixed issues with the ALL-CALLSIGNS recipient on Hoppie - @CronixZero (CronixZero)
 1. [A380X/MFD] Add ATCCOM D-ATIS page layout - @heclak (Heclak)
 1. [A380X/FMS] Enable FMC reset through overhead reset panel push buttons - @flogross89 (floridude)
+1. [ADR] Implement accurate altimetry computations - @tracernz (Mike)
+1. [A32NX] Split EIS baro corrections between captain and first officer side - @tracernz (Mike)
+1. [A32NX] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
+1. [A32NX/FWC] Add baro ref and altitude discrepancy warnings - @tracernz (Mike)
+1. [A32NX/PFD] Add CHECK ALT message - @tracernz (Mike)
+1. [A380X] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
 
 ## 0.12.0
 
