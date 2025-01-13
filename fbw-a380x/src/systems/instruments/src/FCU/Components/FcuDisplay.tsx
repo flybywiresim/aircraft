@@ -22,7 +22,7 @@ export class FcuDisplay extends DisplayComponent<FcuDisplayProps> {
           <div id="Electricity" state={this.props.isHidden.map((v) => (v ? 'off' : 'on'))}>
             <div id="LargeScreen">
               <Speed />
-              <Heading />
+              <Heading bus={this.props.bus} />
 
               <div id="AltVS">
                 <Altitude bus={this.props.bus} />
