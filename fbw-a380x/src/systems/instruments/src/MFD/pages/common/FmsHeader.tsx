@@ -91,7 +91,7 @@ export class FmsHeader extends AbstractHeader {
               { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint'), disabled: true },
               { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid'), disabled: true },
               { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route'), disabled: true },
-              { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport'), disabled: true },
+              { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport') },
               { label: 'PRINTER', action: () => this.props.uiService.navigateTo('fms/data/printer'), disabled: true },
             ]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorData`}
