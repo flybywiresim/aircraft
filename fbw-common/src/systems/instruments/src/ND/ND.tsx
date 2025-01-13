@@ -457,7 +457,12 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               HDG
             </Flag>
 
-            <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate a380xRangeChange">
+            <Flag
+              visible={this.rangeChangeInProgress}
+              x={384}
+              y={320}
+              class="Green FontIntermediate a380xModeRangeChange"
+            >
               {this.props.rangeChangeMessage}
             </Flag>
             <Flag
@@ -468,7 +473,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               )}
               x={384}
               y={320}
-              class="Green FontIntermediate"
+              class="Green FontIntermediate a380xModeRangeChange"
             >
               {this.props.modeChangeMessage}
             </Flag>
