@@ -2377,7 +2377,6 @@ pub mod tests {
         }
 
         fn in_isa_atmosphere(mut self, altitude: Length) -> Self {
-            self.set_pressure_altitude(altitude);
             self.set_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
                 altitude,
             ));
