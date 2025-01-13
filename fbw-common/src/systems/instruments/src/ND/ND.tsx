@@ -217,6 +217,10 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         this.invalidateRange();
       });
 
+    this.rangeChangeInProgress.sub((rangechange) => {
+      this.props.bus.getPublisher<NDControlEvents>().pub('set_range_change', rangechange);
+    });
+
     sub
       .on('ndMode')
       .whenChanged()
