@@ -664,9 +664,9 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateThrustReductionAcceleration();
         }
 
-        pd.taxiFuelPilotEntry.set(null);
-        pd.routeReserveFuelPercentagePilotEntry.set(0.00001);
-        pd.routeReserveFuelWeightPilotEntry.set(0.00001);
+        pd.routeReserveFuelWeightPilotEntry.set(null);
+        pd.routeReserveFuelPercentagePilotEntry.set(0);
+        pd.routeReserveFuelWeightCalculated.set(0);
 
         this.fmgc.data.climbPredictionsReferenceAutomatic.set(
           this.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude,
