@@ -16,6 +16,7 @@ import { loadAirport, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 
 import './MfdFmsDataAirport.scss';
+import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
 
 interface MfdFmsDataAirportProps extends AbstractMfdPageProps {}
 
@@ -39,8 +40,6 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
 
   private readonly airportIcao = Subject.create<string | null>(null);
 
-  private readonly runwayDataRef = FSComponent.createRef<HTMLDivElement>();
-
   private readonly runwayIdent = Subject.create<string | null>(null);
   private readonly runwayCoords = Subject.create<string | null>(null);
   private readonly runwayElevation = Subject.create<string | null>(null);
@@ -58,7 +57,11 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
   private currentIndexRef = FSComponent.createRef<HTMLSpanElement>();
   private totalRunwaysRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private containerRef = FSComponent.createRef<HTMLDivElement>();
+  private customRwyButtonDisabled = Subject.create<boolean>(true);
+
+  private isAirportInfoVisible = Subject.create<boolean>(true);
+  private isRunwayDataVisible = Subject.create<boolean>(false);
+  private isRunwayButtonListVisible = Subject.create<boolean>(false);
 
   private renderRunwayButtons(): void {
     this.runwayButtonListRef.instance.innerHTML = '';
@@ -71,11 +74,13 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
         <Button
           label={runway.label}
           onClick={() => this.selectedRunwayIndex.set(index)}
-          buttonStyle="width: 220px; margin-bottom: 5px; height: 40px; margin-left: 10px;"
+          buttonStyle="width: 220px; margin-bottom: 5px; margin-top: 5px; height: 40px; margin-left: 10px;"
         />,
         this.runwayButtonListRef.instance,
       );
     });
+
+    this.isRunwayButtonListVisible.set(true);
   }
 
   private scrollRunwayButtons(direction: 'left' | 'right'): void {
@@ -92,14 +97,12 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
     this.runwayCourse.set(runwayData.course);
     this.runwayLsIdent.set(runwayData.lsIdent);
 
-    this.runwayDataRef.instance.style.display = 'block';
+    this.isRunwayDataVisible.set(true);
   }
 
   private async loadAirportRunways(icao: string | null) {
     if (icao) {
       const airport = await loadAirport(icao);
-
-      console.log(airport);
 
       if (airport) {
         const runways = await loadAllRunways(airport);
@@ -108,8 +111,6 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
 
         const simplifiedRunways = runways.map((runway) => {
           const length = MathUtils.round(runway.length, 10).toFixed(0).padStart(5, '\xa0');
-          // TODO: add alt to location coming from Airport types
-          // @ts-ignore
           const elevation = MathUtils.round(runway.location.alt, 10).toFixed(0).padStart(5, '\xa0');
 
           return {
@@ -154,30 +155,26 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
     this.airportIcao.sub((icao: string | null) => {
       if (icao && icao.length === 4) {
         this.loadAirportRunways(icao);
-
-        // hide runway data and show runway buttons
-        this.runwayDataRef.instance.style.display = 'none';
-        this.runwayButtonListRef.instance.style.display = 'block';
-        this.containerRef.instance.style.border = '1px solid #444';
+        this.isAirportInfoVisible.set(true);
+        this.isRunwayButtonListVisible.set(true);
+        this.isRunwayDataVisible.set(false);
       } else {
-        this.containerRef.instance.style.border = 'none';
-        this.runwayDataRef.instance.style.display = 'none';
-        this.runwayButtonListRef.instance.style.display = 'none';
+        this.isAirportInfoVisible.set(false);
+        this.isRunwayDataVisible.set(false);
+        this.isRunwayButtonListVisible.set(false);
       }
     });
 
     this.selectedRunwayIndex.sub((index: number | null) => {
       if (index === null) {
-        this.runwayDataRef.instance.style.display = 'none';
-        this.runwayButtonListRef.instance.style.display = 'block';
+        this.isRunwayButtonListVisible.set(true);
+        this.isRunwayDataVisible.set(false);
       } else {
+        this.isRunwayButtonListVisible.set(false);
         this.checkScrollButtons();
         this.currentIndex.set(index + 1);
-
         const runwayData = this.airportRunways.get()[index];
-
         this.renderRunwayData(runwayData);
-        this.runwayButtonListRef.instance.style.display = 'none';
       }
     });
 
@@ -224,118 +221,151 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
             selectedTabTextColor="white"
             tabBarSlantedEdgeAngle={25}
           >
-            <TopTabNavigatorPage>
-              <div class="mfd-data-airport-input">
-                <div class="mfd-label" style={'position: relative; right: 90px;'}>
-                  ARPT IDENT
-                </div>
-                <div>
-                  <InputField<string>
-                    dataEntryFormat={new AirportFormat()}
-                    dataHandlerDuringValidation={async (v) => {
-                      this.airportIcao.set(v);
-                    }}
-                    mandatory={Subject.create(true)}
-                    canBeCleared={Subject.create(false)}
-                    value={this.airportIcao}
-                    alignText="center"
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                    hEventConsumer={this.props.mfd.hEventConsumer}
-                    interactionMode={this.props.mfd.interactionMode}
-                    containerStyle="position: relative; right: 60px;"
-                  />
-                </div>
-              </div>
+            <TopTabNavigatorPage containerStyle="height: 680px;">
               {/* DATABASE ARPTs */}
-              <div class="mfd-data-airport-info">
-                <div class="mfd-value bigger" style={'margin-bottom: 20px;'}>
-                  {this.airportName || '\u00A0'}
-                </div>
-                <div class="mfd-value bigger mfd-data-airport-coords">{this.airportCoords || '\u00A0'}</div>
-              </div>
-              <div class="mfd-data-airport-container" ref={this.containerRef}>
-                <div ref={this.runwayButtonListRef} class="mfd-data-airport-list" />
-                <div ref={this.runwayDataRef} style="display: none;">
-                  <div class="mfd-data-airport-runway">
-                    <div class="mfd-label mfd-data-airport-runway-field" data-label="RWY" style="min-width: 120px;">
-                      <div>
-                        <span class="mfd-value bigger">{this.runwayIdent}</span>
-                      </div>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: -25px; margin-bottom: 20px;">
-                      <div>
-                        <span class="mfd-label" ref={this.currentIndexRef}></span>
-                        <span class="mfd-label">/</span>
-                        <span class="mfd-label" ref={this.totalRunwaysRef}></span>
-                      </div>
-                      <div class="mfd-data-airport-runway-scroll-buttons">
-                        <IconButton
-                          icon="double-left"
-                          onClick={() => this.scrollRunwayButtons('left')}
-                          disabled={this.disabledScrollLeft}
-                          containerStyle="width: 50px; height: 50px; margin-right: 5px;"
-                        />
-                        <IconButton
-                          icon="double-right"
-                          onClick={() => this.scrollRunwayButtons('right')}
-                          containerStyle="width: 50px; height: 50px;"
-                          disabled={this.disabledScrollRight}
-                        />
-                      </div>
-                    </div>
-
-                    <div
-                      class="mfd-label mfd-data-airport-runway-field"
-                      data-label="LAT/LONG"
-                      style="min-width: 120px;"
-                    >
-                      <div>
-                        <span class="mfd-value bigger">{this.runwayCoords}</span>
-                      </div>
-                    </div>
-                    <div
-                      class="mfd-label mfd-data-airport-runway-field"
-                      data-label="ELEVATION"
-                      style="min-width: 120px;"
-                    >
-                      <div>
-                        <span class="mfd-value bigger">{this.runwayElevation}</span>
-                        <span class="mfd-label-unit mfd-unit-trailing">{'FT'}</span>
-                      </div>
-                    </div>
-                    <div class="mfd-label mfd-data-airport-runway-field" data-label="LENGTH" style="min-width: 120px;">
-                      <div>
-                        <span class="mfd-value bigger"> {this.runwayLength}</span>
-                        <span class="mfd-label-unit mfd-unit-trailing">{'M'}</span>
-                      </div>
-                      <div class="mfd-label mfd-data-airport-runway-field-course">
-                        <span class="mfd-value bigger">{this.runwayCourse}</span>
-                        <span class="mfd-label-unit mfd-unit-trailing">°</span>
-                      </div>
-                    </div>
-                    <div
-                      class="mfd-label mfd-data-airport-runway-field"
-                      data-label="LS IDENT"
-                      style="min-width: 120px;"
-                    >
-                      <div>
-                        <span class="mfd-value bigger">{this.runwayLsIdent}</span>
-                      </div>
-                    </div>
+              <div class="mfd-data-airport-container">
+                <div class="mfd-data-airport-input">
+                  <div class="mfd-label" style={'position: relative; right: 90px;'}>
+                    ARPT IDENT
                   </div>
-                  <Button
-                    label="RWY LIST"
-                    onClick={() => this.selectedRunwayIndex.set(null)}
-                    buttonStyle="width: 220px; margin-bottom: 10px; margin-left: 10px; height: 40px;"
+                  <div>
+                    <InputField<string>
+                      dataEntryFormat={new AirportFormat()}
+                      dataHandlerDuringValidation={async (v) => {
+                        this.airportIcao.set(v);
+                      }}
+                      mandatory={Subject.create(true)}
+                      canBeCleared={Subject.create(false)}
+                      value={this.airportIcao}
+                      alignText="center"
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
+                      containerStyle="position: relative; right: 60px;"
+                    />
+                  </div>
+                </div>
+                <div class="mfd-data-airport-info-container">
+                  <ConditionalComponent
+                    condition={this.isAirportInfoVisible}
+                    componentIfTrue={
+                      <div class="mfd-data-airport-info">
+                        <div class="mfd-value bigger">{this.airportName}</div>
+                        <div class="mfd-value bigger mfd-data-airport-coords">{this.airportCoords}</div>
+                      </div>
+                    }
+                    componentIfFalse={<></>}
                   />
                 </div>
+                <ConditionalComponent
+                  noStyle
+                  condition={this.isRunwayButtonListVisible}
+                  componentIfTrue={
+                    <div
+                      ref={this.runwayButtonListRef}
+                      class="mfd-data-airport-list mfd-data-airport-border-container "
+                    />
+                  }
+                  componentIfFalse={<></>}
+                />
+                <ConditionalComponent
+                  noStyle
+                  condition={this.isRunwayDataVisible}
+                  componentIfTrue={
+                    <div class="mfd-data-airport-border-container">
+                      <div class="mfd-data-airport-runway">
+                        <div class="mfd-label mfd-data-airport-runway-field" data-label="RWY" style="min-width: 120px;">
+                          <div>
+                            <span class="mfd-value bigger">{this.runwayIdent}</span>
+                          </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: -25px; margin-bottom: 20px;">
+                          <div>
+                            <span class="mfd-label" ref={this.currentIndexRef}></span>
+                            <span class="mfd-label">/</span>
+                            <span class="mfd-label" ref={this.totalRunwaysRef}></span>
+                          </div>
+                          <div class="mfd-data-airport-runway-scroll-buttons">
+                            <IconButton
+                              icon="double-left"
+                              onClick={() => this.scrollRunwayButtons('left')}
+                              disabled={this.disabledScrollLeft}
+                              containerStyle="width: 50px; height: 50px; margin-right: 5px;"
+                            />
+                            <IconButton
+                              icon="double-right"
+                              onClick={() => this.scrollRunwayButtons('right')}
+                              containerStyle="width: 50px; height: 50px;"
+                              disabled={this.disabledScrollRight}
+                            />
+                          </div>
+                        </div>
+
+                        <div
+                          class="mfd-label mfd-data-airport-runway-field"
+                          data-label="LAT/LONG"
+                          style="min-width: 120px;"
+                        >
+                          <div>
+                            <span class="mfd-value bigger">{this.runwayCoords}</span>
+                          </div>
+                        </div>
+                        <div
+                          class="mfd-label mfd-data-airport-runway-field"
+                          data-label="ELEVATION"
+                          style="min-width: 120px;"
+                        >
+                          <div>
+                            <span class="mfd-value bigger">{this.runwayElevation}</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">{'FT'}</span>
+                          </div>
+                        </div>
+                        <div
+                          class="mfd-label mfd-data-airport-runway-field"
+                          data-label="LENGTH"
+                          style="min-width: 120px;"
+                        >
+                          <div>
+                            <span class="mfd-value bigger"> {this.runwayLength}</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">{'M'}</span>
+                          </div>
+                          <div class="mfd-label mfd-data-airport-runway-field-course">
+                            <span class="mfd-value bigger">{this.runwayCourse}</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">°</span>
+                          </div>
+                        </div>
+                        <div
+                          class="mfd-label mfd-data-airport-runway-field"
+                          data-label="LS IDENT"
+                          style="min-width: 120px;"
+                        >
+                          <div>
+                            <span class="mfd-value bigger">{this.runwayLsIdent}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        label="RWY LIST"
+                        onClick={() => this.selectedRunwayIndex.set(null)}
+                        buttonStyle="width: 220px; margin-bottom: 10px; margin-left: 10px; height: 40px;"
+                      />
+                    </div>
+                  }
+                  componentIfFalse={<></>}
+                />
               </div>
             </TopTabNavigatorPage>
-            <TopTabNavigatorPage>
-              <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                <span class="mfd-label">NOT IMPLEMENTED</span>
+            <TopTabNavigatorPage containerStyle="height: 680px;">
+              <div class="mfd-label" style={'align-self: center; position: relative; top: 45px;'}>
+                NO PILOT STORED NAVAID
               </div>
+              <Button
+                label="NEW RWY"
+                disabled={this.customRwyButtonDisabled}
+                buttonStyle="width: 170px; height: 60px; position: absolute; right: 0; top: 630px;"
+                onClick={() => {}}
+              />
             </TopTabNavigatorPage>
           </TopTabNavigator>
           <div style="flex-grow: 1;" />

@@ -121,6 +121,7 @@
 1. [ATSU] Fixed issues with the ALL-CALLSIGNS recipient on Hoppie - @CronixZero (CronixZero)
 1. [A380X/MFD] Add ATCCOM D-ATIS page layout - @heclak (Heclak)
 1. [A380X/FMS] Enable FMC reset through overhead reset panel push buttons - @flogross89 (floridude)
+1. [A380X/MFD] Add airport data page into the MFD (DATA > AIRPORT) - @bulenteroglu (senolitam)
 
 ## 0.12.0
 
