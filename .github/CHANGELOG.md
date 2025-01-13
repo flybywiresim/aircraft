@@ -106,7 +106,6 @@
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
 1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
-1. [A380X/FMS] Enable FMC reset through overhead reset panel push buttons - @flogross89 (floridude)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
@@ -121,6 +120,7 @@
 1. [FMS] Transition altitude/level and RNP now come from navdata in MSFS2024 - @tracernz (Mike)
 1. [ATSU] Fixed issues with the ALL-CALLSIGNS recipient on Hoppie - @CronixZero (CronixZero)
 1. [A380X/MFD] Add ATCCOM D-ATIS page layout - @heclak (Heclak)
+1. [A380X/FMS] Enable FMC reset through overhead reset panel push buttons - @flogross89 (floridude)
 
 ## 0.12.0
 
