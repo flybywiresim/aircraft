@@ -17,7 +17,7 @@ import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button'
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { ISimbriefData } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief/simbriefInterface';
+import { ISimbriefData } from '@flybywiresim/flypad';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
@@ -30,7 +30,7 @@ interface MfdFmsInitProps extends AbstractMfdPageProps {}
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private simBriefOfp: ISimbriefData | null = null;
 
-  private cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmcService.master
+  private readonly cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
         if (!it) {
           return (
@@ -51,7 +51,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       })
     : Subject.create(<></>);
 
-  private cpnyFplnButtonMenuItems: Subscribable<ButtonMenuItem[]> = this.props.fmcService.master
+  private readonly cpnyFplnButtonMenuItems: Subscribable<ButtonMenuItem[]> = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) =>
         it
           ? [
@@ -68,48 +68,54 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       )
     : Subject.create([]);
 
-  private fromIcao = Subject.create<string | null>(null);
+  private readonly fromIcao = Subject.create<string | null>(null);
 
-  private toIcao = Subject.create<string | null>(null);
+  private readonly toIcao = Subject.create<string | null>(null);
 
-  private cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy]) => fp > FmgcFlightPhase.Preflight || tmpy,
+  private readonly cityPairDisabled = MappedSubject.create(
+    ([fp, tmpy, fromIcao, toIcao]) => (fp > FmgcFlightPhase.Preflight && (!fromIcao || !toIcao)) || tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
+    this.fromIcao,
+    this.toIcao,
   );
 
-  private altnIcao = Subject.create<string | null>(null);
+  private readonly altnIcao = Subject.create<string | null>(null);
 
-  private altnDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
+  private readonly altnDisabled = MappedSubject.create(
+    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    this.fromIcao,
+    this.toIcao,
+  );
 
-  private cpnyRte = Subject.create<string | null>(null); // FIXME not found
+  private readonly cpnyRte = Subject.create<string | null>(null); // FIXME not found
 
-  private altnRte = Subject.create<string | null>(null); // FIXME not found
+  private readonly altnRte = Subject.create<string | null>(null); // FIXME not found
 
-  private crzFl = Subject.create<number | null>(null);
+  private readonly crzFl = Subject.create<number | null>(null);
 
-  private costIndex = Subject.create<number | null>(null);
+  private readonly costIndex = Subject.create<number | null>(null);
 
-  private costIndexDisabled = MappedSubject.create(
+  private readonly costIndexDisabled = MappedSubject.create(
     ([toIcao, fromIcao, flightPhase]) => !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent,
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
   );
 
-  private tripWindDisabled = MappedSubject.create(
+  private readonly tripWindDisabled = MappedSubject.create(
     ([toIcao, fromIcao]) => !toIcao || !fromIcao,
     this.fromIcao,
     this.toIcao,
   );
 
-  private cpnyRteMandatory = MappedSubject.create(
+  private readonly cpnyRteMandatory = MappedSubject.create(
     ([toIcao, fromIcao]) => !toIcao || !fromIcao,
     this.fromIcao,
     this.toIcao,
   );
 
-  private departureButtonDisabled = MappedSubject.create(
+  private readonly departureButtonDisabled = MappedSubject.create(
     ([toIcao, fromIcao, phase]) => !toIcao || !fromIcao || phase !== FmgcFlightPhase.Preflight,
     this.fromIcao,
     this.toIcao,
