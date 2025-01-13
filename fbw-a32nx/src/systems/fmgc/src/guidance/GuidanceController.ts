@@ -306,7 +306,7 @@ export class GuidanceController {
       this.windProfileFactory,
       this.acConfig,
     );
-    this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
+    this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
     this.symbolConfig = acConfig.fmSymbolConfig;
   }
