@@ -788,6 +788,7 @@ impl BleedMonitoringComputerChannel {
             force_hp_bleed = (wing_anti_ice.is_wai_selected()
                 && precooler_outlet_temperature.get::<degree_celsius>()
                     < Self::FORCE_HP_BLEED_WAI_THRESHOLD_C)
+                    // FIXME use ADR pressure alt
                 || (context.pressure_altitude().get::<foot>() < 7000.
                     && !context.is_on_ground()
                     && !self.flight_phase_loop.is_climb_active()
@@ -796,6 +797,7 @@ impl BleedMonitoringComputerChannel {
             force_ip_bleed = precooler_outlet_temperature.get::<degree_celsius>()
                 > Self::FORCE_HP_BLEED_ISOLATION_C
                 || (sensors.high_pressure().get::<psi>() > Self::FORCE_HP_BLEED_ISOLATION_PS3_PSI
+                    // FIXME use ADR pressure alt
                     && context.pressure_altitude().get::<foot>() > 25000.
                     && (self.is_in_dual_bleed_config || !wing_anti_ice.is_wai_selected()));
         }
@@ -1872,7 +1874,9 @@ impl FlightPhaseLoop {
     pub fn update(&mut self, context: &UpdateContext) {
         // TODO: Use correct signals here
         let is_on_ground = context.is_on_ground();
+        // FIXME use ADR pressure alt
         let altitude_selected = context.pressure_altitude();
+        // FIXME use ADR vs
         let vertical_speed = context.vertical_speed();
 
         self.vertical_speed_greater_140

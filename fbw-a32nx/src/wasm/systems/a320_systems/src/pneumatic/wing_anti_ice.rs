@@ -486,6 +486,7 @@ impl WingAntiIceSystem {
 
         // Check if HIGH or LOW pressure
         if self.wai_consumer_pressure()
+            // FIXME use ADR static pressure
             <= Pressure::new::<bar>(Self::WAI_MIN_PRESSURE) + context.ambient_pressure()
             && !self.is_wai_valve_closed()
         {
@@ -493,6 +494,7 @@ impl WingAntiIceSystem {
             self.wai_low_pressure = true;
             self.wai_has_fault = true;
         } else if self.wai_consumer_pressure()
+            // FIXME use ADR static pressure
             >= Pressure::new::<bar>(Self::WAI_MAX_PRESSURE) + context.ambient_pressure()
             && !self.is_wai_valve_closed()
         {
