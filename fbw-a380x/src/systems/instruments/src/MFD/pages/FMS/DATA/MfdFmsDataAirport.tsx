@@ -71,7 +71,7 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
         <Button
           label={runway.label}
           onClick={() => this.selectedRunwayIndex.set(index)}
-          buttonStyle="width: 220px; margin-bottom: 5px; height: 40px;"
+          buttonStyle="width: 220px; margin-bottom: 5px; height: 40px; margin-left: 10px;"
         />,
         this.runwayButtonListRef.instance,
       );
@@ -98,6 +98,8 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
   private async loadAirportRunways(icao: string | null) {
     if (icao) {
       const airport = await loadAirport(icao);
+
+      console.log(airport);
 
       if (airport) {
         const runways = await loadAllRunways(airport);
