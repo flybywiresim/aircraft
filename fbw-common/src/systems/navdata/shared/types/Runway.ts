@@ -14,10 +14,10 @@ export interface Runway extends BaseFix<SectionCode.Airport> {
    */
   gradient: Degrees;
   startLocation: Coordinates;
+  location: ElevatedCoordinates;
   /**
    * Location, including altitude (if available), of the threshold
    */
-  location: ElevatedCoordinates;
   thresholdLocation: ElevatedCoordinates;
   thresholdCrossingHeight: Feet;
   // TODO is this TORA, ASDA, LDW, ???
