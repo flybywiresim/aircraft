@@ -94,7 +94,6 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
 
   private readonly selectedNavaid = Subject.create<string | null>(null);
   private readonly selectedNavaidType = Subject.create<SelectedNavaidType | null>(null);
-  private readonly freq = Subject.create<string | null>(null);
 
   private readonly newNavaidIdent = Subject.create<string | null>(null);
   private readonly newNavaidClass = Subject.create<NavaidClass | null>(NavaidClass.VOR);
@@ -164,10 +163,6 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
       const selectedNavaid = await this.getSelectedNavaid(ident);
       const locBearing = await this.getLocBearing(selectedNavaid);
       const frequency = this.formatFrequency(selectedNavaid.frequency);
-
-      this.freq.set(frequency);
-
-      console.log(selectedNavaid);
 
       const navaidInfo = this.createNavaidInfo(selectedNavaid, locBearing, frequency);
 
@@ -274,14 +269,20 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
 
     return (
       <div class={`mfd-data-navaid-information-row`}>
-        {fields.map((field) => (
-          <div class="mfd-label">{field.label}</div>
-        ))}
-        <div class={`mfd-data-navaid-information-row right`}>
+        <div class={`mfd-data-navaid-information-row labels`}>
+          {fields.map((field) => (
+            <div class="mfd-label">{field.label}</div>
+          ))}
+        </div>
+        <div class={`mfd-data-navaid-information-row values`}>
           {fields.map((field: NavaidField) => (
             <div class={`mfd-value bigger ${field.class || ''}`}>
               {this.navaidData.map((data) => field.value(data))}
-              {field.unit && <span class="mfd-label-unit mfd-unit-trailing">{field.unit ? field.unit : ''}</span>}
+              {field.unit && (
+                <span class="mfd-label-unit mfd-unit-trailing">
+                  {this.navaidData.map((data) => (typeof field.unit === 'function' ? field.unit(data) : field.unit))}
+                </span>
+              )}
             </div>
           ))}
         </div>

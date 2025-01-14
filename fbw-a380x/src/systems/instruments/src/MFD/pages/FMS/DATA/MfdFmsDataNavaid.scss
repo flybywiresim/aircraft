@@ -9,55 +9,27 @@
     right: 20px;
 }
 
-.mfd-data-airport-information-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-top: 25px;
-    margin-bottom: 25px;
-}
-
-.mfd-data-airport-pse-label {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-right: 10px;
-    margin-bottom: 20px;
-}
-
-.mfd-data-airport-pse-value {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.mfd-fms-data-apt-container {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    height: 520px;
-    margin: 0px 0px 60px 0px;
-    border: 2px outset #c4c6cf;
-    padding: 15px;
-}
-
 .mfd-data-navaid-information-row {
-    font-size: 21px;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: space-evenly;
     display: flex;
-    height: 600px;
+    height: 560px;
     position: absolute;
     left: 55px;
-    text-align: right;
-    width: 200px;
+    width: 650px;
 }
 
-.mfd-data-navaid-information-row.right {
-    left: 275px;
-    text-align: left;
+.mfd-data-navaid-information-row.labels {
+    flex-direction: column;
+    width: 200px;
+    text-align: right;
+}
+
+.mfd-data-navaid-information-row.values {
+    flex-direction: column;
+    position: relative;
+    left: 160px;
+    width: 400px;
 }
 
 .new-navaid-container {
@@ -66,7 +38,7 @@
 }
 
 .mfd-data-navaid-options {
-display: flex;
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
     height: 550px;
