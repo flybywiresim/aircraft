@@ -6,8 +6,8 @@ use crate::{
         HydraulicColor, PneumaticValve,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, Reader, SideControlling, SimulationElement, SimulationElementVisitor,
+        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -1053,6 +1053,7 @@ mod tests {
             Angle::new::<radian>(0.),
             MachNumber(0.),
             Angle::new::<degree>(0.),
+            SideControlling::CAPTAIN,
         )
     }
 
