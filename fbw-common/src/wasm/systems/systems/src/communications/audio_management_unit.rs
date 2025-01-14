@@ -312,6 +312,9 @@ impl AdaptationBoard {
             // volume_att_id: context.get_identifier("ATT_VOLUME".to_owned()),
             // volume_mech_id: context.get_identifier("MECH_VOLUME".to_owned()),
             // volume_pa_id: context.get_identifier("PA_VOLUME".to_owned()),
+
+            //_FILTER_ACTIVE Should be moved to C++ with an even, same as A380.
+            // beside Morse code generation
             ls_fcu1_pressed_id: context.get_identifier("BTN_LS_1_FILTER_ACTIVE".to_owned()),
             ls_fcu2_pressed_id: context.get_identifier("BTN_LS_2_FILTER_ACTIVE".to_owned()),
 

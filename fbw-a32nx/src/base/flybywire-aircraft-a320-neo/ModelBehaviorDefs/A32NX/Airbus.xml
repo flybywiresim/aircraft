@@ -979,6 +979,8 @@
         </Condition>
     </Template>
 
+    <!--_FILTER_ACTIVE SHOULD BE REMOVED IN THE FUTURE, SAME AS A380
+    Moved beside Morse code generation -->
     <Template Name="A32NX_GlassCockpit_Push_Template">
         <DefaultTemplateParameters>
             <NODE_ID>AIRBUS_Push_Autopilot_#BTN_ID#_#ID#</NODE_ID>
