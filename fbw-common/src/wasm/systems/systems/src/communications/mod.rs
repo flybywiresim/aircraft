@@ -4,8 +4,8 @@ mod radio_management_panel;
 mod receivers;
 
 use crate::simulation::{
-    InitContext, SideControlling, SimulationElement, SimulationElementVisitor, SimulatorWriter,
-    UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use self::audio_management_unit::AudioManagementUnit;
@@ -44,8 +44,8 @@ impl Communications {
 
         if self.rmp_cpt.as_ref().unwrap().is_powered() && self.rmp_fo.as_ref().unwrap().is_powered()
         {
-            self.sel_light = (self.rmp_cpt.as_ref().unwrap().is_abnormal_mode()
-                || self.rmp_fo.as_ref().unwrap().is_abnormal_mode());
+            self.sel_light = self.rmp_cpt.as_ref().unwrap().is_abnormal_mode()
+                || self.rmp_fo.as_ref().unwrap().is_abnormal_mode();
 
             self.nav_backup_mode = self.rmp_cpt.as_ref().unwrap().is_nav_backup_mode()
                 && self.rmp_fo.as_ref().unwrap().is_nav_backup_mode()

@@ -3,7 +3,7 @@ use std::f64::consts::PI;
 use crate::{
     pneumatic::{Solenoid, SolenoidSignal},
     shared::{interpolation, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
-    simulation::{SideControlling, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use uom::si::{
@@ -612,7 +612,7 @@ mod tests {
         electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, InternationalStandardAtmosphere, MachNumber},
-        simulation::{test::TestVariableRegistry, InitContext},
+        simulation::{test::TestVariableRegistry, InitContext, SideControlling},
     };
 
     use std::time::Duration;
