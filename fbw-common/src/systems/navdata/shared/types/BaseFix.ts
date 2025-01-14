@@ -1,11 +1,12 @@
-import { DatabaseItem, ElevatedCoordinates } from './Common';
+import { Coordinates } from 'msfs-geo';
+import { DatabaseItem } from './Common';
 import { VhfNavaid } from './VhfNavaid';
 import { SectionCode } from './SectionCode';
 import { Waypoint, WaypointArea } from './Waypoint';
 import { NdbNavaid } from './NdbNavaid';
 
 export interface BaseFix<T extends SectionCode> extends DatabaseItem<T> {
-  location: ElevatedCoordinates;
+  location: Coordinates;
 
   area: WaypointArea;
 }
