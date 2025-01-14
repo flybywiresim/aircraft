@@ -222,12 +222,10 @@ export class HeadingManager extends TemporaryHax implements Instrument {
       this.isTRKMode = _isTRKMode;
       this.showSelectedHeading = _showSelectedHeading;
       this.currentValue = _value;
-      this.setTextElementActive(this.textTRUE, false);
       this.setTextElementActive(this.textHDG, !this.isTRKMode);
       this.setTextElementActive(this.textTRK, !!this.isTRKMode);
       this.lightsTest = _lightsTest;
       if (this.lightsTest) {
-        this.setTextElementActive(this.textTRUE, true);
         this.setTextElementActive(this.textHDG, true);
         this.setTextElementActive(this.textTRK, true);
         this.setElementVisibility(this.signDegrees, true);
