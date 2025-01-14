@@ -400,12 +400,16 @@
       HF2 | 5
       VOR | 6
       ILS | 7
-      MLS | 8
+      GLS | 8
       ADF | 9
 
-- A32NX_RMP_{L,R}_NAV_BUTTON_SELECTED
+- A32NX_RMP_{L,R}_NAV_BACKUP_MODE
     - Bool
-    - Whether the NAV push button on the left/right RMP is pushed or not.
+    - Whether the left/right RMP is in nav backup mode or not
+
+- A32NX_RMP_NAV_BACKUP_MODE
+    - Bool
+    - Whether the system in nav backup mode or not
 
 - A32NX_RMP_{L,R}_VHF{1,2,3}_STANDBY
     - Hz

@@ -18,10 +18,12 @@ pub struct Communications {
     rmp_fo: Option<RadioManagementPanel>,
 
     sel_light_id: VariableIdentifier,
+    nav_backup_mode_id: VariableIdentifier,
 
     previous_side_controlling: SideControlling,
 
     sel_light: bool,
+    nav_backup_mode: bool,
 }
 
 impl Communications {
@@ -32,22 +34,29 @@ impl Communications {
             rmp_fo: Some(RadioManagementPanel::new_fo(context)),
 
             sel_light_id: context.get_identifier("RMP_SEL_LIGHT_ON".to_owned()),
+            nav_backup_mode_id: context.get_identifier("RMP_NAV_BACKUP_MODE".to_owned()),
 
             previous_side_controlling: SideControlling::CAPTAIN,
 
             sel_light: false,
+            nav_backup_mode: false,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
         self.amu.update(context);
 
-        self.sel_light = (self.rmp_cpt.as_ref().unwrap().is_powered()
-            && self.rmp_fo.as_ref().unwrap().is_powered())
-            && (self.rmp_cpt.as_ref().unwrap().is_abnormal_mode()
+        if self.rmp_cpt.as_ref().unwrap().is_powered() && self.rmp_fo.as_ref().unwrap().is_powered()
+        {
+            self.sel_light = (self.rmp_cpt.as_ref().unwrap().is_abnormal_mode()
                 || self.rmp_fo.as_ref().unwrap().is_abnormal_mode());
 
-        self.previous_side_controlling = context.side_controlling();
+            self.nav_backup_mode = self.rmp_cpt.as_ref().unwrap().is_nav_backup_mode()
+                && self.rmp_fo.as_ref().unwrap().is_nav_backup_mode()
+        } else {
+            self.sel_light = false;
+            self.nav_backup_mode = false;
+        }
     }
 }
 
@@ -63,5 +72,6 @@ impl SimulationElement for Communications {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.sel_light_id, self.sel_light);
+        writer.write(&self.nav_backup_mode_id, self.nav_backup_mode);
     }
 }

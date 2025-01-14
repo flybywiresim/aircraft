@@ -115,13 +115,15 @@ export const NavRadioPanel = (props: Props) => {
   const [AP] = useSimVar('L:A32NX_AUTOPILOT_ACTIVE', 'bool');
   const [RA1] = useSimVar('L:A32NX_RA_1_RADIO_ALTITUDE', 'number');
   const [RA2] = useSimVar('L:A32NX_RA_2_RADIO_ALTITUDE', 'number');
+   // FIXME: Remove A32NX_RMP_LS_COURSE and K:VOR${index}_SET once MMR implements them
   const [, setCourse] = useSimVar(
-    props.receiver === TransceiverType.VOR ? `K:VOR${index}_SET` : 'L:A32NX_FM_LS_COURSE',
+    props.receiver === TransceiverType.VOR ? `K:VOR${index}_SET` : 'L:A32NX_RMP_LS_COURSE',
     'number',
     100,
   );
 
   useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
+    // FIXME: Remove this logic once MMR is implemented
     // Inhibit RMP tuning if below 700 RA, APPR engaged, at least one AP/FD engaged (FCOM compliant)
     if ((RA1 >= 700 && RA2 >= 700) || !APPR || !AP) {
       if (mode === Mode.FREQUENCY) {
@@ -132,8 +134,7 @@ export const NavRadioPanel = (props: Props) => {
         // FCOM compliant: If ILS, the frequency can be tuned via the RMP only if both RMPs are in nav backup mode.
         if (
           props.receiver !== TransceiverType.ILS ||
-          (SimVar.GetSimVarValue('L:A32NX_RMP_L_NAV_BUTTON_SELECTED', 'Bool') === true &&
-            SimVar.GetSimVarValue('L:A32NX_RMP_R_NAV_BUTTON_SELECTED', 'Bool') === true)
+          (SimVar.GetSimVarValue('L:A32NX_RMP_NAV_BACKUP_MODE', 'Bool') === true)
         ) {
           setActiveFrequencySimVar(props.receiver, index, standbyFrequency);
         }

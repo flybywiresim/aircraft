@@ -11,13 +11,13 @@ enum SelectedMode {
     Vhf3,
     Hf1,
     Hf2,
+    Nav,
     Vor,
     Ils,
     Mls,
     Adf,
     Bfo,
     Am,
-    Nav,
 }
 
 impl From<f64> for SelectedMode {
@@ -27,13 +27,13 @@ impl From<f64> for SelectedMode {
             3 => Self::Vhf3,
             4 => Self::Hf1,
             5 => Self::Hf2,
-            6 => Self::Vor,
-            7 => Self::Ils,
-            8 => Self::Mls,
-            9 => Self::Adf,
-            10 => Self::Bfo,
-            11 => Self::Am,
-            12 => Self::Nav,
+            6 => Self::Nav,
+            7 => Self::Vor,
+            8 => Self::Ils,
+            9 => Self::Mls,
+            10 => Self::Adf,
+            11 => Self::Bfo,
+            12 => Self::Am,
             _ => Self::Vhf1,
         }
     }
@@ -95,6 +95,10 @@ impl RadioManagementPanel {
                 && (self.id_rmp == 1 || self.id_rmp == 2))
             || (self.selected_mode == SelectedMode::Vhf1 && (self.id_rmp == 2 || self.id_rmp == 3))
             || (self.selected_mode == SelectedMode::Vhf2 && (self.id_rmp == 1 || self.id_rmp == 3))
+    }
+
+    pub fn is_nav_backup_mode(&self) -> bool {
+        self.selected_mode > SelectedMode::Hf2
     }
 
     pub fn is_powered(&self) -> bool {

@@ -150,7 +150,7 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <BASE_NAME>AM</BASE_NAME>
-            <MODE_ID>11</MODE_ID>
+            <MODE_ID>12</MODE_ID>
         </UseTemplate>
 
         <!-- SEL indicator led light -->
@@ -197,14 +197,14 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <BASE_NAME>NAV</BASE_NAME>
-            <MODE_ID>12</MODE_ID>
+            <MODE_ID>6</MODE_ID>
         </UseTemplate>
 
         <!-- VOR mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <MODE_ID>6</MODE_ID>
+            <MODE_ID>7</MODE_ID>
             <BASE_NAME>VOR</BASE_NAME>
         </UseTemplate>
 
@@ -213,7 +213,7 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <BASE_NAME>ILS</BASE_NAME>
-            <MODE_ID>7</MODE_ID>
+            <MODE_ID>8</MODE_ID>
         </UseTemplate>
 
         <!-- GLS mode button and led -->
@@ -221,7 +221,7 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <BASE_NAME>GLS</BASE_NAME>
-            <MODE_ID>8</MODE_ID>
+            <MODE_ID>9</MODE_ID>
         </UseTemplate>
 
         <!-- MLS mode button and led -->
@@ -229,7 +229,7 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <BASE_NAME>MLS</BASE_NAME>
-            <MODE_ID>9</MODE_ID>
+            <MODE_ID>10</MODE_ID>
         </UseTemplate>
 
         <!-- ADF mode button and led -->
@@ -237,7 +237,7 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <BASE_NAME>ADF</BASE_NAME>
-            <MODE_ID>10</MODE_ID>
+            <MODE_ID>11</MODE_ID>
         </UseTemplate>
     </Template>
 
@@ -284,8 +284,8 @@
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
                     let modeId = #MODE_ID, number#;
                     alias selectedMode = (L:A32NX_RMP_#SIDE#_SELECTED_MODE, number);
-                    alias navButtonPressed = (L:A32NX_RMP_#SIDE#_NAV_BUTTON_SELECTED, bool);
-                    (if #RMP_POWERED, bool# and indicatorsPowered and (selectedMode == modeId or (modeId == 12 and navButtonPressed) or #EMISSIVE_TEST, bool#) {
+                    alias navButtonPressed = (L:A32NX_RMP_#SIDE#_NAV_BACKUP_MODE, bool);
+                    (if #RMP_POWERED, bool# and indicatorsPowered and (selectedMode == modeId or (modeId == 6 and navButtonPressed) or #EMISSIVE_TEST, bool#) {
                         #EMISSIVE_DIM, number#
                     } else {
                         0

@@ -32,8 +32,8 @@ export const StandbyCourse = (props: Props) => {
   // Handle inner knob turned.
   const innerKnobUpdateCallback: UpdateValueCallback = useCallback(
     (offset) => {
-      const integer = Math.floor((props.value + offset) / 360);
-      props.setValue(props.value - integer * 360 + offset);
+        // +360 to take into account values below 0
+        props.setValue((((props.value + offset) % 360) + 360) % 360);
     },
     [props.value],
   );
@@ -46,5 +46,5 @@ export const StandbyCourse = (props: Props) => {
   useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_CLOCKWISE`, () => innerKnob.current.increase());
   useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_ANTICLOCKWISE`, () => innerKnob.current.decrease());
 
-  return <RadioPanelDisplay value={`C-${Math.abs(props.value).toString().padStart(3, '0')}`} />;
+  return <RadioPanelDisplay value={`C-${props.value.toString().padStart(3, '0')}`} />;
 };
