@@ -263,8 +263,6 @@ pub struct AdaptationBoard {
     ls_fcu2_pressed: bool,
 
     pilot_transmit_channel: u32,
-
-    need_update: bool,
 }
 
 impl AdaptationBoard {
@@ -357,8 +355,6 @@ impl AdaptationBoard {
 
             ls_fcu1_pressed: false,
             ls_fcu2_pressed: false,
-
-            need_update: false,
         }
     }
 
@@ -507,10 +503,6 @@ impl SimulationElement for AdaptationBoard {
             2 => AudioSwitchingKnobPosition::Fo,
             _ => AudioSwitchingKnobPosition::Norm,
         };
-
-        self.need_update = self.audio_switching_knob != audio_switching_knob
-            || self.ls_fcu1_pressed != ls_fcu1_pressed
-            || self.ls_fcu2_pressed != ls_fcu2_pressed;
 
         self.audio_switching_knob = audio_switching_knob;
         self.ls_fcu1_pressed = ls_fcu1_pressed;
