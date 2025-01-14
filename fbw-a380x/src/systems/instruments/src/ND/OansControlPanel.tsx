@@ -8,6 +8,7 @@ import {
   ArraySubject,
   ClockEvents,
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -60,6 +61,7 @@ import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublis
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
 import { Feature, Geometry, MultiLineString, Point, Position } from '@turf/turf';
+import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -74,11 +76,19 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<
-    ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData & OansControlEvents
+    ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData & OansControlEvents & ResetPanelSimvars
   >();
 
   /** If navigraph not available, this class will compute BTV features */
   private readonly navigraphAvailable = Subject.create(false);
+
+  private readonly oansResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_arpt_nav'), false);
+
+  private readonly oansAvailable = MappedSubject.create(
+    ([ng, reset]) => ng && !reset,
+    this.navigraphAvailable,
+    this.oansResetPulled,
+  );
 
   private amdbClient = new NavigraphAmdbClient();
 
@@ -250,13 +260,23 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.subs.push(this.activeTabIndex.sub((_index) => Coherent.trigger('UNFOCUS_INPUT_FIELD')));
 
     this.subs.push(
-      this.navigraphAvailable.sub((v) => {
+      this.oansAvailable.sub((v) => {
         if (this.mapDataMainRef.getOrDefault() && this.mapDataBtvFallback.getOrDefault()) {
           this.mapDataMainRef.instance.style.display = v ? 'block' : 'none';
           this.mapDataBtvFallback.instance.style.display = v ? 'none' : 'block';
         }
         SimVar.SetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool, v);
         this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, true, false);
+      }, true),
+    );
+
+    this.subs.push(
+      this.oansResetPulled.sub((v) => {
+        if (v) {
+          this.props.bus.getPublisher<OansControlEvents>().pub('oans_display_airport', '', true);
+          this.store.loadedAirport.set(null);
+          this.store.isAirportSelectionPending.set(false);
+        }
       }, true),
     );
 
@@ -468,10 +488,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
 
     // If airport has been manually selected, do not auto load.
+    // FIXME reset manualAirportSelection after a while, to enable auto-load for destination even if departure was selected manually
     if (
       this.manualAirportSelection === true ||
       this.store.loadedAirport.get() !== this.store.selectedAirport.get() ||
-      this.store.airports.length === 0
+      this.store.airports.length === 0 ||
+      this.oansResetPulled.get()
     ) {
       return;
     }

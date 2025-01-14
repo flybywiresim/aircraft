@@ -63,6 +63,7 @@ import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
 import { LubberLine } from '../ND/pages/arc/LubberLine';
 import { OancMarkerManager } from 'instruments/src/OANC/OancMarkerManager';
+import { ResetPanelSimvars } from 'instruments/src/OANC/ResetPanelPublisher';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -206,6 +207,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     ([icao, iata]) => `${icao}  ${iata}`,
     this.dataAirportIcao,
     this.dataAirportIata,
+  );
+
+  private readonly resetPulled = ConsumerSubject.create(
+    this.props.bus.getSubscriber<ResetPanelSimvars>().on('a380x_reset_panel_arpt_nav'),
+    false,
   );
 
   private layerFeatures: FeatureCollection<Geometry, AmdbProperties>[] = [
@@ -593,6 +599,20 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.btvUtils.clearSelection();
     this.markerManager.eraseAllCrosses();
     this.markerManager.eraseAllFlags();
+
+    if (!icao) {
+      this.dataLoading = false;
+      this.airportLoading.set(false);
+      this.arpCoordinates.set(undefined);
+
+      this.data = undefined;
+      this.dataAirportName.set('');
+      this.dataAirportIcao.set('');
+      this.dataAirportIata.set('');
+      this.aircraftWithinAirport.set(false);
+
+      return;
+    }
 
     const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce(
       (acc, it) => [
@@ -1028,7 +1048,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const deltaTime = (now - this.lastTime) / 1_000;
     this.lastTime = now;
 
-    if (!this.data || this.dataLoading) return;
+    if (!this.data || this.dataLoading || this.resetPulled.get()) return;
 
     this.aircraftOnGround.set(
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),

@@ -43,6 +43,7 @@ import { CdsDisplayUnit, DisplayUnitID, getDisplayIndex } from '../MsfsAvionicsC
 import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
+import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
@@ -91,6 +92,8 @@ class NDInstrument implements FsInstrument {
   private readonly egpwcBusPublisher: EgpwcBusPublisher;
 
   private readonly hEventPublisher: HEventPublisher;
+
+  private readonly resetPanelPublisher: ResetPanelSimvarPublisher;
 
   private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
@@ -161,6 +164,7 @@ class NDInstrument implements FsInstrument {
     this.dmcPublisher = new DmcPublisher(this.bus);
     this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
     this.hEventPublisher = new HEventPublisher(this.bus);
+    this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
     this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
@@ -181,6 +185,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('dmc', this.dmcPublisher);
     this.backplane.addPublisher('egpwc', this.egpwcBusPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
+    this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);
@@ -322,7 +327,7 @@ class NDInstrument implements FsInstrument {
       });
     }
 
-    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents>();
+    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & ResetPanelSimvars>();
 
     this.oansNotAvailable.setConsumer(sub.on('oans_not_avail'));
 

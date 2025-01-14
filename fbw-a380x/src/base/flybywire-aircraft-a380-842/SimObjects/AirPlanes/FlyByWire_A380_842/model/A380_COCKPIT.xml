@@ -4982,6 +4982,9 @@
                 </Component>
 
                 <Component ID="Overhead_Reset_Panel">
+                <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>ARPT_NAV</NAME>
+                    </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <NAME>FMC_A</NAME>
                     </UseTemplate>

@@ -9,6 +9,7 @@ import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@m
  * Functionally, these behave similarly to circuit breakers, however they only interrupt software. If pulled out, execution of SW is halted.
  */
 export type ResetPanelSimvars = {
+  a380x_reset_panel_arpt_nav: boolean;
   a380x_reset_panel_fmc_a: boolean;
   a380x_reset_panel_fmc_b: boolean;
   a380x_reset_panel_fmc_c: boolean;
@@ -16,6 +17,7 @@ export type ResetPanelSimvars = {
 
 export class ResetPanelSimvarPublisher extends SimVarPublisher<ResetPanelSimvars> {
   private static simvars = new Map<keyof ResetPanelSimvars, SimVarDefinition>([
+    ['a380x_reset_panel_arpt_nav', { name: 'L:A32NX_RESET_PANEL_ARPT_NAV', type: SimVarValueType.Bool }],
     ['a380x_reset_panel_fmc_a', { name: 'L:A32NX_RESET_PANEL_FMC_A', type: SimVarValueType.Bool }],
     ['a380x_reset_panel_fmc_b', { name: 'L:A32NX_RESET_PANEL_FMC_B', type: SimVarValueType.Bool }],
     ['a380x_reset_panel_fmc_c', { name: 'L:A32NX_RESET_PANEL_FMC_C', type: SimVarValueType.Bool }],
