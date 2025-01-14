@@ -71,6 +71,7 @@
 1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
 1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Various Fuel & Load Fixes - @BravoMike99 (bruno_pt99)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
 1. [A380X/FWS] No "auto brake off" callout when double pressing A/THR instinctive disconnect - @flogross89 (floridude)
@@ -116,6 +117,13 @@
 1. [A380X/ND] Remove leading zeros from terrain elevation display - @BravoMike99 (bruno_pt99)
 1. [A380X/BTV] Add EXIT MISSED indication on FMA and aural triple click - @flogross89 (floridude)
 1. [A380X/OANS] Add flags/crosses capability, change cursor to magenta, implement ARPT NAV reset button - @flogross89 (floridude)
+1. [A32NX/FWS] Fix autopilot instinctive disconnect button logic for 3D model - @flogross89 (floridude)
+1. [A380X/EFIS] Fix VV pb indicator not turning on when TRK-FPA mode is selected - @heclak (Heclak)
+1. [FMS] Transition altitude/level and RNP now come from navdata in MSFS2024 - @tracernz (Mike)
+1. [ATSU] Fixed issues with the ALL-CALLSIGNS recipient on Hoppie - @CronixZero (CronixZero)
+1. [A380X/MFD] Add ATCCOM D-ATIS page layout - @heclak (Heclak)
+1. [A380X/FMS] Enable FMC reset through overhead reset panel push buttons - @flogross89 (floridude)
+1. [A380X/FCU] Add TRUE indication on FCU when TRUE North reference is selected on AFS CP - @heclak (Heclak)
 
 ## 0.12.0
 

@@ -18,4 +18,5 @@ export interface GenericFmsEvents {
   apprMessage1: number;
   mrpLat: number;
   mrpLong: number;
+  fmsFailed: boolean;
 }
