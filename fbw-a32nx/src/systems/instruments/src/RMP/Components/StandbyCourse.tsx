@@ -32,8 +32,8 @@ export const StandbyCourse = (props: Props) => {
   // Handle inner knob turned.
   const innerKnobUpdateCallback: UpdateValueCallback = useCallback(
     (offset) => {
-        // +360 to take into account values below 0
-        props.setValue((((props.value + offset) % 360) + 360) % 360);
+      // +360 to take into account values below 0
+      props.setValue((((props.value + offset) % 360) + 360) % 360);
     },
     [props.value],
   );

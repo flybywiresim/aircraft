@@ -2018,7 +2018,6 @@ export class PseudoFWC {
     this.voiceVhf3.set(SimVar.GetSimVarValue('A:COM ACTIVE FREQUENCY:3', 'number'));
     this.audioSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_AUDIOSWITCHING_KNOB', 'number'));
 
-
     /* FUEL */
     const fuelGallonsToKg = SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilogram');
     this.centerFuelQuantity.set(SimVar.GetSimVarValue('FUEL TANK CENTER QUANTITY', 'gallons') * fuelGallonsToKg);

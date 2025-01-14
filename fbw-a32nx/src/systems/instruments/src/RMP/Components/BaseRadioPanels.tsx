@@ -67,9 +67,9 @@ const PoweredRadioPanel = (props: Props) => {
   const [indexTransceiver, setIndexTransceiver] = useState(props.side === 'L' ? 1 : 2);
   // FIXME: A32NX_RMP_LS_COURSE and A32NX_RMP_VOR_** once MMR has them
   const [, setCourse] = useSimVar(
-   navReceiverType === TransceiverType.VOR ? `K:VOR${props.side === 'L' ? 1 : 2}_SET` : 'L:A32NX_RMP_LS_COURSE',
-   'number'
- );
+    navReceiverType === TransceiverType.VOR ? `K:VOR${props.side === 'L' ? 1 : 2}_SET` : 'L:A32NX_RMP_LS_COURSE',
+    'number',
+  );
 
   // Hook radio management panel mode buttons to set panelMode SimVar.
   useInteractionEvent(`A32NX_RMP_${props.side}_VHF1_BUTTON_PRESSED`, () => {
