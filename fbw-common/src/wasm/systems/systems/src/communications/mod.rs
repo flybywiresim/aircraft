@@ -20,8 +20,6 @@ pub struct Communications {
     sel_light_id: VariableIdentifier,
     nav_backup_mode_id: VariableIdentifier,
 
-    previous_side_controlling: SideControlling,
-
     sel_light: bool,
     nav_backup_mode: bool,
 }
@@ -35,8 +33,6 @@ impl Communications {
 
             sel_light_id: context.get_identifier("RMP_SEL_LIGHT_ON".to_owned()),
             nav_backup_mode_id: context.get_identifier("RMP_NAV_BACKUP_MODE".to_owned()),
-
-            previous_side_controlling: SideControlling::CAPTAIN,
 
             sel_light: false,
             nav_backup_mode: false,
