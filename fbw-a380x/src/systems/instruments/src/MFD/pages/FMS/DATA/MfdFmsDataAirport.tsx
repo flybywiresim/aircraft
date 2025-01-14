@@ -111,14 +111,14 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
 
         const simplifiedRunways = runways.map((runway) => {
           const length = MathUtils.round(runway.length, 10).toFixed(0).padStart(5, '\xa0');
-          const elevation = MathUtils.round(runway.location.alt, 10).toFixed(0).padStart(5, '\xa0');
+          const elevation = MathUtils.round(runway.thresholdLocation.alt, 10).toFixed(0).padStart(5, '\xa0');
 
           return {
             label: `${runway.ident.substring(4).padEnd(3, ' ')} ${length}M ${runway.lsIdent ? 'ILS' : ''}`,
             length,
             lsIdent: runway.lsIdent ?? '\xa0',
             elevation,
-            coords: coordinateToString(runway.location.lat, runway.location.long, false),
+            coords: coordinateToString(runway.thresholdLocation.lat, runway.thresholdLocation.long, false),
             runwayIdent: runway.ident.substring(4).padEnd(3, ' '),
             course: runway.bearing.toFixed(0).padStart(3, '0'),
           };
