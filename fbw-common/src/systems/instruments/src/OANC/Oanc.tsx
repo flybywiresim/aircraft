@@ -59,11 +59,11 @@ import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOv
 import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
+import { OancMarkerManager } from './OancMarkerManager';
+import { ResetPanelSimvars } from './ResetPanelPublisher';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
 import { LubberLine } from '../ND/pages/arc/LubberLine';
-import { OancMarkerManager } from 'instruments/src/OANC/OancMarkerManager';
-import { ResetPanelSimvars } from 'instruments/src/OANC/ResetPanelPublisher';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -408,14 +408,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.airportLoading,
   );
 
-  private readonly setPlanModeFlagVisible = MappedSubject.create(
-    ([arptNavPosLostFlagVisible, airportLoading, tooFarAway]) =>
-      !arptNavPosLostFlagVisible && !airportLoading && tooFarAway,
-    this.arptNavPosLostFlagVisible,
-    this.airportLoading,
-    this.airportTooFarAwayAndInArcNavMode,
-  );
-
   private readonly oansNotAvailable = ConsumerSubject.create(null, false);
 
   private readonly anyFlagVisible = MappedSubject.create(
@@ -449,6 +441,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.efisOansRangeSub.setConsumer(this.sub.on('oansRange'));
 
     this.efisOansRangeSub.sub((range) => this.zoomLevelIndex.set(range), true);
+
+    this.airportTooFarAwayAndInArcNavMode.sub((v) =>
+      this.props.bus.getPublisher<OansControlEvents>().pub('oans_show_set_plan_mode', v, true),
+    );
 
     this.sub
       .on('oans_display_airport')
@@ -1506,12 +1502,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
           style={{ visibility: this.pleaseWaitFlagVisible.map((v) => (v ? 'inherit' : 'hidden')) }}
         >
           PLEASE WAIT
-        </div>
-        <div
-          class="oanc-flag-container FontSmall"
-          style={{ visibility: this.setPlanModeFlagVisible.map((v) => (v ? 'inherit' : 'hidden')) }}
-        >
-          SET PLAN MODE
         </div>
         <div
           class="oanc-flag-container amber FontLarge"

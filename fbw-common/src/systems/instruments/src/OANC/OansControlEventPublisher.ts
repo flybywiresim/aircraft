@@ -27,4 +27,6 @@ export interface OansControlEvents {
   oans_answer_symbols_at_cursor: { side: EfisSide; cross: number | null; flag: number | null };
   oans_erase_cross_id: number;
   oans_erase_flag_id: number;
+  /** OANC -> ND: Show SET PLAN MODE in control panel, if in ARC/NAV mode and arpt too far away */
+  oans_show_set_plan_mode: boolean;
 }

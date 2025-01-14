@@ -157,6 +157,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.pposLongWord,
   );
 
+  private readonly setPlanModeDisplay = ConsumerSubject.create(this.sub.on('oans_show_set_plan_mode'), false).map(
+    (it) => (it ? 'inherit' : 'none'),
+  );
+
   private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
   private readonly runwayTora = Subject.create<string | null>(null);
@@ -817,6 +821,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
                           return `${ControlPanelUtils.LAT_FORMATTER(it.coordinates.lat)}/${ControlPanelUtils.LONG_FORMATTER(it.coordinates.lon)}`;
                         })}
+                      </span>
+                      <span class="mfd-label bigger" style={{ display: this.setPlanModeDisplay }}>
+                        SET PLAN MODE
                       </span>
                     </div>
                     <div style="flex-grow: 1;" />
