@@ -23,7 +23,7 @@
 
 
 .mfd-data-airport-border-container {
-  border: 1px solid #444;
+  border: 1px solid $display-light-grey;
   height: 450px;
   flex-wrap: wrap;
   overflow:hidden;
@@ -64,7 +64,7 @@
 
 .mfd-data-airport-runway {
   position: relative;
-  background-color: black;
+  background-color: $display-background;
   color: #00ff00;
   padding: 20px 0 20px 130px;
   box-sizing: border-box;

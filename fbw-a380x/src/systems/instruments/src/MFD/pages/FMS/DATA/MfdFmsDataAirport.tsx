@@ -1,11 +1,10 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { coordinateToString, MathUtils } from '@flybywiresim/fbw-sdk';
@@ -187,23 +186,6 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
         }
       }, true),
     );
-
-    const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
-    this.subs.push(
-      sub
-        .on('realTime')
-        .atFrequency(1)
-        .handle((_t) => {
-          this.onNewData();
-        }),
-    );
-  }
-
-  public destroy(): void {
-    // Destroy all subscriptions to remove all references to this instance.
-    this.subs.forEach((x) => x.destroy());
-
-    super.destroy();
   }
 
   render(): VNode {
