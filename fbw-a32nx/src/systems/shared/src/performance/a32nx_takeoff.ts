@@ -927,13 +927,13 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   private static readonly v2SecondSegBrakeBaseTable2: Record<number, [number, number]> = {
     1: [0.868263, 85.8],
-    2: [0.692636, 92.9863],
+    2: [0.46666, 111,0],
     3: [0.859926, 82.4377],
   };
 
   private static readonly v2SecondSegBrakeRunwayTable1: Record<number, [number, number]> = {
     1: [3180, -0.015997],
-    2: [3180, -0.014862],
+    2: [3180, -0.012],
     3: [3180, -0.019296],
   };
 
