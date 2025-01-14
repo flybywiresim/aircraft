@@ -3,7 +3,7 @@ use std::f64::consts::PI;
 use crate::{
     pneumatic::{Solenoid, SolenoidSignal},
     shared::{interpolation, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{SideControlling, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use uom::si::{
@@ -686,6 +686,7 @@ mod tests {
             Angle::new::<radian>(0.),
             MachNumber(0.),
             Angle::new::<degree>(0.),
+            SideControlling::CAPTAIN,
         )
     }
 
