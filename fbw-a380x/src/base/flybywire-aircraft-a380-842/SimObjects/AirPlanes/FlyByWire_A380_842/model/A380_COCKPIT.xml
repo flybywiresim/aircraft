@@ -4992,10 +4992,10 @@
                         <NAME>FMC_C</NAME>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
-                        <COMPONENT>FWS1</COMPONENT>
+                        <NAME>FWS1</NAME>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
-                        <COMPONENT>FWS2</COMPONENT>
+                        <NAME>FWS2</NAME>
                     </UseTemplate>
                 </Component>
             </Component>

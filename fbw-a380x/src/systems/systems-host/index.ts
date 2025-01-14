@@ -115,8 +115,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
 
-  private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('fws1Reset'), false);
-  private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('fws2Reset'), false);
+  private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
+  private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
 
   private readonly fws1Powered = ConsumerSubject.create(this.sub.on('cpiomC1Avail'), true);
   private readonly fws2Powered = ConsumerSubject.create(this.sub.on('cpiomC2Avail'), true);
