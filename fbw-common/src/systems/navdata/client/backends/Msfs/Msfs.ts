@@ -221,9 +221,14 @@ export class MsfsBackend implements DataInterface {
     return this.mapping.mapGates(airport);
   }
 
-  /** MSFS database does not contain enroute holds */
-  public async getHolds(_airportIdentifier: string): Promise<ProcedureLeg[]> {
-    return [];
+  public async getHolds(airportIdentifier: string): Promise<ProcedureLeg[]> {
+    const airport = await this.fetchMsfsAirport(airportIdentifier);
+
+    if (!airport) {
+      return [];
+    }
+
+    return this.mapping.mapHolds(airport);
   }
 
   /** @inheritdoc */
