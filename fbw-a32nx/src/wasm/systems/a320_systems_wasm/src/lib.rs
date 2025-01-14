@@ -1,6 +1,7 @@
 mod ailerons;
 mod autobrakes;
 mod brakes;
+mod communications;
 mod elevators;
 mod flaps;
 mod gear;
@@ -15,6 +16,7 @@ use a320_systems::A320;
 use ailerons::ailerons;
 use autobrakes::autobrakes;
 use brakes::brakes;
+use communications::communications;
 use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
@@ -408,6 +410,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         "radian per second squared",
         0,
     )?
+    .provides_aircraft_variable("MARKER SOUND", "Bool", 0)?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
@@ -448,6 +451,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(gear)?
     .with_aspect(payload)?
     .with_aspect(trimmable_horizontal_stabilizer)?
+    .with_aspect(communications)?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {
