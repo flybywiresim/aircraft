@@ -3,8 +3,8 @@
 
 import { ArraySubject, SubscribableArrayEventType } from '@microsoft/msfs-sdk';
 import { Position } from '@turf/turf';
-import { Label, LabelStyle, Oanc } from 'instruments/src/OANC';
-import { OancLabelManager } from 'instruments/src/OANC/OancLabelManager';
+import { Label, LabelStyle, Oanc } from './';
+import { OancLabelManager } from './OancLabelManager';
 
 const MAX_SYMBOL_DIST_NEIGHBORHOOD_SEARCH = 20;
 export class OancMarkerManager<T extends number> {
