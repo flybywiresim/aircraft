@@ -22,7 +22,7 @@ import {
 
 import './MfdFmsDataNavaid.scss';
 
-interface MfdFmsDataAirportProps extends AbstractMfdPageProps {}
+interface MfdFmsDataNavaidProps extends AbstractMfdPageProps {}
 
 /** The information about a navaid. */
 interface NavaidData {
@@ -85,7 +85,7 @@ interface NavaidField {
   unit?: string | ((data: NavaidData) => string);
 }
 
-export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
+export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataNavaidProps> {
   private readonly selectedPageIndex = Subject.create<number>(0);
   private readonly storedNavaids = Subject.create('00');
   private readonly deleteStoredElementsDisabled = Subject.create(true);
