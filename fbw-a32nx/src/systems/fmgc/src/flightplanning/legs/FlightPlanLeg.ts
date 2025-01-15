@@ -412,22 +412,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     );
   }
 
-  static radialOutLeg(segment: EnrouteSegment, waypoint: Fix): FlightPlanLeg {
-    return new FlightPlanLeg(
-      segment,
-      {
-        procedureIdent: '',
-        type: LegType.IF,
-        overfly: false,
-        waypoint,
-      },
-      waypoint.ident,
-      '',
-      undefined,
-    );
-  }
-
-  static manual(segment: EnrouteSegment, waypoint: Fix, magneticCourse: number): FlightPlanLeg {
+  static radialOutLeg(segment: EnrouteSegment, waypoint: Fix, outboundCourse: DegreesMagnetic): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -435,7 +420,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.FM,
         overfly: false,
         waypoint,
-        magneticCourse,
+        magneticCourse: outboundCourse,
       },
       'MANUAL',
       '',

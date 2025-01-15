@@ -16,7 +16,6 @@ import { MathUtils, Fix } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { PathVector, PathVectorType } from '../PathVector';
-import { IN_BND_IDENT, OUT_BND_IDENT } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 
 export class CFLeg extends XFLeg {
   private computedPath: PathVector[] = [];
@@ -43,7 +42,8 @@ export class CFLeg extends XFLeg {
   }
 
   getPathStartPoint(): Coordinates | undefined {
-    if (this.inboundGuidable instanceof IFLeg && this.isIfSuitableStartPoint(this.inboundGuidable)) {
+    // Make sure an inbound radial doesn't connect to the actual IN-BND waypoint which is at PPOS
+    if (this.inboundGuidable instanceof IFLeg && !this.inboundGuidable.isInbndOrOutbnd()) {
       return this.inboundGuidable.fix.location;
     }
 
@@ -151,9 +151,5 @@ export class CFLeg extends XFLeg {
 
   get repr(): string {
     return `CF(${this.course.toFixed(1)}T) TO ${this.fix.ident}`;
-  }
-
-  private isIfSuitableStartPoint(ifLeg: IFLeg): boolean {
-    return ifLeg.ident !== IN_BND_IDENT && ifLeg.ident !== OUT_BND_IDENT;
   }
 }

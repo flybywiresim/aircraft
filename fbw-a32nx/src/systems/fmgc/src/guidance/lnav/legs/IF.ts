@@ -13,6 +13,7 @@ import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Fix, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { distanceTo } from 'msfs-geo';
+import { IN_BND_IDENT, OUT_BND_IDENT } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 
 export class IFLeg extends XFLeg {
   constructor(
@@ -97,5 +98,9 @@ export class IFLeg extends XFLeg {
 
   get repr(): string {
     return `IF AT ${this.fix.ident}`;
+  }
+
+  isInbndOrOutbnd(): boolean {
+    return this.ident === IN_BND_IDENT || this.ident === OUT_BND_IDENT;
   }
 }
