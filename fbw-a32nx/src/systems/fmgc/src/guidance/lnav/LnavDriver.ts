@@ -92,18 +92,10 @@ export class LnavDriver implements GuidanceComponent {
     const geometry = this.guidanceController.activeGeometry;
     const activeLegIdx = this.guidanceController.activeLegIndex;
 
+    this.updateDistanceToDestination(geometry, trueTrack);
+
     if (geometry && geometry.legs.size > 0) {
       const dtg = geometry.getDistanceToGo(this.guidanceController.activeLegIndex, this.ppos);
-
-      const activeLegAlongTrackCompletePathDtg = this.computeAlongTrackDistanceToGo(geometry, activeLegIdx, trueTrack);
-      if (
-        activeLegAlongTrackCompletePathDtg === undefined &&
-        this.guidanceController.activeLegAlongTrackCompletePathDtg !== undefined
-      ) {
-        console.log('[FMS/LNAV] No reference leg found to compute alongTrackDistanceToGo');
-      }
-
-      this.guidanceController.activeLegAlongTrackCompletePathDtg = activeLegAlongTrackCompletePathDtg;
 
       const inboundTrans = geometry.transitions.get(activeLegIdx - 1);
       const activeLeg = geometry.legs.get(activeLegIdx);
@@ -409,42 +401,55 @@ export class LnavDriver implements GuidanceComponent {
     }
   }
 
-  /**
-   *
-   * @param geometry active geometry
-   * @param activeLegIdx index of active leg in the geometry
-   * @param trueTrack true track of the aircraft
-   * @returns distance to go along the active leg
-   */
-  private computeAlongTrackDistanceToGo(
-    geometry: Geometry,
-    activeLegIdx: number,
-    trueTrack: DegreesTrue,
-  ): NauticalMiles {
-    // Iterate over the upcoming legs until we find one that has a distance to go.
-    // If we sequence a discontinuity for example, there is no geometry leg for the active leg, so we iterate downpath until we find one.
-    // This will typically be an IF leg
-    for (let i = activeLegIdx ?? 0; geometry.legs.has(i) || geometry.legs.has(i + 1); i++) {
-      const leg = geometry.legs.get(i);
-      if (!leg || leg instanceof VMLeg || leg instanceof FMLeg) {
-        continue;
-      }
+  private updateDistanceToDestination(geometry: Geometry, trueTrack: number): void {
+    if (!geometry || geometry.legs.size <= 0) {
+      this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
+      this.guidanceController.alongTrackDistanceToDestination = undefined;
 
-      const inboundTrans = geometry.transitions.get(i - 1);
-      const outboundTrans = geometry.transitions.get(i);
-
-      const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
-        this.ppos,
-        trueTrack,
-        leg,
-        inboundTrans,
-        outboundTrans,
-      );
-
-      return completeLegAlongTrackPathDtg;
+      return;
     }
 
-    return undefined;
+    const activeLegIndex = this.guidanceController.activeLegIndex;
+    const activeLeg = geometry.legs.get(activeLegIndex);
+
+    let referenceLegIndex = activeLegIndex;
+    if (!activeLeg) {
+      referenceLegIndex = activeLegIndex + 1;
+    } else if (activeLeg instanceof VMLeg || activeLeg instanceof FMLeg) {
+      referenceLegIndex = activeLegIndex + 2;
+    }
+    const referenceLeg = geometry.legs.get(referenceLegIndex);
+
+    if (!referenceLeg) {
+      this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
+      this.guidanceController.alongTrackDistanceToDestination = undefined;
+
+      return;
+    }
+
+    let completeLegAlongTrackPathDtg: number | undefined = undefined;
+    if (this.guidanceController.doesPreNavModeEngagementPathExist()) {
+      completeLegAlongTrackPathDtg =
+        this.guidanceController.getPreNavModeAlongTrackDistanceToGo(trueTrack) ?? undefined;
+    } else {
+      const inboundTransition = geometry.transitions.get(referenceLegIndex - 1);
+      const outboundTransition = geometry.transitions.get(referenceLegIndex);
+
+      completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
+        this.ppos,
+        trueTrack,
+        referenceLeg,
+        inboundTransition,
+        outboundTransition,
+      );
+    }
+
+    this.guidanceController.activeLegAlongTrackCompletePathDtg = completeLegAlongTrackPathDtg;
+    this.guidanceController.alongTrackDistanceToDestination = Number.isFinite(
+      referenceLeg.calculated?.cumulativeDistanceToEndWithTransitions,
+    )
+      ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
+      : undefined;
   }
 
   public legEta(gs: Knots, termination: Coordinates): number {
