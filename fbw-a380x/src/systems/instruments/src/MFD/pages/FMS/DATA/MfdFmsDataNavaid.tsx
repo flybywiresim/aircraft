@@ -6,7 +6,7 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
-import { coordinateToString, VhfNavaid } from '@flybywiresim/fbw-sdk';
+import { coordinateToString, isNdbNavaid, NdbNavaid, VhfNavaid } from '@flybywiresim/fbw-sdk';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { NavigationDatabaseService } from '@fmgc/index';
 import { NAVAID_TYPE_STRINGS } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionNavaids';
@@ -55,6 +55,7 @@ export enum NavaidClass {
 export enum SelectedNavaidType {
   LS = 0,
   VOR = 1,
+  NDB = 2,
 }
 
 /** The category of an ILS. */
@@ -80,7 +81,7 @@ interface NavaidField {
   value: (data: NavaidData) => string;
   /** The class to apply to the field. */
   class?: string;
-  /** The unit to display for the field. */
+  /** The trailing unit to display for the field. */
   unit?: string | ((data: NavaidData) => string);
 }
 
@@ -90,7 +91,7 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
   private readonly deleteStoredElementsDisabled = Subject.create(true);
   private readonly isSwapConfirmVisible = Subject.create(false);
 
-  private readonly db = NavigationDatabaseService.activeDatabase.backendDatabase;
+  private readonly db = NavigationDatabaseService.activeDatabase;
 
   private readonly selectedNavaid = Subject.create<string | null>(null);
   private readonly selectedNavaidType = Subject.create<SelectedNavaidType | null>(null);
@@ -123,9 +124,14 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
       [1 << 2]: NAVAID_TYPE_STRINGS[3],
       [1 << 3]: NAVAID_TYPE_STRINGS[1],
       [1 << 4]: NAVAID_TYPE_STRINGS[5],
-      [1 << 5]: NAVAID_TYPE_STRINGS[4],
+      [1 << 5]: NAVAID_TYPE_STRINGS[2],
       [1 << 7]: NAVAID_TYPE_STRINGS[6],
     };
+
+    if (!navaid.type && isNdbNavaid(navaid)) {
+      return 'NDB';
+    }
+
     return typeMapping[navaid.type] || 'N/A';
   }
 
@@ -146,7 +152,7 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
 
   private async getLocBearing(navaid: VhfNavaid): Promise<number | null> {
     if (navaid.type === 1 << 7) {
-      const ilsData = await this.db.getILSs([navaid.ident]);
+      const ilsData = await this.db.backendDatabase.getILSs([navaid.ident]);
       const selectedILS = await this.props.mfd.deduplicateFacilities(ilsData);
 
       if (selectedILS) {
@@ -161,20 +167,20 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
 
     try {
       const selectedNavaid = await this.getSelectedNavaid(ident);
-      const locBearing = await this.getLocBearing(selectedNavaid);
+      const locBearing = await this.getLocBearing(selectedNavaid as VhfNavaid);
       const frequency = this.formatFrequency(selectedNavaid.frequency);
 
       const navaidInfo = this.createNavaidInfo(selectedNavaid, locBearing, frequency);
 
-      this.updateContainerDisplay(navaidInfo.runwayIdent);
+      this.setNavaidType(selectedNavaid);
       this.navaidData.set(navaidInfo);
     } catch (e) {
       console.error(`[FMS/FPM] Error loading navaid: ${e}`);
     }
   }
 
-  private async getSelectedNavaid(ident: string): Promise<VhfNavaid> {
-    const navaids = await this.db.getNavaids([ident]);
+  private async getSelectedNavaid(ident: string): Promise<VhfNavaid | NdbNavaid> {
+    const navaids = await this.db.searchAllNavaid(ident);
     const selectedNavaid = await this.props.mfd.deduplicateFacilities(navaids);
 
     if (!selectedNavaid) {
@@ -189,29 +195,42 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
     return frequency.toFixed(2).endsWith('0') ? frequency.toFixed(1) : frequency.toFixed(2);
   }
 
-  private createNavaidInfo(selectedNavaid: VhfNavaid, locBearing: number | null, frequency: string): NavaidData {
+  private createNavaidInfo(
+    selectedNavaid: VhfNavaid | NdbNavaid,
+    locBearing: number | null,
+    frequency: string,
+  ): NavaidData {
+    const isVhf = !isNdbNavaid(selectedNavaid);
     return {
-      airportIdent: selectedNavaid.airportIdent,
-      ident: selectedNavaid.ident,
-      class: this.getNavaidType(selectedNavaid),
-      latLong: coordinateToString(selectedNavaid.location.lat, selectedNavaid.location.long, false),
+      airportIdent: isVhf ? selectedNavaid.airportIdent ?? 'N/A' : 'N/A',
+      ident: selectedNavaid.ident ?? 'N/A',
+      class: this.getNavaidType(selectedNavaid as VhfNavaid) ?? 'N/A',
+      latLong: coordinateToString(selectedNavaid.location.lat, selectedNavaid.location.long, false) ?? 'N/A',
       elevation: 'N/A',
-      stationDeclination: selectedNavaid.stationDeclination.toFixed(1).replace('-', ''),
-      declinationCardinalDir: selectedNavaid.stationDeclination > 0 ? 'E' : 'W',
-      runwayIdent: selectedNavaid.name?.includes('RW')
-        ? `${selectedNavaid.airportIdent}${selectedNavaid.name.split('RW')[1]}`
+      stationDeclination: isVhf
+        ? (selectedNavaid as VhfNavaid).stationDeclination?.toFixed(1).replace('-', '') ?? 'N/A'
         : 'N/A',
+      declinationCardinalDir: isVhf ? (selectedNavaid.stationDeclination > 0 ? 'E' : 'W') : 'N/A',
+      runwayIdent:
+        isVhf && selectedNavaid.name?.includes('RW')
+          ? `${selectedNavaid.airportIdent}${selectedNavaid.name.split('RW')[1]}`
+          : 'N/A',
       freq: frequency ?? 'N/A',
-      category: this.getILSCategory(selectedNavaid),
+      category: isVhf ? this.getILSCategory(selectedNavaid) ?? 'N/A' : 'N/A',
       course: locBearing?.toFixed(0) ?? 'N/A',
-      figOfMerit: selectedNavaid.figureOfMerit.toFixed(0),
+      figOfMerit: isVhf ? selectedNavaid.figureOfMerit?.toFixed(0) ?? 'N/A' : 'N/A',
     };
   }
 
-  /* Toggle the display of the LS or VOR container depending on whether or not a rwyIdent is set. */
-  private updateContainerDisplay(rwyIdent: string | null): void {
-    const isRwyIdentAvailable = rwyIdent !== 'N/A';
-    this.selectedNavaidType.set(isRwyIdentAvailable ? SelectedNavaidType.LS : SelectedNavaidType.VOR);
+  /** This sets the type of the navaid which we use to control the conditional component.  */
+  private setNavaidType(navaid: VhfNavaid | NdbNavaid): void {
+    if (navaid.name?.includes('ILS') || navaid.name?.includes('LOC')) {
+      this.selectedNavaidType.set(SelectedNavaidType.LS);
+    } else if (isNdbNavaid(navaid)) {
+      this.selectedNavaidType.set(SelectedNavaidType.NDB);
+    } else {
+      this.selectedNavaidType.set(SelectedNavaidType.VOR);
+    }
   }
 
   protected onNewData() {
@@ -231,9 +250,10 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
 
     this.subs.push(
       this.props.mfd.uiService.activeUri.sub((val) => {
-        if (val.extra === 'acft-status') {
+        // We could potentially use the extra payload to set the navaid here since we might not need to deep link the pages?
+        if (val.extra === 'database') {
           this.selectedPageIndex.set(0);
-        } else if (val.extra === 'fms-pn') {
+        } else if (val.extra === 'pilot-stored') {
           this.selectedPageIndex.set(1);
         }
       }, true),
@@ -244,10 +264,10 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
     const commonFields: NavaidField[] = [
       { label: 'CLASS', value: (data: NavaidData) => data.class },
       { label: 'LAT/LONG', value: (data: NavaidData) => data.latLong },
-      { label: 'ELEVATION', value: (data: NavaidData) => data.elevation, class: 'indent-1' },
     ];
 
     const lsFields = [
+      { label: 'ELEVATION', value: (data: NavaidData) => data.elevation, class: 'indent-1' },
       { label: 'RWY IDENT', value: (data: NavaidData) => data.runwayIdent },
       { label: 'FREQ', value: (data: NavaidData) => data.freq },
       { label: 'CAT', value: (data: NavaidData) => data.category },
@@ -265,7 +285,14 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
       { label: 'FIG OF MERIT', value: (data: NavaidData) => data.figOfMerit },
     ];
 
-    const fields = type === SelectedNavaidType.LS ? [...commonFields, ...lsFields] : [...commonFields, ...vorFields];
+    const ndbFields = [{ label: 'FREQ', value: (data: NavaidData) => data.freq }];
+
+    const fields =
+      type === SelectedNavaidType.LS
+        ? [...commonFields, ...lsFields]
+        : type === SelectedNavaidType.VOR
+          ? [...commonFields, ...vorFields]
+          : [...commonFields, ...ndbFields];
 
     return (
       <div class={`mfd-data-navaid-information-row`}>
@@ -335,6 +362,11 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
                 <ConditionalComponent
                   condition={this.selectedNavaidType.map((type) => type === SelectedNavaidType.VOR)}
                   componentIfTrue={this.renderNavaidFields(SelectedNavaidType.VOR)}
+                  componentIfFalse={<></>}
+                />
+                <ConditionalComponent
+                  condition={this.selectedNavaidType.map((type) => type === SelectedNavaidType.NDB)}
+                  componentIfTrue={this.renderNavaidFields(SelectedNavaidType.NDB)}
                   componentIfFalse={<></>}
                 />
               </div>
@@ -478,7 +510,6 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataAirportProps> {
             </TopTabNavigatorPage>
           </TopTabNavigator>
           <div style="flex-grow: 1;" />
-          {/* fill space vertically */}
         </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>

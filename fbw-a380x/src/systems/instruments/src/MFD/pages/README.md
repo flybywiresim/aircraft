@@ -49,7 +49,7 @@ Status legend:
 |  |  |  |  |
 | ✅ | fms/data/status | 2 | FMS P/N page, swap DB, idle/perf factors  |
 | 🟥 | fms/data/airport | 2 | tbd |
-| 🟥 | fms/data/navaid | 2 | tbd |
+| 2️⃣ | fms/data/navaid | 2 | tbd |
 | 🟥 | fms/data/waypoint | 2 | tbd |
 | 🟥 | fms/data/printer | 4 | tbd |
 | 🟥 | fms/data/route | 3 | tbd |
