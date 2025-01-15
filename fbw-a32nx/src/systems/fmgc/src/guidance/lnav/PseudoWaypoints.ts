@@ -272,8 +272,17 @@ export class PseudoWaypoints implements GuidanceComponent {
 
     const activeLegIndex = this.guidanceController.activeLegIndex;
 
-    for (let i = activeLegIndex - 1; i < wptCount; i++) {
-      const geometryLeg = path.legs.get(i);
+    for (let i = activeLegIndex - 2; i < wptCount; i++) {
+      if (i < activeLegIndex - 1 && !this.guidanceController.doesPreNavModeEngagementPathExist()) {
+        continue;
+      }
+
+      const geometry =
+        i <= activeLegIndex && this.guidanceController.doesPreNavModeEngagementPathExist()
+          ? this.guidanceController.getPreNavModeEngagementPathGeometry()
+          : path;
+
+      const geometryLeg = geometry.legs.get(i);
 
       if (!geometryLeg || geometryLeg.isNull || !geometryLeg.calculated) {
         continue;
@@ -282,8 +291,8 @@ export class PseudoWaypoints implements GuidanceComponent {
       const accumulator = geometryLeg.calculated.cumulativeDistanceToEndWithTransitions;
 
       if (accumulator < distanceFromEnd) {
-        const inboundTrans = path.transitions.get(i - 1);
-        const outboundTrans = path.transitions.get(i);
+        const inboundTrans = geometry.transitions.get(i - 1);
+        const outboundTrans = geometry.transitions.get(i);
 
         const [inboundTransLength, legPartLength, outboundTransLength] = Geometry.completeLegPathLengths(
           geometryLeg,
