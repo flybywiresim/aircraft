@@ -121,7 +121,9 @@ export class DmeArcTransition extends Transition {
         this.addDebugPoints();
       }
     } else if (this.nextLeg instanceof AFLeg) {
-      const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse));
+      const inboundCourse =
+        bearingTo(this.nextLeg.centre, this.previousLeg.getPathEndPoint()) + 90 * this.nextLeg.turnDirectionSign;
+      const turnDirection = Math.sign(MathUtils.diffAngle(this.previousLeg.outboundCourse, inboundCourse));
       const reference = placeBearingDistance(
         this.previousLeg.getPathEndPoint(),
         this.previousLeg.outboundCourse + 90 * turnDirection,

@@ -339,20 +339,24 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     }
 
     const crossTrackError = SimVar.GetSimVarValue('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
-    const trackAngleError = SimVar.GetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'Degrees');
 
-    if (Math.abs(crossTrackError) < 0.2 && Math.abs(trackAngleError) < 20) {
+    if (Math.abs(crossTrackError) < 0.2) {
       this.resetPath();
     }
   }
 
   private shouldComputeInterceptPath(leg?: FlightPlanElement): leg is FlightPlanLeg {
-    // Possible leg types we can intercept AF, CF, DF, FA, FC, FD, FM, HA, HF, HM, PI, RF, TF
+    // Possible leg types we can intercept AF, CF, DF, FA, FC, FD, FM, (IF), (HA, HF, HM), (PI), (RF), TF
+    // We know Vx and Cx (except CF) legs don't get intercepts drawn,
+    // the others I've excluded here because I don't see how they should word
     return (
       leg?.isDiscontinuity === false &&
       !leg.isVx() &&
       (!leg.isCx() || leg.type === LegType.CF) &&
-      leg.type !== LegType.IF
+      leg.type !== LegType.IF &&
+      !leg.isHX() &&
+      leg.type !== LegType.RF &&
+      leg.type !== LegType.PI
     );
   }
 
