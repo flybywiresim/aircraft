@@ -7,7 +7,7 @@ import { BaseFix } from './BaseFix';
  * VOR fix
  */
 export interface VhfNavaid extends BaseFix<SectionCode.Navaid> {
-  airportIdent: string;
+  airportIdent?: string;
   subSectionCode: NavaidSubsectionCode.VhfNavaid;
 
   frequency: MegaHertz;
