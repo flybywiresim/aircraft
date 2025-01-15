@@ -179,9 +179,9 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
 
     this.subs.push(
       this.props.mfd.uiService.activeUri.sub((val) => {
-        if (val.extra === 'acft-status') {
+        if (val.extra === 'database') {
           this.selectedPageIndex.set(0);
-        } else if (val.extra === 'fms-pn') {
+        } else if (val.extra === 'pilot-stored') {
           this.selectedPageIndex.set(1);
         }
       }, true),
