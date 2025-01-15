@@ -23,6 +23,7 @@ import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from 
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { DirectTo, isDirectWithCourseIn, isDirectWithCourseOut } from '@fmgc/flightplanning/types/DirectTo';
+import { IN_BND_IDENT, OUT_BND_IDENT } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -176,27 +177,31 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     let turningPoint: FlightPlanLeg = undefined;
     let turnEnd: FlightPlanLeg = undefined;
-    let legsToInsert = [];
 
     if (isDirectWithCourseIn(directTo)) {
       const magneticInboundCourse = MathUtils.normalise360(directTo.courseIn + 180);
 
-      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, 'IN-BND', ppos);
+      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, IN_BND_IDENT, ppos);
       turningPoint.flags |= FlightPlanLegFlags.DirectToInBound;
 
       turnEnd = FlightPlanLeg.radialInLeg(this.enrouteSegment, terminationWaypoint, magneticInboundCourse);
 
-      legsToInsert = [turningPoint, turnEnd];
+      if (!isToNonFlightPlanWaypoint) {
+        turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
+        // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
+        turnEnd.ident = targetLeg.ident;
+      }
     } else if (isDirectWithCourseOut(directTo)) {
-      const magneticOutboundCourse = MathUtils.normalise360(directTo.courseOut + 180);
+      const magneticOutboundCourse = MathUtils.normalise360(directTo.courseOut);
 
-      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, 'OUT-BND', ppos);
+      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, OUT_BND_IDENT, terminationWaypoint.location);
       turningPoint.flags |= FlightPlanLegFlags.DirectToOutBound;
 
-      turnEnd = FlightPlanLeg.radialOutLeg(this.enrouteSegment, terminationWaypoint);
-      const manual = FlightPlanLeg.manual(this.enrouteSegment, terminationWaypoint, magneticOutboundCourse);
+      turnEnd = FlightPlanLeg.radialOutLeg(this.enrouteSegment, terminationWaypoint, magneticOutboundCourse);
 
-      legsToInsert = [turningPoint, turnEnd, manual];
+      if (!isToNonFlightPlanWaypoint) {
+        turningPoint.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
+      }
     } else {
       const magVar = MagVar.get(ppos.lat, ppos.long);
       const aircraftMagneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
@@ -205,17 +210,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
       turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, terminationWaypoint);
 
-      legsToInsert = [turningPoint, turnEnd];
+      if (!isToNonFlightPlanWaypoint) {
+        turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
+        // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
+        turnEnd.ident = targetLeg.ident;
+      }
     }
 
     if (this.index === FlightPlanIndex.Temporary) {
       turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
-    }
-
-    if (!isToNonFlightPlanWaypoint) {
-      turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
-      // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
-      turnEnd.ident = targetLeg.ident;
     }
 
     this.redistributeLegsAt(0);
@@ -233,19 +236,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
     }
 
-    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, ...legsToInsert);
+    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, turnEnd);
     this.incrementVersion();
 
     // In case of radial out, insert a discontinuity after the turn end
     // In case of direct to random waypoint, insert a discontinuity after the turn end
     const shouldInsertDiscontinuityAfterTurnEnd = isDirectWithCourseOut(directTo) || isToNonFlightPlanWaypoint;
 
-    const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === legsToInsert[legsToInsert.length - 1]);
+    const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
     if (
       shouldInsertDiscontinuityAfterTurnEnd &&
       this.maybeElementAt(turnEndLegIndexInPlan + 1)?.isDiscontinuity === false
     ) {
-      this.enrouteSegment.allLegs.splice(legsToInsert.length, 0, { isDiscontinuity: true });
+      this.enrouteSegment.allLegs.splice(2, 0, { isDiscontinuity: true });
       this.syncSegmentLegsChange(this.enrouteSegment);
       this.incrementVersion();
 
