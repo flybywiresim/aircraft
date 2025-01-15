@@ -262,15 +262,7 @@ export class CruisePathBuilder {
     const { zeroFuelWeight, cruiseAltitude, managedCruiseSpeedMach, tropoPause } =
       this.computationParametersObserver.get();
 
-    const averageCas = (speed + finalSpeed) / 2;
-    const averageClimbSpeedMach = Math.min(
-      managedCruiseSpeedMach,
-      this.atmosphericConditions.computeMachFromCas(cruiseAltitude, averageCas),
-    );
-    const totalAirTemperature = this.atmosphericConditions.totalAirTemperatureFromMach(
-      cruiseAltitude,
-      averageClimbSpeedMach,
-    );
+    const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(cruiseAltitude);
 
     return Predictions.speedChangeStep(
       config,
@@ -280,7 +272,7 @@ export class CruisePathBuilder {
       finalSpeed,
       managedCruiseSpeedMach,
       managedCruiseSpeedMach,
-      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, cruiseAltitude, totalAirTemperature),
+      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, cruiseAltitude, staticAirTemperature),
       zeroFuelWeight,
       remainingFuelOnBoard,
       headwind.value,

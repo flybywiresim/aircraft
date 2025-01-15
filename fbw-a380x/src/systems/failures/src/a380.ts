@@ -1,9 +1,8 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-// One can rightfully argue that this constant shouldn't be located in @flybywiresim/failures.
-// Once we create an A320 specific package, such as @flybywiresim/a320, we can move it there.
 import { FailureDefinition } from '@flybywiresim/fbw-sdk';
 
+// Keep in mind that the CPP code also keeps a list of failure codes: fbw-a380x\src\wasm\fbw_a380\src\failures\FailureList.h
 export const A380Failure = Object.freeze({
   RapidDecompression: 21000,
   CabinFan1: 21001,
@@ -56,9 +55,19 @@ export const A380Failure = Object.freeze({
   CpcsApp3: 21048,
   CpcsApp4: 21049,
 
-  FmcA: 22000,
-  FmcB: 22001,
-  FmcC: 22002,
+  Fac1: 22000, // FIXME update CPP code failures
+  Fac2: 22001, // FIXME update CPP code failures
+  Elac1: 27000, // FIXME update CPP code failures
+  Elac2: 27001, // FIXME update CPP code failures
+  Sec1: 27002, // FIXME update CPP code failures
+  Sec2: 27003, // FIXME update CPP code failures
+  Sec3: 27004, // FIXME update CPP code failures
+  Fcdc1: 27005, // FIXME update CPP code failures
+  Fcdc2: 27006, // FIXME update CPP code failures
+
+  FmcA: 22100,
+  FmcB: 22101,
+  FmcC: 22102,
 
   AudioManagementUnit1: 23000,
   AudioManagementUnit2: 23001,
