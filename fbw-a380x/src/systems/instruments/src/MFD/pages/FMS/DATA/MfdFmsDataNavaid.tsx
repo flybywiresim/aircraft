@@ -41,7 +41,7 @@ interface NavaidData {
 }
 
 /** The class of a navaid. */
-export enum NavaidClass {
+enum NavaidClass {
   VOR = 0,
   DME = 1,
   LOC = 2,
@@ -52,21 +52,21 @@ export enum NavaidClass {
 }
 
 /** The type of navaid that is selected. */
-export enum SelectedNavaidType {
+enum SelectedNavaidType {
   LS = 0,
   VOR = 1,
   NDB = 2,
 }
 
 /** The category of an ILS. */
-export enum NavaidCategory {
+enum NavaidCategory {
   CAT1 = 0,
   CAT2 = 1,
   CAT3 = 2,
 }
 
 /** The figure of merit of a navaid. */
-export enum NavaidFom {
+enum NavaidFom {
   FOM0 = 0,
   FOM1 = 1,
   FOM2 = 2,
@@ -334,7 +334,7 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataNavaidProps> {
           >
             <TopTabNavigatorPage containerStyle="height: 680px;">
               <div class="mfd-data-navaid-input-container">
-                <div class="mfd-label" style="margin-right: 90px">
+                <div class="mfd-label" style="position:relative; right: 90px">
                   NAVAID IDENT
                 </div>
                 <InputField<string>
@@ -349,7 +349,7 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataNavaidProps> {
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
-                  containerStyle="margin-right: 60px"
+                  containerStyle="position: relative; right: 60px;"
                 />
               </div>
 
