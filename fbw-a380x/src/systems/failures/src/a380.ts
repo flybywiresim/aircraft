@@ -55,16 +55,6 @@ export const A380Failure = Object.freeze({
   CpcsApp3: 21048,
   CpcsApp4: 21049,
 
-  Fac1: 22000, // FIXME update CPP code failures
-  Fac2: 22001, // FIXME update CPP code failures
-  Elac1: 27000, // FIXME update CPP code failures
-  Elac2: 27001, // FIXME update CPP code failures
-  Sec1: 27002, // FIXME update CPP code failures
-  Sec2: 27003, // FIXME update CPP code failures
-  Sec3: 27004, // FIXME update CPP code failures
-  Fcdc1: 27005, // FIXME update CPP code failures
-  Fcdc2: 27006, // FIXME update CPP code failures
-
   FmcA: 22100,
   FmcB: 22101,
   FmcC: 22102,
@@ -127,6 +117,15 @@ export const A380Failure = Object.freeze({
   MLGLoopA: 26017,
   MLGLoopB: 26018,
 
+  Prim1: 27000,
+  Prim2: 27001,
+  Prim3: 27002,
+  Sec1: 27003,
+  Sec2: 27004,
+  Sec3: 27005,
+  Fcdc1: 27006,
+  Fcdc2: 27007,
+
   GreenReservoirLeak: 29000,
   YellowReservoirLeak: 29001,
   GreenReservoirAirLeak: 29002,
@@ -145,9 +144,6 @@ export const A380Failure = Object.freeze({
   EnginePump3BOHeat: 29015,
   EnginePump4AOHeat: 29016,
   EnginePump4BOHeat: 29017,
-
-  LeftPfdDisplay: 31000,
-  RightPfdDisplay: 31001,
 
   LgciuPowerSupply1: 32000,
   LgciuPowerSupply2: 32001,
@@ -287,6 +283,15 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [26, A380Failure.MLGLoopA, 'Main Landing Gear Bay Loop A'],
   [26, A380Failure.MLGLoopB, 'Main Landing Gear Bay Loop B'],
 
+  [27, A380Failure.Prim1, 'PRIM 1'],
+  [27, A380Failure.Prim2, 'PRIM 2'],
+  [27, A380Failure.Prim3, 'PRIM 3'],
+  [27, A380Failure.Sec1, 'SEC 1'],
+  [27, A380Failure.Sec2, 'SEC 2'],
+  [27, A380Failure.Sec3, 'SEC 3'],
+  [27, A380Failure.Fcdc1, 'FCDC 1'],
+  [27, A380Failure.Fcdc2, 'FCDC 2'],
+
   [29, A380Failure.GreenReservoirLeak, 'Green reservoir leak'],
   [29, A380Failure.YellowReservoirLeak, 'Yellow reservoir leak'],
   [29, A380Failure.GreenReservoirAirLeak, 'Green reservoir air leak'],
@@ -305,9 +310,6 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [29, A380Failure.EnginePump3BOHeat, 'Engine 3 pump B overheat'],
   [29, A380Failure.EnginePump4AOHeat, 'Engine 4 pump A overheat'],
   [29, A380Failure.EnginePump4BOHeat, 'Engine 4 pump B overheat'],
-
-  [31, A380Failure.LeftPfdDisplay, 'Captain PFD display'],
-  [31, A380Failure.RightPfdDisplay, 'F/O PFD display'],
 
   [32, A380Failure.LgciuPowerSupply1, 'LGCIU 1 Power supply'],
   [32, A380Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],
