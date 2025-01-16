@@ -1613,9 +1613,14 @@ export class FmcAircraftInterface {
   }
 
   getManagedTargets(v: number, m: number) {
-    const alt = ADIRS.getBaroCorrectedAltitude();
+    // Use hardcoded crossover altitude of 30000ft
     const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', m);
-    return alt && alt.isNormalOperation() && alt.value > 20_000 && v > vM ? [vM, true] : [v, false];
+    return FmcAircraftInterface.useManagedMach() ? [vM, true] : [v, false];
+  }
+
+  static useManagedMach(): boolean {
+    const alt = ADIRS.getBaroCorrectedAltitude();
+    return alt !== undefined && alt.isNormalOperation() && alt.value > 30_000;
   }
 
   // TODO/VNAV: Speed constraint
