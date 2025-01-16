@@ -1,15 +1,14 @@
 #include "FailuresConsumer.h"
-#include <utility>
 #include <algorithm>
+#include <utility>
 
 FailuresConsumer::FailuresConsumer() {
-  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Elac1, false));
-  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Elac2, false));
+  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Prim1, false));
+  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Prim2, false));
+  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Prim3, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Sec1, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Sec2, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Sec3, false));
-  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fac1, false));
-  activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fac2, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fcdc1, false));
   activeFailures.emplace(std::make_pair<Failures, bool>(Failures::Fcdc2, false));
 }
@@ -53,10 +52,8 @@ bool FailuresConsumer::setIfFound(double identifier, bool value) {
 }
 
 bool FailuresConsumer::isAnyActive() {
-  if (std::any_of(activeFailures.begin(), activeFailures.end(), [](auto pair) {
-    return pair.second;
-  })) {
-      return true;
+  if (std::any_of(activeFailures.begin(), activeFailures.end(), [](auto pair) { return pair.second; })) {
+    return true;
   }
   return false;
 }
