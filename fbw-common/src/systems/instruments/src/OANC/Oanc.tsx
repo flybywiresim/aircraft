@@ -350,7 +350,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.getZoomLevelInverseScale.bind(this),
   );
 
-  private readonly markerManager = new OancMarkerManager<T>(this, this.labelManager);
+  private readonly markerManager = new OancMarkerManager<T>(this, this.labelManager, this.props.bus);
 
   private readonly airportNotInActiveFpln = MappedSubject.create(
     ([ndMode, arpt, origin, dest, altn]) => ndMode !== EfisNdMode.ARC && ![origin, dest, altn].includes(arpt),
@@ -455,16 +455,20 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.sub.on('oans_center_on_acft').handle(() => this.centerOnAcft());
     this.sub.on('oans_center_map_on').handle((coords) => this.centerMapOn(coords));
-    this.sub.on('oans_add_cross_at_position').handle((coords) => this.markerManager.addCross(coords));
-    this.sub.on('oans_add_flag_at_position').handle((coords) => this.markerManager.addFlag(coords));
+    this.sub.on('oans_add_cross_at_feature').handle((f) => this.markerManager.addCrossAtFeature(f.id, f.feattype));
+    this.sub.on('oans_add_flag_at_feature').handle((f) => this.markerManager.addFlagAtFeature(f.id, f.feattype));
+    this.sub
+      .on('oans_remove_cross_at_feature')
+      .handle((f) => this.markerManager.removeCrossAtFeature(f.id, f.feattype));
+    this.sub.on('oans_remove_flag_at_feature').handle((f) => this.markerManager.removeFlagAtFeature(f.id, f.feattype));
     this.sub
       .on('oans_add_cross_at_cursor')
       .handle(([x, y]) => this.markerManager.addCross(this.unprojectPoint([x, y])));
     this.sub.on('oans_add_flag_at_cursor').handle(([x, y]) => this.markerManager.addFlag(this.unprojectPoint([x, y])));
     this.sub.on('oans_erase_all_crosses').handle(() => this.markerManager.eraseAllCrosses());
     this.sub.on('oans_erase_all_flags').handle(() => this.markerManager.eraseAllFlags());
-    this.sub.on('oans_erase_cross_id').handle((index) => this.markerManager.removeCross(index));
-    this.sub.on('oans_erase_flag_id').handle((index) => this.markerManager.removeFlag(index));
+    this.sub.on('oans_erase_cross_id').handle((id) => this.markerManager.removeCross(id));
+    this.sub.on('oans_erase_flag_id').handle((id) => this.markerManager.removeFlag(id));
     this.sub.on('oans_query_symbols_at_cursor').handle((data) => {
       const foundSymbols = this.markerManager.findSymbolAtCursor(this.unprojectPoint(data.cursorPosition));
       this.props.bus.getPublisher<OansControlEvents>().pub('oans_answer_symbols_at_cursor', {

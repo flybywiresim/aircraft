@@ -39,6 +39,7 @@ import {
   Arinc429LocalVarConsumerSubject,
   BtvData,
   EfisSide,
+  FeatureType,
   FeatureTypeString,
   FmsOansData,
   MathUtils,
@@ -60,7 +61,7 @@ import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseServic
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MFD/MFD';
-import { Feature, Geometry, MultiLineString, Point, Position } from '@turf/turf';
+import { Feature, Geometry, LineString, Point, Position } from '@turf/turf';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 
 export interface OansProps extends ComponentProps {
@@ -135,6 +136,26 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly entityIsNotSelected = this.selectedEntityIndex.map((i) => i === null);
 
   private selectedEntityPosition: Position = [];
+
+  private readonly selectedFeatureId = Subject.create<number | null>(null);
+  private readonly selectedFeatureType = Subject.create<FeatureType | null>(null);
+
+  private readonly symbolsForFeatureIds = ConsumerSubject.create(this.sub.on('oans_symbols_for_feature_ids'), {
+    featureIdsWithCrosses: [],
+    featureIdsWithFlags: [],
+  });
+
+  private readonly flagExistsForEntity = MappedSubject.create(
+    ([symbols, id]) => symbols.featureIdsWithFlags.some((f) => f === id),
+    this.symbolsForFeatureIds,
+    this.selectedFeatureId,
+  );
+
+  private readonly crossExistsForEntity = MappedSubject.create(
+    ([symbols, id]) => symbols.featureIdsWithCrosses.some((f) => f === id),
+    this.symbolsForFeatureIds,
+    this.selectedFeatureId,
+  );
 
   private manualAirportSelection = false;
 
@@ -329,13 +350,16 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         ) {
           const feature = this.mapDataFeatures[idx] as Feature<Point>;
           this.selectedEntityPosition = feature.geometry.coordinates;
-        } else if (idx !== -1 && searchMode === ControlPanelMapDataSearchMode.TWY) {
-          const taxiway = this.mapDataFeatures[idx] as Feature<MultiLineString>;
-          const centerCoords = Math.min(
-            Math.max(Math.floor(taxiway.geometry.coordinates[0].length / 2), 0),
-            taxiway.geometry.coordinates[0].length - 1,
-          );
-          this.selectedEntityPosition = taxiway.geometry.coordinates[0][centerCoords];
+          this.selectedFeatureId.set(feature.properties?.id);
+          this.selectedFeatureType.set(feature.properties?.feattype);
+        } else if (
+          idx !== -1 &&
+          (searchMode === ControlPanelMapDataSearchMode.TWY || searchMode === ControlPanelMapDataSearchMode.OTHER)
+        ) {
+          const taxiway = this.mapDataFeatures[idx] as Feature<LineString, AmdbProperties>;
+          this.selectedEntityPosition = taxiway.properties.midpoint?.coordinates ?? [0, 0];
+          this.selectedFeatureId.set(taxiway.properties?.id);
+          this.selectedFeatureType.set(taxiway.properties?.feattype);
         }
 
         if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.RWY) {
@@ -430,7 +454,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           featureType = FeatureTypeString.RunwayThreshold;
           break;
         case ControlPanelMapDataSearchMode.TWY:
-          featureType = FeatureTypeString.TaxiwayElement;
+          featureType = FeatureTypeString.TaxiwayGuidanceLine;
           break;
         case ControlPanelMapDataSearchMode.STAND:
           featureType = FeatureTypeString.ParkingStandLocation;
@@ -648,24 +672,40 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   <div ref={this.mapDataMainRef} class="oans-cp-map-data-main">
                     <div class="oans-cp-map-data-main-2">
                       <Button
-                        label="ADD CROSS"
+                        label={this.crossExistsForEntity.map((e) => (e ? <>DEL CROSS</> : <>ADD CROSS</>))}
                         onClick={() => {
-                          if (this.selectedEntityPosition) {
+                          const selId = this.selectedFeatureId.get();
+                          const selFeatType = this.selectedFeatureType.get();
+                          if (selId !== null && selFeatType !== null) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oans_add_cross_at_position', this.selectedEntityPosition, true);
+                              .pub(
+                                this.crossExistsForEntity.get()
+                                  ? 'oans_remove_cross_at_feature'
+                                  : 'oans_add_cross_at_feature',
+                                { id: selId, feattype: selFeatType },
+                                true,
+                              );
                           }
                         }}
                         buttonStyle="flex: 1"
                         disabled={this.entityIsNotSelected}
                       />
                       <Button
-                        label="ADD FLAG"
+                        label={this.flagExistsForEntity.map((e) => (e ? <>DEL FLAG</> : <>ADD FLAG</>))}
                         onClick={() => {
-                          if (this.selectedEntityPosition) {
+                          const selId = this.selectedFeatureId.get();
+                          const selFeatType = this.selectedFeatureType.get();
+                          if (selId !== null && selFeatType !== null) {
                             this.props.bus
                               .getPublisher<OansControlEvents>()
-                              .pub('oans_add_flag_at_position', this.selectedEntityPosition, true);
+                              .pub(
+                                this.flagExistsForEntity.get()
+                                  ? 'oans_remove_flag_at_feature'
+                                  : 'oans_add_flag_at_feature',
+                                { id: selId, feattype: selFeatType },
+                                true,
+                              );
                           }
                         }}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"

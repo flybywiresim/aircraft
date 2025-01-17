@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide } from '@flybywiresim/fbw-sdk';
+import { EfisSide, FeatureType } from '@flybywiresim/fbw-sdk';
 import { Position } from '@turf/turf';
 
 export interface OansControlEvents {
@@ -13,8 +13,12 @@ export interface OansControlEvents {
   oans_not_avail: boolean;
   oans_center_map_on: Position;
   oans_center_on_acft: boolean;
-  oans_add_cross_at_position: Position;
-  oans_add_flag_at_position: Position;
+  oans_add_cross_at_feature: { id: number; feattype: FeatureType };
+  oans_add_flag_at_feature: { id: number; feattype: FeatureType };
+  oans_remove_cross_at_feature: { id: number; feattype: FeatureType };
+  oans_remove_flag_at_feature: { id: number; feattype: FeatureType };
+  /** OANC -> ND, whether symbol (flag or cross) already exists for feature id */
+  oans_symbols_for_feature_ids: { featureIdsWithCrosses: number[]; featureIdsWithFlags: number[] };
   /** Mouse X, Y */
   oans_add_cross_at_cursor: [number, number];
   /** Mouse X, Y */
