@@ -1621,11 +1621,7 @@ export class FmcAircraftInterface {
       press !== undefined &&
       (press.isNormalOperation() || press.isFunctionalTest())
     ) {
-      const vM = MathUtils.convertMachToKCas(
-        m,
-        MathUtils.convertCtoK(sat.value),
-        UnitType.HPA.convertTo(press.value, UnitType.MB),
-      );
+      const vM = MathUtils.convertMachToKCas(m, press.value);
       return v > vM ? [vM, true] : [v, false];
     } else {
       return [v, false];
