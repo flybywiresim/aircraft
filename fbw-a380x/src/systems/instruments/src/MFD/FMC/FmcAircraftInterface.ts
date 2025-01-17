@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -1170,17 +1170,16 @@ export class FmcAircraftInterface {
     this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
     this.speedVapp.set(Math.round(approachSpeeds.vapp));
 
-    // Retrieve CAS and altitude from ADRs
-    const cas = this.fmc.navigation.getComputedAirspeed();
+    // Retrieve altitude from ADRs
     const alt = this.fmc.navigation.getPressureAltitude();
 
-    if (cas !== null && alt !== null) {
-      // Only update speeds if ADR data valid
+    if (alt !== null) {
+      // Only update speeds if ADR altitude data valid.
 
       const flapLever = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
       const speeds = new A380OperatingSpeeds(
         grossWeight,
-        cas,
+        this.fmc.navigation.getComputedAirspeed() ?? 0, // CAS is NCD for low speeds/standstill, leading to null here
         flapLever,
         this.flightPhase.get(),
         this.fmgc.getV2Speed(),
@@ -1612,15 +1611,20 @@ export class FmcAircraftInterface {
     return SimVar.GetSimVarValue('AUTOPILOT ALTITUDE SLOT INDEX', 'number') === 2;
   }
 
-  getManagedTargets(v: number, m: number) {
-    // Use hardcoded crossover altitude of 30000ft
-    const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', m);
-    return FmcAircraftInterface.useManagedMach() ? [vM, true] : [v, false];
-  }
-
-  static useManagedMach(): boolean {
+  getManagedTargets(v: number, m: number): [number, boolean] {
+    const sat = ADIRS.getStaticAirTemperature();
     const alt = ADIRS.getBaroCorrectedAltitude();
-    return alt !== undefined && alt.isNormalOperation() && alt.value > 30_000;
+
+    if (sat !== undefined && sat.isNormalOperation() && alt !== undefined && alt.isNormalOperation()) {
+      const vM = MathUtils.convertMachToKCas(
+        m,
+        MathUtils.convertCtoK(sat.value),
+        SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar'),
+      );
+      return alt.value > 20_000 && v > vM ? [vM, true] : [v, false];
+    } else {
+      return [v, false];
+    }
   }
 
   // TODO/VNAV: Speed constraint

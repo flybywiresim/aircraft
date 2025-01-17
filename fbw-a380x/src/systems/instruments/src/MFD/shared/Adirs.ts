@@ -60,6 +60,10 @@ export class ADIRS {
     return ADIRS.getFromAnyAdiru('ADR', 'ALTITUDE');
   }
 
+  static getStaticAirTemperature() {
+    return ADIRS.getFromAnyAdiru('ADR', 'STATIC_AIR_TEMPERATURE');
+  }
+
   /**
    *
    * @param type IR or ADR

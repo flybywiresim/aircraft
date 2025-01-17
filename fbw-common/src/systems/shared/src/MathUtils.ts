@@ -323,6 +323,17 @@ export class MathUtils {
   }
 
   /**
+   * Convert Mach to Calibrated Air Speed
+   * @param kcas velocity true air speed
+   * @param oat Kelvin
+   * @param pressure current pressure hpa
+   * @returns Calibrated Air Speed
+   */
+  public static convertKCasToMach(kcas: number, oat: number, pressure: number): number {
+    return MathUtils.convertKTASToMach(MathUtils.convertKCasToKTAS(kcas, oat, pressure), oat);
+  }
+
+  /**
    * Gets the horizontal distance between 2 points, given in lat/lon
    * @param pos0Lat {number} Position 0 lat
    * @param pos0Lon {number} Position 0 lon
