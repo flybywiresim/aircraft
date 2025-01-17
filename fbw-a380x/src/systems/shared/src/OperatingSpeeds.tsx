@@ -403,28 +403,13 @@ function getVfeNIdx(fi: number): number {
 }
 
 /**
- * Convert degrees Celsius into Kelvin
- * @param T degrees Celsius
- * @returns degrees Kelvin
- */
-function convertCtoK(T: number): number {
-  return T + 273.15;
-}
-
-/**
  * Get correct Vmax for Vmo and Mmo in knots
  * @returns Min(Vmo, Mmo)
  * @private
  */
 function getVmo() {
-  return Math.min(
-    Vmo,
-    MathUtils.convertMachToKCas(
-      Mmo,
-      convertCtoK(Simplane.getAmbientTemperature()),
-      SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar'),
-    ),
-  );
+  // FIXME use ADR corrected average static pressure
+  return Math.min(Vmo, MathUtils.convertMachToKCas(Mmo, SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar')));
 }
 
 export class A380OperatingSpeeds {
