@@ -409,7 +409,6 @@ function getVfeNIdx(fi: number): number {
  * @private
  */
 function getVmo() {
-  // FIXME use ADR corrected average static pressure
   const adrPressure = ADIRS.getCorrectedAverageStaticPressure();
   const ambientPressure = adrPressure !== undefined ? adrPressure.valueOr(1013.25) : 1013.25;
   return Math.min(Vmo, MathUtils.convertMachToKCas(Mmo, ambientPressure));
