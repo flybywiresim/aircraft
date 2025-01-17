@@ -48,7 +48,7 @@ Status legend:
 | 🟥 | fms/sec/index | 4 | tbd |
 |  |  |  |  |
 | ✅ | fms/data/status | 2 | FMS P/N page, swap DB, idle/perf factors  |
-| 🟥 | fms/data/airport | 2 | tbd |
+| ✅ | fms/data/airport | 2 | pilot stored runways missing |
 | 🟥 | fms/data/navaid | 2 | tbd |
 | 🟥 | fms/data/waypoint | 2 | tbd |
 | 🟥 | fms/data/printer | 4 | tbd |
@@ -64,16 +64,15 @@ Use React-based implementation for now, hence no dev. effort needed here.
 
 | Status      | URI | Sprint/Prio |
 | ------------- | ------------- | ------------- |
-| 🟥 | atccom/connect/notification | 6 |
-| 🟥 | atccom/connect/connection-status | 6 |
+| 2️⃣ | atccom/connect | 6 |
 | 🟥 | atccom/connect/max-uplink-delay | 6 |
 | 🟥 | atccom/request | 6 |
 | 🟥 | atccom/report-modify/position | 6 |
 | 🟥 | atccom/report-modify/modify | 6 |
 | 🟥 | atccom/report-modify/other-reports | 6 |
 | 🟥 | atccom/msg-record | 6 |
-| 🟥 | atccom/atis | 6 |
-| 🟥 | atccom/atis/list | 6 |
+| 2️⃣ | atccom/d-atis/list | 6 |
+| 2️⃣ | atccom/d-atis/received | 6 |
 | 🟥 | atccom/emer | 6 |
 
 ### SURV
