@@ -4,8 +4,6 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
-1. [A380X/MFD] Fixed FLT NBR not displaying as a mandatory input field - @jet2code (john.xyz)
-
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
@@ -126,7 +124,7 @@
 1. [A380X/MFD] Add airport data page into the MFD (DATA > AIRPORT) - @bulenteroglu (senolitam)
 1. [A380X/EFB] Adds PRIM/SEC/FCDC failures to EFB - @flogross89 (floridude)
 1. [A380X/PFD] Fix precision of pitch trim indicator - @flogross89 (floridude)
-
+1. [A380X/MFD] Fixed FLT NBR not displaying as a mandatory input field - @jet2code (john.xyz)
 
 ## 0.12.0
 
