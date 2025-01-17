@@ -1,6 +1,40 @@
 import { FailuresOrchestrator } from '.';
-import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 import { flushPromises } from './test-functions';
+
+const genericDataListenerSend = jest.fn();
+
+jest.mock('../GenericDataListenerSync', () => ({
+  GenericDataListenerSync: jest.fn().mockImplementation(() => {
+    return {
+      sendEvent: genericDataListenerSend,
+    };
+  }),
+}));
+
+let sendRequestForFailuresHandler = undefined;
+const sendRequestForFailures = () => {
+  if (!sendRequestForFailuresHandler) {
+    throw new Error('View Listener never registered!');
+  }
+  sendRequestForFailuresHandler();
+};
+
+global.RegisterViewListener = (name: string, callback?: any): ViewListener.ViewListener => {
+  callback({
+    on: (topic, requestFailuresCallback) => (sendRequestForFailuresHandler = requestFailuresCallback),
+  });
+  return undefined as any;
+};
+
+const failuresUpdateReceiver = jest.fn();
+(global as any).RegisterGenericDataListener = jest.fn();
+(global as any).Coherent = {
+  call: (event, data0, data1) => {
+    if (event === 'COMM_BUS_WASM_CALLBACK' && data0 === 'FBW_FAILURE_UPDATE') {
+      failuresUpdateReceiver(data1);
+    }
+  },
+};
 
 describe('FailuresOrchestrator', () => {
   test('stores configured failures', () => {
@@ -39,54 +73,78 @@ describe('FailuresOrchestrator', () => {
 
       expect(o.isActive(identifier)).toBe(false);
     });
+  });
 
-    describe('changing', () => {
-      test('while failure is activating', async () => {
-        const o = orchestrator();
+  describe('sends failures over commbus', () => {
+    it('sends failures when requested', async () => {
+      const o = orchestrator();
 
-        expect(o.isChanging(identifier)).toBe(false);
+      o.update();
 
-        const promise = o.activate(identifier);
+      failuresUpdateReceiver.mockReset();
+      sendRequestForFailures();
 
-        expect(o.isChanging(identifier)).toBe(true);
+      o.update();
 
-        await flushPromises();
-        await SimVar.SetSimVarValue(activateSimVarName, 'number', 0);
-        o.update();
-        await promise;
+      expect(failuresUpdateReceiver).toHaveBeenCalledTimes(1);
+      expect(failuresUpdateReceiver.mock.lastCall[0]).toBe('[]');
+    });
 
-        expect(o.isChanging(identifier)).toBe(false);
-      });
+    it('sends failures when failures change', async () => {
+      const o = orchestrator();
 
-      test('while failure is deactivating', async () => {
-        const o = orchestrator();
+      o.update();
 
-        expect(o.isChanging(identifier)).toBe(false);
+      failuresUpdateReceiver.mockReset();
 
-        const promise = o.deactivate(identifier);
+      activateFailure(o);
 
-        expect(o.isChanging(identifier)).toBe(true);
+      o.update();
 
-        await flushPromises();
-        await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 0);
-        o.update();
-        await promise;
+      expect(failuresUpdateReceiver).toHaveBeenCalledTimes(1);
+      expect(failuresUpdateReceiver.mock.lastCall[0]).toBe('[123]');
+    });
+  });
 
-        expect(o.isChanging(identifier)).toBe(false);
-      });
+  describe('sends failures over generic data listener sync', () => {
+    it('sends failures when requested', async () => {
+      const o = orchestrator();
+
+      o.update();
+
+      genericDataListenerSend.mockReset();
+      sendRequestForFailures();
+
+      o.update();
+
+      expect(genericDataListenerSend).toHaveBeenCalledTimes(1);
+      expect(genericDataListenerSend.mock.lastCall[0]).toBe('FBW_FAILURE_UPDATE');
+      expect(genericDataListenerSend.mock.lastCall[1]).toEqual([]);
+    });
+
+    it('sends failures when failures change', async () => {
+      const o = orchestrator();
+
+      o.update();
+
+      genericDataListenerSend.mockReset();
+
+      activateFailure(o);
+
+      o.update();
+
+      expect(genericDataListenerSend).toHaveBeenCalledTimes(1);
+      expect(genericDataListenerSend.mock.lastCall[0]).toBe('FBW_FAILURE_UPDATE');
+      expect(genericDataListenerSend.mock.lastCall[1]).toEqual([123]);
     });
   });
 });
-
-const prefix = 'PREFIX';
-const activateSimVarName = getActivateFailureSimVarName(prefix);
-const deactivateSimVarName = getDeactivateFailureSimVarName(prefix);
 
 const identifier = 123;
 const name = 'test';
 
 function orchestrator() {
-  return new FailuresOrchestrator(prefix, [[0, identifier, name]]);
+  return new FailuresOrchestrator([[0, identifier, name]]);
 }
 
 function activateFailure(o: FailuresOrchestrator) {
@@ -100,7 +158,6 @@ function deactivateFailure(o: FailuresOrchestrator) {
 async function activateOrDeactivateFailure(o: FailuresOrchestrator, activate: boolean) {
   const promise = activate ? o.activate(identifier) : o.deactivate(identifier);
   await flushPromises();
-  await SimVar.SetSimVarValue(activate ? activateSimVarName : deactivateSimVarName, 'number', 0);
   o.update();
 
   await promise;
