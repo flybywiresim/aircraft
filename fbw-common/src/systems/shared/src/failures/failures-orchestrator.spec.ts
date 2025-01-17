@@ -1,8 +1,8 @@
 import { FailuresOrchestrator } from '.';
 import { flushPromises } from './test-functions';
 
+// mock enough of JS GenericDataListener to ensure the right calls are made for JS interop
 const genericDataListenerSend = jest.fn();
-
 jest.mock('../GenericDataListenerSync', () => ({
   GenericDataListenerSync: jest.fn().mockImplementation(() => {
     return {
@@ -11,21 +11,16 @@ jest.mock('../GenericDataListenerSync', () => ({
   }),
 }));
 
-let sendRequestForFailuresHandler = undefined;
-const sendRequestForFailures = () => {
-  if (!sendRequestForFailuresHandler) {
-    throw new Error('View Listener never registered!');
-  }
-  sendRequestForFailuresHandler();
-};
+let sendRequestForFailures = undefined;
 
 global.RegisterViewListener = (name: string, callback?: any): ViewListener.ViewListener => {
   callback({
-    on: (topic, requestFailuresCallback) => (sendRequestForFailuresHandler = requestFailuresCallback),
+    on: (topic, requestFailuresCallback) => (sendRequestForFailures = requestFailuresCallback),
   });
   return undefined as any;
 };
 
+// mock enough of COMM BUS to ensure the right calls are made for WASM interop
 const failuresUpdateReceiver = jest.fn();
 (global as any).RegisterGenericDataListener = jest.fn();
 (global as any).Coherent = {
