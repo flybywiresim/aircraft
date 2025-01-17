@@ -127,6 +127,7 @@
 1. [A380X/PFD] Fix precision of pitch trim indicator - @flogross89 (floridude)
 1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
 
+
 ## 0.12.0
 
 1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
