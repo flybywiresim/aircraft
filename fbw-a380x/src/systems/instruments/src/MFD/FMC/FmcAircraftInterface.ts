@@ -1613,15 +1613,20 @@ export class FmcAircraftInterface {
 
   getManagedTargets(v: number, m: number): [number, boolean] {
     const sat = ADIRS.getStaticAirTemperature();
-    const alt = ADIRS.getBaroCorrectedAltitude();
+    const press = ADIRS.getCorrectedAverageStaticPressure();
 
-    if (sat !== undefined && sat.isNormalOperation() && alt !== undefined && alt.isNormalOperation()) {
+    if (
+      sat !== undefined &&
+      (sat.isNormalOperation() || sat.isFunctionalTest()) &&
+      press !== undefined &&
+      (press.isNormalOperation() || press.isFunctionalTest())
+    ) {
       const vM = MathUtils.convertMachToKCas(
         m,
         MathUtils.convertCtoK(sat.value),
-        SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar'),
+        UnitType.HPA.convertTo(press.value, UnitType.MB),
       );
-      return alt.value > 20_000 && v > vM ? [vM, true] : [v, false];
+      return v > vM ? [vM, true] : [v, false];
     } else {
       return [v, false];
     }
