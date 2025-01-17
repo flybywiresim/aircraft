@@ -125,7 +125,7 @@
 1. [A380X/MFD] Add airport data page into the MFD (DATA > AIRPORT) - @bulenteroglu (senolitam)
 1. [A380X/EFB] Adds PRIM/SEC/FCDC failures to EFB - @flogross89 (floridude)
 1. [A380X/PFD] Fix precision of pitch trim indicator - @flogross89 (floridude)
-
+1. [FMS] Improved nav database error handling, preserving as much valid data as possible - @tracernz (Mike)
 
 ## 0.12.0
 
