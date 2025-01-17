@@ -35,7 +35,7 @@ export interface ProcedureLeg {
    */
   arcCentreFix?: Fix;
   /**
-   * Defines the radius for RF legs
+   * Defines the radius for RF legs, or Hx legs.
    */
   arcRadius?: NauticalMiles;
   /**
