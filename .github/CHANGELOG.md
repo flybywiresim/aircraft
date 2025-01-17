@@ -126,6 +126,7 @@
 1. [A380X/EFB] Adds PRIM/SEC/FCDC failures to EFB - @flogross89 (floridude)
 1. [A380X/PFD] Fix precision of pitch trim indicator - @flogross89 (floridude)
 1. [FMS] Improved nav database error handling, preserving as much valid data as possible - @tracernz (Mike)
+1. [A32NX/FMS] Sort instrument procedures for display on the MCDU - @tracernz (Mike)
 
 ## 0.12.0
 
