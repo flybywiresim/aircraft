@@ -1,0 +1,62 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../MsfsAvionicsCommon/definitions.scss";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FBW-Display-EIS-A380-SlashedZero";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.oit-main {
+  position: absolute;
+  width: 1333px;
+  height: 1000px; /* 1:1.33 W:H  */
+  background: $display-background;
+  font-family: "Ecam", monospace;
+  display: flex;
+  flex-direction: column;
+}
+
+.oit-label {
+  font-size: 20px;
+  color: $display-white;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
+}
+
+.oit-label.green {
+  color: $display-green;
+}
+
+.oit-label.amber {
+  color: $display-amber;
+}
+
+.oit-label.cyan {
+  color: $display-cyan;
+}
+
+.oit-label.bigger {
+  font-size: 24px;
+}
+
+.oit-label.biggest {
+  font-size: 28px;
+}
+
+.oit-header-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
