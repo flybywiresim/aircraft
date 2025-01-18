@@ -125,7 +125,8 @@
 1. [A380X/FCU] Add TRUE indication on FCU when TRUE North reference is selected on AFS CP - @heclak (Heclak)
 1. [A380X/MFD] Add airport data page into the MFD (DATA > AIRPORT) - @bulenteroglu (senolitam)
 1. [A380X/EFB] Adds PRIM/SEC/FCDC failures to EFB - @flogross89 (floridude)
-
+1. [A380X/PFD] Fix precision of pitch trim indicator - @flogross89 (floridude)
+1. [A380X/MFD] Add leading zero to altitude prediction and track from last waypoint on FPLN page - @bulenteroglu (senolitam)
 
 ## 0.12.0
 
