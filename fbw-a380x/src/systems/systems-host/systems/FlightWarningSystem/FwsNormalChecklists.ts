@@ -304,19 +304,17 @@ export class FwsNormalChecklists {
           this.getNormalProceduresKeysSorted(true).length,
         ),
       );
-    } else if (this.activeDeferredProcedureId.get() !== null) {
-      if (this.activeProcedure.lastLineIsSelected()) {
-        const curDefIndex = this.visibleDeferredProcedureKeys.indexOf(this.activeDeferredProcedureId.get());
-        if (curDefIndex !== -1) {
-          this.activeDeferredProcedureId.set(
-            curDefIndex < this.visibleDeferredProcedureKeys.length - 1
-              ? this.visibleDeferredProcedureKeys[curDefIndex + 1]
-              : null,
-          );
-        }
-      } else {
-        this.activeProcedure.moveDown(skipCompletedSensed);
+    } else if (this.activeDeferredProcedureId.get() !== null && this.activeProcedure.lastLineIsSelected()) {
+      const curDefIndex = this.visibleDeferredProcedureKeys.indexOf(this.activeDeferredProcedureId.get());
+      if (curDefIndex !== -1) {
+        this.activeDeferredProcedureId.set(
+          curDefIndex < this.visibleDeferredProcedureKeys.length - 1
+            ? this.visibleDeferredProcedureKeys[curDefIndex + 1]
+            : null,
+        );
       }
+    } else {
+      this.activeProcedure.moveDown(skipCompletedSensed);
     }
   }
 
@@ -331,6 +329,7 @@ export class FwsNormalChecklists {
         const clStateFollowing: ChecklistState = {
           id: idFollowing.toString(),
           procedureCompleted: procFollowing.onlyActivatedByRequest ? true : false,
+          procedureActivated: true,
           itemsChecked: [...clFollowing.itemsChecked].map((val, index) =>
             procFollowing.items[index].sensed ? val : false,
           ),

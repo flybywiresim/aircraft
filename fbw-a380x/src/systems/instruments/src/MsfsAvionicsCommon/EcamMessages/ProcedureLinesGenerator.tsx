@@ -151,7 +151,10 @@ export class ProcedureLinesGenerator {
   }
 
   moveUp() {
-    if (!this.checklistState.procedureActivated) {
+    if (
+      (this.type === ProcedureType.Deferred || this.type === ProcedureType.Abnormal) &&
+      !this.checklistState.procedureActivated
+    ) {
       this.selectedItemIndex.set(SPECIAL_INDEX_ACTIVATE);
       return;
     }
@@ -189,7 +192,10 @@ export class ProcedureLinesGenerator {
   }
 
   moveDown(skipCompletedSensed = true) {
-    if (!this.checklistState.procedureActivated) {
+    if (
+      (this.type === ProcedureType.Deferred || this.type === ProcedureType.Abnormal) &&
+      !this.checklistState.procedureActivated
+    ) {
       this.selectedItemIndex.set(SPECIAL_INDEX_ACTIVATE);
       return;
     }
@@ -212,7 +218,6 @@ export class ProcedureLinesGenerator {
       const sii = this.selectedItemIndex.get();
       // Check for special lines
       if (sii === SPECIAL_INDEX_NORMAL_CL_COMPLETE) {
-        // Do nothing
         this.selectedItemIndex.set(SPECIAL_INDEX_NORMAL_RESET);
       } else if (sii > HIGHEST_SPECIAL_INDEX) {
         this.selectedItemIndex.set(
@@ -280,11 +285,17 @@ export class ProcedureLinesGenerator {
   }
 
   selectFirst() {
-    if (!this.checklistState.procedureActivated) {
+    if (
+      (this.type === ProcedureType.Deferred || this.type === ProcedureType.Abnormal) &&
+      !this.checklistState.procedureActivated === false
+    ) {
       this.selectedItemIndex.set(SPECIAL_INDEX_ACTIVATE);
       return;
     } else if (this.type === ProcedureType.Deferred && this.checklistState.procedureCompleted) {
       this.selectedItemIndex.set(SPECIAL_INDEX_DEFERRED_PROC_RECALL);
+      return;
+    } else if (this.type === ProcedureType.Normal && this.checklistState.procedureCompleted) {
+      this.selectedItemIndex.set(SPECIAL_INDEX_NORMAL_RESET);
       return;
     }
 

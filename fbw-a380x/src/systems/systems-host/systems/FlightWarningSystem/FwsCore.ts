@@ -1624,14 +1624,16 @@ export class FwsCore {
       }),
     );
 
-    this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s));
+    this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true);
 
-    this.ecamEwdShowStsIndication.sub((s) =>
-      this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
+    this.ecamEwdShowStsIndication.sub(
+      (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
+      true,
     );
 
-    this.ecamEwdShowFailurePendingIndication.sub((s) =>
-      this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
+    this.ecamEwdShowFailurePendingIndication.sub(
+      (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
+      true,
     );
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
