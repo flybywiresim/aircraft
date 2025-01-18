@@ -9,7 +9,7 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { LegType } from '@flybywiresim/fbw-sdk';
+import { isVhfNavaid, LegType } from '@flybywiresim/fbw-sdk';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
@@ -24,6 +24,7 @@ import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { RFLeg } from '@fmgc/guidance/lnav/legs/RF';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
+import { FCLeg } from '@fmgc/guidance/lnav/legs/FC';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { CDLeg } from '@fmgc/guidance/lnav/legs/CD';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
@@ -270,13 +271,15 @@ function geometryLegFromFlightPlanLeg(
     }
     case LegType.CA:
     case LegType.VA: {
-      // TODO FA, VA legs in geometry
       const altitude = flightPlanLeg.definition.altitude1;
 
       return new CALeg(trueCourse, altitude, metadata, SegmentType.Departure);
     }
     case LegType.CD:
-    case LegType.VD: // TODO FA, VA legs in geometry
+    case LegType.VD:
+      if (!isVhfNavaid(recommendedNavaid)) {
+        throw new Error('[FMS/Geometry] Cannot create a CD or VD leg with invalid recommended navaid');
+      }
       return new CDLeg(trueCourse, length, recommendedNavaid, metadata, SegmentType.Departure);
     case LegType.CF:
       return new CFLeg(waypoint, trueCourse, length, metadata, SegmentType.Departure);
@@ -309,15 +312,12 @@ function geometryLegFromFlightPlanLeg(
     case LegType.FA:
       return new FALeg(waypoint, trueCourse, flightPlanLeg.definition.altitude1, metadata, SegmentType.Departure);
     case LegType.FC:
+      return new FCLeg(trueCourse, length, waypoint, metadata, SegmentType.Departure);
     case LegType.FD:
-      return new FDLeg(
-        trueCourse,
-        length,
-        waypoint,
-        legType === LegType.FC ? waypoint : recommendedNavaid,
-        metadata,
-        SegmentType.Departure,
-      );
+      if (!isVhfNavaid(recommendedNavaid)) {
+        throw new Error('[FMS/Geometry] Cannot create a FD leg with invalid recommended navaid');
+      }
+      return new FDLeg(trueCourse, length, waypoint, recommendedNavaid, metadata, SegmentType.Departure);
     case LegType.FM:
       return new FMLeg(flightPlanLeg.terminationWaypoint(), trueCourse, metadata, SegmentType.Departure);
     case LegType.IF:

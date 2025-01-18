@@ -6,65 +6,66 @@
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
-import { Fix, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
-import { Coordinates, distanceTo, firstSmallCircleIntersection } from 'msfs-geo';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { LegMetadata } from './index';
 import { courseToFixDistanceToGo, fixToFixGuidance } from '../CommonGeometry';
 
-export class FDLeg extends Leg {
-  predictedPath: PathVector[] = [];
+export class FCLeg extends Leg {
+  /** @inheritdoc */
+  public predictedPath: PathVector[];
 
-  inboundCourse;
+  /** @inheritdoc */
+  public inboundCourse = this.course;
+  /** @inheritdoc */
+  public outboundCourse = this.course;
 
-  outboundCourse;
+  // not actually an "intercepted", but that prop is required by transitions
+  /** The endpoint of the path, not considering the outbound transition. */
+  public intercept: Coordinates;
 
-  intercept: Coordinates;
-
-  // FIXME remove this fallback when MSFS2020 is dropped
-  private readonly dmeLocation = this.navaid.dmeLocation ?? this.navaid.location;
-
+  /**
+   * Ctor.
+   * @param course True course of the leg in degrees.
+   * @param legLength Length of the leg from the fix in nautical miles.
+   * @param fix The fix to start from.
+   * @param metadata Additional leg metadata.
+   * @param segment The segment this leg belongs to.
+   */
   constructor(
-    private readonly course: DegreesTrue,
-    private readonly dmeDistance: NauticalMiles,
+    private readonly course: number,
+    private readonly legLength: number,
     private readonly fix: Fix,
-    private readonly navaid: VhfNavaid,
     public readonly metadata: Readonly<LegMetadata>,
-    segment: SegmentType,
+    public readonly segment: SegmentType,
   ) {
     super();
 
-    this.segment = segment;
+    // FC legs can be statically computed the first time
 
-    this.inboundCourse = course;
-    this.outboundCourse = course;
+    this.intercept = placeBearingDistance(fix.location, this.course, this.legLength);
 
-    // FD legs can be statically computed the first time
-
-    this.predictedPath.length = 0;
-
-    const intersect = firstSmallCircleIntersection(this.dmeLocation, this.dmeDistance, this.fix.location, this.course);
-
-    this.intercept = intersect;
-
-    this.predictedPath.push({
-      type: PathVectorType.Line,
-      startPoint: this.getPathStartPoint(),
-      endPoint: this.getPathEndPoint(),
-    });
+    this.predictedPath = [
+      {
+        type: PathVectorType.Line,
+        startPoint: this.getPathStartPoint(),
+        endPoint: this.getPathEndPoint(),
+      },
+    ];
 
     if (LnavConfig.DEBUG_PREDICTED_PATH) {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,
           startPoint: this.getPathStartPoint(),
-          annotation: 'FD START',
+          annotation: 'FC START',
         },
         {
           type: PathVectorType.DebugPoint,
           startPoint: this.getPathEndPoint(),
-          annotation: 'FD END',
+          annotation: 'FC END',
         },
       );
     }
@@ -89,26 +90,10 @@ export class FDLeg extends Leg {
   }
 
   recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
-    this.predictedPath.length = 0;
-    this.predictedPath.push({
-      type: PathVectorType.Line,
-      startPoint: this.getPathStartPoint(),
-      endPoint: this.getPathEndPoint(),
-    });
+    this.predictedPath[0].startPoint = this.getPathStartPoint();
 
     if (LnavConfig.DEBUG_PREDICTED_PATH) {
-      this.predictedPath.push(
-        {
-          type: PathVectorType.DebugPoint,
-          startPoint: this.getPathStartPoint(),
-          annotation: 'FD START',
-        },
-        {
-          type: PathVectorType.DebugPoint,
-          startPoint: this.getPathEndPoint(),
-          annotation: 'FD END',
-        },
-      );
+      this.predictedPath[1].startPoint = this.getPathStartPoint();
     }
 
     this.isComputed = true;
@@ -144,6 +129,6 @@ export class FDLeg extends Leg {
   }
 
   get repr(): string {
-    return `FD(${this.dmeDistance.toFixed(1)}NM, ${this.course.toFixed(1)})`;
+    return `FC(${this.legLength.toFixed(1)}NM, ${this.course.toFixed(1)})`;
   }
 }
