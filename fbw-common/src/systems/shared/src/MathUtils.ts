@@ -314,7 +314,6 @@ export class MathUtils {
   /**
    * Convert Mach to Calibrated Air Speed
    * @param mach Mach
-   * @param oat Kelvin
    * @param pressure current pressure hpa
    * @returns Calibrated Air Speed
    */
