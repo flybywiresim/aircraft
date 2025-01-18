@@ -125,6 +125,7 @@
 1. [A380X/MFD] Add airport data page into the MFD (DATA > AIRPORT) - @bulenteroglu (senolitam)
 1. [A380X/EFB] Adds PRIM/SEC/FCDC failures to EFB - @flogross89 (floridude)
 1. [A380X/PFD] Fix precision of pitch trim indicator - @flogross89 (floridude)
+1. [A380X/MFD] Add leading zero to altitude prediction and track from last waypoint on FPLN page - @bulenteroglu (senolitam)
 1. [ATSU] Add MSFS as TAF source in MSFS2024 - @tracernz (Mike)
 
 ## 0.12.0
