@@ -206,4 +206,6 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   ): void;
 
   clearCheckSpeedModeMessage(): void;
+
+  reset(): void;
 }

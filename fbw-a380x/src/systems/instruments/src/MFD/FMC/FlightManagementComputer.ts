@@ -35,7 +35,6 @@ import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInte
 import {
   DatabaseItem,
   EfisSide,
-  FailuresConsumer,
   Fix,
   NXDataStore,
   UpdateThrottler,
@@ -207,13 +206,14 @@ export class FlightManagementComputer implements FmcInterface {
 
   private readonly legacyFmsIsHealthy = Subject.create(false);
 
+  private wasReset = false;
+
   constructor(
     private instance: FmcIndex,
     operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
-    private readonly isPowered: Subscribable<boolean>,
+    private readonly fmcInop: Subscribable<boolean>,
     mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null,
-    private readonly failuresConsumer: FailuresConsumer,
   ) {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
@@ -664,9 +664,9 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateThrustReductionAcceleration();
         }
 
-        pd.taxiFuelPilotEntry.set(null);
-        pd.routeReserveFuelPercentagePilotEntry.set(0.00001);
-        pd.routeReserveFuelWeightPilotEntry.set(0.00001);
+        pd.routeReserveFuelWeightPilotEntry.set(null);
+        pd.routeReserveFuelPercentagePilotEntry.set(0);
+        pd.routeReserveFuelWeightCalculated.set(0);
 
         this.fmgc.data.climbPredictionsReferenceAutomatic.set(
           this.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude,
@@ -899,27 +899,33 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private onUpdate(dt: number) {
-    if (!this.isPowered.get() || this.failuresConsumer.isActive(this.failureKey)) {
-      SimVar.SetSimVarValue(
-        `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
-        SimVarValueType.Bool,
-        false,
-      );
-      this.legacyFmsIsHealthy.set(false);
+    const isHealthy = !this.fmcInop.get();
+
+    SimVar.SetSimVarValue(
+      `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
+      SimVarValueType.Bool,
+      isHealthy,
+    );
+
+    // Stop early, if not FmcA or if all FMCs failed
+    const allFmcResetsPulled =
+      SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_A', SimVarValueType.Bool) &&
+      SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_B', SimVarValueType.Bool) &&
+      SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_B', SimVarValueType.Bool);
+    const allFmcInop =
+      !SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', SimVarValueType.Bool);
+
+    this.legacyFmsIsHealthy.set(!allFmcInop);
+    if (this.instance !== FmcIndex.FmcA || (this.instance === FmcIndex.FmcA && allFmcInop)) {
+      if (this.instance === FmcIndex.FmcA && (allFmcResetsPulled || allFmcInop) && this.wasReset === false) {
+        this.reset();
+      }
       return;
-    } else {
-      SimVar.SetSimVarValue(
-        `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
-        SimVarValueType.Bool,
-        true,
-      );
-      this.legacyFmsIsHealthy.set(true);
     }
 
-    // Stop early, if not FmcA
-    if (this.instance !== FmcIndex.FmcA) {
-      return;
-    }
+    this.wasReset = false;
 
     this.flightPhaseManager.shouldActivateNextPhase(dt);
 
@@ -1033,14 +1039,21 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   async swapNavDatabase(): Promise<void> {
-    // FIXME reset ATSU when it is added to A380X
-    // this.atsu.resetAtisAutoUpdate();
-    await this.flightPlanService.reset();
-    this.fmgc.data.reset();
-    this.initSimVars();
-    this.deleteAllStoredWaypoints();
-    this.clearLatestFmsErrorMessage();
-    this.mfdReference?.uiService.navigateTo('fms/data/status');
-    this.navigation.resetState();
+    await this.reset();
+  }
+
+  async reset(): Promise<void> {
+    if (this.instance === FmcIndex.FmcA) {
+      // FIXME reset ATSU when it is added to A380X
+      // this.atsu.resetAtisAutoUpdate();
+      this.wasReset = true;
+      await this.flightPlanService.reset();
+      this.fmgc.data.reset();
+      this.initSimVars();
+      this.deleteAllStoredWaypoints();
+      this.clearLatestFmsErrorMessage();
+      this.mfdReference?.uiService.navigateTo('fms/data/status');
+      this.navigation.resetState();
+    }
   }
 }
