@@ -3,7 +3,7 @@ import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayU
 import {
   ConsumerSubject,
   DisplayComponent,
-  EventSubscriber,
+  EventBus,
   FSComponent,
   MappedSubject,
   Subject,
@@ -26,7 +26,7 @@ import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAb
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
 
-  private readonly availChecker = new FwsEwdAvailabilityChecker(this.sub);
+  private readonly availChecker = new FwsEwdAvailabilityChecker(this.props.bus);
 
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
     ConsumerSubject.create(this.sub.on('engine_state_1'), 0),
@@ -297,7 +297,9 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
 }
 
 class FwsEwdAvailabilityChecker {
-  constructor(private sub: EventSubscriber<EwdSimvars>) {}
+  constructor(private bus: EventBus) {}
+
+  private readonly sub = this.bus.getSubscriber<EwdSimvars>();
 
   private readonly fws1IsHealthy = ConsumerSubject.create(this.sub.on('fws1_is_healthy'), true);
   private readonly fws2IsHealthy = ConsumerSubject.create(this.sub.on('fws2_is_healthy'), true);

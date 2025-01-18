@@ -287,7 +287,7 @@ export class ProcedureLinesGenerator {
   selectFirst() {
     if (
       (this.type === ProcedureType.Deferred || this.type === ProcedureType.Abnormal) &&
-      !this.checklistState.procedureActivated === false
+      this.checklistState.procedureActivated === false
     ) {
       this.selectedItemIndex.set(SPECIAL_INDEX_ACTIVATE);
       return;

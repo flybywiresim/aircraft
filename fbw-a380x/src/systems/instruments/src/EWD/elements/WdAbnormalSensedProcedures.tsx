@@ -57,7 +57,8 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
     super.onAfterRender(node);
 
     this.procedures.sub(() => this.updateChecklists(), true);
-    this.activeProcedureId.sub(() => this.updateChecklists());
+    this.activeProcedureId.sub(() => this.updateChecklists(), true);
+    this.props.fwsAvail?.sub(() => this.updateChecklists(), true);
   }
 
   render() {
