@@ -3,7 +3,7 @@
 
 import { Metar } from '@microsoft/msfs-sdk';
 import { AtsuStatusCodes, WeatherMessage } from '../../../common/src';
-import { isMsfs2024 } from 'shared/src';
+import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
 
 export class MsfsConnector {
   public static async receiveMsfsMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
