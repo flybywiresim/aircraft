@@ -130,6 +130,7 @@
 1. [FMS] Improved nav database error handling, preserving as much valid data as possible - @tracernz (Mike)
 1. [A32NX/FMS] Sort instrument procedures for display on the MCDU - @tracernz (Mike)
 1. [A380X/ELEC] Various fixes in the electrical system (battery voltage indicator switchup, AC GND SVC BUS and correct behavior of battery contactors) - @Gurgel100 (Pascal)
+1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
 
 ## 0.12.0
 
