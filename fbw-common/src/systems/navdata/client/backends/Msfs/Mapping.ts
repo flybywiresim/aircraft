@@ -69,6 +69,9 @@ import {
   TurnDirection as MSTurnDirection,
   VorClass as MSVorClass,
   VorType,
+  LandingSystemCategory,
+  SpeedRestrictionDescriptor,
+  JS_ICAO,
 } from './FsTypes';
 import { FacilityCache, LoadType } from './FacilityCache';
 import { Gate } from '../../../shared/types/Gate';
@@ -135,6 +138,16 @@ export class MsfsMapping {
     // MSFS doesn't give the airport elevation... so we take the mean of the runway elevations
     const elevation = elevations.reduce((a, b) => a + b, 0) / elevations.length;
 
+    const transitionAltitude =
+      msAirport.transitionAlt !== undefined && msAirport.transitionAlt > 0
+        ? Math.round(msAirport.transitionAlt / 0.3048)
+        : undefined;
+
+    const transitionLevel =
+      msAirport.transitionLevel !== undefined && msAirport.transitionLevel > 0
+        ? Math.round(msAirport.transitionLevel / 30.48)
+        : undefined;
+
     return {
       databaseId: msAirport.icao,
       sectionCode: SectionCode.Airport,
@@ -145,6 +158,8 @@ export class MsfsMapping {
       location: { lat: msAirport.lat, long: msAirport.lon, alt: elevation },
       longestRunwayLength: longestRunway[0],
       longestRunwaySurfaceType: this.mapRunwaySurface(longestRunway[1]?.surface),
+      transitionAltitude,
+      transitionLevel,
     };
   }
 
@@ -427,47 +442,61 @@ export class MsfsMapping {
     airport: JS_FacilityAirport,
     approach: JS_Approach | undefined,
   ): Promise<IlsNavaid> {
+    // ILS icaos always have a blank region code, so we have to get that from the airport
     const icaoCode = this.getIcaoCodeFromAirport(airport);
-    const airportIdent = FacilityCache.ident(airport.icao);
 
     let locBearing = -1;
-    let runwayIdent = '';
-    let gsSlope = undefined;
+    let gsSlope: IlsNavaid['gsSlope'] = undefined;
+    let gsLocation: IlsNavaid['gsLocation'] = undefined;
     let category = LsCategory.None;
+    let trueReferenced: IlsNavaid['trueReferenced'] = undefined;
 
-    let jsFrequency: JS_ILSFrequency | null = null;
-    for (const r of airport.runways) {
-      if (r.primaryILSFrequency.icao === ls.icao) {
-        jsFrequency = r.primaryILSFrequency;
-        runwayIdent = `${airportIdent}${r.designation.split('-')[0].padStart(2, '0')}${this.mapRunwayDesignator(r.designatorCharPrimary)}`;
-      } else if (r.secondaryILSFrequency.icao === ls.icao) {
-        jsFrequency = r.secondaryILSFrequency;
-        runwayIdent = `${airportIdent}${r.designation.split('-')[1].padStart(2, '0')}${this.mapRunwayDesignator(r.designatorCharSecondary)}`;
-      }
-    }
+    // TODO don't need all these hax in FS2024, as we have ls.ils
 
-    if (jsFrequency !== null) {
-      const nameMatch = jsFrequency.name.match(MsfsMapping.ILS_CAT_REGEX);
-      if (nameMatch !== null) {
-        category = this.mapIlsCatString(nameMatch[1]);
-      }
-      locBearing = jsFrequency.localizerCourse;
-      gsSlope = jsFrequency.hasGlideslope ? jsFrequency.glideslopeAngle : undefined;
-    } else if (approach) {
-      runwayIdent = `${airportIdent}${approach.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
-      gsSlope = this.approachHasGlideslope(approach)
-        ? approach.finalLegs[approach.finalLegs.length - 1].verticalAngle - 360
-        : undefined;
-
-      const [bearing, bearingIsTrue] = await this.getFinalApproachCourse(airport, approach);
-      if (bearing !== undefined) {
-        locBearing = bearingIsTrue ? this.trueToMagnetic(bearing, -ls.magneticVariation) : bearing;
+    if (ls.ils) {
+      // >= MSFS2024
+      locBearing = ls.ils.localizerCourse;
+      gsLocation = {
+        lat: ls.ils?.glideslopeLat!,
+        long: ls.ils?.glideslopeLon!,
+        alt: ls.ils?.glideslopeAlt,
+      };
+      gsSlope = ls.ils.hasGlideslope ? -ls.ils.glideslopeAngle : undefined;
+      category = this.mapLsCategory(ls.ils.lsCategory);
+      trueReferenced = ls.trueReferenced;
+    } else {
+      // MSFS2020, we need some hax
+      let jsFrequency: JS_ILSFrequency | null = null;
+      for (const r of airport.runways) {
+        if (r.primaryILSFrequency.icao === ls.icao) {
+          jsFrequency = r.primaryILSFrequency;
+        } else if (r.secondaryILSFrequency.icao === ls.icao) {
+          jsFrequency = r.secondaryILSFrequency;
+        }
       }
 
-      if (ls.name.length > 0) {
-        const nameMatch = ls.name.match(MsfsMapping.ILS_CAT_REGEX);
+      if (jsFrequency !== null) {
+        const nameMatch = jsFrequency.name.match(MsfsMapping.ILS_CAT_REGEX);
         if (nameMatch !== null) {
           category = this.mapIlsCatString(nameMatch[1]);
+        }
+        locBearing = jsFrequency.localizerCourse;
+        gsSlope = jsFrequency.hasGlideslope ? jsFrequency.glideslopeAngle : undefined;
+      } else if (approach) {
+        gsSlope = this.approachHasGlideslope(approach)
+          ? approach.finalLegs[approach.finalLegs.length - 1].verticalAngle - 360
+          : undefined;
+
+        const [bearing, bearingIsTrue] = await this.getFinalApproachCourse(airport, approach);
+        if (bearing !== undefined) {
+          locBearing = bearingIsTrue ? this.trueToMagnetic(bearing, -ls.magneticVariation) : bearing;
+        }
+
+        if (ls.name.length > 0) {
+          const nameMatch = ls.name.match(MsfsMapping.ILS_CAT_REGEX);
+          if (nameMatch !== null) {
+            category = this.mapIlsCatString(nameMatch[1]);
+          }
         }
       }
     }
@@ -480,12 +509,39 @@ export class MsfsMapping {
       ident: FacilityCache.ident(ls.icao),
       frequency: ls.freqMHz,
       category,
-      runwayIdent,
       locLocation: { lat: ls.lat, long: ls.lon },
       locBearing,
       stationDeclination: MathUtils.normalise180(360 - ls.magneticVariation),
       gsSlope,
+      gsLocation,
+      trueReferenced,
     };
+  }
+
+  private mapLsCategory(lsCategory?: LandingSystemCategory): LsCategory {
+    switch (lsCategory) {
+      case LandingSystemCategory.Cat1:
+        return LsCategory.Category1;
+      case LandingSystemCategory.Cat2:
+        return LsCategory.Category2;
+      case LandingSystemCategory.Cat3:
+        return LsCategory.Category3;
+      case LandingSystemCategory.Igs:
+        return LsCategory.IgsOnly;
+      case LandingSystemCategory.LdaNoGs:
+        return LsCategory.LdaOnly;
+      case LandingSystemCategory.LdaWithGs:
+        return LsCategory.LdaGlideslope;
+      case LandingSystemCategory.Localizer:
+        return LsCategory.LocOnly;
+      case LandingSystemCategory.SdfNoGs:
+        return LsCategory.SdfOnly;
+      case LandingSystemCategory.SdfWithGs:
+        return LsCategory.SdfGlideslope;
+      case LandingSystemCategory.None:
+        return LsCategory.None;
+    }
+    return LsCategory.None;
   }
 
   private approachHasGlideslope(approach: JS_Approach): boolean {
@@ -618,9 +674,14 @@ export class MsfsMapping {
           const approachName = this.mapApproachName(approach);
           const suffix = approach.approachSuffix.length > 0 ? approach.approachSuffix : undefined;
 
-          // the AR flag is not available so we use this heuristic based on analysing the MSFS data
-          const authorisationRequired = approach.approachType === MSApproachType.Rnav && approach.rnavTypeFlags === 0;
+          // The AR flag is only available from MSFS2024, so fall back to a heuristic based on analysing the MSFS2020 data if not available.
+          const authorisationRequired =
+            approach.rnpAr !== undefined
+              ? approach.rnpAr
+              : approach.approachType === MSApproachType.Rnav && approach.rnavTypeFlags === 0;
           const rnp = authorisationRequired ? 0.3 : undefined;
+          const missedApproachAuthorisationRequired =
+            approach.rnpArMissed !== undefined ? approach.rnpArMissed : authorisationRequired;
 
           const runwayIdent = `${airportIdent}${approach.runwayNumber.toString().padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
 
@@ -639,6 +700,7 @@ export class MsfsMapping {
             multipleIndicator: approach.approachSuffix,
             type: this.mapApproachType(approach.approachType),
             authorisationRequired,
+            missedApproachAuthorisationRequired,
             levelOfService,
             transitions,
             legs: approach.finalLegs.map((leg, legIndex) =>
@@ -664,6 +726,7 @@ export class MsfsMapping {
       databaseId: `P${icaoCode}${airportIdent}${arrival.name}`,
       icaoCode,
       ident: arrival.name,
+      authorisationRequired: arrival.rnpAr ?? false,
       commonLegs: arrival.commonLegs.map((leg, legIndex) =>
         this.mapLeg(leg, legIndex, facilities, msAirport, arrival.name),
       ),
@@ -683,12 +746,16 @@ export class MsfsMapping {
     const facilities = await this.loadFacilitiesFromProcedures(msAirport.departures);
 
     return msAirport.departures.map((departure) => {
-      const commonLegsAreAr = this.isAnyRfLegPresent(departure.commonLegs);
-      const commonLegsRnp = commonLegsAreAr ? 0.3 : undefined;
-      const authorisationRequired =
-        commonLegsAreAr ||
-        this.isAnyRfLegPresent(departure.runwayTransitions) ||
-        this.isAnyRfLegPresent(departure.enRouteTransitions);
+      let authorisationRequired = departure.rnpAr;
+      if (authorisationRequired === undefined) {
+        // fallback heuristic for MSFS2020
+        authorisationRequired =
+          this.isAnyRfLegPresent(departure.commonLegs) ||
+          this.isAnyRfLegPresent(departure.runwayTransitions) ||
+          this.isAnyRfLegPresent(departure.enRouteTransitions);
+      }
+
+      const commonLegsRnp = authorisationRequired ? 0.3 : undefined;
 
       return {
         sectionCode: SectionCode.Airport,
@@ -744,6 +811,71 @@ export class MsfsMapping {
         location,
       };
     });
+  }
+
+  public static mapIcaoStructToIcao(icaoStruct: JS_ICAO): string {
+    return `${icaoStruct.type}${icaoStruct.region.padEnd(2)}${icaoStruct.airport.padEnd(4)}${icaoStruct.ident.padEnd(5)}`;
+  }
+
+  public async mapHolds(msAirport: JS_FacilityAirport): Promise<ProcedureLeg[]> {
+    // FIXME cache
+    const ret: ProcedureLeg[] = [];
+    // Not in MSFS2020
+    if (msAirport.holdingPatterns) {
+      for (const hold of msAirport.holdingPatterns) {
+        const rawFix = await this.cache.getFacility(
+          MsfsMapping.mapIcaoStructToIcao(hold.icaoStruct),
+          LoadType.Intersection,
+        );
+        if (!rawFix) {
+          console.warn('Failed to load fix for hold', hold);
+          continue;
+        }
+        const waypoint = this.mapFacilityToWaypoint(rawFix);
+
+        let altitudeDescriptor: ProcedureLeg['altitudeDescriptor'] = undefined;
+        let altitude1: ProcedureLeg['altitude1'] = undefined;
+        let altitude2: ProcedureLeg['altitude1'] = undefined;
+        switch (true) {
+          case hold.minAltitude > 0 && hold.maxAltitude > 0:
+            altitudeDescriptor = AltitudeDescriptor.BetweenAlt1Alt2;
+            altitude1 = hold.maxAltitude;
+            altitude2 = hold.minAltitude;
+            break;
+          case hold.minAltitude > 0:
+            altitudeDescriptor = AltitudeDescriptor.AtOrAboveAlt1;
+            altitude1 = hold.minAltitude;
+            break;
+          case hold.maxAltitude > 0:
+            altitudeDescriptor = AltitudeDescriptor.AtOrBelowAlt1;
+            altitude1 = hold.maxAltitude;
+            break;
+        }
+
+        const speedDescriptor: ProcedureLeg['speedDescriptor'] = hold.speed > 0 ? SpeedDescriptor.Maximum : undefined;
+        const speed: ProcedureLeg['speed'] = hold.speed > 0 ? hold.speed : undefined;
+
+        ret.push({
+          type: LegType.HM,
+          procedureIdent: hold.name,
+          overfly: true,
+          waypoint,
+          arcRadius: hold.radius > 0 ? hold.radius / 1852 : undefined,
+          length: hold.legLength > 0 ? hold.legLength / 1852 : undefined,
+          lengthTime: hold.legTime,
+          rnp: hold.rnp > 0 ? hold.rnp / 1852 : undefined,
+          altitudeDescriptor,
+          altitude1,
+          altitude2,
+          speedDescriptor,
+          speed,
+          turnDirection: hold.turnRight ? TurnDirection.Right : TurnDirection.Left,
+          magneticCourse: hold.inboundCourse,
+        });
+      }
+    }
+
+    return ret;
   }
 
   private async loadFacilitiesFromProcedures(procedures: JS_Procedure[]): Promise<Map<string, JS_Facility>> {
@@ -912,7 +1044,7 @@ export class MsfsMapping {
     airport: JS_FacilityAirport,
     procedureIdent: string,
     approachType?: MSApproachType,
-    rnp?: number,
+    fallbackRnp?: number,
   ): ProcedureLeg {
     const arcCentreFixFacility = FacilityCache.validFacilityIcao(leg.arcCenterFixIcao)
       ? facilities.get(leg.arcCenterFixIcao)
@@ -943,6 +1075,14 @@ export class MsfsMapping {
     const approachWaypointDescriptor =
       approachType !== undefined ? this.mapMsLegToApproachWaypointDescriptor(leg, legIndex, approachType) : undefined;
 
+    const rnp = leg.rnp !== undefined ? (leg.rnp > 0 ? leg.rnp / 1852 : undefined) : fallbackRnp;
+
+    // speedRestrictionType is currently bugged, so ignore it for now until fixed.
+    const speedDescriptor =
+      /*leg.speedRestrictionType !== undefined
+        ? this.mapSpeedDescriptor(leg.speedRestrictionType)
+        :*/ leg.speedRestriction > 0 ? SpeedDescriptor.Maximum : undefined;
+
     // TODO for approach, pass approach type to mapMsAltDesc
     return {
       procedureIdent,
@@ -959,8 +1099,8 @@ export class MsfsMapping {
       altitudeDescriptor: this.mapMsAltDesc(leg.altDesc, leg.fixTypeFlags, approachType, approachWaypointDescriptor),
       altitude1: Math.round(leg.altitude1 / 0.3048),
       altitude2: Math.round(leg.altitude2 / 0.3048),
-      speed: leg.speedRestriction > 0 ? leg.speedRestriction : undefined,
-      speedDescriptor: leg.speedRestriction > 0 ? SpeedDescriptor.Maximum : undefined,
+      speed: speedDescriptor !== undefined ? leg.speedRestriction : undefined,
+      speedDescriptor,
       turnDirection: this.mapMsTurnDirection(leg.turnDirection),
       magneticCourse: leg.course, // TODO check magnetic/true
       waypointDescriptor: this.mapMsIcaoToWaypointDescriptor(leg.fixIcao),
@@ -968,6 +1108,20 @@ export class MsfsMapping {
       verticalAngle: Math.abs(leg.verticalAngle) > Number.EPSILON ? leg.verticalAngle - 360 : undefined,
       rnp,
     };
+  }
+
+  private mapSpeedDescriptor(desc: SpeedRestrictionDescriptor): SpeedDescriptor | undefined {
+    switch (desc) {
+      case SpeedRestrictionDescriptor.At:
+        return SpeedDescriptor.Mandatory;
+      case SpeedRestrictionDescriptor.AtOrAbove:
+        return SpeedDescriptor.Minimum;
+      case SpeedRestrictionDescriptor.AtOrBelow:
+        return SpeedDescriptor.Maximum;
+      case SpeedRestrictionDescriptor.Between:
+      case SpeedRestrictionDescriptor.Unused:
+        return undefined;
+    }
   }
 
   private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): TerminalWaypoint | undefined {
@@ -985,6 +1139,7 @@ export class MsfsMapping {
           ident: runwayIdent,
           location: runway.thresholdLocation,
           area: WaypointArea.Terminal,
+          airportIdent,
         };
       }
     }
@@ -1040,14 +1195,19 @@ export class MsfsMapping {
   }
 
   private getIcaoCodeFromAirport(msAirport: JS_FacilityAirport): string {
+    if (msAirport.icaoStruct?.region?.length === 2) {
+      return msAirport.icaoStruct.region;
+    }
+
     const mapIcaos = msAirport.approaches.map((appr) => appr.finalLegs[appr.finalLegs.length - 1].fixIcao);
     // we do a little hack...
     return mapIcaos.length > 0 ? mapIcaos[0].substring(1, 3) : '  ';
   }
 
   public mapFacilityToWaypoint<T extends JS_Facility>(facility: T): FacilityType<T> {
+    const airportIdent = facility.icao.substring(3, 7).trim();
     // TODO this is a hack
-    const isTerminalVsEnroute = facility.icao.substring(3, 7).trim().length > 0;
+    const isTerminalVsEnroute = airportIdent.length > 0;
 
     const databaseItem = {
       databaseId: facility.icao,
@@ -1056,6 +1216,7 @@ export class MsfsMapping {
       name: Utils.Translate(facility.name),
       location: { lat: facility.lat, long: facility.lon },
       area: isTerminalVsEnroute ? WaypointArea.Terminal : WaypointArea.Enroute,
+      airportIdent: isTerminalVsEnroute ? airportIdent : undefined,
     };
 
     // TODO: VORs are also stored as intersections in the database. In this case, their ICAO starts with "V" but they are of type
@@ -1083,6 +1244,7 @@ export class MsfsMapping {
           range: this.mapVorRange(vor),
           figureOfMerit: this.mapVorFigureOfMerit(vor),
           stationDeclination: MathUtils.normalise180(360 - vor.magneticVariation),
+          trueReferenced: vor.trueReferenced,
           dmeLocation: (vor.type & VorType.DME) > 0 ? databaseItem.location : undefined,
           type: this.mapVorType(vor),
           class: this.mapVorClass(vor),

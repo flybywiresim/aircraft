@@ -5,6 +5,7 @@
   DisplayComponent,
   FSComponent,
   MappedSubject,
+  MathUtils,
   NodeReference,
   Subject,
   Subscribable,
@@ -1303,7 +1304,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           this.fpaRef.instance.innerText = '';
         } else {
           this.trackRef.instance.innerText = data.trackFromLastWpt
-            ? `${data.trackFromLastWpt.toFixed(0)}°${this.props.trueTrack.get() ? 'T' : ''}`
+            ? `${data.trackFromLastWpt.toFixed(0).padStart(3, '0')}°${this.props.trueTrack.get() ? 'T' : ''}`
             : '';
           this.distRef.instance.innerText = data.distFromLastWpt?.toFixed(0) ?? '';
           this.fpaRef.instance.innerText = data.fpa ? data.fpa.toFixed(1) : '';
@@ -1444,9 +1445,14 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       ) {
         altStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
       } else if (!isBelowTransAlt) {
-        altStr = <span>{`FL${Math.round(data.altitudePrediction / 100).toString()}`}</span>;
+        altStr = (
+          <span>{`FL${Math.round(data.altitudePrediction / 100)
+            .toString()
+            .padStart(3, '0')}`}</span>
+        );
       } else {
-        altStr = <span>{data.altitudePrediction.toFixed(0)}</span>;
+        const roundedAltitude = MathUtils.round(data.altitudePrediction, 10).toFixed(0);
+        altStr = <span>{roundedAltitude}</span>;
       }
     }
     if (data.hasAltitudeConstraint && data.altitudePrediction) {
