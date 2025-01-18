@@ -786,6 +786,10 @@ export class FixFormat implements DataEntryFormat<Fix, string> {
   public readonly maxDigits = 7;
 
   async parse(input: string): Promise<string | null> {
+    if (input.trim().length === 0) {
+      return null;
+    }
+
     if (WaypointEntryUtils.isPlaceFormat(input) || WaypointEntryUtils.isRunwayFormat(input)) {
       return input;
     }

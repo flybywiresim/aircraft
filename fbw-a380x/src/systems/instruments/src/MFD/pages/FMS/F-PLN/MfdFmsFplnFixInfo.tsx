@@ -67,8 +67,9 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                 <InputField<AnyFix, string, false>
                   readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.fix ?? null)}
                   onModified={async (text) => {
-                    if (!text) {
-                      return null;
+                    if (text === null) {
+                      void this.props.fmcService.master!.flightPlanService.setFixInfoEntry(value, null);
+                      return;
                     }
 
                     const fix = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master!, text, true);
@@ -113,19 +114,19 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                         (it) => it?.radials?.[0]?.magneticBearing ?? null,
                       )}
                       onModified={(radial) => {
-                        if (radial === null) {
-                          return;
-                        }
-
                         this.props.fmcService.master?.flightPlanService.editFixInfoEntry(value, (fixInfo) => {
                           if (!fixInfo.radials) {
                             fixInfo.radials = [];
                           }
 
-                          fixInfo.radials[0] = {
-                            magneticBearing: radial,
-                            trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
-                          };
+                          if (radial !== null) {
+                            fixInfo.radials[0] = {
+                              magneticBearing: radial,
+                              trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                            };
+                          } else {
+                            delete fixInfo.radials[0];
+                          }
 
                           return fixInfo;
                         });
@@ -147,19 +148,19 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                         (it) => it?.radials?.[1]?.magneticBearing ?? null,
                       )}
                       onModified={(radial) => {
-                        if (radial === null) {
-                          return;
-                        }
-
                         this.props.fmcService.master?.flightPlanService.editFixInfoEntry(value, (fixInfo) => {
                           if (!fixInfo.radials) {
                             fixInfo.radials = [];
                           }
 
-                          fixInfo.radials[1] = {
-                            magneticBearing: radial,
-                            trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
-                          };
+                          if (radial !== null) {
+                            fixInfo.radials[1] = {
+                              magneticBearing: radial,
+                              trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                            };
+                          } else {
+                            delete fixInfo.radials[1];
+                          }
 
                           return fixInfo;
                         });
@@ -186,16 +187,16 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       disabled={this.flightPlan.fixInfos[value].map((it) => it?.fix === undefined)}
                       readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.radii?.[0]?.radius ?? null)}
                       onModified={(radius) => {
-                        if (radius === null) {
-                          return;
-                        }
-
                         this.props.fmcService.master?.flightPlanService.editFixInfoEntry(value, (fixInfo) => {
                           if (!fixInfo.radii) {
                             fixInfo.radii = [];
                           }
 
-                          fixInfo.radii[0] = { radius };
+                          if (radius !== null) {
+                            fixInfo.radii[0] = { radius };
+                          } else {
+                            delete fixInfo.radii[0];
+                          }
 
                           return fixInfo;
                         });
