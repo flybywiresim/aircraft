@@ -9,6 +9,7 @@ import { OitUiService, OitUriInformation } from 'instruments/src/OIT/OitUiServic
 import { OitNotFound } from 'instruments/src/OIT/pages/OitNotFound';
 import { pageForUrl } from 'instruments/src/OIT/OitPageDirectory';
 import { OitHeader } from 'instruments/src/OIT/OitHeader';
+import { OitFooter } from 'instruments/src/OIT/OitFooter';
 
 export interface AbstractOitPageProps extends ComponentProps {
   bus: EventBus;
@@ -76,6 +77,7 @@ export class OIT extends DisplayComponent<OitProps> {
       <div ref={this.topRef} class="oit-main">
         <OitHeader uiService={this.uiService} oit={this} />
         <div ref={this.activePageRef} class="mfd-navigator-container" />
+        <OitFooter uiService={this.uiService} oit={this} />
       </div>
     );
   }

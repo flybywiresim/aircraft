@@ -1,5 +1,7 @@
 import { DisplayComponent, FSComponent, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
+import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { OIT } from 'instruments/src/OIT/OIT';
 import { OitUiService } from 'instruments/src/OIT/OitUiService';
 
@@ -46,19 +48,27 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             { label: 'EXPORT BOX', action: () => this.props.uiService.navigateTo('flt-ops/export-box') },
             { label: 'EXIT SESSION', action: () => this.props.uiService.navigateTo('flt-ops/exit-session') },
           ]}
-          idPrefix={`${this.props.uiService.captOrFo}_OIT_menu`}
+          idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_menu`}
+          labelStyle="font-family: OIT; font-size: 28px; margin: 7px 0px 7px 0px;"
+          containerStyle="height: 60px;"
         />
-        <div class="oit-label cyan biggest">
-          {this.props.uiService.activeUri.map((uri) => heading[`${uri.sys}/${uri.page}`] ?? '<HEADING>')}
-        </div>
+        <div class="oit-heading">{this.props.uiService.activeUri.map((uri) => heading[uri.uri] ?? 'FIXME')}</div>
+        <div style="flex-grow: 1" />
         <PageSelectorDropdownMenu
           isActive={SubscribableUtils.toSubscribable(false, true)}
           label="FUNCTIONS"
-          menuItems={[{ label: 'BLANK', action: () => this.props.uiService.navigateTo('flt-ops'), disabled: true }]}
-          idPrefix={`${this.props.uiService.captOrFo}_OIT_menu`}
+          menuItems={[
+            { label: 'BLANK', action: () => this.props.uiService.navigateTo('flt-ops') },
+            { label: 'BLANK', action: () => this.props.uiService.navigateTo('flt-ops') },
+          ]}
+          idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_functions`}
+          labelStyle="font-family: OIT; font-size: 28px; margin: 7px 0px 7px 0px;"
+          containerStyle="height: 60px"
         />
-        <div class="oit-label bigger">0 MSG</div>
-        <div style="flex-grow: 1" />
+        <div class="oit-msg-header">0 MSG</div>
+        <div class="oit-msg-box"></div>
+        <IconButton icon={'single-down'} containerStyle="width: 60px; height: 60px;" />
+        <Button label={'CLEAR'} onClick={() => {}} buttonStyle="font-family: OIT; font-size: 28px; height: 60px;" />
       </div>
     );
   }
