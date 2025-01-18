@@ -48,7 +48,7 @@ Status legend:
 | 🟥 | fms/sec/index | 4 | tbd |
 |  |  |  |  |
 | ✅ | fms/data/status | 2 | FMS P/N page, swap DB, idle/perf factors  |
-| 🟥 | fms/data/airport | 2 | tbd |
+| ✅ | fms/data/airport | 2 | pilot stored runways missing |
 | 🟥 | fms/data/navaid | 2 | tbd |
 | 🟥 | fms/data/waypoint | 2 | tbd |
 | 🟥 | fms/data/printer | 4 | tbd |
