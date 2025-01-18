@@ -11,6 +11,7 @@ import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
@@ -57,6 +58,8 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
 
   private abnormalRef = FSComponent.createRef<SVGGElement>();
 
+  private readonly hdgFlagVisible = Subject.create(false);
+
   private heading = Subject.create(0);
 
   private ILSCourse = Subject.create(0);
@@ -77,9 +80,11 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
         if (word.isNormalOperation()) {
           this.normalRef.instance.style.visibility = 'visible';
           this.abnormalRef.instance.style.visibility = 'hidden';
+          this.hdgFlagVisible.set(false);
         } else {
           this.normalRef.instance.style.visibility = 'hidden';
           this.abnormalRef.instance.style.visibility = 'visible';
+          this.hdgFlagVisible.set(true);
         }
       });
 
@@ -104,9 +109,11 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
         <g ref={this.abnormalRef}>
           <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" class="TapeBackground" />
           <path id="HeadingTapeOutline" class="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />
-          <text id="HDGFailText" class="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">
-            HDG
-          </text>
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.hdgFlagVisible}>
+            <text id="HDGFailText" class="FontLargest EndAlign Red" x="75.926208" y="151.95506">
+              HDG
+            </text>
+          </FlashOneHertz>
         </g>
         <g id="HeadingOfftapeGroup" ref={this.normalRef}>
           <path id="HeadingTapeOutline" class="NormalStroke White" d="m32.138 156.23v-10.886h73.536v10.886" />

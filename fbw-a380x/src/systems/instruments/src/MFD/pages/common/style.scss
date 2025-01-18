@@ -21,7 +21,7 @@
   width: 768px;
   height: 1024px; /* 1:1.33 W:H  */
   background: $display-background;
-  font-family: "Ecam", monospace !important;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   display: flex;
   flex-direction: column;
 }
@@ -29,7 +29,7 @@
 .mfd-label {
   font-size: 20px;
   color: $display-white;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
 }
 
 .mfd-label.green {
@@ -99,7 +99,7 @@
   font-size: 22px;
   background-color: $display-mfd-darker-grey;
   color: $display-white;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   text-align: center;
   align-items: center;
   justify-content: center;
@@ -451,7 +451,7 @@
 }
 
 .mfd-context-menu {
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   background-color: $display-mfd-darker-grey;
   border: 2px outset $display-light-grey;
   position: absolute;
@@ -721,7 +721,7 @@
   margin-left: 15px;
   font-size: 26px;
   color: $display-background;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
 }
 
 .fr {
@@ -771,9 +771,55 @@
 .mfd-surv-label {
   font-size: 20px;
   color: $display-white;
-  font-family: "Ecam", monospace;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   text-align: center;
   margin-bottom: 2px;
+}
+
+.mfd-surv-status-button {
+  background-color: #3c3c3c;
+  height: 60px;
+  width: 90px;
+  position: absolute;
+  top: -35px;
+  left: 0px;
+  right: 0px;
+  margin: auto;
+  border: 2px solid $display-light-grey;
+}
+
+.mfd-surv-status-button:hover {
+  border-color: $display-cyan;
+}
+
+.mfd-surv-status-button-label {
+  text-align: center;
+  font-size: 22px;
+  padding-top: 3px;
+  color: $display-white;
+  font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
+}
+
+.mfd-surv-status-indicator {
+  width: 100%;
+  height: 14.3%;
+  background-color: $display-light-grey;
+}
+
+.mfd-surv-status-indicator.active {
+  background-color: $display-green;
+}
+
+.mfd-surv-status-item {
+  font-size: 24px;
+}
+
+.mfd-surv-status-item.active {
+  color: $display-green;
+}
+
+.mfd-surv-status-item.failed {
+  color: $display-amber;
 }
 
 .hidden {
@@ -804,4 +850,13 @@
   font-size: 20px;
   color: $display-dark-grey;
   font-family: "Ecam", monospace;
+}
+
+.mfd-amber-error-message {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  color: $display-amber;
+  font-size: 24px;
 }

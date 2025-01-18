@@ -693,8 +693,8 @@ impl ZoneController {
         pressurization: &impl CabinAltitude,
         zone_measured_temperature: ThermodynamicTemperature,
     ) -> ThermodynamicTemperature {
-        let altitude_correction: f64 =
-            pressurization.altitude().get::<foot>() * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
+        let altitude_correction: f64 = pressurization.altitude().get::<foot>().max(0.)
+            * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
         let corrected_selected_temp: f64 =
             self.zone_selected_temperature.get::<kelvin>() + altitude_correction;
 

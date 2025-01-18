@@ -1736,7 +1736,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
   bool athr_instinctive_disc = simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
-  bool ap_instinctive_disc = simInputAutopilot.AP_disconnect || idCaptPriorityButtonPressed->get() || idFoPriorityButtonPressed->get();
+  bool ap_instinctive_disc = simInputAutopilot.AP_disconnect;
 
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.is_unit_1 = fmgcIndex == 0;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.athr_opp_engaged = fmgcsDiscreteOutputs[oppFmgcIndex].athr_own_engaged;
@@ -2116,6 +2116,7 @@ bool FlyByWireInterface::updateFcu(double sampleTime) {
   fcu.modelInputs.in.discrete_inputs.fd_2_engaged = fmgcsDiscreteOutputs[1].fd_own_engaged;
   fcu.modelInputs.in.discrete_inputs.athr_2_engaged = fmgcsDiscreteOutputs[1].athr_own_engaged;
   fcu.modelInputs.in.discrete_inputs.lights_test = idLightsTest->get();
+  fcu.modelInputs.in.discrete_inputs.pin_prog_qfe_avail = false;
 
   fcu.modelInputs.in.discrete_inputs.capt_efis_inputs = simConnectInterface.getFcuEfisPanelInputs(0);
   fcu.modelInputs.in.discrete_inputs.capt_efis_inputs.efis_mode = static_cast<efis_mode_selection>(idFcuEisPanelEfisMode[0]->get());

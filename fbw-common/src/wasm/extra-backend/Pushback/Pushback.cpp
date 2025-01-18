@@ -120,7 +120,7 @@ bool Pushback::preUpdate([[maybe_unused]] sGaugeDrawData* pData) {
 
 bool Pushback::update(sGaugeDrawData* pData) {
   if (!_isInitialized) {
-    std::cerr << "Pushback::update() - not initialized" << std::endl;
+    LOG_ERROR("Pushback::update() - not initialized");
     return false;
   }
 
@@ -164,7 +164,7 @@ bool Pushback::update(sGaugeDrawData* pData) {
       helper::Math::angleAdd(pushbackBaseInfoPtr->data().aircraftHeading, tugCommandedHeadingFactor->get() * -90);
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   // https://docs.flightsimulator.com/html/Programming_Tools/Event_IDs/Aircraft_Misc_Events.htm#TUG_HEADING
-  const uint32_t convertedComputedTugHeading = static_cast<uint32_t>(computedTugHdg * (UINT32_MAX / 360));
+  const auto convertedComputedTugHeading = static_cast<uint32_t>(computedTugHdg * (UINT32_MAX / 360));
 
   // send K:KEY_TUG_HEADING event
   tugHeadingEvent->trigger(convertedComputedTugHeading);

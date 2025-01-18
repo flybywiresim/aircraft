@@ -741,22 +741,22 @@
             <!-- OUTFLOW VALVE 1-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>outflow_valve_1</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
             </UseTemplate>
             <!-- OUTFLOW VALVE 2-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>outflow_valve_2</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
             </UseTemplate>
             <!-- OUTFLOW VALVE 3-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>outflow_valve_3</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
             </UseTemplate>
             <!-- OUTFLOW VALVE 4-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>outflow_valve_4</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
             </UseTemplate>
         </Component>
 

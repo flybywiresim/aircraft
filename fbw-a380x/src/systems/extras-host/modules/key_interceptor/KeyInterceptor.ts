@@ -80,6 +80,7 @@ export class KeyInterceptor {
     // --- RADIO NAVIGATION MISC events ---
     COPILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
     PILOT_TRANSMITTER_SET: { handler: this.onComTxSelect.bind(this) },
+    // --- EXTERNAL POWER events ---
   };
 
   private publisher = this.bus.getPublisher<InterRmpBusEvents>();

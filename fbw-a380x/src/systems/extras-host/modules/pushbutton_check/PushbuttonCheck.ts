@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DebounceTimer, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
-import { NotificationManager, NotificationTheme } from '@flybywiresim/fbw-sdk';
-import { ExtrasSimVarEvents } from 'extras-host/modules/common/ExtrasSimVarPublisher';
+import { BaseExtrasSimVarEvents, NotificationManager, NotificationTheme } from '@flybywiresim/fbw-sdk';
 
 /**
  * Monitors cockpit pushbuttons that may be written externally to ensure they are not "stuck" because
@@ -13,7 +12,7 @@ export class PushbuttonCheck {
   /** Maximum time in ms that TO CONF can be pressed before it is considered "stuck" */
   private static readonly TO_CONFIG_MAX_PRESS_TIME = 30000;
 
-  private readonly sub = this.bus.getSubscriber<ExtrasSimVarEvents>();
+  private readonly sub = this.bus.getSubscriber<BaseExtrasSimVarEvents>();
 
   private readonly fwcFlightPhase = ConsumerSubject.create(null, 1);
 
