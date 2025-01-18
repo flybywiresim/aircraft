@@ -67,6 +67,8 @@ export class FwsNormalChecklists {
 
   private deferredProcedures: ProcedureLinesGenerator[] = [];
 
+  private deferredAutoDisplayWasTriggered = false;
+
   private activeProcedure: ProcedureLinesGenerator;
 
   constructor(private fws: FwsCore) {
@@ -127,7 +129,7 @@ export class FwsNormalChecklists {
           this.activeDeferredProcedureId.set(null);
           return;
         }
-        const firstProcedureKey = this.visibleDeferredProcedureKeys[0];
+        const firstProcedureKey = this.visibleDeferredProcedureKeys[0] ?? null;
         this.activeDeferredProcedureId.set(firstProcedureKey);
         this.visibleDeferredProcedureKeys.forEach((key) => {
           const proc = this.fws.activeDeferredProceduresList.getValue(key);
@@ -237,31 +239,21 @@ export class FwsNormalChecklists {
     this.selectedLine.sub(() => this.scrollToSelectedLine());
   }
 
-  getNormalProceduresKeysSorted(onlyVisible = false) {
+  getNormalProceduresKeysSorted() {
     return Object.keys(EcamNormalProcedures)
       .map((v) => parseInt(v))
-      .filter((v, index) => {
-        if (onlyVisible && deferredProcedureIds.includes(v) && this.checklistState.getValue(0)?.itemsToShow[index]) {
-          return false;
-        } else {
-          return true;
-        }
-      })
       .sort((a, b) => a - b);
   }
 
   selectFirst() {
     if (this.checklistId.get() === 0) {
       // Find first non-completed checklist
-      const keys = this.getNormalProceduresKeysSorted(true);
-      let firstIncompleteChecklist = 0;
-      keys.some((key, index) => {
-        if (!this.checklistState.getValue(key).procedureCompleted) {
-          firstIncompleteChecklist = index;
-          return true;
-        }
-      });
-      this.selectedLine.set(firstIncompleteChecklist);
+      const keys = this.getNormalProceduresKeysSorted();
+      const firstIncompleteChecklist = keys.findIndex(
+        (key, index) =>
+          this.checklistState.getValue(0).itemsToShow[index] && !this.checklistState.getValue(key).procedureCompleted,
+      );
+      this.selectedLine.set(firstIncompleteChecklist !== -1 ? firstIncompleteChecklist : 0);
     } else {
       this.activeProcedure.selectFirst();
     }
@@ -273,12 +265,12 @@ export class FwsNormalChecklists {
         .map((_, index) => (this.checklistState.getValue(0).itemsToShow[index] ? index : null))
         .filter((v) => v !== null);
       this.selectedLine.set(Math.max(shownItems[shownItems.indexOf(this.selectedLine.get()) - 1] ?? 0, 0));
-    } else {
+    } else if (deferredProcedureIds.includes(this.checklistId.get())) {
       if (this.activeDeferredProcedureId.get() !== null) {
-        if (this.activeProcedure.lastLineIsSelected()) {
+        if (this.activeProcedure.firstLineIsSelected()) {
           const curDefIndex = this.visibleDeferredProcedureKeys.indexOf(this.activeDeferredProcedureId.get());
           if (curDefIndex !== -1 && curDefIndex > 0) {
-            this.activeDeferredProcedureId.set(this.visibleDeferredProcedureKeys[curDefIndex - 1]);
+            this.activeDeferredProcedureId.set(this.visibleDeferredProcedureKeys[curDefIndex - 1] ?? null);
           }
         } else {
           this.activeProcedure.moveUp();
@@ -286,9 +278,11 @@ export class FwsNormalChecklists {
       } else {
         // CLEAR of page selected, select last procedure
         this.activeDeferredProcedureId.set(
-          this.visibleDeferredProcedureKeys[this.visibleDeferredProcedureKeys.length - 1],
+          this.visibleDeferredProcedureKeys[this.visibleDeferredProcedureKeys.length - 1] ?? null,
         );
       }
+    } else {
+      this.activeProcedure.moveUp();
     }
   }
 
@@ -299,9 +293,8 @@ export class FwsNormalChecklists {
         .filter((v) => v !== null);
       this.selectedLine.set(
         Math.min(
-          shownItems[shownItems.indexOf(this.selectedLine.get()) + 1] ??
-            this.getNormalProceduresKeysSorted(true).length,
-          this.getNormalProceduresKeysSorted(true).length,
+          shownItems[shownItems.indexOf(this.selectedLine.get()) + 1] ?? shownItems[shownItems.length - 1],
+          shownItems[shownItems.length - 1],
         ),
       );
     } else if (this.activeDeferredProcedureId.get() !== null && this.activeProcedure.lastLineIsSelected()) {
@@ -359,10 +352,15 @@ export class FwsNormalChecklists {
       this.fws.adrPressureAltitude.get() < 20_000 &&
       this.fws.slatsAngle.get() > 0 &&
       Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD' &&
-      !this.showChecklistRequested.get() &&
       this.hasDeferred.some((v) => v)
     ) {
-      this.showChecklistRequested.set(true);
+      if (!this.deferredAutoDisplayWasTriggered && !this.showChecklistRequested.get()) {
+        this.showChecklistRequested.set(true);
+        this.navigateToChecklist(0);
+        this.deferredAutoDisplayWasTriggered = true;
+      } else if (this.showChecklistRequested.get()) {
+        this.deferredAutoDisplayWasTriggered = true;
+      }
     }
   }
 
@@ -370,31 +368,6 @@ export class FwsNormalChecklists {
     if (this.fws.clPulseNode.read()) {
       this.navigateToChecklist(0);
       this.showChecklistRequested.set(!this.showChecklistRequested.get());
-    }
-
-    if (!this.checklistShown.get()) {
-      return;
-    }
-
-    if (this.fws.clDownPulseNode.read()) {
-      this.moveDown();
-    }
-
-    if (this.fws.clUpPulseNode.read()) {
-      this.moveUp();
-    }
-
-    if (this.fws.clCheckPulseNode.read()) {
-      if (this.checklistId.get() === 0) {
-        // Navigate to check list
-        this.navigateToChecklist(this.getNormalProceduresKeysSorted()[this.selectedLine.get()]);
-      } else {
-        if (deferredProcedureIds.includes(this.checklistId.get()) && this.activeDeferredProcedureId.get() === null) {
-          this.navigateToChecklist(0);
-        } else {
-          this.activeProcedure.checkSelected();
-        }
-      }
     }
 
     // Update deferred proc status
@@ -429,9 +402,35 @@ export class FwsNormalChecklists {
           }
           break;
       }
-
-      this.checkIfDeferredAutoDisplay();
     });
+
+    this.checkIfDeferredAutoDisplay();
+
+    if (!this.checklistShown.get()) {
+      return;
+    }
+
+    if (this.fws.clDownPulseNode.read()) {
+      this.moveDown();
+    }
+
+    if (this.fws.clUpPulseNode.read()) {
+      this.moveUp();
+    }
+
+    if (this.fws.clCheckPulseNode.read()) {
+      if (this.checklistId.get() === 0) {
+        // Navigate to check list
+        this.navigateToChecklist(this.getNormalProceduresKeysSorted()[this.selectedLine.get()]);
+      } else if (
+        deferredProcedureIds.includes(this.checklistId.get()) &&
+        this.activeDeferredProcedureId.get() === null
+      ) {
+        this.navigateToChecklist(0);
+      } else {
+        this.activeProcedure.checkSelected();
+      }
+    }
 
     // Update sensed items
     const ids = this.getNormalProceduresKeysSorted();
