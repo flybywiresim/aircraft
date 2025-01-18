@@ -6,7 +6,7 @@
 import { Coordinates, bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 // FIXME remove msfs-sdk dep
 import { AirportClassMask } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { ElevatedCoordinates, isMsfs2024, MathUtils } from '@flybywiresim/fbw-sdk';
 import {
   AirportCommunication,
   Airway,
@@ -457,16 +457,24 @@ export class MsfsMapping {
     let category = LsCategory.None;
     let trueReferenced: IlsNavaid['trueReferenced'] = undefined;
 
+    let dmeLocation: ElevatedCoordinates | undefined;
+    if (ls.dme) {
+      // >= MSFS2024
+      dmeLocation = { lat: ls.dme.lat, long: ls.dme.lon, alt: ls.dme.alt };
+    }
+
     // TODO don't need all these hax in FS2024, as we have ls.ils
 
     if (ls.ils) {
       // >= MSFS2024
       locBearing = ls.ils.localizerCourse;
-      gsLocation = {
-        lat: ls.ils?.glideslopeLat!,
-        long: ls.ils?.glideslopeLon!,
-        alt: ls.ils?.glideslopeAlt,
-      };
+      gsLocation = ls.ils.hasGlideslope
+        ? {
+            lat: ls.ils.glideslopeLat!,
+            long: ls.ils.glideslopeLon!,
+            alt: ls.ils.glideslopeAlt,
+          }
+        : undefined;
       gsSlope = ls.ils.hasGlideslope ? -ls.ils.glideslopeAngle : undefined;
       category = this.mapLsCategory(ls.ils.lsCategory);
       trueReferenced = ls.trueReferenced;
@@ -520,6 +528,7 @@ export class MsfsMapping {
       stationDeclination: MathUtils.normalise180(360 - ls.magneticVariation),
       gsSlope,
       gsLocation,
+      dmeLocation,
       trueReferenced,
     };
   }
@@ -1286,6 +1295,13 @@ export class MsfsMapping {
       case 'V': {
         const vor = facility as any as JS_FacilityVOR;
 
+        let dmeLocation: Coordinates | undefined;
+        if (vor.dme) {
+          dmeLocation = { lat: vor.dme.lat, long: vor.dme.lon };
+        } else if (!isMsfs2024() && (vor.type & VorType.DME) > 0) {
+          dmeLocation = databaseItem.location;
+        }
+
         return {
           ...databaseItem,
           sectionCode: SectionCode.Navaid,
@@ -1295,7 +1311,7 @@ export class MsfsMapping {
           figureOfMerit: this.mapVorFigureOfMerit(vor),
           stationDeclination: MathUtils.normalise180(360 - vor.magneticVariation),
           trueReferenced: vor.trueReferenced,
-          dmeLocation: (vor.type & VorType.DME) > 0 ? databaseItem.location : undefined,
+          dmeLocation,
           type: this.mapVorType(vor),
           class: this.mapVorClass(vor),
         } as unknown as FacilityType<T>;
