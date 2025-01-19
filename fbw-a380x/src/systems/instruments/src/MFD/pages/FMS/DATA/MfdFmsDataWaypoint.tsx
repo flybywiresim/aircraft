@@ -20,9 +20,13 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
 
   private readonly waypointCoords = Subject.create('');
 
+  private readonly disabledScrollLeft = Subject.create(true);
+  private readonly disabledScrollRight = Subject.create(false);
+
   private readonly db = NavigationDatabaseService.activeDatabase;
 
   private isWaypointDataVisible = Subject.create<boolean>(false);
+  private isPilotStoredWaypoints = Subject.create<boolean>(false);
 
   protected onNewData(): void {}
 
@@ -119,7 +123,25 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
                 />
               </div>
             </TopTabNavigatorPage>
-            <TopTabNavigatorPage></TopTabNavigatorPage>
+            <TopTabNavigatorPage containerStyle="height: 680px;">
+              <ConditionalComponent
+                condition={this.isPilotStoredWaypoints}
+                componentIfTrue={
+                  <div class="mfd-data-waypoint-stored-container">
+                    <div class="mfd-data-waypoint-stored-ident-row">
+                      <div class="mfd-label" style="position: relative; right: 75px;">
+                        WPT IDENT
+                      </div>
+                    </div>
+                  </div>
+                }
+                componentIfFalse={
+                  <div class="mfd-label" style="align-self:center; position: relative; top: 45px;">
+                    NO PILOT STORED WPT
+                  </div>
+                }
+              ></ConditionalComponent>
+            </TopTabNavigatorPage>
           </TopTabNavigator>
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
