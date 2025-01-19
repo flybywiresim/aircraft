@@ -9,6 +9,7 @@ import './MfdFmsDataWaypoint.scss';
 import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/index';
+import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 interface MfdFmsDataWaypointProps extends AbstractMfdPageProps {}
 
@@ -120,7 +121,10 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
             </TopTabNavigatorPage>
             <TopTabNavigatorPage></TopTabNavigatorPage>
           </TopTabNavigator>
+          <div style="flex-grow: 1;" />
+          {/* fill space vertically */}
         </div>
+        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>
     );
   }
