@@ -244,9 +244,11 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataNavaidProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.selectedNavaid.sub((icao: string | null) => {
-      this.fetchNavaid(icao);
-    });
+    this.subs.push(
+      this.selectedNavaid.sub((icao: string | null) => {
+        this.fetchNavaid(icao);
+      }, true),
+    );
 
     this.subs.push(
       this.props.mfd.uiService.activeUri.sub((val) => {
@@ -421,9 +423,6 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataNavaidProps> {
                     <div class="mfd-label">LAT/LONG</div>
                     <InputField
                       dataEntryFormat={new LatitudeFormat(Subject.create('-------'))}
-                      dataHandlerDuringValidation={async (v) => {
-                        console.log(v);
-                      }}
                       mandatory={Subject.create(false)}
                       canBeCleared={Subject.create(true)}
                       value={Subject.create<number | null>(null)}
@@ -435,9 +434,6 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataNavaidProps> {
                     <span>/</span>
                     <InputField
                       dataEntryFormat={new LatitudeFormat(Subject.create('-------'))}
-                      dataHandlerDuringValidation={async (v) => {
-                        console.log(v);
-                      }}
                       mandatory={Subject.create(false)}
                       canBeCleared={Subject.create(true)}
                       value={Subject.create<number | null>(null)}
@@ -451,9 +447,6 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataNavaidProps> {
                     <div class="mfd-label">ELEVATION</div>
                     <InputField
                       dataEntryFormat={new AltitudeFormat()}
-                      dataHandlerDuringValidation={async (v) => {
-                        console.log(v);
-                      }}
                       mandatory={Subject.create(false)}
                       canBeCleared={Subject.create(true)}
                       value={Subject.create<number | null>(null)}
@@ -467,9 +460,6 @@ export class MfdFmsDataNavaid extends FmsPage<MfdFmsDataNavaidProps> {
                     <div class="mfd-label">STATION DEC</div>
                     <InputField
                       dataEntryFormat={new LengthFormat()}
-                      dataHandlerDuringValidation={async (v) => {
-                        console.log(v);
-                      }}
                       mandatory={Subject.create(false)}
                       canBeCleared={Subject.create(true)}
                       value={Subject.create<number | null>(null)}

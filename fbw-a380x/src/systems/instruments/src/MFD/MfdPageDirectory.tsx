@@ -98,7 +98,7 @@ export function pageForUrl(
       return <MfdFmsDataDebug pageTitle="DEBUG" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/airport':
       return <MfdFmsDataAirport pageTitle="AIRPORT" bus={bus} mfd={mfd} fmcService={fmcService} />;
-     case 'fms/data/navaid':
+    case 'fms/data/navaid':
       return <MfdFmsDataNavaid pageTitle="NAVAID" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'surv/controls':
       return <MfdSurvControls pageTitle="CONTROLS" bus={bus} mfd={mfd} fmcService={fmcService} />;
