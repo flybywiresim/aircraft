@@ -132,7 +132,7 @@ export class FwsAbnormalSensed {
             (newState) => this.fws.activeAbnormalProceduresList.setValue(value.id, newState),
             this.clearActiveProcedure.bind(this),
             () => {},
-            EcamAbnormalSensedProcedures[value.id].recommendation,
+            this.fws.aircraftOnGround.get() ? undefined : EcamAbnormalSensedProcedures[value.id].recommendation,
           );
           this.procedures.push(procGen);
         } else if (type === SubscribableMapEventType.Changed) {

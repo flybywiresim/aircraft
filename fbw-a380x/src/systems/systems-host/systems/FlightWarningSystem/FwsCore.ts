@@ -4105,7 +4105,7 @@ export class FwsCore {
 
         // Push LAND ASAP or LAND ANSA to limitations
         FwsCore.pushKeyUnique(() => {
-          if (proc.recommendation) {
+          if (proc.recommendation && !this.aircraftOnGround.get()) {
             return proc.recommendation === 'LAND ANSA' ? ['2'] : ['1'];
           }
           return [];
