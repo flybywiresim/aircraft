@@ -130,6 +130,7 @@
 1. [A32NX/FMS] Sort instrument procedures for display on the MCDU - @tracernz (Mike)
 1. [A380X/ELEC] Various fixes in the electrical system (battery voltage indicator switchup, AC GND SVC BUS and correct behavior of battery contactors) - @Gurgel100 (Pascal)
 1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
+1. [A380X/MFD] Fix wrong Landing weight calculation & block fuel not editable across flights in FUEL & LOAD - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
