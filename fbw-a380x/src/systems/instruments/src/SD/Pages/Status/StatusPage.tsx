@@ -41,7 +41,7 @@ export const StatusPage: React.FC = () => {
 
   // Skip ADCN reachability check for now, add when ported to avionics framework
   const [fws1IsHealthy] = useSimVar('L:A32NX_FWS1_IS_HEALTHY', 'number', 1000);
-  const [fws2IsHealthy] = useSimVar('L:A32NX_FWS1_IS_HEALTHY', 'number', 1000);
+  const [fws2IsHealthy] = useSimVar('L:A32NX_FWS2_IS_HEALTHY', 'number', 1000);
   const statusNotAvailable = !fws1IsHealthy && !fws2IsHealthy;
 
   return (

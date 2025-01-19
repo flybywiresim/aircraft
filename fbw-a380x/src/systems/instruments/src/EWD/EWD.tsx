@@ -272,19 +272,37 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
             <div class="StsArea">
               <div
                 class="FailurePendingBox"
-                style={{ visibility: this.failurePendingIndicationRequested.map((s) => (s ? 'visible' : 'hidden')) }}
+                style={{
+                  visibility: MappedSubject.create(
+                    SubscribableMapFunctions.and(),
+                    this.failurePendingIndicationRequested,
+                    this.availChecker.fwsAvail,
+                  ).map((s) => (s ? 'visible' : 'hidden')),
+                }}
               >
                 FAILURE PENDING
               </div>
               <div
                 class="StsBox"
-                style={{ visibility: this.stsIndicationRequested.map((s) => (s ? 'visible' : 'hidden')) }}
+                style={{
+                  visibility: MappedSubject.create(
+                    SubscribableMapFunctions.and(),
+                    this.stsIndicationRequested,
+                    this.availChecker.fwsAvail,
+                  ).map((s) => (s ? 'visible' : 'hidden')),
+                }}
               >
                 STS
               </div>
               <div
                 class="AdvBox"
-                style={{ visibility: this.advIndicationRequested.map((s) => (s ? 'visible' : 'hidden')) }}
+                style={{
+                  visibility: MappedSubject.create(
+                    SubscribableMapFunctions.and(),
+                    this.advIndicationRequested,
+                    this.availChecker.fwsAvail,
+                  ).map((s) => (s ? 'visible' : 'hidden')),
+                }}
               >
                 ADV
               </div>
