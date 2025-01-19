@@ -4148,14 +4148,6 @@ export class FwsCore {
         });
 
         if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
-          console.log('set', {
-            id: key,
-            procedureActivated: value.procedureActivated,
-            procedureCompleted: value.procedureCompleted,
-            itemsChecked: fusedChecked,
-            itemsActive: [...value.itemsActive].map((_, index) => itemsActive[index]),
-            itemsToShow: [...value.itemsToShow].map((_, index) => itemsToShow[index]),
-          });
           this.activeDeferredProceduresList.setValue(key, {
             id: key,
             procedureActivated: value.procedureActivated,
@@ -4190,9 +4182,7 @@ export class FwsCore {
     this.activeAbnormalProceduresList.get().forEach((_, key) => {
       if (!allFailureKeys.includes(key) || this.recallFailures.includes(key)) {
         this.activeAbnormalProceduresList.delete(key);
-      }
 
-      if (!allFailureKeys.includes(key) && !this.recallFailures.includes(key)) {
         // Delete associated deferred procedure
         for (const [deferredKey, _] of ewdDeferredEntries) {
           if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key)) {

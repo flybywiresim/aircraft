@@ -39,38 +39,34 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
       .sort((a, b) => parseInt(a.id) - parseInt(b.id));
     const clState = sorted.find((v) => parseInt(v.id) === this.checklistId.get());
 
-    if (this.deferred.get().length > 0) {
-      // Status of deferred procedures
-      this.hasDeferred[0] = this.deferred
-        .get()
-        .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.ALL_PHASES);
-      this.hasDeferred[1] = this.deferred
-        .get()
-        .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.AT_TOP_OF_DESCENT);
-      this.hasDeferred[2] = this.deferred
-        .get()
-        .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_APPROACH);
-      this.hasDeferred[3] = this.deferred
-        .get()
-        .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_LANDING);
+    // Status of deferred procedures
+    this.hasDeferred[0] = this.deferred
+      .get()
+      .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.ALL_PHASES);
+    this.hasDeferred[1] = this.deferred
+      .get()
+      .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.AT_TOP_OF_DESCENT);
+    this.hasDeferred[2] = this.deferred
+      .get()
+      .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_APPROACH);
+    this.hasDeferred[3] = this.deferred
+      .get()
+      .some((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_LANDING);
 
-      this.deferredIsCompleted[0] = this.deferred
-        .get()
-        .every((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.ALL_PHASES && p.procedureCompleted);
-      this.deferredIsCompleted[1] = this.deferred
-        .get()
-        .every(
-          (p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.AT_TOP_OF_DESCENT && p.procedureCompleted,
-        );
-      this.deferredIsCompleted[2] = this.deferred
-        .get()
-        .every(
-          (p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_APPROACH && p.procedureCompleted,
-        );
-      this.deferredIsCompleted[3] = this.deferred
-        .get()
-        .every((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_LANDING && p.procedureCompleted);
-    }
+    this.deferredIsCompleted[0] = this.deferred
+      .get()
+      .every((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.ALL_PHASES && p.procedureCompleted);
+    this.deferredIsCompleted[1] = this.deferred
+      .get()
+      .every(
+        (p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.AT_TOP_OF_DESCENT && p.procedureCompleted,
+      );
+    this.deferredIsCompleted[2] = this.deferred
+      .get()
+      .every((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_APPROACH && p.procedureCompleted);
+    this.deferredIsCompleted[3] = this.deferred
+      .get()
+      .every((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_LANDING && p.procedureCompleted);
 
     if (this.checklistId.get() === 0) {
       // Render overview page
@@ -90,6 +86,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
           let checked = false;
           let display = true;
           if (deferredProcedureIds.includes(parseInt(state.id))) {
+            display = false;
             lineStyle = state.procedureCompleted
               ? ChecklistLineStyle.CompletedDeferredProcedure
               : ChecklistLineStyle.DeferredProcedure;
@@ -191,7 +188,10 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
 
     this.checklists.sub(() => this.updateChecklists(), true);
     this.checklistId.sub(() => this.updateChecklists());
-    this.deferred.sub(() => this.updateChecklists(), true);
+    this.deferred.sub(() => {
+      console.log('deferred', this.deferred.get());
+      this.updateChecklists();
+    }, true);
     this.activeDeferredProcedureId.sub(() => this.updateChecklists());
   }
 
