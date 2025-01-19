@@ -6,3 +6,16 @@
   align-items: center;
   margin-top: 20px;
 }
+
+.mfd-data-waypoint-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 200px;
+}
+
+.mfd-data-latlong-text {
+  display: flex;
+  flex-direction: row;
+}

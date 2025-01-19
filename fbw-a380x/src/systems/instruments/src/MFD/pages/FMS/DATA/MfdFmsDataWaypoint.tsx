@@ -98,12 +98,19 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
                 />
               </div>
 
-              <div class="mfd-data-waypoint-information-container">
+              <div class="mfd-data-waypoint-info-container">
                 <ConditionalComponent
                   condition={this.isWaypointDataVisible}
                   componentIfTrue={
                     <div class="mfd-data-waypoint-info">
-                      <div class="mfd-value bigger"></div>
+                      <div class="mfd-data-latlong-text">
+                        <div class="mfd-label" style="position: relative; right: 75px;">
+                          LAT
+                        </div>
+                        <div class="mfd-label" style="position: relative; left: 75px;">
+                          LONG
+                        </div>
+                      </div>
                       <div class="mfd-value bigger mfd-data-airport-coords">{this.waypointCoords}</div>
                     </div>
                   }
