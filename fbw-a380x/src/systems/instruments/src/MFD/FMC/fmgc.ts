@@ -91,9 +91,17 @@ export class FmgcData {
   public readonly blockFuel = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly taxiFuel = Subject.create<number | null>(AirlineModifiableInformation.EK.taxiFuel);
+  public readonly taxiFuelPilotEntry = Subject.create<number | null>(null);
 
-  public readonly taxiFuelIsPilotEntered = Subject.create(false);
+  public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((v) => v !== null);
+
+  public readonly defaultTaxiFuel = Subject.create<number | null>(AirlineModifiableInformation.EK.taxiFuel);
+
+  public readonly taxiFuel = MappedSubject.create(
+    ([pilotEntryTaxiFuel, defaultTaxiFuel]) => (pilotEntryTaxiFuel !== null ? pilotEntryTaxiFuel : defaultTaxiFuel),
+    this.taxiFuelPilotEntry,
+    this.defaultTaxiFuel,
+  );
 
   /** in kg. null if not set. */
   public readonly routeReserveFuelWeightPilotEntry = Subject.create<number | null>(null);
@@ -299,11 +307,11 @@ export class FmgcData {
   /** in feet. null if not set. */
   public readonly approachRadioMinimum = Subject.create<number | null>(null);
 
-  public readonly approachVref = Subject.create<Knots>(129);
+  public readonly approachVref = Subject.create<Knots | null>(null);
 
   public readonly approachFlapConfig = Subject.create<FlapConf>(FlapConf.CONF_FULL);
 
-  public readonly approachVls = Subject.create<Knots>(134);
+  public readonly approachVls = Subject.create<Knots | null>(null);
 
   /**
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
