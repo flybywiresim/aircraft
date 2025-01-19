@@ -126,6 +126,10 @@
 1. [A380X/EFB] Adds PRIM/SEC/FCDC failures to EFB - @flogross89 (floridude)
 1. [A380X/PFD] Fix precision of pitch trim indicator - @flogross89 (floridude)
 1. [A380X/MFD] Add leading zero to altitude prediction and track from last waypoint on FPLN page - @bulenteroglu (senolitam)
+1. [FMS] Improved nav database error handling, preserving as much valid data as possible - @tracernz (Mike)
+1. [A32NX/FMS] Sort instrument procedures for display on the MCDU - @tracernz (Mike)
+1. [A380X/ELEC] Various fixes in the electrical system (battery voltage indicator switchup, AC GND SVC BUS and correct behavior of battery contactors) - @Gurgel100 (Pascal)
+1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
 
 ## 0.12.0
 
