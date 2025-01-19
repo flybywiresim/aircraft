@@ -150,10 +150,14 @@ void EngineControl_A380X::initializeEngineControlData() {
 
   // Setting initial Oil Quantity and adding some randomness to it
   std::srand(std::time(0));
-  simData.engineOilTotal[E1]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10);
-  simData.engineOilTotal[E2]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10);
-  simData.engineOilTotal[E3]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10);
-  simData.engineOilTotal[E4]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10);
+  simData.engineOilTotal[E1]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0 + 1);
+  simData.engineOilTotal[E2]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0 + 1);
+  simData.engineOilTotal[E3]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0 + 1);
+  simData.engineOilTotal[E4]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0 + 1);
+  simData.engineOil[E1]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0);
+  simData.engineOil[E2]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0);
+  simData.engineOil[E3]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0);
+  simData.engineOil[E4]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0);
 
   // Setting initial Oil Temperature
   const bool simOnGround = msfsHandlerPtr->getSimOnGround();

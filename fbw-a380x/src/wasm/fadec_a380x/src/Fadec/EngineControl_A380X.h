@@ -60,8 +60,8 @@ class EngineControl_A380X {
   double prevSimEngineN3[4] = {0.0, 0.0, 0.0, 0.0};
 
   // additional constants
-  static constexpr int    MAX_OIL             = 200;
-  static constexpr int    MIN_OIL             = 140;
+  static constexpr int    MAX_OIL             = 183;
+  static constexpr int    MIN_OIL             = 160;
   static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
 
   /**
