@@ -942,14 +942,34 @@ void FcuComputer::step()
       FcuComputer_DWork.pValue_h = FcuComputer_U.in.sim_input.alt;
     }
 
-    if (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_increment_1000) {
-      FcuComputer_DWork.pValue_h = std::round((static_cast<real32_T>
-        (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns) * 1000.0F + FcuComputer_DWork.pValue_h) / 1000.0F) *
-        1000.0F;
-    } else {
-      FcuComputer_DWork.pValue_h = std::round((static_cast<real32_T>
-        (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns) * 100.0F + FcuComputer_DWork.pValue_h) / 100.0F) *
-        100.0F;
+     if (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns != FcuComputer_P.CompareToConstant_const) {
+      if (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_increment_1000) {
+        // In the case altitude is still in 100s, ensure a turn doesn't count for more than 1000ft (e.g. 6300ft turn -1 should be 6000ft,
+        // not 5000ft)
+        real32_T orig_value = FcuComputer_DWork.pValue_h;
+        real32_T new_value = std::round((static_cast<real32_T>(FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns) * 1000.0F +
+                                         FcuComputer_DWork.pValue_h) /
+                                        1000.0F) *
+                             1000.0F;
+
+        real32_T max_delta = std::abs(FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns * 1000.0F);
+        real32_T delta = std::abs(new_value - orig_value);
+        if (delta > max_delta) {
+          if (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns > 0)
+            new_value -= 1000.0F;
+          else
+            new_value += 1000.0F;
+        }
+
+        FcuComputer_DWork.pValue_h = new_value;
+
+      } else {
+        FcuComputer_DWork.pValue_h =
+            std::round(
+                (static_cast<real32_T>(FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns) * 100.0F + FcuComputer_DWork.pValue_h) /
+                100.0F) *
+            100.0F;
+      }
     }
 
     FcuComputer_DWork.pValue_h = std::fmax(std::fmin(FcuComputer_DWork.pValue_h, 49000.0F), 100.0F);
