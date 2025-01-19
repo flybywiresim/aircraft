@@ -24,6 +24,8 @@ export interface TcasWXMessagesProps {
 export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
   private readonly taOnlySub = Subject.create(false);
 
+  private readonly tcasModeSub = Subject.create(-1);
+
   private readonly failSub = Subject.create(false);
 
   private readonly leftMessage = Subject.create<TcasWxrMessage | undefined>(undefined);
@@ -31,6 +33,8 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
   private readonly rightMessage = Subject.create<TcasWxrMessage | undefined>(undefined);
 
   private textClass = Subject.create('');
+
+  private rectClass = Subject.create('');
 
   private readonly y = this.props.mode.map((mode) =>
     mode === EfisNdMode.ROSE_VOR || mode === EfisNdMode.ROSE_ILS ? 713 : 680,
@@ -68,21 +72,32 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
       .on('tcasFault')
       .whenChanged()
       .handle((value) => this.failSub.set(value));
+    sub
+      .on('tcasMode')
+      .whenChanged()
+      .handle((value) => this.tcasModeSub.set(value));
 
     MappedSubject.create(
-      ([taOnly, failed]) => {
+      ([taOnly, failed, mode]) => {
         if (failed) {
           this.leftMessage.set({ text: 'TCAS' });
           this.textClass.set('Amber TCASMessage');
+          this.rectClass.set('Grey BackgroundFill');
         } else if (taOnly) {
           this.leftMessage.set({ text: 'TA ONLY' });
           this.textClass.set('White TCASMessage');
+          this.rectClass.set('Grey BackgroundFill');
+        } else if (mode === 0) {
+          this.leftMessage.set({ text: 'TCAS STBY' });
+          this.textClass.set('White TCASMessage TCASStby');
+          this.rectClass.set('Grey BackgroundFill TCASStby');
         } else {
           this.leftMessage.set(undefined);
         }
       },
       this.taOnlySub,
       this.failSub,
+      this.tcasModeSub,
     );
   }
 
@@ -99,7 +114,7 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
           stroke="none"
         />
 
-        <rect x={0} y={0} width={440} height={27} class="Grey BackgroundFill" stroke-width={1.75} />
+        <rect x={0} y={0} width={440} height={27} class={this.rectClass} stroke-width={1.75} />
 
         <text x={8} y={25} class={this.textClass} text-anchor="start" font-size={27}>
           {this.leftMessage.map((it) => it?.text ?? '')}
