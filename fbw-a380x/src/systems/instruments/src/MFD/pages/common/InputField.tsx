@@ -541,7 +541,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         } else if (val && val.substring(0, 1) === '-') {
           this.modifiedFieldValue.set(`+${val.substring(1)}`);
         } else {
-          this.modifiedFieldValue.set(`-${this.modifiedFieldValue.get()}`);
+          this.modifiedFieldValue.set(`-${this.modifiedFieldValue.get() ?? ''}`);
         }
       }
 
