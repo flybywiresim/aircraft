@@ -30,6 +30,8 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
 
   private readonly rightMessage = Subject.create<TcasWxrMessage | undefined>(undefined);
 
+  private textClass = Subject.create('');
+
   private readonly y = this.props.mode.map((mode) =>
     mode === EfisNdMode.ROSE_VOR || mode === EfisNdMode.ROSE_ILS ? 713 : 680,
   );
@@ -70,9 +72,11 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
     MappedSubject.create(
       ([taOnly, failed]) => {
         if (failed) {
-          this.leftMessage.set({ text: 'TCAS', color: 'Amber' });
+          this.leftMessage.set({ text: 'TCAS' });
+          this.textClass.set('Amber TCASMessage');
         } else if (taOnly) {
-          this.leftMessage.set({ text: 'TA ONLY', color: 'White' });
+          this.leftMessage.set({ text: 'TA ONLY' });
+          this.textClass.set('White TCASMessage');
         } else {
           this.leftMessage.set(undefined);
         }
@@ -97,11 +101,11 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
 
         <rect x={0} y={0} width={440} height={27} class="Grey BackgroundFill" stroke-width={1.75} />
 
-        <text x={8} y={25} class={this.leftMessage.map((it) => it?.color ?? '')} text-anchor="start" font-size={27}>
+        <text x={8} y={25} class={this.textClass} text-anchor="start" font-size={27}>
           {this.leftMessage.map((it) => it?.text ?? '')}
         </text>
 
-        <text x={425} y={25} class={this.rightMessage.map((it) => it?.color ?? '')} text-anchor="end" font-size={27}>
+        <text x={425} y={25} class={this.textClass} text-anchor="end" font-size={27}>
           {this.rightMessage.map((it) => it?.text ?? '')}
         </text>
       </Layer>
