@@ -3,7 +3,7 @@ import { FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@micro
 import './MfdFmsInit.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AirportFormat,
   CostIndexFormat,
@@ -13,7 +13,7 @@ import {
   TripWindFormat,
   TropoFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';

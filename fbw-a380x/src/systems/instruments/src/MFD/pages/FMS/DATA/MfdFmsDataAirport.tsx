@@ -6,16 +6,16 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { coordinateToString, MathUtils } from '@flybywiresim/fbw-sdk';
 
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { loadAirport, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 
 import './MfdFmsDataAirport.scss';
-import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
+import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 
 interface MfdFmsDataAirportProps extends AbstractMfdPageProps {}
 

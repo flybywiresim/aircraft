@@ -1,3 +1,6 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import {
   ComponentProps,
   Consumer,
@@ -9,7 +12,6 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { InteractionMode } from 'instruments/src/MFD/MFD';

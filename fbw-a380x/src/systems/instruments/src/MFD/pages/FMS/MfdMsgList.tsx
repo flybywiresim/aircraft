@@ -9,7 +9,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './MfdMsgList.scss';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 

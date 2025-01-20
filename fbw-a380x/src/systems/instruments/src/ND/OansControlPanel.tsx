@@ -44,13 +44,13 @@ import {
   Runway,
 } from '@flybywiresim/fbw-sdk';
 
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';

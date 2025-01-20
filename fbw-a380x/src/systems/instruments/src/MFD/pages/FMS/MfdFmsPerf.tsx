@@ -1,11 +1,11 @@
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 
 import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
@@ -26,11 +26,11 @@ import {
   WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
-import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
+import { ConfirmationDialog } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcData, TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/FMC/fmgc';
-import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
+import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
