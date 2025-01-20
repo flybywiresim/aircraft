@@ -6,6 +6,9 @@ import { AirportSubsectionCode, SectionCode } from './SectionCode';
 export interface Runway extends BaseFix<SectionCode.Airport> {
   subSectionCode: AirportSubsectionCode.Runways;
 
+  number: number;
+  designator: RunwayDesignator;
+
   airportIdent: string;
   bearing: DegreesTrue;
   magneticBearing: DegreesMagnetic;
@@ -33,4 +36,12 @@ export enum RunwaySurfaceType {
   Hard = 1 << 1,
   Soft = 1 << 2,
   Water = 1 << 3,
+}
+
+export enum RunwayDesignator {
+  None = 0,
+  Left,
+  Centre,
+  Right,
+  True,
 }
