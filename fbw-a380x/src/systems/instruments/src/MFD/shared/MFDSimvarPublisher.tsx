@@ -38,6 +38,11 @@ export type InternalKccuKeyEvent = {
   kccuKeyEvent: string;
 };
 
+export enum InteractionMode {
+  Touchscreen,
+  Kccu,
+}
+
 export enum MfdVars {
   coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
   elec = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
