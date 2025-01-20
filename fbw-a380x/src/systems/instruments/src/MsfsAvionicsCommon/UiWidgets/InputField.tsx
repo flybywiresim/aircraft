@@ -14,7 +14,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { InteractionMode } from 'instruments/src/MFD/MFD';
+import { InteractionMode } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 interface InputFieldProps<T> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T>;

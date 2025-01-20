@@ -5,7 +5,7 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { coordinateToString, MathUtils } from '@flybywiresim/fbw-sdk';
 

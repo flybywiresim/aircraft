@@ -27,7 +27,7 @@ import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterfac
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
-import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
+import { InteractionMode, InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
 import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotAvail';
 
 import './pages/common/style.scss';
@@ -59,11 +59,6 @@ export interface MfdDisplayInterface {
   interactionMode: Subscribable<InteractionMode>;
 
   openMessageList(): void;
-}
-
-export enum InteractionMode {
-  Touchscreen,
-  Kccu,
 }
 
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {

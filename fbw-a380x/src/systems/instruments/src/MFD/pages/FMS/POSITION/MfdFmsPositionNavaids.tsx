@@ -10,7 +10,7 @@ import {
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 

@@ -51,13 +51,12 @@ import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/R
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
 import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
-import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { InteractionMode, InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
-import { InteractionMode } from 'instruments/src/MFD/MFD';
 import { Position } from '@turf/turf';
 
 export interface OansProps extends ComponentProps {

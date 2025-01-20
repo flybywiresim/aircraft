@@ -16,7 +16,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { InteractionMode } from 'instruments/src/MFD/MFD';
+import { InteractionMode } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
