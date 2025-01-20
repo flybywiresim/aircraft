@@ -62,6 +62,7 @@ class CDUDirectToPage {
                         mcdu.directToWaypoint(w).then(() => {
                             CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
                         }).catch(err => {
+                            mcdu.logTroubleshootingError(err);
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                             console.error(err);
                         });
@@ -119,6 +120,7 @@ class CDUDirectToPage {
                             mcdu.directToLeg(legIndex).then(() => {
                                 CDUDirectToPage.ShowPage(mcdu, leg.terminationWaypoint(), wptsListIndex);
                             }).catch(err => {
+                                mcdu.logTroubleshootingError(err);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                                 console.error(err);
                             });

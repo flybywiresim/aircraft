@@ -1,6 +1,6 @@
 import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 
 export class Footer extends DisplayComponent<AbstractMfdPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
