@@ -3,7 +3,7 @@ import { FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@micro
 import './MfdFmsInit.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AirportFormat,
   CostIndexFormat,
@@ -13,10 +13,10 @@ import {
   TripWindFormat,
   TropoFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { logTroubleshootingError, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { ISimbriefData } from '@flybywiresim/flypad';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -210,12 +210,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID);
 
-    SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
-      this.props.fmcService.master,
-      this.props.fmcService.master.flightPlanService,
-      this.simBriefOfp,
-      { doUplinkProcedures: false },
-    );
+    try {
+      SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
+        this.props.fmcService.master,
+        this.props.fmcService.master.flightPlanService,
+        this.simBriefOfp,
+        { doUplinkProcedures: false },
+      );
+    } catch (e) {
+      console.error(e);
+      logTroubleshootingError(this.props.bus, e);
+    }
   }
 
   private async cityPairModified() {
@@ -239,7 +244,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       return;
     }
 
-    this.props.fmcService.master.flightPlanService.uplinkInsert();
+    try {
+      this.props.fmcService.master.flightPlanService.uplinkInsert();
+    } catch (e) {
+      console.error(e);
+      logTroubleshootingError(this.props.bus, e);
+    }
     this.props.fmcService.master?.acInterface.updateOansAirports();
     this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
 
