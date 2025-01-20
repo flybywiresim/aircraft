@@ -1056,6 +1056,12 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
 export class LatitudeFormat implements DataEntryFormat<number> {
   public placeholder = '----.--';
 
+  constructor(placeholder?: Subscribable<string>) {
+    if (placeholder) {
+      placeholder.sub((val) => (this.placeholder = val), true);
+    }
+  }
+
   public maxDigits = 7;
 
   private minValue = -90;

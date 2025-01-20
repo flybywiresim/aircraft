@@ -89,7 +89,7 @@ export class FmsHeader extends AbstractHeader {
               { label: 'STATUS', action: () => this.props.uiService.navigateTo('fms/data/status') },
               { label: 'DEBUG', action: () => this.props.uiService.navigateTo('fms/data/debug') },
               { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint'), disabled: true },
-              { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid'), disabled: true },
+              { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid') },
               { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route'), disabled: true },
               { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport') },
               { label: 'PRINTER', action: () => this.props.uiService.navigateTo('fms/data/printer'), disabled: true },

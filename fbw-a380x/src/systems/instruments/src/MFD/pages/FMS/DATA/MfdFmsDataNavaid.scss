@@ -1,0 +1,62 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-data-navaid-input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.mfd-data-navaid-information-row {
+    flex-direction: row;
+    justify-content: space-evenly;
+    display: flex;
+    height: 560px;
+    position: absolute;
+    left: 55px;
+    width: 650px;
+}
+
+.mfd-data-navaid-information-row.labels {
+    flex-direction: column;
+    width: 200px;
+    text-align: right;
+}
+
+.mfd-data-navaid-information-row.values {
+    flex-direction: column;
+    position: relative;
+    left: 160px;
+    width: 400px;
+}
+
+.new-navaid-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.mfd-data-navaid-options {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: 550px;
+    justify-content: space-evenly;
+    margin-left: 150px;
+}
+
+.mfd-data-navaid-options .option {
+    display: flex;
+    align-items: center;
+}
+
+.mfd-data-navaid-options .mfd-dropdown-container {
+    margin-left: 10px;
+}
+
+.mfd-value.indent-0 {
+    margin-left: 20px;
+}
+
+.mfd-value.indent-1 {
+    margin-left: 40px;
+}
