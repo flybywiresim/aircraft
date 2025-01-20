@@ -1,6 +1,6 @@
 import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OIT } from 'instruments/src/OIT/OIT';
 import { OitUiService } from 'instruments/src/OIT/OitUiService';
 
