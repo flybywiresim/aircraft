@@ -4,6 +4,15 @@
 // disable a few lints rules as we're using MSFS type names
 /* eslint-disable camelcase */
 
+/** FS2024 only. */
+export interface JS_ICAO {
+  __Type: 'JS_ICAO';
+  type: string;
+  region: string;
+  airport: string;
+  ident: string;
+}
+
 export interface JS_Approach {
   __Type: 'JS_Approach';
   /** multiple approach identifier */
@@ -28,6 +37,10 @@ export interface JS_Approach {
   runwayNumber: number;
   /** approach vias/transitions */
   transitions: JS_ApproachTransition[];
+  /** FS2024 only. */
+  rnpAr?: boolean;
+  /** FS2024 only. */
+  rnpArMissed?: boolean;
 }
 
 export interface JS_ApproachTransition {
@@ -46,6 +59,8 @@ export interface JS_Arrival {
   /** name in ARINC 424 format */
   name: string;
   runwayTransitions: JS_RunwayTransition[];
+  /** FS2024 only. */
+  rnpAr?: boolean;
 }
 export interface JS_Departure {
   __Type: 'JS_Departure';
@@ -54,6 +69,8 @@ export interface JS_Departure {
   /** name in ARINC 424 format */
   name: string;
   runwayTransitions: JS_RunwayTransition[];
+  /** FS2024 only. */
+  rnpAr?: boolean;
 }
 
 export type JS_Procedure = JS_Approach | JS_Arrival | JS_Departure;
@@ -67,6 +84,8 @@ export interface JS_EnRouteTransition {
 
 export interface JS_FacilityAirport {
   __Type: 'JS_FacilityAirport';
+  /** FS2024 only. Specifies what data was request for this facility. */
+  loadedDataFlags?: number;
   airportClass: AirportClass;
   airportPrivateType: AirportPrivateType;
   airpspaceType: AirspaceType;
@@ -83,10 +102,14 @@ export interface JS_FacilityAirport {
   gates: JS_Gate[];
   /** the MSFS database identifier, not 4 letter icao code! */
   icao: string;
+  /** The MSFS database identifier in object form; MSFS2024 only. */
+  icaoStruct?: JS_ICAO;
   /** airport reference point latitude */
   lat: number;
   /** airport reference point longitude */
   lon: number;
+  /** FS2024 only. +/- 180 degrees. */
+  magvar?: number;
   /** needs translated with Utils.Translate */
   name: string;
   radarCoverage: number;
@@ -94,6 +117,14 @@ export interface JS_FacilityAirport {
   runways: JS_Runway[];
   /** always seems to be false */
   towered: boolean;
+  /** FS2024 only. */
+  holdingPatterns?: JS_HoldingPattern[];
+  /** Metres, 0 if not defined. FS2024 only. */
+  transitionAlt?: number;
+  /** Metres, 0 if not defined. FS2024 only. */
+  transitionLevel?: number;
+  /** FS2024 only. */
+  iata?: string;
 }
 
 export interface JS_FacilityIntersection {
@@ -143,6 +174,49 @@ export interface JS_FacilityNDB {
   type: NdbType;
   /** unknown */
   weatherBroadcast: number;
+  /** FS2024 only. +/- 180 degrees. */
+  magvar?: number;
+  /** metres. FS2024 only. */
+  range?: number;
+  /** FS2024 only. */
+  bfoRequired?: boolean;
+}
+
+/** FS2024 only. */
+export interface JS_DME {
+  readonly __Type: 'JS_DME';
+  /** The altitude of the DME transmitter. */
+  readonly alt: number;
+  /** Whether the DME station is colocated with the glideslope. */
+  readonly atGlideslope: boolean;
+  /** Whether the DME station is colocated with the nav transmitter (VOR or LOC). */
+  readonly atNav: boolean;
+  /** The latitude of the DME transmitter. */
+  readonly lat: number;
+  /** The longitude of the DME transmitter. */
+  readonly lon: number;
+}
+
+/** FS2024 only. */
+export enum TacanMode {
+  None = 0,
+  X = 88, // ASCII 'X'
+  Y = 89, // ASCII 'Y'
+}
+
+/** FS2024 only. */
+export interface JS_TACAN {
+  readonly __Type: 'JS_TACAN';
+  /** The altitude of the DME transmitter. */
+  readonly alt: number;
+  /** TACAN channel number. */
+  readonly channel: number;
+  /** The latitude of the DME transmitter. */
+  readonly lat: number;
+  /** The longitude of the DME transmitter. */
+  readonly lon: number;
+  /** The TACAN mode. */
+  readonly mode: TacanMode;
 }
 
 /** the record for a VOR, there will be a @see JS_FacilityIntersection associated if there are airways to/from the VOR */
@@ -171,6 +245,18 @@ export interface JS_FacilityVOR {
   vorClass: VorClass;
   /** unknown */
   weatherBroadcast: number;
+  /** FS2024 only. +/- 180 degrees. */
+  magvar?: number;
+  /** metres. FS2024 only. */
+  navRange?: number;
+  /** FS2024 only. */
+  dme?: JS_DME | null;
+  /** FS2024 only. */
+  ils?: JS_ILSFrequency | null;
+  /** FS2024 only. */
+  tacan?: JS_TACAN | null;
+  /** FS2024 only. */
+  trueReferenced?: boolean;
 }
 
 export type JS_Facility = JS_FacilityAirport | JS_FacilityIntersection | JS_FacilityNDB | JS_FacilityVOR;
@@ -192,10 +278,22 @@ export interface JS_Frequency extends JS_FrequencyBase {
 
 export interface JS_ILSFrequency extends JS_FrequencyBase {
   __Type: 'JS_ILSFrequency';
+  /** FS2024 only. */
+  hasBackcourse?: boolean;
   hasGlideslope: number;
+  /** Metres. FS2024 only. */
+  glideslopeAlt?: number;
   glideslopeAngle: number;
+  /** FS2024 only. */
+  glideslopeLat?: number;
+  /** FS2024 only. */
+  glideslopeLon?: number;
   localizerCourse: number;
+  /** Degrees, FS2024 only. */
+  localizerWidth?: number;
   magvar: number;
+  /** FS2024 only. */
+  lsCategory?: LandingSystemCategory;
 }
 
 export interface JS_Gate {
@@ -240,6 +338,8 @@ export interface JS_Leg {
   rho: number;
   /** the speed limit, assumed at or below */
   speedRestriction: number;
+  /** FS2024 only. */
+  speedRestrictionType: SpeedRestrictionDescriptor;
   /** theta in magnetic degrees, to be intrepeted per ARINC 424 */
   theta: number;
   /** if the @see course is in true degrees instead of magnetic */
@@ -250,6 +350,8 @@ export interface JS_Leg {
   type: LegType;
   /** Vertical angle for the leg in degrees + 360 */
   verticalAngle: number;
+  /** metres, FS2024 only. */
+  rnp?: number;
 }
 
 export interface JS_Route {
@@ -258,8 +360,16 @@ export interface JS_Route {
   name: string;
   /** waypoint after this on the airway */
   nextIcao: string;
+  /** FS2024 only. */
+  nextIcaoStruct?: JS_ICAO;
+  /** Metres, FS2024 only. */
+  nextMinAlt?: number;
   /** waypoint before this on the airway */
   prevIcao: string;
+  /** FS2024 only. */
+  prevIcaoStruct?: JS_ICAO;
+  /** Metres, FS2024 only. */
+  prevMinAlt?: number;
   type: RouteType;
 }
 
@@ -305,6 +415,33 @@ export interface JS_RunwayTransition {
   runwayDesignation: RunwayDesignatorChar;
   /** matches up to @see JS_Runway.designation and @see JS_Runway.designation as a number */
   runwayNumber: number;
+}
+
+/** FS2024 only. */
+export interface JS_HoldingPattern {
+  __Type: 'JS_HoldingPattern';
+  /** The holding fix ICAO. */
+  readonly icaoStruct: JS_ICAO;
+  /** Course for the inbound leg of the holding pattern, in degrees. Can be magnetic or true. */
+  readonly inboundCourse: number;
+  /** The holding leg length, in metres, or 0 if the hold is time-based. */
+  readonly legLength: number;
+  /** The holding leg length, in minutes, or 0 if the hold is distance-based. */
+  readonly legTime: number;
+  /** Maximum altitude in the hold, in metres, or 0 if none. */
+  readonly maxAltitude: number;
+  /** Minimum altitude in the hold, in metres, or 0 if none. */
+  readonly minAltitude: number;
+  /** Friendly name of the holding pattern. */
+  readonly name: string;
+  /** The required arc radius in the hold, in metres, or 0 if none. */
+  readonly radius: number;
+  /** The required navigation performance in the hold, in metres, or 0 if none. */
+  readonly rnp: number;
+  /** Maximum speed in the hold, in knots, or 0 if none. */
+  readonly speed: number;
+  /** Whether the hold is right-turn (true), or left-turn (false). */
+  readonly turnRight: boolean;
 }
 
 export enum AirportClass {
@@ -364,6 +501,15 @@ export enum AltitudeDescriptor {
   V = 10, // V, Alt1 is procedure alt for step-down, Alt2 is at alt for vertical path angle
   // X, not supported
   // Y, not supported
+}
+
+/** FS2024 only. */
+export enum SpeedRestrictionDescriptor {
+  Unused,
+  At,
+  AtOrAbove,
+  AtOrBelow,
+  Between,
 }
 
 export enum ApproachType {
@@ -554,4 +700,18 @@ export enum VorType {
   VORTAC = 5,
   ILS = 6,
   VOT = 7,
+}
+
+/** FS2024 only. */
+export enum LandingSystemCategory {
+  None = 0,
+  Cat1,
+  Cat2,
+  Cat3,
+  Localizer,
+  Igs,
+  LdaNoGs,
+  LdaWithGs,
+  SdfNoGs,
+  SdfWithGs,
 }

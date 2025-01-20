@@ -10,6 +10,7 @@ import { Feet, Knots } from 'msfs-geo';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LerpLookupTable } from '@microsoft/msfs-sdk';
+import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export enum ApproachConf {
@@ -388,12 +389,19 @@ function getdiffAngle(a: number, b: number): number {
 }
 
 /**
- * Convert degrees Celsius into Kelvin
- * @param T degrees Celsius
- * @returns degrees Kelvin
+ * Get next flaps index for vfeFS table
+ * @returns vfeFS table index
+ * @private
  */
-function convertCtoK(T: number): number {
-  return T + 273.15;
+function getVfeNIdx(fi: number): number {
+  switch (fi) {
+    case 0:
+      return 4;
+    case 5:
+      return 1;
+    default:
+      return fi;
+  }
 }
 
 /**
@@ -402,14 +410,9 @@ function convertCtoK(T: number): number {
  * @private
  */
 function getVmo() {
-  return Math.min(
-    Vmo,
-    MathUtils.convertMachToKCas(
-      Mmo,
-      convertCtoK(Simplane.getAmbientTemperature()),
-      SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar'),
-    ),
-  );
+  const adrPressure = ADIRS.getCorrectedAverageStaticPressure();
+  const ambientPressure = adrPressure !== undefined ? adrPressure.valueOr(1013.25) : 1013.25;
+  return Math.min(Vmo, MathUtils.convertMachToKCas(Mmo, ambientPressure));
 }
 
 export class A380OperatingSpeeds {

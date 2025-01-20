@@ -27,6 +27,7 @@ import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
+import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotAvail';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -65,23 +66,21 @@ export enum InteractionMode {
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
-  #uiService = new MfdUiService(this.props.captOrFo);
+  #uiService = new MfdUiService(this.props.captOrFo, this.props.bus);
 
   get uiService() {
     return this.#uiService;
   }
 
-  public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
+  public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
-  public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
+  public readonly interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
   private readonly fmsDataKnob = ConsumerSubject.create(this.sub.on('fmsDataKnob').whenChanged(), 0);
 
   private readonly fmcAIsHealthy = ConsumerSubject.create(this.sub.on('fmcAIsHealthy').whenChanged(), true);
 
   private readonly fmcBIsHealthy = ConsumerSubject.create(this.sub.on('fmcBIsHealthy').whenChanged(), true);
-
-  private readonly fmcCIsHealthy = ConsumerSubject.create(this.sub.on('fmcCIsHealthy').whenChanged(), true);
 
   private readonly activeFmsSource = MappedSubject.create(
     ([knob, a, b]) => {
@@ -343,6 +342,12 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
       >
         <div class="mfd-main" ref={this.topRef}>
           <div ref={this.activeHeaderRef} />
+          <MfdFmsPageNotAvail
+            bus={this.props.bus}
+            fmcService={this.props.fmcService}
+            captOrFo={this.props.captOrFo}
+            requestedSystem={this.uiService.activeUri.map((uri) => uri.sys)}
+          />
           <MfdMsgList visible={this.messageListOpened} bus={this.props.bus} fmcService={this.props.fmcService} />
           <MfdFmsFplnDuplicateNames
             ref={this.duplicateNamesRef}
