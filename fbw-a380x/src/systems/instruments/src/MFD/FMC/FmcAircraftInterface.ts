@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, FmsData, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -495,29 +495,49 @@ export class FmcAircraftInterface {
     return phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && isCloseToDestination);
   }
 
-  updateOansAirports() {
-    if (this.flightPlanService.hasActive) {
-      const pub = this.bus.getPublisher<FmsOansData>();
-      if (this.flightPlanService.active?.originAirport?.ident) {
-        pub.pub('fmsOrigin', this.flightPlanService.active.originAirport.ident, true);
-      }
+  updateFmsData() {
+    const pub = this.bus.getPublisher<FmsData>();
+    pub.pub(
+      'fmsOrigin',
+      this.flightPlanService.hasActive && this.flightPlanService.active?.originAirport?.ident
+        ? this.flightPlanService.active.originAirport.ident
+        : null,
+      true,
+    );
 
-      if (this.flightPlanService.active?.originRunway?.ident) {
-        pub.pub('fmsDepartureRunway', this.flightPlanService.active.originRunway.ident, true);
-      }
+    pub.pub(
+      'fmsDepartureRunway',
+      this.flightPlanService.hasActive && this.flightPlanService.active?.originRunway?.ident
+        ? this.flightPlanService.active.originRunway.ident
+        : null,
+      true,
+    );
 
-      if (this.flightPlanService.active?.destinationAirport?.ident) {
-        pub.pub('fmsDestination', this.flightPlanService.active.destinationAirport.ident, true);
-      }
+    pub.pub(
+      'fmsDestination',
+      this.flightPlanService.hasActive && this.flightPlanService.active?.destinationAirport?.ident
+        ? this.flightPlanService.active.destinationAirport.ident
+        : null,
+      true,
+    );
 
-      if (this.flightPlanService.active?.destinationRunway?.ident) {
-        pub.pub('fmsLandingRunway', this.flightPlanService.active.destinationRunway.ident, true);
-      }
+    pub.pub(
+      'fmsLandingRunway',
+      this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway?.ident
+        ? this.flightPlanService.active.destinationRunway.ident
+        : null,
+      true,
+    );
 
-      if (this.flightPlanService.active?.alternateDestinationAirport?.ident) {
-        pub.pub('fmsAlternate', this.flightPlanService.active.alternateDestinationAirport.ident, true);
-      }
-    }
+    pub.pub(
+      'fmsAlternate',
+      this.flightPlanService.hasActive && this.flightPlanService.active?.alternateDestinationAirport?.ident
+        ? this.flightPlanService.active.alternateDestinationAirport.ident
+        : null,
+      true,
+    );
+
+    pub.pub('fmsFlightNumber', this.fmgc.data.atcCallsign.get(), true);
   }
 
   activatePreSelSpeedMach(preSel: number) {

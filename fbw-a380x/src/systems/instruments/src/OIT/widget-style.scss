@@ -3,7 +3,7 @@
 .mfd-label {
   font-size: 20px;
   color: $display-white;
-  font-family: "OIT", monospace;
+  font-family: "OIT";
 }
 
 .mfd-label.green {
@@ -73,7 +73,7 @@
   font-size: 22px;
   background-color: $display-mfd-darker-grey;
   color: $display-white;
-  font-family: "OIT", monospace;
+  font-family: "OIT";
   text-align: center;
   align-items: center;
   justify-content: center;
@@ -212,7 +212,7 @@
 .mfd-page-selector-label {
   font-size: 28px;
   color: $display-white;
-  font-family: "OIT", monospace;
+  font-family: "OIT";
   padding: 2px;
   text-align: center;
   display: inline;
@@ -433,7 +433,7 @@
 }
 
 .mfd-context-menu {
-  font-family: "OIT", monospace;
+  font-family: "OIT";
   background-color: $display-mfd-darker-grey;
   border: 2px outset $display-light-grey;
   position: absolute;
@@ -510,7 +510,7 @@
 .mfd-input-field-text-input {
   background-color: $display-background;
   border: none;
-  font-family: "OIT", monospace;
+  font-family: "OIT";
   font-size: 27px;
   line-height: 27px;
   color: $display-cyan;
@@ -563,7 +563,7 @@
   width: 18px;
   background-color: $display-cyan;
   color: $display-background;
-  font-family: "OIT", monospace;
+  font-family: "OIT";
   font-size: 27px;
   text-align: center;
   vertical-align: center;
@@ -659,7 +659,7 @@
 .mfd-surv-label {
   font-size: 20px;
   color: $display-white;
-  font-family: "OIT", monospace;
+  font-family: "OIT";
   text-align: center;
   margin-bottom: 2px;
 }
@@ -685,7 +685,7 @@
   font-size: 22px;
   padding-top: 3px;
   color: $display-white;
-  font-family: "OIT", monospace;
+  font-family: "OIT";
 }
 
 .mfd-surv-status-indicator {
@@ -737,5 +737,5 @@
 .mfd-adsc-label-off {
   font-size: 20px;
   color: $display-dark-grey;
-  font-family: "OIT", monospace;
+  font-family: "OIT";
 }

@@ -144,6 +144,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       } else {
         this.disconnectFromNetworks();
       }
+      this.props.fmcService.master?.acInterface.updateFmsData();
+      this.loadedFlightPlan?.setFlightNumber(c);
     });
   }
 
@@ -235,7 +237,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         toIcao,
         this.altnIcao.get() ?? undefined,
       );
-      this.props.fmcService.master?.acInterface.updateOansAirports();
+      this.props.fmcService.master?.acInterface.updateFmsData();
     }
   }
 
@@ -250,7 +252,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       console.error(e);
       logTroubleshootingError(this.props.bus, e);
     }
-    this.props.fmcService.master?.acInterface.updateOansAirports();
+    this.props.fmcService.master?.acInterface.updateFmsData();
     this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
 
     // Don't insert weights for now, something seems broken here
@@ -387,7 +389,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   this.altnIcao.set(v);
                   if (v) {
                     await this.props.fmcService.master?.flightPlanService.setAlternate(v);
-                    this.props.fmcService.master?.acInterface.updateOansAirports();
+                    this.props.fmcService.master?.acInterface.updateFmsData();
                   }
                 }}
                 mandatory={Subject.create(true)}

@@ -47,6 +47,14 @@ export class OIT extends DisplayComponent<OitProps> {
     return this.#uiService;
   }
 
+  get laptop() {
+    return this.props.laptop;
+  }
+
+  get laptopData() {
+    return this.props.laptop.data;
+  }
+
   public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKbdKeyEvent>().on('kbdKeyEvent');
 
   public readonly interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);

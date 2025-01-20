@@ -5,7 +5,7 @@ import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNo
 import { AbstractOitPageProps } from 'instruments/src/OIT/OIT';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { LongAlphanumericFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { AirportFormat, LongAlphanumericFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 
 interface OitFltOpsStatusPageProps extends AbstractOitPageProps {}
@@ -47,7 +47,11 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   interactionMode={this.props.oit.interactionMode}
                 />
                 <div style="width: 40px;" />
-                <Button label="SYNCHRO<br />AVIONICS" onClick={() => {}} containerStyle="width: 175px;" />
+                <Button
+                  label="SYNCHRO<br />AVIONICS"
+                  onClick={() => this.props.oit.laptop.synchroAvionics()}
+                  containerStyle="width: 175px;"
+                />
                 <div style="flex-grow: 1" />
               </div>
             </div>
@@ -67,7 +71,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                 <InputField<string>
                   dataEntryFormat={new LongAlphanumericFormat()}
                   mandatory={Subject.create(true)}
-                  value={Subject.create(null)}
+                  value={this.props.oit.laptopData.fltNumber}
                   containerStyle="width: 600px; margin-right: 5px;"
                   alignText="center"
                   hEventConsumer={this.props.oit.hEventConsumer}
@@ -79,30 +83,24 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
             <div class="oit-flt-ops-sts-line">
               <div class="oit-flt-ops-sts-line-left oit-label bigger">FROM</div>
               <div class="oit-flt-ops-sts-line-right oit-label bigger">
-                <DropdownMenu
-                  idPrefix={`${this.props.oit.uiService.captOrFo}_OIT_acftRegistration`}
-                  selectedIndex={Subject.create<number | null>(0)}
-                  values={ArraySubject.create(['----'])}
-                  freeTextAllowed={false}
-                  containerStyle="width: 250px;"
-                  alignLabels="center"
-                  numberOfDigitsForInputField={6}
-                  tmpyActive={Subject.create(false)}
+                <InputField<string>
+                  dataEntryFormat={new AirportFormat()}
+                  mandatory={Subject.create(true)}
+                  value={this.props.oit.laptopData.fromAirport}
+                  containerStyle="width: 250px; margin-right: 5px;"
+                  alignText="center"
                   hEventConsumer={this.props.oit.hEventConsumer}
                   interactionMode={this.props.oit.interactionMode}
                 />
                 <div class="oit-label bigger" style="width: 100px; padding-left: 40px;">
                   TO
                 </div>
-                <DropdownMenu
-                  idPrefix={`${this.props.oit.uiService.captOrFo}_OIT_acftRegistration`}
-                  selectedIndex={Subject.create<number | null>(0)}
-                  values={ArraySubject.create(['----'])}
-                  freeTextAllowed={false}
-                  containerStyle="width: 250px;"
-                  alignLabels="center"
-                  numberOfDigitsForInputField={6}
-                  tmpyActive={Subject.create(false)}
+                <InputField<string>
+                  dataEntryFormat={new AirportFormat()}
+                  mandatory={Subject.create(true)}
+                  value={this.props.oit.laptopData.toAirport}
+                  containerStyle="width: 250px; margin-right: 5px;"
+                  alignText="center"
                   hEventConsumer={this.props.oit.hEventConsumer}
                   interactionMode={this.props.oit.interactionMode}
                 />

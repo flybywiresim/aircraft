@@ -1,19 +1,33 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Instrument, SimVarValueType, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { ConsumerSubject, EventBus, Instrument, SimVarValueType, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { FailuresConsumer, FmsData } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 
 type LaptopIndex = 1 | 2;
 
 export class OisLaptop implements Instrument {
+  public readonly data = new OisLaptopData();
+
   private readonly failureKey = this.index === 1 ? A380Failure.CaptainLaptop : A380Failure.FirstOfficerLaptop;
 
   private readonly powered = Subject.create(false);
 
   private readonly _isHealthy = Subject.create(false);
   public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
+
+  private readonly sub = this.bus.getSubscriber<FmsData>();
+
+  private readonly fltNumberBus = ConsumerSubject.create(this.sub.on('fmsFlightNumber'), null);
+  private readonly fromAirportBus = ConsumerSubject.create(this.sub.on('fmsOrigin'), null);
+  private readonly toAirportBus = ConsumerSubject.create(this.sub.on('fmsDestination'), null);
+
+  public synchroAvionics() {
+    this.data.fltNumber.set(this.fltNumberBus.get());
+    this.data.fromAirport.set(this.fromAirportBus.get());
+    this.data.toAirport.set(this.toAirportBus.get());
+  }
 
   constructor(
     private readonly bus: EventBus,
@@ -46,4 +60,10 @@ export class OisLaptop implements Instrument {
       this._isHealthy.get(),
     );
   }
+}
+
+export class OisLaptopData {
+  public readonly fltNumber = Subject.create<string | null>(null);
+  public readonly fromAirport = Subject.create<string | null>(null);
+  public readonly toAirport = Subject.create<string | null>(null);
 }

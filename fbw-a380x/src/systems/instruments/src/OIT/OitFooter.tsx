@@ -31,9 +31,21 @@ export abstract class OitFooter extends DisplayComponent<OiFooterHeaderProps> {
     return (
       <div class="oit-header-row">
         <IconButton icon={'single-left'} containerStyle="width: 60px; height: 50px;" />
-        {['FLT OPS STS', 'CHARTS', 'FLT FOLDER'].map((s) => (
-          <Button label={s} onClick={() => {}} buttonStyle="width: 225px; font-size: 28px; height: 50px;" />
-        ))}
+        <Button
+          label={'FLT OPS STS'}
+          onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
+          buttonStyle="width: 225px; font-size: 28px; height: 50px;"
+        />
+        <Button
+          label={'CHARTS'}
+          onClick={() => this.props.oit.uiService.navigateTo('flt-ops/charts')}
+          buttonStyle="width: 225px; font-size: 28px; height: 50px;"
+        />
+        <Button
+          label={'FLT FOLDER'}
+          onClick={() => this.props.oit.uiService.navigateTo('flt-ops/flt-folder')}
+          buttonStyle="width: 225px; font-size: 28px; height: 50px;"
+        />
         <div style="flex-grow: 1" />
         <IconButton icon={'single-right'} containerStyle="width: 60px; height: 50px;" />
       </div>

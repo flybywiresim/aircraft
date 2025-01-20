@@ -28,11 +28,13 @@
   visibility: visible !important;
 
   text-anchor: middle;
+  font-family: "OIT";
 }
 
 .EngineeringTestModeText {
   font-size: 21px;
   color: black;
+  font-family: "OIT";
 }
 
 .AnsuFailed {
@@ -50,4 +52,5 @@
   fill: $display-amber;
   visibility: visible !important;
   text-anchor: middle;
+  font-family: "OIT";
 }

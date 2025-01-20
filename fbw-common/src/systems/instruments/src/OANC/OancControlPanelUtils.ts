@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ArraySubject, ConsumerSubject, DmsFormatter2, EventBus, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { AmdbAirportSearchResult, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { AmdbAirportSearchResult, FmsData } from '@flybywiresim/fbw-sdk';
 
 export enum ControlPanelAirportSearchMode {
   Icao,
@@ -57,7 +57,7 @@ export class ControlPanelStore {
 
 export class FmsDataStore {
   constructor(private bus: EventBus) {
-    const sub = this.bus.getSubscriber<FmsOansData>();
+    const sub = this.bus.getSubscriber<FmsData>();
     this.origin.setConsumer(sub.on('fmsOrigin'));
     this.destination.setConsumer(sub.on('fmsDestination'));
     this.alternate.setConsumer(sub.on('fmsAlternate'));
