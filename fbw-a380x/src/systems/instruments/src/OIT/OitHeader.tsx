@@ -51,9 +51,9 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
               disabled: true,
               separatorBelow: true,
             },
-            { label: 'T.O PERF', action: () => this.props.uiService.navigateTo('flt-ops/to-perf') },
+            { label: 'T.O PERF', action: () => this.props.uiService.navigateTo('flt-ops/to-perf'), disabled: true },
             { label: 'LOADSHEET', action: () => this.props.uiService.navigateTo('flt-ops/loadsheet'), disabled: true },
-            { label: 'LDG PERF', action: () => this.props.uiService.navigateTo('flt-ops/ldg-perf') },
+            { label: 'LDG PERF', action: () => this.props.uiService.navigateTo('flt-ops/ldg-perf'), disabled: true },
             {
               label: 'IN-FLT PERF',
               action: () => this.props.uiService.navigateTo('flt-ops/in-flt-perf'),

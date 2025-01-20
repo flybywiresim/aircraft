@@ -27,10 +27,7 @@ export class OitFltOpsPerformance extends DisplayComponent<OitFltOpsPerformanceP
         {/* begin page content */}
         <div class="oit-page-container" style="justify-content: center; align-items: center;">
           <div class="oit-label amber" style="font-size: 36px;">
-            NOT IMPLEMENTED
-          </div>
-          <div class="oit-label" style="font-size: 28px; width: 85%; text-align: center;">
-            Performance calculations are not yet implemented. We suggest to use Navigraph's performance calculators.
+            NOT YET IMPLEMENTED
           </div>
         </div>
         {/* end page content */}
