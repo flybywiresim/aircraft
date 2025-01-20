@@ -1,3 +1,6 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import {
   ComponentProps,
   Consumer,
@@ -9,10 +12,9 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { InteractionMode } from 'instruments/src/MFD/MFD';
+import { InteractionMode } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 interface InputFieldProps<T> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T>;
@@ -541,7 +543,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         } else if (val && val.substring(0, 1) === '-') {
           this.modifiedFieldValue.set(`+${val.substring(1)}`);
         } else {
-          this.modifiedFieldValue.set(`-${this.modifiedFieldValue.get()}`);
+          this.modifiedFieldValue.set(`-${this.modifiedFieldValue.get() ?? ''}`);
         }
       }
 
