@@ -1,4 +1,4 @@
-import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
@@ -10,6 +10,8 @@ import { ConditionalComponent } from 'instruments/src/MFD/pages/common/Condition
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/index';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
+import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 
 interface MfdFmsDataWaypointProps extends AbstractMfdPageProps {}
 
@@ -19,6 +21,8 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
   private readonly waypointIdent = Subject.create<string | null>(null);
 
   private readonly waypointCoords = Subject.create('');
+
+  private readonly pilotStoredWaypointsList = ArraySubject.create<string>([]);
 
   private readonly disabledScrollLeft = Subject.create(true);
   private readonly disabledScrollRight = Subject.create(false);
@@ -37,13 +41,12 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
 
       if (selectedWaypoint) {
         const waypointCoords = coordinateToString(selectedWaypoint.location.lat, selectedWaypoint.location.long, false);
-
-        if (selectedWaypoint.location) {
-          this.waypointCoords.set(waypointCoords);
-        }
+        this.waypointCoords.set(waypointCoords);
       }
     }
   }
+
+  private scrollStoredWaypointButtons(direction: 'left' | 'right'): void {}
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -136,8 +139,32 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
                   </div>
                 }
                 componentIfFalse={
-                  <div class="mfd-label" style="align-self:center; position: relative; top: 45px;">
-                    NO PILOT STORED WPT
+                  <div class="-mfd-data-waypoint-list-container">
+                    <div class="mfd-label" style="align-self:center; position: relative; top: 45px;">
+                      NO PILOT STORED WPT
+                    </div>
+                    <DropdownMenu
+                      values={undefined}
+                      selectedIndex={undefined}
+                      freeTextAllowed={false}
+                      idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataWaypointListDropdown`}
+                      hEventConsumer={undefined}
+                      interactionMode={undefined}
+                    />
+                    <div class="mfd-data-waypoint-stored-list-scroll-buttons">
+                      <IconButton
+                        icon="double-left"
+                        onClick={() => this.scrollStoredWaypointButtons('left')}
+                        disabled={this.disabledScrollLeft}
+                        containerStyle="width: 50px; height: 50px; margin-right: 5px"
+                      />
+                      <IconButton
+                        icon="double-right"
+                        onClick={() => this.scrollStoredWaypointButtons('right')}
+                        disabled={this.disabledScrollRight}
+                        containerStyle="width: 50px; height: 50px;"
+                      />
+                    </div>
                   </div>
                 }
               ></ConditionalComponent>
