@@ -166,12 +166,19 @@ export class CDUAvailableArrivalsPage {
       // Approaches not going to a specific runway (i.e circling approaches are filtered out at DB level)
       .filter((a) => !!runways.find((rw) => rw.ident === a.runwayIdent))
       // Sort the approaches in Honeywell's documented order, and alphabetical in between
+      // Sort the approaches in Honeywell's documented order, then by runway number, runway designator, and finally approach suffix.
       .sort((a, b) =>
-        a.type != b.type ? ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type] : a.ident.localeCompare(b.ident),
+        a.type != b.type
+          ? ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type]
+          : a.runwayNumber !== b.runwayNumber
+            ? a.runwayNumber - b.runwayNumber
+            : a.runwayDesignator !== b.runwayDesignator
+              ? a.runwayDesignator - b.runwayDesignator
+              : a.multipleIndicator.localeCompare(b.multipleIndicator),
       );
     const allApproaches = (sortedApproaches as (Runway | Approach)[]).concat(
       // Runway-by-itself approaches
-      runways,
+      runways.slice().sort((a, b) => (a.number !== b.number ? a.number - b.number : a.designator - b.designator)),
     );
     const rows = [[''], [''], [''], [''], [''], [''], [''], ['']];
 

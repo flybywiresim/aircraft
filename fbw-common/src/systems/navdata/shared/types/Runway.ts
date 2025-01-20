@@ -38,10 +38,11 @@ export enum RunwaySurfaceType {
   Water = 1 << 3,
 }
 
+// Maintain in sort order for FMS
 export enum RunwayDesignator {
   None = 0,
   Left,
-  Centre,
   Right,
+  Centre,
   True,
 }
