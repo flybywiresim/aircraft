@@ -1,7 +1,7 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { AbstractOitPageProps } from 'instruments/src/OIT/OIT';
 
@@ -13,8 +13,6 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    new Promise((resolve) => setTimeout(resolve, 500)).then(() => this.props.oit.uiService.navigateTo('back'));
   }
 
   public destroy(): void {
@@ -32,27 +30,70 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
           <div class="fr">
             <div class="oit-flt-ops-menu-column">
               <div class="oit-flt-ops-menu-column-title">MISSION</div>
-              {['FLT FOLDER', 'CHARTS'].map((s) => (
-                <Button label={s} containerStyle="width: 300px; margin-bottom: 20px" onClick={() => {}} />
-              ))}
+              <Button
+                label={'FLT FOLDER'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/flt-folder')}
+              />
+              <Button
+                label={'CHARTS'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/charts')}
+              />
             </div>
             <div class="oit-flt-ops-menu-column">
               <div class="oit-flt-ops-menu-column-title">DOCUMENTATION</div>
-              {['OPS LIBRARY'].map((s) => (
-                <Button label={s} containerStyle="width: 300px; margin-bottom: 20px" onClick={() => {}} />
-              ))}
+              <Button
+                label={'OPS LIBRARY'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/ops-library')}
+                disabled={Subject.create(true)}
+              />
             </div>
             <div class="oit-flt-ops-menu-column">
               <div class="oit-flt-ops-menu-column-title">PERFORMANCE</div>
-              {['T.O PERF', 'LOADSHEET', 'LDG PERF', 'IN-FLT PERF'].map((s) => (
-                <Button label={s} containerStyle="width: 300px; margin-bottom: 20px" onClick={() => {}} />
-              ))}
+              <Button
+                label={'T.O PERF'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/to-perf')}
+              />
+              <Button
+                label={'LOADSHEET'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/loadsheet')}
+                disabled={Subject.create(true)}
+              />
+              <Button
+                label={'LDG PERF'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/ldg-perf')}
+              />
+              <Button
+                label={'IN-FLT PERF'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/in-flt-perf')}
+                disabled={Subject.create(true)}
+              />
             </div>
             <div class="oit-flt-ops-menu-column">
               <div class="oit-flt-ops-menu-column-title">UTILITIES</div>
-              {['FLT OPS STS', 'LOAD BOX', 'EXPORT BOX'].map((s) => (
-                <Button label={s} containerStyle="width: 300px; margin-bottom: 20px" onClick={() => {}} />
-              ))}
+              <Button
+                label={'FLT OPS STS'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
+              />
+              <Button
+                label={'LOAD BOX'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/load-box')}
+                disabled={Subject.create(true)}
+              />
+              <Button
+                label={'EXPORT BOX'}
+                containerStyle="width: 300px; margin-bottom: 20px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/export-box')}
+                disabled={Subject.create(true)}
+              />
             </div>
           </div>
           <div style="flex-grow: 1" />
@@ -60,6 +101,7 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
             label={'EXIT SESSION'}
             containerStyle="width: 300px; margin-bottom: 20px; align-self: flex-end;"
             onClick={() => {}}
+            disabled={Subject.create(true)}
           />
         </div>
         {/* end page content */}

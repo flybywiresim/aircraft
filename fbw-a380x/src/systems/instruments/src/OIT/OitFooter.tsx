@@ -31,7 +31,7 @@ export abstract class OitFooter extends DisplayComponent<OiFooterHeaderProps> {
     return (
       <div class="oit-header-row">
         <IconButton icon={'single-left'} containerStyle="width: 60px; height: 50px;" />
-        {['FLT OPS STS', 'CHARTS', 'OPS LIBRARY'].map((s) => (
+        {['FLT OPS STS', 'CHARTS', 'FLT FOLDER'].map((s) => (
           <Button label={s} onClick={() => {}} buttonStyle="width: 225px; font-size: 28px; height: 50px;" />
         ))}
         <div style="flex-grow: 1" />

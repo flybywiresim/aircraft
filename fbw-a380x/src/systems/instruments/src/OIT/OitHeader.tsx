@@ -48,24 +48,31 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             {
               label: 'OPS LIBRARY',
               action: () => this.props.uiService.navigateTo('flt-ops/ops-library'),
+              disabled: true,
               separatorBelow: true,
             },
             { label: 'T.O PERF', action: () => this.props.uiService.navigateTo('flt-ops/to-perf') },
-            { label: 'LOADSHEET', action: () => this.props.uiService.navigateTo('flt-ops/loadsheet') },
+            { label: 'LOADSHEET', action: () => this.props.uiService.navigateTo('flt-ops/loadsheet'), disabled: true },
             { label: 'LDG PERF', action: () => this.props.uiService.navigateTo('flt-ops/ldg-perf') },
             {
               label: 'IN-FLT PERF',
               action: () => this.props.uiService.navigateTo('flt-ops/in-flt-perf'),
+              disabled: true,
               separatorBelow: true,
             },
             { label: 'FLT OPS STS', action: () => this.props.uiService.navigateTo('flt-ops/sts') },
-            { label: 'LOAD BOX', action: () => this.props.uiService.navigateTo('flt-ops/load-box') },
+            { label: 'LOAD BOX', action: () => this.props.uiService.navigateTo('flt-ops/load-box'), disabled: true },
             {
               label: 'EXPORT BOX',
               action: () => this.props.uiService.navigateTo('flt-ops/export-box'),
+              disabled: true,
               separatorBelow: true,
             },
-            { label: 'EXIT SESSION', action: () => this.props.uiService.navigateTo('flt-ops/exit-session') },
+            {
+              label: 'EXIT SESSION',
+              action: () => this.props.uiService.navigateTo('flt-ops/exit-session'),
+              disabled: true,
+            },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_menu`}
           containerStyle="height: 60px;"
@@ -77,8 +84,17 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
           isActive={SubscribableUtils.toSubscribable(false, true)}
           label="FUNCTIONS"
           menuItems={[
-            { label: 'BLANK', action: () => this.props.uiService.navigateTo('flt-ops') },
-            { label: 'BLANK', action: () => this.props.uiService.navigateTo('flt-ops') },
+            { label: 'HOME', action: () => {}, disabled: true },
+            { label: 'PREVIOUS', action: () => {}, disabled: true },
+            { label: 'NEXT', action: () => {}, disabled: true, separatorBelow: true },
+            { label: 'PRINT', action: () => {}, disabled: true },
+            { label: 'STORE', action: () => {}, disabled: true },
+            { label: 'UPDATE', action: () => {}, disabled: true, separatorBelow: true },
+            { label: 'UNDO', action: () => {}, disabled: true },
+            { label: 'REDO', action: () => {}, disabled: true, separatorBelow: true },
+            { label: 'HELP', action: () => {}, disabled: true, separatorBelow: true },
+            { label: 'HIDE SWITCHING BAR', action: () => {}, disabled: true, separatorBelow: true },
+            { label: 'CLOSE APPLICATION', action: () => {}, disabled: true, separatorBelow: true },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_functions`}
           containerStyle="height: 60px"
@@ -95,7 +111,11 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
 
 const heading: Record<string, string> = {
   'flt-ops': 'FLT OPS MENU',
+  'flt-ops/flt-folder': 'FLT FOLDER',
+  'flt-ops/charts': 'CHARTS',
   'flt-ops/sts': 'STATUS PAGE',
+  'flt-ops/to-perf': 'T.O PERF',
+  'flt-ops/ldg-perf': 'LDG PERF',
   'flt-ops/load-box': 'LOAD BOX',
   'flt-ops/export-box': 'EXPORT BOX',
 };
