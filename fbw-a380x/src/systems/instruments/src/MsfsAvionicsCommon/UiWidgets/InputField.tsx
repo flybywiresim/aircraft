@@ -52,6 +52,8 @@ interface InputFieldProps<T> extends ComponentProps {
   hEventConsumer: Consumer<string>;
   /** Kccu uses the HW keys, and doesn't focus input fields */
   interactionMode: Subscribable<InteractionMode>;
+  /** Used for OIT, where placeholders are [] for mandatory fields */
+  overrideEmptyMandatoryPlaceholder?: string;
   // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
 }
 
@@ -312,7 +314,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     this.trailingUnit.set(unitTrailing ?? '');
 
     if (this.props.mandatory?.get() && !this.props.inactive?.get() && !this.props.disabled?.get()) {
-      this.textInputRef.instance.innerHTML = formatted?.replace(/-/gi, '\u25AF') ?? '';
+      this.textInputRef.instance.innerHTML =
+        formatted?.replace(/-/gi, this.props.overrideEmptyMandatoryPlaceholder ?? '\u25AF') ?? '';
     } else {
       this.textInputRef.instance.innerText = formatted ?? '';
     }

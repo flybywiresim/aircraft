@@ -75,7 +75,6 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_menu`}
-          containerStyle="height: 60px;"
           dropdownMenuStyle="width: 300px;"
         />
         <div class="oit-heading">{this.props.uiService.activeUri.map((uri) => heading[uri.uri] ?? 'FIXME')}</div>
@@ -97,7 +96,6 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             { label: 'CLOSE APPLICATION', action: () => {}, disabled: true, separatorBelow: true },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_functions`}
-          containerStyle="height: 60px"
           dropdownMenuStyle="width: 300px;"
         />
         <div class="oit-msg-header">0 MSG</div>
