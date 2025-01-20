@@ -36,12 +36,12 @@ export const AtsuAocPage = () => {
       const body = {
         logon: value,
         from: 'FBWA32NX',
-        to: 'ALL-CALLSIGNS',
+        to: 'SERVER',
         type: 'ping',
         packet: '',
       };
       return Hoppie.sendRequest(body).then((resp) => {
-        if (resp.response === 'error {illegal logon code}') {
+        if (resp.response === 'error {invalid logon code}') {
           reject(new Error(`Error: Unknown user ID: ${resp.response}`));
         } else {
           resolve(value);

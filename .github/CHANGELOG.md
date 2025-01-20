@@ -71,6 +71,7 @@
 1. [A380X/FMS] Added SURV Status & Switching page with TCAS fault indication - @Frenkii (Moritz)
 1. [FMS] Fix T/D not showing in selected speed - @BlueberryKing (BlueberryKing)
 1. [FMS] Fix Pause at T/D not working in selected speed - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Various Fuel & Load Fixes - @BravoMike99 (bruno_pt99)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
 1. [A380X/FWS] No "auto brake off" callout when double pressing A/THR instinctive disconnect - @flogross89 (floridude)
@@ -118,6 +119,18 @@
 1. [A380X/EFIS] Fix VV pb indicator not turning on when TRK-FPA mode is selected - @heclak (Heclak)
 1. [EFB] Added troubleshooting page, under about page, for advanced support - @tracernz (Mike)
 1. [FMS] Transition altitude/level and RNP now come from navdata in MSFS2024 - @tracernz (Mike)
+1. [ATSU] Fixed issues with the ALL-CALLSIGNS recipient on Hoppie - @CronixZero (CronixZero)
+1. [A380X/MFD] Add ATCCOM D-ATIS page layout - @heclak (Heclak)
+1. [A380X/FMS] Enable FMC reset through overhead reset panel push buttons - @flogross89 (floridude)
+1. [A380X/FCU] Add TRUE indication on FCU when TRUE North reference is selected on AFS CP - @heclak (Heclak)
+1. [A380X/MFD] Add airport data page into the MFD (DATA > AIRPORT) - @bulenteroglu (senolitam)
+1. [A380X/EFB] Adds PRIM/SEC/FCDC failures to EFB - @flogross89 (floridude)
+1. [A380X/PFD] Fix precision of pitch trim indicator - @flogross89 (floridude)
+1. [A380X/MFD] Add leading zero to altitude prediction and track from last waypoint on FPLN page - @bulenteroglu (senolitam)
+1. [FMS] Improved nav database error handling, preserving as much valid data as possible - @tracernz (Mike)
+1. [A32NX/FMS] Sort instrument procedures for display on the MCDU - @tracernz (Mike)
+1. [A380X/ELEC] Various fixes in the electrical system (battery voltage indicator switchup, AC GND SVC BUS and correct behavior of battery contactors) - @Gurgel100 (Pascal)
+1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
 
 ## 0.12.0
 
