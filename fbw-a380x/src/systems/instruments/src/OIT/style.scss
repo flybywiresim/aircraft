@@ -43,8 +43,14 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+
 }
 
+.oit-page-container.framed {
+  border: 3px solid $display-light-grey;
+  padding: 10px;
+  margin: 10px;
+}
 
 .oit-heading {
   font-size: 28px;
@@ -128,4 +134,41 @@
   color: $display-white;
   margin-top: 60px;
   margin-bottom: 30px;
+}
+
+.oit-flt-ops-sts-upper {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-bottom: 3px solid $display-light-grey;
+}
+
+.oit-flt-ops-sts-line {
+  display: flex;
+  flex-direction: row;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.oit-flt-ops-sts-lower {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.oit-flt-ops-sts-line-left {
+  flex: 2;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.oit-flt-ops-sts-line-right {
+  flex: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
 }

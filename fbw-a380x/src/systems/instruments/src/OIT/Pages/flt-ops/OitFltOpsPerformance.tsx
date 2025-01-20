@@ -4,9 +4,9 @@
 import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { AbstractOitPageProps } from 'instruments/src/OIT/OIT';
 
-interface OitFltOpsMenuPageProps extends AbstractOitPageProps {}
+interface OitFltOpsPerformancePageProps extends AbstractOitPageProps {}
 
-export class OitFltOpsPerformance extends DisplayComponent<OitFltOpsMenuPageProps> {
+export class OitFltOpsPerformance extends DisplayComponent<OitFltOpsPerformancePageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 

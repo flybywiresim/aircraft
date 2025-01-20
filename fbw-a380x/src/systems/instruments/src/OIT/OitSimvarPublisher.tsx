@@ -16,6 +16,10 @@ export type OitSimvars = {
   laptopFoHealthy: boolean;
 };
 
+export type InternalKbdKeyEvent = {
+  kbdKeyEvent: string;
+};
+
 export enum OitVars {
   coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
   elec = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',

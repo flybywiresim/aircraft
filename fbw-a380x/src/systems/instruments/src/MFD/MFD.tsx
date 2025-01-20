@@ -27,10 +27,11 @@ import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterfac
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
-import { InteractionMode, InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
+import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
 import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotAvail';
 
 import './pages/common/style.scss';
+import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');

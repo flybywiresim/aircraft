@@ -12,7 +12,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './style.scss';
-import { OitSimvars } from 'instruments/src/OIT/OitSimvarPublisher';
+import { InternalKbdKeyEvent, OitSimvars } from 'instruments/src/OIT/OitSimvarPublisher';
 import { OitUiService, OitUriInformation } from 'instruments/src/OIT/OitUiService';
 import { OitNotFound } from 'instruments/src/OIT/pages/OitNotFound';
 import { pageForUrl } from 'instruments/src/OIT/OitPageDirectory';
@@ -21,6 +21,7 @@ import { OitFooter } from 'instruments/src/OIT/OitFooter';
 import { OitDisplayUnit, OitDisplayUnitID } from 'instruments/src/OIT/OitDisplayUnit';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OisLaptop } from 'instruments/src/OIT/OisLaptop';
+import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 
 export interface AbstractOitPageProps extends ComponentProps {
   bus: EventBus;
@@ -46,6 +47,10 @@ export class OIT extends DisplayComponent<OitProps> {
     return this.#uiService;
   }
 
+  public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKbdKeyEvent>().on('kbdKeyEvent');
+
+  public readonly interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
+
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly activePageRef = FSComponent.createRef<HTMLDivElement>();
@@ -59,7 +64,7 @@ export class OIT extends DisplayComponent<OitProps> {
       this.activeUriChanged(uri);
     });
 
-    this.uiService.navigateTo('flt-ops'); // should be /sts
+    this.uiService.navigateTo('flt-ops/sts'); // should be /sts
   }
 
   private activeUriChanged(uri: OitUriInformation) {

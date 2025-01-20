@@ -14,7 +14,11 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { InteractionMode } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+
+export enum InteractionMode {
+  Touchscreen,
+  Kccu,
+}
 
 interface InputFieldProps<T> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T>;
