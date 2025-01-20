@@ -132,6 +132,7 @@
 1. [A380X/ELEC] Various fixes in the electrical system (battery voltage indicator switchup, AC GND SVC BUS and correct behavior of battery contactors) - @Gurgel100 (Pascal)
 1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
 1. [A380X/SD] Display oil quantity on ENG page - @flogross89 (floridude)
+1. [A380X/FMS] Accept KCCU plus/minus key as first entry into field - @flogross89 (floridude)
 
 ## 0.12.0
 
