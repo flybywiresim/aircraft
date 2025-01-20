@@ -389,22 +389,6 @@ function getdiffAngle(a: number, b: number): number {
 }
 
 /**
- * Get next flaps index for vfeFS table
- * @returns vfeFS table index
- * @private
- */
-function getVfeNIdx(fi: number): number {
-  switch (fi) {
-    case 0:
-      return 4;
-    case 5:
-      return 1;
-    default:
-      return fi;
-  }
-}
-
-/**
  * Get correct Vmax for Vmo and Mmo in knots
  * @returns Min(Vmo, Mmo)
  * @private
