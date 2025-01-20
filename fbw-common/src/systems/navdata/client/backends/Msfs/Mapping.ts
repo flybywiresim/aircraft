@@ -698,7 +698,6 @@ export class MsfsMapping {
         .map((approach) => {
           try {
             const approachName = this.mapApproachName(approach);
-            const suffix = approach.approachSuffix.length > 0 ? approach.approachSuffix : undefined;
 
             // The AR flag is only available from MSFS2024, so fall back to a heuristic based on analysing the MSFS2020 data if not available.
             const authorisationRequired =
@@ -721,7 +720,6 @@ export class MsfsMapping {
               databaseId: `P${icaoCode}${airportIdent}${approach.name}`,
               icaoCode,
               ident: approachName,
-              suffix,
               runwayIdent,
               runwayNumber: approach.runwayNumber,
               // we can assert the type here as we filtered out null designators earlier

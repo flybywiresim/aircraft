@@ -52,9 +52,6 @@ export interface Approach extends DatabaseItem<SectionCode.Airport> {
    */
   type: ApproachType;
 
-  /** The approach suffix char for multiple approaches, or undefined if none. */
-  suffix?: string;
-
   /**
    * RNP-AR approach?
    */
