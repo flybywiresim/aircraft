@@ -4,6 +4,7 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
@@ -130,7 +131,6 @@
 1. [A380X/ELEC] Various fixes in the electrical system (battery voltage indicator switchup, AC GND SVC BUS and correct behavior of battery contactors) - @Gurgel100 (Pascal)
 1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
 1. [A380X/MFD] Added DATA/NAVAID page with functional navaid lookup - @jet2code (john.xyz)
-
 
 ## 0.12.0
 
