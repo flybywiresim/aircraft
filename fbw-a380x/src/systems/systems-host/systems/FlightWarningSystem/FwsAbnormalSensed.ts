@@ -186,13 +186,23 @@ export class FwsAbnormalSensed {
     return Array.from(this.fws.activeAbnormalProceduresList.get().keys());
   }
 
-  public clearActiveProcedure() {
+  public clearActiveProcedure(newState?: ChecklistState) {
     const numFailures = this.fws.activeAbnormalNonSensedKeys.size + this.fws.presentedFailures.length;
     if (numFailures === 1 && !this.fws.ecamStsNormal.get()) {
       // Call STS page on SD
       SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
     }
     this.fws.presentedFailures.splice(this.fws.presentedFailures.indexOf(this.activeProcedureId.get()), 1);
+
+    // Delete procedure completely if not-sensed procedure is de-activated
+    if (
+      newState?.procedureActivated === false &&
+      EcamAbnormalSensedProcedures[this.activeProcedureId.get()]?.sensed === false
+    ) {
+      this.fws.activeAbnormalNonSensedKeys.delete(parseInt(this.activeProcedureId.get()));
+      this.fws.allCurrentFailures.splice(this.fws.allCurrentFailures.indexOf(this.activeProcedureId.get()), 1);
+    }
+
     this.fws.recallFailures = this.fws.allCurrentFailures.filter((item) => !this.fws.presentedFailures.includes(item));
   }
 

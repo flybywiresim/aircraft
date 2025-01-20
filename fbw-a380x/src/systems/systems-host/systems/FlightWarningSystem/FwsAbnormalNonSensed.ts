@@ -28,7 +28,12 @@ export class FwsAbnormalNonSensed {
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
   constructor(private fws: FwsCore) {
-    this.checklistId.sub((id) => this.pub.pub('fws_abn_non_sensed_id', id, true), true);
+    this.checklistId.sub((id) => {
+      this.pub.pub('fws_abn_non_sensed_id', id, true);
+      if (id > 10) {
+        this.pub.pub('fws_abn_non_sensed_current_active', this.fws.activeAbnormalNonSensedKeys.has(id), true);
+      }
+    }, true);
   }
 
   getAbnormalNonSensedMenuSize(): number {
@@ -109,8 +114,12 @@ export class FwsAbnormalNonSensed {
         this.checklistId.set(AbnormalNonSensedProceduresOverview[subMenuProcsStartAt + this.selectedItem.get()].id);
         this.selectedItem.set(-1);
       } else {
-        // Activate non-sensed procedure (add to ECAM faults) and close dialog, i.e. return to abnormal procs
-        this.fws.activeAbnormalNonSensedKeys.add(this.checklistId.get());
+        // Activate or de-activate non-sensed procedure (add to ECAM faults) and close dialog, i.e. return to abnormal procs
+        if (!this.fws.activeAbnormalNonSensedKeys.has(this.checklistId.get())) {
+          this.fws.activeAbnormalNonSensedKeys.add(this.checklistId.get());
+        } else {
+          this.fws.activeAbnormalNonSensedKeys.delete(this.checklistId.get());
+        }
         this.selectedItem.set(0);
         this.showAbnProcRequested.set(false);
       }

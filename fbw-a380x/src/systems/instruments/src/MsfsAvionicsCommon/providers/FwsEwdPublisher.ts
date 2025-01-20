@@ -48,6 +48,8 @@ export interface FwsEwdEvents {
   fws_show_abn_non_sensed: boolean;
   /** (FWS -> EWD) Which checklist to display. 0-10 special overview (sub-)pages, other IDs refer to the respective procedure */
   fws_abn_non_sensed_id: number;
+  /** (FWS -> EWD) Whether currently displayed procedure is activated */
+  fws_abn_non_sensed_current_active: boolean;
 
   /** (FWS -> EWD) Show FAILURE PENDING indication at bottom of page */
   fws_show_failure_pending: boolean;

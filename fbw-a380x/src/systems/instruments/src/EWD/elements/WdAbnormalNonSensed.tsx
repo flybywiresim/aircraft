@@ -17,6 +17,8 @@ function removeUnderline(text: string): string {
 export class WdAbnormalNonSensedProcedures extends WdAbstractChecklistComponent {
   private readonly checklistId = ConsumerSubject.create(this.sub.on('fws_abn_non_sensed_id'), 0);
 
+  private readonly checklistActivated = ConsumerSubject.create(this.sub.on('fws_abn_non_sensed_current_active'), false);
+
   public updateChecklists() {
     this.lineData.length = 0;
 
@@ -124,7 +126,7 @@ export class WdAbnormalNonSensedProcedures extends WdAbstractChecklistComponent 
         activeProcedure: true,
         abnormalProcedure: true,
         sensed: false,
-        checked: false,
+        checked: this.checklistActivated.get(),
         text: `${'\xa0'.repeat(31)}ACTIVATE`,
         style: ChecklistLineStyle.ChecklistItem,
         firstLine: false,

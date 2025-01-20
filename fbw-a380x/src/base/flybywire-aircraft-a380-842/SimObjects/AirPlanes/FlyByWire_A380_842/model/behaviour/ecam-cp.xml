@@ -141,7 +141,7 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:#SIMVAR#)
                 </LEFT_LEAVE_CODE>
-                <SEQ2_EMISSIVE_CODE>(L:A32NX_ECAM_SFAIL) -1 &gt; #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
+                <SEQ2_EMISSIVE_CODE>(L:A32NX_ECAM_FAILURE_ACTIVE) #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>

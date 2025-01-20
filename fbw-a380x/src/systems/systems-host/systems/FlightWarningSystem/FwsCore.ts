@@ -3927,9 +3927,23 @@ export class FwsCore {
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
 
+    const faultIsActiveConsideringFaultSuppression = (fault: EwdAbnormalItem) => {
+      // Skip if other fault overrides this one
+      const shouldBeSuppressed = fault.notActiveWhenFaults.some((val) => {
+        if (val && this.ewdAbnormal[val]) {
+          const otherFault = this.ewdAbnormal[val] as EwdAbnormalItem;
+          if (otherFault.simVarIsActive.get()) {
+            return true;
+          }
+          return false;
+        }
+      });
+      return fault.simVarIsActive.get() && !shouldBeSuppressed;
+    };
+
     // Update memos and failures list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdAbnormal)) {
-      if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
+      if (!faultIsActiveConsideringFaultSuppression(value) || value.flightPhaseInhib.some((e) => e === flightPhase)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
@@ -3953,20 +3967,7 @@ export class FwsCore {
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
       const proc = EcamAbnormalProcedures[key];
 
-      if (value.simVarIsActive.get()) {
-        // Skip if other fault overrides this one
-        let overridden = false;
-        value.notActiveWhenFaults.forEach((val) => {
-          if (val && this.ewdAbnormal[val]) {
-            const otherFault = this.ewdAbnormal[val] as EwdAbnormalItem;
-            if (otherFault.simVarIsActive.get()) {
-              overridden = true;
-            }
-          }
-        });
-        if (overridden) {
-          continue;
-        }
+      if (faultIsActiveConsideringFaultSuppression(value)) {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
@@ -4282,6 +4283,8 @@ export class FwsCore {
     );
 
     this.masterWarning.set(this.requestMasterWarningFromFaults || this.requestMasterWarningFromApOff);
+
+    SimVar.SetSimVarValue('L:A32NX_ECAM_FAILURE_ACTIVE', SimVarValueType.Bool, this.presentedFailures.length > 0);
 
     if (failureSystemCount === 0) {
       SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);

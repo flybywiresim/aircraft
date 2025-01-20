@@ -38,6 +38,7 @@ const SPECIAL_INDEX_DEFERRED_PROC_RECALL = -4;
 const SPECIAL_INDEX_NORMAL_CL_COMPLETE = -5;
 const SPECIAL_INDEX_NORMAL_RESET = -6;
 const SPECIAL_INDEX_CLEAR = -7;
+const SPECIAL_INDEX_DEACTIVATE = -8;
 const HIGHEST_SPECIAL_INDEX = SPECIAL_INDEX_ACTIVATE;
 export const SPECIAL_INDEX_DEFERRED_PAGE_CLEAR = -99;
 
@@ -175,18 +176,26 @@ export class ProcedureLinesGenerator {
     ) {
       this.selectedItemIndex.set(selectable[selectable.length - 1]);
     } else if (sii >= 0) {
-      const previousElement = () => {
-        for (let i = selectable.length - 1; i >= 0; i--) {
-          if (selectable[i] < sii) {
-            return selectable[i];
+      if (
+        sii === selectable[0] &&
+        this.type === ProcedureType.Abnormal &&
+        EcamAbnormalProcedures[this.procedureId]?.sensed === false
+      ) {
+        this.selectedItemIndex.set(SPECIAL_INDEX_ACTIVATE);
+      } else {
+        const previousElement = () => {
+          for (let i = selectable.length - 1; i >= 0; i--) {
+            if (selectable[i] < sii) {
+              return selectable[i];
+            }
           }
-        }
-        return -1;
-      };
-      const pEl = previousElement();
+          return -1;
+        };
+        const pEl = previousElement();
 
-      if (pEl >= 0) {
-        this.selectedItemIndex.set(Math.max(pEl, 0));
+        if (pEl >= 0) {
+          this.selectedItemIndex.set(Math.max(pEl, 0));
+        }
       }
     }
   }
@@ -219,6 +228,8 @@ export class ProcedureLinesGenerator {
       // Check for special lines
       if (sii === SPECIAL_INDEX_NORMAL_CL_COMPLETE) {
         this.selectedItemIndex.set(SPECIAL_INDEX_NORMAL_RESET);
+      } else if (sii === SPECIAL_INDEX_ACTIVATE) {
+        this.selectedItemIndex.set(selectable[0]);
       } else if (sii > HIGHEST_SPECIAL_INDEX) {
         this.selectedItemIndex.set(
           Math.min(
@@ -266,7 +277,7 @@ export class ProcedureLinesGenerator {
       clState.itemsChecked = clState.itemsChecked.map((val, index) => (this.items[index].sensed ? val : false));
       this.procedureClearedOrResetCallback(clState);
     } else if (this.sii === SPECIAL_INDEX_ACTIVATE) {
-      clState.procedureActivated = true;
+      clState.procedureActivated = !clState.procedureActivated;
       this.procedureClearedOrResetCallback(clState);
     } else if (this.sii === SPECIAL_INDEX_DEFERRED_PROC_COMPLETE) {
       clState.procedureCompleted = true;
@@ -354,6 +365,8 @@ export class ProcedureLinesGenerator {
       this.type === ProcedureType.Deferred ||
       this.type === ProcedureType.FwsFailedFallback;
     const isAbnormal = this.type === ProcedureType.Abnormal;
+    const isAbnormalNotSensed =
+      this.type === ProcedureType.Abnormal && EcamAbnormalProcedures[this.procedureId]?.sensed === false;
     const isDeferred = this.type === ProcedureType.Deferred;
 
     if (isDeferred) {
@@ -394,7 +407,7 @@ export class ProcedureLinesGenerator {
         });
       }
 
-      if (isDeferred && !this.checklistState.procedureCompleted) {
+      if ((isDeferred && !this.checklistState.procedureCompleted) || isAbnormalNotSensed) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
           activeProcedure: this.procedureIsActive.get(),
