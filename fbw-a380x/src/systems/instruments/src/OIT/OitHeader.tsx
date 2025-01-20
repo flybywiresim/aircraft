@@ -35,22 +35,41 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
           isActive={SubscribableUtils.toSubscribable(false, true)}
           label="MENU"
           menuItems={[
-            { label: 'FLT OPS MENU', action: () => this.props.uiService.navigateTo('flt-ops') },
-            { label: 'FLT FOLDER', action: () => this.props.uiService.navigateTo('flt-ops/flt-folder') },
-            { label: 'TERML CHART', action: () => this.props.uiService.navigateTo('flt-ops/terml-chart') },
-            { label: 'OPS LIBRARY', action: () => this.props.uiService.navigateTo('flt-ops/ops-library') },
+            { label: 'FLT OPS MENU', action: () => this.props.uiService.navigateTo('flt-ops'), separatorBelow: true },
+            {
+              label: 'FLT FOLDER',
+              action: () => this.props.uiService.navigateTo('flt-ops/flt-folder'),
+            },
+            {
+              label: 'TERML CHART',
+              action: () => this.props.uiService.navigateTo('flt-ops/terml-chart'),
+              separatorBelow: true,
+            },
+            {
+              label: 'OPS LIBRARY',
+              action: () => this.props.uiService.navigateTo('flt-ops/ops-library'),
+              separatorBelow: true,
+            },
             { label: 'T.O PERF', action: () => this.props.uiService.navigateTo('flt-ops/to-perf') },
             { label: 'LOADSHEET', action: () => this.props.uiService.navigateTo('flt-ops/loadsheet') },
             { label: 'LDG PERF', action: () => this.props.uiService.navigateTo('flt-ops/ldg-perf') },
-            { label: 'IN-FLT PERF', action: () => this.props.uiService.navigateTo('flt-ops/in-flt-perf') },
+            {
+              label: 'IN-FLT PERF',
+              action: () => this.props.uiService.navigateTo('flt-ops/in-flt-perf'),
+              separatorBelow: true,
+            },
             { label: 'FLT OPS STS', action: () => this.props.uiService.navigateTo('flt-ops/sts') },
             { label: 'LOAD BOX', action: () => this.props.uiService.navigateTo('flt-ops/load-box') },
-            { label: 'EXPORT BOX', action: () => this.props.uiService.navigateTo('flt-ops/export-box') },
+            {
+              label: 'EXPORT BOX',
+              action: () => this.props.uiService.navigateTo('flt-ops/export-box'),
+              separatorBelow: true,
+            },
             { label: 'EXIT SESSION', action: () => this.props.uiService.navigateTo('flt-ops/exit-session') },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_menu`}
-          labelStyle="font-family: OIT; font-size: 28px; margin: 7px 0px 7px 0px;"
           containerStyle="height: 60px;"
+          dropdownMenuStyle="width: 300px;"
         />
         <div class="oit-heading">{this.props.uiService.activeUri.map((uri) => heading[uri.uri] ?? 'FIXME')}</div>
         <div style="flex-grow: 1" />
@@ -62,13 +81,13 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             { label: 'BLANK', action: () => this.props.uiService.navigateTo('flt-ops') },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_functions`}
-          labelStyle="font-family: OIT; font-size: 28px; margin: 7px 0px 7px 0px;"
           containerStyle="height: 60px"
+          dropdownMenuStyle="width: 300px;"
         />
         <div class="oit-msg-header">0 MSG</div>
         <div class="oit-msg-box"></div>
         <IconButton icon={'single-down'} containerStyle="width: 60px; height: 60px;" />
-        <Button label={'CLEAR'} onClick={() => {}} buttonStyle="font-family: OIT; font-size: 28px; height: 60px;" />
+        <Button label={'CLEAR'} onClick={() => {}} buttonStyle="font-size: 28px; height: 60px;" />
       </div>
     );
   }

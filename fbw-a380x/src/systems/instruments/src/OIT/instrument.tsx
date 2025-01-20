@@ -13,6 +13,7 @@ import {
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OIT } from 'instruments/src/OIT/OIT';
 import { OitSimvarPublisher } from 'instruments/src/OIT/OitSimvarPublisher';
+import { OisLaptop } from 'instruments/src/OIT/OisLaptop';
 
 class OitInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -27,12 +28,19 @@ class OitInstrument implements FsInstrument {
 
   private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
+  private readonly laptop = new OisLaptop(
+    this.bus,
+    this.instrument.instrumentIndex === 1 ? 1 : 2,
+    this.failuresConsumer,
+  );
+
   constructor(public readonly instrument: BaseInstrument) {
     this.hEventPublisher = new HEventPublisher(this.bus);
 
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
     this.backplane.addPublisher('oitSimvar', this.oitSimvarPublisher);
+    this.backplane.addInstrument('Laptop', this.laptop);
 
     this.doInit();
   }
@@ -47,6 +55,8 @@ class OitInstrument implements FsInstrument {
         bus={this.bus}
         instrument={this.instrument}
         captOrFo={this.instrument.instrumentIndex === 1 ? 'CAPT' : 'FO'}
+        failuresConsumer={this.failuresConsumer}
+        laptop={this.laptop}
       />,
       document.getElementById('OIT_CONTENT'),
     );

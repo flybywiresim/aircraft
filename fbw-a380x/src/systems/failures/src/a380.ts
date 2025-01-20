@@ -167,6 +167,14 @@ export const A380Failure = Object.freeze({
 
   Transponder1: 34003,
   Transponder2: 34004,
+
+  NssAnsu1: 46001,
+  NssAnsu2: 46002,
+  FltOpsAnsu1: 46003,
+  CaptainLaptop: 46004,
+  FirstOfficerLaptop: 46005,
+  CaptainOit: 46006,
+  FirstOfficerOit: 46007,
 });
 
 export const A380FailureDefinitions: FailureDefinition[] = [
@@ -329,4 +337,12 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [34, A380Failure.RadioAntennaDirectCoupling3, 'RA SYS C Direct Coupling'],
   [34, A380Failure.Transponder1, 'XPDR 1'],
   [34, A380Failure.Transponder2, 'XPDR 2'],
+
+  [46, A380Failure.NssAnsu1, 'NSS AVNCS ANSU 1'],
+  [46, A380Failure.NssAnsu2, 'NSS AVNCS ANSU 2'],
+  [46, A380Failure.FltOpsAnsu1, 'FLT OPS ANSU 1'],
+  [46, A380Failure.CaptainLaptop, 'Captain Laptop'],
+  [46, A380Failure.FirstOfficerLaptop, 'F/O Laptop'],
+  [46, A380Failure.CaptainOit, 'Captain OIT'],
+  [46, A380Failure.FirstOfficerOit, 'F/O OIT'],
 ];

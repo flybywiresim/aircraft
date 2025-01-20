@@ -32,46 +32,26 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
           <div class="fr">
             <div class="oit-flt-ops-menu-column">
               <div class="oit-flt-ops-menu-column-title">MISSION</div>
-              {['CHARTS', 'FLT FOLDER'].map((s) => (
-                <Button
-                  label={s}
-                  containerStyle="width: 300px; margin-bottom: 20px"
-                  buttonStyle="padding: 10px;"
-                  onClick={() => {}}
-                />
+              {['FLT FOLDER', 'CHARTS'].map((s) => (
+                <Button label={s} containerStyle="width: 300px; margin-bottom: 20px" onClick={() => {}} />
               ))}
             </div>
             <div class="oit-flt-ops-menu-column">
               <div class="oit-flt-ops-menu-column-title">DOCUMENTATION</div>
               {['OPS LIBRARY'].map((s) => (
-                <Button
-                  label={s}
-                  containerStyle="width: 300px; margin-bottom: 20px"
-                  buttonStyle="padding: 10px;"
-                  onClick={() => {}}
-                />
+                <Button label={s} containerStyle="width: 300px; margin-bottom: 20px" onClick={() => {}} />
               ))}
             </div>
             <div class="oit-flt-ops-menu-column">
               <div class="oit-flt-ops-menu-column-title">PERFORMANCE</div>
               {['T.O PERF', 'LOADSHEET', 'LDG PERF', 'IN-FLT PERF'].map((s) => (
-                <Button
-                  label={s}
-                  containerStyle="width: 300px; margin-bottom: 20px"
-                  buttonStyle="padding: 10px;"
-                  onClick={() => {}}
-                />
+                <Button label={s} containerStyle="width: 300px; margin-bottom: 20px" onClick={() => {}} />
               ))}
             </div>
             <div class="oit-flt-ops-menu-column">
               <div class="oit-flt-ops-menu-column-title">UTILITIES</div>
               {['FLT OPS STS', 'LOAD BOX', 'EXPORT BOX'].map((s) => (
-                <Button
-                  label={s}
-                  containerStyle="width: 300px; margin-bottom: 20px"
-                  buttonStyle="padding: 10px;"
-                  onClick={() => {}}
-                />
+                <Button label={s} containerStyle="width: 300px; margin-bottom: 20px" onClick={() => {}} />
               ))}
             </div>
           </div>
@@ -79,7 +59,6 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
           <Button
             label={'EXIT SESSION'}
             containerStyle="width: 300px; margin-bottom: 20px; align-self: flex-end;"
-            buttonStyle="padding: 10px;"
             onClick={() => {}}
           />
         </div>

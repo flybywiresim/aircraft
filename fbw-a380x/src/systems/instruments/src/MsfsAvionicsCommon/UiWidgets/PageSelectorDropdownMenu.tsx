@@ -16,6 +16,7 @@ type PageSelectorMenuItem = {
   label: string;
   action(): void;
   disabled?: boolean;
+  separatorBelow?: boolean;
 };
 
 interface PageSelectorDropdownMenuProps extends ComponentProps {
@@ -25,6 +26,7 @@ interface PageSelectorDropdownMenuProps extends ComponentProps {
   idPrefix: string;
   containerStyle?: string;
   labelStyle?: string;
+  dropdownMenuStyle?: string;
 }
 export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropdownMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -108,10 +110,14 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
   render(): VNode {
     return (
-      <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
+      <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle ?? ''}>
         <div class="mfd-page-selector-outer" ref={this.dropdownSelectorRef}>
           <div class="mfd-page-selector-label-container">
-            <span class="mfd-page-selector-label" ref={this.dropdownSelectorLabelRef} style={this.props.labelStyle}>
+            <span
+              class="mfd-page-selector-label"
+              ref={this.dropdownSelectorLabelRef}
+              style={this.props.labelStyle ?? ''}
+            >
               {this.props.label}
             </span>
           </div>
@@ -126,13 +132,13 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
         <div
           ref={this.dropdownMenuRef}
           class="mfd-dropdown-menu"
-          style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}
+          style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'};${this.props.dropdownMenuStyle ?? ''}`}
         >
           {this.props.menuItems.map(
             (el, idx) => (
               <span
                 id={`${this.props.idPrefix}_${idx}`}
-                class={`mfd-dropdown-menu-element${el.disabled ? ' disabled' : ''}`}
+                class={`mfd-dropdown-menu-element${el.disabled ? ' disabled' : ''}${el.separatorBelow ? ' separator' : ''}`}
               >
                 {el.label}
               </span>
