@@ -2,7 +2,7 @@ import { Feet, Metres, NauticalMiles } from 'msfs-geo';
 import { DatabaseItem, Knots, FlightLevel, ElevatedCoordinates } from './Common';
 import { RunwaySurfaceType } from './Runway';
 import { AirportSubsectionCode, SectionCode } from './SectionCode';
-import { WaypointArea } from 'navdata/shared/types/Waypoint';
+import { WaypointArea } from './Waypoint';
 
 export interface Airport extends DatabaseItem<SectionCode.Airport> {
   subSectionCode: AirportSubsectionCode.ReferencePoints;
