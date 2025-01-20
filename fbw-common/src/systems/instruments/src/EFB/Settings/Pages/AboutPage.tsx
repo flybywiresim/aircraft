@@ -98,7 +98,7 @@ export const AboutPage = () => {
               </div>
             </div>
             <div className="mt-8 flex flex-col justify-center">
-              <p>&copy; 2020-2024 FlyByWire Simulations and its contributors, all rights reserved.</p>
+              <p>&copy; 2020-2025 FlyByWire Simulations and its contributors, all rights reserved.</p>
               <p>Licensed under the GNU General Public License Version 3</p>
             </div>
 
