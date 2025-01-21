@@ -74,6 +74,7 @@ void EngineControl_A380X::update() {
     const double simCN1        = simData.engineCorrectedN1DataPtr[engineIdx]->data().correctedN1;
     const double simN1         = simData.simVarsDataPtr->data().simEngineN1[engineIdx];
     const double simN3         = simData.simVarsDataPtr->data().simEngineN2[engineIdx];  // as the sim does not have N3, we use N2
+    const double deltaN3       = simN3 - prevSimEngineN3[engineIdx];
     prevSimEngineN3[engineIdx] = simN3;
 
     // Update various engine values based on the current engine state
@@ -90,10 +91,7 @@ void EngineControl_A380X::update() {
         updatePrimaryParameters(engine, simN1, simN3);
         double correctedFuelFlow = updateFF(engine, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
         updateEGT(engine, engineState, deltaTime, simCN1, correctedFuelFlow, mach, pressureAltitude, ambientTemperature, simOnGround);
-        // TODO: Oil to be implemented
-        // The following call is commented out because it was not yet implemented/working in the original code
-        // The function is at the end of this files in its original form
-        // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemperature);
+        updateSecondaryParameters(engine, engineState, deltaTime, simOnGround, ambientTemperature, deltaN3);
         break;
     }
   }
@@ -150,10 +148,10 @@ void EngineControl_A380X::initializeEngineControlData() {
 
   // Setting initial Oil Quantity and adding some randomness to it
   std::srand(std::time(0));
-  simData.engineOilTotal[E1]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10);
-  simData.engineOilTotal[E2]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10);
-  simData.engineOilTotal[E3]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10);
-  simData.engineOilTotal[E4]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10);
+  simData.engineOilTotal[E1]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0);
+  simData.engineOilTotal[E2]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0);
+  simData.engineOilTotal[E3]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0);
+  simData.engineOilTotal[E4]->set((std::rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10.0);
 
   // Setting initial Oil Temperature
   const bool simOnGround = msfsHandlerPtr->getSimOnGround();
@@ -163,24 +161,17 @@ void EngineControl_A380X::initializeEngineControlData() {
   const bool engine3Combustion = static_cast<bool>(simData.engineCombustion[E3]->updateFromSim(timeStamp, tickCounter));
   const bool engine4Combustion = static_cast<bool>(simData.engineCombustion[E4]->updateFromSim(timeStamp, tickCounter));
 
-  double oilTemperaturePre[4];
-  if (simOnGround == 1 && engine1Combustion == 1 && engine2Combustion == 1 && engine3Combustion == 1 && engine4Combustion == 1) {
-    oilTemperaturePre[E1] = 75;
-    oilTemperaturePre[E2] = 75;
-    oilTemperaturePre[E3] = 75;
-    oilTemperaturePre[E4] = 75;
-  } else if (simOnGround == 0 && engine1Combustion == 1 && engine2Combustion == 1 && engine3Combustion == 1 && engine4Combustion == 1) {
-    oilTemperaturePre[E1] = 85;
-    oilTemperaturePre[E2] = 85;
-    oilTemperaturePre[E3] = 85;
-    oilTemperaturePre[E4] = 85;
-  } else {
-    const double ambientTemperature = simData.simVarsDataPtr->data().ambientTemperature;
-    oilTemperaturePre[E1]           = ambientTemperature;
-    oilTemperaturePre[E2]           = ambientTemperature;
-    oilTemperaturePre[E3]           = ambientTemperature;
-    oilTemperaturePre[E4]           = ambientTemperature;
-  }
+  thermalEnergy[E1] = 0;
+  thermalEnergy[E2] = 0;
+  thermalEnergy[E3] = 0;
+  thermalEnergy[E4] = 0;
+
+  double       oilTemperaturePre[4];
+  const double ambientTemperature            = simData.simVarsDataPtr->data().ambientTemperature;
+  oilTemperaturePre[E1]                      = ambientTemperature;
+  oilTemperaturePre[E2]                      = ambientTemperature;
+  oilTemperaturePre[E3]                      = ambientTemperature;
+  oilTemperaturePre[E4]                      = ambientTemperature;
   simData.oilTempDataPtr[E1]->data().oilTemp = oilTemperaturePre[E1];
   simData.oilTempDataPtr[E1]->writeDataToSim();
   simData.oilTempDataPtr[E2]->data().oilTemp = oilTemperaturePre[E2];
@@ -542,6 +533,23 @@ void EngineControl_A380X::updatePrimaryParameters(int engine, double simN1, doub
 
 #ifdef PROFILING
   profilerUpdatePrimaryParameters.stop();
+#endif
+}
+
+void EngineControl_A380X::updateSecondaryParameters(int          engine,
+                                                    EngineState  engineState,
+                                                    double       deltaTime,
+                                                    bool         simOnGround,
+                                                    const double ambientTemperature,
+                                                    double       deltaN3) {
+#ifdef PROFILING
+  profilerUpdateSecondaryParameters.start();
+#endif
+
+  updateOil(engine, engineState, deltaTime, simOnGround, ambientTemperature, deltaN3);
+
+#ifdef PROFILING
+  profilerUpdateSecondaryParameters.stop();
 #endif
 }
 
@@ -991,78 +999,49 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
 #endif
 }
 
-/*
- * Previous code - call to it was already commented out and this function was not in use.
- * Keeping it to make completing/fixing it easier.
- * It is not migrated to the cpp framework yet.
- *
-/// <summary>
-/// FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and degree Celsius)
-/// Updates Oil with realistic values visualized in the SD
-/// </summary>
-void updateOil(int engine, double thrust, double simN3, double deltaN3, double deltaTime, double ambientTemp) {
-  double steadyTemperature;
-  double thermalEnergy;
-  double oilTemperaturePre;
-  double oilQtyActual;
-  double oilTotalActual;
+void EngineControl_A380X::updateOil(int          engine,
+                                    EngineState  engineState,
+                                    double       deltaTime,
+                                    bool         simOnGround,
+                                    const double ambientTemperature,
+                                    double       deltaN3) {
+  const int engineIdx         = engine - 1;
+  double    steadyTemperature = simData.engineEgt[engineIdx]->get();
+
+  double oilQtyActual   = simData.engineOil[engineIdx]->get();
+  double oilTotalActual = simData.engineOilTotal[engineIdx]->get();
   double oilQtyObjective;
   double oilBurn;
   double oilPressureIdle;
   double oilPressure;
+  double oilTemperature;
 
-  //--------------------------------------------
-  // Engine Reading
-  //--------------------------------------------
-  if (engine == 1) {
-    steadyTemperature = simVars->getEngine1EGT();
-    thermalEnergy = thermalEnergy1;
-    oilTemperaturePre = oilTemperatureEngine1Pre;
-    oilQtyActual = simVars->getEngine1Oil();
-    oilTotalActual = simVars->getEngine1TotalOil();
-  } else if (engine == 2) {
-    steadyTemperature = simVars->getEngine2EGT();
-    thermalEnergy = thermalEnergy2;
-    oilTemperaturePre = oilTemperatureEngine2Pre;
-    oilQtyActual = simVars->getEngine2Oil();
-    oilTotalActual = simVars->getEngine2TotalOil();
-  } else if (engine == 3) {
-    steadyTemperature = simVars->getEngine3EGT();
-    thermalEnergy = thermalEnergy3;
-    oilTemperaturePre = oilTemperatureEngine3Pre;
-    oilQtyActual = simVars->getEngine3Oil();
-    oilTotalActual = simVars->getEngine3TotalOil();
-  } else {
-    steadyTemperature = simVars->getEngine4EGT();
-    thermalEnergy = thermalEnergy4;
-    oilTemperaturePre = oilTemperatureEngine4Pre;
-    oilQtyActual = simVars->getEngine4Oil();
-    oilTotalActual = simVars->getEngine4TotalOil();
-  }
+  simData.oilTempDataPtr[engineIdx]->requestDataFromSim();
+  double oilTemperaturePre = simData.oilTempDataPtr[engineIdx]->data().oilTemp;
 
   //--------------------------------------------
   // Oil Temperature
   //--------------------------------------------
-  if (simOnGround == 1 && engineState == 0 && ambientTemp > oilTemperaturePre - 10) {
-    oilTemperature = ambientTemp;
+  // FIXME feel free to fix oil temperature, values are a little sus
+  if (simOnGround == 1 && engineState == 0 && ambientTemperature > oilTemperaturePre - 10) {
+    oilTemperature = ambientTemperature;
   } else {
-    if (steadyTemperature > oilTemperatureMax) {
-      steadyTemperature = oilTemperatureMax;
-    }
-    thermalEnergy = (0.995 * thermalEnergy) + (deltaN3 / deltaTime);
-    oilTemperature = poly->oilTemperature(thermalEnergy, oilTemperaturePre, steadyTemperature, deltaTime);
+    thermalEnergy[engineIdx] = (0.995 * thermalEnergy[engineIdx]) + (deltaN3 / deltaTime);
+
+    oilTemperature = Polynomial_A380X::oilTemperature(thermalEnergy[engineIdx], oilTemperaturePre, MAX_OIL_TEMP, deltaTime);
   }
 
   //--------------------------------------------
   // Oil Quantity
   //--------------------------------------------
   // Calculating Oil Qty as a function of thrust
-  oilQtyObjective = oilTotalActual * (1 - poly->oilGulpPct(thrust));
-  oilQtyActual = oilQtyActual - (oilTemperature - oilTemperaturePre);
+  double thrust   = simData.simVarsDataPtr->data().simEngineThrust[engineIdx] * FORCE_LB_TO_N;
+  oilQtyObjective = oilTotalActual * (1 - Polynomial_A380X::oilGulpPct(thrust));
+  oilQtyActual    = oilQtyObjective;
 
   // Oil burnt taken into account for tank and total oil
-  oilBurn = (0.00011111 * deltaTime);
-  oilQtyActual = oilQtyActual - oilBurn;
+  oilBurn        = (0.00011111 * deltaTime);
+  oilQtyActual   = oilQtyActual - oilBurn;
   oilTotalActual = oilTotalActual - oilBurn;
 
   //--------------------------------------------
@@ -1070,44 +1049,16 @@ void updateOil(int engine, double thrust, double simN3, double deltaN3, double d
   //--------------------------------------------
   oilPressureIdle = 0;
 
-  oilPressure = poly->oilPressure(simN3) + oilPressureIdle;
+  double simN3 = simData.simVarsDataPtr->data().simEngineN2[engineIdx];
+  oilPressure  = Polynomial_A380X::oilPressure(simN3) + oilPressureIdle;
 
   //--------------------------------------------
   // Engine Writing
   //--------------------------------------------
-  if (engine == 1) {
-    thermalEnergy1 = thermalEnergy;
-    oilTemperatureEngine1Pre = oilTemperature;
-    simVars->setEngine1Oil(oilQtyActual);
-    simVars->setEngine1TotalOil(oilTotalActual);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                  &oilTemperature);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
-  } else if (engine == 2) {
-    thermalEnergy2 = thermalEnergy;
-    oilTemperatureEngine2Pre = oilTemperature;
-    simVars->setEngine2Oil(oilQtyActual);
-    simVars->setEngine2TotalOil(oilTotalActual);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                  &oilTemperature);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
-  } else if (engine == 3) {
-    thermalEnergy3 = thermalEnergy;
-    oilTemperatureEngine3Pre = oilTemperature;
-    simVars->setEngine3Oil(oilQtyActual);
-    simVars->setEngine3TotalOil(oilTotalActual);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                  &oilTemperature);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
-  } else {
-    thermalEnergy4 = thermalEnergy;
-    oilTemperatureEngine4Pre = oilTemperature;
-    simVars->setEngine4Oil(oilQtyActual);
-    simVars->setEngine4TotalOil(oilTotalActual);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempEngine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                  &oilTemperature);
-    SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiEngine4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
-  }
+  simData.oilTempDataPtr[engineIdx]->data().oilTemp = oilTemperature;
+  simData.oilTempDataPtr[engineIdx]->writeDataToSim();
+  simData.engineOil[engineIdx]->set(oilQtyActual);
+  simData.engineOilTotal[engineIdx]->set(oilTotalActual);
+  simData.oilPsiDataPtr[engineIdx]->data().oilPsi = oilPressure;
+  simData.oilPsiDataPtr[engineIdx]->writeDataToSim();
 }
-
- */
