@@ -126,9 +126,7 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
                             }}
                           >
                             <div className="flex flex-row">
-                              <div className="h-screen w-screen pr-6 pt-14" style={{ width: 1313, height: 860 }}>
-                                {showCharts === 1 && <Navigation />}
-                              </div>
+                              <div className="h-screen w-screen p-2.5 pt-0">{showCharts === 1 && <Navigation />}</div>
                             </div>
                           </div>
                         )}
