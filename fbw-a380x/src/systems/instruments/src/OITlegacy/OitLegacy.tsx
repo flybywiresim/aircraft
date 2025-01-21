@@ -10,6 +10,9 @@ import {
   ModalProvider,
   PowerContext,
   PowerStates,
+  setAirframeInfo,
+  setCabinInfo,
+  setFlypadInfo,
   store,
 } from '@flybywiresim/flypad';
 
@@ -21,7 +24,8 @@ import { Provider } from 'react-redux';
 import { TroubleshootingContextProvider } from '../../../../../../fbw-common/src/systems/instruments/src/EFB/TroubleshootingContext';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { UniversalConfigProvider, useSimVar } from '@flybywiresim/fbw-sdk';
+import { Dispatch } from '../../../../../../fbw-common/src/systems/instruments/src/EFB/Dispatch/Dispatch';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -45,6 +49,20 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
   document.getElementsByTagName('a380x-oitlegacy')[0].classList.toggle('nopointer', !showEfbOverlay);
 
   const [err, setErr] = useState(false);
+
+  useEffect(() => {
+    UniversalConfigProvider.fetchAirframeInfo(process.env.AIRCRAFT_PROJECT_PREFIX, process.env.AIRCRAFT_VARIANT).then(
+      (info) => store.dispatch(setAirframeInfo(info)),
+    );
+
+    UniversalConfigProvider.fetchFlypadInfo(process.env.AIRCRAFT_PROJECT_PREFIX, process.env.AIRCRAFT_VARIANT).then(
+      (info) => store.dispatch(setFlypadInfo(info)),
+    );
+
+    UniversalConfigProvider.fetchCabinInfo(process.env.AIRCRAFT_PROJECT_PREFIX, process.env.AIRCRAFT_VARIANT).then(
+      (info) => store.dispatch(setCabinInfo(info)),
+    );
+  }, []);
 
   useEffect(() => {
     document
@@ -126,7 +144,10 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
                             }}
                           >
                             <div className="flex flex-row">
-                              <div className="h-screen w-screen p-2.5 pt-0">{showCharts === 1 && <Navigation />}</div>
+                              <div className="h-screen w-screen p-2.5 pt-0">
+                                {showCharts === 1 && <Navigation />}
+                                {showOfp === 1 && <Dispatch />}
+                              </div>
                             </div>
                           </div>
                         )}

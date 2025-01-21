@@ -91,7 +91,9 @@
 }
 
 .mfd-button.disabled {
-  color: $display-dark-grey;
+  color: $display-dark-grey !important;
+  --color-text: $display-dark-grey;
+  color: var(--color-text);
 }
 
 .mfd-button.selected {

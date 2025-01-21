@@ -172,3 +172,11 @@
   align-items: center;
   flex-direction: row;
 }
+
+$font-file-path: '/Fonts/fbw-a380x/EFB';
+
+@import "../../../../../../fbw-common/src/systems/instruments/src/EFB/Assets/Efb.scss";
+
+.nopointer {
+  pointer-events: none;
+}
