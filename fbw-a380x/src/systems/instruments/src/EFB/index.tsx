@@ -9,6 +9,7 @@ import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
 import { a380xSyncedSettings } from 'instruments/src/EFB/settingsSync';
 
 import './Efb.scss';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 function aircraftEfbSetup(): void {
   syncSettingsFromPersistentStorage(a380xSyncedSettings);
@@ -55,6 +56,7 @@ render(
           pilotSeat: true,
           registrationDecal: false, // TODO FIXME: Enable when dynamic registration decal is completed
           wheelChocks: false,
+          cabinLighting: true,
         },
         throttle: {
           numberOfAircraftThrottles: 4,
@@ -72,6 +74,6 @@ render(
       },
     }}
   >
-    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} />
+    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />
   </AircraftContext.Provider>,
 );

@@ -309,49 +309,49 @@
                 <!-- 1L -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>l_spoiler1_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_1_LEFT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_1_LEFT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 2L -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>l_spoiler2_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_2_LEFT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_2_LEFT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 3L -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>l_spoiler3_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_3_LEFT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_3_LEFT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 4L -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>l_spoiler4_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_4_LEFT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_4_LEFT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 5L -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>l_spoiler5_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_5_LEFT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_5_LEFT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 6L -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>l_spoiler6_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_6_LEFT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_6_LEFT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 7L -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>l_spoiler7_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_7_LEFT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_7_LEFT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 8L -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>l_spoiler8_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_8_LEFT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_8_LEFT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
             </Component>
 
@@ -360,49 +360,49 @@
                 <!-- 1R -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>r_spoiler1_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_1_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_1_RIGHT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 2R -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>r_spoiler2_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_2_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_2_RIGHT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 3R -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>r_spoiler3_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_3_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_3_RIGHT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 4R -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>r_spoiler4_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_4_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_4_RIGHT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 5R -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>r_spoiler5_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_5_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_5_RIGHT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 6R -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>r_spoiler6_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_6_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_6_RIGHT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 7R -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>r_spoiler7_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_7_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_7_RIGHT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
 
                 <!-- 8R -->
                 <UseTemplate Name="FBW_Spoiler_Surface_Template">
                     <ANIM_NAME>r_spoiler8_key</ANIM_NAME>
-                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_8_RIGHT_DEFLECTION, number)</DEFLECTION_CODE>
+                    <DEFLECTION_CODE>(L:A32NX_HYD_SPOILER_8_RIGHT_DEFLECTION_UNSMOOTH, number)</DEFLECTION_CODE>
                 </UseTemplate>
             </Component>
 
@@ -449,26 +449,17 @@
             </Component>
 
             <!-- Flaps -->
-            <UseTemplate Name="ASOBO_HANDLING_Flaps_Template">
-                <ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
-                <ANIM_NAME_RIGHT>r_flap_percent_key</ANIM_NAME_RIGHT>
-                <!-- ANIM_EVENTS -->
-                <ANIM_EVENT_EFFECT_NAME_1>CAM_FLAPS01</ANIM_EVENT_EFFECT_NAME_1>
-                <NORMALIZED_TIME_1>0.01</NORMALIZED_TIME_1>
-                <DIRECTION_1>Both</DIRECTION_1>
-                <ANIM_EVENT_EFFECT_NAME_2>CAM_FLAPS02</ANIM_EVENT_EFFECT_NAME_2>
-                <NORMALIZED_TIME_2>0.15</NORMALIZED_TIME_2>
-                <DIRECTION_2>Both</DIRECTION_2>
-                <ANIM_EVENT_EFFECT_NAME_3>CAM_FLAPS03</ANIM_EVENT_EFFECT_NAME_3>
-                <NORMALIZED_TIME_3>0.29</NORMALIZED_TIME_3>
-                <DIRECTION_3>Both</DIRECTION_3>
-                <ANIM_EVENT_EFFECT_NAME_4>CAM_FLAPS04</ANIM_EVENT_EFFECT_NAME_4>
-                <NORMALIZED_TIME_4>0.43</NORMALIZED_TIME_4>
-                <DIRECTION_4>Both</DIRECTION_4>
-                <ANIM_EVENT_EFFECT_NAME_5>CAM_FLAPS05</ANIM_EVENT_EFFECT_NAME_5>
-                <NORMALIZED_TIME_5>0.58</NORMALIZED_TIME_5>
-                <DIRECTION_5>Both</DIRECTION_5>
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>l_flap_percent_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_LEFT_FLAPS_ANIMATION_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
+
+	        <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>r_flap_percent_key</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_RIGHT_FLAPS_ANIMATION_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+	    	</UseTemplate>
         </Component>
 
         <Component ID="DOOR_ANIMATIONS_EXTERIOR">
@@ -750,22 +741,22 @@
             <!-- OUTFLOW VALVE 1-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>outflow_valve_1</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
             </UseTemplate>
             <!-- OUTFLOW VALVE 2-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>outflow_valve_2</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
             </UseTemplate>
             <!-- OUTFLOW VALVE 3-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>outflow_valve_3</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
             </UseTemplate>
             <!-- OUTFLOW VALVE 4-->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>outflow_valve_4</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE)</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_ANIM)</ANIM_CODE>
             </UseTemplate>
         </Component>
 

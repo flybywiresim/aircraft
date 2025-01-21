@@ -360,12 +360,17 @@
                 <POTENTIOMETER>87</POTENTIOMETER>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
-                <NODE_ID>SCREEN_AUTOPILOT</NODE_ID>
-                <POTENTIOMETER>87</POTENTIOMETER>
-                <!-- ref FBW-22-06 C/B 5LF -->
-                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
-            </UseTemplate>
+            <Component ID="SCREEN_AUTOPILOT" Node="SCREEN_AUTOPILOT">
+                <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+                    <!-- ref FBW-22-06 C/B 5LF -->
+                    <EMISSIVE_CODE>
+                        (L:A32NX_AMBIENT_BRIGHTNESS) * 0.05 * 0.01 max
+                        (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) if{
+                            (A:LIGHT POTENTIOMETER:87, percent over 100) max
+                        }
+                    </EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
             <CameraTitle>PA</CameraTitle>
 
             <!-- CPT CONSOLE/FLOOR LT -->
@@ -1032,7 +1037,7 @@
                 <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                 <SEQ1_CODE>(L:A32NX_BRAKES_HOT, Bool)</SEQ1_CODE>
-                <SEQ2_CODE>(L:A32NX_BRAKE_FAN, Bool)</SEQ2_CODE>
+                <SEQ2_CODE>(L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool)</SEQ2_CODE>
                 <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
             </UseTemplate>
@@ -3441,6 +3446,7 @@
                             <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</SEQ1_POWERED>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) ! and</SEQ2_POWERED>
                             <SEQ3_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or ! (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</SEQ3_POWERED>
+                            <ON_FIRE>(A:APU ON FIRE DETECTED)</ON_FIRE>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
                             <NODE_ID>LOCK_OVHD_APU</NODE_ID>
@@ -4134,7 +4140,7 @@
             </UseTemplate>
 
             <!-- FCU ALT INCREMENT-->
-            <UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
+            <UseTemplate Name="FBW_AUTOPILOT_Switch_Altitude_Increment_Template">
                 <NODE_ID>A32NX_KNOB_SELECTOR_ALT</NODE_ID>
                 <ANIM_NAME>A32NX_KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
             </UseTemplate>
@@ -4167,41 +4173,6 @@
                 <ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
             </UseTemplate>
 
-            <!-- FCU ADF/VOR 1 L -->
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
-                <BASE_NAME>A32NX_SWITCH_AUTOPILOT_ADF1_L</BASE_NAME>
-                <SIDE>L</SIDE>
-                <INDEX>1</INDEX>
-            </UseTemplate>
-
-            <!-- FCU ADF/VOR 2 L -->
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
-                <BASE_NAME>A32NX_SWITCH_AUTOPILOT_ADF2_L</BASE_NAME>
-                <SIDE>L</SIDE>
-                <INDEX>2</INDEX>
-            </UseTemplate>
-
-            <!-- FCU ADF/VOR 1 R -->
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
-                <BASE_NAME>A32NX_SWITCH_AUTOPILOT_ADF1_R</BASE_NAME>
-                <SIDE>R</SIDE>
-                <INDEX>1</INDEX>
-            </UseTemplate>
-
-            <!-- FCU ADF/VOR 2 R -->
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
-                <BASE_NAME>A32NX_SWITCH_AUTOPILOT_ADF2_R</BASE_NAME>
-                <SIDE>R</SIDE>
-                <INDEX>2</INDEX>
-            </UseTemplate>
             <CameraTitle>PA</CameraTitle>
         </Component>
 
@@ -4224,6 +4195,7 @@
                 <ANIM_NAME_KNOB>A32NX_KNOB_AUTOPILOT_BARO_L</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>A32NX_KNOB_AUTOPILOT_BARO_L_PULLER</ANIM_NAME_PUSHPULL>
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
+                <SIDE>L</SIDE>
             </UseTemplate>
 
             <!-- FCU FD -->
@@ -4246,21 +4218,35 @@
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KNOB</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Template</ANIM_TEMPLATE>
-                <TYPE>AIRBUS</TYPE>
                 <NODE_ID>A32NX_KNOB_AUTOPILOT_ROSE_L</NODE_ID>
                 <PART_ID>A32NX_KNOB_AUTOPILOT_ROSE_L</PART_ID>
                 <ANIM_NAME>A32NX_KNOB_AUTOPILOT_ROSE_L</ANIM_NAME>
-                <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_MODE</KNOB_POSITION_VAR>
             </UseTemplate>
 
             <!-- FCU ND RANGE -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KNOB</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Range_Template</ANIM_TEMPLATE>
-                <TYPE>AIRBUS</TYPE>
                 <NODE_ID>A32NX_KNOB_AUTOPILOT_L1</NODE_ID>
                 <ANIM_NAME>A32NX_KNOB_AUTOPILOT_L1</ANIM_NAME>
-                <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_RANGE</KNOB_POSITION_VAR>
+            </UseTemplate>
+
+            <!-- FCU ADF/VOR 1 L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
+                <BASE_NAME>A32NX_SWITCH_AUTOPILOT_ADF1_L</BASE_NAME>
+                <SIDE>L</SIDE>
+                <INDEX>1</INDEX>
+            </UseTemplate>
+
+            <!-- FCU ADF/VOR 2 L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
+                <BASE_NAME>A32NX_SWITCH_AUTOPILOT_ADF2_L</BASE_NAME>
+                <SIDE>L</SIDE>
+                <INDEX>2</INDEX>
             </UseTemplate>
 
             <!-- FCU CSTR L -->
@@ -4326,6 +4312,7 @@
                 <ANIM_NAME_KNOB>A32NX_KNOB_AUTOPILOT_BARO_R</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>A32NX_KNOB_AUTOPILOT_BARO_R_PULLER</ANIM_NAME_PUSHPULL>
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
+                <SIDE>R</SIDE>
             </UseTemplate>
 
             <!-- FCU FD R -->
@@ -4348,21 +4335,35 @@
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KNOB</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Template</ANIM_TEMPLATE>
-                <TYPE>AIRBUS</TYPE>
                 <NODE_ID>A32NX_KNOB_AUTOPILOT_ROSE_R</NODE_ID>
                 <PART_ID>A32NX_KNOB_AUTOPILOT_ROSE_R</PART_ID>
                 <ANIM_NAME>A32NX_KNOB_AUTOPILOT_ROSE_R</ANIM_NAME>
-                <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_MODE</KNOB_POSITION_VAR>
             </UseTemplate>
 
             <!-- FCU ND RANGE R -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KNOB</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Range_Template</ANIM_TEMPLATE>
-                <TYPE>AIRBUS</TYPE>
                 <NODE_ID>A32NX_KNOB_AUTOPILOT_R1</NODE_ID>
                 <ANIM_NAME>A32NX_KNOB_AUTOPILOT_R1</ANIM_NAME>
-                <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_RANGE</KNOB_POSITION_VAR>
+            </UseTemplate>
+
+            <!-- FCU ADF/VOR 1 R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
+                <BASE_NAME>A32NX_SWITCH_AUTOPILOT_ADF1_R</BASE_NAME>
+                <SIDE>R</SIDE>
+                <INDEX>1</INDEX>
+            </UseTemplate>
+
+            <!-- FCU ADF/VOR 2 R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
+                <BASE_NAME>A32NX_SWITCH_AUTOPILOT_ADF2_R</BASE_NAME>
+                <SIDE>R</SIDE>
+                <INDEX>2</INDEX>
             </UseTemplate>
 
             <!-- FCU CSTR R -->

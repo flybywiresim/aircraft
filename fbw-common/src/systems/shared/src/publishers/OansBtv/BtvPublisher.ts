@@ -15,12 +15,24 @@ export interface BtvData {
   dryStoppingDistance: number;
   /** (BTV -> OANS) Wet stopping distance */
   wetStoppingDistance: number;
-  /** (PRIM -> OANS) Remaining stop distance on ground, used for ROP */
+  /** (BTV -> OANS) Remaining stop distance on ground, used for ROP */
   stopBarDistance: number;
 
   radioAltitude_1: number;
   radioAltitude_2: number;
   radioAltitude_3: number;
+
+  groundSpeed_1: number;
+  groundSpeed_2: number;
+  groundSpeed_3: number;
+
+  lgciuDiscreteWord2_1: number;
+  lgciuDiscreteWord2_2: number;
+
+  verticalSpeed_1: number;
+  verticalSpeed_2: number;
+  verticalSpeed_3: number;
+
   fwcFlightPhase: number;
 }
 
@@ -34,6 +46,14 @@ export enum BtvSimVars {
   radioAltitude_1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
   radioAltitude_2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
   radioAltitude_3 = 'L:A32NX_RA_3_RADIO_ALTITUDE',
+  groundSpeed_1 = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
+  groundSpeed_2 = 'L:A32NX_ADIRS_IR_2_GROUND_SPEED',
+  groundSpeed_3 = 'L:A32NX_ADIRS_IR_3_GROUND_SPEED',
+  lgciuDiscreteWord2_1 = 'L:A32NX_LGCIU_1_DISCRETE_WORD_2',
+  lgciuDiscreteWord2_2 = 'L:A32NX_LGCIU_2_DISCRETE_WORD_2',
+  verticalSpeed_1 = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
+  verticalSpeed_2 = 'L:A32NX_ADIRS_IR_2_VERTICAL_SPEED',
+  verticalSpeed_3 = 'L:A32NX_ADIRS_IR_3_VERTICAL_SPEED',
   fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
 }
 
@@ -48,6 +68,14 @@ export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
     ['radioAltitude_1', { name: BtvSimVars.radioAltitude_1, type: SimVarValueType.Number }],
     ['radioAltitude_2', { name: BtvSimVars.radioAltitude_2, type: SimVarValueType.Number }],
     ['radioAltitude_3', { name: BtvSimVars.radioAltitude_3, type: SimVarValueType.Number }],
+    ['groundSpeed_1', { name: BtvSimVars.groundSpeed_1, type: SimVarValueType.Number }],
+    ['groundSpeed_2', { name: BtvSimVars.groundSpeed_2, type: SimVarValueType.Number }],
+    ['groundSpeed_3', { name: BtvSimVars.groundSpeed_3, type: SimVarValueType.Number }],
+    ['lgciuDiscreteWord2_1', { name: BtvSimVars.lgciuDiscreteWord2_1, type: SimVarValueType.Number }],
+    ['lgciuDiscreteWord2_2', { name: BtvSimVars.lgciuDiscreteWord2_2, type: SimVarValueType.Number }],
+    ['verticalSpeed_1', { name: BtvSimVars.verticalSpeed_1, type: SimVarValueType.Number }],
+    ['verticalSpeed_2', { name: BtvSimVars.verticalSpeed_2, type: SimVarValueType.Number }],
+    ['verticalSpeed_3', { name: BtvSimVars.verticalSpeed_3, type: SimVarValueType.Number }],
     ['fwcFlightPhase', { name: BtvSimVars.fwcFlightPhase, type: SimVarValueType.Enum }],
   ]);
 

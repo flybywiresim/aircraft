@@ -1,0 +1,78 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions";
+
+.mfd-atccom-connect-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 30px;
+  width: 100%;
+}
+
+.mfd-atccom-connect-row.adsc {
+  justify-content: center;
+}
+
+.mfd-atccom-connect-col-1 {
+  align-items: flex-end;
+  width: 305px;
+  text-align: right;
+  padding-right: 20px;
+}
+
+.mfd-atccom-connect-col-2 {
+  align-items: flex-start;
+  width: 167px;
+}
+
+.mfd-atccom-connect-col-3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 296px;
+}
+
+.mfd-atccom-connect-atc-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.mfd-atccom-connect-section-1 {
+  margin-top: 60px;
+  padding-bottom: 20px;
+  align-items: flex-start;
+  border-bottom: 2px solid $display-light-grey;
+}
+
+.mfd-atccom-connect-adsc-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 300px;
+}
+
+.mfd-atccom-connect-connected-centers-list {
+  height: 265px;
+  border: 2px solid $display-light-grey;
+  width: 360px;
+  margin-top: 0px;
+  margin-left: 26px;
+}
+
+.mfd-atccom-connect.mfd-label {
+  font-size: 22px;
+}
+
+.mfd-atccom-connect-adscbutton .mfd-adsc-button {
+  width: 200px;
+  height: 70px;
+  margin-top: 10px;
+}
+
+.mfd-atccom-connect-adscEmerbutton .mfd-adsc-button {
+  width: 110px;
+  height: 70px;
+  margin-top: 10px;
+}

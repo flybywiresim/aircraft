@@ -193,7 +193,7 @@
       "Title": "Vytlačení"
     },
     "Services": {
-      "AirStarterUnit": "Vzduchová startovací jednotka",
+      "AirStarterUnit": "Vzduchová start. jedn.",
       "BaggageTruck": "Zavazadlový vůz",
       "CateringTruck": "Cateringový vůz",
       "Cones": "Výstražné kužely",
@@ -305,7 +305,7 @@
       "OverweightProcedure": "Overweight postup",
       "Qnh": "QNH",
       "ReverseThrust": "Zpětný tah",
-      "RunwayAltitude": "Výška dráhy",
+      "RunwayAltitude": "Nadmořská výška dráhy",
       "RunwayAltitudeUnit": "ft ASL (stopy nad mořem)",
       "RunwayCondition": "Stav dráhy",
       "RunwayConditions": {
@@ -337,6 +337,76 @@
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "SYNC",
+    "Takeoff": {
+      "Airport": "Letiště",
+      "AntiIce": "Anti-Ice",
+      "Calculate": "Vypočítat",
+      "CentreOfGravity": "TOCG",
+      "Clear": "Vymazat",
+      "CoGPosition": "Poloha CG",
+      "CoGPositions": {
+        "Forward": "Vpředu (<27%)",
+        "Standard": "Standardní"
+      },
+      "Configuration": "Konfigurace",
+      "CrosswindAboveLimitMessage": "Chcete provést výpočet s {actual_crosswind} uzly?",
+      "CrosswindAboveLimitTitle": "Maximální boční vítr je {max_crosswind} uzlů",
+      "EnterManually": "Ruční vyplnění",
+      "EntryAngle": "Vstupní úhel",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "CG mimo vzletový limit",
+        "FlexNotPossible": "Flex není možný",
+        "HeadwindLimited": "Protivítr byl snížen na {max_headwind} uzlů",
+        "InvalidData": "Neplatné údaje",
+        "MaximumPressureAlt": "Nad maximální tlakovou výškou ({max_zp} ft)",
+        "MaximumRunwaySlope": "Mimo limit sklonu dráhy (±2%)",
+        "MaximumTailwind": "Nad maximální hodnotou zadního větru ({max_tailwind} uzlů)",
+        "MaximumTemperature": "Nad maximální OAT ({tmax}°C)",
+        "MaximumTireSpeed": "Maximální rychlost pneumatik není dodržena",
+        "OperatingEmptyWeight": "Pod prázdnou provozní hmotností ({oew} {weight_unit})",
+        "StructuralMtow": "Nad konstrukční MTOW ({structural_mtow} {weight_unit})",
+        "TooHeavy": "Přes maximální vzletovou hmotnost {mtow} {weight_unit}",
+        "TooLight": "Pod minimální vzletovou hmotností",
+        "VmcgVmcaLimits": "Limity VMCG/VMCA nejsou splněny"
+      },
+      "Packs": "Packy",
+      "Qnh": "QNH",
+      "Runway": "Dráha",
+      "RunwayBearing": "Směr dráhy",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "Stav dráhy",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "Suchý sníh - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "Suchý sníh - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "Břečka - 12,7 mm/½\"",
+        "Contaminated13mmWater": "Voda - 12,7 mm/½\"",
+        "Contaminated15mmWetSnow": "Mokrý sníh - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "Mokrý sníh - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "Mokrý sníh - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "Břečka - 6,3 mm/¼\"",
+        "Contaminated6mmWater": "Voda - 6,3 mm/¼\"",
+        "ContaminatedCompactedSnow": "Uježděný sníh",
+        "Dry": "Suchý",
+        "Wet": "Mokrý"
+      },
+      "RunwayElevation": "Výška dráhy",
+      "RunwayElevationUnit": "ft",
+      "RunwayLengthUnitFt": "ft",
+      "RunwayLengthUnitMeter": "m",
+      "RunwaySlope": "Sklon dráhy",
+      "Temperature": "Teplota",
+      "Thrust": "Výkon",
+      "Title": "Vzlet",
+      "Tora": "TORA",
+      "Weight": "Vzletová hmotnost",
+      "Wind": "Vítr",
+      "WindMagnitudeUnit": "kts nebo °/kts"
+    },
     "Title": "Výkony",
     "TopOfDescent": {
       "Data": {
@@ -477,10 +547,10 @@
     "PauseAtTodInactive": "Neaktivní",
     "PauseAtTodStandby": "Připravena",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "připojen",
+    "SimBridgeConnected": "Připojen",
     "SimBridgeConnecting": "Připojování…",
-    "SimBridgeOff": "vypnutý",
-    "SimBridgeOffline": "nedostupný",
+    "SimBridgeOff": "Vypnutý",
+    "SimBridgeOffline": "Nedostupný",
     "Simrate": "Rychlost simulace",
     "TT": {
       "AlignAdirs": "Okamžitě zarovnat ADIRS",
@@ -497,6 +567,8 @@
     },
     "Title": "Rychlé ovládání"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Zapnutí/vypnutí automatického osvětlení kabiny",
+  "QuickControls.TT.CabinLighting": "Nastavení osvětlení kabiny",
   "Settings": {
     "About": {
       "Title": "O zařízení"
@@ -562,6 +634,7 @@
       "AutofillChecklists": "Automaticky vyplňovat checklisty",
       "BoardingTime": "Čas nastupování cestujících",
       "DmcSelfTestTime": "Inicializační test DMC",
+      "EclSoftKeys": "Zobrazit tlačítka pro elektronický checklist na EWD",
       "FirstOfficerAvatar": "Zobrazit avatar prvního důstojníka",
       "HomeCockpitMode": "Režim domácího kokpitu",
       "McduFocusTimeout": "Časový limit vstupu MCDU z klávesnice (sekundy)",
@@ -570,7 +643,7 @@
       "PauseAtTodDistance": "Vzdálenost zapauzování před T/D (nm)",
       "PilotAvatar": "Zobrazit avatar pilota",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
-      "SyncEfis": "Synchronizovat EFIS mezi kapitánem a FO",
+      "SyncEfis": "Synchronizovat EFIS a ovládání zvuku mezi kapitánem a prvním důstojníkem",
       "Title": "Realismus"
     },
     "SimOptions": {
@@ -587,12 +660,16 @@
       "EnableSimBridge": "Povolit připojení SimBridge (Bez úspěšného připojení se po 5 minutách automaticky vypne)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Povolit připojení k serveru MCDU (Bez úspěšného připojení se po 5 minutách automaticky vypne)",
       "ExternalMcduServerPort": "Port externího serveru MCDU",
+      "FdrEnabled": "Povolit zapisovač letových údajů (FDR)",
       "Hpa": "hPa",
       "Inactive": "Neaktivní",
+      "Left": "Vlevo",
       "LoadOnly": "Pouze při načtení",
-      "None": "Žádné",
+      "None": "Nikdy",
       "Off": "Vypnuto",
-      "Save": "Uložit",
+      "PilotSeat": "Sedadlo pilota pro ovládání",
+      "Right": "Vpravo",
+      "Save": "Vždy",
       "Side": "Strana",
       "SimBridgeIp": "Externí hostitelská adresa SimBridge",
       "SimBridgePort": "Externí port SimBridge",
@@ -665,6 +742,7 @@
       "Blue": "Modrý",
       "Brightness": "Jas",
       "Dark": "Tmavý",
+      "DisablePushbackConflictWarning": "Vypnout varování o kompatibilitě Pushback systému",
       "Language": "Jazyk",
       "Light": "Světlý",
       "Local": "Místní",
@@ -681,6 +759,8 @@
       "UtcAndLocal": "UTC a místní"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Automatické osvětlení kabiny",
+  "Settings.SimOptions.CabinManualBrightness": "Jas osvětlení kabiny",
   "StatusBar": {
     "Apr": "Dub",
     "Aug": "Srp",

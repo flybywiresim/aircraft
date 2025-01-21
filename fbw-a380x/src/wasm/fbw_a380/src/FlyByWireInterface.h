@@ -35,8 +35,8 @@ class FlyByWireInterface {
  private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\ModelConfiguration.ini";
 
-  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = 0.11;
-  static constexpr uint32_t LOW_PERFORMANCE_TIMER_THRESHOLD = 10;
+  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = (1.0 / 6.0);
+  static constexpr uint32_t LOW_PERFORMANCE_TIMER_THRESHOLD = (3 * 6);
   uint32_t lowPerformanceTimer = 0;
 
   double previousSimulationTime = 0;
@@ -455,6 +455,8 @@ class FlyByWireInterface {
 
   // SEC discrete output Lvars
   std::unique_ptr<LocalVariable> idSecHealthy[3];
+  std::unique_ptr<LocalVariable> idSecRudderStatusWord[3];
+  std::unique_ptr<LocalVariable> idSecRudderTrimActualPos[3];
 
   // Flight controls solenoid valve energization Lvars
   std::unique_ptr<LocalVariable> idLeftInboardAileronSolenoidEnergized[2];
@@ -491,6 +493,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLowerRudderCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRudderTrimActiveModeCommanded[2];
   std::unique_ptr<LocalVariable> idRudderTrimCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idRudderTrimActualPosition;
 
   // FAC discrete input Lvars
   std::unique_ptr<LocalVariable> idFacPushbuttonPressed[2];
@@ -523,8 +526,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFacDiscreteWord3[2];
   std::unique_ptr<LocalVariable> idFacDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFacDiscreteWord5[2];
-  std::unique_ptr<LocalVariable> idFacDeltaRRudderTrim[2];
-  std::unique_ptr<LocalVariable> idFacRudderTrimPos[2];
 
   std::unique_ptr<LocalVariable> idLeftAileronInwardPosition;
   std::unique_ptr<LocalVariable> idLeftAileronMiddlePosition;

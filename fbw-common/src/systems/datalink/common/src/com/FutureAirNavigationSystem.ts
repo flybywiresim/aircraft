@@ -59,6 +59,8 @@ export class FutureAirNavigationSystem {
     // Spain
     'CBRA', 'CBRN', 'CBRS', 'CBRW', 'CBRC', 'CBRE', 'CBRD', 'CMRA', 'CMRM', 'CMRN', 'CMRC', 'CMRW', 'CMRE', 'CSRA', 'CSRW',
     'CCRA', 'CCRI', 'CCRL', 'CCRW', 'CCRE', 'CCRO',
+    // Portugal
+    'LPPC', 'LPZC', 'LPZD', 'LPZE', 'LPZI', 'LPZN', 'LPZS', 'LPZW', 'LPWU', 'LPNU', 'LPCU', 'LPYP', 'LPYL', 'LPYT', 'LPYF', 'LPYM',
     // Poland
     'EPWW', 'EPWU', 'EPWB', 'EPWC', 'EPWD', 'EPWE', 'EPWF', 'EPWG', 'EPWJ', 'EPWK', 'EPWN', 'EPWR', 'EPWZ',
     // Czech

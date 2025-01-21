@@ -337,6 +337,76 @@
       "WindMagnitudeUnit": "קשר"
     },
     "SYNC": "סינכרון",
+    "Takeoff": {
+      "Airport": "Airport",
+      "AntiIce": "Anti-Ice",
+      "Calculate": "Calculate",
+      "CentreOfGravity": "TOCG",
+      "Clear": "Clear",
+      "CoGPosition": "CG Position",
+      "CoGPositions": {
+        "Forward": "Forward (<27%)",
+        "Standard": "Standard"
+      },
+      "Configuration": "Configuration",
+      "CrosswindAboveLimitMessage": "Do you want to perform the computation with {actual_crosswind} knots?",
+      "CrosswindAboveLimitTitle": "Maximum Crosswind Is {max_crosswind} Knots",
+      "EnterManually": "Enter Manually",
+      "EntryAngle": "Entry Angle",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "CG Outside Takeoff Envelope",
+        "FlexNotPossible": "Flex Not Possible",
+        "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
+        "InvalidData": "Invalid Inputs",
+        "MaximumPressureAlt": "Above Maximum Pressure Altitude ({max_zp} ft)",
+        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
+        "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
+        "MaximumTemperature": "Above Maximum OAT ({tmax}°C)",
+        "MaximumTireSpeed": "Maximum Tire Speed Not Satisfied",
+        "OperatingEmptyWeight": "Below Operating Empty Weight ({oew} {weight_unit})",
+        "StructuralMtow": "Above Structural MTOW ({structural_mtow} {weight_unit})",
+        "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
+        "TooLight": "Below Minimum Takeoff Weight",
+        "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
+      },
+      "Packs": "Packs",
+      "Qnh": "QNH",
+      "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "Runway Condition",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "Dry Snow - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "Slush - 12.7 mm/½\"",
+        "Contaminated13mmWater": "Water - 12.7 mm/½\"",
+        "Contaminated15mmWetSnow": "Wet Snow - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "Wet Snow - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "Wet Snow - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "Slush - 6.3 mm/¼\"",
+        "Contaminated6mmWater": "Water - 6.3 mm/¼\"",
+        "ContaminatedCompactedSnow": "Compacted Snow",
+        "Dry": "Dry",
+        "Wet": "Wet"
+      },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft",
+      "RunwayLengthUnitFt": "ft",
+      "RunwayLengthUnitMeter": "m",
+      "RunwaySlope": "Runway Slope",
+      "Temperature": "Temperature",
+      "Thrust": "Thrust",
+      "Title": "Takeoff",
+      "Tora": "TORA",
+      "Weight": "Takeoff Weight",
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts or °/kts"
+    },
     "Title": "ביצועים",
     "TopOfDescent": {
       "Data": {
@@ -488,7 +558,7 @@
       "Brightness": "הגדר את הבהירות",
       "FinishBoarding": "סיום עליה למטוס באופן מיידי",
       "OnScreenKeyboard": "הפעל/כבה מקלדת מסך",
-      "PauseAtTod": "Arm or Disarm Pause at Top of Descent",
+      "PauseAtTod": "Arm or Disarm pause at Top of Descent",
       "PowerButton": "כיבוי",
       "Settings": "עבור לדף ההגדרות של flyPad",
       "SimBridge": "בקרת חיבור SimBridge",
@@ -497,6 +567,8 @@
     },
     "Title": "קיצורי דרך"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "אודות"
@@ -562,6 +634,7 @@
       "AutofillChecklists": "מלא רשימות בדיקה אוטומטית",
       "BoardingTime": "זמן עלייה למטוס",
       "DmcSelfTestTime": "DMC - זמן בדיקה עצמית",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "הצג קצין ראשון",
       "HomeCockpitMode": "מצב תא טייס ביתי",
       "McduFocusTimeout": "MCDU - זמן לשחרור מקלדת",
@@ -587,11 +660,15 @@
       "EnableSimBridge": "אפשר חיבור Simbridge (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "אפשר חיבור שרת MCDU (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
       "ExternalMcduServerPort": "פורט MCDU חיצוני",
+      "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "Hpa": "hPa",
       "Inactive": "לא פעיל",
+      "Left": "Left",
       "LoadOnly": "לטעון בלבד",
       "None": "ללא",
       "Off": "כבוי",
+      "PilotSeat": "Pilot Seat for Control",
+      "Right": "Right",
       "Save": "שמור",
       "Side": "Side",
       "SimBridgeIp": "כתובת SimBridge חיצונית",
@@ -665,6 +742,7 @@
       "Blue": "כחול",
       "Brightness": "בהירות",
       "Dark": "כהה",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "שפה",
       "Light": "מואר",
       "Local": "מקומי",
@@ -681,6 +759,8 @@
       "UtcAndLocal": "UTC ומקומי"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "אפריל",
     "Aug": "אוגוסט",

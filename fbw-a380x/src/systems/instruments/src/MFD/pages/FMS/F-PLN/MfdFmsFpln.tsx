@@ -5,6 +5,7 @@
   DisplayComponent,
   FSComponent,
   MappedSubject,
+  MathUtils,
   NodeReference,
   Subject,
   Subscribable,
@@ -16,9 +17,9 @@ import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { ContextMenu, ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { FplnRevisionsMenuType, getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisionsMenu';
 import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
 import { InsertNextWptFromWindow, NextWptInfo } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
@@ -32,7 +33,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
-import { ConditionalComponent } from '../../common/ConditionalComponent';
+import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -85,9 +86,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private destTimeLabel = Subject.create<string>('--:--');
 
-  private destEfob = Subject.create<string>('--.-');
+  private destEfob = Subject.create<string>('---.-');
 
-  private destDistanceLabel = Subject.create<string>('---');
+  private destDistanceLabel = Subject.create<string>('----');
 
   private displayFplnFromLineIndex = Subject.create<number>(0);
 
@@ -167,11 +168,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       if (destEfob) {
         this.destEfob.set(Math.max(0, Units.poundToKilogram(destEfob) / 1_000).toFixed(1));
       } else {
-        this.destEfob.set('--.-');
+        this.destEfob.set('---.-');
       }
 
       this.destDistanceLabel.set(
-        Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---',
+        Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '----',
       );
     }
     this.checkScrollButtons();
@@ -1216,19 +1217,34 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }),
     );
 
-    this.identRef.getOrDefault()?.addEventListener('click', () => {
-      if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
-        this.props.openRevisionsMenuCallback();
-        this.selectedForRevision.set(true);
-      }
-    });
+    this.identRef.getOrDefault()?.addEventListener('click', this.onIdentClickedHandler);
 
-    this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', () => this.props.callbacks.rta());
+    this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.rta);
   }
+
+  private onIdentClicked() {
+    if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
+      this.props.openRevisionsMenuCallback();
+      this.selectedForRevision.set(true);
+    }
+  }
+
+  private onIdentClickedHandler = this.onIdentClicked.bind(this);
 
   public destroy(): void {
     this.subs.forEach((sub) => sub.destroy());
     this.lineColor.destroy();
+
+    this.identRef.getOrDefault()?.removeEventListener('click', this.onIdentClickedHandler);
+    this.timeRef.getOrDefault()?.parentElement?.removeEventListener('click', this.props.callbacks.rta);
+
+    if (this.props.displayEfobAndWind.get()) {
+      this.altRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.wind);
+    } else {
+      this.altRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.altitude);
+      this.speedRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.speed);
+    }
+
     super.destroy();
   }
 
@@ -1288,7 +1304,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           this.fpaRef.instance.innerText = '';
         } else {
           this.trackRef.instance.innerText = data.trackFromLastWpt
-            ? `${data.trackFromLastWpt.toFixed(0)}°${this.props.trueTrack.get() ? 'T' : ''}`
+            ? `${data.trackFromLastWpt.toFixed(0).padStart(3, '0')}°${this.props.trueTrack.get() ? 'T' : ''}`
             : '';
           this.distRef.instance.innerText = data.distFromLastWpt?.toFixed(0) ?? '';
           this.fpaRef.instance.innerText = data.fpa ? data.fpa.toFixed(1) : '';
@@ -1346,12 +1362,12 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     while (this.speedRef.instance.firstChild) {
-      this.speedRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.speed());
+      this.speedRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.speed);
       this.speedRef.instance.removeChild(this.speedRef.instance.firstChild);
     }
     while (this.altRef.instance.firstChild) {
-      this.altRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.altitude());
-      this.altRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.wind());
+      this.altRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.altitude);
+      this.altRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.wind);
       this.altRef.instance.removeChild(this.altRef.instance.firstChild);
     }
     FSComponent.render(this.efobOrSpeed(data), this.speedRef.instance);
@@ -1360,7 +1376,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     if (this.props.displayEfobAndWind.get()) {
       this.altRef.instance.style.alignSelf = 'flex-end';
       this.altRef.instance.style.paddingRight = '20px';
-      this.altRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.wind());
+      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.wind);
       this.speedRef.instance.style.paddingLeft = '10px';
       if (this.speedRef.instance.parentElement) {
         this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small';
@@ -1368,9 +1384,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     } else {
       this.altRef.instance.style.alignSelf = '';
       this.altRef.instance.style.paddingRight = '';
-      this.altRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.altitude());
+      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.altitude);
       this.speedRef.instance.style.paddingLeft = '';
-      this.speedRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.speed());
+      this.speedRef.instance.parentElement?.addEventListener('click', this.props.callbacks.speed);
       if (this.speedRef.instance.parentElement) {
         this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small-clickable';
       }
@@ -1429,9 +1445,14 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       ) {
         altStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
       } else if (!isBelowTransAlt) {
-        altStr = <span>{`FL${Math.round(data.altitudePrediction / 100).toString()}`}</span>;
+        altStr = (
+          <span>{`FL${Math.round(data.altitudePrediction / 100)
+            .toString()
+            .padStart(3, '0')}`}</span>
+        );
       } else {
-        altStr = <span>{data.altitudePrediction.toFixed(0)}</span>;
+        const roundedAltitude = MathUtils.round(data.altitudePrediction, 10).toFixed(0);
+        altStr = <span>{roundedAltitude}</span>;
       }
     }
     if (data.hasAltitudeConstraint && data.altitudePrediction) {

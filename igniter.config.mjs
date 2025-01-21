@@ -50,6 +50,7 @@ export default new TaskOfTasks('all', [
                 new ExecTask('extras-host', 'npm run build-a32nx:extras-host', [
                     'fbw-a32nx/src/systems/extras-host',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ExtrasHost',
+                    'fbw-common/src/systems/shared/src/extras',
                 ]),
                 new ExecTask('failures', 'npm run build-a32nx:failures', [
                     'fbw-a32nx/src/systems/failures',
@@ -139,6 +140,7 @@ export default new TaskOfTasks('all', [
                             'npm run build-a380x:link-base-files',
                             'npm run unchunkLargeFiles',
                             'npm run build-a380x:link-large-files',
+                            'npm run build-a380x:link-large-files-texture-8k',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
@@ -146,7 +148,7 @@ export default new TaskOfTasks('all', [
                             'npm run build-a380x:link-base-files',
                             'npm run unchunkLargeFiles',
                             'npm run build-a380x:link-large-files',
-                            'npm run build-a380x:copy-large-files-texture-4k',
+                            'npm run build-a380x:link-large-files-texture-4k',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
@@ -160,6 +162,7 @@ export default new TaskOfTasks('all', [
                             'npm run build-a380x:copy-base-files',
                             'npm run unchunkLargeFiles',
                             'npm run build-a380x:copy-large-files',
+                            'npm run build-a380x:copy-large-files-texture-8k',
                             'npm run chunkLargeFiles',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
@@ -192,6 +195,7 @@ export default new TaskOfTasks('all', [
                 new ExecTask('extras-host', 'npm run build-a380x:extras-host', [
                     'fbw-a380x/src/systems/extras-host',
                     'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/ExtrasHost',
+                    'fbw-common/src/systems/shared/src/extras',
                 ]),
                 new ExecTask('systems-host', 'npm run build-a380x:systems-host', [
                     'fbw-a380x/src/systems/systems-host',

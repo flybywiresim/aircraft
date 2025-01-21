@@ -9,11 +9,11 @@
     "SetActive": "활성 주파수로 설정",
     "SetStandby": "대기 주파수로 설정",
     "ShowAll": "모두",
-    "ShowApproach": "접근",
+    "ShowApproach": "접근관제",
     "ShowAtis": "ATIS",
-    "ShowDelivery": "인가",
-    "ShowDeparture": "출발",
-    "ShowGround": "지상",
+    "ShowDelivery": "인가관제",
+    "ShowDeparture": "출발관제",
+    "ShowGround": "지상관제",
     "ShowRadar": "레이더",
     "ShowTower": "타워",
     "Standby": "대기",
@@ -21,7 +21,7 @@
       "AtcCallSignSearch": "ATC 콜사인 검색",
       "AtcTypeFilter": "필터"
     },
-    "Title": "항공 교통 관제"
+    "Title": "항공 교통 관제(ATC)"
   },
   "Checklists": {
     "AreYouSureYouWantToResetAllChecklists": "모든 체크리스트를 초기화하시겠습니까?",
@@ -337,6 +337,76 @@
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "동기화",
+    "Takeoff": {
+      "Airport": "공항",
+      "AntiIce": "방빙(Anti-Ice)",
+      "Calculate": "계산",
+      "CentreOfGravity": "이륙 CG",
+      "Clear": "초기화",
+      "CoGPosition": "CG 위치",
+      "CoGPositions": {
+        "Forward": "전방 (<27%)",
+        "Standard": "표준"
+      },
+      "Configuration": "설정",
+      "CrosswindAboveLimitMessage": "{actual_crosswind} 노트로 계산을 수행하시겠습니까?",
+      "CrosswindAboveLimitTitle": "최대 측풍은 {max_crosswind} 노트 입니다",
+      "EnterManually": "수동으로 입력",
+      "EntryAngle": "진입 각",
+      "EntryAngles": {
+        "0": "0°",
+        "90": "90°",
+        "180": "180°"
+      },
+      "Messages": {
+        "CgOutOfLimits": "이륙 CG 제한 초과",
+        "FlexNotPossible": "Flex 불가능",
+        "HeadwindLimited": "역풍(headwind)이 {max_headwind} 노트로 감소했습니다.",
+        "InvalidData": "잘못된 입력",
+        "MaximumPressureAlt": "최대 기압 고도 초과 ({max_zp} 피트)",
+        "MaximumRunwaySlope": "활주로 경사 제한 초과(±2%)",
+        "MaximumTailwind": "최대 순풍(tailwind) 초과 ({max_tailwind} 노트)",
+        "MaximumTemperature": "최대 외부 온도 초과 ({tmax} °C)",
+        "MaximumTireSpeed": "최대 타이어 속도 미충족",
+        "OperatingEmptyWeight": "운행 공 중량 미만 ({oew} {weight_unit})",
+        "StructuralMtow": "실제 구조적 최대 이륙 중량 초과 ({structural_mtow} {weight_unit})",
+        "TooHeavy": "이륙 중량 제한 초과 - 최대 {mtow} {weight_unit}",
+        "TooLight": "최소 이륙 중량 미만",
+        "VmcgVmcaLimits": "VMCG/VMCA 한도 미충족"
+      },
+      "Packs": "에어컨",
+      "Qnh": "QNH",
+      "Runway": "활주로",
+      "RunwayBearing": "활주로 방위",
+      "RunwayBearingUnit": "°",
+      "RunwayCondition": "활주로 상태",
+      "RunwayConditions": {
+        "Contaminated100mmDrySnow": "마른 눈 - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "마른 눈 - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "진흙 - 12.7 mm/½\"",
+        "Contaminated13mmWater": "물 - 12.7 mm/½\"",
+        "Contaminated15mmWetSnow": "젖은 눈 - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "젖은 눈 - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "젖은 눈 - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "진흙 - 6.3 mm/¼\"",
+        "Contaminated6mmWater": "물 - 6.3 mm/¼\"",
+        "ContaminatedCompactedSnow": "압축된 눈",
+        "Dry": "마름",
+        "Wet": "젖음"
+      },
+      "RunwayElevation": "활주로 고도",
+      "RunwayElevationUnit": "피트",
+      "RunwayLengthUnitFt": "피트",
+      "RunwayLengthUnitMeter": "미터",
+      "RunwaySlope": "활주로 경사",
+      "Temperature": "온도",
+      "Thrust": "추력",
+      "Title": "이륙",
+      "Tora": "이륙활주거리",
+      "Weight": "이륙 중량",
+      "Wind": "바람",
+      "WindMagnitudeUnit": "노트 또는 °/노트"
+    },
     "Title": "성능",
     "TopOfDescent": {
       "Data": {
@@ -497,6 +567,8 @@
     },
     "Title": "빠른 설정"
   },
+  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "정보"
@@ -562,6 +634,7 @@
       "AutofillChecklists": "체크리스트 자동 완성",
       "BoardingTime": "승객 탑승 시간",
       "DmcSelfTestTime": "DMC 자체 점검 시간",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "부기장 아바타 표시",
       "HomeCockpitMode": "실내 조종석 모드",
       "McduFocusTimeout": "MCDU 포커스 타임아웃 (초)",
@@ -570,7 +643,7 @@
       "PauseAtTodDistance": "T/D 일시정지 거리 (nm)",
       "PilotAvatar": "기장 아바타 표시",
       "SeparateTillerFromRudderInputs": "러더 입력과 틸러 입력 분리",
-      "SyncEfis": "기장과 부기장의 EFIS 컨트롤 동기화",
+      "SyncEfis": "기장과 부기장의 EFIS 및 오디오 컨트롤 동기화",
       "Title": "리얼리즘"
     },
     "SimOptions": {
@@ -587,11 +660,15 @@
       "EnableSimBridge": "SimBridge 연결 활성화 (5분동안 연결 실패 시 자동으로 비활성화)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU 서버 연결 사용 (연결 실패 시 5분 후 자동으로 비활성화)",
       "ExternalMcduServerPort": "외부 MCDU 서버 포트",
+      "FdrEnabled": "비행 데이터 기록 장치(FDR) 활성화",
       "Hpa": "hPa",
       "Inactive": "비활성",
+      "Left": "왼쪽",
       "LoadOnly": "불러오기 전용",
       "None": "없음",
       "Off": "끄기",
+      "PilotSeat": "조종할 좌석",
+      "Right": "오른쪽",
       "Save": "저장",
       "Side": "위치",
       "SimBridgeIp": "외부 SimBridge 호스트 주소",
@@ -665,6 +742,7 @@
       "Blue": "블루",
       "Brightness": "밝기",
       "Dark": "다크",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "언어",
       "Light": "라이트",
       "Local": "현지",
@@ -681,6 +759,8 @@
       "UtcAndLocal": "UTC 및 현지 시간"
     }
   },
+  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
+  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "4월",
     "Aug": "8월",

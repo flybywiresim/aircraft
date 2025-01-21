@@ -4,16 +4,6 @@ class A32NX_Core {
     constructor() {
         this.modules = [
             {
-                name: 'BaroSelector',
-                module: new A32NX_BaroSelector(),
-                updateInterval: 300,
-            },
-            {
-                name: 'BrakeTemp',
-                module: new A32NX_BrakeTemp(),
-                updateInterval: 150,
-            },
-            {
                 name: 'Refuel',
                 module: new A32NX_Refuel(),
                 updateInterval: 150,

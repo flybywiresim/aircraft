@@ -124,8 +124,12 @@ impl Actuator for FlapSlatHydraulicMotor {
 pub struct FlapSlatAssembly {
     position_left_percent_id: VariableIdentifier,
     position_right_percent_id: VariableIdentifier,
+
     angle_left_id: VariableIdentifier,
     angle_right_id: VariableIdentifier,
+
+    animation_left_id: VariableIdentifier,
+    animation_right_id: VariableIdentifier,
     is_moving_id: VariableIdentifier,
 
     surface_control_arm_position: Angle,
@@ -182,6 +186,9 @@ impl FlapSlatAssembly {
 
             angle_left_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
             angle_right_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
+
+            animation_left_id: context.get_identifier(format!("LEFT_{}_ANIMATION_POSITION", id)),
+            animation_right_id: context.get_identifier(format!("RIGHT_{}_ANIMATION_POSITION", id)),
 
             is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
@@ -531,6 +538,11 @@ impl SimulationElement for FlapSlatAssembly {
         let flaps_surface_angle = self.flap_surface_angle();
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
         writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
+
+        let flaps_fppu_percent =
+            (self.position_feedback() / self.max_synchro_gear_position).get::<percent>();
+        writer.write(&self.animation_left_id, flaps_fppu_percent);
+        writer.write(&self.animation_right_id, flaps_fppu_percent);
 
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }

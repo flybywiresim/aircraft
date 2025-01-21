@@ -39,6 +39,11 @@ export interface FlightPlanSetSegmentLegsEvent extends FlightPlanEditSyncEvent {
   legs: (SerializedFlightPlanLeg | Discontinuity)[];
 }
 
+export interface FlightPlanLegFlagsEditEvent extends FlightPlanEditSyncEvent {
+  atIndex: number;
+  newFlags: number;
+}
+
 export interface FlightPlanLegDefinitionEditEvent extends FlightPlanEditSyncEvent {
   atIndex: number;
   newDefinition: FlightPlanLegDefinition;
@@ -81,6 +86,7 @@ export interface FlightPlanEvents {
 
   'flightPlan.setActiveLegIndex': FlightPlanSetActiveLegIndexEvent;
   'flightPlan.setSegmentLegs': FlightPlanSetSegmentLegsEvent;
+  'flightPlan.legFlagsEdit': FlightPlanLegFlagsEditEvent;
   'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent;
   'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;
   'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent;

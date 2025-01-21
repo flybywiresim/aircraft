@@ -8,8 +8,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -139,13 +139,14 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
         );
         FSComponent.render(node, this.linesDivRef.instance);
 
-        // These don't get explicitly deleted when re-rendering the list, TODO check if critical
-        document.getElementById(`mfd-fms-dupl-${i}`)?.addEventListener('click', () => {
-          this.callback(this.duplicateOptions.get()[i].fixData);
-          this.props.visible.set(false);
-        });
+        document.getElementById(`mfd-fms-dupl-${i}`)?.addEventListener('click', this.itemClickedHandler.bind(this, i));
       }
     }
+  }
+
+  private itemClickedHandler(i: number) {
+    this.callback(this.duplicateOptions.get()[i].fixData);
+    this.props.visible.set(false);
   }
 
   // Entry point after opening this dialog
@@ -162,6 +163,14 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+
+    for (let i = 0; i < this.duplicateOptions.get().length; i++) {
+      if (this.duplicateOptions.get()[i] !== undefined) {
+        document
+          .getElementById(`mfd-fms-dupl-${i}`)
+          ?.removeEventListener('click', this.itemClickedHandler.bind(this, i));
+      }
+    }
 
     super.destroy();
   }

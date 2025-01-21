@@ -29,30 +29,10 @@ export type PFDSimvars = AdirsSimVars &
     noseGearCompressed: boolean;
     leftMainGearCompressed: boolean;
     rightMainGearCompressed: boolean;
-    activeLateralMode: number;
-    activeVerticalMode: number;
-    fmaModeReversion: boolean;
-    fmaSpeedProtection: boolean;
-    AThrMode: number;
-    apVsSelected: number;
-    approachCapability: number;
-    ap1Active: boolean;
-    ap2Active: boolean;
-    fmaVerticalArmed: number;
-    fmaLateralArmed: number;
-    fd1Active: boolean;
-    fd2Active: boolean;
-    athrStatus: number;
-    athrModeMessage: number;
-    machPreselVal: number;
-    speedPreselVal: number;
     attHdgKnob: number;
     airKnob: number;
     vsBaro: number;
     vsInert: number;
-    fdYawCommand: number;
-    fdBank: number;
-    fdPitch: number;
     v1: number;
     vr: number;
     fwcFlightPhase: number;
@@ -66,17 +46,9 @@ export type PFDSimvars = AdirsSimVars &
     hasGlideslope: boolean;
     glideSlopeError: number;
     markerBeacon: number;
-    isAltManaged: boolean;
-    targetSpeedManaged: number;
     flapHandleIndex: number;
-    selectedHeading: number;
-    showSelectedHeading: number;
-    altConstraint: number;
-    trkFpaActive: boolean;
     aoa: number;
-    selectedFpa: number;
     ilsCourse: number;
-    metricAltToggle: boolean;
     tla1: number;
     tla2: number;
     landingElevation: number;
@@ -89,16 +61,11 @@ export type PFDSimvars = AdirsSimVars &
     tcasFail: boolean;
     engOneRunning: boolean;
     engTwoRunning: boolean;
-    expediteMode: boolean;
     setHoldSpeed: boolean;
     tdReached: boolean;
-    trkFpaDeselectedTCAS: boolean;
-    tcasRaInhibited: boolean;
     checkSpeedMode: boolean;
     radioAltitude1: number;
     radioAltitude2: number;
-    crzAltMode: boolean;
-    tcasModeDisarmed: boolean;
     flexTemp: number;
     autoBrakeMode: number;
     autoBrakeActive: boolean;
@@ -106,8 +73,6 @@ export type PFDSimvars = AdirsSimVars &
     fpaRaw: number;
     daRaw: number;
     latAccRaw: number;
-    ls1Button: boolean;
-    ls2Button: boolean;
     fcdc1DiscreteWord1Raw: number;
     fcdc2DiscreteWord1Raw: number;
     fcdc1DiscreteWord2Raw: number;
@@ -169,6 +134,58 @@ export type PFDSimvars = AdirsSimVars &
     fm2TransLvlRaw: number;
     fm1Backbeam: boolean;
     fm2Backbeam: boolean;
+    fmgc1PfdSelectedSpeedRaw: number;
+    fmgc2PfdSelectedSpeedRaw: number;
+    fmgc1PreselMachRaw: number;
+    fmgc2PreselMachRaw: number;
+    fmgc1PreselSpeedRaw: number;
+    fmgc2PreselSpeedRaw: number;
+    fmgc1RollFdCommandRaw: number;
+    fmgc2RollFdCommandRaw: number;
+    fmgc1PitchFdCommandRaw: number;
+    fmgc2PitchFdCommandRaw: number;
+    fmgc1YawFdCommandRaw: number;
+    fmgc2YawFdCommandRaw: number;
+    fmgc1DiscreteWord5Raw: number;
+    fmgc2DiscreteWord5Raw: number;
+    fmgc1DiscreteWord4Raw: number;
+    fmgc2DiscreteWord4Raw: number;
+    fmgc1FmAltitudeConstraintRaw: number;
+    fmgc2FmAltitudeConstraintRaw: number;
+    fmgc1AtsDiscreteWordRaw: number;
+    fmgc2AtsDiscreteWordRaw: number;
+    fmgc1DiscreteWord3Raw: number;
+    fmgc2DiscreteWord3Raw: number;
+    fmgc1DiscreteWord1Raw: number;
+    fmgc2DiscreteWord1Raw: number;
+    fmgc1DiscreteWord2Raw: number;
+    fmgc2DiscreteWord2Raw: number;
+    fmgc1DiscreteWord7Raw: number;
+    fmgc2DiscreteWord7Raw: number;
+    fmgc1SpeedMarginHighRaw: number;
+    fmgc2SpeedMarginHighRaw: number;
+    fmgc1SpeedMarginLowRaw: number;
+    fmgc2SpeedMarginLowRaw: number;
+    fcuSelectedHeadingRaw: number;
+    fcuSelectedAltitudeRaw: number;
+    fcuSelectedAirspeedRaw: number;
+    fcuSelectedVerticalSpeedRaw: number;
+    fcuSelectedTrackRaw: number;
+    fcuSelectedFpaRaw: number;
+    fcuAtsDiscreteWordRaw: number;
+    fcuAtsFmaDiscreteWordRaw: number;
+    fcuEisLeftDiscreteWord1Raw: number;
+    fcuEisLeftDiscreteWord2Raw: number;
+    fcuEisLeftBaroRaw: number;
+    fcuEisLeftBaroHpaRaw: number;
+    fcuEisRightDiscreteWord1Raw: number;
+    fcuEisRightDiscreteWord2Raw: number;
+    fcuEisRightBaroRaw: number;
+    fcuEisRightBaroHpaRaw: number;
+    fcuDiscreteWord1Raw: number;
+    fcuDiscreteWord2Raw: number;
+    ecu1MaintenanceWord6Raw: number;
+    ecu2MaintenanceWord6Raw: number;
   };
 
 export enum PFDVars {
@@ -186,30 +203,10 @@ export enum PFDVars {
   noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
   leftMainGearCompressed = 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED',
   rightMainGearCompressed = 'L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED',
-  activeLateralMode = 'L:A32NX_FMA_LATERAL_MODE',
-  activeVerticalMode = 'L:A32NX_FMA_VERTICAL_MODE',
-  fmaModeReversion = 'L:A32NX_FMA_MODE_REVERSION',
-  fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
-  AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
-  apVsSelected = 'L:A32NX_AUTOPILOT_VS_SELECTED',
-  approachCapability = 'L:A32NX_ApproachCapability',
-  ap1Active = 'L:A32NX_AUTOPILOT_1_ACTIVE',
-  ap2Active = 'L:A32NX_AUTOPILOT_2_ACTIVE',
-  fmaVerticalArmed = 'L:A32NX_FMA_VERTICAL_ARMED',
-  fmaLateralArmed = 'L:A32NX_FMA_LATERAL_ARMED',
-  fd1Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:1',
-  fd2Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:2',
-  athrStatus = 'L:A32NX_AUTOTHRUST_STATUS',
-  athrModeMessage = 'L:A32NX_AUTOTHRUST_MODE_MESSAGE',
-  machPreselVal = 'L:A32NX_MachPreselVal',
-  speedPreselVal = 'L:A32NX_SpeedPreselVal',
   attHdgKnob = 'L:A32NX_ATT_HDG_SWITCHING_KNOB',
   airKnob = 'L:A32NX_AIR_DATA_SWITCHING_KNOB',
   vsBaro = 'L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED',
   vsInert = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
-  fdYawCommand = 'L:A32NX_FLIGHT_DIRECTOR_YAW',
-  fdBank = 'L:A32NX_FLIGHT_DIRECTOR_BANK',
-  fdPitch = 'L:A32NX_FLIGHT_DIRECTOR_PITCH',
   v1 = 'L:AIRLINER_V1_SPEED',
   vr = 'L:AIRLINER_VR_SPEED',
   fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
@@ -223,19 +220,11 @@ export enum PFDVars {
   hasGlideslope = 'L:A32NX_RADIO_RECEIVER_GS_IS_VALID',
   glideSlopeError = 'L:A32NX_RADIO_RECEIVER_GS_DEVIATION',
   markerBeacon = 'MARKER BEACON STATE',
-  isAltManaged = 'L:A32NX_FCU_ALT_MANAGED',
-  targetSpeedManaged = 'L:A32NX_SPEEDS_MANAGED_PFD',
   mach = 'L:A32NX_ADIRS_ADR_1_MACH',
   flapHandleIndex = 'L:A32NX_FLAPS_HANDLE_INDEX',
   magTrackRaw = 'L:A32NX_ADIRS_IR_1_TRACK',
-  selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
-  showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
-  altConstraint = 'L:A32NX_FG_ALTITUDE_CONSTRAINT',
-  trkFpaActive = 'L:A32NX_TRK_FPA_MODE_ACTIVE',
   aoa = 'INCIDENCE ALPHA',
-  selectedFpa = 'L:A32NX_AUTOPILOT_FPA_SELECTED',
   ilsCourse = 'L:A32NX_FM_LS_COURSE',
-  metricAltToggle = 'L:A32NX_METRIC_ALT_TOGGLE',
   tla1 = 'L:A32NX_AUTOTHRUST_TLA:1',
   tla2 = 'L:A32NX_AUTOTHRUST_TLA:2',
   tcasState = 'L:A32NX_TCAS_STATE',
@@ -247,16 +236,11 @@ export enum PFDVars {
   tcasFail = 'L:A32NX_TCAS_FAULT',
   engOneRunning = 'GENERAL ENG COMBUSTION:1',
   engTwoRunning = 'GENERAL ENG COMBUSTION:2',
-  expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
   setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
-  trkFpaDeselectedTCAS = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
   tdReached = 'L:A32NX_PFD_MSG_TD_REACHED',
-  tcasRaInhibited = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED',
   checkSpeedMode = 'L:A32NX_PFD_MSG_CHECK_SPEED_MODE',
   radioAltitude1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
   radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
-  crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
-  tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
   flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
   autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
@@ -264,8 +248,6 @@ export enum PFDVars {
   fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
   daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
   latAccRaw = 'L:A32NX_ADIRS_IR_1_BODY_LATERAL_ACC',
-  ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
-  ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
   fcdc1DiscreteWord1Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
   fcdc2DiscreteWord1Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
   fcdc1DiscreteWord2Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
@@ -329,6 +311,58 @@ export enum PFDVars {
   fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
   fm1Backbeam = 'L:A32NX_FM1_BACKBEAM_SELECTED',
   fm2Backbeam = 'L:A32NX_FM2_BACKBEAM_SELECTED',
+  fmgc1PfdSelectedSpeedRaw = 'L:A32NX_FMGC_1_PFD_SELECTED_SPEED',
+  fmgc2PfdSelectedSpeedRaw = 'L:A32NX_FMGC_2_PFD_SELECTED_SPEED',
+  fmgc1PreselMachRaw = 'L:A32NX_FMGC_1_PRESEL_MACH',
+  fmgc2PreselMachRaw = 'L:A32NX_FMGC_2_PRESEL_MACH',
+  fmgc1PreselSpeedRaw = 'L:A32NX_FMGC_1_PRESEL_SPEED',
+  fmgc2PreselSpeedRaw = 'L:A32NX_FMGC_2_PRESEL_SPEED',
+  fmgc1RollFdCommandRaw = 'L:A32NX_FMGC_1_ROLL_FD_COMMAND',
+  fmgc2RollFdCommandRaw = 'L:A32NX_FMGC_2_ROLL_FD_COMMAND',
+  fmgc1PitchFdCommandRaw = 'L:A32NX_FMGC_1_PITCH_FD_COMMAND',
+  fmgc2PitchFdCommandRaw = 'L:A32NX_FMGC_2_PITCH_FD_COMMAND',
+  fmgc1YawFdCommandRaw = 'L:A32NX_FMGC_1_YAW_FD_COMMAND',
+  fmgc2YawFdCommandRaw = 'L:A32NX_FMGC_2_YAW_FD_COMMAND',
+  fmgc1DiscreteWord5Raw = 'L:A32NX_FMGC_1_DISCRETE_WORD_5',
+  fmgc2DiscreteWord5Raw = 'L:A32NX_FMGC_2_DISCRETE_WORD_5',
+  fmgc1DiscreteWord4Raw = 'L:A32NX_FMGC_1_DISCRETE_WORD_4',
+  fmgc2DiscreteWord4Raw = 'L:A32NX_FMGC_2_DISCRETE_WORD_4',
+  fmgc1FmAltitudeConstraintRaw = 'L:A32NX_FMGC_1_FM_ALTITUDE_CONSTRAINT',
+  fmgc2FmAltitudeConstraintRaw = 'L:A32NX_FMGC_2_FM_ALTITUDE_CONSTRAINT',
+  fmgc1AtsDiscreteWordRaw = 'L:A32NX_FMGC_1_ATS_DISCRETE_WORD',
+  fmgc2AtsDiscreteWordRaw = 'L:A32NX_FMGC_2_ATS_DISCRETE_WORD',
+  fmgc1DiscreteWord3Raw = 'L:A32NX_FMGC_1_DISCRETE_WORD_3',
+  fmgc2DiscreteWord3Raw = 'L:A32NX_FMGC_2_DISCRETE_WORD_3',
+  fmgc1DiscreteWord1Raw = 'L:A32NX_FMGC_1_DISCRETE_WORD_1',
+  fmgc2DiscreteWord1Raw = 'L:A32NX_FMGC_2_DISCRETE_WORD_1',
+  fmgc1DiscreteWord2Raw = 'L:A32NX_FMGC_1_DISCRETE_WORD_2',
+  fmgc2DiscreteWord2Raw = 'L:A32NX_FMGC_2_DISCRETE_WORD_2',
+  fmgc1DiscreteWord7Raw = 'L:A32NX_FMGC_1_DISCRETE_WORD_7',
+  fmgc2DiscreteWord7Raw = 'L:A32NX_FMGC_2_DISCRETE_WORD_7',
+  fmgc1SpeedMarginHighRaw = 'L:A32NX_FMGC_1_SPEED_MARGIN_HIGH',
+  fmgc2SpeedMarginHighRaw = 'L:A32NX_FMGC_2_SPEED_MARGIN_HIGH',
+  fmgc1SpeedMarginLowRaw = 'L:A32NX_FMGC_1_SPEED_MARGIN_LOW',
+  fmgc2SpeedMarginLowRaw = 'L:A32NX_FMGC_2_SPEED_MARGIN_LOW',
+  fcuSelectedHeadingRaw = 'L:A32NX_FCU_SELECTED_HEADING',
+  fcuSelectedAltitudeRaw = 'L:A32NX_FCU_SELECTED_ALTITUDE',
+  fcuSelectedAirspeedRaw = 'L:A32NX_FCU_SELECTED_AIRSPEED',
+  fcuSelectedVerticalSpeedRaw = 'L:A32NX_FCU_SELECTED_VERTICAL_SPEED',
+  fcuSelectedTrackRaw = 'L:A32NX_FCU_SELECTED_TRACK',
+  fcuSelectedFpaRaw = 'L:A32NX_FCU_SELECTED_FPA',
+  fcuAtsDiscreteWordRaw = 'L:A32NX_FCU_ATS_DISCRETE_WORD',
+  fcuAtsFmaDiscreteWordRaw = 'L:A32NX_FCU_ATS_FMA_DISCRETE_WORD',
+  fcuEisLeftDiscreteWord1Raw = 'L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_1',
+  fcuEisLeftDiscreteWord2Raw = 'L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_2',
+  fcuEisLeftBaroRaw = 'L:A32NX_FCU_LEFT_EIS_BARO',
+  fcuEisLeftBaroHpaRaw = 'L:A32NX_FCU_LEFT_EIS_BARO_HPA',
+  fcuEisRightDiscreteWord1Raw = 'L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_1',
+  fcuEisRightDiscreteWord2Raw = 'L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_2',
+  fcuEisRightBaroRaw = 'L:A32NX_FCU_RIGHT_EIS_BARO',
+  fcuEisRightBaroHpaRaw = 'L:A32NX_FCU_RIGHT_EIS_BARO_HPA',
+  fcuDiscreteWord1Raw = 'L:A32NX_FCU_DISCRETE_WORD_1',
+  fcuDiscreteWord2Raw = 'L:A32NX_FCU_DISCRETE_WORD_2',
+  ecu1MaintenanceWord6Raw = 'L:A32NX_ECU_1_MAINTENANCE_WORD_6',
+  ecu2MaintenanceWord6Raw = 'L:A32NX_ECU_2_MAINTENANCE_WORD_6',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -349,30 +383,10 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['noseGearCompressed', { name: PFDVars.noseGearCompressed, type: SimVarValueType.Bool }],
     ['leftMainGearCompressed', { name: PFDVars.leftMainGearCompressed, type: SimVarValueType.Bool }],
     ['rightMainGearCompressed', { name: PFDVars.rightMainGearCompressed, type: SimVarValueType.Bool }],
-    ['activeLateralMode', { name: PFDVars.activeLateralMode, type: SimVarValueType.Number }],
-    ['activeVerticalMode', { name: PFDVars.activeVerticalMode, type: SimVarValueType.Number }],
-    ['fmaModeReversion', { name: PFDVars.fmaModeReversion, type: SimVarValueType.Bool }],
-    ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Bool }],
-    ['AThrMode', { name: PFDVars.AThrMode, type: SimVarValueType.Number }],
-    ['apVsSelected', { name: PFDVars.apVsSelected, type: SimVarValueType.FPM }],
-    ['approachCapability', { name: PFDVars.approachCapability, type: SimVarValueType.Number }],
-    ['ap1Active', { name: PFDVars.ap1Active, type: SimVarValueType.Bool }],
-    ['ap2Active', { name: PFDVars.ap2Active, type: SimVarValueType.Bool }],
-    ['fmaVerticalArmed', { name: PFDVars.fmaVerticalArmed, type: SimVarValueType.Number }],
-    ['fmaLateralArmed', { name: PFDVars.fmaLateralArmed, type: SimVarValueType.Number }],
-    ['fd1Active', { name: PFDVars.fd1Active, type: SimVarValueType.Bool }],
-    ['fd2Active', { name: PFDVars.fd2Active, type: SimVarValueType.Bool }],
-    ['athrStatus', { name: PFDVars.athrStatus, type: SimVarValueType.Number }],
-    ['athrModeMessage', { name: PFDVars.athrModeMessage, type: SimVarValueType.Number }],
-    ['machPreselVal', { name: PFDVars.machPreselVal, type: SimVarValueType.Number }],
-    ['speedPreselVal', { name: PFDVars.speedPreselVal, type: SimVarValueType.Knots }],
     ['attHdgKnob', { name: PFDVars.attHdgKnob, type: SimVarValueType.Enum }],
     ['airKnob', { name: PFDVars.airKnob, type: SimVarValueType.Enum }],
     ['vsBaro', { name: PFDVars.vsBaro, type: SimVarValueType.Number }],
     ['vsInert', { name: PFDVars.vsInert, type: SimVarValueType.Number }],
-    ['fdYawCommand', { name: PFDVars.fdYawCommand, type: SimVarValueType.Number }],
-    ['fdBank', { name: PFDVars.fdBank, type: SimVarValueType.Number }],
-    ['fdPitch', { name: PFDVars.fdPitch, type: SimVarValueType.Number }],
     ['v1', { name: PFDVars.v1, type: SimVarValueType.Knots }],
     ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots }],
     ['fwcFlightPhase', { name: PFDVars.fwcFlightPhase, type: SimVarValueType.Number }],
@@ -386,19 +400,11 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['hasGlideslope', { name: PFDVars.hasGlideslope, type: SimVarValueType.Bool }],
     ['glideSlopeError', { name: PFDVars.glideSlopeError, type: SimVarValueType.Degree }],
     ['markerBeacon', { name: PFDVars.markerBeacon, type: SimVarValueType.Enum }],
-    ['isAltManaged', { name: PFDVars.isAltManaged, type: SimVarValueType.Bool }],
-    ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
     ['mach', { name: PFDVars.mach, type: SimVarValueType.Number }],
     ['flapHandleIndex', { name: PFDVars.flapHandleIndex, type: SimVarValueType.Number }],
     ['magTrackRaw', { name: PFDVars.magTrackRaw, type: SimVarValueType.Number }],
-    ['selectedHeading', { name: PFDVars.selectedHeading, type: SimVarValueType.Degree }],
-    ['showSelectedHeading', { name: PFDVars.showSelectedHeading, type: SimVarValueType.Number }],
-    ['altConstraint', { name: PFDVars.altConstraint, type: SimVarValueType.Feet }],
-    ['trkFpaActive', { name: PFDVars.trkFpaActive, type: SimVarValueType.Bool }],
     ['aoa', { name: PFDVars.aoa, type: SimVarValueType.Degree }],
-    ['selectedFpa', { name: PFDVars.selectedFpa, type: SimVarValueType.Degree }],
     ['ilsCourse', { name: PFDVars.ilsCourse, type: SimVarValueType.Number }],
-    ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
     ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
     ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],
     ['tcasState', { name: PFDVars.tcasState, type: SimVarValueType.Enum }],
@@ -410,16 +416,11 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['tcasFail', { name: PFDVars.tcasFail, type: SimVarValueType.Bool }],
     ['engOneRunning', { name: PFDVars.engOneRunning, type: SimVarValueType.Bool }],
     ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
-    ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
     ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
     ['tdReached', { name: PFDVars.tdReached, type: SimVarValueType.Bool }],
-    ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
-    ['tcasRaInhibited', { name: PFDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
     ['checkSpeedMode', { name: PFDVars.checkSpeedMode, type: SimVarValueType.Bool }],
     ['radioAltitude1', { name: PFDVars.radioAltitude1, type: SimVarValueType.Number }],
     ['radioAltitude2', { name: PFDVars.radioAltitude2, type: SimVarValueType.Number }],
-    ['crzAltMode', { name: PFDVars.crzAltMode, type: SimVarValueType.Bool }],
-    ['tcasModeDisarmed', { name: PFDVars.tcasModeDisarmed, type: SimVarValueType.Bool }],
     ['flexTemp', { name: PFDVars.flexTemp, type: SimVarValueType.Number }],
     ['autoBrakeMode', { name: PFDVars.autoBrakeMode, type: SimVarValueType.Number }],
     ['autoBrakeActive', { name: PFDVars.autoBrakeActive, type: SimVarValueType.Bool }],
@@ -427,8 +428,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
     ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
     ['latAccRaw', { name: PFDVars.latAccRaw, type: SimVarValueType.Number }],
-    ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
-    ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
     ['fcdc1DiscreteWord1Raw', { name: PFDVars.fcdc1DiscreteWord1Raw, type: SimVarValueType.Number }],
     ['fcdc2DiscreteWord1Raw', { name: PFDVars.fcdc2DiscreteWord1Raw, type: SimVarValueType.Number }],
     ['fcdc1DiscreteWord2Raw', { name: PFDVars.fcdc1DiscreteWord2Raw, type: SimVarValueType.Number }],
@@ -490,6 +489,58 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fm2TransLvlRaw', { name: PFDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
     ['fm1Backbeam', { name: PFDVars.fm1Backbeam, type: SimVarValueType.Bool }],
     ['fm2Backbeam', { name: PFDVars.fm2Backbeam, type: SimVarValueType.Bool }],
+    ['fmgc1PfdSelectedSpeedRaw', { name: PFDVars.fmgc1PfdSelectedSpeedRaw, type: SimVarValueType.Number }],
+    ['fmgc2PfdSelectedSpeedRaw', { name: PFDVars.fmgc2PfdSelectedSpeedRaw, type: SimVarValueType.Number }],
+    ['fmgc1PreselMachRaw', { name: PFDVars.fmgc1PreselMachRaw, type: SimVarValueType.Number }],
+    ['fmgc2PreselMachRaw', { name: PFDVars.fmgc2PreselMachRaw, type: SimVarValueType.Number }],
+    ['fmgc1PreselSpeedRaw', { name: PFDVars.fmgc1PreselSpeedRaw, type: SimVarValueType.Number }],
+    ['fmgc2PreselSpeedRaw', { name: PFDVars.fmgc2PreselSpeedRaw, type: SimVarValueType.Number }],
+    ['fmgc1RollFdCommandRaw', { name: PFDVars.fmgc1RollFdCommandRaw, type: SimVarValueType.Number }],
+    ['fmgc2RollFdCommandRaw', { name: PFDVars.fmgc2RollFdCommandRaw, type: SimVarValueType.Number }],
+    ['fmgc1PitchFdCommandRaw', { name: PFDVars.fmgc1PitchFdCommandRaw, type: SimVarValueType.Number }],
+    ['fmgc2PitchFdCommandRaw', { name: PFDVars.fmgc2PitchFdCommandRaw, type: SimVarValueType.Number }],
+    ['fmgc1YawFdCommandRaw', { name: PFDVars.fmgc1YawFdCommandRaw, type: SimVarValueType.Number }],
+    ['fmgc2YawFdCommandRaw', { name: PFDVars.fmgc2YawFdCommandRaw, type: SimVarValueType.Number }],
+    ['fmgc1DiscreteWord5Raw', { name: PFDVars.fmgc1DiscreteWord5Raw, type: SimVarValueType.Number }],
+    ['fmgc2DiscreteWord5Raw', { name: PFDVars.fmgc2DiscreteWord5Raw, type: SimVarValueType.Number }],
+    ['fmgc1DiscreteWord4Raw', { name: PFDVars.fmgc1DiscreteWord4Raw, type: SimVarValueType.Number }],
+    ['fmgc2DiscreteWord4Raw', { name: PFDVars.fmgc2DiscreteWord4Raw, type: SimVarValueType.Number }],
+    ['fmgc1FmAltitudeConstraintRaw', { name: PFDVars.fmgc1FmAltitudeConstraintRaw, type: SimVarValueType.Number }],
+    ['fmgc2FmAltitudeConstraintRaw', { name: PFDVars.fmgc2FmAltitudeConstraintRaw, type: SimVarValueType.Number }],
+    ['fmgc1AtsDiscreteWordRaw', { name: PFDVars.fmgc1AtsDiscreteWordRaw, type: SimVarValueType.Number }],
+    ['fmgc2AtsDiscreteWordRaw', { name: PFDVars.fmgc2AtsDiscreteWordRaw, type: SimVarValueType.Number }],
+    ['fmgc1DiscreteWord3Raw', { name: PFDVars.fmgc1DiscreteWord3Raw, type: SimVarValueType.Number }],
+    ['fmgc2DiscreteWord3Raw', { name: PFDVars.fmgc2DiscreteWord3Raw, type: SimVarValueType.Number }],
+    ['fmgc1DiscreteWord1Raw', { name: PFDVars.fmgc1DiscreteWord1Raw, type: SimVarValueType.Number }],
+    ['fmgc2DiscreteWord1Raw', { name: PFDVars.fmgc2DiscreteWord1Raw, type: SimVarValueType.Number }],
+    ['fmgc1DiscreteWord2Raw', { name: PFDVars.fmgc1DiscreteWord2Raw, type: SimVarValueType.Number }],
+    ['fmgc2DiscreteWord2Raw', { name: PFDVars.fmgc2DiscreteWord2Raw, type: SimVarValueType.Number }],
+    ['fmgc1DiscreteWord7Raw', { name: PFDVars.fmgc1DiscreteWord7Raw, type: SimVarValueType.Number }],
+    ['fmgc2DiscreteWord7Raw', { name: PFDVars.fmgc2DiscreteWord7Raw, type: SimVarValueType.Number }],
+    ['fmgc1SpeedMarginHighRaw', { name: PFDVars.fmgc1SpeedMarginHighRaw, type: SimVarValueType.Number }],
+    ['fmgc2SpeedMarginHighRaw', { name: PFDVars.fmgc2SpeedMarginHighRaw, type: SimVarValueType.Number }],
+    ['fmgc1SpeedMarginLowRaw', { name: PFDVars.fmgc1SpeedMarginLowRaw, type: SimVarValueType.Number }],
+    ['fmgc2SpeedMarginLowRaw', { name: PFDVars.fmgc2SpeedMarginLowRaw, type: SimVarValueType.Number }],
+    ['fcuSelectedHeadingRaw', { name: PFDVars.fcuSelectedHeadingRaw, type: SimVarValueType.Number }],
+    ['fcuSelectedAltitudeRaw', { name: PFDVars.fcuSelectedAltitudeRaw, type: SimVarValueType.Number }],
+    ['fcuSelectedAirspeedRaw', { name: PFDVars.fcuSelectedAirspeedRaw, type: SimVarValueType.Number }],
+    ['fcuSelectedVerticalSpeedRaw', { name: PFDVars.fcuSelectedVerticalSpeedRaw, type: SimVarValueType.Number }],
+    ['fcuSelectedTrackRaw', { name: PFDVars.fcuSelectedTrackRaw, type: SimVarValueType.Number }],
+    ['fcuSelectedFpaRaw', { name: PFDVars.fcuSelectedFpaRaw, type: SimVarValueType.Number }],
+    ['fcuAtsDiscreteWordRaw', { name: PFDVars.fcuAtsDiscreteWordRaw, type: SimVarValueType.Number }],
+    ['fcuAtsFmaDiscreteWordRaw', { name: PFDVars.fcuAtsFmaDiscreteWordRaw, type: SimVarValueType.Number }],
+    ['fcuEisLeftDiscreteWord1Raw', { name: PFDVars.fcuEisLeftDiscreteWord1Raw, type: SimVarValueType.Number }],
+    ['fcuEisLeftDiscreteWord2Raw', { name: PFDVars.fcuEisLeftDiscreteWord2Raw, type: SimVarValueType.Number }],
+    ['fcuEisLeftBaroRaw', { name: PFDVars.fcuEisLeftBaroRaw, type: SimVarValueType.Number }],
+    ['fcuEisLeftBaroHpaRaw', { name: PFDVars.fcuEisLeftBaroHpaRaw, type: SimVarValueType.Number }],
+    ['fcuEisRightDiscreteWord1Raw', { name: PFDVars.fcuEisRightDiscreteWord1Raw, type: SimVarValueType.Number }],
+    ['fcuEisRightDiscreteWord2Raw', { name: PFDVars.fcuEisRightDiscreteWord2Raw, type: SimVarValueType.Number }],
+    ['fcuEisRightBaroRaw', { name: PFDVars.fcuEisRightBaroRaw, type: SimVarValueType.Number }],
+    ['fcuEisRightBaroHpaRaw', { name: PFDVars.fcuEisRightBaroHpaRaw, type: SimVarValueType.Number }],
+    ['fcuDiscreteWord1Raw', { name: PFDVars.fcuDiscreteWord1Raw, type: SimVarValueType.Number }],
+    ['fcuDiscreteWord2Raw', { name: PFDVars.fcuDiscreteWord2Raw, type: SimVarValueType.Number }],
+    ['ecu1MaintenanceWord6Raw', { name: PFDVars.ecu1MaintenanceWord6Raw, type: SimVarValueType.Number }],
+    ['ecu2MaintenanceWord6Raw', { name: PFDVars.ecu2MaintenanceWord6Raw, type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: ArincEventBus) {

@@ -100,12 +100,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedCrzSpeed = undefined;
         this.managedSpeedTarget = undefined;
         this.managedSpeedTargetIsMach = undefined;
-        this.climbSpeedLimit = undefined;
-        this.climbSpeedLimitAlt = undefined;
-        this.climbSpeedLimitPilot = undefined;
-        this.descentSpeedLimit = undefined;
-        this.descentSpeedLimitAlt = undefined;
-        this.descentSpeedLimitPilot = undefined;
         this.managedSpeedClimb = undefined;
         this.managedSpeedClimbIsPilotEntered = undefined;
         this.managedSpeedClimbMach = undefined;
@@ -450,12 +444,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedCrzSpeed = undefined;
         this.managedSpeedTarget = NaN;
         this.managedSpeedTargetIsMach = false;
-        this.climbSpeedLimit = 250;
-        this.climbSpeedLimitAlt = 10000;
-        this.climbSpeedLimitPilot = false;
-        this.descentSpeedLimit = 250;
-        this.descentSpeedLimitAlt = 10000;
-        this.descentSpeedLimitPilot = false;
         this.managedSpeedClimb = 290;
         this.managedSpeedClimbIsPilotEntered = false;
         this.managedSpeedClimbMach = 0.78;
@@ -947,11 +935,11 @@ class FMCMainDisplay extends BaseAirliners {
 
         // apply speed limit/alt
         if (this.flightPhaseManager.phase <= FmgcFlightPhases.CRUISE) {
-            if (this.climbSpeedLimit !== undefined && alt <= this.climbSpeedLimitAlt) {
+            if (this.climbSpeedLimit !== null && alt <= this.climbSpeedLimitAlt) {
                 kcas = Math.min(this.climbSpeedLimit, kcas);
             }
         } else if (this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
-            if (this.descentSpeedLimit !== undefined && alt <= this.descentSpeedLimitAlt) {
+            if (this.descentSpeedLimit !== null && alt <= this.descentSpeedLimitAlt) {
                 kcas = Math.min(this.descentSpeedLimit, kcas);
             }
         }
@@ -1200,15 +1188,18 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.isAirspeedManaged()) {
             Coherent.call("AP_SPD_VAR_SET", 0, Vtap).catch(console.error);
         }
+
+        // Reset V1/R/2 speed after the TAKEOFF phase
+        if (this.flightPhaseManager.phase > FmgcFlightPhases.TAKEOFF) {
+            this.v1Speed = null;
+            this.vrSpeed = null;
+            this.v2Speed = null;
+        }
     }
 
     activatePreSelSpeedMach(preSel) {
         if (preSel) {
-            if (preSel < 1) {
-                SimVar.SetSimVarValue("H:A320_Neo_FCU_USE_PRE_SEL_MACH", "number", 1);
-            } else {
-                SimVar.SetSimVarValue("H:A320_Neo_FCU_USE_PRE_SEL_SPEED", "number", 1);
-            }
+            SimVar.SetSimVarValue("K:A32NX.FMS_PRESET_SPD_ACTIVATE", "number", 1);
         }
     }
 
@@ -2259,27 +2250,22 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
     }
 
-    updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
+    async updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
         if (flightNo.length > 7) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
 
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            this.atsu.connectToNetworks(flightNo)
-                .then((code) => {
-                    if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
-                        SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
-                        this.addNewAtsuMessage(code);
-                        this.flightNo = "";
-                        return callback(false);
-                    }
+        this.flightNumber = flightNo;
+        await SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC");
 
-                    SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 1);
-                    this.flightNumber = flightNo;
-                    return callback(true);
-                });
-        });
+        // FIXME move ATSU code to ATSU
+        const code = await this.atsu.connectToNetworks(flightNo);
+        if (code !== AtsuCommon.AtsuStatusCodes.Ok) {
+            this.addNewAtsuMessage(code);
+        }
+
+        return callback(true);
     }
 
     async updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
@@ -2555,11 +2541,16 @@ class FMCMainDisplay extends BaseAirliners {
     insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
             const oldCostIndex = this.costIndex;
-            const oldDestination = this.currFlightPlanService.active.destinationAirport.ident;
+            const oldDestination = this.currFlightPlanService.active.destinationAirport
+                ? this.currFlightPlanService.active.destinationAirport.ident
+                : undefined;
             const oldCruiseLevel = this.cruiseLevel;
             this.flightPlanService.temporaryInsert();
             this.checkCostIndex(oldCostIndex);
-            this.checkDestination(oldDestination);
+            // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+            if (oldDestination !== undefined) {
+                this.checkDestination(oldDestination);
+            }
             this.checkCruiseLevel(oldCruiseLevel);
 
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
@@ -4759,6 +4750,62 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    /**
+     * The maximum speed imposed by the climb speed limit in the active flight plan or null if it is not set.
+     * @returns {number | null}
+     */
+    get climbSpeedLimit() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.climbSpeedLimitSpeed : DefaultPerformanceData.ClimbSpeedLimitSpeed;
+    }
+
+    /**
+     * The altitude below which the climb speed limit of the active flight plan applies or null if not set.
+     * @returns {number | null}
+     */
+    get climbSpeedLimitAlt() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.climbSpeedLimitAltitude : DefaultPerformanceData.ClimbSpeedLimitAltitude;
+    }
+
+    get climbSpeedLimitPilot() {
+        const plan = this.currFlightPlanService.active;
+
+        return plan ? plan.performanceData.isClimbSpeedLimitPilotEntered : false;
+    }
+
+    /**
+     * The maximum speed imposed by the descent speed limit in the active flight plan or null if it is not set.
+     * @returns {number | null}
+     */
+    get descentSpeedLimit() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.descentSpeedLimitSpeed : DefaultPerformanceData.DescentSpeedLimitSpeed;
+    }
+
+    /**
+     * The altitude below which the descent speed limit of the active flight plan applies or null if not set.
+     * @returns {number | null}
+     */
+    get descentSpeedLimitAlt() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.descentSpeedLimitAltitude : DefaultPerformanceData.DescentSpeedLimitAltitude;
+    }
+
+    get descentSpeedLimitPilot() {
+        const plan = this.currFlightPlanService.active;
+
+        return plan ? plan.performanceData.isDescentSpeedLimitPilotEntered : false;
+    }
+
     getFlightPhase() {
         return this.flightPhaseManager.phase;
     }
@@ -5073,6 +5120,13 @@ FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const FlightPlans = Object.freeze({
     Active: 0,
     Temporary: 1,
+});
+
+const DefaultPerformanceData = Object.freeze({
+    ClimbSpeedLimitSpeed: 250,
+    ClimbSpeedLimitAltitude: 10000,
+    DescentSpeedLimitSpeed: 250,
+    DescentSpeedLimitAltitude: 10000,
 });
 
 class FmArinc429OutputWord extends Arinc429Word {

@@ -12,6 +12,7 @@ import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
 import { a32nxSyncedSettings } from 'instruments/src/EFB/settingsSync';
 
 import './Efb.scss';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 function aircraftEfbSetup(): void {
   syncSettingsFromPersistentStorage(a32nxSyncedSettings);
@@ -58,6 +59,7 @@ render(
           pilotSeat: false,
           registrationDecal: true,
           wheelChocks: true,
+          cabinLighting: false,
         },
         throttle: {
           numberOfAircraftThrottles: 2,
@@ -71,7 +73,7 @@ render(
       },
     }}
   >
-    <EfbWrapper failures={A320FailureDefinitions} aircraftSetup={aircraftEfbSetup} />
+    <EfbWrapper failures={A320FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />
   </AircraftContext.Provider>,
   true,
   true,
