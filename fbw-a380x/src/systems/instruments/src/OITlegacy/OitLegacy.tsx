@@ -4,28 +4,27 @@
 import React, { useEffect, useState } from 'react';
 import {
   AircraftContext,
+  Dispatch,
   ErrorFallback,
   EventBusContextProvider,
   FailuresOrchestratorProvider,
   ModalProvider,
+  Navigation,
   PowerContext,
   PowerStates,
   setAirframeInfo,
   setCabinInfo,
   setFlypadInfo,
   store,
+  TroubleshootingContextProvider,
 } from '@flybywiresim/flypad';
 
 import './Efb.scss';
 import { EventBus } from '@microsoft/msfs-sdk';
-import { NavigraphAuthProvider } from '../../../../../../fbw-common/src/systems/instruments/src/react/navigraph';
-import { Navigation } from '../../../../../../fbw-common/src/systems/instruments/src/EFB/Navigation/Navigation';
 import { Provider } from 'react-redux';
-import { TroubleshootingContextProvider } from '../../../../../../fbw-common/src/systems/instruments/src/EFB/TroubleshootingContext';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
-import { UniversalConfigProvider, useSimVar } from '@flybywiresim/fbw-sdk';
-import { Dispatch } from '../../../../../../fbw-common/src/systems/instruments/src/EFB/Dispatch/Dispatch';
+import { NavigraphAuthProvider, UniversalConfigProvider, useSimVar } from '@flybywiresim/fbw-sdk';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
