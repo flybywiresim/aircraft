@@ -3,6 +3,7 @@
 
 import { EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { OIT } from 'instruments/src/OIT/OIT';
+import { OitFltOpsEfbOverlay } from 'instruments/src/OIT/pages/flt-ops/OitFltOpsEfbOverlay';
 import { OitFltOpsMenuPage } from 'instruments/src/OIT/pages/flt-ops/OitFltOpsMenuPage';
 import { OitFltOpsPerformance } from 'instruments/src/OIT/pages/flt-ops/OitFltOpsPerformance';
 import { OitFltOpsStatus } from 'instruments/src/OIT/pages/flt-ops/OitFltOpsStatus';
@@ -20,6 +21,10 @@ export function pageForUrl(url: string, bus: EventBus, oit: OIT): VNode {
       return <OitFltOpsPerformance bus={bus} oit={oit} />;
     case 'flt-ops/ldg-perf':
       return <OitFltOpsPerformance bus={bus} oit={oit} />;
+    case 'flt-ops/charts':
+      return <OitFltOpsEfbOverlay bus={bus} oit={oit} />;
+    case 'flt-ops/flt-folder':
+      return <OitFltOpsEfbOverlay bus={bus} oit={oit} />;
 
     default:
       return <OitNotFound bus={bus} oit={oit} />;

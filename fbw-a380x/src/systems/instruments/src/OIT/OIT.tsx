@@ -7,6 +7,7 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
+  SimVarValueType,
   Subject,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -18,7 +19,7 @@ import { OitNotFound } from 'instruments/src/OIT/pages/OitNotFound';
 import { pageForUrl } from 'instruments/src/OIT/OitPageDirectory';
 import { OitHeader } from 'instruments/src/OIT/OitHeader';
 import { OitFooter } from 'instruments/src/OIT/OitFooter';
-import { OitDisplayUnit, OitDisplayUnitID } from 'instruments/src/OIT/OitDisplayUnit';
+import { getDisplayIndex, OitDisplayUnit, OitDisplayUnitID } from 'instruments/src/OIT/OitDisplayUnit';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OisLaptop } from 'instruments/src/OIT/OisLaptop';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
@@ -70,6 +71,18 @@ export class OIT extends DisplayComponent<OitProps> {
 
     this.uiService.activeUri.sub((uri) => {
       this.activeUriChanged(uri);
+
+      // Activate EFB overlay if on charts or flt-folder page
+      SimVar.SetSimVarValue(
+        `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`,
+        SimVarValueType.Bool,
+        uri.uri === 'flt-ops/charts', // uri.uri === 'flt-ops/charts'
+      );
+      SimVar.SetSimVarValue(
+        `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`,
+        SimVarValueType.Bool,
+        uri.uri === 'flt-ops/flt-folder',
+      );
     });
 
     this.uiService.navigateTo('flt-ops/sts'); // should be /sts

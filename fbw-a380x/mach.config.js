@@ -41,6 +41,7 @@ module.exports = {
     reactInstrument('BAT'),
     reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
     reactInstrument('ISISlegacy'),
+    reactInstrument('OITlegacy'),
     reactInstrument('RTPI'),
     reactInstrument('SD'),
   ],

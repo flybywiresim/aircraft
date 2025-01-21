@@ -42,7 +42,7 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             },
             {
               label: 'TERML CHART',
-              action: () => this.props.uiService.navigateTo('flt-ops/terml-chart'),
+              action: () => this.props.uiService.navigateTo('flt-ops/charts'),
               separatorBelow: true,
             },
             {
