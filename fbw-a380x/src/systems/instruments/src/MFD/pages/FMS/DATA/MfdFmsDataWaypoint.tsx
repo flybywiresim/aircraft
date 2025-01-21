@@ -2,21 +2,22 @@ import { ArraySubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
 import './MfdFmsDataWaypoint.scss';
-import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
+import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/index';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 
 interface MfdFmsDataWaypointProps extends AbstractMfdPageProps {}
 
 export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
   private readonly selectedPageIndex = Subject.create<number>(0);
+  private readonly pilotStoredWaypointsIndex = Subject.create<number | null>(0);
 
   private readonly waypointIdent = Subject.create<string | null>(null);
 
@@ -144,12 +145,12 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
                       NO PILOT STORED WPT
                     </div>
                     <DropdownMenu
-                      values={undefined}
-                      selectedIndex={undefined}
+                      values={this.pilotStoredWaypointsList}
+                      selectedIndex={this.pilotStoredWaypointsIndex}
                       freeTextAllowed={false}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataWaypointListDropdown`}
-                      hEventConsumer={undefined}
-                      interactionMode={undefined}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
                     />
                     <div class="mfd-data-waypoint-stored-list-scroll-buttons">
                       <IconButton
