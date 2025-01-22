@@ -133,6 +133,7 @@
 1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
 1. [A380X/SD] Display oil quantity on ENG page - @flogross89 (floridude)
 1. [A380X/FMS] Accept KCCU plus/minus key as first entry into field - @flogross89 (floridude)
+1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-85)
 
 ## 0.12.0
 
