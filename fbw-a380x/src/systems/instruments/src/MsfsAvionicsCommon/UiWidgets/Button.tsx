@@ -1,3 +1,6 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import {
   ComponentProps,
   DisplayComponent,
@@ -7,8 +10,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import './style.scss';
-import { TriangleDown, TriangleUp } from 'instruments/src/MFD/pages/common/shapes';
+import { TriangleDown, TriangleUp } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/shapes';
 
 export type ButtonMenuItem = {
   label: string;

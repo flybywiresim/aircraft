@@ -139,6 +139,7 @@ class CDULateralRevisionPage {
                         await mcdu.flightPlanService.enableAltn(legIndexFP, cruiseLevel, forPlan);
                     } catch (e) {
                         console.error(e);
+                        mcdu.logTroubleshootingError(e);
                         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
                     }
 
