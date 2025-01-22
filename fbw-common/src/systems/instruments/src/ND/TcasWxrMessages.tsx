@@ -32,9 +32,29 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
 
   private readonly rightMessage = Subject.create<TcasWxrMessage | undefined>(undefined);
 
-  private textClass = Subject.create('');
+  private textClassSub = Subject.create('');
 
-  private rectClass = Subject.create('');
+  private rectClassSub = Subject.create('');
+
+  private handleClass() {
+    const taOnly = this.taOnlySub.get();
+    const failed = this.failSub.get();
+    const mode = this.tcasModeSub.get();
+
+    if (failed) {
+      this.textClassSub.set('Amber TcasMessage');
+      this.rectClassSub.set('Grey BackgroundFill');
+    } else if (taOnly) {
+      this.textClassSub.set('White TcasMessage');
+      this.rectClassSub.set('Grey BackgroundFill');
+    } else if (mode === 0) {
+      this.textClassSub.set('White TcasMessage TcasStandbyMessage');
+      this.rectClassSub.set('Grey BackgroundFill TcasStandbyMessage');
+    } else {
+      this.textClassSub.set('');
+      this.rectClassSub.set('');
+    }
+  }
 
   private readonly y = this.props.mode.map((mode) =>
     mode === EfisNdMode.ROSE_VOR || mode === EfisNdMode.ROSE_ILS ? 713 : 680,
@@ -67,30 +87,33 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
     sub
       .on('tcasTaOnly')
       .whenChanged()
-      .handle((value) => this.taOnlySub.set(value));
+      .handle((value) => {
+        this.taOnlySub.set(value);
+        this.handleClass();
+      });
     sub
       .on('tcasFault')
       .whenChanged()
-      .handle((value) => this.failSub.set(value));
+      .handle((value) => {
+        this.failSub.set(value);
+        this.handleClass();
+      });
     sub
       .on('tcasMode')
       .whenChanged()
-      .handle((value) => this.tcasModeSub.set(value));
+      .handle((value) => {
+        this.tcasModeSub.set(value);
+        this.handleClass();
+      });
 
     MappedSubject.create(
       ([taOnly, failed, mode]) => {
         if (failed) {
           this.leftMessage.set({ text: 'TCAS' });
-          this.textClass.set('Amber TCASMessage');
-          this.rectClass.set('Grey BackgroundFill');
         } else if (taOnly) {
           this.leftMessage.set({ text: 'TA ONLY' });
-          this.textClass.set('White TCASMessage');
-          this.rectClass.set('Grey BackgroundFill');
         } else if (mode === 0) {
           this.leftMessage.set({ text: 'TCAS STBY' });
-          this.textClass.set('White TCASMessage TCASStby');
-          this.rectClass.set('Grey BackgroundFill TCASStby');
         } else {
           this.leftMessage.set(undefined);
         }
@@ -114,13 +137,13 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
           stroke="none"
         />
 
-        <rect x={0} y={0} width={440} height={27} class={this.rectClass} stroke-width={1.75} />
+        <rect x={0} y={0} width={440} height={27} class={this.rectClassSub} stroke-width={1.75} />
 
-        <text x={8} y={25} class={this.textClass} text-anchor="start" font-size={27}>
+        <text x={8} y={25} class={this.textClassSub} text-anchor="start" font-size={27}>
           {this.leftMessage.map((it) => it?.text ?? '')}
         </text>
 
-        <text x={425} y={25} class={this.textClass} text-anchor="end" font-size={27}>
+        <text x={425} y={25} class={this.textClassSub} text-anchor="end" font-size={27}>
           {this.rightMessage.map((it) => it?.text ?? '')}
         </text>
       </Layer>
