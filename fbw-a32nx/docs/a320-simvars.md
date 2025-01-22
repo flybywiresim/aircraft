@@ -2380,13 +2380,23 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number (lbs)
     - Previous deltaTime fuel for the center tank
 
-- A32NX_ENGINE_OIL_TOTAL:{index}
+- `A32NX_ENGINE_OIL_PRESS:{index}`
+    - Number (psi)
+    - Total engine {index} oil quantity in the oil tank
+
+- `A32NX_ENGINE_OIL_QTY:{index}`
+    - Number (quarts)
+    - Total engine {index} oil quantity in the oil tank
+
+- `A32NX_ENGINE_OIL_TEMP:{index}`
+    - Number (celsius)
+    - Total engine {index} oil quantity in the oil system (tank + circuit)
+
+- `A32NX_ENGINE_OIL_TOTAL:{index}`
     - Number (quarts)
     - Total engine {index} oil quantity in the oil system (tank + circuit)
 
-- A32NX_ENGINE_OIL_QTY:{index}
-    - Number (quarts)
-    - Total engine {index} oil quantity in the oil tank
+
 
 ## Air Conditioning / Pressurisation / Ventilation
 

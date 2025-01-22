@@ -121,7 +121,8 @@ void EngineControl_A32NX::update() {
         const double correctedFuelFlow = updateFF(engine, imbalance, simCN1, mach, pressureAltitude, ambientTemperature, ambientPressure);
         updateEGT(engine, imbalance, deltaTime, msfsHandlerPtr->getSimOnGround(), engineState, simCN1, correctedFuelFlow, mach,
                   pressureAltitude, ambientTemperature);
-        // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
+        const double thrust = simData.simVarsDataPtr->data().simEngineThrust[engineIdx];
+        updateOil(engineIdx, engineState, imbalance, thrust, simN2, deltaTime, msfsHandlerPtr->getSimOnGround(), ambientTemperature);
     }
 
     // set highest N1 from either engine
@@ -178,9 +179,9 @@ void EngineControl_A32NX::initializeEngineControlData() {
 
   // Setting initial Oil with some randomness and imbalance
   const double idleOilL = (rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10;
-  simData.engineOilTotal[L]->set(idleOilL - ((engineImbalanced == 1) ? oilQtyImbalance : 0));
+  simData.engineOilTotalQuantity[L]->set(idleOilL - ((engineImbalanced == 1) ? oilQtyImbalance : 0));
   const double idleOilR = (rand() % (MAX_OIL - MIN_OIL + 1) + MIN_OIL) / 10;
-  simData.engineOilTotal[R]->set(idleOilR - ((engineImbalanced == 2) ? oilQtyImbalance : 0));
+  simData.engineOilTotalQuantity[R]->set(idleOilR - ((engineImbalanced == 2) ? oilQtyImbalance : 0));
 
   const bool engine1Combustion = static_cast<bool>(simData.engineCombustion[L]->updateFromSim(timeStamp, tickCounter));
   const bool engine2Combustion = static_cast<bool>(simData.engineCombustion[R]->updateFromSim(timeStamp, tickCounter));
@@ -196,10 +197,8 @@ void EngineControl_A32NX::initializeEngineControlData() {
     oilTemperaturePre[L] = simData.simVarsDataPtr->data().ambientTemperature;
     oilTemperaturePre[R] = simData.simVarsDataPtr->data().ambientTemperature;
   }
-  simData.oilTempDataPtr[L]->data().oilTemp = oilTemperaturePre[L];
-  simData.oilTempDataPtr[L]->writeDataToSim();
-  simData.oilTempDataPtr[R]->data().oilTemp = oilTemperaturePre[R];
-  simData.oilTempDataPtr[R]->writeDataToSim();
+  simData.engineOilTemperature[L]->setAndWriteToSim(oilTemperaturePre[L]);
+  simData.engineOilTemperature[L]->setAndWriteToSim(oilTemperaturePre[R]);
 
   // Initialize Engine State
   simData.engineState[L]->set(OFF);
@@ -1109,103 +1108,69 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
 #endif
 }
 
-/*
- * Previous code - call to it was already commented out and this function was not in use.
- * Keeping it to make completing/fixing it easier.
- * It is not migrated to the cpp framework yet.
- *
- * /// <summary>
+/// <summary>
 /// FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and degree Celsius)
 /// Updates Oil with realistic values visualized in the SD
 /// </summary>
-void updateOil(int engine, double imbalance, double thrust, double simN2, double deltaN2, double deltaTime, double ambientTemp) {
-  double steadyTemperature;
-  double thermalEnergy;
-  double oilTemperaturePre;
-  double oilQtyActual;
-  double oilTotalActual;
-  double oilQtyObjective;
-  double oilBurn;
-  double oilIdleRandom;
-  double oilPressure;
+void EngineControl_A32NX::updateOil(int         engineIdx,
+                                    EngineState engineState,
+                                    double      imbalance,
+                                    double      thrust,
+                                    double      simN2,
+                                    double      deltaTime,
+                                    bool        isOnGround,
+                                    double      ambientTemp) {
+  const int engineImbalanced = imbalanceExtractor(imbalance, 1);
 
-//--------------------------------------------
-// Engine Reading
-//--------------------------------------------
-if (engine == 1) {
-steadyTemperature = simVars->getEngine1EGT();
-thermalEnergy = thermalEnergy1;
-oilTemperaturePre = oilTemperatureLeftPre;
-oilQtyActual = simVars->getEngine1Oil();
-oilTotalActual = simVars->getEngine1OilTotal();
-} else {
-steadyTemperature = simVars->getEngine2EGT();
-thermalEnergy = thermalEnergy2;
-oilTemperaturePre = oilTemperatureRightPre;
-oilQtyActual = simVars->getEngine2Oil();
-oilTotalActual = simVars->getEngine2OilTotal();
+  //--------------------------------------------
+  // Oil Temperature
+  //--------------------------------------------
+  const double egt               = simData.engineEgt[engineIdx]->get();
+  const double oilTemperaturePre = simData.engineOilTemperature[engineIdx]->get();
+  const double oilTemperatureMax = MAX_OIL_TEMP_NOMINAL + (engineIdx + 1) == engineImbalanced ? imbalanceExtractor(imbalance, 8) : 0;
+  double       oilTemperature;
+  if (isOnGround && engineState == EngineState::OFF && ambientTemp > oilTemperaturePre - 10) {
+    oilTemperature = ambientTemp;
+  } else {
+    double deltaN2 = simN2 - simData.engineN2[engineIdx]->get();
+    // FIXME this makes zero sense, implies perpetual decay at steady-state
+    thermalEnergy[engineIdx] = (0.995 * thermalEnergy[engineIdx]) + (deltaN2 / deltaTime);
+    oilTemperature           = Polynomial_A32NX::oilTemperature(thermalEnergy[engineIdx], std::max(ambientTemp, oilTemperaturePre),
+                                                                std::min(egt, oilTemperatureMax), deltaTime);
+  }
+  simData.engineOilTemperature[engineIdx]->set(oilTemperature);
+
+  //--------------------------------------------
+  // Oil Quantity
+  //--------------------------------------------
+  // Calculating Oil Qty as a function of thrust
+  double oilTotalActual = simData.engineOilTotalQuantity[engineIdx]->get();
+  double oilQtyActual   = oilTotalActual * (1 - Polynomial_A32NX::oilGulpPct(thrust));
+
+  // Oil burnt taken into account for tank and total oil
+  double oilBurn = (0.00011111 * deltaTime);
+  oilQtyActual   = oilQtyActual - oilBurn;
+  oilTotalActual = oilTotalActual - oilBurn;
+
+  //--------------------------------------------
+  // Oil Pressure
+  //--------------------------------------------
+  // Engine imbalance
+  double paramImbalance = imbalanceExtractor(imbalance, 6) / 10;
+  double oilIdleRandom  = imbalanceExtractor(imbalance, 7) - 6;
+
+  // Checking engine imbalance
+  if (engineImbalanced != (engineIdx + 1)) {
+    paramImbalance = 0;
+  }
+
+  double oilPressure = Polynomial_A32NX::oilPressure(simN2) - paramImbalance + oilIdleRandom;
+
+  //--------------------------------------------
+  // Engine Writing
+  //--------------------------------------------
+  simData.engineOilTankQuantity[engineIdx]->set(oilQtyActual);
+  simData.engineOilTotalQuantity[engineIdx]->set(oilTotalActual);
+  simData.engineOilTemperature[engineIdx]->set(oilTemperature);
+  simData.engineOilPressure[engineIdx]->set(oilPressure);
 }
-
-//--------------------------------------------
-// Oil Temperature
-//--------------------------------------------
-if (simOnGround == 1 && engineState == 0 && ambientTemp > oilTemperaturePre - 10) {
-oilTemperature = ambientTemp;
-} else {
-if (steadyTemperature > oilTemperatureMax) {
-  steadyTemperature = oilTemperatureMax;
-}
-thermalEnergy = (0.995 * thermalEnergy) + (deltaN2 / deltaTime);
-oilTemperature = poly->oilTemperature(thermalEnergy, oilTemperaturePre, steadyTemperature, deltaTime);
-}
-
-//--------------------------------------------
-// Oil Quantity
-//--------------------------------------------
-// Calculating Oil Qty as a function of thrust
-oilQtyObjective = oilTotalActual * (1 - poly->oilGulpPct(thrust));
-oilQtyActual = oilQtyActual - (oilTemperature - oilTemperaturePre);
-
-// Oil burnt taken into account for tank and total oil
-oilBurn = (0.00011111 * deltaTime);
-oilQtyActual = oilQtyActual - oilBurn;
-oilTotalActual = oilTotalActual - oilBurn;
-
-//--------------------------------------------
-// Oil Pressure
-//--------------------------------------------
-// Engine imbalance
-engineImbalanced = imbalanceExtractor(imbalance, 1);
-paramImbalance = imbalanceExtractor(imbalance, 6) / 10;
-oilIdleRandom = imbalanceExtractor(imbalance, 7) - 6;
-
-// Checking engine imbalance
-if (engineImbalanced != engine) {
-paramImbalance = 0;
-}
-
-oilPressure = poly->oilPressure(simN2) - paramImbalance + oilIdleRandom;
-
-//--------------------------------------------
-// Engine Writing
-//--------------------------------------------
-if (engine == 1) {
-thermalEnergy1 = thermalEnergy;
-oilTemperatureLeftPre = oilTemperature;
-simVars->setEngine1Oil(oilQtyActual);
-simVars->setEngine1OilTotal(oilTotalActual);
-SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                              &oilTemperature);
-SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
-} else {
-thermalEnergy2 = thermalEnergy;
-oilTemperatureRightPre = oilTemperature;
-simVars->setEngine2Oil(oilQtyActual);
-simVars->setEngine2OilTotal(oilTotalActual);
-SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                              &oilTemperature);
-SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
-}
-}
-
- */

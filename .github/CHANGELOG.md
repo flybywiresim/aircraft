@@ -133,6 +133,7 @@
 1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
 1. [A380X/SD] Display oil quantity on ENG page - @flogross89 (floridude)
 1. [A380X/FMS] Accept KCCU plus/minus key as first entry into field - @flogross89 (floridude)
+1. [A32NX/SD] Use oil quantity and pressure simulation on ENG page - @tracernz (Mike)
 
 ## 0.12.0
 

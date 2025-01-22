@@ -4,7 +4,7 @@
 
 import React, { FC, useState, useEffect } from 'react';
 import { Arc, Needle } from '@instruments/common/gauges';
-import { usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { MathUtils, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
@@ -87,13 +87,14 @@ function getNeedleValue(value: any, max: number): number {
 interface ComponentPositionProps {
   x: number;
   y: number;
+  /** 1-based index of the engine.*/
   engineNumber: number;
   fadecOn: boolean;
 }
 
 const PressureGauge = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => {
-  const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
-  const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
+  const [engineOilPressure] = useSimVar(`L:A32NX_ENGINE_OIL_PRESS:${engineNumber}`, 'number', 100);
+  const displayedEngineOilPressure = MathUtils.round(engineOilPressure, 2); // Engine oil pressure has a step of 2
   const OIL_PSI_MAX = 130;
   const OIL_PSI_HIGH_LIMIT = 130;
   const OIL_PSI_LOW_LIMIT = 14; // TODO FIXME: standin value
@@ -190,11 +191,10 @@ const PressureGauge = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) 
 };
 
 const QuantityGauge = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => {
-  const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 100);
+  const [engineOilQuantity] = useSimVar(`L:A32NX_ENGINE_OIL_QTY:${engineNumber}`, 'number', 100);
   const OIL_QTY_MAX = 24.25;
   const OIL_QTY_LOW_ADVISORY = 1.35;
-  const displayedEngineOilQuantity =
-    engineOilQuantity === 100 ? OIL_QTY_MAX : Math.round(((engineOilQuantity / 100) * OIL_QTY_MAX) / 0.5) * 0.5; // Engine oil quantity has a step of 0.2
+  const displayedEngineOilQuantity = MathUtils.clamp(MathUtils.round(engineOilQuantity, 0.5), 0, OIL_QTY_MAX); // Engine oil quantity has a step of 0.5
   const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
   const [shouldQuantityPulse, setShouldQuantityPulse] = useState(false);
 

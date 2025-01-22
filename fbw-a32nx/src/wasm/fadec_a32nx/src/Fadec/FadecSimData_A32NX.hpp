@@ -120,6 +120,7 @@ class FadecSimData_A32NX {
     FLOAT64 pressureAltitude;          // Feet
     FLOAT64 simEngineN1[2];            // Percent
     FLOAT64 simEngineN2[2];            // Percent
+    FLOAT64 simEngineThrust[2];        // Percent
     FLOAT64 xFeedValve;                // Number
     FLOAT64 xfrCenterManual[2];        // Number
     FLOAT64 xfrValveCenterAuto[2];     // Number
@@ -158,6 +159,8 @@ class FadecSimData_A32NX {
       {"TURB ENG N1",                  2,  UNITS.Percent  }, // simEngineN1[1]
       {"TURB ENG N2",                  1,  UNITS.Percent  }, // simEngineN2[0]
       {"TURB ENG N2",                  2,  UNITS.Percent  }, // simEngineN2[1]
+      {"TURB ENG JET THRUST",          1,  UNITS.Pounds   }, // simEngineThrust[0]
+      {"TURB ENG JET THRUST",          2,  UNITS.Pounds   }, // simEngineThrust[1]
       {"FUELSYSTEM VALVE OPEN",        3,  UNITS.Number   }, // xFeedValve
       {"FUELSYSTEM JUNCTION SETTING",  4,  UNITS.Number   }, // xfrCenterManual[0]
       {"FUELSYSTEM JUNCTION SETTING",  5,  UNITS.Number   }, // xfrCenterManual[1]
@@ -197,8 +200,10 @@ class FadecSimData_A32NX {
   NamedVariablePtr engineImbalance;
   NamedVariablePtr engineN1[2];
   NamedVariablePtr engineN2[2];
-  NamedVariablePtr engineOilTotal[2];
-  NamedVariablePtr engineOil[2];
+  NamedVariablePtr engineOilPressure[2];
+  NamedVariablePtr engineOilTankQuantity[2];
+  NamedVariablePtr engineOilTemperature[2];
+  NamedVariablePtr engineOilTotalQuantity[2];
   NamedVariablePtr enginePreFF[2];
   NamedVariablePtr engineStarterPressurized[2];
   NamedVariablePtr engineState[2];
@@ -314,11 +319,17 @@ class FadecSimData_A32NX {
     engineN2[L] = dm->make_named_var("A32NX_ENGINE_N2:1", UNITS.Number, AUTO_READ_WRITE);
     engineN2[R] = dm->make_named_var("A32NX_ENGINE_N2:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineOil[L] = dm->make_named_var("A32NX_ENGINE_OIL_QTY:1", UNITS.Number, AUTO_READ_WRITE);
-    engineOil[R] = dm->make_named_var("A32NX_ENGINE_OIL_QTY:2", UNITS.Number, AUTO_READ_WRITE);
+    engineOilPressure[L] = dm->make_named_var("A32NX_ENGINE_OIL_PRESS:1", UNITS.Number, AUTO_READ_WRITE);
+    engineOilPressure[R] = dm->make_named_var("A32NX_ENGINE_OIL_PRESS:2", UNITS.Number, AUTO_READ_WRITE);
 
-    engineOilTotal[L] = dm->make_named_var("A32NX_ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
-    engineOilTotal[R] = dm->make_named_var("A32NX_ENGINE_OIL_TOTAL:2", UNITS.Number, AUTO_READ_WRITE);
+    engineOilTankQuantity[L] = dm->make_named_var("A32NX_ENGINE_OIL_QTY:1", UNITS.Number, AUTO_READ_WRITE);
+    engineOilTankQuantity[R] = dm->make_named_var("A32NX_ENGINE_OIL_QTY:2", UNITS.Number, AUTO_READ_WRITE);
+
+    engineOilTemperature[L] = dm->make_named_var("A32NX_ENGINE_OIL_TEMP:1", UNITS.Number, AUTO_READ_WRITE);
+    engineOilTemperature[R] = dm->make_named_var("A32NX_ENGINE_OIL_TEMP:2", UNITS.Number, AUTO_READ_WRITE);
+
+    engineOilTotalQuantity[L] = dm->make_named_var("A32NX_ENGINE_OIL_TOTAL:1", UNITS.Number, AUTO_READ_WRITE);
+    engineOilTotalQuantity[R] = dm->make_named_var("A32NX_ENGINE_OIL_TOTAL:2", UNITS.Number, AUTO_READ_WRITE);
 
     enginePreFF[L] = dm->make_named_var("A32NX_ENGINE_PRE_FF:1", UNITS.Number, AUTO_READ_WRITE);
     enginePreFF[R] = dm->make_named_var("A32NX_ENGINE_PRE_FF:2", UNITS.Number, AUTO_READ_WRITE);
@@ -374,10 +385,10 @@ class FadecSimData_A32NX {
     engineN1[R]->setAndWriteToSim(0);
     engineN2[L]->setAndWriteToSim(0);
     engineN2[R]->setAndWriteToSim(0);
-    engineOilTotal[L]->setAndWriteToSim(0);
-    engineOilTotal[R]->setAndWriteToSim(0);
-    engineOil[L]->setAndWriteToSim(0);
-    engineOil[R]->setAndWriteToSim(0);
+    engineOilTotalQuantity[L]->setAndWriteToSim(0);
+    engineOilTotalQuantity[R]->setAndWriteToSim(0);
+    engineOilTankQuantity[L]->setAndWriteToSim(0);
+    engineOilTankQuantity[R]->setAndWriteToSim(0);
     enginePreFF[L]->setAndWriteToSim(0);
     enginePreFF[R]->setAndWriteToSim(0);
     engineState[L]->setAndWriteToSim(0);

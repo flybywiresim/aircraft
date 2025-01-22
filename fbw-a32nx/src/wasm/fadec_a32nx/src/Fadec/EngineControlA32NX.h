@@ -56,6 +56,10 @@ class EngineControl_A32NX {
   double prevThrustLimitType       = 0.0;
   double prevEngineMasterPos[2]    = {0, 0};
   bool   prevEngineStarterState[2] = {false, false};
+  double thermalEnergy[2]          = {
+      0.,
+      0.,
+  };
 
   // FLX->CLB thrust limit transition
   double transitionStartTime;
@@ -63,9 +67,10 @@ class EngineControl_A32NX {
   bool   wasFlexActive = false;
 
   // additional constants
-  static constexpr int    MAX_OIL             = 200;
-  static constexpr int    MIN_OIL             = 140;
-  static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
+  static constexpr int    MAX_OIL              = 200;
+  static constexpr int    MIN_OIL              = 140;
+  static constexpr int    MAX_OIL_TEMP_NOMINAL = 86;
+  static constexpr double FUEL_RATE_THRESHOLD  = 661;  // lbs/sec for determining fuel ui tampering
 
   /**
    * @enum EngineState
@@ -335,6 +340,15 @@ class EngineControl_A32NX {
                           int    packs,
                           int    nai,
                           int    wai);
+
+  void updateOil(int         engine,
+                 EngineState engineState,
+                 double      imbalance,
+                 double      thrust,
+                 double      simN2,
+                 double      deltaTime,
+                 bool        isOnGround,
+                 double      ambientTemp);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A32NX_H
