@@ -2,12 +2,12 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { AbstractOitPageProps } from 'instruments/src/OIT/OIT';
+import { AbstractOitPageProps } from '../../OIT';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirportFormat, LongAlphanumericFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { OisInternalData } from 'instruments/src/OIT/OisInternalPublisher';
+import { OisInternalData } from '../../OisInternalPublisher';
 
 interface OitFltOpsStatusPageProps extends AbstractOitPageProps {}
 

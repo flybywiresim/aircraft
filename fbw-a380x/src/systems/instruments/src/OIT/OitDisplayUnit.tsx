@@ -19,9 +19,9 @@ import { FailuresConsumer, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AcElectricalBus, DcElectricalBus } from '@shared/electrical';
 
 import './oit-display-unit.scss';
-import { OitSimvars } from 'instruments/src/OIT/OitSimvarPublisher';
+import { OitSimvars } from './OitSimvarPublisher';
 import { A380Failure } from '@failures';
-import { OisOperationMode } from 'instruments/src/OIT/OIT';
+import { OisOperationMode } from './OIT';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))

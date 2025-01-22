@@ -4,7 +4,7 @@
 import { ConsumerSubject, EventBus, Instrument, SimVarValueType, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { FailuresConsumer, FmsData } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
-import { OisInternalData } from 'instruments/src/OIT/OisInternalPublisher';
+import { OisInternalData } from './OisInternalPublisher';
 
 type LaptopIndex = 1 | 2;
 

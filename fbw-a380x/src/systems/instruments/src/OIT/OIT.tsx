@@ -14,15 +14,15 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './style.scss';
-import { InternalKbdKeyEvent, OitSimvars } from 'instruments/src/OIT/OitSimvarPublisher';
-import { OitUiService, OitUriInformation } from 'instruments/src/OIT/OitUiService';
-import { OitNotFound } from 'instruments/src/OIT/pages/OitNotFound';
-import { pageForUrl } from 'instruments/src/OIT/OitPageDirectory';
-import { OitHeader } from 'instruments/src/OIT/OitHeader';
-import { OitFooter } from 'instruments/src/OIT/OitFooter';
-import { getDisplayIndex, OitDisplayUnit, OitDisplayUnitID } from 'instruments/src/OIT/OitDisplayUnit';
+import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
+import { OitUiService, OitUriInformation } from './OitUiService';
+import { OitNotFound } from './Pages/OitNotFound';
+import { pageForUrl } from './OitPageDirectory';
+import { OitHeader } from './OitHeader';
+import { OitFooter } from './OitFooter';
+import { getDisplayIndex, OitDisplayUnit, OitDisplayUnitID } from './OitDisplayUnit';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
-import { OisLaptop } from 'instruments/src/OIT/OisLaptop';
+import { OisLaptop } from './OisLaptop';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 
 export interface AbstractOitPageProps extends ComponentProps {

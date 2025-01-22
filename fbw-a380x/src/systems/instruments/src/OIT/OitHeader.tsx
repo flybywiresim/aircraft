@@ -2,8 +2,8 @@ import { DisplayComponent, FSComponent, SubscribableUtils, Subscription, VNode }
 import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { OIT } from 'instruments/src/OIT/OIT';
-import { OitUiService } from 'instruments/src/OIT/OitUiService';
+import { OIT } from './OIT';
+import { OitUiService } from './OitUiService';
 
 interface OitHeaderHeaderProps {
   uiService: OitUiService;

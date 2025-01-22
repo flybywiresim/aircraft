@@ -1,8 +1,8 @@
 import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { OIT } from 'instruments/src/OIT/OIT';
-import { OitUiService } from 'instruments/src/OIT/OitUiService';
+import { OIT } from './OIT';
+import { OitUiService } from './OitUiService';
 
 interface OiFooterHeaderProps {
   uiService: OitUiService;

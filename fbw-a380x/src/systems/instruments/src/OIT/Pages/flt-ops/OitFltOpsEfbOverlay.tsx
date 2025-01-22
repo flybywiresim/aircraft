@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { AbstractOitPageProps } from 'instruments/src/OIT/OIT';
+import { AbstractOitPageProps } from '../../OIT';
 
 interface OitFltOpsEfbOverlayPageProps extends AbstractOitPageProps {}
 

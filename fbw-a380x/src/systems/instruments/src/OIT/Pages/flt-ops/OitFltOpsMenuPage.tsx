@@ -3,7 +3,7 @@
 
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { AbstractOitPageProps } from 'instruments/src/OIT/OIT';
+import { AbstractOitPageProps } from '../../OIT';
 
 interface OitFltOpsMenuPageProps extends AbstractOitPageProps {}
 

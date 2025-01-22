@@ -11,9 +11,9 @@ import {
   ClockPublisher,
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
-import { OIT } from 'instruments/src/OIT/OIT';
-import { OitSimvarPublisher } from 'instruments/src/OIT/OitSimvarPublisher';
-import { OisLaptop } from 'instruments/src/OIT/OisLaptop';
+import { OIT } from './OIT';
+import { OitSimvarPublisher } from './OitSimvarPublisher';
+import { OisLaptop } from './OisLaptop';
 
 class OitInstrument implements FsInstrument {
   private readonly bus = new EventBus();
