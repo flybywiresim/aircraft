@@ -1596,7 +1596,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     logTroubleshootingError(msg) {
-        this.bus.pub('troubleshooting_log_error', msg, true, false);
+        this.bus.pub('troubleshooting_log_error', String(msg), true, false);
     }
 }
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);
