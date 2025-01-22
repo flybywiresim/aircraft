@@ -1,7 +1,7 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import '../../common/style.scss';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
