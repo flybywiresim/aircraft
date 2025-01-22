@@ -8,6 +8,7 @@ import {
   ErrorFallback,
   EventBusContextProvider,
   FailuresOrchestratorProvider,
+  fetchSimbriefDataAction,
   ModalProvider,
   Navigation,
   PowerContext,
@@ -15,16 +16,29 @@ import {
   setAirframeInfo,
   setCabinInfo,
   setFlypadInfo,
+  SimbriefData,
   store,
   TroubleshootingContextProvider,
+  useAppDispatch,
+  useEventBus,
+  useNavigraphAuthInfo,
 } from '@flybywiresim/flypad';
 
 import './Efb.scss';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { Provider } from 'react-redux';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
-import { NavigraphAuthProvider, UniversalConfigProvider, useSimVar } from '@flybywiresim/fbw-sdk';
+import {
+  FmsData,
+  NavigraphAuthProvider,
+  UniversalConfigProvider,
+  usePersistentProperty,
+  useSimVar,
+} from '@flybywiresim/fbw-sdk';
+import { ToastContainer } from 'react-toastify';
+import { OisInternalData } from '../OIT/OisInternalPublisher';
+import { simbriefDataFromFms } from 'instruments/src/OITlegacy/utils';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -40,12 +54,6 @@ export interface OitEfbWrapperProps {
 
 export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
   const [powerState, setPowerState] = useState<PowerStates>(PowerStates.LOADED);
-
-  const [showCharts] = useSimVar(`L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`, 'Bool', 100);
-  const [showOfp] = useSimVar(`L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`, 'Bool', 100);
-
-  const showEfbOverlay = showCharts === 1 || showOfp === 1;
-  document.getElementsByTagName('a380x-oitlegacy')[0].classList.toggle('nopointer', !showEfbOverlay);
 
   const [err, setErr] = useState(false);
 
@@ -135,21 +143,8 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
                   <EventBusContextProvider eventBus={eventBus}>
                     <NavigraphAuthProvider>
                       <PowerContext.Provider value={{ powerState, setPowerState }}>
-                        {showEfbOverlay && (
-                          <div
-                            className="bg-theme-body"
-                            style={{
-                              backgroundColor: '#000',
-                            }}
-                          >
-                            <div className="flex flex-row">
-                              <div className="h-screen w-screen p-2.5 pt-0">
-                                {showCharts === 1 && <Navigation />}
-                                {showOfp === 1 && <Dispatch />}
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                        <ToastContainer position="top-center" draggableDirection="y" limit={2} />
+                        <OitEfbPageWrapper eventBus={eventBus} />
                       </PowerContext.Provider>
                     </NavigraphAuthProvider>
                   </EventBusContextProvider>
@@ -160,5 +155,102 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
         </TroubleshootingContextProvider>
       </Provider>
     </AircraftContext.Provider>
+  );
+};
+
+export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
+  const dispatch = useAppDispatch();
+
+  const [showCharts] = useSimVar(`L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`, 'Bool', 100);
+  const [showOfp] = useSimVar(`L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`, 'Bool', 100);
+  const [synchroAvionics] = useSimVar('L:A32NX_OIS_SYNCHRO_AVIONICS', 'number', 100);
+
+  const [simBriefData, setSimBriefData] = useState<SimbriefData>();
+  const [fromAirport, setFromAirport] = useState<string>('');
+  const [toAirport, setToAirport] = useState<string>('');
+  const [altnAirport, setAltnAirport] = useState<string>('');
+
+  const showEfbOverlay = showCharts === 1 || showOfp === 1;
+  document.getElementsByTagName('a380x-oitlegacy')[0].classList.toggle('nopointer', !showEfbOverlay);
+
+  const navigraphAuthInfo = useNavigraphAuthInfo();
+  const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
+
+  const bus = useEventBus();
+
+  const updateSimBriefInfo = async () => {
+    try {
+      const action = await fetchSimbriefDataAction(
+        (navigraphAuthInfo.loggedIn && navigraphAuthInfo.username) || '',
+        overrideSimBriefUserID ?? '',
+      );
+      setSimBriefData(action.payload);
+      const newAction = simbriefDataFromFms(simBriefData, fromAirport, toAirport, altnAirport);
+      dispatch(newAction);
+    } catch (e) {
+      console.error(e.message);
+    }
+  };
+
+  useEffect(() => {
+    const sub = bus.getSubscriber<FmsData & OisInternalData>();
+    const subs: Subscription[] = [];
+    subs.push(
+      sub.on('synchroAvncs').handle(() => {
+        updateSimBriefInfo(); // never triggers, because synced messages in the same VCockpit don't work
+      }),
+    );
+    subs.push(
+      sub
+        .on('fmsOrigin')
+        .whenChanged()
+        .handle((icao) => setFromAirport(icao)),
+    );
+    subs.push(
+      sub
+        .on('fmsDestination')
+        .whenChanged()
+        .handle((icao) => setToAirport(icao)),
+    );
+    subs.push(
+      sub
+        .on('fmsAlternate')
+        .whenChanged()
+        .handle((icao) => setAltnAirport(icao)),
+    );
+
+    return () => {
+      subs.forEach((s) => s.destroy());
+    };
+  }, []);
+
+  // Enable this for FMS auto-sync
+  /* useEffect(() => {
+    dispatch(simbriefDataFromFms(simBriefData, fromAirport, toAirport, altnAirport));
+  }, [fromAirport, toAirport, altnAirport]);
+  */
+
+  useEffect(() => {
+    updateSimBriefInfo();
+  }, [navigraphAuthInfo.loggedIn, synchroAvionics]);
+
+  return (
+    <>
+      {showEfbOverlay && (
+        <div
+          className="bg-theme-body"
+          style={{
+            backgroundColor: '#000',
+          }}
+        >
+          <div className="flex flex-row">
+            <div className="h-screen w-screen p-2.5 pt-0">
+              {showCharts === 1 && <Navigation />}
+              {showOfp === 1 && <Dispatch />}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

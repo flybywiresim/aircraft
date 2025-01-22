@@ -4,6 +4,7 @@
 
 import {
   ClockEvents,
+  ComponentProps,
   ConsumerSubject,
   DisplayComponent,
   EventBus,
@@ -63,7 +64,7 @@ enum DisplayUnitState {
   Failed,
 }
 
-export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps> {
+export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & ComponentProps> {
   private readonly sub = this.props.bus.getSubscriber<OitSimvars & ClockEvents>();
 
   private readonly state = Subject.create<DisplayUnitState>(
@@ -81,7 +82,7 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
   private oitRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly powered = Subject.create(false);
+  public readonly powered = Subject.create(false);
 
   private readonly brightness = ConsumerSubject.create(
     this.sub.on(this.props.displayUnitId === OitDisplayUnitID.CaptOit ? 'potentiometerCaptain' : 'potentiometerFo'),
@@ -111,13 +112,19 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps> {
     true,
   ).map(SubscribableMapFunctions.not());
 
-  private readonly failed = MappedSubject.create(
+  private readonly fltOpsFailed = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.fltOpsAnsuFailed,
+    this.fltOpsLaptopFailed,
+  );
+
+  public readonly failed = MappedSubject.create(
     ([opMode, state, nssFail, fltOpsFail]) =>
       state === DisplayUnitState.On && ((opMode === 'nss' && nssFail) || (opMode === 'flt-ops' && fltOpsFail)),
     this.props.nssOrFltOps,
     this.state,
     this.allNssAnsuFailed,
-    this.fltOpsLaptopFailed,
+    this.fltOpsFailed,
   );
 
   public onAfterRender(node: VNode): void {

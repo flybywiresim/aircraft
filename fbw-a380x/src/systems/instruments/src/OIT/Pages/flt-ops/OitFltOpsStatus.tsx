@@ -7,6 +7,7 @@ import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Dropd
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirportFormat, LongAlphanumericFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { OisInternalData } from 'instruments/src/OIT/OisInternalPublisher';
 
 interface OitFltOpsStatusPageProps extends AbstractOitPageProps {}
 
@@ -49,7 +50,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                 <div style="width: 40px;" />
                 <Button
                   label="SYNCHRO<br />AVIONICS"
-                  onClick={() => this.props.oit.laptop.synchroAvionics()}
+                  onClick={() => this.props.bus.getPublisher<OisInternalData>().pub('synchroAvncs', true, true, false)}
                   containerStyle="width: 175px;"
                 />
                 <div style="flex-grow: 1" />

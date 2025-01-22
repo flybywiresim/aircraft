@@ -7,6 +7,7 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   SimVarValueType,
   Subject,
   VNode,
@@ -56,11 +57,15 @@ export class OIT extends DisplayComponent<OitProps> {
     return this.props.laptop.data;
   }
 
+  private readonly operationMode = Subject.create<OisOperationMode>('flt-ops');
+
   public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKbdKeyEvent>().on('kbdKeyEvent');
 
   public readonly interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
+
+  private readonly displayUnitRef = FSComponent.createRef<OitDisplayUnit>();
 
   private readonly activePageRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -71,19 +76,27 @@ export class OIT extends DisplayComponent<OitProps> {
 
     this.uiService.activeUri.sub((uri) => {
       this.activeUriChanged(uri);
-
-      // Activate EFB overlay if on charts or flt-folder page
-      SimVar.SetSimVarValue(
-        `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`,
-        SimVarValueType.Bool,
-        uri.uri === 'flt-ops/charts', // uri.uri === 'flt-ops/charts'
-      );
-      SimVar.SetSimVarValue(
-        `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`,
-        SimVarValueType.Bool,
-        uri.uri === 'flt-ops/flt-folder',
-      );
     });
+
+    MappedSubject.create(
+      ([uri, displayFailed, displayPowered, operationMode]) => {
+        // Activate EFB overlay if on charts or flt-folder page
+        SimVar.SetSimVarValue(
+          `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`,
+          SimVarValueType.Bool,
+          uri.uri === 'flt-ops/charts' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
+        );
+        SimVar.SetSimVarValue(
+          `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`,
+          SimVarValueType.Bool,
+          uri.uri === 'flt-ops/flt-folder' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
+        );
+      },
+      this.uiService.activeUri,
+      this.displayUnitRef.instance.failed,
+      this.displayUnitRef.instance.powered,
+      this.operationMode,
+    );
 
     this.uiService.navigateTo('flt-ops/sts'); // should be /sts
   }
@@ -116,10 +129,11 @@ export class OIT extends DisplayComponent<OitProps> {
   render(): VNode | null {
     return (
       <OitDisplayUnit
+        ref={this.displayUnitRef}
         bus={this.props.bus}
         displayUnitId={this.props.captOrFo === 'CAPT' ? OitDisplayUnitID.CaptOit : OitDisplayUnitID.FoOit}
         failuresConsumer={this.props.failuresConsumer}
-        nssOrFltOps={Subject.create<OisOperationMode>('flt-ops')}
+        nssOrFltOps={this.operationMode}
       >
         <div ref={this.topRef} class="oit-main">
           <OitHeader uiService={this.uiService} oit={this} />

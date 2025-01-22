@@ -4,6 +4,7 @@
 import { ConsumerSubject, EventBus, Instrument, SimVarValueType, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { FailuresConsumer, FmsData } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
+import { OisInternalData } from 'instruments/src/OIT/OisInternalPublisher';
 
 type LaptopIndex = 1 | 2;
 
@@ -17,7 +18,7 @@ export class OisLaptop implements Instrument {
   private readonly _isHealthy = Subject.create(false);
   public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
 
-  private readonly sub = this.bus.getSubscriber<FmsData>();
+  private readonly sub = this.bus.getSubscriber<FmsData & OisInternalData>();
 
   private readonly fltNumberBus = ConsumerSubject.create(this.sub.on('fmsFlightNumber'), null);
   private readonly fromAirportBus = ConsumerSubject.create(this.sub.on('fmsOrigin'), null);
@@ -27,6 +28,9 @@ export class OisLaptop implements Instrument {
     this.data.fltNumber.set(this.fltNumberBus.get());
     this.data.fromAirport.set(this.fromAirportBus.get());
     this.data.toAirport.set(this.toAirportBus.get());
+
+    // Workaround since synced messages in the same VCockpit don't work
+    SimVar.SetSimVarValue('L:A32NX_OIS_SYNCHRO_AVIONICS', SimVarValueType.Number, Math.random());
   }
 
   constructor(
@@ -38,6 +42,8 @@ export class OisLaptop implements Instrument {
   /** @inheritdoc */
   init(): void {
     this.failuresConsumer.register(this.failureKey);
+
+    this.sub.on('synchroAvncs').handle(() => this.synchroAvionics());
   }
 
   /** @inheritdoc */
