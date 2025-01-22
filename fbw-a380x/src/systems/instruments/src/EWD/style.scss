@@ -1,5 +1,6 @@
 @import "../MsfsAvionicsCommon/definitions";
 @import "../MsfsAvionicsCommon/gauges";
+@import "../MFD/pages/common/widget-style.scss"; // Re-use MFD widget style
 
 @mixin Blink10SecondsFill($color) {
     @keyframes pulsing {
