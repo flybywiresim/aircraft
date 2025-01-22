@@ -195,7 +195,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     // Derive LDA from geometry (if we take the LDA database value, there might be drawing errors)
     const lda = dist1 > dist2 ? dist1 : dist2;
 
-    const heading = thresholdFeature.properties?.brngtrue ?? 0;
+    const heading = thresholdFeature.properties?.brngmag ?? 0;
 
     this.btvRunwayLda.set(lda);
     this.btvRunwayBearingTrue.set(heading);

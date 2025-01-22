@@ -137,7 +137,6 @@ export class OancMarkerManager<T extends number> {
     const feature = this.oanc.data?.features.filter(
       (it) => it.properties?.id === id && it.properties.feattype === feattype,
     );
-    console.log(id, feature);
     if (feature) {
       if (feattype === FeatureType.TaxiwayGuidanceLine) {
         // Look up all taxiways by name
