@@ -76,13 +76,15 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
 
   private timeOut: number = 0;
 
-  private selfTestRef = FSComponent.createRef<SVGElement>();
-
-  private thalesBootupRef = FSComponent.createRef<SVGElement>();
+  private selfTestRef = FSComponent.createRef<HTMLDivElement>();
 
   private oitRef = FSComponent.createRef<HTMLDivElement>();
 
   public readonly powered = Subject.create(false);
+
+  /** in seconds */
+  private readonly remainingStartupTime = Subject.create(0);
+  private readonly totalStartupTime = Subject.create(0);
 
   private readonly brightness = ConsumerSubject.create(
     this.sub.on(this.props.displayUnitId === OitDisplayUnitID.CaptOit ? 'potentiometerCaptain' : 'potentiometerFo'),
@@ -135,12 +137,15 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
     this.sub.on('realTime').handle(() => this.update());
     this.sub
       .on('realTime')
-      .atFrequency(1)
+      .atFrequency(4)
       .handle((_t) => {
         // override MSFS menu animations setting for this instrument
         if (!document.documentElement.classList.contains('animationsEnabled')) {
           document.documentElement.classList.add('animationsEnabled');
         }
+
+        // Update loading progress bar
+        this.remainingStartupTime.set(Math.max(0, this.remainingStartupTime.get() - 0.25));
       });
 
     MappedSubject.create(
@@ -192,7 +197,9 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
       this.setTimer(0.25 + Math.random() * 0.2);
     } else if (this.state.get() === DisplayUnitState.Bootup && this.brightness.get() !== 0 && this.powered.get()) {
       this.state.set(DisplayUnitState.Selftest);
-      this.setTimer(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')));
+      this.totalStartupTime.set(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 2);
+      this.remainingStartupTime.set(this.totalStartupTime.get());
+      this.setTimer(this.remainingStartupTime.get());
     } else if (
       (this.state.get() === DisplayUnitState.Selftest || this.state.get() === DisplayUnitState.Bootup) &&
       (this.brightness.get() === 0 || !this.powered.get())
@@ -203,23 +210,18 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
 
     if (this.state.get() === DisplayUnitState.Selftest) {
       this.selfTestRef.instance.style.display = 'block';
-      this.thalesBootupRef.instance.style.display = 'none';
       this.oitRef.instance.style.display = 'none';
     } else if (this.state.get() === DisplayUnitState.Bootup) {
-      this.selfTestRef.instance.style.display = 'none';
-      this.thalesBootupRef.instance.style.display = 'block';
+      this.selfTestRef.instance.style.display = 'block';
       this.oitRef.instance.style.display = 'none';
     } else if (this.state.get() === DisplayUnitState.On) {
       this.selfTestRef.instance.style.display = 'none';
-      this.thalesBootupRef.instance.style.display = 'none';
       this.oitRef.instance.style.display = 'block';
     } else if (this.state.get() === DisplayUnitState.Failed) {
       this.selfTestRef.instance.style.display = 'none';
-      this.thalesBootupRef.instance.style.display = 'none';
       this.oitRef.instance.style.display = 'none';
     } else {
       this.selfTestRef.instance.style.display = 'none';
-      this.thalesBootupRef.instance.style.display = 'none';
       this.oitRef.instance.style.display = 'none';
     }
   }
@@ -227,23 +229,20 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
   render(): VNode {
     return (
       <>
-        <svg style="display:none" ref={this.selfTestRef} class="SelfTest" viewBox="0 0 1333 1000">
-          <rect class="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
-
-          <text class="SelfTestText" x="50%" y="50%">
-            SAFETY TEST IN PROGRESS
-          </text>
-          <text class="SelfTestText" x="50%" y="54%">
-            (MAX 30 SECONDS)
-          </text>
-        </svg>
-
-        <svg style="display:none" ref={this.thalesBootupRef} class="SelfTest" viewBox="0 0 1333 1000">
-          <rect class="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
-
-          <rect x={84} y={880} width={600} height={70} fill="#ffffff" />
-          <rect x={89} y={885} width={35} height={60} fill="#4d4dff" />
-        </svg>
+        <div class="SelfTest" ref={this.selfTestRef}>
+          <div class="FbwTail" />
+          <div class="LoadingProgressBarBackground" />
+          <div
+            class="LoadingProgressBarFill"
+            style={{
+              width: MappedSubject.create(
+                ([remaining, total]) => (1 - remaining / total) * 40,
+                this.remainingStartupTime,
+                this.totalStartupTime,
+              ).map((t) => `${t}%`),
+            }}
+          />
+        </div>
 
         <div style="display:none" ref={this.oitRef}>
           {this.props.children}

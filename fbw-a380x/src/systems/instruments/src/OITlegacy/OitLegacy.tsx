@@ -23,7 +23,6 @@ import {
   useNavigraphAuthInfo,
 } from '@flybywiresim/flypad';
 
-import './Efb.scss';
 import { EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { Provider } from 'react-redux';
 import { ErrorBoundary } from 'react-error-boundary';

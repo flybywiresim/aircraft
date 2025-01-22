@@ -9,34 +9,6 @@
   font-style: normal;
 }
 
-.SelfTest {
-  position: absolute;
-  left: 0%;
-  top: 0%;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.SelfTestBackground {
-  fill: $display-background;
-}
-
-.SelfTestText {
-  font-size: 24px;
-  fill: $display-green;
-  visibility: visible !important;
-
-  text-anchor: middle;
-  font-family: "OIT";
-}
-
-.EngineeringTestModeText {
-  font-size: 21px;
-  color: black;
-  font-family: "OIT";
-}
-
 .AnsuFailed {
   position: absolute;
   left: 0%;
@@ -53,4 +25,42 @@
   visibility: visible !important;
   text-anchor: middle;
   font-family: "OIT";
+}
+
+.SelfTest {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: $display-background;
+}
+
+.LoadingProgressBarBackground {
+  position: absolute;
+  width: 40%;
+  height: 25px;
+  left: 30%;
+  top: 672.5px;
+  border: 1px solid #ffffff;
+}
+.LoadingProgressBarFill {
+  position: absolute;
+  width: 0%;
+  height: 25px;
+  left: 30%;
+  top: 672.5px;
+  border: 1px solid #ffffff;
+  background-color: rgb(0, 224, 254);
+}
+.FbwTail {
+  position: absolute;
+  top: 302.5px;
+  left: 506.5px;
+  background-image: url('/Images/fbw-a380x/Common/fbw-tail.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 320px;
+  height: 300px;
 }
