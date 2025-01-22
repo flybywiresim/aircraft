@@ -170,7 +170,7 @@ export const A380Failure = Object.freeze({
 
   NssAnsu1: 46001,
   NssAnsu2: 46002,
-  FltOpsAnsu1: 46003,
+  FltOpsAnsu: 46003,
   CaptainLaptop: 46004,
   FirstOfficerLaptop: 46005,
   CaptainOit: 46006,
@@ -340,7 +340,7 @@ export const A380FailureDefinitions: FailureDefinition[] = [
 
   [46, A380Failure.NssAnsu1, 'NSS AVNCS ANSU 1'],
   [46, A380Failure.NssAnsu2, 'NSS AVNCS ANSU 2'],
-  [46, A380Failure.FltOpsAnsu1, 'FLT OPS ANSU 1'],
+  [46, A380Failure.FltOpsAnsu, 'FLT OPS ANSU'],
   [46, A380Failure.CaptainLaptop, 'Captain Laptop'],
   [46, A380Failure.FirstOfficerLaptop, 'F/O Laptop'],
   [46, A380Failure.CaptainOit, 'Captain OIT'],
