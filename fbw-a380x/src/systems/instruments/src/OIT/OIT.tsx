@@ -57,7 +57,7 @@ export class OIT extends DisplayComponent<OitProps> {
     return this.props.laptop.data;
   }
 
-  private readonly operationMode = Subject.create<OisOperationMode>('flt-ops');
+  public readonly operationMode = Subject.create<OisOperationMode>('flt-ops');
 
   public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKbdKeyEvent>().on('kbdKeyEvent');
 

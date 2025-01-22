@@ -16,7 +16,6 @@ import {
   setAirframeInfo,
   setCabinInfo,
   setFlypadInfo,
-  SimbriefData,
   store,
   TroubleshootingContextProvider,
   useAppDispatch,
@@ -165,7 +164,6 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
   const [showOfp] = useSimVar(`L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`, 'Bool', 100);
   const [synchroAvionics] = useSimVar('L:A32NX_OIS_SYNCHRO_AVIONICS', 'number', 100);
 
-  const [simBriefData, setSimBriefData] = useState<SimbriefData>();
   const [fromAirport, setFromAirport] = useState<string>('');
   const [toAirport, setToAirport] = useState<string>('');
   const [altnAirport, setAltnAirport] = useState<string>('');
@@ -184,13 +182,17 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
         (navigraphAuthInfo.loggedIn && navigraphAuthInfo.username) || '',
         overrideSimBriefUserID ?? '',
       );
-      setSimBriefData(action.payload);
-      const newAction = simbriefDataFromFms(simBriefData, fromAirport, toAirport, altnAirport);
+      const newAction = simbriefDataFromFms(action.payload, fromAirport, toAirport, altnAirport);
       dispatch(newAction);
     } catch (e) {
       console.error(e.message);
     }
   };
+
+  useEffect(() => {
+    console.log('navigraphAuthInfo.loggedIn, synchroAvionics', navigraphAuthInfo);
+    updateSimBriefInfo();
+  }, [navigraphAuthInfo, synchroAvionics]);
 
   useEffect(() => {
     const sub = bus.getSubscriber<FmsData & OisInternalData>();
@@ -229,10 +231,6 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
     dispatch(simbriefDataFromFms(simBriefData, fromAirport, toAirport, altnAirport));
   }, [fromAirport, toAirport, altnAirport]);
   */
-
-  useEffect(() => {
-    updateSimBriefInfo();
-  }, [navigraphAuthInfo.loggedIn, synchroAvionics]);
 
   return (
     <>

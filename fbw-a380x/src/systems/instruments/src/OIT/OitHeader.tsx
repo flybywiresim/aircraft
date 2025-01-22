@@ -83,8 +83,22 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
           isActive={SubscribableUtils.toSubscribable(false, true)}
           label="FUNCTIONS"
           menuItems={[
-            { label: 'HOME', action: () => {}, disabled: true },
-            { label: 'PREVIOUS', action: () => {}, disabled: true },
+            {
+              label: 'HOME',
+              action: () => {
+                if (this.props.oit.operationMode.get() === 'flt-ops') {
+                  this.props.uiService.navigateTo('flt-ops');
+                }
+              },
+            },
+            {
+              label: 'PREVIOUS',
+              action: () => {
+                if (this.props.uiService.canGoBack()) {
+                  this.props.uiService.navigateTo('back');
+                }
+              },
+            },
             { label: 'NEXT', action: () => {}, disabled: true, separatorBelow: true },
             { label: 'PRINT', action: () => {}, disabled: true },
             { label: 'STORE', action: () => {}, disabled: true },
