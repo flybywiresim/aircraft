@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EcamAbnormalSensedProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { EcamAbnormalProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
   SimVarValueType,
@@ -58,7 +58,7 @@ export interface EwdAbnormalItem {
 }
 
 export interface EwdAbnormalDict {
-  [key: keyof typeof EcamAbnormalSensedProcedures]: EwdAbnormalItem;
+  [key: keyof typeof EcamAbnormalProcedures]: EwdAbnormalItem;
 }
 
 /**
@@ -88,10 +88,20 @@ export class FwsAbnormalSensed {
 
   private activeProcedure: ProcedureLinesGenerator;
 
-  static compareAbnormalProceduresByPriority(idA: string, idB: string, failureLevelA: number, failureLevelB: number) {
-    const bPriority = idB.substring(0, 4) === '9998' ? 0 : failureLevelA;
-    const aPriority = idA.substring(0, 4) === '9998' ? 0 : failureLevelB;
-    return bPriority - aPriority;
+  static compareAbnormalProceduresByPriority(
+    idA: string,
+    idB: string,
+    failureLevelA: number,
+    failureLevelB: number,
+    nonSensedA: boolean,
+    nonSensedB: boolean,
+  ) {
+    // 9998: Secondary failures at the end; non-sensed procedures at the top
+    const bPriority = idB.substring(0, 4) === '9998' ? 0 : nonSensedB ? 4 : failureLevelB;
+    const aPriority = idA.substring(0, 4) === '9998' ? 0 : nonSensedA ? 4 : failureLevelA;
+
+    // Sort desceding, from highest failure level to lowest
+    return -(bPriority - aPriority);
   }
 
   constructor(private fws: FwsCore) {
@@ -120,6 +130,8 @@ export class FwsAbnormalSensed {
             b.id,
             this.fws.ewdAbnormal[a.id].failure,
             this.fws.ewdAbnormal[b.id].failure,
+            !EcamAbnormalProcedures[a.id].sensed,
+            !EcamAbnormalProcedures[b.id].sensed,
           );
         });
 
@@ -132,7 +144,7 @@ export class FwsAbnormalSensed {
             (newState) => this.fws.activeAbnormalProceduresList.setValue(value.id, newState),
             this.clearActiveProcedure.bind(this),
             () => {},
-            this.fws.aircraftOnGround.get() ? undefined : EcamAbnormalSensedProcedures[value.id].recommendation,
+            this.fws.aircraftOnGround.get() ? undefined : EcamAbnormalProcedures[value.id].recommendation,
           );
           this.procedures.push(procGen);
         } else if (type === SubscribableMapEventType.Changed) {
@@ -197,7 +209,7 @@ export class FwsAbnormalSensed {
     // Delete procedure completely if not-sensed procedure is de-activated
     if (
       newState?.procedureActivated === false &&
-      EcamAbnormalSensedProcedures[this.activeProcedureId.get()]?.sensed === false
+      EcamAbnormalProcedures[this.activeProcedureId.get()]?.sensed === false
     ) {
       this.fws.activeAbnormalNonSensedKeys.delete(parseInt(this.activeProcedureId.get()));
       this.fws.allCurrentFailures.splice(this.fws.allCurrentFailures.indexOf(this.activeProcedureId.get()), 1);

@@ -4295,6 +4295,8 @@ export class FwsCore {
           b,
           this.ewdAbnormal[a].failure,
           this.ewdAbnormal[b].failure,
+          !EcamAbnormalProcedures[a].sensed,
+          !EcamAbnormalProcedures[b].sensed,
         );
       });
       if (sortedAbnormals.length > 0 && this.ewdAbnormal[sortedAbnormals[0]].sysPage > -1) {
