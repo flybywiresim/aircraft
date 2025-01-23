@@ -187,11 +187,8 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
     super.onAfterRender(node);
 
     this.checklists.sub(() => this.updateChecklists(), true);
-    this.checklistId.sub(() => this.updateChecklists());
-    this.deferred.sub(() => {
-      console.log('deferred', this.deferred.get());
-      this.updateChecklists();
-    }, true);
+    this.checklistId.sub(() => this.updateChecklists(), true);
+    this.deferred.sub(() => this.updateChecklists(), true);
     this.activeDeferredProcedureId.sub(() => this.updateChecklists());
   }
 

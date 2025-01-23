@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { MapSubject, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import { MapSubject, SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { EcamAbNormalSensedSubMenuVector, WD_NUM_LINES } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
@@ -11,6 +11,8 @@ import { SdPages } from '@shared/EcamSystemPages';
 
 export class FwsAbnormalNonSensed {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+
+  private subs: Subscription[] = [];
 
   public readonly abnProcShown = Subject.create(false);
 
@@ -28,12 +30,14 @@ export class FwsAbnormalNonSensed {
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
   constructor(private fws: FwsCore) {
-    this.checklistId.sub((id) => {
-      this.pub.pub('fws_abn_non_sensed_id', id, true);
-      if (id > 10) {
-        this.pub.pub('fws_abn_non_sensed_current_active', this.fws.activeAbnormalNonSensedKeys.has(id), true);
-      }
-    }, true);
+    this.subs.push(
+      this.checklistId.sub((id) => {
+        this.pub.pub('fws_abn_non_sensed_id', id, true);
+        if (id > 10) {
+          this.pub.pub('fws_abn_non_sensed_current_active', this.fws.activeAbnormalNonSensedKeys.has(id), true);
+        }
+      }, true),
+    );
   }
 
   getAbnormalNonSensedMenuSize(): number {
@@ -130,6 +134,10 @@ export class FwsAbnormalNonSensed {
     this.fws.activeAbnormalNonSensedKeys.clear();
     this.checklistState.clear();
     this.showAbnProcRequested.set(false);
+  }
+
+  destroy() {
+    this.subs.forEach((s) => s.destroy());
   }
 
   public ewdAbnormalNonSensed: EwdAbnormalDict = {

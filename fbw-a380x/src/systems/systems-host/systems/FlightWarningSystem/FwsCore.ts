@@ -19,6 +19,7 @@ import {
   Wait,
   SetSubject,
   Subscribable,
+  Subscription,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -86,6 +87,9 @@ export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
     PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents & FuelSystemEvents & KeyEvents
   >();
+
+  private subs: Subscription[] = [];
+
   public readonly vhfSub = this.bus.getSubscriber<VhfComManagerDataEvents>();
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
@@ -1536,104 +1540,132 @@ export class FwsCore {
       this.abnormalNonSensed.ewdAbnormalNonSensed,
     );
 
-    this.startupCompleted.sub((v) => {
-      if (v) {
-        this.normalChecklists.reset(null);
-        this.abnormalNonSensed.reset();
-        this.activeDeferredProceduresList.clear();
-        this.abnormalSensed.reset();
-        this.activeAbnormalProceduresList.clear();
-        this.allCurrentFailures.length = 0;
-        this.presentedFailures.length = 0;
-        this.recallFailures.length = 0;
-      }
-    });
+    this.subs.push(
+      this.startupCompleted.sub((v) => {
+        if (v) {
+          this.normalChecklists.reset(null);
+          this.abnormalNonSensed.reset();
+          this.activeDeferredProceduresList.clear();
+          this.abnormalSensed.reset();
+          this.activeAbnormalProceduresList.clear();
+          this.allCurrentFailures.length = 0;
+          this.presentedFailures.length = 0;
+          this.recallFailures.length = 0;
+        }
+      }),
+    );
 
     // Not a lot of references on which parts of the FWS to reset when
-    this.shutDownFor50MinutesCheckListReset.sub((v) => {
-      if (v) {
-        if (!this.manualCheckListReset.get()) {
-          this.normalChecklists.reset(null);
+    this.subs.push(
+      this.shutDownFor50MinutesCheckListReset.sub((v) => {
+        if (v) {
+          if (!this.manualCheckListReset.get()) {
+            this.normalChecklists.reset(null);
+          }
+          this.abnormalNonSensed.reset();
+          this.activeDeferredProceduresList.clear();
         }
-        this.abnormalNonSensed.reset();
-        this.activeDeferredProceduresList.clear();
-      }
-    });
+      }),
+    );
 
-    this.flightPhase12Entered.sub((v) => {
-      if (v) {
-        this.abnormalSensed.reset();
-        this.activeAbnormalProceduresList.clear();
-        this.allCurrentFailures.length = 0;
-        this.presentedFailures.length = 0;
-        this.recallFailures.length = 0;
-      }
-    });
+    this.subs.push(
+      this.flightPhase12Entered.sub((v) => {
+        if (v) {
+          this.abnormalSensed.reset();
+          this.activeAbnormalProceduresList.clear();
+          this.allCurrentFailures.length = 0;
+          this.presentedFailures.length = 0;
+          this.recallFailures.length = 0;
+        }
+      }),
+    );
 
     this.ewdMessageLinesLeft.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
+        }),
+      ),
     );
 
     this.ewdMessageLinesRight.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsRight[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsRight[i], 'string', l ?? '');
+        }),
+      ),
     );
 
     this.pfdMemoLines.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.pfdMemoSimVars[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.pfdMemoSimVars[i], 'string', l ?? '');
+        }),
+      ),
     );
 
     this.sdStatusInfoLines.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.sdStatusInfoSimVars[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.sdStatusInfoSimVars[i], 'string', l ?? '');
+        }),
+      ),
     );
 
     this.sdStatusInopAllPhasesLines.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.sdStatusInopAllPhasesSimVars[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.sdStatusInopAllPhasesSimVars[i], 'string', l ?? '');
+        }),
+      ),
     );
 
     this.sdStatusInopApprLdgLines.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
+        }),
+      ),
     );
 
     this.pfdLimitationsLines.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.pfdLimitationsSimVars[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.pfdLimitationsSimVars[i], 'string', l ?? '');
+        }),
+      ),
     );
 
     this.ewdLimitationsAllPhasesLines.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.ewdLimitationsAllPhasesSimVars[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.ewdLimitationsAllPhasesSimVars[i], 'string', l ?? '');
+        }),
+      ),
     );
 
     this.ewdLimitationsApprLdgLines.forEach((ls, i) =>
-      ls.sub((l) => {
-        SimVar.SetSimVarValue(FwsCore.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
-      }),
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
+        }),
+      ),
     );
 
-    this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true);
+    this.subs.push(this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true));
 
-    this.ecamEwdShowStsIndication.sub(
-      (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
-      true,
+    this.subs.push(
+      this.ecamEwdShowStsIndication.sub(
+        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
+        true,
+      ),
     );
 
-    this.ecamEwdShowFailurePendingIndication.sub(
-      (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
-      true,
+    this.subs.push(
+      this.ecamEwdShowFailurePendingIndication.sub(
+        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
+        true,
+      ),
     );
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
@@ -1676,44 +1708,60 @@ export class FwsCore {
         }
       });
 
-    this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
-    this.flightPhase.sub((fp) => {
-      SimVar.SetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', fp || 0);
-      if (fp !== null) {
-        this.flightPhaseEndedPulseNode.write(true, 0);
-      }
-    });
+    this.subs.push(
+      this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal)),
+    );
+    this.subs.push(
+      this.flightPhase.sub((fp) => {
+        SimVar.SetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', fp || 0);
+        if (fp !== null) {
+          this.flightPhaseEndedPulseNode.write(true, 0);
+        }
+      }),
+    );
 
-    this.auralCrcActive.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
+    this.subs.push(
+      this.auralCrcActive.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true),
+    );
 
-    this.masterCautionOutput.sub((caution) => {
-      // Inhibit master warning/cautions until FWC startup has been completed
-      SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', caution);
-    }, true);
+    this.subs.push(
+      this.masterCautionOutput.sub((caution) => {
+        // Inhibit master warning/cautions until FWC startup has been completed
+        SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', caution);
+      }, true),
+    );
 
-    this.masterWarningOutput.sub((warning) => {
-      // Inhibit master warning/cautions until FWC startup has been completed
-      SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', warning);
-    }, true);
+    this.subs.push(
+      this.masterWarningOutput.sub((warning) => {
+        // Inhibit master warning/cautions until FWC startup has been completed
+        SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', warning);
+      }, true),
+    );
 
     // L/G lever red arrow sinking outputs
-    this.lgLeverRedArrow.sub((on) => {
-      // TODO FWCs need to be powered...
-      SimVar.SetSimVarValue('L:A32NX_FWC_1_LG_RED_ARROW', SimVarValueType.Bool, on);
-      SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, on);
-    }, true);
+    this.subs.push(
+      this.lgLeverRedArrow.sub((on) => {
+        // TODO FWCs need to be powered...
+        SimVar.SetSimVarValue('L:A32NX_FWC_1_LG_RED_ARROW', SimVarValueType.Bool, on);
+        SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, on);
+      }, true),
+    );
 
-    this.stallWarning.sub((v) => {
-      this.fwcOut126.setBitValue(17, v);
-      // set the sound on/off
-      this.soundManager.handleSoundCondition('stall', v);
-    }, true);
-    this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v));
+    this.subs.push(
+      this.stallWarning.sub((v) => {
+        this.fwcOut126.setBitValue(17, v);
+        // set the sound on/off
+        this.soundManager.handleSoundCondition('stall', v);
+      }, true),
+    );
+    this.subs.push(this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v)));
 
-    this.fwcOut126.sub((v) => {
-      Arinc429Word.toSimVarValue('L:A32NX_FWC_1_DISCRETE_WORD_126', v.value, v.ssm);
-      Arinc429Word.toSimVarValue('L:A32NX_FWC_2_DISCRETE_WORD_126', v.value, v.ssm);
-    }, true);
+    this.subs.push(
+      this.fwcOut126.sub((v) => {
+        Arinc429Word.toSimVarValue('L:A32NX_FWC_1_DISCRETE_WORD_126', v.value, v.ssm);
+        Arinc429Word.toSimVarValue('L:A32NX_FWC_2_DISCRETE_WORD_126', v.value, v.ssm);
+      }, true),
+    );
 
     // FIXME depend on FWC state
     this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -1747,9 +1795,9 @@ export class FwsCore {
     );
 
     if (this.fwsNumber === 1) {
-      this.dcESSBusPowered.sub((v) => this.handlePowerChange(v));
+      this.subs.push(this.dcESSBusPowered.sub((v) => this.handlePowerChange(v), true));
     } else {
-      this.dc2BusPowered.sub((v) => this.handlePowerChange(v));
+      this.subs.push(this.dc2BusPowered.sub((v) => this.handlePowerChange(v), true));
     }
   }
 
@@ -4512,5 +4560,12 @@ export class FwsCore {
 
     bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', false, true);
     bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', false, true);
+  }
+
+  destroy() {
+    this.abnormalNonSensed.destroy();
+    this.abnormalSensed.destroy();
+    this.normalChecklists.destroy();
+    this.subs.forEach((s) => s.destroy());
   }
 }

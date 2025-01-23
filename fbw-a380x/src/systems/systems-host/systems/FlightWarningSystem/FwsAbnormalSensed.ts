@@ -10,6 +10,7 @@ import {
   Subscribable,
   SubscribableMapEventType,
   SubscribableMapFunctions,
+  Subscription,
 } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
 import {
@@ -71,6 +72,8 @@ export interface EwdAbnormalDict {
 export class FwsAbnormalSensed {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
+  private subs: Subscription[] = [];
+
   public readonly abnormalShown = Subject.create(false);
 
   public readonly showAbnormalSensedRequested = Subject.create(false);
@@ -105,93 +108,99 @@ export class FwsAbnormalSensed {
   }
 
   constructor(private fws: FwsCore) {
-    this.fws.activeAbnormalProceduresList.sub(
-      (
-        map: ReadonlyMap<string, ChecklistState>,
-        type: SubscribableMapEventType,
-        key: string,
-        value: ChecklistState,
-      ) => {
-        const flattened: ChecklistState[] = [];
-        map.forEach((val, key) =>
-          flattened.push({
-            id: key,
-            procedureActivated: val.procedureActivated,
-            procedureCompleted: val.procedureCompleted,
-            itemsChecked: val.itemsChecked,
-            itemsActive: val.itemsActive,
-            itemsToShow: val.itemsToShow,
-          }),
-        );
-        // Sort by decreasing importance
-        const sortedAbnormalsFlattened = flattened.sort((a, b) => {
-          return FwsAbnormalSensed.compareAbnormalProceduresByPriority(
-            a.id,
-            b.id,
-            this.fws.ewdAbnormal[a.id].failure,
-            this.fws.ewdAbnormal[b.id].failure,
-            !EcamAbnormalProcedures[a.id].sensed,
-            !EcamAbnormalProcedures[b.id].sensed,
+    this.subs.push(
+      this.fws.activeAbnormalProceduresList.sub(
+        (
+          map: ReadonlyMap<string, ChecklistState>,
+          type: SubscribableMapEventType,
+          key: string,
+          value: ChecklistState,
+        ) => {
+          const flattened: ChecklistState[] = [];
+          map.forEach((val, key) =>
+            flattened.push({
+              id: key,
+              procedureActivated: val.procedureActivated,
+              procedureCompleted: val.procedureCompleted,
+              itemsChecked: val.itemsChecked,
+              itemsActive: val.itemsActive,
+              itemsToShow: val.itemsToShow,
+            }),
           );
-        });
+          // Sort by decreasing importance
+          const sortedAbnormalsFlattened = flattened.sort((a, b) => {
+            return FwsAbnormalSensed.compareAbnormalProceduresByPriority(
+              a.id,
+              b.id,
+              this.fws.ewdAbnormal[a.id].failure,
+              this.fws.ewdAbnormal[b.id].failure,
+              !EcamAbnormalProcedures[a.id].sensed,
+              !EcamAbnormalProcedures[b.id].sensed,
+            );
+          });
 
-        if (type === SubscribableMapEventType.Added) {
-          const procGen = new ProcedureLinesGenerator(
-            value.id,
-            this.activeProcedureId.map((id) => value.id === id),
-            ProcedureType.Abnormal,
-            value,
-            (newState) => this.fws.activeAbnormalProceduresList.setValue(value.id, newState),
-            this.clearActiveProcedure.bind(this),
-            () => {},
-            this.fws.aircraftOnGround.get() ? undefined : EcamAbnormalProcedures[value.id].recommendation,
-          );
-          this.procedures.push(procGen);
-        } else if (type === SubscribableMapEventType.Changed) {
-          const procGenIndex = this.procedures.findIndex((v) => v.procedureId === key);
-          if (procGenIndex !== -1) {
-            this.procedures[procGenIndex].checklistState = value;
-          }
-        } else if (type === SubscribableMapEventType.Deleted) {
-          const procGenIndex = this.procedures.findIndex((v) => v.procedureId === key);
-          this.procedures.splice(procGenIndex, 1);
-        }
-
-        sortedAbnormalsFlattened.forEach((val) => {
-          if (val.id === this.activeProcedureId.get()) {
-            const procGenIndex = this.procedures.findIndex((v) => v.procedureId === val.id);
+          if (type === SubscribableMapEventType.Added) {
+            const procGen = new ProcedureLinesGenerator(
+              value.id,
+              this.activeProcedureId.map((id) => value.id === id),
+              ProcedureType.Abnormal,
+              value,
+              (newState) => this.fws.activeAbnormalProceduresList.setValue(value.id, newState),
+              this.clearActiveProcedure.bind(this),
+              () => {},
+              this.fws.aircraftOnGround.get() ? undefined : EcamAbnormalProcedures[value.id].recommendation,
+            );
+            this.procedures.push(procGen);
+          } else if (type === SubscribableMapEventType.Changed) {
+            const procGenIndex = this.procedures.findIndex((v) => v.procedureId === key);
             if (procGenIndex !== -1) {
-              this.activeProcedure = this.procedures[procGenIndex];
-              this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
+              this.procedures[procGenIndex].checklistState = value;
             }
+          } else if (type === SubscribableMapEventType.Deleted) {
+            const procGenIndex = this.procedures.findIndex((v) => v.procedureId === key);
+            this.procedures.splice(procGenIndex, 1);
           }
-        });
 
-        this.activeProcedureId.set(sortedAbnormalsFlattened.length > 0 ? sortedAbnormalsFlattened[0].id : null);
-        this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
-      },
-      true,
+          sortedAbnormalsFlattened.forEach((val) => {
+            if (val.id === this.activeProcedureId.get()) {
+              const procGenIndex = this.procedures.findIndex((v) => v.procedureId === val.id);
+              if (procGenIndex !== -1) {
+                this.activeProcedure = this.procedures[procGenIndex];
+                this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
+              }
+            }
+          });
+
+          this.activeProcedureId.set(sortedAbnormalsFlattened.length > 0 ? sortedAbnormalsFlattened[0].id : null);
+          this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
+        },
+        true,
+      ),
     );
 
-    this.abnormalShown.sub((shown) => {
-      if (shown) {
-        this.activeProcedure.selectFirst();
-      }
-    });
+    this.subs.push(
+      this.abnormalShown.sub((shown) => {
+        if (shown) {
+          this.activeProcedure.selectFirst();
+        }
+      }),
+    );
 
-    this.activeProcedureId.sub((id) => {
-      if (id) {
-        this.procedures.forEach((val) => {
-          if (val.procedureId === id) {
-            this.activeProcedure = val;
-            this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
-          }
-        });
-        this.activeProcedure.selectFirst();
-      }
-    });
+    this.subs.push(
+      this.activeProcedureId.sub((id) => {
+        if (id) {
+          this.procedures.forEach((val) => {
+            if (val.procedureId === id) {
+              this.activeProcedure = val;
+              this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
+            }
+          });
+          this.activeProcedure.selectFirst();
+        }
+      }),
+    );
 
-    this.selectedItemIndex.sub(() => this.scrollToSelectedLine());
+    this.subs.push(this.selectedItemIndex.sub(() => this.scrollToSelectedLine()));
   }
 
   getAbnormalProceduresKeysSorted() {
@@ -271,6 +280,10 @@ export class FwsAbnormalSensed {
 
   reset() {
     this.showAbnormalSensedRequested.set(false);
+  }
+
+  destroy() {
+    this.subs.forEach((s) => s.destroy());
   }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
