@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
@@ -11,11 +11,15 @@ import {
   SENTRY_CONSENT_KEY,
   useSimVar,
 } from '@flybywiresim/fbw-sdk';
-import { t } from '@flybywiresim/flypad';
+import { PageLink, pathify, t, TabRoutes } from '@flybywiresim/flypad';
 import { SettingsPage } from '../Settings';
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
 import { useViewListenerEvent } from '../../Utils/listener';
+import { Link, Route, Switch } from 'react-router-dom';
+import { TroubleshootingPage } from './TroubleshootingPage';
+
+const baseAboutRoute = `/settings/${pathify('About')}`;
 
 interface BuildInfoEntryProps {
   title: string;
@@ -59,6 +63,10 @@ export const AboutPage = () => {
   const [version, setVersion] = useSessionStorage('SIM_VERSION', '');
   const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
+  const subTabs: PageLink[] = [
+    { alias: t('Settings.Troubleshooting.Title'), name: 'Troubleshooting', component: <TroubleshootingPage /> },
+  ];
+
   // Callback function to set sBuildVersion from the community panel
   const onSetPlayerData = (data: CommunityPanelPlayerData) => {
     setVersion(data.sBuildVersion);
@@ -72,43 +80,58 @@ export const AboutPage = () => {
   }, [process.env.AIRCRAFT_PROJECT_PREFIX]);
 
   return (
-    <SettingsPage name={t('Settings.About.Title')}>
-      <div className="pointer-events-none absolute inset-y-0 flex flex-col justify-center px-16">
-        <div className="flex flex-row items-center">
-          <div className="flex flex-col">
+    <Switch>
+      <Route exact path={baseAboutRoute}>
+        <SettingsPage name={t('Settings.About.Title')}>
+          <div className="absolute inset-y-0 flex flex-col justify-center px-16">
             <div className="flex flex-row items-center">
-              <img className="w-[36px]" src={FbwTail} alt="" />
-              <h1 className="font-manrope ml-4 text-4xl font-bold">flyPadOS 3</h1>
+              <div className="flex flex-col">
+                <div className="flex flex-row items-center">
+                  <img className="w-[36px]" src={FbwTail} alt="" />
+                  <h1 className="font-manrope ml-4 text-4xl font-bold">flyPadOS 3</h1>
+                </div>
+
+                <p className="mt-3 text-2xl">
+                  Made with love by contributors in Québec, Germany, the United States, Singapore, Indonesia, New
+                  Zealand, Australia, Spain, the United Kingdom, France, the Netherlands, Sweden, and Switzerland!
+                </p>
+              </div>
+            </div>
+            <div className="mt-8 flex flex-col justify-center">
+              <p>&copy; 2020-2025 FlyByWire Simulations and its contributors, all rights reserved.</p>
+              <p>Licensed under the GNU General Public License Version 3</p>
             </div>
 
-            <p className="mt-3 text-2xl">
-              Made with love by contributors in Québec, Germany, the United States, Singapore, Indonesia, New Zealand,
-              Australia, Spain, the United Kingdom, France, the Netherlands, Sweden, and Switzerland!
-            </p>
-          </div>
-        </div>
-        <div className="mt-8 flex flex-col justify-center">
-          <p>&copy; 2020-2024 FlyByWire Simulations and its contributors, all rights reserved.</p>
-          <p>Licensed under the GNU General Public License Version 3</p>
-        </div>
+            <div className="mt-16">
+              <h1 className="font-bold">Build Info</h1>
+              <div className="mt-4">
+                <BuildInfoEntry title="Sim Version" value={version} />
+                <BuildInfoEntry title="Aircraft Version" value={buildInfo?.version} />
+                <BuildInfoEntry title="Livery Title" value={title} />
+                <BuildInfoEntry title="Built" value={buildInfo?.built} />
+                <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
+                <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={7} />
+                <BuildInfoEntry title="Event Name" value={buildInfo?.eventName} />
+                <BuildInfoEntry title="Pretty Release Name" value={buildInfo?.prettyReleaseName} />
+                {sentryEnabled === SentryConsentState.Given && (
+                  <BuildInfoEntry title="Sentry Session ID" value={sessionId} />
+                )}
+              </div>
+            </div>
 
-        <div className="mt-16">
-          <h1 className="font-bold">Build Info</h1>
-          <div className="mt-4">
-            <BuildInfoEntry title="Sim Version" value={version} />
-            <BuildInfoEntry title="Aircraft Version" value={buildInfo?.version} />
-            <BuildInfoEntry title="Livery Title" value={title} />
-            <BuildInfoEntry title="Built" value={buildInfo?.built} />
-            <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
-            <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={7} />
-            <BuildInfoEntry title="Event Name" value={buildInfo?.eventName} />
-            <BuildInfoEntry title="Pretty Release Name" value={buildInfo?.prettyReleaseName} />
-            {sentryEnabled === SentryConsentState.Given && (
-              <BuildInfoEntry title="Sentry Session ID" value={sessionId} />
-            )}
+            <div className="mt-16">
+              <Link
+                to={`${baseAboutRoute}/${pathify('Troubleshooting')}`}
+                className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5
+                                    py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
+              >
+                {t('Settings.Troubleshooting.Title')}
+              </Link>
+            </div>
           </div>
-        </div>
-      </div>
-    </SettingsPage>
+        </SettingsPage>
+      </Route>
+      <TabRoutes basePath={baseAboutRoute} tabs={subTabs} />
+    </Switch>
   );
 };
