@@ -174,7 +174,6 @@ export class FwsAbnormalSensed {
           this.activeProcedureId.set(sortedAbnormalsFlattened.length > 0 ? sortedAbnormalsFlattened[0].id : null);
           this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
         },
-        true,
       ),
     );
 
@@ -201,6 +200,12 @@ export class FwsAbnormalSensed {
     );
 
     this.subs.push(this.selectedItemIndex.sub(() => this.scrollToSelectedLine()));
+
+    this.publishInitialState();
+  }
+
+  publishInitialState() {
+    this.pub.pub('fws_abn_sensed_procedures', [], true);
   }
 
   getAbnormalProceduresKeysSorted() {

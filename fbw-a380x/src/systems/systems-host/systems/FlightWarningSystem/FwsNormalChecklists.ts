@@ -96,13 +96,11 @@ export class FwsNormalChecklists {
           );
           this.pub.pub('fws_normal_checklists', flattened, true);
         },
-        true,
       ),
     );
 
     this.subs.push(
       this.checklistId.sub((id) => {
-        console.log(this.fws.activeDeferredProceduresList.get());
         if (id !== 0 && !deferredProcedureIds.includes(id)) {
           const clState = this.checklistState.getValue(id);
           const procGen = new ProcedureLinesGenerator(
@@ -176,29 +174,20 @@ export class FwsNormalChecklists {
     );
 
     this.subs.push(
-      this.fws.activeDeferredProceduresList.sub(
-        (
-          map: ReadonlyMap<string, ChecklistState>,
-          _type: SubscribableMapEventType,
-          _key: string,
-          _value: ChecklistState,
-        ) => {
-          const flattened: ChecklistState[] = [];
-          map.forEach((val, key) =>
-            flattened.push({
-              id: key,
-              procedureCompleted: val.procedureCompleted,
-              procedureActivated: val.procedureActivated,
-              itemsChecked: val.itemsChecked,
-              itemsActive: val.itemsActive,
-              itemsToShow: val.itemsToShow,
-            }),
-          );
-          this.pub.pub('fws_deferred_procedures', flattened, true);
-          console.log('pub', flattened);
-        },
-        true,
-      ),
+      this.fws.activeDeferredProceduresList.sub((map: ReadonlyMap<string, ChecklistState>) => {
+        const flattened: ChecklistState[] = [];
+        map.forEach((val, key) =>
+          flattened.push({
+            id: key,
+            procedureCompleted: val.procedureCompleted,
+            procedureActivated: val.procedureActivated,
+            itemsChecked: val.itemsChecked,
+            itemsActive: val.itemsActive,
+            itemsToShow: val.itemsToShow,
+          }),
+        );
+        this.pub.pub('fws_deferred_procedures', flattened, true);
+      }),
     );
 
     this.subs.push(
@@ -255,6 +244,12 @@ export class FwsNormalChecklists {
     });
 
     this.subs.push(this.selectedLine.sub(() => this.scrollToSelectedLine()));
+    this.publishInitialState();
+  }
+
+  publishInitialState() {
+    this.pub.pub('fws_normal_checklists', [], true);
+    this.pub.pub('fws_deferred_procedures', [], true);
   }
 
   getNormalProceduresKeysSorted() {
