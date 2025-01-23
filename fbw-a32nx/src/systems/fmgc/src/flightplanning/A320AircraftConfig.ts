@@ -28,6 +28,7 @@ const vnavConfig: VnavConfig = {
   VNAV_USE_LATCHED_DESCENT_MODE: false,
   IDLE_N1_MARGIN: 2,
   MAXIMUM_FUEL_ESTIMATE: 40000,
+  LIM_PSEUDO_WPT_LABEL: '(LIM)',
 };
 
 const flightModelParams: FlightModelParameters = {

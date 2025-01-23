@@ -53,6 +53,10 @@ export enum ClimbDerated {
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */
 export class FmgcData {
+  static fmcFormatSpeed(sub: Subscribable<number | null>) {
+    return sub.map((it) => (it !== null ? it.toFixed(0) : '---'));
+  }
+
   public readonly cpnyFplnAvailable = Subject.create(false);
 
   public readonly cpnyFplnUplinkInProgress = Subject.create(false);
@@ -112,14 +116,21 @@ export class FmgcData {
   /** in percent. null if not set. */
   public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number | null>(null);
 
-  public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) =>
-    it === null ? AirlineModifiableInformation.EK.rteRsv : it,
-  ); // in percent
+  public readonly routeReserveFuelIsPilotEntered = this.routeReserveFuelWeightPilotEntry.map((it) => it !== null);
 
-  public readonly routeReserveFuelIsPilotEntered = MappedSubject.create(
-    ([fuel, time]) => fuel !== null || time !== null,
-    this.routeReserveFuelWeightPilotEntry,
+  public readonly routeReserveFuelPercentage = MappedSubject.create(
+    ([percentagePilotEntry, reservePilotEntry]) =>
+      reservePilotEntry !== null
+        ? null
+        : percentagePilotEntry === null
+          ? AirlineModifiableInformation.EK.rteRsv
+          : percentagePilotEntry,
     this.routeReserveFuelPercentagePilotEntry,
+    this.routeReserveFuelWeightPilotEntry,
+  );
+
+  public readonly routeReserveFuelPercentageIsPilotEntered = this.routeReserveFuelPercentagePilotEntry.map(
+    (v) => v !== null,
   );
 
   public readonly paxNumber = Subject.create<number | null>(null);
@@ -210,11 +221,11 @@ export class FmgcData {
 
   public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
 
-  public readonly flapRetractionSpeed = Subject.create<Knots | null>(141);
+  public readonly flapRetractionSpeed = Subject.create<Knots | null>(null);
 
-  public readonly slatRetractionSpeed = Subject.create<Knots | null>(159);
+  public readonly slatRetractionSpeed = Subject.create<Knots | null>(null);
 
-  public readonly greenDotSpeed = Subject.create<Knots | null>(190);
+  public readonly greenDotSpeed = Subject.create<Knots | null>(null);
 
   public readonly approachSpeed = Subject.create<Knots | null>(null);
 
@@ -447,10 +458,11 @@ export class FmgcDataService implements Fmgc {
       return preSel;
     }
 
-    if (this.flightPlanService.has(FlightPlanIndex.Active)) {
+    // FIXME need to rework the cost index based speed calculations
+    /* if (this.flightPlanService.has(FlightPlanIndex.Active)) {
       const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
-    }
+    }*/
     return 310;
   }
 
