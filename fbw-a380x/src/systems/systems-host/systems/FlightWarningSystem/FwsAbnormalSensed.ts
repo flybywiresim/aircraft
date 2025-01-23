@@ -101,7 +101,7 @@ export class FwsAbnormalSensed {
     const aPriority = idA.substring(0, 4) === '9998' ? 0 : nonSensedA ? 4 : failureLevelA;
 
     // Sort desceding, from highest failure level to lowest
-    return -(bPriority - aPriority);
+    return bPriority - aPriority;
   }
 
   constructor(private fws: FwsCore) {
