@@ -18,5 +18,5 @@ export interface TroubleshootingEvents {
  * @param msg The message to log.
  */
 export function logTroubleshootingError(bus: EventBus, msg: any): void {
-  bus.pub('troubleshooting_log_error', typeof msg === 'string' ? msg : String(msg), true, false);
+  bus.pub('troubleshooting_log_error', String(msg), true, false);
 }
