@@ -4493,4 +4493,22 @@ export class FwsCore {
         return 10;
     }
   }
+
+  static sendFailureWarning(bus: EventBus) {
+    // In case of FWS1+2, populate output with FW messages
+    SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', SimVarValueType.Bool, true);
+    SimVar.SetSimVarValue('L:A32NX_ECAM_FAILURE_ACTIVE', SimVarValueType.Bool, false);
+    SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Number, -1);
+    SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', SimVarValueType.Bool, false);
+    SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', SimVarValueType.Bool, false);
+    SimVar.SetSimVarValue('L:A32NX_FWC_1_LG_RED_ARROW', SimVarValueType.Bool, false);
+    SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, false);
+    const ar = Arinc429Register.empty();
+    ar.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+    ar.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126');
+    ar.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_126');
+
+    bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', false, true);
+    bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', false, true);
+  }
 }

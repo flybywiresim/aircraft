@@ -201,6 +201,7 @@ class SystemsHost extends BaseInstrument {
     this.fwsAvailable.sub((a) => {
       if (!a && this.fwsCore !== undefined) {
         this.fwsCore = undefined;
+        FwsCore.sendFailureWarning(this.bus);
       } else if (a && this.fwsCore === undefined) {
         this.fwsCore = new FwsCore(1, this.bus, this.failuresConsumer, this.fws1Failed, this.fws2Failed);
         this.fwsCore.init();
