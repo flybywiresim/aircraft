@@ -115,6 +115,7 @@
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
 1. [A380X/MFD] Use slashed zero as default font for FMS pages - @bulenteroglu (senolitam)
 1. [A380X/ND] Remove leading zeros from terrain elevation display - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed the crossing climb/descent speed limit pseudo-waypoint label on the A380X - @bulenteroglu (senolitam)
 1. [A32NX/FWS] Fix autopilot instinctive disconnect button logic for 3D model - @flogross89 (floridude)
 1. [A380X/EFIS] Fix VV pb indicator not turning on when TRK-FPA mode is selected - @heclak (Heclak)
 1. [EFB] Added troubleshooting page, under about page, for advanced support - @tracernz (Mike)
