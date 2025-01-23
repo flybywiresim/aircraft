@@ -966,6 +966,15 @@ export class FlightManagementComputer implements FmcInterface {
     if (throttledDt !== -1) {
       this.navigation.update(throttledDt);
       if (this.flightPlanService.hasActive) {
+        const flightPhase = this.flightPhase.get();
+        this.enginesWereStarted.set(
+          flightPhase >= FmgcFlightPhase.Takeoff ||
+            (flightPhase == FmgcFlightPhase.Preflight && SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number') > 20) ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number') > 20 ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'number') > 20 ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20,
+        );
+
         this.acInterface.updateThrustReductionAcceleration();
         this.acInterface.updateTransitionAltitudeLevel();
         this.acInterface.updatePerformanceData();
@@ -988,15 +997,6 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateMinimums(destPred.distanceFromAircraft);
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-
-        const flightPhase = this.flightPhase.get();
-        this.enginesWereStarted.set(
-          flightPhase >= FmgcFlightPhase.Takeoff ||
-            (flightPhase == FmgcFlightPhase.Preflight && SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number') > 20) ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'number') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20,
-        );
       }
       this.checkGWParams();
       this.updateMessageQueue();
