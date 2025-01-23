@@ -4235,7 +4235,7 @@ export class FwsCore {
         // Delete associated deferred procedure
         for (const [deferredKey, _] of ewdDeferredEntries) {
           if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key)) {
-            this.activeDeferredProceduresList.delete(key);
+            this.activeDeferredProceduresList.delete(deferredKey);
           }
         }
       }
