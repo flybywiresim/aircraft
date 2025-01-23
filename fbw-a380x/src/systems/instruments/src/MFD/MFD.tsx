@@ -1,4 +1,5 @@
-import 'instruments/src/MFD/pages/common/style.scss';
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 
 import {
   ClockEvents,
@@ -16,7 +17,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
 
-import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
+import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
 
 import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MfdMsgList';
 import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
@@ -26,8 +27,10 @@ import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterfac
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
-import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
+import { InteractionMode, InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
 import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotAvail';
+
+import './pages/common/style.scss';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -56,11 +59,6 @@ export interface MfdDisplayInterface {
   interactionMode: Subscribable<InteractionMode>;
 
   openMessageList(): void;
-}
-
-export enum InteractionMode {
-  Touchscreen,
-  Kccu,
 }
 
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {

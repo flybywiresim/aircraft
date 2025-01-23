@@ -143,8 +143,8 @@ class CDUAvailableArrivalsPage {
             // Filter out approaches with no matching runway
             // Approaches not going to a specific runway (i.e circling approaches are filtered out at DB level)
             .filter((a) => !!runways.find((rw) => rw.ident === a.runwayIdent))
-            // Sort the approaches in Honeywell's documented order
-            .sort((a, b) => ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type])
+            // Sort the approaches in Honeywell's documented order, and alphabetical in between
+            .sort((a, b) => a.type != b.type ? ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type] : a.ident.localeCompare(b.ident))
             .map((approach) => ({ approach }))
             .concat(
                 // Runway-by-itself approaches
@@ -199,6 +199,7 @@ class CDUAvailableArrivalsPage {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                             } catch (e) {
                                 console.error(e);
+                                mcdu.logTroubleshootingError(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                 mcdu.eraseTemporaryFlightPlan(() => {
@@ -231,6 +232,7 @@ class CDUAvailableArrivalsPage {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                             } catch (e) {
                                 console.error(e);
+                                mcdu.logTroubleshootingError(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                 mcdu.eraseTemporaryFlightPlan(() => {
@@ -252,7 +254,7 @@ class CDUAvailableArrivalsPage {
             const destinationRunway = targetPlan.destinationRunway;
 
             if (destinationRunway) {
-                const arrivals = targetPlan.availableArrivals;
+                const arrivals = [...targetPlan.availableArrivals].sort((a, b) => a.ident.localeCompare(b.ident));
 
                 for (let i = 0; i < arrivals.length; i++) {
                     const arrival = arrivals[i];
@@ -300,6 +302,7 @@ class CDUAvailableArrivalsPage {
                                 }
                             } catch (e) {
                                 console.error(e);
+                                mcdu.logTroubleshootingError(e);
                                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                 mcdu.eraseTemporaryFlightPlan(() => {
@@ -343,6 +346,7 @@ class CDUAvailableArrivalsPage {
                                     }
                                 } catch (e) {
                                     console.error(e);
+                                    mcdu.logTroubleshootingError(e);
                                     mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                     mcdu.eraseTemporaryFlightPlan(() => {
@@ -373,6 +377,7 @@ class CDUAvailableArrivalsPage {
                             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
                         } catch (e) {
                             console.error(e);
+                            mcdu.logTroubleshootingError(e);
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                             mcdu.eraseTemporaryFlightPlan(() => {
@@ -400,6 +405,7 @@ class CDUAvailableArrivalsPage {
                                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, true, forPlan, inAlternate);
                                     } catch (e) {
                                         console.error(e);
+                                        mcdu.logTroubleshootingError(e);
                                         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                                         mcdu.eraseTemporaryFlightPlan(() => {
@@ -563,6 +569,7 @@ class CDUAvailableArrivalsPage {
                             CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                         } catch (e) {
                             console.error(e);
+                            mcdu.logTroubleshootingError(e);
                             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                             mcdu.eraseTemporaryFlightPlan(() => {
@@ -627,6 +634,7 @@ class CDUAvailableArrivalsPage {
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
             } catch (e) {
                 console.error(e);
+                mcdu.logTroubleshootingError(e);
                 mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
 
                 mcdu.eraseTemporaryFlightPlan(() => {
