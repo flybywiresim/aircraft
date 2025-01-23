@@ -2,9 +2,9 @@ import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscribable, VNo
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { NewAtisIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/NewAtisIcon';
 import { AutoUpdateIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoUpdateIcon';
 import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPrintIcon';

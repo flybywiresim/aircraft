@@ -17,9 +17,9 @@ import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { ContextMenu, ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { FplnRevisionsMenuType, getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisionsMenu';
 import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
 import { InsertNextWptFromWindow, NextWptInfo } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
@@ -33,7 +33,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
-import { ConditionalComponent } from '../../common/ConditionalComponent';
+import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -1304,7 +1304,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           this.fpaRef.instance.innerText = '';
         } else {
           this.trackRef.instance.innerText = data.trackFromLastWpt
-            ? `${data.trackFromLastWpt.toFixed(0)}°${this.props.trueTrack.get() ? 'T' : ''}`
+            ? `${data.trackFromLastWpt.toFixed(0).padStart(3, '0')}°${this.props.trueTrack.get() ? 'T' : ''}`
             : '';
           this.distRef.instance.innerText = data.distFromLastWpt?.toFixed(0) ?? '';
           this.fpaRef.instance.innerText = data.fpa ? data.fpa.toFixed(1) : '';
@@ -1445,7 +1445,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       ) {
         altStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
       } else if (!isBelowTransAlt) {
-        altStr = <span>{`FL${Math.round(data.altitudePrediction / 100).toString()}`}</span>;
+        altStr = (
+          <span>{`FL${Math.round(data.altitudePrediction / 100)
+            .toString()
+            .padStart(3, '0')}`}</span>
+        );
       } else {
         const roundedAltitude = MathUtils.round(data.altitudePrediction, 10).toFixed(0);
         altStr = <span>{roundedAltitude}</span>;
