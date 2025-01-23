@@ -76,10 +76,6 @@ export class ProcedureLinesGenerator {
     ChecklistLineStyle.OmissionDots,
     ChecklistLineStyle.SeparationLine,
     ChecklistLineStyle.SubHeadline,
-    ChecklistLineStyle.Amber,
-    ChecklistLineStyle.Cyan,
-    ChecklistLineStyle.Green,
-    ChecklistLineStyle.White,
   ];
 
   static conditionalActiveItems(
