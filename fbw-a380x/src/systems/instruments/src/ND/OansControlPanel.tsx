@@ -590,12 +590,22 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   render(): VNode {
     return (
       <>
-        <IconButton
-          ref={this.closePanelButtonRef}
-          onClick={() => this.props.togglePanel()}
-          icon="double-up"
-          containerStyle="z-index: 10; width: 49px; height: 45px; position: absolute; right: 2px; top: 768px;"
-        />
+        <div style={{ display: this.props.isVisible.map((v) => (v ? 'inherit' : 'none')) }}>
+          <IconButton
+            ref={this.closePanelButtonRef}
+            onClick={() => this.props.togglePanel()}
+            icon="double-up"
+            containerStyle="z-index: 10; width: 49px; height: 45px; position: absolute; right: 2px; top: 768px;"
+          />
+        </div>
+        <div style={{ display: this.props.isVisible.map((v) => (v ? 'none' : 'inherit')) }}>
+          <IconButton
+            ref={this.closePanelButtonRef}
+            onClick={() => this.props.togglePanel()}
+            icon="double-down"
+            containerStyle="z-index: 10; width: 49px; height: 45px; position: absolute; right: 2px; top: 768px;"
+          />
+        </div>
         <div class="oans-control-panel-background">
           <div ref={this.oansMenuRef} class="oans-control-panel" style={this.style}>
             <TopTabNavigator
