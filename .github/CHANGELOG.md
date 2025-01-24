@@ -137,6 +137,7 @@
 1. [ATSU] Add MSFS as TAF source in MSFS2024 - @tracernz (Mike)
 1. [A380X/MFD] Fix wrong Landing weight calculation & block fuel not editable across flights in FUEL & LOAD - @BravoMike99 (bruno_pt99)
 1. [A32NX/FMS] Add terminal area database holds for MSFS2024 - @tracernz (Mike)
+1. [EFB] Set EFB Auto Brightness to default to On - @MrJigs7 (MrJigs)
 
 ## 0.12.0
 
