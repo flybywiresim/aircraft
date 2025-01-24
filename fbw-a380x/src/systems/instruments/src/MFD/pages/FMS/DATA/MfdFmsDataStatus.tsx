@@ -7,12 +7,12 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { NavigationDatabaseService } from '@fmgc/index';
 import { DatabaseIdent } from '@flybywiresim/fbw-sdk';
-import { ConfirmationDialog } from '../../common/ConfirmationDialog';
+import { ConfirmationDialog } from '../../../../MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
 
 import './MfdFmsDataStatus.scss';
 
