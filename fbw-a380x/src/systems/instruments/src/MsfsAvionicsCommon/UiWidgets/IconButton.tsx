@@ -1,3 +1,6 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import {
   ComponentProps,
   DisplayComponent,
@@ -7,15 +10,16 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import './style.scss';
 
 interface IconButtonProps extends ComponentProps {
   containerStyle?: string;
   icon:
-    | 'double-up'
-    | 'double-down'
     | 'single-up'
     | 'single-down'
+    | 'double-up'
+    | 'double-down'
+    | 'double-left'
+    | 'double-right'
     | 'ecl-single-up'
     | 'ecl-single-down'
     | 'ecl-check'
@@ -84,22 +88,6 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
   render(): VNode {
     return (
       <span ref={this.spanRef} class="mfd-icon-button" style={`${this.props.containerStyle}`}>
-        {this.props.icon === 'double-up' && (
-          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
-            <g ref={this.svgGroupRef} fill={this.fillColor}>
-              <polygon points="0,17.5 17.5,0 35,17.5" />
-              <polygon points="0,35 17.5,17.5 35,35" />
-            </g>
-          </svg>
-        )}
-        {this.props.icon === 'double-down' && (
-          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
-            <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(180 17.5 17.5)">
-              <polygon points="0,17.5 17.5,0 35,17.5" />
-              <polygon points="0,35 17.5,17.5 35,35" />
-            </g>
-          </svg>
-        )}
         {this.props.icon === 'single-up' && (
           <svg width="35" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor}>
@@ -114,15 +102,47 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
             </g>
           </svg>
         )}
-        {this.props.icon === 'ecl-single-up' && (
+        {this.props.icon === 'double-up' && (
+          <svg width="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor}>
+              <polygon points="0,17.5 17.5,0 35,17.5" />
+              <polygon points="0,35 17.5,17.5 35,35" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'double-down' && (
+          <svg width="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(180 17.5 17.5)">
+              <polygon points="0,17.5 17.5,0 35,17.5" />
+              <polygon points="0,35 17.5,17.5 35,35" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'double-left' && (
           <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(270 17.5 17.5)">
+              <polygon points="0,17.5 17.5,0 35,17.5" />
+              <polygon points="0,35 17.5,17.5 35,35" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'double-right' && (
+          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(90 17.5 17.5)">
+              <polygon points="0,17.5 17.5,0 35,17.5" />
+              <polygon points="0,35 17.5,17.5 35,35" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'ecl-single-up' && (
+          <svg width="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill-opacity="0.0" stroke={this.fillColor} stroke-width="3">
               <polygon points="3,32 17.5,3 32,32" />
             </g>
           </svg>
         )}
         {this.props.icon === 'ecl-single-down' && (
-          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+          <svg width="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg">
             <g
               ref={this.svgGroupRef}
               fill-opacity="0.0"
@@ -135,7 +155,7 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
           </svg>
         )}
         {this.props.icon === 'ecl-check' && (
-          <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+          <svg width="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg">
             <g
               ref={this.svgGroupRef}
               fill="white"

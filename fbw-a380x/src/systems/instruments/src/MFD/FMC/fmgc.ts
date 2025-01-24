@@ -53,6 +53,10 @@ export enum ClimbDerated {
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */
 export class FmgcData {
+  static fmcFormatSpeed(sub: Subscribable<number | null>) {
+    return sub.map((it) => (it !== null ? it.toFixed(0) : '---'));
+  }
+
   public readonly cpnyFplnAvailable = Subject.create(false);
 
   public readonly cpnyFplnUplinkInProgress = Subject.create(false);
@@ -89,12 +93,15 @@ export class FmgcData {
   /** in kg. null if not set. */
   public readonly taxiFuelPilotEntry = Subject.create<number | null>(null);
 
-  /** in kg */
-  public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) =>
-    it === null ? AirlineModifiableInformation.EK.taxiFuel : it,
-  );
+  public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((v) => v !== null);
 
-  public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((it) => it !== null);
+  public readonly defaultTaxiFuel = Subject.create<number | null>(AirlineModifiableInformation.EK.taxiFuel);
+
+  public readonly taxiFuel = MappedSubject.create(
+    ([pilotEntryTaxiFuel, defaultTaxiFuel]) => (pilotEntryTaxiFuel !== null ? pilotEntryTaxiFuel : defaultTaxiFuel),
+    this.taxiFuelPilotEntry,
+    this.defaultTaxiFuel,
+  );
 
   /** in kg. null if not set. */
   public readonly routeReserveFuelWeightPilotEntry = Subject.create<number | null>(null);
@@ -112,14 +119,21 @@ export class FmgcData {
   /** in percent. null if not set. */
   public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number | null>(null);
 
-  public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) =>
-    it === null ? AirlineModifiableInformation.EK.rteRsv : it,
-  ); // in percent
+  public readonly routeReserveFuelIsPilotEntered = this.routeReserveFuelWeightPilotEntry.map((it) => it !== null);
 
-  public readonly routeReserveFuelIsPilotEntered = MappedSubject.create(
-    ([fuel, time]) => fuel !== null || time !== null,
-    this.routeReserveFuelWeightPilotEntry,
+  public readonly routeReserveFuelPercentage = MappedSubject.create(
+    ([percentagePilotEntry, reservePilotEntry]) =>
+      reservePilotEntry !== null
+        ? null
+        : percentagePilotEntry === null
+          ? AirlineModifiableInformation.EK.rteRsv
+          : percentagePilotEntry,
     this.routeReserveFuelPercentagePilotEntry,
+    this.routeReserveFuelWeightPilotEntry,
+  );
+
+  public readonly routeReserveFuelPercentageIsPilotEntered = this.routeReserveFuelPercentagePilotEntry.map(
+    (v) => v !== null,
   );
 
   public readonly paxNumber = Subject.create<number | null>(null);
@@ -210,11 +224,11 @@ export class FmgcData {
 
   public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
 
-  public readonly flapRetractionSpeed = Subject.create<Knots | null>(141);
+  public readonly flapRetractionSpeed = Subject.create<Knots | null>(null);
 
-  public readonly slatRetractionSpeed = Subject.create<Knots | null>(159);
+  public readonly slatRetractionSpeed = Subject.create<Knots | null>(null);
 
-  public readonly greenDotSpeed = Subject.create<Knots | null>(190);
+  public readonly greenDotSpeed = Subject.create<Knots | null>(null);
 
   public readonly approachSpeed = Subject.create<Knots | null>(null);
 
@@ -293,11 +307,11 @@ export class FmgcData {
   /** in feet. null if not set. */
   public readonly approachRadioMinimum = Subject.create<number | null>(null);
 
-  public readonly approachVref = Subject.create<Knots>(129);
+  public readonly approachVref = Subject.create<Knots | null>(null);
 
   public readonly approachFlapConfig = Subject.create<FlapConf>(FlapConf.CONF_FULL);
 
-  public readonly approachVls = Subject.create<Knots>(134);
+  public readonly approachVls = Subject.create<Knots | null>(null);
 
   /**
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
@@ -447,10 +461,11 @@ export class FmgcDataService implements Fmgc {
       return preSel;
     }
 
-    if (this.flightPlanService.has(FlightPlanIndex.Active)) {
+    // FIXME need to rework the cost index based speed calculations
+    /* if (this.flightPlanService.has(FlightPlanIndex.Active)) {
       const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
-    }
+    }*/
     return 310;
   }
 
@@ -564,7 +579,7 @@ export class FmgcDataService implements Fmgc {
     return this.data.approachTemperature.get() ?? 0;
   }
 
-  /** in kilograms */
+  /** in tons */
   getDestEFOB(useFob: boolean): number {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
@@ -574,7 +589,7 @@ export class FmgcDataService implements Fmgc {
     return 0;
   }
 
-  /** in kilograms */
+  /** in tons */
   getAltEFOB(useFOB = false): number {
     // TODO estimate alternate fuel
     if (this.getDestEFOB(useFOB) === 0) {

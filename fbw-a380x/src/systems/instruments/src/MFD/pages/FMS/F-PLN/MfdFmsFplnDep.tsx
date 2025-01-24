@@ -3,7 +3,7 @@
 import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {}

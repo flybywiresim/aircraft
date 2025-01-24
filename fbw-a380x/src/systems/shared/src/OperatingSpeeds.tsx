@@ -11,6 +11,7 @@ import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LerpLookupTable } from '@microsoft/msfs-sdk';
+import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 
 export enum ApproachConf {
   CONF_1 = 1,
@@ -119,6 +120,9 @@ export class SpeedsLookupTables {
     if (conf === 0) {
       return SpeedsLookupTables.VLS_CONF_0.get(0, weight);
     } else {
+      if (conf > 5) {
+        throw new Error('Invalid flap config for approach VLS computation');
+      }
       return SpeedsLookupTables.VLS_APPR_CONF[conf].get(cg, weight);
     }
   }
@@ -400,28 +404,14 @@ function getVfeNIdx(fi: number): number {
 }
 
 /**
- * Convert degrees Celsius into Kelvin
- * @param T degrees Celsius
- * @returns degrees Kelvin
- */
-function convertCtoK(T: number): number {
-  return T + 273.15;
-}
-
-/**
  * Get correct Vmax for Vmo and Mmo in knots
  * @returns Min(Vmo, Mmo)
  * @private
  */
 function getVmo() {
-  return Math.min(
-    Vmo,
-    MathUtils.convertMachToKCas(
-      Mmo,
-      convertCtoK(Simplane.getAmbientTemperature()),
-      SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar'),
-    ),
-  );
+  const adrPressure = ADIRS.getCorrectedAverageStaticPressure();
+  const ambientPressure = adrPressure !== undefined ? adrPressure.valueOr(1013.25) : 1013.25;
+  return Math.min(Vmo, MathUtils.convertMachToKCas(Mmo, ambientPressure));
 }
 
 export class A380OperatingSpeeds {
@@ -512,13 +502,12 @@ export class A380OperatingSpeeds {
     this.f2 =
       fmgcFlightPhase <= FmgcFlightPhase.Takeoff
         ? Math.max(1.18 * vs1gConf1F, Vmcl + 5)
-        : SpeedsLookupTables.F2_SPEED.get(altitude, m);
+        : SpeedsLookupTables.F2_SPEED.get(cg, m);
     this.f3 =
       fmgcFlightPhase <= FmgcFlightPhase.Takeoff
         ? Math.max(1.18 * vs1gConf1F, Vmcl + 5)
-        : SpeedsLookupTables.F3_SPEED.get(altitude, m);
-    this.s =
-      fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? 1.21 * vs1gConf0 : SpeedsLookupTables.S_SPEED.get(altitude, m);
+        : SpeedsLookupTables.F3_SPEED.get(cg, m);
+    this.s = fmgcFlightPhase <= FmgcFlightPhase.Takeoff ? 1.21 * vs1gConf0 : SpeedsLookupTables.S_SPEED.get(m);
   }
 }
 

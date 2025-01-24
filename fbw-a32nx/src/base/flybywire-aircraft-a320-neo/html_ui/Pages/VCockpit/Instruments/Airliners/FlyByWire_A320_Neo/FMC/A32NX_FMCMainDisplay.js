@@ -100,12 +100,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedCrzSpeed = undefined;
         this.managedSpeedTarget = undefined;
         this.managedSpeedTargetIsMach = undefined;
-        this.climbSpeedLimit = undefined;
-        this.climbSpeedLimitAlt = undefined;
-        this.climbSpeedLimitPilot = undefined;
-        this.descentSpeedLimit = undefined;
-        this.descentSpeedLimitAlt = undefined;
-        this.descentSpeedLimitPilot = undefined;
         this.managedSpeedClimb = undefined;
         this.managedSpeedClimbIsPilotEntered = undefined;
         this.managedSpeedClimbMach = undefined;
@@ -450,12 +444,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedCrzSpeed = undefined;
         this.managedSpeedTarget = NaN;
         this.managedSpeedTargetIsMach = false;
-        this.climbSpeedLimit = 250;
-        this.climbSpeedLimitAlt = 10000;
-        this.climbSpeedLimitPilot = false;
-        this.descentSpeedLimit = 250;
-        this.descentSpeedLimitAlt = 10000;
-        this.descentSpeedLimitPilot = false;
         this.managedSpeedClimb = 290;
         this.managedSpeedClimbIsPilotEntered = false;
         this.managedSpeedClimbMach = 0.78;
@@ -947,11 +935,11 @@ class FMCMainDisplay extends BaseAirliners {
 
         // apply speed limit/alt
         if (this.flightPhaseManager.phase <= FmgcFlightPhases.CRUISE) {
-            if (this.climbSpeedLimit !== undefined && alt <= this.climbSpeedLimitAlt) {
+            if (this.climbSpeedLimit !== null && alt <= this.climbSpeedLimitAlt) {
                 kcas = Math.min(this.climbSpeedLimit, kcas);
             }
         } else if (this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
-            if (this.descentSpeedLimit !== undefined && alt <= this.descentSpeedLimitAlt) {
+            if (this.descentSpeedLimit !== null && alt <= this.descentSpeedLimitAlt) {
                 kcas = Math.min(this.descentSpeedLimit, kcas);
             }
         }
@@ -4762,6 +4750,62 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    /**
+     * The maximum speed imposed by the climb speed limit in the active flight plan or null if it is not set.
+     * @returns {number | null}
+     */
+    get climbSpeedLimit() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.climbSpeedLimitSpeed : DefaultPerformanceData.ClimbSpeedLimitSpeed;
+    }
+
+    /**
+     * The altitude below which the climb speed limit of the active flight plan applies or null if not set.
+     * @returns {number | null}
+     */
+    get climbSpeedLimitAlt() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.climbSpeedLimitAltitude : DefaultPerformanceData.ClimbSpeedLimitAltitude;
+    }
+
+    get climbSpeedLimitPilot() {
+        const plan = this.currFlightPlanService.active;
+
+        return plan ? plan.performanceData.isClimbSpeedLimitPilotEntered : false;
+    }
+
+    /**
+     * The maximum speed imposed by the descent speed limit in the active flight plan or null if it is not set.
+     * @returns {number | null}
+     */
+    get descentSpeedLimit() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.descentSpeedLimitSpeed : DefaultPerformanceData.DescentSpeedLimitSpeed;
+    }
+
+    /**
+     * The altitude below which the descent speed limit of the active flight plan applies or null if not set.
+     * @returns {number | null}
+     */
+    get descentSpeedLimitAlt() {
+        const plan = this.currFlightPlanService.active;
+
+        // The plane follows 250 below 10'000 even without a flight plan
+        return plan ? plan.performanceData.descentSpeedLimitAltitude : DefaultPerformanceData.DescentSpeedLimitAltitude;
+    }
+
+    get descentSpeedLimitPilot() {
+        const plan = this.currFlightPlanService.active;
+
+        return plan ? plan.performanceData.isDescentSpeedLimitPilotEntered : false;
+    }
+
     getFlightPhase() {
         return this.flightPhaseManager.phase;
     }
@@ -5076,6 +5120,13 @@ FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const FlightPlans = Object.freeze({
     Active: 0,
     Temporary: 1,
+});
+
+const DefaultPerformanceData = Object.freeze({
+    ClimbSpeedLimitSpeed: 250,
+    ClimbSpeedLimitAltitude: 10000,
+    DescentSpeedLimitSpeed: 250,
+    DescentSpeedLimitAltitude: 10000,
 });
 
 class FmArinc429OutputWord extends Arinc429Word {

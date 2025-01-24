@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -15,6 +15,7 @@ import { FlightArea } from '@fmgc/navigation/FlightArea';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { ImportedPerformanceData } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import {
+  DefaultPerformanceData,
   FlightPlanPerformanceData,
   FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
@@ -129,7 +130,18 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     this.alternateFlightPlan.allLegs.length = 0;
 
+    this.resetAlternatePerformanceData();
+
     this.alternateFlightPlan.incrementVersion();
+  }
+
+  private resetAlternatePerformanceData() {
+    this.setPerformanceData('alternateClimbSpeedLimitSpeed', DefaultPerformanceData.ClimbSpeedLimitSpeed);
+    this.setPerformanceData('alternateClimbSpeedLimitAltitude', DefaultPerformanceData.ClimbSpeedLimitAltitude);
+    this.setPerformanceData('isAlternateClimbSpeedLimitPilotEntered', false);
+    this.setPerformanceData('alternateDescentSpeedLimitSpeed', DefaultPerformanceData.DescentSpeedLimitSpeed);
+    this.setPerformanceData('alternateDescentSpeedLimitAltitude', DefaultPerformanceData.DescentSpeedLimitAltitude);
+    this.setPerformanceData('isAlternateDescentSpeedLimitPilotEntered', false);
   }
 
   directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
@@ -301,8 +313,21 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
     this.setPerformanceData('costIndex', 0);
+    this.setPerformanceData('climbSpeedLimitSpeed', this.performanceData.alternateClimbSpeedLimitSpeed);
+    this.setPerformanceData('climbSpeedLimitAltitude', this.performanceData.alternateClimbSpeedLimitAltitude);
+    this.setPerformanceData(
+      'isClimbSpeedLimitPilotEntered',
+      this.performanceData.isAlternateClimbSpeedLimitPilotEntered,
+    );
+    this.setPerformanceData('descentSpeedLimitSpeed', this.performanceData.alternateDescentSpeedLimitSpeed);
+    this.setPerformanceData('descentSpeedLimitAltitude', this.performanceData.alternateDescentSpeedLimitAltitude);
+    this.setPerformanceData(
+      'isDescentSpeedLimitPilotEntered',
+      this.performanceData.isAlternateDescentSpeedLimitPilotEntered,
+    );
 
     this.deleteAlternateFlightPlan();
+    this.resetAlternatePerformanceData();
 
     this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
     this.enqueueOperation(FlightPlanQueuedOperation.Restring);
@@ -401,8 +426,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param data performance data available in uplink
    */
   setImportedPerformanceData(data: ImportedPerformanceData) {
-    this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
-    this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
+    // Workaround for MSFS2020 not having transition alt/level in the navdata
+    if (!isMsfs2024()) {
+      this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
+      this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
+    }
     this.setPerformanceData('costIndex', data.costIndex);
     this.setPerformanceData('cruiseFlightLevel', data.cruiseFlightLevel);
     this.setPerformanceData('pilotTropopause', data.pilotTropopause);
@@ -450,6 +478,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotThrustReductionAltitude', null);
     plan.setPerformanceData('pilotAccelerationAltitude', null);
     plan.setPerformanceData('pilotEngineOutAccelerationAltitude', null);
+
+    plan.setPerformanceData('databaseTransitionAltitude', airport?.transitionAltitude ?? null);
   }
 
   /**
@@ -486,6 +516,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotMissedThrustReductionAltitude', null);
     plan.setPerformanceData('pilotMissedAccelerationAltitude', null);
     plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', null);
+
+    plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
   }
 
   static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(

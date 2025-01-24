@@ -1,6 +1,6 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
+import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 
 /*
  * Complete header for the FMS system
@@ -91,7 +91,7 @@ export class FmsHeader extends AbstractHeader {
               { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint'), disabled: true },
               { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid'), disabled: true },
               { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route'), disabled: true },
-              { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport'), disabled: true },
+              { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport') },
               { label: 'PRINTER', action: () => this.props.uiService.navigateTo('fms/data/printer'), disabled: true },
             ]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorData`}

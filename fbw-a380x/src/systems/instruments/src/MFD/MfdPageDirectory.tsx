@@ -20,6 +20,8 @@ import { MfdAtccomMsgRecord } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMs
 import { MfdAtccomMsgRecordAll } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordAll';
 import { MfdAtccomMsgRecordMonitored } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordMonitored';
 import { MfdAtccomMsgRecordExpand } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomMsgRecordExpand';
+import { MfdAtccomDAtis } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomDAtis';
+import { MfdAtccomDAtisReceived } from 'instruments/src/MFD/pages/ATCCOM/MfdAtccomDAtisReceived';
 
 // Header imports
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
@@ -33,6 +35,7 @@ import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
 import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls';
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
+import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataAirport';
 
 export function pageForUrl(
   url: string,
@@ -96,6 +99,8 @@ export function pageForUrl(
       return <MfdFmsDataStatus pageTitle="STATUS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/debug':
       return <MfdFmsDataDebug pageTitle="DEBUG" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fms/data/airport':
+      return <MfdFmsDataAirport pageTitle="AIRPORT" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'surv/controls':
       return <MfdSurvControls pageTitle="CONTROLS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'surv/status-switching':
@@ -114,6 +119,10 @@ export function pageForUrl(
       return (
         <MfdAtccomMsgRecordExpand pageTitle="MSG RECORD/ALL MSG/EXPAND" bus={bus} mfd={mfd} fmcService={fmcService} />
       );
+    case 'atccom/d-atis/list':
+      return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'atccom/d-atis/received':
+      return <MfdAtccomDAtisReceived pageTitle="D-ATIS/RECEIVED" bus={bus} mfd={mfd} fmcService={fmcService} />;
 
     default:
       return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;

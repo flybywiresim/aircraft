@@ -17,6 +17,7 @@ import {
 import {
   A380EfisNdRangeValue,
   a380EfisRangeSettings,
+  a380TerrainThresholdPadValue,
   ArincEventBus,
   BtvSimvarPublisher,
   EfisNdMode,
@@ -34,8 +35,8 @@ import {
   ZOOM_TRANSITION_TIME_MS,
 } from '@flybywiresim/oanc';
 
-import { ContextMenu, ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
-import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
+import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
+import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
 import { OansControlPanel } from './OansControlPanel';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
@@ -244,7 +245,7 @@ class NDInstrument implements FsInstrument {
       <div ref={this.topRef}>
         <CdsDisplayUnit
           bus={this.bus}
-          displayUnitId={DisplayUnitID.CaptNd}
+          displayUnitId={getDisplayIndex() === 1 ? DisplayUnitID.CaptNd : DisplayUnitID.FoNd}
           test={Subject.create(-1)}
           failed={Subject.create(false)}
         >
@@ -280,7 +281,12 @@ class NDInstrument implements FsInstrument {
               />
             </div>
           </div>
-          <NDComponent bus={this.bus} side={this.efisSide} rangeValues={a380EfisRangeSettings} />
+          <NDComponent
+            bus={this.bus}
+            side={this.efisSide}
+            rangeValues={a380EfisRangeSettings}
+            terrainThresholdPaddingText={a380TerrainThresholdPadValue}
+          />
           <ContextMenu
             ref={this.contextMenuRef}
             opened={this.contextMenuOpened}

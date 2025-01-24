@@ -7,8 +7,8 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { SurvStatusButton } from 'instruments/src/MFD/pages/common/SurvStatusButton';
-import { SurvStatusItem } from 'instruments/src/MFD/pages/common/SurvStatusItem';
+import { SurvStatusButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvStatusButton';
+import { SurvStatusItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvStatusItem';
 
 interface MfdSurvStatusSwitchingProps extends AbstractMfdPageProps {}
 

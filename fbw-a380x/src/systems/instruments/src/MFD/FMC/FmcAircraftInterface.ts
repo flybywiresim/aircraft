@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -813,7 +813,7 @@ export class FmcAircraftInterface {
         case FmgcFlightPhase.GoAround: {
           if (this.fmaVerticalMode.get() === VerticalMode.SRS_GA) {
             const speed = Math.min(
-              this.fmgc.data.approachVls.get() + (engineOut ? 15 : 25),
+              this.fmgc.data.approachVls.get() ?? Infinity + (engineOut ? 15 : 25),
               Math.max(
                 SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'),
                 this.fmgc.data.approachSpeed.get() ?? 0,
@@ -1116,7 +1116,7 @@ export class FmcAircraftInterface {
     const altActive = false;
     const landingWeight =
       this.fmgc.data.zeroFuelWeight.get() ??
-      NaN + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true));
+      NaN + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true)) * 1_000;
 
     return Number.isFinite(landingWeight) ? landingWeight : NaN;
   }
@@ -1128,7 +1128,7 @@ export class FmcAircraftInterface {
     /** in kg */
     const estLdgWeight = this.tryEstimateLandingWeight();
     let ldgWeight = estLdgWeight;
-    const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + this.fmc.fmgc.getFOB();
+    const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + this.fmc.fmgc.getFOB() * 1_000;
     const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
     if (this.flightPhase.get() >= FmgcFlightPhase.Approach || !Number.isFinite(estLdgWeight)) {
@@ -1170,22 +1170,17 @@ export class FmcAircraftInterface {
     this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
     this.speedVapp.set(Math.round(approachSpeeds.vapp));
 
-    // Retrieve CAS and altitude from ADRs
-    const cas = this.fmc.navigation.getComputedAirspeed();
+    // Retrieve altitude from ADRs
     const alt = this.fmc.navigation.getPressureAltitude();
 
-    if (cas !== null && alt !== null) {
-      // Only update speeds if ADR data valid
+    if (alt !== null) {
+      // Only update speeds if ADR altitude data valid.
 
       const flapLever = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
-      let flaps = flapLever;
-      if (flapLever === 1 && SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'Enum') === 1) {
-        flaps = 5; // CONF 1
-      }
       const speeds = new A380OperatingSpeeds(
         grossWeight,
-        cas,
-        flaps,
+        this.fmc.navigation.getComputedAirspeed() ?? 0, // CAS is NCD for low speeds/standstill, leading to null here
+        flapLever,
         this.flightPhase.get(),
         this.fmgc.getV2Speed(),
         alt,
@@ -1199,10 +1194,10 @@ export class FmcAircraftInterface {
         const f = Math.max(speeds.f2, Vmcl + 5);
         this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
       } else {
-        if (flaps === 2) {
+        if (flapLever === 2) {
           const f = Math.max(speeds.f2, Vmcl + 15);
           this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
-        } else if (flaps === 3) {
+        } else if (flapLever === 3) {
           const f = Math.max(speeds.f3, Vmcl + 10);
           this.fmgc.data.flapRetractionSpeed.set(Math.ceil(f));
         }
@@ -1238,7 +1233,7 @@ export class FmcAircraftInterface {
       SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
     }
 
-    if (this.fmc.enginesWereStarted.get()) {
+    if (this.fmc.enginesWereStarted.get() && this.flightPhase.get() !== FmgcFlightPhase.Done) {
       this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
     }
   }
@@ -1616,10 +1611,21 @@ export class FmcAircraftInterface {
     return SimVar.GetSimVarValue('AUTOPILOT ALTITUDE SLOT INDEX', 'number') === 2;
   }
 
-  getManagedTargets(v: number, m: number) {
-    const alt = ADIRS.getBaroCorrectedAltitude();
-    const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', m);
-    return alt && alt.isNormalOperation() && alt.value > 20_000 && v > vM ? [vM, true] : [v, false];
+  getManagedTargets(v: number, m: number): [number, boolean] {
+    const sat = ADIRS.getStaticAirTemperature();
+    const press = ADIRS.getCorrectedAverageStaticPressure();
+
+    if (
+      sat !== undefined &&
+      (sat.isNormalOperation() || sat.isFunctionalTest()) &&
+      press !== undefined &&
+      (press.isNormalOperation() || press.isFunctionalTest())
+    ) {
+      const vM = MathUtils.convertMachToKCas(m, press.value);
+      return v > vM ? [vM, true] : [v, false];
+    } else {
+      return [v, false];
+    }
   }
 
   // TODO/VNAV: Speed constraint
