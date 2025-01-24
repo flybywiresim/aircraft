@@ -26,9 +26,10 @@ export class OitFltOpsEfbOverlay extends DisplayComponent<OitFltOpsEfbOverlayPag
       <>
         {/* begin page content */}
         <div class="oit-page-container" style="justify-content: center; align-items: center;">
-          <div class="oit-label amber" style="font-size: 36px;">
+          <div class="oit-label amber" style="font-size: 36px; margin-bottom: 20px;">
             EFB OVERLAY FAILED
           </div>
+          <div class="oit-label">Please reload aircraft after linking Navigraph through the EFB.</div>
         </div>
         {/* end page content */}
       </>

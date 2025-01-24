@@ -30,6 +30,7 @@ import { MemoryRouter as Router } from 'react-router';
 import {
   FmsData,
   NavigraphAuthProvider,
+  NXDataStore,
   UniversalConfigProvider,
   usePersistentProperty,
   useSimVar,
@@ -167,11 +168,25 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
   const [toAirport, setToAirport] = useState<string>('');
   const [altnAirport, setAltnAirport] = useState<string>('');
 
-  const showEfbOverlay = showCharts === 1 || showOfp === 1;
-  document.getElementsByTagName('a380x-oitlegacy')[0].classList.toggle('nopointer', !showEfbOverlay);
-
   const navigraphAuthInfo = useNavigraphAuthInfo();
   const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
+
+  const [navigraphToken, setNavigraphToken] = useState<string>(NXDataStore.get('NAVIGRAPH_ACCESS_TOKEN'));
+  const [reloadAircraft, setReloadAircraft] = useState<boolean>(false);
+
+  const showEfbOverlay = (showCharts === 1 && !reloadAircraft) || showOfp === 1;
+  document.getElementsByTagName('a380x-oitlegacy')[0].classList.toggle('nopointer', !showEfbOverlay);
+
+  useEffect(() => {
+    const cancelSub = NXDataStore.getAndSubscribe('NAVIGRAPH_ACCESS_TOKEN', (_, token) => {
+      if (!navigraphToken && token) {
+        setReloadAircraft(true);
+      }
+      setNavigraphToken(token);
+    });
+
+    return () => cancelSub();
+  }, []);
 
   const bus = useEventBus();
 
@@ -242,7 +257,7 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
         >
           <div className="flex flex-row">
             <div className="h-screen w-screen p-2.5 pt-0">
-              {showCharts === 1 && <Navigation />}
+              {showCharts === 1 && !reloadAircraft && <Navigation />}
               {showOfp === 1 && <Dispatch />}
             </div>
           </div>
