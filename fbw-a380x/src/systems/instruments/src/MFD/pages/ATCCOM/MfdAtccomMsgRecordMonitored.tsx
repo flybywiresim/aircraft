@@ -5,7 +5,7 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { MessageElementMonitored } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageElementMonitored';
 
 interface MfdAtccomMsgRecordMonitoredProps extends AbstractMfdPageProps {}

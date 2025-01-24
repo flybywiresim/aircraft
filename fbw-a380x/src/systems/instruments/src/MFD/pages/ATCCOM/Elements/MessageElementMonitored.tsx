@@ -1,5 +1,5 @@
 import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 
 interface MessageElementMonitoredProps extends ComponentProps {
   msgTime?: string;

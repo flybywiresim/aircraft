@@ -5,8 +5,8 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { MessageElement } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageElement';
 
 interface MfdAtccomMsgRecordAllProps extends AbstractMfdPageProps {}

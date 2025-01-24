@@ -5,7 +5,7 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 
 interface MfdAtccomMsgRecordExpandProps extends AbstractMfdPageProps {}
 
