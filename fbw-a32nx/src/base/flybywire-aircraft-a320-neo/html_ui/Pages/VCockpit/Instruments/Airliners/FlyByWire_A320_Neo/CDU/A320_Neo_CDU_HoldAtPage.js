@@ -143,9 +143,9 @@ class CDUHoldAtPage {
                 }
                 return hold.altitude2 - altitude;
             case "+":
-                return altitude >= hold.altitude1 ? 0 : hold.altitude1 - altitude;
+                return Math.max(0, hold.altitude1 - altitude);
             case "-":
-                return altitude <= hold.altitude1 ? 0 : altitude - hold.altitude1;
+                return Math.max(0, altitude - hold.altitude1);
             default:
                 // no restriction, so always suitable
                 return 0;
