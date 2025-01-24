@@ -1,7 +1,7 @@
 import { Chart } from 'navigraph/charts';
 
 export enum NavigraphSubscriptionStatus {
-  Free,
+  None,
   Standard,
   Unlimited,
   Unknown,

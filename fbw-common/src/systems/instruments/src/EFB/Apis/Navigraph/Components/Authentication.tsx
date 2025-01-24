@@ -30,7 +30,7 @@ export type NavigraphAuthInfo =
 function getNavigraphSubscriptionStatus(user: User) {
   switch (true) {
     case user.subscriptions.length === 0:
-      return NavigraphSubscriptionStatus.Free;
+      return NavigraphSubscriptionStatus.None;
     case [NAVIGRAPH_SUBSCRIPTION_CHARTS, NAVIGRAPH_SUBSCRIPTION_FMSDATA].every((it) => user.subscriptions.includes(it)):
       return NavigraphSubscriptionStatus.Unlimited;
     case user.subscriptions.includes(NAVIGRAPH_SUBSCRIPTION_FMSDATA):
