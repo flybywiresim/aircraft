@@ -115,6 +115,7 @@
 1. [A380X/MFD] Fixed the altitude prediction not rounding to the nearest 10 on the FPLN page - @bulenteroglu (senolitam)
 1. [A380X/MFD] Use slashed zero as default font for FMS pages - @bulenteroglu (senolitam)
 1. [A380X/ND] Remove leading zeros from terrain elevation display - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed the crossing climb/descent speed limit pseudo-waypoint label on the A380X - @bulenteroglu (senolitam)
 1. [A32NX/FWS] Fix autopilot instinctive disconnect button logic for 3D model - @flogross89 (floridude)
 1. [A380X/EFIS] Fix VV pb indicator not turning on when TRK-FPA mode is selected - @heclak (Heclak)
 1. [EFB] Added troubleshooting page, under about page, for advanced support - @tracernz (Mike)
@@ -131,6 +132,11 @@
 1. [A32NX/FMS] Sort instrument procedures for display on the MCDU - @tracernz (Mike)
 1. [A380X/ELEC] Various fixes in the electrical system (battery voltage indicator switchup, AC GND SVC BUS and correct behavior of battery contactors) - @Gurgel100 (Pascal)
 1. [A380X/FMS] Use cruise mach above crossover altitude - @flogross89 (floridude)
+1. [A380X/SD] Display oil quantity on ENG page - @flogross89 (floridude)
+1. [A380X/FMS] Accept KCCU plus/minus key as first entry into field - @flogross89 (floridude)
+1. [ATSU] Add MSFS as TAF source in MSFS2024 - @tracernz (Mike)
+1. [A380X/MFD] Fix wrong Landing weight calculation & block fuel not editable across flights in FUEL & LOAD - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Add terminal area database holds for MSFS2024 - @tracernz (Mike)
 1. [EFB] Navigraph subscriptions other than Ultimate are now shown on the EFB to reduce confusion with "Unknown" - @tracernz (Mike)
 
 ## 0.12.0
