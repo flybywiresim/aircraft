@@ -867,7 +867,6 @@ class CDUFlightPlanPage {
 
         try {
             await mcdu.flightPlanService.deleteElementAt(fpIndex, insertDiscontinuity, forPlan, forAlternate);
-            console.log("deleting element");
         } catch (e) {
             console.error(e);
             mcdu.logTroubleshootingError(e);
