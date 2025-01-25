@@ -9,7 +9,7 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { LegType } from '@flybywiresim/fbw-sdk';
+import { isVhfNavaid, LegType, ApproachType } from '@flybywiresim/fbw-sdk';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
@@ -30,25 +30,12 @@ import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 import { HALeg, HFLeg, HMLeg } from '../lnav/legs/HX';
-
-function getFacilities(): typeof Facilities {
-  if ('Facilities' in window) {
-    return Facilities;
-  }
-
-  return {
-    getMagVar(_lat: Degrees, _long: Degrees): Degrees {
-      return 0;
-    },
-  };
-}
+import { MagVar } from '@microsoft/msfs-sdk';
 
 export namespace GeometryFactory {
   export function createFromFlightPlan(plan: BaseFlightPlan, doGenerateTransitions = true): Geometry {
     const legs = new Map<number, Leg>();
     const transitions = new Map<number, Transition>();
-
-    let runningMagvar = 0;
 
     const planElements = plan.allLegs;
     for (let i = 0; i < planElements.length; i++) {
@@ -61,12 +48,7 @@ export namespace GeometryFactory {
         continue;
       }
 
-      if (element.isXF()) {
-        const fixLocation = element.terminationWaypoint().location;
-
-        // TODO very sussy... declination/variation does not work like this for terminal procedures
-        runningMagvar = getFacilities().getMagVar(fixLocation.lat, fixLocation.long);
-      }
+      const magVar = getMagCorrection(i, plan);
 
       let nextGeometryLeg: Leg;
       if (
@@ -75,11 +57,11 @@ export namespace GeometryFactory {
         nextElement.type !== LegType.VI
       ) {
         nextGeometryLeg = isXiIfXf(element, nextElement, nextNextElement)
-          ? geometryLegFromFlightPlanLeg(runningMagvar, nextElement, nextNextElement)
-          : geometryLegFromFlightPlanLeg(runningMagvar, element, nextElement);
+          ? geometryLegFromFlightPlanLeg(magVar, nextElement, nextNextElement)
+          : geometryLegFromFlightPlanLeg(magVar, element, nextElement);
       }
 
-      const geometryLeg = geometryLegFromFlightPlanLeg(runningMagvar, prevElement, element, nextGeometryLeg);
+      const geometryLeg = geometryLegFromFlightPlanLeg(magVar, prevElement, element, nextGeometryLeg);
 
       if (isXiIfXf(prevElement, element, nextElement)) {
         geometryLeg.isNull = true;
@@ -105,8 +87,6 @@ export namespace GeometryFactory {
       console.log('[Fms/Geometry/Update] Starting geometry update.');
     }
 
-    let runningMagvar = 0;
-
     for (let i = 0; i < flightPlan.legCount; i++) {
       const oldLeg = geometry.legs.get(i);
 
@@ -116,29 +96,24 @@ export namespace GeometryFactory {
 
       const planLeg = flightPlan.allLegs[i];
 
-      if (planLeg.isDiscontinuity === false && planLeg.isXF()) {
-        const fixLocation = planLeg.terminationWaypoint().location;
-
-        // TODO very sussy... declination/variation does not work like this for terminal procedures
-        runningMagvar = getFacilities().getMagVar(fixLocation.lat, fixLocation.long);
-      }
-
       // We start at 0 in the loop because we wanna still update runningMagvar from the start of the plan. This avoids changes in leg true courses
       // that can cause unwanted re-creation of new legs.
       if (i < flightPlan.activeLegIndex - 1) {
         continue;
       }
 
+      const magVar = planLeg.isDiscontinuity === false ? getMagCorrection(i, flightPlan) : 0;
+
       let nextLeg: Leg = undefined;
       if (nextPlanLeg?.isDiscontinuity === false && !nextPlanLeg.isXI()) {
         nextLeg = isXiIfXf(planLeg, nextPlanLeg, nextNextPlanLeg)
-          ? geometryLegFromFlightPlanLeg(runningMagvar, nextPlanLeg, nextNextPlanLeg)
-          : geometryLegFromFlightPlanLeg(runningMagvar, planLeg, nextPlanLeg);
+          ? geometryLegFromFlightPlanLeg(magVar, nextPlanLeg, nextNextPlanLeg)
+          : geometryLegFromFlightPlanLeg(magVar, planLeg, nextPlanLeg);
       }
 
       const newLeg =
         planLeg?.isDiscontinuity === false
-          ? geometryLegFromFlightPlanLeg(runningMagvar, prevPlanLeg, planLeg, nextLeg)
+          ? geometryLegFromFlightPlanLeg(magVar, prevPlanLeg, planLeg, nextLeg)
           : undefined;
 
       if (isXiIfXf(prevPlanLeg, planLeg, nextPlanLeg)) {
@@ -241,7 +216,7 @@ export namespace GeometryFactory {
 }
 
 function geometryLegFromFlightPlanLeg(
-  runningMagvar: Degrees,
+  magVar: Degrees,
   previousFlightPlanLeg: FlightPlanElement | undefined,
   flightPlanLeg: FlightPlanLeg,
   nextGeometryLeg?: Leg,
@@ -256,10 +231,9 @@ function geometryLegFromFlightPlanLeg(
 
   const waypoint = flightPlanLeg.terminationWaypoint();
   const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
-  const trueCourse = flightPlanLeg.definition.magneticCourse + runningMagvar;
+  const trueCourse = A32NX_Util.magneticToTrue(flightPlanLeg.definition.magneticCourse, magVar);
   const magneticTheta = flightPlanLeg.definition.theta;
-  const radialMagVar = recommendedNavaid ? A32NX_Util.getRadialMagVar(recommendedNavaid) : runningMagvar;
-  const trueTheta = A32NX_Util.magneticToTrue(flightPlanLeg.definition.theta, radialMagVar);
+  const trueTheta = A32NX_Util.magneticToTrue(flightPlanLeg.definition.theta, magVar);
   const length = flightPlanLeg.definition.length;
 
   switch (legType) {
@@ -356,6 +330,98 @@ function geometryLegFromFlightPlanLeg(
   }
 
   throw new Error(`[FMS/Geometry] Could not generate geometry leg for flight plan leg type=${LegType[legType]}`);
+}
+
+function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
+  // we try to interpret PANS OPs as accurately as possible within the limits of available data
+  const currentLeg = plan.legElementAt(legIndex);
+
+  let airportMagVar = 0;
+  if (legIndex <= plan.findLastDepartureLeg()[2]) {
+    airportMagVar =
+      plan.originAirport.magneticVariation ??
+      MagVar.get(plan.originAirport.location.lat, plan.originAirport.location.long);
+  } else if (legIndex >= plan.findFirstArrivalLeg()[2]) {
+    airportMagVar =
+      plan.destinationAirport.magneticVariation ??
+      MagVar.get(plan.destinationAirport.location.lat, plan.destinationAirport.location.long);
+  }
+
+  const isLegOnApproach =
+    legIndex >= plan.firstApproachLegIndex - plan.approachViaSegment.legCount &&
+    legIndex < plan.firstMissedApproachLegIndex;
+
+  // magnetic tracks to/from a VOR always use VOR station declination
+  if (isVhfNavaid(currentLeg.definition.waypoint)) {
+    const vor = currentLeg.definition.waypoint;
+
+    if (vor?.stationDeclination === undefined) {
+      console.warn('Leg coded incorrectly (missing vor fix or station declination)', currentLeg, vor);
+      return airportMagVar;
+    }
+
+    return vor.stationDeclination;
+  } else if (isLegOnApproach) {
+    return getApproachMagCorrection(legIndex, plan) ?? airportMagVar;
+  }
+
+  // for all other terminal procedure legs we use airport magnetic variation
+  return airportMagVar;
+}
+
+function getApproachMagCorrection(legIndex: number, plan: BaseFlightPlan): number | undefined {
+  const approachType = plan.approach.type;
+  const currentLeg = plan.legElementAt(legIndex);
+
+  // we use station declination for VOR/DME approaches
+  if (
+    approachType === ApproachType.Vor ||
+    approachType === ApproachType.VorDme ||
+    approachType === ApproachType.Vortac
+  ) {
+    // find a leg with the reference navaid for the procedure
+    for (
+      let i = plan.firstMissedApproachLegIndex - 1;
+      i >= plan.firstMissedApproachLegIndex - plan.approachViaSegment.legCount;
+      i--
+    ) {
+      const leg = plan.allLegs[i];
+      if (leg.isDiscontinuity === false && isVhfNavaid(leg.definition.recommendedNavaid)) {
+        return leg.definition.recommendedNavaid.stationDeclination;
+      }
+    }
+
+    console.warn('VOR/DME approach coded incorrectly (missing recommended navaid or station declination)', currentLeg);
+    return undefined;
+  }
+
+  // for RNAV procedures use recommended navaid station declination for these leg types
+  let useStationDeclination =
+    currentLeg.type === LegType.CF || currentLeg.type === LegType.FA || currentLeg.type === LegType.FM;
+
+  switch (approachType) {
+    case ApproachType.LocBackcourse:
+    case ApproachType.Ils:
+    case ApproachType.Loc:
+    case ApproachType.Mls:
+    case ApproachType.Igs:
+    case ApproachType.Sdf:
+    case ApproachType.Lda:
+    case ApproachType.MlsTypeA:
+    case ApproachType.MlsTypeBC:
+      useStationDeclination = useStationDeclination && legIndex < plan.getFinalApproachCourseFixIndex();
+  }
+
+  if (useStationDeclination) {
+    const recNavaid = currentLeg.definition.recommendedNavaid;
+
+    if (!recNavaid || !isVhfNavaid(recNavaid)) {
+      console.warn('Leg coded incorrectly (missing recommended navaid or station declination)', currentLeg, recNavaid);
+      return undefined;
+    }
+
+    return recNavaid.stationDeclination;
+  }
 }
 
 function doGenerateTransitionsForLeg(leg: Leg, legIndex: number, plan: BaseFlightPlan) {
