@@ -5,8 +5,8 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { MessageElementMonitored } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageElementMonitored';
+import { MessageRecordNav } from 'instruments/src/MFD/pages/ATCCOM/Elements/MessageRecordNav';
 
 interface MfdAtccomMsgRecordMonitoredProps extends AbstractMfdPageProps {}
 
@@ -52,12 +52,7 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
               {/* fill space vertically */}
             </div>
             <div id="msg-record-scrollbar"></div>
-            <div id="msg-record-nav">
-              <IconButton icon={'double-up'} containerStyle="width:42px; height:42px;" />
-              <IconButton icon={'single-up'} containerStyle="width:42px; height:42px; padding:8px;" />
-              <IconButton icon={'single-down'} containerStyle="width:42px; height:42px; padding:8px;" />
-              <IconButton icon={'double-down'} containerStyle="width:42px; height:42px;" />
-            </div>
+            <MessageRecordNav />
           </div>
           <div class="mfd-atccom-msg-record-footer"></div>
         </div>
