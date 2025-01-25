@@ -139,6 +139,7 @@
 1. [A32NX/FMS] Add terminal area database holds for MSFS2024 - @tracernz (Mike)
 1. [EFB] Set EFB Auto Brightness to default to On - @MrJigs7 (MrJigs)
 1. [FMS] Allow airport to be loaded as fixes in instrument procedures - @tracernz (Mike)
+1. [FMS] Make sure radials of CR/VR legs use the station declination as magvar - @BlueberryKing (BlueberryKing)
 
 ## 0.12.0
 
