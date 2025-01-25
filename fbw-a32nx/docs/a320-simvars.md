@@ -2382,7 +2382,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `A32NX_ENGINE_OIL_PRESS:{index}`
     - Number (psi)
-    - Total engine {index} oil quantity in the oil tank
+    - Engine {index} oil pressure 
 
 - `A32NX_ENGINE_OIL_QTY:{index}`
     - Number (quarts)
@@ -2390,7 +2390,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - `A32NX_ENGINE_OIL_TEMP:{index}`
     - Number (celsius)
-    - Total engine {index} oil quantity in the oil system (tank + circuit)
+    - Engine {index} oil temperature
 
 - `A32NX_ENGINE_OIL_TOTAL:{index}`
     - Number (quarts)
