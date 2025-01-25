@@ -91,14 +91,14 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
         {this.props.icon === 'single-up' && (
           <svg width="35" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor}>
-              <polygon points="7.5,0 15,15 0,15" />
+              <polygon points="7.5,1 15,14 0,14" />
             </g>
           </svg>
         )}
         {this.props.icon === 'single-down' && (
           <svg width="35" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor}>
-              <polygon points="0,0 15,0 7.5,15" />
+              <polygon points="0,1 15,1 7.5,14" />
             </g>
           </svg>
         )}
