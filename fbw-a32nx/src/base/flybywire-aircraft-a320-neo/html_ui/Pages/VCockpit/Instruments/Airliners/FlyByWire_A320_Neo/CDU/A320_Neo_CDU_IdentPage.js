@@ -139,7 +139,7 @@ class CDUIdentPage {
         };
 
         mcdu.setTemplate([
-            ["A320-200"], //This aircraft code is correct and does not include the engine type.
+            ["A320-200\xa0\xa0\xa0\xa0"], //This aircraft code is correct and does not include the engine type.
             ["\xa0ENG"],
             ["LEAP-1A26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
@@ -152,9 +152,9 @@ class CDUIdentPage {
             ["", storedTitleCell],
             ["", storedRoutesRunwaysCell],
             ["CHG CODE", storedWaypointsNavaidsCell],
-            ["{small}[  ]{end}[color]inop", storedDeleteCell],
-            ["IDLE/PERF", "SOFTWARE"],
-            ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"],
+            ["[\xa0][color]inop", storedDeleteCell],
+            ["IDLE/PERF", "SOFTWARE\xa0\xa0"],
+            ["{small}{green}+0.0/+0.0{end}{end}", "STATUS/XLOAD>[color]inop"],
         ]);
     }
 }
