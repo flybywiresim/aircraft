@@ -28,6 +28,7 @@ pub struct BatteryChargeRectifierUnit {
     battery_pb_is_auto: bool,
     backup_is_powered: bool,
     contactor_closed: bool,
+    ground_service_contactor_closed: bool,
     ground_servicing: bool,
     loss_of_ac_duration: Duration,
     overcurrent_duration: Duration,
@@ -55,6 +56,7 @@ impl BatteryChargeRectifierUnit {
             battery_pb_is_auto: false,
             backup_is_powered: false,
             contactor_closed: false,
+            ground_service_contactor_closed: false,
             ground_servicing: false,
             loss_of_ac_duration: Duration::default(),
             overcurrent_duration: Duration::default(),
@@ -111,6 +113,10 @@ impl BatteryChargeRectifierUnit {
 
     pub fn should_close_line_contactor(&self) -> bool {
         self.contactor_closed
+    }
+
+    pub fn should_close_ground_service_line_contactor(&self) -> bool {
+        self.ground_service_contactor_closed
     }
 
     pub fn should_close_battery_connector(&self) -> bool {
