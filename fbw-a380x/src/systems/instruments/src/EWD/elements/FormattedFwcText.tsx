@@ -169,7 +169,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
         spans.push(
           <tspan
             key={buffer}
-            class={{ [color]: true, EWDWarn: !this.props.pfd, FontIntermediate: this.props.pfd ?? false }}
+            class={{ [color]: true, EWDWarn: !this.props.pfd, FontMediumSmaller: this.props.pfd ?? false }}
           >
             {buffer}
           </tspan>,

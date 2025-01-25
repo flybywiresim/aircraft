@@ -185,17 +185,7 @@ export const EcamMemos: { [n: string]: string } = {
 };
 
 /** Only these IDs will be shown in the PFD MEMO section */
-export const pfdMemoDisplay: string[] = [
-  '322000001',
-  '000006002',
-  '000032501',
-  '000054502',
-  '220000001',
-  '220000002',
-  '300000001',
-  '300000002',
-  '320000001',
-];
+export const pfdMemoDisplay: string[] = ['000006002', '220000001', '220000002', '300000001', '300000002', '320000001'];
 
 /** All possible INFOs (e.g. CAT 3 SINGLE ONLY), with special formatting characters. */
 export const EcamInfos: { [n: string]: string } = {

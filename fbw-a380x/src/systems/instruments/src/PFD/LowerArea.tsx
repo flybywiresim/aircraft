@@ -692,7 +692,7 @@ class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscr
       <g visibility={this.props.visible.map((it) => (it ? 'inherit' : 'hidden'))}>
         <g visibility={this.availChecker.fwsAvail.map((it) => (it ? 'inherit' : 'hidden'))}>
           {this.limitationsLine.map((line, index) => (
-            <FormattedFwcText x={70} y={165 + index * 7} message={line} pfd={true} />
+            <FormattedFwcText x={70} y={165 + index * 6.5} message={line} pfd={true} />
           ))}
         </g>
         <g visibility={this.availChecker.fwsAvail.map((it) => (it ? 'hidden' : 'inherit'))}>

@@ -1530,7 +1530,7 @@ export class FwsAbnormalSensed {
         this.fws.fmcAFault.get() && this.fws.fmcBFault.get(),
         this.fws.fmcAFault.get() && !this.fws.fmcBFault.get() && !this.fws.fmcCFault.get(),
         true,
-      ], // simplified, update when improved FMS swtchg logic
+      ],
       whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 0],
       failure: 2,
       sysPage: -1,
@@ -1546,7 +1546,7 @@ export class FwsAbnormalSensed {
         this.fws.fmcBFault.get() && this.fws.fmcCFault.get(),
         this.fws.fmcBFault.get() && !this.fws.fmcAFault.get() && !this.fws.fmcCFault.get(),
         true,
-      ], // simplified, update when improved FMS swtchg logic
+      ],
       whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 2],
       failure: 2,
       sysPage: -1,
@@ -1557,13 +1557,13 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.fms1Fault, this.fws.fms2Fault),
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true, true, true, true, true], // simplified, update when improved FMS swtchg logic
+      whichItemsToShow: () => [true, true, true, true, true],
       whichItemsChecked: () => [
         true,
         this.fws.fmsSwitchingKnob.get() === 1,
         false,
         false,
-        !this.fws.gpwsFlapModeOff.get(),
+        this.fws.gpwsFlapModeOff.get(),
       ],
       failure: 2,
       sysPage: -1,

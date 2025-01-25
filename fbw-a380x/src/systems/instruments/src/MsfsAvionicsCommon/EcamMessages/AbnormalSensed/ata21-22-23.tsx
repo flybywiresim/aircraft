@@ -1811,15 +1811,15 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'FOR NAV: USE STBY INSTRUMENTS',
-        sensed: true,
+        sensed: false,
       },
       {
         name: 'FOR NAVAID TUNING: USE RMP',
-        sensed: true,
+        sensed: false,
       },
       {
         name: '[MFD SURV] TAWS FLAP MODE',
-        sensed: false,
+        sensed: true,
         labelNotCompleted: 'OFF',
       },
     ],
