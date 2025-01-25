@@ -692,7 +692,7 @@ class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscr
       <g visibility={this.props.visible.map((it) => (it ? 'inherit' : 'hidden'))}>
         <g visibility={this.availChecker.fwsAvail.map((it) => (it ? 'inherit' : 'hidden'))}>
           {this.limitationsLine.map((line, index) => (
-            <FormattedFwcText x={70} y={165 + index * 6.5} message={line} pfd={true} />
+            <FormattedFwcText x={70} y={165 + index * 6.1} message={line} pfd={true} />
           ))}
         </g>
         <g visibility={this.availChecker.fwsAvail.map((it) => (it ? 'hidden' : 'inherit'))}>
@@ -726,8 +726,8 @@ class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
       <>
         <g id="memos" visibility={this.availChecker.fwsAvail.map((it) => (it ? 'inherit' : 'hidden'))}>
           <FormattedFwcText x={4} y={165} message={this.memoLine1} pfd={true} />
-          <FormattedFwcText x={4} y={172} message={this.memoLine2} pfd={true} />
-          <FormattedFwcText x={4} y={179} message={this.memoLine3} pfd={true} />
+          <FormattedFwcText x={4} y={171.1} message={this.memoLine2} pfd={true} />
+          <FormattedFwcText x={4} y={177.2} message={this.memoLine3} pfd={true} />
         </g>
         <g id="memoNotAvail" visibility={this.availChecker.fwsAvail.map((it) => (it ? 'hidden' : 'inherit'))}>
           <FormattedFwcText x={8} y={172} message={'\x1b<4mMEMO NOT AVAIL'} pfd={true} />
