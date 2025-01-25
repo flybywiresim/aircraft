@@ -1056,7 +1056,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[0]}>
                         <span class="mfd-value tmpy">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.v1ToBeConfirmed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.v1ToBeConfirmed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -1096,7 +1096,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div ref={this.flapSpeedsRef[0]} class="mfd-label-value-container">
                       <span class="mfd-label mfd-spacing-right">F</span>
                       <span class="mfd-value">
-                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.flapRetractionSpeed)}
+                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.flapRetractionSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -1120,7 +1120,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[1]}>
                         <span class="mfd-value tmpy">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.vrToBeConfirmed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.vrToBeConfirmed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -1128,7 +1128,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div ref={this.flapSpeedsRef[1]} class="mfd-label-value-container">
                       <span class="mfd-label mfd-spacing-right">S</span>
                       <span class="mfd-value">
-                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.slatRetractionSpeed)}
+                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.slatRetractionSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -1152,7 +1152,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[2]}>
                         <span class="mfd-value tmpy">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.v2ToBeConfirmed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.v2ToBeConfirmed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -1164,7 +1164,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         </svg>
                       </span>
                       <span class="mfd-value">
-                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.greenDotSpeed)}
+                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.greenDotSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -2570,28 +2570,28 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           </svg>
                         </span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">S</span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">F</span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container" style="padding-top: 15px;">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">VREF</span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachVref)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachVref)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -2611,7 +2611,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div class="mfd-label-value-container" style="margin-top: 10px;">
                         <span class="mfd-label mfd-spacing-right">VLS</span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachVls)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachVls)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -2672,14 +2672,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">F</span>
                     <span class="mfd-value">
-                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
+                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">S</span>
                     <span class="mfd-value">
-                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
+                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
@@ -2690,7 +2690,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       </svg>
                     </span>
                     <span class="mfd-value">
-                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
+                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>

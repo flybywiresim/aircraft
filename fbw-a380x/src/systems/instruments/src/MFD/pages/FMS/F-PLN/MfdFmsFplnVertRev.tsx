@@ -12,6 +12,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AltitudeOrFlightLevelFormat,
+  FlightLevelFormat,
   SpeedKnotsFormat,
   TimeHHMMSSFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -23,6 +24,8 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { FmgcData } from 'instruments/src/MFD/FMC/fmgc';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {}
 
@@ -30,6 +33,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private selectedPageIndex = Subject.create(0);
 
   private availableWaypoints = ArraySubject.create<string>([]);
+
+  private availableWaypointsToLegIndex: number[] = [];
 
   private selectedWaypointIndex = Subject.create<number | null>(null);
 
@@ -83,6 +88,22 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private altWindowUnitTrailing = Subject.create<string>('');
 
   // STEP ALTs page
+  private readonly crzFl = Subject.create<number | null>(null);
+
+  private readonly stepAltsLineVisibility = Array.from(Array(5), () => Subject.create<'visible' | 'hidden'>('hidden'));
+  private readonly stepAltsWptIndices = Array.from(Array(5), () => Subject.create<number | null>(null));
+  private readonly stepAltsAltitudes = Array.from(Array(5), () => Subject.create<number | null>(null));
+  private readonly stepAltsDistances = Array.from(Array(5), () => Subject.create<number | null>(null));
+  private readonly stepAltsTimes = Array.from(Array(5), () => Subject.create<string>('--:--'));
+  private readonly stepAltsIgnored = Array.from(Array(5), () => Subject.create<boolean>(false));
+
+  private readonly stepNotAllowedAt = Subject.create<string | null>(null);
+
+  private readonly stepAltsStartAtStepIndex = Subject.create<number>(0);
+  private readonly stepAltsNumberOfCruiseSteps = Subject.create<number>(0);
+
+  private readonly stepAltsScrollDownDisabled = Subject.create(true);
+  private readonly stepAltsScrollUpDisabled = Subject.create(true);
 
   protected onNewData(): void {
     console.time('F-PLN/VERT REV:onNewData');
@@ -105,10 +126,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.loadedFlightPlanIndex.get(),
     ).activeLegIndex;
     if (activeLegIndex) {
+      this.availableWaypointsToLegIndex = [];
       const wpt = this.loadedFlightPlan?.allLegs
-        .slice(activeLegIndex + 1)
-        .map((el) => {
-          if (el.isDiscontinuity === false) {
+        .slice(activeLegIndex)
+        .map((el, idx) => {
+          if (el instanceof FlightPlanLeg && el.isXF()) {
+            this.availableWaypointsToLegIndex.push(idx + activeLegIndex);
             return el.ident;
           }
           return null;
@@ -121,6 +144,62 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
       if (revWptIdx && this.props.fmcService.master?.revisedWaypointIndex.get() !== undefined) {
         this.selectedWaypointIndex.set(revWptIdx - activeLegIndex - 1);
+      }
+    }
+
+    if (pd?.cruiseFlightLevel) {
+      this.crzFl.set(pd.cruiseFlightLevel);
+    }
+
+    if (this.loadedFlightPlan) {
+      const cruiseSteps = this.loadedFlightPlan.allLegs
+        .map((l) => (l.isDiscontinuity === false && l.cruiseStep ? l.cruiseStep : null))
+        .filter((it) => it !== null);
+
+      for (let i = 0; i < 5; i++) {
+        this.stepAltsLineVisibility[i].set('hidden');
+      }
+
+      this.stepAltsNumberOfCruiseSteps.set(cruiseSteps.length);
+      this.stepAltsScrollUpDisabled.set(this.stepAltsStartAtStepIndex.get() === 0);
+      this.stepAltsScrollDownDisabled.set(cruiseSteps.length - this.stepAltsStartAtStepIndex.get() <= 5);
+
+      for (let i = this.stepAltsStartAtStepIndex.get(); i < this.stepAltsStartAtStepIndex.get() + 5; i++) {
+        const line = i - this.stepAltsStartAtStepIndex.get();
+
+        if (!cruiseSteps[i]) {
+          this.stepAltsLineVisibility[line].set('visible');
+          this.stepAltsWptIndices[line].set(null);
+          this.stepAltsAltitudes[line].set(null);
+          this.stepAltsDistances[line].set(null);
+          this.stepAltsTimes[line].set('--:--');
+          this.stepAltsIgnored[line].set(false);
+          break;
+        }
+
+        const leg = this.loadedFlightPlan.allLegs[cruiseSteps[i].waypointIndex];
+
+        if (cruiseSteps[i] && leg.isDiscontinuity === false) {
+          const pred =
+            this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i);
+          const etaDate = new Date(
+            (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + (pred?.secondsFromPresent ?? 0)) * 1000,
+          );
+          const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseSteps[i].waypointIndex);
+
+          leg.isDiscontinuity === false && this.stepAltsLineVisibility[line].set('visible');
+          this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
+          this.stepAltsAltitudes[line].set(cruiseSteps[i].toAltitude);
+          this.stepAltsDistances[line].set(
+            leg.calculated?.cumulativeDistance ?? 0 + cruiseSteps[i].distanceBeforeTermination,
+          );
+          this.stepAltsTimes[line].set(
+            pred
+              ? `${etaDate.getUTCHours().toString().padStart(2, '0')}:${etaDate.getUTCMinutes().toString().padStart(2, '0')}`
+              : '--:--',
+          );
+          this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
+        }
       }
     }
 
@@ -299,6 +378,24 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.loadedFlightPlanIndex.get(),
         false,
       );
+    }
+  }
+
+  private tryAddCruiseStep(lineIndex: number) {
+    const wptIndex = this.stepAltsWptIndices[lineIndex].get();
+    const alt = this.stepAltsAltitudes[lineIndex].get();
+
+    if (wptIndex !== null && alt !== null) {
+      const legIndex = this.availableWaypointsToLegIndex[wptIndex];
+      console.log('add cruise step', wptIndex, legIndex, this.loadedFlightPlan?.allLegs);
+      this.loadedFlightPlan?.addOrUpdateCruiseStep(legIndex, alt);
+    }
+  }
+
+  private tryDeleteCruiseStep(lineIndex: number, oldWptIndex: number) {
+    console.log('delete cruise step');
+    if (this.stepAltsWptIndices[lineIndex].get() === null || this.stepAltsAltitudes[lineIndex].get() === null) {
+      this.loadedFlightPlan?.removeCruiseStep(oldWptIndex);
     }
   }
 
@@ -573,8 +670,171 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
               </TopTabNavigatorPage>
               <TopTabNavigatorPage>
                 {/* STEP ALTs */}
-                <div style="display: flex; justify-content: center; align-items: center;">
-                  <span class="mfd-label mfd-spacing-right">NOT IMPLEMENTED</span>
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                  <div class="mfd-fms-fpln-labeled-box-container" style="width: 100%;">
+                    <div class="mfd-fms-fpln-labeled-box-label" style="margin-left: 15px;">
+                      <span class="mfd-label mfd-spacing-right">STEP ALTS FROM CRZ</span>
+                      <span class="mfd-label-unit mfd-unit-leading">FL</span>
+                      <span class="mfd-value">{FmgcData.fmcFormatValue(this.crzFl)}</span>
+                    </div>
+                    <div style="width: 100%">
+                      <div style="display: grid; grid-template-columns: 35% 25% 20% 20%; grid-auto-rows: 60px;">
+                        <div
+                          class="mfd-label"
+                          style="align-self: flex-end; padding-left: 60px; padding-bottom: 10px; border-bottom: 1px solid #777777;"
+                        >
+                          WPT
+                        </div>
+                        <div
+                          class="mfd-label"
+                          style="align-self: flex-end; padding-left: 25px; padding-bottom: 10px; border-bottom: 1px solid #777777; border-right: 1px solid #777777;"
+                        >
+                          ALT
+                        </div>
+                        <div
+                          class="mfd-label"
+                          style="align-self: flex-end; padding-left: 30px; padding-bottom: 10px; border-bottom: 1px solid #777777;"
+                        >
+                          <span style="margin-right: 70px;">DIST</span>
+                        </div>
+                        <div
+                          class="mfd-label"
+                          style="align-self: flex-end; padding-left: 30px; padding-bottom: 10px; border-bottom: 1px solid #777777;"
+                        >
+                          <span>TIME</span>
+                        </div>
+
+                        {[0, 1, 2, 3, 4].map((li) => (
+                          <>
+                            <div class="fc aic jcc">
+                              <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
+                                <DropdownMenu
+                                  idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_stepAltWpt${li}`}
+                                  selectedIndex={this.stepAltsWptIndices[li]}
+                                  values={this.availableWaypoints}
+                                  freeTextAllowed={false}
+                                  containerStyle="width: 175px;"
+                                  alignLabels="flex-start"
+                                  numberOfDigitsForInputField={7}
+                                  tmpyActive={this.tmpyActive}
+                                  onModified={(newWptIndex) => {
+                                    const wptIndex = this.stepAltsWptIndices[li].get();
+                                    if (newWptIndex === null && wptIndex !== null) {
+                                      this.tryDeleteCruiseStep(li, wptIndex);
+                                    } else if (newWptIndex !== null) {
+                                      this.stepAltsWptIndices[li].set(newWptIndex);
+                                      this.tryAddCruiseStep(li);
+                                    }
+                                  }}
+                                  hEventConsumer={this.props.mfd.hEventConsumer}
+                                  interactionMode={this.props.mfd.interactionMode}
+                                />
+                              </div>
+                            </div>
+                            <div class="fc aic jcc" style="border-right: 1px solid #777777;">
+                              <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
+                                <InputField<number>
+                                  dataEntryFormat={new FlightLevelFormat()}
+                                  value={this.stepAltsAltitudes[li]}
+                                  containerStyle="width: 150px;"
+                                  alignText="center"
+                                  onModified={(alt) => {
+                                    const wptIndex = this.stepAltsWptIndices[li].get();
+                                    if (alt === null && wptIndex !== null) {
+                                      this.tryDeleteCruiseStep(li, wptIndex);
+                                    } else if (alt !== null) {
+                                      this.stepAltsAltitudes[li].set(alt);
+                                      this.tryAddCruiseStep(li);
+                                    }
+                                  }}
+                                  hEventConsumer={this.props.mfd.hEventConsumer}
+                                  interactionMode={this.props.mfd.interactionMode}
+                                />
+                              </div>
+                            </div>
+                            <div
+                              class="fr aic jcc"
+                              style={{
+                                display: this.stepAltsIgnored[li].map((i) => (i ? 'flex' : 'none')),
+                                'grid-column': 'span 2',
+                              }}
+                            >
+                              <span class="mfd-label">IGNORED</span>
+                            </div>
+                            <div
+                              class="fr aic jcc"
+                              style={{
+                                display: this.stepAltsIgnored[li].map((i) => (i ? 'none' : 'flex')),
+                                'justify-content': 'flex-end',
+                              }}
+                            >
+                              <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
+                                <span class="mfd-value">{FmgcData.fmcFormatValue(this.stepAltsDistances[li])}</span>
+                                <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+                              </div>
+                            </div>
+                            <div
+                              class="fr aic jcc"
+                              style={{ display: this.stepAltsIgnored[li].map((i) => (i ? 'none' : 'flex')) }}
+                            >
+                              <span class="mfd-value" style={{ visibility: this.stepAltsLineVisibility[li] }}>
+                                {this.stepAltsTimes[li]}
+                              </span>
+                            </div>
+                          </>
+                        ))}
+                      </div>
+                      <div style="flex-grow: 1" />
+                      <div clasS="fr jcc" style="flex: 1;">
+                        <span
+                          class="mfd-label biggest amber"
+                          style={{ visibility: this.stepNotAllowedAt.map((s) => (s === null ? 'hidden' : 'visible')) }}
+                        >
+                          {this.stepNotAllowedAt.map((s) => `STEP NOT ALLOWED AT ${s}`)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                    <IconButton
+                      icon={'double-down'}
+                      containerStyle="padding: 10px; margin-right: 5px;"
+                      disabled={this.stepAltsScrollDownDisabled}
+                      onClick={() =>
+                        this.stepAltsStartAtStepIndex.set(
+                          Math.min(this.stepAltsNumberOfCruiseSteps.get(), this.stepAltsStartAtStepIndex.get() + 1),
+                        )
+                      }
+                    />
+                    <IconButton
+                      icon={'double-up'}
+                      containerStyle="padding: 10px"
+                      disabled={this.stepAltsScrollUpDisabled}
+                      onClick={() =>
+                        this.stepAltsStartAtStepIndex.set(Math.max(0, this.stepAltsStartAtStepIndex.get() - 1))
+                      }
+                    />
+                  </div>
+                  <div class="fc" style="width: 100%; margin-top: 25px;">
+                    <div
+                      class="mfd-fms-fpln-labeled-box-container"
+                      style="flex-direction: row; justify-content: flex-start; align-items: flex-start;"
+                    >
+                      <div class="mfd-fms-fpln-labeled-box-label">
+                        <span class="mfd-label">OPTIMUM STEP POINT</span>
+                      </div>
+                      <div class="fr aic" style="margin: 25px 200px 0px 10px;">
+                        <span class="mfd-label" style="margin-right: 10px;">
+                          TO
+                        </span>
+                        <span class="mfd-label-unit mfd-unit-leading">FL</span>
+                        <span class="mfd-value">---</span>
+                      </div>
+                      <div class="mfd-label" style="margin-top: 60px; margin-bottom: 30px;">
+                        NO OPTIMUM STEP FOUND
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </TopTabNavigatorPage>
             </TopTabNavigator>
