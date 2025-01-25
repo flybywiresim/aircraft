@@ -213,7 +213,7 @@ export class FwsAbnormalSensed {
   }
 
   public clearActiveProcedure(newState?: ChecklistState) {
-    const numFailures = this.fws.activeAbnormalNonSensedKeys.size + this.fws.presentedFailures.length;
+    const numFailures = this.fws.presentedFailures.length;
     if (numFailures === 1 && !this.fws.ecamStsNormal.get()) {
       // Call STS page on SD
       SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
