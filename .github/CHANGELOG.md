@@ -74,7 +74,6 @@
 1. [A380X/MFD] Various Fuel & Load Fixes - @BravoMike99 (bruno_pt99)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
-1. [ND] Fixed active leg label to be left aligned - @MrJigs7 (MrJigs)
 1. [A380X/FWS] No "auto brake off" callout when double pressing A/THR instinctive disconnect - @flogross89 (floridude)
 1. [A380X/FWS] Improve landing capability downgrade triple click logic (#9008) - @flogross89 (floridude)
 1. [A32NX/FWS] Add "auto brake off" callout, improve AP/ATHR disconnect aural alert logic - @flogross89 (floridude)
@@ -141,7 +140,6 @@
 1. [EFB] Set EFB Auto Brightness to default to On - @MrJigs7 (MrJigs)
 1. [FMS] Allow airport to be loaded as fixes in instrument procedures - @tracernz (Mike)
 1. [A380X/ND] Fixed active leg label to be left aligned - @MrJigs7 (MrJigs)
-
 
 ## 0.12.0
 
