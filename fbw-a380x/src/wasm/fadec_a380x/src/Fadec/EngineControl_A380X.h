@@ -59,9 +59,14 @@ class EngineControl_A380X {
   // TODO - might not be required - feeds into stateMachine but really relevant
   double prevSimEngineN3[4] = {0.0, 0.0, 0.0, 0.0};
 
+  // Engine oil state
+  double thermalEnergy[4] = {0.0, 0.0, 0.0, 0.0};
+
   // additional constants
   static constexpr int    MAX_OIL             = 200;
-  static constexpr int    MIN_OIL             = 140;
+  static constexpr int    MIN_OIL             = 170;
+  static constexpr int    MAX_OIL_TEMP        = 85;
+  static constexpr double FORCE_LB_TO_N       = 4.4482216153;
   static constexpr double FUEL_RATE_THRESHOLD = 661;  // lbs/sec for determining fuel ui tampering
 
   /**
@@ -90,6 +95,7 @@ class EngineControl_A380X {
   SimpleProfiler profilerEngineShutdownProcedure{"Fadec::EngineControl_A380X::engineShutdownProcedure()", 100};
   SimpleProfiler profilerUpdateFF{"Fadec::EngineControl_A380X::updateFF()", 100};
   SimpleProfiler profilerUpdatePrimaryParameters{"Fadec::EngineControl_A380X::updatePrimaryParameters()", 100};
+  SimpleProfiler profilerUpdateSecondaryParameters{"Fadec::EngineControl_A380X::updateSecondaryParameters()", 100};
   SimpleProfiler profilerUpdateEGT{"Fadec::EngineControl_A380X::updateEGT()", 100};
   SimpleProfiler profilerUpdateFuel{"Fadec::EngineControl_A380X::updateFuel()", 100};
   SimpleProfiler profilerUpdateThrustLimits{"Fadec::EngineControl_A380X::updateThrustLimits()", 100};
@@ -140,7 +146,7 @@ class EngineControl_A380X {
   /**
    * @brief Manages the state and state changes of the engine.
    *
-   * @param engine The engine number (1 or 2).
+   * @param engine The engine number (1-4).
    * @param engineIgniter The status of the engine igniter (enum 0=Crank, 1=Norm, 2=Ign).
    * @param engineStarter The status of the engine starter as bool.
    * @param simN3 The current N2 value from the simulator used as N3 for the A380X in percent.
@@ -159,7 +165,7 @@ class EngineControl_A380X {
   /**
    * @brief This function manages the engine start procedure.
    *
-   * @param engine The engine number (1 or 2).
+   * @param engine The engine number (1-4).
    * @param engineState The current state of the engine as an enum of type EngineState.
    * @param deltaTime The time difference since the last update in seconds.
    * @param engineTimer A timer used to calculate the elapsed time for various operations.
@@ -179,7 +185,7 @@ class EngineControl_A380X {
    * @brief This function manages the engine shutdown procedure.
    *        TODO: Temporary solution as per comment in original code
    *
-   * @param engine The engine number (1 or 2).
+   * @param engine The engine number (1-4).
    * @param ambientTemperature The current ambient temperature in degrees Celsius to calculate the engine's operating temperature.
    * @param simN1 The current N1 value from the simulator.
    * @param deltaTime The time difference since the last update. This is used to calculate the rate of change of various parameters.
@@ -190,7 +196,7 @@ class EngineControl_A380X {
   /**
    * @brief Updates the fuel flow of the engine.
    *
-   * @param engine The engine number (1 or 2).
+   * @param engine The engine number (1-4).
    * @param simCN1 The current corrected fan speed value from the simulator.
    * @param mach The current Mach number of the aircraft.
    * @param pressureAltitude The current pressure altitude of the aircraft in feet.
@@ -204,7 +210,7 @@ class EngineControl_A380X {
    * @brief Updates the primary custom parameters (LVars) of the engine when not starting or stopping the engine
    *        and the sim has control.
    *
-   * @param engine The engine number (1 or 2).
+   * @param engine The engine number (1-4).
    * @param imbalance The current encoded imbalance number of the engine.
    * @param simN1 The current N1 value from the simulator in percent.
    * @param simN3 The current N2 value from the simulator in percent used as N3 input in the A380X.
@@ -212,9 +218,27 @@ class EngineControl_A380X {
   void updatePrimaryParameters(int engine, FLOAT64 simN1, FLOAT64 simN3);
 
   /**
+   * @brief Updates the secondary custom parameters (LVars) of the engine when not starting or stopping the engine
+   *        and the sim has control.
+   *
+   * @param engine The engine number (1-4).
+   * @param engineState The current state of the engine as an enum of type EngineState.
+   * @param deltaTime The time difference since the last update in seconds.
+   * @param simOnGround The on ground status of the aircraft (0 or 1).
+   * @param ambientTemperature The current ambient pressure in hPa.
+   * @param deltaN3 Difference between last N3 and current N3
+   */
+  void updateSecondaryParameters(int          engine,
+                                 EngineState  engineState,
+                                 double       deltaTime,
+                                 bool         simOnGround,
+                                 const double ambientTemperature,
+                                 double       deltaN3);
+
+  /**
    * @brief FBW Exhaust Gas Temperature (in degree Celsius). Updates EGT with realistic values visualized in the ECAM
    *
-   * @param engine The engine number (1 or 2).
+   * @param engine The engine number (1-4).
    * @param deltaTime The time difference since the last update to calculate the rate of change of various parameters.
    * @param simOnGround The on ground status of the aircraft (0 or 1).
    * @param engineState The current state of the engine.
@@ -263,6 +287,18 @@ class EngineControl_A380X {
                           int    packs,
                           int    nai,
                           int    wai);
+
+  /**
+   * @brief Updates the oil parameters. Quantity works atm, temperature doesn't.
+   *
+   * @param engine The engine number (1-4).
+   * @param engineState The current state of the engine as an enum of type EngineState.
+   * @param deltaTime The time difference since the last update in seconds.
+   * @param simOnGround The on ground status of the aircraft (0 or 1).
+   * @param ambientTemperature The current ambient pressure in hPa.
+   * @param deltaN3 Difference between last N3 and current N3
+   */
+  void updateOil(int engine, EngineState engineState, double deltaTime, bool simOnGround, const double ambientTemperature, double deltaN3);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_ENGINECONTROL_A380X_H

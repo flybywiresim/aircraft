@@ -100,13 +100,12 @@ export class TakeoffPathBuilder {
     const startingAltitude = lastCheckpoint.altitude;
     const midwayAltitude = (startingAltitude + accelerationAltitude) / 2;
 
-    const v2PlusTenMach = this.atmosphericConditions.computeMachFromCas(midwayAltitude, speed);
-    const estimatedTat = this.atmosphericConditions.totalAirTemperatureFromMach(midwayAltitude, v2PlusTenMach);
+    const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(midwayAltitude);
 
     const predictedN1 = EngineModel.getClimbThrustCorrectedN1(
       config.engineModelParameters,
       midwayAltitude,
-      estimatedTat,
+      staticAirTemperature,
     );
 
     const { fuelBurned, distanceTraveled, timeElapsed } = Predictions.altitudeStep(
