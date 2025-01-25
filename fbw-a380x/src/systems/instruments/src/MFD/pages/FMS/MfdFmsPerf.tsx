@@ -1,11 +1,11 @@
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
 import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
@@ -26,11 +26,11 @@ import {
   WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
-import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
+import { ConfirmationDialog } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/FMC/fmgc';
-import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
+import { FmgcData, TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/FMC/fmgc';
+import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
@@ -1055,7 +1055,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[0]}>
-                        <span class="mfd-value tmpy">{this.props.fmcService.master.fmgc.data.v1ToBeConfirmed}</span>
+                        <span class="mfd-value tmpy">
+                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.v1ToBeConfirmed)}
+                        </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                     </div>
@@ -1093,7 +1095,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                     <div ref={this.flapSpeedsRef[0]} class="mfd-label-value-container">
                       <span class="mfd-label mfd-spacing-right">F</span>
-                      <span class="mfd-value">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
+                      <span class="mfd-value">
+                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.flapRetractionSpeed)}
+                      </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
                     <div class="mfd-label-value-container">
@@ -1115,13 +1119,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[1]}>
-                        <span class="mfd-value tmpy">{this.props.fmcService.master.fmgc.data.vrToBeConfirmed}</span>
+                        <span class="mfd-value tmpy">
+                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.vrToBeConfirmed)}
+                        </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                     </div>
                     <div ref={this.flapSpeedsRef[1]} class="mfd-label-value-container">
                       <span class="mfd-label mfd-spacing-right">S</span>
-                      <span class="mfd-value">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
+                      <span class="mfd-value">
+                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.slatRetractionSpeed)}
+                      </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
                     <div class="mfd-label-value-container">
@@ -1143,7 +1151,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[2]}>
-                        <span class="mfd-value tmpy">{this.props.fmcService.master.fmgc.data.v2ToBeConfirmed}</span>
+                        <span class="mfd-value tmpy">
+                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.v2ToBeConfirmed)}
+                        </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                     </div>
@@ -1153,7 +1163,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           <circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" />
                         </svg>
                       </span>
-                      <span class="mfd-value">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
+                      <span class="mfd-value">
+                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.greenDotSpeed)}
+                      </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
                   </div>
@@ -2557,26 +2569,30 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" />
                           </svg>
                         </span>
-                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachGreenDotSpeed}</span>
+                        <span class="mfd-value">
+                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
+                        </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">S</span>
                         <span class="mfd-value">
-                          {this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed}
+                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">F</span>
                         <span class="mfd-value">
-                          {this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed}
+                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container" style="padding-top: 15px;">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">VREF</span>
-                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachVref}</span>
+                        <span class="mfd-value">
+                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachVref)}
+                        </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                     </div>
@@ -2594,7 +2610,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       />
                       <div class="mfd-label-value-container" style="margin-top: 10px;">
                         <span class="mfd-label mfd-spacing-right">VLS</span>
-                        <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachVls}</span>
+                        <span class="mfd-value">
+                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachVls)}
+                        </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                     </div>
@@ -2653,12 +2671,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <div style="margin: 60px 0px 100px 200px; display: flex; flex-direction: column;">
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">F</span>
-                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed}</span>
+                    <span class="mfd-value">
+                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
+                    </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">S</span>
-                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed}</span>
+                    <span class="mfd-value">
+                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
+                    </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                   <div class="mfd-label-value-container">
@@ -2667,7 +2689,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" />
                       </svg>
                     </span>
-                    <span class="mfd-value">{this.props.fmcService.master.fmgc.data.approachGreenDotSpeed}</span>
+                    <span class="mfd-value">
+                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
+                    </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                 </div>

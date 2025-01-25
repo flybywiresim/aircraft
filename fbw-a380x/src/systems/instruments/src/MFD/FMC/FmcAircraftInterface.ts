@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -813,7 +813,7 @@ export class FmcAircraftInterface {
         case FmgcFlightPhase.GoAround: {
           if (this.fmaVerticalMode.get() === VerticalMode.SRS_GA) {
             const speed = Math.min(
-              this.fmgc.data.approachVls.get() + (engineOut ? 15 : 25),
+              this.fmgc.data.approachVls.get() ?? Infinity + (engineOut ? 15 : 25),
               Math.max(
                 SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'),
                 this.fmgc.data.approachSpeed.get() ?? 0,
@@ -1170,17 +1170,16 @@ export class FmcAircraftInterface {
     this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
     this.speedVapp.set(Math.round(approachSpeeds.vapp));
 
-    // Retrieve CAS and altitude from ADRs
-    const cas = this.fmc.navigation.getComputedAirspeed();
+    // Retrieve altitude from ADRs
     const alt = this.fmc.navigation.getPressureAltitude();
 
-    if (cas !== null && alt !== null) {
-      // Only update speeds if ADR data valid
+    if (alt !== null) {
+      // Only update speeds if ADR altitude data valid.
 
       const flapLever = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
       const speeds = new A380OperatingSpeeds(
         grossWeight,
-        cas,
+        this.fmc.navigation.getComputedAirspeed() ?? 0, // CAS is NCD for low speeds/standstill, leading to null here
         flapLever,
         this.flightPhase.get(),
         this.fmgc.getV2Speed(),
@@ -1234,7 +1233,7 @@ export class FmcAircraftInterface {
       SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
     }
 
-    if (this.fmc.enginesWereStarted.get()) {
+    if (this.fmc.enginesWereStarted.get() && this.flightPhase.get() !== FmgcFlightPhase.Done) {
       this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
     }
   }
@@ -1612,10 +1611,21 @@ export class FmcAircraftInterface {
     return SimVar.GetSimVarValue('AUTOPILOT ALTITUDE SLOT INDEX', 'number') === 2;
   }
 
-  getManagedTargets(v: number, m: number) {
-    const alt = ADIRS.getBaroCorrectedAltitude();
-    const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', m);
-    return alt && alt.isNormalOperation() && alt.value > 20_000 && v > vM ? [vM, true] : [v, false];
+  getManagedTargets(v: number, m: number): [number, boolean] {
+    const sat = ADIRS.getStaticAirTemperature();
+    const press = ADIRS.getCorrectedAverageStaticPressure();
+
+    if (
+      sat !== undefined &&
+      (sat.isNormalOperation() || sat.isFunctionalTest()) &&
+      press !== undefined &&
+      (press.isNormalOperation() || press.isFunctionalTest())
+    ) {
+      const vM = MathUtils.convertMachToKCas(m, press.value);
+      return v > vM ? [vM, true] : [v, false];
+    } else {
+      return [v, false];
+    }
   }
 
   // TODO/VNAV: Speed constraint

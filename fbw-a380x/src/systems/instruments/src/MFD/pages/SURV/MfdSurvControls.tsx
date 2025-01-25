@@ -15,12 +15,12 @@ import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdS
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { SquawkFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { SurvButton } from 'instruments/src/MFD/pages/common/SurvButton';
+import { SurvButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvButton';
 
 interface MfdSurvControlsProps extends AbstractMfdPageProps {}
 

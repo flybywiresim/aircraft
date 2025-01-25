@@ -8,8 +8,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';

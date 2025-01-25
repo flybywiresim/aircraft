@@ -1,6 +1,6 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
+import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 
 /*
  * Complete header for the ATCCOM system
@@ -27,7 +27,7 @@ export class AtccomHeader extends AbstractHeader {
         this.requestIsSelected.set(val.category === 'request');
         this.reportModifyIsSelected.set(val.category === 'report-modify');
         this.msgRecordIsSelected.set(val.category === 'msg-record');
-        this.atisIsSelected.set(val.category === 'atis');
+        this.atisIsSelected.set(val.category === 'd-atis');
         this.emerIsSelected.set(val.category === 'emer');
       }, true),
     );
@@ -77,8 +77,8 @@ export class AtccomHeader extends AbstractHeader {
           />
           <PageSelectorDropdownMenu
             isActive={this.atisIsSelected}
-            label="ATIS"
-            menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/atis') }]}
+            label="D-ATIS"
+            menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/d-atis/list') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorAtis`}
             containerStyle="flex: 1"
           />
