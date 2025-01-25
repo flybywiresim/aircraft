@@ -29,7 +29,8 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
       if (!skipUpdateLegs) {
         this.allLegs.length = 0;
 
-        this.flightPlan.syncSegmentLegsChange(this);
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringDeparture);
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, this);
       }
 
       return;
