@@ -4230,12 +4230,14 @@ export class FwsCore {
     // Delete inactive failures from internal map
     this.activeAbnormalProceduresList.get().forEach((_, key) => {
       if (!allFailureKeys.includes(key) || this.recallFailures.includes(key)) {
-        this.activeAbnormalProceduresList.delete(key);
-
-        // Delete associated deferred procedure
-        for (const [deferredKey, _] of ewdDeferredEntries) {
-          if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key)) {
-            this.activeDeferredProceduresList.delete(deferredKey);
+        if (this.recallFailures.includes(key)) {
+          this.activeAbnormalProceduresList.delete(key);
+        } else {
+          // Delete associated deferred procedure
+          for (const [deferredKey, _] of ewdDeferredEntries) {
+            if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key)) {
+              this.activeDeferredProceduresList.delete(deferredKey);
+            }
           }
         }
       }
@@ -4413,7 +4415,7 @@ export class FwsCore {
       );
     }
 
-    this.normalChecklists.update();
+    this.normalChecklists.update(deltaTime);
     this.abnormalSensed.update();
     this.abnormalNonSensed.update();
     this.updateRowRopWarnings();
