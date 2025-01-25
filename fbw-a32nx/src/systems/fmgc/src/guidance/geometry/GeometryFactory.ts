@@ -257,7 +257,9 @@ function geometryLegFromFlightPlanLeg(
   const waypoint = flightPlanLeg.terminationWaypoint();
   const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
   const trueCourse = flightPlanLeg.definition.magneticCourse + runningMagvar;
-  const trueTheta = flightPlanLeg.definition.theta + runningMagvar;
+  const magneticTheta = flightPlanLeg.definition.theta;
+  const radialMagVar = recommendedNavaid ? A32NX_Util.getRadialMagVar(recommendedNavaid) : runningMagvar;
+  const trueTheta = A32NX_Util.magneticToTrue(flightPlanLeg.definition.theta, radialMagVar);
   const length = flightPlanLeg.definition.length;
 
   switch (legType) {
@@ -293,7 +295,7 @@ function geometryLegFromFlightPlanLeg(
     case LegType.VR: // TODO VR leg in geometry
       return new CRLeg(
         trueCourse,
-        { ident: recommendedNavaid.ident, coordinates: recommendedNavaid.location, theta: trueTheta - runningMagvar },
+        { ident: recommendedNavaid.ident, coordinates: recommendedNavaid.location, theta: magneticTheta },
         trueTheta,
         metadata,
         SegmentType.Departure,
