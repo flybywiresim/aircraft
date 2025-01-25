@@ -157,7 +157,7 @@ impl A380DirectCurrentElectrical {
                 &self.battery_2,
                 &mut self.tr_2_contactor,
                 &self.dc_bus_2,
-                !ac_state.tr_2_powered_by_ac_bus(),
+                ac_state.ground_servicing_active(),
             ),
             (
                 &mut self.tr_ess,
