@@ -39,6 +39,7 @@
 1. [A380X/ND] Show RNP on approach identifier for RNP AR approaches - @BravoMike99 (bruno_pt99)
 1. [ND] Improve vertical position of approach message - @BravoMike99 (bruno_pt99)
 1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
+1. [FMS] Make sure radials of CR/VR legs use the station declination as magvar - @BlueberryKing (BlueberryKing)
 
 ## 0.13.0
 
