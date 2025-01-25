@@ -190,7 +190,7 @@ export class FlightManagementComputer implements FmcInterface {
   // TODO make private, and access methods through FmcInterface
   public acInterface!: FmcAircraftInterface;
 
-  public revisedWaypointIndex = Subject.create<number | null>(null);
+  public revisedWaypointLegIndex = Subject.create<number | null>(null);
 
   public revisedWaypointPlanIndex = Subject.create<FlightPlanIndex | null>(null);
 
@@ -294,7 +294,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public revisedWaypoint(): Fix | undefined {
-    const revWptIdx = this.revisedWaypointIndex.get();
+    const revWptIdx = this.revisedWaypointLegIndex.get();
     const revPlanIdx = this.revisedWaypointPlanIndex.get();
     if (revWptIdx !== null && revPlanIdx !== null && this.flightPlanService.has(revPlanIdx)) {
       const flightPlan = this.revisedWaypointIsAltn.get()
@@ -310,11 +310,11 @@ export class FlightManagementComputer implements FmcInterface {
   public setRevisedWaypoint(index: number, planIndex: number, isAltn: boolean) {
     this.revisedWaypointPlanIndex.set(planIndex);
     this.revisedWaypointIsAltn.set(isAltn);
-    this.revisedWaypointIndex.set(index);
+    this.revisedWaypointLegIndex.set(index);
   }
 
   public resetRevisedWaypoint(): void {
-    this.revisedWaypointIndex.set(null);
+    this.revisedWaypointLegIndex.set(null);
     this.revisedWaypointIsAltn.set(null);
     this.revisedWaypointPlanIndex.set(null);
   }

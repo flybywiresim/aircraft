@@ -88,7 +88,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
   /**
    * Returns leg index (in the flight plan) of currently revised waypoint
    */
-  get revisedWaypointIndex(): Subject<number | null>;
+  get revisedWaypointLegIndex(): Subject<number | null>;
 
   /**
    * Returns flight plan index of currently revised waypoint

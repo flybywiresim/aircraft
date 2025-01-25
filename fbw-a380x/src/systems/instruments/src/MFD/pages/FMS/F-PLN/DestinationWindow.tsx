@@ -24,7 +24,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
   private onModified(newDest: string | null): void {
     if (newDest) {
-      const revWpt = this.props.fmcService.master?.revisedWaypointIndex.get();
+      const revWpt = this.props.fmcService.master?.revisedWaypointLegIndex.get();
       if (newDest.length === 4 && revWpt) {
         this.props.fmcService.master?.flightPlanService.newDest(
           revWpt,
@@ -54,7 +54,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
     if (this.props.fmcService.master) {
       this.subs.push(
-        this.props.fmcService.master.revisedWaypointIndex.sub(() => {
+        this.props.fmcService.master.revisedWaypointLegIndex.sub(() => {
           if (this.props.fmcService.master?.revisedWaypoint()) {
             this.identRef.instance.innerText = this.props.fmcService.master?.revisedWaypoint()?.ident ?? '';
           }

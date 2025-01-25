@@ -141,8 +141,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.availableWaypoints.set(wpt);
       }
 
-      const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
-      if (revWptIdx && this.props.fmcService.master?.revisedWaypointIndex.get() !== undefined) {
+      const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
+      if (revWptIdx && this.props.fmcService.master?.revisedWaypointLegIndex.get() !== undefined) {
+        const wptIndex = this.availableWaypointsToLegIndex.indexOf(revWptIdx);
         this.selectedWaypointIndex.set(revWptIdx - activeLegIndex - 1);
       }
     }
@@ -329,7 +330,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.selectedWaypointIndex.set(idx);
 
     if (idx !== null) {
-      this.props.fmcService.master?.revisedWaypointIndex.set(
+      this.props.fmcService.master?.revisedWaypointLegIndex.set(
         this.props.fmcService.master.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1,
       );
       this.updateConstraints();

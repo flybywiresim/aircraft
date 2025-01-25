@@ -55,7 +55,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
     if (idx !== null && idx >= 0) {
       const wptInfo = this.props.availableWaypoints.get(idx);
-      const revWpt = this.props.fmcService.master.revisedWaypointIndex.get();
+      const revWpt = this.props.fmcService.master.revisedWaypointLegIndex.get();
       const fpln = this.props.fmcService.master.revisedWaypointIsAltn.get()
         ? this.props.fmcService.master.flightPlanService.get(revWptPlanIndex).alternateFlightPlan
         : this.props.fmcService.master.flightPlanService.get(revWptPlanIndex);
@@ -79,7 +79,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
     } else {
       try {
         const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
-        const revWpt = this.props.fmcService.master.revisedWaypointIndex.get();
+        const revWpt = this.props.fmcService.master.revisedWaypointLegIndex.get();
         if (wpt && revWpt) {
           await this.props.fmcService.master.flightPlanService.nextWaypoint(
             revWpt,
@@ -113,7 +113,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
     if (this.props.fmcService.master) {
       this.subs.push(
-        this.props.fmcService.master.revisedWaypointIndex.sub((wptIdx) => {
+        this.props.fmcService.master.revisedWaypointLegIndex.sub((wptIdx) => {
           if (wptIdx && this.props.fmcService.master?.revisedWaypoint()) {
             const fpln = this.props.fmcService.master.flightPlanService.get(
               this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? FlightPlanIndex.Active,

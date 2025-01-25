@@ -42,7 +42,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
   private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+    const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
     if (this.props.fmcService.master?.revisedWaypoint() && revWptIdx) {
       const leg = this.loadedFlightPlan?.legElementAt(revWptIdx);
       const hold = leg?.modifiedHold !== undefined ? leg.modifiedHold : leg?.defaultHold;
@@ -72,7 +72,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
   }
 
   private async modifyHold() {
-    const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+    const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
     if (revWptIdx && this.props.fmcService.master?.revisedWaypoint()) {
       const desiredHold: HoldData = {
         type: HoldType.Pilot,
@@ -238,7 +238,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
             <Button
               label="COMPUTED"
               onClick={() => {
-                const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+                const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
                 if (revWptIdx && this.props.fmcService.master?.revisedWaypoint()) {
                   this.props.fmcService.master.flightPlanService.revertHoldToComputed(
                     revWptIdx,
