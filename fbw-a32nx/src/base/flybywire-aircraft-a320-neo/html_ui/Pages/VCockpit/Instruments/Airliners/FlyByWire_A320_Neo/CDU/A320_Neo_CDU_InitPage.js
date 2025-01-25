@@ -122,10 +122,10 @@ class CDUInitPage {
                 if (mcdu.cruiseLevel) {
                     cruiseFl.update("FL" + mcdu.cruiseLevel.toFixed(0).padStart(3, "0"), Column.cyan);
                     if (mcdu.cruiseTemperature) {
-                        cruiseTemp.update(mcdu.cruiseTemperature.toFixed(0) + "°", Column.cyan);
+                        cruiseTemp.update(CDUInitPage.formatTemperature(mcdu.cruiseTemperature), Column.cyan);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan);
                     } else {
-                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu.cruiseLevel).toFixed(0) + "°", Column.cyan, Column.small);
+                        cruiseTemp.update(CDUInitPage.formatTemperature(mcdu.tempCurve.evaluate(mcdu.cruiseLevel)), Column.cyan, Column.small);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan, Column.small);
                     }
                 }
@@ -238,7 +238,7 @@ class CDUInitPage {
 
         const groundTemp = new Column(23, "---°", Column.right);
         if (mcdu.groundTemp !== undefined) {
-            groundTemp.update(mcdu.groundTemp.toFixed(0) + "°", Column.cyan, (mcdu.groundTempPilot !== undefined ? Column.big : Column.small));
+            groundTemp.update(CDUInitPage.formatTemperature(mcdu.groundTemp), Column.cyan, (mcdu.groundTempPilot !== undefined ? Column.big : Column.small));
         }
 
         mcdu.onRightInput[5] = (scratchpadValue, scratchpadCallback) => {
@@ -823,5 +823,9 @@ class CDUInitPage {
 
     static formatWindComponent(tailwindComponent) {
         return Math.round(Math.abs(tailwindComponent)).toFixed(0).padStart(3, "0");
+    }
+
+    static formatTemperature(temperature) {
+        return (temperature > 0 ? '+' : '') + temperature.toFixed(0) + "°";
     }
 }
