@@ -2287,8 +2287,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       }
     }
 
-    if (this.enrouteSegment.allLegs[0]?.isDiscontinuity === false) {
-      // Insert disco otherwise
+    this.incrementVersion();
+
+    // Insert disco after departure segment if there is no disco already
+    if (this.allLegs[lastDepartureLegIndexInPlan + 1]?.isDiscontinuity === false) {
       this.enrouteSegment.allLegs.unshift({ isDiscontinuity: true });
       this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, lastDepartureSegment);
     }
