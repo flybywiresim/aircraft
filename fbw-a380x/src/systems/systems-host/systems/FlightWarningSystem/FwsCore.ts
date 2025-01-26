@@ -3991,7 +3991,7 @@ export class FwsCore {
 
     // Update memos and failures list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdAbnormal)) {
-      if (!faultIsActiveConsideringFaultSuppression(value) || value.flightPhaseInhib.some((e) => e === flightPhase)) {
+      if (!faultIsActiveConsideringFaultSuppression(value)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
@@ -4007,13 +4007,13 @@ export class FwsCore {
     this.abnormalUpdatedItems.clear();
     this.deferredUpdatedItems.clear();
     for (const [key, value] of ewdAbnormalEntries) {
-      if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
-        continue;
-      }
-
       // new warning?
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
       const proc = EcamAbnormalProcedures[key];
+
+      if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
+        continue;
+      }
 
       if (faultIsActiveConsideringFaultSuppression(value)) {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
