@@ -15,12 +15,12 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { Footer } from '../../common/Footer';
-import { TopTabNavigator, TopTabNavigatorPage } from '../../common/TopTabNavigator';
-import { InputField } from '../../common/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FixFormat, RadialFormat, RadiusFormat } from '../../common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
-import { Button } from '../../common/Button';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
