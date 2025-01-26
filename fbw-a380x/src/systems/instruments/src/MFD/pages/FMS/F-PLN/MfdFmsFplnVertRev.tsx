@@ -1,6 +1,6 @@
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
-import { ArraySubject, ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -8,7 +8,6 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import './MfdFmsFplnVertRev.scss';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AltitudeOrFlightLevelFormat,
@@ -31,65 +30,66 @@ import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
-  private selectedPageIndex = Subject.create(0);
+  private readonly selectedPageIndex = Subject.create(0);
 
-  private availableWaypoints = ArraySubject.create<string>([]);
+  private readonly availableWaypoints = ArraySubject.create<string>([]);
 
   private availableWaypointsToLegIndex: number[] = [];
 
-  private selectedWaypointIndex = Subject.create<number | null>(null);
+  private readonly selectedWaypointIndex = Subject.create<number | null>(null);
 
-  private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   /** in feet */
-  private transitionAltitude = Subject.create<number | null>(null);
+  private readonly transitionAltitude = Subject.create<number | null>(null);
   /** in feet */
-  private transitionLevel = Subject.create<number | null>(null);
+  private readonly transitionLevel = Subject.create<number | null>(null);
 
   // RTA page
 
   // SPD page
-  private speedMessageArea = Subject.create<string>('TOO STEEP PATH AHEAD');
+  private readonly speedMessageArea = Subject.create<string>('TOO STEEP PATH AHEAD');
 
   /** in knots */
-  private speedConstraintInput = Subject.create<number | null>(null);
+  private readonly speedConstraintInput = Subject.create<number | null>(null);
 
-  private speedConstraintType = Subject.create<'CLB' | 'DES' | null>(null);
+  private readonly speedConstraintType = Subject.create<'CLB' | 'DES' | null>(null);
 
-  private spdConstraintDisabled = Subject.create(true);
+  private readonly spdConstraintDisabled = Subject.create(true);
 
-  private cannotDeleteSpeedConstraint = Subject.create(false);
+  private readonly cannotDeleteSpeedConstraint = Subject.create(false);
 
   // CMS page
 
   // ALT page
-  private altitudeMessageArea = Subject.create<string>('TOO STEEP PATH AHEAD');
+  private readonly altitudeMessageArea = Subject.create<string>('TOO STEEP PATH AHEAD');
 
   /** in feet */
-  private altitudeConstraintInput = Subject.create<number | null>(null);
+  private readonly altitudeConstraintInput = Subject.create<number | null>(null);
 
-  private altitudeConstraintType = Subject.create<'CLB' | 'DES' | null>(null);
+  private readonly altitudeConstraintType = Subject.create<'CLB' | 'DES' | null>(null);
 
-  private altConstraintDisabled = Subject.create(true);
+  private readonly altConstraintDisabled = Subject.create(true);
 
-  private cannotDeleteAltConstraint = Subject.create(false);
+  private readonly cannotDeleteAltConstraint = Subject.create(false);
 
-  private selectedAltitudeConstraintOption = Subject.create<number | null>(null);
+  private readonly selectedAltitudeConstraintOption = Subject.create<number | null>(null);
 
-  private altWindowLabelRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly altWindowLabelRef = FSComponent.createRef<HTMLDivElement>();
 
-  private altWindowValueRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly altWindowValueRef = FSComponent.createRef<HTMLDivElement>();
 
-  private altWindowUnitLeading = Subject.create<string>('');
+  private readonly altWindowUnitLeading = Subject.create<string>('');
 
-  private altWindowUnitValue = Subject.create<string>('EMPTY');
+  private readonly altWindowUnitValue = Subject.create<string>('EMPTY');
 
-  private altWindowUnitTrailing = Subject.create<string>('');
+  private readonly altWindowUnitTrailing = Subject.create<string>('');
 
   // STEP ALTs page
   private readonly crzFl = Subject.create<number | null>(null);
+  private readonly crzFlFormatted = FmgcData.fmcFormatValue(this.crzFl);
 
   private readonly stepAltsLineVisibility = Array.from(Array(5), () => Subject.create<'visible' | 'hidden'>('hidden'));
   private readonly stepAltsWptIndices = Array.from(Array(5), () => Subject.create<number | null>(null));
@@ -97,6 +97,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly stepAltsDistances = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsTimes = Array.from(Array(5), () => Subject.create<string>('--:--'));
   private readonly stepAltsIgnored = Array.from(Array(5), () => Subject.create<boolean>(false));
+  private readonly stepAltsIgnoredDisplay = Array.from(Array(5), (x) =>
+    this.stepAltsIgnored[x].map((i) => (i ? 'flex' : 'none')),
+  );
+  private readonly stepAltsNotIgnoredDisplay = Array.from(Array(5), (x) =>
+    this.stepAltsIgnored[x].map((i) => (i ? 'none' : 'flex')),
+  );
 
   private readonly stepNotAllowedAt = Subject.create<string | null>(null);
 
@@ -472,8 +478,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
-
     // If extra parameter for activeUri is given, navigate to flight phase sub-page
     switch (this.props.mfd.uiService.activeUri.get().extra) {
       case 'rta':
@@ -497,15 +501,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
 
     this.subs.push(
-      sub
-        .on('realTime')
-        .atFrequency(1)
-        .handle((_t) => {
-          // const obs = this.props.fmService.guidanceController.verticalProfileComputationParametersObserver.get();
-        }),
-    );
-
-    this.subs.push(
       this.tmpyActive.sub((v) => {
         if (this.returnButtonDiv.getOrDefault() && this.tmpyInsertButtonDiv.getOrDefault()) {
           this.returnButtonDiv.instance.style.visibility = v ? 'hidden' : 'visible';
@@ -513,6 +508,18 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         }
       }, true),
     );
+
+    this.subs.push(this.crzFlFormatted);
+
+    for (const i of [0, 1, 2, 3, 4]) {
+      this.subs.push(this.stepAltsIgnoredDisplay[i], this.stepAltsNotIgnoredDisplay[i]);
+    }
+  }
+
+  public destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
   }
 
   render(): VNode {
@@ -730,7 +737,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     <div class="mfd-fms-fpln-labeled-box-label" style="margin-left: 15px;">
                       <span class="mfd-label mfd-spacing-right">STEP ALTS FROM CRZ</span>
                       <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                      <span class="mfd-value">{FmgcData.fmcFormatValue(this.crzFl)}</span>
+                      <span class="mfd-value">{this.crzFlFormatted}</span>
                     </div>
                     <div style="width: 100%">
                       <div style="display: grid; grid-template-columns: 35% 25% 20% 20%; grid-auto-rows: 60px;">
@@ -810,7 +817,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             <div
                               class="fr aic jcc"
                               style={{
-                                display: this.stepAltsIgnored[li].map((i) => (i ? 'flex' : 'none')),
+                                display: this.stepAltsIgnoredDisplay[li],
                                 'grid-column': 'span 2',
                               }}
                             >
@@ -819,7 +826,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             <div
                               class="fr aic jcc"
                               style={{
-                                display: this.stepAltsIgnored[li].map((i) => (i ? 'none' : 'flex')),
+                                display: this.stepAltsNotIgnoredDisplay[li],
                                 'justify-content': 'flex-end',
                               }}
                             >
@@ -828,10 +835,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                 <span class="mfd-label-unit mfd-unit-trailing">NM</span>
                               </div>
                             </div>
-                            <div
-                              class="fr aic jcc"
-                              style={{ display: this.stepAltsIgnored[li].map((i) => (i ? 'none' : 'flex')) }}
-                            >
+                            <div class="fr aic jcc" style={{ display: this.stepAltsNotIgnoredDisplay[li] }}>
                               <span class="mfd-value" style={{ visibility: this.stepAltsLineVisibility[li] }}>
                                 {this.stepAltsTimes[li]}
                               </span>
