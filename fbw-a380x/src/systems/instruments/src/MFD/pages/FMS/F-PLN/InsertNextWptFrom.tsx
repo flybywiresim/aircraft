@@ -9,9 +9,9 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import '../../common/style.scss';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FlightPlanIndex } from '@fmgc/index';

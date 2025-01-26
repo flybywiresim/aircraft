@@ -15,7 +15,7 @@ Status legend:
 | Status      | URI | Sprint/Prio | Missing functionality |
 | ------------- | ------------- | ------------- | ---------- |
 | ✅ | fms/\*/init | 1 | CPNY WIND REQUEST, RTE SEL, ALTN RTE SEL, CPNY T.O REQUEST |
-| ✅ | fms/\*/fuel-load | 1 | RTE RSV, correct fuel calculation, FUEL PLANNING |
+| ✅ | fms/\*/fuel-load | 1 | correct fuel calculation, FUEL PLANNING |
 | ✅ | fms/\*/perf | 1 | OPT FL, REC MAX, EO behavior, display of type of speed restriction (when MANAGED), PRED TO |
 |  |  |  |  |
 | ✅ | fms/\*/f-pln | 1 | F-PLN INFO button, exit of hold not possible via button |

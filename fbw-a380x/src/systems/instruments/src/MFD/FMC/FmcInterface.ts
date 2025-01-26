@@ -151,6 +151,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** in kilograms */
   getTripFuel(): number | null;
 
+  /** in kilograms */
+  getExtraFuel(): number | null;
+
   /** as flight level */
   getRecMaxFlightLevel(): number | null;
 

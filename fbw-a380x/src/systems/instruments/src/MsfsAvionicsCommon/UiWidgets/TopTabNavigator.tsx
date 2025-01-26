@@ -8,7 +8,6 @@ import {
   SubscribableUtils,
   VNode,
 } from '@microsoft/msfs-sdk';
-import './style.scss';
 
 interface TopTabElementProps extends ComponentProps {
   title: string;

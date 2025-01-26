@@ -37,6 +37,7 @@ import {
   EfisSide,
   Fix,
   NXDataStore,
+  Units,
   UpdateThrottler,
   Waypoint,
   a380EfisRangeSettings,
@@ -268,6 +269,7 @@ export class FlightManagementComputer implements FmcInterface {
             !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
           ) {
             this.flightPlanService.active.setPerformanceData('costIndex', 0);
+            this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('0'));
           }
         }),
         this.legacyFmsIsHealthy.sub((v) => {
@@ -372,7 +374,7 @@ export class FlightManagementComputer implements FmcInterface {
       // TOW before engine start: TOW = ZFW + BLOCK - TAXI
       const zfw = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw;
       if (this.fmgc.data.zeroFuelWeight.get() && this.fmgc.data.blockFuel.get() && this.fmgc.data.taxiFuel.get()) {
-        return zfw + (this.fmgc.data.blockFuel.get() ?? maxBlockFuel) - this.fmgc.data.taxiFuel.get();
+        return zfw + (this.fmgc.data.blockFuel.get() ?? maxBlockFuel) - (this.fmgc.data.taxiFuel.get() ?? 0);
       }
       return null;
     }
@@ -388,7 +390,35 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTripFuel(): number | null {
-    return 25_000; // FIXME Dummy value
+    const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+    if (destPred) {
+      const fob = this.fmgc.getFOB() * 1_000;
+      const destFuelKg = Units.poundToKilogram(destPred.estimatedFuelOnBoard);
+      return fob - destFuelKg;
+    }
+    return null;
+  }
+
+  public getExtraFuel(): number | null {
+    const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+    if (destPred) {
+      if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
+        // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
+        return (
+          (this.enginesWereStarted.get() ? this.fmgc.getFOB() * 1_000 : this.fmgc.data.blockFuel.get() ?? 0) -
+          (this.fmgc.data.taxiFuel.get() ?? 0) -
+          (this.getTripFuel() ?? 0) -
+          (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
+          (this.fmgc.data.routeReserveFuelWeight.get() ?? 0)
+        );
+      } else {
+        return (
+          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0)
+        );
+      }
+    }
+
+    return null;
   }
 
   public getRecMaxFlightLevel(): number | null {
@@ -664,6 +694,8 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateThrustReductionAcceleration();
         }
 
+        pd.taxiFuelPilotEntry.set(null);
+        pd.defaultTaxiFuel.set(null);
         pd.routeReserveFuelWeightPilotEntry.set(null);
         pd.routeReserveFuelPercentagePilotEntry.set(0);
         pd.routeReserveFuelWeightCalculated.set(0);
@@ -934,6 +966,15 @@ export class FlightManagementComputer implements FmcInterface {
     if (throttledDt !== -1) {
       this.navigation.update(throttledDt);
       if (this.flightPlanService.hasActive) {
+        const flightPhase = this.flightPhase.get();
+        this.enginesWereStarted.set(
+          flightPhase >= FmgcFlightPhase.Takeoff ||
+            (flightPhase == FmgcFlightPhase.Preflight && SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number') > 20) ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number') > 20 ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'number') > 20 ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20,
+        );
+
         this.acInterface.updateThrustReductionAcceleration();
         this.acInterface.updateTransitionAltitudeLevel();
         this.acInterface.updatePerformanceData();
@@ -956,19 +997,6 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateMinimums(destPred.distanceFromAircraft);
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-
-        if (!this.enginesWereStarted.get()) {
-          const flightPhase = this.fmgc.getFlightPhase();
-          const oneEngineWasStarted =
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'percent') > 20;
-          this.enginesWereStarted.set(
-            flightPhase >= FmgcFlightPhase.Takeoff ||
-              (flightPhase === FmgcFlightPhase.Preflight && oneEngineWasStarted),
-          );
-        }
       }
       this.checkGWParams();
       this.updateMessageQueue();
