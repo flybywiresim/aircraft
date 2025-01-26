@@ -289,7 +289,7 @@ export class MathUtils {
     return (
       1479.1 *
       Math.sqrt(
-        ((pressure / 1013) * ((1 + (1 / (oat / 288.15)) * (tas / 1479.1) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1,
+        ((pressure / 1013.25) * ((1 + (1 / (oat / 288.15)) * (tas / 1479.1) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1,
       )
     );
   }
@@ -306,7 +306,7 @@ export class MathUtils {
       1479.1 *
       Math.sqrt(
         (oat / 288.15) *
-          (((1 / (pressure / 1013)) * ((1 + 0.2 * (kcas / 661.4786) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1),
+          (((1 / (pressure / 1013.25)) * ((1 + 0.2 * (kcas / 661.4786) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1),
       )
     );
   }
@@ -314,12 +314,14 @@ export class MathUtils {
   /**
    * Convert Mach to Calibrated Air Speed
    * @param mach Mach
-   * @param oat Kelvin
    * @param pressure current pressure hpa
    * @returns Calibrated Air Speed
    */
-  public static convertMachToKCas(mach: number, oat: number, pressure: number): number {
-    return MathUtils.convertTasToKCas(MathUtils.convertMachToKTas(mach, oat), oat, pressure);
+  public static convertMachToKCas(mach: number, pressure: number): number {
+    // Formula from Jet Transport Performance Methods 2009.
+    return (
+      1479.1 * Math.sqrt(Math.pow((pressure / 1013.25) * (Math.pow(0.2 * mach * mach + 1, 3.5) - 1) + 1, 1 / 3.5) - 1)
+    );
   }
 
   /**

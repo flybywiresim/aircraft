@@ -4,6 +4,7 @@ import { VhfNavaid } from './VhfNavaid';
 import { SectionCode } from './SectionCode';
 import { Waypoint, WaypointArea } from './Waypoint';
 import { NdbNavaid } from './NdbNavaid';
+import { Airport } from './Airport';
 
 export interface BaseFix<T extends SectionCode> extends DatabaseItem<T> {
   location: Coordinates;
@@ -14,7 +15,7 @@ export interface BaseFix<T extends SectionCode> extends DatabaseItem<T> {
 /**
  * Union of all possible fix interfaces
  */
-export type Fix = VhfNavaid | NdbNavaid | Waypoint;
+export type Fix = Airport | NdbNavaid | VhfNavaid | Waypoint;
 
 export function isFix(o: any): o is Fix {
   return typeof o === 'object' && 'location' in o && 'databaseId' in o;

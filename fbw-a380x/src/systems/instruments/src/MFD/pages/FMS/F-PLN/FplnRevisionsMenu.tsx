@@ -3,7 +3,7 @@ import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightPlanIndex } from '@fmgc/index';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
-import { ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
+import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
