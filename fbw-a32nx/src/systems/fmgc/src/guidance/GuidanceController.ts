@@ -34,6 +34,7 @@ import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+import { A32NX_Util } from '@shared/A32NX_Util';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;

@@ -26,10 +26,11 @@ import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
 import { LandingSystemUtils } from './flightplanning/data/landingsystem';
 
 function initFmgcLoop(
-  baseInstrument: BaseInstrument,
-  flightPlanService: FlightPlanService<A320FlightPlanPerformanceData>,
+  navigation: Navigation,
+  guidanceController: GuidanceController,
+  flightPlanService: FlightPlanService,
 ): void {
-  initComponents(baseInstrument, flightPlanService);
+  initComponents(navigation, guidanceController, flightPlanService);
 }
 
 function updateFmgcLoop(deltaTime: number): void {

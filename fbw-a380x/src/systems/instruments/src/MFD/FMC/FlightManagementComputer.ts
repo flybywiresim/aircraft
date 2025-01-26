@@ -660,8 +660,8 @@ export class FlightManagementComputer implements FmcInterface {
   /**
    * This method is called by the FlightPhaseManager after a flight phase change
    * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
-   * @param prevPhase {FmgcFlightPhases} Previous FmgcFlightPhase
-   * @param nextPhase {FmgcFlightPhases} New FmgcFlightPhase
+   * @param prevPhase Previous FmgcFlightPhase
+   * @param nextPhase New FmgcFlightPhase
    */
   onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
     this.acInterface.updateConstraints();
