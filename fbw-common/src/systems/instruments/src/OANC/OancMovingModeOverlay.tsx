@@ -60,6 +60,8 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
         this.rotationArinc429Word.setValueSsm(r, Arinc429SignStatusMatrix.NormalOperation);
       }),
     );
+
+    this.subs.push(this.arcModeVisible, this.roseModeVisible);
   }
 
   destroy(): void {

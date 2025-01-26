@@ -25,7 +25,7 @@ interface MouseCursorProps extends ComponentProps {
 }
 
 export class MouseCursor extends DisplayComponent<MouseCursorProps> {
-  private subs: Subscription[] = [];
+  private readonly subs: Subscription[] = [];
 
   private readonly divRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -35,6 +35,8 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
   );
 
   private readonly fillColor = this.color.map((c) => (c === MouseCursorColor.Magenta ? '#ff94ff' : '#ffff00'));
+
+  private readonly rotation = this.props.side.map((side) => `rotate(${side === 'FO' ? 90 : 0} 40 40)`);
 
   private hideTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
@@ -72,13 +74,21 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
     if (this.props.visible) {
       this.subs.push(this.props.visible.sub((vis) => (vis ? this.show() : this.hide()), true));
     }
+
+    this.subs.push(this.fillColor, this.rotation);
+  }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
   }
 
   render(): VNode {
     return (
       <div ref={this.divRef} class="mfd-mouse-cursor">
         <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
-          <g transform={this.props.side.map((side) => `rotate(${side === 'FO' ? 90 : 0} 40 40)`)}>
+          <g transform={this.rotation}>
             <polyline points="0,0 40,35 80,0" style={{ fill: 'none', stroke: this.fillColor, 'stroke-width': '3' }} />
             <line x1="40" y1="39" x2="40" y2="41" style={{ stroke: this.fillColor, 'stroke-width': '2' }} />
             <line x1="39" y1="40" x2="41" y2="40" style={{ stroke: this.fillColor, 'stroke-width': '2' }} />

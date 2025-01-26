@@ -328,6 +328,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
   destroy(): void {
     this.topRef.getOrDefault()?.removeEventListener('mousemove', this.onMouseMoveHandler);
+    this.mouseCursorRef.getOrDefault()?.destroy();
+    this.duplicateNamesRef.getOrDefault()?.destroy();
 
     super.destroy();
   }

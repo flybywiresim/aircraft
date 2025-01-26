@@ -163,7 +163,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly pposLongWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'));
 
-  private presentPos = MappedSubject.create(
+  private readonly presentPos = MappedSubject.create(
     ([lat, lon]) => {
       return { lat: lat.value, long: lon.value } as Coordinates;
     },
@@ -171,15 +171,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.pposLongWord,
   );
 
-  private presentPosNotAvailable = MappedSubject.create(
+  private readonly presentPosNotAvailable = MappedSubject.create(
     ([lat, long]) => !lat.isNormalOperation() || !long.isNormalOperation(),
     this.pposLatWord,
     this.pposLongWord,
   );
 
-  private readonly setPlanModeDisplay = ConsumerSubject.create(this.sub.on('oans_show_set_plan_mode'), false).map(
-    (it) => (it ? 'inherit' : 'none'),
-  );
+  private readonly setPlanModeConsumer = ConsumerSubject.create(this.sub.on('oans_show_set_plan_mode'), false);
+  private readonly setPlanModeDisplay = this.setPlanModeConsumer.map((it) => (it ? 'inherit' : 'none'));
 
   private readonly fmsDataStore = new FmsDataStore(this.props.bus);
 
@@ -304,16 +303,18 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       }, true),
     );
 
-    this.fmsDataStore.landingRunway.sub(async (it) => {
-      // Set control panel display
-      if (it) {
-        // Load runway data
-        const destination = this.fmsDataStore.destination.get();
-        if (destination && this.navigraphAvailable.get() === false) {
-          this.setBtvRunwayFromFmsRunway();
+    this.subs.push(
+      this.fmsDataStore.landingRunway.sub(async (it) => {
+        // Set control panel display
+        if (it) {
+          // Load runway data
+          const destination = this.fmsDataStore.destination.get();
+          if (destination && this.navigraphAvailable.get() === false) {
+            this.setBtvRunwayFromFmsRunway();
+          }
         }
-      }
-    });
+      }),
+    );
 
     this.subs.push(
       this.sub
@@ -336,47 +337,74 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     this.subs.push(this.sub.on('oans_display_airport').handle((arpt) => this.handleSelectAirport(arpt)));
 
-    this.selectedEntityIndex.sub((val) => {
-      const searchMode = this.selectedEntityType.get();
-      if (searchMode !== null && this.mapDataFeatures && val !== null) {
-        const prop = ControlPanelUtils.getMapDataSearchModeProp(searchMode);
-        const idx = this.mapDataFeatures.findIndex((f) => f.properties[prop] === this.availableEntityList.get(val));
-        this.selectedEntityString.set(idx !== -1 ? this.mapDataFeatures[idx]?.properties[prop]?.toString() ?? '' : '');
+    this.subs.push(
+      this.selectedEntityIndex.sub((val) => {
+        const searchMode = this.selectedEntityType.get();
+        if (searchMode !== null && this.mapDataFeatures && val !== null) {
+          const prop = ControlPanelUtils.getMapDataSearchModeProp(searchMode);
+          const idx = this.mapDataFeatures.findIndex((f) => f.properties[prop] === this.availableEntityList.get(val));
+          this.selectedEntityString.set(
+            idx !== -1 ? this.mapDataFeatures[idx]?.properties[prop]?.toString() ?? '' : '',
+          );
 
-        if (
-          (idx !== -1 && searchMode === ControlPanelMapDataSearchMode.Runway) ||
-          searchMode === ControlPanelMapDataSearchMode.Stand
-        ) {
-          const feature = this.mapDataFeatures[idx] as Feature<Point>;
-          this.selectedEntityPosition = feature.geometry.coordinates;
-          this.selectedFeatureId.set(feature.properties?.id);
-          this.selectedFeatureType.set(feature.properties?.feattype);
-        } else if (
-          idx !== -1 &&
-          (searchMode === ControlPanelMapDataSearchMode.Taxiway || searchMode === ControlPanelMapDataSearchMode.Other)
-        ) {
-          const taxiway = this.mapDataFeatures[idx] as Feature<LineString, AmdbProperties>;
-          this.selectedEntityPosition = taxiway.properties.midpoint?.coordinates ?? [0, 0];
-          this.selectedFeatureId.set(taxiway.properties?.id);
-          this.selectedFeatureType.set(taxiway.properties?.feattype);
+          if (
+            (idx !== -1 && searchMode === ControlPanelMapDataSearchMode.Runway) ||
+            searchMode === ControlPanelMapDataSearchMode.Stand
+          ) {
+            const feature = this.mapDataFeatures[idx] as Feature<Point>;
+            this.selectedEntityPosition = feature.geometry.coordinates;
+            this.selectedFeatureId.set(feature.properties?.id);
+            this.selectedFeatureType.set(feature.properties?.feattype);
+          } else if (
+            idx !== -1 &&
+            (searchMode === ControlPanelMapDataSearchMode.Taxiway || searchMode === ControlPanelMapDataSearchMode.Other)
+          ) {
+            const taxiway = this.mapDataFeatures[idx] as Feature<LineString, AmdbProperties>;
+            this.selectedEntityPosition = taxiway.properties.midpoint?.coordinates ?? [0, 0];
+            this.selectedFeatureId.set(taxiway.properties?.id);
+            this.selectedFeatureType.set(taxiway.properties?.feattype);
+          }
+
+          if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.Runway) {
+            this.runwayLda.set(this.mapDataFeatures[idx].properties.lda?.toFixed(0) ?? '');
+            this.runwayTora.set(this.mapDataFeatures[idx].properties.tora?.toFixed(0) ?? '');
+          }
+        } else {
+          this.selectedEntityString.set('');
+          this.runwayLda.set('');
+          this.runwayTora.set('');
         }
+      }, true),
+    );
+    this.subs.push(
+      this.selectedEntityType.sub((v) => this.handleSelectMapDataSearchMode(v ?? ControlPanelMapDataSearchMode.Runway)),
+    );
 
-        if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.Runway) {
-          this.runwayLda.set(this.mapDataFeatures[idx].properties.lda?.toFixed(0) ?? '');
-          this.runwayTora.set(this.mapDataFeatures[idx].properties.tora?.toFixed(0) ?? '');
-        }
-      } else {
-        this.selectedEntityString.set('');
-        this.runwayLda.set('');
-        this.runwayTora.set('');
-      }
-    }, true);
-    this.selectedEntityType.sub((v) => this.handleSelectMapDataSearchMode(v ?? ControlPanelMapDataSearchMode.Runway));
+    this.subs.push(
+      this.sub
+        .on(this.props.side === 'L' ? 'kccuOnL' : 'kccuOnR')
+        .whenChanged()
+        .handle((it) => this.interactionMode.set(it ? InteractionMode.Kccu : InteractionMode.Touchscreen)),
+    );
 
-    this.sub
-      .on(this.props.side === 'L' ? 'kccuOnL' : 'kccuOnR')
-      .whenChanged()
-      .handle((it) => this.interactionMode.set(it ? InteractionMode.Kccu : InteractionMode.Touchscreen));
+    this.subs.push(
+      this.setPlanModeConsumer,
+      this.setPlanModeDisplay,
+      this.oansResetPulled,
+      this.oansAvailable,
+      this.entityIsNotSelected,
+      this.symbolsForFeatureIds,
+      this.flagExistsForEntity,
+      this.crossExistsForEntity,
+      this.pposLatWord,
+      this.pposLongWord,
+      this.presentPos,
+      this.presentPosNotAvailable,
+      this.oansRequestedStoppingDistance,
+      this.reqStoppingDistance,
+      this.fmsLandingRunwayVisibility,
+      this.airportDatabase,
+    );
   }
 
   public updateAirportSearchData() {
