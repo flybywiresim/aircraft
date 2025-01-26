@@ -26,7 +26,7 @@ function calculateActiveDate(dbIdent) {
     return `${effDay}${DB_MONTHS[effMonth]}-${expDay}${DB_MONTHS[expMonth]}`;
 }
 
-function calculatesecondDate(dbIdent) {
+function calculateSecondDate(dbIdent) {
     const [effYear, effMonth, effDay] = dbIdent.effectiveFrom.split('-');
     const [expYear, expMonth, expDay] = dbIdent.effectiveTo.split('-');
 
@@ -101,7 +101,7 @@ class CDUIdentPage {
 
         const dbCycle = mcdu.getNavDatabaseIdent();
         const activeCycleDates = dbCycle === null ? '' : calculateActiveDate(dbCycle);
-        const secondCycleDates = dbCycle === null ? '' : calculatesecondDate(dbCycle);
+        const secondCycleDates = dbCycle === null ? '' : calculateSecondDate(dbCycle);
         const navSerial = dbCycle === null ? '' : `${dbCycle.provider.substring(0, 2).toUpperCase()}${dbCycle.airacCycle}0001`;
 
         // H4+ only confirm prompt + year on second dates
