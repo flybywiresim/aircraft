@@ -1,5 +1,5 @@
 import { DisplayComponent, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { Button } from './Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
 import { FmcServiceInterface } from '../../FMC/FmcServiceInterface';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
