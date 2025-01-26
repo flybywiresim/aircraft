@@ -646,7 +646,7 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <text class="FontLargest Magenta MiddleAlign Blink9Seconds" ref={this.lsTitle} x="104" y="126">
+      <text class="FontLargest Magenta MiddleAlign" ref={this.lsTitle} x="104" y="126">
         ILS
       </text>
     );
@@ -658,27 +658,22 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly lsReminder = FSComponent.createRef<SVGTextElement>();
 
-  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
-  private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), FmgcFlightPhase.Preflight);
+  // TODO replace with proper FG signals once implemented
+  private readonly locPushed = ConsumerSubject.create(this.sub.on('fcuLocModeActive'), false)
 
   private readonly approachModePushed = ConsumerSubject.create(this.sub.on('fcuApproachModeActive'), false);
 
   private readonly lsButton = ConsumerSubject.create(null, false);
 
+
   private readonly lsReminderVisible = MappedSubject.create(
-    ([fwcPhase, fmgcPhase, approachModePushed, lsPushed]) => {
+    ([locPushed, approachModePushed, lsPushed]) => {
       return (
-        approachModePushed &&
-        fmgcPhase === FmgcFlightPhase.Approach &&
-        !lsPushed && // TODO Check if LOC or G/S scales are invalid
-        fwcPhase !== 10 &&
-        fwcPhase !== 11 &&
-        fwcPhase !== 12
-      );
+        (locPushed || approachModePushed) &&
+        !lsPushed )  // TODO Check if LOC or G/S scales are invalid
     },
-    this.fwcFlightPhase,
-    this.fmgcFlightPhase,
+    this.locPushed,
     this.approachModePushed,
     this.lsButton,
   );
