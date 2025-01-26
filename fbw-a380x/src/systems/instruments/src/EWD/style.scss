@@ -295,7 +295,7 @@ text, tspan, span {
   display: inline;
   position: relative;
   left: 40px;
-  top: 0px;
+  top: 4px;
   border: 2px outset $display-white;
   font-size: 24px;
   padding: 2px;
@@ -305,7 +305,7 @@ text, tspan, span {
   display: inline;
   position: relative;
   left: 150px;
-  top: 0px;
+  top: 4px;
   border: 2px outset $display-white;
   font-size: 24px;
   padding: 2px;
@@ -315,7 +315,7 @@ text, tspan, span {
   display: inline;
   position: relative;
   left: 360px;
-  top: 0px;
+  top: 4px;
   border: 2px outset $display-white;
   font-size: 24px;
   padding: 2px;
@@ -395,7 +395,7 @@ text, tspan, span {
 .WarningsColumn {
   display: flex;
   flex-direction: column;
-  padding: 12px 0px 12px 0px;
+  padding: 12px 0px 15px 0px;
   height: 100%;
   flex: 1;
 }
