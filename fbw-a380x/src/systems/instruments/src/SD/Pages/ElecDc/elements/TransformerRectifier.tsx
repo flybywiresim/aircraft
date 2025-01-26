@@ -67,7 +67,7 @@ export const TransformerRectifier: FC<TransformerRectifierProps> = ({ x, y, bus 
       <text
         x={57}
         y={22}
-        className={`F25 MiddleAlign ${trVoltageNormal && (trCurrentNormal || title === 'APU TR') ? 'White' : 'Amber'} LS1 WS-8`}
+        className={`F25 MiddleAlign ${(trVoltageNormal && trCurrentNormal) || bus == DcElecBus.DcApu ? 'White' : 'Amber'} LS1 WS-8`}
       >
         {title}
       </text>
@@ -87,7 +87,7 @@ export const TransformerRectifier: FC<TransformerRectifierProps> = ({ x, y, bus 
       <text
         x={65}
         y={97}
-        className={`F28 EndAlign ${trCurrentNormal ? 'Green' : title === 'APU TR' ? 'White' : 'Amber'} LS1`}
+        className={`F28 EndAlign ${trCurrentNormal || bus == DcElecBus.DcApu ? 'Green' : 'Amber'} LS1`}
       >
         {Math.round(current)}
       </text>
