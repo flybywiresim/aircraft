@@ -13,7 +13,6 @@ import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
-import { FmgcFlightPhase } from '@shared/flightphase';
 
 export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
   private lsButtonPressedVisibility = false;
@@ -658,20 +657,16 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly lsReminder = FSComponent.createRef<SVGTextElement>();
 
-
   // TODO replace with proper FG signals once implemented
-  private readonly locPushed = ConsumerSubject.create(this.sub.on('fcuLocModeActive'), false)
+  private readonly locPushed = ConsumerSubject.create(this.sub.on('fcuLocModeActive'), false);
 
   private readonly approachModePushed = ConsumerSubject.create(this.sub.on('fcuApproachModeActive'), false);
 
   private readonly lsButton = ConsumerSubject.create(null, false);
 
-
   private readonly lsReminderVisible = MappedSubject.create(
     ([locPushed, approachModePushed, lsPushed]) => {
-      return (
-        (locPushed || approachModePushed) &&
-        !lsPushed )  // TODO Check if LOC or G/S scales are invalid
+      return (locPushed || approachModePushed) && !lsPushed; // TODO Check if LOC or G/S scales are invalid
     },
     this.locPushed,
     this.approachModePushed,
