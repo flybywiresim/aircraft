@@ -358,10 +358,10 @@ class NDInstrument implements FsInstrument {
 
   private updateNdOansVisibility() {
     if (this.efisCpRange === -1 && [EfisNdMode.PLAN, EfisNdMode.ARC, EfisNdMode.ROSE_NAV].includes(this.efisNdMode)) {
-      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', true, true, false);
+      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', { side: this.efisSide, show: true }, true, false);
       this.oansShown.set(true);
     } else {
-      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', false, true, false);
+      this.bus.getPublisher<OansControlEvents>().pub('nd_show_oans', { side: this.efisSide, show: false }, true, false);
       this.oansShown.set(false);
     }
   }

@@ -5,11 +5,8 @@ import { EfisSide, FeatureType } from '@flybywiresim/fbw-sdk';
 import { Position } from '@turf/turf';
 
 export interface OansControlEvents {
-  nd_show_oans: boolean;
-  nd_set_context_menu: { x: number; y: number };
+  nd_show_oans: { side: EfisSide; show: boolean };
   oans_display_airport: string;
-  oans_zoom_in: number;
-  oans_zoom_out: number;
   oans_not_avail: boolean;
   oans_center_map_on: Position;
   oans_center_on_acft: boolean;

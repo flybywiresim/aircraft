@@ -326,7 +326,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public readonly arpReferencedMapParams = new MapParameters();
 
-  private readonly oansVisible = ConsumerSubject.create<boolean>(null, false);
+  private readonly oansVisible = ConsumerSubject.create<{ side: EfisSide; show: boolean }>(null, {
+    side: this.props.side,
+    show: false,
+  });
 
   private readonly efisNDModeSub = ConsumerSubject.create<EfisNdMode>(null, EfisNdMode.PLAN);
 
@@ -1106,7 +1109,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     // If OANS is not visible on this side (i.e. range selector is not on ZOOM), don't continue here to save runtime
-    if (!this.oansVisible.get()) {
+    if (this.oansVisible.get().side === this.props.side && !this.oansVisible.get().show) {
       return;
     }
 
