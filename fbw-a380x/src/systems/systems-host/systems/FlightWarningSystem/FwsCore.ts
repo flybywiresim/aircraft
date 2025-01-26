@@ -4227,17 +4227,23 @@ export class FwsCore {
       }
     }
 
-    // Delete inactive failures from internal map
-    this.activeAbnormalProceduresList.get().forEach((_, key) => {
-      if (!allFailureKeys.includes(key)) {
-        // Delete associated deferred procedure
-        for (const [deferredKey, _] of ewdDeferredEntries) {
-          if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key)) {
-            this.activeDeferredProceduresList.delete(deferredKey);
-          }
+    // Retrieve all active deferred procedure keys, delete inactive
+    const deferredProcedureKeys: string[] = [];
+    allFailureKeys.forEach((failureKey) => {
+      for (const [deferredKey, _] of ewdDeferredEntries) {
+        if (EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(failureKey)) {
+          deferredProcedureKeys.push(deferredKey);
         }
       }
+    });
+    this.activeDeferredProceduresList.get().forEach((_, activeDeferredKey) => {
+      if (!deferredProcedureKeys.includes(activeDeferredKey)) {
+        this.activeDeferredProceduresList.delete(activeDeferredKey);
+      }
+    });
 
+    // Delete inactive failures from internal map
+    this.activeAbnormalProceduresList.get().forEach((_, key) => {
       if (!allFailureKeys.includes(key) || this.recallFailures.includes(key)) {
         this.activeAbnormalProceduresList.delete(key);
       }
