@@ -367,7 +367,8 @@ export class FwsNormalChecklists {
         this.fws.flightPhase.get() === 8 &&
         this.fws.adrPressureAltitude.get() < 20_000 &&
         (this.fws.slatsAngle.get() > 0 || Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD') &&
-        this.hasDeferred.some((v) => v),
+        this.hasDeferred.some((v) => v) &&
+        this.deferredIsCompleted.some((v) => !v),
       deltaTime,
     );
 
