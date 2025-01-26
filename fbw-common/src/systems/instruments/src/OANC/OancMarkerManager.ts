@@ -9,6 +9,7 @@ import { AmdbProperties, FeatureType } from '@flybywiresim/fbw-sdk';
 
 const MAX_SYMBOL_DIST_NEIGHBORHOOD_SEARCH = 20;
 const TAXIWAY_SYMBOL_SPACING = 250;
+
 export class OancMarkerManager<T extends number> {
   constructor(
     public oanc: Oanc<T>,
@@ -146,24 +147,26 @@ export class OancMarkerManager<T extends number> {
             (f.properties.feattype === FeatureType.TaxiwayGuidanceLine ||
               f.properties.feattype === FeatureType.RunwayExitLine),
         );
-        taxiwayLines?.forEach((tw) => {
-          if (tw.geometry.type === 'LineString') {
-            const twLength = length(tw, { units: 'degrees' });
-            const lineString = tw.geometry as LineString;
-            if (twLength > TAXIWAY_SYMBOL_SPACING) {
-              // One point every 250m
-              for (let alongDistance = 0; alongDistance < twLength; alongDistance += TAXIWAY_SYMBOL_SPACING) {
-                addFunction(
-                  along(lineString, Math.min(alongDistance, twLength), { units: 'degrees' }).geometry.coordinates,
-                  tw,
-                );
+        if (taxiwayLines) {
+          for (const tw of taxiwayLines) {
+            if (tw.geometry.type === 'LineString') {
+              const twLength = length(tw, { units: 'degrees' });
+              const lineString = tw.geometry as LineString;
+              if (twLength > TAXIWAY_SYMBOL_SPACING) {
+                // One point every 250m
+                for (let alongDistance = 0; alongDistance < twLength; alongDistance += TAXIWAY_SYMBOL_SPACING) {
+                  addFunction(
+                    along(lineString, Math.min(alongDistance, twLength), { units: 'degrees' }).geometry.coordinates,
+                    tw,
+                  );
+                }
+              } else {
+                addFunction(lineString.coordinates[0], tw);
+                addFunction(lineString.coordinates[lineString.coordinates.length - 1], tw);
               }
-            } else {
-              addFunction(lineString.coordinates[0], tw);
-              addFunction(lineString.coordinates[lineString.coordinates.length - 1], tw);
             }
           }
-        });
+        }
       } else if (feattype === FeatureType.RunwayThreshold || feattype === FeatureType.ParkingStandLocation) {
         const geo = this.oanc.data?.features.filter(
           (f) =>
@@ -202,12 +205,12 @@ export class OancMarkerManager<T extends number> {
     if (isTaxiway) {
       // Find by name
       let taxiwayName = '';
-      symbols.forEach((label) => {
+      for (const label of symbols) {
         if (label.associatedFeature?.properties.id === id && label.associatedFeature.properties.feattype === feattype) {
           taxiwayName = label.associatedFeature.properties.idlin ?? '';
           return;
         }
-      });
+      }
 
       const idsToDelete = symbols
         .map((label) => (label.associatedFeature?.properties.idlin === taxiwayName ? parseInt(label.text) : null))

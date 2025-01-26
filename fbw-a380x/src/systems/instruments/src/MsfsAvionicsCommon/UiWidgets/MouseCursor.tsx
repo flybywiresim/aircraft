@@ -13,8 +13,8 @@ import {
 } from '@microsoft/msfs-sdk';
 
 export enum MouseCursorColor {
-  YELLOW,
-  MAGENTA,
+  Yellow,
+  Magenta,
 }
 
 interface MouseCursorProps extends ComponentProps {
@@ -30,11 +30,11 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
   private readonly divRef = FSComponent.createRef<HTMLSpanElement>();
 
   private readonly color: Subscribable<MouseCursorColor> = SubscribableUtils.toSubscribable(
-    this.props.color ?? MouseCursorColor.YELLOW,
+    this.props.color ?? MouseCursorColor.Yellow,
     true,
   );
 
-  private readonly fillColor = this.color.map((c) => (c === MouseCursorColor.MAGENTA ? '#ff94ff' : '#ffff00'));
+  private readonly fillColor = this.color.map((c) => (c === MouseCursorColor.Magenta ? '#ff94ff' : '#ffff00'));
 
   private hideTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 

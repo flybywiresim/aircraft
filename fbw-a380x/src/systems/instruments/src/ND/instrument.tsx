@@ -293,7 +293,7 @@ class NDInstrument implements FsInstrument {
             ref={this.mouseCursorRef}
             side={Subject.create(this.efisSide === 'L' ? 'CAPT' : 'FO')}
             visible={this.cursorVisible}
-            color={this.oansShown.map((it) => (it ? MouseCursorColor.MAGENTA : MouseCursorColor.YELLOW))}
+            color={this.oansShown.map((it) => (it ? MouseCursorColor.Magenta : MouseCursorColor.Yellow))}
           />
           <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
         </CdsDisplayUnit>

@@ -11,10 +11,10 @@ export enum ControlPanelAirportSearchMode {
 }
 
 export enum ControlPanelMapDataSearchMode {
-  RWY,
-  TWY,
-  STAND,
-  OTHER,
+  Runway,
+  Taxiway,
+  Stand,
+  Other,
 }
 
 export class ControlPanelUtils {
@@ -45,16 +45,16 @@ export class ControlPanelUtils {
     let prop: keyof AmdbProperties;
     switch (mode) {
       default:
-      case ControlPanelMapDataSearchMode.RWY:
+      case ControlPanelMapDataSearchMode.Runway:
         prop = 'idthr';
         break;
-      case ControlPanelMapDataSearchMode.TWY:
+      case ControlPanelMapDataSearchMode.Taxiway:
         prop = 'idlin';
         break;
-      case ControlPanelMapDataSearchMode.STAND:
+      case ControlPanelMapDataSearchMode.Stand:
         prop = 'idstd';
         break;
-      case ControlPanelMapDataSearchMode.OTHER:
+      case ControlPanelMapDataSearchMode.Other:
         prop = 'ident';
         break;
     }
@@ -75,7 +75,7 @@ export class ControlPanelStore {
 
   public readonly airportSearchSelectedAirportIndex = Subject.create<number | null>(null);
 
-  public readonly mapDataSearchMode = Subject.create<number | null>(ControlPanelMapDataSearchMode.RWY);
+  public readonly mapDataSearchMode = Subject.create<number | null>(ControlPanelMapDataSearchMode.Runway);
 
   public readonly mapDataSearchData = ArraySubject.create<string>();
 

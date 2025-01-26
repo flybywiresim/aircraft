@@ -123,7 +123,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly endShift = Subject.create<number | null>(null);
 
   private readonly selectedEntityType = Subject.create<ControlPanelMapDataSearchMode | null>(
-    ControlPanelMapDataSearchMode.RWY,
+    ControlPanelMapDataSearchMode.Runway,
   );
 
   private readonly availableEntityList = ArraySubject.create(['']);
@@ -344,8 +344,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.selectedEntityString.set(idx !== -1 ? this.mapDataFeatures[idx]?.properties[prop]?.toString() ?? '' : '');
 
         if (
-          (idx !== -1 && searchMode === ControlPanelMapDataSearchMode.RWY) ||
-          searchMode === ControlPanelMapDataSearchMode.STAND
+          (idx !== -1 && searchMode === ControlPanelMapDataSearchMode.Runway) ||
+          searchMode === ControlPanelMapDataSearchMode.Stand
         ) {
           const feature = this.mapDataFeatures[idx] as Feature<Point>;
           this.selectedEntityPosition = feature.geometry.coordinates;
@@ -353,7 +353,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           this.selectedFeatureType.set(feature.properties?.feattype);
         } else if (
           idx !== -1 &&
-          (searchMode === ControlPanelMapDataSearchMode.TWY || searchMode === ControlPanelMapDataSearchMode.OTHER)
+          (searchMode === ControlPanelMapDataSearchMode.Taxiway || searchMode === ControlPanelMapDataSearchMode.Other)
         ) {
           const taxiway = this.mapDataFeatures[idx] as Feature<LineString, AmdbProperties>;
           this.selectedEntityPosition = taxiway.properties.midpoint?.coordinates ?? [0, 0];
@@ -361,7 +361,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           this.selectedFeatureType.set(taxiway.properties?.feattype);
         }
 
-        if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.RWY) {
+        if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.Runway) {
           this.runwayLda.set(this.mapDataFeatures[idx].properties.lda?.toFixed(0) ?? '');
           this.runwayTora.set(this.mapDataFeatures[idx].properties.tora?.toFixed(0) ?? '');
         }
@@ -371,7 +371,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.runwayTora.set('');
       }
     }, true);
-    this.selectedEntityType.sub((v) => this.handleSelectMapDataSearchMode(v ?? ControlPanelMapDataSearchMode.RWY));
+    this.selectedEntityType.sub((v) => this.handleSelectMapDataSearchMode(v ?? ControlPanelMapDataSearchMode.Runway));
 
     this.sub
       .on(this.props.side === 'L' ? 'kccuOnL' : 'kccuOnR')
@@ -437,7 +437,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.store.airportSearchSelectedAirportIndex.set(airportIndexInSearchData);
     this.store.selectedAirport.set(airport);
 
-    this.handleSelectMapDataSearchMode(ControlPanelMapDataSearchMode.RWY);
+    this.handleSelectMapDataSearchMode(ControlPanelMapDataSearchMode.Runway);
 
     this.store.isAirportSelectionPending.set(true);
   };
@@ -449,16 +449,16 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     if (selectedAirport !== null) {
       let featureType: FeatureTypeString = FeatureTypeString.RunwayThreshold;
       switch (newSearchMode) {
-        case ControlPanelMapDataSearchMode.RWY:
+        case ControlPanelMapDataSearchMode.Runway:
           featureType = FeatureTypeString.RunwayThreshold;
           break;
-        case ControlPanelMapDataSearchMode.TWY:
+        case ControlPanelMapDataSearchMode.Taxiway:
           featureType = FeatureTypeString.TaxiwayGuidanceLine;
           break;
-        case ControlPanelMapDataSearchMode.STAND:
+        case ControlPanelMapDataSearchMode.Stand:
           featureType = FeatureTypeString.ParkingStandLocation;
           break;
-        case ControlPanelMapDataSearchMode.OTHER:
+        case ControlPanelMapDataSearchMode.Other:
           featureType = FeatureTypeString.DeicingArea;
           break;
         default:
@@ -507,6 +507,38 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.store.loadedAirport.set(selectedArpt);
     this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
   };
+
+  private handleCrossButton() {
+    {
+      const selId = this.selectedFeatureId.get();
+      const selFeatType = this.selectedFeatureType.get();
+      if (selId !== null && selFeatType !== null) {
+        this.props.bus
+          .getPublisher<OansControlEvents>()
+          .pub(
+            this.crossExistsForEntity.get() ? 'oans_remove_cross_at_feature' : 'oans_add_cross_at_feature',
+            { id: selId, feattype: selFeatType },
+            true,
+          );
+      }
+    }
+  }
+
+  private handleFlagButton() {
+    {
+      const selId = this.selectedFeatureId.get();
+      const selFeatType = this.selectedFeatureType.get();
+      if (selId !== null && selFeatType !== null) {
+        this.props.bus
+          .getPublisher<OansControlEvents>()
+          .pub(
+            this.flagExistsForEntity.get() ? 'oans_remove_flag_at_feature' : 'oans_add_flag_at_feature',
+            { id: selId, feattype: selFeatType },
+            true,
+          );
+      }
+    }
+  }
 
   private autoLoadAirport() {
     // If we don't have ppos, do not try to auto load
@@ -682,41 +714,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     <div class="oans-cp-map-data-main-2">
                       <Button
                         label={this.crossExistsForEntity.map((e) => (e ? <>DEL CROSS</> : <>ADD CROSS</>))}
-                        onClick={() => {
-                          const selId = this.selectedFeatureId.get();
-                          const selFeatType = this.selectedFeatureType.get();
-                          if (selId !== null && selFeatType !== null) {
-                            this.props.bus
-                              .getPublisher<OansControlEvents>()
-                              .pub(
-                                this.crossExistsForEntity.get()
-                                  ? 'oans_remove_cross_at_feature'
-                                  : 'oans_add_cross_at_feature',
-                                { id: selId, feattype: selFeatType },
-                                true,
-                              );
-                          }
-                        }}
+                        onClick={() => this.handleCrossButton()}
                         buttonStyle="flex: 1"
                         disabled={this.entityIsNotSelected}
                       />
                       <Button
                         label={this.flagExistsForEntity.map((e) => (e ? <>DEL FLAG</> : <>ADD FLAG</>))}
-                        onClick={() => {
-                          const selId = this.selectedFeatureId.get();
-                          const selFeatType = this.selectedFeatureType.get();
-                          if (selId !== null && selFeatType !== null) {
-                            this.props.bus
-                              .getPublisher<OansControlEvents>()
-                              .pub(
-                                this.flagExistsForEntity.get()
-                                  ? 'oans_remove_flag_at_feature'
-                                  : 'oans_add_flag_at_feature',
-                                { id: selId, feattype: selFeatType },
-                                true,
-                              );
-                          }
-                        }}
+                        onClick={() => this.handleFlagButton()}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"
                         disabled={this.entityIsNotSelected}
                       />
@@ -992,8 +996,9 @@ export class EraseSymbolsDialog extends DisplayComponent<EraseSymbolsDialogProps
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
-    this.subs.forEach((x) => x.destroy());
-
+    for (const x of this.subs) {
+      x.destroy();
+    }
     super.destroy();
   }
 

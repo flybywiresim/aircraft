@@ -22,10 +22,10 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
     this.rwyDivRef.instance.style.display = 'none';
     this.standDivRef.instance.style.display = 'none';
 
-    if (this.props.rwyOrStand.get() === ControlPanelMapDataSearchMode.RWY && this.props.selectedEntity.get()) {
+    if (this.props.rwyOrStand.get() === ControlPanelMapDataSearchMode.Runway && this.props.selectedEntity.get()) {
       this.rwyDivRef.instance.style.display = 'grid';
       this.standDivRef.instance.style.display = 'none';
-    } else if (this.props.rwyOrStand.get() === ControlPanelMapDataSearchMode.STAND && this.props.selectedEntity.get()) {
+    } else if (this.props.rwyOrStand.get() === ControlPanelMapDataSearchMode.Stand && this.props.selectedEntity.get()) {
       this.rwyDivRef.instance.style.display = 'none';
       this.standDivRef.instance.style.display = 'flex';
     } else {
