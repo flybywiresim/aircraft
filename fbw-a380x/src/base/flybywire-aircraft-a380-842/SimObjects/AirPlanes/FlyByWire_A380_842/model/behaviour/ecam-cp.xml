@@ -32,7 +32,6 @@
             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
             <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            <SEQ2_EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_EMISSIVE_CODE>
 
             <!-- Internal -->
             <STATE_SIMVAR>L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX</STATE_SIMVAR>
@@ -52,7 +51,7 @@
                 }
                 (&gt;H:A32NX_SD_PAGE_CHANGED)
             </LEFT_SINGLE_CODE>
-            <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# ==</SEQ2_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
             <CURSOR>Hand</CURSOR>
         </UseTemplate>
     </Template>
@@ -74,7 +73,7 @@
             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
             <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            <SEQ2_EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>#SEQ2_POWERED#</SEQ2_EMISSIVE_CODE>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -141,7 +140,7 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:#SIMVAR#)
                 </LEFT_LEAVE_CODE>
-                <SEQ2_EMISSIVE_CODE>(L:A32NX_ECAM_FAILURE_ACTIVE) #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
+                <SEQ2_EMISSIVE_CODE>(L:A32NX_ECAM_FAILURE_ACTIVE) (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>
@@ -175,7 +174,7 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:#SIMVAR#)
                 </LEFT_LEAVE_CODE>
-                <SEQ2_EMISSIVE_CODE>(L:A32NX_SD_MORE_SHOWN, Bool) #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
+                <SEQ2_EMISSIVE_CODE>(L:A32NX_SD_MORE_SHOWN, Bool) (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>
