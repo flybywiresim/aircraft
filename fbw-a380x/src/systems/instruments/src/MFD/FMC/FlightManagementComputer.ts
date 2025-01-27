@@ -35,9 +35,9 @@ import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInte
 import {
   DatabaseItem,
   EfisSide,
-  FailuresConsumer,
   Fix,
   NXDataStore,
+  Units,
   UpdateThrottler,
   Waypoint,
   a380EfisRangeSettings,
@@ -207,13 +207,14 @@ export class FlightManagementComputer implements FmcInterface {
 
   private readonly legacyFmsIsHealthy = Subject.create(false);
 
+  private wasReset = false;
+
   constructor(
     private instance: FmcIndex,
     operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
-    private readonly isPowered: Subscribable<boolean>,
+    private readonly fmcInop: Subscribable<boolean>,
     mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
-    private readonly failuresConsumer: FailuresConsumer,
   ) {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
@@ -268,6 +269,7 @@ export class FlightManagementComputer implements FmcInterface {
             !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
           ) {
             this.flightPlanService.active.setPerformanceData('costIndex', 0);
+            this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('0'));
           }
         }),
         this.legacyFmsIsHealthy.sub((v) => {
@@ -372,7 +374,7 @@ export class FlightManagementComputer implements FmcInterface {
       // TOW before engine start: TOW = ZFW + BLOCK - TAXI
       const zfw = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw;
       if (this.fmgc.data.zeroFuelWeight.get() && this.fmgc.data.blockFuel.get() && this.fmgc.data.taxiFuel.get()) {
-        return zfw + (this.fmgc.data.blockFuel.get() ?? maxBlockFuel) - this.fmgc.data.taxiFuel.get();
+        return zfw + (this.fmgc.data.blockFuel.get() ?? maxBlockFuel) - (this.fmgc.data.taxiFuel.get() ?? 0);
       }
       return null;
     }
@@ -388,7 +390,35 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTripFuel(): number | null {
-    return 25_000; // FIXME Dummy value
+    const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+    if (destPred) {
+      const fob = this.fmgc.getFOB() * 1_000;
+      const destFuelKg = Units.poundToKilogram(destPred.estimatedFuelOnBoard);
+      return fob - destFuelKg;
+    }
+    return null;
+  }
+
+  public getExtraFuel(): number | null {
+    const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+    if (destPred) {
+      if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
+        // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
+        return (
+          (this.enginesWereStarted.get() ? this.fmgc.getFOB() * 1_000 : this.fmgc.data.blockFuel.get() ?? 0) -
+          (this.fmgc.data.taxiFuel.get() ?? 0) -
+          (this.getTripFuel() ?? 0) -
+          (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
+          (this.fmgc.data.routeReserveFuelWeight.get() ?? 0)
+        );
+      } else {
+        return (
+          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0)
+        );
+      }
+    }
+
+    return null;
   }
 
   public getRecMaxFlightLevel(): number | null {
@@ -665,8 +695,10 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         pd.taxiFuelPilotEntry.set(null);
-        pd.routeReserveFuelPercentagePilotEntry.set(0.00001);
-        pd.routeReserveFuelWeightPilotEntry.set(0.00001);
+        pd.defaultTaxiFuel.set(null);
+        pd.routeReserveFuelWeightPilotEntry.set(null);
+        pd.routeReserveFuelPercentagePilotEntry.set(0);
+        pd.routeReserveFuelWeightCalculated.set(0);
 
         this.fmgc.data.climbPredictionsReferenceAutomatic.set(
           this.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude,
@@ -899,27 +931,33 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private onUpdate(dt: number) {
-    if (!this.isPowered.get() || this.failuresConsumer.isActive(this.failureKey)) {
-      SimVar.SetSimVarValue(
-        `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
-        SimVarValueType.Bool,
-        false,
-      );
-      this.legacyFmsIsHealthy.set(false);
+    const isHealthy = !this.fmcInop.get();
+
+    SimVar.SetSimVarValue(
+      `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
+      SimVarValueType.Bool,
+      isHealthy,
+    );
+
+    // Stop early, if not FmcA or if all FMCs failed
+    const allFmcResetsPulled =
+      SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_A', SimVarValueType.Bool) &&
+      SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_B', SimVarValueType.Bool) &&
+      SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_B', SimVarValueType.Bool);
+    const allFmcInop =
+      !SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', SimVarValueType.Bool);
+
+    this.legacyFmsIsHealthy.set(!allFmcInop);
+    if (this.instance !== FmcIndex.FmcA || (this.instance === FmcIndex.FmcA && allFmcInop)) {
+      if (this.instance === FmcIndex.FmcA && (allFmcResetsPulled || allFmcInop) && this.wasReset === false) {
+        this.reset();
+      }
       return;
-    } else {
-      SimVar.SetSimVarValue(
-        `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
-        SimVarValueType.Bool,
-        true,
-      );
-      this.legacyFmsIsHealthy.set(true);
     }
 
-    // Stop early, if not FmcA
-    if (this.instance !== FmcIndex.FmcA) {
-      return;
-    }
+    this.wasReset = false;
 
     this.flightPhaseManager.shouldActivateNextPhase(dt);
 
@@ -928,6 +966,15 @@ export class FlightManagementComputer implements FmcInterface {
     if (throttledDt !== -1) {
       this.navigation.update(throttledDt);
       if (this.flightPlanService.hasActive) {
+        const flightPhase = this.flightPhase.get();
+        this.enginesWereStarted.set(
+          flightPhase >= FmgcFlightPhase.Takeoff ||
+            (flightPhase == FmgcFlightPhase.Preflight && SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number') > 20) ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number') > 20 ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'number') > 20 ||
+            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20,
+        );
+
         this.acInterface.updateThrustReductionAcceleration();
         this.acInterface.updateTransitionAltitudeLevel();
         this.acInterface.updatePerformanceData();
@@ -950,19 +997,6 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateMinimums(destPred.distanceFromAircraft);
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-
-        if (!this.enginesWereStarted.get()) {
-          const flightPhase = this.fmgc.getFlightPhase();
-          const oneEngineWasStarted =
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'percent') > 20 ||
-            SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'percent') > 20;
-          this.enginesWereStarted.set(
-            flightPhase >= FmgcFlightPhase.Takeoff ||
-              (flightPhase === FmgcFlightPhase.Preflight && oneEngineWasStarted),
-          );
-        }
       }
       this.checkGWParams();
       this.updateMessageQueue();
@@ -1033,14 +1067,21 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   async swapNavDatabase(): Promise<void> {
-    // FIXME reset ATSU when it is added to A380X
-    // this.atsu.resetAtisAutoUpdate();
-    await this.flightPlanService.reset();
-    this.fmgc.data.reset();
-    this.initSimVars();
-    this.deleteAllStoredWaypoints();
-    this.clearLatestFmsErrorMessage();
-    this.mfdReference?.uiService.navigateTo('fms/data/status');
-    this.navigation.resetState();
+    await this.reset();
+  }
+
+  async reset(): Promise<void> {
+    if (this.instance === FmcIndex.FmcA) {
+      // FIXME reset ATSU when it is added to A380X
+      // this.atsu.resetAtisAutoUpdate();
+      this.wasReset = true;
+      await this.flightPlanService.reset();
+      this.fmgc.data.reset();
+      this.initSimVars();
+      this.deleteAllStoredWaypoints();
+      this.clearLatestFmsErrorMessage();
+      this.mfdReference?.uiService.navigateTo('fms/data/status');
+      this.navigation.resetState();
+    }
   }
 }

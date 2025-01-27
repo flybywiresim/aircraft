@@ -1,5 +1,7 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { ComponentProps, DisplayComponent, FSComponent, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
-import './style.scss';
 
 interface ConditionalComponentProps extends ComponentProps {
   componentIfTrue: VNode;
@@ -7,6 +9,7 @@ interface ConditionalComponentProps extends ComponentProps {
   condition: Subscribable<boolean>;
   width?: number; // Fixed width in pixel. If not set, positioning might not be consistent
   height?: number; // Fixed height in pixels. If not set, positioning might not be consistent
+  noStyle?: boolean; // If true, the component will not be styled (display: flex, justify-content: center, align-items: center)
 }
 
 /*
@@ -44,7 +47,7 @@ export class ConditionalComponent extends DisplayComponent<ConditionalComponentP
     return (
       <div
         ref={this.containerRef}
-        style={`display: flex; justify-content: center; align-items: center;
+        style={`${this.props.noStyle ? '' : 'display: flex; justify-content: center; align-items: center;'}
                 ${this.props.width !== undefined ? ` width: ${this.props.width.toFixed(0)}px;` : ''}
                 ${this.props.height !== undefined ? ` height: ${this.props.height.toFixed(0)}px;` : ''}`}
       >

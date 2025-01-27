@@ -143,4 +143,14 @@ describe('MathUtils.correctMsfsLocaliserError', () => {
     expect(MathUtils.correctMsfsLocaliserError(177.5)).toBeCloseTo(2.5);
     expect(MathUtils.correctMsfsLocaliserError(90.1)).toBeCloseTo(89.9);
   });
+
+  describe('MathUtils.convertMachToKCas', () => {
+    it('correctly converts mach to CAS', () => {
+      expect(MathUtils.convertMachToKCas(0, 1013.25)).toBeCloseTo(0);
+      expect(MathUtils.convertMachToKCas(0.84, 1013.25)).toBeCloseTo(555.634);
+      // FL350 = 238.423 hPa
+      expect(MathUtils.convertMachToKCas(0, 238.423)).toBeCloseTo(0);
+      expect(MathUtils.convertMachToKCas(0.84, 238.423)).toBeCloseTo(287.097);
+    });
+  });
 });

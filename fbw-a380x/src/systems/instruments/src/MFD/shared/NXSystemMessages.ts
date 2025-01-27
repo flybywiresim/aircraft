@@ -73,6 +73,7 @@ export const NXSystemMessages = {
   checkToData: new TypeIIMessage('CHECK TAKE OFF DATA', true),
   comUnavailable: new TypeIMessage('COM UNAVAILABLE'),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
+  costIndexInUse: new TypeIMessage('COST INDEX-NNN IN USE', false, 'NNN'),
   databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
   dcduFileFull: new TypeIMessage('DCDU FILE FULL'),
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
