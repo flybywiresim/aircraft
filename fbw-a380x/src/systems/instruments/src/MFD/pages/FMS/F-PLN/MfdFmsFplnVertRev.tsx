@@ -418,12 +418,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private async tryUpdateAltitudeConstraint(newAlt?: number) {
-    console.log(
-      this.props.fmcService.master,
-      this.loadedFlightPlan,
-      this.selectedLegIndex,
-      this.altConstraintTypeRadioSelected.get(),
-    );
     if (
       !this.props.fmcService.master ||
       !this.loadedFlightPlan ||
