@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -17,6 +17,8 @@ import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
 import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
+import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -1772,6 +1774,36 @@ export class FmcAircraftInterface {
       profilePoint.climbAltitude = currentClbConstraint;
       profilePoint.descentAltitude = Math.max(destinationElevation, currentDesConstraint);
       previousSpeedConstraint = currentSpeedConstraint;
+    }
+  }
+
+  private stepAheadTriggeredForAltitude: number | null = null;
+
+  public checkForStepClimb() {
+    const crzPred = this.fmc.guidanceController?.vnavDriver?.getPerfCrzToPrediction();
+    const approachingCruiseStep = MfdFmsFplnVertRev.nextCruiseStep(this.flightPlanService.active);
+
+    if (
+      approachingCruiseStep &&
+      !approachingCruiseStep.isIgnored &&
+      (crzPred?.reason === VerticalCheckpointReason.StepClimb ||
+        crzPred?.reason === VerticalCheckpointReason.StepDescent)
+    ) {
+      if (
+        crzPred.distanceFromPresentPosition < 20 &&
+        this.stepAheadTriggeredForAltitude !== approachingCruiseStep.toAltitude
+      ) {
+        this.fmc.addMessageToQueue(NXSystemMessages.stepAhead, undefined, undefined);
+
+        const autoStepClimb = NXDataStore.get('AUTO_STEP_CLIMB', 'DISABLED') === 'ENABLED';
+        if (autoStepClimb && !this.fmc.guidanceController.vnavDriver.isSelectedVerticalModeActive()) {
+          // Set new FCU alt, push FCU knob
+          Coherent.call('AP_ALT_VAR_SET_ENGLISH', 3, approachingCruiseStep.toAltitude, true).catch(console.error);
+          SimVar.SetSimVarValue('H:A320_Neo_FCU_ALT_PUSH', 'number', 1);
+          SimVar.SetSimVarValue('H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE', 'number', 1);
+        }
+        this.stepAheadTriggeredForAltitude = approachingCruiseStep.toAltitude;
+      }
     }
   }
 

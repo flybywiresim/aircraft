@@ -1,6 +1,6 @@
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
-import { ArraySubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -42,6 +42,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
+  private readonly tmpyColor = this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'));
+
   /** in feet */
   private readonly transitionAltitude = Subject.create<number | null>(null);
   /** in feet */
@@ -77,6 +79,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly selectedAltitudeConstraintOption = Subject.create<number | null>(null);
 
+  private readonly selectedAltitudeConstraintDisabled = this.altConstraintDisabled.map((it) => Array(3).fill(it));
+
+  private readonly selectedAltitudeConstraintInvisible = this.selectedAltitudeConstraintOption.map((v) => v === null);
+
   private readonly altWindowLabelRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly altWindowValueRef = FSComponent.createRef<HTMLDivElement>();
@@ -97,14 +103,15 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly stepAltsDistances = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsTimes = Array.from(Array(5), () => Subject.create<string>('--:--'));
   private readonly stepAltsIgnored = Array.from(Array(5), () => Subject.create<boolean>(false));
-  private readonly stepAltsIgnoredDisplay = Array.from(Array(5), (x) =>
+  private readonly stepAltsIgnoredDisplay = Array.from(Array(5), (_, x) =>
     this.stepAltsIgnored[x].map((i) => (i ? 'flex' : 'none')),
   );
-  private readonly stepAltsNotIgnoredDisplay = Array.from(Array(5), (x) =>
+  private readonly stepAltsNotIgnoredDisplay = Array.from(Array(5), (_, x) =>
     this.stepAltsIgnored[x].map((i) => (i ? 'none' : 'flex')),
   );
 
   private readonly stepNotAllowedAt = Subject.create<string | null>(null);
+  private readonly stepNotAllowedAtVisibility = this.stepNotAllowedAt.map((s) => (!s ? 'hidden' : 'visible'));
 
   private readonly stepAltsStartAtStepIndex = Subject.create<number>(0);
   private readonly stepAltsNumberOfCruiseSteps = Subject.create<number>(0);
@@ -158,59 +165,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.crzFl.set(pd.cruiseFlightLevel);
     }
 
-    if (this.loadedFlightPlan) {
-      const cruiseSteps = this.loadedFlightPlan.allLegs
-        .map((l) => (l.isDiscontinuity === false && l.cruiseStep ? l.cruiseStep : null))
-        .filter((it) => it !== null);
-
-      for (let i = 0; i < 5; i++) {
-        this.stepAltsLineVisibility[i].set('hidden');
-      }
-
-      this.stepAltsNumberOfCruiseSteps.set(cruiseSteps.length);
-      this.stepAltsScrollUpDisabled.set(this.stepAltsStartAtStepIndex.get() === 0);
-      this.stepAltsScrollDownDisabled.set(cruiseSteps.length - this.stepAltsStartAtStepIndex.get() <= 5);
-
-      for (let i = this.stepAltsStartAtStepIndex.get(); i < this.stepAltsStartAtStepIndex.get() + 5; i++) {
-        const line = i - this.stepAltsStartAtStepIndex.get();
-
-        if (!cruiseSteps[i]) {
-          this.stepAltsLineVisibility[line].set('visible');
-          this.stepAltsWptIndices[line].set(null);
-          this.stepAltsAltitudes[line].set(null);
-          this.stepAltsDistances[line].set(null);
-          this.stepAltsTimes[line].set('--:--');
-          this.stepAltsIgnored[line].set(false);
-          break;
-        }
-
-        const leg = this.loadedFlightPlan.allLegs[cruiseSteps[i].waypointIndex];
-
-        if (cruiseSteps[i] && leg.isDiscontinuity === false) {
-          const pred =
-            this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i);
-          const etaDate = new Date(
-            (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + (pred?.secondsFromPresent ?? 0)) * 1000,
-          );
-          const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseSteps[i].waypointIndex);
-
-          leg.isDiscontinuity === false && this.stepAltsLineVisibility[line].set('visible');
-          this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
-          this.stepAltsAltitudes[line].set(cruiseSteps[i].toAltitude / 100);
-          this.stepAltsDistances[line].set(
-            leg.calculated?.cumulativeDistance ?? 0 + cruiseSteps[i].distanceBeforeTermination,
-          );
-          this.stepAltsTimes[line].set(
-            pred
-              ? `${etaDate.getUTCHours().toString().padStart(2, '0')}:${etaDate.getUTCMinutes().toString().padStart(2, '0')}`
-              : '--:--',
-          );
-          this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
-        }
-      }
-    }
-
     this.updateConstraints();
+    this.updateCruiseSteps();
 
     console.timeEnd('F-PLN/VERT REV:onNewData');
   }
@@ -325,6 +281,87 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.altWindowValueRef.instance.style.visibility = 'hidden';
       }
     }
+  }
+
+  private updateCruiseSteps() {
+    if (this.loadedFlightPlan) {
+      const activeLegIndex = this.loadedFlightPlan.activeLegIndex;
+      const cruiseSteps = this.loadedFlightPlan.allLegs
+        .map((l, index) =>
+          l.isDiscontinuity === false && index >= activeLegIndex && l.cruiseStep ? l.cruiseStep : null,
+        )
+        .filter((it) => it !== null);
+      const cruiseStepLegIndices = this.loadedFlightPlan.allLegs
+        .map((l, index) => (l.isDiscontinuity === false && index >= activeLegIndex && l.cruiseStep ? index : null))
+        .filter((it) => it !== null);
+
+      for (let i = 0; i < 5; i++) {
+        this.stepAltsLineVisibility[i].set('hidden');
+      }
+
+      this.stepAltsNumberOfCruiseSteps.set(cruiseSteps.length);
+      this.stepAltsScrollUpDisabled.set(this.stepAltsStartAtStepIndex.get() === 0);
+      this.stepAltsScrollDownDisabled.set(cruiseSteps.length - this.stepAltsStartAtStepIndex.get() <= 5);
+
+      for (let i = this.stepAltsStartAtStepIndex.get(); i < this.stepAltsStartAtStepIndex.get() + 5; i++) {
+        const line = i - this.stepAltsStartAtStepIndex.get();
+
+        if (!cruiseSteps[i]) {
+          this.stepAltsLineVisibility[line].set('visible');
+          this.stepAltsDistances[line].set(null);
+          this.stepAltsTimes[line].set('--:--');
+          this.stepAltsIgnored[line].set(false);
+          break;
+        }
+
+        const leg = this.loadedFlightPlan.allLegs[cruiseStepLegIndices[i]];
+
+        if (cruiseSteps[i] && leg.isDiscontinuity === false) {
+          const pred =
+            this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(
+              cruiseStepLegIndices[i],
+            );
+          const etaDate = new Date(
+            (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + (pred?.secondsFromPresent ?? 0)) * 1000,
+          );
+          const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
+
+          leg.isDiscontinuity === false && this.stepAltsLineVisibility[line].set('visible');
+          this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
+          this.stepAltsAltitudes[line].set(cruiseSteps[i].toAltitude / 100);
+
+          if (pred) {
+            this.stepAltsDistances[line].set(pred.distanceFromAircraft - cruiseSteps[i].distanceBeforeTermination);
+            this.stepAltsTimes[line].set(
+              `${etaDate.getUTCHours().toString().padStart(2, '0')}:${etaDate.getUTCMinutes().toString().padStart(2, '0')}`,
+            );
+          } else {
+            this.stepAltsDistances[line].set(null);
+            this.stepAltsTimes[line].set('--:--');
+          }
+          this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
+        }
+      }
+    }
+  }
+
+  static nextCruiseStep(flightPlan: FlightPlan): CruiseStepEntry | undefined {
+    const cruiseStep = (
+      flightPlan.allLegs.find(
+        (l, index) => l instanceof FlightPlanLeg && index >= flightPlan.activeLegIndex && l.cruiseStep,
+      ) as FlightPlanLeg
+    )?.cruiseStep;
+    const cruiseStepLegIndex = flightPlan.allLegs.findIndex(
+      (l, index) => l instanceof FlightPlanLeg && index >= flightPlan.activeLegIndex && l.cruiseStep,
+    );
+    return cruiseStep
+      ? {
+          distanceBeforeTermination: cruiseStep.distanceBeforeTermination,
+          isIgnored: cruiseStep.isIgnored,
+          toAltitude: cruiseStep.toAltitude,
+          waypointIndex: cruiseStepLegIndex, // Fix waypointIndex
+        }
+      : undefined;
   }
 
   private async onWptDropdownModified(idx: number | null): Promise<void> {
@@ -461,7 +498,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         const wptIdx = this.selectedWaypointIndex.get();
         if (wptIdx !== null) {
           const leg = this.loadedFlightPlan?.allLegs[this.availableWaypointsToLegIndex[wptIdx]];
-          this.stepNotAllowedAt.set(leg instanceof FlightPlanLeg ? leg.ident : null);
+          this.stepNotAllowedAt.set(leg instanceof FlightPlanLeg ? `STEP NOT ALLOWED AT ${leg.ident}` : '');
         }
       }
     }
@@ -469,7 +506,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private tryDeleteCruiseStep(lineIndex: number, wptIndex: number, altitude: number | null) {
     if (wptIndex === null || altitude === null) {
-      this.loadedFlightPlan?.removeCruiseStep(wptIndex);
+      const legIndex = this.availableWaypointsToLegIndex[wptIndex];
+      this.loadedFlightPlan?.removeCruiseStep(legIndex);
       this.stepAltsWptIndices[lineIndex].set(null);
       this.stepAltsAltitudes[lineIndex].set(null);
     }
@@ -510,6 +548,25 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     );
 
     this.subs.push(this.crzFlFormatted);
+
+    for (const i of [0, 1, 2, 3, 4]) {
+      this.subs.push(this.stepAltsIgnoredDisplay[i], this.stepAltsNotIgnoredDisplay[i]);
+    }
+
+    this.subs.push(
+      this.props.bus
+        .getSubscriber<ClockEvents>()
+        .on('realTime')
+        .atFrequency(0.5)
+        .handle(() => this.updateCruiseSteps()),
+    );
+
+    this.subs.push(
+      this.tmpyColor,
+      this.selectedAltitudeConstraintDisabled,
+      this.selectedAltitudeConstraintInvisible,
+      this.stepNotAllowedAtVisibility,
+    );
 
     for (const i of [0, 1, 2, 3, 4]) {
       this.subs.push(this.stepAltsIgnoredDisplay[i], this.stepAltsNotIgnoredDisplay[i]);
@@ -670,8 +727,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_altCstrRadioButtons`}
                         selectedIndex={this.selectedAltitudeConstraintOption}
                         values={['AT', 'AT OR ABOVE', 'AT OR BELOW']}
-                        color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
-                        valuesDisabled={this.altConstraintDisabled.map((it) => Array(3).fill(it))}
+                        color={this.tmpyColor}
+                        valuesDisabled={this.selectedAltitudeConstraintDisabled}
                         onModified={(newIdx) => {
                           this.selectedAltitudeConstraintOption.set(newIdx);
                           this.tryUpdateAltitudeConstraint();
@@ -682,7 +739,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       </div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-self: flex-end; justify-content: center; align-items: center; padding-bottom: 20px;">
-                      <div class={{ invisible: this.selectedAltitudeConstraintOption.map((v) => v === null) }}>
+                      <div class={{ invisible: this.selectedAltitudeConstraintInvisible }}>
                         <InputField<number>
                           dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
                           dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val ?? undefined)}
@@ -845,11 +902,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       </div>
                       <div style="flex-grow: 1" />
                       <div clasS="fr jcc" style="flex: 1;">
-                        <span
-                          class="mfd-label biggest amber"
-                          style={{ visibility: this.stepNotAllowedAt.map((s) => (s === null ? 'hidden' : 'visible')) }}
-                        >
-                          {this.stepNotAllowedAt.map((s) => `STEP NOT ALLOWED AT ${s}`)}
+                        <span class="mfd-label biggest amber" style={{ visibility: this.stepNotAllowedAtVisibility }}>
+                          {this.stepNotAllowedAt}
                         </span>
                       </div>
                     </div>

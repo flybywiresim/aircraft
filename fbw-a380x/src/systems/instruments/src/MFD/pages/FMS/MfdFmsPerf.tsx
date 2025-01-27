@@ -38,6 +38,7 @@ import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -806,9 +807,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               } else {
                 this.crzPredStepRef.instance.style.display = 'block';
                 this.crzPredStepAheadRef.instance.style.display = 'none';
-                this.crzPredWaypoint.set('N/A'); // Where to get this from?
-                this.crzPredAltitudeTarget.set(0); // Where to get this from?
-                this.crzTablePredLine1.set(null);
+
+                if (this.props.fmcService.master?.flightPlanService.active) {
+                  const approachingCruiseStep = MfdFmsFplnVertRev.nextCruiseStep(
+                    this.props.fmcService.master.flightPlanService.active,
+                  );
+                  this.crzPredWaypoint.set(
+                    approachingCruiseStep
+                      ? this.props.fmcService.master?.flightPlanService.active.legElementAt(
+                          approachingCruiseStep.waypointIndex,
+                        ).ident
+                      : '',
+                  );
+                  this.crzPredAltitudeTarget.set(approachingCruiseStep ? approachingCruiseStep.toAltitude / 100 : null);
+                  this.crzTablePredLine1.set(null);
+                }
               }
             }
           }
@@ -2203,7 +2216,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       buttonStyle="margin-right: 10px;"
                     />
                     <Button
-                      disabled={Subject.create(true)}
+                      disabled={Subject.create(false)}
                       label="STEP ALTs"
                       onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/step-alts')}
                     />
