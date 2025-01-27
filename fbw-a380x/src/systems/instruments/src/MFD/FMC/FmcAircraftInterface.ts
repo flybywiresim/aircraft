@@ -813,7 +813,7 @@ export class FmcAircraftInterface {
         case FmgcFlightPhase.GoAround: {
           if (this.fmaVerticalMode.get() === VerticalMode.SRS_GA) {
             const speed = Math.min(
-              this.fmgc.data.approachVls.get() + (engineOut ? 15 : 25),
+              this.fmgc.data.approachVls.get() ?? Infinity + (engineOut ? 15 : 25),
               Math.max(
                 SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'),
                 this.fmgc.data.approachSpeed.get() ?? 0,
@@ -1233,7 +1233,7 @@ export class FmcAircraftInterface {
       SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
     }
 
-    if (this.fmc.enginesWereStarted.get()) {
+    if (this.fmc.enginesWereStarted.get() && this.flightPhase.get() !== FmgcFlightPhase.Done) {
       this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
     }
   }
