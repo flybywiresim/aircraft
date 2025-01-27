@@ -631,6 +631,7 @@
     "Real": "真實",
     "Realism": {
       "AdirsAlignTime": "ADIRS 校準時間",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "自動填充檢查單",
       "BoardingTime": "登機需時",
       "DmcSelfTestTime": "DMC 自檢時間",
