@@ -8,7 +8,7 @@ import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { TurnDirection } from '@flybywiresim/fbw-sdk';
 
@@ -40,6 +40,10 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
   private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
+  private readonly radioButtonColor = this.tmpyActive.map((it) =>
+    it ? RadioButtonColor.Yellow : RadioButtonColor.Cyan,
+  );
 
   protected onNewData(): void {
     const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
@@ -177,7 +181,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_holdTurnRadio`}
                 selectedIndex={this.turnSelectedIndex}
                 values={['LEFT', 'RIGHT']}
-                color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
+                color={this.radioButtonColor}
               />
             </div>
             <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">
@@ -188,7 +192,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_holdDefiningParameterRadio`}
                 selectedIndex={this.legDefiningParameterSelectedIndex}
                 values={['TIME', 'DIST']}
-                color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
+                color={this.radioButtonColor}
               />
               <div class="mfd-fpln-hold-timedist-box">
                 <div ref={this.legTimeRef}>

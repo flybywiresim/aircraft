@@ -11,7 +11,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-type RADIO_BUTTON_COLOR = 'yellow' | 'green' | 'cyan' | 'white';
+export enum RadioButtonColor {
+  Yellow,
+  Green,
+  Amber,
+  Cyan,
+  White,
+}
 
 interface RadioButtonGroupProps extends ComponentProps {
   values: string[];
@@ -21,7 +27,7 @@ interface RadioButtonGroupProps extends ComponentProps {
   /** If this function is defined, selectedIndex is not automatically updated. This function should take care of that. */
   onModified?: (newSelectedIndex: number) => void;
   additionalVerticalSpacing?: number;
-  color?: Subscribable<RADIO_BUTTON_COLOR>;
+  color?: Subscribable<RadioButtonColor>;
 }
 export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -39,7 +45,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     super.onAfterRender(node);
 
     if (this.props.color === undefined) {
-      this.props.color = Subject.create<RADIO_BUTTON_COLOR>('cyan');
+      this.props.color = Subject.create<RadioButtonColor>(RadioButtonColor.Cyan);
     }
     if (this.props.valuesDisabled === undefined) {
       this.props.valuesDisabled = Subject.create<boolean[]>(this.props.values.map(() => false));
@@ -78,12 +84,21 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     this.subs.push(
       this.props.color.sub((v) => {
         this.props.values.forEach((val, idx) => {
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('yellow');
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('green');
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('cyan');
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('white');
-
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.add(v);
+          document
+            .getElementById(`${this.props.idPrefix}_label_${idx}`)
+            ?.classList.toggle('yellow', v === RadioButtonColor.Yellow);
+          document
+            .getElementById(`${this.props.idPrefix}_label_${idx}`)
+            ?.classList.toggle('green', v === RadioButtonColor.Green);
+          document
+            .getElementById(`${this.props.idPrefix}_label_${idx}`)
+            ?.classList.toggle('amber', v === RadioButtonColor.Amber);
+          document
+            .getElementById(`${this.props.idPrefix}_label_${idx}`)
+            ?.classList.toggle('cyan', v === RadioButtonColor.Cyan);
+          document
+            .getElementById(`${this.props.idPrefix}_label_${idx}`)
+            ?.classList.toggle('white', v === RadioButtonColor.White);
         });
       }, true),
     );

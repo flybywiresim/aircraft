@@ -18,7 +18,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { SquawkFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { SurvButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvButton';
 
@@ -251,7 +251,9 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   selectedIndex={this.xpdrStatusSelectedIndex}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsXpdrStatus`}
                   additionalVerticalSpacing={50}
-                  color={this.xpdrStatusSelectedIndex.map((it) => (it === 0 ? 'green' : 'white'))}
+                  color={this.xpdrStatusSelectedIndex.map((it) =>
+                    it === 0 ? RadioButtonColor.Green : RadioButtonColor.White,
+                  )} // FIXME subscription leak
                 />
               </div>
             </div>
@@ -267,7 +269,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasTara`}
                   additionalVerticalSpacing={10}
                   valuesDisabled={this.tcasRadioGroupDisabled}
-                  color={Subject.create('green')}
+                  color={Subject.create(RadioButtonColor.Green)}
                 />
               </div>
               <div class="mfd-surv-controls-tcas-right">
@@ -280,7 +282,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   valuesDisabled={this.tcasRadioGroupDisabled}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasNormAbvBlw`}
                   additionalVerticalSpacing={10}
-                  color={Subject.create('green')}
+                  color={Subject.create(RadioButtonColor.Green)}
                 />
               </div>
             </div>
@@ -296,7 +298,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                 selectedIndex={this.wxrElevnTiltSelectedIndex}
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlswxrElevnTilt`}
                 additionalVerticalSpacing={10}
-                color={Subject.create('green')}
+                color={Subject.create(RadioButtonColor.Green)}
                 valuesDisabled={Subject.create(Array(3).fill(true))}
               />
             </div>
