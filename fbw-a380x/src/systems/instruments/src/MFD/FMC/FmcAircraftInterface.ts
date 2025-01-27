@@ -1805,6 +1805,14 @@ export class FmcAircraftInterface {
         this.stepAheadTriggeredForAltitude = approachingCruiseStep.toAltitude;
       }
     }
+
+    // Check for STEP DELETED message
+    if (SimVar.GetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', SimVarValueType.Bool) === 1) {
+      // Add message
+      this.fmc.addMessageToQueue(NXSystemMessages.stepDeleted, undefined, undefined);
+
+      SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', SimVarValueType.Bool, false);
+    }
   }
 
   //-----------------------------------------------------------------------------------
