@@ -957,7 +957,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                 'grid-column': 'span 2',
                               }}
                             >
-                              <span class="mfd-label">IGNORED</span>
+                              <span class="mfd-label">{this.stepAltsMessage[li]}</span>
                             </div>
                             <div
                               class="fr aic jcc"
