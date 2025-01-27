@@ -631,6 +631,7 @@
     "Real": "실제",
     "Realism": {
       "AdirsAlignTime": "ADIRS 정렬 시간",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "체크리스트 자동 완성",
       "BoardingTime": "승객 탑승 시간",
       "DmcSelfTestTime": "DMC 자체 점검 시간",
