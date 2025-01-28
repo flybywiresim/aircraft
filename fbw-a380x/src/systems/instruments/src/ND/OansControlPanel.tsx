@@ -112,9 +112,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly activeTabIndex = Subject.create<number>(2);
 
-  private readonly availableEntityTypes = Object.values(ControlPanelMapDataSearchMode).filter(
-    (v) => typeof v === 'string',
-  ) as string[];
+  private readonly availableEntityTypes = ['RWY', 'TWY', 'STAND', 'OTHER'];
 
   private mapDataFeatures: Feature<Geometry, AmdbProperties>[] | undefined = undefined;
 
