@@ -1776,28 +1776,6 @@ export class FwsCore {
     // FIXME depend on FWC state
     this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
 
-    this.allEngineSwitchOff.set(
-      !(
-        this.engine1ValueSwitch.get() ||
-        this.engine2ValueSwitch.get() ||
-        this.engine3ValueSwitch.get() ||
-        this.engine4ValueSwitch.get()
-      ),
-    );
-    this.allFuelPumpsOff.set(
-      !this.engine1ValueSwitch.get() &&
-        !this.engine2ValueSwitch.get() &&
-        !this.engine3ValueSwitch.get() &&
-        !this.engine4ValueSwitch.get() &&
-        !this.centerFuelPump1Auto.get() &&
-        !this.centerFuelPump2Auto.get() &&
-        !this.leftFuelPump1Auto.get() &&
-        !this.leftFuelPump2Auto.get() &&
-        !this.rightFuelPump1Auto.get() &&
-        !this.rightFuelPump2Auto.get() &&
-        this.allEngineSwitchOff.get(),
-    );
-
     // Inhibit single chimes for the first two seconds after power-on
     this.auralSingleChimeInhibitTimer.schedule(
       () => (this.auralSingleChimePending = false),
@@ -3270,6 +3248,28 @@ export class FwsCore {
 
     this.fmsZfwOrZfwCgNotSet.set(
       this.fmsZeroFuelWeight.isNoComputedData() || this.fmsZeroFuelWeightCg.isNoComputedData(),
+    );
+
+    this.allEngineSwitchOff.set(
+      !(
+        this.engine1ValueSwitch.get() ||
+        this.engine2ValueSwitch.get() ||
+        this.engine3ValueSwitch.get() ||
+        this.engine4ValueSwitch.get()
+      ),
+    );
+    this.allFuelPumpsOff.set(
+      !this.engine1ValueSwitch.get() &&
+        !this.engine2ValueSwitch.get() &&
+        !this.engine3ValueSwitch.get() &&
+        !this.engine4ValueSwitch.get() &&
+        !this.centerFuelPump1Auto.get() &&
+        !this.centerFuelPump2Auto.get() &&
+        !this.leftFuelPump1Auto.get() &&
+        !this.leftFuelPump2Auto.get() &&
+        !this.rightFuelPump1Auto.get() &&
+        !this.rightFuelPump2Auto.get() &&
+        this.allEngineSwitchOff.get(),
     );
 
     /* F/CTL */
