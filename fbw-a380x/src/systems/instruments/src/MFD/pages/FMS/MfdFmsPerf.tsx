@@ -54,6 +54,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   // Subjects
   private crzFl = Subject.create<number | null>(null);
 
+  private readonly crzFlIsMandatory = Subject.create(true);
+
   private recMaxFl = Subject.create<string>('---');
 
   private optFl = Subject.create<string>('---');
@@ -430,9 +432,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     console.time('PERF:onNewData');
 
-    if (pd.cruiseFlightLevel) {
-      this.crzFl.set(pd.cruiseFlightLevel);
-    }
+    this.crzFl.set(pd.cruiseFlightLevel);
+    this.crzFlIsMandatory.set(
+      (this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent,
+    );
 
     if (pd.costIndex) {
       this.costIndex.set(pd.costIndex);
@@ -999,7 +1002,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   dataHandlerDuringValidation={async (v) =>
                     v ? this.props.fmcService.master?.acInterface.setCruiseFl(v) : false
                   }
-                  mandatory={Subject.create(false)}
+                  mandatory={this.crzFlIsMandatory}
                   value={this.crzFl}
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
