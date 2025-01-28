@@ -583,6 +583,8 @@ export class FwsCore {
 
   public readonly dcESSBusPowered = Subject.create(false);
 
+  public readonly dc1BusPowered = Subject.create(false);
+
   public readonly dc2BusPowered = Subject.create(false);
 
   public readonly extPwrConnected = Subject.create(false);
@@ -732,19 +734,23 @@ export class FwsCore {
 
   public readonly lrElevFaultCondition = Subject.create(false);
 
+  public readonly sec1Healthy = Subject.create(false);
+
+  public readonly sec2Healthy = Subject.create(false);
+
+  public readonly sec3Healthy = Subject.create(false);
+
   public readonly sec1FaultCondition = Subject.create(false);
+  public readonly sec1OffThenOnPulseNode = new NXLogicPulseNode(true);
+  public readonly sec1OffThenOnMemoryNode = new NXLogicMemoryNode();
 
   public readonly sec2FaultCondition = Subject.create(false);
+  public readonly sec2OffThenOnPulseNode = new NXLogicPulseNode(true);
+  public readonly sec2OffThenOnMemoryNode = new NXLogicMemoryNode();
 
   public readonly sec3FaultCondition = Subject.create(false);
-
-  public readonly sec1FaultLine123Display = Subject.create(false);
-
-  public readonly sec1FaultLine45Display = Subject.create(false);
-
-  public readonly sec2FaultLine123Display = Subject.create(false);
-
-  public readonly sec3FaultLine123Display = Subject.create(false);
+  public readonly sec3OffThenOnPulseNode = new NXLogicPulseNode(true);
+  public readonly sec3OffThenOnMemoryNode = new NXLogicMemoryNode();
 
   public readonly prim2Healthy = Subject.create(false);
 
@@ -1080,6 +1086,10 @@ export class FwsCore {
   public readonly flightPhase89 = Subject.create(false);
 
   public readonly flightPhase910 = Subject.create(false);
+
+  public readonly flightPhase1112MoreThanOneMin = Subject.create(false);
+
+  public readonly flightPhase1112MoreThanOneMinConfNode = new NXLogicConfirmNode(60);
 
   public readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
 
@@ -2025,6 +2035,9 @@ export class FwsCore {
     this.phase815MinConfNode.write(this.flightPhase.get() === 8, deltaTime);
     this.phase112.set(flightPhase112);
 
+    this.flightPhase1112MoreThanOneMinConfNode.write(this.flightPhase.get() >= 11, deltaTime);
+    this.flightPhase1112MoreThanOneMin.set(this.flightPhase1112MoreThanOneMinConfNode.read());
+
     this.phase12ShutdownMemoryNode.write(this.flightPhase.get() === 12, !this.phase112.get());
     this.flightPhase12Entered.set(this.flightPhase.get() === 12);
 
@@ -2081,6 +2094,7 @@ export class FwsCore {
 
     /* ELECTRICAL acquisition */
     this.dcESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool') > 0);
+    this.dc1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'bool') > 0);
     this.dc2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool') > 0);
     this.ac1BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool') > 0);
     this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool') > 0);
@@ -3309,38 +3323,30 @@ export class FwsCore {
     );
     this.elac2FaultConfirmNodeOutput.set(this.elac2FaultConfirmNode.write(elac2FaultCondition, deltaTime));
 
-    // SEC 1 FAULT computation
-    const ss1f = fcdc1DiscreteWord1.bitValueOr(25, false) || fcdc2DiscreteWord1.bitValueOr(25, false);
-    this.sec1FaultCondition.set(
-      !(flightPhase112 && (fcdc1DiscreteWord3.bitValueOr(27, false) || fcdc2DiscreteWord3.bitValueOr(27, false))) &&
-        this.dcESSBusPowered.get() &&
-        ss1f,
-    );
-    this.sec1FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.bitValueOr(27, false) || fcdc2DiscreteWord3.bitValueOr(27, false)),
-    );
+    this.sec1Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'bool'));
+    this.sec2Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_2_HEALTHY', 'bool'));
+    this.sec3Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'bool'));
 
-    // SEC 2 FAULT computation
-    const ss2f = fcdc1DiscreteWord1.bitValueOr(26, false) || fcdc2DiscreteWord1.bitValueOr(26, false);
-    this.sec2FaultCondition.set(
-      !(flightPhase112 && (fcdc1DiscreteWord3.bitValueOr(28, false) || fcdc2DiscreteWord3.bitValueOr(28, false))) &&
-        this.dc2BusPowered.get() &&
-        ss2f,
+    this.sec1FaultCondition.set(!flightPhase112 && !this.sec1Healthy.get() && this.dcESSBusPowered.get());
+    this.sec1OffThenOnPulseNode.write(
+      SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+      deltaTime,
     );
-    this.sec2FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.bitValueOr(28, false) || fcdc2DiscreteWord3.bitValueOr(28, false)),
-    );
+    this.sec1OffThenOnMemoryNode.write(this.sec1OffThenOnPulseNode.read(), !this.sec1FaultCondition.get());
 
-    // SEC 3 FAULT computation
-    const ss3f = fcdc1DiscreteWord1.bitValueOr(29, false) || fcdc2DiscreteWord1.bitValueOr(29, false);
-    this.sec3FaultCondition.set(
-      !(flightPhase112 && (fcdc1DiscreteWord3.bitValueOr(29, false) || fcdc2DiscreteWord3.bitValueOr(29, false))) &&
-        this.dc2BusPowered.get() &&
-        ss3f,
+    this.sec2FaultCondition.set(!flightPhase112 && !this.sec2Healthy.get() && this.dc2BusPowered.get());
+    this.sec2OffThenOnPulseNode.write(
+      SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+      deltaTime,
     );
-    this.sec3FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.bitValueOr(29, false) || fcdc2DiscreteWord3.bitValueOr(29, false)),
+    this.sec2OffThenOnMemoryNode.write(this.sec2OffThenOnPulseNode.read(), !this.sec2FaultCondition.get());
+
+    this.sec3FaultCondition.set(!flightPhase112 && !this.sec3Healthy.get() && this.dc1BusPowered.get());
+    this.sec3OffThenOnPulseNode.write(
+      SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+      deltaTime,
     );
+    this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
 
     // FCDC 1+2 FAULT computation
     const SFCDC1FT =

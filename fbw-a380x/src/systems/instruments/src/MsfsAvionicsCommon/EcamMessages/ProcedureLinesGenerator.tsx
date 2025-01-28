@@ -473,7 +473,7 @@ export class ProcedureLinesGenerator {
 
         if (isChecklistCondition(item) && !item.sensed) {
           // Insert CONFIRM <condition>
-          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name.substring(2)}`;
+          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
           lineData.push({
             abnormalProcedure: isAbnormalOrDeferred,
             activeProcedure: this.procedureIsActive.get(),

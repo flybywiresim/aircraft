@@ -307,17 +307,36 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   271800058: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SEC 1 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'SEC 1', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'SEC 1', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800059: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SEC 2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'SEC 2', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'SEC 2', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'SEC 2', sensed: true, labelNotCompleted: 'KEEP ON' },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800060: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SEC 3 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'SEC 3', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'SEC 3', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800061: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SINGLE ELEVATOR FAULT',

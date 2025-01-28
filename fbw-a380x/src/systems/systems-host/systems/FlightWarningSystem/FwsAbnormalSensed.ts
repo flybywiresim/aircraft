@@ -2336,7 +2336,100 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Fctl,
       inopSysAllPhases: () => [],
     },
-
+    271800058: {
+      // SEC 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.sec1FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [this.fws.flightPhase1112MoreThanOneMin.get(), true, true, true, true],
+      whichItemsChecked: () => [
+        true,
+        this.fws.sec1OffThenOnMemoryNode.read(),
+        this.fws.sec1OffThenOnMemoryNode.read(),
+        !SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysAllPhases: () => [
+        '270300001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get()
+          ? '290100011'
+          : '290100001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec3Healthy.get() ? '270300004' : null,
+        '320300007',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220300026' : null,
+      ],
+      info: () => [
+        '270200001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220200010' : null,
+      ],
+      redundLoss: () => ['270300005'],
+    },
+    271800059: {
+      // SEC 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.sec2FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [this.fws.flightPhase1112MoreThanOneMin.get(), true, true, true, false, true],
+      whichItemsChecked: () => [
+        true,
+        this.fws.sec2OffThenOnMemoryNode.read(),
+        this.fws.sec2OffThenOnMemoryNode.read(),
+        !SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        true,
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysAllPhases: () => [
+        '270300001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get()
+          ? '290100011'
+          : '290100001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec3Healthy.get() ? '270300004' : null,
+        '320300007',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220300026' : null,
+      ],
+      info: () => [
+        '270200001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220200010' : null,
+      ],
+      redundLoss: () => [],
+    },
+    271800060: {
+      // SEC 3 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.sec3FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [this.fws.flightPhase1112MoreThanOneMin.get(), true, true, true, true],
+      whichItemsChecked: () => [
+        true,
+        this.fws.sec3OffThenOnMemoryNode.read(),
+        this.fws.sec3OffThenOnMemoryNode.read(),
+        !SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysAllPhases: () => [
+        '270300001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get()
+          ? '290100011'
+          : '290100001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec3Healthy.get() ? '270300004' : null,
+        '320300007',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220300026' : null,
+      ],
+      info: () => [
+        '270200001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220200010' : null,
+      ],
+      redundLoss: () => ['270300006'],
+    },
     272800001: {
       // SLAT NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
