@@ -118,8 +118,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
-    console.time('F-PLN:onNewData');
-
     // update(...) is the most costly function. First performance improvement: Don't render everything completely new every time, just update with refs
     // Delete and re-render FPLN lines only if:
     // a) activeLegIndex changes
@@ -177,7 +175,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       );
     }
     this.checkScrollButtons();
-    console.timeEnd('F-PLN:onNewData');
   }
 
   private update(startAtIndex: number, onlyUpdatePredictions = true): void {
