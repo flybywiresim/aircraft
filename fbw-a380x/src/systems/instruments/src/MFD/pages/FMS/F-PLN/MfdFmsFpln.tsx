@@ -650,7 +650,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         if (k === 'UP') {
           this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
         } else if (k === 'DOWN') {
-          this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() + 1);
+          this.displayFplnFromLineIndex.set(
+            Math.min(this.displayFplnFromLineIndex.get() + 1, this.getLastAllowableIndex()),
+          );
         }
       }),
     );
@@ -661,7 +663,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.disabledScrollUp.set(
       !this.lineData || this.displayFplnFromLineIndex.get() <= (this.loadedFlightPlan?.activeLegIndex ?? 1) - 1,
     );
-    this.disabledScrollDown.set(!this.lineData || this.displayFplnFromLineIndex.get() >= this.lineData.length - 1);
+    this.disabledScrollDown.set(!this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastAllowableIndex());
   }
 
   private spdAltButton(): VNode {
@@ -793,19 +795,17 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         targetIndex = this.displayFplnFromLineIndex.get() + 1 - this.renderedFplnLines.length;
       } else {
         targetIndex = this.displayFplnFromLineIndex.get() + this.renderedFplnLines.length - 1;
-        if (targetIndex > this.lineData.length) {
-          targetIndex = this.lineData.findIndex(
-            (it) =>
-              it &&
-              it.originalLegIndex ===
-                (this.loadedFlightPlan?.alternateFlightPlan
-                  ? this.loadedFlightPlan.alternateFlightPlan.lastIndex
-                  : this.loadedFlightPlan?.lastIndex),
-          );
+        const maxBottomIndex = this.getLastAllowableIndex();
+        if (targetIndex > maxBottomIndex) {
+          targetIndex = maxBottomIndex;
         }
       }
       this.displayFplnFromLineIndex.set(Math.max(targetIndex, 0));
     }
+  }
+
+  private getLastAllowableIndex() {
+    return this.lineData.length - this.renderedFplnLines.length;
   }
 
   render(): VNode {
