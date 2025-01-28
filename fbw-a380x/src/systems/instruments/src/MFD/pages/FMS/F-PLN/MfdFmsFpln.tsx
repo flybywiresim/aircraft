@@ -34,6 +34,7 @@ import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
+import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -637,7 +638,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.scrollToDest();
     }
 
-    const sub = this.props.bus.getSubscriber<ClockEvents>();
+    const sub = this.props.bus.getSubscriber<ClockEvents & InternalKccuKeyEvent>();
     this.subs.push(
       sub
         .on('realTime')
@@ -645,6 +646,16 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         .handle((_t) => {
           this.onNewData();
         }),
+    );
+
+    this.subs.push(
+      sub.on('kccuKeyEvent').handle((k) => {
+        if (k === 'UP') {
+          this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
+        } else if (k === 'DOWN') {
+          this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() + 1);
+        }
+      }),
     );
   }
 
@@ -772,6 +783,26 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.displayFplnFromLineIndex.set(whichLineIndex - (this.tmpyActive.get() ? 8 : 9));
       }
     }
+  }
+
+  private scrollPage(up: boolean) {
+    if (!this.loadedFlightPlan) {
+      return;
+    }
+
+    let targetIndex;
+    if (up) {
+      targetIndex = this.displayFplnFromLineIndex.get() - this.renderedFplnLines.length;
+      if (targetIndex < 0) {
+        this.displayFplnFromLineIndex.set(0);
+      }
+    } else {
+      targetIndex = this.displayFplnFromLineIndex.get() + this.renderedFplnLines.length;
+      if (targetIndex > this.lineData.length) {
+        targetIndex = this.lineData.length;
+      }
+    }
+    this.displayFplnFromLineIndex.set(targetIndex);
   }
 
   render(): VNode {
@@ -904,13 +935,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             <div style="display: flex; flex-direction: row; margin-top: 5px; margin-bottom: 5px;">
               <IconButton
                 icon="double-down"
-                onClick={() => this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() + 1)}
+                onClick={() => this.scrollPage(false)}
                 disabled={this.disabledScrollDown}
                 containerStyle="width: 60px; height: 60px;"
               />
               <IconButton
                 icon="double-up"
-                onClick={() => this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1)}
+                onClick={() => this.scrollPage(true)}
                 disabled={this.disabledScrollUp}
                 containerStyle="width: 60px; height: 60px;"
               />
