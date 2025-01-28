@@ -787,19 +787,25 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
-    let targetIndex;
-    if (up) {
-      targetIndex = this.displayFplnFromLineIndex.get() - this.renderedFplnLines.length;
-      if (targetIndex < 0) {
-        this.displayFplnFromLineIndex.set(0);
+    if (this.lineData) {
+      let targetIndex;
+      if (up) {
+        targetIndex = this.displayFplnFromLineIndex.get() + 1 - this.renderedFplnLines.length;
+      } else {
+        targetIndex = this.displayFplnFromLineIndex.get() + this.renderedFplnLines.length - 1;
+        if (targetIndex > this.lineData.length) {
+          targetIndex = this.lineData.findIndex(
+            (it) =>
+              it &&
+              it.originalLegIndex ===
+                (this.loadedFlightPlan?.alternateFlightPlan
+                  ? this.loadedFlightPlan.alternateFlightPlan.lastIndex
+                  : this.loadedFlightPlan?.lastIndex),
+          );
+        }
       }
-    } else {
-      targetIndex = this.displayFplnFromLineIndex.get() + this.renderedFplnLines.length;
-      if (targetIndex > this.lineData.length) {
-        targetIndex = this.lineData.length;
-      }
+      this.displayFplnFromLineIndex.set(Math.max(targetIndex, 0));
     }
-    this.displayFplnFromLineIndex.set(targetIndex);
   }
 
   render(): VNode {
