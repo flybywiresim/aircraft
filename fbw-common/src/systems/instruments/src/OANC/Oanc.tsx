@@ -592,16 +592,20 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     setTimeout(() => (this.labelManager.showLabels = true), ZOOM_TRANSITION_TIME_MS + 200);
   }
 
-  public async loadAirportMap(icao: string) {
-    this.dataLoading = true;
-
-    this.airportLoading.set(true);
-
+  public unloadAirportMap() {
     this.btvUtils.clearSelection();
     this.markerManager.eraseAllCrosses();
     this.markerManager.eraseAllFlags();
     this.clearMap();
     this.clearData();
+  }
+
+  public async loadAirportMap(icao: string) {
+    this.dataLoading = true;
+
+    this.airportLoading.set(true);
+
+    this.unloadAirportMap();
 
     if (!icao) {
       this.dataLoading = false;
@@ -1050,6 +1054,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const now = Date.now();
     const deltaTime = (now - this.lastTime) / 1_000;
     this.lastTime = now;
+
+    if (this.data && this.resetPulled.get()) {
+      this.unloadAirportMap();
+    }
 
     if (!this.data || this.dataLoading || this.resetPulled.get()) return;
 
