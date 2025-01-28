@@ -79,11 +79,11 @@ export class A32NX_Speeds {
 
   /**
    * Math.round(x / r) * r
-   * @param x {number} number to be rounded
-   * @param r {number} precision
-   * @returns {number} rounded number
+   * @param x number to be rounded
+   * @param r precision
+   * @returns rounded number
    */
-  round(x, r = 100) {
+  round(x: number, r = 100): number {
     return Math.round(x / r) * r;
   }
 }

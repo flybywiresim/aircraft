@@ -1,13 +1,15 @@
+import { A320_Neo_CDU_MainDisplay } from '../legacy_pages/A320_Neo_CDU_MainDisplay';
+import { TypeIIMessage } from '../messages/NXSystemMessages';
+
 export class A32NX_MessageQueue {
   private readonly _queue = [];
 
-  constructor(private readonly _fmgc) {}
+  constructor(private readonly _fmgc: A320_Neo_CDU_MainDisplay) {}
 
   /**
    * Fmgc messages enter the queue via this void
-   * @param message {TypeIIMessage}
    */
-  addMessage(message) {
+  addMessage(message: TypeIIMessage) {
     if (message.isResolved(this._fmgc)) {
       this.updateDisplayedMessage();
       return;
@@ -17,7 +19,7 @@ export class A32NX_MessageQueue {
     this.updateDisplayedMessage();
   }
 
-  removeMessage(value) {
+  removeMessage(value: string) {
     for (let i = 0; i < this._queue.length; i++) {
       const message = this._queue[i];
       if (message.text === value) {
@@ -52,7 +54,7 @@ export class A32NX_MessageQueue {
     }
   }
 
-  _addToQueueOrUpdateQueuePosition(message) {
+  _addToQueueOrUpdateQueuePosition(message: TypeIIMessage) {
     for (let i = 0; i < this._queue.length; i++) {
       if (this._queue[i].text === message.text) {
         if (i !== 0) {

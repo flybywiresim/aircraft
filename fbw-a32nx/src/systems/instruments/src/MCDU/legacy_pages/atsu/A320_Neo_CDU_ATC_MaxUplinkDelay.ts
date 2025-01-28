@@ -2,9 +2,10 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { Keypad } from '../A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcMaxUplinkDelay {
-  static ShowPage(mcdu, updateInProgress = false) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, updateInProgress = false) {
     mcdu.clearDisplay();
 
     let activeAtc = '----';

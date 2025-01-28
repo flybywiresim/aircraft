@@ -1,4 +1,5 @@
 import { Fix, IlsNavaid } from '@flybywiresim/fbw-sdk';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class A320_Neo_CDU_SelectWptPage {
   /**
@@ -8,7 +9,7 @@ export class A320_Neo_CDU_SelectWptPage {
    * @param page
    * @constructor
    */
-  static ShowPage(mcdu, fixes: (Fix | IlsNavaid)[], callback, page = 0) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, fixes: (Fix | IlsNavaid)[], callback, page = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.SelectWptPage;
     const rows = [['', 'FREQ', 'LAT/LONG'], [''], [''], [''], [''], [''], [''], [''], [''], [''], [''], ['<RETURN']];

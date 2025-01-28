@@ -13,9 +13,10 @@ import { CDUAtcUsualRequestFansA } from './FansA/A320_Neo_CDU_ATC_UsualRequest';
 import { CDUAtcEmergencyFansB } from './FansB/A320_Neo_CDU_ATC_Emergency';
 import { CDUAtcUsualRequestFansB } from './FansB/A320_Neo_CDU_ATC_UsualRequest';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcMenu {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCMenu;
     mcdu.activeSystem = 'ATSU';

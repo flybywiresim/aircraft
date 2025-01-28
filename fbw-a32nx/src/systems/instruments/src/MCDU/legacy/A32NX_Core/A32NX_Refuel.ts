@@ -7,6 +7,7 @@ import { NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 const WING_FUELRATE_GAL_SEC = 4.01;
 const CENTER_MODIFIER = 0.4528;
 
+// FIXME move to systems host
 export class A32NX_Refuel {
   constructor() {}
 

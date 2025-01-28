@@ -1,6 +1,7 @@
 import { AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcReportAtis {
   static ConvertAtisInformation(info) {
@@ -62,7 +63,7 @@ export class CDUAtcReportAtis {
     }
   }
 
-  static ShowPage(mcdu, title, messages, messageIndex, offset = 0) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, title, messages, messageIndex, offset = 0) {
     mcdu.clearDisplay();
 
     const message = messages[messageIndex];

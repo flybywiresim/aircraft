@@ -3,6 +3,7 @@ import { Keypad } from '../../A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { CDUAtcTextFansB } from '../FansB/A320_Neo_CDU_ATC_Text';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcMessageModifyUM131 {
   static CreateDataBlock(message) {
@@ -23,7 +24,7 @@ export class CDUAtcMessageModifyUM131 {
     message.Response.Content[0].Content[1].Value = data.personsOnBoard;
   }
 
-  static ShowPage(mcdu, message, data = CDUAtcMessageModifyUM131.CreateDataBlock(message)) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, message, data = CDUAtcMessageModifyUM131.CreateDataBlock(message)) {
     let cancel = '\xa0CANCEL';
     let addText = 'ADD TEXT\xa0';
     let transfer = 'DCDU\xa0';

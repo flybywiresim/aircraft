@@ -2,6 +2,7 @@ import { UplinkMessageStateMachine } from '@datalink/atc';
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcMessage } from './A320_Neo_CDU_ATC_Message';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcMessageMonitoring {
   static TranslateCpdlcResponse(response) {
@@ -32,7 +33,7 @@ export class CDUAtcMessageMonitoring {
     return '';
   }
 
-  static ShowPage(mcdu, messages = null, offset = 0, cancelIndex = -1) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages = null, offset = 0, cancelIndex = -1) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCMessageMonitoring;
 

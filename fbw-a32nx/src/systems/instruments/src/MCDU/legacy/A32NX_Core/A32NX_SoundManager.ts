@@ -1,14 +1,19 @@
+interface SoundDefinition {
+  name: string;
+  length: number;
+}
+
 class PeriodicSound {
-  private timeSinceLastPlayed = NaN;
+  public timeSinceLastPlayed = NaN;
 
   constructor(
-    private sound,
-    private period,
+    public sound: SoundDefinition,
+    public period: number,
   ) {}
 }
 
 export class A32NX_SoundManager {
-  private periodicList = [];
+  private periodicList: PeriodicSound[] = [];
 
   private playingSound = null;
   private playingSoundRemaining = NaN;
@@ -70,7 +75,7 @@ export class A32NX_SoundManager {
     return false;
   }
 
-  update(deltaTime, _core) {
+  update(deltaTime: number, _core) {
     if (this.playingSoundRemaining <= 0) {
       this.playingSound = null;
       this.playingSoundRemaining = NaN;
@@ -91,7 +96,7 @@ export class A32NX_SoundManager {
 }
 
 // many lengths are approximate until we can get them accuratly (when boris re-makes them and we have the sources)
-export const soundList = {
+export const soundList: Record<string, SoundDefinition> = {
   pull_up: {
     name: 'aural_pullup_new',
     length: 0.9,

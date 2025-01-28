@@ -1,8 +1,9 @@
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 import { CDUCfdsMainMenu } from './A320_Neo_CDU_CFDS_Menu';
 import { CDUCfdsTestInst } from './instruments/A320_Neo_CDU_CFDS_Test_Inst';
 
 export class CDUCfdsTestMenu {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.setTemplate([
       ['SYSTEM REPORT / TEST   }'],
@@ -43,7 +44,7 @@ export class CDUCfdsTestMenu {
     };
   }
 
-  static ShowPage2(mcdu) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.setTemplate([
       ['SYSTEM REPORT / TEST   }'],

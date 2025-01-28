@@ -1,8 +1,9 @@
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { CDUPosFrozen } from './A320_Neo_CDU_PositionFrozen';
 import { CDUSelectedNavaids } from './A320_Neo_CDU_SelectedNavaids';
 
 export class CDUPositionMonitorPage {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PositionMonitorPage;
 

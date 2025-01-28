@@ -9,9 +9,10 @@ import { Keypad } from '../../A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcVertRequestFansA {
-  static CreateDataBlock() {
+  static CreateDataBlock(): any {
     return {
       climb: null,
       climbStart: null,
@@ -191,7 +192,7 @@ export class CDUAtcVertRequestFansA {
     return retval;
   }
 
-  static ShowPage1(mcdu, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
+  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let climbTo = '[   ][color]cyan';
@@ -443,7 +444,7 @@ export class CDUAtcVertRequestFansA {
     };
   }
 
-  static ShowPage2(mcdu, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let climbStart = '[   ]/[   ][color]cyan';

@@ -14,7 +14,7 @@ export class McduMessage {
 }
 
 export class TypeIMessage extends McduMessage {
-  constructor(text, isAmber = false, replace = '') {
+  constructor(text: string, isAmber = false, replace = '') {
     super(text, isAmber, replace);
   }
 
@@ -22,7 +22,7 @@ export class TypeIMessage extends McduMessage {
    * Only returning a "copy" of the object to ensure thread safety when trying to edit the original message
    * t {string} replaces defined elements, see this.replace
    */
-  getModifiedMessage(t) {
+  getModifiedMessage(t?: string | number) {
     return new McduMessage(t ? this.text.replace(this.replace, '' + t) : this.text, this.isAmber, this.replace);
   }
 }
@@ -31,7 +31,7 @@ export class TypeIIMessage extends McduMessage {
   public isTypeTwo = true;
 
   constructor(
-    text,
+    text: string,
     isAmber = false,
     replace = '',
     public isResolved = () => false,
@@ -46,7 +46,7 @@ export class TypeIIMessage extends McduMessage {
    * isResolved {function} overrides present function
    * onClear {function} overrides present function
    */
-  getModifiedMessage(t, isResolved = undefined, onClear = undefined) {
+  getModifiedMessage(t?: string | number, isResolved = undefined, onClear = undefined) {
     return new TypeIIMessage(
       t ? this.text.replace(this.replace, '' + t) : this.text,
       this.isAmber,

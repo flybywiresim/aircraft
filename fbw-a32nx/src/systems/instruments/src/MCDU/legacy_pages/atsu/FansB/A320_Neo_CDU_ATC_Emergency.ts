@@ -1,7 +1,8 @@
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 
 export class CDUAtcEmergencyFansB {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCEmergency;
 

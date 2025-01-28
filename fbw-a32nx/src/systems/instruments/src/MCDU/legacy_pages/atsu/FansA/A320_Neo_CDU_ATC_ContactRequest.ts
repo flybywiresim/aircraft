@@ -3,9 +3,10 @@ import { Keypad } from '../../A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcContactRequest {
-  static CreateDataBlock() {
+  static CreateDataBlock(): any {
     return {
       requestContact: false,
     };
@@ -15,7 +16,7 @@ export class CDUAtcContactRequest {
     return data.requestContact;
   }
 
-  static CreateRequest(mcdu, type, values = []) {
+  static CreateRequest(mcdu: A320_Neo_CDU_MainDisplay, type, values = []) {
     const retval = new CpdlcMessage();
     retval.Station = mcdu.atsu.currentStation();
     retval.Content.push(CpdlcMessagesDownlink[type][1].deepCopy());
@@ -37,7 +38,7 @@ export class CDUAtcContactRequest {
     return retval;
   }
 
-  static ShowPage(mcdu, data = CDUAtcContactRequest.CreateDataBlock()) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcContactRequest.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let requestContact = '{cyan}{{end}REQ VOICE CONTACT';

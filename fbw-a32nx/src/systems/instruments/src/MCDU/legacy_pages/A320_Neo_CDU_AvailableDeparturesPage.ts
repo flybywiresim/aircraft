@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXUnits } from '@flybywiresim/fbw-sdk';
+import { Departure, NXUnits } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, RunwayUtils } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 const DeparturePagination = Object.freeze({
   DEPT_PAGE: 4,
@@ -18,7 +19,7 @@ const Labels = Object.freeze({
 
 export class CDUAvailableDeparturesPage {
   static ShowPage(
-    mcdu,
+    mcdu: A320_Neo_CDU_MainDisplay,
     airport,
     pageCurrent = -1,
     sidSelection = false,
@@ -53,12 +54,15 @@ export class CDUAvailableDeparturesPage {
 
     /** @type {import('msfs-navdata').Runway[]} */
     const availableRunways = [...targetPlan.availableOriginRunways];
-    let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident));
+    let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident)) as (
+      | Departure
+      | (typeof Labels)['NO_SID']
+    )[];
     let availableTransitions = [];
 
     if (selectedRunway) {
       // filter out any SIDs not compatible with this runway
-      availableSids = availableSids.filter(
+      availableSids = (availableSids as Departure[]).filter(
         (sid) =>
           sid.runwayTransitions.length === 0 || findRunwayTransitionIndex(selectedRunway, sid.runwayTransitions) !== -1,
       );

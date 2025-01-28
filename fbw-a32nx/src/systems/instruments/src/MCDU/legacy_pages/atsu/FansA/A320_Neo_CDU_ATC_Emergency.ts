@@ -3,6 +3,7 @@ import { Keypad } from '../../A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcEmergencyFansA {
   static CanSendData(data) {
@@ -53,7 +54,7 @@ export class CDUAtcEmergencyFansA {
     };
   }
 
-  static CreateRequest(mcdu, type, values = []) {
+  static CreateRequest(mcdu: A320_Neo_CDU_MainDisplay, type, values = []) {
     const retval = new CpdlcMessage();
     retval.Station = mcdu.atsu.currentStation();
     retval.Content.push(CpdlcMessagesDownlink[type][1].deepCopy());
@@ -65,7 +66,7 @@ export class CDUAtcEmergencyFansA {
     return retval;
   }
 
-  static CreateRequests(mcdu, data) {
+  static CreateRequests(mcdu: A320_Neo_CDU_MainDisplay, data) {
     const retval = [];
 
     if (data.mayday === true) {
@@ -100,7 +101,7 @@ export class CDUAtcEmergencyFansA {
     return retval;
   }
 
-  static ShowPage1(mcdu, data = CDUAtcEmergencyFansA.CreateDataBlock()) {
+  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcEmergencyFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCEmergency;
 
@@ -299,7 +300,7 @@ export class CDUAtcEmergencyFansA {
     };
   }
 
-  static ShowPage2(mcdu, data = CDUAtcEmergencyFansA.CreateDataBlock()) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcEmergencyFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let deviating = '{cyan}[ ]{end}';

@@ -4,6 +4,7 @@
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 /*
     Displays blank waypoint field, when waypoint inputted, LAT, LONG will show.
@@ -11,7 +12,7 @@ import { NXSystemMessages } from '../messages/NXSystemMessages';
 */
 
 export class CDUWaypointPage {
-  static ShowPage(mcdu, waypoint = undefined) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, waypoint = undefined) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.WaypointPage;
     mcdu.returnPageCallback = () => {

@@ -8,6 +8,7 @@ import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
 
 const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 
+// FIXME move to systems host
 export class A32NX_LocalVarUpdater {
   // Initial data for deltas
   private lastFlapsPosition = SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_POSITION_PERCENT', 'Percent');

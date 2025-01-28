@@ -1,7 +1,8 @@
 import { CDUIRSStatus } from './A320_Neo_CDU_IRSStatus';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUIRSMonitor {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.IRSMonitor;
     mcdu.setTemplate([

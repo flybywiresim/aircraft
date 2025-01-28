@@ -5,9 +5,10 @@ import { FlightPlanIndex, WaypointEntryUtils } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class A320_Neo_CDU_AirwaysFromWaypointPage {
-  static ShowPage(mcdu, reviseIndex, pendingAirway, lastIndex, forPlan, inAlternate) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, reviseIndex, pendingAirway, lastIndex, forPlan, inAlternate) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AirwaysFromWaypointPage;
 
@@ -222,7 +223,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
    *
    * @returns {Promise<import('msfs-navdata').Airway>}
    */
-  static async _getAirway(mcdu, fromFpIndex, lastAirway, lastFix, value) {
+  static async _getAirway(mcdu: A320_Neo_CDU_MainDisplay, fromFpIndex, lastAirway, lastFix, value) {
     const airways = await mcdu.navigationDatabase.searchAirway(value, lastFix);
 
     let matchingAirway = lastFix && airways.find((it) => it.fixes.some((fix) => fix.ident === lastFix.ident));
@@ -241,7 +242,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
    *
    * @param prevAirway {import('msfs-navdata').Airway}
    */
-  static async _getFirstIntersection(mcdu, prevAirway, prevAirwayFromIcao, nextAirwayIdent) {
+  static async _getFirstIntersection(mcdu: A320_Neo_CDU_MainDisplay, prevAirway, prevAirwayFromIcao, nextAirwayIdent) {
     const prevAirwayFixes = prevAirway.fixes;
 
     const prevAirwayStartIndex = prevAirwayFixes.findIndex((fix) => fix.databaseId === prevAirwayFromIcao);
@@ -272,7 +273,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
     }
   }
 
-  static async _getRoute(mcdu, airwayName, fixOnAirway) {
+  static async _getRoute(mcdu: A320_Neo_CDU_MainDisplay, airwayName, fixOnAirway) {
     const airways = await mcdu.navigationDatabase.searchAirway(airwayName, fixOnAirway);
     const matchingAirway = airways.find((it) => it.fixes.some((fix) => fix.databaseId === fixOnAirway.databaseId));
 

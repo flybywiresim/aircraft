@@ -4,15 +4,16 @@
 
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUIRSInit {
   static ShowPage(
-    mcdu,
-    lon,
-    originAirportLat,
-    originAirportLon,
-    referenceName,
-    originAirportCoordinates,
+    mcdu: A320_Neo_CDU_MainDisplay,
+    lon?,
+    originAirportLat?,
+    originAirportLon?,
+    referenceName?,
+    originAirportCoordinates?,
     alignMsg = 'ALIGN ON REF}[color]cyan',
   ) {
     mcdu.clearDisplay();

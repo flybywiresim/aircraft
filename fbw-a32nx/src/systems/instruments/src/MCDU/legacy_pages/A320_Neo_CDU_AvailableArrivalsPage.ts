@@ -20,6 +20,7 @@ import { ApproachType, ApproachUtils, RunwayUtils } from '@flybywiresim/fbw-sdk'
 import { FlightPlanIndex } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 const ApproachTypeOrder = Object.freeze({
   [ApproachType.Mls]: 0,
@@ -57,7 +58,7 @@ const Labels = Object.freeze({
 
 export class CDUAvailableArrivalsPage {
   static async ShowPage(
-    mcdu,
+    mcdu: A320_Neo_CDU_MainDisplay,
     airport,
     pageCurrent = 0,
     starSelection = false,

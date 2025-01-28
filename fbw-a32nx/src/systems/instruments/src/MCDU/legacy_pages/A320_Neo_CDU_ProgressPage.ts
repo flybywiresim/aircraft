@@ -4,9 +4,10 @@
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUProgressPage {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ProgressPage;
     mcdu.returnPageCallback = () => {

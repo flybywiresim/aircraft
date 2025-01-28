@@ -1,8 +1,9 @@
+import { A320_Neo_CDU_MainDisplay } from '../../../A320_Neo_CDU_MainDisplay';
 import { CDUCfdsTestInst } from '../A320_Neo_CDU_CFDS_Test_Inst';
 import { CDU_CFDS_Test_Inst_EIS_Tests } from './A320_Neo_CDU_CFDS_Test_Inst_EIS_Tests';
 
 export class CDU_CFDS_Test_Inst_EIS_Menu {
-  static ShowPage(mcdu, eisIndex) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, eisIndex) {
     mcdu.clearDisplay();
     SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, 'Enum', 1);
     const title = 'EIS ( DMC ' + eisIndex + ' )';

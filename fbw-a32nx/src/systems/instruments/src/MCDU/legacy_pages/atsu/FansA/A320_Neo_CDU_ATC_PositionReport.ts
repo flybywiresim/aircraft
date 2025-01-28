@@ -11,6 +11,7 @@ import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcReports } from '../FansA/A320_Neo_CDU_ATC_Reports';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcPositionReport {
   static SecondsToString(seconds) {
@@ -26,7 +27,7 @@ export class CDUAtcPositionReport {
     return InputValidation.formatScratchpadAltitude(`${altitude}FT`);
   }
 
-  static FillDataBlock(mcdu, data) {
+  static FillDataBlock(mcdu: A320_Neo_CDU_MainDisplay, data) {
     const current = data.atsuFlightStateData;
     const target = data.atsuAutopilotData;
     const lastWp = data.atsuLastWaypoint;
@@ -309,7 +310,7 @@ export class CDUAtcPositionReport {
   }
 
   static ShowPage1(
-    mcdu,
+    mcdu: A320_Neo_CDU_MainDisplay,
     requestMessage = null,
     data = CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, true),
   ) {
@@ -679,7 +680,7 @@ export class CDUAtcPositionReport {
   }
 
   static ShowPage2(
-    mcdu,
+    mcdu: A320_Neo_CDU_MainDisplay,
     requestMessage = null,
     data = CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, true),
   ) {
@@ -881,7 +882,7 @@ export class CDUAtcPositionReport {
   }
 
   static ShowPage3(
-    mcdu,
+    mcdu: A320_Neo_CDU_MainDisplay,
     requestMessage = null,
     data = CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, true),
   ) {

@@ -6,6 +6,8 @@ import { FlightPlanIndex, NavigationDatabaseService } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { WaypointArea } from '@flybywiresim/fbw-sdk';
 
 const TurnDirection = Object.freeze({
   Unknown: 'U',
@@ -21,7 +23,7 @@ const HoldType = Object.freeze({
 });
 
 export class CDUHoldAtPage {
-  static ShowPage(mcdu, waypointIndexFP, forPlan, inAlternate) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, waypointIndexFP, forPlan, inAlternate) {
     const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
     const waypoint = targetPlan.legElementAt(waypointIndexFP);
 
@@ -74,7 +76,7 @@ export class CDUHoldAtPage {
             NavigationDatabaseService.activeDatabase.getHolds(fix.ident, targetPlan.destinationAirport.ident),
           );
         }
-        if (fix && fix.area === 1 /* WaypointArea.Terminal */ && fix.airportIdent && fix.airportIdent.length > 0) {
+        if (fix && fix.area === WaypointArea.Terminal && fix.airportIdent && fix.airportIdent.length > 0) {
           promises.push(NavigationDatabaseService.activeDatabase.getHolds(fix.ident, fix.airportIdent));
         }
         Promise.all(promises)

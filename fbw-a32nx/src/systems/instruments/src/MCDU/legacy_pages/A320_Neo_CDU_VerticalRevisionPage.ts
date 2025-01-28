@@ -10,6 +10,7 @@ import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -21,7 +22,7 @@ export class CDUVerticalRevisionPage {
    * @param confirmCode
    */
   static ShowPage(
-    mcdu,
+    mcdu: A320_Neo_CDU_MainDisplay,
     waypoint,
     wpIndex,
     verticalWaypoint,

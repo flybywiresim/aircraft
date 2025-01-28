@@ -6,6 +6,7 @@ import { ADIRS } from '../../legacy/A32NX_Core/Adirs';
 import { CDU_SingleValueField } from '../A320_Neo_CDU_Field';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcOceanicReq {
   static CreateDataBlock() {
@@ -101,7 +102,7 @@ export class CDUAtcOceanicReq {
     return retval;
   }
 
-  static ShowPage1(mcdu, store = CDUAtcOceanicReq.CreateDataBlock()) {
+  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, store = CDUAtcOceanicReq.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let flightNo = '{white}-------{end}';
@@ -322,7 +323,7 @@ export class CDUAtcOceanicReq {
     };
   }
 
-  static ShowPage2(mcdu, store) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, store) {
     mcdu.clearDisplay();
 
     const freetextLines = [];

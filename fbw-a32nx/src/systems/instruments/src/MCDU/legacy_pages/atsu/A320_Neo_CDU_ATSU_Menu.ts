@@ -1,10 +1,11 @@
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtsuDatalinkStatus } from './A320_Neo_CDU_ATSU_DatalinkStatus';
 import { CDUCommMenu } from './A320_Neo_CDU_Comm_Menu';
 
 export class CDUAtsuMenu {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATSUMenu;
     mcdu.activeSystem = 'ATSU';

@@ -8,9 +8,10 @@ import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUFuelPredPage {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FuelPredPage;
     mcdu.pageRedrawCallback = () => CDUFuelPredPage.ShowPage(mcdu);

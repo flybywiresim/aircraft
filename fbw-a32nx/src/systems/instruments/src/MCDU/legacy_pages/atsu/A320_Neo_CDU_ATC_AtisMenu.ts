@@ -7,9 +7,10 @@ import { CDUAtcAtisAutoUpdate } from './A320_Neo_CDU_ATC_AtisAutoUpdate';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcReportAtis } from './A320_Neo_CDU_ATC_ReportAtis';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcAtisMenu {
-  static CreateDataBlock(mcdu) {
+  static CreateDataBlock(mcdu: A320_Neo_CDU_MainDisplay) {
     const airports = [
       { icao: '', type: AtisType.Departure, requested: false, autoupdate: false },
       { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false },
@@ -37,7 +38,7 @@ export class CDUAtcAtisMenu {
     return airports;
   }
 
-  static InterpretLSK(mcdu, value, airports, idx, updateAtisPrintInProgress) {
+  static InterpretLSK(mcdu, value, airports, idx, updateAtisPrintInProgress = false) {
     if (!value) {
       const reports = mcdu.atsu.atisReports(airports[idx].icao);
       if (reports.length !== 0) {
@@ -94,7 +95,7 @@ export class CDUAtcAtisMenu {
     }
   }
 
-  static InterpretRSK(mcdu, airports, idx, updateAtisPrintInProgress) {
+  static InterpretRSK(mcdu: A320_Neo_CDU_MainDisplay, airports, idx, updateAtisPrintInProgress) {
     if (airports[idx].icao === '') {
       return;
     }
@@ -113,7 +114,7 @@ export class CDUAtcAtisMenu {
     }
   }
 
-  static CreateLineData(mcdu, airport) {
+  static CreateLineData(mcdu: A320_Neo_CDU_MainDisplay, airport) {
     if (airport.icao !== '') {
       const reports = mcdu.atsu.atisReports(airport.icao);
 
@@ -151,7 +152,7 @@ export class CDUAtcAtisMenu {
     }
   }
 
-  static RequestAtis(mcdu, airports, idx, updateAtisPrintInProgress) {
+  static RequestAtis(mcdu: A320_Neo_CDU_MainDisplay, airports, idx, updateAtisPrintInProgress = false) {
     if (airports[idx].icao !== '' && !airports[idx].requested) {
       airports[idx].requested = true;
 
@@ -170,7 +171,11 @@ export class CDUAtcAtisMenu {
     }
   }
 
-  static ShowPage(mcdu, airports = CDUAtcAtisMenu.CreateDataBlock(mcdu), updateAtisPrintInProgress = false) {
+  static ShowPage(
+    mcdu: A320_Neo_CDU_MainDisplay,
+    airports = CDUAtcAtisMenu.CreateDataBlock(mcdu),
+    updateAtisPrintInProgress = false,
+  ) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCAtis;
 

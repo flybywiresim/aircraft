@@ -1,6 +1,7 @@
 import { IlsNavaid, NdbNavaid, VhfNavaid, LsCategory, VhfNavaidType } from '@flybywiresim/fbw-sdk';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUNavaidPage {
   /**
@@ -8,7 +9,7 @@ export class CDUNavaidPage {
    * @param facility MSFS facility to show
    * @param {any} returnPage Callback for the RETURN LSK... only for use by SELECTED NAVAIDS
    */
-  static ShowPage(mcdu, facility?: VhfNavaid | NdbNavaid | IlsNavaid, returnPage?) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, facility?: VhfNavaid | NdbNavaid | IlsNavaid, returnPage?) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.NavaidPage;
     mcdu.returnPageCallback = () => {

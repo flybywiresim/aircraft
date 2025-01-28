@@ -13,9 +13,10 @@ import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUInitPage {
-  static ShowPage1(mcdu) {
+  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.InitPageA;
     mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu);
@@ -355,7 +356,7 @@ export class CDUInitPage {
       }, mcdu.getDelayFuelPred());
     }
   }
-  static ShowPage2(mcdu) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.InitPageB;
     mcdu.activeSystem = 'FMGC';
@@ -422,7 +423,7 @@ export class CDUInitPage {
       }
     }
     mcdu.onRightInput[1] = async (value, scratchpadCallback) => {
-      if (mcdu._zeroFuelWeightZFWCGEntered && value !== mcdu.clrValue) {
+      if (mcdu._zeroFuelWeightZFWCGEntered && value !== Keypad.clrValue) {
         //Simulate delay if calculating trip data
         if (await mcdu.trySetBlockFuel(value)) {
           CDUInitPage.updateTowIfNeeded(mcdu);

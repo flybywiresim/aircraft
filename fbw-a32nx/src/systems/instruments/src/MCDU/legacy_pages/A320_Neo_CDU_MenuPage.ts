@@ -4,9 +4,10 @@ import { CDU_AIDS_MainMenu } from './aids/A320_Neo_CDU_AIDS_Menu';
 import { CDUAtsuMenu } from './atsu/A320_Neo_CDU_ATSU_Menu';
 import { CDUCfdsMainMenu } from './cfdiu/A320_Neo_CDU_CFDS_Menu';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUMenuPage {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.MenuPage;
     // The MCDU MENU does not maintain an editable scratchpad... subsystems and the backup nav do that.

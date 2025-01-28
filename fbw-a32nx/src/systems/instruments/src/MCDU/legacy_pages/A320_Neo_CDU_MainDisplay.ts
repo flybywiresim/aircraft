@@ -28,7 +28,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   private readonly mcduServerConnectUpdateThrottler = new UpdateThrottler(1000);
   private readonly powerCheckUpdateThrottler = new UpdateThrottler(500);
 
-  private readonly fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+  public readonly fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
   private readonly _keypad = new Keypad(this);
 
@@ -79,10 +79,10 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   private _lastAtsuMessageCount = 0;
   private leftBrightness = 0;
   private rightBrightness = 0;
-  private onLeftInput = [];
-  private onRightInput = [];
-  private leftInputDelay = [];
-  private rightInputDelay = [];
+  public onLeftInput = [];
+  public onRightInput = [];
+  public leftInputDelay = [];
+  public rightInputDelay = [];
   private _activeSystem: 'FMGC' | 'ATSU' | 'AIDS' | 'CFDS' = 'FMGC';
   private inFocus = false;
   private lastInput = 0;
@@ -91,16 +91,17 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   private updateRequest = false;
   private initB = false;
   private lastPowerState = null;
-  public PageTimeout = {
+  public readonly PageTimeout = {
     Fast: 500,
     Medium: 1000,
     Dyn: 1500,
     Default: 2000,
     Slow: 3000,
   };
+  public returnPageCallback = null;
 
   public page = {
-    SelfPtr: false,
+    SelfPtr: false as ReturnType<typeof setTimeout> | false,
     Current: 0,
     Clear: 0,
     AirportsMonitor: 1,
@@ -226,8 +227,8 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   private _labelElements?;
   private _lineElements?;
 
-  private pageRedrawCallback?;
-  private pageUpdate?;
+  public pageRedrawCallback?;
+  public pageUpdate?;
 
   private arrowHorizontal?: HTMLSpanElement;
   private arrowVertical?: HTMLSpanElement;
@@ -1019,18 +1020,16 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   /**
    * Check if there is an active request from a subsystem to the MCDU
-   * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
    * @returns true if an active request exists
    */
-  isSubsystemRequesting(subsystem) {
+  isSubsystemRequesting(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
     return this.requests[subsystem] === true;
   }
 
   /**
    * Set a request from a subsystem to the MCDU
-   * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
    */
-  setRequest(subsystem) {
+  setRequest(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
     if (!(subsystem in this.requests) || this.activeSystem === subsystem) {
       return;
     }
@@ -1046,9 +1045,8 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   /**
    * Clear a request from a subsystem to the MCDU
-   * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
    */
-  _clearRequest(subsystem) {
+  _clearRequest(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
     if (!(subsystem in this.requests)) {
       return;
     }

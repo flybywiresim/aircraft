@@ -1,8 +1,9 @@
 import { CDUIRSMonitor } from './A320_Neo_CDU_IRSMonitor';
 import { CDUIRSStatusFrozen } from './A320_Neo_CDU_IRSStatusFrozen';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUIRSStatus {
-  static ShowPage(mcdu, index, prev_wind_dir) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, index, prev_wind_dir?) {
     let currPos = new LatLong(
       SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude'),
       SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude'),

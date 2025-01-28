@@ -1,8 +1,9 @@
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { CDUPositionMonitorPage } from './A320_Neo_CDU_PositionMonitorPage';
 import { CDUSelectedNavaids } from './A320_Neo_CDU_SelectedNavaids';
 
 export class CDUPosFrozen {
-  static ShowPage(mcdu, currPos) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, currPos) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PosFrozen;
     const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));

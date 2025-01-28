@@ -1,7 +1,8 @@
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 import { CDUCfdsAvionicsMenu } from './A320_Neo_CDU_CFDS_Avionics_Menu';
 
 export class CDUCfdsMainMenu {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.activeSystem = 'CFDS';
     mcdu.setTemplate([
@@ -43,7 +44,7 @@ export class CDUCfdsMainMenu {
     };
   }
 
-  static ShowPage2(mcdu) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
 
     mcdu.setTemplate([

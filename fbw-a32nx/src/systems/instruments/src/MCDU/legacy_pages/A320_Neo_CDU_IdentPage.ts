@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 const DB_MONTHS = Object.freeze({
   '01': 'JAN',
@@ -46,7 +47,7 @@ const ConfirmType = {
 };
 
 export class CDUIdentPage {
-  static ShowPage(mcdu, confirmType = ConfirmType.NoConfirm) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, confirmType = ConfirmType.NoConfirm) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.IdentPage;
     mcdu.activeSystem = 'FMGC';

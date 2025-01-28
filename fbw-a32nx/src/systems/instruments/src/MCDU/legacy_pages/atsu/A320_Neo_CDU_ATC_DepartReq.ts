@@ -6,6 +6,7 @@ import { CDU_SingleValueField } from '../A320_Neo_CDU_Field';
 import { Keypad } from '../A320_Neo_CDU_Keypad';
 import { CDUAtcClearanceReq } from './A320_Neo_CDU_ATC_ClearanceReq';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcDepartReq {
   static CreateDataBlock() {
@@ -41,7 +42,7 @@ export class CDUAtcDepartReq {
     return retval;
   }
 
-  static ShowPage1(mcdu, store = CDUAtcDepartReq.CreateDataBlock()) {
+  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, store = CDUAtcDepartReq.CreateDataBlock()) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCDepartReq;
 
@@ -243,7 +244,7 @@ export class CDUAtcDepartReq {
     };
   }
 
-  static ShowPage2(mcdu, store) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, store) {
     mcdu.clearDisplay();
 
     const freetextLines = [];

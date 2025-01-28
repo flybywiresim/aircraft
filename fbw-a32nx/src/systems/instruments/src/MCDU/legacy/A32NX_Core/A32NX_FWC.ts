@@ -5,6 +5,7 @@ import {
   NXLogicTriggeredMonostableNode,
 } from '@flybywiresim/fbw-sdk';
 
+// FIXME move to PseudoFWC
 export class A32NX_FWC {
   // momentary
   private toConfigTest = null; // WTOCT

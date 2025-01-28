@@ -13,6 +13,7 @@ import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FmsErrorType } from '@fmgc/FmsError';
+// FIXME rogue import from EFB
 import {
   ISimbriefData,
   simbriefDataParser,

@@ -2,10 +2,11 @@ import { AtsuMessageNetwork, AtsuStatusCodes, FreetextMessage } from '@datalink/
 import { Keypad } from '../A320_Neo_CDU_Keypad';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAocFreeText {
   static ShowPage(
-    mcdu,
+    mcdu: A320_Neo_CDU_MainDisplay,
     store = {
       msg_to: '',
       reqID: SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 0 ? 0 : 1,

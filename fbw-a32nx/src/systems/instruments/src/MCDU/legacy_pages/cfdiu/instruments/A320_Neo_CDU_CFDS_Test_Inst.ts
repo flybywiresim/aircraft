@@ -1,7 +1,8 @@
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 import { CDU_CFDS_Test_Inst_EIS_Menu } from './eis/A320_Neo_CDU_CFDS_Test_Inst_EIS_Menu';
 
 export class CDUCfdsTestInst {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.setTemplate([
       ['SYSTEM REPORT / TEST'],

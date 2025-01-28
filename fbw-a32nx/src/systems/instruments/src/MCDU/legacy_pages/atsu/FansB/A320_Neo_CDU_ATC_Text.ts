@@ -3,6 +3,7 @@ import { Keypad } from '../../A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcTextFansB {
   static CreateDataBlock() {
@@ -37,7 +38,7 @@ export class CDUAtcTextFansB {
     return updated;
   }
 
-  static ShowPage(mcdu, messages, data = CDUAtcTextFansB.CreateDataBlock()) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages, data = CDUAtcTextFansB.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let erase = '\xa0ERASE';

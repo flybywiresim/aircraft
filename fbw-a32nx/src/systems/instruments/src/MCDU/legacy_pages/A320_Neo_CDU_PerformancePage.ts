@@ -8,12 +8,13 @@ import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUPerformancePage {
   private static _timer;
   private static _lastPhase;
 
-  static ShowPage(mcdu, _phase = undefined) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, _phase = undefined) {
     mcdu.activeSystem = 'FMGC';
 
     switch (_phase || mcdu.flightPhaseManager.phase) {
@@ -40,7 +41,7 @@ export class CDUPerformancePage {
         break;
     }
   }
-  static ShowTAKEOFFPage(mcdu) {
+  static ShowTAKEOFFPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageTakeoff;
     CDUPerformancePage._timer = 0;
@@ -386,7 +387,7 @@ export class CDUPerformancePage {
       ['<TO DATA[color]inop', nextPhase],
     ]);
   }
-  static ShowCLBPage(mcdu, confirmAppr = false) {
+  static ShowCLBPage(mcdu: A320_Neo_CDU_MainDisplay, confirmAppr = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageClb;
     CDUPerformancePage._timer = 0;
@@ -568,7 +569,7 @@ export class CDUPerformancePage {
     ]);
   }
 
-  static ShowCRZPage(mcdu, confirmAppr = false) {
+  static ShowCRZPage(mcdu: A320_Neo_CDU_MainDisplay, confirmAppr = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageCrz;
     CDUPerformancePage._timer = 0;
@@ -717,7 +718,7 @@ export class CDUPerformancePage {
     ]);
   }
 
-  static ShowDESPage(mcdu, confirmAppr = false) {
+  static ShowDESPage(mcdu: A320_Neo_CDU_MainDisplay, confirmAppr = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageDes;
     CDUPerformancePage._timer = 0;
@@ -867,7 +868,7 @@ export class CDUPerformancePage {
     ]);
   }
 
-  static ShowAPPRPage(mcdu) {
+  static ShowAPPRPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageAppr;
 
@@ -1094,7 +1095,7 @@ export class CDUPerformancePage {
     ]);
   }
 
-  static ShowGOAROUNDPage(mcdu, confirmAppr = false) {
+  static ShowGOAROUNDPage(mcdu: A320_Neo_CDU_MainDisplay, confirmAppr = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageGoAround;
     CDUPerformancePage._timer = 0;
@@ -1230,7 +1231,7 @@ export class CDUPerformancePage {
     ]);
   }
 
-  static getClbSelectedTitleAndValue(mcdu, isPhaseActive, isSelected, preSel) {
+  static getClbSelectedTitleAndValue(mcdu: A320_Neo_CDU_MainDisplay, isPhaseActive, isSelected, preSel) {
     if (!isPhaseActive) {
       return ['PRESEL', (isFinite(preSel) ? '\xa0' + preSel : '*[ ]') + '[color]cyan'];
     }
@@ -1258,7 +1259,7 @@ export class CDUPerformancePage {
     }
   }
 
-  static getDesSelectedTitleAndValue(mcdu, isPhaseActive, isSelected) {
+  static getDesSelectedTitleAndValue(mcdu: A320_Neo_CDU_MainDisplay, isPhaseActive, isSelected) {
     if (!isPhaseActive || !isSelected) {
       return ['', ''];
     }
@@ -1329,7 +1330,7 @@ export class CDUPerformancePage {
     return [predToDistanceCell, predToTimeCell];
   }
 
-  static formatDestEfobAndTime(mcdu, isFlying) {
+  static formatDestEfobAndTime(mcdu: A320_Neo_CDU_MainDisplay, isFlying) {
     const destinationPrediction = mcdu.guidanceController.vnavDriver.getDestinationPrediction();
 
     let destEfobCell = '---.-';
@@ -1355,7 +1356,7 @@ export class CDUPerformancePage {
     return [destEfobCell, destTimeCell];
   }
 
-  static formatToReasonDistanceAndTime(mcdu) {
+  static formatToReasonDistanceAndTime(mcdu: A320_Neo_CDU_MainDisplay) {
     const toPrediction = mcdu.guidanceController.vnavDriver.getPerfCrzToPrediction();
 
     let reasonCell = '(T/D)';
@@ -1383,7 +1384,7 @@ export class CDUPerformancePage {
     return ['{small}TO{end}\xa0{green}' + reasonCell + '{end}', distCell, timeCell];
   }
 
-  static formatCostIndexCell(mcdu, hasFromToPair, allowModification) {
+  static formatCostIndexCell(mcdu: A320_Neo_CDU_MainDisplay, hasFromToPair, allowModification) {
     let costIndexCell = '---';
     if (hasFromToPair) {
       if (mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex)) {

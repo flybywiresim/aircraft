@@ -13,9 +13,9 @@ import {
   Subject,
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { A320_Neo_CDU_MainDisplay } from './legacy_pages/A320_Neo_CDU_MainDisplay';
 
 import './mcdu.scss';
-import { A320_Neo_CDU_MainDisplay } from 'instruments/src/mcdu/legacy_pages/A320_Neo_CDU_MainDisplay';
 
 export class McduFsInstrument implements FsInstrument {
   private static readonly INIT_DURATION = 1000;

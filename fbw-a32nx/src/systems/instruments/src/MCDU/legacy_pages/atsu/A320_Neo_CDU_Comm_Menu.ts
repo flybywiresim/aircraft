@@ -1,7 +1,8 @@
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 import { CDUAtsuMenu } from './A320_Neo_CDU_ATSU_Menu';
 
 export class CDUCommMenu {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.setTemplate([
       ['COMM MENU'],

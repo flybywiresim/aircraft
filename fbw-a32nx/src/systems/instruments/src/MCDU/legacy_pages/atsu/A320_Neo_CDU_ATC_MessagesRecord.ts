@@ -2,6 +2,7 @@ import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/
 import { Keypad } from '../A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcMessage } from './A320_Neo_CDU_ATC_Message';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcMessagesRecord {
   static TranslateCpdlcResponse(response) {
@@ -29,7 +30,7 @@ export class CDUAtcMessagesRecord {
     return '';
   }
 
-  static ShowPage(mcdu, messages = null, offset = 0, confirmErase = false) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages = null, offset = 0, confirmErase = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCMessageRecord;
 

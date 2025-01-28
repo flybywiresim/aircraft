@@ -3,6 +3,7 @@ import { Keypad } from '../A320_Neo_CDU_Keypad';
 import { CDUAtcDepartReq } from './A320_Neo_CDU_ATC_DepartReq';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcClearanceReq {
   static CreateDataBlock() {
@@ -15,7 +16,7 @@ export class CDUAtcClearanceReq {
     return data.clearance;
   }
 
-  static CreateRequest(mcdu) {
+  static CreateRequest(mcdu: A320_Neo_CDU_MainDisplay) {
     const retval = new CpdlcMessage();
     retval.Station = mcdu.atsu.currentStation();
     retval.Content.push(CpdlcMessagesDownlink['DM25'][1].deepCopy());
@@ -23,7 +24,7 @@ export class CDUAtcClearanceReq {
     return retval;
   }
 
-  static ShowPage(mcdu, title, data = CDUAtcClearanceReq.CreateDataBlock()) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, title, data = CDUAtcClearanceReq.CreateDataBlock()) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCGroundRequest;
 

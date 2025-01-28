@@ -4,6 +4,7 @@ import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcPositionReport } from '../FansA/A320_Neo_CDU_ATC_PositionReport';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcReports {
   static CreateDataBlock() {
@@ -18,7 +19,7 @@ export class CDUAtcReports {
     return data.requestContact || data.deviating;
   }
 
-  static CreateRequest(mcdu, type, values = []) {
+  static CreateRequest(mcdu: A320_Neo_CDU_MainDisplay, type, values = []) {
     const retval = new CpdlcMessage();
     retval.Station = mcdu.atsu.currentStation();
     retval.Content.push(CpdlcMessagesDownlink[type][1].deepCopy());
@@ -30,7 +31,7 @@ export class CDUAtcReports {
     return retval;
   }
 
-  static CreateRequests(mcdu, data) {
+  static CreateRequests(mcdu: A320_Neo_CDU_MainDisplay, data) {
     const retval = [];
 
     if (data.requestContact) {
@@ -44,7 +45,7 @@ export class CDUAtcReports {
     return retval;
   }
 
-  static ShowPage(mcdu, data = CDUAtcReports.CreateDataBlock()) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcReports.CreateDataBlock()) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCReports;
 

@@ -1,8 +1,9 @@
 import { CoRouteUplinkAdapter } from '@fmgc/index';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUAvailableFlightPlanPage {
-  static ShowPage(mcdu, offset = 0, currentRoute = 1) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0, currentRoute = 1) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AvailableFlightPlanPage;
     let fromTo = 'NO ORIGIN/DEST';

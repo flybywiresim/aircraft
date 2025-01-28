@@ -1,15 +1,16 @@
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUWindPage {
   static Return() {}
 
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     CDUWindPage.ShowCLBPage(mcdu);
   }
 
-  static ShowCLBPage(mcdu, offset = 0) {
+  static ShowCLBPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ClimbWind;
 
@@ -53,7 +54,7 @@ export class CDUWindPage {
     };
   }
 
-  static ShowCRZPage(mcdu, offset = 0) {
+  static ShowCRZPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0) {
     //TODO: allow wind to be set for each waypoint
 
     mcdu.clearDisplay();
@@ -103,7 +104,7 @@ export class CDUWindPage {
     };
   }
 
-  static ShowDESPage(mcdu, offset = 0) {
+  static ShowDESPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DescentWind;
 
@@ -191,7 +192,7 @@ export class CDUWindPage {
     return output;
   }
 
-  static ShowWinds(rows, mcdu, _showPage, _winds, _offset, _max = 3) {
+  static ShowWinds(rows, mcdu: A320_Neo_CDU_MainDisplay, _showPage, _winds, _offset, _max = 3) {
     let entries = 0;
     for (let i = 0; i < _winds.length - _offset; i++) {
       if (i < _max) {
@@ -303,7 +304,7 @@ export class CDUWindPage {
     };
   }
 
-  static WindRequest(mcdu, stage, _showPage) {
+  static WindRequest(mcdu: A320_Neo_CDU_MainDisplay, stage, _showPage) {
     getSimBriefOfp(
       mcdu,
       () => {},

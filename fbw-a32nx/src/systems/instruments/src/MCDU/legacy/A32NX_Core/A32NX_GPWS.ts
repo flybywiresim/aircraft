@@ -10,6 +10,7 @@ import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '
 import { soundList } from './A32NX_SoundManager';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
+// FIXME move GPWS logic to systems host, and ACOs to PseudoFWC
 export class A32NX_GPWS {
   private autoCallOutPins = A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS;
 

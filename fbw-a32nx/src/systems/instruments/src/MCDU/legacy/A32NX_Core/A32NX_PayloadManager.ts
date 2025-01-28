@@ -1,5 +1,6 @@
 import { BitFlags, NXUnits } from '@flybywiresim/fbw-sdk';
 
+// FIXME move to extras host
 /* eslint-disable no-undef */
 export class A32NX_PayloadConstructor {
   public readonly paxStations = {

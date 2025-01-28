@@ -11,6 +11,7 @@ import { Keypad } from '../../A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcLatRequestFansA {
   static CreateDataBlock() {
@@ -33,7 +34,7 @@ export class CDUAtcLatRequestFansA {
     return data.directTo || data.weatherDeviation || data.offset || data.heading || data.track || data.backOnTrack;
   }
 
-  static CreateRequest(mcdu, type, values = []) {
+  static CreateRequest(mcdu: A320_Neo_CDU_MainDisplay, type, values = []) {
     const retval = new CpdlcMessage();
     retval.Station = mcdu.atsu.currentStation();
     retval.Content.push(CpdlcMessagesDownlink[type][1].deepCopy());
@@ -45,7 +46,7 @@ export class CDUAtcLatRequestFansA {
     return retval;
   }
 
-  static CreateRequests(mcdu, data) {
+  static CreateRequests(mcdu: A320_Neo_CDU_MainDisplay, data) {
     const retval = [];
 
     if (data.directTo) {
@@ -87,7 +88,7 @@ export class CDUAtcLatRequestFansA {
     return retval;
   }
 
-  static ShowPage1(mcdu, data = CDUAtcLatRequestFansA.CreateDataBlock()) {
+  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcLatRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let weatherDeviation = '{cyan}[  ]{end}';
@@ -306,7 +307,7 @@ export class CDUAtcLatRequestFansA {
     };
   }
 
-  static ShowPage2(mcdu, data = CDUAtcLatRequestFansA.CreateDataBlock()) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcLatRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let offsetDistance = '[  ]';

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+// FIXME move to systems host
 export class A32NX_FADEC {
   private fadecTimer = -1;
   private dcEssPoweredInPreviousUpdate = false;

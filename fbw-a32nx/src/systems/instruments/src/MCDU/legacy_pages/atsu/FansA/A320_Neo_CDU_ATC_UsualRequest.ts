@@ -4,6 +4,7 @@ import { Keypad } from '../../A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcUsualRequestFansA {
   static CreateDataBlock() {
@@ -101,7 +102,7 @@ export class CDUAtcUsualRequestFansA {
     return retval;
   }
 
-  static ShowPage(mcdu, data = CDUAtcUsualRequestFansA.CreateDataBlock()) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcUsualRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCUsualRequest;
 

@@ -1,5 +1,7 @@
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+
 export class CDUGPSMonitor {
-  static ShowPage(mcdu, merit1, merit2, sat1, sat2) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, merit1?, merit2?, sat1?, sat2?) {
     let currPos = new LatLong(
       SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude'),
       SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude'),

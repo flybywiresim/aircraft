@@ -2,26 +2,42 @@
 // SPDX-License-Identifier: GPL-3.0
 
 // FIXME fix circular ref with clrValue
-import { PilotWaypointType } from '@fmgc/flightplanning/DataManager';
+import { PilotWaypoint, PilotWaypointType } from '@fmgc/flightplanning/DataManager';
 import { WaypointEntryUtils } from '@fmgc/index';
 // FIXME fix circular ref
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
-import { McduMessage, NXSystemMessages } from '../messages/NXSystemMessages';
+import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+
+type NewWaypointDoneCallback = (waypoint: PilotWaypoint | undefined | null) => void;
+interface InProgressData {
+  ident: string;
+  type: PilotWaypointType;
+  wp: Waypoint;
+  coordinates: Coordinates;
+  place: Fix;
+  bearing: number;
+  distance: number;
+  place1: Fix;
+  place2: Fix;
+  bearing1: number;
+  bearing2: number;
+}
 
 export class CDUNewWaypoint {
   /**
-   * Callback when a new waypoint has been created, or aborted
-   * @name NewWaypointDoneCallback
-   * @function
-   * @param {PilotWaypoint | undefined | null} waypoint the resultant new waypoint, or undefined if aborted
-   */
-  /**
    * New Waypoint Page
-   * @param {NewWaypointDoneCallback} doneCallback callback when the user is finished with the page
-   * @param {any} _inProgressData private data used by the page
+   * @param doneCallback callback when the user is finished with the page
+   * @param _inProgressData private data used by the page
    */
-  static ShowPage(mcdu, doneCallback = undefined, _inProgressData = {}) {
+  static ShowPage(
+    mcdu: A320_Neo_CDU_MainDisplay,
+    doneCallback: NewWaypointDoneCallback = undefined,
+    _inProgressData: Partial<InProgressData> = {},
+  ) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.NewWaypoint;
     mcdu.returnPageCallback = () => {

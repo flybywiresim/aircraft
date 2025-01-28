@@ -1,13 +1,15 @@
 // private variables and function are marked with _ prefix
 
+import { McduMessage } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 /** The MCDU scratchpad display. This belongs to the MCDU itself. */
 export class ScratchpadDisplay {
-  private readonly guid = `SP-${Utils.generateGUID()}`;
+  public readonly guid = `SP-${Utils.generateGUID()}`;
   constructor(
-    private mcdu,
-    private scratchpadElement,
+    private mcdu: A320_Neo_CDU_MainDisplay,
+    private scratchpadElement: HTMLElement,
   ) {
     this.mcdu = mcdu;
     this.scratchpadElement = scratchpadElement;
@@ -49,19 +51,19 @@ export class ScratchpadDataLink {
   private _isPaused = true;
 
   constructor(
-    private mcdu,
-    private displayUnit,
-    private subsystem,
+    private mcdu: A320_Neo_CDU_MainDisplay,
+    private displayUnit: ScratchpadDisplay,
+    private subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC',
     private keypadEnabled = true,
   ) {}
 
-  setText(text) {
+  setText(text: string) {
     this._message = undefined;
     this._text = text;
     this._display(text);
   }
 
-  setMessage(message) {
+  setMessage(message: McduMessage) {
     if (this._message && !this._message.isTypeTwo && message.isTypeTwo) {
       return;
     }
@@ -69,13 +71,13 @@ export class ScratchpadDataLink {
     this._display(message.text, message.isAmber ? 'amber' : 'white');
   }
 
-  removeMessage(messageText) {
+  removeMessage(messageText: string) {
     if (this._message && this._message.text === messageText) {
       this.setText('');
     }
   }
 
-  addChar(char) {
+  addChar(char: string) {
     if (!this.keypadEnabled) {
       return;
     }
@@ -115,7 +117,7 @@ export class ScratchpadDataLink {
     return this._status !== SpDisplayStatus.userContent;
   }
 
-  plusMinus(char) {
+  plusMinus(char: string) {
     if (!this.keypadEnabled) {
       return;
     }
@@ -126,7 +128,7 @@ export class ScratchpadDataLink {
     }
   }
 
-  setUserData(data) {
+  setUserData(data: string) {
     this._text = data;
   }
 
@@ -155,7 +157,7 @@ export class ScratchpadDataLink {
     this._display(this._value, this._colour);
   }
 
-  _display(value, color = 'white') {
+  private _display(value: string, color = 'white') {
     // store the content whether we're paused or not
     this._colour = color;
     this._value = value;
@@ -169,7 +171,7 @@ export class ScratchpadDataLink {
     this.mcdu.setRequest(this.subsystem);
   }
 
-  _updateStatus(scratchpadText) {
+  private _updateStatus(scratchpadText: string) {
     if (this._message) {
       this._status = this._message.isTypeTwo ? SpDisplayStatus.typeTwoMessage : SpDisplayStatus.typeOneMessage;
     } else {

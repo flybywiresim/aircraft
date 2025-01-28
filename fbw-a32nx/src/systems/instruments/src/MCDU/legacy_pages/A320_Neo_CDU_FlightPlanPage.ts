@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { A32NX_Util } from '@shared/A32NX_Util';
@@ -15,6 +14,7 @@ import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 const MAX_FIX_ROW = 5;
 
@@ -40,7 +40,7 @@ const Time = Object.freeze({
 });
 
 export class CDUFlightPlanPage {
-  static ShowPage(mcdu, offset = 0, forPlan = 0) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0, forPlan = 0) {
     // INIT
     function addLskAt(index, delay, callback) {
       mcdu.leftInputDelay[index] = typeof delay === 'function' ? delay : () => delay;
@@ -352,7 +352,7 @@ export class CDUFlightPlanPage {
         }
 
         // Time
-        let timeCell = Time.NoPrediction;
+        let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
           const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
@@ -394,7 +394,7 @@ export class CDUFlightPlanPage {
         let spdColor = 'white';
 
         // Should show empty speed prediction for waypoint after hold
-        let speedConstraint = wp.type === 'HM' ? Speed.Empty : Speed.NoPrediction;
+        let speedConstraint: string = wp.type === 'HM' ? Speed.Empty : Speed.NoPrediction;
         let speedPrefix = '';
 
         if (targetPlan.index !== FlightPlanIndex.Temporary && wp.type !== 'HM') {
@@ -425,7 +425,7 @@ export class CDUFlightPlanPage {
 
         // Altitude
         const hasAltConstraint = legHasAltConstraint(wp);
-        let altitudeConstraint = Altitude.NoPrediction;
+        let altitudeConstraint: string = Altitude.NoPrediction;
         let altSize = 'big';
         if (targetPlan.index !== FlightPlanIndex.Temporary) {
           if (verticalWaypoint && verticalWaypoint.altitude) {
@@ -654,7 +654,7 @@ export class CDUFlightPlanPage {
         const shouldHidePredictions =
           !fmsGeometryProfile || !fmsGeometryProfile.isReadyToDisplay || !pwp.flightPlanInfo;
 
-        let timeCell = Time.NoPrediction;
+        let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.secondsFromPresent)) {
           const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
@@ -665,14 +665,14 @@ export class CDUFlightPlanPage {
             : `${FMCMainDisplay.secondsTohhmm(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
         }
 
-        let speed = Speed.NoPrediction;
+        let speed: string = Speed.NoPrediction;
         let spdColor = 'white';
         if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.speed)) {
           speed = `{small}${pwp.flightPlanInfo.speed < 1 ? formatMachNumber(pwp.flightPlanInfo.speed) : Math.round(pwp.flightPlanInfo.speed).toFixed(0)}{end}`;
           spdColor = color;
         }
 
-        let altitudeConstraint = Altitude.NoPrediction;
+        let altitudeConstraint: string = Altitude.NoPrediction;
         let altColor = 'white';
         if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.altitude)) {
           altitudeConstraint = formatAltitudeOrLevel(mcdu, pwp.flightPlanInfo.altitude, useTransitionAltitude);

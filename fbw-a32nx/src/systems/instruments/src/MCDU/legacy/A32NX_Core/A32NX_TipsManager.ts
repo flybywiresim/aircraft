@@ -1,6 +1,7 @@
 import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { NXNotifManager } from '@shared/NxNotif';
 
+// FIXME move to extras host
 export class A32NX_TipsManager {
   private readonly notif = new NXNotifManager();
   private readonly updateThrottler = new UpdateThrottler(15000);

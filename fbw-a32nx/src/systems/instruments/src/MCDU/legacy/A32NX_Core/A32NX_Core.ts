@@ -11,6 +11,7 @@ import { A32NX_TipsManager } from './A32NX_TipsManager';
 
 const ENABLE_TOTAL_UPDATE_TIME_TRACING = false;
 
+// FIXME move Speeds to somewhere nicer in the FMS, and the rest out to system or extras host
 export class A32NX_Core {
   private readonly modules = [
     {

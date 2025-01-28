@@ -5,10 +5,12 @@ import {
   a320EfisRangeSettings,
   Arinc429SignStatusMatrix,
   Arinc429Word,
+  EfisSide,
   MathUtils,
   NXDataStore,
   NXUnits,
   UpdateThrottler,
+  Waypoint,
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '@shared/A32NX_Util';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -50,9 +52,13 @@ import { CompanyRoute } from '@simbridge/index';
 import { Keypad } from '../legacy_pages/A320_Neo_CDU_Keypad';
 import { FmsClient } from '@atsu/fmsclient';
 import { AtsuStatusCodes } from '@datalink/common';
+import { A320_Neo_CDU_MainDisplay } from '../legacy_pages/A320_Neo_CDU_MainDisplay';
 
 export abstract class FMCMainDisplay {
   private static DEBUG_INSTANCE: FMCMainDisplay;
+
+  /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
+  private readonly mcdu = this as unknown as A320_Neo_CDU_MainDisplay;
 
   public readonly navDatabaseBackend = NavigationDatabaseBackend.Msfs;
   public readonly currFlightPhaseManager = new FlightPhaseManager(this.bus);
@@ -66,14 +72,16 @@ export abstract class FMCMainDisplay {
   private readonly _progBrgDistUpdateThrottler = new UpdateThrottler(2000);
   private readonly _apCooldown = 500;
   private lastFlightPlanVersion = 0;
-  private readonly _messageQueue = new A32NX_MessageQueue(this);
+  private readonly _messageQueue = new A32NX_MessageQueue(this.mcdu);
+
+  public _deltaTime = 0;
 
   /** Declaration of every variable used (NOT initialization) */
   private maxCruiseFL = undefined;
   private recMaxCruiseFL = undefined;
   private routeIndex = undefined;
-  private coRoute = { routeNumber: undefined, routes: undefined };
-  private perfTOTemp = undefined;
+  public coRoute = { routeNumber: undefined, routes: undefined };
+  public perfTOTemp = undefined;
   private _overridenFlapApproachSpeed = undefined;
   private _overridenSlatApproachSpeed = undefined;
   private _routeFinalFuelWeight = undefined;
@@ -81,66 +89,66 @@ export abstract class FMCMainDisplay {
   private _routeFinalFuelTimeDefault = undefined;
   private _routeReservedWeight = undefined;
   private _routeReservedPercent = undefined;
-  private takeOffWeight = undefined;
-  private landingWeight = undefined;
-  // +ve for tailwind, -ve for headwind
-  private averageWind = undefined;
-  private perfApprQNH = undefined;
-  private perfApprTemp = undefined;
-  private perfApprWindHeading = undefined;
-  private perfApprWindSpeed = undefined;
-  private unconfirmedV1Speed = undefined;
-  private unconfirmedVRSpeed = undefined;
-  private unconfirmedV2Speed = undefined;
-  private _toFlexChecked = undefined;
+  public takeOffWeight = undefined;
+  public landingWeight = undefined;
+  /** +ve for tailwind, -ve for headwind */
+  public averageWind = undefined;
+  public perfApprQNH = undefined;
+  public perfApprTemp = undefined;
+  public perfApprWindHeading = undefined;
+  public perfApprWindSpeed = undefined;
+  public unconfirmedV1Speed = undefined;
+  public unconfirmedVRSpeed = undefined;
+  public unconfirmedV2Speed = undefined;
+  public _toFlexChecked = undefined;
   private toRunway = undefined;
-  private vApp = undefined;
-  private perfApprMDA = null;
-  private perfApprDH = null;
-  private perfApprFlaps3 = undefined;
+  public vApp = undefined;
+  public perfApprMDA = null;
+  public perfApprDH = null;
+  public perfApprFlaps3 = undefined;
   private _debug = undefined;
   private _checkFlightPlan = undefined;
-  private _fuelPlanningPhases = undefined;
-  private _zeroFuelWeightZFWCGEntered = undefined;
-  private _taxiEntered = undefined;
+  public _fuelPlanningPhases = undefined;
+  public _zeroFuelWeightZFWCGEntered = undefined;
+  public _taxiEntered = undefined;
   private _DistanceToAlt = undefined;
   private _routeAltFuelWeight = undefined;
   private _routeAltFuelTime = undefined;
   private _routeTripFuelWeight = undefined;
-  private _routeTripTime = undefined;
+  public _routeTripTime = undefined;
   private _defaultTaxiFuelWeight = undefined;
-  private _rteRsvPercentOOR = undefined;
-  private _rteReservedWeightEntered = undefined;
-  private _rteReservedPctEntered = undefined;
+  public _rteRsvPercentOOR = undefined;
+  public _rteReservedWeightEntered = undefined;
+  public _rteReservedPctEntered = undefined;
   private _rteFinalCoeffecient = undefined;
-  private _rteFinalWeightEntered = undefined;
-  private _rteFinalTimeEntered = undefined;
-  private _routeAltFuelEntered = undefined;
-  private _minDestFob = undefined;
-  private _minDestFobEntered = undefined;
-  private _isBelowMinDestFob = undefined;
+  public _rteFinalWeightEntered = undefined;
+  public _rteFinalTimeEntered = undefined;
+  public _routeAltFuelEntered = undefined;
+  public _minDestFob = undefined;
+  public _minDestFobEntered = undefined;
+  public _isBelowMinDestFob = undefined;
   private _defaultRouteFinalTime = undefined;
-  private _fuelPredDone = undefined;
-  private _fuelPlanningPhase = undefined;
-  private _blockFuelEntered = undefined;
+  public _fuelPredDone = undefined;
+  public _fuelPlanningPhase = undefined;
+  public _blockFuelEntered = undefined;
   private _initMessageSettable = undefined;
-  private _checkWeightSettable = undefined;
+  public _checkWeightSettable = undefined;
   private _gwInitDisplayed = undefined;
   /* CPDLC Fields */
   private _destDataChecked = undefined;
   private _towerHeadwind = undefined;
   private _EfobBelowMinClr = undefined;
-  private simbrief = undefined;
+  public simbrief = undefined;
   private aocWeight = undefined;
-  protected aocTimes = undefined;
-  private winds = undefined;
-  private computedVgd = undefined;
-  private computedVfs = undefined;
-  private computedVss = undefined;
-  private computedVls = undefined;
-  private approachSpeeds = undefined; // based on selected config, not current config
+  public aocTimes = undefined;
+  public winds = undefined;
+  public computedVgd = undefined;
+  public computedVfs = undefined;
+  public computedVss = undefined;
+  public computedVls = undefined;
+  public approachSpeeds = undefined; // based on selected config, not current config
   private _cruiseEntered = undefined;
-  private constraintAlt = undefined;
+  public constraintAlt = undefined;
   private fcuSelAlt = undefined;
   private _forceNextAltitudeUpdate = undefined;
   private _lastUpdateAPTime = undefined;
@@ -150,36 +158,36 @@ export abstract class FMCMainDisplay {
   private _lastRequestedFLCModeWaypointIndex = undefined;
 
   private _progBrgDist = undefined;
-  private preSelectedClbSpeed = undefined;
-  private preSelectedCrzSpeed = undefined;
-  private managedSpeedTarget = undefined;
-  private managedSpeedTargetIsMach = undefined;
-  private managedSpeedClimb = undefined;
+  public preSelectedClbSpeed = undefined;
+  public preSelectedCrzSpeed = undefined;
+  public managedSpeedTarget = undefined;
+  public managedSpeedTargetIsMach = undefined;
+  public managedSpeedClimb = undefined;
   private managedSpeedClimbIsPilotEntered = undefined;
-  private managedSpeedClimbMach = undefined;
+  public managedSpeedClimbMach = undefined;
   // private managedSpeedClimbMachIsPilotEntered = undefined;
-  private managedSpeedCruise = undefined;
-  private managedSpeedCruiseIsPilotEntered = undefined;
-  private managedSpeedCruiseMach = undefined;
+  public managedSpeedCruise = undefined;
+  public managedSpeedCruiseIsPilotEntered = undefined;
+  public managedSpeedCruiseMach = undefined;
   // private managedSpeedCruiseMachIsPilotEntered = undefined;
-  private managedSpeedDescend = undefined;
-  private managedSpeedDescendPilot = undefined;
-  private managedSpeedDescendMach = undefined;
-  private managedSpeedDescendMachPilot = undefined;
+  public managedSpeedDescend = undefined;
+  public managedSpeedDescendPilot = undefined;
+  public managedSpeedDescendMach = undefined;
+  public managedSpeedDescendMachPilot = undefined;
   // private managedSpeedDescendMachIsPilotEntered = undefined;
   private cruiseFlightLevelTimeOut = undefined;
-  /** @type {0 | 1 | 2 | 3 | null} Takeoff config entered on PERF TO */
-  private flaps = undefined;
-  private ths = undefined;
-  private cruiseTemperature = undefined;
-  private taxiFuelWeight = undefined;
-  private blockFuel = undefined;
-  private zeroFuelWeight = undefined;
-  private zeroFuelWeightMassCenter = undefined;
+  /** Takeoff config entered on PERF TO */
+  public flaps?: 0 | 1 | 2 | 3 | null = undefined;
+  public ths = undefined;
+  public cruiseTemperature = undefined;
+  public taxiFuelWeight = undefined;
+  public blockFuel = undefined;
+  public zeroFuelWeight = undefined;
+  public zeroFuelWeightMassCenter = undefined;
   private activeWpIdx = undefined;
   private efisSymbols = undefined;
-  private groundTempAuto = undefined;
-  private groundTempPilot = undefined;
+  public groundTempAuto = undefined;
+  public groundTempPilot = undefined;
   /**
    * Landing elevation in feet MSL.
    * This is the destination runway threshold elevation, or airport elevation if runway is not selected.
@@ -198,14 +206,14 @@ export abstract class FMCMainDisplay {
   /** Speed in KCAS when the first engine failed during takeoff */
   private takeoffEngineOutSpeed = undefined;
   private checkSpeedModeMessageActive = undefined;
-  private perfClbPredToAltitudePilot = undefined;
-  private perfDesPredToAltitudePilot = undefined;
+  public perfClbPredToAltitudePilot = undefined;
+  public perfDesPredToAltitudePilot = undefined;
 
   // ATSU data
-  protected atsu = undefined;
-  private holdSpeedTarget = undefined;
-  private holdIndex = undefined;
-  private holdDecelReached = undefined;
+  public atsu = undefined;
+  public holdSpeedTarget = undefined;
+  public holdIndex = undefined;
+  public holdDecelReached = undefined;
   private setHoldSpeedMessageActive = undefined;
   private managedProfile = undefined;
   private speedLimitExceeded = undefined;
@@ -213,8 +221,8 @@ export abstract class FMCMainDisplay {
   private toSpeedsTooLow = false;
   private vSpeedDisagree = false;
 
-  private onAirport = undefined;
-  private _activeCruiseFlightLevelDefaulToFcu = false;
+  public onAirport = undefined;
+  public _activeCruiseFlightLevelDefaulToFcu = false;
   private paxStations;
   private payloadStations;
 
@@ -261,15 +269,15 @@ export abstract class FMCMainDisplay {
 
   private navDbIdent = null;
 
-  private A32NXCore;
-  private dataManager;
-  private efisInterfaces;
-  public guidanceController;
-  public navigation;
+  private A32NXCore?: A32NX_Core;
+  public dataManager?: DataManager;
+  public efisInterfaces?: Record<EfisSide, EfisInterface>;
+  public guidanceController?: GuidanceController;
+  public navigation?: Navigation;
 
-  private tempCurve;
-  private casToMachManualCrossoverCurve;
-  private machToCasManualCrossoverCurve;
+  public tempCurve;
+  public casToMachManualCrossoverCurve;
+  public machToCasManualCrossoverCurve;
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
@@ -649,6 +657,7 @@ export abstract class FMCMainDisplay {
   }
 
   onUpdate(_deltaTime) {
+    this._deltaTime = _deltaTime;
     // this.flightPlanManager.update(_deltaTime);
     const flightPlanChanged = this.flightPlanService.activeOrTemporary.version !== this.lastFlightPlanVersion;
     if (flightPlanChanged) {
@@ -765,9 +774,9 @@ export abstract class FMCMainDisplay {
         }
 
         if (this.page.Current === this.page.PerformancePageTakeoff) {
-          CDUPerformancePage.ShowTAKEOFFPage(this);
+          CDUPerformancePage.ShowTAKEOFFPage(this.mcdu);
         } else if (this.page.Current === this.page.ProgressPage) {
-          CDUProgressPage.ShowPage(this);
+          CDUProgressPage.ShowPage(this.mcdu);
         }
 
         /** Arm preselected speed/mach for next flight phase */
@@ -784,7 +793,7 @@ export abstract class FMCMainDisplay {
         this._destDataChecked = false;
 
         if (this.page.Current === this.page.ProgressPage) {
-          CDUProgressPage.ShowPage(this);
+          CDUProgressPage.ShowPage(this.mcdu);
         } else {
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
@@ -806,7 +815,7 @@ export abstract class FMCMainDisplay {
 
       case FmgcFlightPhase.Cruise: {
         if (this.page.Current === this.page.ProgressPage) {
-          CDUProgressPage.ShowPage(this);
+          CDUProgressPage.ShowPage(this.mcdu);
         } else {
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
@@ -830,7 +839,7 @@ export abstract class FMCMainDisplay {
 
       case FmgcFlightPhase.Descent: {
         if (this.page.Current === this.page.ProgressPage) {
-          CDUProgressPage.ShowPage(this);
+          CDUProgressPage.ShowPage(this.mcdu);
         } else {
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
@@ -850,7 +859,7 @@ export abstract class FMCMainDisplay {
 
       case FmgcFlightPhase.Approach: {
         if (this.page.Current === this.page.ProgressPage) {
-          CDUProgressPage.ShowPage(this);
+          CDUProgressPage.ShowPage(this.mcdu);
         } else {
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
@@ -896,7 +905,7 @@ export abstract class FMCMainDisplay {
         }
 
         if (this.page.Current === this.page.ProgressPage) {
-          CDUProgressPage.ShowPage(this);
+          CDUProgressPage.ShowPage(this.mcdu);
         } else {
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
@@ -905,7 +914,7 @@ export abstract class FMCMainDisplay {
       }
 
       case FmgcFlightPhase.Done:
-        CDUIdentPage.ShowPage(this);
+        CDUIdentPage.ShowPage(this.mcdu);
 
         this.flightPlanService
           .reset()
@@ -914,7 +923,7 @@ export abstract class FMCMainDisplay {
             this.dataManager.deleteAllStoredWaypoints();
             this.setScratchpadText('');
             SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
-              CDUIdentPage.ShowPage(this);
+              CDUIdentPage.ShowPage(this.mcdu);
             });
           })
           .catch(console.error);
@@ -2029,7 +2038,7 @@ export abstract class FMCMainDisplay {
             this.cruiseLevel = fcuFl;
 
             if (this.page.Current === this.page.ProgressPage) {
-              CDUProgressPage.ShowPage(this);
+              CDUProgressPage.ShowPage(this.mcdu);
             }
           }
         }, 3000);
@@ -2608,7 +2617,7 @@ export abstract class FMCMainDisplay {
     }
 
     return new Promise((resolve) => {
-      A320_Neo_CDU_SelectWptPage.ShowPage(this, items, resolve);
+      A320_Neo_CDU_SelectWptPage.ShowPage(this.mcdu, items, resolve);
     });
   }
 
@@ -2639,10 +2648,10 @@ export abstract class FMCMainDisplay {
     }
   }
 
-  createNewWaypoint(ident) {
-    return new Promise((resolve, reject) => {
+  createNewWaypoint(ident: string): Promise<Waypoint | undefined> {
+    return new Promise<Waypoint>((resolve, reject) => {
       CDUNewWaypoint.ShowPage(
-        this,
+        this.mcdu,
         (waypoint) => {
           if (waypoint) {
             resolve(waypoint);
@@ -2683,7 +2692,7 @@ export abstract class FMCMainDisplay {
       if (waypoints.length === 1) {
         return callback(waypoints[0]);
       }
-      A320_Neo_CDU_SelectWptPage.ShowPage(this, waypoints, callback);
+      A320_Neo_CDU_SelectWptPage.ShowPage(this.mcdu, waypoints, callback);
     });
   }
 
@@ -2720,7 +2729,7 @@ export abstract class FMCMainDisplay {
     index,
     before = false,
     callback = EmptyCallback.Boolean,
-    bypassTmpy,
+    bypassTmpy = false,
   ) {
     if (newWaypointTo === '' || newWaypointTo === Keypad.clrValue) {
       return callback(false);
@@ -4543,10 +4552,10 @@ export abstract class FMCMainDisplay {
 
     if (_new > _old) {
       if (_new >= curPerfPagePhase) {
-        CDUPerformancePage.ShowPage(this, _new);
+        CDUPerformancePage.ShowPage(this.mcdu, _new);
       }
     } else if (_old === curPerfPagePhase) {
-      CDUPerformancePage.ShowPage(this, _old);
+      CDUPerformancePage.ShowPage(this.mcdu, _old);
     }
   }
 

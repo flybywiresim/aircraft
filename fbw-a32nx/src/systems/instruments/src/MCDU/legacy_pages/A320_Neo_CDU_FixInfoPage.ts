@@ -5,9 +5,10 @@ import { A32NX_Util } from '@shared/A32NX_Util';
 import { WaypointEntryUtils } from '@fmgc/index';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUFixInfoPage {
-  static ShowPage(mcdu, page = 0) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, page = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FixInfoPage;
     mcdu.returnPageCallback = () => {

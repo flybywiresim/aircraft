@@ -1,10 +1,11 @@
 import { translateAtsuMessageType } from '../../legacy/A32NX_Core/A32NX_ATSU';
 import { Keypad } from '../A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { CDUAocMessageSentDetail } from './A320_Neo_CDU_AOC_MessageSentDetail';
 
 export class CDUAocMessagesSent {
-  static ShowPage(mcdu, messages = null, page = 0) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages = null, page = 0) {
     if (!messages) {
       messages = mcdu.atsu.aocOutputMessages();
     }

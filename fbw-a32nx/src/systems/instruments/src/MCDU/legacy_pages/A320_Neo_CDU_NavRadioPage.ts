@@ -6,9 +6,10 @@ import { RadioUtils } from '@flybywiresim/fbw-sdk';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUNavRadioPage {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.NavRadioPage;
     mcdu.activeSystem = 'FMGC';

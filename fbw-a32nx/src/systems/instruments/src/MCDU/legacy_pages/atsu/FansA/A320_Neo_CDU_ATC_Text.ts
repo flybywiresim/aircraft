@@ -2,9 +2,10 @@ import { CpdlcMessage, CpdlcMessagesDownlink, FansMode } from '@datalink/common'
 import { Keypad } from '../../A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcTextFansA {
-  static CreateDataBlock() {
+  static CreateDataBlock(): any {
     return {
       performance: false,
       weather: false,
@@ -95,7 +96,7 @@ export class CDUAtcTextFansA {
     return messages;
   }
 
-  static ShowPage1(mcdu, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
+  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let erase = '\xa0ERASE';
@@ -282,7 +283,7 @@ export class CDUAtcTextFansA {
     };
   }
 
-  static ShowPage2(mcdu, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
+  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let freetext1 =

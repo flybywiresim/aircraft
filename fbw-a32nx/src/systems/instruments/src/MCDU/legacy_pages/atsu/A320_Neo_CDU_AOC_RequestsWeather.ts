@@ -5,9 +5,10 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { Keypad } from '../A320_Neo_CDU_Keypad';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { NXFictionalMessages, NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAocRequestsWeather {
-  static CreateDataBlock(mcdu) {
+  static CreateDataBlock(mcdu: A320_Neo_CDU_MainDisplay) {
     const retval = {
       airports: ['', '', '', ''],
       managed: [true, true, true, true],
@@ -32,7 +33,7 @@ export class CDUAocRequestsWeather {
     return retval;
   }
 
-  static ShowPage(mcdu, data = CDUAocRequestsWeather.CreateDataBlock(mcdu)) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAocRequestsWeather.CreateDataBlock(mcdu)) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AOCRequestWeather;
     let labelTimeout;

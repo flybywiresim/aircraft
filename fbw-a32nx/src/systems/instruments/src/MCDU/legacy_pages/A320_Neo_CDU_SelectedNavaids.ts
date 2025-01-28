@@ -7,6 +7,7 @@ import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { SelectedNavaid, SelectedNavaidMode, SelectedNavaidType } from '@fmgc/navigation/Navigation';
 import { CDUPositionMonitorPage } from './A320_Neo_CDU_PositionMonitorPage';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 const NAVAID_TYPE_STRINGS = Object.freeze({
   [SelectedNavaidType.None]: '',
@@ -27,7 +28,7 @@ const NAVAID_MODE_STRINGS = Object.freeze({
 });
 
 export class CDUSelectedNavaids {
-  static ShowPage(mcdu) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.SelectedNavaids;
     mcdu.returnPageCallback = () => CDUSelectedNavaids.ShowPage(mcdu);

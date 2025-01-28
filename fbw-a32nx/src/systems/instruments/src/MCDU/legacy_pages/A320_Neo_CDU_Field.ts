@@ -19,10 +19,7 @@ export class CDU_Field {
     return '';
   }
 
-  /**
-   * @param {string|number|null} value
-   */
-  onSelect(value) {
+  onSelect(value?: string | number | null) {
     this.selectedCallback(this.currentValue);
   }
 

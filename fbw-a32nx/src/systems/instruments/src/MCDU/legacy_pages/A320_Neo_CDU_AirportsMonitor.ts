@@ -1,7 +1,9 @@
+import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUAirportsMonitor {
-  static ShowPage(mcdu, reset = false) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, reset = false) {
     mcdu.page.Current = mcdu.page.AirportsMonitor;
 
     // one delta t unit is about 1.5 ms it seems

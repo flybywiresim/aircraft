@@ -11,6 +11,7 @@ import { CDUAtcPositionReport } from './FansA/A320_Neo_CDU_ATC_PositionReport';
 import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { CDUAtcTextFansB } from './FansB/A320_Neo_CDU_ATC_Text';
 import { CDUAtcMessageModifyUM131 } from './MessageModify/A320_Neo_CDU_ATC_MessageModifyUM131';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 const ModifyLookupTable = {
   UM132: [
@@ -439,7 +440,7 @@ export class CDUAtcMessageModify {
     message.Response.Content = [newContent];
   }
 
-  static ShowPage(mcdu, message, data = null) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, message, data = null) {
     mcdu.page.Current = mcdu.page.ATCModify;
 
     if (message.Content[0].TypeId === 'UM147') {

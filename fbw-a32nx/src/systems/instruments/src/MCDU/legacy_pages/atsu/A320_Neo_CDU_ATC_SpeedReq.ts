@@ -3,6 +3,7 @@ import { Keypad } from '../A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcSpeedRequest {
   static CreateDataBlock() {
@@ -45,7 +46,7 @@ export class CDUAtcSpeedRequest {
     return retval;
   }
 
-  static ShowPage(mcdu, data = CDUAtcSpeedRequest.CreateDataBlock()) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcSpeedRequest.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let speed = '[ ][color]cyan';

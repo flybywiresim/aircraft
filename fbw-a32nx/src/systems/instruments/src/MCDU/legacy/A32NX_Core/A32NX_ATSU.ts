@@ -6,8 +6,13 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SimBriefUplinkAdapter } from '@fmgc/index';
 import { NXFictionalMessages } from '../../messages/NXSystemMessages';
 import { AtsuMessageType } from '@datalink/common';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy_pages/A320_Neo_CDU_MainDisplay';
+// FIXME rogue import from EFB
+import { ISimbriefData } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 
-export function translateAtsuMessageType(type) {
+// FIXME move all to ATSU (systems host)
+
+export function translateAtsuMessageType(type: AtsuMessageType) {
   switch (type) {
     case AtsuMessageType.Freetext:
       return 'FREETEXT';
@@ -43,11 +48,12 @@ const lbsToKg = (value) => {
 
 /**
  * Fetch SimBrief OFP data and store on FMCMainDisplay object
- * @param {FMCMainDisplay} mcdu FMCMainDisplay
- * @param {() => void} updateView
- * @return {Promise<ISimbriefData>}
  */
-export const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
+export const getSimBriefOfp = (
+  mcdu: A320_Neo_CDU_MainDisplay,
+  updateView: () => void,
+  callback = () => {},
+): Promise<ISimbriefData | void> => {
   const navigraphUsername = NXDataStore.get('NAVIGRAPH_USERNAME', '');
   const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 

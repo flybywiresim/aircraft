@@ -4,9 +4,10 @@ import { CDUNewWaypoint } from './A320_Neo_CDU_NewWaypoint';
 import { CDUDataIndexPage } from './A320_Neo_CDU_DataIndexPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 export class CDUPilotsWaypoint {
-  static ShowPage(mcdu, index = 0, confirmDeleteAll = false) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, index = 0, confirmDeleteAll = false) {
     if (mcdu.dataManager.numberOfStoredWaypoints() < 1) {
       return CDUNewWaypoint.ShowPage(mcdu, () => CDUDataIndexPage.ShowPage2(mcdu));
     }
