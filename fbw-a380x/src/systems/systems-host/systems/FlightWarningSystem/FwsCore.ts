@@ -1140,8 +1140,6 @@ export class FwsCore {
 
   public readonly shutDownFor50MinutesCheckListReset = Subject.create(false);
 
-  public readonly flightPhase12Entered = Subject.create(false);
-
   /** If one of the ADR's CAS is above V1 - 4kts, confirm for 0.3s */
   public readonly v1SpeedConfirmNode = new NXLogicConfirmNode(0.3);
 
@@ -1573,16 +1571,9 @@ export class FwsCore {
             this.normalChecklists.reset(null);
           }
           this.abnormalNonSensed.reset();
-          this.activeDeferredProceduresList.clear();
-        }
-      }),
-    );
-
-    this.subs.push(
-      this.flightPhase12Entered.sub((v) => {
-        if (v) {
           this.abnormalSensed.reset();
           this.activeAbnormalProceduresList.clear();
+          this.activeDeferredProceduresList.clear();
           this.allCurrentFailures.length = 0;
           this.presentedFailures.length = 0;
           this.recallFailures.length = 0;
@@ -2017,7 +2008,6 @@ export class FwsCore {
     this.flightPhase1112MoreThanOneMin.set(this.flightPhase1112MoreThanOneMinConfNode.read());
 
     this.phase12ShutdownMemoryNode.write(this.flightPhase.get() === 12, !this.phase112.get());
-    this.flightPhase12Entered.set(this.flightPhase.get() === 12);
 
     this.shutDownFor50MinutesCheckListReset.set(
       this.shutDownFor50MinutesClResetConfNode.write(this.phase12ShutdownMemoryNode.read(), deltaTime),
