@@ -76,6 +76,7 @@ export const NXSystemMessages = {
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
+  invalidFplnUplink: new TypeIIMessage('INVALID F-PLN UPLINK', false),
   mandatoryFields: new TypeIMessage('ENTER MANDATORY FIELDS'), // FIXME move out of FMS
   formatError: new TypeIMessage('FORMAT ERROR'),
   fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'),

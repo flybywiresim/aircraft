@@ -223,29 +223,35 @@ export class CDUInitPage {
           if (mcdu.page.Current === mcdu.page.InitPageA) {
             CDUInitPage.ShowPage1(mcdu);
           }
-        }).then((data) => {
-          SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(mcdu, mcdu.flightPlanService, data, {
-            doUplinkProcedures: false,
-          })
-            .then(() => {
-              console.log('SimBrief data uplinked.');
-
-              mcdu.flightPlanService.uplinkInsert();
-
-              const plan = mcdu.flightPlanService.active;
-              mcdu.updateFlightNo(plan.flightNumber);
-              mcdu.setGroundTempFromOrigin();
-
-              if (mcdu.page.Current === mcdu.page.InitPageA) {
-                CDUInitPage.ShowPage1(mcdu);
-              }
+        })
+          .then((data) => {
+            SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(mcdu, mcdu.flightPlanService, data, {
+              doUplinkProcedures: false,
             })
-            .catch((error) => {
-              console.error(error);
-              mcdu.logTroubleshootingError(error);
-              mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-            });
-        });
+              .then(() => {
+                console.log('SimBrief data uplinked.');
+
+                mcdu.flightPlanService.uplinkInsert();
+
+                const plan = mcdu.flightPlanService.active;
+                mcdu.updateFlightNo(plan.flightNumber);
+                mcdu.setGroundTempFromOrigin();
+
+                if (mcdu.page.Current === mcdu.page.InitPageA) {
+                  CDUInitPage.ShowPage1(mcdu);
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+                mcdu.logTroubleshootingError(error);
+                mcdu.setScratchpadMessage(NXSystemMessages.invalidFplnUplink);
+              });
+          })
+          .catch((error) => {
+            console.error(error);
+            mcdu.logTroubleshootingError(error);
+            mcdu.setScratchpadMessage(NXSystemMessages.invalidFplnUplink);
+          });
       }
     };
     mcdu.rightInputDelay[2] = () => {

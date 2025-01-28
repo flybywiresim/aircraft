@@ -53,7 +53,7 @@ export const getSimBriefOfp = (
   mcdu: A320_Neo_CDU_MainDisplay,
   updateView: () => void,
   callback = () => {},
-): Promise<ISimbriefData | void> => {
+): Promise<ISimbriefData> => {
   const navigraphUsername = NXDataStore.get('NAVIGRAPH_USERNAME', '');
   const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
@@ -118,10 +118,11 @@ export const getSimBriefOfp = (
 
       return data;
     })
-    .catch((_err) => {
-      console.log(_err.message);
-
+    .catch((err) => {
       mcdu.simbrief['sendStatus'] = 'READY';
       updateView();
+
+      // we need to rethrow so the upstream thing can handle it, otherwise its promise will resolve with bad data.
+      throw err;
     });
 };
