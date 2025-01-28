@@ -631,6 +631,7 @@
     "Real": "Rzeczywisty",
     "Realism": {
       "AdirsAlignTime": "Czas Kalibracji ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Automatyczne Wypełnianie Checklist",
       "BoardingTime": "Czas Wejścia Pasażerów na Pokład",
       "DmcSelfTestTime": "Czas Autotestu DMC",

@@ -631,6 +631,7 @@
     "Real": "現実的",
     "Realism": {
       "AdirsAlignTime": "ADIRSの調整時間",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "チェックリストの自動入力",
       "BoardingTime": "乗客の搭乗時間",
       "DmcSelfTestTime": "DMCの自己診断時間",

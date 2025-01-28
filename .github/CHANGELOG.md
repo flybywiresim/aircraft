@@ -139,6 +139,7 @@
 1. [A32NX/FMS] Add terminal area database holds for MSFS2024 - @tracernz (Mike)
 1. [EFB] Set EFB Auto Brightness to default to On - @MrJigs7 (MrJigs)
 1. [FMS] Allow airport to be loaded as fixes in instrument procedures - @tracernz (Mike)
+1. [A380X/ND] Fix Terr text wrong position on terrain radar - @MrJigs7 (MrJigs.)
 1. [A380X/BTV] Add EXIT MISSED indication on FMA and aural triple click - @flogross89 (floridude)
 1. [A380X/OANS] Add flags/crosses capability, change cursor to magenta, implement ARPT NAV reset button - @flogross89 (floridude)
 
