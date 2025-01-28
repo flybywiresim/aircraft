@@ -597,11 +597,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.airportLoading.set(true);
 
-    this.clearData();
-    this.clearMap();
     this.btvUtils.clearSelection();
     this.markerManager.eraseAllCrosses();
     this.markerManager.eraseAllFlags();
+    this.clearMap();
+    this.clearData();
 
     if (!icao) {
       this.dataLoading = false;
@@ -1269,6 +1269,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         ctx.clearRect(0, 0, cw, ch);
       }
     }
+
+    this.canvasWidth.set(0);
+    this.canvasHeight.set(0);
+
+    this.canvasCentreX.set(0);
+    this.canvasCentreY.set(0);
 
     this.panOffsetX.set(0);
     this.panOffsetY.set(0);

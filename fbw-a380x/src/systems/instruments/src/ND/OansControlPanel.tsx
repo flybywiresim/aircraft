@@ -318,7 +318,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       this.sub
         .on('realTime')
         .atFrequency(1)
-        .handle((_) => this.autoLoadAirport()),
+        .handle(() => this.autoLoadAirport()),
     );
 
     this.subs.push(
