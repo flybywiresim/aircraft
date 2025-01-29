@@ -159,7 +159,7 @@ export class CDUAvailableArrivalsPage {
     const sortedApproaches = approaches
       .slice()
       // The A320 cannot fly TACAN approaches
-      .filter(({ type }) => type !== ApproachType.TACAN)
+      .filter(({ type }) => type !== ApproachType.Tacan)
       // Filter out approaches with no matching runway
       // Approaches not going to a specific runway (i.e circling approaches are filtered out at DB level)
       .filter((a) => !!runways.find((rw) => rw.ident === a.runwayIdent))
