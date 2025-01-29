@@ -13,6 +13,7 @@ import {
   DisplayComponent,
   FSComponent,
   MappedSubject,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
@@ -32,6 +33,8 @@ export interface GenericFcuEvents {
 }
 
 export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps> {
+  private readonly subs: Subscription[] = [];
+
   private readonly minAlt = -500;
   private readonly maxAlt = 24000;
 
@@ -77,14 +80,61 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
 
   private readonly baroCorrectedAltitude = Arinc429RegisterSubject.createEmpty();
 
+  private readonly planeSymbolY = this.baroCorrectedAltitude.map((a) =>
+    a.isNormalOperation() ? this.altToY(a.value) : 0,
+  );
+
+  private readonly planeSymbolVisibility = MappedSubject.create(
+    ([alt, avail]) => (alt.isNormalOperation() && alt.value < 24000 && avail ? 'visible' : 'hidden'),
+    this.baroCorrectedAltitude,
+    this.vdAvailable,
+  );
+
+  private readonly rangeMarkerVisibility = this.vdAvailable.map((a) => (a ? 'visible' : 'hidden'));
+
+  private readonly rangeMarkerText = [
+    this.ndRangeSetting.map((value) => (value / 4) * 1),
+    this.ndRangeSetting.map((value) => (value / 4) * 2),
+    this.ndRangeSetting.map((value) => (value / 4) * 3),
+    this.ndRangeSetting.map((value) => (value / 4) * 4),
+  ];
+
+  private readonly altitudeFlTextVisible = this.baroMode.map((m) => (m === 'STD' ? 'visible' : 'hidden'));
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.baroCorrectedAltitudeRaw.sub((w) => this.baroCorrectedAltitude.setWord(w));
+    this.subs.push(this.baroCorrectedAltitudeRaw.sub((w) => this.baroCorrectedAltitude.setWord(w)));
+
+    this.subs.push(
+      this.ndMode,
+      this.ndRangeSetting,
+      this.visible,
+      this.headingWord,
+      this.trackWord,
+      this.vdAvailable,
+      this.lineColor,
+      this.baroMode,
+      this.baroCorrectedAltitudeRaw,
+      this.planeSymbolY,
+      this.planeSymbolVisibility,
+      this.rangeMarkerVisibility,
+      this.altitudeFlTextVisible,
+    );
+
+    for (const rm of this.rangeMarkerText) {
+      this.subs.push(rm);
+    }
   }
 
   private altToY(alt: number) {
     return 800 + (this.maxAlt - alt) / ((this.maxAlt - this.minAlt) / 200);
+  }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
   }
 
   render(): VNode {
@@ -134,15 +184,11 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
           <line
             x1="97"
             x2="115"
-            y1={this.baroCorrectedAltitude.map((a) => (a.isNormalOperation() ? this.altToY(a.value) : 0))}
-            y2={this.baroCorrectedAltitude.map((a) => (a.isNormalOperation() ? this.altToY(a.value) : 0))}
+            y1={this.planeSymbolY}
+            y2={this.planeSymbolY}
             stroke="yellow"
             stroke-width="4"
-            visibility={MappedSubject.create(
-              ([alt, avail]) => (alt.isNormalOperation() && alt.value < 24000 && avail ? 'visible' : 'hidden'),
-              this.baroCorrectedAltitude,
-              this.vdAvailable,
-            )}
+            visibility={this.planeSymbolVisibility}
           />
         </g>
         <g>
@@ -153,24 +199,24 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
           <line x1="555" x2="555" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" stroke-dasharray="8" />
           <line x1="690" x2="690" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" />
         </g>
-        <g visibility={this.vdAvailable.map((a) => (a ? 'visible' : 'hidden'))}>
+        <g visibility={this.rangeMarkerVisibility}>
           <text x="150" y="797" class="Cyan FontSmallest MiddleAlign">
             0
           </text>
           <text x="285" y="797" class="Cyan FontSmallest MiddleAlign">
-            {this.ndRangeSetting.map((value) => (value / 4) * 1)}
+            {this.rangeMarkerText[0]}
           </text>
           <text x="420" y="797" class="Cyan FontSmallest MiddleAlign">
-            {this.ndRangeSetting.map((value) => (value / 4) * 2)}
+            {this.rangeMarkerText[1]}
           </text>
           <text x="555" y="797" class="Cyan FontSmallest MiddleAlign">
-            {this.ndRangeSetting.map((value) => (value / 4) * 3)}
+            {this.rangeMarkerText[2]}
           </text>
           <text x="690" y="797" class="Cyan FontSmallest MiddleAlign">
-            {this.ndRangeSetting.map((value) => (value / 4) * 4)}
+            {this.rangeMarkerText[3]}
           </text>
         </g>
-        <g visibility={this.vdAvailable.map((a) => (a ? 'visible' : 'hidden'))}>
+        <g visibility={this.rangeMarkerVisibility}>
           <text x="95" y={this.altToY(0) + 7.5} class="White FontSmallest EndAlign">
             0
           </text>
@@ -180,12 +226,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
           <text x="95" y={this.altToY(20000) + 7.5} class="White FontSmallest EndAlign">
             {this.baroMode.map((m) => (m === 'STD' ? '200' : '20000'))}
           </text>
-          <text
-            x="10"
-            y="900"
-            class="White FontSmallest"
-            visibility={this.baroMode.map((m) => (m === 'STD' ? 'visible' : 'hidden'))}
-          >
+          <text x="10" y="900" class="White FontSmallest" visibility={this.altitudeFlTextVisible}>
             FL
           </text>
         </g>
