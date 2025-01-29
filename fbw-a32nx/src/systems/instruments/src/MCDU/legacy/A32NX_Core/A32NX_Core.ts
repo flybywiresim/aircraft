@@ -59,8 +59,8 @@ export class A32NX_Core {
 
   private isInit = false;
 
-  init(startTime: number) {
-    this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(startTime);
+  init() {
+    this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
     this.modules.forEach((moduleDefinition) => {
       if ('init' in moduleDefinition.module) {
         moduleDefinition.module.init();

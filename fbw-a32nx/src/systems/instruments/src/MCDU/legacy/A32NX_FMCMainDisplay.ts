@@ -310,7 +310,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     this.initVariables();
 
     this.A32NXCore = new A32NX_Core();
-    this.A32NXCore.init(this._lastTime);
+    this.A32NXCore.init();
 
     this.dataManager = new DataManager(this);
 
