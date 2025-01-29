@@ -22,8 +22,9 @@ export class ScratchpadDisplay {
     this.mcdu.sendUpdate();
   }
 
-  setStyle(style) {
-    this.scratchpadElement.style = style;
+  setStyle(style: string) {
+    // This is actually legal as long as you assign a string, but the typescript DOM types mark it readonly so we need a cast.
+    (this.scratchpadElement.style as unknown as string) = style;
   }
 
   getText() {

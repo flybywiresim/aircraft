@@ -36,7 +36,7 @@ function calculateSecondDate(dbIdent) {
   return `${effDay}${DB_MONTHS[effMonth]}${effYear}-${expDay}${DB_MONTHS[expMonth]}${expYear}`;
 }
 
-async function switchDataBase(mcdu) {
+async function switchDataBase(mcdu: A320_Neo_CDU_MainDisplay) {
   await mcdu.switchNavDatabase();
 }
 

@@ -6,7 +6,7 @@ import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { recallMessageById } from '@fmgc/components';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { NXNotifManager, NXPopUp } from '@shared/NxNotif';
-import { NXFictionalMessages, NXSystemMessages, TypeIIMessage } from '../messages/NXSystemMessages';
+import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage } from '../messages/NXSystemMessages';
 import { McduServerClient } from '@simbridge/index';
 import { ScratchpadDataLink, ScratchpadDisplay } from '../legacy_pages/A320_Neo_CDU_Scratchpad';
 import { CDUMenuPage } from '../legacy_pages/A320_Neo_CDU_MenuPage';
@@ -15,7 +15,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDU_Field } from './A320_Neo_CDU_Field';
 import { AtsuStatusCodes } from '@datalink/common';
 import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
-import { CDUAtcMessageModify } from './atsu/A320_Neo_CDU_ATC_MessageModify';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 
 export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
@@ -32,7 +31,6 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   private readonly _keypad = new Keypad(this);
 
-  private _registered = false;
   private _title = undefined;
   private _titleLeft = '';
   private _pageCurrent = undefined;
@@ -184,7 +182,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     ATCDepartReq: 78,
   };
 
-  private mcduServerClient?;
+  private mcduServerClient?: McduServerClient;
 
   private readonly emptyLines = {
     lines: [
@@ -220,15 +218,15 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     integralBrightness: 0,
   };
 
-  private _titleLeftElement?;
-  private _titleElement?;
-  private _pageCurrentElement?;
-  private _pageCountElement?;
-  private _labelElements?;
-  private _lineElements?;
+  private _titleLeftElement?: HTMLElement;
+  private _titleElement?: HTMLElement;
+  private _pageCurrentElement?: HTMLElement;
+  private _pageCountElement?: HTMLElement;
+  private _labelElements?: any[];
+  private _lineElements?: any[];
 
-  public pageRedrawCallback?;
-  public pageUpdate?;
+  public pageRedrawCallback?: () => void;
+  public pageUpdate?: () => void;
 
   private arrowHorizontal?: HTMLSpanElement;
   private arrowVertical?: HTMLSpanElement;
@@ -238,14 +236,8 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   private printing = false;
 
-  public setTimeout = (func) => {
-    setTimeout(() => {
-      func;
-    }, this.getDelaySwitchPage());
-  };
-
   /** The following events remain due to shared use by the keypad and keyboard type entry */
-  public onLetterInput = (l) => this.scratchpad.addChar(l);
+  public onLetterInput = (l: string) => this.scratchpad.addChar(l);
   public onSp = () => this.scratchpad.addChar(' ');
   public onDiv = () => this.scratchpad.addChar('/');
   public onDot = () => this.scratchpad.addChar('.');
@@ -268,7 +260,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   }
 
   // TODO this really belongs in the FMCMainDisplay, not the CDU
-  setupFmgcTriggers() {
+  private setupFmgcTriggers() {
     Coherent.on('A32NX_FMGC_SEND_MESSAGE_TO_MCDU', (message) => {
       this.addMessageToQueue(
         new TypeIIMessage(message.text, message.color === 'Amber'),
@@ -286,20 +278,19 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     });
   }
 
-  get templateID() {
+  public get templateID() {
     return 'A320_Neo_CDU';
   }
 
-  get isInteractive() {
+  public get isInteractive() {
     return true;
   }
 
-  connectedCallback() {
+  public connectedCallback() {
     RegisterViewListener('JS_LISTENER_KEYEVENT', () => {
       console.log('JS_LISTENER_KEYEVENT registered.');
       RegisterViewListener('JS_LISTENER_FACILITY', () => {
         console.log('JS_LISTENER_FACILITY registered.');
-        this._registered = true;
       });
     });
 
@@ -319,7 +310,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   // See https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#events for possible events.
   // This will be used as a parameter when the McduServerClient's connect method is called.
   // this.mcduServerClient.connect(this, this.mcduServerClientEventHandler);
-  mcduServerClientEventHandler(event) {
+  private mcduServerClientEventHandler(event) {
     switch (event.type) {
       case 'open': {
         console.log(`[MCDU] Websocket connection to SimBridge opened. (${McduServerClient.url()})`);
@@ -431,11 +422,11 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     this.updateAnnunciators(true);
   }
 
-  requestUpdate() {
+  public requestUpdate() {
     this.updateRequest = true;
   }
 
-  onUpdate(_deltaTime) {
+  public onUpdate(_deltaTime: number) {
     super.onUpdate(_deltaTime);
 
     // every 100ms
@@ -498,7 +489,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /**
    * Updates the MCDU state.
    */
-  updateMCDU() {
+  private updateMCDU() {
     this.updateAnnunciators();
 
     this.updateBrightness();
@@ -512,7 +503,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
    * Checks whether INIT page B is open and an engine is being started, if so:
    * The INIT page B reverts to the FUEL PRED page 15 seconds after the first engine start and cannot be accessed after engine start.
    */
-  updateInitBFuelPred() {
+  private updateInitBFuelPred() {
     if (this.isAnEngineOn()) {
       if (!this.initB) {
         this.initB = true;
@@ -527,7 +518,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  updateAnnunciators(forceWrite = false) {
+  private updateAnnunciators(forceWrite = false) {
     const lightTestPowered = SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const lightTest = lightTestPowered && SimVar.GetSimVarValue('L:A32NX_OVHD_INTLT_ANN', 'number') === 0;
 
@@ -542,7 +533,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     this.updateAnnunciatorsForSide('right', lightTest, rightAnnuncPower, forceWrite);
   }
 
-  updateBrightness() {
+  private updateBrightness() {
     const left = SimVar.GetSimVarValue('L:A32NX_MCDU_L_BRIGHTNESS', 'number');
     const right = SimVar.GetSimVarValue('L:A32NX_MCDU_R_BRIGHTNESS', 'number');
 
@@ -563,7 +554,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  updateAtsuRequest() {
+  private updateAtsuRequest() {
     // the ATSU currently doesn't have the MCDU request signal, so we just check for messages and set it's flag
     const msgs = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number');
     if (msgs > this._lastAtsuMessageCount) {
@@ -574,11 +565,11 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   /**
    * Updates the annunciator light states for one MCDU.
-   * @param {'left' | 'right'} side Which MCDU to update.
-   * @param {boolean} lightTest Whether ANN LT TEST is active.
-   * @param {boolean} powerOn Whether annunciator LED power is available.
+   * @param side Which MCDU to update.
+   * @param lightTest Whether ANN LT TEST is active.
+   * @param powerOn Whether annunciator LED power is available.
    */
-  updateAnnunciatorsForSide(side, lightTest, powerOn, forceWrite = false) {
+  private updateAnnunciatorsForSide(side: 'left' | 'right', lightTest: boolean, powerOn: boolean, forceWrite = false) {
     let updateNeeded = false;
 
     const simVarSide = side.toUpperCase().charAt(0);
@@ -610,7 +601,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   }
 
   // FIXME move ATSU code to ATSU
-  checkAocTimes() {
+  private checkAocTimes() {
     if (!this.aocTimes.off) {
       if (this.flightPhaseManager.phase === FmgcFlightPhase.Takeoff && !this.isOnGround()) {
         // Wheels off
@@ -658,7 +649,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /* END OF MCDU UPDATE */
   /* MCDU INTERFACE/LAYOUT */
 
-  _formatCell(str) {
+  private _formatCell(str) {
     return str
       .replace(/{big}/g, "<span class='b-text'>")
       .replace(/{small}/g, "<span class='s-text'>")
@@ -677,14 +668,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
       .replace(/{end}/g, '</span>');
   }
 
-  getTitle() {
-    if (this._title === undefined) {
-      this._title = this._titleElement.textContent;
-    }
-    return this._title;
-  }
-
-  setTitle(content) {
+  public setTitle(content: string) {
     let color = content.split('[color]')[1];
     if (!color) {
       color = 'white';
@@ -694,7 +678,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     this._titleElement.textContent = this._title;
   }
 
-  setTitleLeft(content) {
+  private setTitleLeft(content: string) {
     if (!content) {
       this._titleLeft = '';
       this._titleLeftElement.textContent = '';
@@ -709,7 +693,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     this._titleLeftElement.textContent = this._titleLeft;
   }
 
-  setPageCurrent(value) {
+  private setPageCurrent(value: string | number) {
     if (typeof value === 'number') {
       this._pageCurrent = value;
     } else if (typeof value === 'string') {
@@ -718,7 +702,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     this._pageCurrentElement.textContent = (this._pageCurrent > 0 ? this._pageCurrent : '') + '';
   }
 
-  setPageCount(value) {
+  private setPageCount(value: string | number) {
     if (typeof value === 'number') {
       this._pageCount = value;
     } else if (typeof value === 'string') {
@@ -732,7 +716,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  setLabel(label, row, col = -1, websocketDraw = true) {
+  private setLabel(label: string, row: number, col = -1, websocketDraw = true) {
     if (col >= this._labelElements[row].length) {
       return;
     }
@@ -777,13 +761,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  /**
-   * @param {string|CDU_Field} content
-   * @param {number} row
-   * @param {number} col
-   * @param {boolean} websocketDraw
-   */
-  setLine(content, row, col = -1, websocketDraw = true) {
+  private setLine(content: string | CDU_Field, row: number, col = -1, websocketDraw = true) {
     if (content instanceof CDU_Field) {
       const field = content;
       (col === 0 || col === -1 ? this.onLeftInput : this.onRightInput)[row] = (value) => {
@@ -832,7 +810,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  setTemplate(template, large = false) {
+  public setTemplate(template: any[][], large = false) {
     if (template[0]) {
       this.setTitle(template[0][0]);
       this.setPageCurrent(template[0][1]);
@@ -904,12 +882,12 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   /**
    * Sets what arrows will be displayed in the corner of the screen. Arrows are removed when clearDisplay() is called.
-   * @param {boolean} up - whether the up arrow will be displayed
-   * @param {boolean} down - whether the down arrow will be displayed
-   * @param {boolean} left - whether the left arrow will be displayed
-   * @param {boolean} right - whether the right arrow will be displayed
+   * @param up whether the up arrow will be displayed
+   * @param down whether the down arrow will be displayed
+   * @param left whether the left arrow will be displayed
+   * @param right whether the right arrow will be displayed
    */
-  setArrows(up, down, left, right) {
+  public setArrows(up: boolean, down: boolean, left: boolean, right: boolean) {
     this._arrows = [up, down, left, right];
     this.arrowHorizontal.style.opacity = left || right ? '1' : '0';
     this.arrowVertical.style.opacity = up || down ? '1' : '0';
@@ -929,7 +907,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  clearDisplay(webSocketDraw = false) {
+  public clearDisplay(webSocketDraw = false) {
     this.onUnload();
     this.onUnload = () => {};
     this.setTitle('');
@@ -965,17 +943,17 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
    * Set the active subsystem
    * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
    */
-  set activeSystem(subsystem) {
+  public set activeSystem(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
     this._activeSystem = subsystem;
     this.scratchpad = this.scratchpads[subsystem];
     this._clearRequest(subsystem);
   }
 
-  get activeSystem() {
+  public get activeSystem() {
     return this._activeSystem;
   }
 
-  set scratchpad(sp) {
+  private set scratchpad(sp) {
     if (sp === this._scratchpad) {
       return;
     }
@@ -990,31 +968,31 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     this._scratchpad.resume();
   }
 
-  get scratchpad() {
+  private get scratchpad() {
     return this._scratchpad;
   }
 
-  get mcduScratchpad() {
+  public get mcduScratchpad() {
     return this.scratchpads['MCDU'];
   }
 
-  get fmgcScratchpad() {
+  public get fmgcScratchpad() {
     return this.scratchpads['FMGC'];
   }
 
-  get atsuScratchpad() {
+  public get atsuScratchpad() {
     return this.scratchpads['ATSU'];
   }
 
-  get aidsScratchpad() {
+  public get aidsScratchpad() {
     return this.scratchpads['AIDS'];
   }
 
-  get cfdsScratchpad() {
+  public get cfdsScratchpad() {
     return this.scratchpads['CFDS'];
   }
 
-  activateMcduScratchpad() {
+  public activateMcduScratchpad() {
     this.scratchpad = this.scratchpads['MCDU'];
   }
 
@@ -1022,14 +1000,14 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
    * Check if there is an active request from a subsystem to the MCDU
    * @returns true if an active request exists
    */
-  isSubsystemRequesting(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
+  public isSubsystemRequesting(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
     return this.requests[subsystem] === true;
   }
 
   /**
    * Set a request from a subsystem to the MCDU
    */
-  setRequest(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
+  public setRequest(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
     if (!(subsystem in this.requests) || this.activeSystem === subsystem) {
       return;
     }
@@ -1046,7 +1024,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /**
    * Clear a request from a subsystem to the MCDU
    */
-  _clearRequest(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
+  private _clearRequest(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') {
     if (!(subsystem in this.requests)) {
       return;
     }
@@ -1061,7 +1039,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  generateHTMLLayout(parent) {
+  private generateHTMLLayout(parent) {
     while (parent.children.length > 0) {
       parent.removeChild(parent.children[0]);
     }
@@ -1151,11 +1129,11 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /* END OF MCDU INTERFACE/LAYOUT */
   /* MCDU SCRATCHPAD */
 
-  setScratchpadUserData(value) {
+  public setScratchpadUserData(value) {
     this.scratchpad.setUserData(value);
   }
 
-  clearFocus() {
+  private clearFocus() {
     this.inFocus = false;
     this.allSelected = false;
     try {
@@ -1164,13 +1142,14 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
       console.error(e);
     }
     this.scratchpadDisplay.setStyle(null);
-    this.getChildById('header').style = null;
+    // This is legal but the TS DOM types mark it readonly.
+    (this.getChildById('header').style as unknown as any) = null;
     if (this.check_focus) {
       clearInterval(this.check_focus);
     }
   }
 
-  initKeyboardScratchpad() {
+  private initKeyboardScratchpad() {
     window.document.addEventListener('click', () => {
       const mcduInput = NXDataStore.get('MCDU_KB_INPUT', 'DISABLED');
       const mcduTimeout = parseInt(NXDataStore.get('CONFIG_MCDU_KB_TIMEOUT', '60'));
@@ -1181,7 +1160,8 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
       if (mcduInput === 'ENABLED') {
         this.inFocus = !this.inFocus;
         if (this.inFocus && (isPoweredL || isPoweredR)) {
-          this.getChildById('header').style =
+          // This is legal but the TS DOM types mark it readonly.
+          (this.getChildById('header').style as unknown as any) =
             'background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);';
           this.scratchpadDisplay.setStyle('display: inline-block; width:87%; background: rgba(255,255,255,0.2);');
           try {
@@ -1330,9 +1310,8 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   /**
    * Display a type I message on the active subsystem's scratch pad
-   * @param message {TypeIMessage}
    */
-  setScratchpadMessage(message) {
+  public setScratchpadMessage(message: McduMessage) {
     if (typeof message === 'TypeIIMessage') {
       console.error('Type II message passed to setScratchpadMessage!', message);
       return;
@@ -1343,18 +1322,8 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  setScratchpadText(value) {
+  public setScratchpadText(value: string) {
     this.scratchpad.setText(value);
-  }
-
-  // FIXME move non-FMS code out of FMS
-  /**
-   * Tries to show the MODIFY page if the MCDU is in the ATC COM system
-   */
-  tryToShowAtcModifyPage() {
-    if (this.page.Current >= this.page.ATCMenu && this.page.Current < this.page.ATCComLastId) {
-      CDUAtcMessageModify.ShowPage(this, this.atsu.modificationMessage);
-    }
   }
 
   // FIXME move non-FMS code out of FMS
@@ -1362,7 +1331,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
    * General ATSU message handler which converts ATSU status codes to new MCDU messages
    * @param code ATSU status code
    */
-  addNewAtsuMessage(code) {
+  public addNewAtsuMessage(code: AtsuStatusCodes) {
     if (!this.atsuScratchpad) {
       return;
     }
@@ -1419,11 +1388,11 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /* END OF MCDU MESSAGE SYSTEM */
   /* MCDU EVENTS */
 
-  onPowerOn() {
+  public onPowerOn() {
     super.onPowerOn();
   }
 
-  onEvent(_event) {
+  protected onEvent(_event) {
     super.onEvent(_event);
 
     // MCDU should not accept input while unpowered
@@ -1456,7 +1425,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
+  private onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
     if (!fncAction) {
       return;
     }
@@ -1476,10 +1445,8 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   /**
    * Handle brightness key events
-   * @param {'L' | 'R'} side
-   * @param {-1 | 1} sign
    */
-  onBrightnessKey(side, sign) {
+  public onBrightnessKey(side: 'L' | 'R', sign: -1 | 1) {
     const oldBrightness = side === 'R' ? this.rightBrightness : this.leftBrightness;
     SimVar.SetSimVarValue(
       `L:A32NX_MCDU_${side}_BRIGHTNESS`,
@@ -1496,56 +1463,56 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   /**
    * Used for switching pages
-   * @returns {number} delay in ms between 150 and 200
+   * @returns delay in ms between 150 and 200
    */
-  getDelaySwitchPage() {
+  public getDelaySwitchPage(): number {
     return 150 + 50 * Math.random();
   }
 
   /**
    * Used for basic inputs e.g. alternate airport, ci, fl, temp, constraints, ...
-   * @returns {number} delay in ms between 300 and 400
+   * @returns delay in ms between 300 and 400
    */
-  getDelayBasic() {
+  public getDelayBasic(): number {
     return 300 + 100 * Math.random();
   }
 
   /**
    * Used for e.g. loading time fore pages
-   * @returns {number} delay in ms between 600 and 800
+   * @returns delay in ms between 600 and 800
    */
-  getDelayMedium() {
+  public getDelayMedium(): number {
     return 600 + 200 * Math.random();
   }
 
   /**
    * Used for intense calculation
-   * @returns {number} delay in ms between 900 and 12000
+   * @returns delay in ms between 900 and 12000
    */
-  getDelayHigh() {
+  public getDelayHigh(): number {
     return 900 + 300 * Math.random();
   }
 
   /**
    * Used for calculation time for fuel pred page
-   * @returns {number} dynamic delay in ms between 2000ms and 4000ms
+   * @returns dynamic delay in ms between 2000ms and 4000ms
    */
-  getDelayFuelPred() {
+  public getDelayFuelPred(): number {
     return Math.max(2000, Math.min(4000, 225 * this.getActivePlanLegCount()));
   }
 
   /**
    * Used to load wind data into sfms
-   * @returns {number} dynamic delay in ms dependent on amount of waypoints
+   * @returns dynamic delay in ms dependent on amount of waypoints
    */
-  getDelayWindLoad() {
+  public getDelayWindLoad(): number {
     return Math.pow(this.getActivePlanLegCount(), 2);
   }
 
   /**
    * Tries to delete a pages timeout
    */
-  tryDeleteTimeout() {
+  private tryDeleteTimeout() {
     if (this.page.SelfPtr) {
       clearTimeout(this.page.SelfPtr);
       this.page.SelfPtr = false;
@@ -1555,7 +1522,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /* END OF MCDU DELAY SIMULATION */
   /* MCDU AOC MESSAGE SYSTEM */
 
-  printPage(lines) {
+  public printPage(lines: any[]) {
     if (this.printing) {
       return;
     }
@@ -1602,7 +1569,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
    * Sends a message to the websocket server (if connected)
    * @param {string} message
    */
-  sendToMcduServerClient(message) {
+  private sendToMcduServerClient(message: string) {
     if (this.mcduServerClient && this.mcduServerClient.isConnected()) {
       try {
         this.mcduServerClient.send(message);
@@ -1615,7 +1582,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /**
    * Sends an update to the websocket server (if connected) with the current state of the MCDU
    */
-  sendUpdate() {
+  public sendUpdate() {
     // only calculate update when mcduServerClient is established.
     if (this.mcduServerClient && !this.mcduServerClient.isConnected()) {
       return;
@@ -1674,7 +1641,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /**
    * Clears the remote MCDU clients' screens
    */
-  sendClearScreen() {
+  private sendClearScreen() {
     // only calculate update when mcduServerClient is established.
     if (this.mcduServerClient && !this.mcduServerClient.isConnected()) {
       return;
@@ -1687,7 +1654,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
   /* END OF WEBSOCKET */
 
-  goToFuelPredPage() {
+  public goToFuelPredPage() {
     if (this.isAnEngineOn()) {
       CDUFuelPredPage.ShowPage(this);
     } else {
@@ -1695,7 +1662,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
   }
 
-  logTroubleshootingError(msg) {
+  public logTroubleshootingError(msg: any) {
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);
   }
 }

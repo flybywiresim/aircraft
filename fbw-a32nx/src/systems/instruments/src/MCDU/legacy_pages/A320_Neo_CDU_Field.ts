@@ -19,7 +19,7 @@ export class CDU_Field {
     return '';
   }
 
-  onSelect(value?: string | number | null) {
+  onSelect(_value?: string | number | null) {
     this.selectedCallback(this.currentValue);
   }
 
@@ -201,7 +201,7 @@ export class CDU_SingleValueField extends CDU_Field {
       this.mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
     }
   }
-  onSelect(value) {
+  onSelect(value?: string | number | null) {
     if (value === Keypad.clrValue) {
       this.clearValue();
     } else {

@@ -83,7 +83,7 @@ export class CDUNavRadioPage {
     mcdu.setTemplate(template);
   }
 
-  static handleVorLsk(mcdu, receiverIndex, input, scratchpadCallback) {
+  static handleVorLsk(mcdu: A320_Neo_CDU_MainDisplay, receiverIndex, input, scratchpadCallback) {
     if (input === Keypad.clrValue) {
       const vor = mcdu.getVorTuningData(receiverIndex);
       if (vor.manual) {
@@ -188,7 +188,7 @@ export class CDUNavRadioPage {
     return '{cyan}[\xa0]{end}';
   }
 
-  static handleMmrLsk(mcdu, input, scratchpadCallback) {
+  static handleMmrLsk(mcdu: A320_Neo_CDU_MainDisplay, input, scratchpadCallback) {
     if (mcdu.isMmrTuningLocked()) {
       mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
       return;
@@ -335,7 +335,7 @@ export class CDUNavRadioPage {
     return 'CRS';
   }
 
-  static handleAdfLsk(mcdu, receiverIndex, input, scratchpadCallback) {
+  static handleAdfLsk(mcdu: A320_Neo_CDU_MainDisplay, receiverIndex, input, scratchpadCallback) {
     if (input === Keypad.clrValue) {
       const adf = mcdu.getAdfTuningData(receiverIndex);
       if (adf.manual) {

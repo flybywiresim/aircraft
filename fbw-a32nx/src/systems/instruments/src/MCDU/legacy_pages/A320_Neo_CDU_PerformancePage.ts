@@ -352,7 +352,7 @@ export class CDUPerformancePage {
     ) {
       next = 'CONFIRM\xa0';
       nextPhase = 'TO DATA*';
-      mcdu.onRightInput[5] = (value) => {
+      mcdu.onRightInput[5] = () => {
         mcdu.v1Speed = mcdu.unconfirmedV1Speed ? mcdu.unconfirmedV1Speed : mcdu.v1Speed;
         mcdu.vRSpeed = mcdu.unconfirmedVRSpeed ? mcdu.unconfirmedVRSpeed : mcdu.vRSpeed;
         mcdu.v2Speed = mcdu.unconfirmedV2Speed ? mcdu.unconfirmedV2Speed : mcdu.v2Speed;
@@ -366,7 +366,7 @@ export class CDUPerformancePage {
       mcdu.rightInputDelay[5] = () => {
         return mcdu.getDelaySwitchPage();
       };
-      mcdu.onRightInput[5] = (value) => {
+      mcdu.onRightInput[5] = () => {
         CDUPerformancePage.ShowCLBPage(mcdu);
       };
     }
@@ -1040,14 +1040,14 @@ export class CDUPerformancePage {
         mcdu.leftInputDelay[5] = () => {
           return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[5] = (value) => {
+        mcdu.onLeftInput[5] = () => {
           CDUPerformancePage.ShowGOAROUNDPage(mcdu);
         };
       } else {
         mcdu.leftInputDelay[5] = () => {
           return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[5] = (value) => {
+        mcdu.onLeftInput[5] = () => {
           CDUPerformancePage.ShowDESPage(mcdu);
         };
       }
@@ -1059,7 +1059,7 @@ export class CDUPerformancePage {
       mcdu.rightInputDelay[5] = () => {
         return mcdu.getDelaySwitchPage();
       };
-      mcdu.onRightInput[5] = (value) => {
+      mcdu.onRightInput[5] = () => {
         CDUPerformancePage.ShowGOAROUNDPage(mcdu);
       };
     }

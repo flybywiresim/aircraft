@@ -166,7 +166,7 @@ export class CDUInitPage {
         mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
           try {
             if (value === '') {
-              await mcdu.getCoRouteList(mcdu);
+              await mcdu.getCoRouteList();
               CDUAvailableFlightPlanPage.ShowPage(mcdu);
             } else {
               if (await mcdu.tryUpdateAltDestination(value)) {
@@ -212,7 +212,7 @@ export class CDUInitPage {
           }
         });
       } else if (mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport) {
-        mcdu.getCoRouteList(mcdu).then(() => {
+        mcdu.getCoRouteList().then(() => {
           CDUAvailableFlightPlanPage.ShowPage(mcdu);
         });
       }
@@ -332,12 +332,12 @@ export class CDUInitPage {
     }
   }
   // Does not refresh page so that other things can be performed first as necessary
-  static updateTowIfNeeded(mcdu) {
+  static updateTowIfNeeded(mcdu: A320_Neo_CDU_MainDisplay) {
     if (isFinite(mcdu.taxiFuelWeight) && isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.blockFuel)) {
       mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
     }
   }
-  static fuelPredConditionsMet(mcdu) {
+  static fuelPredConditionsMet(mcdu: A320_Neo_CDU_MainDisplay) {
     const fob = mcdu.getFOB();
 
     return (
@@ -349,7 +349,7 @@ export class CDUInitPage {
       mcdu._zeroFuelWeightZFWCGEntered
     );
   }
-  static trySetFuelPred(mcdu) {
+  static trySetFuelPred(mcdu: A320_Neo_CDU_MainDisplay) {
     if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
       setTimeout(() => {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
