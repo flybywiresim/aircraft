@@ -248,7 +248,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
     const prevAirwayStartIndex = prevAirwayFixes.findIndex((fix) => fix.databaseId === prevAirwayFromIcao);
 
     if (prevAirwayStartIndex < 0) {
-      throw new Error(`Cannot find waypoint ${icao} in airway ${prevAirway.ident}`);
+      throw new Error(`Cannot find waypoint ${prevAirwayFromIcao} in airway ${prevAirway.ident}`);
     }
 
     for (let i = 0; i < prevAirwayFixes.length; i++) {
