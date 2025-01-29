@@ -1283,7 +1283,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     // Reset V1/R/2 speed after the TAKEOFF phase
     if (this.flightPhaseManager.phase > FmgcFlightPhase.Takeoff) {
       this.v1Speed = null;
-      this.vrSpeed = null;
+      this.vRSpeed = null;
       this.v2Speed = null;
     }
   }
