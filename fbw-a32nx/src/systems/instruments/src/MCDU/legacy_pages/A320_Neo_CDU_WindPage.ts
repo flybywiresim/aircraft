@@ -312,7 +312,7 @@ export class CDUWindPage {
         let windData = [];
         let lastAltitude = 0;
         switch (stage) {
-          case 'CLB':
+          case 'CLB': {
             const clbWpts = mcdu.simbrief.navlog.filter((val) => val.stage === stage);
 
             // iterate through each clbWpt grabbing the wind data
@@ -370,13 +370,14 @@ export class CDUWindPage {
             });
             mcdu.winds.climb = windData;
             break;
-          case 'CRZ':
+          }
+          case 'CRZ': {
             const toc = mcdu.simbrief.navlog.find((val) => val.ident === 'TOC');
             mcdu.winds.cruise = [];
             toc.wind_data.level.forEach((val) => {
               const direction = parseInt(val.wind_dir);
               const speed = parseInt(val.wind_spd);
-              const altitude = parseInt(val.altitude / 100);
+              const altitude = parseInt(val.altitude) / 100;
               mcdu.winds.cruise.push({
                 direction,
                 speed,
@@ -385,7 +386,8 @@ export class CDUWindPage {
               lastAltitude = altitude;
             });
             break;
-          case 'DSC':
+          }
+          case 'DSC': {
             // TOD is marked as cruise stage, but we want it's topmost wind data
             const tod = mcdu.simbrief.navlog.find((val) => val.ident === 'TOD');
             const desWpts = [tod, ...mcdu.simbrief.navlog.filter((val) => val.stage === stage)];
@@ -455,6 +457,7 @@ export class CDUWindPage {
             });
             mcdu.winds.des = windData;
             break;
+          }
         }
         _showPage(mcdu);
       },
