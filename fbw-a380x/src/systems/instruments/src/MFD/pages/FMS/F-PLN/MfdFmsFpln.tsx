@@ -134,6 +134,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
+    // If we ended beyond flightplan end due to TMPY deletion, scroll back to fit the flightplan
+    const lastAllowableIndex = this.getLastDisplayAllowableIndex();
+    if (this.displayFplnFromLineIndex.get() > this.getLastDisplayAllowableIndex()) {
+      this.displayFplnFromLineIndex.set(lastAllowableIndex);
+      return;
+    }
+
     this.update(this.displayFplnFromLineIndex.get(), onlyUpdatePredictions);
 
     this.lastRenderedActiveLegIndex = this.loadedFlightPlan.activeLegIndex ?? null;
@@ -651,7 +658,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
         } else if (k === 'DOWN') {
           this.displayFplnFromLineIndex.set(
-            Math.min(this.displayFplnFromLineIndex.get() + 1, this.getLastAllowableIndex()),
+            Math.min(this.displayFplnFromLineIndex.get() + 1, this.getLastDisplayAllowableIndex()),
           );
         }
       }),
@@ -663,7 +670,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.disabledScrollUp.set(
       !this.lineData || this.displayFplnFromLineIndex.get() <= (this.loadedFlightPlan?.activeLegIndex ?? 1) - 1,
     );
-    this.disabledScrollDown.set(!this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastAllowableIndex());
+    this.disabledScrollDown.set(
+      !this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastDisplayAllowableIndex(),
+    );
   }
 
   private spdAltButton(): VNode {
@@ -792,10 +801,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     if (this.lineData) {
       let targetIndex;
       if (up) {
-        targetIndex = this.displayFplnFromLineIndex.get() + 1 - this.renderedFplnLines.length;
+        targetIndex = this.displayFplnFromLineIndex.get() + 1 - this.renderedLineData.length;
       } else {
-        targetIndex = this.displayFplnFromLineIndex.get() + this.renderedFplnLines.length - 1;
-        const maxBottomIndex = this.getLastAllowableIndex();
+        targetIndex = this.displayFplnFromLineIndex.get() + this.renderedLineData.length - 1;
+        const maxBottomIndex = this.getLastDisplayAllowableIndex();
         if (targetIndex > maxBottomIndex) {
           targetIndex = maxBottomIndex;
         }
@@ -804,8 +813,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
   }
 
-  private getLastAllowableIndex() {
-    return this.lineData.length - this.renderedFplnLines.length;
+  private getLastDisplayAllowableIndex() {
+    return this.lineData.length - this.renderedLineData.length;
   }
 
   render(): VNode {
