@@ -2654,7 +2654,7 @@ export abstract class FMCMainDisplay {
         this.mcdu,
         (waypoint) => {
           if (waypoint) {
-            resolve(waypoint);
+            resolve(waypoint.waypoint);
           } else {
             reject();
           }
