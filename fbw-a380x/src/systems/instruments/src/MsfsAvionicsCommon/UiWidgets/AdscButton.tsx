@@ -1,3 +1,6 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import {
   ComponentProps,
   DisplayComponent,
@@ -8,9 +11,8 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import './style.scss';
 
-export interface SurvButtonProps extends ComponentProps {
+export interface AdscButtonProps extends ComponentProps {
   /** True = Upper state; False = Lower state */
   state: Subscribable<boolean>;
   /** Upper label */
@@ -25,7 +27,7 @@ export interface SurvButtonProps extends ComponentProps {
 /*
  * Button for MFD pages. If menuItems is set, a dropdown menu will be displayed when button is clicked
  */
-export class SurvButton extends DisplayComponent<SurvButtonProps> {
+export class AdscButton extends DisplayComponent<AdscButtonProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
@@ -93,10 +95,10 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
 
   public render(): VNode {
     return (
-      <div class={{ 'mfd-surv-button': true, disabled: this.props.disabled ?? false }} ref={this.topRef}>
+      <div class={{ 'mfd-adsc-button': true, disabled: this.props.disabled ?? false }} ref={this.topRef}>
         <div
           class={{
-            'mfd-label': this.upperLabelGreen.map((it) => !it),
+            'mfd-adsc-label-off': this.upperLabelGreen.map((it) => !it),
             'mfd-value': this.upperLabelGreen,
             bigger: this.upperLabelGreen,
           }}
@@ -106,8 +108,8 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
         </div>
         <div
           class={{
-            'mfd-label': this.lowerLabelGreen.map((it) => !it),
-            'mfd-value': this.lowerLabelGreen,
+            'mfd-adsc-label-off': this.lowerLabelGreen.map((it) => !it),
+            'mfd-label': this.lowerLabelGreen,
             bigger: this.lowerLabelGreen,
           }}
           style={{ visibility: this.lowerLabelHidden.map((it) => (it ? 'hidden' : 'visible')) }}

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -55,9 +55,72 @@ class CDUHoldAtPage {
                     type: HoldType.Computed,
                 };
                 modifiedHold = {};
+
+                const fix = waypoint.terminationWaypoint();
+                const promises = [];
+                // Due to the way MSFS stores holds, we have to try all these possibilities.
+                if (targetPlan.originAirport) {
+                    promises.push(Fmgc.NavigationDatabaseService.activeDatabase.getHolds(fix.ident, targetPlan.originAirport.ident));
+                }
+                if (targetPlan.destinationAirport) {
+                    promises.push(Fmgc.NavigationDatabaseService.activeDatabase.getHolds(fix.ident, targetPlan.destinationAirport.ident));
+                }
+                if (fix && fix.area === 1 /* WaypointArea.Terminal */ && fix.airportIdent && fix.airportIdent.length > 0) {
+                    promises.push(Fmgc.NavigationDatabaseService.activeDatabase.getHolds(fix.ident, fix.airportIdent));
+                }
+                Promise.all(promises).then((resolvedPromises) => {
+                    // Pick a hold based on altitude suitability and inbound course
+                    // Missing in the navdata is the duplicate indicator that would help us pick the right area/airspace type.
+                    const holds = resolvedPromises
+                        .reduce((allHolds, holds) => {
+                            allHolds.push(...holds); return allHolds;
+                        })
+                        .filter((v) => v.waypoint.databaseId === fix.databaseId)
+                        .sort((a, b) => {
+                            let ret = CDUHoldAtPage.holdVerticalDistanceFromAlt(alt, a) - CDUHoldAtPage.holdVerticalDistanceFromAlt(alt, b);
+                            if (ret === 0) {
+                                ret = Math.abs(a.magneticCourse - inboundMagneticCourse) - Math.abs(b.magneticCourse - inboundMagneticCourse);
+                            }
+                            return ret;
+                        });
+
+                    if (holds[0]) {
+                        defaultHold = {
+                            inboundMagneticCourse: holds[0].magneticCourse,
+                            turnDirection: holds[0].turnDirection,
+                            time: holds[0].lengthTime ? holds[0].lengthTime : undefined,
+                            distance: holds[0].length ? holds[0].length : undefined,
+                            type: HoldType.Database,
+                        };
+                    }
+
+                    CDUHoldAtPage.addOrEditManualHold(
+                        mcdu,
+                        waypointIndexFP,
+                        // eslint-disable-next-line prefer-object-spread
+                        Object.assign({}, defaultHold),
+                        modifiedHold,
+                        defaultHold,
+                        forPlan,
+                        inAlternate,
+                    );
+                }).catch(() => {
+                    CDUHoldAtPage.addOrEditManualHold(
+                        mcdu,
+                        waypointIndexFP,
+                        // eslint-disable-next-line prefer-object-spread
+                        Object.assign({}, defaultHold),
+                        modifiedHold,
+                        defaultHold,
+                        forPlan,
+                        inAlternate,
+                    );
+                });
+                return;
             }
 
-            mcdu.flightPlanService.addOrEditManualHold(
+            CDUHoldAtPage.addOrEditManualHold(
+                mcdu,
                 waypointIndexFP,
                 // eslint-disable-next-line prefer-object-spread
                 Object.assign({}, defaultHold),
@@ -65,10 +128,49 @@ class CDUHoldAtPage {
                 defaultHold,
                 forPlan,
                 inAlternate,
-            ).then((holdIndex) => {
-                CDUHoldAtPage.DrawPage(mcdu, holdIndex, waypointIndexFP, forPlan, inAlternate);
-            });
+            );
         }
+    }
+
+    static holdVerticalDistanceFromAlt(altitude, hold) {
+        switch (hold.altitudeDescriptor) {
+            case "B":
+                if (altitude <= hold.altitude1 && altitude >= hold.altitude2) {
+                    return 0;
+                }
+                if (altitude > hold.altitude1) {
+                    return altitude - hold.altitude1;
+                }
+                return hold.altitude2 - altitude;
+            case "+":
+                return Math.max(0, hold.altitude1 - altitude);
+            case "-":
+                return Math.max(0, altitude - hold.altitude1);
+            default:
+                // no restriction, so always suitable
+                return 0;
+        }
+    }
+
+    static addOrEditManualHold(
+        mcdu,
+        atIndex,
+        desiredHold,
+        modifiedHold,
+        defaultHold,
+        planIndex,
+        alternate,
+    ) {
+        mcdu.flightPlanService.addOrEditManualHold(
+            atIndex,
+            desiredHold,
+            modifiedHold,
+            defaultHold,
+            planIndex,
+            alternate,
+        ).then((holdIndex) => {
+            CDUHoldAtPage.DrawPage(mcdu, holdIndex, atIndex, planIndex, alternate);
+        });
     }
 
     static DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan, inAlternate) {

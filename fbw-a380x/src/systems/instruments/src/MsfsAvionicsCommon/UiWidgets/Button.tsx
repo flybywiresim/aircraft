@@ -1,3 +1,6 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import {
   ComponentProps,
   DisplayComponent,
@@ -7,8 +10,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import './style.scss';
-import { TriangleDown, TriangleUp } from 'instruments/src/MFD/pages/common/shapes';
+import { TriangleDown, TriangleUp } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/shapes';
 
 export type ButtonMenuItem = {
   label: string;
@@ -23,6 +25,7 @@ export interface ButtonProps extends ComponentProps {
   disabled?: Subscribable<boolean>;
   selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
   buttonStyle?: string;
+  containerStyle?: string;
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;
 }
@@ -258,7 +261,11 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   public render(): VNode {
     return (
-      <div class="mfd-dropdown-container" ref={this.topRef}>
+      <div
+        class="mfd-dropdown-container"
+        ref={this.topRef}
+        style={this.props.containerStyle ? this.props.containerStyle : ''}
+      >
         <span
           ref={this.buttonRef}
           class="mfd-button"

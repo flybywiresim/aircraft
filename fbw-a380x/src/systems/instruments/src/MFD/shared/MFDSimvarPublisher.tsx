@@ -30,11 +30,18 @@ export type MfdSimvars = {
   fmcAIsHealthy: boolean;
   fmcBIsHealthy: boolean;
   fmcCIsHealthy: boolean;
+  fmsCaptFailed: boolean;
+  fmsFoFailed: boolean;
 };
 
 export type InternalKccuKeyEvent = {
   kccuKeyEvent: string;
 };
+
+export enum InteractionMode {
+  Touchscreen,
+  Kccu,
+}
 
 export enum MfdVars {
   coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
@@ -66,6 +73,8 @@ export enum MfdVars {
   fmcAIsHealthy = 'L:A32NX_FMC_A_IS_HEALTHY',
   fmcBIsHealthy = 'L:A32NX_FMC_B_IS_HEALTHY',
   fmcCIsHealthy = 'L:A32NX_FMC_C_IS_HEALTHY',
+  fmsCaptFailed = 'L:A32NX_FMS_L_FAILED',
+  fmsFoFailed = 'L:A32NX_FMS_R_FAILED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -99,6 +108,8 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['fmcAIsHealthy', { name: MfdVars.fmcAIsHealthy, type: SimVarValueType.Bool }],
     ['fmcBIsHealthy', { name: MfdVars.fmcBIsHealthy, type: SimVarValueType.Bool }],
     ['fmcCIsHealthy', { name: MfdVars.fmcCIsHealthy, type: SimVarValueType.Bool }],
+    ['fmsCaptFailed', { name: MfdVars.fmsCaptFailed, type: SimVarValueType.Bool }],
+    ['fmsFoFailed', { name: MfdVars.fmsFoFailed, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
