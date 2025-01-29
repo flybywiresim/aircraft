@@ -463,7 +463,7 @@ export class A380OperatingSpeeds {
     } else {
       this.vls = SpeedsLookupTables.getApproachVls(fPos + 1, cg, m);
     }
-    this.vapp = this.vls + addWindComponent(wind);
+    this.vapp = this.vls + addWindComponent(Math.round(wind / 3));
     this.vref = this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_FULL, cg, m);
 
     this.gd = SpeedsLookupTables.GREEN_DOT.get(altitude, m);
