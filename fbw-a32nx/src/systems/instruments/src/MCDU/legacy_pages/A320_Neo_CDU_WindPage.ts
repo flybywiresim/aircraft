@@ -377,7 +377,7 @@ export class CDUWindPage {
             toc.wind_data.level.forEach((val) => {
               const direction = parseInt(val.wind_dir);
               const speed = parseInt(val.wind_spd);
-              const altitude = parseInt(val.altitude / 100);
+              const altitude = parseInt(val.altitude) / 100;
               mcdu.winds.cruise.push({
                 direction,
                 speed,
