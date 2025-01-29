@@ -4387,7 +4387,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
           if (roundedMinDestFob) {
             if (destEfob - roundedMinDestFob >= 0.3) {
               this._isBelowMinDestFob = false;
-              this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin);
+              this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin.text);
             }
           }
         }
