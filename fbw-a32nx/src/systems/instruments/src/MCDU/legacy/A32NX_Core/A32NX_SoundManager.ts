@@ -75,7 +75,7 @@ export class A32NX_SoundManager {
     return false;
   }
 
-  update(deltaTime: number, _core) {
+  update(deltaTime: number) {
     if (this.playingSoundRemaining <= 0) {
       this.playingSound = null;
       this.playingSoundRemaining = NaN;

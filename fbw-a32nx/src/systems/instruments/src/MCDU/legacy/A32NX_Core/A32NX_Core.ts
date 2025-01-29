@@ -36,7 +36,7 @@ export class A32NX_Core {
     },
     {
       name: 'FWC',
-      module: new A32NX_FWC(2),
+      module: new A32NX_FWC(),
       updateInterval: 50,
     },
     {
