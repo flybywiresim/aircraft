@@ -223,8 +223,6 @@ export abstract class FMCMainDisplay {
 
   public onAirport = undefined;
   public _activeCruiseFlightLevelDefaulToFcu = false;
-  private paxStations;
-  private payloadStations;
 
   // arinc bus output words
   private readonly arincDiscreteWord2 = FmArinc429OutputWord.empty('DISCRETE_WORD_2');
@@ -401,18 +399,6 @@ export abstract class FMCMainDisplay {
     // Start the check routine for system health and status
     setInterval(() => {
       if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this._destDataChecked) {
-        const adirLat = ADIRS.getLatitude();
-        const adirLong = ADIRS.getLongitude();
-        const ppos =
-          adirLat.isNormalOperation() && adirLong.isNormalOperation()
-            ? {
-                lat: ADIRS.getLatitude().value,
-                long: ADIRS.getLongitude().value,
-              }
-            : {
-                lat: NaN,
-                long: NaN,
-              };
         const distanceToDestination = this.getDistanceToDestination();
         if (Number.isFinite(distanceToDestination) && distanceToDestination !== -1 && distanceToDestination < 180) {
           this._destDataChecked = true;
@@ -551,9 +537,6 @@ export abstract class FMCMainDisplay {
     this._lastRequestedFLCModeWaypointIndex = -1;
 
     this._activeCruiseFlightLevelDefaulToFcu = false;
-    const payloadConstruct = new A32NX_PayloadConstructor();
-    this.paxStations = payloadConstruct.paxStations;
-    this.payloadStations = payloadConstruct.payloadStations;
     this._progBrgDist = undefined;
     this.preSelectedClbSpeed = undefined;
     this.preSelectedCrzSpeed = undefined;
@@ -1624,7 +1607,6 @@ export abstract class FMCMainDisplay {
 
     const plan = this.flightPlanService.active;
 
-    const origin = plan.originAirport;
     const destination = plan.destinationAirport;
     const destinationElevation = destination ? destination.location.alt : 0;
 
@@ -2404,7 +2386,7 @@ export abstract class FMCMainDisplay {
    * static distance. Works down to 20NM airDistance and FL100 Up to 3100NM airDistance and FL390, anything out of those ranges and values
    * won't be updated.
    */
-  tryUpdateRouteTrip(dynamic = false) {
+  tryUpdateRouteTrip(_dynamic = false) {
     // TODO Use static distance for `dynamic = false` (fms-v2)
     const groundDistance = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
     const airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
@@ -3445,7 +3427,7 @@ export abstract class FMCMainDisplay {
       return true;
     }
     let value = parseInt(s);
-    if (!isFinite(value) || !/^[+\-]?\d{1,2}$/.test(s)) {
+    if (!isFinite(value) || !/^[+-]?\d{1,2}$/.test(s)) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
     }
@@ -4042,7 +4024,7 @@ export abstract class FMCMainDisplay {
       }
     }
 
-    if (!/^[\+\-]?\d{1,2}$/.test(s)) {
+    if (!/^[+-]?\d{1,2}$/.test(s)) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
     }
@@ -4680,7 +4662,7 @@ export abstract class FMCMainDisplay {
       return;
     }
 
-    if (scratchpadValue.match(/^[+\-]?[0-9]{1,2}$/) === null) {
+    if (scratchpadValue.match(/^[+-]?[0-9]{1,2}$/) === null) {
       throw NXSystemMessages.formatError;
     }
 
