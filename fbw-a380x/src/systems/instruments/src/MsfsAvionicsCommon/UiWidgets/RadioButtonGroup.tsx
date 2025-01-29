@@ -33,6 +33,10 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
+  private readonly valueRefs = Array.from(Array(this.props.values.length), () =>
+    FSComponent.createRef<HTMLLabelElement>(),
+  );
+
   private changeEventHandler(i: number) {
     if (this.props.onModified) {
       this.props.onModified(i);
@@ -51,54 +55,42 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
       this.props.valuesDisabled = Subject.create<boolean[]>(this.props.values.map(() => false));
     }
 
-    for (let i = 0; i < this.props.values.length; i++) {
-      document
-        .getElementById(`${this.props.idPrefix}_${i}`)
-        ?.addEventListener('change', this.changeEventHandler.bind(this, i));
-    }
+    this.valueRefs.forEach((ref, index) =>
+      ref.instance.addEventListener('change', this.changeEventHandler.bind(this, index)),
+    );
 
     this.subs.push(
       this.props.selectedIndex.sub((val) => {
-        for (let i = 0; i < this.props.values.length; i++) {
-          if (i === val) {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.setAttribute('checked', 'checked');
+        this.valueRefs.forEach((ref, index) => {
+          if (index === val) {
+            ref.instance.setAttribute('checked', 'checked');
           } else {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.removeAttribute('checked');
+            ref.instance.removeAttribute('checked');
           }
-        }
+        });
       }, true),
     );
 
     this.subs.push(
       this.props.valuesDisabled.sub((val) => {
-        for (let i = 0; i < this.props.values.length; i++) {
-          if (val[i]) {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.setAttribute('disabled', 'disabled');
+        this.valueRefs.forEach((ref, index) => {
+          if (val[index]) {
+            ref.instance.setAttribute('disabled', 'disabled');
           } else {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.removeAttribute('disabled');
+            ref.instance.removeAttribute('disabled');
           }
-        }
+        });
       }, true),
     );
 
     this.subs.push(
       this.props.color.sub((v) => {
-        this.props.values.forEach((val, idx) => {
-          document
-            .getElementById(`${this.props.idPrefix}_label_${idx}`)
-            ?.classList.toggle('yellow', v === RadioButtonColor.Yellow);
-          document
-            .getElementById(`${this.props.idPrefix}_label_${idx}`)
-            ?.classList.toggle('green', v === RadioButtonColor.Green);
-          document
-            .getElementById(`${this.props.idPrefix}_label_${idx}`)
-            ?.classList.toggle('amber', v === RadioButtonColor.Amber);
-          document
-            .getElementById(`${this.props.idPrefix}_label_${idx}`)
-            ?.classList.toggle('cyan', v === RadioButtonColor.Cyan);
-          document
-            .getElementById(`${this.props.idPrefix}_label_${idx}`)
-            ?.classList.toggle('white', v === RadioButtonColor.White);
+        this.valueRefs.forEach((ref) => {
+          ref.instance.classList.toggle('yellow', v === RadioButtonColor.Yellow);
+          ref.instance.classList.toggle('green', v === RadioButtonColor.Green);
+          ref.instance.classList.toggle('amber', v === RadioButtonColor.Amber);
+          ref.instance.classList.toggle('cyan', v === RadioButtonColor.Cyan);
+          ref.instance.classList.toggle('white', v === RadioButtonColor.White);
         });
       }, true),
     );
@@ -108,11 +100,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    for (let i = 0; i < this.props.values.length; i++) {
-      document
-        .getElementById(`${this.props.idPrefix}_${i}`)
-        ?.removeEventListener('change', this.changeEventHandler.bind(this, i));
-    }
+    this.valueRefs.forEach((ref, index) =>
+      ref.instance.removeEventListener('change', this.changeEventHandler.bind(this, index)),
+    );
 
     super.destroy();
   }
@@ -122,6 +112,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
       <form>
         {this.props.values.map((el, idx) => (
           <label
+            ref={this.valueRefs[idx]}
             class="mfd-radio-button"
             htmlFor={`${this.props.idPrefix}_${idx}`}
             style={this.props.additionalVerticalSpacing ? `margin-top: ${this.props.additionalVerticalSpacing}px;` : ''}

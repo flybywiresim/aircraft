@@ -191,9 +191,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       }
 
       const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
-      if (revWptIdx !== null && revWptIdx !== undefined) {
-        this.selectedLegIndex = revWptIdx;
-      }
+      this.selectedLegIndex = revWptIdx ?? null;
     }
 
     this.crzFl.set(pd?.cruiseFlightLevel ?? null);
@@ -206,10 +204,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   public static isEligibleForVerticalRevision(legIndex: number, leg: FlightPlanLeg, flightPlan: FlightPlan): boolean {
     // Check conditions: No constraints for airports, FROM waypoint, GA legs, pseudo waypoints
-    if (leg.isRunway() || legIndex <= flightPlan.activeLegIndex || legIndex >= flightPlan.firstMissedApproachLegIndex) {
-      return false;
-    }
-    return true;
+    return (
+      !leg.isRunway() && legIndex >= flightPlan.activeLegIndex && legIndex < flightPlan.firstMissedApproachLegIndex
+    );
   }
 
   private updateConstraints() {
@@ -394,14 +391,15 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   static nextCruiseStep(flightPlan: FlightPlan): CruiseStepEntry | undefined {
-    const cruiseStep = (
-      flightPlan.allLegs.find(
-        (l, index) => l instanceof FlightPlanLeg && index >= flightPlan.activeLegIndex && l.cruiseStep,
-      ) as FlightPlanLeg
-    )?.cruiseStep;
     const cruiseStepLegIndex = flightPlan.allLegs.findIndex(
-      (l, index) => l instanceof FlightPlanLeg && index >= flightPlan.activeLegIndex && l.cruiseStep,
+      (l, index) => l.isDiscontinuity === false && index >= flightPlan.activeLegIndex && l.cruiseStep,
     );
+
+    if (cruiseStepLegIndex < 0) {
+      return undefined;
+    }
+
+    const cruiseStep = flightPlan.legElementAt(cruiseStepLegIndex).cruiseStep;
     return cruiseStep
       ? {
           distanceBeforeTermination: cruiseStep.distanceBeforeTermination,
@@ -433,7 +431,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.props.fmcService.master.flightPlanService.setPilotEnteredSpeedConstraintAt(
         this.selectedLegIndex,
         this.spdConstraintTypeRadioSelected.get() === 1,
-        newSpeed ?? 250,
+        newSpeed,
         this.loadedFlightPlanIndex.get(),
         false,
       );
@@ -565,20 +563,18 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.loadedFlightPlan?.addOrUpdateCruiseStep(legIndex, alt * 100);
       } else {
         if (this.selectedLegIndex !== null) {
-          const leg = this.loadedFlightPlan?.allLegs[this.selectedLegIndex];
-          this.stepNotAllowedAt.set(leg instanceof FlightPlanLeg ? `STEP NOT ALLOWED AT ${leg.ident}` : '');
+          const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);
+          this.stepNotAllowedAt.set(leg?.isDiscontinuity === false ? `STEP NOT ALLOWED AT ${leg.ident}` : '');
         }
       }
     }
   }
 
-  private tryDeleteCruiseStep(lineIndex: number, dropdownIndex: number, altitude: number | null) {
-    if (dropdownIndex === null || altitude === null) {
-      const legIndex = this.availableWaypointsToLegIndex[dropdownIndex];
-      this.loadedFlightPlan?.removeCruiseStep(legIndex);
-      this.stepAltsWptIndices[lineIndex].set(null);
-      this.stepAltsFlightLevel[lineIndex].set(null);
-    }
+  private tryDeleteCruiseStep(lineIndex: number, previousDropdownIndex: number) {
+    const legIndex = this.availableWaypointsToLegIndex[previousDropdownIndex];
+    this.loadedFlightPlan?.removeCruiseStep(legIndex);
+    this.stepAltsWptIndices[lineIndex].set(null);
+    this.stepAltsFlightLevel[lineIndex].set(null);
   }
 
   public onAfterRender(node: VNode): void {
@@ -912,8 +908,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                   onModified={(newWptIndex) => {
                                     const oldWptIndex = this.stepAltsWptIndices[li].get();
                                     if (newWptIndex === null && oldWptIndex !== null) {
-                                      this.tryDeleteCruiseStep(li, oldWptIndex, this.stepAltsFlightLevel[li].get());
-                                    } else if (newWptIndex !== null) {
+                                      this.tryDeleteCruiseStep(li, oldWptIndex);
+                                    } else if (newWptIndex !== null && this.stepAltsFlightLevel[li].get() !== null) {
                                       this.tryAddCruiseStep(li);
                                     }
                                     this.stepAltsWptIndices[li].set(newWptIndex);
@@ -933,10 +929,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                   tmpyActive={this.tmpyActive}
                                   onModified={(alt) => {
                                     const wptIndex = this.stepAltsWptIndices[li].get();
+                                    this.stepAltsFlightLevel[li].set(alt);
                                     if (alt === null && wptIndex !== null) {
-                                      this.tryDeleteCruiseStep(li, wptIndex, alt);
-                                    } else if (alt !== null) {
-                                      this.stepAltsFlightLevel[li].set(alt);
+                                      this.tryDeleteCruiseStep(li, wptIndex);
+                                    } else if (alt !== null && wptIndex !== null) {
                                       this.tryAddCruiseStep(li);
                                     }
                                   }}
