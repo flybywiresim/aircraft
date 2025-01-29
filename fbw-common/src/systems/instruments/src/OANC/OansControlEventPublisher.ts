@@ -6,6 +6,7 @@ import { Position } from '@turf/turf';
 
 export interface OansControlEvents {
   nd_show_oans: { side: EfisSide; show: boolean };
+  oans_performance_mode_hide: { side: EfisSide; hide: boolean };
   oans_display_airport: string;
   oans_not_avail: boolean;
   oans_center_map_on: Position;

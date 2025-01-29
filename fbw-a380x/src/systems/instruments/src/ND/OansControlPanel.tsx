@@ -14,7 +14,6 @@ import {
   FSComponent,
   MapSubject,
   MappedSubject,
-  MappedSubscribable,
   SimVarValueType,
   Subject,
   Subscribable,
@@ -44,6 +43,7 @@ import {
   FmsOansData,
   MathUtils,
   NXDataStore,
+  NXLogicConfirmNode,
   Runway,
 } from '@flybywiresim/fbw-sdk';
 
@@ -73,7 +73,7 @@ export interface OansProps extends ComponentProps {
 const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 export class OansControlPanel extends DisplayComponent<OansProps> {
-  private readonly subs: (Subscription | MappedSubscribable<any>)[] = [];
+  private readonly subs: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<
     ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData & OansControlEvents & ResetPanelSimvars
@@ -83,6 +83,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly navigraphAvailable = Subject.create(false);
 
   private readonly oansResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_arpt_nav'), false);
+
+  private oansPerformanceModeSettingSub = () => {};
+  private readonly oansPerformanceMode = Subject.create(false);
+  private showOans = false;
+  private lastUpdateTime: number | null = null;
+  private readonly oansPerformanceModeAndMovedOutOfZoomRange = new NXLogicConfirmNode(60, true);
 
   private readonly oansAvailable = MappedSubject.create(
     ([ng, reset]) => ng && !reset,
@@ -294,11 +300,15 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.subs.push(
       this.oansResetPulled.sub((v) => {
         if (v) {
-          this.props.bus.getPublisher<OansControlEvents>().pub('oans_display_airport', '', true);
-          this.store.loadedAirport.set(null);
-          this.store.isAirportSelectionPending.set(false);
+          this.unloadCurrentAirport();
         }
       }, true),
+    );
+
+    this.oansPerformanceModeSettingSub = NXDataStore.getAndSubscribe(
+      'CONFIG_A380X_OANS_PERFORMANCE_MODE',
+      (_, v) => this.oansPerformanceMode.set(v === '1'),
+      '0',
     );
 
     this.subs.push(
@@ -316,9 +326,36 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     this.subs.push(
       this.sub
+        .on('nd_show_oans')
+        .whenChanged()
+        .handle((showOans) => {
+          if (this.props.side === showOans.side) {
+            this.showOans = showOans.show;
+          }
+        }),
+    );
+
+    this.subs.push(
+      this.sub
         .on('realTime')
-        .atFrequency(1)
-        .handle(() => this.autoLoadAirport()),
+        .atFrequency(0.5)
+        .handle((time) => {
+          this.oansPerformanceModeAndMovedOutOfZoomRange.write(
+            this.oansPerformanceMode.get() && !this.showOans,
+            this.lastUpdateTime === null ? 0 : time - this.lastUpdateTime,
+          );
+          this.props.bus.getPublisher<OansControlEvents>().pub(
+            'oans_performance_mode_hide',
+            {
+              side: this.props.side,
+              hide: this.oansPerformanceModeAndMovedOutOfZoomRange.read(),
+            },
+            true,
+          );
+          this.autoLoadAirport();
+
+          this.lastUpdateTime = time;
+        }),
     );
 
     this.subs.push(
@@ -566,15 +603,21 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
   }
 
-  private autoLoadAirport() {
-    // If we don't have ppos, do not try to auto load
-    if (this.presentPosNotAvailable.get()) {
-      return;
+  private unloadCurrentAirport() {
+    if (this.store.loadedAirport.get()) {
+      this.props.bus.getPublisher<OansControlEvents>().pub('oans_display_airport', '', true);
+      this.store.loadedAirport.set(null);
+      this.store.isAirportSelectionPending.set(false);
     }
+  }
 
+  private autoLoadAirport() {
+    // If we don't have ppos or airport unloaded due to performance reasons, do not try to auto load
     // If airport has been manually selected, do not auto load.
     // FIXME reset manualAirportSelection after a while, to enable auto-load for destination even if departure was selected manually
     if (
+      this.presentPosNotAvailable.get() ||
+      this.oansPerformanceModeAndMovedOutOfZoomRange.read() ||
       this.manualAirportSelection === true ||
       this.store.loadedAirport.get() !== this.store.selectedAirport.get() ||
       this.store.airports.length === 0 ||
@@ -643,6 +686,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.btvUtils.selectExitFromManualEntry(distance, localExitPos);
       }
     }
+  }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+    this.oansPerformanceModeSettingSub();
+    super.destroy();
   }
 
   render(): VNode {

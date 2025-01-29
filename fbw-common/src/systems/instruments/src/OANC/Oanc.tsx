@@ -419,6 +419,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.pleaseWaitFlagVisible,
   );
 
+  private readonly oansPerformanceModeHide = Subject.create(false);
+
   public getZoomLevelInverseScale() {
     const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
@@ -453,8 +455,29 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       .on('oans_display_airport')
       .whenChanged()
       .handle((airport) => {
-        this.loadAirportMap(airport);
+        if (this.oansPerformanceModeHide.get()) {
+          this.dataAirportIcao.set(airport);
+        } else {
+          this.loadAirportMap(airport);
+        }
       });
+
+    this.sub
+      .on('oans_performance_mode_hide')
+      .whenChanged()
+      .handle((perfHide) => {
+        if (this.props.side === perfHide.side) {
+          this.oansPerformanceModeHide.set(perfHide.hide);
+        }
+      });
+
+    this.oansPerformanceModeHide.sub((hide) => {
+      if (hide) {
+        this.unloadAirportMap();
+      } else if (this.dataAirportIcao.get()) {
+        this.loadAirportMap(this.dataAirportIcao.get());
+      }
+    });
 
     this.sub.on('oans_center_on_acft').handle(() => this.centerOnAcft());
     this.sub.on('oans_center_map_on').handle((coords) => this.centerMapOn(coords));
@@ -598,11 +621,19 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.markerManager.eraseAllFlags();
     this.clearMap();
     this.clearData();
+
+    this.arpCoordinates.set(undefined);
+    this.data = undefined;
+    this.aircraftWithinAirport.set(false);
   }
 
+  /**
+   *
+   * @param icao four letter ICAO code of airport to load
+   * @returns
+   */
   public async loadAirportMap(icao: string) {
     this.dataLoading = true;
-
     this.airportLoading.set(true);
 
     this.unloadAirportMap();
@@ -610,13 +641,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     if (!icao) {
       this.dataLoading = false;
       this.airportLoading.set(false);
-      this.arpCoordinates.set(undefined);
 
-      this.data = undefined;
       this.dataAirportName.set('');
       this.dataAirportIcao.set('');
       this.dataAirportIata.set('');
-      this.aircraftWithinAirport.set(false);
 
       return;
     }

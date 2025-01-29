@@ -52,6 +52,7 @@ interface SimOptions {
   registrationDecal: boolean;
   wheelChocks: boolean;
   cabinLighting: boolean;
+  oansPerformanceMode: boolean;
 }
 
 interface ThrottleOptions {
@@ -102,6 +103,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       registrationDecal: false,
       wheelChocks: false,
       cabinLighting: false,
+      oansPerformanceMode: false,
     },
     throttle: {
       numberOfAircraftThrottles: 0,
