@@ -16,11 +16,11 @@ import { LateralMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
 const PWP_IDENT_STEP_DESCENT = '(S/D)';
-const PWP_IDENT_SPD_LIM = '(LIM)';
 const PWP_IDENT_TOD = '(T/D)';
 const PWP_IDENT_DECEL = '(DECEL)';
 const PWP_IDENT_FLAP1 = '(FLAP1)';
@@ -82,6 +82,7 @@ export class PseudoWaypoints implements GuidanceComponent {
     private readonly flightPlanService: FlightPlanService,
     private readonly guidanceController: GuidanceController,
     private readonly atmosphericConditions: AtmosphericConditions,
+    private readonly acConfig: AircraftConfig,
   ) {}
 
   acceptVerticalProfile() {
@@ -368,6 +369,9 @@ export class PseudoWaypoints implements GuidanceComponent {
   ): PseudoWaypoint | undefined {
     let [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = [undefined, undefined, undefined];
 
+    const PWP_IDENT_SPD_LIM = this.acConfig.vnavConfig.LIM_PSEUDO_WPT_LABEL;
+    const PWP_SPD_LIM_HEADER = PWP_IDENT_SPD_LIM === '(LIM)' ? '\xa0(SPD)' : undefined;
+
     const isLatAutoControlArmedOrActive =
       this.guidanceController.vnavDriver.isLatAutoControlActive() ||
       this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
@@ -419,7 +423,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          mcduHeader: '\xa0(SPD)',
+          mcduHeader: PWP_SPD_LIM_HEADER,
           flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
           displayedOnNd: false,
         };
@@ -432,7 +436,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          mcduHeader: '\xa0(SPD)',
+          mcduHeader: PWP_SPD_LIM_HEADER,
           flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
           displayedOnNd: false,
         };

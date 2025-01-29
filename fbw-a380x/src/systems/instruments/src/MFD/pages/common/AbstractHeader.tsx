@@ -9,7 +9,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 
 interface AbstractMfdHeaderProps {
