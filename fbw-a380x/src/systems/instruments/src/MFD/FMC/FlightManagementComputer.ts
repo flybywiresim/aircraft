@@ -190,11 +190,11 @@ export class FlightManagementComputer implements FmcInterface {
   // TODO make private, and access methods through FmcInterface
   public acInterface!: FmcAircraftInterface;
 
-  public revisedWaypointLegIndex = Subject.create<number | null>(null);
+  public revisedLegIndex = Subject.create<number | null>(null);
 
-  public revisedWaypointPlanIndex = Subject.create<FlightPlanIndex | null>(null);
+  public revisedLegPlanIndex = Subject.create<FlightPlanIndex | null>(null);
 
-  public revisedWaypointIsAltn = Subject.create<boolean | null>(null);
+  public revisedLegIsAltn = Subject.create<boolean | null>(null);
 
   public enginesWereStarted = Subject.create<boolean>(false);
 
@@ -294,10 +294,10 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public revisedWaypoint(): Fix | undefined {
-    const revWptIdx = this.revisedWaypointLegIndex.get();
-    const revPlanIdx = this.revisedWaypointPlanIndex.get();
+    const revWptIdx = this.revisedLegIndex.get();
+    const revPlanIdx = this.revisedLegPlanIndex.get();
     if (revWptIdx !== null && revPlanIdx !== null && this.flightPlanService.has(revPlanIdx)) {
-      const flightPlan = this.revisedWaypointIsAltn.get()
+      const flightPlan = this.revisedLegIsAltn.get()
         ? this.flightPlanService.get(revPlanIdx).alternateFlightPlan
         : this.flightPlanService.get(revPlanIdx);
       if (flightPlan.hasElement(revWptIdx) && flightPlan.elementAt(revWptIdx)?.isDiscontinuity === false) {
@@ -308,15 +308,15 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public setRevisedWaypoint(index: number, planIndex: number, isAltn: boolean) {
-    this.revisedWaypointPlanIndex.set(planIndex);
-    this.revisedWaypointIsAltn.set(isAltn);
-    this.revisedWaypointLegIndex.set(index);
+    this.revisedLegPlanIndex.set(planIndex);
+    this.revisedLegIsAltn.set(isAltn);
+    this.revisedLegIndex.set(index);
   }
 
   public resetRevisedWaypoint(): void {
-    this.revisedWaypointLegIndex.set(null);
-    this.revisedWaypointIsAltn.set(null);
-    this.revisedWaypointPlanIndex.set(null);
+    this.revisedLegIndex.set(null);
+    this.revisedLegIsAltn.set(null);
+    this.revisedLegPlanIndex.set(null);
   }
 
   public latLongStoredWaypoints: Waypoint[] = [];

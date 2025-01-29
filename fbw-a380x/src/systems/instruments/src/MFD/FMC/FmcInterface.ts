@@ -88,17 +88,17 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
   /**
    * Returns leg index (in the flight plan) of currently revised waypoint
    */
-  get revisedWaypointLegIndex(): Subject<number | null>;
+  get revisedLegIndex(): Subject<number | null>;
 
   /**
    * Returns flight plan index of currently revised waypoint
    */
-  get revisedWaypointPlanIndex(): Subject<FlightPlanIndex | null>;
+  get revisedLegPlanIndex(): Subject<FlightPlanIndex | null>;
 
   /**
    * Returns, whether currently revised waypoint is part of ALTN flight plan
    */
-  get revisedWaypointIsAltn(): Subject<boolean | null>;
+  get revisedLegIsAltn(): Subject<boolean | null>;
 
   /**
    * Returns, whether number 2&3 engines were started

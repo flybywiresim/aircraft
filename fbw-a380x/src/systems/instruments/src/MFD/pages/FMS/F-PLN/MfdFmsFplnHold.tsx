@@ -46,7 +46,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
   );
 
   protected onNewData(): void {
-    const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
+    const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
     if (this.props.fmcService.master?.revisedWaypoint() && revWptIdx) {
       const leg = this.loadedFlightPlan?.legElementAt(revWptIdx);
       const hold = leg?.modifiedHold !== undefined ? leg.modifiedHold : leg?.defaultHold;
@@ -76,7 +76,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
   }
 
   private async modifyHold() {
-    const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
+    const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
     if (revWptIdx && this.props.fmcService.master?.revisedWaypoint()) {
       const desiredHold: HoldData = {
         type: HoldType.Pilot,
@@ -99,8 +99,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         { ...desiredHold },
         desiredHold,
         this.loadedFlightPlan?.legElementAt(revWptIdx).defaultHold ?? fallbackDefaultHold,
-        this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
-        this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
+        this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
+        this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
       );
       this.onNewData();
     }
@@ -242,12 +242,12 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
             <Button
               label="COMPUTED"
               onClick={() => {
-                const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
+                const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
                 if (revWptIdx && this.props.fmcService.master?.revisedWaypoint()) {
                   this.props.fmcService.master.flightPlanService.revertHoldToComputed(
                     revWptIdx,
-                    this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
-                    this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
+                    this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
+                    this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
                   );
                 }
               }}

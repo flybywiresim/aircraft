@@ -24,13 +24,13 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
   private onModified(newDest: string | null): void {
     if (newDest) {
-      const revWpt = this.props.fmcService.master?.revisedWaypointLegIndex.get();
+      const revWpt = this.props.fmcService.master?.revisedLegIndex.get();
       if (newDest.length === 4 && revWpt) {
         this.props.fmcService.master?.flightPlanService.newDest(
           revWpt,
           newDest,
-          this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
-          this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
+          this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
+          this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
         );
         this.props.fmcService.master?.acInterface.updateOansAirports();
       }
@@ -54,7 +54,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
     if (this.props.fmcService.master) {
       this.subs.push(
-        this.props.fmcService.master.revisedWaypointLegIndex.sub(() => {
+        this.props.fmcService.master.revisedLegIndex.sub(() => {
           if (this.props.fmcService.master?.revisedWaypoint()) {
             this.identRef.instance.innerText = this.props.fmcService.master?.revisedWaypoint()?.ident ?? '';
           }

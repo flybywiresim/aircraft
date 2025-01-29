@@ -190,15 +190,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.availableWaypoints.set(wpt);
       }
 
-      const revWptIdx = this.props.fmcService.master?.revisedWaypointLegIndex.get();
+      const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
       if (revWptIdx !== null && revWptIdx !== undefined) {
         this.selectedLegIndex = revWptIdx;
       }
     }
 
-    if (pd?.cruiseFlightLevel) {
-      this.crzFl.set(pd.cruiseFlightLevel);
-    }
+    this.crzFl.set(pd?.cruiseFlightLevel ?? null);
 
     this.updateConstraints();
     this.updateCruiseSteps();
@@ -215,111 +213,108 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private updateConstraints() {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan || this.selectedLegIndex == null) {
+    if (!this.props.fmcService.master || !this.loadedFlightPlan || this.selectedLegIndex === null) {
       return;
     }
-    if (this.selectedLegIndex !== null) {
-      const leg = this.loadedFlightPlan.legElementAt(this.selectedLegIndex);
 
-      if (!MfdFmsFplnVertRev.isEligibleForVerticalRevision(this.selectedLegIndex, leg, this.loadedFlightPlan)) {
-        this.speedMessageArea.set(`SPD CSTR NOT ALLOWED AT ${leg.ident}`);
-        this.spdConstraintDisabled.set(true);
-        this.altitudeMessageArea.set(`ALT CSTR NOT ALLOWED AT ${leg.ident}`);
-        this.altConstraintDisabled.set(true);
-        return;
-      }
-      this.speedMessageArea.set('');
-      this.spdConstraintDisabled.set(false);
-      this.altitudeMessageArea.set('');
-      this.altConstraintDisabled.set(false);
+    const leg = this.loadedFlightPlan.legElementAt(this.selectedLegIndex);
 
-      // Load speed constraints
-      this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
-      this.constraintType.set(
-        leg.constraintType === WaypointConstraintType.CLB
-          ? 'CLB'
-          : leg.constraintType === WaypointConstraintType.DES
-            ? 'DES'
-            : '',
+    if (!MfdFmsFplnVertRev.isEligibleForVerticalRevision(this.selectedLegIndex, leg, this.loadedFlightPlan)) {
+      this.speedMessageArea.set(`SPD CSTR NOT ALLOWED AT ${leg.ident}`);
+      this.spdConstraintDisabled.set(true);
+      this.altitudeMessageArea.set(`ALT CSTR NOT ALLOWED AT ${leg.ident}`);
+      this.altConstraintDisabled.set(true);
+      return;
+    }
+    this.speedMessageArea.set('');
+    this.spdConstraintDisabled.set(false);
+    this.altitudeMessageArea.set('');
+    this.altConstraintDisabled.set(false);
+
+    // Load speed constraints
+    this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
+    this.constraintType.set(
+      leg.constraintType === WaypointConstraintType.CLB
+        ? 'CLB'
+        : leg.constraintType === WaypointConstraintType.DES
+          ? 'DES'
+          : '',
+    );
+    this.spdConstraintTypeRadioSelected.set(
+      leg.constraintType === WaypointConstraintType.CLB
+        ? 0
+        : leg.constraintType === WaypointConstraintType.DES
+          ? 1
+          : null,
+    );
+    this.altConstraintTypeRadioSelected.set(
+      leg.constraintType === WaypointConstraintType.CLB
+        ? 0
+        : leg.constraintType === WaypointConstraintType.DES
+          ? 1
+          : null,
+    );
+    this.altitudeClbDesConstraintVisibility.set(
+      leg.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
+    );
+
+    this.cannotDeleteAltConstraint.set(
+      !leg.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
+    );
+    this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
+
+    // Load altitude constraints
+    // FIXME missing a lot of cases here
+    switch (leg.altitudeConstraint?.altitudeDescriptor) {
+      case AltitudeDescriptor.AtAlt1:
+        this.selectedAltitudeConstraintOption.set(0);
+        break;
+      case AltitudeDescriptor.AtOrAboveAlt1:
+        this.selectedAltitudeConstraintOption.set(1);
+        break;
+      case AltitudeDescriptor.AtOrBelowAlt1:
+        this.selectedAltitudeConstraintOption.set(2);
+        break;
+      default:
+        this.selectedAltitudeConstraintOption.set(null);
+        break;
+    }
+    this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1 ?? null);
+
+    const ac = leg.altitudeConstraint;
+    if (
+      ac &&
+      ac.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2 &&
+      ac.altitude1 !== undefined &&
+      ac.altitude2 !== undefined
+    ) {
+      // ALT window, alt 1 is the higher altitude, displayed 2nd in the box
+      const transAlt =
+        leg.constraintType === WaypointConstraintType.DES ? this.transitionLevel.get() : this.transitionAltitude.get();
+
+      // FIXME check format when only the higher altitude is above TA/TL
+      const alt1IsFl = transAlt !== null && ac.altitude1 > transAlt;
+      const alt2IsFl = transAlt !== null && ac.altitude2 > transAlt;
+      this.altWindowUnitLeading.set(alt1IsFl && !alt2IsFl ? 'FT' : '');
+      this.altWindowUnitTrailing.set(alt1IsFl ? 'FL' : 'FT');
+      this.altWindowUnitValue.set(
+        `${(alt2IsFl ? ac.altitude2 / 100 : ac.altitude2).toFixed(0).padStart(3, '0')}-${(alt1IsFl ? ac.altitude1 / 100 : ac.altitude1).toFixed(0).padStart(3, '0')}`,
       );
-      this.spdConstraintTypeRadioSelected.set(
-        leg.constraintType === WaypointConstraintType.CLB
-          ? 0
-          : leg.constraintType === WaypointConstraintType.DES
-            ? 1
-            : null,
-      );
-      this.altConstraintTypeRadioSelected.set(
-        leg.constraintType === WaypointConstraintType.CLB
-          ? 0
-          : leg.constraintType === WaypointConstraintType.DES
-            ? 1
-            : null,
-      );
-      this.altitudeClbDesConstraintVisibility.set(
-        leg.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
-      );
 
-      this.cannotDeleteAltConstraint.set(
-        !leg.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
-      );
-      this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
-
-      // Load altitude constraints
-      // FIXME missing a lot of cases here
-      switch (leg.altitudeConstraint?.altitudeDescriptor) {
-        case AltitudeDescriptor.AtAlt1:
-          this.selectedAltitudeConstraintOption.set(0);
-          break;
-        case AltitudeDescriptor.AtOrAboveAlt1:
-          this.selectedAltitudeConstraintOption.set(1);
-          break;
-        case AltitudeDescriptor.AtOrBelowAlt1:
-          this.selectedAltitudeConstraintOption.set(2);
-          break;
-        default:
-          this.selectedAltitudeConstraintOption.set(null);
-          break;
-      }
-      this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1 ?? null);
-
-      const ac = leg.altitudeConstraint;
-      if (
-        ac &&
-        ac.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2 &&
-        ac.altitude1 !== undefined &&
-        ac.altitude2 !== undefined
-      ) {
-        // ALT window, alt 1 is the higher altitude, displayed 2nd in the box
-        const transAlt =
-          leg.constraintType === WaypointConstraintType.DES
-            ? this.transitionLevel.get()
-            : this.transitionAltitude.get();
-
-        // FIXME check format when only the higher altitude is above TA/TL
-        const alt1IsFl = transAlt !== null && ac.altitude1 > transAlt;
-        const alt2IsFl = transAlt !== null && ac.altitude2 > transAlt;
-        this.altWindowUnitLeading.set(alt1IsFl && !alt2IsFl ? 'FT' : '');
-        this.altWindowUnitTrailing.set(alt1IsFl ? 'FL' : 'FT');
-        this.altWindowUnitValue.set(
-          `${(alt2IsFl ? ac.altitude2 / 100 : ac.altitude2).toFixed(0).padStart(3, '0')}-${(alt1IsFl ? ac.altitude1 / 100 : ac.altitude1).toFixed(0).padStart(3, '0')}`,
+      this.altWindowLabelRef.instance.style.visibility = 'visible';
+      this.altWindowValueRef.instance.style.visibility = 'visible';
+    } else {
+      if (ac?.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2) {
+        console.error(
+          'BetweenAlt1Alt2 constraint with either altitude1 or altitude2 undefined!',
+          leg.ident,
+          leg.definition.procedureIdent,
+          ac?.altitude1,
+          ac?.altitude2,
         );
-
-        this.altWindowLabelRef.instance.style.visibility = 'visible';
-        this.altWindowValueRef.instance.style.visibility = 'visible';
-      } else {
-        if (ac?.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2) {
-          console.error(
-            'BetweenAlt1Alt2 constraint with either altitude1 or altitude2 undefined!',
-            leg.ident,
-            leg.definition.procedureIdent,
-            ac?.altitude1,
-            ac?.altitude2,
-          );
-        }
-        this.altWindowLabelRef.instance.style.visibility = 'hidden';
-        this.altWindowValueRef.instance.style.visibility = 'hidden';
       }
+      this.altWindowLabelRef.instance.style.visibility = 'hidden';
+      this.altWindowValueRef.instance.style.visibility = 'hidden';
     }
   }
 
@@ -367,7 +362,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           );
           const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
 
-          leg.isDiscontinuity === false && this.stepAltsLineVisibility[line].set('visible');
+          this.stepAltsLineVisibility[line].set('visible');
           this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
           this.stepAltsFlightLevel[line].set(cruiseSteps[i].toAltitude / 100);
 
@@ -421,7 +416,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     if (idx !== null) {
       const legIndex = this.availableWaypointsToLegIndex[idx];
       this.selectedLegIndex = legIndex;
-      this.props.fmcService.master?.revisedWaypointLegIndex.set(legIndex);
+      this.props.fmcService.master?.revisedLegIndex.set(legIndex);
       this.updateConstraints();
     } else {
       this.selectedLegIndex = null;
