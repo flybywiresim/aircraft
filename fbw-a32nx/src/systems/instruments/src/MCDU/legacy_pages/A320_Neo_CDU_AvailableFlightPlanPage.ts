@@ -174,6 +174,7 @@ export class CDUAvailableFlightPlanPage {
 
       mcdu.onRightInput[5] = () => {
         const selectedRoute = mcdu.coRoute.routes[currentRoute - 1];
+        // FIXME This whole thing is very shady. Why is this one object doing a bunch of different things?
         mcdu.coRoute.routeNumber = routeName;
         mcdu.coRoute['originIcao'] = selectedRoute.originIcao;
         mcdu.coRoute['destinationIcao'] = selectedRoute.destinationIcao;
@@ -183,7 +184,9 @@ export class CDUAvailableFlightPlanPage {
         }
         mcdu.coRoute['navlog'] = selectedRoute.navlog;
         setTimeout(async () => {
-          await CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(mcdu, mcdu.flightPlanService, mcdu.coRoute);
+          // FIXME This should not use the uplink functions, as it is not an uplink.
+          // Doing so causes an erroneous uplink related scratchpad message.
+          await CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(mcdu, mcdu.flightPlanService, selectedRoute);
           await mcdu.flightPlanService.uplinkInsert();
           mcdu.setGroundTempFromOrigin();
 
