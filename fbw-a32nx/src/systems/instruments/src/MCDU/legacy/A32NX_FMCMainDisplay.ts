@@ -802,7 +802,8 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
         }
 
         /** Arm preselected speed/mach for next flight phase */
-        this.updatePreSelSpeedMach(this.preSelectedDesSpeed);
+        // FIXME implement pre-selected descent speed!
+        //this.updatePreSelSpeedMach(this.preSelectedDesSpeed);
 
         break;
       }
