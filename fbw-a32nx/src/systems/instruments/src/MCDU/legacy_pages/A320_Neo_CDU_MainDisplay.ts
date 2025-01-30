@@ -91,7 +91,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   public rightInputDelay: LskDelayFunction[] = [];
   private _activeSystem: 'FMGC' | 'ATSU' | 'AIDS' | 'CFDS' = 'FMGC';
   private inFocus = false;
-  private lastInput = 0;
+  private lastInput = new Date(0);
   private clrStop = false;
   private allSelected = false;
   private updateRequest = false;
@@ -1181,7 +1181,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
           if (mcduTimeout) {
             this.check_focus = setInterval(
               () => {
-                if (Math.abs(new Date() - this.lastInput) / 1000 >= mcduTimeout) {
+                if (Math.abs(Date.now() - this.lastInput.getTime()) / 1000 >= mcduTimeout) {
                   this.clearFocus();
                 }
               },
