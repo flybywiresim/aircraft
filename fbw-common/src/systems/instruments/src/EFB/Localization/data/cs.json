@@ -631,6 +631,7 @@
     "Real": "Reálný",
     "Realism": {
       "AdirsAlignTime": "Čas zarovnání ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Automaticky vyplňovat checklisty",
       "BoardingTime": "Čas nastupování cestujících",
       "DmcSelfTestTime": "Inicializační test DMC",

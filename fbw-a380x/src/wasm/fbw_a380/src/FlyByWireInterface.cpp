@@ -1458,8 +1458,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
       powerSupplyAvailable = idElecDc1BusPowered->get();
     }
 
-    prims[primIndex].update(sampleTime, simData.simulationTime,
-                            failuresConsumer.isActive(primIndex == 0 ? Failures::Elac1 : Failures::Elac2), powerSupplyAvailable);
+    Failures failureIndex = primIndex == 0 ? Failures::Prim1 : (primIndex == 1 ? Failures::Prim2 : Failures::Prim3);
+    prims[primIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable);
 
     primsDiscreteOutputs[primIndex] = prims[primIndex].getDiscreteOutputs();
     primsAnalogOutputs[primIndex] = prims[primIndex].getAnalogOutputs();
@@ -1830,8 +1830,15 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
     facsAnalogOutputs[facIndex] = simConnectInterface.getClientDataFacAnalogsOutput();
     facsBusOutputs[facIndex] = simConnectInterface.getClientDataFacBusOutput();
   } else {
-    facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(facIndex == 0 ? Failures::Fac1 : Failures::Fac2),
-                          true);
+    // Check failure state of master PRIM
+    Failures failureIndex = Failures::Prim1;
+    for (int i = 0; i < 3; i++) {
+      if (primsDiscreteOutputs[i].prim_healthy) {
+        failureIndex = i == 0 ? Failures::Prim1 : (i == 1 ? Failures::Prim2 : Failures::Prim3);
+        break;
+      }
+    }
+    facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), true);
 
     facsDiscreteOutputs[facIndex] = facs[facIndex].getDiscreteOutputs();
     facsAnalogOutputs[facIndex] = facs[facIndex].getAnalogOutputs();
