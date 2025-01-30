@@ -117,7 +117,7 @@ export class CDUInitPage {
             suffix: '[color]cyan',
           },
           (value) => {
-            if (value != null) {
+            if (typeof value === 'number') {
               mcdu.costIndex = value;
               // mcdu.isCostIndexSet = true;
             } else {
