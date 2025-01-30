@@ -496,6 +496,10 @@
   background-color: $display-mfd-darker-grey;
 }
 
+.mfd-input-field-container.disabled:hover {
+  border: 2px inset $display-light-grey;
+}
+
 .mfd-input-field-container:hover {
   border: 2px inset $display-cyan;
 }
@@ -532,7 +536,7 @@
 
 .mfd-input-field-text-input.disabled {
   background-color: $display-mfd-darker-grey;
-  color: $display-light-grey;
+  color: $display-dark-grey;
 }
 
 .mfd-input-field-text-input.mandatory {
