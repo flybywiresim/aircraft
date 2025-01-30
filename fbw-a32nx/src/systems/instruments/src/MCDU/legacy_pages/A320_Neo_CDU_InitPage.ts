@@ -40,8 +40,6 @@ export class CDUInitPage {
         await mcdu.updateCoRoute(value, (result) => {
           if (result) {
             CDUInitPage.ShowPage1(mcdu);
-          } else {
-            scratchpadCallback();
           }
         });
       },
