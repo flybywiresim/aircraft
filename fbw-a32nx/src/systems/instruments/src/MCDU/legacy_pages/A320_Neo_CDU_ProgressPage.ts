@@ -130,7 +130,7 @@ export class CDUProgressPage {
     mcdu.onRightInput[3] = (input, scratchpadCallback) => {
       mcdu.trySetProgWaypoint(input, (success) => {
         if (!success) {
-          scratchpadCallback(input);
+          scratchpadCallback();
         }
 
         CDUProgressPage.ShowPage(mcdu);
@@ -156,14 +156,14 @@ export class CDUProgressPage {
       const match = input.match(/^\d{1,2}(\.\d{1,2})?$/);
       if (match === null) {
         mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-        scratchpadCallback(input);
+        scratchpadCallback();
         return;
       }
 
       const rnp = parseFloat(input);
       if (rnp < 0.01 || rnp > 20) {
         mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-        scratchpadCallback(input);
+        scratchpadCallback();
         return;
       }
 

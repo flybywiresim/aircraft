@@ -281,7 +281,7 @@ export class CDUNewWaypoint {
     mcdu.onRightInput[4] = () => {
       requestAnimationFrame(() => {
         if (doneCallback !== undefined) {
-          doneCallback();
+          doneCallback(undefined);
         } else {
           CDUPilotsWaypoint.ShowPage(mcdu);
         }

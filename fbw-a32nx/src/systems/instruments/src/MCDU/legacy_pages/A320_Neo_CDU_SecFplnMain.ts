@@ -20,7 +20,7 @@ export class CDUSecFplnMain {
 
     mcdu.onLeftInput[0] = () => {
       return;
-      mcdu.flightPlanService.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.FirstSecondary);
+      //mcdu.flightPlanService.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.FirstSecondary);
       CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
     };
 
@@ -36,7 +36,7 @@ export class CDUSecFplnMain {
 
     mcdu.onLeftInput[5] = () => {
       return;
-      mcdu.flightPlanService.flightPlanManager.swap(FlightPlanIndex.FirstSecondary, FlightPlanIndex.Active);
+      //mcdu.flightPlanService.flightPlanManager.swap(FlightPlanIndex.FirstSecondary, FlightPlanIndex.Active);
     };
 
     mcdu.setTemplate([
