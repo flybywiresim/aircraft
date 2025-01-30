@@ -9,6 +9,7 @@ import {
   NdbNavaid,
   VhfNavaid,
   VhfNavaidType,
+  isNdbNavaid,
 } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -494,7 +495,7 @@ export class NavaidSelectionManager {
 
       // eslint-disable-next-line no-underscore-dangle
       const facility = segment.lastLeg?.definition.recommendedNavaid ?? null;
-      if (facility !== null && facility.subSectionCode === NavaidSubsectionCode.NdbNavaid) {
+      if (facility !== null && isNdbNavaid(facility)) {
         return facility;
       }
     }
