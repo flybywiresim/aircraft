@@ -74,7 +74,7 @@ export class CDUAvailableArrivalsPage {
     inAlternate = false,
   ) {
     /** @type {BaseFlightPlan} */
-    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
     const isTemporary = targetPlan.index === FlightPlanIndex.Temporary;
 

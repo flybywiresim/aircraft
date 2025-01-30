@@ -24,7 +24,7 @@ const HoldType = Object.freeze({
 
 export class CDUHoldAtPage {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, waypointIndexFP, forPlan, inAlternate) {
-    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
     const waypoint = targetPlan.legElementAt(waypointIndexFP);
 
     if (!waypoint) {
@@ -182,7 +182,7 @@ export class CDUHoldAtPage {
     mcdu.page.Current = mcdu.page.HoldAtPage;
 
     const tmpy = forPlan === FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary;
-    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
     const leg = targetPlan.legElementAt(waypointIndexFP);
 

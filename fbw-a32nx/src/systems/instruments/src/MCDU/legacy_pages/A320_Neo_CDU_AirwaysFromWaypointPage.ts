@@ -12,8 +12,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AirwaysFromWaypointPage;
 
-    /** @type {FlightPlan} */
-    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
     const waypoint = targetPlan.legElementAt(reviseIndex);
 
     const fpIsSec = forPlan >= FlightPlanIndex.FirstSecondary;
@@ -82,7 +81,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
           rows[i] = ['[\xa0\xa0\xa0][color]cyan', ''];
 
           mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
-            const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+            const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
             if (value.length > 0) {
               const elements = targetPlan.pendingAirways.elements;
@@ -120,7 +119,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
           rows[i] = [`${pendingAirway.ident}[color]cyan`, '[\xa0\xa0\xa0][color]cyan'];
 
           mcdu.onRightInput[i] = (value, scratchpadCallback) => {
-            const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+            const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
             if (value.length > 0) {
               WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then(
@@ -149,7 +148,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
             subRows[i + 1] = ['\xa0VIA', ''];
 
             mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
-              const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+              const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
               if (value.length > 0) {
                 const airway = await this._getFirstIntersection(mcdu, pendingAirway, prevIcao, value).catch(

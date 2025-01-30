@@ -293,15 +293,14 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     return this.currFlightPlanService;
   }
 
-  public flightPlan(index: FlightPlanIndex, alternate: boolean) {
-    const plan =
-      index === FlightPlanIndex.Active ? this.flightPlanService.activeOrTemporary : this.flightPlanService.get(index);
+  public getFlightPlan(index: FlightPlanIndex) {
+    return index === FlightPlanIndex.Active
+      ? this.flightPlanService.activeOrTemporary
+      : this.flightPlanService.get(index);
+  }
 
-    if (alternate) {
-      return plan.alternateFlightPlan;
-    }
-
-    return plan;
+  public getAlternateFlightPlan(index: FlightPlanIndex) {
+    return this.getFlightPlan(index).alternateFlightPlan;
   }
 
   public get navigationDatabaseService() {

@@ -39,7 +39,7 @@ export class CDULateralRevisionPage {
       coordinates = `${lat.deg}°${lat.min}.${Math.ceil(Number(lat.sec / 100))}${lat.dir}/${long.deg}°${long.min}.${Math.ceil(Number(long.sec / 100))}${long.dir}[color]green`;
     }
     /** @type {BaseFlightPlan} */
-    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
     const isPpos = leg === undefined || (legIndexFP === 0 && leg !== targetPlan.originLeg);
     const isFrom = legIndexFP === targetPlan.fromLegIndex && forPlan === FlightPlanIndex.Active && !inAlternate;
@@ -147,7 +147,7 @@ export class CDULateralRevisionPage {
           long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
         };
 
-        const flightPlan = mcdu.flightPlan(forPlan, false);
+        const flightPlan = mcdu.getFlightPlan(forPlan);
         const alternateAirport = flightPlan.alternateDestinationAirport;
         if (alternateAirport) {
           const distance = Avionics.Utils.computeGreatCircleDistance(ppos, alternateAirport.location);

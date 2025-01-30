@@ -35,9 +35,8 @@ export class CDUVerticalRevisionPage {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.VerticalRevisionPage;
 
-    /** @type {BaseFlightPlan} */
-    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
-    const mainTargetPlan = mcdu.flightPlan(forPlan, false);
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+    const mainTargetPlan = mcdu.getFlightPlan(forPlan);
     // Use performance data of primary for waypoints in alternate
     const performanceData = mainTargetPlan.performanceData;
 

@@ -39,7 +39,7 @@ export class CDUAvailableDeparturesPage {
 
     const editingTmpy = forPlan === FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary;
 
-    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
     const selectedRunway = targetPlan.originRunway;
     const selectedSid = targetPlan.originDeparture;

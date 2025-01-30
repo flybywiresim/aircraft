@@ -1067,7 +1067,7 @@ export class CDUFlightPlanPage {
       return;
     }
 
-    const targetPlan = mcdu.flightPlan(forPlan, forAlternate);
+    const targetPlan = forAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
     const element = targetPlan.elementAt(fpIndex);
 
     const previousElement = targetPlan.maybeElementAt(fpIndex - 1);
@@ -1097,7 +1097,7 @@ export class CDUFlightPlanPage {
   }
 
   static ensureCanClearElement(mcdu, fpIndex, forPlan, forAlternate, scratchpadCallback) {
-    const targetPlan = mcdu.flightPlan(forPlan, forAlternate);
+    const targetPlan = forAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
     if (forPlan === FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary) {
       mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
