@@ -667,6 +667,7 @@
       "Left": "왼쪽",
       "LoadOnly": "불러오기 전용",
       "None": "없음",
+      "OansPerformanceMode": "OANS Performance Mode (Un-Load Airport Map When Not Used)",
       "Off": "끄기",
       "PilotSeat": "조종할 좌석",
       "Right": "오른쪽",

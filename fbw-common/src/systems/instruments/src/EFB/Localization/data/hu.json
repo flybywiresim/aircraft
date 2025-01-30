@@ -667,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Betöltés",
       "None": "Nincs",
+      "OansPerformanceMode": "OANS Performance Mode (Un-Load Airport Map When Not Used)",
       "Off": "Ki",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",

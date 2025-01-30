@@ -667,6 +667,7 @@
       "Left": "左側",
       "LoadOnly": "読み込みのみ",
       "None": "なし",
+      "OansPerformanceMode": "OANS Performance Mode (Un-Load Airport Map When Not Used)",
       "Off": "オフ",
       "PilotSeat": "どちら側の操縦席で操縦するか",
       "Right": "右側",

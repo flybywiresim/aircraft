@@ -667,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Chỉ tải",
       "None": "Không",
+      "OansPerformanceMode": "OANS Performance Mode (Un-Load Airport Map When Not Used)",
       "Off": "Tắt",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
