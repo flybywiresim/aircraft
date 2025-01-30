@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { OclMessage } from '@datalink/common';
-import { ADIRS } from '../../legacy/A32NX_Core/Adirs';
 import { CDU_SingleValueField } from '../A320_Neo_CDU_Field';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
@@ -75,19 +74,6 @@ export class CDUAtcOceanicReq {
 
     const activePlan = mcdu.flightPlanService.active;
 
-    const adirLat = ADIRS.getLatitude();
-    const adirLong = ADIRS.getLongitude();
-    const ppos =
-      adirLat.isNormalOperation() && adirLong.isNormalOperation()
-        ? {
-            lat: ADIRS.getLatitude().value,
-            long: ADIRS.getLongitude().value,
-          }
-        : {
-            lat: undefined,
-            long: undefined,
-          };
-
     let retval = '';
     const stats = activePlan.computeWaypointStatistics();
     stats.forEach((value) => {
@@ -117,7 +103,7 @@ export class CDUAtcOceanicReq {
         emptyValue: '{amber}_____{end}',
         suffix: '[color]cyan',
         maxLength: 5,
-        isValid: (value) => {
+        isValid: (value: string) => {
           if (value.length !== 4 && value.length !== 5) {
             return false;
           }
@@ -137,7 +123,7 @@ export class CDUAtcOceanicReq {
           return asInt <= 2359 && asInt >= 0;
         },
       },
-      (value) => {
+      (value: string | null) => {
         if (value.length === 4) {
           store.entryTime = `${value}Z`;
         } else {
@@ -155,7 +141,7 @@ export class CDUAtcOceanicReq {
         emptyValue: '{amber}_______{end}',
         suffix: '[color]cyan',
       },
-      (value) => {
+      (value: string | null) => {
         mcdu.waypointType(mcdu, value).then((type) => {
           if (type[0] === -1) {
             mcdu.setScratchpadMessage(type[1]);
@@ -189,7 +175,7 @@ export class CDUAtcOceanicReq {
         emptyValue: '{amber}___{end}',
         suffix: '[color]cyan',
         maxLength: 3,
-        isValid: (value) => {
+        isValid: (value: string) => {
           if (value && /^M*.[0-9]{1,2}$/.test(value)) {
             const split = value.split('.');
             let number = parseInt(split.length > 0 && split[1]);
@@ -201,7 +187,7 @@ export class CDUAtcOceanicReq {
           return false;
         },
       },
-      (value) => {
+      (value: string | null) => {
         if (value) {
           const split = value.split('.');
           let number = parseInt(split.length > 0 && split[1]);
@@ -222,7 +208,7 @@ export class CDUAtcOceanicReq {
         emptyValue: '{amber}_____{end}',
         suffix: '[color]cyan',
         maxLength: 5,
-        isValid: (value) => {
+        isValid: (value: string) => {
           if (/^(FL)*[0-9]{2,3}$/.test(value)) {
             let level = 0;
             if (value.startsWith('FL')) {
@@ -235,7 +221,7 @@ export class CDUAtcOceanicReq {
           return false;
         },
       },
-      (value) => {
+      (value: string | null) => {
         if (value.startsWith('FL')) {
           store.requestedFlightlevel = value;
         } else {
@@ -256,7 +242,7 @@ export class CDUAtcOceanicReq {
         suffix: '[color]white',
         maxLength: 22,
       },
-      (value) => {
+      (value: string | null) => {
         store.freetext[0] = value;
         CDUAtcOceanicReq.ShowPage1(mcdu, store);
       },
@@ -340,7 +326,7 @@ export class CDUAtcOceanicReq {
             suffix: '[color]white',
             maxLength: 22,
           },
-          (value) => {
+          (value: string | null) => {
             store.freetext[i + 1] = value;
             CDUAtcOceanicReq.ShowPage2(mcdu, store);
           },
