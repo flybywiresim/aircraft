@@ -1,4 +1,4 @@
-import { IlsNavaid, NdbNavaid, VhfNavaid, LsCategory, VhfNavaidType } from '@flybywiresim/fbw-sdk';
+import { IlsNavaid, NdbNavaid, VhfNavaid, LsCategory, VhfNavaidType, isIlsNavaid } from '@flybywiresim/fbw-sdk';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
@@ -33,7 +33,7 @@ export class CDUNavaidPage {
     ];
 
     if (facility) {
-      let latLon = facility.location;
+      let latLon = isIlsNavaid(facility) ? facility.locLocation : facility.location;
       if (facility.sectionCode === 4 && facility.subSectionCode === 7) {
         // airport && ils
         CDUNavaidPage.renderIls(facility, template);
