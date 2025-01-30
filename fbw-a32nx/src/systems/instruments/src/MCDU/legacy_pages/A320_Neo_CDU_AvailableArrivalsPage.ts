@@ -16,7 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApproachType, ApproachUtils, RunwayUtils } from '@flybywiresim/fbw-sdk';
+import {
+  Airport,
+  AirportSubsectionCode,
+  Approach,
+  ApproachType,
+  ApproachUtils,
+  Runway,
+  RunwayUtils,
+} from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
@@ -59,7 +67,7 @@ const Labels = Object.freeze({
 export class CDUAvailableArrivalsPage {
   static async ShowPage(
     mcdu: A320_Neo_CDU_MainDisplay,
-    airport,
+    airport: Airport,
     pageCurrent = 0,
     starSelection = false,
     forPlan = FlightPlanIndex.Active,
@@ -145,14 +153,7 @@ export class CDUAvailableArrivalsPage {
       selectedTransitionCellColor = flightPlanAccentColor;
     }
 
-    /**
-     * @type {import('msfs-navdata').Approach[]}
-     */
     const approaches = targetPlan.availableApproaches;
-
-    /**
-     * @type {import('msfs-navdata').Runway[]}
-     */
     const runways = targetPlan.availableDestinationRunways;
 
     // Sort the approaches in Honeywell's documented order
@@ -166,12 +167,11 @@ export class CDUAvailableArrivalsPage {
       // Sort the approaches in Honeywell's documented order, and alphabetical in between
       .sort((a, b) =>
         a.type != b.type ? ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type] : a.ident.localeCompare(b.ident),
-      )
-      .map((approach) => ({ approach }))
-      .concat(
-        // Runway-by-itself approaches
-        runways.slice().map((runway) => ({ runway })),
       );
+    const allApproaches = (sortedApproaches as (Runway | Approach)[]).concat(
+      // Runway-by-itself approaches
+      runways,
+    );
     const rows = [[''], [''], [''], [''], [''], [''], [''], ['']];
 
     /**
@@ -183,27 +183,26 @@ export class CDUAvailableArrivalsPage {
       for (let i = 0; i < ArrivalPagination.ARR_PAGE; i++) {
         const index = i + pageCurrent * ArrivalPagination.ARR_PAGE;
 
-        const approachOrRunway = sortedApproaches[index];
+        const approachOrRunway = allApproaches[index];
         if (!approachOrRunway) {
           break;
         }
 
-        const { approach, runway } = approachOrRunway;
-        if (approach) {
+        if (approachOrRunway.subSectionCode === AirportSubsectionCode.ApproachProcedures) {
           let runwayLength = '----';
           let runwayCourse = '---';
 
-          const isSelected = selectedApproach && selectedApproachId === approach.databaseId;
+          const isSelected = selectedApproach && selectedApproachId === approachOrRunway.databaseId;
           const color = isSelected && !isTemporary ? 'green' : 'cyan';
 
-          const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
+          const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approachOrRunway.runwayIdent);
           if (runway) {
             runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
             runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
-            const finalLeg = approach.legs[approach.legs.length - 1];
+            const finalLeg = approachOrRunway.legs[approachOrRunway.legs.length - 1];
             const matchingIls =
-              approach.type === ApproachType.Ils
+              approachOrRunway.type === ApproachType.Ils
                 ? ilss.find(
                     (ils) =>
                       finalLeg &&
@@ -215,7 +214,7 @@ export class CDUAvailableArrivalsPage {
             const ilsText = hasIls ? `${matchingIls.ident.padStart(6)}/${matchingIls.frequency.toFixed(2)}` : '';
 
             rows[2 * i] = [
-              `{${color}}${!isSelected ? '{' : '{sp}'}${ApproachUtils.shortApproachName(approach)}{end}`,
+              `{${color}}${!isSelected ? '{' : '{sp}'}${ApproachUtils.shortApproachName(approachOrRunway)}{end}`,
               '',
               `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`,
             ];
@@ -226,7 +225,7 @@ export class CDUAvailableArrivalsPage {
             // Clicking the already selected approach is not allowed
             if (!isSelected) {
               try {
-                await mcdu.flightPlanService.setApproach(approach.databaseId, forPlan, inAlternate);
+                await mcdu.flightPlanService.setApproach(approachOrRunway.databaseId, forPlan, inAlternate);
 
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
               } catch (e) {
@@ -244,18 +243,18 @@ export class CDUAvailableArrivalsPage {
               scratchpadCallback();
             }
           };
-        } else if (runway) {
-          const runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
-          const runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
+        } else {
+          const runwayLength = approachOrRunway.length.toFixed(0); // TODO imperial length pin program
+          const runwayCourse = Utils.leadingZeros(Math.round(approachOrRunway.magneticBearing), 3);
 
           const isSelected =
             !selectedApproach &&
             targetPlan.destinationRunway &&
-            runway.databaseId === targetPlan.destinationRunway.databaseId;
+            approachOrRunway.databaseId === targetPlan.destinationRunway.databaseId;
           const color = isSelected && !isTemporary ? 'green' : 'cyan';
 
           rows[2 * i] = [
-            `{${color}}${!isSelected ? '{' : '{sp}'}${RunwayUtils.runwayString(runway.ident)}{end}`,
+            `{${color}}${!isSelected ? '{' : '{sp}'}${RunwayUtils.runwayString(approachOrRunway.ident)}{end}`,
             '',
             `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`,
           ];
@@ -266,7 +265,7 @@ export class CDUAvailableArrivalsPage {
             if (!isSelected) {
               try {
                 await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
-                await mcdu.flightPlanService.setDestinationRunway(runway.ident, forPlan, inAlternate);
+                await mcdu.flightPlanService.setDestinationRunway(approachOrRunway.ident, forPlan, inAlternate);
 
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
               } catch (e) {
@@ -514,7 +513,7 @@ export class CDUAvailableArrivalsPage {
             Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1,
           )
         : Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1
-      : (pageCurrent, Math.ceil(sortedApproaches.length / ArrivalPagination.ARR_PAGE) - 1);
+      : Math.ceil(sortedApproaches.length / ArrivalPagination.ARR_PAGE) - 1;
     if (pageCurrent < maxPage) {
       mcdu.onUp = () => {
         pageCurrent++;
@@ -564,9 +563,14 @@ export class CDUAvailableArrivalsPage {
     mcdu.onNextPage = mcdu.onPrevPage;
   }
 
-  static ShowViasPage(mcdu, airport, pageCurrent = 0, forPlan = FlightPlanIndex.Active, inAlternate = false) {
-    /** @type {BaseFlightPlan} */
-    const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+  static ShowViasPage(
+    mcdu: A320_Neo_CDU_MainDisplay,
+    airport: Airport,
+    pageCurrent = 0,
+    forPlan = FlightPlanIndex.Active,
+    inAlternate = false,
+  ) {
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
     const isTemporary = targetPlan.index === FlightPlanIndex.Temporary;
     const planColor = isTemporary ? 'yellow' : 'green';
