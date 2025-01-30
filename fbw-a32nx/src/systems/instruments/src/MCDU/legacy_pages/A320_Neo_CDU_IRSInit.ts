@@ -302,12 +302,12 @@ export class CDUIRSInit {
         if (mcdu.page.Current === mcdu.page.IRSInit) {
           CDUIRSInit.ShowPage(
             mcdu,
-            (lon = lon),
-            (originAirportLat = originAirportLat),
-            (originAirportLon = originAirportLon),
-            (referenceName = referenceName),
-            (originAirportCoordinates = originAirportCoordinates),
-            (alignMsg = alignMsg),
+            lon,
+            originAirportLat,
+            originAirportLon,
+            referenceName,
+            originAirportCoordinates,
+            alignMsg,
           );
         }
       }, 1000);
