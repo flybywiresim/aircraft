@@ -1,8 +1,7 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Departure, NXUnits } from '@flybywiresim/fbw-sdk';
+import { Airport, Departure, NXUnits, ProcedureTransition, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, RunwayUtils } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
@@ -20,7 +19,7 @@ const Labels = Object.freeze({
 export class CDUAvailableDeparturesPage {
   static ShowPage(
     mcdu: A320_Neo_CDU_MainDisplay,
-    airport,
+    airport: Airport,
     pageCurrent = -1,
     sidSelection = false,
     forPlan = FlightPlanIndex.Active,
@@ -40,19 +39,14 @@ export class CDUAvailableDeparturesPage {
 
     const editingTmpy = forPlan === FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary;
 
-    /** @type {BaseFlightPlan} */
     const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
-    /** @type {import('msfs-navdata').Runway} */
     const selectedRunway = targetPlan.originRunway;
     const selectedSid = targetPlan.originDeparture;
     const selectedTransition = targetPlan.departureEnrouteTransition;
 
-    /** @type {Departure} */
-    /** @type {ProcedureTransition} */
     const showEosid = selectedRunway && sidSelection;
 
-    /** @type {import('msfs-navdata').Runway[]} */
     const availableRunways = [...targetPlan.availableOriginRunways];
     let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident)) as (
       | Departure
@@ -77,9 +71,14 @@ export class CDUAvailableDeparturesPage {
     if (selectedSid) {
       availableTransitions = [...selectedSid.enrouteTransitions];
 
-      selectedSidPage = Math.floor(
-        availableSids.findIndex((sid) => sid.databaseId === selectedSid.databaseId) / DeparturePagination.DEPT_PAGE,
-      );
+      selectedSidPage =
+        selectedSid === undefined
+          ? 0
+          : Math.floor(
+              availableSids.findIndex((sid) =>
+                sid === Labels.NO_SID ? selectedSid === null : sid.databaseId === selectedSid.databaseId,
+              ) / DeparturePagination.DEPT_PAGE,
+            );
     }
 
     const selectedRunwayPage = selectedRunway
@@ -182,8 +181,8 @@ export class CDUAvailableDeparturesPage {
         const sid = availableSids[pageCurrent * DeparturePagination.DEPT_PAGE + i];
         if (sid) {
           const selected =
-            (sid === Labels.NO_SID && selectedSid === null) ||
-            (selectedSid && selectedSid.databaseId === sid.databaseId);
+            sid !== undefined &&
+            (sid === Labels.NO_SID ? selectedSid === null : selectedSid?.databaseId === sid.databaseId);
           const color = selected && !editingTmpy ? 'green' : 'cyan';
 
           rows[2 * i] = [`{${color}}${selected ? '{sp}' : '{'}${typeof sid === 'string' ? sid : sid.ident}{end}`];
@@ -349,10 +348,8 @@ export class CDUAvailableDeparturesPage {
 
 /**
  * Check if a runway transition matches with a runway
- * @param {Runway} runway
- * @param {ProcedureTransition} transition
- * @returns {number} -1 if not found, else index of the transition
+ * @returns -1 if not found, else index of the transition
  */
-function findRunwayTransitionIndex(runway, transitions) {
+function findRunwayTransitionIndex(runway: Runway, transitions: ProcedureTransition[]): number {
   return transitions.findIndex((trans) => trans.ident === runway.ident);
 }
