@@ -46,7 +46,7 @@ class CDUAvailableDeparturesPage {
         const showEosid = selectedRunway && sidSelection;
 
         /** @type {import('msfs-navdata').Runway[]} */
-        const availableRunways = [...targetPlan.availableOriginRunways];
+        const availableRunways = [...targetPlan.availableOriginRunways].sort((a, b) => a.number !== b.number ? a.number - b.number : a.designator - b.designator);
         let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident));
         let availableTransitions = [];
 

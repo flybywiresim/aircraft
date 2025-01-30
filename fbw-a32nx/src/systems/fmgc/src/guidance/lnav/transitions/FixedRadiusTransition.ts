@@ -17,14 +17,15 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Geo } from '@fmgc/utils/Geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
+import { FCLeg } from '@fmgc/guidance/lnav/legs/FC';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 import { PathVector, PathVectorType } from '../PathVector';
 import { CFLeg } from '../legs/CF';
 
-type PrevLeg = CILeg | CFLeg | DFLeg | FDLeg | TFLeg;
-type NextLeg = CFLeg | FDLeg | FALeg | FMLeg | PILeg | TFLeg;
+type PrevLeg = CILeg | CFLeg | DFLeg | FCLeg | FDLeg | TFLeg;
+type NextLeg = CFLeg | FCLeg | FDLeg | FALeg | FMLeg | PILeg | TFLeg;
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
 
