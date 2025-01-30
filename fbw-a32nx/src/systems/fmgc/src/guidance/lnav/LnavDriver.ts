@@ -23,6 +23,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
+import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 
 /**
  * Represents the current turn state of the LNAV driver
@@ -463,7 +464,16 @@ export class LnavDriver implements GuidanceComponent {
   sequenceLeg(leg?: Leg, outboundTransition?: Transition): void {
     this.flightPlanService.active.sequence();
 
-    console.log(`[FMGC/Guidance] LNAV - sequencing leg. [new Index: ${this.flightPlanService.active.activeLegIndex}]`);
+    let secIndex = 1;
+    while (this.flightPlanService.hasSecondary(secIndex) && secIndex < 100) {
+      this.trySequenceSecondaryPlan(secIndex++);
+    }
+
+    if (LnavConfig.DEBUG_GUIDANCE) {
+      console.log(
+        `[LnavDriver](sequenceLeg) Sequencing leg [new Index: ${this.flightPlanService.active.activeLegIndex}]`,
+      );
+    }
 
     outboundTransition?.freeze();
 
@@ -483,6 +493,56 @@ export class LnavDriver implements GuidanceComponent {
     } else {
       this.turnState = LnavTurnState.Normal;
     }
+  }
+
+  /**
+   * Attempts to sequence a secondary flight plan, if the previous FROM/TO pair of the active flight plan matches the current
+   * FROM/TO pair of that secondary plan.
+   *
+   * @param secIndex the 1-based index of the secondary plan to try and sequence
+   */
+  trySequenceSecondaryPlan(secIndex: number) {
+    const activePlan = this.flightPlanService.active;
+    const secPlan = this.flightPlanService.secondary(secIndex);
+
+    const secFromLeg = secPlan.elementAt(this.flightPlanService.active.activeLegIndex - 1);
+    const secToLeg = secPlan.elementAt(this.flightPlanService.active.activeLegIndex);
+
+    const activeFromLeg = activePlan.elementAt(this.flightPlanService.active.activeLegIndex - 1);
+    const activeToLeg = activePlan.elementAt(this.flightPlanService.active.activeLegIndex);
+
+    // We see if what used to be the FROM/TO pair in the active plan is currently the FROM/TO in the secondary plan
+    const shouldSequence =
+      secPlan.activeLegIndex === activePlan.activeLegIndex - 1 &&
+      FlightPlanUtils.areFlightPlanElementsSame(secFromLeg, activeFromLeg) &&
+      FlightPlanUtils.areFlightPlanElementsSame(secToLeg, activeToLeg);
+
+    if (!shouldSequence) {
+      if (LnavConfig.DEBUG_GUIDANCE) {
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) Not sequencing SEC ${secIndex} - FROM/TO pairs were different`,
+        );
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) SEC: FROM: ${secFromLeg.isDiscontinuity === true ? '<disco>' : secFromLeg.uuid}`,
+        );
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) SEC: TO: ${secToLeg.isDiscontinuity === true ? '<disco>' : secToLeg.uuid}`,
+        );
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) ACT: FROM: ${activeFromLeg.isDiscontinuity === true ? '<disco>' : activeFromLeg.uuid}`,
+        );
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) ACT: TO: ${activeToLeg.isDiscontinuity === true ? '<disco>' : activeToLeg.uuid}`,
+        );
+      }
+      return;
+    }
+
+    if (LnavConfig.DEBUG_GUIDANCE) {
+      console.log(`[LnavDriver](trySequenceSecondaryPlan) Sequencing SEC ${secIndex}`);
+    }
+
+    secPlan.sequence();
   }
 
   sequenceDiscontinuity(_leg?: Leg, followingLeg?: Leg): void {
