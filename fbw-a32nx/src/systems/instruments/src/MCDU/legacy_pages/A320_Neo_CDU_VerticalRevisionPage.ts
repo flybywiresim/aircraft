@@ -11,6 +11,7 @@ import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -411,7 +412,12 @@ export class CDUVerticalRevisionPage {
         }
 
         const altitude = matchResult[5] !== undefined ? parseInt(matchResult[5]) * 100 : parseInt(matchResult[6]);
-        const code = matchResult[1] === undefined ? '@' : matchResult[1] === '-' ? '-' : '+';
+        const code =
+          matchResult[1] === undefined
+            ? AltitudeDescriptor.AtAlt1
+            : matchResult[1] === '-'
+              ? AltitudeDescriptor.AtOrBelowAlt1
+              : AltitudeDescriptor.AtOrAboveAlt1;
 
         if (altitude > 45000) {
           mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
