@@ -24,16 +24,16 @@ export interface FixInfoRadius {
  * A FIX INFO entry in a flight plan
  */
 export class FixInfoEntry implements FixInfoData {
-  /** The fix concerned by the fix info */
-  public fix: Fix;
-
-  /** The radii contained in the fix info */
-  public radii?: FixInfoRadius[];
-
-  /** The radials contained in the fix ino */
-  public radials?: FixInfoRadial[];
-
-  constructor(fix: Fix, radii?: FixInfoRadius[], radials?: FixInfoRadial[]) {
+  /**
+   * @param fix The fix concerned by the fix info.
+   * @param radii The radii contained in the fix info.
+   * @param radials The radials contained in the fix info.
+   */
+  constructor(
+    public readonly fix: Fix,
+    public readonly radii?: FixInfoRadius[],
+    public readonly radials?: FixInfoRadial[],
+  ) {
     this.fix = fix;
     this.radii = radii;
     this.radials = radials;
