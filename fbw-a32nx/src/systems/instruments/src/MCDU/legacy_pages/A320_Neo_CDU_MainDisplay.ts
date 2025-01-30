@@ -1320,7 +1320,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
    * Display a type I message on the active subsystem's scratch pad
    */
   public setScratchpadMessage(message: McduMessage) {
-    if (typeof message === 'TypeIIMessage') {
+    if (message instanceof TypeIIMessage) {
       console.error('Type II message passed to setScratchpadMessage!', message);
       return;
     }
