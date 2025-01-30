@@ -6,9 +6,10 @@ import { WaypointEntryUtils } from '@fmgc/index';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 
 export class CDUFixInfoPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, page = 0) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, page: 1 | 2 | 3 | 4 = 1) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FixInfoPage;
     mcdu.returnPageCallback = () => {
@@ -33,11 +34,7 @@ export class CDUFixInfoPage {
       if (WaypointEntryUtils.isPlaceFormat(value)) {
         WaypointEntryUtils.parsePlace(mcdu, value)
           .then((runway) => {
-            mcdu.flightPlanService.setFixInfoEntry(page, {
-              fix: runway,
-              radii: [],
-              radials: [],
-            });
+            mcdu.flightPlanService.setFixInfoEntry(page, new FixInfoEntry(runway));
 
             CDUFixInfoPage.ShowPage(mcdu, page);
           })
@@ -49,7 +46,7 @@ export class CDUFixInfoPage {
 
               scratchpadCallback();
             } else {
-              console.error(err);
+              console.error(message);
             }
           });
       } else {
@@ -60,8 +57,8 @@ export class CDUFixInfoPage {
     };
 
     const template = [
-      [`\xa0\xa0\xa0\xa0\xa0FIX INFO\xa0\xa0{small}${page + 1}/4{end}`],
-      [`REF FIX ${page + 1}`],
+      [`\xa0\xa0\xa0\xa0\xa0FIX INFO\xa0\xa0{small}${page}/4{end}`],
+      [`REF FIX ${page}`],
       ['{amber}_______{end}'],
       [],
       [],
@@ -95,6 +92,7 @@ export class CDUFixInfoPage {
             if (radial !== undefined) {
               mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
                 fixInfo.radials.splice(i);
+                return fixInfo;
               });
 
               CDUFixInfoPage.ShowPage(mcdu, page);
@@ -112,6 +110,7 @@ export class CDUFixInfoPage {
                   magneticBearing: degrees,
                   trueBearing: A32NX_Util.magneticToTrue(degrees, A32NX_Util.getRadialMagVar(fixInfo.fix)),
                 };
+                return fixInfo;
               });
 
               CDUFixInfoPage.ShowPage(mcdu, page);
@@ -146,6 +145,7 @@ export class CDUFixInfoPage {
           if (fixInfo.radii[0] !== undefined) {
             mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
               fixInfo.radii.length = 0;
+              return fixInfo;
             });
 
             CDUFixInfoPage.ShowPage(mcdu, page);
@@ -162,6 +162,7 @@ export class CDUFixInfoPage {
               } else {
                 fixInfo.radii[0] = { radius };
               }
+              return fixInfo;
             });
 
             CDUFixInfoPage.ShowPage(mcdu, page);
@@ -187,17 +188,17 @@ export class CDUFixInfoPage {
     mcdu.setArrows(false, false, true, true);
     mcdu.setTemplate(template);
     mcdu.onPrevPage = () => {
-      if (page > 0) {
-        CDUFixInfoPage.ShowPage(mcdu, page - 1);
+      if (page >= 2) {
+        CDUFixInfoPage.ShowPage(mcdu, (page - 1) as 1 | 2 | 3 | 4);
       } else {
-        CDUFixInfoPage.ShowPage(mcdu, 3);
+        CDUFixInfoPage.ShowPage(mcdu, 4);
       }
     };
     mcdu.onNextPage = () => {
-      if (page < 3) {
-        CDUFixInfoPage.ShowPage(mcdu, page + 1);
+      if (page <= 3) {
+        CDUFixInfoPage.ShowPage(mcdu, (page + 1) as 1 | 2 | 3 | 4);
       } else {
-        CDUFixInfoPage.ShowPage(mcdu, 0);
+        CDUFixInfoPage.ShowPage(mcdu, 1);
       }
     };
   }
