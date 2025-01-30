@@ -7,6 +7,7 @@ import {
   Arinc429Word,
   DatabaseIdent,
   EfisSide,
+  Fix,
   IlsNavaid,
   MathUtils,
   NdbNavaid,
@@ -5348,7 +5349,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
   /**
    * Modifies the active flight plan to go direct to a specific waypoint, not necessarily in the flight plan
    */
-  public async directToWaypoint(waypoint: Waypoint) {
+  public async directToWaypoint(waypoint: Fix) {
     // FIXME fm pos
     const adirLat = ADIRS.getLatitude();
     const adirLong = ADIRS.getLongitude();

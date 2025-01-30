@@ -6,11 +6,12 @@ import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Fix } from '@flybywiresim/fbw-sdk';
 
 // TODO this whole thing is thales layout...
 
 export class CDUDirectToPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, directWaypoint?, wptsListIndex = 0) {
+  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, directWaypoint?: Fix, wptsListIndex = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DirectToPage;
     mcdu.returnPageCallback = () => {
