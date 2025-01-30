@@ -76,7 +76,7 @@ export class CDUHoldAtPage {
             NavigationDatabaseService.activeDatabase.getHolds(fix.ident, targetPlan.destinationAirport.ident),
           );
         }
-        if (fix && fix.area === WaypointArea.Terminal && fix.airportIdent && fix.airportIdent.length > 0) {
+        if (fix && fix.area === WaypointArea.Terminal && 'airportIdent' in fix && fix.airportIdent.length > 0) {
           promises.push(NavigationDatabaseService.activeDatabase.getHolds(fix.ident, fix.airportIdent));
         }
         Promise.all(promises)
@@ -177,7 +177,7 @@ export class CDUHoldAtPage {
       });
   }
 
-  static DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan, inAlternate) {
+  static DrawPage(mcdu: A320_Neo_CDU_MainDisplay, waypointIndexFP, originalFpIndex, forPlan, inAlternate) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.HoldAtPage;
 
