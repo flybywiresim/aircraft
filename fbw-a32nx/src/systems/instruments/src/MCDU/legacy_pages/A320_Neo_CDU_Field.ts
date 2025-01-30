@@ -2,12 +2,17 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { Column } from './A320_Neo_CDU_Format';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 
+export type SelectedCallback = (
+  /** The parsed and formatted value. */
+  value: string | number | null,
+) => void;
+
 export class CDU_Field {
-  protected currentValue = null;
+  protected currentValue: string | number | null = null;
 
   constructor(
     protected mcdu,
-    protected selectedCallback,
+    protected selectedCallback: SelectedCallback,
   ) {}
   setOptions(options) {
     for (const option in options) {
@@ -65,12 +70,11 @@ export class CDU_Field {
 export class CDU_InopField extends CDU_Field {
   private value;
 
+  // mcdu is A320_Neo_CDU_MainDisplay, but typing it would be a circular ref
   /**
-   * @param {A320_Neo_CDU_MainDisplay} mcdu
-   * @param {string} value
-   * @param {boolean} [inopColor=true] whether to append "[color]inop" to the value
+   * @param inopColor whether to append "[color]inop" to the value
    */
-  constructor(mcdu, value, inopColor = true) {
+  constructor(mcdu, value: string, inopColor: boolean = true) {
     super(mcdu, () => {});
     this.value = inopColor ? `${value}[color]inop` : value;
   }
@@ -117,11 +121,11 @@ export class CDU_SingleValueField extends CDU_Field {
   protected isValid?: (value: string | number | null) => boolean;
 
   constructor(
-    mcdu,
+    mcdu, // A320_Neo_CDU_MainDisplay, but typing it would be a circular ref
     protected type: string | number,
     protected currentValue: string | number | null,
     options: CDU_SingleValueFieldOptions,
-    selectedCallback,
+    selectedCallback: SelectedCallback,
   ) {
     super(mcdu, selectedCallback);
     this.setOptions(options);
@@ -136,7 +140,7 @@ export class CDU_SingleValueField extends CDU_Field {
       return this.emptyValue;
     }
     if (this.type === 'number' && isFinite(this.maxDisplayedDecimalPlaces)) {
-      value = value.toFixed(this.maxDisplayedDecimalPlaces);
+      value = Number(value).toFixed(this.maxDisplayedDecimalPlaces);
     }
     return `${this.prefix}${value}${this.suffix}`;
   }
@@ -159,7 +163,7 @@ export class CDU_SingleValueField extends CDU_Field {
           return false;
         }
         break;
-      case 'int':
+      case 'int': {
         // Make sure value is an integer and is within the min/max
         const valueAsInt = Number.parseInt(value, 10);
         if (!isFinite(valueAsInt) || value.includes('.')) {
@@ -172,7 +176,8 @@ export class CDU_SingleValueField extends CDU_Field {
         }
         value = valueAsInt;
         break;
-      case 'number':
+      }
+      case 'number': {
         // Make sure value is a valid number and is within the min/max
         const valueAsFloat = Number.parseFloat(value);
         if (!isFinite(valueAsFloat)) {
@@ -185,6 +190,7 @@ export class CDU_SingleValueField extends CDU_Field {
         }
         value = valueAsFloat;
         break;
+      }
     }
     // Update the value
     this.currentValue = value;
