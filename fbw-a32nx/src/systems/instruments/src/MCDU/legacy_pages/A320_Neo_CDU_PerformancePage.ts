@@ -925,7 +925,7 @@ export class CDUPerformancePage {
     };
     let magWindHeadingCell = '[\xa0]';
     if (isFinite(mcdu.perfApprWindHeading)) {
-      magWindHeadingCell = ('' + mcdu.perfApprWindHeading.toFixed(0)).padStart(3, 0);
+      magWindHeadingCell = ('' + mcdu.perfApprWindHeading.toFixed(0)).padStart(3, '0');
     }
     let magWindSpeedCell = '[\xa0]';
     if (isFinite(mcdu.perfApprWindSpeed)) {
