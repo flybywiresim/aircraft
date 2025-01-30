@@ -54,7 +54,7 @@ export class ScratchpadDataLink {
   constructor(
     private mcdu: A320_Neo_CDU_MainDisplay,
     private displayUnit: ScratchpadDisplay,
-    private subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC',
+    private subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC' | 'MCDU',
     private keypadEnabled = true,
   ) {}
 
@@ -169,7 +169,9 @@ export class ScratchpadDataLink {
       this.displayUnit.write(value, color);
     }
     // flag the annunciator if needed
-    this.mcdu.setRequest(this.subsystem);
+    if (this.subsystem !== 'MCDU') {
+      this.mcdu.setRequest(this.subsystem);
+    }
   }
 
   private _updateStatus(scratchpadText: string) {

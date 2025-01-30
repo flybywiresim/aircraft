@@ -17,6 +17,15 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 
+type LskCallback = (
+  /** The scratchpad content when the LSK was pressed. */
+  value: string,
+  /** Pushes the value back into the scratchpad. */
+  scratchpadCallback: () => void,
+) => void;
+
+type LskDelayFunction = () => number;
+
 export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   private static readonly MIN_BRIGHTNESS = 0.5;
   private static readonly MAX_BRIGHTNESS = 8;
@@ -39,8 +48,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   private _lines = [];
   private scratchpadDisplay = null;
   private _scratchpad = null;
-  /** @type {Record<'MCDU' | 'FMGC' | 'ATSU' | 'AIDS' | 'CFDS', ScratchpadDataLink>} */
-  private scratchpads = {};
+  private scratchpads?: Record<'MCDU' | 'FMGC' | 'ATSU' | 'AIDS' | 'CFDS', ScratchpadDataLink>;
   private _arrows = [false, false, false, false];
 
   private annunciators = {
@@ -77,10 +85,10 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   private _lastAtsuMessageCount = 0;
   private leftBrightness = 0;
   private rightBrightness = 0;
-  public onLeftInput = [];
-  public onRightInput = [];
-  public leftInputDelay = [];
-  public rightInputDelay = [];
+  public onLeftInput: LskCallback[] = [];
+  public onRightInput: LskCallback[] = [];
+  public leftInputDelay: LskDelayFunction[] = [];
+  public rightInputDelay: LskDelayFunction[] = [];
   private _activeSystem: 'FMGC' | 'ATSU' | 'AIDS' | 'CFDS' = 'FMGC';
   private inFocus = false;
   private lastInput = 0;
@@ -359,11 +367,13 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     this.generateHTMLLayout(this.getChildById('Mainframe') || this);
 
     this.scratchpadDisplay = new ScratchpadDisplay(this, this.getChildById('in-out'));
-    this.scratchpads['MCDU'] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'MCDU', false);
-    this.scratchpads['FMGC'] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'FMGC');
-    this.scratchpads['ATSU'] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'ATSU');
-    this.scratchpads['AIDS'] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'AIDS');
-    this.scratchpads['CFDS'] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'CFDS');
+    this.scratchpads = {
+      MCDU: new ScratchpadDataLink(this, this.scratchpadDisplay, 'MCDU', false),
+      FMGC: new ScratchpadDataLink(this, this.scratchpadDisplay, 'FMGC'),
+      ATSU: new ScratchpadDataLink(this, this.scratchpadDisplay, 'ATSU'),
+      AIDS: new ScratchpadDataLink(this, this.scratchpadDisplay, 'AIDS'),
+      CFDS: new ScratchpadDataLink(this, this.scratchpadDisplay, 'CFDS'),
+    };
     this.activateMcduScratchpad();
 
     try {
@@ -749,7 +759,6 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
       if (!color) {
         color = 'white';
       }
-      const e = this._labelElements[row][col];
       label = label.split('[color]')[0];
       label = `{${color}}${label}{end}`;
     }
@@ -794,7 +803,6 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
       if (!color) {
         color = 'white';
       }
-      const e = this._lineElements[row][col];
       content = content.split('[color]')[0];
       content = `{${color}}${content}{end}`;
       if (content.indexOf('[s-text]') !== -1) {
@@ -1380,6 +1388,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         break;
       case AtsuStatusCodes.NotInDatabase:
         this.atsuScratchpad.setMessage(NXSystemMessages.notInDatabase);
+        break;
       default:
         break;
     }
@@ -1551,7 +1560,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     SimVar.SetSimVarValue('L:A32NX_PRINT_LINES', 'number', lines.length);
     SimVar.SetSimVarValue('L:A32NX_PAGE_ID', 'number', SimVar.GetSimVarValue('L:A32NX_PAGE_ID', 'number') + 1);
-    SimVar.SetSimVarValue('L:A32NX_PRINTER_PRINTING', 'bool', 0).then((v) => {
+    SimVar.SetSimVarValue('L:A32NX_PRINTER_PRINTING', 'bool', 0).then(() => {
       this.fmgcMesssagesListener.triggerToAllSubscribers('A32NX_PRINT', formattedValues);
       this.sendToMcduServerClient(`print:${JSON.stringify({ lines: websocketLines })}`);
       setTimeout(() => {
