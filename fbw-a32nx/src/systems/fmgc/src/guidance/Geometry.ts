@@ -90,7 +90,7 @@ export class Geometry {
 
     const transmitHoldEntry = !this.temp;
 
-    const ret = [];
+    const ret: PathVector[] = [];
 
     for (const [index, leg] of this.legs.entries()) {
       if (

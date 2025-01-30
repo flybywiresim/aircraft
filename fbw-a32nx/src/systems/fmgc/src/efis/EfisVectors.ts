@@ -6,7 +6,7 @@
 import { EfisNdMode, EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
+import { PathVector, pathVectorLength, PathVectorType, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -212,8 +212,21 @@ export class EfisVectors {
     // ACTIVE
 
     const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
+    const predictions = this.guidanceController.vnavDriver?.mcduProfile?.waypointPredictions;
+    let lastAltitude = 0;
 
-    const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
+    const vectors = geometry
+      .getAllPathVectors(plan.activeLegIndex)
+      .map((path, index) => {
+        // Add vertical Information
+        if (path.type !== PathVectorType.DebugPoint && predictions) {
+          path.startAltitude = lastAltitude;
+          path.endAltitude = predictions.get(index)?.altitude;
+          lastAltitude = predictions.get(index)?.altitude;
+        }
+        return path;
+      })
+      .filter((it) => EfisVectors.isVectorReasonable(it));
 
     // ACTIVE missed
 

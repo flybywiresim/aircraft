@@ -27,12 +27,16 @@ export interface ArcPathVector {
   endPoint: Coordinates;
   centrePoint: Coordinates;
   sweepAngle: Degrees;
+  startAltitude?: number;
+  endAltitude?: number;
 }
 
 export interface LinePathVector {
   type: PathVectorType.Line;
   startPoint: Coordinates;
   endPoint: Coordinates;
+  startAltitude?: number;
+  endAltitude?: number;
 }
 
 export interface DebugPointPathVector {

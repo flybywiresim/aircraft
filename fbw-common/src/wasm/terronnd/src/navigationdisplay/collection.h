@@ -59,8 +59,8 @@ class Collection {
                                          EgpwcHeading,
                                          EgpwcVerticalSpeed,
                                          EgpwcGearIsDown>>
-                                                                                       _aircraftStatus;
-  std::shared_ptr<simconnect::LVarObject<EgpwcDestinationLat, EgpwcDestinationLong, >> _verticalPath;
+                                                                                     _aircraftStatus;
+  std::shared_ptr<simconnect::LVarObject<EgpwcDestinationLat, EgpwcDestinationLong>> _verticalPath;
   std::shared_ptr<simconnect::LVarObject<EgpwcNdLeftRange,
                                          EfisNdLeftMode,
                                          EgpwcTerrOnNdLeftActive,

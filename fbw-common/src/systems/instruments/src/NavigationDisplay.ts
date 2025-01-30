@@ -1,6 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { Coordinates } from 'msfs-geo';
 
 export type EfisSide = 'L' | 'R';
@@ -74,10 +75,12 @@ export interface NdSymbol {
   databaseId: string;
   ident: string;
   location: Coordinates;
+  predictedAltitude?: number;
   direction?: number; // true
   length?: number; // nautical miles
   type: NdSymbolTypeFlags;
   constraints?: string[];
+  altConstraint?: AltitudeConstraint;
   radials?: number[];
   radii?: number[];
   distanceFromAirplane?: number;
