@@ -143,6 +143,7 @@
 1. [A380X/FMS] Vapp wind correction calculation fix - @Waveif (waveif)
 1. [A380X/MFD] Fixed FLT NBR not displaying as a mandatory input field - @jet2code (john.xyz)
 1. [A380X/PFD] Add FCU ALT ABOVE/BELOW A/C FMA messages - @Pruznak (Pruznak)
+1. [A380X/MFD] Updated disabled input field styling - @jet2code (john)
 
 ## 0.12.0
 
