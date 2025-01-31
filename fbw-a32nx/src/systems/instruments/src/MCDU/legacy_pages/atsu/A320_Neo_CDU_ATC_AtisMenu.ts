@@ -95,7 +95,8 @@ export class CDUAtcAtisMenu {
     }
   }
 
-  static InterpretRSK(mcdu: A320_Neo_CDU_MainDisplay, airports, idx, updateAtisPrintInProgress) {
+  // FIXME what is an RSK? Is this meant to be right-side LSK?
+  static InterpretRSK(mcdu: A320_Neo_CDU_MainDisplay, airports, idx, updateAtisPrintInProgress?: boolean) {
     if (airports[idx].icao === '') {
       return;
     }
