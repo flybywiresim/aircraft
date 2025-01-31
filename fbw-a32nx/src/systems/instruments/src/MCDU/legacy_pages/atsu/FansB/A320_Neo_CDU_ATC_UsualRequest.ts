@@ -267,7 +267,7 @@ export class CDUAtcUsualRequestFansB {
       if (CDUAtcUsualRequestFansB.CanSendData(data)) {
         const requests = CDUAtcUsualRequestFansB.CreateRequests(mcdu, data);
         if (requests.length !== 0) {
-          CDUAtcTextFansB.ShowPage1(mcdu, requests);
+          CDUAtcTextFansB.ShowPage(mcdu, requests);
         }
       }
     };
