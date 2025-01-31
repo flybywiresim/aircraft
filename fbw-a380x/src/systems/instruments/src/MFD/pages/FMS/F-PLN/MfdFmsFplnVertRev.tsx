@@ -34,6 +34,8 @@ import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconBut
 import { FmgcData } from 'instruments/src/MFD/FMC/fmgc';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { getEtaFromUtcOrPresent } from 'instruments/src/MFD/shared/utils';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {}
 
@@ -126,6 +128,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   // STEP ALTs page
   private readonly crzFl = Subject.create<number | null>(null);
   private readonly crzFlFormatted = FmgcData.fmcFormatValue(this.crzFl);
+
+  private readonly stepAltsTimeHeader = this.activeFlightPhase.map((fp) =>
+    fp === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
+  );
 
   /** If set to true, a re-layouting of the lines is forced, e.g. if an entry in the middle was deleted. */
   private stepAltsLineWasDeleted = false;
@@ -363,8 +369,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(
               cruiseStepLegIndices[i],
             );
-          const etaDate = new Date(
-            (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + (pred?.secondsFromPresent ?? 0)) * 1000,
+          const wptEta = getEtaFromUtcOrPresent(
+            pred?.secondsFromPresent,
+            this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
           );
           const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
 
@@ -374,9 +381,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
           if (pred) {
             this.stepAltsDistances[line].set(pred.distanceFromAircraft - cruiseSteps[i].distanceBeforeTermination);
-            this.stepAltsTimes[line].set(
-              `${etaDate.getUTCHours().toString().padStart(2, '0')}:${etaDate.getUTCMinutes().toString().padStart(2, '0')}`,
-            );
+            this.stepAltsTimes[line].set(wptEta);
           } else {
             this.stepAltsDistances[line].set(null);
             this.stepAltsTimes[line].set('--:--');
@@ -902,7 +907,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                           class="mfd-label"
                           style="align-self: flex-end; padding-left: 30px; padding-bottom: 10px; border-bottom: 1px solid #777777;"
                         >
-                          <span>TIME</span>
+                          <span>{this.stepAltsTimeHeader}</span>
                         </div>
 
                         {[0, 1, 2, 3, 4].map((li) => (
