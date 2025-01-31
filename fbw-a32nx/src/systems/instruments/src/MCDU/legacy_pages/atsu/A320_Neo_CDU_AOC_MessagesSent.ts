@@ -1,11 +1,11 @@
 import { translateAtsuMessageType } from '../../legacy/A32NX_Core/A32NX_ATSU';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { CDUAocMessageSentDetail } from './A320_Neo_CDU_AOC_MessageSentDetail';
 
 export class CDUAocMessagesSent {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages = null, page = 0) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, messages = null, page = 0) {
     if (!messages) {
       messages = mcdu.atsu.aocOutputMessages();
     }
@@ -15,7 +15,7 @@ export class CDUAocMessagesSent {
     page = Math.max(0, Math.min(Math.floor((messages.length - 1) / 5), page));
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.AOCSentMsgs) {
         CDUAocMessagesSent.ShowPage(mcdu, null, page);
       }

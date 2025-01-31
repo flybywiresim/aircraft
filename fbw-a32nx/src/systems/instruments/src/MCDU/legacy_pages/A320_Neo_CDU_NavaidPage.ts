@@ -1,15 +1,15 @@
 import { IlsNavaid, NdbNavaid, VhfNavaid, LsCategory, VhfNavaidType, isIlsNavaid } from '@flybywiresim/fbw-sdk';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUNavaidPage {
   /**
-   * @param {A320_Neo_CDU_MainDisplay} mcdu MCDU
+   * @param mcdu MCDU
    * @param facility MSFS facility to show
-   * @param {any} returnPage Callback for the RETURN LSK... only for use by SELECTED NAVAIDS
+   * @param returnPage Callback for the RETURN LSK... only for use by SELECTED NAVAIDS
    */
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, facility?: VhfNavaid | NdbNavaid | IlsNavaid, returnPage?) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, facility?: VhfNavaid | NdbNavaid | IlsNavaid, returnPage?) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.NavaidPage;
     mcdu.returnPageCallback = () => {
@@ -62,6 +62,7 @@ export class CDUNavaidPage {
     mcdu.setTemplate(template);
 
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
+      // FIXME this does not get ILS navaids
       mcdu.getOrSelectNavaidsByIdent(value, (res) => {
         if (res) {
           CDUNavaidPage.ShowPage(mcdu, res, returnPage);
@@ -73,11 +74,7 @@ export class CDUNavaidPage {
     };
   }
 
-  /**
-   *
-   * @param {import('msfs-navdata').IlsNavaid} facility
-   */
-  static renderIls(facility, template) {
+  static renderIls(facility: IlsNavaid, template: string[][]) {
     let cat = 0;
     switch (facility.category) {
       case LsCategory.Category1:
@@ -93,7 +90,9 @@ export class CDUNavaidPage {
 
     // 1R
     template[1][1] = 'RWY IDENT';
-    template[2][1] = `{green}${facility.runwayIdent}{end}`;
+    // FIXME
+    //template[2][1] = `{green}${facility.runwayIdent}{end}`;
+    template[2][1] = ``;
 
     // 2L
     template[3][0] = 'CLASS';

@@ -9,7 +9,7 @@ import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcVertRequestFansA {
   static CreateDataBlock(): any {
@@ -192,7 +192,7 @@ export class CDUAtcVertRequestFansA {
     return retval;
   }
 
-  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
+  static ShowPage1(mcdu: LegacyAtsuPageInterface, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let climbTo = '[   ][color]cyan';
@@ -444,7 +444,7 @@ export class CDUAtcVertRequestFansA {
     };
   }
 
-  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
+  static ShowPage2(mcdu: LegacyAtsuPageInterface, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let climbStart = '[   ]/[   ][color]cyan';

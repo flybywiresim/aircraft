@@ -1,8 +1,8 @@
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 import { CDUAtsuMenu } from './A320_Neo_CDU_ATSU_Menu';
 
 export class CDUCommMenu {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface) {
     mcdu.clearDisplay();
     mcdu.setTemplate([
       ['COMM MENU'],

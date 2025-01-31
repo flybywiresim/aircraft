@@ -6,7 +6,7 @@ import { CDU_SingleValueField } from '../../legacy/A320_Neo_CDU_Field';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcClearanceReq } from './A320_Neo_CDU_ATC_ClearanceReq';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcDepartReq {
   static CreateDataBlock() {
@@ -42,7 +42,7 @@ export class CDUAtcDepartReq {
     return retval;
   }
 
-  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, store = CDUAtcDepartReq.CreateDataBlock()) {
+  static ShowPage1(mcdu: LegacyAtsuPageInterface, store = CDUAtcDepartReq.CreateDataBlock()) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCDepartReq;
 
@@ -52,6 +52,7 @@ export class CDUAtcDepartReq {
       }
     }
 
+    // FIXME YIKES! ATSU cannot access this.
     const activePlan = mcdu.flightPlanService.active;
 
     if (store.firstCall && store.from === '') {
@@ -236,7 +237,7 @@ export class CDUAtcDepartReq {
     };
   }
 
-  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, store) {
+  static ShowPage2(mcdu: LegacyAtsuPageInterface, store) {
     mcdu.clearDisplay();
 
     const freetextLines = [];

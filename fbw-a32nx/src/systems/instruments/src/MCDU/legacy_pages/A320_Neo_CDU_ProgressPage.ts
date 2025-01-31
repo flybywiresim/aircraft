@@ -4,10 +4,10 @@
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUProgressPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ProgressPage;
     mcdu.returnPageCallback = () => {
@@ -201,7 +201,7 @@ export class CDUProgressPage {
     ]);
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.ProgressPage) {
         CDUProgressPage.ShowPage(mcdu);
       }

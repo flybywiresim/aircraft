@@ -1,9 +1,9 @@
 import { CDUIRSMonitor } from './A320_Neo_CDU_IRSMonitor';
 import { CDUIRSStatus } from './A320_Neo_CDU_IRSStatus';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUIRSStatusFrozen {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, index, wind_dir) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, index, wind_dir) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.IRSStatusFrozen;
     let currPos = new LatLong(

@@ -2,7 +2,7 @@ import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcMessage } from './A320_Neo_CDU_ATC_Message';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMessagesRecord {
   static TranslateCpdlcResponse(response) {
@@ -30,7 +30,7 @@ export class CDUAtcMessagesRecord {
     return '';
   }
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages = null, offset = 0, confirmErase = false) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, messages = null, offset = 0, confirmErase = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCMessageRecord;
 
@@ -39,7 +39,7 @@ export class CDUAtcMessagesRecord {
     }
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.ATCMessageRecord) {
         CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, confirmErase);
       }

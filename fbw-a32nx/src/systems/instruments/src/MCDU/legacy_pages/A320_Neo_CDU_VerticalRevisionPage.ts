@@ -10,8 +10,8 @@ import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -23,7 +23,7 @@ export class CDUVerticalRevisionPage {
    * @param confirmCode
    */
   static ShowPage(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyFmsPageInterface,
     waypoint,
     wpIndex,
     verticalWaypoint,

@@ -6,8 +6,8 @@ import { FlightPlanIndex, NavigationDatabaseService } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { WaypointArea } from '@flybywiresim/fbw-sdk';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 const TurnDirection = Object.freeze({
   Unknown: 'U',
@@ -23,7 +23,7 @@ const HoldType = Object.freeze({
 });
 
 export class CDUHoldAtPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, waypointIndexFP, forPlan, inAlternate) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, waypointIndexFP, forPlan, inAlternate) {
     const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
     const waypoint = targetPlan.legElementAt(waypointIndexFP);
 
@@ -169,7 +169,15 @@ export class CDUHoldAtPage {
     }
   }
 
-  static addOrEditManualHold(mcdu, atIndex, desiredHold, modifiedHold, defaultHold, planIndex, alternate) {
+  static addOrEditManualHold(
+    mcdu: LegacyFmsPageInterface,
+    atIndex,
+    desiredHold,
+    modifiedHold,
+    defaultHold,
+    planIndex,
+    alternate,
+  ) {
     mcdu.flightPlanService
       .addOrEditManualHold(atIndex, desiredHold, modifiedHold, defaultHold, planIndex, alternate)
       .then((holdIndex) => {
@@ -177,7 +185,7 @@ export class CDUHoldAtPage {
       });
   }
 
-  static DrawPage(mcdu: A320_Neo_CDU_MainDisplay, waypointIndexFP, originalFpIndex, forPlan, inAlternate) {
+  static DrawPage(mcdu: LegacyFmsPageInterface, waypointIndexFP, originalFpIndex, forPlan, inAlternate) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.HoldAtPage;
 
@@ -353,7 +361,7 @@ export class CDUHoldAtPage {
   }
 
   static async modifyHold(
-    mcdu,
+    mcdu: LegacyFmsPageInterface,
     waypointIndexFP,
     /** @type {FlightPlanLeg} */ waypointData,
     param,

@@ -3,10 +3,10 @@
 
 import { AtisType, AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcAtisAutoUpdate {
-  static ToggleAutoUpdate(mcdu: A320_Neo_CDU_MainDisplay, icao, reloadPage) {
+  static ToggleAutoUpdate(mcdu: LegacyAtsuPageInterface, icao, reloadPage) {
     if (mcdu.atsu.atisAutoUpdateActive(icao)) {
       mcdu.atsu.deactivateAtisAutoUpdate(icao).then((status) => {
         if (status !== AtsuStatusCodes.Ok) {
@@ -28,7 +28,7 @@ export class CDUAtcAtisAutoUpdate {
     }
   }
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, updateInProgress = false) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, updateInProgress = false) {
     mcdu.clearDisplay();
 
     const activeDestinationAirport = mcdu.flightPlanService.active.destinationAirport;

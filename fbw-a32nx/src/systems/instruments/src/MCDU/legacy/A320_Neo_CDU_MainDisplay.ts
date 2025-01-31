@@ -16,17 +16,13 @@ import { CDU_Field } from './A320_Neo_CDU_Field';
 import { AtsuStatusCodes } from '@datalink/common';
 import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
 import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
+import { LegacyFmsPageInterface, LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
+import { LegacyAtsuPageInterface } from './LegacyAtsuPageInterface';
 
-type LskCallback = (
-  /** The scratchpad content when the LSK was pressed. */
-  value: string,
-  /** Pushes the value back into the scratchpad. */
-  scratchpadCallback: () => void,
-) => void;
-
-type LskDelayFunction = () => number;
-
-export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
+export class A320_Neo_CDU_MainDisplay
+  extends FMCMainDisplay
+  implements LegacyFmsPageInterface, LegacyAtsuPageInterface
+{
   private static readonly MIN_BRIGHTNESS = 0.5;
   private static readonly MAX_BRIGHTNESS = 8;
 
@@ -104,10 +100,11 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Default: 2000,
     Slow: 3000,
   };
-  public returnPageCallback = null;
+  public returnPageCallback: typeof EmptyCallback.Void | null = null;
+
+  public SelfPtr: ReturnType<typeof setTimeout> | false = false;
 
   public page = {
-    SelfPtr: false as ReturnType<typeof setTimeout> | false,
     Current: 0,
     Clear: 0,
     AirportsMonitor: 1,
@@ -976,7 +973,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     this._scratchpad.resume();
   }
 
-  private get scratchpad() {
+  private get scratchpad(): ScratchpadDataLink {
     return this._scratchpad;
   }
 
@@ -1137,7 +1134,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
   /* END OF MCDU INTERFACE/LAYOUT */
   /* MCDU SCRATCHPAD */
 
-  public setScratchpadUserData(value) {
+  public setScratchpadUserData(value: string) {
     this.scratchpad.setUserData(value);
   }
 
@@ -1522,9 +1519,9 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
    * Tries to delete a pages timeout
    */
   private tryDeleteTimeout() {
-    if (this.page.SelfPtr) {
-      clearTimeout(this.page.SelfPtr);
-      this.page.SelfPtr = false;
+    if (this.SelfPtr) {
+      clearTimeout(this.SelfPtr);
+      this.SelfPtr = false;
     }
   }
 

@@ -7,16 +7,16 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUStepAltsPage {
   static Return() {}
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.pageUpdate = () => {};
 
     mcdu.page.Current = mcdu.page.StepAltsPage;
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.StepAltsPage) {
         CDUStepAltsPage.ShowPage(mcdu);
       }

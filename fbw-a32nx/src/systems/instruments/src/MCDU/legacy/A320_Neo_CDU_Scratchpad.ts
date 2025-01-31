@@ -2,13 +2,12 @@
 
 import { McduMessage } from '../messages/NXSystemMessages';
 import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 
 /** The MCDU scratchpad display. This belongs to the MCDU itself. */
 export class ScratchpadDisplay {
   public readonly guid = `SP-${Utils.generateGUID()}`;
   constructor(
-    private mcdu: A320_Neo_CDU_MainDisplay,
+    private mcdu: { sendUpdate: () => void },
     private scratchpadElement: HTMLElement,
   ) {
     this.mcdu = mcdu;
@@ -52,7 +51,11 @@ export class ScratchpadDataLink {
   private _isPaused = true;
 
   constructor(
-    private mcdu: A320_Neo_CDU_MainDisplay,
+    private mcdu: {
+      removeMessageFromQueue: (m: string) => void;
+      setRequest: (subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC') => void;
+      updateMessageQueue: () => void;
+    },
     private displayUnit: ScratchpadDisplay,
     private subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC' | 'MCDU',
     private keypadEnabled = true,

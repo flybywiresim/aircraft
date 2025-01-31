@@ -5,11 +5,11 @@ import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { WaypointEntryUtils } from '@fmgc/index';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUFixInfoPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, page: 1 | 2 | 3 | 4 = 1) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, page: 1 | 2 | 3 | 4 = 1) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FixInfoPage;
     mcdu.returnPageCallback = () => {

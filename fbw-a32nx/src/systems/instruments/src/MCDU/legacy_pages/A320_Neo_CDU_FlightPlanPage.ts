@@ -13,7 +13,7 @@ import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { AltitudeDescriptor, NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 const Markers = {
@@ -38,7 +38,7 @@ const Time = Object.freeze({
 });
 
 export class CDUFlightPlanPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0, forPlan = 0) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, offset = 0, forPlan = 0) {
     // INIT
     function addLskAt(index, delay, callback) {
       mcdu.leftInputDelay[index] = typeof delay === 'function' ? delay : () => delay;
@@ -60,7 +60,7 @@ export class CDUFlightPlanPage {
     mcdu.activeSystem = 'FMGC';
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.FlightPlanPage) {
         CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
       }
@@ -1064,7 +1064,7 @@ export class CDUFlightPlanPage {
   }
 
   static async clearElement(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyFmsPageInterface,
     fpIndex: number,
     offset: number,
     forPlan: number,
@@ -1106,7 +1106,7 @@ export class CDUFlightPlanPage {
   }
 
   static ensureCanClearElement(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyFmsPageInterface,
     fpIndex: number,
     forPlan: number,
     forAlternate: boolean,
@@ -1321,7 +1321,7 @@ function legIsAirport(leg: FlightPlanLeg): boolean {
  * @param useTransAlt Whether to use transition altitude, otherwise transition level is used.
  * @returns The formatted altitude/level.
  */
-function formatAltitudeOrLevel(mcdu: A320_Neo_CDU_MainDisplay, alt: number, useTransAlt: boolean): string {
+function formatAltitudeOrLevel(mcdu: LegacyFmsPageInterface, alt: number, useTransAlt: boolean): string {
   const activePlan = mcdu.flightPlanService.active;
 
   let isFl = false;
@@ -1374,7 +1374,7 @@ function formatAlt(alt: number): string {
 }
 
 function formatAltConstraint(
-  mcdu: A320_Neo_CDU_MainDisplay,
+  mcdu: LegacyFmsPageInterface,
   constraint: { altitudeDescriptor: AltitudeDescriptor; altitude1: number; altitude2: number },
   useTransAlt: boolean,
 ) {

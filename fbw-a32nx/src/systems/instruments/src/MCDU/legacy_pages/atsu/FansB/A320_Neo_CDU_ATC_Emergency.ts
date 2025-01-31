@@ -1,8 +1,8 @@
-import { A320_Neo_CDU_MainDisplay } from '../../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 
 export class CDUAtcEmergencyFansB {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCEmergency;
 

@@ -2,17 +2,17 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcConnection } from './A320_Neo_CDU_ATC_Connection';
 import { CDUAtcConnectionNotification } from './A320_Neo_CDU_ATC_ConnectionNotification';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcConnectionStatus {
   static ShowPage(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyAtsuPageInterface,
     store = { disconnectInProgress: false, disconnectAvail: false, disconnectConfirm: false },
   ) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCConnectionStatus;
 
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.ATCConnectionStatus) {
         CDUAtcConnectionStatus.ShowPage(mcdu, store);
       }

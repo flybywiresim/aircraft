@@ -1,9 +1,9 @@
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { CDUPosFrozen } from './A320_Neo_CDU_PositionFrozen';
 import { CDUSelectedNavaids } from './A320_Neo_CDU_SelectedNavaids';
 
 export class CDUPositionMonitorPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PositionMonitorPage;
 
@@ -53,7 +53,7 @@ export class CDUPositionMonitorPage {
     };
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.PositionMonitorPage) {
         CDUPositionMonitorPage.ShowPage(mcdu);
       }

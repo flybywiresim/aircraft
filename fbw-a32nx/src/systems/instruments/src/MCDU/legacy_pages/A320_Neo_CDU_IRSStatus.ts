@@ -1,9 +1,9 @@
 import { CDUIRSMonitor } from './A320_Neo_CDU_IRSMonitor';
 import { CDUIRSStatusFrozen } from './A320_Neo_CDU_IRSStatusFrozen';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUIRSStatus {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, index, prev_wind_dir?) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, index, prev_wind_dir?) {
     let currPos = new LatLong(
       SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude'),
       SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude'),
@@ -38,6 +38,7 @@ export class CDUIRSStatus {
     } else if (delta < -180) {
       endAngle += 360;
     }
+    // FIXME filtering inside the page doesn't make a lot of sense!
     const smoothedAngle = Utils.SmoothSin(startAngle, endAngle, 0.25, mcdu._deltaTime / 1000);
     wind_dir = smoothedAngle % 360;
 
@@ -76,7 +77,7 @@ export class CDUIRSStatus {
     };
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.IRSStatus) {
         CDUIRSStatus.ShowPage(mcdu, index, wind_dir);
       }

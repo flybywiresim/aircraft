@@ -12,7 +12,7 @@ import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXFictionalMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDULateralRevisionPage {
   /**
@@ -23,7 +23,7 @@ export class CDULateralRevisionPage {
    * @constructor
    */
   static ShowPage(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyFmsPageInterface,
     leg,
     legIndexFP,
     forPlan = FlightPlanIndex.Active,

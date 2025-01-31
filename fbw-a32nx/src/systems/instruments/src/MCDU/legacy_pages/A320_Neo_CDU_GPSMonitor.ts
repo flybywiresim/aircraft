@@ -1,7 +1,7 @@
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUGPSMonitor {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, merit1?, merit2?, sat1?, sat2?) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, merit1?, merit2?, sat1?, sat2?) {
     let currPos = new LatLong(
       SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude'),
       SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude'),
@@ -57,7 +57,7 @@ export class CDUGPSMonitor {
 
     // ideally, this would update with the same frequency (is it known?) as the A320 GPS
     // updates fast as it shows seconds
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.GPSMonitor) {
         CDUGPSMonitor.ShowPage(mcdu, merit1, merit2, sat1, sat2);
       }

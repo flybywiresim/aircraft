@@ -1,5 +1,11 @@
 import * as math from 'mathjs';
 
+export enum FuelPlanningPhases {
+  PLANNING = 1,
+  IN_PROGRESS = 2,
+  COMPLETED = 3,
+}
+
 // DO NOT TOUCH THESE VALUES
 const airDistanceCoeff = math.bignumber(
   math.matrix([

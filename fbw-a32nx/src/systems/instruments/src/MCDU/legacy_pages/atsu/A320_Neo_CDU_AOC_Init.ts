@@ -2,7 +2,7 @@ import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { getSimBriefOfp } from '../../legacy/A32NX_Core/A32NX_ATSU';
 import { FMCMainDisplay } from '../../legacy/A32NX_FMCMainDisplay';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 /**
  * Value is rounded to 1000 and fixed to 1 decimal
@@ -13,7 +13,7 @@ function formatWeight(value) {
 }
 
 export class CDUAocInit {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AOCInit;
     mcdu.pageRedrawCallback = () => CDUAocInit.ShowPage(mcdu);
@@ -37,7 +37,7 @@ export class CDUAocInit {
     }
 
     // regular update due to showing time on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       updateView();
     }, mcdu.PageTimeout.Default);
 
@@ -105,7 +105,7 @@ export class CDUAocInit {
     };
   }
 
-  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage2(mcdu: LegacyAtsuPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AOCInit2;
     mcdu.activeSystem = 'ATSU';
@@ -185,7 +185,7 @@ export class CDUAocInit {
     }
 
     // regular update due to showing time on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       updateView();
     }, mcdu.PageTimeout.Default);
 

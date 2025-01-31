@@ -3,7 +3,7 @@ import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcSpeedRequest {
   static CreateDataBlock(): any {
@@ -21,7 +21,7 @@ export class CDUAtcSpeedRequest {
     return data.speed || data.whenSpeed;
   }
 
-  static CreateRequest(mcdu, type, values = []) {
+  static CreateRequest(mcdu: LegacyAtsuPageInterface, type, values = []) {
     const retval = new CpdlcMessage();
     retval.Station = mcdu.atsu.currentStation();
     retval.Content.push(CpdlcMessagesDownlink[type][1].deepCopy());
@@ -33,7 +33,7 @@ export class CDUAtcSpeedRequest {
     return retval;
   }
 
-  static CreateRequests(mcdu, data) {
+  static CreateRequests(mcdu: LegacyAtsuPageInterface, data) {
     const retval = [];
 
     if (data.speed) {
@@ -46,7 +46,7 @@ export class CDUAtcSpeedRequest {
     return retval;
   }
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcSpeedRequest.CreateDataBlock()) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, data = CDUAtcSpeedRequest.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let speed = '[ ][color]cyan';

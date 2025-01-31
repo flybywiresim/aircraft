@@ -13,10 +13,11 @@ import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FuelPlanningPhases } from '../legacy/A32NX_Core/A32NX_FuelPred';
 
 export class CDUInitPage {
-  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage1(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.InitPageA;
     mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu);
@@ -54,7 +55,7 @@ export class CDUInitPage {
         suffix: '[color]cyan',
         maxLength: 7,
       },
-      (value) => {
+      (value: string) => {
         mcdu.updateFlightNo(value, (result) => {
           if (result) {
             CDUInitPage.ShowPage1(mcdu);
@@ -330,12 +331,12 @@ export class CDUInitPage {
     }
   }
   // Does not refresh page so that other things can be performed first as necessary
-  static updateTowIfNeeded(mcdu: A320_Neo_CDU_MainDisplay) {
+  static updateTowIfNeeded(mcdu: LegacyFmsPageInterface) {
     if (isFinite(mcdu.taxiFuelWeight) && isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.blockFuel)) {
       mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
     }
   }
-  static fuelPredConditionsMet(mcdu: A320_Neo_CDU_MainDisplay) {
+  static fuelPredConditionsMet(mcdu: LegacyFmsPageInterface) {
     const fob = mcdu.getFOB();
 
     return (
@@ -347,7 +348,7 @@ export class CDUInitPage {
       mcdu._zeroFuelWeightZFWCGEntered
     );
   }
-  static trySetFuelPred(mcdu: A320_Neo_CDU_MainDisplay) {
+  static trySetFuelPred(mcdu: LegacyFmsPageInterface) {
     if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
       setTimeout(() => {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
@@ -360,7 +361,7 @@ export class CDUInitPage {
       }, mcdu.getDelayFuelPred());
     }
   }
-  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage2(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.InitPageB;
     mcdu.activeSystem = 'FMGC';
@@ -421,7 +422,7 @@ export class CDUInitPage {
     };
 
     const blockFuel = new Column(23, '__._', Column.amber, Column.right);
-    if (mcdu._blockFuelEntered || mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
+    if (mcdu._blockFuelEntered || mcdu._fuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS) {
       if (isFinite(mcdu.blockFuel)) {
         blockFuel.update(NXUnits.kgToUser(mcdu.blockFuel).toFixed(1), Column.cyan);
       }
@@ -458,7 +459,7 @@ export class CDUInitPage {
         }
       };
     }
-    if (mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
+    if (mcdu._fuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS) {
       fuelPlanTopTitle.update('BLOCK ', Column.green);
       fuelPlanBottomTitle.update('CONFIRM', Column.green);
       mcdu.onRightInput[2] = async () => {

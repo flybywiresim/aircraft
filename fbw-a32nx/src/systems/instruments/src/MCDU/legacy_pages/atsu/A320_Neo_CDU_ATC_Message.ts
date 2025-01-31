@@ -1,7 +1,7 @@
 import { AtsuMessageComStatus, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMessageMonitoring } from './A320_Neo_CDU_ATC_MessageMonitoring';
 import { CDUAtcMessagesRecord } from './A320_Neo_CDU_ATC_MessagesRecord';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMessage {
   static TranslateCpdlcResponse(message) {
@@ -44,7 +44,7 @@ export class CDUAtcMessage {
     return retval;
   }
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages, messageIndex, messageList, offset = 0) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, messages, messageIndex, messageList, offset = 0) {
     mcdu.clearDisplay();
     const message = messages[messageIndex];
     const lines = message.serialize(AtsuMessageSerializationFormat.FmsDisplay).split('\n');

@@ -8,9 +8,9 @@ import { WaypointEntryUtils } from '@fmgc/index';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 type NewWaypointDoneCallback = (waypoint: PilotWaypoint | undefined | null) => void;
 interface InProgressData {
@@ -34,7 +34,7 @@ export class CDUNewWaypoint {
    * @param _inProgressData private data used by the page
    */
   static ShowPage(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyFmsPageInterface,
     doneCallback: NewWaypointDoneCallback = undefined,
     _inProgressData: Partial<InProgressData> = {},
   ) {

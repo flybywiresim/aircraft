@@ -1,8 +1,8 @@
 import { NXFictionalMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAidsPageInterface } from '../../legacy/LegacyAidsPageInterface';
 
 export class CDU_AIDS_MainMenu {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyAidsPageInterface) {
     mcdu.clearDisplay();
     mcdu.activeSystem = 'AIDS';
     mcdu.setTemplate([

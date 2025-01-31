@@ -7,10 +7,10 @@ import { CDUAtcAtisAutoUpdate } from './A320_Neo_CDU_ATC_AtisAutoUpdate';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcReportAtis } from './A320_Neo_CDU_ATC_ReportAtis';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcAtisMenu {
-  static CreateDataBlock(mcdu: A320_Neo_CDU_MainDisplay) {
+  static CreateDataBlock(mcdu: LegacyAtsuPageInterface) {
     const airports = [
       { icao: '', type: AtisType.Departure, requested: false, autoupdate: false },
       { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false },
@@ -96,7 +96,7 @@ export class CDUAtcAtisMenu {
   }
 
   // FIXME what is an RSK? Is this meant to be right-side LSK?
-  static InterpretRSK(mcdu: A320_Neo_CDU_MainDisplay, airports, idx, updateAtisPrintInProgress?: boolean) {
+  static InterpretRSK(mcdu: LegacyAtsuPageInterface, airports, idx, updateAtisPrintInProgress?: boolean) {
     if (airports[idx].icao === '') {
       return;
     }
@@ -115,7 +115,7 @@ export class CDUAtcAtisMenu {
     }
   }
 
-  static CreateLineData(mcdu: A320_Neo_CDU_MainDisplay, airport) {
+  static CreateLineData(mcdu: LegacyAtsuPageInterface, airport) {
     if (airport.icao !== '') {
       const reports = mcdu.atsu.atisReports(airport.icao);
 
@@ -153,7 +153,7 @@ export class CDUAtcAtisMenu {
     }
   }
 
-  static RequestAtis(mcdu: A320_Neo_CDU_MainDisplay, airports, idx, updateAtisPrintInProgress = false) {
+  static RequestAtis(mcdu: LegacyAtsuPageInterface, airports, idx, updateAtisPrintInProgress = false) {
     if (airports[idx].icao !== '' && !airports[idx].requested) {
       airports[idx].requested = true;
 
@@ -173,7 +173,7 @@ export class CDUAtcAtisMenu {
   }
 
   static ShowPage(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyAtsuPageInterface,
     airports = CDUAtcAtisMenu.CreateDataBlock(mcdu),
     updateAtisPrintInProgress = false,
   ) {

@@ -3,7 +3,7 @@ import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcProcedureRequest {
   static CreateDataBlock() {
@@ -50,7 +50,7 @@ export class CDUAtcProcedureRequest {
     return retval;
   }
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcProcedureRequest.CreateDataBlock()) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, data = CDUAtcProcedureRequest.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let sid = '[   ][color]cyan';

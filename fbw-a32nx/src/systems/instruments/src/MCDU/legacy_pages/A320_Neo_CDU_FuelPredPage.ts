@@ -8,10 +8,10 @@ import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUFuelPredPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FuelPredPage;
     mcdu.pageRedrawCallback = () => CDUFuelPredPage.ShowPage(mcdu);
@@ -321,7 +321,7 @@ export class CDUFuelPredPage {
     };
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.FuelPredPage) {
         CDUFuelPredPage.ShowPage(mcdu);
       }

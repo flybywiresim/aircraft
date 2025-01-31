@@ -6,11 +6,12 @@ import { AtisType, AtsuStatusCodes } from '@datalink/common';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
-import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+
+// FIXME cannot access the flight phase manager!
 
 export class CDUAocRequestsAtis {
-  static CreateDataBlock(mcdu: A320_Neo_CDU_MainDisplay): any {
+  static CreateDataBlock(mcdu: LegacyAtsuPageInterface): any {
     const retval = {
       requestId: mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight ? AtisType.Departure : AtisType.Arrival,
       departure: '',
@@ -42,7 +43,7 @@ export class CDUAocRequestsAtis {
     return retval;
   }
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, store = CDUAocRequestsAtis.CreateDataBlock(mcdu)) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, store = CDUAocRequestsAtis.CreateDataBlock(mcdu)) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AOCRequestAtis;
     let labelTimeout;

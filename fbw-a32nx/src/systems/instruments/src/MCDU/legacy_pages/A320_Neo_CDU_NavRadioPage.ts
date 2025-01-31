@@ -1,15 +1,15 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { RadioUtils } from '@flybywiresim/fbw-sdk';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 
 export class CDUNavRadioPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.NavRadioPage;
     mcdu.activeSystem = 'FMGC';
@@ -83,7 +83,12 @@ export class CDUNavRadioPage {
     mcdu.setTemplate(template);
   }
 
-  static handleVorLsk(mcdu: A320_Neo_CDU_MainDisplay, receiverIndex, input, scratchpadCallback) {
+  static handleVorLsk(
+    mcdu: LegacyFmsPageInterface,
+    receiverIndex: 1 | 2,
+    input: string,
+    scratchpadCallback: () => void,
+  ) {
     if (input === Keypad.clrValue) {
       const vor = mcdu.getVorTuningData(receiverIndex);
       if (vor.manual) {
@@ -138,10 +143,10 @@ export class CDUNavRadioPage {
     });
   }
 
-  static renderVor(mcdu, receiverIndex) {
+  static renderVor(mcdu: LegacyFmsPageInterface, receiverIndex: 1 | 2) {
     const vor = mcdu.getVorTuningData(receiverIndex);
-    let identText;
-    let freqText;
+    let identText: string;
+    let freqText: string;
     if (vor.frequency !== null) {
       const ident = vor.ident !== null ? vor.ident : '[\xa0\xa0]';
       identText = `{${vor.manual ? 'big' : 'small'}}${receiverIndex === 2 ? ident.padEnd(4, '\xa0') : ident.padStart(4, '\xa0')}{end}`;
@@ -154,7 +159,12 @@ export class CDUNavRadioPage {
     return `{cyan}${receiverIndex === 2 ? freqText : identText}{${vor.manual ? 'big' : 'small'}}/{end}${receiverIndex === 2 ? identText : freqText}{end}`;
   }
 
-  static handleVorCrsLsk(mcdu, receiverIndex, input, scratchpadCallback) {
+  static handleVorCrsLsk(
+    mcdu: LegacyFmsPageInterface,
+    receiverIndex: 1 | 2,
+    input: string,
+    scratchpadCallback: () => void,
+  ) {
     if (input === Keypad.clrValue) {
       mcdu.setVorCourse(receiverIndex, null);
     } else if (input.match(/^\d{1,3}$/) !== null) {
@@ -176,7 +186,7 @@ export class CDUNavRadioPage {
     });
   }
 
-  static renderVorCrs(mcdu, receiverIndex) {
+  static renderVorCrs(mcdu: LegacyFmsPageInterface, receiverIndex: 1 | 2) {
     // FIXME T suffix for true-ref VORs
     const vor = mcdu.getVorTuningData(receiverIndex);
     if (vor.dmeOnly) {
@@ -188,7 +198,7 @@ export class CDUNavRadioPage {
     return '{cyan}[\xa0]{end}';
   }
 
-  static handleMmrLsk(mcdu: A320_Neo_CDU_MainDisplay, input, scratchpadCallback) {
+  static handleMmrLsk(mcdu: LegacyFmsPageInterface, input: string, scratchpadCallback: () => void) {
     if (mcdu.isMmrTuningLocked()) {
       mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
       return;
@@ -246,10 +256,10 @@ export class CDUNavRadioPage {
     }
   }
 
-  static renderMmr(mcdu) {
+  static renderMmr(mcdu: LegacyFmsPageInterface) {
     const mmr = mcdu.getMmrTuningData(1);
-    let identText;
-    let freqText;
+    let identText: string;
+    let freqText: string;
     if (mmr.frequency !== null) {
       const ident = mmr.ident !== null ? mmr.ident : '[\xa0\xa0]';
       identText = `{${mmr.manual ? 'big' : 'small'}}${ident.padStart(4, '\xa0')}{end}`;
@@ -262,7 +272,7 @@ export class CDUNavRadioPage {
     return `{cyan}${identText}{${mmr.manual ? 'big' : 'small'}}/{end}${freqText}{end}`;
   }
 
-  static handleMmrCrsLsk(mcdu, input, scratchpadCallback) {
+  static handleMmrCrsLsk(mcdu: LegacyFmsPageInterface, input: string, scratchpadCallback: () => void) {
     if (mcdu.isMmrTuningLocked()) {
       mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
       return;
@@ -306,13 +316,13 @@ export class CDUNavRadioPage {
     });
   }
 
-  static showSlope(mcdu, mmr) {
+  static showSlope(mcdu: LegacyFmsPageInterface, mmr: MmrRadioTuningStatus) {
     const takeoff = mcdu.flightPhaseManager.phase <= FmgcFlightPhase.Takeoff;
     const ilsAppr = mcdu.flightPlanService.active.approach && mcdu.flightPlanService.active.approach.type === 5; // ILS
     return mmr.manual || (!takeoff && ilsAppr);
   }
 
-  static renderMmrCrs(mcdu) {
+  static renderMmrCrs(mcdu: LegacyFmsPageInterface) {
     const mmr = mcdu.getMmrTuningData(1);
     const showSlope = CDUNavRadioPage.showSlope(mcdu, mmr);
     const slope =
@@ -335,7 +345,12 @@ export class CDUNavRadioPage {
     return 'CRS';
   }
 
-  static handleAdfLsk(mcdu: A320_Neo_CDU_MainDisplay, receiverIndex, input, scratchpadCallback) {
+  static handleAdfLsk(
+    mcdu: LegacyFmsPageInterface,
+    receiverIndex: 1 | 2,
+    input: string,
+    scratchpadCallback: () => void,
+  ) {
     if (input === Keypad.clrValue) {
       const adf = mcdu.getAdfTuningData(receiverIndex);
       if (adf.manual) {
@@ -386,7 +401,7 @@ export class CDUNavRadioPage {
     });
   }
 
-  static renderAdf(mcdu, receiverIndex) {
+  static renderAdf(mcdu: LegacyFmsPageInterface, receiverIndex: 1 | 2) {
     const adf = mcdu.getAdfTuningData(receiverIndex);
     let identText;
     let freqText;

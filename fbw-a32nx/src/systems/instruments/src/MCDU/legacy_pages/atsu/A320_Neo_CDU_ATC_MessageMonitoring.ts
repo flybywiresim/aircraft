@@ -1,8 +1,8 @@
-import { UplinkMessageStateMachine } from '@datalink/atc';
+//import { UplinkMessageStateMachine } from '@datalink/atc';
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcMessage } from './A320_Neo_CDU_ATC_Message';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMessageMonitoring {
   static TranslateCpdlcResponse(response) {
@@ -33,7 +33,7 @@ export class CDUAtcMessageMonitoring {
     return '';
   }
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages = null, offset = 0, cancelIndex = -1) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, messages = null, offset = 0, cancelIndex = -1) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCMessageMonitoring;
 
@@ -42,14 +42,14 @@ export class CDUAtcMessageMonitoring {
     }
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.ATCMessageMonitoring) {
         CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset, cancelIndex);
       }
     }, mcdu.PageTimeout.Slow);
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.ATCMessageMonitoring) {
         CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset, cancelIndex);
       }

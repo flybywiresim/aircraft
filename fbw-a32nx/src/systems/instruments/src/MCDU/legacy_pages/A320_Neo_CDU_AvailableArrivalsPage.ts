@@ -28,7 +28,7 @@ import {
 import { FlightPlanIndex } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 const ApproachTypeOrder = Object.freeze({
   [ApproachType.Mls]: 0,
@@ -66,7 +66,7 @@ const Labels = Object.freeze({
 
 export class CDUAvailableArrivalsPage {
   static async ShowPage(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyFmsPageInterface,
     airport: Airport,
     pageCurrent = 0,
     starSelection = false,
@@ -564,7 +564,7 @@ export class CDUAvailableArrivalsPage {
   }
 
   static ShowViasPage(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyFmsPageInterface,
     airport: Airport,
     pageCurrent = 0,
     forPlan = FlightPlanIndex.Active,

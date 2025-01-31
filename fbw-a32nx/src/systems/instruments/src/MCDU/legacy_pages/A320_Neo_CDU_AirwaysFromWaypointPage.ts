@@ -5,12 +5,12 @@ import { FlightPlanIndex, WaypointEntryUtils } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
-import { Airway } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix } from '@flybywiresim/fbw-sdk';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class A320_Neo_CDU_AirwaysFromWaypointPage {
   static ShowPage(
-    mcdu: A320_Neo_CDU_MainDisplay,
+    mcdu: LegacyFmsPageInterface,
     reviseIndex: number,
     pendingAirway: Airway,
     lastIndex: number,
@@ -224,13 +224,13 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
     return allRows;
   }
 
-  /**
-   * @param {import('msfs-navdata').Airway} lastAirway
-   * @param {import('msfs-navdata').Fix} lastFix
-   *
-   * @returns {Promise<import('msfs-navdata').Airway>}
-   */
-  static async _getAirway(mcdu: A320_Neo_CDU_MainDisplay, fromFpIndex, lastAirway, lastFix, value) {
+  static async _getAirway(
+    mcdu: LegacyFmsPageInterface,
+    fromFpIndex: number,
+    lastAirway: Airway,
+    lastFix: Fix,
+    value: string,
+  ): Promise<Airway> {
     const airways = await mcdu.navigationDatabase.searchAirway(value, lastFix);
 
     let matchingAirway = lastFix && airways.find((it) => it.fixes.some((fix) => fix.ident === lastFix.ident));
@@ -249,13 +249,18 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
    *
    * @param prevAirway {import('msfs-navdata').Airway}
    */
-  static async _getFirstIntersection(mcdu: A320_Neo_CDU_MainDisplay, prevAirway, prevAirwayFromIcao, nextAirwayIdent) {
+  static async _getFirstIntersection(
+    mcdu: LegacyFmsPageInterface,
+    prevAirway: Airway,
+    prevAirwayDatabaseId: string,
+    nextAirwayIdent: string,
+  ) {
     const prevAirwayFixes = prevAirway.fixes;
 
-    const prevAirwayStartIndex = prevAirwayFixes.findIndex((fix) => fix.databaseId === prevAirwayFromIcao);
+    const prevAirwayStartIndex = prevAirwayFixes.findIndex((fix) => fix.databaseId === prevAirwayDatabaseId);
 
     if (prevAirwayStartIndex < 0) {
-      throw new Error(`Cannot find waypoint ${prevAirwayFromIcao} in airway ${prevAirway.ident}`);
+      throw new Error(`Cannot find waypoint ${prevAirwayDatabaseId} in airway ${prevAirway.ident}`);
     }
 
     for (let i = 0; i < prevAirwayFixes.length; i++) {
@@ -280,7 +285,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
     }
   }
 
-  static async _getRoute(mcdu: A320_Neo_CDU_MainDisplay, airwayName, fixOnAirway) {
+  static async _getRoute(mcdu: LegacyFmsPageInterface, airwayName: string, fixOnAirway: Fix) {
     const airways = await mcdu.navigationDatabase.searchAirway(airwayName, fixOnAirway);
     const matchingAirway = airways.find((it) => it.fixes.some((fix) => fix.databaseId === fixOnAirway.databaseId));
 

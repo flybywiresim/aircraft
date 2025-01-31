@@ -2,14 +2,14 @@ import { CDUAirportsMonitor } from './A320_Neo_CDU_AirportsMonitor';
 import { CDUGPSMonitor } from './A320_Neo_CDU_GPSMonitor';
 import { CDUIdentPage } from './A320_Neo_CDU_IdentPage';
 import { CDUIRSMonitor } from './A320_Neo_CDU_IRSMonitor';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { CDUNavaidPage } from './A320_Neo_CDU_NavaidPage';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { CDUPositionMonitorPage } from './A320_Neo_CDU_PositionMonitorPage';
 import { CDUWaypointPage } from './A320_Neo_CDU_WaypointPage';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUDataIndexPage {
-  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage1(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DataIndexPage1;
     mcdu.activeSystem = 'FMGC';
@@ -76,7 +76,7 @@ export class CDUDataIndexPage {
       this.ShowPage2(mcdu);
     };
   }
-  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage2(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DataIndexPage2;
     mcdu.setTemplate([

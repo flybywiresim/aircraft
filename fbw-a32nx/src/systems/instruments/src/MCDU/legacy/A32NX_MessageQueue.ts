@@ -1,10 +1,10 @@
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { TypeIIMessage } from '../messages/NXSystemMessages';
+import { ScratchpadDataLink } from './A320_Neo_CDU_Scratchpad';
 
 export class A32NX_MessageQueue {
   private readonly _queue = [];
 
-  constructor(private readonly _fmgc: A320_Neo_CDU_MainDisplay) {}
+  constructor(private readonly _fmgc: { fmgcScratchpad: ScratchpadDataLink }) {}
 
   /**
    * Fmgc messages enter the queue via this void

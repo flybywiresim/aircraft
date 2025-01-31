@@ -1,9 +1,9 @@
 import { AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAocMessagesSent } from './A320_Neo_CDU_AOC_MessagesSent';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAocMessageSentDetail {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages, messageIndex, offset = 0) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, messages, messageIndex, offset = 0) {
     mcdu.clearDisplay();
     const message = messages[messageIndex];
     const lines = message.serialize(AtsuMessageSerializationFormat.FmsDisplay).split('\n');

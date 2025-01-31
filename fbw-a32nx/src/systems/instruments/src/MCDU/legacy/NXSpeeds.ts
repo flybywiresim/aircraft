@@ -488,7 +488,7 @@ export class NXSpeedsApp {
   public readonly f = f[this.cm](this.m);
   public readonly s = s[this.cm](this.m);
   public readonly gd = _computeGD(this.m);
-  public readonly valid = true;
+  public valid = true;
 
   /**
    * Calculates VLS and Vapp for selected landing configuration

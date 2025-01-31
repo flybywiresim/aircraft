@@ -1,8 +1,8 @@
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyCfdiuPageInterface } from '../../legacy/LegacyCfdiuPageInterface';
 import { CDUCfdsMainMenu } from './A320_Neo_CDU_CFDS_Menu';
 
 export class CDUCfdsAvionicsMenu {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyCfdiuPageInterface) {
     mcdu.clearDisplay();
     mcdu.setTemplate([
       ['AVIONICS STATUS', '1', '2'],
@@ -37,7 +37,7 @@ export class CDUCfdsAvionicsMenu {
     };
   }
 
-  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage2(mcdu: LegacyCfdiuPageInterface) {
     mcdu.clearDisplay();
     mcdu.setTemplate([
       ['AVIONICS STATUS', '2', '2'],

@@ -2,14 +2,14 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcConnection } from './A320_Neo_CDU_ATC_Connection';
 import { CDUAtcConnectionStatus } from './A320_Neo_CDU_ATC_ConnectionStatus';
 import { NXFictionalMessages, NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcConnectionNotification {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, store = { atcCenter: '', logonAllowed: false, loginState: 0 }) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, store = { atcCenter: '', logonAllowed: false, loginState: 0 }) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCNotification;
 
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.ATCNotification) {
         CDUAtcConnectionNotification.ShowPage(mcdu, store);
       }

@@ -4,9 +4,8 @@
 
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SimBriefUplinkAdapter } from '@fmgc/index';
-import { NXFictionalMessages } from '../../messages/NXSystemMessages';
+import { McduMessage, NXFictionalMessages } from '../../messages/NXSystemMessages';
 import { AtsuMessageType } from '@datalink/common';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
 // FIXME rogue import from EFB
 import { ISimbriefData } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 
@@ -50,7 +49,7 @@ const lbsToKg = (value) => {
  * Fetch SimBrief OFP data and store on FMCMainDisplay object
  */
 export const getSimBriefOfp = (
-  mcdu: A320_Neo_CDU_MainDisplay,
+  mcdu: { simbrief: any; setScratchpadMessage(m: McduMessage) },
   updateView: () => void,
   callback = () => {},
 ): Promise<ISimbriefData> => {

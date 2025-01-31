@@ -5,7 +5,7 @@ import { OclMessage } from '@datalink/common';
 import { CDU_SingleValueField } from '../../legacy/A320_Neo_CDU_Field';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { McduMessage, NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 import { WaypointEntryUtils } from '@fmgc/index';
 
 export class CDUAtcOceanicReq {
@@ -89,7 +89,7 @@ export class CDUAtcOceanicReq {
     return retval;
   }
 
-  static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay, store = CDUAtcOceanicReq.CreateDataBlock()) {
+  static ShowPage1(mcdu: LegacyAtsuPageInterface, store = CDUAtcOceanicReq.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let flightNo = '{white}-------{end}';
@@ -309,7 +309,7 @@ export class CDUAtcOceanicReq {
     };
   }
 
-  static ShowPage2(mcdu: A320_Neo_CDU_MainDisplay, store) {
+  static ShowPage2(mcdu: LegacyAtsuPageInterface, store) {
     mcdu.clearDisplay();
 
     const freetextLines = [];

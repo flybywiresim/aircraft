@@ -12,16 +12,16 @@ import { CDUAtcUsualRequestFansA } from './FansA/A320_Neo_CDU_ATC_UsualRequest';
 import { CDUAtcEmergencyFansB } from './FansB/A320_Neo_CDU_ATC_Emergency';
 import { CDUAtcUsualRequestFansB } from './FansB/A320_Neo_CDU_ATC_UsualRequest';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMenu {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCMenu;
     mcdu.activeSystem = 'ATSU';
 
     // regular update due to showing dynamic data on this page
-    mcdu.page.SelfPtr = setTimeout(() => {
+    mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.ATCMenu) {
         CDUAtcMenu.ShowPage(mcdu);
       }

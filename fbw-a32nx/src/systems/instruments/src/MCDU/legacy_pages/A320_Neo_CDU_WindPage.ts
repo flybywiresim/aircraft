@@ -1,16 +1,16 @@
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUWindPage {
   static Return() {}
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyFmsPageInterface) {
     CDUWindPage.ShowCLBPage(mcdu);
   }
 
-  static ShowCLBPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0) {
+  static ShowCLBPage(mcdu: LegacyFmsPageInterface, offset = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ClimbWind;
 
@@ -54,7 +54,7 @@ export class CDUWindPage {
     };
   }
 
-  static ShowCRZPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0) {
+  static ShowCRZPage(mcdu: LegacyFmsPageInterface, offset = 0) {
     //TODO: allow wind to be set for each waypoint
 
     mcdu.clearDisplay();
@@ -104,7 +104,7 @@ export class CDUWindPage {
     };
   }
 
-  static ShowDESPage(mcdu: A320_Neo_CDU_MainDisplay, offset = 0) {
+  static ShowDESPage(mcdu: LegacyFmsPageInterface, offset = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DescentWind;
 
@@ -192,7 +192,7 @@ export class CDUWindPage {
     return output;
   }
 
-  static ShowWinds(rows, mcdu: A320_Neo_CDU_MainDisplay, _showPage, _winds, _offset, _max = 3) {
+  static ShowWinds(rows, mcdu: LegacyFmsPageInterface, _showPage, _winds, _offset, _max = 3) {
     let entries = 0;
     for (let i = 0; i < _winds.length - _offset; i++) {
       if (i < _max) {
@@ -268,7 +268,7 @@ export class CDUWindPage {
     };
   }
 
-  static TryAddWind(mcdu, _windArray, _input, _showPage, scratchpadCallback) {
+  static TryAddWind(mcdu: LegacyFmsPageInterface, _windArray, _input, _showPage, scratchpadCallback) {
     const data = CDUWindPage.ParseTrueWindAlt(_input);
     if (data == null) {
       mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -304,7 +304,7 @@ export class CDUWindPage {
     };
   }
 
-  static WindRequest(mcdu: A320_Neo_CDU_MainDisplay, stage, _showPage) {
+  static WindRequest(mcdu: LegacyFmsPageInterface, stage, _showPage) {
     getSimBriefOfp(
       mcdu,
       () => {},

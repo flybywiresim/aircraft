@@ -1,8 +1,8 @@
-import { A320_Neo_CDU_MainDisplay } from '../../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyCfdiuPageInterface } from '../../../legacy/LegacyCfdiuPageInterface';
 import { CDU_CFDS_Test_Inst_EIS_Menu } from './eis/A320_Neo_CDU_CFDS_Test_Inst_EIS_Menu';
 
 export class CDUCfdsTestInst {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyCfdiuPageInterface) {
     mcdu.clearDisplay();
     mcdu.setTemplate([
       ['SYSTEM REPORT / TEST'],

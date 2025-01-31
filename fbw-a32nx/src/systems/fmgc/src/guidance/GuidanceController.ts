@@ -136,8 +136,11 @@ export class GuidanceController {
    */
   activeLegAlongTrackCompletePathDtg: NauticalMiles;
 
-  /** * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA */
-  alongTrackDistanceToDestination: NauticalMiles;
+  /**
+   * Along track distance to destination in nautical miles.
+   * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA
+   */
+  alongTrackDistanceToDestination?: number;
 
   focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
 

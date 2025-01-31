@@ -4,7 +4,7 @@ import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcLatRequestFansB {
   static CreateDataBlock(): any {
@@ -22,7 +22,7 @@ export class CDUAtcLatRequestFansB {
     return data.directTo || data.weatherDeviation;
   }
 
-  static CreateRequest(mcdu: A320_Neo_CDU_MainDisplay, type, values = []) {
+  static CreateRequest(mcdu: LegacyAtsuPageInterface, type, values = []) {
     const retval = new CpdlcMessage();
     retval.Station = mcdu.atsu.currentStation();
     retval.Content.push(CpdlcMessagesDownlink[type][1].deepCopy());
@@ -34,7 +34,7 @@ export class CDUAtcLatRequestFansB {
     return retval;
   }
 
-  static CreateRequests(mcdu: A320_Neo_CDU_MainDisplay, data) {
+  static CreateRequests(mcdu: LegacyAtsuPageInterface, data) {
     const retval = [];
 
     if (data.directTo) {
@@ -48,7 +48,7 @@ export class CDUAtcLatRequestFansB {
     return retval;
   }
 
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, data = CDUAtcLatRequestFansB.CreateDataBlock()) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface, data = CDUAtcLatRequestFansB.CreateDataBlock()) {
     mcdu.clearDisplay();
 
     let weatherDeviation = '{cyan}[  ]{end}';

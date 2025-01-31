@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 const DB_MONTHS = Object.freeze({
   '01': 'JAN',
@@ -36,7 +36,7 @@ function calculateSecondDate(dbIdent) {
   return `${effDay}${DB_MONTHS[effMonth]}${effYear}-${expDay}${DB_MONTHS[expMonth]}${expYear}`;
 }
 
-async function switchDataBase(mcdu: A320_Neo_CDU_MainDisplay) {
+async function switchDataBase(mcdu: LegacyFmsPageInterface) {
   await mcdu.switchNavDatabase();
 }
 
@@ -47,7 +47,7 @@ const ConfirmType = {
 };
 
 export class CDUIdentPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, confirmType = ConfirmType.NoConfirm) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, confirmType = ConfirmType.NoConfirm) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.IdentPage;
     mcdu.activeSystem = 'FMGC';

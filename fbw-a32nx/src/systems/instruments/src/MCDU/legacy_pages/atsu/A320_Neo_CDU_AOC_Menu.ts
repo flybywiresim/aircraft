@@ -1,4 +1,4 @@
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 import { CDUAocFreeText } from './A320_Neo_CDU_AOC_FreeText';
 import { CDUAocInit } from './A320_Neo_CDU_AOC_Init';
 import { CDUAocMessagesReceived } from './A320_Neo_CDU_AOC_MessagesReceived';
@@ -8,7 +8,7 @@ import { CDUAocRequestsWeather } from './A320_Neo_CDU_AOC_RequestsWeather';
 import { CDUAtsuMenu } from './A320_Neo_CDU_ATSU_Menu';
 
 export class CDUAocMenu {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AOCMenu;
     mcdu.setTemplate([

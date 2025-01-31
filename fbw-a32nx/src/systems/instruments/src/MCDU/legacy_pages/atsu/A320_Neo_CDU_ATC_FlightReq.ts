@@ -10,10 +10,10 @@ import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { CDUAtcVertRequestFansA } from './FansA/A320_Neo_CDU_ATC_VertRequest';
 import { CDUAtcLatRequestFansB } from './FansB/A320_Neo_CDU_ATC_LatRequest';
 import { CDUAtcVertRequestFansB } from './FansB/A320_Neo_CDU_ATC_VertRequest';
-import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcFlightReq {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
+  static ShowPage(mcdu: LegacyAtsuPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ATCFlightRequest;
 

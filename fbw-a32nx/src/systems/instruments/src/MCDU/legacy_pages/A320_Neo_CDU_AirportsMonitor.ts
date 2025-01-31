@@ -1,9 +1,9 @@
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
+import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUAirportsMonitor {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, reset = false) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, reset = false) {
     mcdu.page.Current = mcdu.page.AirportsMonitor;
 
     // one delta t unit is about 1.5 ms it seems
@@ -250,7 +250,7 @@ export class CDUAirportsMonitor {
     // page refresh
     if (!this.frozen || !this.icao1) {
       // regular update due to showing dynamic data on this page
-      mcdu.page.SelfPtr = setTimeout(() => {
+      mcdu.SelfPtr = setTimeout(() => {
         CDUAirportsMonitor.ShowPage(mcdu, false);
       }, mcdu.PageTimeout.Default);
     }

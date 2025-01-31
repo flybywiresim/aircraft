@@ -143,6 +143,10 @@ export class DataManager {
     this.updateLocalStorage();
   }
 
+  public getStoredWaypoint(index: number): PilotWaypoint | undefined {
+    return this.storedWaypoints[index];
+  }
+
   async deleteStoredWaypoint(index: number, updateStorage = true) {
     if (!this.storedWaypoints[index]) {
       return true;
