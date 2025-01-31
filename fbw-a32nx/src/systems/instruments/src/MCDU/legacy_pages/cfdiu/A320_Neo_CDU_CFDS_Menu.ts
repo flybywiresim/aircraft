@@ -1,3 +1,4 @@
+import { CDUCfdsTestMenu } from './A320_Neo_CDU_CFDS_Test_Menu';
 import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 import { CDUCfdsAvionicsMenu } from './A320_Neo_CDU_CFDS_Avionics_Menu';
 
