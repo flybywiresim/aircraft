@@ -182,17 +182,9 @@ export class CDUAtcDepartReq {
         if (airports.length !== 2 || !/^[A-Z0-9]{4}$/.test(airports[0]) || !/^[A-Z0-9]{4}$/.test(airports[1])) {
           mcdu.setScratchpadMessage(NXSystemMessages.formatError);
         } else {
-          mcdu.navigationDatabaseService.activeDatabase.searchAirport(airports[0]).then((from) => {
-            mcdu.navigationDatabaseService.activeDatabase.searchAirport(airports[1]).then((to) => {
-              if (from.ident && to.ident) {
-                store.from = from.ident;
-                store.to = to.ident;
-                CDUAtcDepartReq.ShowPage1(mcdu, store);
-              } else {
-                mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-              }
-            });
-          });
+          store.from = airports[0];
+          store.to = airports[1];
+          CDUAtcDepartReq.ShowPage1(mcdu, store);
         }
       }
     };

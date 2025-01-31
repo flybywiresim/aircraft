@@ -108,18 +108,12 @@ export class CDUAocRequestsAtis {
         store.selected = '';
         CDUAocRequestsAtis.ShowPage(mcdu, store);
       } else if (value) {
-        mcdu.navigationDatabaseService.activeDatabase.searchAirport(value).then((airport) => {
-          if (airport) {
-            store.selected = value;
-            store.manual = true;
+        store.selected = value;
+        store.manual = true;
 
-            if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
-              CDUAocRequestsAtis.ShowPage(mcdu, store);
-            }
-          } else {
-            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-          }
-        });
+        if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+          CDUAocRequestsAtis.ShowPage(mcdu, store);
+        }
       }
     };
     mcdu.leftInputDelay[1] = () => {

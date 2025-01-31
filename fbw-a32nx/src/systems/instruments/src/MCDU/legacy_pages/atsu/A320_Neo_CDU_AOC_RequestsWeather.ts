@@ -88,18 +88,12 @@ export class CDUAocRequestsWeather {
           if (!/^[A-Z0-9]{4}$/.test(value)) {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
           } else {
-            mcdu.navigationDatabaseService.activeDatabase.searchAirport(value).then((airport) => {
-              if (airport) {
-                data.airports[i] = value;
-                data.managed[i] = false;
+            data.airports[i] = value;
+            data.managed[i] = false;
 
-                if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
-                  CDUAocRequestsWeather.ShowPage(mcdu, data);
-                }
-              } else {
-                mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-              }
-            });
+            if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+              CDUAocRequestsWeather.ShowPage(mcdu, data);
+            }
           }
         }
       };
