@@ -72,11 +72,11 @@ export const getSimBriefOfp = (
       mcdu.simbrief['route'] = data.route;
       mcdu.simbrief['cruiseAltitude'] = data.cruiseAltitude;
       mcdu.simbrief['originIcao'] = data.origin.icao;
-      mcdu.simbrief['originTransAlt'] = parseInt(data.origin.transAlt, 10);
-      mcdu.simbrief['originTransLevel'] = parseInt(data.origin.transLevel, 10);
+      mcdu.simbrief['originTransAlt'] = data.origin.transAlt;
+      mcdu.simbrief['originTransLevel'] = data.origin.transLevel;
       mcdu.simbrief['destinationIcao'] = data.destination.icao;
-      mcdu.simbrief['destinationTransAlt'] = parseInt(data.destination.transAlt, 10);
-      mcdu.simbrief['destinationTransLevel'] = parseInt(data.destination.transLevel, 10);
+      mcdu.simbrief['destinationTransAlt'] = data.destination.transAlt;
+      mcdu.simbrief['destinationTransLevel'] = data.destination.transLevel;
       mcdu.simbrief['blockFuel'] = mcdu.simbrief['units'] === 'kgs' ? data.fuel.planRamp : lbsToKg(data.fuel.planRamp);
       mcdu.simbrief['payload'] =
         mcdu.simbrief['units'] === 'kgs' ? data.weights.payload : lbsToKg(data.weights.payload);
@@ -96,10 +96,10 @@ export const getSimBriefOfp = (
         alternate = data.alternate[0];
       }
       mcdu.simbrief['alternateIcao'] = alternate.icao_code;
-      mcdu.simbrief['alternateTransAlt'] = parseInt(alternate.transAlt, 10);
-      mcdu.simbrief['alternateTransLevel'] = parseInt(alternate.transLevel, 10);
-      mcdu.simbrief['alternateAvgWindDir'] = parseInt(alternate.averageWindDirection, 10);
-      mcdu.simbrief['alternateAvgWindSpd'] = parseInt(alternate.averageWindSpeed, 10);
+      mcdu.simbrief['alternateTransAlt'] = alternate.transAlt;
+      mcdu.simbrief['alternateTransLevel'] = alternate.transLevel;
+      mcdu.simbrief['alternateAvgWindDir'] = alternate.averageWindDirection;
+      mcdu.simbrief['alternateAvgWindSpd'] = alternate.averageWindSpeed;
       mcdu.simbrief['avgTropopause'] = data.averageTropopause;
       mcdu.simbrief['ete'] = data.times.estTimeEnroute;
       mcdu.simbrief['blockTime'] = data.times.estBlock;
