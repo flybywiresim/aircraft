@@ -66,7 +66,7 @@ export class CDUAtcConnectionNotification {
       const seconds = Math.floor(mcdu.atsu.nextStationNotificationTime());
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds - hours * 3600) / 60);
-      const zeroPad = (num, places) => String(num).padStart(places, 0);
+      const zeroPad = (num, places) => String(num).padStart(places, '0');
 
       // check if the page is loaded again
       if (store['atcCenter'] !== mcdu.atsu.nextStation()) {
