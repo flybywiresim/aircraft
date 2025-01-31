@@ -1,5 +1,5 @@
 import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
-import { A32NX_Util } from '@shared/A32NX_Util';
+import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
 import { A32NX_Refuel } from './A32NX_Refuel';
 import { A32NX_Speeds } from './A32NX_Speeds';
 import { A32NX_FADEC } from './A32NX_FADEC';

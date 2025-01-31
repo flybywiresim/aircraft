@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { A32NX_Util } from '@shared/A32NX_Util';
+import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanIndex } from '@fmgc/index';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';

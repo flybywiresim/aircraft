@@ -7,7 +7,7 @@ import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { Coordinates } from 'msfs-geo';
-import { A32NX_Util } from '@shared/A32NX_Util';
+import { A32NX_Util } from '../../../shared/src/A32NX_Util';
 
 export enum PilotWaypointType {
   Pbd = 1,

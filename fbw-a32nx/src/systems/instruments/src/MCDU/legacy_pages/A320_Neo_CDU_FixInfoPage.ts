@@ -1,7 +1,7 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { A32NX_Util } from '@shared/A32NX_Util';
+import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { WaypointEntryUtils } from '@fmgc/index';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';

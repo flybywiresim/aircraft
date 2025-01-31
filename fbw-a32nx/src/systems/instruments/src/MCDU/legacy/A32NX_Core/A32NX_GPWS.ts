@@ -5,7 +5,7 @@ import {
   NXLogicConfirmNode,
   NXLogicTriggeredMonostableNode,
 } from '@flybywiresim/fbw-sdk';
-import { A32NX_Util } from '@shared/A32NX_Util';
+import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
 import { soundList } from './A32NX_SoundManager';
 import { FmgcFlightPhase } from '@shared/flightphase';
