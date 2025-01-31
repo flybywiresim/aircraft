@@ -123,7 +123,7 @@ export class CDUAtcTextFansB {
         if (mcdu.atsu.currentStation() === '') {
           mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
         } else {
-          if (CDUAtcTextFansB.CreateMessages(mcdu, messages, data)) {
+          if (CDUAtcTextFansB.CreateMessages(messages, data)) {
             mcdu.atsu.updateMessage(messages[0]);
           } else {
             mcdu.atsu.registerMessages(messages);
