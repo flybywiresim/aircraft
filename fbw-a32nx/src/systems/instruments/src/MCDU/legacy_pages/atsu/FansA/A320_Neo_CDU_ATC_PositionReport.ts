@@ -439,8 +439,8 @@ export class CDUAtcPositionReport {
       } else if (value && WaypointEntryUtils.isLatLonFormat(value)) {
         // format: DDMM.MB/EEEMM.MC
         try {
-          WaypointEntryUtils.parseLatLon(value);
-          data.currentPosition[0] = value;
+          const pos = WaypointEntryUtils.parseLatLon(value);
+          data.currentPosition[0] = [pos.lat, pos.long];
           data.currentPosition[1] = true;
         } catch (err) {
           if (err === NXSystemMessages.formatError) {
