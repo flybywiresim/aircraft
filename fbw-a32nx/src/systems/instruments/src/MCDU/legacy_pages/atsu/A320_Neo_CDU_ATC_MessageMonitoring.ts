@@ -102,13 +102,13 @@ export class CDUAtcMessageMonitoring {
       right = false;
     if (messages.length > offset + 4) {
       mcdu.onNextPage = () => {
-        CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset + 4, false);
+        CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset + 4, -1);
       };
       right = true;
     }
     if (offset > 0) {
       mcdu.onPrevPage = () => {
-        CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset - 4, false);
+        CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset - 4, -1);
       };
       left = true;
     }
