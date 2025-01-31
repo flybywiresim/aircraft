@@ -44,8 +44,14 @@
   display: none;
 }
 
+
 .WaypointIndicator {
   text-align: start;
   text-anchor: start;
   transform: translateX(-130px) translateY(0);
+}
+
+.TerrTextLabel {
+  transform: translateX(5px) translateY(4px);
+  font-size: 25px;
 }

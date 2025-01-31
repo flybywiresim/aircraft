@@ -631,6 +631,7 @@
     "Real": "จริง",
     "Realism": {
       "AdirsAlignTime": "ADIRS Align Time",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Checklists ป้อนอัตโนมัติ",
       "BoardingTime": "เวลาขึ้นเครื่อง",
       "DmcSelfTestTime": "เวลา DMC Self Test",
