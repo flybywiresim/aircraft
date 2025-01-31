@@ -14,7 +14,7 @@ export class CDU_Field {
     protected mcdu,
     protected selectedCallback: SelectedCallback,
   ) {}
-  setOptions(options) {
+  setOptions(options: CDU_SingleValueFieldOptions) {
     for (const option in options) {
       this[option] = options[option];
     }

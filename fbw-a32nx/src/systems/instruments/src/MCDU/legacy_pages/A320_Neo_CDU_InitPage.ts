@@ -297,7 +297,7 @@ export class CDUInitPage {
         [altDest, new Column(23, requestButton, Column.amber, Column.right)],
         [new Column(0, 'FLT NBR')],
         [new Column(0, flightNoText, flightNoColor), new Column(23, alignOption || '', Column.right)],
-        [''],
+        [],
         [new Column(23, 'WIND/TEMP>', Column.right)],
         [new Column(0, 'COST INDEX'), new Column(23, 'TROPO', Column.right)],
         [new Column(0, costIndexText, costIndexColor), tropo],

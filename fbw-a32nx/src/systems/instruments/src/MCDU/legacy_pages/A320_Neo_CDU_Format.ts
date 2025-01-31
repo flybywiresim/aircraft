@@ -1,54 +1,74 @@
+// Copyright (c) 2025 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+type ColorValue = 'amber' | 'red' | 'green' | 'cyan' | 'white' | 'magenta' | 'yellow' | 'inop';
+interface ColorAttribute {
+  color: ColorValue;
+}
+
+type SizeValue = 'small' | 'big';
+interface SizeAttribute {
+  size: SizeValue;
+}
+
+interface AlignAttribute {
+  alignRight: boolean;
+}
+
+type Attribute = ColorAttribute | SizeAttribute | AlignAttribute;
+
 /** Used to displayed data on a mcdu page when using the formatting helper */
 export class Column {
-  public static right = { align: true };
-  public static small = { size: 'small' };
-  public static big = { size: 'big' };
-  public static amber = { color: 'amber' };
-  public static red = { color: 'red' };
-  public static green = { color: 'green' };
-  public static cyan = { color: 'cyan' };
-  public static white = { color: 'white' };
-  public static magenta = { color: 'magenta' };
-  public static yellow = { color: 'yellow' };
-  public static inop = { color: 'inop' };
+  public static left: AlignAttribute = { alignRight: false };
+  public static right: AlignAttribute = { alignRight: true };
+  public static small: SizeAttribute = { size: 'small' };
+  public static big: SizeAttribute = { size: 'big' };
+  public static amber: ColorAttribute = { color: 'amber' };
+  public static red: ColorAttribute = { color: 'red' };
+  public static green: ColorAttribute = { color: 'green' };
+  public static cyan: ColorAttribute = { color: 'cyan' };
+  public static white: ColorAttribute = { color: 'white' };
+  public static magenta: ColorAttribute = { color: 'magenta' };
+  public static yellow: ColorAttribute = { color: 'yellow' };
+  public static inop: ColorAttribute = { color: 'inop' };
 
-  protected raw: string;
-  protected color: { color: string };
-  protected length: number;
-  protected anchorPos: number;
-  protected size: { size: string } | string[];
+  public raw: string;
+  protected color: string;
+  public length: number;
+  public anchorPos: number;
+  protected size: string | null;
 
   /**
-   * @param {number} index - valid range from 0 to 23
-   * @param {string} text - text to be displayed
-   * @param {...({ color: string } | { size: string } | { align: bool })} att - attributes of the text, e.g. text size, color and/or alignment
+   * @param index - valid range from 0 to 23
+   * @param text - text to be displayed
+   * @param att - attributes of the text, e.g. text size, color and/or alignment
    */
   constructor(
     protected index: number,
     text: string,
-    ...att: ({ color: string } | { size: string } | { align: boolean })[]
+    ...att: Attribute[]
   ) {
     this.index = index;
     this.raw = text;
-    this.color = att.find((e) => 'color' in e) || Column.white;
+    const colorAttr = att.find((e) => 'color' in e);
+    this.color = colorAttr?.color ?? Column.white.color;
     this.length = text.length;
-    this.anchorPos = att.find((e) => 'align' in e) ? index - this.length + 1 : index;
-    const size = att.find((e) => 'size' in e);
-    this.size = size ? [`{${size['size']}}`, '{end}'] : ['', ''];
+    this.anchorPos = att.find((e) => 'alignRight' in e) ? index - this.length + 1 : index;
+    const sizeAttr = att.find((e) => 'size' in e);
+    this.size = sizeAttr ? sizeAttr.size : null;
   }
 
   /**
    * Returns a styled/formatted string.
-   * @returns {string}
    */
-  get text() {
-    return `${this.size[0]}{${this.color.color}}${this.raw}{end}${this.size[1]}`;
+  get text(): string {
+    return `${this.size !== null ? '{' + this.size + '}' : ''}{${this.color}}${this.raw}{end}${this.size !== null ? '{end}' : ''}`;
   }
 
   /**
-   * @param {string} text - text to be displayed
+   * @param text - text to be displayed
    */
-  set text(text) {
+  set text(text: string) {
     this.raw = text;
     this.length = text.length;
 
@@ -59,19 +79,20 @@ export class Column {
   }
 
   /**
-   * @param {...({ color: string } | { size: string })} att - attributes of the text, e.g. text size and/or color
+   * @param att - attributes of the text, e.g. text size and/or color
    */
-  updateAttributes(...att) {
-    this.color = att.find((e) => e.color) || this.color;
-    const size = att.find((e) => e.size);
-    this.size = size ? [`{${size['size']}}`, '{end}'] : this.size;
+  updateAttributes(...att: { color?: string; size?: string }[]) {
+    const colorAttr = att.find((e) => e.color) as { color: string } | undefined;
+    this.color = colorAttr?.color ?? this.color;
+    const sizeAttr = att.find((e) => e.size);
+    this.size = sizeAttr?.size ?? this.size;
   }
 
   /**
-   * @param {string} text - text to be displayed
-   * @param {...({ color: string } | { size: string })} att - attributes of the text, e.g. text size and/or color
+   * @param text - text to be displayed
+   * @param att - attributes of the text, e.g. text size and/or color
    */
-  update(text, ...att) {
+  update(text: string, ...att: { color?: string; size?: string }[]) {
     this.text = text;
     this.updateAttributes(...att);
   }
@@ -79,17 +100,17 @@ export class Column {
 
 /**
  * Returns a formatted mcdu page template
- * @param {Column[][]} lines - mcdu lines
- * @returns {string[][]} mcdu template
+ * @param lines - mcdu lines
+ * @returns mcdu template
  */
-export const FormatTemplate = (lines) => lines.map((line) => FormatLine(...line));
+export const FormatTemplate = (lines: Column[][]): string[][] => lines.map((line) => FormatLine(...line));
 
 /**
  * Returns a formatted mcdu line
  * @param {...Column} columns
  * @returns {string[]}
  */
-function FormatLine(...columns) {
+function FormatLine(...columns: Column[]): string[] {
   columns.sort((a, b) => a.anchorPos - b.anchorPos);
 
   let line = ''.padStart(24);

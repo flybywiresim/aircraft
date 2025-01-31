@@ -58,7 +58,7 @@ export class CDUMenuPage {
             ),
             new Column(23, 'NAV B/UP>', Column.right, Column.inop),
           ],
-          [''],
+          [],
           [
             new Column(
               0,
@@ -66,7 +66,7 @@ export class CDUMenuPage {
               getColor(atsuActive, selectedSystem === 'ATSU'),
             ),
           ],
-          [''],
+          [],
           [
             new Column(
               0,
@@ -74,7 +74,7 @@ export class CDUMenuPage {
               getColor(aidsActive, selectedSystem === 'AIDS'),
             ),
           ],
-          [''],
+          [],
           [
             new Column(
               0,
@@ -82,10 +82,10 @@ export class CDUMenuPage {
               getColor(cfdsActive, selectedSystem === 'CFDS'),
             ),
           ],
-          [''],
-          [''],
-          [''],
-          [''],
+          [],
+          [],
+          [],
+          [],
         ]),
       );
     };
