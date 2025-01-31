@@ -14,7 +14,7 @@ export class CDUProgressPage {
       CDUProgressPage.ShowPage(mcdu);
     };
     mcdu.activeSystem = 'FMGC';
-    const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
+    const flightNo = mcdu.flightNumber ?? '';
     const flMax = mcdu.getMaxFlCorrected();
     const flOpt =
       mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || mcdu.isOnGround())

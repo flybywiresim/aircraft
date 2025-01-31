@@ -90,7 +90,7 @@ export class CDUFlightPlanPage {
 
     let flightNumberText = '';
     if (forActiveOrTemporary) {
-      flightNumberText = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string', 'FMC');
+      flightNumberText = mcdu.flightNumber ?? '';
     }
 
     const waypointsAndMarkers = [];
