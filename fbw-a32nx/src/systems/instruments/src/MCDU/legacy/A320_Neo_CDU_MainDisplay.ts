@@ -650,7 +650,7 @@ export class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.aocTimes.doors = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
       } else {
         if (cabinDoorPctOpen > 20) {
-          this.aocTimes.doors = '';
+          this.aocTimes.doors = 0;
         }
       }
     }
