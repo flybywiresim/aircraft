@@ -125,7 +125,7 @@ export class CDUAtcReports {
       return mcdu.getDelaySwitchPage();
     };
     mcdu.onLeftInput[3] = () => {
-      mcdu.atsu.toggleAutomaticPositionReportActive().then((status) => {
+      mcdu.atsu.toggleAutomaticPositionReport().then((status) => {
         if (status !== AtsuStatusCodes.Ok) {
           mcdu.addNewAtsuMessage(status);
         }
