@@ -631,6 +631,7 @@
     "Real": "Ekte",
     "Realism": {
       "AdirsAlignTime": "ADIRS kalibreringstid",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Autoutfyll sjekklister",
       "BoardingTime": "Ombordstigningstid",
       "DmcSelfTestTime": "DMC selvtest tid",
