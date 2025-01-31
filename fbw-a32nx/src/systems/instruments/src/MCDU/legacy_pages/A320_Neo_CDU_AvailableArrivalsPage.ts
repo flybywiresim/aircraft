@@ -28,7 +28,7 @@ import {
 import { FlightPlanIndex } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 const ApproachTypeOrder = Object.freeze({
   [ApproachType.Mls]: 0,

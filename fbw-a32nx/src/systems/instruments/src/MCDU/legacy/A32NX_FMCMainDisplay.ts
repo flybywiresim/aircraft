@@ -53,10 +53,10 @@ import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage } fro
 import { Navigation, SelectedNavaid } from '@fmgc/navigation/Navigation';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CompanyRoute } from '@simbridge/index';
-import { Keypad } from '../legacy_pages/A320_Neo_CDU_Keypad';
+import { Keypad } from './A320_Neo_CDU_Keypad';
 import { FmsClient } from '@atsu/fmsclient';
 import { AtsuStatusCodes } from '@datalink/common';
-import { A320_Neo_CDU_MainDisplay } from '../legacy_pages/A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';

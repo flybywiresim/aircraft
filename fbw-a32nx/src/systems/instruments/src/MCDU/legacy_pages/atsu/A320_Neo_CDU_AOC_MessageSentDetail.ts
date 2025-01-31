@@ -1,6 +1,6 @@
 import { AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAocMessagesSent } from './A320_Neo_CDU_AOC_MessagesSent';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAocMessageSentDetail {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages, messageIndex, offset = 0) {

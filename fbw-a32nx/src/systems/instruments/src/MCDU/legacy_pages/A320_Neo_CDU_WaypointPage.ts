@@ -1,10 +1,10 @@
 // Copyright (c) 2021-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Keypad } from './A320_Neo_CDU_Keypad';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 /*
     Displays blank waypoint field, when waypoint inputted, LAT, LONG will show.

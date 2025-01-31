@@ -1,7 +1,7 @@
 import { IlsNavaid, NdbNavaid, VhfNavaid, LsCategory, VhfNavaidType, isIlsNavaid } from '@flybywiresim/fbw-sdk';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUNavaidPage {
   /**

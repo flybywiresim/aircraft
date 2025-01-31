@@ -5,13 +5,13 @@ import {
   FansMode,
   InputValidation,
 } from '@datalink/common';
-import { Keypad } from '../A320_Neo_CDU_Keypad';
+import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcPositionReport } from './FansA/A320_Neo_CDU_ATC_PositionReport';
 import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { CDUAtcTextFansB } from './FansB/A320_Neo_CDU_ATC_Text';
 import { CDUAtcMessageModifyUM131 } from './MessageModify/A320_Neo_CDU_ATC_MessageModifyUM131';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 const ModifyLookupTable = {
   UM132: [

@@ -1,8 +1,8 @@
 import { CpdlcMessage, CpdlcMessagesDownlink, FansMode } from '@datalink/common';
-import { Keypad } from '../../A320_Neo_CDU_Keypad';
+import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcTextFansA {
   static CreateDataBlock(): any {

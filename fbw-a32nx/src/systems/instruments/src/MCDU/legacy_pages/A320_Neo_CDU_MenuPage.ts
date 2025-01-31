@@ -1,10 +1,10 @@
-import { Column, FormatTemplate } from './A320_Neo_CDU_Format';
+import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { CDUIdentPage } from './A320_Neo_CDU_IdentPage';
 import { CDU_AIDS_MainMenu } from './aids/A320_Neo_CDU_AIDS_Menu';
 import { CDUAtsuMenu } from './atsu/A320_Neo_CDU_ATSU_Menu';
 import { CDUCfdsMainMenu } from './cfdiu/A320_Neo_CDU_CFDS_Menu';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUMenuPage {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {

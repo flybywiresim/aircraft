@@ -4,8 +4,8 @@
 import { WaypointEntryUtils } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
-import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { Fix } from '@flybywiresim/fbw-sdk';
 
 // TODO this whole thing is thales layout...

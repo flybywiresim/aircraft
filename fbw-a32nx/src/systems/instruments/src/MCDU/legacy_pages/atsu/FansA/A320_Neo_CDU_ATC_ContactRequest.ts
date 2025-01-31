@@ -1,9 +1,9 @@
 import { AtsuStatusCodes, CpdlcMessage, CpdlcMessagesDownlink, InputValidation } from '@datalink/common';
-import { Keypad } from '../../A320_Neo_CDU_Keypad';
+import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcContactRequest {
   static CreateDataBlock(): any {

@@ -5,12 +5,12 @@
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanIndex } from '@fmgc/index';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { Keypad } from './A320_Neo_CDU_Keypad';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 
 export class CDUVerticalRevisionPage {

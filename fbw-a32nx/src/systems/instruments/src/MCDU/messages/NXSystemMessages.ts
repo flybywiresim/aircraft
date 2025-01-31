@@ -34,7 +34,7 @@ export class TypeIIMessage extends McduMessage {
     text: string,
     isAmber = false,
     replace = '',
-    public isResolved = () => false,
+    public isResolved: (mcdu: any) => boolean = () => false,
     public onClear = () => {},
   ) {
     super(text, isAmber, replace);

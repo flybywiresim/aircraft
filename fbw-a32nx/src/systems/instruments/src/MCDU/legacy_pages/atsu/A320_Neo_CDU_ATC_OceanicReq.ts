@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { OclMessage } from '@datalink/common';
-import { CDU_SingleValueField } from '../A320_Neo_CDU_Field';
+import { CDU_SingleValueField } from '../../legacy/A320_Neo_CDU_Field';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcOceanicReq {
   static CreateDataBlock() {

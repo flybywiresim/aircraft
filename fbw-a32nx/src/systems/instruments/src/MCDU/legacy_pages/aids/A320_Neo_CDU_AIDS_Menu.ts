@@ -1,5 +1,5 @@
 import { NXFictionalMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDU_AIDS_MainMenu {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {

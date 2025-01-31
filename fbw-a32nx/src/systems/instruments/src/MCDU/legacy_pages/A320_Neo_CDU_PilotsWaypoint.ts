@@ -3,8 +3,8 @@ import { PilotWaypointType } from '@fmgc/flightplanning/DataManager';
 import { CDUNewWaypoint } from './A320_Neo_CDU_NewWaypoint';
 import { CDUDataIndexPage } from './A320_Neo_CDU_DataIndexPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUPilotsWaypoint {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, index = 0, confirmDeleteAll = false) {

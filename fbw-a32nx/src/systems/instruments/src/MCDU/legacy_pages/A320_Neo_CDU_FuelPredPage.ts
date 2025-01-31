@@ -7,8 +7,8 @@ import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
 import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUFuelPredPage {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {

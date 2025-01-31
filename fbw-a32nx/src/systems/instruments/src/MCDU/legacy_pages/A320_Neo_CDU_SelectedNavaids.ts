@@ -6,8 +6,8 @@ import { CDUNavaidPage } from './A320_Neo_CDU_NavaidPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { SelectedNavaid, SelectedNavaidMode, SelectedNavaidType } from '@fmgc/navigation/Navigation';
 import { CDUPositionMonitorPage } from './A320_Neo_CDU_PositionMonitorPage';
-import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 const NAVAID_TYPE_STRINGS = Object.freeze({
   [SelectedNavaidType.None]: '',

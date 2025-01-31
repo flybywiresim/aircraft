@@ -2,7 +2,7 @@ import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { getSimBriefOfp } from '../../legacy/A32NX_Core/A32NX_ATSU';
 import { FMCMainDisplay } from '../../legacy/A32NX_FMCMainDisplay';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 /**
  * Value is rounded to 1000 and fixed to 1 decimal

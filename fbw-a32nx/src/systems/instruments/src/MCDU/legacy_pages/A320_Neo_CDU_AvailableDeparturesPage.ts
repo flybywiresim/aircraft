@@ -5,7 +5,7 @@ import { Airport, Departure, NXUnits, ProcedureTransition, Runway } from '@flyby
 import { FlightPlanIndex, RunwayUtils } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 const DeparturePagination = Object.freeze({
   DEPT_PAGE: 4,

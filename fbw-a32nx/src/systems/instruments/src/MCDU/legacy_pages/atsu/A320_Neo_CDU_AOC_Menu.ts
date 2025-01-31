@@ -1,4 +1,4 @@
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 import { CDUAocFreeText } from './A320_Neo_CDU_AOC_FreeText';
 import { CDUAocInit } from './A320_Neo_CDU_AOC_Init';
 import { CDUAocMessagesReceived } from './A320_Neo_CDU_AOC_MessagesReceived';

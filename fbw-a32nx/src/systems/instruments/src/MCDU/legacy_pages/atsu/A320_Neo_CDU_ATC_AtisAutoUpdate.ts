@@ -3,7 +3,7 @@
 
 import { AtisType, AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcAtisAutoUpdate {
   static ToggleAutoUpdate(mcdu: A320_Neo_CDU_MainDisplay, icao, reloadPage) {

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { AtisType, AtsuStatusCodes } from '@datalink/common';
-import { Keypad } from '../A320_Neo_CDU_Keypad';
+import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcAtisAutoUpdate } from './A320_Neo_CDU_ATC_AtisAutoUpdate';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcReportAtis } from './A320_Neo_CDU_ATC_ReportAtis';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcAtisMenu {
   static CreateDataBlock(mcdu: A320_Neo_CDU_MainDisplay) {

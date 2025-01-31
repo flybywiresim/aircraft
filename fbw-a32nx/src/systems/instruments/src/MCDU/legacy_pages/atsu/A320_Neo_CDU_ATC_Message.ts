@@ -1,7 +1,7 @@
 import { AtsuMessageComStatus, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMessageMonitoring } from './A320_Neo_CDU_ATC_MessageMonitoring';
 import { CDUAtcMessagesRecord } from './A320_Neo_CDU_ATC_MessagesRecord';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcMessage {
   static TranslateCpdlcResponse(message) {

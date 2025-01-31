@@ -4,7 +4,7 @@ import { CDUAtcConnectionStatus } from './A320_Neo_CDU_ATC_ConnectionStatus';
 import { CDUAtcMaxUplinkDelay } from './A320_Neo_CDU_ATC_MaxUplinkDelay';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcConnection {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {

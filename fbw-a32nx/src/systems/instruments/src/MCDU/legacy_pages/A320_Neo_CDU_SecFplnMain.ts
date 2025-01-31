@@ -4,7 +4,7 @@
 
 import { FlightPlanIndex } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUSecFplnMain {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {

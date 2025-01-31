@@ -7,8 +7,8 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
-import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUPerformancePage {
   private static _timer;

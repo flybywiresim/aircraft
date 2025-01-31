@@ -1,6 +1,6 @@
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAirportsMonitor {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, reset = false) {

@@ -13,7 +13,7 @@ import {
   Subject,
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
-import { A320_Neo_CDU_MainDisplay } from './legacy_pages/A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from './legacy/A320_Neo_CDU_MainDisplay';
 
 import './mcdu.scss';
 

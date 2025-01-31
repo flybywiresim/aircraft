@@ -1,4 +1,4 @@
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUGPSMonitor {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, merit1?, merit2?, sat1?, sat2?) {

@@ -1,8 +1,8 @@
 import { AtsuMessageNetwork, AtsuStatusCodes, FreetextMessage } from '@datalink/common';
-import { Keypad } from '../A320_Neo_CDU_Keypad';
+import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAocFreeText {
   static ShowPage(

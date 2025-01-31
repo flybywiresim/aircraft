@@ -1,9 +1,9 @@
 import { AtsuMessageType } from '@datalink/common';
 import { translateAtsuMessageType } from '../../legacy/A32NX_Core/A32NX_ATSU';
-import { Keypad } from '../A320_Neo_CDU_Keypad';
+import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { CDUAocRequestsMessage } from './A320_Neo_CDU_AOC_RequestsMessage';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAocMessagesReceived {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, messages = null, page = 0) {

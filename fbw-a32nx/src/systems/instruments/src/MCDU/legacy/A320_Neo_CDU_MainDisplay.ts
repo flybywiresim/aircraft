@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
-import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
+import { FMCMainDisplay } from './A32NX_FMCMainDisplay';
 import { recallMessageById } from '@fmgc/components';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { NXNotifManager, NXPopUp } from '@shared/NxNotif';
 import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage } from '../messages/NXSystemMessages';
 import { McduServerClient } from '@simbridge/index';
-import { ScratchpadDataLink, ScratchpadDisplay } from '../legacy_pages/A320_Neo_CDU_Scratchpad';
+import { ScratchpadDataLink, ScratchpadDisplay } from './A320_Neo_CDU_Scratchpad';
 import { CDUMenuPage } from '../legacy_pages/A320_Neo_CDU_MenuPage';
 import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDU_Field } from './A320_Neo_CDU_Field';
 import { AtsuStatusCodes } from '@datalink/common';
 import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
-import { CDUInitPage } from './A320_Neo_CDU_InitPage';
+import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 
 type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */

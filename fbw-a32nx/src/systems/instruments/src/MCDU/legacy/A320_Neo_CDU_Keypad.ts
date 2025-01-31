@@ -1,14 +1,14 @@
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { CDUDataIndexPage } from './A320_Neo_CDU_DataIndexPage';
-import { CDUDirectToPage } from './A320_Neo_CDU_DirectToPage';
-import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
-import { CDUInitPage } from './A320_Neo_CDU_InitPage';
-import { CDUMenuPage } from './A320_Neo_CDU_MenuPage';
-import { CDUNavRadioPage } from './A320_Neo_CDU_NavRadioPage';
-import { CDUPerformancePage } from './A320_Neo_CDU_PerformancePage';
-import { CDUProgressPage } from './A320_Neo_CDU_ProgressPage';
-import { CDUSecFplnMain } from './A320_Neo_CDU_SecFplnMain';
-import { CDUAtcMenu } from './atsu/A320_Neo_CDU_ATC_Menu';
+import { CDUDataIndexPage } from '../legacy_pages/A320_Neo_CDU_DataIndexPage';
+import { CDUDirectToPage } from '../legacy_pages/A320_Neo_CDU_DirectToPage';
+import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
+import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
+import { CDUMenuPage } from '../legacy_pages/A320_Neo_CDU_MenuPage';
+import { CDUNavRadioPage } from '../legacy_pages/A320_Neo_CDU_NavRadioPage';
+import { CDUPerformancePage } from '../legacy_pages/A320_Neo_CDU_PerformancePage';
+import { CDUProgressPage } from '../legacy_pages/A320_Neo_CDU_ProgressPage';
+import { CDUSecFplnMain } from '../legacy_pages/A320_Neo_CDU_SecFplnMain';
+import { CDUAtcMenu } from '../legacy_pages/atsu/A320_Neo_CDU_ATC_Menu';
 
 export class Keypad {
   private static readonly _AvailableKeys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

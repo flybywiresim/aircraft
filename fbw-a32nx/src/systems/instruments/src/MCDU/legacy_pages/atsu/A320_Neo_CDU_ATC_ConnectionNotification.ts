@@ -2,7 +2,7 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcConnection } from './A320_Neo_CDU_ATC_Connection';
 import { CDUAtcConnectionStatus } from './A320_Neo_CDU_ATC_ConnectionStatus';
 import { NXFictionalMessages, NXSystemMessages } from '../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcConnectionNotification {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, store = { atcCenter: '', logonAllowed: false, loginState: 0 }) {

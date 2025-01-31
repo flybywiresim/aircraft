@@ -1,4 +1,4 @@
-import { A320_Neo_CDU_MainDisplay } from '../legacy_pages/A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { TypeIIMessage } from '../messages/NXSystemMessages';
 
 export class A32NX_MessageQueue {

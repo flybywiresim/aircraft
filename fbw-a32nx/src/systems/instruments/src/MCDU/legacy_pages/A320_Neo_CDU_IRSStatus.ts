@@ -1,6 +1,6 @@
 import { CDUIRSMonitor } from './A320_Neo_CDU_IRSMonitor';
 import { CDUIRSStatusFrozen } from './A320_Neo_CDU_IRSStatusFrozen';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUIRSStatus {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, index, prev_wind_dir?) {

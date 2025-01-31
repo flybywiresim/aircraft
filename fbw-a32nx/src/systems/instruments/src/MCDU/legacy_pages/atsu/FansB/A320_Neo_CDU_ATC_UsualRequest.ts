@@ -1,10 +1,10 @@
 import { AtsuStatusCodes, CpdlcMessage, CpdlcMessagesDownlink, InputValidation } from '@datalink/common';
 import { WaypointEntryUtils } from '@fmgc/index';
-import { Keypad } from '../../A320_Neo_CDU_Keypad';
+import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcTextFansB } from '../FansB/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { A320_Neo_CDU_MainDisplay } from '../../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcUsualRequestFansB {
   static CreateDataBlock() {

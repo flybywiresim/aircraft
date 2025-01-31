@@ -1,4 +1,4 @@
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 import { CDUAtsuMenu } from './A320_Neo_CDU_ATSU_Menu';
 
 export class CDUCommMenu {

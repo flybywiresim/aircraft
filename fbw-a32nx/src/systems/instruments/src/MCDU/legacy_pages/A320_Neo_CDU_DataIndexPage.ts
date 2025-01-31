@@ -2,7 +2,7 @@ import { CDUAirportsMonitor } from './A320_Neo_CDU_AirportsMonitor';
 import { CDUGPSMonitor } from './A320_Neo_CDU_GPSMonitor';
 import { CDUIdentPage } from './A320_Neo_CDU_IdentPage';
 import { CDUIRSMonitor } from './A320_Neo_CDU_IRSMonitor';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { CDUNavaidPage } from './A320_Neo_CDU_NavaidPage';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { CDUPositionMonitorPage } from './A320_Neo_CDU_PositionMonitorPage';

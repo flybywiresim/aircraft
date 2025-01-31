@@ -3,8 +3,8 @@
 
 import { SimBriefUplinkAdapter } from '@fmgc/index';
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
-import { Column, FormatTemplate } from './A320_Neo_CDU_Format';
-import { CDU_SingleValueField } from './A320_Neo_CDU_Field';
+import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
+import { CDU_SingleValueField } from '../legacy/A320_Neo_CDU_Field';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUAvailableFlightPlanPage } from './A320_Neo_CDU_AvailableFlightPlanPage';
 import { CDUIRSInit } from './A320_Neo_CDU_IRSInit';
@@ -12,8 +12,8 @@ import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
-import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUInitPage {
   static ShowPage1(mcdu: A320_Neo_CDU_MainDisplay) {

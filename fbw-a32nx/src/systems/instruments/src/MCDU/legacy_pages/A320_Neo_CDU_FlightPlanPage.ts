@@ -12,8 +12,8 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { AltitudeDescriptor, NXUnits } from '@flybywiresim/fbw-sdk';
-import { Keypad } from './A320_Neo_CDU_Keypad';
-import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { A320_Neo_CDU_MainDisplay } from '../legacy/A320_Neo_CDU_MainDisplay';
 import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 const Markers = {

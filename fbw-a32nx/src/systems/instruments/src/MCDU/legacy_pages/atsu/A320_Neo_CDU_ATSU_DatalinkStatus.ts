@@ -1,5 +1,5 @@
-import { CDUAtsuMenu } from 'instruments/src/mcdu/legacy_pages/atsu/A320_Neo_CDU_ATSU_Menu';
-import { A320_Neo_CDU_MainDisplay } from '../A320_Neo_CDU_MainDisplay';
+import { CDUAtsuMenu } from './A320_Neo_CDU_ATSU_Menu';
+import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtsuDatalinkStatus {
   static ShowPage(mcdu: A320_Neo_CDU_MainDisplay) {
