@@ -65,6 +65,7 @@ import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { FmsFormatters } from './FmsFormatters';
 
 export abstract class FMCMainDisplay implements DataInterface, DisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -3488,7 +3489,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
         if (this.isFinalTimeInRange(rteFinalTime)) {
           this._rteFinalWeightEntered = false;
           this._rteFinalTimeEntered = true;
-          this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4, '0'));
+          this._routeFinalFuelTime = FmsFormatters.hhmmToMinutes(rteFinalTime.padStart(4, '0'));
           return true;
         } else {
           this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -4670,51 +4671,6 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
   /* END OF MCDU GET/SET METHODS */
   /* UNSORTED CODE BELOW */
 
-  //TODO: can this be util?
-  public static secondsToUTC(seconds: number) {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds - h * 3600) / 60);
-    return (h % 24).toFixed(0).padStart(2, '0') + m.toFixed(0).padStart(2, '0');
-  }
-  //TODO: can this be util?
-  public static secondsTohhmm(seconds: number) {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds - h * 3600) / 60);
-    return h.toFixed(0).padStart(2, '0') + m.toFixed(0).padStart(2, '0');
-  }
-
-  //TODO: can this be util?
-  public static minuteToSeconds(minutes) {
-    return minutes * 60;
-  }
-
-  /**
-   * Computes hour and minutes when given minutes
-   * @param minutes - minutes used to make the conversion
-   * @returns A string in the format "HHMM" e.g "0235"
-   */
-  //TODO: can this be util?
-  public static minutesTohhmm(minutes: number): string {
-    const h = Math.floor(minutes / 60);
-    const m = minutes - h * 60;
-    return h.toFixed(0).padStart(2, '0') + m.toFixed(0).padStart(2, '0');
-  }
-
-  /**
-   * computes minutes when given hour and minutes
-   * @param {string} hhmm - string used to make the conversion
-   * @returns {number} numbers in minutes form
-   */
-  //TODO: can this be util?
-  private static hhmmToMinutes(hhmm) {
-    if (!hhmm) {
-      return NaN;
-    }
-    const h = parseInt(hhmm.substring(0, 2));
-    const m = parseInt(hhmm.substring(2, 4));
-    return h * 60 + m;
-  }
-
   /**
    * Generic function which returns true if engine(index) is ON (N2 > 20)
    */
@@ -4788,7 +4744,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
 
   //TODO: Can this be util?
   private isFinalTimeInRange(time: string) {
-    const convertedTime = FMCMainDisplay.hhmmToMinutes(time.padStart(4, '0'));
+    const convertedTime = FmsFormatters.hhmmToMinutes(time.padStart(4, '0'));
     return 0 <= convertedTime && convertedTime <= 90;
   }
 

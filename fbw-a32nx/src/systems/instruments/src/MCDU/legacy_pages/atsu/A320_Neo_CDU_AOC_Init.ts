@@ -1,8 +1,8 @@
 import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { getSimBriefOfp } from '../../legacy/A32NX_Core/A32NX_ATSU';
-import { FMCMainDisplay } from '../../legacy/A32NX_FMCMainDisplay';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { FmsFormatters } from '../../legacy/FmsFormatters';
 
 /**
  * Value is rounded to 1000 and fixed to 1 decimal
@@ -28,7 +28,7 @@ export class CDUAocInit {
     let gmt = '0000[color]green';
 
     const seconds = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
-    gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
+    gmt = `{small}${FmsFormatters.secondsTohhmm(seconds)}{end}[color]green`;
 
     function updateView() {
       if (mcdu.page.Current === mcdu.page.AOCInit) {
@@ -54,7 +54,7 @@ export class CDUAocInit {
       fltNbr = `{small}${mcdu.simbrief.callsign}{end}[color]green`;
     }
     if (mcdu.simbrief.ete) {
-      ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
+      ete = `${FmsFormatters.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
     }
     if (mcdu.isAnEngineOn()) {
       // should only get if an engine running
@@ -129,7 +129,7 @@ export class CDUAocInit {
     let gmt = '0000[color]green';
 
     const seconds = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
-    gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
+    gmt = `{small}${FmsFormatters.secondsTohhmm(seconds)}{end}[color]green`;
     if (mcdu.isAnEngineOn()) {
       const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
       if (currentFob) {
@@ -137,29 +137,29 @@ export class CDUAocInit {
       }
     }
     if (mcdu.aocTimes.out) {
-      outTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.out)}[color]green`;
+      outTime = `${FmsFormatters.secondsTohhmm(mcdu.aocTimes.out)}[color]green`;
     }
     if (mcdu.aocTimes.doors) {
-      doorsTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.doors)}[color]green`;
+      doorsTime = `${FmsFormatters.secondsTohhmm(mcdu.aocTimes.doors)}[color]green`;
     }
     if (mcdu.aocTimes.off) {
-      offTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.off)}[color]green`;
+      offTime = `${FmsFormatters.secondsTohhmm(mcdu.aocTimes.off)}[color]green`;
       let currentfltTime = 0;
       if (mcdu.aocTimes.on) {
         currentfltTime = mcdu.aocTimes.on - mcdu.aocTimes.off;
       } else {
         currentfltTime = seconds - mcdu.aocTimes.off;
       }
-      fltTime = `${FMCMainDisplay.secondsTohhmm(currentfltTime)}[color]green`;
+      fltTime = `${FmsFormatters.secondsTohhmm(currentfltTime)}[color]green`;
     }
     if (mcdu.aocTimes.on) {
-      onTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.on)}[color]green`;
+      onTime = `${FmsFormatters.secondsTohhmm(mcdu.aocTimes.on)}[color]green`;
     }
     if (mcdu.aocTimes.in) {
-      inTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
+      inTime = `${FmsFormatters.secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
     }
     if (mcdu.aocTimes.in && mcdu.aocTimes.out) {
-      blockTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in - mcdu.aocTimes.out)}[color]green`;
+      blockTime = `${FmsFormatters.secondsTohhmm(mcdu.aocTimes.in - mcdu.aocTimes.out)}[color]green`;
     }
 
     function updateView() {

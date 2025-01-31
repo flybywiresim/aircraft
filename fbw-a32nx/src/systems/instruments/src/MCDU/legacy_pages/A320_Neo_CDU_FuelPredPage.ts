@@ -4,11 +4,11 @@
 
 import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
-import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FmsFormatters } from '../legacy/FmsFormatters';
 
 export class CDUFuelPredPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -135,9 +135,9 @@ export class CDUFuelPredPage {
             finalFuelCell = '{sp}{sp}{small}' + NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight()).toFixed(1) + '{end}';
           }
           if (mcdu._rteFinalTimeEntered || !mcdu.routeFinalEntered()) {
-            finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
+            finalTimeCell = FmsFormatters.minutesTohhmm(mcdu.getRouteFinalFuelTime());
           } else {
-            finalTimeCell = '{small}' + FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + '{end}';
+            finalTimeCell = '{small}' + FmsFormatters.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + '{end}';
           }
           finalColor = '[color]cyan';
         }
@@ -162,7 +162,7 @@ export class CDUFuelPredPage {
             altFuelColor = '[color]cyan';
             const time = mcdu.getRouteAltFuelTime();
             if (time) {
-              altFuelTimeCell = '{small}' + FMCMainDisplay.minutesTohhmm(time) + '{end}';
+              altFuelTimeCell = '{small}' + FmsFormatters.minutesTohhmm(time) + '{end}';
               altTimeColor = '{green}';
             } else {
               altFuelTimeCell = '----';
@@ -199,18 +199,18 @@ export class CDUFuelPredPage {
         destEFOBCell = NXUnits.kgToUser(efob).toFixed(1);
         // Should we use predicted values or liveETATo and liveUTCto?
         destTimeCell = isFlying
-          ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
-          : (destTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime));
+          ? FmsFormatters.secondsToUTC(utcTime + FmsFormatters.minuteToSeconds(mcdu._routeTripTime))
+          : (destTimeCell = FmsFormatters.minutesTohhmm(mcdu._routeTripTime));
 
         if (alternate) {
           if (mcdu.getRouteAltFuelTime()) {
             altTimeCell = isFlying
-              ? FMCMainDisplay.secondsToUTC(
+              ? FmsFormatters.secondsToUTC(
                   utcTime +
-                    FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime) +
-                    FMCMainDisplay.minuteToSeconds(mcdu.getRouteAltFuelTime()),
+                    FmsFormatters.minuteToSeconds(mcdu._routeTripTime) +
+                    FmsFormatters.minuteToSeconds(mcdu.getRouteAltFuelTime()),
                 )
-              : FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime());
+              : FmsFormatters.minutesTohhmm(mcdu.getRouteAltFuelTime());
             altTimeCellColor = '[color]green';
           } else {
             altTimeCell = '----';
@@ -268,7 +268,7 @@ export class CDUFuelPredPage {
           extraTimeCell = '----{end}';
           extraTimeColor = '{white}';
         } else {
-          extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime(true)) + '{end}';
+          extraTimeCell = FmsFormatters.minutesTohhmm(mcdu.tryGetExtraTime(true)) + '{end}';
           extraTimeColor = '{green}';
         }
         extraCellColor = '[color]green';

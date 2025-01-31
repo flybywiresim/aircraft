@@ -7,7 +7,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
-import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
@@ -15,6 +14,7 @@ import { AltitudeDescriptor, NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FmsFormatters } from '../legacy/FmsFormatters';
 
 const Markers = {
   FPLN_DISCONTINUITY: ['---F-PLN DISCONTINUITY--'],
@@ -356,8 +356,8 @@ export class CDUFlightPlanPage {
 
           timeCell = `${isFromLeg ? '{big}' : '{small}'}${
             isFlying
-              ? FMCMainDisplay.secondsToUTC(utcTime + verticalWaypoint.secondsFromPresent)
-              : FMCMainDisplay.secondsTohhmm(verticalWaypoint.secondsFromPresent)
+              ? FmsFormatters.secondsToUTC(utcTime + verticalWaypoint.secondsFromPresent)
+              : FmsFormatters.secondsTohhmm(verticalWaypoint.secondsFromPresent)
           }{end}`;
 
           timeColor = color;
@@ -662,8 +662,8 @@ export class CDUFlightPlanPage {
           timeColor = color;
 
           timeCell = isFlying
-            ? `${FMCMainDisplay.secondsToUTC(utcTime + pwp.flightPlanInfo.secondsFromPresent)}[s-text]`
-            : `${FMCMainDisplay.secondsTohhmm(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
+            ? `${FmsFormatters.secondsToUTC(utcTime + pwp.flightPlanInfo.secondsFromPresent)}[s-text]`
+            : `${FmsFormatters.secondsTohhmm(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
         }
 
         let speed: string = Speed.NoPrediction;
@@ -964,8 +964,8 @@ export class CDUFlightPlanPage {
             const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
             destTimeCell = isFlying
-              ? FMCMainDisplay.secondsToUTC(utcTime + timeRemaining)
-              : FMCMainDisplay.secondsTohhmm(timeRemaining);
+              ? FmsFormatters.secondsToUTC(utcTime + timeRemaining)
+              : FmsFormatters.secondsTohhmm(timeRemaining);
           }
         }
       }

@@ -6,8 +6,8 @@ import { FlightPlanIndex } from '@fmgc/index';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FmsFormatters } from '../legacy/FmsFormatters';
 
 export class CDUStepAltsPage {
   static Return() {}
@@ -124,8 +124,8 @@ export class CDUStepAltsPage {
 
             const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
             const timeCell = isFlying
-              ? `{green}${FMCMainDisplay.secondsToUTC(utcTime + secondsFromPresent)}[s-text]{end}`
-              : `{green}${FMCMainDisplay.secondsTohhmm(secondsFromPresent)}[s-text]{end}`;
+              ? `{green}${FmsFormatters.secondsToUTC(utcTime + secondsFromPresent)}[s-text]{end}`
+              : `{green}${FmsFormatters.secondsTohhmm(secondsFromPresent)}[s-text]{end}`;
 
             lastColumn = distanceCell + '\xa0' + timeCell;
           }

@@ -4,11 +4,11 @@
 
 import { ApproachUtils, NXUnits, RunwayUtils } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FmsFormatters } from '../legacy/FmsFormatters';
 
 export class CDUPerformancePage {
   private static _timer;
@@ -1317,7 +1317,7 @@ export class CDUPerformancePage {
 
       if (Number.isFinite(predictions.secondsFromPresent)) {
         const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        const predToTimeCellText = FMCMainDisplay.secondsToUTC(utcTime + predictions.secondsFromPresent);
+        const predToTimeCellText = FmsFormatters.secondsToUTC(utcTime + predictions.secondsFromPresent);
 
         if (printSmall) {
           predToTimeCell = '{small}' + predToTimeCellText + '{end}[color]green';
@@ -1346,8 +1346,8 @@ export class CDUPerformancePage {
         const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
         const predToTimeCellText = isFlying
-          ? FMCMainDisplay.secondsToUTC(utcTime + destinationPrediction.secondsFromPresent)
-          : FMCMainDisplay.secondsTohhmm(destinationPrediction.secondsFromPresent);
+          ? FmsFormatters.secondsToUTC(utcTime + destinationPrediction.secondsFromPresent)
+          : FmsFormatters.secondsTohhmm(destinationPrediction.secondsFromPresent);
 
         destTimeCell = predToTimeCellText + '[color]green';
       }
@@ -1371,7 +1371,7 @@ export class CDUPerformancePage {
       if (Number.isFinite(toPrediction.secondsFromPresent)) {
         const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
-        timeCell = FMCMainDisplay.secondsToUTC(utcTime + toPrediction.secondsFromPresent) + '[color]green';
+        timeCell = FmsFormatters.secondsToUTC(utcTime + toPrediction.secondsFromPresent) + '[color]green';
       }
 
       if (toPrediction.reason === 'StepClimb') {

@@ -10,11 +10,11 @@ import { CDUAvailableFlightPlanPage } from './A320_Neo_CDU_AvailableFlightPlanPa
 import { CDUIRSInit } from './A320_Neo_CDU_IRSInit';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXUnits } from '@flybywiresim/fbw-sdk';
-import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FuelPlanningPhases } from '../legacy/A32NX_Core/A32NX_FuelPred';
+import { FmsFormatters } from '../legacy/FmsFormatters';
 
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface) {
@@ -531,7 +531,7 @@ export class CDUInitPage {
     const finalCellDivider = new Column(5, '/');
 
     if (mcdu.getRouteFinalFuelTime() > 0) {
-      finalTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan);
+      finalTimeCell.update(FmsFormatters.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan);
       finalCellDivider.updateAttributes(Column.cyan);
     }
     mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
@@ -586,9 +586,9 @@ export class CDUInitPage {
             );
           }
           if (mcdu._rteFinalTimeEntered || !mcdu.routeFinalEntered()) {
-            finalTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan);
+            finalTimeCell.update(FmsFormatters.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan);
           } else {
-            finalTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan, Column.small);
+            finalTimeCell.update(FmsFormatters.minutesTohhmm(mcdu.getRouteFinalFuelTime()), Column.cyan, Column.small);
             finalCellDivider.updateAttributes(Column.small);
           }
           finalCellDivider.updateAttributes(Column.cyan);
@@ -618,7 +618,7 @@ export class CDUInitPage {
             );
             const time = mcdu.getRouteAltFuelTime();
             if (time) {
-              altnTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()), Column.green, Column.small);
+              altnTimeCell.update(FmsFormatters.minutesTohhmm(mcdu.getRouteAltFuelTime()), Column.green, Column.small);
               altnCellDivider.updateAttributes(Column.green, Column.small);
             } else {
               altnTimeCell.update('----', Column.white);
@@ -644,7 +644,7 @@ export class CDUInitPage {
         mcdu.tryUpdateRouteTrip();
         if (isFinite(mcdu.getTotalTripFuelCons()) && isFinite(mcdu.getTotalTripTime())) {
           tripWeightCell.update(NXUnits.kgToUser(mcdu.getTotalTripFuelCons()).toFixed(1), Column.green, Column.small);
-          tripTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime), Column.green, Column.small);
+          tripTimeCell.update(FmsFormatters.minutesTohhmm(mcdu._routeTripTime), Column.green, Column.small);
           tripCellDivider.updateAttributes(Column.green, Column.small);
         }
 
@@ -726,7 +726,7 @@ export class CDUInitPage {
 
         extraWeightCell.update(NXUnits.kgToUser(mcdu.tryGetExtraFuel()).toFixed(1), Column.green, Column.small);
         if (mcdu.tryGetExtraFuel() >= 0) {
-          extraTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()), Column.green, Column.small);
+          extraTimeCell.update(FmsFormatters.minutesTohhmm(mcdu.tryGetExtraTime()), Column.green, Column.small);
           extraCellDivider.updateAttributes(Column.green, Column.small);
         }
       }
