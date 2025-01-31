@@ -95,7 +95,7 @@ export const getSimBriefOfp = (
       if (Array.isArray(data.alternate)) {
         alternate = data.alternate[0];
       }
-      mcdu.simbrief['alternateIcao'] = alternate.icao_code;
+      mcdu.simbrief['alternateIcao'] = alternate.icao;
       mcdu.simbrief['alternateTransAlt'] = alternate.transAlt;
       mcdu.simbrief['alternateTransLevel'] = alternate.transLevel;
       mcdu.simbrief['alternateAvgWindDir'] = alternate.averageWindDirection;
