@@ -276,7 +276,7 @@ export class CDUAtcUsualRequestFansB {
       return mcdu.getDelaySwitchPage();
     };
     mcdu.onRightInput[5] = () => {
-      if (CDUAtcUsualRequestFansB.CDUAtcUsualRequestFansB(data)) {
+      if (CDUAtcUsualRequestFansB.CanSendData(data)) {
         const requests = CDUAtcUsualRequestFansB.CreateRequests(mcdu, data);
         if (requests.length !== 0) {
           mcdu.atsu.registerMessages(requests);
