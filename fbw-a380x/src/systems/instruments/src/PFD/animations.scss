@@ -42,6 +42,10 @@
   100%  {opacity: 1}
 }
 
+@keyframes Disappear{
+  to {visibility: hidden}
+}
+
 .BlinkInfinite {
   animation-name: blinking;
   animation-duration: 1s;

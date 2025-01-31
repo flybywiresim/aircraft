@@ -631,6 +631,7 @@
     "Real": "Real",
     "Realism": {
       "AdirsAlignTime": "Tiempo de alineación ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Autocompletar listas de verificación",
       "BoardingTime": "Tiempo de embarque",
       "DmcSelfTestTime": "Tiempo de autocomprobación DMC",
