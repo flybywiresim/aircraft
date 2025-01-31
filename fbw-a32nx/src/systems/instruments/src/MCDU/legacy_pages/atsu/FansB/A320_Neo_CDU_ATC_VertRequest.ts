@@ -159,7 +159,7 @@ export class CDUAtcVertRequestFansB {
       if (CDUAtcVertRequestFansB.CanSendData(data)) {
         const messages = CDUAtcVertRequestFansB.CreateRequests(mcdu, data);
         if (messages.length !== 0) {
-          CDUAtcTextFansB.ShowPage1(mcdu, messages);
+          CDUAtcTextFansB.ShowPage(mcdu, messages);
         }
       }
     };
