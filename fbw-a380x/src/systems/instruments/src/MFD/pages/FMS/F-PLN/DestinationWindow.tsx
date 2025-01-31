@@ -14,13 +14,13 @@ interface DestinationWindowProps extends ComponentProps {
 }
 export class DestinationWindow extends DisplayComponent<DestinationWindowProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private identRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly identRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private newDest = Subject.create<string | null>(null);
+  private readonly newDest = Subject.create<string | null>(null);
 
   private onModified(newDest: string | null): void {
     if (newDest) {

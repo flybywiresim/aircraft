@@ -56,35 +56,35 @@ interface InputFieldProps<T> extends ComponentProps {
  */
 export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
   private readonly guid = `InputField-${Utils.generateGUID()}`;
 
-  public topRef = FSComponent.createRef<HTMLDivElement>();
+  public readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  public containerRef = FSComponent.createRef<HTMLDivElement>();
+  public readonly containerRef = FSComponent.createRef<HTMLDivElement>();
 
-  private spanningDivRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly spanningDivRef = FSComponent.createRef<HTMLDivElement>();
 
-  public textInputRef = FSComponent.createRef<HTMLSpanElement>();
+  public readonly textInputRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private caretRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly caretRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private leadingUnit = Subject.create<string>('');
+  private readonly leadingUnit = Subject.create<string>('');
 
-  private trailingUnit = Subject.create<string>('');
+  private readonly trailingUnit = Subject.create<string>('');
 
-  private leadingUnitRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly leadingUnitRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private trailingUnitRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly trailingUnitRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private modifiedFieldValue = Subject.create<string | null>(null);
+  private readonly modifiedFieldValue = Subject.create<string | null>(null);
 
-  private isFocused = Subject.create(false);
+  private readonly isFocused = Subject.create(false);
 
-  private isValidating = Subject.create(false);
+  private readonly isValidating = Subject.create(false);
 
-  private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(
+  private readonly alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(
     this.props.alignText ?? 'center',
     true,
   );
@@ -588,6 +588,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
       this.leadingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
       this.trailingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
     }
+
+    this.props.dataEntryFormat?.destroy();
 
     super.destroy();
   }

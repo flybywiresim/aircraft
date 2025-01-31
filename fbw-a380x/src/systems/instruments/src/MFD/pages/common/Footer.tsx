@@ -4,11 +4,11 @@ import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 
 export class Footer extends DisplayComponent<AbstractMfdPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  protected subs = [] as Subscription[];
+  protected readonly subs = [] as Subscription[];
 
-  private buttonRef = FSComponent.createRef<Button>();
+  private readonly buttonRef = FSComponent.createRef<Button>();
 
-  private buttonText = Subject.create<VNode>(
+  private readonly buttonText = Subject.create<VNode>(
     <span>
       MSG
       <br />
@@ -16,16 +16,16 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
     </span>,
   );
 
-  private messageRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly messageRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private messageToBeCleared = Subject.create<boolean>(false);
+  private readonly messageToBeCleared = Subject.create<boolean>(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     if (this.props.fmcService.master) {
       this.subs.push(
-        this.props.fmcService.master.fmsErrors.sub((index, type, item, arr) => {
+        this.props.fmcService.master.fmsErrors.sub((_, __, ___, arr) => {
           const ind = arr.findIndex((el) => !el.cleared);
 
           if (ind > -1 && this.messageRef.getOrDefault()) {

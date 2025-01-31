@@ -21,27 +21,29 @@ enum DirectToOption {
 }
 
 export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
-  private dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
+  private readonly dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
 
-  private availableWaypoints = ArraySubject.create<string>([]);
+  private readonly availableWaypoints = ArraySubject.create<string>([]);
 
   private availableWaypointsToLegIndex: number[] = [];
 
-  private selectedWaypointIndex = Subject.create<number | null>(null);
+  private readonly selectedWaypointIndex = Subject.create<number | null>(null);
 
   private manualWptIdent: string | null = '';
 
-  private utcEta = Subject.create<string>('--:--');
+  private readonly utcEta = Subject.create<string>('--:--');
 
-  private distToWpt = Subject.create<string>('---');
+  private readonly distToWpt = Subject.create<string>('---');
 
-  private directToOption = Subject.create<DirectToOption | null>(DirectToOption.DIRECT);
+  readonly directToOption = Subject.create<DirectToOption | null>(DirectToOption.DIRECT);
 
-  private eraseButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly eraseButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
+  private readonly directOptionRadioColor = this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'));
 
   protected onNewData(): void {
     // Use active FPLN for building the list (page only works for active anyways)
@@ -142,6 +144,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         }
       }, true),
     );
+
+    this.subs.push(this.directOptionRadioColor);
   }
 
   render(): VNode {
@@ -220,7 +224,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                   values={['DIRECT', 'DIRECT WITH ABEAM', 'CRS IN', 'CRS OUT']}
                   valuesDisabled={Subject.create([false, true, true, true])}
                   selectedIndex={this.directToOption}
-                  color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
+                  color={this.directOptionRadioColor}
                 />
               </div>
             </div>

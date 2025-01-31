@@ -35,17 +35,17 @@ export interface ButtonProps extends ComponentProps {
  */
 export class Button extends DisplayComponent<ButtonProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private buttonRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly buttonRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownIsOpened = Subject.create(false);
+  private readonly dropdownIsOpened = Subject.create(false);
 
-  private menuOpensUpwards = Subject.create(false);
+  private readonly menuOpensUpwards = Subject.create(false);
 
   private renderedMenuItems: ButtonMenuItem[] = [];
 
@@ -252,9 +252,15 @@ export class Button extends DisplayComponent<ButtonProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.buttonRef.getOrDefault()?.removeEventListener('click', this.onClickHandler);
+    this.buttonRef.instance.removeEventListener('click', this.onClickHandler);
     document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onCloseDropdownHandler);
-    this.buttonRef.getOrDefault()?.removeEventListener('click', this.onButtonClickHandler);
+    this.buttonRef.instance.removeEventListener('click', this.onButtonClickHandler);
+
+    this.renderedMenuItems?.forEach((val, i) => {
+      document
+        .getElementById(`${this.props.idPrefix}_${i}`)
+        ?.removeEventListener('click', this.onDropdownMenuElementClickHandler.bind(this, val));
+    });
 
     super.destroy();
   }

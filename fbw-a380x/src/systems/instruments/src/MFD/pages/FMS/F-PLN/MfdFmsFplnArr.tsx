@@ -34,13 +34,13 @@ const ApproachTypeOrder = Object.freeze({
 interface MfdFmsFplnArrProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
-  private toIcao = Subject.create<string>('');
+  private readonly toIcao = Subject.create<string>('');
 
-  private rwyIdent = Subject.create<string>('');
+  private readonly rwyIdent = Subject.create<string>('');
 
-  private rwyLength = Subject.create<string>('');
+  private readonly rwyLength = Subject.create<string>('');
 
-  private rwyCrs = Subject.create<string>('');
+  private readonly rwyCrs = Subject.create<string>('');
 
   private readonly approachName = Subject.create<string>('');
 
@@ -48,35 +48,35 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
   private readonly approachLsIdent = Subject.create('');
 
-  private via = Subject.create<string>('');
+  private readonly via = Subject.create<string>('');
 
-  private star = Subject.create<string>('');
+  private readonly star = Subject.create<string>('');
 
-  private trans = Subject.create<string>('');
+  private readonly trans = Subject.create<string>('');
 
-  private rwyOptions = Subject.create<ButtonMenuItem[]>([]);
+  private readonly rwyOptions = Subject.create<ButtonMenuItem[]>([]);
 
-  private apprDisabled = Subject.create<boolean>(false);
+  private readonly apprDisabled = Subject.create<boolean>(false);
 
-  private apprOptions = Subject.create<ButtonMenuItem[]>([]);
+  private readonly apprOptions = Subject.create<ButtonMenuItem[]>([]);
 
-  private viaDisabled = Subject.create<boolean>(false);
+  private readonly viaDisabled = Subject.create<boolean>(false);
 
-  private viaOptions = Subject.create<ButtonMenuItem[]>([]);
+  private readonly viaOptions = Subject.create<ButtonMenuItem[]>([]);
 
-  private starDisabled = Subject.create<boolean>(false);
+  private readonly starDisabled = Subject.create<boolean>(false);
 
-  private starOptions = Subject.create<ButtonMenuItem[]>([]);
+  private readonly starOptions = Subject.create<ButtonMenuItem[]>([]);
 
-  private transDisabled = Subject.create<boolean>(false);
+  private readonly transDisabled = Subject.create<boolean>(false);
 
-  private transOptions = Subject.create<ButtonMenuItem[]>([]);
+  private readonly transOptions = Subject.create<ButtonMenuItem[]>([]);
 
-  private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private apprButtonScrollTo = Subject.create<number>(0);
+  private readonly apprButtonScrollTo = Subject.create<number>(0);
 
   protected onNewData(): void {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
@@ -389,13 +389,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         }
       }, true),
     );
-  }
-
-  public destroy(): void {
-    // Destroy all subscriptions to remove all references to this instance.
-    this.subs.forEach((x) => x.destroy());
-
-    super.destroy();
   }
 
   render(): VNode {

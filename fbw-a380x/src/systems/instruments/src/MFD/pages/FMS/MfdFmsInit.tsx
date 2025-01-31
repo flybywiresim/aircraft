@@ -1,4 +1,4 @@
-import { FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsInit.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -30,7 +30,7 @@ interface MfdFmsInitProps extends AbstractMfdPageProps {}
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private simBriefOfp: ISimbriefData | null = null;
 
-  private readonly cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmcService.master
+  private readonly cpnyFplnButtonLabel = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
         if (!it) {
           return (
@@ -49,9 +49,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
           </span>
         );
       })
-    : Subject.create(<></>);
+    : MappedSubject.create(() => <></>);
 
-  private readonly cpnyFplnButtonMenuItems: Subscribable<ButtonMenuItem[]> = this.props.fmcService.master
+  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) =>
         it
           ? [
@@ -66,7 +66,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             ]
           : [],
       )
-    : Subject.create([]);
+    : MappedSubject.create(() => []);
 
   private readonly fromIcao = Subject.create<string | null>(null);
 
@@ -122,29 +122,48 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.activeFlightPhase,
   );
 
+  private readonly crzTempDisabled = this.crzFl.map((it) => it === null);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.bus
-      .getSubscriber<FmsRouterMessages>()
-      .on('routerManagementResponse')
-      .handle((data) => {
-        this.routerResponseCallbacks.every((callback, index) => {
-          if (callback(data.status, data.requestId)) {
-            this.routerResponseCallbacks.splice(index, 1);
-            return false;
-          }
-          return true;
-        });
-      });
+    this.subs.push(
+      this.props.bus
+        .getSubscriber<FmsRouterMessages>()
+        .on('routerManagementResponse')
+        .handle((data) => {
+          this.routerResponseCallbacks.every((callback, index) => {
+            if (callback(data.status, data.requestId)) {
+              this.routerResponseCallbacks.splice(index, 1);
+              return false;
+            }
+            return true;
+          });
+        }),
+    );
 
-    this.props.fmcService.master?.fmgc.data.atcCallsign.sub((c) => {
-      if (c) {
-        this.connectToNetworks(c);
-      } else {
-        this.disconnectFromNetworks();
-      }
-    });
+    if (this.props.fmcService.master) {
+      this.subs.push(
+        this.props.fmcService.master.fmgc.data.atcCallsign.sub((c) => {
+          if (c) {
+            this.connectToNetworks(c);
+          } else {
+            this.disconnectFromNetworks();
+          }
+        }),
+      );
+    }
+
+    this.subs.push(
+      this.cpnyFplnButtonLabel,
+      this.cpnyFplnButtonMenuItems,
+      this.cityPairDisabled,
+      this.altnDisabled,
+      this.costIndexDisabled,
+      this.tripWindDisabled,
+      this.cpnyRteMandatory,
+      this.departureButtonDisabled,
+    );
   }
 
   protected onNewData() {
@@ -467,7 +486,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 }}
                 mandatory={Subject.create(false)}
                 enteredByPilot={this.props.fmcService.master.fmgc.data.cruiseTemperatureIsPilotEntered}
-                disabled={this.crzFl.map((it) => it === null)}
+                disabled={this.crzTempDisabled}
                 value={this.props.fmcService.master.fmgc.data.cruiseTemperature}
                 containerStyle="width: 110px; justify-content: flex-end;"
                 alignText="center"

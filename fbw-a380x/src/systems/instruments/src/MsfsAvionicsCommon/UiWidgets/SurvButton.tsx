@@ -29,9 +29,9 @@ export interface SurvButtonProps extends ComponentProps {
  */
 export class SurvButton extends DisplayComponent<SurvButtonProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly upperLabelGreen = MappedSubject.create(
     ([state, disabled]) => state && !disabled,
@@ -63,7 +63,7 @@ export class SurvButton extends DisplayComponent<SurvButtonProps> {
     }
   }
 
-  private onClickHandler = this.onClick.bind(this);
+  private readonly onClickHandler = this.onClick.bind(this);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

@@ -44,21 +44,21 @@ export interface DerivedFplnLegData {
 }
 
 export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
-  private lineColor = Subject.create<FplnLineColor>(FplnLineColor.Active);
+  private readonly lineColor = Subject.create<FplnLineColor>(FplnLineColor.Active);
 
-  private spdAltEfobWindRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly spdAltEfobWindRef = FSComponent.createRef<HTMLDivElement>();
 
-  private displayEfobAndWind = Subject.create<boolean>(false);
+  private readonly displayEfobAndWind = Subject.create<boolean>(false);
 
-  private trueTrackEnabled = Subject.create<boolean>(false);
+  private readonly trueTrackEnabled = Subject.create<boolean>(false);
 
-  private efobAndWindButtonDynamicContent = Subject.create<VNode>(<span />);
+  private readonly efobAndWindButtonDynamicContent = Subject.create<VNode>(<span />);
 
-  private efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([{ label: '', action: () => {} }]);
+  private readonly efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([{ label: '', action: () => {} }]);
 
-  private lineData: FplnLineDisplayData[] = [];
+  private readonly lineData: FplnLineDisplayData[] = [];
 
-  private renderedLineData = [
+  private readonly renderedLineData = [
     Subject.create<FplnLineDisplayData | null>(null),
     Subject.create<FplnLineDisplayData | null>(null),
     Subject.create<FplnLineDisplayData | null>(null),
@@ -74,50 +74,54 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private lastRenderedFpVersion: number | null = null;
 
-  private derivedFplnLegData: DerivedFplnLegData[] = [];
+  private readonly derivedFplnLegData: DerivedFplnLegData[] = [];
 
-  private linesDivRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly linesDivRef = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyLineRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyLineRef = FSComponent.createRef<HTMLDivElement>();
 
-  private destButtonLabel = Subject.create<string>('');
+  private readonly destButtonLabel = Subject.create<string>('');
 
-  private destButtonDisabled = Subject.create<boolean>(true);
+  private readonly destButtonDisabled = Subject.create<boolean>(true);
 
-  private destTimeLabel = Subject.create<string>('--:--');
+  private readonly destTimeLabel = Subject.create<string>('--:--');
 
-  private destEfob = Subject.create<string>('---.-');
+  private readonly destEfob = Subject.create<string>('---.-');
 
-  private destDistanceLabel = Subject.create<string>('----');
+  private readonly destDistanceLabel = Subject.create<string>('----');
 
-  private displayFplnFromLineIndex = Subject.create<number>(0);
+  private readonly displayFplnFromLineIndex = Subject.create<number>(0);
 
   private lastRenderedDisplayLineIndex: number = -1;
 
-  private disabledScrollDown = Subject.create(true);
+  private readonly disabledScrollDown = Subject.create(true);
 
-  private disabledScrollUp = Subject.create(false);
+  private readonly disabledScrollUp = Subject.create(false);
 
-  private revisionsMenuRef = FSComponent.createRef<ContextMenu>();
+  private readonly revisionsMenuRef = FSComponent.createRef<ContextMenu>();
 
-  private revisionsMenuValues = Subject.create<ContextMenuElement[]>([]);
+  private readonly revisionsMenuValues = Subject.create<ContextMenuElement[]>([]);
 
-  private revisionsMenuOpened = Subject.create<boolean>(false);
+  private readonly revisionsMenuOpened = Subject.create<boolean>(false);
 
-  private newDestWindowOpened = Subject.create<boolean>(false);
+  private readonly newDestWindowOpened = Subject.create<boolean>(false);
 
-  private insertNextWptWindowOpened = Subject.create<boolean>(false);
+  private readonly insertNextWptWindowOpened = Subject.create<boolean>(false);
 
-  private nextWptAvailableWaypoints = ArraySubject.create<NextWptInfo>([]);
+  private readonly nextWptAvailableWaypoints = ArraySubject.create<NextWptInfo>([]);
 
-  private renderedFplnLines: NodeReference<FplnLegLine>[] = [];
+  private readonly renderedFplnLines: NodeReference<FplnLegLine>[] = [];
+
+  private readonly destButtonLabelNode = this.destButtonLabel.map((it) => <span>{it}</span>);
+
+  private readonly lineColorIsTemporary = this.lineColor.map((it) => it === FplnLineColor.Temporary);
+
+  private readonly preflightPhase = this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight);
 
   protected onNewData(): void {
     if (!this.loadedFlightPlan) {
       return;
     }
-
-    console.time('F-PLN:onNewData');
 
     // update(...) is the most costly function. First performance improvement: Don't render everything completely new every time, just update with refs
     // Delete and re-render FPLN lines only if:
@@ -176,7 +180,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       );
     }
     this.checkScrollButtons();
-    console.timeEnd('F-PLN:onNewData');
   }
 
   private update(startAtIndex: number, onlyUpdatePredictions = true): void {
@@ -193,7 +196,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         : startAtIndex;
 
     // Compute rest of required attributes
-    this.derivedFplnLegData = [];
+    this.derivedFplnLegData.length = 0;
     let lastDistanceFromStart: number = 0;
     let lastLegLatLong: Coordinates = { lat: 0, long: 0 };
     // Construct leg data for all legs
@@ -243,7 +246,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.derivedFplnLegData.push(newEl);
     });
 
-    this.lineData = [];
+    this.lineData.length = 0;
 
     // Prepare sequencing of pseudo waypoints
     const pseudoWptMap = new Map<number, PseudoWaypoint>();
@@ -408,7 +411,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         line.instance.destroy();
       });
 
-      this.renderedFplnLines = [];
+      this.renderedFplnLines.length = 0;
     }
 
     const untilLegIndex = Math.min(this.lineData.length, startAtIndexChecked + (this.tmpyActive.get() ? 8 : 9));
@@ -642,10 +645,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       sub
         .on('realTime')
         .atFrequency(0.5)
-        .handle((_t) => {
+        .handle(() => {
           this.onNewData();
         }),
     );
+
+    this.subs.push(this.destButtonLabelNode, this.lineColorIsTemporary, this.preflightPhase);
   }
 
   checkScrollButtons() {
@@ -860,9 +865,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           {/* fill space vertically */}
           <div class="mfd-fms-fpln-line-destination">
             <Button
-              label={this.destButtonLabel.map((it) => (
-                <span>{it}</span>
-              ))}
+              label={this.destButtonLabelNode}
               onClick={() => {
                 this.props.fmcService.master?.resetRevisedWaypoint();
                 this.props.mfd.uiService.navigateTo(
@@ -874,7 +877,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             <span
               class={{
                 'mfd-label': true,
-                'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                'mfd-fms-yellow-text': this.lineColorIsTemporary,
               }}
             >
               {this.destTimeLabel}
@@ -883,7 +886,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               <span
                 class={{
                   'mfd-label': true,
-                  'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                  'mfd-fms-yellow-text': this.lineColorIsTemporary,
                 }}
               >
                 {this.destEfob}
@@ -894,7 +897,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               <span
                 class={{
                   'mfd-label': true,
-                  'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                  'mfd-fms-yellow-text': this.lineColorIsTemporary,
                 }}
               >
                 {this.destDistanceLabel}
@@ -924,7 +927,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           </div>
           <div class="mfd-fms-fpln-footer">
             <ConditionalComponent
-              condition={this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight)}
+              condition={this.preflightPhase}
               width={125}
               componentIfTrue={
                 <Button
@@ -1121,11 +1124,11 @@ export interface FplnLegLineProps extends FplnLineCommonProps {
 
 class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   // Make sure to collect all subscriptions here, so we can properly destroy them.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private selectedForRevision = Subject.create(false);
+  private readonly selectedForRevision = Subject.create(false);
 
-  private lineColor = MappedSubject.create(
+  private readonly lineColor = MappedSubject.create(
     ([color, data]) => {
       if (data && (isWaypoint(data) || isHold(data)) && (data.isAltnWaypoint || data.isMissedAppchWaypoint)) {
         return FplnLineColor.Alternate;
@@ -1136,33 +1139,33 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     this.props.data,
   );
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private lineRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly lineRef = FSComponent.createRef<HTMLDivElement>();
 
   private currentlyRenderedType: FplnLineType = FplnLineType.None;
 
   private currentlyRenderedLine: VNode | null = null;
 
-  private annotationRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly annotationRef = FSComponent.createRef<HTMLDivElement>();
 
-  private identRef = FSComponent.createRef<HTMLDivElement | HTMLSpanElement>();
+  private readonly identRef = FSComponent.createRef<HTMLDivElement | HTMLSpanElement>();
 
-  private timeRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly timeRef = FSComponent.createRef<HTMLDivElement>();
 
-  private speedRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly speedRef = FSComponent.createRef<HTMLDivElement>();
 
-  private altRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly altRef = FSComponent.createRef<HTMLDivElement>();
 
-  private connectorRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly connectorRef = FSComponent.createRef<HTMLDivElement>();
 
-  private trackRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly trackRef = FSComponent.createRef<HTMLDivElement>();
 
-  private distRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly distRef = FSComponent.createRef<HTMLDivElement>();
 
-  private fpaRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly fpaRef = FSComponent.createRef<HTMLDivElement>();
 
-  private allRefs: NodeReference<HTMLElement>[] = [
+  private readonly allRefs: NodeReference<HTMLElement>[] = [
     this.annotationRef,
     this.identRef,
     this.timeRef,
@@ -1173,6 +1176,10 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     this.distRef,
     this.fpaRef,
   ];
+
+  private readonly lineColorIsTemporary = this.lineColor.map((it) => it === FplnLineColor.Temporary);
+  private readonly lineColorIsSecondary = this.lineColor.map((it) => it === FplnLineColor.Secondary);
+  private readonly lineColorIsAlternate = this.lineColor.map((it) => it === FplnLineColor.Alternate);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -1217,8 +1224,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }),
     );
 
-    this.identRef.getOrDefault()?.addEventListener('click', this.onIdentClickedHandler);
+    this.subs.push(this.lineColor, this.lineColorIsTemporary, this.lineColorIsSecondary, this.lineColorIsAlternate);
 
+    this.identRef.getOrDefault()?.addEventListener('click', this.onIdentClickedHandler);
     this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.rta);
   }
 
@@ -1620,9 +1628,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         ref={this.lineRef}
         class={{
           'mfd-fms-fpln-line': true,
-          'mfd-fms-fpln-line-temporary': this.lineColor.map((it) => it === FplnLineColor.Temporary),
-          'mfd-fms-fpln-line-secondary': this.lineColor.map((it) => it === FplnLineColor.Secondary),
-          'mfd-fms-fpln-line-altn': this.lineColor.map((it) => it === FplnLineColor.Alternate),
+          'mfd-fms-fpln-line-temporary': this.lineColorIsTemporary,
+          'mfd-fms-fpln-line-secondary': this.lineColorIsSecondary,
+          'mfd-fms-fpln-line-altn': this.lineColorIsAlternate,
         }}
         style={`${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
       >

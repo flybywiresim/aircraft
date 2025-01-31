@@ -15,31 +15,31 @@ import { TurnDirection } from '@flybywiresim/fbw-sdk';
 interface MfdFmsFplnHoldProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
-  private holdType = Subject.create<string>('MODIFIED HOLD AT');
+  private readonly holdType = Subject.create<string>('MODIFIED HOLD AT');
 
-  private waypointIdent = Subject.create<string>('WAYPOINT');
+  private readonly waypointIdent = Subject.create<string>('WAYPOINT');
 
-  private inboundCourse = Subject.create<number | null>(null);
+  private readonly inboundCourse = Subject.create<number | null>(null);
 
-  private turnSelectedIndex = Subject.create<number | null>(null);
+  private readonly turnSelectedIndex = Subject.create<number | null>(null);
 
-  private legDefiningParameterSelectedIndex = Subject.create<number | null>(null);
+  private readonly legDefiningParameterSelectedIndex = Subject.create<number | null>(null);
 
-  private legTime = Subject.create<number | null>(null);
+  private readonly legTime = Subject.create<number | null>(null);
 
-  private legTimeRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly legTimeRef = FSComponent.createRef<HTMLDivElement>();
 
-  private legDistance = Subject.create<number | null>(null);
+  private readonly legDistance = Subject.create<number | null>(null);
 
-  private legDistanceRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly legDistanceRef = FSComponent.createRef<HTMLDivElement>();
 
-  private lastExitUtc = Subject.create<string | null>(null);
+  private readonly lastExitUtc = Subject.create<string | null>(null);
 
-  private lastExitEfob = Subject.create<string | null>(null);
+  private readonly lastExitEfob = Subject.create<string | null>(null);
 
-  private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
     const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
