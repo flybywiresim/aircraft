@@ -17,7 +17,6 @@ import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
 import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
-import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 
 /**
@@ -1780,17 +1779,17 @@ export class FmcAircraftInterface {
   private stepAheadTriggeredForAltitude: number | null = null;
 
   public checkForStepClimb() {
-    const crzPred = this.fmc.guidanceController?.vnavDriver?.getPerfCrzToPrediction();
-    const approachingCruiseStep = MfdFmsFplnVertRev.nextCruiseStep(this.flightPlanService.active);
+    const [approachingCruiseStep, cruiseStepLegIndex] = MfdFmsFplnVertRev.nextCruiseStep(this.flightPlanService.active);
 
-    if (
-      approachingCruiseStep &&
-      !approachingCruiseStep.isIgnored &&
-      (crzPred?.reason === VerticalCheckpointReason.StepClimb ||
-        crzPred?.reason === VerticalCheckpointReason.StepDescent)
-    ) {
+    if (approachingCruiseStep && !approachingCruiseStep.isIgnored && cruiseStepLegIndex) {
+      const distanceToStep =
+        this.fmc.guidanceController.vnavDriver.mcduProfile?.waypointPredictions.get(
+          cruiseStepLegIndex,
+        )?.distanceFromAircraft;
+
       if (
-        crzPred.distanceFromPresentPosition < 20 &&
+        distanceToStep !== undefined &&
+        distanceToStep < 20 &&
         this.stepAheadTriggeredForAltitude !== approachingCruiseStep.toAltitude
       ) {
         this.fmc.addMessageToQueue(NXSystemMessages.stepAhead, undefined, undefined);

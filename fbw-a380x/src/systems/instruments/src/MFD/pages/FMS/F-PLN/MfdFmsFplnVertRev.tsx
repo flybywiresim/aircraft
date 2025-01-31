@@ -127,6 +127,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly crzFl = Subject.create<number | null>(null);
   private readonly crzFlFormatted = FmgcData.fmcFormatValue(this.crzFl);
 
+  /** If set to true, a re-layouting of the lines is forced, e.g. if an entry in the middle was deleted. */
+  private stepAltsLineWasDeleted = false;
+
   private readonly stepAltsLineVisibility = Array.from(Array(5), () => Subject.create<'visible' | 'hidden'>('hidden'));
   private readonly stepAltsWptIndices = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsFlightLevel = Array.from(Array(5), () => Subject.create<number | null>(null));
@@ -344,6 +347,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           this.stepAltsTimes[line].set('--:--');
           this.stepAltsIgnored[line].set(false);
           this.stepAltsAboveMaxFl[line].set(false);
+
+          if (this.stepAltsLineWasDeleted) {
+            this.stepAltsWptIndices[line].set(null);
+            this.stepAltsFlightLevel[line].set(null);
+            this.stepAltsLineWasDeleted = false;
+          }
           break;
         }
 
@@ -390,24 +399,27 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
   }
 
-  static nextCruiseStep(flightPlan: FlightPlan): CruiseStepEntry | undefined {
+  static nextCruiseStep(flightPlan: FlightPlan): [CruiseStepEntry | undefined, number | undefined] {
     const cruiseStepLegIndex = flightPlan.allLegs.findIndex(
       (l, index) => l.isDiscontinuity === false && index >= flightPlan.activeLegIndex && l.cruiseStep,
     );
 
     if (cruiseStepLegIndex < 0) {
-      return undefined;
+      return [undefined, undefined];
     }
 
     const cruiseStep = flightPlan.legElementAt(cruiseStepLegIndex).cruiseStep;
     return cruiseStep
-      ? {
-          distanceBeforeTermination: cruiseStep.distanceBeforeTermination,
-          isIgnored: cruiseStep.isIgnored,
-          toAltitude: cruiseStep.toAltitude,
-          waypointIndex: cruiseStepLegIndex, // Fix waypointIndex
-        }
-      : undefined;
+      ? [
+          {
+            distanceBeforeTermination: cruiseStep.distanceBeforeTermination,
+            isIgnored: cruiseStep.isIgnored,
+            toAltitude: cruiseStep.toAltitude,
+            waypointIndex: cruiseStepLegIndex, // Fix waypointIndex
+          },
+          cruiseStepLegIndex,
+        ]
+      : [undefined, undefined];
   }
 
   private async onWptDropdownModified(idx: number | null): Promise<void> {
@@ -575,6 +587,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.loadedFlightPlan?.removeCruiseStep(legIndex);
     this.stepAltsWptIndices[lineIndex].set(null);
     this.stepAltsFlightLevel[lineIndex].set(null);
+    this.stepAltsLineWasDeleted = true;
   }
 
   public onAfterRender(node: VNode): void {

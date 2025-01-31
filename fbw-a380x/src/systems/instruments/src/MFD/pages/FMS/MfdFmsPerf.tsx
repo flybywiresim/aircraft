@@ -812,14 +812,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.crzPredStepAheadRef.instance.style.display = 'none';
 
                 if (this.props.fmcService.master?.flightPlanService.active) {
-                  const approachingCruiseStep = MfdFmsFplnVertRev.nextCruiseStep(
+                  const [approachingCruiseStep, cruiseStepLegIndex] = MfdFmsFplnVertRev.nextCruiseStep(
                     this.props.fmcService.master.flightPlanService.active,
                   );
                   this.crzPredWaypoint.set(
-                    approachingCruiseStep
-                      ? this.props.fmcService.master?.flightPlanService.active.legElementAt(
-                          approachingCruiseStep.waypointIndex,
-                        ).ident
+                    cruiseStepLegIndex && approachingCruiseStep
+                      ? this.props.fmcService.master?.flightPlanService.active.legElementAt(cruiseStepLegIndex).ident
                       : '',
                   );
                   this.crzPredAltitudeTarget.set(approachingCruiseStep ? approachingCruiseStep.toAltitude / 100 : null);
