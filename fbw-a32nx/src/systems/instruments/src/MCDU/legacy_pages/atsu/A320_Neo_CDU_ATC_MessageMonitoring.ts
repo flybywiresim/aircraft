@@ -164,7 +164,8 @@ export class CDUAtcMessageMonitoring {
     };
     mcdu.onRightInput[5] = () => {
       if (cancelIndex > -1) {
-        UplinkMessageStateMachine.update(mcdu.atsu, messages[cancelIndex], false);
+        // FIXME this should only live on the systems host?
+        //UplinkMessageStateMachine.update(mcdu.atsu, messages[cancelIndex], false);
         mcdu.atsu.updateMessage(messages[cancelIndex]);
         CDUAtcMessageMonitoring.ShowPage(mcdu);
       }
