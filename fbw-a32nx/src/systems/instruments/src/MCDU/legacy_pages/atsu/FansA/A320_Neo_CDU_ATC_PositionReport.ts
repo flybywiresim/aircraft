@@ -75,7 +75,7 @@ export class CDUAtcPositionReport {
     if (!data.sat[1]) {
       const sat = data.atsuEnvironmentData.temperature;
       if (InputValidation.validateScratchpadTemperature(sat.value) === AtsuStatusCodes.Ok) {
-        data.sat[0] = Math.round(InputValidation.formatScratchpadTemperature(`${sat.value}`));
+        data.sat[0] = Math.round(sat.value);
       }
     }
 
