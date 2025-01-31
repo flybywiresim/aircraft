@@ -38,6 +38,8 @@ export class McduFsInstrument implements FsInstrument {
 
   private readonly legacyFms = new A320_Neo_CDU_MainDisplay(this.bus);
 
+  private lastTime = Date.now();
+
   /**
    * Creates a new instance of FsInstrument.
    * @param instrument This instrument's parent BaseInstrument.
@@ -77,7 +79,9 @@ export class McduFsInstrument implements FsInstrument {
     this.backplane.onUpdate();
 
     // TODO deltaTime
-    this.legacyFms.onUpdate(20);
+    const deltaTime = Date.now() - this.lastTime;
+    this.lastTime = Date.now();
+    this.legacyFms.onUpdate(deltaTime);
   }
 
   /** @inheritdoc */
