@@ -10,7 +10,7 @@ import { NXSystemMessages } from '../../messages/NXSystemMessages';
 import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAocRequestsAtis {
-  static CreateDataBlock(mcdu: A320_Neo_CDU_MainDisplay) {
+  static CreateDataBlock(mcdu: A320_Neo_CDU_MainDisplay): any {
     const retval = {
       requestId: mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight ? AtisType.Departure : AtisType.Arrival,
       departure: '',

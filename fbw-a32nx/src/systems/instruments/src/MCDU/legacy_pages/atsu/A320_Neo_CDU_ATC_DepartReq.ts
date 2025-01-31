@@ -85,11 +85,11 @@ export class CDUAtcDepartReq {
         emptyValue: '{amber}_{end}',
         suffix: '[color]cyan',
         maxLength: 1,
-        isValid: (value) => {
+        isValid: (value: string) => {
           return /^[A-Z()]*$/.test(value) === true;
         },
       },
-      (value) => {
+      (value: string) => {
         store.atis = value;
         CDUAtcDepartReq.ShowPage1(mcdu, store);
       },
@@ -104,7 +104,7 @@ export class CDUAtcDepartReq {
         suffix: '[color]cyan',
         maxLength: 4,
       },
-      (value) => {
+      (value: string) => {
         store.gate = value;
         CDUAtcDepartReq.ShowPage1(mcdu, store);
       },
@@ -120,7 +120,7 @@ export class CDUAtcDepartReq {
         suffix: '[color]white',
         maxLength: 22,
       },
-      (value) => {
+      (value: string) => {
         store.freetext[0] = value;
         CDUAtcDepartReq.ShowPage1(mcdu, store);
       },

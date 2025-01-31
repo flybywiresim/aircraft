@@ -331,9 +331,12 @@ export class CDUAtcMessageModify {
     return `{cyan}{{end}{white}${text}{end}`;
   }
 
-  static CreateVisualization(message, data) {
+  static CreateVisualization(
+    message: { Content: { TypeId: string | number }[] },
+    data: { selectedToggles: any[]; value: string; modified: any },
+  ) {
     const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
-    const visualization = [['', ''], '', ''];
+    const visualization: [string[], string, string] = [['', ''], '', ''];
 
     const color = !data.selectedToggles[0] && !data.selectedToggles[1] ? '{cyan}' : '{white}';
     visualization[0][0] = `${color}\xa0${CDUAtcMessageModify.CreateDescriptionLine(message, lutEntry[0])}{end}`;

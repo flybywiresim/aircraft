@@ -6,7 +6,7 @@ import { NXSystemMessages } from '../../messages/NXSystemMessages';
 import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
 
 export class CDUAtcSpeedRequest {
-  static CreateDataBlock() {
+  static CreateDataBlock(): any {
     return {
       speed: null,
       whenSpeed: null,
