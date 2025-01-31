@@ -119,7 +119,7 @@ export class CDUProgressPage {
     let progBearingDist = '{small}\xa0---°\xa0/----.-{end}';
     let progWaypoint = '[\xa0\xa0\xa0\xa0\xa0]';
     if (mcdu.progWaypointIdent !== undefined) {
-      progWaypoint = mcdu.progWaypointIdent.padEnd('7', '\xa0');
+      progWaypoint = mcdu.progWaypointIdent.padEnd(7, '\xa0');
       if (mcdu.progBearing > 0 && mcdu.progDistance > 0) {
         const distDigits = mcdu.progDistance > 9999 ? 0 : 1;
         progBearingDist = `{small}{green}\xa0${mcdu.progBearing.toFixed(0).padStart(3, '0')}°\xa0/${mcdu.progDistance.toFixed(distDigits).padStart(3)}{end}{end}`;
