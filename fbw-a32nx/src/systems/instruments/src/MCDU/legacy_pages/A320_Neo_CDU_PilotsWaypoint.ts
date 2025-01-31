@@ -11,7 +11,7 @@ export class CDUPilotsWaypoint {
     if (mcdu.dataManager.numberOfStoredWaypoints() < 1) {
       return CDUNewWaypoint.ShowPage(mcdu, () => CDUDataIndexPage.ShowPage2(mcdu));
     }
-    if (mcdu.dataManager.storedWaypoints[index] === undefined) {
+    if (mcdu.dataManager.getStoredWaypoint(index) === undefined) {
       index = mcdu.dataManager.prevStoredWaypointIndex(index);
     }
     const number = mcdu.dataManager.storedWaypointNumber(index);
@@ -35,7 +35,7 @@ export class CDUPilotsWaypoint {
       ['', `{${confirmDeleteAll ? 'amber' : 'cyan'}}DELETE ALL${confirmDeleteAll ? '*' : '}'}{end}`],
     ];
 
-    const storedWp = mcdu.dataManager.storedWaypoints[index];
+    const storedWp = mcdu.dataManager.getStoredWaypoint(index);
     if (storedWp !== undefined) {
       template[2][0] = `{green}${storedWp.waypoint.ident}{end}`;
 
@@ -68,7 +68,7 @@ export class CDUPilotsWaypoint {
           } else if (mcdu.dataManager.numberOfStoredWaypoints() < 1) {
             CDUNewWaypoint.ShowPage(mcdu, () => CDUDataIndexPage.ShowPage2(mcdu));
           } else {
-            CDUPilotsWaypoint.ShowPage(mcdu, mcdu.dataManager.nextStoredWaypointIndex());
+            CDUPilotsWaypoint.ShowPage(mcdu, mcdu.dataManager.nextStoredWaypointIndex(index));
           }
         });
       } else {
