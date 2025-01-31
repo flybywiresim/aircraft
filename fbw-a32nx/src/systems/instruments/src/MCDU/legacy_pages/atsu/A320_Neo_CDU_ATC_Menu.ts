@@ -6,7 +6,6 @@ import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcMessageModify } from './A320_Neo_CDU_ATC_MessageModify';
 import { CDUAtcMessageMonitoring } from './A320_Neo_CDU_ATC_MessageMonitoring';
 import { CDUAtcMessagesRecord } from './A320_Neo_CDU_ATC_MessagesRecord';
-import { CDUAtcReportAtis } from './A320_Neo_CDU_ATC_ReportAtis';
 import { CDUAtsuMenu } from './A320_Neo_CDU_ATSU_Menu';
 import { CDUAtcEmergencyFansA } from './FansA/A320_Neo_CDU_ATC_Emergency';
 import { CDUAtcUsualRequestFansA } from './FansA/A320_Neo_CDU_ATC_UsualRequest';
@@ -114,7 +113,7 @@ export class CDUAtcMenu {
     };
     mcdu.onRightInput[2] = () => {
       if (mcdu.atsu.fansMode() === FansMode.FansA) {
-        CDUAtcReportAtis.ShowPage(mcdu);
+        CDUAtcAtisMenu.ShowPage(mcdu);
       } else {
         mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
       }
