@@ -2822,39 +2822,6 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
   // TODO:FPM REWRITE: End of functions to refactor
   //-----------------------------------------------------------------------------------
 
-  // FIXME move to ATSU
-  /*
-   * validates the waypoint type
-   * return values:
-   *    0 = lat-lon coordinate
-   *    1 = time
-   *    2 = place definition
-   *   -1 = unknown
-   */
-  public async waypointType(mcdu, waypoint) {
-    if (WaypointEntryUtils.isLatLonFormat(waypoint)) {
-      return [0, null];
-    }
-
-    // time formatted
-    if (/([0-2][0-4][0-5][0-9]Z?)/.test(waypoint) && waypoint.length <= 5) {
-      return [1, null];
-    }
-
-    // place formatted
-    if (/^[A-Z0-9]{2,7}/.test(waypoint)) {
-      return mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(waypoint).then((waypoints) => {
-        if (waypoints.length !== 0) {
-          return [2, null];
-        } else {
-          return [-1, NXSystemMessages.notInDatabase];
-        }
-      });
-    }
-
-    return [-1, NXSystemMessages.formatError];
-  }
-
   private vSpeedsValid() {
     return (
       (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true) &&

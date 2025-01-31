@@ -418,16 +418,11 @@ export class CDUAtcPositionReport {
           }
         } else if (/^[A-Z0-9]{2,7}/.test(value)) {
           // place format
-          mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
-            if (waypoints.length === 0) {
-              mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-            } else {
-              data.passedWaypoint[0] = value;
-              data.passedWaypoint[3] = true;
-            }
-
-            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
-          });
+          data.passedWaypoint[0] = value;
+          data.passedWaypoint[3] = true;
+          CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
+        } else {
+          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
         }
       }
 
@@ -480,16 +475,11 @@ export class CDUAtcPositionReport {
           }
         } else if (/^[A-Z0-9]{2,7}/.test(value)) {
           // place format
-          mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
-            if (waypoints.length === 0) {
-              mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-            } else {
-              data.activeWaypoint[0] = value;
-              data.activeWaypoint[2] = true;
-            }
-
-            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
-          });
+          data.activeWaypoint[0] = value;
+          data.activeWaypoint[2] = true;
+          CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
+        } else {
+          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
         }
       }
 
@@ -517,16 +507,11 @@ export class CDUAtcPositionReport {
           }
         } else if (/^[A-Z0-9]{2,7}/.test(value)) {
           // place format
-          mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
-            if (waypoints.length === 0) {
-              mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-            } else {
-              data.nextWaypoint[0] = value;
-              data.nextWaypoint[1] = true;
-            }
-
-            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
-          });
+          data.nextWaypoint[0] = value;
+          data.nextWaypoint[1] = true;
+          CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
+        } else {
+          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
         }
       }
 

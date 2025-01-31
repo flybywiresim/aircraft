@@ -4,8 +4,9 @@
 import { OclMessage } from '@datalink/common';
 import { CDU_SingleValueField } from '../../legacy/A320_Neo_CDU_Field';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
-import { NXSystemMessages } from '../../messages/NXSystemMessages';
+import { McduMessage, NXSystemMessages } from '../../messages/NXSystemMessages';
 import { A320_Neo_CDU_MainDisplay } from '../../legacy/A320_Neo_CDU_MainDisplay';
+import { WaypointEntryUtils } from '@fmgc/index';
 
 export class CDUAtcOceanicReq {
   static CreateDataBlock() {
@@ -142,28 +143,27 @@ export class CDUAtcOceanicReq {
         suffix: '[color]cyan',
       },
       (value: string | null) => {
-        mcdu.waypointType(mcdu, value).then((type) => {
-          if (type[0] === -1) {
-            mcdu.setScratchpadMessage(type[1]);
-          } else if (type[0] === 1) {
-            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-          } else {
-            store.entryPoint = value;
-            if (CDUAtcOceanicReq.WaypointOnRoute(mcdu, value)) {
-              store.entryTime = CDUAtcOceanicReq.CalculateEntryPointETA(mcdu, value);
-              if (store.entryTime !== '') {
-                entryTime.setValue(store.entryTime);
-              } else {
-                entryTime.clearValue();
-              }
+        const type = CDUAtcOceanicReq.waypointType(value);
+        if (type[0] === -1) {
+          mcdu.setScratchpadMessage(type[1]);
+        } else if (type[0] === 1) {
+          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+        } else {
+          store.entryPoint = value;
+          if (CDUAtcOceanicReq.WaypointOnRoute(mcdu, value)) {
+            store.entryTime = CDUAtcOceanicReq.CalculateEntryPointETA(mcdu, value);
+            if (store.entryTime !== '') {
+              entryTime.setValue(store.entryTime);
             } else {
-              store.entryTime = '';
               entryTime.clearValue();
             }
+          } else {
+            store.entryTime = '';
+            entryTime.clearValue();
           }
+        }
 
-          CDUAtcOceanicReq.ShowPage1(mcdu, store);
-        });
+        CDUAtcOceanicReq.ShowPage1(mcdu, store);
       },
     );
     const requestedMach = new CDU_SingleValueField(
@@ -357,5 +357,23 @@ export class CDUAtcOceanicReq {
     mcdu.onLeftInput[5] = () => {
       CDUAtcOceanicReq.ShowPage1(mcdu, store);
     };
+  }
+
+  private static waypointType(waypoint: string): [number, McduMessage | null] {
+    if (WaypointEntryUtils.isLatLonFormat(waypoint)) {
+      return [0, null];
+    }
+
+    // time formatted
+    if (/([0-2][0-4][0-5][0-9]Z?)/.test(waypoint) && waypoint.length <= 5) {
+      return [1, null];
+    }
+
+    // place formatted
+    if (/^[A-Z0-9]{2,7}/.test(waypoint)) {
+      return [2, null];
+    }
+
+    return [-1, NXSystemMessages.formatError];
   }
 }

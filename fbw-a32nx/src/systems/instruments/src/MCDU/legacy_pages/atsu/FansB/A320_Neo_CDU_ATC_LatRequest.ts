@@ -106,15 +106,10 @@ export class CDUAtcLatRequestFansB {
           }
         } else if (/^[A-Z0-9]{2,7}/.test(value)) {
           // place format
-          mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
-            if (waypoints.length === 0) {
-              mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-            } else {
-              data.directTo = value;
-            }
-
-            CDUAtcLatRequestFansB.ShowPage(mcdu, data);
-          });
+          data.directTo = value;
+          CDUAtcLatRequestFansB.ShowPage(mcdu, data);
+        } else {
+          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
         }
       }
 
