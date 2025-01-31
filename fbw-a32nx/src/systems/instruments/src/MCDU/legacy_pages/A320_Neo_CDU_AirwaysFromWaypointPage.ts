@@ -6,9 +6,17 @@ import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
+import { Airway } from '@flybywiresim/fbw-sdk';
 
 export class A320_Neo_CDU_AirwaysFromWaypointPage {
-  static ShowPage(mcdu: A320_Neo_CDU_MainDisplay, reviseIndex, pendingAirway, lastIndex, forPlan, inAlternate) {
+  static ShowPage(
+    mcdu: A320_Neo_CDU_MainDisplay,
+    reviseIndex: number,
+    pendingAirway: Airway,
+    lastIndex: number,
+    forPlan: number,
+    inAlternate: boolean,
+  ) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AirwaysFromWaypointPage;
 

@@ -215,7 +215,7 @@ export class CDUAvailableFlightPlanPage {
     };
   }
 
-  static insertEmptyRows(rowsToInsert) {
+  static insertEmptyRows(rowsToInsert: number) {
     const array = [];
     for (let i = 0; i < rowsToInsert; i++) {
       array.push(['']);

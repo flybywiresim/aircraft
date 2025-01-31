@@ -11,11 +11,10 @@ import { FMCMainDisplay } from '../legacy/A32NX_FMCMainDisplay';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
-
-const MAX_FIX_ROW = 5;
+import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 const Markers = {
   FPLN_DISCONTINUITY: ['---F-PLN DISCONTINUITY--'],
@@ -302,7 +301,7 @@ export class CDUFlightPlanPage {
           break;
         }
         case 2:
-          bearingTrack = formatTrack(wpPrev, bearingTrackTo);
+          bearingTrack = isDiscontinuity(wpPrev) ? '' : formatTrack(wpPrev, bearingTrackTo);
           break;
       }
 
@@ -1064,7 +1063,14 @@ export class CDUFlightPlanPage {
     ]);
   }
 
-  static async clearElement(mcdu, fpIndex, offset, forPlan, forAlternate, scratchpadCallback) {
+  static async clearElement(
+    mcdu: A320_Neo_CDU_MainDisplay,
+    fpIndex: number,
+    offset: number,
+    forPlan: number,
+    forAlternate: boolean,
+    scratchpadCallback: () => void,
+  ) {
     if (!this.ensureCanClearElement(mcdu, fpIndex, forPlan, forAlternate, scratchpadCallback)) {
       return;
     }
@@ -1079,7 +1085,8 @@ export class CDUFlightPlanPage {
       if (element.isHX() || (!forAlternate && fpIndex <= targetPlan.activeLegIndex)) {
         insertDiscontinuity = false;
       } else if (previousElement.isDiscontinuity === false && previousElement.type === 'PI' && element.type === 'CF') {
-        insertDiscontinuity = element.waypoint.databaseId === previousElement.recommendedNavaid.databaseId;
+        insertDiscontinuity =
+          element.definition.waypoint?.databaseId === previousElement.definition.recommendedNavaid?.databaseId;
       }
     } else {
       insertDiscontinuity = false;
@@ -1098,7 +1105,13 @@ export class CDUFlightPlanPage {
     CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
   }
 
-  static ensureCanClearElement(mcdu, fpIndex, forPlan, forAlternate, scratchpadCallback) {
+  static ensureCanClearElement(
+    mcdu: A320_Neo_CDU_MainDisplay,
+    fpIndex: number,
+    forPlan: number,
+    forAlternate: boolean,
+    scratchpadCallback: { (): void; (): void },
+  ) {
     const targetPlan = forAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
     if (forPlan === FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary) {
@@ -1181,7 +1194,12 @@ export class CDUFlightPlanPage {
   }
 }
 
-function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true) {
+function renderFixHeader(
+  rowObj: { fixAnnotation: string; color: string; distance: string; bearingTrack: string; fpa: string },
+  showNm = false,
+  showDist = true,
+  showFix = true,
+) {
   const { fixAnnotation, color, distance, bearingTrack, fpa } = rowObj;
   let right = showDist ? `{${color}}${distance}{end}` : '';
   if (fpa) {
@@ -1198,7 +1216,22 @@ function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true
   ];
 }
 
-function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
+function renderFixContent(
+  rowObj: {
+    ident: string;
+    isOverfly: boolean;
+    color: string;
+    spdColor: string;
+    speedConstraint: string;
+    altColor: string;
+    altSize: string;
+    altitudeConstraint: string;
+    timeCell: string;
+    timeColor: string;
+  },
+  spdRepeat = false,
+  altRepeat = false,
+) {
   const {
     ident,
     isOverfly,
@@ -1238,10 +1271,9 @@ function emptyFplnPage(forPlan) {
 
 /**
  * Check whether leg is a course reversal leg
- * @param {FlightPlanLeg} leg
  * @returns true if leg is a course reversal leg
  */
-function legTypeIsCourseReversal(leg) {
+function legTypeIsCourseReversal(leg: FlightPlanLeg) {
   switch (leg.type) {
     case 'HA':
     case 'HF':
@@ -1255,10 +1287,9 @@ function legTypeIsCourseReversal(leg) {
 
 /**
  * Check whether leg has a coded forced turn direction
- * @param {FlightPlanLeg} leg
  * @returns true if leg has coded forced turn direction
  */
-function legTurnIsForced(leg) {
+function legTurnIsForced(leg: FlightPlanLeg) {
   // forced turns are only for straight legs
   return (
     (leg.definition.turnDirection === 'L' /* Left */ || leg.definition.turnDirection === 'R') /* Right */ &&
@@ -1267,42 +1298,30 @@ function legTurnIsForced(leg) {
   );
 }
 
-function formatMachNumber(rawNumber) {
+function formatMachNumber(rawNumber: number) {
   return (Math.round(100 * rawNumber) / 100).toFixed(2).slice(1);
 }
 
-/**
- * @param {FlightPlanLeg} leg
- * @return {boolean}
- */
-function legHasAltConstraint(leg) {
+function legHasAltConstraint(leg: FlightPlanLeg): boolean {
   return !leg.isXA() && (leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint());
 }
 
-/**
- * @param {FlightPlanLeg} leg
- * @return {boolean}
- */
-function legIsRunway(leg) {
+function legIsRunway(leg: FlightPlanLeg): boolean {
   return leg.definition && leg.definition.waypointDescriptor === 4;
 }
 
-/**
- * @param {FlightPlanLeg} leg
- * @return {boolean}
- */
-function legIsAirport(leg) {
+function legIsAirport(leg: FlightPlanLeg): boolean {
   return leg.definition && leg.definition.waypointDescriptor === 1;
 }
 
 /**
  * Formats an altitude as an altitude or flight level for display.
- * @param {*} mcdu Reference to the MCDU instance
- * @param {number} altitudeToFormat  The altitude in feet.
- * @param {boolean} useTransAlt Whether to use transition altitude, otherwise transition level is used.
- * @returns {string} The formatted altitude/level.
+ * @param mcdu Reference to the MCDU instance
+ * @param alt  The altitude in feet.
+ * @param useTransAlt Whether to use transition altitude, otherwise transition level is used.
+ * @returns The formatted altitude/level.
  */
-function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
+function formatAltitudeOrLevel(mcdu: A320_Neo_CDU_MainDisplay, alt: number, useTransAlt: boolean): string {
   const activePlan = mcdu.flightPlanService.active;
 
   let isFl = false;
@@ -1321,7 +1340,7 @@ function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
   return formatAlt(alt);
 }
 
-function formatTrack(from, to) {
+function formatTrack(from: FlightPlanLeg, to: { definition: { waypoint: { location: LatLongData }; type: string } }) {
   // TODO: Does this show something for non-waypoint terminated legs?
   if (
     !from ||
@@ -1347,34 +1366,38 @@ function formatTrack(from, to) {
 
 /**
  * Formats a numberical altitude to a string to be displayed in the altitude column. Does not format FLs, use {@link formatAltitudeOrLevel} for this purpose
- * @param {Number} alt The altitude to format
- * @returns {String} The formatted altitude string
+ * @param alt The altitude to format
+ * @returns The formatted altitude string
  */
-function formatAlt(alt) {
+function formatAlt(alt: number): string {
   return (Math.round(alt / 10) * 10).toFixed(0);
 }
 
-function formatAltConstraint(mcdu, constraint, useTransAlt) {
+function formatAltConstraint(
+  mcdu: A320_Neo_CDU_MainDisplay,
+  constraint: { altitudeDescriptor: AltitudeDescriptor; altitude1: number; altitude2: number },
+  useTransAlt: boolean,
+) {
   if (!constraint) {
     return '';
   }
 
   // Altitude constraint types "G" and "H" are not shown in the flight plan
   switch (constraint.altitudeDescriptor) {
-    case '@': // AtAlt1
-    case 'I': // AtAlt1GsIntcptAlt2
-    case 'X': // AtAlt1AngleAlt2
+    case AltitudeDescriptor.AtAlt1:
+    case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+    case AltitudeDescriptor.AtAlt1AngleAlt2:
       return formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-    case '+': // AtOrAboveAlt1
-    case 'J': // AtOrAboveAlt1GsIntcptAlt2
-    case 'V': // AtOrAboveAlt1AngleAlt2
+    case AltitudeDescriptor.AtOrAboveAlt1:
+    case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+    case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
       return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-    case '-': // AtOrBelowAlt1
-    case 'Y': // AtOrBelowAlt1AngleAlt2
+    case AltitudeDescriptor.AtOrBelowAlt1:
+    case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
       return '-' + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
-    case 'B': // BetweenAlt1Alt2
+    case AltitudeDescriptor.BetweenAlt1Alt2:
       return 'WINDOW';
-    case 'C': // AtOrAboveAlt2:
+    case AltitudeDescriptor.AtOrAboveAlt2:
       return '+' + formatAltitudeOrLevel(mcdu, constraint.altitude2, useTransAlt);
     default:
       return '';
