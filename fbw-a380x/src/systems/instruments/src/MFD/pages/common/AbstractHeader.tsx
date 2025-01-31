@@ -108,9 +108,7 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
           hEventConsumer={this.props.mfd.hEventConsumer}
           interactionMode={this.props.mfd.interactionMode}
         />
-        <span class="mfd-header-callsign">
-          {this.props.callsign.map((cs) => (cs !== null ? this.props.callsign : '----------'))}
-        </span>
+        <span class="mfd-header-callsign">{this.props.callsign.map((cs) => (cs !== null ? cs : '----------'))}</span>
       </div>
     );
   }
