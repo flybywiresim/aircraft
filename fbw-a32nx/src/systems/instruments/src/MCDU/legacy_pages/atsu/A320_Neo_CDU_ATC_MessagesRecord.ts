@@ -62,7 +62,7 @@ export class CDUAtcMessagesRecord {
         contentStart = '';
 
       if (messages.length > offset + i && messages[offset + i]) {
-        headerLeft = `${messages[offset + i].Timestamp.mailboxTimestamp()} ${messages[offset + i].Direction === AtsuMessageDirection.Input ? 'FROM' : 'TO'} `;
+        headerLeft = `${messages[offset + i].Timestamp.mailboxTimestamp()} ${messages[offset + i].Direction === AtsuMessageDirection.Uplink ? 'FROM' : 'TO'} `;
         headerLeft += messages[offset + i].Station;
         headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].Response);
 
