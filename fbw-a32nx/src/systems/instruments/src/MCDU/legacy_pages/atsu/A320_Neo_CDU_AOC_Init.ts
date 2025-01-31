@@ -131,7 +131,7 @@ export class CDUAocInit {
     const seconds = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
     gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
     if (mcdu.isAnEngineOn()) {
-      currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
+      const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
       if (currentFob) {
         fob = `{small}${currentFob}{end}[color]green`;
       }
