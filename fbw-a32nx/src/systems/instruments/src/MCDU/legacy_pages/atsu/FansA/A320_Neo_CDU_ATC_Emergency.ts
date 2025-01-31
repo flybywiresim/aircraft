@@ -281,7 +281,7 @@ export class CDUAtcEmergencyFansA {
     mcdu.onRightInput[5] = () => {
       if (CDUAtcEmergencyFansA.CanSendData(data)) {
         if (mcdu.atsu.currentStation() === '') {
-          mcdu.addNewMessage(NXSystemMessages.noAtc);
+          mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
         } else {
           const messages = CDUAtcEmergencyFansA.CreateRequests(mcdu, data);
           if (messages.length !== 0) {
@@ -472,7 +472,7 @@ export class CDUAtcEmergencyFansA {
     mcdu.onRightInput[5] = () => {
       if (CDUAtcEmergencyFansA.CanSendData(data)) {
         if (mcdu.atsu.currentStation() === '') {
-          mcdu.addNewMessage(NXSystemMessages.noAtc);
+          mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
         } else {
           const messages = CDUAtcEmergencyFansA.CreateRequests(mcdu, data);
           if (messages.length !== 0) {
