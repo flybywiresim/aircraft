@@ -61,7 +61,7 @@ export class FmgcData {
 
   public readonly cpnyFplnUplinkInProgress = Subject.create(false);
 
-  public readonly atcCallsign = Subject.create<string>('----------');
+  public readonly atcCallsign = Subject.create<string | null>(null);
 
   /** in degrees celsius. null if not set. */
   public readonly cruiseTemperaturePilotEntry = Subject.create<number | null>(null);
