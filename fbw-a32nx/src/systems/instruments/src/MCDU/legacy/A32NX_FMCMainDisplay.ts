@@ -3,6 +3,7 @@
 
 import {
   a320EfisRangeSettings,
+  Arinc429OutputWord,
   Arinc429SignStatusMatrix,
   Arinc429Word,
   DatabaseIdent,
@@ -225,24 +226,24 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
   public _activeCruiseFlightLevelDefaulToFcu = false;
 
   // arinc bus output words
-  private readonly arincDiscreteWord2 = FmArinc429OutputWord.empty('DISCRETE_WORD_2');
-  private readonly arincDiscreteWord3 = FmArinc429OutputWord.empty('DISCRETE_WORD_3');
-  private readonly arincTakeoffPitchTrim = FmArinc429OutputWord.empty('TO_PITCH_TRIM');
-  private readonly arincLandingElevation = FmArinc429OutputWord.empty('LANDING_ELEVATION');
-  private readonly arincDestinationLatitude = FmArinc429OutputWord.empty('DEST_LAT');
-  private readonly arincDestinationLongitude = FmArinc429OutputWord.empty('DEST_LONG');
-  private readonly arincMDA = FmArinc429OutputWord.empty('MINIMUM_DESCENT_ALTITUDE');
-  private readonly arincDH = FmArinc429OutputWord.empty('DECISION_HEIGHT');
-  private readonly arincThrustReductionAltitude = FmArinc429OutputWord.empty('THR_RED_ALT');
-  private readonly arincAccelerationAltitude = FmArinc429OutputWord.empty('ACC_ALT');
-  private readonly arincEoAccelerationAltitude = FmArinc429OutputWord.empty('EO_ACC_ALT');
-  private readonly arincMissedThrustReductionAltitude = FmArinc429OutputWord.empty('MISSED_THR_RED_ALT');
-  private readonly arincMissedAccelerationAltitude = FmArinc429OutputWord.empty('MISSED_ACC_ALT');
-  private readonly arincMissedEoAccelerationAltitude = FmArinc429OutputWord.empty('MISSED_EO_ACC_ALT');
-  private readonly arincTransitionAltitude = FmArinc429OutputWord.empty('TRANS_ALT');
-  private readonly arincTransitionLevel = FmArinc429OutputWord.empty('TRANS_LVL');
+  private readonly arincDiscreteWord2 = new FmArinc429OutputWord('DISCRETE_WORD_2');
+  private readonly arincDiscreteWord3 = new FmArinc429OutputWord('DISCRETE_WORD_3');
+  private readonly arincTakeoffPitchTrim = new FmArinc429OutputWord('TO_PITCH_TRIM');
+  private readonly arincLandingElevation = new FmArinc429OutputWord('LANDING_ELEVATION');
+  private readonly arincDestinationLatitude = new FmArinc429OutputWord('DEST_LAT');
+  private readonly arincDestinationLongitude = new FmArinc429OutputWord('DEST_LONG');
+  private readonly arincMDA = new FmArinc429OutputWord('MINIMUM_DESCENT_ALTITUDE');
+  private readonly arincDH = new FmArinc429OutputWord('DECISION_HEIGHT');
+  private readonly arincThrustReductionAltitude = new FmArinc429OutputWord('THR_RED_ALT');
+  private readonly arincAccelerationAltitude = new FmArinc429OutputWord('ACC_ALT');
+  private readonly arincEoAccelerationAltitude = new FmArinc429OutputWord('EO_ACC_ALT');
+  private readonly arincMissedThrustReductionAltitude = new FmArinc429OutputWord('MISSED_THR_RED_ALT');
+  private readonly arincMissedAccelerationAltitude = new FmArinc429OutputWord('MISSED_ACC_ALT');
+  private readonly arincMissedEoAccelerationAltitude = new FmArinc429OutputWord('MISSED_EO_ACC_ALT');
+  private readonly arincTransitionAltitude = new FmArinc429OutputWord('TRANS_ALT');
+  private readonly arincTransitionLevel = new FmArinc429OutputWord('TRANS_LVL');
   /** contains fm messages (not yet implemented) and nodh bit */
-  private readonly arincEisWord2 = FmArinc429OutputWord.empty('EIS_DISCRETE_WORD_2');
+  private readonly arincEisWord2 = new FmArinc429OutputWord('EIS_DISCRETE_WORD_2');
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   private readonly arincBusOutputs = [
@@ -617,8 +618,8 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     }
 
     this.arincBusOutputs.forEach((word) => {
-      word.value = 0;
-      word.ssm = Arinc429SignStatusMatrix.NoComputedData;
+      word.setRawValue(0);
+      word.setSsm(Arinc429SignStatusMatrix.NoComputedData);
     });
 
     this.toSpeedsChecks();
@@ -1744,7 +1745,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     this.arincDH.setBnrValue(dhValid ? this.perfApprDH : 0, dhSsm, 16, 8192, 0);
     this.arincEisWord2.setBitValue(29, inRange && this.perfApprDH === 'NO DH');
     // FIXME we need to handle these better
-    this.arincEisWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
+    this.arincEisWord2.setSsm(Arinc429SignStatusMatrix.NormalOperation);
   }
 
   private shouldTransmitMinimums() {
@@ -2498,7 +2499,9 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
               }
               this.coRoute['navlog'] = data.navlog.fix;
 
-              await CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(this, this.flightPlanService, this.coRoute);
+              // FIXME this whole thing is a mess. Create proper functions to create a CoRoute from whatever CompanyRoute.getCoRoute returns
+              // and untangle uplinks from route loading (to cater for database routes).
+              await CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(this, this.flightPlanService, this.coRoute as any);
               await this.flightPlanService.uplinkInsert();
               this.setGroundTempFromOrigin();
 
@@ -2948,7 +2951,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     this.arincDiscreteWord3.setBitValue(16, vSpeedDisagree);
     this.arincDiscreteWord3.setBitValue(17, toSpeedsTooLow);
     this.arincDiscreteWord3.setBitValue(18, toSpeedsNotInserted);
-    this.arincDiscreteWord3.ssm = Arinc429SignStatusMatrix.NormalOperation;
+    this.arincDiscreteWord3.setSsm(Arinc429SignStatusMatrix.NormalOperation);
   }
 
   public get v1Speed() {
@@ -4250,7 +4253,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
       this.arincDiscreteWord2.setBitValue(14, this.flaps === 1);
       this.arincDiscreteWord2.setBitValue(15, this.flaps === 2);
       this.arincDiscreteWord2.setBitValue(16, this.flaps === 3);
-      this.arincDiscreteWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
+      this.arincDiscreteWord2.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     }
   }
 
@@ -4626,7 +4629,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     return this.groundTempPilot !== undefined ? this.groundTempPilot : this.groundTempAuto;
   }
 
-  private navModeEngaged() {
+  public navModeEngaged() {
     const lateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
     switch (lateralMode) {
       case 20: // NAV
@@ -5424,59 +5427,17 @@ const DefaultPerformanceData = Object.freeze({
   DescentSpeedLimitAltitude: 10000,
 });
 
-class FmArinc429OutputWord extends Arinc429Word {
-  private dirty = true;
-  private _ssm = 0;
+/** Writes FM output words for both FMS. */
+class FmArinc429OutputWord extends Arinc429OutputWord {
+  private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
 
-  constructor(
-    private name: string,
-    private _value = 0,
-  ) {
-    super(0);
-  }
-
-  get value() {
-    return this._value;
-  }
-
-  set value(value) {
-    if (this._value !== value) {
-      this.dirty = true;
-    }
-    this._value = value;
-  }
-
-  get ssm() {
-    return this._ssm;
-  }
-
-  set ssm(ssm) {
-    if (this._ssm !== ssm) {
-      this.dirty = true;
-    }
-    this._ssm = ssm;
-  }
-
-  static empty(name) {
-    return new FmArinc429OutputWord(name, 0);
-  }
-
-  async writeToSimVarIfDirty() {
-    if (this.dirty) {
-      this.dirty = false;
-      return Promise.all([
-        Arinc429Word.toSimVarValue(`L:A32NX_FM1_${this.name}`, this.value, this.ssm),
-        Arinc429Word.toSimVarValue(`L:A32NX_FM2_${this.name}`, this.value, this.ssm),
-      ]);
+  override async writeToSimVarIfDirty() {
+    if (this.isDirty) {
+      this.isDirty = false;
+      return Promise.all(
+        this.localVars.map((localVar) => Arinc429Word.toSimVarValue(localVar, this.word.value, this.word.ssm)),
+      );
     }
     return Promise.resolve();
-  }
-
-  setBnrValue(value, ssm, bits, rangeMax, rangeMin = 0) {
-    const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
-    const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
-
-    this.value = data;
-    this.ssm = ssm;
   }
 }
