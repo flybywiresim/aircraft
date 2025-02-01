@@ -3,7 +3,6 @@ import {
   DisplayComponent,
   FSComponent,
   MutableSubscribable,
-  Subject,
   Subscribable,
   SubscribableUtils,
   VNode,
