@@ -7,6 +7,7 @@ import {
   Arinc429SignStatusMatrix,
   Arinc429Word,
   DatabaseIdent,
+  DatabaseItem,
   EfisSide,
   EnrouteNdbNavaid,
   Fix,
@@ -1705,7 +1706,6 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     let latitude;
     let longitude;
 
-    /** @type {import('msfs-navdata').Runway} */
     const runway = this.flightPlanService.active.destinationRunway;
 
     if (runway) {
@@ -1713,7 +1713,6 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
       latitude = runway.thresholdLocation.lat;
       longitude = runway.thresholdLocation.long;
     } else {
-      /** @type {import('msfs-navdata').Airport} */
       const airport = this.flightPlanService.active.destinationAirport;
 
       if (airport) {
@@ -2587,15 +2586,12 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
     this.setScratchpadMessage(NXSystemMessages.aocActFplnUplink);
   }
 
-  /**
-     @param items {Array.<import('msfs-navdata').DatabaseItem>}
-     */
-  public deduplicateFacilities(items) {
+  public deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined> {
     if (items.length === 0) {
       return undefined;
     }
     if (items.length === 1) {
-      return items[0];
+      return Promise.resolve(items[0]);
     }
 
     return new Promise((resolve) => {

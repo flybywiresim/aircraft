@@ -1,4 +1,14 @@
-import { IlsNavaid, NdbNavaid, VhfNavaid, LsCategory, VhfNavaidType, isIlsNavaid } from '@flybywiresim/fbw-sdk';
+import {
+  IlsNavaid,
+  NdbNavaid,
+  VhfNavaid,
+  LsCategory,
+  VhfNavaidType,
+  isIlsNavaid,
+  isNdbNavaid,
+  VorClass,
+  NavaidSubsectionCode,
+} from '@flybywiresim/fbw-sdk';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
@@ -146,11 +156,11 @@ export class CDUNavaidPage {
   }
 
   /**
-   * @param {import('msfs-navdata').NdbNavaid | import('msfs-navdata').VhfNavaid} facility Navaid
-   * @returns {string} formatted frequency
+   * @param facility Navaid
+   * @returns formatted frequency
    */
-  static formatFrequency(facility) {
-    if (facility.subSectionCode === 1) {
+  static formatFrequency(facility: NdbNavaid | VhfNavaid | IlsNavaid): string {
+    if (isNdbNavaid(facility)) {
       return facility.frequency.toFixed(0);
     }
     return facility.frequency.toFixed(2);
@@ -158,24 +168,24 @@ export class CDUNavaidPage {
 
   /**
    * Format the figure of merit if possible
-   * @param {import('msfs-navdata').NdbNavaid | import('msfs-navdata').VhfNavaid} facility Navaid
-   * @returns {string} formatted FoM or blank
+   * @param facility Navaid
+   * @returns formatted FoM or blank
    */
-  static formatFigureOfMerit(facility) {
+  static formatFigureOfMerit(facility: VhfNavaid): string {
     if (
-      (facility.subSectionCode === 0 /* VhfNavaid */ && facility.type === 8) /* Dme */ ||
-      facility.type === 2 /* Vor */ ||
-      facility.type === 4 /* VorDme */ ||
-      facility.type === 32 /* Vortac */
+      (facility.subSectionCode === NavaidSubsectionCode.VhfNavaid && facility.type === VhfNavaidType.Dme) ||
+      facility.type === VhfNavaidType.Vor ||
+      facility.type === VhfNavaidType.VorDme ||
+      facility.type === VhfNavaidType.Vortac
     ) {
       switch (facility.class) {
-        case 8 /* HighAlt */:
+        case VorClass.HighAlt:
           return '3';
-        case 1 /* Unknown */:
+        case VorClass.Unknown:
           return '2';
-        case 4 /* LowAlt */:
+        case VorClass.LowAlt:
           return '1';
-        case 2 /* Terminal */:
+        case VorClass.Terminal:
           return '0';
       }
     }

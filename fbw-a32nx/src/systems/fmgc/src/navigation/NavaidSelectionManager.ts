@@ -164,7 +164,7 @@ export class NavaidSelectionManager {
       const distance = distanceTo(this.ppos, facility.dmeLocation ?? facility.location);
 
       if (this.isInLineOfSight(facility, distance)) {
-        // FIXME BCD frequency type in msfs-navdata... comparing floats is problematic
+        // FIXME BCD frequency type in nav db... comparing floats is problematic
         if (frequencies.has(facility.frequency)) {
           duplicateFrequencies.add(facility.frequency);
         }

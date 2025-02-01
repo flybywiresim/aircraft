@@ -77,9 +77,6 @@ dependencies:
   msfs-geo:
     specifier: ^0.1.0-alpha3
     version: 0.1.0-alpha5
-  msfs-navdata:
-    specifier: ^1.1.0
-    version: 1.2.4
   nanoid:
     specifier: ^3.3.1
     version: 3.3.7
@@ -8171,12 +8168,6 @@ packages:
     resolution: {integrity: sha512-ZDj8HUSHt2FWJBWHTCkK4HDjrAamcMcGB7m5UCZ/IGsF/WaPDlCG1MbLnJJIawqc7H4X6eh+hda8Q07+30FteA==}
     dependencies:
       mathjs: 10.6.4
-    dev: false
-
-  /msfs-navdata@1.2.4:
-    resolution: {integrity: sha512-A4nvJ8AZ58n8/0cbbAG+3SchChAW35FnzH1Bw9k9DfzK5fKbMWZwlcCWWuUGuKzoPV2CHdqJyn2xn1kWoRIH3g==}
-    dependencies:
-      msfs-geo: 0.1.0-alpha5
     dev: false
 
   /mz@2.7.0:

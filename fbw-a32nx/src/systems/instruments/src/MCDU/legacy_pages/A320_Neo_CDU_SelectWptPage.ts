@@ -1,4 +1,4 @@
-import { Fix, IlsNavaid } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, isFix, isIlsNavaid, isNdbNavaid, isVhfNavaid } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class A320_Neo_CDU_SelectWptPage {
@@ -9,21 +9,17 @@ export class A320_Neo_CDU_SelectWptPage {
    * @param page
    * @constructor
    */
-  static ShowPage(mcdu: LegacyFmsPageInterface, fixes: (Fix | IlsNavaid)[], callback, page = 0) {
+  static ShowPage<T extends DatabaseItem<any>>(mcdu: LegacyFmsPageInterface, fixes: T[], callback, page = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.SelectWptPage;
     const rows = [['', 'FREQ', 'LAT/LONG'], [''], [''], [''], [''], [''], [''], [''], [''], [''], [''], ['<RETURN']];
 
-    /**
-     * @param w {import('msfs-navdata').Fix | import('msfs-navdata').IlsNavaid}
-     * @returns {NauticalMiles}
-     */
     function calculateDistance(w) {
       const planeLla = new LatLongAlt(
         SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
         SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
       );
-      return Avionics.Utils.computeGreatCircleDistance(planeLla, w.locLocation ? w.locLocation : w.location);
+      return Avionics.Utils.computeGreatCircleDistance(planeLla, isIlsNavaid(w) ? w.locLocation : w.location);
     }
 
     const orderedWaypoints = [...fixes].sort((a, b) => calculateDistance(a) - calculateDistance(b));
@@ -33,12 +29,12 @@ export class A320_Neo_CDU_SelectWptPage {
       if (w) {
         let freq = '';
 
-        if (w.databaseId[0] === 'V' || w.databaseId[0] === 'N') {
+        if (isVhfNavaid(w) || isNdbNavaid(w) || isIlsNavaid(w)) {
           freq = 'frequency' in w ? fastToFixed(w.frequency, 2) : ' ';
         }
 
-        const lat = 'locLocation' in w ? w.locLocation.lat : w.location.lat;
-        const long = 'locLocation' in w ? w.locLocation.long : w.location.long;
+        const lat = isIlsNavaid(w) ? w.locLocation.lat : isFix(w) ? w.location.lat : NaN;
+        const long = isIlsNavaid(w) ? w.locLocation.long : isFix(w) ? w.location.long : NaN;
 
         const latString = `${Math.abs(lat).toFixed(0).padStart(2, '0')}${lat >= 0 ? 'N' : 'S'}`;
         const longString = `${Math.abs(long).toFixed(0).padStart(3, '0')}${long >= 0 ? 'E' : 'W'}`;

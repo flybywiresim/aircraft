@@ -22,6 +22,7 @@ import {
   Approach,
   ApproachType,
   ApproachUtils,
+  Arrival,
   Runway,
   RunwayUtils,
 } from '@flybywiresim/fbw-sdk';
@@ -174,10 +175,7 @@ export class CDUAvailableArrivalsPage {
     );
     const rows = [[''], [''], [''], [''], [''], [''], [''], ['']];
 
-    /**
-     * @type {({ arrival: import('msfs-navdata').Arrival, arrivalIndex: number })[]}
-     */
-    const matchingArrivals = [];
+    const matchingArrivals: { arrival: Arrival; arrivalIndex: number }[] = [];
 
     if (!starSelection) {
       for (let i = 0; i < ArrivalPagination.ARR_PAGE; i++) {
@@ -286,9 +284,6 @@ export class CDUAvailableArrivalsPage {
         }
       }
     } else {
-      /**
-       * @type {import('msfs-navdata').Runway | undefined}
-       */
       const destinationRunway = targetPlan.destinationRunway;
 
       if (destinationRunway) {

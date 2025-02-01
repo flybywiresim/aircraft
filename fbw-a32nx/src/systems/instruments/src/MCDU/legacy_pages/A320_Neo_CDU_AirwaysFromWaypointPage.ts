@@ -131,25 +131,23 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
             const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
             if (value.length > 0) {
-              WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then(
-                /** @param wp {import('msfs-navdata').Fix | undefined} */ (wp) => {
-                  if (wp) {
-                    const result = targetPlan.pendingAirways.thenTo(wp);
+              WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then((wp) => {
+                if (wp) {
+                  const result = targetPlan.pendingAirways.thenTo(wp);
 
-                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
-                      mcdu,
-                      reviseIndex,
-                      undefined,
-                      result ? 1 : -1,
-                      forPlan,
-                      inAlternate,
-                    );
-                  } else {
-                    mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
-                    scratchpadCallback();
-                  }
-                },
-              );
+                  A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
+                    mcdu,
+                    reviseIndex,
+                    undefined,
+                    result ? 1 : -1,
+                    forPlan,
+                    inAlternate,
+                  );
+                } else {
+                  mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
+                  scratchpadCallback();
+                }
+              });
             }
           };
           if (i + 1 < rows.length) {
@@ -247,8 +245,6 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
   /**
    * Distance is measured in number of fixes, not a real distance unit.
    * Searching around current fixes index.
-   *
-   * @param prevAirway {import('msfs-navdata').Airway}
    */
   static async _getFirstIntersection(
     mcdu: LegacyFmsPageInterface,
