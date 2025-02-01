@@ -37,7 +37,7 @@ export const StatusPage: React.FC = () => {
   const [pfdLimitations] = useSimVar('L:A32NX_PFD_LIMITATIONS_LINE_1', 'number', 1000);
   const limitationsVisible = ewdLimitationsAllPhases || ewdLimitationsApprLdg || pfdLimitations;
 
-  const statusNormal = !(limitationsVisible || maxInopLines > 0);
+  const statusNormal = !(limitationsVisible || maxInopLines > 0 || infos.some((i) => i));
 
   // Skip ADCN reachability check for now, add when ported to avionics framework
   const [fws1IsHealthy] = useSimVar('L:A32NX_FWS1_IS_HEALTHY', 'number', 1000);
