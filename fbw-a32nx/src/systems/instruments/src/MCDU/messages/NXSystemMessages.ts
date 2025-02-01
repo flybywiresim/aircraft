@@ -61,6 +61,7 @@ export class TypeIIMessage extends McduMessage {
  NXSystemMessages only holds real messages
  */
 export const NXSystemMessages = {
+  acPositionInvalid: new TypeIIMessage('A/C POSITION INVALID', true),
   aocActFplnUplink: new TypeIIMessage('AOC ACT F-PLN UPLINK'),
   arptTypeAlreadyInUse: new TypeIMessage('ARPT/TYPE ALREADY USED'), // FIXME move out of FMS
   awyWptMismatch: new TypeIMessage('AWY/WPT MISMATCH'),

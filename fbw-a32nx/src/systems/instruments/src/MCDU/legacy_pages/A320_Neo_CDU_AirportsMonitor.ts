@@ -1,314 +1,284 @@
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
+import { Airport, NXUnits } from '@flybywiresim/fbw-sdk';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { bearingTo, distanceTo } from 'msfs-geo';
+import { Predictions } from '@fmgc/guidance/vnav/Predictions';
+import { UnitType } from '@microsoft/msfs-sdk';
+import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
+
+interface AirportRow {
+  airport?: Airport;
+
+  /** Bearing to the airport in degrees from true north. */
+  bearing?: number;
+  /** Distance calculated to the airport in nautical miles. */
+  distance?: number;
+  /** Estimated time of arrival the airport. */
+  eta?: Date;
+  /** Estimated fuel on board upon arrival at the airport in tonnes. */
+  efob?: number;
+}
 
 export class CDUAirportsMonitor {
-  static ShowPage(mcdu: LegacyFmsPageInterface, reset = false) {
+  private static readonly NUM_AIRPORTS = 4;
+  private static readonly airportRows: AirportRow[] = Array.from(
+    { length: CDUAirportsMonitor.NUM_AIRPORTS + 1 },
+    () => ({}),
+  );
+  /** Effective wind for each airport (entered by pilot), in knots, +ve = tailwind. */
+  private static readonly effectiveWinds = new Map<string, number>();
+  private static pilotAirport = this.airportRows[CDUAirportsMonitor.NUM_AIRPORTS];
+  private static magVar = 0;
+
+  static ShowPage(mcdu: LegacyFmsPageInterface, frozen = false, showEfob = false, isRefresh = false) {
     mcdu.page.Current = mcdu.page.AirportsMonitor;
+    mcdu.clearDisplay();
 
-    // one delta t unit is about 1.5 ms it seems
-    const update_ival_ms = 1000;
+    // regular update due to showing dynamic data on this page
+    mcdu.SelfPtr = setTimeout(() => {
+      CDUAirportsMonitor.ShowPage(mcdu, frozen, showEfob, true);
+    }, mcdu.PageTimeout.Default);
 
-    this.total_delta_t += mcdu._deltaTime;
+    const template = [
+      ['CLOSEST AIRPORTS'],
+      [
+        '',
+        '',
+        showEfob
+          ? '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0EFOB\xa0\xa0\xa0EFF\xa0WIND\xa0'
+          : '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0BRG\xa0\xa0\xa0DIST\xa0\xa0UTC\xa0',
+      ],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', ''],
+    ];
 
-    if (reset) {
-      this.user_ap = undefined;
-      this.frozen = false;
-      this.page2 = false;
-      this.total_delta_t = 0;
-    }
-
-    // show an empty page while loading the airports
-    if (!this.icao1) {
-      mcdu.clearDisplay();
-      mcdu.setTemplate([
-        ['CLOSEST AIRPORTS'],
-        ['LOADING...'],
-        [''],
-        [''],
-        [''],
-        [''],
-        [''],
-        [''],
-        [''],
-        [''],
-        [''],
-        [''],
-      ]);
-    }
-
-    // we want the closest 4 APs with unlimited distance
-    const max_num_ap = 4;
-    const max_dist_miles = 100000;
-
-    if (this.total_delta_t >= update_ival_ms || !this.icao1) {
-      const ap_line_batch = new SimVar.SimVarBatch(
-        'C:fs9gps:NearestAirportItemsNumber',
-        'C:fs9gps:NearestAirportCurrentLine',
-      );
-      ap_line_batch.add('C:fs9gps:NearestAirportSelectedLatitude', 'degree latitude');
-      ap_line_batch.add('C:fs9gps:NearestAirportSelectedLongitude', 'degree longitude');
-      ap_line_batch.add('C:fs9gps:NearestAirportCurrentICAO', 'string', 'string');
-      ap_line_batch.add('C:fs9gps:NearestAirportCurrentDistance', 'nautical miles', 'number');
-      ap_line_batch.add('C:fs9gps:NearestAirportCurrentTrueBearing', 'degrees', 'number');
-
-      this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-      this.lon = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-      this.fob_kg = Simplane.getTotalFuel();
-      this.fuel_flow_kg_per_s = SimVar.GetSimVarValue('ENG FUEL FLOW PPH SSL', 'kilograms per second');
-      SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLatitude', 'degree latitude', this.lat);
-      SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLongitude', 'degree longitude', this.lon);
-      SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumItems', 'number', max_num_ap);
-      SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumDistance', 'nautical miles', max_dist_miles);
-
-      SimVar.GetSimVarArrayValues(
-        ap_line_batch,
-        function (_Values) {
-          // sometimes we get only one value,
-          // in which case the display will not be cleared and redrawn
-          if (_Values.length === 4) {
-            this.icao1 = _Values[0][2].substr(2).trim();
-            this.icao2 = _Values[1][2].substr(2).trim();
-            this.icao3 = _Values[2][2].substr(2).trim();
-            this.icao4 = _Values[3][2].substr(2).trim();
-            this.dist1 = Math.round(parseFloat(_Values[0][3]));
-            this.dist2 = Math.round(parseFloat(_Values[1][3]));
-            this.dist3 = Math.round(parseFloat(_Values[2][3]));
-            this.dist4 = Math.round(parseFloat(_Values[3][3]));
-            // values are jumpy! mitigated by slow update rate, as only about every 30th value is erroneous
-            this.magvar = SimVar.GetSimVarValue('MAGVAR', 'degree');
-            this.brng1 = Math.round(parseFloat(_Values[0][4]) - this.magvar);
-            this.brng2 = Math.round(parseFloat(_Values[1][4]) - this.magvar);
-            this.brng3 = Math.round(parseFloat(_Values[2][4]) - this.magvar);
-            this.brng4 = Math.round(parseFloat(_Values[3][4]) - this.magvar);
-            this.ll1 = new LatLong(_Values[0][0], _Values[0][1]);
-            this.ll2 = new LatLong(_Values[1][0], _Values[1][1]);
-            this.ll3 = new LatLong(_Values[2][0], _Values[2][1]);
-            this.ll4 = new LatLong(_Values[3][0], _Values[3][1]);
-          }
-        }.bind(this),
-      );
-
-      // logic from FlightPlanManager.js
-      this.gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
-      if (this.gs < 50) {
-        this.gs = 50;
+    const ppos = mcdu.navigation.getPpos();
+    if (ppos === null) {
+      mcdu.setTemplate(template);
+      if (!isRefresh) {
+        mcdu.setScratchpadMessage(NXSystemMessages.acPositionInvalid);
       }
-
-      this.total_delta_t = 0;
+      return;
     }
 
-    const s_per_h = 3600;
-    const s_per_d = s_per_h * 24;
-
-    // ETA offset in seconds
-    const eta1_s = Math.round((this.dist1 / this.gs) * s_per_h);
-    const eta2_s = Math.round((this.dist2 / this.gs) * s_per_h);
-    const eta3_s = Math.round((this.dist3 / this.gs) * s_per_h);
-    const eta4_s = Math.round((this.dist4 / this.gs) * s_per_h);
-
-    // absolute ETA in seconds
-    const utc_s = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
-    const utc1_s = (utc_s + eta1_s) % s_per_d;
-    const utc2_s = (utc_s + eta2_s) % s_per_d;
-    const utc3_s = (utc_s + eta3_s) % s_per_d;
-    const utc4_s = (utc_s + eta4_s) % s_per_d;
-
-    // components for ETAs in HHMM format
-    const h1 = Math.floor(utc1_s / s_per_h) || 0;
-    const h2 = Math.floor(utc2_s / s_per_h) || 0;
-    const h3 = Math.floor(utc3_s / s_per_h) || 0;
-    const h4 = Math.floor(utc4_s / s_per_h) || 0;
-    const m1 = Math.floor((utc1_s % s_per_h) / 60) || 0;
-    const m2 = Math.floor((utc2_s % s_per_h) / 60) || 0;
-    const m3 = Math.floor((utc3_s % s_per_h) / 60) || 0;
-    const m4 = Math.floor((utc4_s % s_per_h) / 60) || 0;
-
-    // ETA HHMM strings
-    this.eta1 = `${h1.toString().padStart(2, '0') || '00'}${m1.toString().padStart(2, '0') || '00'}`;
-    this.eta2 = `${h2.toString().padStart(2, '0') || '00'}${m2.toString().padStart(2, '0') || '00'}`;
-    this.eta3 = `${h3.toString().padStart(2, '0') || '00'}${m3.toString().padStart(2, '0') || '00'}`;
-    this.eta4 = `${h4.toString().padStart(2, '0') || '00'}${m4.toString().padStart(2, '0') || '00'}`;
-
-    // EFOBs
-    this.efob1 = Math.max(0, (this.fob_kg - this.fuel_flow_kg_per_s * eta1_s) / 1000).toFixed(1);
-    this.efob2 = Math.max(0, (this.fob_kg - this.fuel_flow_kg_per_s * eta2_s) / 1000).toFixed(1);
-    this.efob3 = Math.max(0, (this.fob_kg - this.fuel_flow_kg_per_s * eta3_s) / 1000).toFixed(1);
-    this.efob4 = Math.max(0, (this.fob_kg - this.fuel_flow_kg_per_s * eta4_s) / 1000).toFixed(1);
-
-    if (!this.user_ap) {
-      if (this.page2) {
-        this.user_ap_line = [''];
-      } else {
-        this.user_ap_line = ['[\xa0\xa0][color]cyan', ''];
-      }
-    } else if (this.total_delta_t === 0) {
-      // calculate values for user selected airport
-      SimVar.SetSimVarValue('C:fs9gps:GeoCalcLatitude1', 'degree', this.lat);
-      SimVar.SetSimVarValue('C:fs9gps:GeoCalcLongitude1', 'degree', this.lon);
-      SimVar.SetSimVarValue('C:fs9gps:GeoCalcLatitude2', 'degree', this.user_ap.infos.lat);
-      SimVar.SetSimVarValue('C:fs9gps:GeoCalcLongitude2', 'degree', this.user_ap.infos.long);
-      this.brng5 = Math.round(SimVar.GetSimVarValue('C:fs9gps:GeoCalcBearing', 'degree') - this.magvar);
-      this.dist5 = Math.round(SimVar.GetSimVarValue('C:fs9gps:GeoCalcDistance', 'nautical miles'));
-      const eta5_s = Math.round((this.dist5 / this.gs) * s_per_h);
-      const utc5_s = (utc_s + eta5_s) % s_per_d;
-      const h5 = Math.floor(utc5_s / s_per_h) || 0;
-      const m5 = Math.floor((utc5_s % s_per_h) / 60) || 0;
-      this.eta5 = `${h5.toString().padStart(2, '0') || '00'}${m5.toString().padStart(2, '0') || '00'}`;
-      this.efob5 = Math.max(0, (this.fob_kg - this.fuel_flow_kg_per_s * eta5_s) / 1000).toFixed(1);
-      if (this.page2) {
-        this.user_ap_line = [
-          `${this.user_ap.infos.ident}[color]green`,
-          `---[color]green`,
-          `${this.efob5.toString().padStart(3, '\xa0')}[color]green`,
-        ];
-      } else {
-        this.user_ap_line = [
-          `${this.user_ap.infos.ident}[color]green`,
-          `${this.eta5}[color]green`,
-          `${this.brng5.toString().padStart(3, '0')}° ${this.dist5.toString().padStart(5, '\xa0')}[color]green`,
-        ];
-      }
-    }
-
-    // display data on MCDU
-    if (this.icao1) {
-      mcdu.clearDisplay();
-      if (this.page2) {
-        mcdu.setTemplate([
-          ['CLOSEST AIRPORTS'],
-          ['', 'EFF WIND\xa0', 'EFOB'],
-          [
-            `${this.icao1}[color]green`,
-            `{small}[KTS]{end}{cyan}[\xa0\xa0\xa0]{end}`,
-            `${this.efob1.toString().padStart(3, '\xa0')}[color]green`,
-          ],
-          [''],
-          [
-            `${this.icao2}[color]green`,
-            `[\xa0\xa0\xa0][color]cyan`,
-            `${this.efob2.toString().padStart(3, '\xa0')}[color]green`,
-          ],
-          [''],
-          [
-            `${this.icao3}[color]green`,
-            `[\xa0\xa0\xa0][color]cyan`,
-            `${this.efob3.toString().padStart(3, '\xa0')}[color]green`,
-          ],
-          [''],
-          [
-            `${this.icao4}[color]green`,
-            `[\xa0\xa0\xa0][color]cyan`,
-            `${this.efob4.toString().padStart(3, '\xa0')}[color]green`,
-          ],
-          [''],
-          this.user_ap_line,
-          ['', '', this.frozen ? 'LIST FROZEN' : ''],
-          ['<RETURN'],
-        ]);
-      } else {
-        mcdu.setTemplate([
-          ['CLOSEST AIRPORTS'],
-          ['', 'BRG\xa0\xa0\xa0\xa0DIST\xa0\xa0\xa0UTC\xa0'],
-          [
-            `${this.icao1}[color]green`,
-            `${this.eta1}[color]green`,
-            `${this.brng1.toString().padStart(3, '0')}°\xa0${this.dist1.toString().padStart(5, '\xa0')}[color]green`,
-          ],
-          [''],
-          [
-            `${this.icao2}[color]green`,
-            `${this.eta2}[color]green`,
-            `${this.brng2.toString().padStart(3, '0')}°\xa0${this.dist2.toString().padStart(5, '\xa0')}[color]green`,
-          ],
-          [''],
-          [
-            `${this.icao3}[color]green`,
-            `${this.eta3}[color]green`,
-            `${this.brng3.toString().padStart(3, '0')}°\xa0${this.dist3.toString().padStart(5, '\xa0')}[color]green`,
-          ],
-          [''],
-          [
-            `${this.icao4}[color]green`,
-            `${this.eta4}[color]green`,
-            `${this.brng4.toString().padStart(3, '0')}°\xa0${this.dist4.toString().padStart(5, '\xa0')}[color]green`,
-          ],
-          [''],
-          this.user_ap_line,
-          ['', '', this.frozen ? 'LIST FROZEN' : ''],
-          [this.frozen ? '{UNFREEZE[color]cyan' : '{FREEZE[color]cyan', 'EFOB/WIND>'],
-        ]);
-
-        // force spaces to emulate 4 columns
-        mcdu._labelElements[0][2].innerHTML = '&nbsp;&nbsp;&nbsp;';
-        for (let i = 0; i < (this.user_ap ? 5 : 4); i++) {
-          mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, '&nbsp;');
+    if (!frozen && !showEfob) {
+      const newAirports = [...NearbyFacilities.getInstance().getAirports()];
+      newAirports.sort((a, b) => a.distance - b.distance);
+      newAirports.length = CDUAirportsMonitor.NUM_AIRPORTS;
+      for (let i = 0; i < this.NUM_AIRPORTS; i++) {
+        if (newAirports[i]) {
+          this.airportRows[i].airport = newAirports[i];
+        } else {
+          this.airportRows[i].airport = undefined;
         }
+        this.airportRows[i].bearing = undefined;
+        this.airportRows[i].distance = undefined;
+        this.airportRows[i].efob = undefined;
+        this.airportRows[i].eta = undefined;
       }
     }
 
-    // page refresh
-    if (!this.frozen || !this.icao1) {
-      // regular update due to showing dynamic data on this page
-      mcdu.SelfPtr = setTimeout(() => {
-        CDUAirportsMonitor.ShowPage(mcdu, false);
-      }, mcdu.PageTimeout.Default);
+    // clear out old winds
+    for (const key of this.effectiveWinds.keys()) {
+      if (!this.airportRows.find((row) => row.airport?.ident === key)) {
+        this.effectiveWinds.delete(key);
+      }
     }
 
-    // user-selected 5th airport (only possible to set on page 1)
-    if (!this.page2) {
-      mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
-        if (this.user_ap) {
-          if (value === Keypad.clrValue) {
-            this.user_ap = undefined;
-            // trigger data update next frame
-            this.total_delta_t = update_ival_ms;
-            this.ShowPage(mcdu);
-          }
-        } else if (value !== '' && value !== Keypad.clrValue) {
-          // GetAirportByIdent returns a Waypoint in the callback,
-          // which internally uses FacilityLoader (and further down calls Coherence)
-          mcdu.navigationDatabaseService.activeDatabase
-            .searchAirport(value)
-            .then((ap_data) => {
-              if (ap_data) {
-                this.user_ap = ap_data;
-                // trigger data update next frame
-                this.total_delta_t = update_ival_ms;
-                this.frozen = false;
-                this.ShowPage(mcdu);
+    if (showEfob) {
+      for (let i = 0; i <= CDUAirportsMonitor.NUM_AIRPORTS; i++) {
+        if (this.airportRows[i].airport) {
+          // effective wind entry
+          mcdu.onRightInput[i] = (value) => {
+            if (value === Keypad.clrValue) {
+              this.effectiveWinds.delete(this.airportRows[i].airport.ident);
+            } else {
+              const match = value.match(/^(T|TL|\+|-|H|HD)?(\d{1,3})$/);
+              if (match !== null) {
+                const magnitude = parseInt(match[2]);
+                if (magnitude > 250) {
+                  mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                  return;
+                }
+
+                let sign = 1;
+                switch (match[1]) {
+                  case '-':
+                  case 'H':
+                  case 'HD':
+                    sign = -1;
+                    break;
+                }
+
+                this.effectiveWinds.set(this.airportRows[i].airport.ident, sign * magnitude);
               } else {
-                mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
-                scratchpadCallback();
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                return;
               }
-            })
-            .catch(console.error);
+            }
+            CDUAirportsMonitor.ShowPage(mcdu, frozen, showEfob, true);
+          };
         }
-      };
+      }
     }
 
-    // toggle freeze
-    mcdu.onLeftInput[5] = () => {
-      this.frozen = !this.frozen;
-      this.page2 = false;
-      // trigger data update next frame
-      this.total_delta_t = update_ival_ms;
-      this.ShowPage(mcdu);
+    this.updatePredictions(mcdu);
+
+    for (let i = 0; i < this.airportRows.length; i++) {
+      this.renderAirportRow(template, i, showEfob, mcdu.isTrueRefMode);
+    }
+
+    // pilot airport entry
+    mcdu.onLeftInput[4] = async (value) => {
+      if (value === Keypad.clrValue) {
+        this.pilotAirport.airport = undefined;
+        this.pilotAirport.bearing = undefined;
+        this.pilotAirport.distance = undefined;
+        this.pilotAirport.efob = undefined;
+        this.pilotAirport.eta = undefined;
+      } else if (!value.match(/^[A-Z0-9]{4}$/)) {
+        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+        return;
+      } else {
+        const airport = await mcdu.navigationDatabase.searchAirport(value);
+        if (!airport) {
+          mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+          return;
+        }
+
+        this.pilotAirport.airport = airport;
+      }
+      CDUAirportsMonitor.ShowPage(mcdu, frozen, showEfob, true);
     };
 
-    mcdu.rightInputDelay[5] = () => {
-      return mcdu.getDelaySwitchPage();
-    };
+    if (showEfob) {
+      template[11][2] = 'LIST FROZEN';
+      template[12][2] = '{white}{RETURN{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
 
-    // EFOB/WIND
-    if (!this.page2) {
-      mcdu.onRightInput[5] = () => {
-        this.page2 = true;
-        this.frozen = true;
-        // trigger data update next frame
-        this.total_delta_t = update_ival_ms;
-        this.ShowPage(mcdu);
-      };
+      mcdu.onLeftInput[5] = () => CDUAirportsMonitor.ShowPage(mcdu, frozen, false, true);
+    } else if (frozen) {
+      template[11][2] = 'LIST FROZEN';
+      template[12][2] = '{cyan}{UNFREEZE{end}\xa0\xa0\xa0\xa0\xa0{white}EFOB/WIND>{end}';
+
+      mcdu.onLeftInput[5] = () => CDUAirportsMonitor.ShowPage(mcdu, false, showEfob, true);
+      mcdu.onRightInput[5] = () => CDUAirportsMonitor.ShowPage(mcdu, frozen, true, true);
+    } else {
+      template[12][2] = '{cyan}{FREEZE{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{white}EFOB/WIND>{end}';
+
+      mcdu.onLeftInput[5] = () => CDUAirportsMonitor.ShowPage(mcdu, true, showEfob, true);
+      mcdu.onRightInput[5] = () => CDUAirportsMonitor.ShowPage(mcdu, frozen, true, true);
+    }
+
+    mcdu.setTemplate(template);
+  }
+
+  private static updatePredictions(mcdu: LegacyFmsPageInterface) {
+    const ppos = mcdu.navigation.getPpos();
+    const zfwLb = UnitType.POUND.convertFrom(mcdu.zeroFuelWeight ?? 0, UnitType.TONNE);
+    const fobT = mcdu.getFOB();
+    const fobLb = UnitType.POUND.convertFrom(fobT ?? 0, UnitType.TONNE);
+    const sat = mcdu.navigation?.getStaticAirTemperature() ?? null;
+
+    const doCruisePreds =
+      mcdu.flightPhaseManager.phase === FmgcFlightPhase.Cruise &&
+      mcdu.cruiseLevel !== null &&
+      isFinite(mcdu.zeroFuelWeight) &&
+      fobT !== undefined &&
+      zfwLb > 0 &&
+      sat !== null;
+
+    const isaDev = doCruisePreds ? sat - mcdu.getIsaTemp(mcdu.cruiseLevel * 100) : 0;
+
+    for (const rowData of this.airportRows) {
+      if (ppos && rowData.airport) {
+        rowData.bearing = bearingTo(ppos, rowData.airport.location);
+        rowData.distance = distanceTo(ppos, rowData.airport.location);
+
+        if (doCruisePreds) {
+          const desAlt = mcdu.cruiseLevel * 100 - rowData.airport.location.alt;
+          const desFuelCoef = 0.412;
+          const desBurn = (desFuelCoef * desAlt) / 41000;
+          const desDistCoef = 123;
+          const desDist = (desDistCoef * desAlt) / 41000;
+          const desTime = (desDist / 300) * 3600_000;
+
+          const cruiseCas = mcdu.managedSpeedCruise ?? 290;
+          const cruiseMach = mcdu.managedSpeedCruiseMach ?? 0.78;
+
+          const cruiseDist = Math.max(0, rowData.distance - desDist);
+          const cruisePerf = Predictions.levelFlightStep(
+            A320AircraftConfig,
+            mcdu.cruiseLevel * 100,
+            cruiseDist,
+            cruiseCas,
+            cruiseMach,
+            zfwLb,
+            fobLb,
+            -(this.effectiveWinds.get(rowData.airport.ident) ?? 0),
+            isaDev,
+            mcdu.tropo,
+          );
+
+          const cruiseBurn = UnitType.TONNE.convertFrom(cruisePerf.fuelBurned, UnitType.POUND);
+          rowData.efob = fobT - cruiseBurn + desBurn;
+          rowData.eta = new Date(Date.now() + cruisePerf.timeElapsed * 1000 + desTime);
+        } else {
+          rowData.efob = undefined;
+          rowData.eta = undefined;
+        }
+      } else {
+        rowData.bearing = undefined;
+        rowData.distance = undefined;
+        rowData.efob = undefined;
+        rowData.eta = undefined;
+      }
+    }
+
+    this.magVar = ppos ? Facilities.getMagVar(ppos.lat, ppos.long) : 0;
+  }
+
+  private static renderAirportRow(template: string[][], index: number, showEfob: boolean, showTrueBearing: boolean) {
+    const rowData = this.airportRows[index];
+    const templateIndex = 2 + 2 * index;
+    const isPilotAirport = index === CDUAirportsMonitor.NUM_AIRPORTS;
+
+    template[templateIndex][2] =
+      `{${isPilotAirport ? 'cyan' : 'green'}}${rowData.airport?.ident.padEnd(4, '\xa0') ?? (isPilotAirport ? '[\xa0\xa0]' : '\xa0\xa0\xa0\xa0')}\xa0\xa0\xa0\xa0{end}`;
+
+    if (showEfob) {
+      const effectiveWind = rowData.airport ? this.effectiveWinds.get(rowData.airport.ident) : undefined;
+      const formattedWind =
+        effectiveWind !== undefined
+          ? effectiveWind >= 0
+            ? `TL${effectiveWind.toFixed(0).padStart(3, '0')}`
+            : `HD${Math.abs(effectiveWind).toFixed(0).padStart(3, '0')}`
+          : rowData.airport
+            ? '[\xa0\xa0\xa0]'
+            : '\xa0\xa0\xa0\xa0\xa0';
+
+      template[templateIndex][2] +=
+        `{green}${rowData.efob !== undefined ? NXUnits.kgToUser(rowData.efob).toFixed(1).padStart(4, '\xa0') : '\xa0\xa0\xa0\xa0'}{end}\xa0\xa0${index === 0 ? '{small}{white}[KTS]{end}{end}' : '\xa0\xa0\xa0\xa0\xa0'}{cyan}${formattedWind}{end}`;
+    } else {
+      const bearing =
+        rowData.bearing !== undefined && !showTrueBearing
+          ? A32NX_Util.trueToMagnetic(rowData.bearing, this.magVar)
+          : rowData.bearing;
+
+      template[templateIndex][2] +=
+        `{green}${bearing !== undefined ? bearing.toFixed(0).padStart(3, '0') + (showTrueBearing ? 'T' : '°') : '\xa0\xa0\xa0\xa0'}\xa0\xa0${rowData.distance !== undefined ? Math.min(rowData.distance, 9999).toFixed(0).padStart(4) : '\xa0\xa0\xa0\xa0'}\xa0\xa0${rowData.eta !== undefined ? rowData.eta.getUTCHours().toString().padStart(2, '0') : '\xa0\xa0'}${rowData.eta !== undefined ? rowData.eta.getUTCMinutes().toString().padStart(2, '0') : '\xa0\xa0'}{end}`;
     }
   }
 }

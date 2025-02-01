@@ -215,6 +215,7 @@ interface LegacyFmsPageFmsInterface extends DataInterface, DisplayInterface {
   deselectNavaid(icao: string): void;
   reselectNavaid(icao: string): void;
   getOrSelectWaypointByIdent(ident: string, callback: (fix: Fix) => void): void;
+  getIsaTemp(alt: number): number;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
@@ -318,6 +319,7 @@ interface LegacyFmsPageFmsInterface extends DataInterface, DisplayInterface {
     des: any[];
     alternate: any | null;
   };
+  isTrueRefMode: boolean;
 }
 
 /** This breaks some circular refs, and tells us what we need a shim for to wrap legacy pages in future. */

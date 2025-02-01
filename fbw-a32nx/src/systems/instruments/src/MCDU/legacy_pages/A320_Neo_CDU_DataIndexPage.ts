@@ -66,7 +66,7 @@ export class CDUDataIndexPage {
     };
 
     mcdu.onLeftInput[4] = () => {
-      CDUAirportsMonitor.ShowPage(mcdu, true);
+      CDUAirportsMonitor.ShowPage(mcdu);
     };
 
     mcdu.onNextPage = () => {

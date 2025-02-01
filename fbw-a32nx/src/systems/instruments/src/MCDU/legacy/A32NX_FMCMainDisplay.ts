@@ -251,6 +251,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
   private toSpeedsNotInserted = false;
   private toSpeedsTooLow = false;
   private vSpeedDisagree = false;
+  public isTrueRefMode = false;
 
   public onAirport = () => {};
   // FIXME always false!
@@ -659,6 +660,8 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
 
     updateFmgcLoop(_deltaTime);
 
+    this.isTrueRefMode = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean');
+
     if (this._debug++ > 180) {
       this._debug = 0;
     }
@@ -956,7 +959,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
    * @param alt geopotential altitude in feet
    * @returns °C
    */
-  private getIsaTemp(alt: number): number {
+  public getIsaTemp(alt: number): number {
     if (alt > (this.tropo ? this.tropo : 36090)) {
       return -56.5;
     }
