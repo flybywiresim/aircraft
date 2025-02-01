@@ -13,7 +13,7 @@ interface OitFltOpsStatusPageProps extends AbstractOitPageProps {}
 
 export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -21,7 +21,9 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
-    this.subs.forEach((x) => x.destroy());
+    for (const s of this.subs) {
+      s.destroy();
+    }
 
     super.destroy();
   }

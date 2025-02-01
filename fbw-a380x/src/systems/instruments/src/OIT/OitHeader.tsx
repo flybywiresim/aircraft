@@ -1,4 +1,4 @@
-import { DisplayComponent, FSComponent, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
@@ -15,15 +15,21 @@ interface OitHeaderHeaderProps {
  */
 export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  protected subs = [] as Subscription[];
+  protected readonly subs = [] as Subscription[];
+
+  private readonly oitHeading = this.props.uiService.activeUri.map((uri) => heading[uri.uri] ?? 'FIXME');
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subs.push(this.oitHeading);
   }
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
-    this.subs.forEach((x) => x.destroy());
+    for (const s of this.subs) {
+      s.destroy();
+    }
 
     super.destroy();
   }
@@ -77,7 +83,7 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_menu`}
           dropdownMenuStyle="width: 300px;"
         />
-        <div class="oit-heading">{this.props.uiService.activeUri.map((uri) => heading[uri.uri] ?? 'FIXME')}</div>
+        <div class="oit-heading">{this.oitHeading}</div>
         <div style="flex-grow: 1" />
         <PageSelectorDropdownMenu
           isActive={SubscribableUtils.toSubscribable(false, true)}
@@ -114,8 +120,13 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
         />
         <div class="oit-msg-header">0 MSG</div>
         <div class="oit-msg-box"></div>
-        <IconButton icon={'single-down'} containerStyle="width: 60px; height: 60px;" />
-        <Button label={'CLEAR'} onClick={() => {}} buttonStyle="font-size: 28px; height: 60px;" />
+        <IconButton icon={'single-down'} containerStyle="width: 60px; height: 60px;" disabled={Subject.create(true)} />
+        <Button
+          label={'CLEAR'}
+          onClick={() => {}}
+          buttonStyle="font-size: 28px; height: 60px;"
+          disabled={Subject.create(true)}
+        />
       </div>
     );
   }

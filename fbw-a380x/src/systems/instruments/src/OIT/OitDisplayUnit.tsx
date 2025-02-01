@@ -13,6 +13,7 @@ import {
   Subject,
   Subscribable,
   SubscribableMapFunctions,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer, NXDataStore } from '@flybywiresim/fbw-sdk';
@@ -65,6 +66,8 @@ enum DisplayUnitState {
 }
 
 export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & ComponentProps> {
+  private readonly subs: Subscription[] = [];
+
   private readonly sub = this.props.bus.getSubscriber<OitSimvars & ClockEvents>();
 
   private readonly state = Subject.create<DisplayUnitState>(
@@ -76,15 +79,21 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
 
   private timeOut: number = 0;
 
-  private selfTestRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly selfTestRef = FSComponent.createRef<HTMLDivElement>();
 
   private oitRef = FSComponent.createRef<HTMLDivElement>();
 
   public readonly powered = Subject.create(false);
 
   /** in seconds */
-  private readonly remainingStartupTime = Subject.create(0);
-  private readonly totalStartupTime = Subject.create(0);
+  private readonly remainingStartupTime = Subject.create(24);
+  private readonly totalStartupTime = Subject.create(24);
+
+  private readonly progressBarFillWidth = MappedSubject.create(
+    ([remaining, total]) => (1 - remaining / total) * 40,
+    this.remainingStartupTime,
+    this.totalStartupTime,
+  ).map((t) => `${t}%`);
 
   private readonly brightness = ConsumerSubject.create(
     this.sub.on(this.props.displayUnitId === OitDisplayUnitID.CaptOit ? 'potentiometerCaptain' : 'potentiometerFo'),
@@ -129,32 +138,53 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
     this.fltOpsFailed,
   );
 
+  private readonly failedDisplay = this.failed.map((v) => (v ? 'block' : 'none'));
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.props.failuresConsumer.register(this.failureKey);
 
-    this.sub.on('realTime').handle(() => this.update());
-    this.sub
-      .on('realTime')
-      .atFrequency(4)
-      .handle((_t) => {
-        // override MSFS menu animations setting for this instrument
-        if (!document.documentElement.classList.contains('animationsEnabled')) {
-          document.documentElement.classList.add('animationsEnabled');
-        }
+    this.subs.push(this.sub.on('realTime').handle(() => this.update()));
+    this.subs.push(
+      this.sub
+        .on('realTime')
+        .atFrequency(4)
+        .handle(() => {
+          // override MSFS menu animations setting for this instrument
+          if (!document.documentElement.classList.contains('animationsEnabled')) {
+            document.documentElement.classList.add('animationsEnabled');
+          }
 
-        // Update loading progress bar
-        this.remainingStartupTime.set(Math.max(0, this.remainingStartupTime.get() - 0.25));
-      });
+          // Update loading progress bar
+          if (this.powered.get()) {
+            this.remainingStartupTime.set(Math.max(0, this.remainingStartupTime.get() - 0.25));
+          }
+        }),
+    );
 
-    MappedSubject.create(
-      () => {
-        this.updateState();
-      },
+    this.subs.push(
+      MappedSubject.create(
+        () => {
+          this.updateState();
+        },
+        this.brightness,
+        this.powered,
+        this.failed,
+      ),
+    );
+
+    this.subs.push(
+      this.progressBarFillWidth,
       this.brightness,
-      this.powered,
+      this.nssAnsu1Failed,
+      this.nssAnsu2Failed,
+      this.allNssAnsuFailed,
+      this.fltOpsAnsuFailed,
+      this.fltOpsLaptopFailed,
+      this.fltOpsFailed,
       this.failed,
+      this.failedDisplay,
     );
   }
 
@@ -226,6 +256,14 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
     }
   }
 
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <>
@@ -235,11 +273,7 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
           <div
             class="LoadingProgressBarFill"
             style={{
-              width: MappedSubject.create(
-                ([remaining, total]) => (1 - remaining / total) * 40,
-                this.remainingStartupTime,
-                this.totalStartupTime,
-              ).map((t) => `${t}%`),
+              width: this.progressBarFillWidth,
             }}
           />
         </div>
@@ -250,7 +284,7 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
 
         <svg
           style={{
-            display: this.failed.map((v) => (v ? 'block' : 'none')),
+            display: this.failedDisplay,
           }}
           class="AnsuFailed"
           viewBox="0 0 1333 1000"

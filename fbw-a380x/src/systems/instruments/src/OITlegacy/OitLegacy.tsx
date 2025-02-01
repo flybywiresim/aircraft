@@ -204,7 +204,6 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
   };
 
   useEffect(() => {
-    console.log('navigraphAuthInfo.loggedIn, synchroAvionics', navigraphAuthInfo);
     updateSimBriefInfo();
   }, [navigraphAuthInfo, synchroAvionics]);
 
