@@ -1902,9 +1902,17 @@ export class FwsCore {
   update(_deltaTime: number) {
     const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
 
+    const ecpNotReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_4_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_14_REACHABLE', SimVarValueType.Bool);
+    this.fwsEcpFailed.set(this.failuresConsumer.isActive(A380Failure.FwsEcp) || ecpNotReachable);
+
     // Acquire discrete inputs at a higher frequency, buffer them until the next FWS cycle.
     // T.O CONFIG button
-    if (SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') && !this.failuresConsumer.isActive(A380Failure.FwsEcp)) {
+    if (SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') && !this.fwsEcpFailed.get()) {
+      console.log('TO CONFIG');
       this.toConfigInputBuffer.write(true, false);
     }
 
@@ -1917,7 +1925,7 @@ export class FwsCore {
 
     // RCL button
     const recallButton = SimVar.GetSimVarValue('L:A32NX_BTN_RCL', 'bool');
-    if (recallButton && !this.failuresConsumer.isActive(A380Failure.FwsEcp)) {
+    if (recallButton && !this.fwsEcpFailed.get()) {
       this.recallButtonInputBuffer.write(true, false);
     }
 
@@ -1956,13 +1964,6 @@ export class FwsCore {
       this.failuresConsumer.isActive(A380Failure.Fws1AudioFunction) &&
         this.failuresConsumer.isActive(A380Failure.Fws2AudioFunction),
     );
-
-    const ecpNotReachable =
-      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
-      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
-      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_4_REACHABLE', SimVarValueType.Bool) &&
-      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_14_REACHABLE', SimVarValueType.Bool);
-    this.fwsEcpFailed.set(this.failuresConsumer.isActive(A380Failure.FwsEcp) || ecpNotReachable);
 
     // Update flight phases
     this.flightPhases.update(deltaTime);
@@ -2014,7 +2015,7 @@ export class FwsCore {
     );
 
     // TO CONFIG button
-    this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
+    this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0 && !this.fwsEcpFailed.get();
     this.toConfigPulseNode.write(this.toConfigTestRaw, _deltaTime);
     const toConfigTest = this.toConfigTriggerNode.write(this.toConfigPulseNode.read(), deltaTime);
     if (toConfigTest !== this.toConfigTest) {
