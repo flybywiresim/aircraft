@@ -184,6 +184,17 @@ const _buildBMatrix6 = (value) => {
     ]),
   );
 };
+
+// math.js typings seem to not be nice... it says it may return a complex number when it shouldn't
+function isComplex(v: math.MathScalarType): v is math.Complex {
+  return typeof v === 'object' && 'im' in v;
+}
+
+function getRealNumber(v: math.MathScalarType): number {
+  // should throw maybe??
+  return isComplex(v) ? v.re : math.number(v);
+}
+
 //TODO Refactor this when you have time
 export class A32NX_FuelPred {
   public static refWeight = 55;
@@ -219,7 +230,7 @@ export class A32NX_FuelPred {
     const fuelMatrix = _buildAMatrix6(fuel);
     const flightLevelMatrix = _buildBMatrix6(flightLevel);
     const mmOfFuelFL = math.multiply(flightLevelMatrix, fuelMatrix);
-    return Math.round(math.sum(math.dotMultiply(userAltTimeCoeff, mmOfFuelFL)));
+    return Math.round(getRealNumber(math.sum(math.dotMultiply(userAltTimeCoeff, mmOfFuelFL))));
   }
 
   /**
@@ -234,7 +245,7 @@ export class A32NX_FuelPred {
     const windMatrix = _buildBMatrix7(windComponent);
 
     const mmOfGroundWind = math.multiply(windMatrix, groundMatrix);
-    return Math.round(math.sum(math.dotMultiply(airDistanceCoeff, mmOfGroundWind)));
+    return Math.round(getRealNumber(math.sum(math.dotMultiply(airDistanceCoeff, mmOfGroundWind))));
   }
 
   /**
@@ -247,7 +258,7 @@ export class A32NX_FuelPred {
     const weightMatrix = _buildAMatrix7(weight);
     const flightLevelMatrix = _buildBMatrix7(flightLevel);
     const mmOfWeightFL = math.multiply(flightLevelMatrix, weightMatrix);
-    return Math.round(math.sum(math.dotMultiply(holdingFFCoeff, mmOfWeightFL)));
+    return Math.round(getRealNumber(math.sum(math.dotMultiply(holdingFFCoeff, mmOfWeightFL))));
   }
 
   /**
@@ -265,11 +276,15 @@ export class A32NX_FuelPred {
     //TODO Create logic for handling 200NM and FL390 = 0
     switch (computation) {
       case this.computations.FUEL:
-        return Math.round(math.sum(math.dotMultiply(alternate ? altFuelConsumedCoef : fuelConsumedCoeff, mmOfDistFL)));
+        return Math.round(
+          getRealNumber(math.sum(math.dotMultiply(alternate ? altFuelConsumedCoef : fuelConsumedCoeff, mmOfDistFL))),
+        );
       case this.computations.TIME:
-        return Math.round(math.sum(math.dotMultiply(alternate ? altTimeCoef : timeCoeff, mmOfDistFL)));
+        return Math.round(getRealNumber(math.sum(math.dotMultiply(alternate ? altTimeCoef : timeCoeff, mmOfDistFL))));
       case this.computations.CORRECTIONS:
-        return Math.round(math.sum(math.dotMultiply(alternate ? altCorrectionsCoeff : correctionsCoef, mmOfDistFL)));
+        return Math.round(
+          getRealNumber(math.sum(math.dotMultiply(alternate ? altCorrectionsCoeff : correctionsCoef, mmOfDistFL))),
+        );
     }
   }
 
