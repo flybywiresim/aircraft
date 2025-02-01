@@ -270,6 +270,7 @@ export class A32NX_FWC {
 
     const invalidRadioMemo = this.memoLdgMemo_conf02.write(
       radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === 6,
+      _deltaTime,
     );
 
     this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
@@ -377,13 +378,12 @@ export class A32NX_FWC {
   }
 
   hasAltitudeConstraint() {
-    if (this.aircraft == Aircraft.A320_NEO) {
-      if (
-        Simplane.getAutoPilotAltitudeManaged() &&
-        SimVar.GetSimVarValue('L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT', 'number') != 0
-      ) {
-        return false;
-      }
+    // FIXME SUSSY code reading an LVar that's never written
+    if (
+      Simplane.getAutoPilotAltitudeManaged() &&
+      SimVar.GetSimVarValue('L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT', 'number') != 0
+    ) {
+      return false;
     }
     return true;
   }
