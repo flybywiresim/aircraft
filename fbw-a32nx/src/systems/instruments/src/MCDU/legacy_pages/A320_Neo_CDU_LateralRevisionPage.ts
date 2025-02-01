@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanIndex } from '@fmgc/index';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { A320_Neo_CDU_AirwaysFromWaypointPage } from './A320_Neo_CDU_AirwaysFromWaypointPage';
 import { CDUAvailableArrivalsPage } from './A320_Neo_CDU_AvailableArrivalsPage';
@@ -13,6 +12,7 @@ import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXFictionalMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class CDULateralRevisionPage {
   /**

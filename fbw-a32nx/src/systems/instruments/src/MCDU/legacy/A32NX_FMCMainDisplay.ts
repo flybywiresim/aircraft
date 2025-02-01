@@ -25,21 +25,8 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
+import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { Fmgc, GuidanceController } from '@fmgc/guidance/GuidanceController';
-import {
-  A320FlightPlanPerformanceData,
-  CoRouteUplinkAdapter,
-  FlightPhaseManager,
-  FlightPlanIndex,
-  FlightPlanRpcServer,
-  FlightPlanService,
-  initFmgcLoop,
-  NavigationDatabase,
-  NavigationDatabaseBackend,
-  NavigationDatabaseService,
-  updateFmgcLoop,
-  WaypointEntryUtils,
-} from '@fmgc/index';
 import { A32NX_Core } from './A32NX_Core/A32NX_Core';
 import { A32NX_FuelPred, FuelPlanningPhases } from './A32NX_Core/A32NX_FuelPred';
 import { ADIRS } from './A32NX_Core/Adirs';
@@ -66,6 +53,15 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
+import { FlightPhaseManager } from '@fmgc/flightphase';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { initComponents, updateComponents } from '@fmgc/components';
+import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export abstract class FMCMainDisplay implements DataInterface, DisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -369,7 +365,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
       a320EfisRangeSettings,
     );
 
-    initFmgcLoop(this.navigation, this.guidanceController, this.flightPlanService);
+    initComponents(this.navigation, this.guidanceController, this.flightPlanService);
 
     this.guidanceController.init();
     this.efisSymbols.init();
@@ -658,7 +654,7 @@ export abstract class FMCMainDisplay implements DataInterface, DisplayInterface,
       this.setRequest('FMGC');
     }
 
-    updateFmgcLoop(_deltaTime);
+    updateComponents(_deltaTime);
 
     this.isTrueRefMode = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean');
 

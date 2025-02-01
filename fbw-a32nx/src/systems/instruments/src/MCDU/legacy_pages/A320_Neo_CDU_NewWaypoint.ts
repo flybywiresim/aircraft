@@ -3,7 +3,6 @@
 
 // FIXME fix circular ref with clrValue
 import { PilotWaypoint, PilotWaypointType } from '@fmgc/flightplanning/DataManager';
-import { WaypointEntryUtils } from '@fmgc/index';
 // FIXME fix circular ref
 import { CDUPilotsWaypoint } from './A320_Neo_CDU_PilotsWaypoint';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
@@ -11,6 +10,7 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 type NewWaypointDoneCallback = (waypoint: PilotWaypoint | undefined | null) => void;
 interface InProgressData {

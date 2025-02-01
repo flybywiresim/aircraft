@@ -5,13 +5,13 @@ import {
   CpdlcMessagesDownlink,
   InputValidation,
 } from '@datalink/common';
-import { WaypointEntryUtils } from '@fmgc/index';
 import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcReports } from '../FansA/A320_Neo_CDU_ATC_Reports';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
 import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export class CDUAtcPositionReport {
   static SecondsToString(seconds) {
@@ -1095,6 +1095,7 @@ export class CDUAtcPositionReport {
       return mcdu.getDelaySwitchPage();
     };
     mcdu.onRightInput[3] = (value) => {
+      // FIXME these functions don't exist
       const current = mcdu.atsu.currentFlightState();
       const target = mcdu.atsu.targetFlightState();
 

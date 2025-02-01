@@ -1,11 +1,11 @@
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Departure, NXUnits, ProcedureTransition, Runway } from '@flybywiresim/fbw-sdk';
-import { FlightPlanIndex, RunwayUtils } from '@fmgc/index';
+import { Airport, Departure, NXUnits, ProcedureTransition, Runway, RunwayUtils } from '@flybywiresim/fbw-sdk';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 const DeparturePagination = Object.freeze({
   DEPT_PAGE: 4,

@@ -14,10 +14,10 @@ import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
-import { FlightPlanIndex } from '@fmgc/index';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmsError } from '@fmgc/FmsError';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export type NextWptInfo = {
   ident: string;

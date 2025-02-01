@@ -25,10 +25,10 @@ import {
   Runway,
   RunwayUtils,
 } from '@flybywiresim/fbw-sdk';
-import { FlightPlanIndex } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 const ApproachTypeOrder = Object.freeze({
   [ApproachType.Mls]: 0,

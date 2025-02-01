@@ -1,7 +1,6 @@
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { SimBriefUplinkAdapter } from '@fmgc/index';
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
 import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { CDU_SingleValueField } from '../legacy/A320_Neo_CDU_Field';
@@ -15,6 +14,7 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FuelPlanningPhases } from '../legacy/A32NX_Core/A32NX_FuelPred';
 import { FmsFormatters } from '../legacy/FmsFormatters';
+import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface) {

@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanIndex, NavigationDatabaseService } from '@fmgc/index';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { WaypointArea } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 const TurnDirection = Object.freeze({
   Unknown: 'U',

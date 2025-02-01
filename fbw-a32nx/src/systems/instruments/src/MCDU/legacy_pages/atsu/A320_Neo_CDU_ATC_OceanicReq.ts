@@ -6,7 +6,7 @@ import { CDU_SingleValueField } from '../../legacy/A320_Neo_CDU_Field';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { McduMessage, NXSystemMessages } from '../../messages/NXSystemMessages';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
-import { WaypointEntryUtils } from '@fmgc/index';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export class CDUAtcOceanicReq {
   static CreateDataBlock() {

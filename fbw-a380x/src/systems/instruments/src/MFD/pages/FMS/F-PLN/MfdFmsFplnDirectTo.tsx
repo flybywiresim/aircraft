@@ -7,9 +7,10 @@ import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { FlightPlanIndex, WaypointEntryUtils } from '@fmgc/index';
 import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 interface MfdFmsFplnDirectToProps extends AbstractMfdPageProps {}
 

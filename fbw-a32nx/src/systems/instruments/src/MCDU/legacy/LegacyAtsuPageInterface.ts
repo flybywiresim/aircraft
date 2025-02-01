@@ -5,7 +5,8 @@ import { FmsClient } from '@atsu/fmsclient';
 import { LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
 import { AtsuStatusCodes } from '@datalink/common';
 import { McduMessage } from '../messages/NXSystemMessages';
-import { FlightPhaseManager, FlightPlanService } from '@fmgc/index';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { FlightPhaseManager } from '@fmgc/flightphase';
 
 interface LegacyAtsuPageDrawingInterface {
   clearDisplay(webSocketDraw?: boolean): void;

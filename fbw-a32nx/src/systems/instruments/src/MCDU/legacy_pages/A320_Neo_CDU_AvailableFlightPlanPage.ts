@@ -1,6 +1,6 @@
-import { CoRouteUplinkAdapter } from '@fmgc/index';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 
 export class CDUAvailableFlightPlanPage {
   static ShowPage(mcdu: LegacyFmsPageInterface, offset = 0, currentRoute = 1) {

@@ -15,11 +15,12 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 
 import { coordinateToString, NavaidSubsectionCode } from '@flybywiresim/fbw-sdk';
-import { NavigationDatabaseService, SelectedNavaidType } from '@fmgc/index';
 import { NavRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsPositionNavaids.scss';
+import { SelectedNavaidType } from '@fmgc/navigation/Navigation';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 interface MfdFmsPositionNavaidsProps extends AbstractMfdPageProps {}
 

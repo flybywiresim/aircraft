@@ -2,16 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import {
-  DataManager,
-  EfisInterface,
-  FlightPhaseManager,
-  FlightPlanIndex,
-  FlightPlanService,
-  GuidanceController,
-  Navigation,
-  NavigationDatabase,
-} from '@fmgc/index';
 import { McduMessage } from '../messages/NXSystemMessages';
 import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
 import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
@@ -29,7 +19,14 @@ import { FuelPlanningPhases } from './A32NX_Core/A32NX_FuelPred';
 import { ScratchpadDataLink } from './A320_Neo_CDU_Scratchpad';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { NXSpeedsApp } from './NXSpeeds';
-import { SelectedNavaid } from '@fmgc/navigation/Navigation';
+import { Navigation, SelectedNavaid } from '@fmgc/navigation/Navigation';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { NavigationDatabase } from '@fmgc/NavigationDatabase';
+import { FlightPhaseManager } from '@fmgc/flightphase';
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { DataManager } from '@fmgc/flightplanning/DataManager';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
