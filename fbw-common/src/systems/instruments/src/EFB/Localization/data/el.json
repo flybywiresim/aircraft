@@ -631,6 +631,7 @@
     "Real": "Πραγματικά",
     "Realism": {
       "AdirsAlignTime": "Χρόνος Ευθυγράμμισης ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Λίστες Ελέγχου Αυτόματης Συμπλήρωσης",
       "BoardingTime": "Χρόνος Επιβίβασης ",
       "DmcSelfTestTime": "Χρόνος Αυτοδοκιμής DMC",
