@@ -12,6 +12,7 @@ import { NavigationDatabaseService } from '@fmgc/index';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 
 interface MfdFmsDataWaypointProps extends AbstractMfdPageProps {}
 
@@ -23,17 +24,23 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
 
   private readonly waypointCoords = Subject.create('');
 
-  private readonly pilotStoredWaypointsList = ArraySubject.create<string>([]);
+  private readonly pilotStoredWaypointsList = ArraySubject.create<PilotWaypoint>([]);
+  private readonly pilotStoredWaypointNames = ArraySubject.create<string>([]);
 
   private readonly disabledScrollLeft = Subject.create(true);
   private readonly disabledScrollRight = Subject.create(false);
 
   private readonly db = NavigationDatabaseService.activeDatabase;
 
-  private isWaypointDataVisible = Subject.create<boolean>(false);
-  private isPilotStoredWaypoints = Subject.create<boolean>(false);
+  private readonly isWaypointDataVisible = Subject.create<boolean>(false);
+  private readonly anyPilotStoredWaypoints = Subject.create<boolean>(false);
 
-  protected onNewData(): void {}
+  protected onNewData(): void {
+    const pilotStoredWaypoints = this.props.fmcService.master?.getDataManager()?.getAllStoredWaypoints()!;
+
+    this.anyPilotStoredWaypoints.set(pilotStoredWaypoints.length > 0);
+    this.pilotStoredWaypointsList.set(pilotStoredWaypoints);
+  }
 
   private async loadWaypoint(ident: string | null) {
     if (ident) {
@@ -47,11 +54,14 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
     }
   }
 
-  private scrollStoredWaypointButtons(direction: 'left' | 'right'): void {}
+  private scrollStoredWaypointButtons(direction: 'left' | 'right'): void {
+    const currentIndex = this.pilotStoredWaypointsIndex.get() ?? 0;
+
+    this.pilotStoredWaypointsIndex.set(currentIndex + (direction === 'left' ? -1 : 1));
+  }
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
     this.waypointIdent.sub((ident: string | null) => {
       if (ident) {
         this.loadWaypoint(ident);
@@ -93,9 +103,7 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
                 </div>
                 <InputField<string>
                   dataEntryFormat={new WaypointFormat()}
-                  dataHandlerDuringValidation={async (v) => {
-                    this.waypointIdent.set(v);
-                  }}
+                  dataHandlerDuringValidation={async (v) => this.waypointIdent.set(v)}
                   mandatory={Subject.create(true)}
                   canBeCleared={Subject.create(false)}
                   value={this.waypointIdent}
@@ -129,23 +137,14 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
             </TopTabNavigatorPage>
             <TopTabNavigatorPage containerStyle="height: 680px;">
               <ConditionalComponent
-                condition={this.isPilotStoredWaypoints}
+                condition={this.anyPilotStoredWaypoints}
                 componentIfTrue={
-                  <div class="mfd-data-waypoint-stored-container">
-                    <div class="mfd-data-waypoint-stored-ident-row">
-                      <div class="mfd-label" style="position: relative; right: 75px;">
-                        WPT IDENT
-                      </div>
-                    </div>
-                  </div>
-                }
-                componentIfFalse={
-                  <div class="-mfd-data-waypoint-list-container">
+                  <div class="mfd-data-waypoint-list-container">
                     <div class="mfd-label" style="align-self:center; position: relative; top: 45px;">
-                      NO PILOT STORED WPT
+                      WPT IDENT
                     </div>
                     <DropdownMenu
-                      values={this.pilotStoredWaypointsList}
+                      values={undefined}
                       selectedIndex={this.pilotStoredWaypointsIndex}
                       freeTextAllowed={false}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataWaypointListDropdown`}
@@ -165,6 +164,20 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
                         disabled={this.disabledScrollRight}
                         containerStyle="width: 50px; height: 50px;"
                       />
+                    </div>
+                    <div class="mfd-label">{this.pilotStoredWaypointsList.length.toString().padStart(2, '0')}</div>
+                    <div class="mfd-data-waypoint-stored-ll-display">
+                      <div class="mfd-lable">LAT</div>
+                      <div class="mfd-lable">LAT</div>
+                    </div>
+                  </div>
+                }
+                componentIfFalse={
+                  <div class="mfd-data-waypoint-stored-container">
+                    <div class="mfd-data-waypoint-stored-ident-row">
+                      <div class="mfd-label" style="position: relative;">
+                        NO PILOT STORED WPT
+                      </div>
                     </div>
                   </div>
                 }
