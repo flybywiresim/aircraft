@@ -1141,6 +1141,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.removeForcedTurnAt(duplicatePlanIndex + 1);
         this.removeRange(index, duplicatePlanIndex + 1);
 
+        // Remove overfly on previous leg because it no longer makes sense
+        const previousElement = this.maybeElementAt(index - 1);
+        if (previousElement?.isDiscontinuity === false) {
+          this.setOverflyAt(index - 1, false);
+        }
+
         await this.insertElementBefore(index, leg);
 
         return;
@@ -1148,9 +1154,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const previousElement = this.maybeElementAt(index - 1);
-    if (previousElement?.isDiscontinuity === false && previousElement.isXI()) {
-      this.removeElementAt(index - 1);
-      index -= 1;
+    if (previousElement?.isDiscontinuity === false) {
+      this.setOverflyAt(index - 1, false);
+
+      if (previousElement.isXI()) {
+        this.removeElementAt(index - 1);
+        index -= 1;
+      }
     }
 
     const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
@@ -1178,6 +1188,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           .withDefinitionFrom(duplicateLeg)
           .withPilotEnteredDataFrom(duplicateLeg);
 
+        // A forced turn implies an overfly on the previous leg, so also remove it
+        // because it no longer makes sense
+        this.setOverflyAt(index, false);
         // Remove forced turn on following leg, since it no longer makes sense
         this.removeForcedTurnAt(duplicatePlanIndex + 1);
         this.removeRange(index + 1, duplicatePlanIndex + 1);
