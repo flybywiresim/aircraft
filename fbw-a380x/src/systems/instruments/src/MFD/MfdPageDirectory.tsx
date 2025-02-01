@@ -119,7 +119,7 @@ export function pageForUrl(
 export function headerForSystem(
   sys: string,
   mfd: FmsDisplayInterface & MfdDisplayInterface,
-  atcCallsign: Subscribable<string>,
+  atcCallsign: Subscribable<string | null>,
   activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>,
   uiService: MfdUiService,
 ): VNode {

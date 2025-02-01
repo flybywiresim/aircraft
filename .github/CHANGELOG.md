@@ -139,6 +139,12 @@
 1. [A32NX/FMS] Add terminal area database holds for MSFS2024 - @tracernz (Mike)
 1. [EFB] Set EFB Auto Brightness to default to On - @MrJigs7 (MrJigs)
 1. [FMS] Allow airport to be loaded as fixes in instrument procedures - @tracernz (Mike)
+1. [A380X/ND] Fix Terr text wrong position on terrain radar - @MrJigs7 (MrJigs.)
+1. [A380X/FMS] Vapp wind correction calculation fix - @Waveif (waveif)
+1. [A380X/MFD] Fixed FLT NBR not displaying as a mandatory input field - @jet2code (john.xyz)
+1. [A380X/PFD] Add FCU ALT ABOVE/BELOW A/C FMA messages - @Pruznak (Pruznak)
+1. [A380X/MFD] Updated disabled input field styling - @jet2code (john)
+1. [A380X/FMS] Add page scroll via soft keys & individual scroll via KCCU on MFD F-PLN - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Add basic FIX INFO functionality - @Benjozork (Benjamin Dupont)
 
 ## 0.12.0

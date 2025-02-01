@@ -631,6 +631,7 @@
     "Real": "Resnično",
     "Realism": {
       "AdirsAlignTime": "ADIRS čas uskladitve",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Samodejno izpolni kontrolne sezname",
       "BoardingTime": "Čas vkrcanja",
       "DmcSelfTestTime": "DMC samopreizkusni čas",

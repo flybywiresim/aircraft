@@ -631,6 +631,7 @@
     "Real": "Thực",
     "Realism": {
       "AdirsAlignTime": "Thời gian căn chỉnh ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Tự đồng điền danh sách kiểm tra",
       "BoardingTime": "Thời gian lên máy bay",
       "DmcSelfTestTime": "Thời gian tự kiểm tra của DMC",

@@ -631,6 +631,7 @@
     "Real": "Valós",
     "Realism": {
       "AdirsAlignTime": "ADIRS kalibrációs idő",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Ellenörző listák automatikus kitöltése",
       "BoardingTime": "Beszállási idő",
       "DmcSelfTestTime": "DMC Öntesztelési idő",
