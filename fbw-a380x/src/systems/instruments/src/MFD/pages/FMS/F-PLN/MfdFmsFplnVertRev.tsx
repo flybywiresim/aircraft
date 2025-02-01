@@ -140,6 +140,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly stepAltsWptIndices = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsFlightLevel = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsDistances = Array.from(Array(5), () => Subject.create<number | null>(null));
+  private readonly stepAltsDistancesFormatted = Array.from(Array(5), (_, x) =>
+    FmgcData.fmcFormatValue(this.stepAltsDistances[x]),
+  );
   private readonly stepAltsTimes = Array.from(Array(5), () => Subject.create<string>('--:--'));
   private readonly stepAltsIgnored = Array.from(Array(5), () => Subject.create<boolean>(false));
   private readonly stepAltsAboveMaxFl = Array.from(Array(5), () => Subject.create<boolean>(false));
@@ -556,28 +559,27 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     return true;
   }
 
-  private tryAddCruiseStep(lineIndex: number) {
-    const dropdownIndex = this.stepAltsWptIndices[lineIndex].get();
-    const alt = this.stepAltsFlightLevel[lineIndex].get();
-
-    if (dropdownIndex !== null && alt !== null && this.loadedFlightPlan !== null) {
+  private tryAddCruiseStep(dropdownIndex: number | null, flightLevel: number | null) {
+    const crzFl = this.crzFl.get();
+    if (
+      crzFl &&
+      dropdownIndex !== null &&
+      dropdownIndex in this.availableWaypointsToLegIndex &&
+      flightLevel !== null &&
+      this.loadedFlightPlan !== null
+    ) {
       const legIndex = this.availableWaypointsToLegIndex[dropdownIndex];
       const cruiseSteps = this.loadedFlightPlan.allLegs
         .map((l) => (l.isDiscontinuity === false && l.cruiseStep ? l.cruiseStep : null))
         .filter((it) => it !== null);
-      const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(
-        this.crzFl.get() ?? 0,
-        cruiseSteps,
-        legIndex,
-        alt * 100,
-      );
+      const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, flightLevel * 100);
 
-      if (alt > (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
+      if (flightLevel > (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
 
       if (isValid) {
-        this.loadedFlightPlan?.addOrUpdateCruiseStep(legIndex, alt * 100);
+        this.loadedFlightPlan?.addOrUpdateCruiseStep(legIndex, flightLevel * 100);
       } else {
         if (this.selectedLegIndex !== null) {
           const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);
@@ -593,6 +595,44 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.stepAltsWptIndices[lineIndex].set(null);
     this.stepAltsFlightLevel[lineIndex].set(null);
     this.stepAltsLineWasDeleted = true;
+  }
+
+  private handleCruiseStepWaypointModified(newWptIndex: number | null, lineIndex: number) {
+    const oldWptIndex = this.stepAltsWptIndices[lineIndex].get();
+    const flightLevel = this.stepAltsFlightLevel[lineIndex].get();
+
+    if (newWptIndex === null && oldWptIndex !== null) {
+      // Remove step
+      this.tryDeleteCruiseStep(lineIndex, oldWptIndex);
+    } else if (oldWptIndex === null && newWptIndex !== null && flightLevel !== null) {
+      // Add new step
+      this.tryAddCruiseStep(newWptIndex, flightLevel);
+    } else if (oldWptIndex !== null && newWptIndex !== null && flightLevel !== null) {
+      // Change step's waypoint
+      this.tryDeleteCruiseStep(lineIndex, oldWptIndex);
+      this.tryAddCruiseStep(newWptIndex, flightLevel);
+    }
+    this.stepAltsWptIndices[lineIndex].set(newWptIndex);
+    this.updateCruiseSteps();
+  }
+
+  private handleCruiseStepFlightLevelModified(newFlightLevel: number | null, lineIndex: number) {
+    const wptIndex = this.stepAltsWptIndices[lineIndex].get();
+    const oldFlightLevel = this.stepAltsFlightLevel[lineIndex].get();
+
+    if (newFlightLevel === null && wptIndex !== null) {
+      // Remove step
+      this.tryDeleteCruiseStep(lineIndex, wptIndex);
+    } else if (oldFlightLevel === null && newFlightLevel !== null && wptIndex !== null) {
+      // Add new step
+      this.tryAddCruiseStep(wptIndex, newFlightLevel);
+    } else if (oldFlightLevel !== null && newFlightLevel !== null && wptIndex !== null) {
+      // Change step's flight level
+      this.tryDeleteCruiseStep(lineIndex, wptIndex);
+      this.tryAddCruiseStep(wptIndex, newFlightLevel);
+    }
+    this.stepAltsFlightLevel[lineIndex].set(newFlightLevel);
+    this.updateCruiseSteps();
   }
 
   public onAfterRender(node: VNode): void {
@@ -632,7 +672,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.subs.push(this.crzFlFormatted);
 
     for (const i of [0, 1, 2, 3, 4]) {
-      this.subs.push(this.stepAltsMessageDisplay[i], this.stepAltsNoMessageDisplay[i]);
+      this.subs.push(
+        this.stepAltsMessageDisplay[i],
+        this.stepAltsNoMessageDisplay[i],
+        this.stepAltsDistancesFormatted[i],
+      );
     }
 
     this.subs.push(
@@ -654,12 +698,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.spdConstraintTypeRadioSelected.sub(() => this.tryUpdateSpeedConstraint()),
       this.altConstraintTypeRadioSelected.sub(() => this.tryUpdateAltitudeConstraint()),
     );
-  }
-
-  public destroy(): void {
-    for (const s of this.subs) {
-      s.destroy();
-    }
   }
 
   render(): VNode {
@@ -923,15 +961,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                   alignLabels="flex-start"
                                   numberOfDigitsForInputField={7}
                                   tmpyActive={this.tmpyActive}
-                                  onModified={(newWptIndex) => {
-                                    const oldWptIndex = this.stepAltsWptIndices[li].get();
-                                    if (newWptIndex === null && oldWptIndex !== null) {
-                                      this.tryDeleteCruiseStep(li, oldWptIndex);
-                                    } else if (newWptIndex !== null && this.stepAltsFlightLevel[li].get() !== null) {
-                                      this.tryAddCruiseStep(li);
-                                    }
-                                    this.stepAltsWptIndices[li].set(newWptIndex);
-                                  }}
+                                  onModified={(newWptIndex) => this.handleCruiseStepWaypointModified(newWptIndex, li)}
                                   hEventConsumer={this.props.mfd.hEventConsumer}
                                   interactionMode={this.props.mfd.interactionMode}
                                 />
@@ -945,15 +975,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                   containerStyle="width: 150px;"
                                   alignText="center"
                                   tmpyActive={this.tmpyActive}
-                                  onModified={(alt) => {
-                                    const wptIndex = this.stepAltsWptIndices[li].get();
-                                    this.stepAltsFlightLevel[li].set(alt);
-                                    if (alt === null && wptIndex !== null) {
-                                      this.tryDeleteCruiseStep(li, wptIndex);
-                                    } else if (alt !== null && wptIndex !== null) {
-                                      this.tryAddCruiseStep(li);
-                                    }
-                                  }}
+                                  onModified={(newFlightLevel) =>
+                                    this.handleCruiseStepFlightLevelModified(newFlightLevel, li)
+                                  }
                                   hEventConsumer={this.props.mfd.hEventConsumer}
                                   interactionMode={this.props.mfd.interactionMode}
                                 />
@@ -976,7 +1000,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                               }}
                             >
                               <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
-                                <span class="mfd-value">{FmgcData.fmcFormatValue(this.stepAltsDistances[li])}</span>
+                                <span class="mfd-value">{this.stepAltsDistancesFormatted[li]}</span>
                                 <span class="mfd-label-unit mfd-unit-trailing">NM</span>
                               </div>
                             </div>
