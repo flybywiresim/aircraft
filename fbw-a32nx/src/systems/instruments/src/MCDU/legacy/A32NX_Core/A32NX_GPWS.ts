@@ -7,7 +7,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
-import { soundList } from './A32NX_SoundManager';
+import { SoundDefinition, soundList } from './A32NX_SoundManager';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 // FIXME move GPWS logic to systems host, and ACOs to PseudoFWC
@@ -28,7 +28,12 @@ export class A32NX_GPWS {
   private prevRadioAlt = NaN;
   private prevRadioAlt2 = NaN;
 
-  private modes = [
+  private modes: {
+    type: { sound?: SoundDefinition; soundPeriod?: number; gpwsLight?: boolean; pullUp?: boolean }[];
+    current: number;
+    previous: number;
+    onChange?: (current: number, _: any) => void;
+  }[] = [
     // Mode 1
     {
       // 0: no warning, 1: "sink rate", 2 "pull up"
@@ -68,13 +73,13 @@ export class A32NX_GPWS {
       current: 0,
       previous: 0,
       type: [{}, {}, {}],
-      onChange: (current, _) => {
+      onChange: (current: number, _: any) => {
         this.setGlideSlopeWarning(current >= 1);
       },
     },
   ];
 
-  private PrevShouldPullUpPlay = 0;
+  private PrevShouldPullUpPlay = false;
 
   private AltCallState = A32NX_Util.createMachine(AltCallStateMachine);
 

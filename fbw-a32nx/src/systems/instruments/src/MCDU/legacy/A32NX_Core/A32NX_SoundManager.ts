@@ -1,4 +1,4 @@
-interface SoundDefinition {
+export interface SoundDefinition {
   name: string;
   length: number;
 }
@@ -14,6 +14,7 @@ class PeriodicSound {
 
 export class A32NX_SoundManager {
   private periodicList: PeriodicSound[] = [];
+  private soundQueue: SoundDefinition[] = [];
 
   private playingSound = null;
   private playingSoundRemaining = NaN;
