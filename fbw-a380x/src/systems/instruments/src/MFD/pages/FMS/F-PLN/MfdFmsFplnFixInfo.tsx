@@ -1,5 +1,3 @@
-import { AnyFix } from '@flybywiresim/fbw-sdk';
-
 import { FmsPage } from '../../common/FmsPage';
 import { ObservableFlightPlan } from '@fmgc/flightplanning/plans/ObservableFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
@@ -27,6 +25,7 @@ import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlig
 import { FlightPlanFooter } from '../../common/FlightPlanFooter';
 
 import './MfdFmsFplnFixInfo.scss';
+import { Fix } from '@flybywiresim/fbw-sdk';
 
 export class MfdFmsFplnFixInfo extends FmsPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
@@ -64,7 +63,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
               <div class="fr aic mfd-fms-fpln-fix-info-ref-ident">
                 <span class="mfd-fms-fpln-fix-info-ref-ident-label">REF IDENT</span>
 
-                <InputField<AnyFix, string, false>
+                <InputField<Fix, string, false>
                   readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.fix ?? null)}
                   onModified={async (text) => {
                     if (text === null) {

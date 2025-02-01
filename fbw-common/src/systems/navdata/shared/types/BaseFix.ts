@@ -17,8 +17,6 @@ export interface BaseFix<T extends SectionCode> extends DatabaseItem<T> {
  */
 export type Fix = Airport | NdbNavaid | VhfNavaid | Waypoint;
 
-export type AnyFix = BaseFix<SectionCode>;
-
 export function isFix(o: any): o is Fix {
   return typeof o === 'object' && 'location' in o && 'databaseId' in o;
 }

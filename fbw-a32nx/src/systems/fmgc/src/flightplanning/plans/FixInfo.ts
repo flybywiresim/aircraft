@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AnyFix } from '@flybywiresim/fbw-sdk';
+import { Fix } from '@flybywiresim/fbw-sdk';
 
 export interface FixInfoRadial {
   trueBearing: DegreesTrue;
@@ -25,7 +25,7 @@ export interface FixInfoRadius {
  */
 export class FixInfoEntry implements FixInfoData {
   /** The fix concerned by the fix info */
-  public fix: AnyFix;
+  public fix: Fix;
 
   /** The radii contained in the fix info */
   public radii?: FixInfoRadius[];
@@ -33,7 +33,7 @@ export class FixInfoEntry implements FixInfoData {
   /** The radials contained in the fix ino */
   public radials?: FixInfoRadial[];
 
-  constructor(fix: AnyFix, radii?: FixInfoRadius[], radials?: FixInfoRadial[]) {
+  constructor(fix: Fix, radii?: FixInfoRadius[], radials?: FixInfoRadial[]) {
     this.fix = fix;
     this.radii = radii;
     this.radials = radials;
@@ -50,7 +50,7 @@ export class FixInfoEntry implements FixInfoData {
 
 export interface FixInfoData {
   /** The fix concerned by the fix info */
-  fix: AnyFix;
+  fix: Fix;
 
   /** The radii contained in the fix info */
   radii?: FixInfoRadius[];
