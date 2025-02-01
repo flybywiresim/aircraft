@@ -363,7 +363,7 @@ export class FwsNormalChecklists {
 
   private checkIfDeferredAutoDisplay(deltaTime: number) {
     this.deferredAutoDisplayPulseNode.write(
-      this.fws.activeAbnormalProceduresList.get().size === 0 &&
+      this.fws.presentedAbnormalProceduresList.get().size === 0 &&
         this.fws.flightPhase.get() === 8 &&
         this.fws.adrPressureAltitude.get() < 20_000 &&
         (this.fws.slatsAngle.get() > 0 || Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD') &&

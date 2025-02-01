@@ -238,7 +238,10 @@ export class FwsCore {
   public readonly activeAbnormalNonSensedKeys: SetSubject<number> = SetSubject.create([]);
 
   /** Map to hold all failures which are currently active */
-  public readonly activeAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
+  public readonly presentedAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
+
+  /** Map to hold all failures which are currently active */
+  public readonly clearedAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
 
   /** Map to hold all deferred procs which are currently active */
   public readonly activeDeferredProceduresList = MapSubject.create<string, ChecklistState>();
@@ -1555,7 +1558,8 @@ export class FwsCore {
           this.abnormalNonSensed.reset();
           this.activeDeferredProceduresList.clear();
           this.abnormalSensed.reset();
-          this.activeAbnormalProceduresList.clear();
+          this.presentedAbnormalProceduresList.clear();
+          this.clearedAbnormalProceduresList.clear();
           this.allCurrentFailures.length = 0;
           this.presentedFailures.length = 0;
           this.recallFailures.length = 0;
@@ -1572,7 +1576,8 @@ export class FwsCore {
           }
           this.abnormalNonSensed.reset();
           this.abnormalSensed.reset();
-          this.activeAbnormalProceduresList.clear();
+          this.presentedAbnormalProceduresList.clear();
+          this.clearedAbnormalProceduresList.clear();
           this.activeDeferredProceduresList.clear();
           this.allCurrentFailures.length = 0;
           this.presentedFailures.length = 0;
@@ -3938,7 +3943,14 @@ export class FwsCore {
 
     if (this.rclUpPulseNode.read()) {
       if (this.recallFailures.length > 0) {
-        this.presentedFailures.push(this.recallFailures.shift());
+        const recalledKey = this.recallFailures.shift();
+        this.presentedFailures.push(recalledKey);
+
+        this.presentedAbnormalProceduresList.setValue(
+          recalledKey,
+          this.clearedAbnormalProceduresList.getValue(recalledKey),
+        );
+        this.clearedAbnormalProceduresList.delete(recalledKey);
       }
     }
 
@@ -4029,7 +4041,7 @@ export class FwsCore {
           }
         }
 
-        if (!this.activeAbnormalProceduresList.has(key) && !this.recallFailures.includes(key)) {
+        if (!this.presentedAbnormalProceduresList.has(key) && !this.clearedAbnormalProceduresList.has(key)) {
           // Insert into internal map
           if (value.whichItemsActive) {
             if (proc.items.length !== value.whichItemsActive().length) {
@@ -4053,7 +4065,7 @@ export class FwsCore {
               'ECAM alert definition error: whichItemsChecked() not the same size as number of procedure items',
             );
           }
-          this.activeAbnormalProceduresList.setValue(key, {
+          this.presentedAbnormalProceduresList.setValue(key, {
             id: key,
             procedureActivated: true,
             procedureCompleted: false,
@@ -4090,9 +4102,9 @@ export class FwsCore {
               });
             }
           }
-        } else if (this.activeAbnormalProceduresList.has(key)) {
+        } else if (this.presentedAbnormalProceduresList.has(key)) {
           // Update internal map
-          const prevEl = this.activeAbnormalProceduresList.getValue(key);
+          const prevEl = this.presentedAbnormalProceduresList.getValue(key);
           const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
@@ -4109,7 +4121,7 @@ export class FwsCore {
           });
 
           if (this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key).length > 0) {
-            this.activeAbnormalProceduresList.setValue(key, {
+            this.presentedAbnormalProceduresList.setValue(key, {
               id: key,
               procedureActivated: prevEl.procedureActivated,
               procedureCompleted: prevEl.procedureCompleted,
@@ -4240,9 +4252,15 @@ export class FwsCore {
     });
 
     // Delete inactive failures from internal map
-    this.activeAbnormalProceduresList.get().forEach((_, key) => {
+    this.presentedAbnormalProceduresList.get().forEach((_, key) => {
       if (!allFailureKeys.includes(key) || this.recallFailures.includes(key)) {
-        this.activeAbnormalProceduresList.delete(key);
+        if (this.recallFailures.includes(key)) {
+          this.clearedAbnormalProceduresList.setValue(key, this.presentedAbnormalProceduresList.getValue(key));
+        } else {
+          this.clearedAbnormalProceduresList.delete(key);
+        }
+
+        this.presentedAbnormalProceduresList.delete(key);
       }
     });
 

@@ -109,7 +109,7 @@ export class FwsAbnormalSensed {
 
   constructor(private fws: FwsCore) {
     this.subs.push(
-      this.fws.activeAbnormalProceduresList.sub(
+      this.fws.presentedAbnormalProceduresList.sub(
         (
           map: ReadonlyMap<string, ChecklistState>,
           type: SubscribableMapEventType,
@@ -145,7 +145,7 @@ export class FwsAbnormalSensed {
               this.activeProcedureId.map((id) => value.id === id),
               ProcedureType.Abnormal,
               value,
-              (newState) => this.fws.activeAbnormalProceduresList.setValue(value.id, newState),
+              (newState) => this.fws.presentedAbnormalProceduresList.setValue(value.id, newState),
               this.clearActiveProcedure.bind(this),
               () => {},
               this.fws.aircraftOnGround.get() ? undefined : EcamAbnormalProcedures[value.id].recommendation,
@@ -209,7 +209,7 @@ export class FwsAbnormalSensed {
   }
 
   getAbnormalProceduresKeysSorted() {
-    return Array.from(this.fws.activeAbnormalProceduresList.get().keys());
+    return Array.from(this.fws.presentedAbnormalProceduresList.get().keys());
   }
 
   public clearActiveProcedure(newState?: ChecklistState) {
@@ -241,7 +241,7 @@ export class FwsAbnormalSensed {
    * This block deals mostly with the pilot interaction through the ECAM CP and transmission to the CDS/EWD
    */
   update() {
-    if (this.fws.activeAbnormalProceduresList.get().size > 0) {
+    if (this.fws.presentedAbnormalProceduresList.get().size > 0) {
       this.showAbnormalSensedRequested.set(true);
     } else {
       this.showAbnormalSensedRequested.set(false);
