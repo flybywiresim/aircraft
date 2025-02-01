@@ -1096,8 +1096,8 @@ export class CDUAtcPositionReport {
     };
     mcdu.onRightInput[3] = (value) => {
       // FIXME these functions don't exist
-      const current = mcdu.atsu.currentFlightState();
-      const target = mcdu.atsu.targetFlightState();
+      //const current = mcdu.atsu.currentFlightState();
+      //const target = mcdu.atsu.targetFlightState();
 
       if (!target.apActive || (target.apActive && target.altitude !== current.altitude)) {
         if (value === Keypad.clrValue) {
