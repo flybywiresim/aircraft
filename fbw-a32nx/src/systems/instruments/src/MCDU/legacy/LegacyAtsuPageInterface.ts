@@ -47,7 +47,7 @@ interface LegacyAtsuPageDrawingInterface {
 }
 
 /** These all need to be things published on the FMGC output bus. */
-interface LegacyAtsuPageFmsInterface /* extends DataInterface, DisplayInterface */ {
+interface LegacyAtsuPageFmsInterface {
   // NO!
   isAnEngineOn(): boolean;
   // NO!

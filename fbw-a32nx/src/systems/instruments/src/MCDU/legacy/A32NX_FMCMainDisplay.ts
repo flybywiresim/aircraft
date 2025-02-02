@@ -47,9 +47,9 @@ import { Keypad } from './A320_Neo_CDU_Keypad';
 import { FmsClient } from '@atsu/fmsclient';
 import { AtsuStatusCodes } from '@datalink/common';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
+import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -64,7 +64,7 @@ import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
-export abstract class FMCMainDisplay implements DataInterface, DisplayInterface, Fmgc {
+export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */

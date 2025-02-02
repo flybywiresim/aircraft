@@ -3,8 +3,8 @@
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { McduMessage } from '../messages/NXSystemMessages';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
-import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
+import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
 import {
   DatabaseIdent,
   EfisSide,
@@ -81,7 +81,7 @@ interface LegacyFmsPageDrawingInterface {
   mcduScratchpad: ScratchpadDataLink;
 }
 
-interface LegacyFmsPageFmsInterface extends DataInterface, DisplayInterface {
+interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterface {
   getFlightPlan(index: FlightPlanIndex): ReturnType<FlightPlanInterface['get']>;
   getAlternateFlightPlan(index: FlightPlanIndex): ReturnType<FlightPlanInterface['get']>['alternateFlightPlan'];
   eraseTemporaryFlightPlan(callback?: typeof EmptyCallback.Void): void;
