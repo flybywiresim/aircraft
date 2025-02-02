@@ -5,7 +5,6 @@
 import { NdSymbol, NdSymbolTypeFlags, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { BitFlags } from '@microsoft/msfs-sdk';
-import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
 import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
 import { VerticalDisplayPaintUtils } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayPaintUtils';
@@ -22,7 +21,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
       }
 
       const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
-      const ry = VerticalDisplay.altToY(symbol.predictedAltitude, verticalRange);
+      const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
         this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
@@ -39,7 +38,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
       }
 
       const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
-      const ry = VerticalDisplay.altToY(symbol.predictedAltitude, verticalRange);
+      const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
         this.paintFlightPlanWaypoint(true, context, rx, ry, symbol);

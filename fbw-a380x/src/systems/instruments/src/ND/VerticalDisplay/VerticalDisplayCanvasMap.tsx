@@ -86,20 +86,23 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
 
     const vdRange = this.props.vdRange.get();
     const verticalRange = this.props.verticalRange.get();
-    const debug: [number, number][] = [];
 
     context.beginPath();
     context.strokeStyle = '#0f0';
     context.lineWidth = 2;
 
-    context.moveTo(0, VerticalDisplay.altToY(this.baroCorrectedAltitude.get().value, verticalRange) - 800);
+    context.moveTo(
+      VerticalDisplayCanvasMap.distanceToX(0, vdRange),
+      VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
+    );
+
+    // Draw runway
 
     for (const pe of this.props.displayedFmsPath.get()) {
       context.lineTo(
-        (pe.distanceFromAircraft / vdRange) * 540,
-        VerticalDisplay.altToY(pe.altitude, verticalRange) - 800,
+        VerticalDisplayCanvasMap.distanceToX(pe.distanceFromAircraft, vdRange),
+        VerticalDisplayCanvasMap.altToY(pe.altitude, verticalRange),
       );
-      debug.push([pe.distanceFromAircraft, pe.altitude]);
     }
     context.stroke();
 
@@ -119,17 +122,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       .filter(
         (it) =>
           it.constraints ||
-          (BitFlags.isAny(
-            it.type,
-            NdSymbolTypeFlags.Waypoint |
-              NdSymbolTypeFlags.FlightPlan |
-              NdSymbolTypeFlags.FixInfo |
-              NdSymbolTypeFlags.VorDme |
-              NdSymbolTypeFlags.Vor |
-              NdSymbolTypeFlags.Dme |
-              NdSymbolTypeFlags.Ndb |
-              NdSymbolTypeFlags.Airport,
-          ) &&
+          (BitFlags.isAny(it.type, NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan) &&
             !(it.type & NdSymbolTypeFlags.Runway)),
       );
 
@@ -141,10 +134,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
 
     const pseudoWaypoints = this.fmsSymbols
       .get()
-      .filter(
-        (it) =>
-          it.type & (NdSymbolTypeFlags.PwpStartOfClimb | NdSymbolTypeFlags.PwpDecel | NdSymbolTypeFlags.PwpSpeedChange),
-      );
+      .filter((it) => it.type & (NdSymbolTypeFlags.PwpDecel | NdSymbolTypeFlags.PwpSpeedChange));
 
     this.pwpLayer.data = pseudoWaypoints;
   }
@@ -153,10 +143,12 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     return (distance / vdRange) * 540;
   }
 
+  public static altToY(alt: number, verticalRange: [number, number]) {
+    return VerticalDisplay.altToY(alt, verticalRange) - 800;
+  }
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.subscriptions.push(this.fmsSymbols.sub((p) => console.log(p)));
 
     this.subscriptions.push(
       this.props.displayedFmsPath.sub(() => this.handlePathFrame()),

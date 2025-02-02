@@ -504,6 +504,7 @@ export class EfisSymbols<T extends number> {
           type: pwp.efisSymbolFlag,
           // When in HDG/TRK, this defines where on the track line the PWP lies
           distanceFromAirplane: pwp.distanceFromStart,
+          predictedAltitude: pwp.flightPlanInfo?.altitude ?? undefined,
         });
       }
 
@@ -802,6 +803,8 @@ export class EfisSymbols<T extends number> {
             direction: runway.bearing,
             length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
             type: NdSymbolTypeFlags.Runway,
+            distanceFromAirplane: distanceTo(this.lastPpos, runway.location),
+            predictedAltitude: runway.thresholdLocation.alt,
           });
         }
       } else if (this.isWithinEditArea(airport.location, mapReferencePoint, mapOrientation, editArea)) {
@@ -810,6 +813,8 @@ export class EfisSymbols<T extends number> {
           ident: airport.ident,
           location: airport.location,
           type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
+          distanceFromAirplane: distanceTo(this.lastPpos, airport.location),
+          predictedAltitude: airport.location.alt,
         });
       }
     }

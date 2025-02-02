@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NdSymbol, NdSymbolTypeFlags, MathUtils } from '@flybywiresim/fbw-sdk';
-import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
 import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
 import { VerticalDisplayPaintUtils } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayPaintUtils';
@@ -18,7 +17,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
       }
 
       const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
-      const ry = VerticalDisplay.altToY(symbol.predictedAltitude, verticalRange);
+      const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       if (symbol.type & NdSymbolTypeFlags.Runway) {
         if (vdRange < 160) {
@@ -37,7 +36,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
       }
 
       const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
-      const ry = VerticalDisplay.altToY(symbol.predictedAltitude, verticalRange);
+      const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       if (symbol.type & NdSymbolTypeFlags.Runway) {
         if (vdRange < 160) {
@@ -58,7 +57,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
     vdRange: number,
   ) {
     // Runway shape
-    VerticalDisplayCanvasMap.distanceToX(symbol.length ?? 0.5, vdRange);
+    const length = VerticalDisplayCanvasMap.distanceToX(symbol.length ?? 0.5, vdRange);
 
     context.save();
 
@@ -77,7 +76,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
     context.stroke();
     context.closePath();
 
-    this.paintRunwayIdentifier(isColorLayer, context, x, y, 0, symbol);
+    this.paintRunwayIdentifier(isColorLayer, context, x, y, 90, symbol);
 
     context.restore();
   }
@@ -101,7 +100,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
 
     context.strokeRect(x - 5, y - 12.5, 10, 25);
 
-    this.paintRunwayIdentifier(isColorLayer, context, x, y, 0, symbol);
+    this.paintRunwayIdentifier(isColorLayer, context, x, y, 90, symbol);
 
     context.restore();
   }

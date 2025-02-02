@@ -62,10 +62,10 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       const fmsPathToDisplay: VerticalPathCheckpoint[] = [];
 
       for (const p of path) {
+        fmsPathToDisplay.push(p);
         if (p.distanceFromAircraft > ndRange) {
           break;
         }
-        fmsPathToDisplay.push(p);
       }
       return fmsPathToDisplay;
     },
@@ -235,25 +235,24 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       // Try to fit in egoAltitude, pathFirstAltitude and pathLastAltitude (with descending priority)
       // If that doesn't work, remove altitude with lowest priority, and try again
       let lowerLimit = VERTICAL_DISPLAY_MIN_ALTITUDE;
-      const altitudesToConsider = [egoAltitude, pathFirstAltitude, pathLastAltitude];
-      while (altitudesToConsider.length > 1) {
-        if (Math.max(...altitudesToConsider) - Math.min(...altitudesToConsider) > verticalExtent) {
-          altitudesToConsider.pop();
-        } else {
-          lowerLimit = Math.max(
-            VERTICAL_DISPLAY_MIN_ALTITUDE,
-            Math.min(
-              Math.min(...altitudesToConsider) - 0.8 * verticalExtent,
-              VERTICAL_DISPLAY_MAX_ALTITUDE - verticalExtent,
-            ),
-          );
+      let upperLimit = VERTICAL_DISPLAY_MAX_ALTITUDE;
+      const pathHighest = Math.max(pathFirstAltitude, pathLastAltitude);
+      const pathLowest = Math.min(pathFirstAltitude, pathLastAltitude);
 
-          break;
-        }
+      // Try to cover vertical extent of all displayed waypoints
+      lowerLimit = Math.max(VERTICAL_DISPLAY_MIN_ALTITUDE, (pathLowest + pathHighest - verticalExtent) / 2);
+      upperLimit = lowerLimit + verticalExtent;
+
+      // If ego altitude not contained, shift until it is contained by a margin
+      if (egoAltitude < lowerLimit) {
+        lowerLimit = Math.max(VERTICAL_DISPLAY_MIN_ALTITUDE, egoAltitude - 0.15 * verticalExtent);
+        upperLimit = lowerLimit + verticalExtent;
+      } else if (egoAltitude > upperLimit) {
+        upperLimit = Math.min(VERTICAL_DISPLAY_MAX_ALTITUDE, egoAltitude + 0.15 * verticalExtent);
+        lowerLimit = upperLimit - verticalExtent;
       }
 
-      // console.log('path', lowerLimit, altitudesToConsider);
-      return [lowerLimit, lowerLimit + verticalExtent];
+      return [lowerLimit, upperLimit];
     }
   }
 
