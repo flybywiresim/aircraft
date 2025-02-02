@@ -1,7 +1,7 @@
 use crate::shared::{ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    VariableIdentifier,
+    VariableIdentifier, Write, Writer,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd)]
@@ -19,6 +19,7 @@ enum SelectedMode {
     Bfo,
     Am,
 }
+read_write_enum!(SelectedMode);
 
 impl From<f64> for SelectedMode {
     fn from(value: f64) -> Self {
@@ -112,7 +113,7 @@ impl SimulationElement for RadioManagementPanel {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.selected_mode = SelectedMode::from(reader.read_f64(&self.selected_mode_id));
+        self.selected_mode = reader.read(&self.selected_mode_id);
         self.toggle_switch = reader.read(&self.toggle_switch_id);
     }
 
