@@ -109,7 +109,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
           FlightPlanIndex.Active,
         );
       }
-    } else if (this.props.fmcService.master) {
+    } else if (this.props.fmcService.master && text !== null) {
       const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
       if (wpt) {
         this.manualWptIdent = wpt.ident;
