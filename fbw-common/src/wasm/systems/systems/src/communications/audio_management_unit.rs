@@ -18,7 +18,7 @@ use super::audio_control_panel::AudioControlPanel;
 use super::receivers::{CommTransceiver, NavReceiver};
 
 // Restart full cycle every 160ms as stated in AMM
-pub const TIMEOUT: u128 = 160;
+pub const TIMEOUT: Duration = Duration::from_millis(160);
 
 enum TypeCard {
     Selcal(Selcal),
