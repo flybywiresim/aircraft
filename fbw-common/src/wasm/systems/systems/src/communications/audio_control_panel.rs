@@ -362,18 +362,10 @@ impl AudioControlPanel {
 
 impl SimulationElement for AudioControlPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        for vhf in self.vhfs.iter_mut() {
-            vhf.accept(visitor);
-        }
-        for comm in self.comms.iter_mut() {
-            comm.accept(visitor);
-        }
-        for adf in self.adfs.iter_mut() {
-            adf.accept(visitor);
-        }
-        for vor in self.vors.iter_mut() {
-            vor.accept(visitor);
-        }
+        accept_iterable!(self.vhfs, visitor);
+        accept_iterable!(self.comms, visitor);
+        accept_iterable!(self.adfs, visitor);
+        accept_iterable!(self.vors, visitor);
 
         self.ils.accept(visitor);
         self.gls.accept(visitor);
