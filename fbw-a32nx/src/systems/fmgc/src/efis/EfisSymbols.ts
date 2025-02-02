@@ -41,6 +41,7 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -364,7 +365,7 @@ export class EfisSymbols<T extends number> {
       // (currently sequences with guidance which is too early)
       // eslint-disable-next-line no-lone-blocks
 
-      // ALTN
+      // ACTIVE
       if (
         this.flightPlanService.hasActive &&
         this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)
@@ -382,6 +383,7 @@ export class EfisSymbols<T extends number> {
           editArea,
           formatConstraintAlt,
           formatConstraintSpeed,
+          this.guidanceController.vnavDriver.mcduProfile,
         );
 
         for (const symbol of symbols) {
@@ -555,6 +557,7 @@ export class EfisSymbols<T extends number> {
     editArea: EditArea,
     formatConstraintAlt: (alt: number, descent: boolean, prefix?: string) => string,
     formatConstraintSpeed: (speed: number, prefix?: string) => string,
+    predictions?: NavGeometryProfile,
   ): NdSymbol[] {
     const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
     const isLatAutoControlArmed = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
@@ -734,6 +737,16 @@ export class EfisSymbols<T extends number> {
         constraints.push(`${Math.round(leg.calculated.cumulativeDistanceToEndWithTransitions)}NM`);
       }
 
+      const distanceFromAirplane =
+        predictions && predictions.waypointPredictions.has(i)
+          ? predictions.waypointPredictions.get(i).distanceFromAircraft
+          : undefined;
+
+      const predictedAltitude =
+        predictions && predictions.waypointPredictions.has(i)
+          ? predictions.waypointPredictions.get(i).altitude
+          : undefined;
+
       ret.push({
         databaseId,
         ident: leg.ident,
@@ -741,6 +754,8 @@ export class EfisSymbols<T extends number> {
         type,
         constraints: constraints.length > 0 ? constraints : undefined,
         direction,
+        distanceFromAirplane: distanceFromAirplane,
+        predictedAltitude: predictedAltitude,
       });
     }
 

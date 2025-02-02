@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { arcLength, pointOnArc, pointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { bearingTo, distanceTo } from 'msfs-geo';
@@ -27,16 +28,12 @@ export interface ArcPathVector {
   endPoint: Coordinates;
   centrePoint: Coordinates;
   sweepAngle: Degrees;
-  startAltitude?: number;
-  endAltitude?: number;
 }
 
 export interface LinePathVector {
   type: PathVectorType.Line;
   startPoint: Coordinates;
   endPoint: Coordinates;
-  startAltitude?: number;
-  endAltitude?: number;
 }
 
 export interface DebugPointPathVector {
@@ -47,6 +44,13 @@ export interface DebugPointPathVector {
 }
 
 export type PathVector = LinePathVector | ArcPathVector | DebugPointPathVector;
+
+export interface VerticalPathCheckpoint {
+  distanceFromAircraft: number;
+  altitude: number;
+  altitudeConstraint?: AltitudeConstraint;
+  isAltitudeConstraintMet?: boolean;
+}
 
 export function pathVectorLength(vector: PathVector) {
   if (vector.type === PathVectorType.Line) {

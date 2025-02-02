@@ -55,7 +55,7 @@ import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/provid
 
 import './style.scss';
 import './oans-style.scss';
-import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
+import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
 
 declare type MousePosition = {
   x: number;
@@ -311,7 +311,7 @@ class NDInstrument implements FsInstrument {
             side={Subject.create(this.efisSide === 'L' ? 'CAPT' : 'FO')}
             visible={this.cursorVisible}
           />
-          <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
+          <VerticalDisplay bus={this.bus} side={this.efisSide} />
         </CdsDisplayUnit>
       </div>,
       document.getElementById('ND_CONTENT'),
