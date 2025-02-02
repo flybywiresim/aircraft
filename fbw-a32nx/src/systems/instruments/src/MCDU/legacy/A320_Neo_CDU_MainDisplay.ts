@@ -1318,7 +1318,8 @@ export class A320_Neo_CDU_MainDisplay
    */
   public setScratchpadMessage(message: McduMessage) {
     if (message instanceof TypeIIMessage) {
-      console.error('Type II message passed to setScratchpadMessage!', message);
+      console.error('Type II message passed to setScratchpadMessage! Redirecting to the queue.', message);
+      this.addMessageToQueue(message);
       return;
     }
 

@@ -87,7 +87,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   eraseTemporaryFlightPlan(callback?: typeof EmptyCallback.Void): void;
   insertTemporaryFlightPlan(callback?: typeof EmptyCallback.Void): void;
   updateConstraints(): void;
-  setScratchpadMessage(message: McduMessage | string): void;
+  setScratchpadMessage(message: McduMessage): void;
   logTroubleshootingError(msg: any): void;
   updateTowerHeadwind(): void;
   onToRwyChanged(): void;

@@ -5352,7 +5352,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    */
   protected abstract setRequest(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'): void;
   protected abstract setScratchpadText(value: string): void;
-  protected abstract setScratchpadMessage(message: McduMessage | string): void;
+  protected abstract setScratchpadMessage(message: McduMessage): void;
   protected abstract addNewAtsuMessage(code: AtsuStatusCodes): void;
 }
 
