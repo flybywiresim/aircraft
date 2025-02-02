@@ -291,7 +291,7 @@ impl AudioControlPanel {
                 self.last_complete_cycle_sent = Duration::from_millis(0);
             }
 
-            let transmission_pb_pushed: bool = self.transmit_channel != self.transmit_pushed;
+            let transmission_pb_pushed = self.transmit_channel != self.transmit_pushed;
 
             if self.vhfs[0].has_changed()
                 || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf1
