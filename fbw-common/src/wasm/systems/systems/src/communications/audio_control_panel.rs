@@ -17,7 +17,7 @@ use num_traits::FromPrimitive;
 use std::time::Duration;
 
 #[derive(PartialEq, Copy, Clone, Eq)]
-pub enum TransmitID {
+pub enum TransmitId {
     None = 0,
     Vhf1,
     Vhf2,
@@ -28,18 +28,18 @@ pub enum TransmitID {
     Cab,
     Pa,
 }
-impl From<u32> for TransmitID {
+impl From<u32> for TransmitId {
     fn from(value: u32) -> Self {
         match value {
-            0 => TransmitID::None,
-            1 => TransmitID::Vhf1,
-            2 => TransmitID::Vhf2,
-            3 => TransmitID::Vhf3,
-            4 => TransmitID::Hf1,
-            5 => TransmitID::Hf2,
-            6 => TransmitID::Mech,
-            7 => TransmitID::Cab,
-            8 => TransmitID::Pa,
+            0 => TransmitId::None,
+            1 => TransmitId::Vhf1,
+            2 => TransmitId::Vhf2,
+            3 => TransmitId::Vhf3,
+            4 => TransmitId::Hf1,
+            5 => TransmitId::Hf2,
+            6 => TransmitId::Mech,
+            7 => TransmitId::Cab,
+            8 => TransmitId::Pa,
             i => panic!("Unknown Transmit ID {i}"),
         }
     }
@@ -56,16 +56,16 @@ pub struct AudioControlPanel {
     voice_button: bool,
     reset_button: bool,
 
-    transmit_channel: TransmitID,
-    transmit_pushed: TransmitID,
+    transmit_channel: TransmitId,
+    transmit_pushed: TransmitId,
 
-    vhfs: [TransceiverACPFacade; 3],
-    comms: [TransceiverACPFacade; 5], // TransceiverACPFacades not simulated due to SDK capabilities. Just to make the knobs rotatable/pushable
-    adfs: [TransceiverACPFacade; 2],
-    vors: [TransceiverACPFacade; 2],
-    ils: TransceiverACPFacade,
-    gls: TransceiverACPFacade,
-    markers: TransceiverACPFacade,
+    vhfs: [TransceiverAcpFacade; 3],
+    comms: [TransceiverAcpFacade; 5], // TransceiverACPFacades not simulated due to SDK capabilities. Just to make the knobs rotatable/pushable
+    adfs: [TransceiverAcpFacade; 2],
+    vors: [TransceiverAcpFacade; 2],
+    ils: TransceiverAcpFacade,
+    gls: TransceiverAcpFacade,
+    markers: TransceiverAcpFacade,
 
     power_supply: ElectricalBusType,
     is_power_supply_powered: bool,
@@ -86,32 +86,32 @@ impl AudioControlPanel {
             voice_button: false,
             reset_button: false,
 
-            transmit_channel: TransmitID::Vhf1,
-            transmit_pushed: TransmitID::Vhf1,
+            transmit_channel: TransmitId::Vhf1,
+            transmit_pushed: TransmitId::Vhf1,
 
             vhfs: [
-                TransceiverACPFacade::new(context, id_acp, "VHF1"),
-                TransceiverACPFacade::new(context, id_acp, "VHF2"),
-                TransceiverACPFacade::new(context, id_acp, "VHF3"),
+                TransceiverAcpFacade::new(context, id_acp, "VHF1"),
+                TransceiverAcpFacade::new(context, id_acp, "VHF2"),
+                TransceiverAcpFacade::new(context, id_acp, "VHF3"),
             ],
             comms: [
-                TransceiverACPFacade::new(context, id_acp, "HF1"),
-                TransceiverACPFacade::new(context, id_acp, "HF2"),
-                TransceiverACPFacade::new(context, id_acp, "MECH"),
-                TransceiverACPFacade::new(context, id_acp, "ATT"),
-                TransceiverACPFacade::new(context, id_acp, "PA"),
+                TransceiverAcpFacade::new(context, id_acp, "HF1"),
+                TransceiverAcpFacade::new(context, id_acp, "HF2"),
+                TransceiverAcpFacade::new(context, id_acp, "MECH"),
+                TransceiverAcpFacade::new(context, id_acp, "ATT"),
+                TransceiverAcpFacade::new(context, id_acp, "PA"),
             ],
             adfs: [
-                TransceiverACPFacade::new(context, id_acp, "ADF1"),
-                TransceiverACPFacade::new(context, id_acp, "ADF2"),
+                TransceiverAcpFacade::new(context, id_acp, "ADF1"),
+                TransceiverAcpFacade::new(context, id_acp, "ADF2"),
             ],
             vors: [
-                TransceiverACPFacade::new(context, id_acp, "VOR1"),
-                TransceiverACPFacade::new(context, id_acp, "VOR2"),
+                TransceiverAcpFacade::new(context, id_acp, "VOR1"),
+                TransceiverAcpFacade::new(context, id_acp, "VOR2"),
             ],
-            ils: TransceiverACPFacade::new(context, id_acp, "ILS"),
-            gls: TransceiverACPFacade::new(context, id_acp, "MLS"),
-            markers: TransceiverACPFacade::new(context, id_acp, "MKR"),
+            ils: TransceiverAcpFacade::new(context, id_acp, "ILS"),
+            gls: TransceiverAcpFacade::new(context, id_acp, "MLS"),
+            markers: TransceiverAcpFacade::new(context, id_acp, "MKR"),
 
             power_supply,
             is_power_supply_powered: false,
@@ -279,7 +279,7 @@ impl AudioControlPanel {
         bus_acp.push(word_arinc);
     }
 
-    fn decode_amu_word(bus: &mut Vec<Arinc429Word<u32>>) -> Option<(TransmitID, bool, bool, u32)> {
+    fn decode_amu_word(bus: &mut Vec<Arinc429Word<u32>>) -> Option<(TransmitId, bool, bool, u32)> {
         let label_option: Option<LabelWordAudioManagementUnitAudioControlPanel> =
             FromPrimitive::from_u32(bus[0].get_bits(8, 1));
 
@@ -287,7 +287,7 @@ impl AudioControlPanel {
             if label == LabelWordAudioManagementUnitAudioControlPanel::Label301AudioManagementUnit {
                 let word = bus.remove(0);
                 Some((
-                    TransmitID::from(word.get_bits(4, 11)),
+                    TransmitId::from(word.get_bits(4, 11)),
                     word.get_bit(15),
                     word.get_bit(16),
                     word.get_bits(5, 25),
@@ -328,43 +328,43 @@ impl AudioControlPanel {
             let transmission_pb_pushed = self.transmit_channel != self.transmit_pushed;
 
             if self.vhfs[0].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf1
+                || transmission_pb_pushed && self.transmit_pushed == TransmitId::Vhf1
             {
                 self.send_volume_control(bus_acp, 2);
             }
             if self.vhfs[1].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf2
+                || transmission_pb_pushed && self.transmit_pushed == TransmitId::Vhf2
             {
                 self.send_volume_control(bus_acp, 3);
             }
             if self.vhfs[2].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf3
+                || transmission_pb_pushed && self.transmit_pushed == TransmitId::Vhf3
             {
                 self.send_volume_control(bus_acp, 4);
             }
 
             if self.comms[0].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Hf1
+                || transmission_pb_pushed && self.transmit_pushed == TransmitId::Hf1
             {
                 self.send_volume_control(bus_acp, 5);
             }
             if self.comms[1].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Hf2
+                || transmission_pb_pushed && self.transmit_pushed == TransmitId::Hf2
             {
                 self.send_volume_control(bus_acp, 6);
             }
             if self.comms[2].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Mech
+                || transmission_pb_pushed && self.transmit_pushed == TransmitId::Mech
             {
                 self.send_volume_control(bus_acp, 7);
             }
             if self.comms[3].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Cab
+                || transmission_pb_pushed && self.transmit_pushed == TransmitId::Cab
             {
                 self.send_volume_control(bus_acp, 8);
             }
             if self.comms[4].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Pa
+                || transmission_pb_pushed && self.transmit_pushed == TransmitId::Pa
             {
                 self.send_volume_control(bus_acp, 9);
             }
@@ -414,7 +414,7 @@ impl SimulationElement for AudioControlPanel {
             self.reset_button = reader.read(&self.reset_button_id);
 
             let tmp: u32 = reader.read(&self.transmit_pushed_id);
-            self.transmit_pushed = TransmitID::from(tmp);
+            self.transmit_pushed = TransmitId::from(tmp);
         }
     }
 
@@ -432,14 +432,14 @@ impl SimulationElement for AudioControlPanel {
 }
 
 #[derive(Default)]
-struct TransceiverACPFacade {
+struct TransceiverAcpFacade {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,
     changed: bool,
     knob: bool,
     volume: u32,
 }
-impl TransceiverACPFacade {
+impl TransceiverAcpFacade {
     pub fn new(context: &mut InitContext, id_acp: u32, name: &str) -> Self {
         Self {
             volume_id: context.get_identifier(format!("ACP{}_{}_VOLUME", id_acp, name)),
@@ -452,7 +452,7 @@ impl TransceiverACPFacade {
         self.changed
     }
 }
-impl SimulationElement for TransceiverACPFacade {
+impl SimulationElement for TransceiverAcpFacade {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
     }

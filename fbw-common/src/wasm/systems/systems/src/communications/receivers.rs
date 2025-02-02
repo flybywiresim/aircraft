@@ -136,7 +136,7 @@ impl Morse {
     // From unpack function in file simvar.ts
     fn unpack(&self, value: usize) -> impl DoubleEndedIterator<Item = char> {
         (0..8).filter_map(move |i| {
-            let code = (value >> i * 6) & 0x3f;
+            let code = (value >> (i * 6)) & 0x3f;
             (code > 0).then(|| char::from_u32((code + 31) as u32).unwrap_or(' '))
         })
     }
