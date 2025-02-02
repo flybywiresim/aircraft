@@ -273,17 +273,10 @@ impl AudioControlPanel {
                 // These will be used later on
                 // Especially "calls" when SELCAL will be
                 // translated into Rust
-                let mut call_mech: bool = false;
-                let mut call_att: bool = false;
-                let mut calls: u32 = 0;
-
-                if AudioControlPanel::decode_amu_word(
-                    bus_acp,
-                    &mut self.transmit_channel,
-                    &mut call_mech,
-                    &mut call_att,
-                    &mut calls,
-                ) {
+                if let Some((transmit_channel, _call_mech, _call_att, _calls)) =
+                    AudioControlPanel::decode_amu_word(bus_acp)
+                {
+                    self.transmit_channel = transmit_channel;
                     // Volume control word should be sent every 10ms
                     // but due to sim capabilities, refresh rate turns out to be not high enough
                     // which leads to actions on the ACP ending up very slow.
