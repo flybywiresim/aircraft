@@ -1758,7 +1758,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const inRange = this.shouldTransmitMinimums();
 
     const mdaValid = inRange && this.perfApprMDA !== null;
-    const dhValid = !mdaValid && inRange;
+    const dhValid = !mdaValid && inRange && typeof this.perfApprDH === 'number';
 
     const mdaSsm = mdaValid ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
     const dhSsm = dhValid ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
