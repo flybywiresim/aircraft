@@ -13,7 +13,7 @@ Status legend:
 ### FMS
 
 | Status      | URI | Sprint/Prio | Missing functionality |
-| ------------- | ------------- | ------------- | ------------- |
+| ------------- | ------------- | ------------- | ---------- |
 | ✅ | fms/\*/init | 1 | CPNY WIND REQUEST, RTE SEL, ALTN RTE SEL, CPNY T.O REQUEST |
 | ✅ | fms/\*/fuel-load | 1 | correct fuel calculation, FUEL PLANNING |
 | ✅ | fms/\*/perf | 1 | OPT FL, REC MAX, EO behavior, display of type of speed restriction (when MANAGED), PRED TO |
@@ -29,7 +29,7 @@ Status legend:
 | ✅ | fms/\*/f-pln-vert-rev | 2 | RTA (except ETT), CMS, STEP ALTs, setting whether CLB/DES cstr |
 | 🟥 | fms/\*/f-pln-rte-sel | 3 | tbd |
 | 🟥 | fms/\*/f-pln-offset | 3 | tbd |
-| 🟥 | fms/\*/f-pln-fix-info | 3 | tbd |
+| ✅ | fms/\*/f-pln-fix-info | 3 | intecept predictions, abeam, insert as waypoint |
 | 🟥 | fms/\*/f-pln-alternate | 3 | tbd |
 | 🟥 | fms/\*/f-pln-closest-airports | 3 | tbd |
 | 🟥 | fms/\*/f-pln-cpny-wind-data-req | 4 | tbd |
@@ -47,7 +47,7 @@ Status legend:
 |  |  |  |  |
 | 🟥 | fms/sec/index | 4 | tbd |
 |  |  |  |  |
-| ✅ | fms/data/status | 2 | FMS P/N page, swap DB, idle/perf factors  |
+| ✅ | fms/data/status | 2 | FMS P/N page, swap DB, idle/perf factors |
 | ✅ | fms/data/airport | 2 | pilot stored runways missing |
 | 🟥 | fms/data/navaid | 2 | tbd |
 | 🟥 | fms/data/waypoint | 2 | tbd |

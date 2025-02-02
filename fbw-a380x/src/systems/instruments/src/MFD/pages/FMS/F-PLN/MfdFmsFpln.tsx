@@ -34,6 +34,7 @@ import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
+import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -117,8 +118,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
-    console.time('F-PLN:onNewData');
-
     // update(...) is the most costly function. First performance improvement: Don't render everything completely new every time, just update with refs
     // Delete and re-render FPLN lines only if:
     // a) activeLegIndex changes
@@ -132,6 +131,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     // If we somehow ended up before the FROM waypoint, also update the internal state. Triggers a call of this function, so we can stop this call.
     if (this.displayFplnFromLineIndex.get() < this.loadedFlightPlan.activeLegIndex - 1) {
       this.displayFplnFromLineIndex.set(this.loadedFlightPlan.activeLegIndex - 1);
+      return;
+    }
+
+    // If we ended beyond flightplan end due to TMPY deletion, scroll back to fit the flightplan
+    const lastAllowableIndex = this.getLastDisplayAllowableIndex();
+    if (this.displayFplnFromLineIndex.get() > this.getLastDisplayAllowableIndex()) {
+      this.displayFplnFromLineIndex.set(lastAllowableIndex);
       return;
     }
 
@@ -176,7 +182,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       );
     }
     this.checkScrollButtons();
-    console.timeEnd('F-PLN:onNewData');
   }
 
   private update(startAtIndex: number, onlyUpdatePredictions = true): void {
@@ -637,7 +642,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.scrollToDest();
     }
 
-    const sub = this.props.bus.getSubscriber<ClockEvents>();
+    const sub = this.props.bus.getSubscriber<ClockEvents & InternalKccuKeyEvent>();
     this.subs.push(
       sub
         .on('realTime')
@@ -646,6 +651,18 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           this.onNewData();
         }),
     );
+
+    this.subs.push(
+      sub.on('kccuKeyEvent').handle((k) => {
+        if (k === 'UP') {
+          this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
+        } else if (k === 'DOWN') {
+          this.displayFplnFromLineIndex.set(
+            Math.min(this.displayFplnFromLineIndex.get() + 1, this.getLastDisplayAllowableIndex()),
+          );
+        }
+      }),
+    );
   }
 
   checkScrollButtons() {
@@ -653,7 +670,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.disabledScrollUp.set(
       !this.lineData || this.displayFplnFromLineIndex.get() <= (this.loadedFlightPlan?.activeLegIndex ?? 1) - 1,
     );
-    this.disabledScrollDown.set(!this.lineData || this.displayFplnFromLineIndex.get() >= this.lineData.length - 1);
+    this.disabledScrollDown.set(
+      !this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastDisplayAllowableIndex(),
+    );
   }
 
   private spdAltButton(): VNode {
@@ -772,6 +791,30 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.displayFplnFromLineIndex.set(whichLineIndex - (this.tmpyActive.get() ? 8 : 9));
       }
     }
+  }
+
+  private scrollPage(up: boolean) {
+    if (!this.loadedFlightPlan) {
+      return;
+    }
+
+    if (this.lineData) {
+      let targetIndex;
+      if (up) {
+        targetIndex = this.displayFplnFromLineIndex.get() + 1 - this.renderedLineData.length;
+      } else {
+        targetIndex = this.displayFplnFromLineIndex.get() + this.renderedLineData.length - 1;
+        const maxBottomIndex = this.getLastDisplayAllowableIndex();
+        if (targetIndex > maxBottomIndex) {
+          targetIndex = maxBottomIndex;
+        }
+      }
+      this.displayFplnFromLineIndex.set(Math.max(targetIndex, 0));
+    }
+  }
+
+  private getLastDisplayAllowableIndex() {
+    return this.lineData.length - this.renderedLineData.length;
   }
 
   render(): VNode {
@@ -904,13 +947,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             <div style="display: flex; flex-direction: row; margin-top: 5px; margin-bottom: 5px;">
               <IconButton
                 icon="double-down"
-                onClick={() => this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() + 1)}
+                onClick={() => this.scrollPage(false)}
                 disabled={this.disabledScrollDown}
                 containerStyle="width: 60px; height: 60px;"
               />
               <IconButton
                 icon="double-up"
-                onClick={() => this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1)}
+                onClick={() => this.scrollPage(true)}
                 disabled={this.disabledScrollUp}
                 containerStyle="width: 60px; height: 60px;"
               />
@@ -938,13 +981,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               componentIfFalse={<></>}
             />
             <Button
-              disabled={Subject.create(true)}
+              disabled={false}
               label="F-PLN INFO"
               onClick={() => {}}
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-infoBtn`}
               menuItems={Subject.create([
                 {
                   label: 'ALTERNATE',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-alternate`,
@@ -952,6 +996,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'CLOSEST AIRPORTS',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-closest-airports`,
@@ -959,6 +1004,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'EQUI-TIME POINT',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-equi-time-point`,
@@ -973,6 +1019,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'LL CROSSING',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-ll-xing-time-mkr`,
@@ -980,6 +1027,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'TIME MARKER',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-ll-xing-time-mkr`,
@@ -987,9 +1035,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'CPNY F-PLN REPORT',
+                  disabled: true,
                   action: () => {},
                 },
-              ])}
+              ] as ButtonMenuItem[])}
             />
             <Button
               label="DIR TO"

@@ -1,4 +1,4 @@
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import {
   ArraySubject,
   DisplayComponent,
@@ -16,7 +16,7 @@ interface AbstractMfdHeaderProps {
   activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
   callsign: Subscribable<string | null>;
   uiService: MfdUiService;
-  mfd: DisplayInterface & MfdDisplayInterface;
+  mfd: FmsDisplayInterface & MfdDisplayInterface;
 }
 
 /*
@@ -108,9 +108,7 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
           hEventConsumer={this.props.mfd.hEventConsumer}
           interactionMode={this.props.mfd.interactionMode}
         />
-        <span class="mfd-header-callsign">
-          {this.props.callsign.map((cs) => (cs !== null ? this.props.callsign : '----------'))}
-        </span>
+        <span class="mfd-header-callsign">{this.props.callsign.map((cs) => (cs !== null ? cs : '----------'))}</span>
       </div>
     );
   }
