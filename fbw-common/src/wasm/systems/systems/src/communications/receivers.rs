@@ -118,7 +118,7 @@ impl Morse {
     pub fn new(context: &mut InitContext, name: &str) -> Self {
         // In milliseconds. For 7 words a minute.
         // Use the formula here: https://k7mem.com/Keyer_Speed.html
-        let time_base = 171;
+        let time_base = Duration::from_millis(171);
 
         Self {
             ident_id: context.get_identifier(format!("{}_IDENT_PACKED", name)),
