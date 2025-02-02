@@ -388,19 +388,20 @@ impl AdaptationBoard {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        let mut acp_to_take_into_account: u32 = 1;
-
-        if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo
+        let acp_to_take_into_account = if self.audio_switching_knob
+            != AudioSwitchingKnobPosition::Fo
             && context.side_controlling() == SideControlling::FO
         {
-            acp_to_take_into_account = 2;
+            2
         } else if self.audio_switching_knob == AudioSwitchingKnobPosition::Fo
             && context.side_controlling() == SideControlling::FO
             || self.audio_switching_knob == AudioSwitchingKnobPosition::Captain
                 && context.side_controlling() == SideControlling::CAPTAIN
         {
-            acp_to_take_into_account = 3;
-        }
+            3
+        } else {
+            1
+        };
 
         self.computer_a.update(context, &mut self.bus_arinc_bay);
         self.computer_b.update(context, &mut self.bus_arinc_3rd);
