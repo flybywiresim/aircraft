@@ -424,8 +424,8 @@ impl SimulationElement for TransceiverACPFacade {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let volume: u32 = reader.read(&self.volume_id);
-        let knob: bool = reader.read(&self.knob_id);
+        let volume = reader.read(&self.volume_id);
+        let knob = reader.read(&self.knob_id);
 
         self.changed = volume != self.volume || knob != self.knob;
 
