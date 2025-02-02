@@ -90,10 +90,10 @@ impl RadioManagementPanel {
 
     pub fn is_abnormal_mode(&self) -> bool {
         self.is_powered()
-            && ((self.selected_mode == SelectedMode::Vhf3
-                || self.selected_mode == SelectedMode::Hf1
-                || self.selected_mode == SelectedMode::Hf2)
-                && (self.id_rmp == 1 || self.id_rmp == 2))
+            && (matches!(
+                self.selected_mode,
+                SelectedMode::Vhf3 | SelectedMode::Hf1 | SelectedMode::Hf2
+            ) && (self.id_rmp == 1 || self.id_rmp == 2))
             || (self.selected_mode == SelectedMode::Vhf1 && (self.id_rmp == 2 || self.id_rmp == 3))
             || (self.selected_mode == SelectedMode::Vhf2 && (self.id_rmp == 1 || self.id_rmp == 3))
     }
