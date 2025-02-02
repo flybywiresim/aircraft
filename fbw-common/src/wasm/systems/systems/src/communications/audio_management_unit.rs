@@ -25,13 +25,20 @@ enum TypeCard {
     Bite(Bite),
 }
 
-pub struct WordAMUACPInfo {
-    identification: IdentificationWordAMUACP,
+pub struct WordAudioManagementUnitAudioControlPanelInfo {
+    identification: IdentificationWordAudioManagementUnitAudioControlPanel,
     sdi: u32,
-    label: LabelWordAMUACP,
+    label: LabelWordAudioManagementUnitAudioControlPanel,
 }
-impl WordAMUACPInfo {
-    pub fn new(identification: IdentificationWordAMUACP, sdi: u32, label: LabelWordAMUACP) -> Self {
+impl WordAudioManagementUnitAudioControlPanelInfo {
+    pub fn new(
+        identification: IdentificationWordAudioManagementUnitAudioControlPanel,
+        // sdi is a term used in the protocol documentation to describe which subsystem/instrument
+        // of a group is being monitored. For instance, 1 for VOR1, 2 for VOR2.
+        // I don't know what it stands for though
+        sdi: u32,
+        label: LabelWordAudioManagementUnitAudioControlPanel,
+    ) -> Self {
         Self {
             identification,
             sdi,
@@ -39,7 +46,7 @@ impl WordAMUACPInfo {
         }
     }
 
-    pub fn get_identification(&self) -> IdentificationWordAMUACP {
+    pub fn get_identification(&self) -> IdentificationWordAudioManagementUnitAudioControlPanel {
         self.identification
     }
 
@@ -47,15 +54,15 @@ impl WordAMUACPInfo {
         self.sdi
     }
 
-    pub fn get_label(&self) -> LabelWordAMUACP {
+    pub fn get_label(&self) -> LabelWordAudioManagementUnitAudioControlPanel {
         self.label
     }
 }
 
 #[derive(Eq, PartialEq, PartialOrd, Copy, Clone)]
-pub enum IdentificationWordAMUACP {
+pub enum IdentificationWordAudioManagementUnitAudioControlPanel {
     Word0,
-    Wordamu,
+    WordAudioManagementUnit,
     Word01,
     Word02,
     Word03,
@@ -77,15 +84,15 @@ pub enum IdentificationWordAMUACP {
 
 #[repr(u32)]
 #[derive(FromPrimitive, Eq, PartialOrd, PartialEq, Copy, Clone)]
-pub enum LabelWordAMUACP {
+pub enum LabelWordAudioManagementUnitAudioControlPanel {
     Label300Request = 3,
-    Label301AMU = 0x83,
-    Label210VolumeControlVHF = 0x11,
-    Label211VolumeControlHF = 0x91,
-    Label212VolumeControlADFPA = 0x51,
-    Label213VolumeControlVORMKR = 0xD1,
-    Label215VolumeControlINTCAB = 0xB1,
-    Label217VolumeControlILS = 0xF1,
+    Label301AudioManagementUnit = 0x83,
+    Label210VolumeControlVhf = 0x11,
+    Label211VolumeControlHf = 0x91,
+    Label212VolumeControlAdfPa = 0x51,
+    Label213VolumeControlVorMkr = 0xD1,
+    Label215VolumeControlIntCab = 0xB1,
+    Label217VolumeControlIls = 0xF1,
 }
 #[derive(Copy, Clone)]
 pub struct MixedAudio {
@@ -125,7 +132,7 @@ pub struct MixedAudio {
     // volume_pa: u32,
     //
 }
-impl MixedAudio {}
+
 impl Default for MixedAudio {
     fn default() -> MixedAudio {
         MixedAudio {
@@ -364,7 +371,10 @@ impl AdaptationBoard {
     pub fn send_amu_word(bus_acp: &mut Vec<Arinc429Word<u32>>, transmission_table: &u32) {
         let mut word_arinc: Arinc429Word<u32> = Arinc429Word::new(0, SignStatus::NormalOperation);
 
-        word_arinc.set_bits(1, LabelWordAMUACP::Label301AMU as u32);
+        word_arinc.set_bits(
+            1,
+            LabelWordAudioManagementUnitAudioControlPanel::Label301AudioManagementUnit as u32,
+        );
         word_arinc.set_bits(11, *transmission_table);
 
         // Will have to be used when SELCAL will be written in Rust
@@ -670,11 +680,11 @@ impl AudioCard {
             );
 
             // If data were not received within timeframe, we consider the ACP as U/S
-            if self.last_time_data_received_from_acp.as_millis() > TIMEOUT {
+            if self.last_time_data_received_from_acp > TIMEOUT {
                 self.mixed_audio_acp = Default::default();
             }
 
-            if self.last_time_data_received_from_acp3.as_millis() > TIMEOUT {
+            if self.last_time_data_received_from_acp3 > TIMEOUT {
                 self.mixed_audio_acp3 = Default::default();
             }
         } else {
@@ -694,11 +704,11 @@ impl AudioCard {
         let mut can_send_amu_word = false;
 
         while let Some(word) = bus.pop() {
-            let label_option: Option<LabelWordAMUACP> =
+            let label_option: Option<LabelWordAudioManagementUnitAudioControlPanel> =
                 FromPrimitive::from_u32(word.get_bits(8, 1));
 
             if let Some(label) = label_option {
-                if label == LabelWordAMUACP::Label300Request {
+                if label == LabelWordAudioManagementUnitAudioControlPanel::Label300Request {
                     // Here the ACP id is available in the word
                     // but we don't need it for now. Maybe in the future with more information...
                     can_send_amu_word = true;
@@ -718,7 +728,7 @@ impl AudioCard {
 
                     // Perform this only if the data currently analyzed is from the chosen acp
                     match label {
-                        LabelWordAMUACP::Label210VolumeControlVHF => {
+                        LabelWordAudioManagementUnitAudioControlPanel::Label210VolumeControlVhf => {
                             if sdi == 1 {
                                 mixed_audio.volume_com1 = volume;
                                 mixed_audio.receive_com1 = reception != 0;
@@ -731,7 +741,7 @@ impl AudioCard {
                                 //mixed_audio.receive_com3 = reception != 0;
                             }
                         }
-                        LabelWordAMUACP::Label213VolumeControlVORMKR => {
+                        LabelWordAudioManagementUnitAudioControlPanel::Label213VolumeControlVorMkr => {
                             if sdi == 1 {
                                 mixed_audio.volume_vor1 = volume;
                                 mixed_audio.receive_vor1 = reception != 0;
@@ -742,7 +752,7 @@ impl AudioCard {
                                 mixed_audio.receive_markers = reception != 0;
                             }
                         }
-                        LabelWordAMUACP::Label212VolumeControlADFPA => {
+                        LabelWordAudioManagementUnitAudioControlPanel::Label212VolumeControlAdfPa => {
                             // PA should be here but not simulated
                             if sdi == 1 {
                                 mixed_audio.volume_adf1 = volume;
@@ -752,7 +762,7 @@ impl AudioCard {
                                 mixed_audio.receive_adf2 = reception != 0;
                             }
                         }
-                        LabelWordAMUACP::Label217VolumeControlILS => {
+                        LabelWordAudioManagementUnitAudioControlPanel::Label217VolumeControlIls => {
                             mixed_audio.volume_ils = volume;
                             // TODO: Use data from future DMC. There's a wire between comms and DMC
                             // FCOM compliant: ILS can be listened to only if LS is pressed

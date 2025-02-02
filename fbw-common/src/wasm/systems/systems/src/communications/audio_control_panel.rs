@@ -1,5 +1,7 @@
 use super::audio_management_unit::{
-    IdentificationWordAMUACP, LabelWordAMUACP, WordAMUACPInfo, TIMEOUT,
+    IdentificationWordAudioManagementUnitAudioControlPanel,
+    LabelWordAudioManagementUnitAudioControlPanel, WordAudioManagementUnitAudioControlPanelInfo,
+    TIMEOUT,
 };
 use crate::{
     shared::{
@@ -68,7 +70,7 @@ pub struct AudioControlPanel {
     power_supply: ElectricalBusType,
     is_power_supply_powered: bool,
 
-    list_arinc_words: Vec<WordAMUACPInfo>,
+    list_arinc_words: Vec<WordAudioManagementUnitAudioControlPanelInfo>,
     last_complete_cycle_sent: Duration,
 }
 impl AudioControlPanel {
@@ -115,85 +117,85 @@ impl AudioControlPanel {
             is_power_supply_powered: false,
 
             list_arinc_words: Vec::from([
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word0,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word0,
                     0,
-                    LabelWordAMUACP::Label300Request,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label300Request,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Wordamu,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::WordAudioManagementUnit,
                     0,
-                    LabelWordAMUACP::Label301AMU,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label301AudioManagementUnit,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word01,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word01,
                     1,
-                    LabelWordAMUACP::Label210VolumeControlVHF,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label210VolumeControlVhf,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word02,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word02,
                     2,
-                    LabelWordAMUACP::Label210VolumeControlVHF,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label210VolumeControlVhf,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word03,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word03,
                     3,
-                    LabelWordAMUACP::Label210VolumeControlVHF,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label210VolumeControlVhf,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word04,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word04,
                     1,
-                    LabelWordAMUACP::Label211VolumeControlHF,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label211VolumeControlHf,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word05,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word05,
                     2,
-                    LabelWordAMUACP::Label211VolumeControlHF,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label211VolumeControlHf,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word06,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word06,
                     1,
-                    LabelWordAMUACP::Label215VolumeControlINTCAB,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label215VolumeControlIntCab,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word07,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word07,
                     2,
-                    LabelWordAMUACP::Label215VolumeControlINTCAB,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label215VolumeControlIntCab,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word08,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word08,
                     3,
-                    LabelWordAMUACP::Label212VolumeControlADFPA,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label212VolumeControlAdfPa,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word09,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word09,
                     1,
-                    LabelWordAMUACP::Label213VolumeControlVORMKR,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label213VolumeControlVorMkr,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word10,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word10,
                     2,
-                    LabelWordAMUACP::Label213VolumeControlVORMKR,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label213VolumeControlVorMkr,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word11,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word11,
                     3,
-                    LabelWordAMUACP::Label213VolumeControlVORMKR,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label213VolumeControlVorMkr,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word12,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word12,
                     0,
-                    LabelWordAMUACP::Label217VolumeControlILS,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label217VolumeControlIls,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word15,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word15,
                     1,
-                    LabelWordAMUACP::Label212VolumeControlADFPA,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label212VolumeControlAdfPa,
                 ),
-                WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::Word16,
+                WordAudioManagementUnitAudioControlPanelInfo::new(
+                    IdentificationWordAudioManagementUnitAudioControlPanel::Word16,
                     2,
-                    LabelWordAMUACP::Label212VolumeControlADFPA,
+                    LabelWordAudioManagementUnitAudioControlPanel::Label212VolumeControlAdfPa,
                 ),
             ]),
             last_complete_cycle_sent: Duration::from_millis(0),
@@ -203,7 +205,10 @@ impl AudioControlPanel {
     fn send_word_0(&self, bus_acp: &mut Vec<Arinc429Word<u32>>) {
         let mut word_arinc: Arinc429Word<u32> = Arinc429Word::new(0, SignStatus::NormalOperation);
 
-        word_arinc.set_bits(1, LabelWordAMUACP::Label300Request as u32);
+        word_arinc.set_bits(
+            1,
+            LabelWordAudioManagementUnitAudioControlPanel::Label300Request as u32,
+        );
         word_arinc.set_bits(29, self.id_acp);
 
         bus_acp.push(word_arinc);
@@ -221,20 +226,48 @@ impl AudioControlPanel {
         // word_arinc.set_bit(16, self.int_rad_switch == Self::TRANSMIT_ID_INT);
 
         let (volume, knob) = match self.list_arinc_words[index].get_identification() {
-            IdentificationWordAMUACP::Word01 => (self.vhfs[0].volume, self.vhfs[0].knob),
-            IdentificationWordAMUACP::Word02 => (self.vhfs[1].volume, self.vhfs[1].knob),
-            IdentificationWordAMUACP::Word03 => (self.vhfs[2].volume, self.vhfs[2].knob),
-            IdentificationWordAMUACP::Word04 => (self.comms[0].volume, self.comms[0].knob),
-            IdentificationWordAMUACP::Word05 => (self.comms[1].volume, self.comms[1].knob),
-            IdentificationWordAMUACP::Word06 => (self.comms[2].volume, self.comms[2].knob),
-            IdentificationWordAMUACP::Word07 => (self.comms[3].volume, self.comms[3].knob),
-            IdentificationWordAMUACP::Word08 => (self.comms[4].volume, self.comms[4].knob),
-            IdentificationWordAMUACP::Word09 => (self.vors[0].volume, self.vors[0].knob),
-            IdentificationWordAMUACP::Word10 => (self.vors[1].volume, self.vors[1].knob),
-            IdentificationWordAMUACP::Word11 => (self.markers.volume, self.markers.knob),
-            IdentificationWordAMUACP::Word12 => (self.ils.volume, self.ils.knob),
-            IdentificationWordAMUACP::Word15 => (self.adfs[0].volume, self.adfs[0].knob),
-            IdentificationWordAMUACP::Word16 => (self.adfs[1].volume, self.adfs[1].knob),
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word01 => {
+                (self.vhfs[0].volume, self.vhfs[0].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word02 => {
+                (self.vhfs[1].volume, self.vhfs[1].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word03 => {
+                (self.vhfs[2].volume, self.vhfs[2].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word04 => {
+                (self.comms[0].volume, self.comms[0].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word05 => {
+                (self.comms[1].volume, self.comms[1].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word06 => {
+                (self.comms[2].volume, self.comms[2].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word07 => {
+                (self.comms[3].volume, self.comms[3].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word08 => {
+                (self.comms[4].volume, self.comms[4].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word09 => {
+                (self.vors[0].volume, self.vors[0].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word10 => {
+                (self.vors[1].volume, self.vors[1].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word11 => {
+                (self.markers.volume, self.markers.knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word12 => {
+                (self.ils.volume, self.ils.knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word15 => {
+                (self.adfs[0].volume, self.adfs[0].knob)
+            }
+            IdentificationWordAudioManagementUnitAudioControlPanel::Word16 => {
+                (self.adfs[1].volume, self.adfs[1].knob)
+            }
             i => panic!("Cant find word acp with id {}", i as u32),
         };
 
@@ -247,10 +280,11 @@ impl AudioControlPanel {
     }
 
     fn decode_amu_word(bus: &mut Vec<Arinc429Word<u32>>) -> Option<(TransmitID, bool, bool, u32)> {
-        let label_option: Option<LabelWordAMUACP> = FromPrimitive::from_u32(bus[0].get_bits(8, 1));
+        let label_option: Option<LabelWordAudioManagementUnitAudioControlPanel> =
+            FromPrimitive::from_u32(bus[0].get_bits(8, 1));
 
         label_option.and_then(|label| {
-            if label == LabelWordAMUACP::Label301AMU {
+            if label == LabelWordAudioManagementUnitAudioControlPanel::Label301AudioManagementUnit {
                 let word = bus.remove(0);
                 Some((
                     TransmitID::from(word.get_bits(4, 11)),
@@ -286,7 +320,7 @@ impl AudioControlPanel {
                 }
             }
 
-            if self.last_complete_cycle_sent.as_millis() >= TIMEOUT {
+            if self.last_complete_cycle_sent >= TIMEOUT {
                 self.send_word_0(bus_acp);
                 self.last_complete_cycle_sent = Duration::from_millis(0);
             }

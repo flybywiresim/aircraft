@@ -7,7 +7,6 @@ use crate::{
 };
 
 use std::time::Duration;
-use uom::num::pow;
 
 pub struct CommTransceiver {
     receive_com_id: VariableIdentifier,
@@ -130,7 +129,7 @@ impl Morse {
             duration_long_beep: time_base * 3,
             duration_end_of_ident: time_base * 7,
             duration_current: Duration::from_millis(0),
-            duration_to_wait: 0,
+            duration_to_wait: Duration::from_millis(0),
         }
     }
 
@@ -199,7 +198,7 @@ impl Morse {
 
         if !self.morse.is_empty() {
             // If timedout
-            if self.duration_current.as_millis() > self.duration_to_wait as u128 {
+            if self.duration_current > self.duration_to_wait {
                 // After a beep, we have to wait an amount of time equal to a short beep
                 if (self.duration_to_wait == self.duration_short_beep
                     || self.duration_to_wait == self.duration_long_beep)
