@@ -134,7 +134,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   );
 
   /** If set to true, a re-layouting of the lines is forced, e.g. if an entry in the middle was deleted. */
-  private stepAltsLineWasDeleted = false;
+  private forceRebuildList = false;
 
   private readonly stepAltsLineVisibility = Array.from(Array(5), () => Subject.create<'visible' | 'hidden'>('hidden'));
   private readonly stepAltsWptIndices = Array.from(Array(5), () => Subject.create<number | null>(null));
@@ -343,23 +343,25 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
       this.stepAltsNumberOfCruiseSteps.set(cruiseSteps.length);
       this.stepAltsScrollUpDisabled.set(this.stepAltsStartAtStepIndex.get() === 0);
-      this.stepAltsScrollDownDisabled.set(cruiseSteps.length - this.stepAltsStartAtStepIndex.get() <= 5);
+      this.stepAltsScrollDownDisabled.set(cruiseSteps.length - this.stepAltsStartAtStepIndex.get() <= 4);
 
       for (let i = this.stepAltsStartAtStepIndex.get(); i < this.stepAltsStartAtStepIndex.get() + 5; i++) {
         const line = i - this.stepAltsStartAtStepIndex.get();
 
         if (!(i in cruiseSteps)) {
+          if (this.forceRebuildList) {
+            this.stepAltsWptIndices[line].set(null);
+            this.stepAltsWptIndices[line].notify();
+            this.stepAltsFlightLevel[line].set(null);
+            this.forceRebuildList = false;
+          }
+
           this.stepAltsLineVisibility[line].set('visible');
           this.stepAltsDistances[line].set(null);
           this.stepAltsTimes[line].set('--:--');
           this.stepAltsIgnored[line].set(false);
           this.stepAltsAboveMaxFl[line].set(false);
 
-          if (this.stepAltsLineWasDeleted) {
-            this.stepAltsWptIndices[line].set(null);
-            this.stepAltsFlightLevel[line].set(null);
-            this.stepAltsLineWasDeleted = false;
-          }
           break;
         }
 
@@ -588,7 +590,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.loadedFlightPlan?.removeCruiseStep(legIndex);
     this.stepAltsWptIndices[lineIndex].set(null);
     this.stepAltsFlightLevel[lineIndex].set(null);
-    this.stepAltsLineWasDeleted = true;
+    this.forceRebuildList = true;
   }
 
   private handleCruiseStepWaypointModified(newWptIndex: number | null, lineIndex: number) {
@@ -672,6 +674,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.stepAltsDistancesFormatted[i],
       );
     }
+
+    this.subs.push(
+      this.stepAltsStartAtStepIndex.sub(() => {
+        this.forceRebuildList = true;
+        this.updateCruiseSteps();
+      }),
+    );
 
     this.subs.push(
       this.props.bus
