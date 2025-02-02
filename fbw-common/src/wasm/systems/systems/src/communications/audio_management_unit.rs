@@ -620,7 +620,7 @@ impl SimulationElement for Computer {
     }
 }
 
-pub struct AudioCard {
+struct AudioCard {
     bus_acp: Vec<Arinc429Word<u32>>,
     acp: AudioControlPanel,
     mixed_audio_acp: MixedAudio,
