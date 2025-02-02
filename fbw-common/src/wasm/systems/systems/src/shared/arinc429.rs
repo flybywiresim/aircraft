@@ -48,6 +48,7 @@ impl Arinc429Word<u32> {
     }
 
     pub fn set_bits(&mut self, first_bit: u32, value: u32) {
+        debug_assert!((1..=29).contains(&first_bit));
         self.value = ((self.value) & !(1 << (first_bit - 1))) | (value << (first_bit - 1));
     }
 
@@ -57,6 +58,7 @@ impl Arinc429Word<u32> {
     }
 
     pub fn get_bits(&self, nb_bits: u8, from_bit: u8) -> u32 {
+        debug_assert!((1..=29).contains(&from_bit));
         (self.value >> (from_bit - 1)) & ((1 << nb_bits) - 1)
     }
 }
