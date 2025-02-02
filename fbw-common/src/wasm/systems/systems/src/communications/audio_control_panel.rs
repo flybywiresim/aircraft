@@ -247,27 +247,22 @@ impl AudioControlPanel {
     }
 
     pub fn decode_amu_word(
-        bus: &mut Vec<Arinc429Word<u32>>,
-        transmission_table: &mut TransmitID,
-        call_mech: &mut bool,
-        call_att: &mut bool,
-        calls: &mut u32,
-    ) -> bool {
-        let mut ret: bool = false;
+    fn decode_amu_word(bus: &mut Vec<Arinc429Word<u32>>) -> Option<(TransmitID, bool, bool, u32)> {
         let label_option: Option<LabelWordAMUACP> = FromPrimitive::from_u32(bus[0].get_bits(8, 1));
 
-        if let Some(label) = label_option {
+        label_option.and_then(|label| {
             if label == LabelWordAMUACP::Label301AMU {
                 let word = bus.remove(0);
-                *transmission_table = TransmitID::from(word.get_bits(4, 11));
-                *call_mech = word.get_bit(15);
-                *call_att = word.get_bit(16);
-                *calls = word.get_bits(5, 25);
-                ret = true;
+                Some((
+                    TransmitID::from(word.get_bits(4, 11)),
+                    word.get_bit(15),
+                    word.get_bit(16),
+                    word.get_bits(5, 25),
+                ))
+            } else {
+                None
             }
-        }
-
-        ret
+        })
     }
 
     pub fn update(&mut self, context: &UpdateContext, bus_acp: &mut Vec<Arinc429Word<u32>>) {
