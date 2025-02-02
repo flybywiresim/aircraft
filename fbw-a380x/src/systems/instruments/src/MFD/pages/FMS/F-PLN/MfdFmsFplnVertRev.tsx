@@ -168,8 +168,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly stepAltsScrollUpDisabled = Subject.create(true);
 
   protected onNewData(): void {
-    console.time('F-PLN/VERT REV:onNewData');
-
     const pd = this.loadedFlightPlan?.performanceData;
 
     if (pd?.transitionAltitude) {
@@ -187,6 +185,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.loadedFlightPlanIndex.get(),
     ).activeLegIndex;
     if (activeLegIndex) {
+      const selectedLegIndexBeforeUpdate = this.selectedLegIndex;
       this.availableWaypointsToLegIndex = [];
       const wpt = this.loadedFlightPlan?.allLegs
         .slice(activeLegIndex)
@@ -200,6 +199,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         .filter((el) => el !== null) as string[] | undefined;
       if (wpt) {
         this.availableWaypoints.set(wpt);
+        this.selectedLegIndex = selectedLegIndexBeforeUpdate;
       }
 
       const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
@@ -210,8 +210,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
     this.updateConstraints();
     this.updateCruiseSteps();
-
-    console.timeEnd('F-PLN/VERT REV:onNewData');
   }
 
   public static isEligibleForVerticalRevision(legIndex: number, leg: FlightPlanLeg, flightPlan: FlightPlan): boolean {
@@ -350,7 +348,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       for (let i = this.stepAltsStartAtStepIndex.get(); i < this.stepAltsStartAtStepIndex.get() + 5; i++) {
         const line = i - this.stepAltsStartAtStepIndex.get();
 
-        if (!cruiseSteps[i]) {
+        if (!(i in cruiseSteps)) {
           this.stepAltsLineVisibility[line].set('visible');
           this.stepAltsDistances[line].set(null);
           this.stepAltsTimes[line].set('--:--');
@@ -365,43 +363,39 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           break;
         }
 
-        const leg = this.loadedFlightPlan.allLegs[cruiseStepLegIndices[i]];
-
-        if (cruiseSteps[i] && leg.isDiscontinuity === false) {
-          const pred =
-            this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(
-              cruiseStepLegIndices[i],
-            );
-          const wptEta = getEtaFromUtcOrPresent(
-            pred?.secondsFromPresent,
-            this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+        const pred =
+          this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(
+            cruiseStepLegIndices[i],
           );
-          const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
+        const wptEta = getEtaFromUtcOrPresent(
+          pred?.secondsFromPresent,
+          this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+        );
+        const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
 
-          this.stepAltsLineVisibility[line].set('visible');
-          this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
-          this.stepAltsFlightLevel[line].set(cruiseSteps[i].toAltitude / 100);
+        this.stepAltsLineVisibility[line].set('visible');
+        this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
+        this.stepAltsFlightLevel[line].set(cruiseSteps[i].toAltitude / 100);
 
-          if (pred) {
-            this.stepAltsDistances[line].set(pred.distanceFromAircraft - cruiseSteps[i].distanceBeforeTermination);
-            this.stepAltsTimes[line].set(wptEta);
-          } else {
-            this.stepAltsDistances[line].set(null);
-            this.stepAltsTimes[line].set('--:--');
-          }
-          this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
-          this.stepAltsAboveMaxFl[line].set(
-            cruiseSteps[i].toAltitude / 100 >
-              (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100),
-          );
+        if (pred) {
+          this.stepAltsDistances[line].set(pred.distanceFromAircraft - cruiseSteps[i].distanceBeforeTermination);
+          this.stepAltsTimes[line].set(wptEta);
+        } else {
+          this.stepAltsDistances[line].set(null);
+          this.stepAltsTimes[line].set('--:--');
+        }
+        this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
+        this.stepAltsAboveMaxFl[line].set(
+          cruiseSteps[i].toAltitude / 100 >
+            (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100),
+        );
 
-          if (this.stepAltsIgnored[line].get()) {
-            this.stepAltsMessage[line].set('IGNORED');
-          } else if (this.stepAltsAboveMaxFl[line].get()) {
-            this.stepAltsMessage[line].set('ABOVE MAX FL');
-          } else {
-            this.stepAltsMessage[line].set('');
-          }
+        if (this.stepAltsIgnored[line].get()) {
+          this.stepAltsMessage[line].set('IGNORED');
+        } else if (this.stepAltsAboveMaxFl[line].get()) {
+          this.stepAltsMessage[line].set('ABOVE MAX FL');
+        } else {
+          this.stepAltsMessage[line].set('');
         }
       }
     }
