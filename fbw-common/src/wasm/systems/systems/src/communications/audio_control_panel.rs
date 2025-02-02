@@ -18,7 +18,7 @@ use std::time::Duration;
 pub enum TransmitID {
     None = 0,
     Vhf1,
-    VHf2,
+    Vhf2,
     Vhf3,
     Hf1,
     Hf2,
@@ -31,7 +31,7 @@ impl From<u32> for TransmitID {
         match value {
             0 => TransmitID::None,
             1 => TransmitID::Vhf1,
-            2 => TransmitID::VHf2,
+            2 => TransmitID::Vhf2,
             3 => TransmitID::Vhf3,
             4 => TransmitID::Hf1,
             5 => TransmitID::Hf2,
@@ -278,7 +278,7 @@ impl AudioControlPanel {
                     self.transmit_channel = transmit_channel;
                     // Volume control word should be sent every 10ms
                     // but due to sim capabilities, refresh rate turns out to be not high enough
-                    // which leads to actions on the ACP ending up very slow.
+                    // which leads to very slow responsiveness of ACP
                     // Therefore I took the decision to send all the words at the same time to avoid that.
                     for index in 2..(self.list_arinc_words.len()) {
                         self.send_volume_control(bus_acp, index);
@@ -286,7 +286,7 @@ impl AudioControlPanel {
                 }
             }
 
-            if self.last_complete_cycle_sent.as_millis() > TIMEOUT {
+            if self.last_complete_cycle_sent.as_millis() >= TIMEOUT {
                 self.send_word_0(bus_acp);
                 self.last_complete_cycle_sent = Duration::from_millis(0);
             }
@@ -299,7 +299,7 @@ impl AudioControlPanel {
                 self.send_volume_control(bus_acp, 2);
             }
             if self.vhfs[1].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHf2
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf2
             {
                 self.send_volume_control(bus_acp, 3);
             }
