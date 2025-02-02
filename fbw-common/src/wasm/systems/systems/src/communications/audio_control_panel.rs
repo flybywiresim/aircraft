@@ -246,7 +246,6 @@ impl AudioControlPanel {
         bus_acp.push(word_arinc);
     }
 
-    pub fn decode_amu_word(
     fn decode_amu_word(bus: &mut Vec<Arinc429Word<u32>>) -> Option<(TransmitID, bool, bool, u32)> {
         let label_option: Option<LabelWordAMUACP> = FromPrimitive::from_u32(bus[0].get_bits(8, 1));
 
