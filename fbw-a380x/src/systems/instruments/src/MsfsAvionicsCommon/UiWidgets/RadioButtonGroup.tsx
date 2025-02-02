@@ -33,7 +33,10 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
-  private readonly valueRefs = Array.from(Array(this.props.values.length), () =>
+  private readonly labelRefs = Array.from(Array(this.props.values.length), () =>
+    FSComponent.createRef<HTMLLabelElement>(),
+  );
+  private readonly inputRefs = Array.from(Array(this.props.values.length), () =>
     FSComponent.createRef<HTMLLabelElement>(),
   );
 
@@ -55,13 +58,13 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
       this.props.valuesDisabled = Subject.create<boolean[]>(this.props.values.map(() => false));
     }
 
-    this.valueRefs.forEach((ref, index) =>
+    this.inputRefs.forEach((ref, index) =>
       ref.instance.addEventListener('change', this.changeEventHandler.bind(this, index)),
     );
 
     this.subs.push(
       this.props.selectedIndex.sub((val) => {
-        this.valueRefs.forEach((ref, index) => {
+        this.inputRefs.forEach((ref, index) => {
           if (index === val) {
             ref.instance.setAttribute('checked', 'checked');
           } else {
@@ -73,7 +76,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
 
     this.subs.push(
       this.props.valuesDisabled.sub((val) => {
-        this.valueRefs.forEach((ref, index) => {
+        this.inputRefs.forEach((ref, index) => {
           if (val[index]) {
             ref.instance.setAttribute('disabled', 'disabled');
           } else {
@@ -85,7 +88,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
 
     this.subs.push(
       this.props.color.sub((v) => {
-        this.valueRefs.forEach((ref) => {
+        this.labelRefs.forEach((ref) => {
           ref.instance.classList.toggle('yellow', v === RadioButtonColor.Yellow);
           ref.instance.classList.toggle('green', v === RadioButtonColor.Green);
           ref.instance.classList.toggle('amber', v === RadioButtonColor.Amber);
@@ -100,7 +103,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.valueRefs.forEach((ref, index) =>
+    this.inputRefs.forEach((ref, index) =>
       ref.instance.removeEventListener('change', this.changeEventHandler.bind(this, index)),
     );
 
@@ -112,13 +115,18 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
       <form>
         {this.props.values.map((el, idx) => (
           <label
-            ref={this.valueRefs[idx]}
+            ref={this.labelRefs[idx]}
             class="mfd-radio-button"
             htmlFor={`${this.props.idPrefix}_${idx}`}
             style={this.props.additionalVerticalSpacing ? `margin-top: ${this.props.additionalVerticalSpacing}px;` : ''}
             id={`${this.props.idPrefix}_label_${idx}`}
           >
-            <input type="radio" name={`${this.props.idPrefix}`} id={`${this.props.idPrefix}_${idx}`} />
+            <input
+              ref={this.inputRefs[idx]}
+              type="radio"
+              name={`${this.props.idPrefix}`}
+              id={`${this.props.idPrefix}_${idx}`}
+            />
             <span>{el}</span>
           </label>
         ))}
