@@ -107,11 +107,11 @@ struct Morse {
     ident_current: usize,
     morse: String,
     beep: bool,
-    duration_short_beep: usize,
-    duration_long_beep: usize,
-    duration_end_of_ident: usize,
+    duration_short_beep: Duration,
+    duration_long_beep: Duration,
+    duration_end_of_ident: Duration,
     duration_current: Duration,
-    duration_to_wait: usize,
+    duration_to_wait: Duration,
 }
 
 impl Morse {
