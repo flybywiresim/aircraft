@@ -143,45 +143,42 @@ impl Morse {
     }
 
     fn convert_ident_to_morse(&mut self) -> String {
-        let mut copy = "".to_owned();
-
-        for c in self.unpack(self.ident_new).chars() {
-            // elements counts for number of characters + space between them
-            let code: &str = match c.to_ascii_uppercase() {
-                'A' => "._",
-                'B' => "_...",
-                'C' => "_._.",
-                'D' => "_..",
-                'E' => ".",
-                'F' => ".._.",
-                'G' => "__.",
-                'H' => "....",
-                'I' => "..",
-                'J' => ".___",
-                'K' => "_._",
-                'L' => "._..",
-                'M' => "__",
-                'N' => "_.",
-                'O' => "___",
-                'P' => ".__.",
-                'Q' => "__._",
-                'R' => "._.",
-                'S' => "...",
-                'T' => "_",
-                'U' => ".._",
-                'V' => "..._",
-                'W' => ".__",
-                'X' => "_.._",
-                'Y' => "_.__",
-                'Z' => "__..",
-                _ => "",
-            };
-
-            copy.push_str(code);
-            copy.push(' ');
-        }
-
-        copy.chars().rev().collect::<String>()
+        self.unpack(self.ident_new)
+            .flat_map(|c| {
+                // elements counts for number of characters + space between them
+                match c.to_ascii_uppercase() {
+                    'A' => "._ ",
+                    'B' => "_... ",
+                    'C' => "_._. ",
+                    'D' => "_.. ",
+                    'E' => ". ",
+                    'F' => ".._. ",
+                    'G' => "__. ",
+                    'H' => ".... ",
+                    'I' => ".. ",
+                    'J' => ".___ ",
+                    'K' => "_._ ",
+                    'L' => "._.. ",
+                    'M' => "__ ",
+                    'N' => "_. ",
+                    'O' => "___ ",
+                    'P' => ".__. ",
+                    'Q' => "__._ ",
+                    'R' => "._. ",
+                    'S' => "... ",
+                    'T' => "_ ",
+                    'U' => ".._ ",
+                    'V' => "..._ ",
+                    'W' => ".__ ",
+                    'X' => "_.._ ",
+                    'Y' => "_.__ ",
+                    'Z' => "__.. ",
+                    _ => " ",
+                }
+                .chars()
+            })
+            .rev()
+            .collect()
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
