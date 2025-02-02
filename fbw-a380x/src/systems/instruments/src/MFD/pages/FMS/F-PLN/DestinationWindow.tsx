@@ -3,13 +3,13 @@ import '../../common/style.scss';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 
 interface DestinationWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
-  mfd: DisplayInterface & MfdDisplayInterface;
+  mfd: FmsDisplayInterface & MfdDisplayInterface;
   visible: Subject<boolean>;
 }
 export class DestinationWindow extends DisplayComponent<DestinationWindowProps> {

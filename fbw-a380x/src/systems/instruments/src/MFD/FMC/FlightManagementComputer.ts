@@ -51,7 +51,7 @@ import {
 } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 import { distanceTo, Coordinates } from 'msfs-geo';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
@@ -76,13 +76,13 @@ export interface FmsErrorMessage {
 export class FlightManagementComputer implements FmcInterface {
   protected subs = [] as Subscription[];
 
-  #mfdReference: (DisplayInterface & MfdDisplayInterface) | null;
+  #mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null;
 
   get mfdReference() {
     return this.#mfdReference;
   }
 
-  set mfdReference(value: (DisplayInterface & MfdDisplayInterface) | null) {
+  set mfdReference(value: (FmsDisplayInterface & MfdDisplayInterface) | null) {
     this.#mfdReference = value;
 
     if (value) {
@@ -214,7 +214,7 @@ export class FlightManagementComputer implements FmcInterface {
     operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
     private readonly fmcInop: Subscribable<boolean>,
-    mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
+    mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null,
   ) {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;

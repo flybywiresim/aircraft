@@ -1,6 +1,6 @@
 import { FmsErrorType } from '@fmgc/FmsError';
-import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { DataManager, FlightPlanIndex, FlightPlanService, GuidanceController } from '@fmgc/index';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
@@ -34,7 +34,7 @@ export interface FlightPhaseManagerProxyInterface {
  * Handles requests inside each FlightManagementComputer (FMC).
  * DisplayInterface shouldn't be here, but WaypointEntryUtils requires on parameter with both DisplayInterface and DataInterface
  */
-export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInterface, DisplayInterface {
+export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataInterface, FmsDisplayInterface {
   /**
    * Which operation mode is FMC in? Can be master, slave or standby.
    */
@@ -44,8 +44,8 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
   /**
    * Mfd reference, used for navigating to pages and opening prompts
    */
-  get mfdReference(): (DisplayInterface & MfdDisplayInterface) | null;
-  set mfdReference(value: DisplayInterface & MfdDisplayInterface);
+  get mfdReference(): (FmsDisplayInterface & MfdDisplayInterface) | null;
+  set mfdReference(value: FmsDisplayInterface & MfdDisplayInterface);
 
   /**
    * FlightPlanService interface

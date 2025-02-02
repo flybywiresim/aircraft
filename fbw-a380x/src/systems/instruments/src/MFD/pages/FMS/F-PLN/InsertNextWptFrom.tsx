@@ -15,7 +15,7 @@ import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Dropd
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FlightPlanIndex } from '@fmgc/index';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmsError } from '@fmgc/FmsError';
 
@@ -25,7 +25,7 @@ export type NextWptInfo = {
 };
 interface InsertNextWptFromWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
-  mfd: DisplayInterface & MfdDisplayInterface;
+  mfd: FmsDisplayInterface & MfdDisplayInterface;
   availableWaypoints: SubscribableArray<NextWptInfo>;
   visible: Subject<boolean>;
   contentContainerStyle?: string;
