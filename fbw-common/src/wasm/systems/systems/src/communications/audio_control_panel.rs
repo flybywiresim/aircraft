@@ -220,69 +220,26 @@ impl AudioControlPanel {
         // word_arinc.set_bit(15, self.int_rad_switch <= Self::DEFAULT_INT_RAD_SWITCH);
         // word_arinc.set_bit(16, self.int_rad_switch == Self::TRANSMIT_ID_INT);
 
-        match self.list_arinc_words[index].get_identification() {
-            IdentificationWordAMUACP::Word01 => {
-                word_arinc.set_bits(17, self.vhfs[0].volume);
-                word_arinc.set_bit(25, self.vhfs[0].knob);
-            }
-            IdentificationWordAMUACP::Word02 => {
-                word_arinc.set_bits(17, self.vhfs[1].volume);
-                word_arinc.set_bit(25, self.vhfs[1].knob);
-            }
-            IdentificationWordAMUACP::Word03 => {
-                word_arinc.set_bits(17, self.vhfs[2].volume);
-                word_arinc.set_bit(25, self.vhfs[2].knob);
-            }
-            IdentificationWordAMUACP::Word04 => {
-                word_arinc.set_bits(17, self.comms[0].volume);
-                word_arinc.set_bit(25, self.comms[0].knob);
-            }
-            IdentificationWordAMUACP::Word05 => {
-                word_arinc.set_bits(17, self.comms[1].volume);
-                word_arinc.set_bit(25, self.comms[1].knob);
-            }
-            IdentificationWordAMUACP::Word06 => {
-                word_arinc.set_bits(17, self.comms[2].volume);
-                word_arinc.set_bit(25, self.comms[2].knob);
-            }
-            IdentificationWordAMUACP::Word07 => {
-                word_arinc.set_bits(17, self.comms[3].volume);
-                word_arinc.set_bit(25, self.comms[3].knob);
-            }
-            IdentificationWordAMUACP::Word08 => {
-                word_arinc.set_bits(17, self.comms[4].volume);
-                word_arinc.set_bit(25, self.comms[4].knob);
-            }
-            IdentificationWordAMUACP::Word09 => {
-                word_arinc.set_bits(17, self.vors[0].volume);
-                word_arinc.set_bit(25, self.vors[0].knob);
-            }
-            IdentificationWordAMUACP::Word10 => {
-                word_arinc.set_bits(17, self.vors[1].volume);
-                word_arinc.set_bit(25, self.vors[1].knob);
-            }
-            IdentificationWordAMUACP::Word11 => {
-                word_arinc.set_bits(17, self.markers.volume);
-                word_arinc.set_bit(25, self.markers.knob);
-            }
-            IdentificationWordAMUACP::Word12 => {
-                word_arinc.set_bits(17, self.ils.volume);
-                word_arinc.set_bit(25, self.ils.knob);
-            }
-            IdentificationWordAMUACP::Word15 => {
-                word_arinc.set_bits(17, self.adfs[0].volume);
-                word_arinc.set_bit(25, self.adfs[0].knob);
-            }
-            IdentificationWordAMUACP::Word16 => {
-                word_arinc.set_bits(17, self.adfs[1].volume);
-                word_arinc.set_bit(25, self.adfs[1].knob);
-            }
-            i => {
-                println!("Cant find word acp with id {}", i as u32);
-                panic!();
-            }
-        }
+        let (volume, knob) = match self.list_arinc_words[index].get_identification() {
+            IdentificationWordAMUACP::Word01 => (self.vhfs[0].volume, self.vhfs[0].knob),
+            IdentificationWordAMUACP::Word02 => (self.vhfs[1].volume, self.vhfs[1].knob),
+            IdentificationWordAMUACP::Word03 => (self.vhfs[2].volume, self.vhfs[2].knob),
+            IdentificationWordAMUACP::Word04 => (self.comms[0].volume, self.comms[0].knob),
+            IdentificationWordAMUACP::Word05 => (self.comms[1].volume, self.comms[1].knob),
+            IdentificationWordAMUACP::Word06 => (self.comms[2].volume, self.comms[2].knob),
+            IdentificationWordAMUACP::Word07 => (self.comms[3].volume, self.comms[3].knob),
+            IdentificationWordAMUACP::Word08 => (self.comms[4].volume, self.comms[4].knob),
+            IdentificationWordAMUACP::Word09 => (self.vors[0].volume, self.vors[0].knob),
+            IdentificationWordAMUACP::Word10 => (self.vors[1].volume, self.vors[1].knob),
+            IdentificationWordAMUACP::Word11 => (self.markers.volume, self.markers.knob),
+            IdentificationWordAMUACP::Word12 => (self.ils.volume, self.ils.knob),
+            IdentificationWordAMUACP::Word15 => (self.adfs[0].volume, self.adfs[0].knob),
+            IdentificationWordAMUACP::Word16 => (self.adfs[1].volume, self.adfs[1].knob),
+            i => panic!("Cant find word acp with id {}", i as u32),
+        };
 
+        word_arinc.set_bits(17, volume);
+        word_arinc.set_bit(25, knob);
         word_arinc.set_bit(26, self.voice_button);
         word_arinc.set_bit(27, self.reset_button);
 
