@@ -21,6 +21,8 @@ import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { GenericFcuEvents, VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
 import { VerticalDisplayWaypointLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayWaypointLayer';
+import { VdPseudoWaypointLayer } from './VdPseudoWaypointLayer';
+import { VerticalDisplayRunwayLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayRunwayLayer';
 
 export interface VerticalDisplayCanvasMapProps {
   bus: ArincEventBus;
@@ -59,15 +61,13 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
 
   private readonly waypointLayer = new VerticalDisplayWaypointLayer();
 
-  private readonly runwayLayer = new VerticalDisplayWaypointLayer();
+  private readonly runwayLayer = new VerticalDisplayRunwayLayer();
 
-  private readonly pwpLayer = new VerticalDisplayWaypointLayer();
+  private readonly pwpLayer = new VdPseudoWaypointLayer();
 
   private handlePathFrame() {
     const canvas = this.canvasRef.instance;
     const context = canvas.getContext('2d');
-
-    // console.log('displayedPath', this.displayedFmsPath.get());
 
     if (
       !context ||
@@ -84,7 +84,6 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     context.clearRect(0, 0, sizeX, sizeY);
     context.resetTransform();
 
-    // let accDistance: number | null = null;
     const vdRange = this.props.vdRange.get();
     const verticalRange = this.props.verticalRange.get();
     const debug: [number, number][] = [];
@@ -107,11 +106,11 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     this.waypointLayer.paintShadowLayer(context, this.props.vdRange.get(), this.props.verticalRange.get());
     this.waypointLayer.paintColorLayer(context, this.props.vdRange.get(), this.props.verticalRange.get());
 
-    /* this.runwayLayer.paintShadowLayer(context, this.props.vdRange.get(), this.props.verticalRange.get());
+    this.runwayLayer.paintShadowLayer(context, this.props.vdRange.get(), this.props.verticalRange.get());
     this.runwayLayer.paintColorLayer(context, this.props.vdRange.get(), this.props.verticalRange.get());
 
     this.pwpLayer.paintShadowLayer(context, this.props.vdRange.get(), this.props.verticalRange.get());
-    this.pwpLayer.paintColorLayer(context, this.props.vdRange.get(), this.props.verticalRange.get()); */
+    this.pwpLayer.paintColorLayer(context, this.props.vdRange.get(), this.props.verticalRange.get());
   }
 
   private handleNewSymbols() {
@@ -165,6 +164,15 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
         this.handleNewSymbols();
         this.handlePathFrame();
       }),
+    );
+
+    this.subscriptions.push(
+      this.fmsSymbols,
+      this.pposLat,
+      this.pposLon,
+      this.baroCorrectedAltitude,
+      this.mapRecomputing,
+      this.pathVisibility,
     );
   }
 

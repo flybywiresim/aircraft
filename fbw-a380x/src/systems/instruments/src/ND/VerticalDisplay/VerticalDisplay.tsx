@@ -116,9 +116,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.displayedFmsPath,
   );
 
-  private readonly minAltitude = this.verticalRange.map((v) => v[0]);
-  private readonly maxAltitude = this.verticalRange.map((v) => v[1]);
-
   private readonly planeSymbolY = MappedSubject.create(
     ([alt, range]) => VerticalDisplay.altToY(alt.valueOr(0), range),
     this.baroCorrectedAltitude,
@@ -176,7 +173,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.vdRange,
       this.fmsPath,
       this.displayedFmsPath,
+      this.mapRecomputing,
       this.visible,
+      this.rangeChangeFlagVisibility,
       this.headingWord,
       this.trackWord,
       this.vdAvailable,
@@ -184,15 +183,26 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.baroMode,
       this.baroCorrectedAltitude,
       this.verticalRange,
-      this.minAltitude,
-      this.maxAltitude,
       this.planeSymbolY,
       this.planeSymbolVisibility,
       this.rangeMarkerVisibility,
+      this.rangeOver160ArrowVisible,
       this.altitudeFlTextVisible,
     );
 
     for (const rm of this.rangeMarkerText) {
+      this.subscriptions.push(rm);
+    }
+
+    for (const rm of this.altitudeTapeLineY) {
+      this.subscriptions.push(rm);
+    }
+
+    for (const rm of this.altitudeTapeTextY) {
+      this.subscriptions.push(rm);
+    }
+
+    for (const rm of this.altitudeTapeText) {
       this.subscriptions.push(rm);
     }
   }
