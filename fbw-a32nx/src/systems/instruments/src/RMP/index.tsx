@@ -9,7 +9,7 @@ import { RootRadioPanel } from './Components/BaseRadioPanels';
 
 render(
   <div className="rmp-wrapper">
-    <RootRadioPanel side="L" />
-    <RootRadioPanel side="R" />
+    <RootRadioPanel side="L" receiver={1} />
+    <RootRadioPanel side="R" receiver={2} />
   </div>,
 );

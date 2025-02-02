@@ -147,6 +147,7 @@
 1. [A380X/FMS] Add page scroll via soft keys & individual scroll via KCCU on MFD F-PLN - @BravoMike99 (bruno_pt99)
 1. [A32NX/FMS] Added nav database swap confirmation - @tracernz (Mike)
 1. [A380X/FMS] Add basic FIX INFO functionality - @Benjozork (Benjamin Dupont)
+1. [A32NX/COMMS] Enabled all components of communications panels with Rust - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.12.0
 

@@ -2237,14 +2237,16 @@ class FMCMainDisplay extends BaseAirliners {
     // TODO:FPM REWRITE: Start of functions to refactor
     //-----------------------------------------------------------------------------------
 
-    // FIXME remove A32NX_FM_LS_COURSE
+    // FIXME remove A32NX_FM_LS_COURSE and A32NX_RMP_LS_COURSE
     async updateIlsCourse() {
-        let course = -1;
-        const mmr = this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1);
-        if (mmr.course !== null) {
-            course = mmr.course;
-        } else if (mmr.frequency !== null && SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number') === 1) {
-            course = SimVar.GetSimVarValue('NAV LOCALIZER:3', 'degrees');
+        let course = SimVar.GetSimVarValue('L:A32NX_RMP_LS_COURSE', 'number');
+        if (course == -1) {
+            const mmr = this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1);
+            if (mmr.course !== null) {
+                course = mmr.course;
+            } else if (mmr.frequency !== null && SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number') === 1) {
+                course = SimVar.GetSimVarValue('NAV LOCALIZER:3', 'degrees');
+            }
         }
 
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);

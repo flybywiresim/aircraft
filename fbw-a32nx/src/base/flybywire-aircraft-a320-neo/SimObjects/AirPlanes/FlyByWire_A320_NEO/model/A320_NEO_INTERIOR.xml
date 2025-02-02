@@ -2475,6 +2475,7 @@
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
+                    </Component>
 
                     <Component ID="EVAC">
                         <!-- EVAC COMMAND -->
@@ -2761,8 +2762,8 @@
                     <!-- AUDIO SWITCHING -->
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>KNOB</ANIM_TYPE>
-                        <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
-                        <Node_ID>KNOB_OVHD_AUDIOSWITCH</Node_ID>
+                        <ANIM_TEMPLATE>FBW_Airbus_AudioSwitching_Knob</ANIM_TEMPLATE>
+                        <NODE_ID>KNOB_OVHD_AUDIOSWITCH</NODE_ID>
                         <PART_ID>KNOB_OVHD_AUDIOSWITCH</PART_ID>
                         <ANIM_NAME>KNOB_OVHD_AUDIOSWITCH</ANIM_NAME>
                         <NUM_STATES>3</NUM_STATES>
@@ -3046,161 +3047,6 @@
                             <DUMMY_BUTTON/>
                         </UseTemplate>
                     </Component>
-
-                    <Component ID="Overhead_Audio_Panel">
-                        <OverrideTemplateParameters>
-                            <POTENTIOMETER>1</POTENTIOMETER>
-                            <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
-                            <POTENTIOMETER_SEQ2>86</POTENTIOMETER_SEQ2>
-                            <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
-                            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                        </OverrideTemplateParameters>
-
-                        <!-- OVHD RADIO VOR1 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_VOR1_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO VOR2 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_VOR2_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO MKR -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_MKR_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO ILS -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_ILS_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO MLS -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_MLS_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO ADF1 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_ADF1_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO ADF2 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_ADF2_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO INT -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_INT_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO INT -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>SWITCH_OVHD_RADIO_INT</NODE_ID>
-                            <NO_SEQ1 />
-                            <NO_SEQ2 />
-                        </UseTemplate>
-                        <!-- OVHD RADIO VOICE -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_VOICE</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO RESET -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_RESET</NODE_ID>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                            <NO_SEQ1 />
-                        </UseTemplate>
-                        <!-- OVHD RADIO PA -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_PA1_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO PA -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_PA</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <NO_SEQ2 />
-                        </UseTemplate>
-                        <!-- OVHD RADIO VHF1 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_VHF1_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO VHF2 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_VHF2_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO VHF3 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_VHF3_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO HF1 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_HF1_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO HF2 -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_HF2_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO CAB -->
-                        <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                            <NODE_ID>PUSH_OVHD_RADIO_CAB_EMIS</NODE_ID>
-                            <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO ATT -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_ATT</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO MECH -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_MECH</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO CALL -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_CALL5</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO CALL -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_CALL4</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO CALL -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_CALL3</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO CALL -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_CALL2</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        </UseTemplate>
-                        <!-- OVHD RADIO CALL -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                            <NODE_ID>PUSH_OVHD_RADIO_CALL1</NODE_ID>
-                            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-                        </UseTemplate>
-                    </Component>
-                </Component>
-
             </Component>
 
                 <Component ID="OverHead_AntiIce">
@@ -4448,11 +4294,10 @@
                 <TYPE>AIRBUS</TYPE>
                 <!-- disable lock mode blue highlight -->
                 <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+                <BACKLIGHTS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
+                <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) and if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
+                <EMISSIVE_TEST>(L:A32NX_OVHD_INTLT_ANN, number) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool) and</EMISSIVE_TEST>
             </DefaultTemplateParameters>
-            <Component ID="Updater">
-                <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Updater">
-                </UseTemplate>
-            </Component>
             <!-- RMP 1 is powered by AC/DC ESS (via ESS TR for AC) -->
             <!-- For each ACP, VHF1 is powered with ESS (emergency circuit), VHF2 with AC/DC 2 and VHF3 with AC/DC 3 (via corresponding TR for AC) -->
             <!-- Hence, in case of total electrical failure, only RMP 1 and VHF1 on both ACP are powered via ESS circuit -->
@@ -4461,37 +4306,16 @@
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <ID>1</ID>
                     <SIDE>L</SIDE>
-                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
-                    <INDICATORS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or </INDICATORS_POWERED>
+                    <RMP_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_RMP_L_TOGGLE_SWITCH, bool) and </RMP_POWERED>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
-                <!-- Init of volume and transmit channels in default operation state: Transmit VHF1 and listen VHF1 and VFH2
-                    PANEL2_Transmit_Channel set to 4 (none) to be able to switch between COM1 and COM2 in third parties -->
-                <Update Once="True">
-                    0 (&gt;L:XMLVAR_COM_PANEL1_Transmit_Channel)
-                    4 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
-
-                    0 (&gt;K:PILOT_TRANSMITTER_SET)
-                    4 (&gt;K:COPILOT_TRANSMITTER_SET)
-
-                    1 (&gt;L:XMLVAR_COM_1_VHF_L_Switch_Down)
-                    1 (&gt;L:XMLVAR_COM_1_VHF_C_Switch_Down)
-                    1 (&gt;L:XMLVAR_COM_2_VHF_L_Switch_Down)
-                    1 (&gt;L:XMLVAR_COM_2_VHF_C_Switch_Down)
-
-                    1 (&gt;K:COM1_RECEIVE_SELECT)
-                    1 (&gt;K:COM2_RECEIVE_SELECT)
-                    1 (&gt;K:COM3_RECEIVE_SELECT)
-
-                    0.8 (&gt;L:XMLVAR_COM_1_Volume_VHF_L)
-                    0.4 (&gt;L:XMLVAR_COM_1_Volume_VHF_C)
-                    0.8 (&gt;L:XMLVAR_COM_2_Volume_VHF_L)
-                    0.4 (&gt;L:XMLVAR_COM_2_Volume_VHF_C)
-                </Update>
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>1</ID>
                     <SIDE>L</SIDE>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or </INDICATORS_POWERED>
+                    <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     <NODE_ID_RECEIVER_VHF_L>KNOB_AUDIOL_VHF1</NODE_ID_RECEIVER_VHF_L>
                     <NODE_ID_LIGHT_RECEIVER_VHF_L>PUSH_AUDIOL_VHF1_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_L>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_L>KNOB_AUDIOL_VHF1</ANIM_NAME_KNOB_RECEIVER_VHF_L>
@@ -4500,6 +4324,7 @@
                     <ANIM_NAME_BUTTON_VHF_L>PUSH_AUDIOL_CALL1</ANIM_NAME_BUTTON_VHF_L>
                     <NODE_ID_BUTTON_SEQ1_VHF_L>PUSH_AUDIOL_CALL1_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_L>
                     <NODE_ID_BUTTON_SEQ2_VHF_L>PUSH_AUDIOL_CALL1_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_L>
+
                     <NODE_ID_RECEIVER_VHF_C>KNOB_AUDIOL_VHF2</NODE_ID_RECEIVER_VHF_C>
                     <NODE_ID_LIGHT_RECEIVER_VHF_C>PUSH_AUDIOL_VHF2_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_C>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_C>KNOB_AUDIOL_VHF2</ANIM_NAME_KNOB_RECEIVER_VHF_C>
@@ -4508,17 +4333,68 @@
                     <ANIM_NAME_BUTTON_VHF_C>PUSH_AUDIOL_CALL2</ANIM_NAME_BUTTON_VHF_C>
                     <NODE_ID_BUTTON_SEQ1_VHF_C>PUSH_AUDIOL_CALL2_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_C>
                     <NODE_ID_BUTTON_SEQ2_VHF_C>PUSH_AUDIOL_CALL2_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_C>
+
                     <NODE_ID_RECEIVER_VHF_R>KNOB_AUDIOL_VHF3</NODE_ID_RECEIVER_VHF_R>
                     <NODE_ID_LIGHT_RECEIVER_VHF_R>PUSH_AUDIOL_VHF3_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_R>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_R>KNOB_AUDIOL_VHF3</ANIM_NAME_KNOB_RECEIVER_VHF_R>
                     <ANIM_NAME_PUSH_RECEIVER_VHF_R>PUSH_AUDIOL_VHF3</ANIM_NAME_PUSH_RECEIVER_VHF_R>
                     <NODE_ID_BUTTON_VHF_R>PUSH_AUDIOL_CALL3</NODE_ID_BUTTON_VHF_R>
                     <ANIM_NAME_BUTTON_VHF_R>PUSH_AUDIOL_CALL3</ANIM_NAME_BUTTON_VHF_R>
+                    <NODE_ID_BUTTON_SEQ1_VHF_R>PUSH_AUDIOL_CALL3_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_R>
+                    <NODE_ID_BUTTON_SEQ2_VHF_R>PUSH_AUDIOL_CALL3_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_R>
+
+                    <NODE_ID_RECEIVER_HF1>KNOB_AUDIOL_HF1</NODE_ID_RECEIVER_HF1>
+                    <NODE_ID_LIGHT_RECEIVER_HF1>PUSH_AUDIOL_HF1_EMIS</NODE_ID_LIGHT_RECEIVER_HF1>
+                    <ANIM_NAME_KNOB_RECEIVER_HF1>KNOB_AUDIOL_HF1</ANIM_NAME_KNOB_RECEIVER_HF1>
+                    <ANIM_NAME_PUSH_RECEIVER_HF1>PUSH_AUDIOL_HF1</ANIM_NAME_PUSH_RECEIVER_HF1>
+                    <NODE_ID_BUTTON_HF1>PUSH_AUDIOL_CALL4</NODE_ID_BUTTON_HF1>
+                    <ANIM_NAME_BUTTON_HF1>PUSH_AUDIOL_CALL4</ANIM_NAME_BUTTON_HF1>
+                    <NODE_ID_BUTTON_SEQ1_HF1>PUSH_AUDIOL_CALL4_SEQ1</NODE_ID_BUTTON_SEQ1_HF1>
+                    <NODE_ID_BUTTON_SEQ2_HF1>PUSH_AUDIOL_CALL4_SEQ2</NODE_ID_BUTTON_SEQ2_HF1>
+
+                    <NODE_ID_RECEIVER_HF2>KNOB_AUDIOL_HF2</NODE_ID_RECEIVER_HF2>
+                    <NODE_ID_LIGHT_RECEIVER_HF2>PUSH_AUDIOL_HF2_EMIS</NODE_ID_LIGHT_RECEIVER_HF2>
+                    <ANIM_NAME_KNOB_RECEIVER_HF2>KNOB_AUDIOL_HF2</ANIM_NAME_KNOB_RECEIVER_HF2>
+                    <ANIM_NAME_PUSH_RECEIVER_HF2>PUSH_AUDIOL_HF2</ANIM_NAME_PUSH_RECEIVER_HF2>
+                    <NODE_ID_BUTTON_HF2>PUSH_AUDIOL_CALL5</NODE_ID_BUTTON_HF2>
+                    <ANIM_NAME_BUTTON_HF2>PUSH_AUDIOL_CALL5</ANIM_NAME_BUTTON_HF2>
+                    <NODE_ID_BUTTON_SEQ1_HF2>PUSH_AUDIOL_CALL5_SEQ1</NODE_ID_BUTTON_SEQ1_HF2>
+                    <NODE_ID_BUTTON_SEQ2_HF2>PUSH_AUDIOL_CALL5_SEQ2</NODE_ID_BUTTON_SEQ2_HF2>
+
+                    <NODE_ID_RECEIVER_MECH>KNOB_AUDIOL_INT</NODE_ID_RECEIVER_MECH>
+                    <NODE_ID_LIGHT_RECEIVER_MECH>PUSH_AUDIOL_INT_EMIS</NODE_ID_LIGHT_RECEIVER_MECH>
+                    <ANIM_NAME_KNOB_RECEIVER_MECH>KNOB_AUDIOL_INT</ANIM_NAME_KNOB_RECEIVER_MECH>
+                    <ANIM_NAME_PUSH_RECEIVER_MECH>PUSH_AUDIOL_INT</ANIM_NAME_PUSH_RECEIVER_MECH>
+                    <NODE_ID_BUTTON_MECH>PUSH_AUDIOL_MECH</NODE_ID_BUTTON_MECH>
+                    <ANIM_NAME_BUTTON_MECH>PUSH_AUDIOL_MECH</ANIM_NAME_BUTTON_MECH>
+                    <NODE_ID_BUTTON_SEQ1_MECH>PUSH_AUDIOL_MECH_SEQ1</NODE_ID_BUTTON_SEQ1_MECH>
+                    <NODE_ID_BUTTON_SEQ2_MECH>PUSH_AUDIOL_MECH_SEQ2</NODE_ID_BUTTON_SEQ2_MECH>
+
+                    <NODE_ID_RECEIVER_ATT>KNOB_AUDIOL_CAB</NODE_ID_RECEIVER_ATT>
+                    <NODE_ID_LIGHT_RECEIVER_ATT>PUSH_AUDIOL_CAB_EMIS</NODE_ID_LIGHT_RECEIVER_ATT>
+                    <ANIM_NAME_KNOB_RECEIVER_ATT>KNOB_AUDIOL_CAB</ANIM_NAME_KNOB_RECEIVER_ATT>
+                    <ANIM_NAME_PUSH_RECEIVER_ATT>PUSH_AUDIOL_CAB</ANIM_NAME_PUSH_RECEIVER_ATT>
+                    <NODE_ID_BUTTON_ATT>PUSH_AUDIOL_ATT</NODE_ID_BUTTON_ATT>
+                    <ANIM_NAME_BUTTON_ATT>PUSH_AUDIOL_ATT</ANIM_NAME_BUTTON_ATT>
+                    <NODE_ID_BUTTON_SEQ1_ATT>PUSH_AUDIOL_ATT_SEQ1</NODE_ID_BUTTON_SEQ1_ATT>
+                    <NODE_ID_BUTTON_SEQ2_ATT>PUSH_AUDIOL_ATT_SEQ2</NODE_ID_BUTTON_SEQ2_ATT>
+
+                    <NODE_ID_RECEIVER_PA>KNOB_AUDIOL_PA</NODE_ID_RECEIVER_PA>
+                    <NODE_ID_LIGHT_RECEIVER_PA>PUSH_AUDIOL_PA1_EMIS</NODE_ID_LIGHT_RECEIVER_PA>
+                    <ANIM_NAME_KNOB_RECEIVER_PA>KNOB_AUDIOL_PA</ANIM_NAME_KNOB_RECEIVER_PA>
+                    <ANIM_NAME_PUSH_RECEIVER_PA>PUSH_AUDIOL_PA1</ANIM_NAME_PUSH_RECEIVER_PA>
+                    <NODE_ID_BUTTON_PA>PUSH_AUDIOL_PA</NODE_ID_BUTTON_PA>
+                    <ANIM_NAME_BUTTON_PA>PUSH_AUDIOL_PA</ANIM_NAME_BUTTON_PA>
+                    <NODE_ID_BUTTON_SEQ1_PA>PUSH_AUDIOL_PA_SEQ1</NODE_ID_BUTTON_SEQ1_PA>
 
                     <NODE_ID_RECEIVER_VOICE>PUSH_AUDIOL_VOICE</NODE_ID_RECEIVER_VOICE>
                     <ANIM_NAME_PUSH_RECEIVER_VOICE>PUSH_AUDIOL_VOICE</ANIM_NAME_PUSH_RECEIVER_VOICE>
                     <NODE_ID_BUTTON_VOICE_SEQ1>PUSH_AUDIOL_VOICE_SEQ1</NODE_ID_BUTTON_VOICE_SEQ1>
                     <NODE_ID_BUTTON_VOICE_SEQ2>PUSH_AUDIOL_VOICE_SEQ2</NODE_ID_BUTTON_VOICE_SEQ2>
+
+                    <NODE_ID_RECEIVER_RESET>PUSH_AUDIOR_RESET</NODE_ID_RECEIVER_RESET>
+                    <ANIM_NAME_PUSH_RECEIVER_RESET>PUSH_AUDIOR_RESET</ANIM_NAME_PUSH_RECEIVER_RESET>
+                    <NODE_ID_BUTTON_RESET_SEQ2>PUSH_AUDIOR_RESET_SEQ2</NODE_ID_BUTTON_RESET_SEQ2>
 
                     <NODE_ID_RECEIVER_MKR>KNOB_AUDIOL_MKR</NODE_ID_RECEIVER_MKR>
                     <NODE_ID_LIGHT_RECEIVER_MKR>PUSH_AUDIOL_MKR_EMIS</NODE_ID_LIGHT_RECEIVER_MKR>
@@ -4540,7 +4416,7 @@
                     <ANIM_NAME_KNOB_RECEIVER_ILS>KNOB_AUDIOL_ILS</ANIM_NAME_KNOB_RECEIVER_ILS>
                     <ANIM_NAME_PUSH_RECEIVER_ILS>PUSH_AUDIOL_ILS</ANIM_NAME_PUSH_RECEIVER_ILS>
 
-                    <!-- INOP unlabelled knob -->
+                    <!-- INOP unlabelled knob. Should be GLS -->
                     <NODE_ID_RECEIVER_MLS>KNOB_AUDIOL_MLS</NODE_ID_RECEIVER_MLS>
                     <NODE_ID_LIGHT_RECEIVER_MLS>PUSH_AUDIOL_MLS_EMIS</NODE_ID_LIGHT_RECEIVER_MLS>
                     <ANIM_NAME_KNOB_RECEIVER_MLS>KNOB_AUDIOL_MLS</ANIM_NAME_KNOB_RECEIVER_MLS>
@@ -4556,71 +4432,8 @@
                     <ANIM_NAME_KNOB_RECEIVER_ADF2>KNOB_AUDIOL_ADF2</ANIM_NAME_KNOB_RECEIVER_ADF2>
                     <ANIM_NAME_PUSH_RECEIVER_ADF2>PUSH_AUDIOL_ADF2</ANIM_NAME_PUSH_RECEIVER_ADF2>
 
-                    <NODE_ID_BUTTON_SEQ1_VHF_R>PUSH_AUDIOL_CALL3_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_R>
-                    <NODE_ID_BUTTON_SEQ2_VHF_R>PUSH_AUDIOL_CALL3_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_R>
-                </UseTemplate>
-                <Component ID="Audio_Panel_Left_Dummies">
-                    <OverrideTemplateParameters>
-                        <POTENTIOMETER>1</POTENTIOMETER>
-                        <POTENTIOMETER_SEQ2>85</POTENTIOMETER_SEQ2>
-                        <SEQ1_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</SEQ1_EMISSIVE_CODE>
-                        <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
-                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                    </OverrideTemplateParameters>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
+                    <NODE_ID_SWITCH_INT>SWITCH_AUDIOL_INT</NODE_ID_SWITCH_INT>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOL_PA</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOL_ATT</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOL_MECH</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOL_CALL4</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOL_CALL5</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                </Component>
-                <Component ID="Audio_Panel_Left_Volume_Dummies">
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_HF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_HF2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_INT_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_CAB_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_PA1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                </Component>
             </Component>
 
             <!-- RMP 2 is powered by AC/DC 2 (via TR 2 for AC) -->
@@ -4631,25 +4444,16 @@
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <ID>2</ID>
                     <SIDE>R</SIDE>
-                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
-                    <INDICATORS_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <RMP_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) (L:A32NX_RMP_R_TOGGLE_SWITCH, bool) and </RMP_POWERED>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Right">
-                <Update Once="True">
-                    0 (&gt;L:XMLVAR_COM_PANEL2_Transmit_Channel)
-                    0 (&gt;K:COPILOT_TRANSMITTER_SET)
-
-                    1 (&gt;L:XMLVAR_COM_2_VHF_L_Switch_Down)
-                    1 (&gt;L:XMLVAR_COM_2_VHF_C_Switch_Down)
-
-                    0.8 (&gt;L:XMLVAR_COM_2_Volume_VHF_L)
-                    0.4 (&gt;L:XMLVAR_COM_2_Volume_VHF_C)
-                    0 (&gt;L:XMLVAR_COM_2_Volume_VHF_R)
-                </Update>
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>2</ID>
                     <SIDE>R</SIDE>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     <NODE_ID_RECEIVER_VHF_L>KNOB_AUDIOR_VHF1</NODE_ID_RECEIVER_VHF_L>
                     <NODE_ID_LIGHT_RECEIVER_VHF_L>PUSH_AUDIOR_VHF1_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_L>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_L>KNOB_AUDIOR_VHF1</ANIM_NAME_KNOB_RECEIVER_VHF_L>
@@ -4658,6 +4462,7 @@
                     <ANIM_NAME_BUTTON_VHF_L>PUSH_AUDIOR_CALL1</ANIM_NAME_BUTTON_VHF_L>
                     <NODE_ID_BUTTON_SEQ1_VHF_L>PUSH_AUDIOR_CALL1_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_L>
                     <NODE_ID_BUTTON_SEQ2_VHF_L>PUSH_AUDIOR_CALL1_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_L>
+
                     <NODE_ID_RECEIVER_VHF_C>KNOB_AUDIOR_VHF2</NODE_ID_RECEIVER_VHF_C>
                     <NODE_ID_LIGHT_RECEIVER_VHF_C>PUSH_AUDIOR_VHF2_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_C>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_C>KNOB_AUDIOR_VHF2</ANIM_NAME_KNOB_RECEIVER_VHF_C>
@@ -4666,6 +4471,7 @@
                     <ANIM_NAME_BUTTON_VHF_C>PUSH_AUDIOR_CALL2</ANIM_NAME_BUTTON_VHF_C>
                     <NODE_ID_BUTTON_SEQ1_VHF_C>PUSH_AUDIOR_CALL2_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_C>
                     <NODE_ID_BUTTON_SEQ2_VHF_C>PUSH_AUDIOR_CALL2_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_C>
+
                     <NODE_ID_RECEIVER_VHF_R>KNOB_AUDIOR_VHF3</NODE_ID_RECEIVER_VHF_R>
                     <NODE_ID_LIGHT_RECEIVER_VHF_R>PUSH_AUDIOR_VHF3_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_R>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_R>KNOB_AUDIOR_VHF3</ANIM_NAME_KNOB_RECEIVER_VHF_R>
@@ -4675,10 +4481,58 @@
                     <NODE_ID_BUTTON_SEQ1_VHF_R>PUSH_AUDIOR_CALL3_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_R>
                     <NODE_ID_BUTTON_SEQ2_VHF_R>PUSH_AUDIOR_CALL3_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_R>
 
+                    <NODE_ID_RECEIVER_HF1>KNOB_AUDIOR_HF1</NODE_ID_RECEIVER_HF1>
+                    <NODE_ID_LIGHT_RECEIVER_HF1>PUSH_AUDIOR_HF1_EMIS</NODE_ID_LIGHT_RECEIVER_HF1>
+                    <ANIM_NAME_KNOB_RECEIVER_HF1>KNOB_AUDIOR_HF1</ANIM_NAME_KNOB_RECEIVER_HF1>
+                    <ANIM_NAME_PUSH_RECEIVER_HF1>PUSH_AUDIOR_HF1</ANIM_NAME_PUSH_RECEIVER_HF1>
+                    <NODE_ID_BUTTON_HF1>PUSH_AUDIOR_CALL4</NODE_ID_BUTTON_HF1>
+                    <ANIM_NAME_BUTTON_HF1>PUSH_AUDIOR_CALL4</ANIM_NAME_BUTTON_HF1>
+                    <NODE_ID_BUTTON_SEQ1_HF1>PUSH_AUDIOR_CALL4_SEQ1</NODE_ID_BUTTON_SEQ1_HF1>
+                    <NODE_ID_BUTTON_SEQ2_HF1>PUSH_AUDIOR_CALL4_SEQ2</NODE_ID_BUTTON_SEQ2_HF1>
+
+                    <NODE_ID_RECEIVER_HF2>KNOB_AUDIOR_HF2</NODE_ID_RECEIVER_HF2>
+                    <NODE_ID_LIGHT_RECEIVER_HF2>PUSH_AUDIOR_HF2_EMIS</NODE_ID_LIGHT_RECEIVER_HF2>
+                    <ANIM_NAME_KNOB_RECEIVER_HF2>KNOB_AUDIOR_HF2</ANIM_NAME_KNOB_RECEIVER_HF2>
+                    <ANIM_NAME_PUSH_RECEIVER_HF2>PUSH_AUDIOR_HF2</ANIM_NAME_PUSH_RECEIVER_HF2>
+                    <NODE_ID_BUTTON_HF2>PUSH_AUDIOR_CALL5</NODE_ID_BUTTON_HF2>
+                    <ANIM_NAME_BUTTON_HF2>PUSH_AUDIOR_CALL5</ANIM_NAME_BUTTON_HF2>
+                    <NODE_ID_BUTTON_SEQ1_HF2>PUSH_AUDIOR_CALL5_SEQ1</NODE_ID_BUTTON_SEQ1_HF2>
+                    <NODE_ID_BUTTON_SEQ2_HF2>PUSH_AUDIOR_CALL5_SEQ2</NODE_ID_BUTTON_SEQ2_HF2>
+
+                    <NODE_ID_RECEIVER_MECH>KNOB_AUDIOR_INT</NODE_ID_RECEIVER_MECH>
+                    <NODE_ID_LIGHT_RECEIVER_MECH>PUSH_AUDIOR_INT_EMIS</NODE_ID_LIGHT_RECEIVER_MECH>
+                    <ANIM_NAME_KNOB_RECEIVER_MECH>KNOB_AUDIOR_INT</ANIM_NAME_KNOB_RECEIVER_MECH>
+                    <ANIM_NAME_PUSH_RECEIVER_MECH>PUSH_AUDIOR_INT</ANIM_NAME_PUSH_RECEIVER_MECH>
+                    <NODE_ID_BUTTON_MECH>PUSH_AUDIOR_MECH</NODE_ID_BUTTON_MECH>
+                    <ANIM_NAME_BUTTON_MECH>PUSH_AUDIOR_MECH</ANIM_NAME_BUTTON_MECH>
+                    <NODE_ID_BUTTON_SEQ1_MECH>PUSH_AUDIOR_MECH_SEQ1</NODE_ID_BUTTON_SEQ1_MECH>
+                    <NODE_ID_BUTTON_SEQ2_MECH>PUSH_AUDIOR_MECH_SEQ2</NODE_ID_BUTTON_SEQ2_MECH>
+
+                    <NODE_ID_RECEIVER_ATT>KNOB_AUDIOR_CAB</NODE_ID_RECEIVER_ATT>
+                    <NODE_ID_LIGHT_RECEIVER_ATT>PUSH_AUDIOR_CAB_EMIS</NODE_ID_LIGHT_RECEIVER_ATT>
+                    <ANIM_NAME_KNOB_RECEIVER_ATT>KNOB_AUDIOR_CAB</ANIM_NAME_KNOB_RECEIVER_ATT>
+                    <ANIM_NAME_PUSH_RECEIVER_ATT>PUSH_AUDIOR_CAB</ANIM_NAME_PUSH_RECEIVER_ATT>
+                    <NODE_ID_BUTTON_ATT>PUSH_AUDIOR_ATT</NODE_ID_BUTTON_ATT>
+                    <ANIM_NAME_BUTTON_ATT>PUSH_AUDIOR_ATT</ANIM_NAME_BUTTON_ATT>
+                    <NODE_ID_BUTTON_SEQ1_ATT>PUSH_AUDIOR_ATT_SEQ1</NODE_ID_BUTTON_SEQ1_ATT>
+                    <NODE_ID_BUTTON_SEQ2_ATT>PUSH_AUDIOR_ATT_SEQ2</NODE_ID_BUTTON_SEQ2_ATT>
+
+                    <NODE_ID_RECEIVER_PA>KNOB_AUDIOR_PA</NODE_ID_RECEIVER_PA>
+                    <NODE_ID_LIGHT_RECEIVER_PA>PUSH_AUDIOR_PA1_EMIS</NODE_ID_LIGHT_RECEIVER_PA>
+                    <ANIM_NAME_KNOB_RECEIVER_PA>KNOB_AUDIOR_PA</ANIM_NAME_KNOB_RECEIVER_PA>
+                    <ANIM_NAME_PUSH_RECEIVER_PA>PUSH_AUDIOR_PA1</ANIM_NAME_PUSH_RECEIVER_PA>
+                    <NODE_ID_BUTTON_PA>PUSH_AUDIOR_PA</NODE_ID_BUTTON_PA>
+                    <ANIM_NAME_BUTTON_PA>PUSH_AUDIOR_PA</ANIM_NAME_BUTTON_PA>
+                    <NODE_ID_BUTTON_SEQ1_PA>PUSH_AUDIOR_PA_SEQ1</NODE_ID_BUTTON_SEQ1_PA>
+
                     <NODE_ID_RECEIVER_VOICE>PUSH_AUDIOR_VOICE</NODE_ID_RECEIVER_VOICE>
                     <ANIM_NAME_PUSH_RECEIVER_VOICE>PUSH_AUDIOR_VOICE</ANIM_NAME_PUSH_RECEIVER_VOICE>
                     <NODE_ID_BUTTON_VOICE_SEQ1>PUSH_AUDIOR_VOICE_SEQ1</NODE_ID_BUTTON_VOICE_SEQ1>
                     <NODE_ID_BUTTON_VOICE_SEQ2>PUSH_AUDIOR_VOICE_SEQ2</NODE_ID_BUTTON_VOICE_SEQ2>
+
+                    <NODE_ID_RECEIVER_RESET>PUSH_AUDIOL_RESET</NODE_ID_RECEIVER_RESET>
+                    <ANIM_NAME_PUSH_RECEIVER_RESET>PUSH_AUDIOL_RESET</ANIM_NAME_PUSH_RECEIVER_RESET>
+                    <NODE_ID_BUTTON_RESET_SEQ2>PUSH_AUDIOL_RESET_SEQ2</NODE_ID_BUTTON_RESET_SEQ2>
 
                     <NODE_ID_RECEIVER_MKR>KNOB_AUDIOR_MKR</NODE_ID_RECEIVER_MKR>
                     <NODE_ID_LIGHT_RECEIVER_MKR>PUSH_AUDIOR_MKR_EMIS</NODE_ID_LIGHT_RECEIVER_MKR>
@@ -4715,105 +4569,134 @@
                     <NODE_ID_LIGHT_RECEIVER_ADF2>PUSH_AUDIOR_ADF2_EMIS</NODE_ID_LIGHT_RECEIVER_ADF2>
                     <ANIM_NAME_KNOB_RECEIVER_ADF2>KNOB_AUDIOR_ADF2</ANIM_NAME_KNOB_RECEIVER_ADF2>
                     <ANIM_NAME_PUSH_RECEIVER_ADF2>PUSH_AUDIOR_ADF2</ANIM_NAME_PUSH_RECEIVER_ADF2>
+
+                     <NODE_ID_SWITCH_INT>SWITCH_AUDIOR_INT</NODE_ID_SWITCH_INT>
+                    </UseTemplate>
+                </Component>
+            <Component ID="Audio_Panel_Overhead">
+                <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
+                    <ID>3</ID>
+                    <SIDE>OVHD</SIDE>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) </SEQ1_POWERED>
+                    <NODE_ID_RECEIVER_VHF_L>KNOB_OVHD_RADIO_VHF1</NODE_ID_RECEIVER_VHF_L>
+                    <NODE_ID_LIGHT_RECEIVER_VHF_L>PUSH_OVHD_RADIO_VHF1_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_L>
+                    <ANIM_NAME_KNOB_RECEIVER_VHF_L>KNOB_OVHD_RADIO_VHF1</ANIM_NAME_KNOB_RECEIVER_VHF_L>
+                    <ANIM_NAME_PUSH_RECEIVER_VHF_L>PUSH_OVHD_RADIO_VHF1</ANIM_NAME_PUSH_RECEIVER_VHF_L>
+                    <NODE_ID_BUTTON_VHF_L>PUSH_OVHD_RADIO_CALL1</NODE_ID_BUTTON_VHF_L>
+                    <ANIM_NAME_BUTTON_VHF_L>PUSH_OVHD_RADIO_CALL1</ANIM_NAME_BUTTON_VHF_L>
+                    <NODE_ID_BUTTON_SEQ1_VHF_L>PUSH_OVHD_RADIO_CALL1_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_L>
+                    <NODE_ID_BUTTON_SEQ2_VHF_L>PUSH_OVHD_RADIO_CALL1_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_L>
+
+                    <NODE_ID_RECEIVER_VHF_C>KNOB_OVHD_RADIO_VHF2</NODE_ID_RECEIVER_VHF_C>
+                    <NODE_ID_LIGHT_RECEIVER_VHF_C>PUSH_OVHD_RADIO_VHF2_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_C>
+                    <ANIM_NAME_KNOB_RECEIVER_VHF_C>KNOB_OVHD_RADIO_VHF2</ANIM_NAME_KNOB_RECEIVER_VHF_C>
+                    <ANIM_NAME_PUSH_RECEIVER_VHF_C>PUSH_OVHD_RADIO_VHF2</ANIM_NAME_PUSH_RECEIVER_VHF_C>
+                    <NODE_ID_BUTTON_VHF_C>PUSH_OVHD_RADIO_CALL2</NODE_ID_BUTTON_VHF_C>
+                    <ANIM_NAME_BUTTON_VHF_C>PUSH_OVHD_RADIO_CALL2</ANIM_NAME_BUTTON_VHF_C>
+                    <NODE_ID_BUTTON_SEQ1_VHF_C>PUSH_OVHD_RADIO_CALL2_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_C>
+                    <NODE_ID_BUTTON_SEQ2_VHF_C>PUSH_OVHD_RADIO_CALL2_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_C>
+
+                    <NODE_ID_RECEIVER_VHF_R>KNOB_OVHD_RADIO_VHF3</NODE_ID_RECEIVER_VHF_R>
+                    <NODE_ID_LIGHT_RECEIVER_VHF_R>PUSH_OVHD_RADIO_VHF3_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_R>
+                    <ANIM_NAME_KNOB_RECEIVER_VHF_R>KNOB_OVHD_RADIO_VHF3</ANIM_NAME_KNOB_RECEIVER_VHF_R>
+                    <ANIM_NAME_PUSH_RECEIVER_VHF_R>PUSH_OVHD_RADIO_VHF3</ANIM_NAME_PUSH_RECEIVER_VHF_R>
+                    <NODE_ID_BUTTON_VHF_R>PUSH_OVHD_RADIO_CALL3</NODE_ID_BUTTON_VHF_R>
+                    <ANIM_NAME_BUTTON_VHF_R>PUSH_OVHD_RADIO_CALL3</ANIM_NAME_BUTTON_VHF_R>
+                    <NODE_ID_BUTTON_SEQ1_VHF_R>PUSH_OVHD_RADIO_CALL3_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_R>
+                    <NODE_ID_BUTTON_SEQ2_VHF_R>PUSH_OVHD_RADIO_CALL3_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_R>
+
+                    <NODE_ID_RECEIVER_HF1>KNOB_OVHD_RADIO_HF1</NODE_ID_RECEIVER_HF1>
+                    <NODE_ID_LIGHT_RECEIVER_HF1>PUSH_OVHD_RADIO_HF1_EMIS</NODE_ID_LIGHT_RECEIVER_HF1>
+                    <ANIM_NAME_KNOB_RECEIVER_HF1>KNOB_OVHD_RADIO_HF1</ANIM_NAME_KNOB_RECEIVER_HF1>
+                    <ANIM_NAME_PUSH_RECEIVER_HF1>PUSH_OVHD_RADIO_HF1</ANIM_NAME_PUSH_RECEIVER_HF1>
+                    <NODE_ID_BUTTON_HF1>PUSH_OVHD_RADIO_CALL4</NODE_ID_BUTTON_HF1>
+                    <ANIM_NAME_BUTTON_HF1>PUSH_OVHD_RADIO_CALL4</ANIM_NAME_BUTTON_HF1>
+                    <NODE_ID_BUTTON_SEQ1_HF1>PUSH_OVHD_RADIO_CALL4_SEQ1</NODE_ID_BUTTON_SEQ1_HF1>
+                    <NODE_ID_BUTTON_SEQ2_HF1>PUSH_OVHD_RADIO_CALL4_SEQ2</NODE_ID_BUTTON_SEQ2_HF1>
+
+                    <NODE_ID_RECEIVER_HF2>KNOB_OVHD_RADIO_HF2</NODE_ID_RECEIVER_HF2>
+                    <NODE_ID_LIGHT_RECEIVER_HF2>PUSH_OVHD_RADIO_HF2_EMIS</NODE_ID_LIGHT_RECEIVER_HF2>
+                    <ANIM_NAME_KNOB_RECEIVER_HF2>KNOB_OVHD_RADIO_HF2</ANIM_NAME_KNOB_RECEIVER_HF2>
+                    <ANIM_NAME_PUSH_RECEIVER_HF2>PUSH_OVHD_RADIO_HF2</ANIM_NAME_PUSH_RECEIVER_HF2>
+                    <NODE_ID_BUTTON_HF2>PUSH_OVHD_RADIO_CALL5</NODE_ID_BUTTON_HF2>
+                    <ANIM_NAME_BUTTON_HF2>PUSH_OVHD_RADIO_CALL5</ANIM_NAME_BUTTON_HF2>
+                    <NODE_ID_BUTTON_SEQ1_HF2>PUSH_OVHD_RADIO_CALL5_SEQ1</NODE_ID_BUTTON_SEQ1_HF2>
+                    <NODE_ID_BUTTON_SEQ2_HF2>PUSH_OVHD_RADIO_CALL5_SEQ2</NODE_ID_BUTTON_SEQ2_HF2>
+
+                    <NODE_ID_RECEIVER_MECH>KNOB_OVHD_RADIO_INT</NODE_ID_RECEIVER_MECH>
+                    <NODE_ID_LIGHT_RECEIVER_MECH>PUSH_OVHD_RADIO_INT_EMIS</NODE_ID_LIGHT_RECEIVER_MECH>
+                    <ANIM_NAME_KNOB_RECEIVER_MECH>KNOB_OVHD_RADIO_INT</ANIM_NAME_KNOB_RECEIVER_MECH>
+                    <ANIM_NAME_PUSH_RECEIVER_MECH>PUSH_OVHD_RADIO_INT</ANIM_NAME_PUSH_RECEIVER_MECH>
+                    <NODE_ID_BUTTON_MECH>PUSH_OVHD_RADIO_MECH</NODE_ID_BUTTON_MECH>
+                    <ANIM_NAME_BUTTON_MECH>PUSH_OVHD_RADIO_MECH</ANIM_NAME_BUTTON_MECH>
+                    <NODE_ID_BUTTON_SEQ1_MECH>PUSH_OVHD_RADIO_MECH_SEQ1</NODE_ID_BUTTON_SEQ1_MECH>
+                    <NODE_ID_BUTTON_SEQ2_MECH>PUSH_OVHD_RADIO_MECH_SEQ2</NODE_ID_BUTTON_SEQ2_MECH>
+
+                    <NODE_ID_RECEIVER_ATT>KNOB_OVHD_RADIO_CAB</NODE_ID_RECEIVER_ATT>
+                    <NODE_ID_LIGHT_RECEIVER_ATT>PUSH_OVHD_RADIO_CAB_EMIS</NODE_ID_LIGHT_RECEIVER_ATT>
+                    <ANIM_NAME_KNOB_RECEIVER_ATT>KNOB_OVHD_RADIO_CAB</ANIM_NAME_KNOB_RECEIVER_ATT>
+                    <ANIM_NAME_PUSH_RECEIVER_ATT>PUSH_OVHD_RADIO_CAB</ANIM_NAME_PUSH_RECEIVER_ATT>
+                    <NODE_ID_BUTTON_ATT>PUSH_OVHD_RADIO_ATT</NODE_ID_BUTTON_ATT>
+                    <ANIM_NAME_BUTTON_ATT>PUSH_OVHD_RADIO_ATT</ANIM_NAME_BUTTON_ATT>
+                    <NODE_ID_BUTTON_SEQ1_ATT>PUSH_OVHD_RADIO_ATT_SEQ1</NODE_ID_BUTTON_SEQ1_ATT>
+                    <NODE_ID_BUTTON_SEQ2_ATT>PUSH_OVHD_RADIO_ATT_SEQ2</NODE_ID_BUTTON_SEQ2_ATT>
+
+                    <NODE_ID_RECEIVER_PA>KNOB_OVHD_RADIO_PA</NODE_ID_RECEIVER_PA>
+                    <NODE_ID_LIGHT_RECEIVER_PA>PUSH_OVHD_RADIO_PA1_EMIS</NODE_ID_LIGHT_RECEIVER_PA>
+                    <ANIM_NAME_KNOB_RECEIVER_PA>KNOB_OVHD_RADIO_PA</ANIM_NAME_KNOB_RECEIVER_PA>
+                    <ANIM_NAME_PUSH_RECEIVER_PA>PUSH_OVHD_RADIO_PA1</ANIM_NAME_PUSH_RECEIVER_PA>
+                    <NODE_ID_BUTTON_PA>PUSH_OVHD_RADIO_PA</NODE_ID_BUTTON_PA>
+                    <ANIM_NAME_BUTTON_PA>PUSH_OVHD_RADIO_PA</ANIM_NAME_BUTTON_PA>
+                    <NODE_ID_BUTTON_SEQ1_PA>PUSH_OVHD_RADIO_PA_SEQ1</NODE_ID_BUTTON_SEQ1_PA>
+
+                    <NODE_ID_RECEIVER_VOICE>PUSH_OVHD_RADIO_VOICE</NODE_ID_RECEIVER_VOICE>
+                    <ANIM_NAME_PUSH_RECEIVER_VOICE>PUSH_OVHD_RADIO_VOICE</ANIM_NAME_PUSH_RECEIVER_VOICE>
+                    <NODE_ID_BUTTON_VOICE_SEQ1>PUSH_OVHD_RADIO_VOICE_SEQ1</NODE_ID_BUTTON_VOICE_SEQ1>
+                    <NODE_ID_BUTTON_VOICE_SEQ2>PUSH_OVHD_RADIO_VOICE_SEQ2</NODE_ID_BUTTON_VOICE_SEQ2>
+
+                    <NODE_ID_RECEIVER_RESET>PUSH_OVHD_RADIO_RESET</NODE_ID_RECEIVER_RESET>
+                    <ANIM_NAME_PUSH_RECEIVER_RESET>PUSH_OVHD_RADIO_RESET</ANIM_NAME_PUSH_RECEIVER_RESET>
+                    <NODE_ID_BUTTON_RESET_SEQ2>PUSH_OVHD_RADIO_RESET_SEQ2</NODE_ID_BUTTON_RESET_SEQ2>
+
+                    <NODE_ID_RECEIVER_MKR>KNOB_OVHD_RADIO_MKR</NODE_ID_RECEIVER_MKR>
+                    <NODE_ID_LIGHT_RECEIVER_MKR>PUSH_OVHD_RADIO_MKR_EMIS</NODE_ID_LIGHT_RECEIVER_MKR>
+                    <ANIM_NAME_KNOB_RECEIVER_MKR>KNOB_OVHD_RADIO_MKR</ANIM_NAME_KNOB_RECEIVER_MKR>
+                    <ANIM_NAME_PUSH_RECEIVER_MKR>PUSH_OVHD_RADIO_MKR</ANIM_NAME_PUSH_RECEIVER_MKR>
+
+                    <NODE_ID_RECEIVER_VOR1>KNOB_OVHD_RADIO_VOR1</NODE_ID_RECEIVER_VOR1>
+                    <NODE_ID_LIGHT_RECEIVER_VOR1>PUSH_OVHD_RADIO_VOR1_EMIS</NODE_ID_LIGHT_RECEIVER_VOR1>
+                    <ANIM_NAME_KNOB_RECEIVER_VOR1>KNOB_OVHD_RADIO_VOR1</ANIM_NAME_KNOB_RECEIVER_VOR1>
+                    <ANIM_NAME_PUSH_RECEIVER_VOR1>PUSH_OVHD_RADIO_VOR1</ANIM_NAME_PUSH_RECEIVER_VOR1>
+
+                    <NODE_ID_RECEIVER_VOR2>KNOB_OVHD_RADIO_VOR2</NODE_ID_RECEIVER_VOR2>
+                    <NODE_ID_LIGHT_RECEIVER_VOR2>PUSH_OVHD_RADIO_VOR2_EMIS</NODE_ID_LIGHT_RECEIVER_VOR2>
+                    <ANIM_NAME_KNOB_RECEIVER_VOR2>KNOB_OVHD_RADIO_VOR2</ANIM_NAME_KNOB_RECEIVER_VOR2>
+                    <ANIM_NAME_PUSH_RECEIVER_VOR2>PUSH_OVHD_RADIO_VOR2</ANIM_NAME_PUSH_RECEIVER_VOR2>
+
+                    <NODE_ID_RECEIVER_ILS>KNOB_OVHD_RADIO_ILS</NODE_ID_RECEIVER_ILS>
+                    <NODE_ID_LIGHT_RECEIVER_ILS>PUSH_OVHD_RADIO_ILS_EMIS</NODE_ID_LIGHT_RECEIVER_ILS>
+                    <ANIM_NAME_KNOB_RECEIVER_ILS>KNOB_OVHD_RADIO_ILS</ANIM_NAME_KNOB_RECEIVER_ILS>
+                    <ANIM_NAME_PUSH_RECEIVER_ILS>PUSH_OVHD_RADIO_ILS</ANIM_NAME_PUSH_RECEIVER_ILS>
+
+                    <NODE_ID_RECEIVER_MLS>KNOB_OVHD_RADIO_MLS</NODE_ID_RECEIVER_MLS>
+                    <NODE_ID_LIGHT_RECEIVER_MLS>PUSH_OVHD_RADIO_MLS_EMIS</NODE_ID_LIGHT_RECEIVER_MLS>
+                    <ANIM_NAME_KNOB_RECEIVER_MLS>KNOB_OVHD_RADIO_MLS</ANIM_NAME_KNOB_RECEIVER_MLS>
+                    <ANIM_NAME_PUSH_RECEIVER_MLS>PUSH_OVHD_RADIO_MLS</ANIM_NAME_PUSH_RECEIVER_MLS>
+
+                    <NODE_ID_RECEIVER_ADF1>KNOB_OVHD_RADIO_ADF1</NODE_ID_RECEIVER_ADF1>
+                    <NODE_ID_LIGHT_RECEIVER_ADF1>PUSH_OVHD_RADIO_ADF1_EMIS</NODE_ID_LIGHT_RECEIVER_ADF1>
+                    <ANIM_NAME_KNOB_RECEIVER_ADF1>KNOB_OVHD_RADIO_ADF1</ANIM_NAME_KNOB_RECEIVER_ADF1>
+                    <ANIM_NAME_PUSH_RECEIVER_ADF1>PUSH_OVHD_RADIO_ADF1</ANIM_NAME_PUSH_RECEIVER_ADF1>
+
+                    <NODE_ID_RECEIVER_ADF2>KNOB_OVHD_RADIO_ADF2</NODE_ID_RECEIVER_ADF2>
+                    <NODE_ID_LIGHT_RECEIVER_ADF2>PUSH_OVHD_RADIO_ADF2_EMIS</NODE_ID_LIGHT_RECEIVER_ADF2>
+                    <ANIM_NAME_KNOB_RECEIVER_ADF2>KNOB_OVHD_RADIO_ADF2</ANIM_NAME_KNOB_RECEIVER_ADF2>
+                    <ANIM_NAME_PUSH_RECEIVER_ADF2>PUSH_OVHD_RADIO_ADF2</ANIM_NAME_PUSH_RECEIVER_ADF2>
+
+                    <NODE_ID_SWITCH_INT>SWITCH_OVHD_RADIO_INT</NODE_ID_SWITCH_INT>
                 </UseTemplate>
-                <Component ID="Audio_Panel_Right_Dummies">
-                    <OverrideTemplateParameters>
-                        <POTENTIOMETER>1</POTENTIOMETER>
-                        <POTENTIOMETER_SEQ2>85</POTENTIOMETER_SEQ2>
-                        <SEQ1_EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</SEQ1_EMISSIVE_CODE>
-                        <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
-                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                    </OverrideTemplateParameters>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOR_RESET</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOR_PA</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOR_ATT</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOR_MECH</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOR_CALL4</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOR_CALL5</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                </Component>
-                <Component ID="Audio_Panel_Right_Volume_Dummies">
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_HF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_HF2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_INT_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_CAB_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_PA1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                </Component>
             </Component>
-            <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED -->
-            <!-- ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
-            <Update Once="True">
-                (A:MARKER SOUND, Bool) 1 == {
-                    (&gt;K:MARKER_SOUND_TOGGLE)
-                }
-
-                0 (&gt;K:NAV1_VOLUME_SET)
-                0 (&gt;K:NAV2_VOLUME_SET)
-                0 (&gt;K:NAV3_VOLUME_SET)
-                0 (&gt;K:NAV4_VOLUME_SET)
-
-                0 (&gt;K:ADF_VOLUME_SET)
-                0 (&gt;K:ADF2_VOLUME_SET)
-
-                113000000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_VOR)
-                113000000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_VOR)
-                113000000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_VOR)
-                113000000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_VOR)
-
-                108900000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ILS)
-                108900000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ILS)
-                108900000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ILS)
-                108900000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ILS)
-
-                433000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ADF)
-                433000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ADF)
-                433000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ADF)
-                433000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ADF)
-
-                22 (&gt;L:A32NX_RMP_L_SAVED_COURSE_VOR)
-                202 (&gt;L:A32NX_RMP_L_SAVED_COURSE_ILS)
-                22 (&gt;L:A32NX_RMP_R_SAVED_COURSE_VOR)
-                202 (&gt;L:A32NX_RMP_R_SAVED_COURSE_ILS)
-            </Update>
         </Component>
 
         <Component ID="Airbus_ATC">
@@ -5243,14 +5126,14 @@
                 <ANIM_TEMPLATE>FBW_Airbus_ATC_MSG_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            </UseTemplate>-->
+            </UseTemplate>
             <!-- ATC MSG F/O -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
                 <ANIM_TEMPLATE>FBW_Airbus_ATC_MSG_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            </UseTemplate>-->
+            </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_RIGHT</NODE_ID>
             </UseTemplate>
@@ -5270,78 +5153,6 @@
          -->
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_EFIS_FO_LOUDSPKR</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_PA</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_PA</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_ATT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_CAB</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_MECH</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_INT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_CALL4</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_HF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_CALL5</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_HF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_RESET</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_PA</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_PA</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_ATT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_CAB</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_MECH</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_INT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_CALL4</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_HF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_CALL5</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_HF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>SWITCH_AUDIOL_INT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>SWITCH_AUDIOR_INT</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_RADAR_GAIN</NODE_ID>
@@ -5369,81 +5180,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_VOR1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_VOR2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_MKR</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_ILS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_MLS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_ADF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_ADF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>SWITCH_OVHD_RADIO_INT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_VOICE</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_RESET</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_PA1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_PA</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_VHF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_VHF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_VHF3</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_HF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_HF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_CAB</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_ATT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_MECH</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_CALL5</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_CALL4</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_CALL3</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_CALL2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_RADIO_CALL1</NODE_ID>
             </UseTemplate>
             <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
             <!--                <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>-->

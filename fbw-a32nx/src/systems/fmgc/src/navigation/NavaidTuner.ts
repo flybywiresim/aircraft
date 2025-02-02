@@ -314,9 +314,7 @@ export class NavaidTuner {
     }
 
     // FIXME RMPs should provide a discrete output for this
-    const rmpTuningActive =
-      SimVar.GetSimVarValue('L:A32NX_RMP_L_NAV_BUTTON_SELECTED', 'bool') ||
-      SimVar.GetSimVarValue('L:A32NX_RMP_R_NAV_BUTTON_SELECTED', 'bool');
+    const rmpTuningActive = SimVar.GetSimVarValue('L:A32NX_RMP_NAV_BACKUP_MODE', 'bool');
     const rmpTuningDeActivated = !rmpTuningActive && this.rmpTuningActive;
     this.rmpTuningActive = rmpTuningActive;
 
@@ -482,6 +480,9 @@ export class NavaidTuner {
    */
   private async tuneVorFrequency(index: 1 | 2, frequency: number | null): Promise<unknown> {
     // FIXME tune through RMP (or direct for off-side)
+    // VOR course and frequencies are set in BaseRadioPanels.ts when in nav backup mode
+    // It doesn't overlap with this piece of code because it's disabled when in nav backup mode
+    // See rmpTuningActive variable in this file
     if (!NavRadioUtils.vhfFrequenciesAreEqual(this.lastVorFrequencies[index - 1], frequency)) {
       this.lastVorFrequencies[index - 1] = frequency;
       this.navaidVersion++;
@@ -498,6 +499,9 @@ export class NavaidTuner {
    */
   private async tuneVorCourse(index: 1 | 2, course: number | null): Promise<unknown> {
     // FIXME tune through RMP (or direct for off-side)
+    // VOR course and frequencies are set in BaseRadioPanels.ts when in nav backup mode
+    // It doesn't overlap with this piece of code because it's disabled when in nav backup mode
+    // See rmpTuningActive variable in this file
     if (Math.round(this.lastVorCourses[index - 1]) !== Math.round(course)) {
       this.lastVorCourses[index - 1] = course;
       return Coherent.call('TRIGGER_KEY_EVENT', `VOR${index}_SET`, true, course ?? 0, 0, 0);

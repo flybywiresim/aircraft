@@ -56,7 +56,7 @@ render(
         sim: {
           cones: true,
           msfsFplnSync: true,
-          pilotSeat: false,
+          pilotSeat: true,
           registrationDecal: true,
           wheelChocks: true,
           cabinLighting: false,
