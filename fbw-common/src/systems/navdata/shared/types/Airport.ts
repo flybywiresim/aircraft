@@ -1,5 +1,5 @@
-import { Coordinates, Feet, Metres, NauticalMiles } from 'msfs-geo';
-import { DatabaseItem, Knots, FlightLevel } from './Common';
+import { Feet, Metres, NauticalMiles } from 'msfs-geo';
+import { DatabaseItem, Knots, FlightLevel, ElevatedCoordinates } from './Common';
 import { RunwaySurfaceType } from './Runway';
 import { AirportSubsectionCode, SectionCode } from './SectionCode';
 import { WaypointArea } from './Waypoint';
@@ -14,7 +14,7 @@ export interface Airport extends DatabaseItem<SectionCode.Airport> {
   /**
    * Airport reference location, and elevation
    */
-  location: Coordinates & { alt?: number };
+  location: ElevatedCoordinates;
   /**
    * Speed limit in the airport's terminal area, applicable below the altitude in {@link Airport/speedLimitAltitude}
    */
