@@ -146,6 +146,8 @@
 1. [A380X/PFD] Add FCU ALT ABOVE/BELOW A/C FMA messages - @Pruznak (Pruznak)
 1. [A380X/MFD] Updated disabled input field styling - @jet2code (john)
 1. [A380X/FMS] Add page scroll via soft keys & individual scroll via KCCU on MFD F-PLN - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Added nav database swap confirmation - @tracernz (Mike)
+1. [A380X/FMS] Add basic FIX INFO functionality - @Benjozork (Benjamin Dupont)
 
 ## 0.12.0
 

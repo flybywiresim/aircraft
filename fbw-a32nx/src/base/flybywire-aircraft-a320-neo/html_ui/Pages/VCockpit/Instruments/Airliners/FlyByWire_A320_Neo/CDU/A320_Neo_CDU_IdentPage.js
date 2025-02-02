@@ -17,9 +17,6 @@ const DB_MONTHS = Object.freeze({
     '12': "DEC"
 });
 
-// Honeywell H4+ feature only
-const confirmDataBaseSwitch = false;
-
 function calculateActiveDate(dbIdent) {
     const effDay = dbIdent.effectiveFrom.substring(8);
     const effMonth = dbIdent.effectiveFrom.substring(5, 7);
@@ -27,6 +24,13 @@ function calculateActiveDate(dbIdent) {
     const expMonth = dbIdent.effectiveTo.substring(5, 7);
 
     return `${effDay}${DB_MONTHS[effMonth]}-${expDay}${DB_MONTHS[expMonth]}`;
+}
+
+function calculateSecondDate(dbIdent) {
+    const [effYear, effMonth, effDay] = dbIdent.effectiveFrom.split('-');
+    const [expYear, expMonth, expDay] = dbIdent.effectiveTo.split('-');
+
+    return `${effDay}${DB_MONTHS[effMonth]}${effYear}-${expDay}${DB_MONTHS[expMonth]}${expYear}`;
 }
 
 async function switchDataBase(mcdu) {
@@ -96,40 +100,29 @@ class CDUIdentPage {
         }
 
         const dbCycle = mcdu.getNavDatabaseIdent();
-        const navCycleDates = dbCycle === null ? '' : calculateActiveDate(dbCycle);
+        const activeCycleDates = dbCycle === null ? '' : calculateActiveDate(dbCycle);
+        const secondCycleDates = dbCycle === null ? '' : calculateSecondDate(dbCycle);
         const navSerial = dbCycle === null ? '' : `${dbCycle.provider.substring(0, 2).toUpperCase()}${dbCycle.airacCycle}0001`;
 
-        // H4+ only confirm prompt
-        if (confirmDataBaseSwitch) {
-            secondaryDBTopLine =
-                confirmType === ConfirmType.SwitchDataBase
-                    ? `{amber}{small}\xa0${navCycleDates}{end}`
-                    : "\xa0SECOND\xa0NAV\xa0DATA\xa0BASE";
-            secondaryDBSubLine =
-                confirmType === ConfirmType.SwitchDataBase
-                    ? "{amber}{CANCEL\xa0\xa0\xa0\xa0SWAP\xa0CONFIRM*{end}"
-                    : `{small}{cyan}{${navCycleDates}{end}{end}`;
-        } else {
-            secondaryDBTopLine = "\xa0SECOND\xa0NAV\xa0DATA\xa0BASE";
-            secondaryDBSubLine =
-                `{small}{cyan}{${navCycleDates}{end}{end}`;
-        }
+        // H4+ only confirm prompt + year on second dates
+        secondaryDBTopLine =
+            confirmType === ConfirmType.SwitchDataBase
+                ? `{amber}{small}\xa0${secondCycleDates}{end}`
+                : "\xa0SECOND\xa0NAV\xa0DATA\xa0BASE";
+        secondaryDBSubLine =
+            confirmType === ConfirmType.SwitchDataBase
+                ? "{amber}{CANCEL\xa0\xa0\xa0SWAP\xa0\xa0CONFIRM*{end}"
+                : `{small}{cyan}{${secondCycleDates}{end}{end}`;
 
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[2] = () => {
-            if (confirmDataBaseSwitch) {
-                if (confirmType === ConfirmType.SwitchDataBase) {
-                    CDUIdentPage.ShowPage(mcdu);
-                } else {
-                    CDUIdentPage.ShowPage(mcdu, ConfirmType.SwitchDataBase);
-                }
+            if (confirmType === ConfirmType.SwitchDataBase) {
+                CDUIdentPage.ShowPage(mcdu);
             } else {
-                switchDataBase(mcdu).then(() => {
-                    CDUIdentPage.ShowPage(mcdu);
-                });
+                CDUIdentPage.ShowPage(mcdu, ConfirmType.SwitchDataBase);
             }
         };
 
@@ -146,12 +139,12 @@ class CDUIdentPage {
         };
 
         mcdu.setTemplate([
-            ["A320-200"], //This aircraft code is correct and does not include the engine type.
+            ["A320-200\xa0\xa0\xa0\xa0"], //This aircraft code is correct and does not include the engine type.
             ["\xa0ENG"],
             ["LEAP-1A26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
             [
-                `{cyan}\xa0${navCycleDates}{end}`,
+                `{cyan}\xa0${activeCycleDates}{end}`,
                 `{green}${navSerial}{end}`,
             ],
             [secondaryDBTopLine],
@@ -159,9 +152,9 @@ class CDUIdentPage {
             ["", storedTitleCell],
             ["", storedRoutesRunwaysCell],
             ["CHG CODE", storedWaypointsNavaidsCell],
-            ["{small}[  ]{end}[color]inop", storedDeleteCell],
-            ["IDLE/PERF", "SOFTWARE"],
-            ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"],
+            ["[\xa0][color]inop", storedDeleteCell],
+            ["IDLE/PERF", "SOFTWARE\xa0\xa0"],
+            ["{small}{green}+0.0/+0.0{end}{end}", "STATUS/XLOAD>[color]inop"],
         ]);
     }
 }

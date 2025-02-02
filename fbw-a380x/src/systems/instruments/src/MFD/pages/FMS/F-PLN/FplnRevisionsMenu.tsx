@@ -4,6 +4,8 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightPlanIndex } from '@fmgc/index';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
 import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
+import { BitFlags } from '@microsoft/msfs-sdk';
+import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
@@ -27,6 +29,13 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
   const previousLeg = fpln.loadedFlightPlan?.maybeElementAt(legIndex - 1);
   const revisedLeg = fpln.loadedFlightPlan?.elementAt(legIndex);
 
+  const isFromLeg = legIndex === fpln.loadedFlightPlan?.fromLegIndex;
+  const isLegTerminatingAtDatabaseFix =
+    revisedLeg &&
+    !revisedLeg.isDiscontinuity &&
+    revisedLeg.isXF() &&
+    !BitFlags.isAny(revisedLeg.flags, FlightPlanLegFlags.DirectToTurningPoint);
+
   return [
     {
       name: 'FROM P.POS DIR TO',
@@ -35,8 +44,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         legIndex >= (fpln.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity) ||
         planIndex === FlightPlanIndex.Temporary ||
         [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
-        revisedLeg?.isDiscontinuity ||
-        !revisedLeg?.isXF(),
+        isFromLeg ||
+        !isLegTerminatingAtDatabaseFix,
       onPressed: () => {
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
         if (ppos) {
@@ -63,6 +72,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       disabled:
         [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
         (revisedLeg?.isDiscontinuity && !previousLeg?.isDiscontinuity && previousLeg?.isVectors()) ||
+        isFromLeg || // TODO allow in HDG/TRK
         planIndex === FlightPlanIndex.Temporary,
       onPressed: () => {
         fpln.props.fmcService.master?.flightPlanService.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
@@ -88,7 +98,10 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     },
     {
       name: 'HOLD',
-      disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+      disabled:
+        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
+        isFromLeg ||
+        !isLegTerminatingAtDatabaseFix,
       onPressed: async () => {
         if (revisedLeg && !revisedLeg.isDiscontinuity && !revisedLeg.isHX()) {
           const alt = revisedLeg.definition.altitude1
@@ -130,9 +143,10 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         [
           FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath,
         ].includes(type) ||
-        revisedLeg?.isDiscontinuity ||
-        revisedLeg?.waypointDescriptor === WaypointDescriptor.Airport ||
-        revisedLeg?.waypointDescriptor === WaypointDescriptor.Runway,
+        isFromLeg ||
+        !isLegTerminatingAtDatabaseFix ||
+        revisedLeg.waypointDescriptor === WaypointDescriptor.Airport ||
+        revisedLeg.waypointDescriptor === WaypointDescriptor.Runway,
       onPressed: () => {
         fpln.props.fmcService.master?.flightPlanService.startAirwayEntry(legIndex);
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-airways`);
@@ -147,13 +161,16 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
           ? 'DELETE OVERFLY *'
           : 'OVERFLY *',
       disabled:
-        altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        altnFlightPlan ||
+        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
+        isFromLeg ||
+        !isLegTerminatingAtDatabaseFix,
       onPressed: () =>
         fpln.props.fmcService.master?.flightPlanService.toggleOverfly(legIndex, planIndex, altnFlightPlan),
     },
     {
       name: 'ENABLE ALTN *',
-      disabled: false,
+      disabled: !revisedLeg || revisedLeg.isDiscontinuity,
       onPressed: () => {
         fpln.props.fmcService.master?.flightPlanService.enableAltn(legIndex, planIndex);
         fpln.props.fmcService.master?.acInterface.updateOansAirports();
@@ -161,13 +178,15 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     },
     {
       name: 'NEW DEST',
-      disabled: false,
+      disabled: isFromLeg || !isLegTerminatingAtDatabaseFix,
       onPressed: () => fpln.openNewDestWindow(),
     },
     {
       name: 'CONSTRAINTS',
       disabled:
-        altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        altnFlightPlan ||
+        !isLegTerminatingAtDatabaseFix ||
+        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
@@ -187,7 +206,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     {
       name: 'STEP ALTs',
       disabled:
-        altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        altnFlightPlan ||
+        !isLegTerminatingAtDatabaseFix ||
+        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/step-alts`,

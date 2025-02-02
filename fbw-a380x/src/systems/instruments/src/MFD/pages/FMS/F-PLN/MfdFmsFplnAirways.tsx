@@ -15,7 +15,7 @@ import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Fix } from '@flybywiresim/fbw-sdk';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {}
 
@@ -169,7 +169,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
 
 interface AirwayLineProps extends ComponentProps {
   fmc: FmcInterface;
-  mfd: DisplayInterface & MfdDisplayInterface;
+  mfd: FmsDisplayInterface & MfdDisplayInterface;
   pendingAirways: PendingAirways;
   fromFix: Fix;
   isFirstLine: boolean;
