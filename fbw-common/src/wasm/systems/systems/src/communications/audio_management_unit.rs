@@ -379,7 +379,7 @@ impl AdaptationBoard {
     }
 
     pub fn send_amu_word(bus_acp: &mut Vec<Arinc429Word<u32>>, transmission_table: &u32) {
-        let mut word_arinc: Arinc429Word<u32> = Arinc429Word::new(0, SignStatus::NormalOperation);
+        let mut word_arinc = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word_arinc.set_bits(
             1,
