@@ -5,8 +5,8 @@ use crate::{
         ElectricalBusType, ElectricalBuses,
     },
     simulation::{
-        InitContext, Read, SideControlling, SimulationElement, SimulationElementVisitor,
-        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        InitContext, Read, Reader, SideControlling, SimulationElement, SimulationElementVisitor,
+        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 use std::time::Duration;
@@ -174,7 +174,7 @@ impl Default for MixedAudio {
     }
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, Copy, PartialEq, Eq, Clone)]
 pub enum AudioSwitchingKnobPosition {
     Captain,
     #[default]
@@ -568,7 +568,7 @@ pub struct Computer {
 }
 
 impl Computer {
-    pub fn new_cpt_and_avncs(context: &mut InitContext) -> Self {
+    fn new_cpt_and_avncs(context: &mut InitContext) -> Self {
         Self {
             audio_card: AudioCard::new(context, 1),
             // Not used for now
@@ -577,7 +577,7 @@ impl Computer {
         }
     }
 
-    pub fn new_fo_and_ovhd(context: &mut InitContext) -> Self {
+    fn new_fo_and_ovhd(context: &mut InitContext) -> Self {
         Self {
             audio_card: AudioCard::new(context, 2),
             // Not used for now
