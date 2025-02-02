@@ -38,10 +38,7 @@ impl From<u32> for TransmitID {
             6 => TransmitID::Mech,
             7 => TransmitID::Cab,
             8 => TransmitID::Pa,
-            i => {
-                println!("Unknow Transmit ID {}", i);
-                panic!();
-            }
+            i => panic!("Unknown Transmit ID {i}"),
         }
     }
 }
