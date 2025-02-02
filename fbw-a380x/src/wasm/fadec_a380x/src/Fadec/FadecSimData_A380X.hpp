@@ -147,6 +147,7 @@ class FadecSimData_A380X {
     FLOAT64 engineStarter[4];        // 0 or 1
     FLOAT64 simEngineN1[4];          // in Percent
     FLOAT64 simEngineN2[4];          // in Percent
+    FLOAT64 simEngineThrust[4];      // in Pounds
   };
   DataDefinitionVector simVarsDataDef = {
       {"ANIMATION DELTA TIME",         0, UNITS.Seconds  }, //
@@ -175,6 +176,10 @@ class FadecSimData_A380X {
       {"TURB ENG N2",                  2, UNITS.Percent  }, //
       {"TURB ENG N2",                  3, UNITS.Percent  }, //
       {"TURB ENG N2",                  4, UNITS.Percent  }, //
+      {"TURB ENG JET THRUST",          1, UNITS.Pounds   }, //
+      {"TURB ENG JET THRUST",          2, UNITS.Pounds   }, //
+      {"TURB ENG JET THRUST",          3, UNITS.Pounds   }, //
+      {"TURB ENG JET THRUST",          4, UNITS.Pounds   }, //
   };
   DataDefinitionVariablePtr<SimVarsData> simVarsDataPtr;
 

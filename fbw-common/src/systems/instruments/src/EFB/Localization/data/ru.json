@@ -631,6 +631,7 @@
     "Real": "Реалистично",
     "Realism": {
       "AdirsAlignTime": "Время калибровки ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Автозаполнение контрольных списков",
       "BoardingTime": "Скорость посадки",
       "DmcSelfTestTime": "Время самотестирования DMC",

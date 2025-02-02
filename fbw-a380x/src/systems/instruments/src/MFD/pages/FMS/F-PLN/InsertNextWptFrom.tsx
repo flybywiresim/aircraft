@@ -9,13 +9,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import '../../common/style.scss';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FlightPlanIndex } from '@fmgc/index';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmsError } from '@fmgc/FmsError';
 
@@ -25,7 +25,7 @@ export type NextWptInfo = {
 };
 interface InsertNextWptFromWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
-  mfd: DisplayInterface & MfdDisplayInterface;
+  mfd: FmsDisplayInterface & MfdDisplayInterface;
   availableWaypoints: SubscribableArray<NextWptInfo>;
   visible: Subject<boolean>;
   contentContainerStyle?: string;
