@@ -4263,6 +4263,11 @@ export class FwsCore {
         this.presentedAbnormalProceduresList.delete(key);
       }
     });
+    this.clearedAbnormalProceduresList.get().forEach((_, key) => {
+      if (!allFailureKeys.includes(key)) {
+        this.clearedAbnormalProceduresList.delete(key);
+      }
+    });
 
     this.auralCrcKeys = auralCrcKeys;
     this.auralScKeys = auralScKeys;
