@@ -135,24 +135,11 @@ impl Morse {
     }
 
     // From unpack function in file simvar.ts
-    fn unpack(&self, value: usize) -> String {
-        let mut unpacked: String = "".to_owned();
-
-        let mut i: usize = 0;
-        while i < 8 {
-            // pow to returns 0 in the game if big number
-            let power = pow(2, (i % 8) * 6);
-            if power > 0 {
-                let code: usize = (value / power) & 0x3f;
-                if code > 0 {
-                    unpacked.push(char::from_u32((code + 31) as u32).unwrap());
-                }
-            }
-
-            i += 1;
-        }
-
-        unpacked
+    fn unpack(&self, value: usize) -> impl DoubleEndedIterator<Item = char> {
+        (0..8).filter_map(move |i| {
+            let code = (value >> i * 6) & 0x3f;
+            (code > 0).then(|| char::from_u32((code + 31) as u32).unwrap_or(' '))
+        })
     }
 
     fn convert_ident_to_morse(&mut self) -> String {
