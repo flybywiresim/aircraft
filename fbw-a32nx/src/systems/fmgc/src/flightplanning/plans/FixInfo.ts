@@ -30,20 +30,16 @@ export class FixInfoEntry implements FixInfoData {
    * @param radials The radials contained in the fix info.
    */
   constructor(
-    public readonly fix: Fix,
-    public readonly radii?: FixInfoRadius[],
-    public readonly radials?: FixInfoRadial[],
-  ) {
-    this.fix = fix;
-    this.radii = radii;
-    this.radials = radials;
-  }
+    public fix: Fix,
+    public radii?: FixInfoRadius[],
+    public radials?: FixInfoRadial[],
+  ) {}
 
   public clone(): FixInfoEntry {
     return new FixInfoEntry(
       this.fix,
-      this.radii.map((radius) => ({ ...radius })),
-      this.radials.map((radial) => ({ ...radial })),
+      this.radii?.map((radius) => ({ ...radius })),
+      this.radials?.map((radial) => ({ ...radial })),
     );
   }
 }

@@ -77,13 +77,13 @@ export class CDUFixInfoPage {
       template[3] = ['\xa0RADIAL\xa0\xa0TIME\xa0\xa0DTG\xa0\xa0ALT'];
 
       for (let i = 0; i <= 1; i++) {
-        const radial = fixInfo.radials[i];
+        const radial = fixInfo.radials?.[i];
 
         if (radial !== undefined) {
           template[4 + i * 2] = [
             `\xa0{cyan}${('' + radial.magneticBearing).padStart(3, '0')}°{end}\xa0\xa0\xa0\xa0----\xa0----\xa0----`,
           ];
-        } else if (i === 0 || fixInfo.radials[0] !== undefined) {
+        } else if (i === 0 || fixInfo.radials?.[0] !== undefined) {
           template[4 + i * 2] = [`\xa0{cyan}[\xa0]°{end}\xa0\xa0\xa0\xa0----\xa0----\xa0----`];
         }
 
@@ -106,6 +106,9 @@ export class CDUFixInfoPage {
 
             if (degrees <= 360) {
               mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
+                if (!fixInfo.radials) {
+                  fixInfo.radials = [];
+                }
                 fixInfo.radials[i] = {
                   magneticBearing: degrees,
                   trueBearing: A32NX_Util.magneticToTrue(degrees, A32NX_Util.getRadialMagVar(fixInfo.fix)),
@@ -132,7 +135,7 @@ export class CDUFixInfoPage {
       }
 
       template[7] = ['\xa0RADIUS'];
-      if (fixInfo.radii[0] !== undefined) {
+      if (fixInfo.radii?.[0] !== undefined) {
         template[8] = [
           `\xa0{cyan}${('' + fixInfo.radii[0].radius).padStart(3, '\xa0')}{small}NM{end}{end}\xa0\xa0\xa0----\xa0----\xa0----`,
         ];
@@ -142,7 +145,7 @@ export class CDUFixInfoPage {
 
       mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
         if (value === Keypad.clrValue) {
-          if (fixInfo.radii[0] !== undefined) {
+          if (fixInfo.radii?.[0] !== undefined) {
             mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
               fixInfo.radii.length = 0;
               return fixInfo;
@@ -157,7 +160,10 @@ export class CDUFixInfoPage {
           const radius = parseInt(value);
           if (radius >= 1 && radius <= 256) {
             mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
-              if (fixInfo.radii[0]) {
+              if (!fixInfo.radii) {
+                fixInfo.radii = [];
+              }
+              if (fixInfo.radii?.[0]) {
                 fixInfo.radii[0].radius = radius;
               } else {
                 fixInfo.radii[0] = { radius };
@@ -170,7 +176,7 @@ export class CDUFixInfoPage {
             mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             scratchpadCallback();
           }
-        } else if (value === '' && fixInfo.radii[0] !== undefined) {
+        } else if (value === '' && fixInfo.radii?.[0] !== undefined) {
           mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
 
           scratchpadCallback();
