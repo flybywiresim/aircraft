@@ -181,6 +181,16 @@ pub enum AudioSwitchingKnobPosition {
     Norm,
     Fo,
 }
+read_write_enum!(AudioSwitchingKnobPosition);
+impl From<f64> for AudioSwitchingKnobPosition {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => Self::Captain,
+            2 => Self::Fo,
+            _ => Self::Norm,
+        }
+    }
+}
 
 pub struct AudioManagementUnit {
     adaptation_board: AdaptationBoard,
@@ -504,13 +514,8 @@ impl SimulationElement for AdaptationBoard {
         let ls_fcu1_pressed = reader.read(&self.ls_fcu1_pressed_id);
         let ls_fcu2_pressed = reader.read(&self.ls_fcu2_pressed_id);
 
-        let audio_switching_knob = match reader.read(&self.audio_switching_knob_id) {
-            0 => AudioSwitchingKnobPosition::Captain,
-            2 => AudioSwitchingKnobPosition::Fo,
-            _ => AudioSwitchingKnobPosition::Norm,
-        };
+        self.audio_switching_knob = reader.read(&self.audio_switching_knob_id);
 
-        self.audio_switching_knob = audio_switching_knob;
         self.ls_fcu1_pressed = ls_fcu1_pressed;
         self.ls_fcu2_pressed = ls_fcu2_pressed;
     }
