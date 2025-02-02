@@ -12,7 +12,6 @@ import {
   MappedSubject,
   Subject,
 } from '@microsoft/msfs-sdk';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A320_Neo_CDU_MainDisplay } from './legacy/A320_Neo_CDU_MainDisplay';
 
 import './mcdu.scss';
@@ -27,8 +26,6 @@ export class McduFsInstrument implements FsInstrument {
   private readonly backplane = new InstrumentBackplane();
   private readonly clock = new Clock(this.bus);
   private readonly hEventPublisher = new HEventPublisher(this.bus);
-
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
   //private readonly isFailedKey = A320Failure.Mcdu1;
   private readonly isFailed = Subject.create(false);
@@ -73,9 +70,6 @@ export class McduFsInstrument implements FsInstrument {
 
   /** @inheritdoc */
   public Update(): void {
-    this.failuresConsumer.update();
-    // this.isFailed.set(this.failuresConsumer.isActive(this.isFailedKey));;
-
     this.backplane.onUpdate();
 
     // TODO deltaTime
@@ -115,8 +109,6 @@ export class McduFsInstrument implements FsInstrument {
 
   /** Init instrument. */
   private doInit(): void {
-    // this.failuresConsumer.register(this.isFailedKey);
-
     MappedSubject.create(this.isPowered, this.isFailed).sub(([isPowered, isFailed]) => {
       if (isPowered && !isFailed) {
         this.initTimer.schedule(() => this.isOperating.set(true), McduFsInstrument.INIT_DURATION);
