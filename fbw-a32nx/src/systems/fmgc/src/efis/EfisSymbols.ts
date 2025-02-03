@@ -41,7 +41,6 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { NavModeIntercept } from '@fmgc/guidance/PreNavModeEngagementPath';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -78,8 +77,6 @@ export class EfisSymbols<T extends number> {
   private lastVnavDriverVersion: number = -1;
 
   private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
-
-  private lastIntercept: NavModeIntercept | null = null;
 
   private mapReferenceLatitude: Record<EfisSide, Arinc429OutputWord> = {
     L: new Arinc429OutputWord('L:A32NX_EFIS_L_MRP_LAT'),
@@ -191,12 +188,6 @@ export class EfisSymbols<T extends number> {
     this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
 
     const intercept = this.guidanceController.getPreNavModeEngagementPathIntercept();
-    const interceptChanged =
-      (this.lastIntercept === null) !== (intercept === null) ||
-      (this.lastIntercept !== null &&
-        intercept === null &&
-        distanceTo(this.lastIntercept?.location, intercept?.location) > 1);
-    this.lastIntercept = intercept;
 
     const hasSuitableRunway = (airport: Airport): boolean =>
       airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
@@ -226,8 +217,7 @@ export class EfisSymbols<T extends number> {
         !fpChanged &&
         !navaidsChanged &&
         !vnavPredictionsChanged &&
-        !efisInterfaceChanged &&
-        !interceptChanged
+        !efisInterfaceChanged
       ) {
         continue;
       }
