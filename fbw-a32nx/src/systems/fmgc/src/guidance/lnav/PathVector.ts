@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { arcLength, getIntermediatePoint, pointOnArc, pointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
-import { bearingTo, distanceTo } from 'msfs-geo';
+import { arcLength, getIntermediatePoint, pointOnArc } from '@fmgc/guidance/lnav/CommonGeometry';
+import { distanceTo } from 'msfs-geo';
 
 export enum PathVectorType {
   Line,
