@@ -1917,7 +1917,6 @@ export class FwsCore {
     // Acquire discrete inputs at a higher frequency, buffer them until the next FWS cycle.
     // T.O CONFIG button
     if (SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') && !this.fwsEcpFailed.get()) {
-      console.log('TO CONFIG');
       this.toConfigInputBuffer.write(true, false);
     }
 
@@ -4345,11 +4344,17 @@ export class FwsCore {
       (a, b) => this.messagePriority(EcamMemos[a]) - this.messagePriority(EcamMemos[b]),
     );
 
-    if (allFailureKeys.length === 0) {
+    // Reset master caution light if appropriate
+    if (allFailureKeys.filter((key) => this.ewdAbnormal[key].failure === 2).length === 0) {
       this.requestMasterCautionFromFaults = false;
-      if (this.nonCancellableWarningCount === 0) {
-        this.requestMasterWarningFromFaults = false;
-      }
+    }
+
+    // Reset master warning light if appropriate
+    if (
+      allFailureKeys.filter((key) => this.ewdAbnormal[key].failure === 3).length === 0 &&
+      this.nonCancellableWarningCount === 0
+    ) {
+      this.requestMasterWarningFromFaults = false;
     }
 
     this.masterCaution.set(
