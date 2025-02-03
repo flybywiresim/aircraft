@@ -304,6 +304,9 @@ export class FwsCore {
 
   public readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
 
+  public readonly approachAutoDisplayQnhSetPulseNode = new NXLogicPulseNode(true);
+  public readonly approachAutoDisplaySlatsExtendedPulseNode = new NXLogicPulseNode(true);
+
   /* MISC STUFF */
 
   public readonly airKnob = Subject.create(0);
@@ -4433,6 +4436,12 @@ export class FwsCore {
     const sdStsShown = SimVar.GetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Number) === 14;
     this.ecamEwdShowStsIndication.set(!this.ecamStsNormal.get() && !sdStsShown);
 
+    this.approachAutoDisplayQnhSetPulseNode.write(
+      Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD',
+      deltaTime,
+    );
+    this.approachAutoDisplaySlatsExtendedPulseNode.write(this.flapsHandle.get() > 0, deltaTime);
+
     const chimeRequested =
       (this.auralSingleChimePending || this.requestSingleChimeFromAThrOff) && !this.auralCrcActive.get();
     if (chimeRequested && !this.auralSingleChimeInhibitTimer.isPending()) {
@@ -4446,7 +4455,7 @@ export class FwsCore {
       );
     }
 
-    this.normalChecklists.update(deltaTime);
+    this.normalChecklists.update();
     this.abnormalSensed.update();
     this.abnormalNonSensed.update();
     this.updateRowRopWarnings();

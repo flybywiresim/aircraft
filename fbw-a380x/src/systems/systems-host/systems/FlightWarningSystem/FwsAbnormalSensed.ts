@@ -236,6 +236,21 @@ export class FwsAbnormalSensed {
     this.showFromLine.set(Math.max(0, this.activeProcedure.numLinesUntilSelected() - WD_NUM_LINES + 2));
   }
 
+  private checkIfStsAutoDisplay() {
+    const approachCondition =
+      this.fws.presentedAbnormalProceduresList.get().size === 0 &&
+      this.fws.flightPhase.get() === 8 &&
+      this.fws.adrPressureAltitude.get() < 20_000 &&
+      !this.fws.ecamStsNormal.get();
+    const triggerAutoDisplay =
+      this.fws.approachAutoDisplayQnhSetPulseNode.read() || this.fws.approachAutoDisplaySlatsExtendedPulseNode.read();
+
+    if (approachCondition && triggerAutoDisplay) {
+      // Call STS page on SD
+      SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
+    }
+  }
+
   /**
    * The majority of ECAM fault logic is still inside FwsCore (due to dependencies to MEMOs, and general flow)
    * This block deals mostly with the pilot interaction through the ECAM CP and transmission to the CDS/EWD
@@ -246,6 +261,8 @@ export class FwsAbnormalSensed {
     } else {
       this.showAbnormalSensedRequested.set(false);
     }
+
+    this.checkIfStsAutoDisplay();
 
     if (!this.abnormalShown.get()) {
       return;

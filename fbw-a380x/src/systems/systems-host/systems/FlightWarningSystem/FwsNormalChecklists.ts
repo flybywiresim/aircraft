@@ -27,7 +27,6 @@ import {
   ProcedureType,
   SPECIAL_INDEX_DEFERRED_PAGE_CLEAR,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
-import { NXLogicPulseNode } from '@flybywiresim/fbw-sdk';
 
 export interface NormalEclSensedItems {
   /** Returns a boolean vector (same length as number of items). If true, item is marked as completed. If null, it's a non-sensed item */
@@ -70,8 +69,6 @@ export class FwsNormalChecklists {
   public visibleDeferredProcedureKeys: string[] = [];
 
   private deferredProcedures: ProcedureLinesGenerator[] = [];
-
-  private readonly deferredAutoDisplayPulseNode = new NXLogicPulseNode(true);
 
   private activeProcedure: ProcedureLinesGenerator;
 
@@ -361,24 +358,23 @@ export class FwsNormalChecklists {
     this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));
   }
 
-  private checkIfDeferredAutoDisplay(deltaTime: number) {
-    this.deferredAutoDisplayPulseNode.write(
+  private checkIfDeferredAutoDisplay() {
+    const approachCondition =
       this.fws.presentedAbnormalProceduresList.get().size === 0 &&
-        this.fws.flightPhase.get() === 8 &&
-        this.fws.adrPressureAltitude.get() < 20_000 &&
-        (this.fws.slatsAngle.get() > 0 || Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD') &&
-        this.hasDeferred.some((v) => v) &&
-        this.deferredIsCompleted.some((v) => !v),
-      deltaTime,
-    );
+      this.fws.flightPhase.get() === 8 &&
+      this.fws.adrPressureAltitude.get() < 20_000 &&
+      this.hasDeferred.some((v) => v) &&
+      this.deferredIsCompleted.some((v) => !v);
+    const triggerAutoDisplay =
+      this.fws.approachAutoDisplayQnhSetPulseNode.read() || this.fws.approachAutoDisplaySlatsExtendedPulseNode.read();
 
-    if (this.deferredAutoDisplayPulseNode.read() && !this.showChecklistRequested.get()) {
+    if (approachCondition && triggerAutoDisplay && !this.showChecklistRequested.get()) {
       this.showChecklistRequested.set(true);
       this.navigateToChecklist(0);
     }
   }
 
-  update(deltaTime: number) {
+  update() {
     if (this.fws.clPulseNode.read()) {
       this.navigateToChecklist(0);
       this.showChecklistRequested.set(!this.showChecklistRequested.get());
@@ -418,7 +414,7 @@ export class FwsNormalChecklists {
       }
     });
 
-    this.checkIfDeferredAutoDisplay(deltaTime);
+    this.checkIfDeferredAutoDisplay();
 
     if (!this.checklistShown.get()) {
       return;
