@@ -7,7 +7,7 @@ import { Coordinates, DegreesMagnetic } from 'msfs-geo';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 
-export interface DataInterface {
+export interface FmsDataInterface {
   createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): PilotWaypoint;
 
   createPlaceBearingPlaceBearingWaypoint(

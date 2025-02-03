@@ -574,12 +574,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   }
 
   public openInsertNextWptFromWindow() {
-    const flightPlan = this.props.fmcService.master?.revisedWaypointIsAltn.get()
+    const flightPlan = this.props.fmcService.master?.revisedLegIsAltn.get()
       ? this.loadedFlightPlan?.alternateFlightPlan
       : this.loadedFlightPlan;
     const wpt: NextWptInfo[] = flightPlan?.allLegs
       .map((el, idx) => {
-        const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+        const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
         if (el instanceof FlightPlanLeg && el.isXF() && revWptIdx && idx >= revWptIdx + 1) {
           return { ident: el.ident, originalLegIndex: idx };
         }
@@ -981,13 +981,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               componentIfFalse={<></>}
             />
             <Button
-              disabled={Subject.create(true)}
+              disabled={false}
               label="F-PLN INFO"
               onClick={() => {}}
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-infoBtn`}
               menuItems={Subject.create([
                 {
                   label: 'ALTERNATE',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-alternate`,
@@ -995,6 +996,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'CLOSEST AIRPORTS',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-closest-airports`,
@@ -1002,6 +1004,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'EQUI-TIME POINT',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-equi-time-point`,
@@ -1016,6 +1019,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'LL CROSSING',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-ll-xing-time-mkr`,
@@ -1023,6 +1027,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'TIME MARKER',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-ll-xing-time-mkr`,
@@ -1030,9 +1035,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'CPNY F-PLN REPORT',
+                  disabled: true,
                   action: () => {},
                 },
-              ])}
+              ] as ButtonMenuItem[])}
             />
             <Button
               label="DIR TO"

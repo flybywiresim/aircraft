@@ -25,11 +25,12 @@ import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
 import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls';
+import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
 import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataAirport';
 import { MfdFmsFplnOffset } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnOffset';
@@ -37,7 +38,7 @@ import { MfdFmsFplnOffset } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln
 export function pageForUrl(
   url: string,
   bus: EventBus,
-  mfd: DisplayInterface & MfdDisplayInterface,
+  mfd: FmsDisplayInterface & MfdDisplayInterface,
   fmcService: FmcServiceInterface,
 ): VNode {
   switch (url) {
@@ -93,6 +94,8 @@ export function pageForUrl(
     case 'fms/sec2/f-pln-offset':
     case 'fms/sec3/f-pln-offset':
       return <MfdFmsFplnOffset pageTitle="F-PLN/OFFSET" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fms/active/f-pln-fix-info':
+      return <MfdFmsFplnFixInfo pageTitle="F-PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/irs':
       return <MfdFmsPositionIrs pageTitle="IRS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/navaids':
@@ -121,7 +124,7 @@ export function pageForUrl(
 
 export function headerForSystem(
   sys: string,
-  mfd: DisplayInterface & MfdDisplayInterface,
+  mfd: FmsDisplayInterface & MfdDisplayInterface,
   atcCallsign: Subscribable<string | null>,
   activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>,
   uiService: MfdUiService,
