@@ -341,6 +341,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.stepAltsLineVisibility[i].set('hidden');
       }
 
+      if (this.stepAltsNumberOfCruiseSteps.get() !== cruiseSteps.length) {
+        this.forceRebuildList = true;
+      }
+
       this.stepAltsNumberOfCruiseSteps.set(cruiseSteps.length);
       this.stepAltsScrollUpDisabled.set(this.stepAltsStartAtStepIndex.get() === 0);
       this.stepAltsScrollDownDisabled.set(cruiseSteps.length - this.stepAltsStartAtStepIndex.get() <= 4);
