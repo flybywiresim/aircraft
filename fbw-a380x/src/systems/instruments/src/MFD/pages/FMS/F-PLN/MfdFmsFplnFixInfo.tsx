@@ -12,6 +12,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { A32NX_Util } from '../../../../../../shared/src/A32NX_Util';
 import { Footer } from '../../common/Footer';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';

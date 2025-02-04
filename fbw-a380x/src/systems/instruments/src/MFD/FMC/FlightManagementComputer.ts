@@ -69,7 +69,7 @@ export interface FmsErrorMessage {
  * Handles navigation (and potentially other aspects) for MFD pages
  */
 export class FlightManagementComputer implements FmcInterface {
-  protected subs = [] as Subscription[];
+  protected readonly subs = [] as Subscription[];
 
   #mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null;
 
@@ -251,13 +251,12 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
 
-      this.shouldBePreflightPhase.sub((shouldBePreflight) => {
-        if (shouldBePreflight) {
-          this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
-        }
-      }, true);
-
       this.subs.push(
+        this.shouldBePreflightPhase.sub((shouldBePreflight) => {
+          if (shouldBePreflight) {
+            this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
+          }
+        }, true),
         this.enginesWereStarted.sub((val) => {
           if (
             val &&
@@ -274,6 +273,8 @@ export class FlightManagementComputer implements FmcInterface {
           SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', v);
         }, true),
       );
+
+      this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
     }
 
     let lastUpdateTime = Date.now();
@@ -287,6 +288,12 @@ export class FlightManagementComputer implements FmcInterface {
     }, 100);
 
     console.log(`${FmcIndex[this.instance]} initialized.`);
+  }
+
+  destroy() {
+    for (const s of this.subs) {
+      s.destroy();
+    }
   }
 
   public revisedWaypoint(): Fix | undefined {

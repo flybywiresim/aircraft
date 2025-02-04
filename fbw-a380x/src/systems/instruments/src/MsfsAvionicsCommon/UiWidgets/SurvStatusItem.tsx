@@ -17,7 +17,7 @@ export interface SurvStatusItemProps extends ComponentProps {
  */
 export class SurvStatusItem extends DisplayComponent<SurvStatusItemProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

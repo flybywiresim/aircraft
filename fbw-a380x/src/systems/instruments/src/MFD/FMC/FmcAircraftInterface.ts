@@ -1,7 +1,15 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
+import {
+  ConsumerValue,
+  EventBus,
+  GameStateProvider,
+  SimVarValueType,
+  Subject,
+  Subscription,
+  UnitType,
+} from '@microsoft/msfs-sdk';
 import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -24,6 +32,8 @@ import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpl
  * Essentially part of the FMC (-A/-B/-C)
  */
 export class FmcAircraftInterface {
+  private readonly subs = [] as Subscription[];
+
   private gameState = GameStateProvider.get();
   // ARINC words
   // arinc bus output words
@@ -128,44 +138,64 @@ export class FmcAircraftInterface {
     this.init();
   }
 
+  destroy() {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+  }
+
   private init(): void {
     // write local vars for other systems
-    this.fmgc.data.greenDotSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', v), true);
-    this.fmgc.data.slatRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', v), true);
-    this.fmgc.data.flapRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', v), true);
-
-    this.speedVs1g.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', v), true);
-    this.speedVls.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', v), true);
-    this.speedVmax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', v), true);
-    this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true);
-    this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true);
-    this.speedShortTermManaged.sub(
-      (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v),
-      true,
+    this.subs.push(
+      this.fmgc.data.greenDotSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', v), true),
+    );
+    this.subs.push(
+      this.fmgc.data.slatRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', v), true),
+    );
+    this.subs.push(
+      this.fmgc.data.flapRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', v), true),
     );
 
-    this.fmgc.data.approachFlapConfig.sub(
-      (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v === FlapConf.CONF_3),
-      true,
+    this.subs.push(this.speedVs1g.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', v), true));
+    this.subs.push(this.speedVls.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', v), true));
+    this.subs.push(this.speedVmax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', v), true));
+    this.subs.push(this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true));
+    this.subs.push(this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true));
+    this.subs.push(
+      this.speedShortTermManaged.sub(
+        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v),
+        true,
+      ),
     );
 
-    this.fmc.fmgc.data.zeroFuelWeight.sub((zfw) => {
-      this.arincZeroFuelWeight.setBnrValue(
-        zfw ? zfw : 0,
-        zfw ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-        19,
-        524288,
-        0,
-      );
-    });
+    this.subs.push(
+      this.fmgc.data.approachFlapConfig.sub(
+        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v === FlapConf.CONF_3),
+        true,
+      ),
+    );
 
-    this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.sub((zfwCg) =>
-      this.arincZeroFuelWeightCg.setBnrValue(
-        zfwCg ? zfwCg : 0,
-        zfwCg ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-        12,
-        64,
-        0,
+    this.subs.push(
+      this.fmc.fmgc.data.zeroFuelWeight.sub((zfw) => {
+        this.arincZeroFuelWeight.setBnrValue(
+          zfw ? zfw : 0,
+          zfw ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+          19,
+          524288,
+          0,
+        );
+      }),
+    );
+
+    this.subs.push(
+      this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.sub((zfwCg) =>
+        this.arincZeroFuelWeightCg.setBnrValue(
+          zfwCg ? zfwCg : 0,
+          zfwCg ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+          12,
+          64,
+          0,
+        ),
       ),
     );
   }

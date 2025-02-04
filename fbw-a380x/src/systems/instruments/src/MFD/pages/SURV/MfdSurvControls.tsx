@@ -35,7 +35,7 @@ export enum TransponderState {
 
 export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
@@ -52,6 +52,9 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   private readonly xpdrAltRptgOn = Subject.create<boolean>(true);
 
   private readonly xpdrStatusSelectedIndex = Subject.create<number | null>(0);
+  private readonly xpdrStatusRadioColor = this.xpdrStatusSelectedIndex.map((it) =>
+    it === 0 ? RadioButtonColor.Green : RadioButtonColor.White,
+  );
 
   private readonly tcasFailed = ConsumerSubject.create(this.sub.on('tcasFail'), true);
 
@@ -97,44 +100,58 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
     const sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
-    sub
-      .on('xpdrCode')
-      .whenChanged()
-      .handle((code) => {
-        this.squawkCode.set(code);
-      });
+    this.subs.push(
+      sub
+        .on('xpdrCode')
+        .whenChanged()
+        .handle((code) => {
+          this.squawkCode.set(code);
+        }),
+    );
 
-    this.xpdrState.sub(() => this.xpdrStatusChanged(), true);
-    this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged(), true);
+    this.subs.push(this.xpdrState.sub(() => this.xpdrStatusChanged(), true));
+    this.subs.push(this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged(), true));
 
-    sub.on('mfd_tcas_alert_level').handle((val) => this.tcasTaraSelectedIndex.set(2 - val));
+    this.subs.push(sub.on('mfd_tcas_alert_level').handle((val) => this.tcasTaraSelectedIndex.set(2 - val)));
 
-    sub.on('mfd_tcas_alt_select').handle((val) => this.tcasNormAbvBlwSelectedIndex.set(val));
+    this.subs.push(sub.on('mfd_tcas_alt_select').handle((val) => this.tcasNormAbvBlwSelectedIndex.set(val)));
 
-    sub
-      .on('gpwsTerrOff')
-      .whenChanged()
-      .handle((it) => this.tawsTerrSysOn.set(!it));
+    this.subs.push(
+      sub
+        .on('gpwsTerrOff')
+        .whenChanged()
+        .handle((it) => this.tawsTerrSysOn.set(!it)),
+    );
 
-    sub
-      .on('gpwsSysOff')
-      .whenChanged()
-      .handle((it) => this.tawsGpwsOn.set(!it));
+    this.subs.push(
+      sub
+        .on('gpwsSysOff')
+        .whenChanged()
+        .handle((it) => this.tawsGpwsOn.set(!it)),
+    );
 
-    sub
-      .on('gpwsGsInhibit')
-      .whenChanged()
-      .handle((it) => this.tawsGsModeOn.set(!it));
+    this.subs.push(
+      sub
+        .on('gpwsGsInhibit')
+        .whenChanged()
+        .handle((it) => this.tawsGsModeOn.set(!it)),
+    );
 
-    sub
-      .on('gpwsFlapsInhibit')
-      .whenChanged()
-      .handle((it) => this.tawsFlapModeOn.set(!it));
+    this.subs.push(
+      sub
+        .on('gpwsFlapsInhibit')
+        .whenChanged()
+        .handle((it) => this.tawsFlapModeOn.set(!it)),
+    );
+
+    this.subs.push(this.xpdrSetAltReportingRequest, this.xpdrState, this.tcasFailed, this.tcasRadioGroupDisabled);
   }
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
-    this.subs.forEach((x) => x.destroy());
+    for (const s of this.subs) {
+      s.destroy();
+    }
 
     super.destroy();
   }
@@ -251,9 +268,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   selectedIndex={this.xpdrStatusSelectedIndex}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsXpdrStatus`}
                   additionalVerticalSpacing={50}
-                  color={this.xpdrStatusSelectedIndex.map((it) =>
-                    it === 0 ? RadioButtonColor.Green : RadioButtonColor.White,
-                  )} // FIXME subscription leak
+                  color={this.xpdrStatusRadioColor}
                 />
               </div>
             </div>
