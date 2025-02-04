@@ -204,9 +204,10 @@ export class CDUNavRadioPage {
       return;
     }
 
-    const onDone = requestAnimationFrame.bind(mcdu, () => {
-      CDUNavRadioPage.ShowPage(mcdu);
-    });
+    const onDone = () =>
+      requestAnimationFrame(() => {
+        CDUNavRadioPage.ShowPage(mcdu);
+      });
 
     if (input === Keypad.clrValue) {
       const mmr = mcdu.getMmrTuningData(1);
