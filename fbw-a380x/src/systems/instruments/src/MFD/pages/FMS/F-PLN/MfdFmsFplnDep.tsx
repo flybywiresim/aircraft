@@ -40,7 +40,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
   private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    const isAltn = this.props.fmcService.master?.revisedWaypointIsAltn.get();
+    const isAltn = this.props.fmcService.master?.revisedLegIsAltn.get();
     const flightPlan = isAltn ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan?.originAirport) {

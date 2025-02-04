@@ -38,6 +38,7 @@ import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
@@ -53,6 +54,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   // Subjects
   private crzFl = Subject.create<number | null>(null);
+
+  private readonly crzFlIsMandatory = Subject.create(true);
 
   private recMaxFl = Subject.create<string>('---');
 
@@ -527,9 +530,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     console.time('PERF:onNewData');
 
-    if (pd.cruiseFlightLevel) {
-      this.crzFl.set(pd.cruiseFlightLevel);
-    }
+    this.crzFl.set(pd.cruiseFlightLevel);
+    this.crzFlIsMandatory.set(
+      (this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent,
+    );
 
     if (pd.costIndex) {
       this.costIndex.set(pd.costIndex);
@@ -904,9 +908,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               } else {
                 this.crzPredStepRef.instance.style.display = 'block';
                 this.crzPredStepAheadRef.instance.style.display = 'none';
-                this.crzPredWaypoint.set('N/A'); // Where to get this from?
-                this.crzPredAltitudeTarget.set(0); // Where to get this from?
-                this.crzTablePredLine1.set(null);
+
+                if (this.props.fmcService.master?.flightPlanService.active) {
+                  const [approachingCruiseStep, cruiseStepLegIndex] = MfdFmsFplnVertRev.nextCruiseStep(
+                    this.props.fmcService.master.flightPlanService.active,
+                  );
+                  this.crzPredWaypoint.set(
+                    cruiseStepLegIndex && approachingCruiseStep
+                      ? this.props.fmcService.master?.flightPlanService.active.legElementAt(cruiseStepLegIndex).ident
+                      : '',
+                  );
+                  this.crzPredAltitudeTarget.set(approachingCruiseStep ? approachingCruiseStep.toAltitude / 100 : null);
+                  this.crzTablePredLine1.set(null);
+                }
               }
             }
           }
@@ -1118,7 +1132,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   dataHandlerDuringValidation={async (v) =>
                     v ? this.props.fmcService.master?.acInterface.setCruiseFl(v) : false
                   }
-                  mandatory={Subject.create(false)}
+                  mandatory={this.crzFlIsMandatory}
                   value={this.crzFl}
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
@@ -1188,7 +1202,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[0]}>
                         <span class="mfd-value tmpy">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.v1ToBeConfirmed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.v1ToBeConfirmed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -1228,7 +1242,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div ref={this.flapSpeedsRef[0]} class="mfd-label-value-container">
                       <span class="mfd-label mfd-spacing-right">F</span>
                       <span class="mfd-value">
-                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.flapRetractionSpeed)}
+                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.flapRetractionSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -1252,7 +1266,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[1]}>
                         <span class="mfd-value tmpy">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.vrToBeConfirmed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.vrToBeConfirmed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -1260,7 +1274,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div ref={this.flapSpeedsRef[1]} class="mfd-label-value-container">
                       <span class="mfd-label mfd-spacing-right">S</span>
                       <span class="mfd-value">
-                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.slatRetractionSpeed)}
+                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.slatRetractionSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -1284,7 +1298,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label-value-container">
                       <div ref={this.vSpeedsConfirmationRef[2]}>
                         <span class="mfd-value tmpy">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.v2ToBeConfirmed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.v2ToBeConfirmed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -1296,7 +1310,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         </svg>
                       </span>
                       <span class="mfd-value">
-                        {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.greenDotSpeed)}
+                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.greenDotSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -1727,7 +1741,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
                     <div class="mfd-label">PRED TO </div>
-                    <InputField<number>
+                    <InputField<number, number, false>
                       dataEntryFormat={
                         new AltitudeOrFlightLevelFormat(
                           this.transAlt,
@@ -1741,7 +1755,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       mandatory={Subject.create(false)}
                       inactive={this.clbPageInactive}
                       enteredByPilot={this.props.fmcService.master.fmgc.data.climbPredictionsReferenceIsPilotEntered}
-                      value={this.props.fmcService.master.fmgc.data.climbPredictionsReference}
+                      readonlyValue={this.props.fmcService.master.fmgc.data.climbPredictionsReference}
                       containerStyle="width: 150px; margin-left: 15px;"
                       alignText="flex-end"
                       errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2055,7 +2069,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfFalse={
                         <Button
                           label="SPD CSTR"
-                          onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev')}
+                          onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/spd')}
                         >
                           SPD CSTR
                         </Button>
@@ -2285,7 +2299,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       buttonStyle="margin-right: 10px;"
                     />
                     <Button
-                      disabled={Subject.create(true)}
+                      disabled={Subject.create(false)}
                       label="STEP ALTs"
                       onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/step-alts')}
                     />
@@ -2461,9 +2475,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div style="display: flex; flex-direction: row;">
                     <Button
-                      disabled={Subject.create(true)}
                       label="SPD CSTR"
-                      onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev')}
+                      onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/spd')}
                     />
                   </div>
                 </div>
@@ -2491,10 +2504,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div style="display: flex; flex-direction: row;">
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">MAG WIND</span>
                         <div style="border: 1px solid lightgrey; display: flex; flex-direction: row; padding: 2px;">
-                          <InputField<number>
+                          <InputField<number, number, false>
                             dataEntryFormat={new WindDirectionFormat()}
                             mandatory={Subject.create(false)}
-                            value={this.apprWindDirectionValue ?? Subject.create(null)}
+                            readonlyValue={this.apprWindDirectionValue ?? Subject.create(null)}
                             onModified={(v) =>
                               this.props.fmcService.master?.fmgc.data.approachWind.set({
                                 direction: v ?? 0,
@@ -2506,10 +2519,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
                           />
-                          <InputField<number>
+                          <InputField<number, number, false>
                             dataEntryFormat={new WindSpeedFormat()}
                             mandatory={Subject.create(false)}
-                            value={this.apprWindSpeedValue ?? Subject.create(null)}
+                            readonlyValue={this.apprWindSpeedValue ?? Subject.create(null)}
                             onModified={(v) =>
                               this.props.fmcService.master?.fmgc.data.approachWind.set({
                                 direction: this.props.fmcService.master.fmgc.data.approachWind.get()?.direction ?? 0,
@@ -2628,28 +2641,28 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           </svg>
                         </span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">S</span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">F</span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container" style="padding-top: 15px;">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">VREF</span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachVref)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachVref)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -2669,7 +2682,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div class="mfd-label-value-container" style="margin-top: 10px;">
                         <span class="mfd-label mfd-spacing-right">VLS</span>
                         <span class="mfd-value">
-                          {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachVls)}
+                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachVls)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -2730,14 +2743,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">F</span>
                     <span class="mfd-value">
-                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
+                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">S</span>
                     <span class="mfd-value">
-                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
+                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
@@ -2748,7 +2761,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       </svg>
                     </span>
                     <span class="mfd-value">
-                      {FmgcData.fmcFormatSpeed(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
+                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>

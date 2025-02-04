@@ -3,8 +3,9 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { ApproachType, LandingSystemUtils } from '@fmgc/index';
 import { getApproachName } from '../../../shared/utils';
+import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { LandingSystemUtils } from '@fmgc/flightplanning/data/landingsystem';
 
 import './MfdFmsFpln.scss';
 
@@ -83,7 +84,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       return;
     }
 
-    const isAltn = this.props.fmcService.master.revisedWaypointIsAltn.get() ?? false;
+    const isAltn = this.props.fmcService.master.revisedLegIsAltn.get() ?? false;
     const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan.destinationAirport) {

@@ -94,6 +94,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly crzFl = Subject.create<number | null>(null);
 
+  private readonly crzFlIsMandatory = Subject.create(true);
+
   private readonly costIndex = Subject.create<number | null>(null);
 
   private readonly costIndexDisabled = MappedSubject.create(
@@ -191,16 +193,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.altnIcao.set(this.loadedFlightPlan.originAirport && this.loadedFlightPlan.destinationAirport ? 'NONE' : '');
     }
 
+    this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel);
+    this.crzFlIsMandatory.set(this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent);
     if (this.loadedFlightPlan.performanceData.cruiseFlightLevel) {
-      this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel);
       this.props.fmcService.master.fmgc.data.cruiseTemperatureIsaTemp.set(
         A380AltitudeUtils.getIsaTemp(this.loadedFlightPlan.performanceData.cruiseFlightLevel * 100),
       );
     }
 
-    if (this.loadedFlightPlan.performanceData.costIndex) {
-      this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
-    }
+    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
 
     // Set some empty fields with pre-defined values
     if (this.fromIcao.get() && this.toIcao.get()) {
@@ -467,7 +468,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataHandlerDuringValidation={async (v) =>
                   v ? this.props.fmcService.master?.acInterface.setCruiseFl(v) : false
                 }
-                mandatory={Subject.create(true)}
+                mandatory={this.crzFlIsMandatory}
                 disabled={this.altnDisabled}
                 canBeCleared={Subject.create(false)}
                 value={this.crzFl}

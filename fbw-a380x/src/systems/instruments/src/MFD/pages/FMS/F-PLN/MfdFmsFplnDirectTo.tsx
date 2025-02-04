@@ -7,9 +7,10 @@ import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { FlightPlanIndex, WaypointEntryUtils } from '@fmgc/index';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 interface MfdFmsFplnDirectToProps extends AbstractMfdPageProps {}
 
@@ -43,7 +44,9 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
 
   private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly directOptionRadioColor = this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'));
+  private readonly directOptionRadioColor = this.tmpyActive.map((it) =>
+    it ? RadioButtonColor.Yellow : RadioButtonColor.Cyan,
+  );
 
   protected onNewData(): void {
     // Use active FPLN for building the list (page only works for active anyways)
@@ -111,7 +114,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
           FlightPlanIndex.Active,
         );
       }
-    } else if (this.props.fmcService.master) {
+    } else if (this.props.fmcService.master && text !== null) {
       const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
       if (wpt) {
         this.manualWptIdent = wpt.ident;
