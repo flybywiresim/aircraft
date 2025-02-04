@@ -214,9 +214,14 @@ export class FwsAbnormalSensed {
 
   public clearActiveProcedure(newState?: ChecklistState) {
     const numFailures = this.fws.presentedFailures.length;
-    if (numFailures === 1 && !this.fws.ecamStsNormal.get()) {
-      // Call STS page on SD
-      SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
+    if (numFailures === 1) {
+      if (!this.fws.ecamStsNormal.get()) {
+        // Call STS page on SD
+        SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
+      }
+
+      // If there are deferred procedures, open ECL menu
+      this.fws.normalChecklists.openIfDeferredApplicable();
     }
     this.fws.presentedFailures.splice(this.fws.presentedFailures.indexOf(this.activeProcedureId.get()), 1);
 

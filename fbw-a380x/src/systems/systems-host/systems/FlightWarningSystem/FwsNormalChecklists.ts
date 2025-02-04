@@ -374,6 +374,15 @@ export class FwsNormalChecklists {
     }
   }
 
+  public openIfDeferredApplicable() {
+    const deferredApplicable = this.hasDeferred.some((v) => v) && this.deferredIsCompleted.some((v) => !v);
+
+    if (deferredApplicable && !this.showChecklistRequested.get()) {
+      this.showChecklistRequested.set(true);
+      this.navigateToChecklist(0);
+    }
+  }
+
   update() {
     if (this.fws.clPulseNode.read()) {
       this.navigateToChecklist(0);
