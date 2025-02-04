@@ -83,7 +83,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       return;
     }
 
-    const isAltn = this.props.fmcService.master.revisedWaypointIsAltn.get() ?? false;
+    const isAltn = this.props.fmcService.master.revisedLegIsAltn.get() ?? false;
     const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan.destinationAirport) {

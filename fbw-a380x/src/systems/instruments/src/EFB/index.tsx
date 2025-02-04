@@ -47,6 +47,7 @@ render(
         realism: {
           mcduKeyboard: false,
           pauseOnTod: true,
+          autoStepClimb: true,
           pilotAvatars: false,
           eclSoftKeys: true,
         },
