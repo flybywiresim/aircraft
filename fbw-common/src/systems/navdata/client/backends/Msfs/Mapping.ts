@@ -1256,7 +1256,6 @@ export class MsfsMapping {
 
   public mapFacilityToWaypoint<T extends JS_Facility>(facility: T): FacilityType<T> {
     const airportIdent = facility.icao.substring(3, 7).trim();
-    // TODO this is a hack
     const isTerminalVsEnroute = airportIdent.length > 0;
 
     const databaseItem = {
@@ -1276,11 +1275,12 @@ export class MsfsMapping {
         const ndb = facility as any as JS_FacilityNDB;
         return {
           ...databaseItem,
-          sectionCode: SectionCode.Navaid,
-          subSectionCode: NavaidSubsectionCode.NdbNavaid,
+          sectionCode: isTerminalVsEnroute ? SectionCode.Airport : SectionCode.Navaid,
+          subSectionCode: isTerminalVsEnroute ? AirportSubsectionCode.TerminalNdb : NavaidSubsectionCode.NdbNavaid,
           frequency: ndb.freqMHz, // actually kHz
           class: this.mapNdbType(ndb.type),
           bfoOperation: false, // TODO can we?
+          airportIdent: isTerminalVsEnroute ? airportIdent : undefined,
         } as unknown as FacilityType<T>;
       }
       case 'V': {

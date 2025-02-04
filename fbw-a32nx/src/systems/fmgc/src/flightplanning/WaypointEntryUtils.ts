@@ -51,7 +51,9 @@ export class WaypointEntryUtils {
   }
 
   /**
-   * Parse a place string into a position
+   * Parse a place string into a position.
+   * @throws an FmsError if no facility is found.
+   * @returns The fix, after de-duplicating if necessary.
    */
   static async parsePlace(fms: FmsDisplayInterface & FmsDataInterface, place: string): Promise<Fix> {
     if (WaypointEntryUtils.isRunwayFormat(place)) {
@@ -73,7 +75,11 @@ export class WaypointEntryUtils {
     // In this case, we only want to return the actual VOR facility
     const items = WaypointEntryUtils.mergeNavaidsWithWaypoints(navaids, waypoints);
 
-    return fms.deduplicateFacilities(items);
+    const ret = fms.deduplicateFacilities(items);
+    if (ret === undefined) {
+      throw new FmsError(FmsErrorType.NotInDatabase);
+    }
+    return ret;
   }
 
   static mergeNavaidsWithWaypoints(navaids: (VhfNavaid | NdbNavaid)[], waypoints: Waypoint[]): Fix[] {
