@@ -119,7 +119,7 @@ export class InputField<
     if (this.modifiedFieldValue.get() !== null) {
       this.modifiedFieldValue.set(null);
     }
-    if (this.readValue.get() != null) {
+    if (this.readValue.get() !== null) {
       if (this.props.canOverflow) {
         // If item was overflowing, check whether overflow is still needed
         this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
@@ -135,7 +135,7 @@ export class InputField<
   private updateDisplayElement() {
     // If input was not modified, render props' value
     if (this.modifiedFieldValue.get() == null) {
-      if (this.readValue.get() == null) {
+      if (this.readValue.get() === null) {
         this.populatePlaceholders();
       } else {
         const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.readValue.get());
@@ -302,8 +302,7 @@ export class InputField<
       this.updateDisplayElement();
 
       if (validateAndUpdate) {
-        if (this.modifiedFieldValue.get() == null && this.readValue.get() != null) {
-          console.log('Enter pressed after no modification');
+        if (this.modifiedFieldValue.get() == null && this.readValue.get() !== null) {
           // Enter is pressed after no modification
           const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
           await this.validateAndUpdate(formatted ?? '');

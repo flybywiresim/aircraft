@@ -18,9 +18,9 @@ export enum FplnRevisionsMenuType {
 }
 
 export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType): ContextMenuElement[] {
-  const legIndex = fpln.props.fmcService.master?.revisedWaypointIndex.get();
-  const planIndex = fpln.props.fmcService.master?.revisedWaypointPlanIndex.get();
-  const altnFlightPlan = fpln.props.fmcService.master?.revisedWaypointIsAltn.get();
+  const legIndex = fpln.props.fmcService.master?.revisedLegIndex.get();
+  const planIndex = fpln.props.fmcService.master?.revisedLegPlanIndex.get();
+  const altnFlightPlan = fpln.props.fmcService.master?.revisedLegIsAltn.get();
 
   if (legIndex == null || planIndex == null || altnFlightPlan == null) {
     return [];
@@ -132,7 +132,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             altnFlightPlan,
           );
 
-          fpln.props.fmcService.master?.revisedWaypointIndex.set(legIndex + 1); // We just inserted a new HOLD leg
+          fpln.props.fmcService.master?.revisedLegIndex.set(legIndex + 1); // We just inserted a new HOLD leg
         }
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-hold`);
       },

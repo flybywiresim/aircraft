@@ -7,7 +7,7 @@ import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
@@ -110,7 +110,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
           FlightPlanIndex.Active,
         );
       }
-    } else if (this.props.fmcService.master) {
+    } else if (this.props.fmcService.master && text !== null) {
       const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
       if (wpt) {
         this.manualWptIdent = wpt.ident;
@@ -221,7 +221,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                   values={['DIRECT', 'DIRECT WITH ABEAM', 'CRS IN', 'CRS OUT']}
                   valuesDisabled={Subject.create([false, true, true, true])}
                   selectedIndex={this.directToOption}
-                  color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
+                  color={this.tmpyActive.map((it) => (it ? RadioButtonColor.Yellow : RadioButtonColor.Cyan))}
                 />
               </div>
             </div>
