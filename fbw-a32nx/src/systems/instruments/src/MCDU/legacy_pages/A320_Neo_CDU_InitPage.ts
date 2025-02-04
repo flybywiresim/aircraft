@@ -143,7 +143,7 @@ export class CDUInitPage {
             cruiseFlTempSeparator.updateAttributes(Column.cyan);
           } else {
             cruiseTemp.update(
-              CDUInitPage.formatTemperature(Math.trunc(mcdu.tempCurve.evaluate(mcdu.cruiseLevel))),
+              CDUInitPage.formatTemperature(Math.round(mcdu.tempCurve.evaluate(mcdu.cruiseLevel))),
               Column.cyan,
               Column.small,
             );
