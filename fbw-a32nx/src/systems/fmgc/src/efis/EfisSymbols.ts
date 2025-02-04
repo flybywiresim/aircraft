@@ -754,6 +754,7 @@ export class EfisSymbols<T extends number> {
         location,
         type,
         constraints: constraints.length > 0 ? constraints : undefined,
+        altConstraint: leg.altitudeConstraint,
         direction,
         distanceFromAirplane: distanceFromAirplane,
         predictedAltitude: predictedAltitude,

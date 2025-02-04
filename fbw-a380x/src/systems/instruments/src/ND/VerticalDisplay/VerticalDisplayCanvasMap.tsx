@@ -121,7 +121,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       .get()
       .filter(
         (it) =>
-          it.constraints ||
+          it.altConstraint ||
           (BitFlags.isAny(it.type, NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan) &&
             !(it.type & NdSymbolTypeFlags.Runway)),
       );
