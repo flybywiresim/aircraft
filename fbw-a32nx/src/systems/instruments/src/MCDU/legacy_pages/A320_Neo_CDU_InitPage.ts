@@ -791,6 +791,6 @@ export class CDUInitPage {
   }
 
   static formatTemperature(temperature: number): string {
-    return (temperature > 0 ? '+' : '') + temperature.toFixed(0) + '°';
+    return `${temperature > 0 ? '+' : ''}${temperature.toFixed(0)}°`;
   }
 }
