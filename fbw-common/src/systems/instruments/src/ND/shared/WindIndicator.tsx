@@ -32,7 +32,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     sub
       .on('windDirection')
-      .atFrequency(2)
+      .atFrequency(10)
       .handle((value) => {
         this.windDirectionWord.setWord(value);
 
@@ -43,7 +43,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     sub
       .on('windSpeed')
-      .atFrequency(2)
+      .atFrequency(10)
       .handle((value) => {
         this.windSpeedWord.setWord(value);
 
@@ -54,7 +54,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     sub
       .on('trueHeadingRaw')
-      .atFrequency(2)
+      .atFrequency(10)
       .handle((value) => {
         this.planeHeadingWord.setWord(value);
       });
