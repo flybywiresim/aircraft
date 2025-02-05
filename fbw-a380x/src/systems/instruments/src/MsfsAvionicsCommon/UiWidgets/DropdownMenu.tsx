@@ -42,27 +42,27 @@ interface DropdownMenuProps extends ComponentProps {
  */
 export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownInnerRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownInnerRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownArrowRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownArrowRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownIsOpened = Subject.create(false);
+  private readonly dropdownIsOpened = Subject.create(false);
 
-  private inputFieldRef = FSComponent.createRef<InputField<string>>();
+  private readonly inputFieldRef = FSComponent.createRef<InputField<string>>();
 
-  private inputFieldValue = Subject.create<string | null>('');
+  private readonly inputFieldValue = Subject.create<string | null>('');
 
   private freeTextEntered = false;
 
-  private renderedDropdownOptions = ArraySubject.create<string>();
+  private readonly renderedDropdownOptions = ArraySubject.create<string>();
 
   private renderedDropdownOptionsIndices: number[] = [];
 
@@ -263,6 +263,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     this.dropdownSelectorRef.getOrDefault()?.removeEventListener('click', this.onOpenCloseClickHandler);
     document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
+
+    this.renderedDropdownOptions.clear();
 
     super.destroy();
   }
