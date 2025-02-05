@@ -32,6 +32,7 @@ export const RealismPage = () => {
   const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
   const [pauseAtTod, setPauseAtTod] = usePersistentBooleanProperty('PAUSE_AT_TOD', false);
   const [todOffset, setTodOffset] = usePersistentNumberProperty('PAUSE_AT_TOD_DISTANCE', 10);
+  const [autoStepClimb, setAutoStepClimb] = usePersistentBooleanProperty('AUTO_STEP_CLIMB', false);
   const [realisticTiller, setRealisticTiller] = usePersistentNumberProperty('REALISTIC_TILLER_ENABLED', 0);
   const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
   const [syncEfis, setFoEfis] = usePersistentNumberProperty('FO_SYNC_EFIS_ENABLED', 0);
@@ -178,6 +179,12 @@ export const RealismPage = () => {
             </SettingItem>
           )}
         </SettingGroup>
+      )}
+
+      {aircraftContext.settingsPages.realism.autoStepClimb && (
+        <SettingItem name={t('Settings.Realism.AutoStepClimb')} unrealistic groupType="parent">
+          <Toggle value={autoStepClimb} onToggle={(value) => setAutoStepClimb(value)} />
+        </SettingItem>
       )}
 
       {aircraftContext.settingsPages.realism.eclSoftKeys && (

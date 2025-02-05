@@ -6,9 +6,9 @@ import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiW
  * Complete header for the FCU BKUP system
  */
 export class FcuBkupHeader extends AbstractHeader {
-  private afsIsSelected = Subject.create(false);
+  private readonly afsIsSelected = Subject.create(false);
 
-  private efisIsSelected = Subject.create(false);
+  private readonly efisIsSelected = Subject.create(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

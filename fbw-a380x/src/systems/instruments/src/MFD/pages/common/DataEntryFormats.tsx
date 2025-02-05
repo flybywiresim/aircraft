@@ -1,20 +1,35 @@
+import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+
+import { Fix } from '@flybywiresim/fbw-sdk';
+
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitTrailing: string | null];
-export interface DataEntryFormat<T> {
+export interface DataEntryFormat<T, U = T> {
   placeholder: string;
   maxDigits: number;
   format(value: T | null): FieldFormatTuple;
-  parse(input: string): Promise<T | null>;
+  parse(input: string): Promise<U | null>;
   /**
    * If modified or notify()ed, triggers format() in the input field (i.e. when dependencies to value have changed)
    */
   reFormatTrigger?: Subscribable<boolean>;
+  destroy?: () => void;
 }
 
-export class SpeedKnotsFormat implements DataEntryFormat<number> {
+class SubscriptionCollector {
+  protected readonly subscriptions: Subscription[] = [];
+
+  destroy() {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+  }
+}
+
+export class SpeedKnotsFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '---';
 
   public maxDigits = 3;
@@ -27,8 +42,9 @@ export class SpeedKnotsFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -53,9 +69,13 @@ export class SpeedKnotsFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
-export class SpeedMachFormat implements DataEntryFormat<number> {
+export class SpeedMachFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '.--';
 
   public maxDigits = 3;
@@ -68,8 +88,9 @@ export class SpeedMachFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -97,10 +118,14 @@ export class SpeedMachFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
 // Assumption: All values between 0 and 430 are FL, above are FT
-export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
+export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '-----';
 
   public maxDigits = 5;
@@ -118,8 +143,9 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
 
     if (transAlt !== null) {
       transAlt.sub((val) => {
@@ -157,9 +183,13 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
-export class AltitudeFormat implements DataEntryFormat<number> {
+export class AltitudeFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '-----';
 
   public maxDigits = 5;
@@ -172,8 +202,9 @@ export class AltitudeFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -197,6 +228,10 @@ export class AltitudeFormat implements DataEntryFormat<number> {
     } else {
       throw new FmsError(FmsErrorType.FormatError);
     }
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 }
 
@@ -250,7 +285,7 @@ export class RadioMinimumFormat implements DataEntryFormat<string | number> {
 /**
  * Unit of value: Feet (i.e. FL * 100)
  */
-export class FlightLevelFormat implements DataEntryFormat<number> {
+export class FlightLevelFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '---';
 
   public maxDigits = 3;
@@ -263,8 +298,9 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -289,6 +325,10 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
     } else {
       throw new FmsError(FmsErrorType.FormatError);
     }
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 }
 
@@ -325,7 +365,7 @@ export class TropoFormat implements DataEntryFormat<number> {
   }
 }
 
-export class LengthFormat implements DataEntryFormat<number> {
+export class LengthFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '----';
 
   public maxDigits = 4;
@@ -338,8 +378,9 @@ export class LengthFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -364,9 +405,13 @@ export class LengthFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
-export class WeightFormat implements DataEntryFormat<number> {
+export class WeightFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '---.-';
 
   public maxDigits = 5;
@@ -379,8 +424,9 @@ export class WeightFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -405,9 +451,13 @@ export class WeightFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
-export class PercentageFormat implements DataEntryFormat<number> {
+export class PercentageFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '--.-';
 
   public maxDigits = 4;
@@ -422,8 +472,9 @@ export class PercentageFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -448,9 +499,13 @@ export class PercentageFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
-export class TemperatureFormat implements DataEntryFormat<number> {
+export class TemperatureFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '---';
 
   public maxDigits = 3;
@@ -463,8 +518,9 @@ export class TemperatureFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -491,6 +547,10 @@ export class TemperatureFormat implements DataEntryFormat<number> {
     } else {
       throw new FmsError(FmsErrorType.FormatError);
     }
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 }
 
@@ -736,7 +796,7 @@ export class CostIndexFormat implements DataEntryFormat<number> {
   }
 }
 
-export class VerticalSpeedFormat implements DataEntryFormat<number> {
+export class VerticalSpeedFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '---';
 
   public maxDigits = 4;
@@ -749,8 +809,9 @@ export class VerticalSpeedFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -775,9 +836,13 @@ export class VerticalSpeedFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
-export class DescentRateFormat implements DataEntryFormat<number> {
+export class DescentRateFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '----';
 
   public maxDigits = 4;
@@ -790,8 +855,9 @@ export class DescentRateFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -820,6 +886,36 @@ export class DescentRateFormat implements DataEntryFormat<number> {
     } else {
       throw new FmsError(FmsErrorType.FormatError);
     }
+  }
+
+  destroy(): void {
+    super.destroy();
+  }
+}
+
+export class FixFormat implements DataEntryFormat<Fix, string> {
+  public readonly placeholder = '-------';
+
+  public readonly maxDigits = 7;
+
+  async parse(input: string): Promise<string | null> {
+    if (input.trim().length === 0) {
+      return null;
+    }
+
+    if (WaypointEntryUtils.isPlaceFormat(input) || WaypointEntryUtils.isRunwayFormat(input)) {
+      return input;
+    }
+
+    throw new FmsError(FmsErrorType.FormatError);
+  }
+
+  format(value: Fix | null): FieldFormatTuple {
+    if (!value) {
+      return [this.placeholder, null, null];
+    }
+
+    return [value.ident, null, null];
   }
 }
 
@@ -1133,7 +1229,7 @@ export class LatitudeFormat implements DataEntryFormat<number> {
   }
 }
 
-export class HeadingFormat implements DataEntryFormat<number> {
+export class HeadingFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '---.-';
 
   public maxDigits = 5;
@@ -1146,8 +1242,9 @@ export class HeadingFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -1172,10 +1269,14 @@ export class HeadingFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
 // Still need to find a way to store whether course is true or magnetic
-export class InboundCourseFormat implements DataEntryFormat<number> {
+export class InboundCourseFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '---';
 
   public maxDigits = 4;
@@ -1188,8 +1289,9 @@ export class InboundCourseFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -1214,9 +1316,13 @@ export class InboundCourseFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
-export class HoldDistFormat implements DataEntryFormat<number> {
+export class HoldDistFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '--.-';
 
   public maxDigits = 4;
@@ -1229,8 +1335,9 @@ export class HoldDistFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -1255,9 +1362,13 @@ export class HoldDistFormat implements DataEntryFormat<number> {
       throw new FmsError(FmsErrorType.FormatError);
     }
   }
+
+  destroy(): void {
+    super.destroy();
+  }
 }
 
-export class HoldTimeFormat implements DataEntryFormat<number> {
+export class HoldTimeFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '-.-';
 
   public maxDigits = 3;
@@ -1270,8 +1381,9 @@ export class HoldTimeFormat implements DataEntryFormat<number> {
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
   ) {
-    minValue.sub((val) => (this.minValue = val), true);
-    maxValue.sub((val) => (this.maxValue = val), true);
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
   }
 
   public format(value: number) {
@@ -1295,6 +1407,10 @@ export class HoldTimeFormat implements DataEntryFormat<number> {
     } else {
       throw new FmsError(FmsErrorType.FormatError);
     }
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 }
 
@@ -1399,7 +1515,7 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
 
 // Still need to find a way to store whether course is true or magnetic
 /** Negative number indicates back course */
-export class LsCourseFormat implements DataEntryFormat<number> {
+export class LsCourseFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '----';
 
   public maxDigits = 4;
@@ -1468,6 +1584,82 @@ export class SquawkFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (!/^[0-7]{4}$/.test(input)) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
+
+/**
+ * FIX INFO radial
+ */
+export class RadialFormat implements DataEntryFormat<number> {
+  public readonly placeholder = '---';
+
+  public readonly maxDigits = 4;
+
+  private readonly minValue = 0;
+
+  private readonly maxValue = 360.0;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, null] as FieldFormatTuple;
+    }
+
+    return [value.toFixed(0).padStart(3, '0'), null, '°'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
+
+/**
+ * FIX INFO radius
+ */
+export class RadiusFormat implements DataEntryFormat<number> {
+  public readonly placeholder = '----';
+
+  public readonly maxDigits = 4;
+
+  private readonly minValue = 1;
+
+  private readonly maxValue = 9999;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, null] as FieldFormatTuple;
+    }
+
+    return [value.toFixed(0), null, 'NM'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+
+    if (nbr > this.maxValue || nbr < this.minValue) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
     } else {
       throw new FmsError(FmsErrorType.FormatError);

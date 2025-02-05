@@ -39,6 +39,7 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 - Fuel planning on FMS/FUEL&LOAD page
 - ATC / datalink / CPDLC
 - FCU BKUP
+- STEP ALTs: Optimum step calculation
 
 ### ATA 23 Communication
 

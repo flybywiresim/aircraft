@@ -1,4 +1,4 @@
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import {
   ConsumerSubject,
   EventBus,
@@ -69,7 +69,7 @@ export class FmcService implements FmcServiceInterface {
 
   constructor(
     private readonly bus: EventBus,
-    private readonly mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
+    private readonly mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null,
     private readonly fmcAFailed: Subscribable<boolean>,
     private readonly fmcBFailed: Subscribable<boolean>,
     private readonly fmcCFailed: Subscribable<boolean>,
@@ -92,7 +92,7 @@ export class FmcService implements FmcServiceInterface {
     return this.fmc.find((it) => it.operatingMode === FmcOperatingModes.Standby) ?? null;
   }
 
-  createFmc(mfdReference: (DisplayInterface & MfdDisplayInterface) | null): void {
+  createFmc(mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null): void {
     // Only FMC-A is operative for now, this takes up enough resources already
     // Before more FMC can be added, they have to be synced
     this.fmc.push(
@@ -119,7 +119,7 @@ export class FmcService implements FmcServiceInterface {
     return this.fmc[forFmcIndex];
   }
 
-  setMfdReference(forFmcIndex: FmcIndex, mfd: DisplayInterface & MfdDisplayInterface) {
+  setMfdReference(forFmcIndex: FmcIndex, mfd: FmsDisplayInterface & MfdDisplayInterface) {
     if (this.fmc[forFmcIndex] === undefined) {
       return;
     }
