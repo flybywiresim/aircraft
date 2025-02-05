@@ -35,49 +35,16 @@ export default new TaskOfTasks('all', [
                     'fbw-a32nx/src/behavior',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated',
                 ]),
-
-                new TaskOfTasks('atsu', [
-                    new ExecTask('common', 'npm run build-a32nx:atsu-common', [
-                        'fbw-a32nx/src/systems/atsu/common',
-                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/common.js',
-                    ]),
-                    new ExecTask('fmsclient', 'npm run build-a32nx:atsu-fms-client', [
-                        'fbw-a32nx/src/systems/atsu/common',
-                        'fbw-a32nx/src/systems/atsu/fmsclient',
-                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/fmsclient.js',
-                    ]),
-                ]),
                 new ExecTask('extras-host', 'npm run build-a32nx:extras-host', [
                     'fbw-a32nx/src/systems/extras-host',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ExtrasHost',
                     'fbw-common/src/systems/shared/src/extras',
-                ]),
-                new ExecTask('failures', 'npm run build-a32nx:failures', [
-                    'fbw-a32nx/src/systems/failures',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/failures/failures.js',
-                ]),
-                new ExecTask('fmgc', 'npm run build-a32nx:fmgc', [
-                    'fbw-a32nx/src/systems/fmgc',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/fmgc',
-                ]),
-                new ExecTask('sentry-client', 'npm run build-a32nx:sentry-client', [
-                    'fbw-a32nx/src/systems/sentry-client',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client',
-                ]),
-                new ExecTask('simbridge-client', 'npm run build-a32nx:simbridge-client', [
-                    'fbw-a32nx/src/systems/simbridge-client',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/simbridge-client',
                 ]),
                 new ExecTask('systems-host', 'npm run build-a32nx:systems-host', [
                     'fbw-a32nx/src/systems/systems-host',
                     'fbw-common/src/systems/datalink',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost',
                 ]),
-                new ExecTask('tcas', 'npm run build-a32nx:tcas', [
-                    'fbw-a32nx/src/systems/tcas',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/tcas',
-                ]),
-
                 new TaskOfTasks('instruments', getA320InstrumentsIgniterTasks(), true),
             ],
             true,
