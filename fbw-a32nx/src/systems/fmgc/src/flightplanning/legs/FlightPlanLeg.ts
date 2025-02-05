@@ -502,3 +502,7 @@ export interface Discontinuity {
 }
 
 export type FlightPlanElement = FlightPlanLeg | Discontinuity;
+
+export function isDiscontinuity(o: any): o is Discontinuity {
+  return typeof o === 'object' && o.isDiscontinuity === true;
+}

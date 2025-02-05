@@ -13,6 +13,7 @@ import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FmsErrorType } from '@fmgc/FmsError';
+// FIXME rogue import from EFB
 import {
   ISimbriefData,
   simbriefDataParser,
@@ -481,17 +482,22 @@ export class SimBriefUplinkAdapter {
       url += `&username=${username}`;
     }
 
-    let ofp: ISimbriefData;
     try {
-      ofp = await fetch(url)
-        .then((result) => result.json())
-        .then((json) => simbriefDataParser(json));
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+      }
+      const body = await response.json();
+      // SimBrief can return an error with an ok HTTP status code.
+      // In that case, the fetch.status starts with "Error:"
+      if (typeof body.fetch?.status === 'string' && body.fetch.status.startsWith('Error:')) {
+        throw new Error(`SimBrief: ${body.fetch.status}`);
+      }
+      return simbriefDataParser(body);
     } catch (e) {
       console.error('SimBrief OFP download failed');
       throw e;
     }
-
-    return ofp;
   }
 
   static getRouteFromOfp(ofp: ISimbriefData): OfpRoute {

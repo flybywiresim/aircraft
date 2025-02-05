@@ -18,7 +18,7 @@ interface MouseCursorProps extends ComponentProps {
 }
 
 export class MouseCursor extends DisplayComponent<MouseCursorProps> {
-  private subs: Subscription[] = [];
+  private readonly subs: Subscription[] = [];
 
   private readonly divRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -75,5 +75,13 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
         </svg>
       </div>
     );
+  }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 }
