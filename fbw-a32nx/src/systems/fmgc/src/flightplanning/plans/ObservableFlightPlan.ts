@@ -72,7 +72,11 @@ export class ObservableFlightPlan {
         return false;
       }
 
-      for (let i = 0; i < a?.radials.length; i++) {
+      if (a.radials?.length !== b.radials?.length) {
+        return false;
+      }
+
+      for (let i = 0; i < a?.radials?.length ?? 0; i++) {
         const aRadial = a?.radials[i];
         const bRadial = b?.radials[i];
 
@@ -81,7 +85,11 @@ export class ObservableFlightPlan {
         }
       }
 
-      for (let i = 0; i < a?.radii.length; i++) {
+      if (a.radii?.length !== b.radii?.length) {
+        return false;
+      }
+
+      for (let i = 0; i < a?.radii?.length ?? 0; i++) {
         const aRadius = a?.radii[i];
         const bRadius = b?.radii[i];
 

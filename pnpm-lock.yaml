@@ -71,12 +71,12 @@ dependencies:
   lodash:
     specifier: ^4.17.20
     version: 4.17.21
+  mathjs:
+    specifier: ^12.4.3
+    version: 12.4.3
   msfs-geo:
     specifier: ^0.1.0-alpha3
     version: 0.1.0-alpha5
-  msfs-navdata:
-    specifier: ^1.1.0
-    version: 1.2.4
   nanoid:
     specifier: ^3.3.1
     version: 3.3.7
@@ -1628,6 +1628,12 @@ packages:
 
   /@babel/runtime@7.23.5:
     resolution: {integrity: sha512-NdUTHcPe4C99WxPub+K9l9tK5/lV4UXIoaHSYgzco9BCyjKAAwzdBI+wWtYqHt7LJdbo74ZjRPJgzVweq1sz0w==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      regenerator-runtime: 0.14.0
+
+  /@babel/runtime@7.26.7:
+    resolution: {integrity: sha512-AOPI3D+a8dXnja+iwsUqGRjr1BbZIe771sXdapOtYI531gSqpi92vXivKcq2asu/DFpdl1ceFAKZyRzK2PCVcQ==}
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.14.0
@@ -5065,6 +5071,10 @@ packages:
     resolution: {integrity: sha512-8njCHOTtFFLtegk6zQo0kkVX1rngygb/KQI6z1qZxlFI3scluC+LVTCFbrkWjBv4vvLlbQ9t88IPMC6k95VTTg==}
     dev: false
 
+  /complex.js@2.4.2:
+    resolution: {integrity: sha512-qtx7HRhPGSCBtGiST4/WGHuW+zeaND/6Ld+db6PbrulIB1i2Ev/2UPiqcmpQNPSyfBKraC0EOvOKCB5dGZKt3g==}
+    dev: false
+
   /concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
     dev: true
@@ -6513,6 +6523,10 @@ packages:
       mime-types: 2.1.35
     dev: true
 
+  /fraction.js@4.3.4:
+    resolution: {integrity: sha512-pwiTgt0Q7t+GHZA4yaLjObx4vXmmdcS0iSJ19o8d/goUGgItX9UZWKWNnLHehxviD8wU2IWRsnR8cD5+yOJP2Q==}
+    dev: false
+
   /fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
@@ -6805,7 +6819,7 @@ packages:
   /history@4.10.1:
     resolution: {integrity: sha512-36nwAD620w12kuzPAsyINPWJqlNbij+hpK1k9XRloDtym8mxzGYl2c17LnV6IAGB2Dmg4tEa7G7DlawS0+qjew==}
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
       loose-envify: 1.4.0
       resolve-pathname: 3.0.0
       tiny-invariant: 1.3.1
@@ -6816,7 +6830,7 @@ packages:
   /history@5.3.0:
     resolution: {integrity: sha512-ZqaKwjjrAYUYfLG+htGaIIZ4nioX2L70ZUMIFysS3xvBsSG4x/n1V6TXV3N8ZYNuFGlDirFg32T7B6WOUPDYcQ==}
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
     dev: true
 
   /hoist-non-react-statics@3.3.2:
@@ -8043,6 +8057,22 @@ packages:
       typed-function: 2.1.0
     dev: false
 
+  /mathjs@12.4.3:
+    resolution: {integrity: sha512-oHdGPDbp7gO873xxG90RLq36IuicuKvbpr/bBG5g9c8Obm/VsKVrK9uoRZZHUodohzlnmCEqfDzbR3LH6m+aAQ==}
+    engines: {node: '>= 18'}
+    hasBin: true
+    dependencies:
+      '@babel/runtime': 7.26.7
+      complex.js: 2.4.2
+      decimal.js: 10.4.3
+      escape-latex: 1.2.0
+      fraction.js: 4.3.4
+      javascript-natural-sort: 0.7.1
+      seedrandom: 3.0.5
+      tiny-emitter: 2.1.0
+      typed-function: 4.2.1
+    dev: false
+
   /mdn-data@2.0.14:
     resolution: {integrity: sha512-dn6wd0uw5GsdswPFfsgMp5NSB0/aDe6fK94YJV/AJDYXL6HVLWBsxeq7js7Ad+mU2K9LAlwpk6kN2D5mwCPVow==}
     dev: true
@@ -8088,7 +8118,7 @@ packages:
       prop-types: ^15.0.0
       react: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
       prop-types: 15.8.1
       react: 17.0.2
       tiny-warning: 1.0.3
@@ -8138,12 +8168,6 @@ packages:
     resolution: {integrity: sha512-ZDj8HUSHt2FWJBWHTCkK4HDjrAamcMcGB7m5UCZ/IGsF/WaPDlCG1MbLnJJIawqc7H4X6eh+hda8Q07+30FteA==}
     dependencies:
       mathjs: 10.6.4
-    dev: false
-
-  /msfs-navdata@1.2.4:
-    resolution: {integrity: sha512-A4nvJ8AZ58n8/0cbbAG+3SchChAW35FnzH1Bw9k9DfzK5fKbMWZwlcCWWuUGuKzoPV2CHdqJyn2xn1kWoRIH3g==}
-    dependencies:
-      msfs-geo: 0.1.0-alpha5
     dev: false
 
   /mz@2.7.0:
@@ -9151,7 +9175,7 @@ packages:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
       classnames: 2.3.2
       dom-align: 1.12.4
       rc-util: 5.38.1(react-dom@17.0.2)(react@17.0.2)
@@ -9166,7 +9190,7 @@ packages:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
       classnames: 2.3.2
       rc-util: 5.38.1(react-dom@17.0.2)(react@17.0.2)
       react: 17.0.2
@@ -9195,7 +9219,7 @@ packages:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
       classnames: 2.3.2
       rc-trigger: 5.3.4(react-dom@17.0.2)(react@17.0.2)
       react: 17.0.2
@@ -9209,7 +9233,7 @@ packages:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
       classnames: 2.3.2
       rc-align: 4.0.15(react-dom@17.0.2)(react@17.0.2)
       rc-motion: 2.9.0(react-dom@17.0.2)(react@17.0.2)
@@ -9224,7 +9248,7 @@ packages:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-is: 18.2.0
@@ -9452,7 +9476,7 @@ packages:
   /regenerator-transform@0.15.2:
     resolution: {integrity: sha512-hfMp2BoF0qOk3uc5V20ALGDS2ddjQaLrdl7xrGXvAIow7qeWRM2VA2HuCHkUKk9slq3VwEwLNK3DFBqDfPGYtg==}
     dependencies:
-      '@babel/runtime': 7.23.5
+      '@babel/runtime': 7.26.7
     dev: true
 
   /regexp.prototype.flags@1.5.1:
@@ -10378,6 +10402,11 @@ packages:
   /typed-function@2.1.0:
     resolution: {integrity: sha512-bctQIOqx2iVbWGDGPWwIm18QScpu2XRmkC19D8rQGFsjKSgteq/o1hTZvIG/wuDq8fanpBDrLkLq+aEN/6y5XQ==}
     engines: {node: '>= 10'}
+    dev: false
+
+  /typed-function@4.2.1:
+    resolution: {integrity: sha512-EGjWssW7Tsk4DGfE+5yluuljS1OGYWiI1J6e8puZz9nTMM51Oug8CD5Zo4gWMsOhq5BI+1bF+rWTm4Vbj3ivRA==}
+    engines: {node: '>= 18'}
     dev: false
 
   /typescript@5.5.2:

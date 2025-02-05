@@ -1,7 +1,6 @@
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { DataManager, FlightPlanIndex, FlightPlanService, GuidanceController } from '@fmgc/index';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { ArraySubject, Subject } from '@microsoft/msfs-sdk';
@@ -11,6 +10,10 @@ import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { EfisSide, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { DataManager } from '@fmgc/flightplanning/DataManager';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export enum FmcOperatingModes {
   Master,
@@ -211,4 +214,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   clearCheckSpeedModeMessage(): void;
 
   reset(): void;
+
+  /** Clean up all subscriptions */
+  destroy(): void;
 }

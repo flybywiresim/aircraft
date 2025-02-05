@@ -3,18 +3,6 @@
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import {
-  A320FlightPlanPerformanceData,
-  DataManager,
-  EfisInterface,
-  EfisSymbols,
-  FlightPhaseManager,
-  FlightPlanIndex,
-  Navigation,
-  NavigationDatabase,
-  NavigationDatabaseBackend,
-  NavigationDatabaseService,
-} from '@fmgc/index';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import {
   ArraySubject,
@@ -49,7 +37,7 @@ import {
   TypeIIMessage,
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
+import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 import { distanceTo, Coordinates } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
@@ -57,9 +45,16 @@ import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { A380Failure } from '@failures';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
-import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
 import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/MfdUiService';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { Navigation } from '@fmgc/navigation/Navigation';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -74,7 +69,7 @@ export interface FmsErrorMessage {
  * Handles navigation (and potentially other aspects) for MFD pages
  */
 export class FlightManagementComputer implements FmcInterface {
-  protected subs = [] as Subscription[];
+  protected readonly subs = [] as Subscription[];
 
   #mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null;
 
@@ -101,6 +96,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.#operatingMode = value;
   }
 
+  // FIXME A320 data
   #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData(), FpmConfigs.A380);
 
   get flightPlanService() {
@@ -255,13 +251,12 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
 
-      this.shouldBePreflightPhase.sub((shouldBePreflight) => {
-        if (shouldBePreflight) {
-          this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
-        }
-      }, true);
-
       this.subs.push(
+        this.shouldBePreflightPhase.sub((shouldBePreflight) => {
+          if (shouldBePreflight) {
+            this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
+          }
+        }, true),
         this.enginesWereStarted.sub((val) => {
           if (
             val &&
@@ -278,6 +273,8 @@ export class FlightManagementComputer implements FmcInterface {
           SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', v);
         }, true),
       );
+
+      this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
     }
 
     let lastUpdateTime = Date.now();
@@ -291,6 +288,12 @@ export class FlightManagementComputer implements FmcInterface {
     }, 100);
 
     console.log(`${FmcIndex[this.instance]} initialized.`);
+  }
+
+  destroy() {
+    for (const s of this.subs) {
+      s.destroy();
+    }
   }
 
   public revisedWaypoint(): Fix | undefined {
@@ -660,8 +663,8 @@ export class FlightManagementComputer implements FmcInterface {
   /**
    * This method is called by the FlightPhaseManager after a flight phase change
    * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
-   * @param prevPhase {FmgcFlightPhases} Previous FmgcFlightPhase
-   * @param nextPhase {FmgcFlightPhases} New FmgcFlightPhase
+   * @param prevPhase Previous FmgcFlightPhase
+   * @param nextPhase New FmgcFlightPhase
    */
   onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
     this.acInterface.updateConstraints();
