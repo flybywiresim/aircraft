@@ -133,6 +133,7 @@ export class FwsNormalChecklists {
 
           if (this.visibleDeferredProcedureKeys.length === 0) {
             this.activeDeferredProcedureId.set(null);
+            this.activeProcedure = null;
             return;
           }
           const firstProcedureKey = this.visibleDeferredProcedureKeys[0] ?? null;
@@ -185,6 +186,11 @@ export class FwsNormalChecklists {
           }),
         );
         this.pub.pub('fws_deferred_procedures', flattened, true);
+
+        // If currently active deferred procedure was deleted, refresh page
+        if (!map.has(this.activeDeferredProcedureId.get())) {
+          this.checklistId.notify();
+        }
       }),
     );
 
@@ -317,7 +323,7 @@ export class FwsNormalChecklists {
             : null,
         );
       }
-    } else {
+    } else if (this.activeProcedure) {
       this.activeProcedure.moveDown(skipCompletedSensed);
     }
   }
