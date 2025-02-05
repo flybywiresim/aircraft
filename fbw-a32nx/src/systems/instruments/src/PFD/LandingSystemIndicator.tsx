@@ -757,35 +757,40 @@ class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), FmgcFlightPhase.Preflight);
 
-  private readonly fmgcDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord3'));
+  private readonly fmgcDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord2'));
+
+  private readonly fmgcDiscreteWord3 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord3'));
 
   private readonly fmgcDiscreteWord4 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord4'));
 
-  private readonly landModeArmedOrActive = MappedSubject.create(
-    ([fmgcDiscreteWord2, fmgcDiscreteWord4]) =>
-      fmgcDiscreteWord4.bitValueOr(14, false) || fmgcDiscreteWord2.bitValueOr(20, false),
+  private readonly fcuEisDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fcuEisDiscreteWord2'));
+
+  private readonly locArmedOrActive = MappedSubject.create(
+    ([fmgcDiscreteWord2, fmgcDiscreteWord3]) =>
+      fmgcDiscreteWord2.bitValueOr(13, false) ||
+      fmgcDiscreteWord2.bitValueOr(14, false) ||
+      fmgcDiscreteWord3.bitValueOr(16, false),
     this.fmgcDiscreteWord2,
-    this.fmgcDiscreteWord4,
+    this.fmgcDiscreteWord3,
   );
 
-  private readonly fcuEisDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fcuEisDiscreteWord2'));
+  private readonly landModeArmedOrActive = MappedSubject.create(
+    ([fmgcDiscreteWord3, fmgcDiscreteWord4]) =>
+      fmgcDiscreteWord4.bitValueOr(14, false) || fmgcDiscreteWord3.bitValueOr(20, false),
+    this.fmgcDiscreteWord3,
+    this.fmgcDiscreteWord4,
+  );
 
   private readonly lsPushed = this.fcuEisDiscreteWord2.map((w) => w.bitValueOr(22, false));
 
   private readonly lsReminderVisible = MappedSubject.create(
-    ([fwcPhase, fmgcPhase, landModeArmedOrActive, lsPushed]) => {
+    ([landModeArmedOrActive, locArmedOrActive, lsPushed]) => {
       return (
-        landModeArmedOrActive &&
-        fmgcPhase === FmgcFlightPhase.Approach &&
-        !lsPushed && // TODO Check if LOC or G/S scales are invalid
-        fwcPhase !== 8 &&
-        fwcPhase !== 9 &&
-        fwcPhase !== 10
+        (landModeArmedOrActive || locArmedOrActive) && !lsPushed // TODO Check if LOC or G/S scales are invalid
       );
     },
-    this.fwcFlightPhase,
-    this.fmgcFlightPhase,
     this.landModeArmedOrActive,
+    this.locArmedOrActive,
     this.lsPushed,
   );
 
