@@ -223,7 +223,7 @@ export class GuidanceController {
         apprMsg = this.flightPlanService.active.originDeparture.ident;
       }
     } else {
-      const runway = this.flightPlanService.active.isApproachActive;
+      const runway = this.flightPlanService.active.destinationRunway;
       if (runway) {
         const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
 

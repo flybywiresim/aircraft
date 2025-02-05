@@ -149,6 +149,7 @@
 1. [A380X/FMS] Add basic FIX INFO functionality - @Benjozork (Benjamin Dupont)
 1. [A380X/FMS] Add STEP ALTs tab on VERT REV page & auto step climb functionality - @flogross89 (floridude)
 1. [A380X/FMS] Add selection of CLB/DES constraint if constraint type is unknown - @flogross89 (floridude)
+1. [FMS] Fix approach ident only showing on ND when approach is being flown - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
