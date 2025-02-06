@@ -4322,10 +4322,6 @@ export class FwsCore {
         });
         const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
         tempMemoArrayRight = tempArrayRight.concat(newCode);
-
-        if (value.sysPage > -1) {
-          SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
-        }
       }
     }
 
@@ -4344,9 +4340,6 @@ export class FwsCore {
         });
 
         tempMemoArrayLeft = tempMemoArrayLeft.concat(newCode);
-        if (value.sysPage > -1) {
-          SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
-        }
       }
     }
 
@@ -4354,7 +4347,7 @@ export class FwsCore {
     const memoOrderRight: string[] = [];
 
     for (const [, value] of Object.entries(this.memos.ewdToLdgMemos)) {
-      if (value.side === 'LEFT') {
+      if (value.leftSide) {
         memoOrderLeft.push(...value.codesToReturn);
       } else {
         memoOrderRight.push(...value.codesToReturn);
