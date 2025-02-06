@@ -1096,7 +1096,7 @@ export class FwsCore {
 
   public readonly flightPhase34567 = this.flightPhase.map((v) => v === 3 || v === 4 || v === 5 || v === 6 || v === 7);
 
-  public readonly flightPhase1211 = this.flightPhase.map((v) => v === 12 || v === 11);
+  public readonly flightPhase1211 = this.flightPhase.map((v) => v === 1 || v === 2 || v === 11);
 
   public readonly flightPhase89 = this.flightPhase.map((v) => v === 8 || v === 9);
 
@@ -1108,10 +1108,12 @@ export class FwsCore {
 
   private readonly flightPhase189 = this.flightPhase.map((v) => v === 1 || v === 8 || v === 9);
 
+  private readonly flightPhase1112 = this.flightPhase.map((v) => v >= 11);
+
   private readonly flightPhase12Or1112 = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.flightPhase1Or2,
-    this.flightPhase1211,
+    this.flightPhase1112,
   );
 
   public readonly flightPhase1112MoreThanOneMin = Subject.create(false);
@@ -2026,7 +2028,7 @@ export class FwsCore {
 
     this.phase815MinConfNode.write(this.flightPhase.get() === 8, deltaTime);
 
-    this.flightPhase1112MoreThanOneMinConfNode.write(this.flightPhase.get() >= 11, deltaTime);
+    this.flightPhase1112MoreThanOneMinConfNode.write(this.flightPhase1112.get(), deltaTime);
     this.flightPhase1112MoreThanOneMin.set(this.flightPhase1112MoreThanOneMinConfNode.read());
 
     this.phase12ShutdownMemoryNode.write(this.flightPhase.get() === 12, !this.phase112.get());
