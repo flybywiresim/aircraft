@@ -48,7 +48,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
     (r) => a380EfisRangeSettings[r],
   );
 
-  private readonly RangeChangeInProgress = ConsumerSubject.create(this.sub.on('set_range_change').whenChanged(), false);
+  private readonly rangeChangeInProgress = ConsumerSubject.create(this.sub.on('set_range_change').whenChanged(), false);
 
   private readonly visible = MappedSubject.create(
     ([mode, range]) =>
@@ -192,7 +192,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
             FL
           </text>
         </g>
-        <g visibility={this.RangeChangeInProgress.map((it) => (it ? 'visible' : 'hidden'))}>
+        <g visibility={this.rangeChangeInProgress.map((it) => (it ? 'visible' : 'hidden'))}>
           <text x="422" y="920" class="Green FontSmall MiddleAlign">
             VD RANGE CHANGE
           </text>

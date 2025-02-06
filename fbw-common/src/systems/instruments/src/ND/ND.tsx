@@ -473,7 +473,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               )}
               x={384}
               y={320}
-              class="Green FontIntermediate a380xModeRangeChange"
+              class="Green mode-range-change"
             >
               {this.props.modeChangeMessage}
             </Flag>
