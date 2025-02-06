@@ -36,13 +36,13 @@ interface IconButtonProps extends ComponentProps {
  */
 export class IconButton extends DisplayComponent<IconButtonProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private spanRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly spanRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private svgGroupRef = FSComponent.createRef<SVGGElement>();
+  private readonly svgGroupRef = FSComponent.createRef<SVGGElement>();
 
-  private fillColor = Subject.create('white');
+  private readonly fillColor = Subject.create('white');
 
   private onClick() {
     if (!this.props?.disabled?.get() && this.props.onClick !== undefined) {

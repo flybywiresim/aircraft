@@ -9,6 +9,7 @@ export type CruiseStepEntry = {
   toAltitude: number;
   /**
    * Index of the waypoint to insert the step at.
+   * WARNING: Is not always updated, e.g. for DIRECT TOs
    */
   waypointIndex: number;
   /**

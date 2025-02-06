@@ -53,8 +53,8 @@ export enum ClimbDerated {
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */
 export class FmgcData {
-  static fmcFormatSpeed(sub: Subscribable<number | null>) {
-    return sub.map((it) => (it !== null ? it.toFixed(0) : '---'));
+  static fmcFormatValue(sub: Subscribable<number | null>, numberDashes = 3) {
+    return sub.map((it) => (it !== null ? it.toFixed(0) : '-'.repeat(numberDashes)));
   }
 
   public readonly cpnyFplnAvailable = Subject.create(false);

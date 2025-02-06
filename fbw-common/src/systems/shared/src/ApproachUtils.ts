@@ -54,7 +54,7 @@ export class ApproachUtils {
   public static shortApproachName: {
     /**
      * Format an approach name in short format (max 7 chars)
-     * @param approach An msfs-navdata approach object
+     * @param approach An approach object
      * @returns An approach name in short format (e.g. RNV23LY)
      */
     (approach: Approach): string;
@@ -71,7 +71,7 @@ export class ApproachUtils {
   public static longApproachName: {
     /*
      * Format an approach name in long format (max 9 chars)
-     * @param approach an msfs-navdata approach object
+     * @param approach an approach object
      * @returns An approach name in long format (e.g. RNAV23L-Y)
      */
     (approach: Approach): string;
