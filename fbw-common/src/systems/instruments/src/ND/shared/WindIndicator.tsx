@@ -54,7 +54,7 @@ export class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     sub
       .on('trueHeadingRaw')
-      .atFrequency(10)
+      .atFrequency(25)
       .handle((value) => {
         this.planeHeadingWord.setWord(value);
       });

@@ -532,7 +532,7 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     sub
       .on('groundSpeed')
-      .atFrequency(10)
+      .atFrequency(25)
       .handle((value) => this.groundSpeedRegister.setWord(value));
 
     this.groundSpeedRegister.sub((data) => {
@@ -543,7 +543,7 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     sub
       .on('trueAirSpeed')
-      .atFrequency(10)
+      .atFrequency(8)
       .handle((value) => this.trueAirSpeedRegister.setWord(value));
 
     this.trueAirSpeedRegister.sub((data) => {
