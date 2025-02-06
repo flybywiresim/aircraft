@@ -38,7 +38,6 @@ import {
 import { VerticalMode } from '@shared/autopilot';
 import { VhfComManagerDataEvents } from '@flybywiresim/rmp';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
-import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import {
   EcamAbnormalProcedures,
   EcamDeferredProcedures,
@@ -63,6 +62,7 @@ import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarn
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
 import { InteractivePointEvents } from 'instruments/src/MsfsAvionicsCommon/providers/InteractivePointsPublisher';
+import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -953,16 +953,42 @@ export class FwsCore {
     this.crossFeed4ValveOpen,
   );
 
-  public readonly fuelCtrTankModeSelMan = ConsumerSubject.create(this.sub.on('fuel_ctr_tk_mode_sel_man'), false);
-
   public readonly fmsZeroFuelWeight = Arinc429Register.empty();
   public readonly fmsZeroFuelWeightCg = Arinc429Register.empty();
 
   public readonly fmsZfwOrZfwCgNotSet = Subject.create(false);
 
+  private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board'), 0);
+
   private readonly refuelPanel = ConsumerSubject.create(this.sub.on('interactive_point_open_19'), 0);
 
-  public readonly refuelPanelOpen = this.refuelPanel.map((v) => !!v);
+  private readonly fuelingInitiated = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
+
+  private readonly fuelingTarget = ConsumerSubject.create(this.sub.on('fuel_desired_by_user'), null);
+
+  public readonly refuelPanelOpen = MappedSubject.create(
+    ([refuelPanelOpen, fuelingInprogress]) => !!refuelPanelOpen || fuelingInprogress,
+    this.refuelPanel,
+    this.fuelingInitiated,
+  );
+
+  private readonly isRefuelFuelTarget = MappedSubject.create(
+    ([fuelOnBoard, targetFuel]) => fuelOnBoard <= targetFuel,
+    this.fuelOnBoard,
+    this.fuelingTarget,
+  );
+
+  public readonly refuelInProgress = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.isRefuelFuelTarget,
+    this.fuelingInitiated,
+  );
+
+  public readonly defuelInProgress = MappedSubject.create(
+    ([fuelingInitiated, refuel]) => fuelingInitiated && !refuel,
+    this.fuelingInitiated,
+    this.isRefuelFuelTarget,
+  );
 
   /* HYDRAULICS */
 
@@ -1934,6 +1960,12 @@ export class FwsCore {
    */
   update(_deltaTime: number) {
     const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
+
+    if (!this.usrStartRefueling.get()) {
+      this.fuelOnBoard.pause();
+    } else {
+      this.fuelOnBoard.resume();
+    }
 
     const ecpNotReachable =
       !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&

@@ -34,7 +34,7 @@ import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/pow
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
 import { AtsuSystem } from 'systems-host/systems/atsu';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
-import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
+import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {

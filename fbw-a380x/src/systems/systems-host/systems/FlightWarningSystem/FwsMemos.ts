@@ -47,6 +47,22 @@ export class FwsMemos {
       codesToReturn: ['280000001'],
       memoInhibit: () => false,
     },
+    280000003: {
+      // DEFUEL IN PROGRESS
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: this.fws.defuelInProgress,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['280000003'],
+      memoInhibit: () => false,
+    },
+    280000009: {
+      // REFUEL IN PROGRESS
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: this.fws.refuelInProgress,
+      whichCodeToReturn: () => [0],
+      codesToReturn: [''],
+      memoInhibit: () => false,
+    },
     '280000010': {
       // REFUEL PNL DOOR OPEN
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
