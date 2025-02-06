@@ -98,4 +98,12 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
       </div>
     );
   }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
 }

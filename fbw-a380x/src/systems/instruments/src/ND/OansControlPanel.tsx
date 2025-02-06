@@ -57,9 +57,10 @@ import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconBut
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
-import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { Feature, Geometry, LineString, Point, Position } from '@turf/turf';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { InteractionMode, InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
@@ -858,10 +859,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         BTV STOP DISTANCE
                       </div>
                       <div>
-                        <InputField<number>
+                        <InputField<number, number, false>
                           dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                           dataHandlerDuringValidation={async (val) => this.btvFallbackSetDistance(val)}
-                          value={this.reqStoppingDistance}
+                          readonlyValue={this.reqStoppingDistance}
                           mandatory={Subject.create(false)}
                           inactive={this.selectedEntityString.map((it) => !it)}
                           hEventConsumer={this.hEventConsumer}

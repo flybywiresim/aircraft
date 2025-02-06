@@ -28,7 +28,7 @@ import {
   pointToLineDistance,
 } from './OancMapUtils';
 import { Coordinates, placeBearingDistance } from 'msfs-geo';
-import { NavigationDatabaseService } from '@fmgc/index';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 export const MIN_TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
 const CLAMP_DRY_STOPBAR_DISTANCE = 100; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway

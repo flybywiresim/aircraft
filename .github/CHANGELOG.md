@@ -145,6 +145,11 @@
 1. [A380X/PFD] Add FCU ALT ABOVE/BELOW A/C FMA messages - @Pruznak (Pruznak)
 1. [A380X/MFD] Updated disabled input field styling - @jet2code (john)
 1. [A380X/FMS] Add page scroll via soft keys & individual scroll via KCCU on MFD F-PLN - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Added nav database swap confirmation - @tracernz (Mike)
+1. [A380X/FMS] Add basic FIX INFO functionality - @Benjozork (Benjamin Dupont)
+1. [A380X/FMS] Add STEP ALTs tab on VERT REV page & auto step climb functionality - @flogross89 (floridude)
+1. [A380X/FMS] Add selection of CLB/DES constraint if constraint type is unknown - @flogross89 (floridude)
+1. [FMS] Fix approach ident only showing on ND when approach is being flown - @BravoMike99 (bruno_pt99)
 1. [A380X/BTV] Add EXIT MISSED indication on FMA and aural triple click - @flogross89 (floridude)
 1. [A380X/OANS] Add flags/crosses capability, change cursor to magenta, implement ARPT NAV reset button - @flogross89 (floridude)
 

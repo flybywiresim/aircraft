@@ -50,6 +50,7 @@ render(
         realism: {
           mcduKeyboard: true,
           pauseOnTod: true,
+          autoStepClimb: false,
           pilotAvatars: true,
           eclSoftKeys: false,
         },
