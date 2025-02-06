@@ -1511,8 +1511,6 @@ export class FwsCore {
 
   public readonly autoBrake = Subject.create(0);
 
-  public readonly usrStartRefueling = Subject.create(false);
-
   public readonly engSelectorPosition = Subject.create(0);
 
   public readonly eng1AntiIce = Subject.create(false);
@@ -1961,7 +1959,7 @@ export class FwsCore {
   update(_deltaTime: number) {
     const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
 
-    if (!this.usrStartRefueling.get()) {
+    if (!this.fuelingInitiated.get()) {
       this.fuelOnBoard.pause();
     } else {
       this.fuelOnBoard.resume();
@@ -2180,7 +2178,6 @@ export class FwsCore {
 
     this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_LDGMEMO', 'bool'));
 
-    this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
     this.engSelectorPosition.set(SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum'));
     this.eng1AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:1', 'bool'));
     this.eng2AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:2', 'bool'));

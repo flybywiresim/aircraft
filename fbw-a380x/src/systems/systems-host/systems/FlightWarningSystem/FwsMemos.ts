@@ -60,7 +60,7 @@ export class FwsMemos {
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: this.fws.refuelInProgress,
       whichCodeToReturn: () => [0],
-      codesToReturn: [''],
+      codesToReturn: ['280000009'],
       memoInhibit: () => false,
     },
     '280000010': {
