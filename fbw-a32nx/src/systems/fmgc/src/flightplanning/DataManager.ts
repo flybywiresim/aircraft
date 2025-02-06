@@ -7,8 +7,9 @@ import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { Coordinates } from 'msfs-geo';
+import { A32NX_Util } from '../../../shared/src/A32NX_Util';
 
-enum PilotWaypointType {
+export enum PilotWaypointType {
   Pbd = 1,
   Pbx = 2,
   LatLon = 3,
@@ -140,6 +141,10 @@ export class DataManager {
   storeWaypoint(wp: PilotWaypoint, index: number) {
     this.storedWaypoints[index] = wp;
     this.updateLocalStorage();
+  }
+
+  public getStoredWaypoint(index: number): PilotWaypoint | undefined {
+    return this.storedWaypoints[index];
   }
 
   async deleteStoredWaypoint(index: number, updateStorage = true) {

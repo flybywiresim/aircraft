@@ -4,14 +4,15 @@
 
 import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType, Icao } from '@flybywiresim/fbw-sdk';
 
-import { EventBus, FlightPlanService } from '@fmgc/index';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { Coordinates } from 'msfs-geo';
+import { FlightPlanService } from '../flightplanning/FlightPlanService';
 
 export enum SelectedNavaidType {
   None,
@@ -82,6 +83,20 @@ export class Navigation implements NavigationProvider {
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_COMPUTED_AIRSPEED`,
   );
 
+  private trueAirspeed: number | null = null;
+
+  private static readonly trueAirspeedVars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_TRUE_AIRSPEED`,
+  );
+
+  private staticAirTemperature: number | null = null;
+
+  private static readonly staticAirTemperatureVars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_STATIC_AIR_TEMPERATURE`,
+  );
+
   private readonly navaidSelectionManager: NavaidSelectionManager;
 
   private readonly landingSystemSelectionManager: LandingSystemSelectionManager;
@@ -117,9 +132,7 @@ export class Navigation implements NavigationProvider {
 
     this.updatePosition();
     this.updateRadioHeight();
-    this.updateBaroAltitude();
-    this.updatePressureAltitude();
-    this.updateComputedAirspeed();
+    this.updateAirData();
 
     NearbyFacilities.getInstance().update(deltaTime);
 
@@ -177,16 +190,13 @@ export class Navigation implements NavigationProvider {
     this.radioHeight = null;
   }
 
-  private updateBaroAltitude(): void {
+  private updateAirData(): void {
     this.baroAltitude = this.getAdiruValue(Navigation.baroAltitudeVars);
-  }
-
-  private updatePressureAltitude(): void {
     this.pressureAltitude = this.getAdiruValue(Navigation.pressureAltitudeVars);
-  }
 
-  private updateComputedAirspeed(): void {
     this.computedAirspeed = this.getAdiruValue(Navigation.computedAirspeedVars);
+    this.trueAirspeed = this.getAdiruValue(Navigation.trueAirspeedVars);
+    this.staticAirTemperature = this.getAdiruValue(Navigation.staticAirTemperatureVars);
   }
 
   private updatePosition(): void {
@@ -217,6 +227,14 @@ export class Navigation implements NavigationProvider {
 
   public getComputedAirspeed(): number | null {
     return this.computedAirspeed;
+  }
+
+  public getTrueAirspeed(): number | null {
+    return this.trueAirspeed;
+  }
+
+  public getStaticAirTemperature(): number | null {
+    return this.staticAirTemperature;
   }
 
   public getRadioHeight(): number | null {
