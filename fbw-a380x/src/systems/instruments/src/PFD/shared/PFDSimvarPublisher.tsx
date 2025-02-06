@@ -329,7 +329,7 @@ export enum PFDVars {
   lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   trimPosition = 'ELEVATOR TRIM POSITION',
-  cgPercent = 'CG PERCENT',
+  cgPercent = 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
   fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
