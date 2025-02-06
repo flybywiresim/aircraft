@@ -49,21 +49,6 @@ export class FwsMemos {
       sysPage: SdPages.None,
       side: 'RIGHT',
     },
-    '0000060': {
-      // SPEED BRK
-      flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([speedBrakeCommand, fwcFlightPhase]) => speedBrakeCommand && ![1, 8, 9, 10].includes(fwcFlightPhase),
-        this.fws.speedBrakeCommand,
-        this.fws.flightPhase,
-      ),
-      whichCodeToReturn: () => [this.fws.amberSpeedBrake.get() ? 1 : 0],
-      codesToReturn: ['000006001', '000006002'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: SdPages.None,
-      side: 'RIGHT',
-    },
     '280000001': {
       // CROSSFEED OPEN
       flightPhaseInhib: [3, 4, 5, 6, 7],
@@ -88,7 +73,7 @@ export class FwsMemos {
     },
     '300000001': {
       // ENG ANTI ICE
-      flightPhaseInhib: [3, 4, 5, 7, 8],
+      flightPhaseInhib: [],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.or(),
         this.fws.eng1AntiIce,
