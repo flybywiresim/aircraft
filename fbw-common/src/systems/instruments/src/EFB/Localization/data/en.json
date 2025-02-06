@@ -631,6 +631,7 @@
     "Realism": {
       "AdirsAlignTime": "ADIRS Align Time",
       "AutofillChecklists": "Autofill Checklists",
+      "AutoStepClimb": "Automatic Step Climb",
       "BoardingTime": "Boarding Time",
       "DmcSelfTestTime": "DMC Self Test Time",
       "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",

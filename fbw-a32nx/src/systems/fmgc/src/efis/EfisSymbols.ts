@@ -79,13 +79,13 @@ export class EfisSymbols<T extends number> {
   private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
 
   private mapReferenceLatitude: Record<EfisSide, Arinc429OutputWord> = {
-    L: Arinc429OutputWord.empty('L:A32NX_EFIS_L_MRP_LAT'),
-    R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LAT'),
+    L: new Arinc429OutputWord('L:A32NX_EFIS_L_MRP_LAT'),
+    R: new Arinc429OutputWord('L:A32NX_EFIS_R_MRP_LAT'),
   };
 
   private mapReferenceLongitude: Record<EfisSide, Arinc429OutputWord> = {
-    L: Arinc429OutputWord.empty('L:A32NX_EFIS_L_MRP_LONG'),
-    R: Arinc429OutputWord.empty('L:A32NX_EFIS_R_MRP_LONG'),
+    L: new Arinc429OutputWord('L:A32NX_EFIS_L_MRP_LONG'),
+    R: new Arinc429OutputWord('L:A32NX_EFIS_R_MRP_LONG'),
   };
 
   private readonly flightPhase = ConsumerValue.create(
@@ -801,7 +801,7 @@ export class EfisSymbols<T extends number> {
 
     // FP fix info
     if (flightPlan instanceof FlightPlan && flightPlan.index === FlightPlanIndex.Active && !isAlternate) {
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < flightPlan.fixInfos.length; i++) {
         const fixInfo = flightPlan.fixInfos[i];
 
         if (!fixInfo) {
@@ -813,8 +813,8 @@ export class EfisSymbols<T extends number> {
           ident: fixInfo.fix.ident,
           location: fixInfo.fix.location,
           type: NdSymbolTypeFlags.FixInfo,
-          radials: fixInfo.radials.map((it) => it.trueBearing),
-          radii: fixInfo.radii.map((it) => it.radius),
+          radials: fixInfo.radials?.map((it) => it.trueBearing),
+          radii: fixInfo.radii?.map((it) => it.radius),
         });
       }
     }

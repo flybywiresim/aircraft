@@ -17,9 +17,9 @@ interface ConfirmationDialogProps extends ComponentProps {
  */
 export class ConfirmationDialog extends DisplayComponent<ConfirmationDialogProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
