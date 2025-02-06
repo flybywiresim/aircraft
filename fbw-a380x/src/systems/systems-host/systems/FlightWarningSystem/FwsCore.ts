@@ -2412,6 +2412,8 @@ export class FwsCore {
       [eng3APumpBelow2900, eng3BPumpBelow2900, eng4APumpBelow2900, eng4BPumpBelow2900].filter((v) => v).length > 3,
     );
 
+    this.ratDeployed.set(SimVar.GetSimVarValue('L:A32NX_RAT_STOW_POSITION', 'percent over 100'));
+
     /* ADIRS acquisition */
     /* NAVIGATION */
 
