@@ -452,7 +452,7 @@ export class FwsNormalChecklists {
         this.activeDeferredProcedureId.get() === null
       ) {
         this.navigateToChecklist(0);
-      } else {
+      } else if (this.activeProcedure) {
         this.activeProcedure.checkSelected();
       }
     }
