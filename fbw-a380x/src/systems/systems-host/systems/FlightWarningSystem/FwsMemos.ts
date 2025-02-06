@@ -38,6 +38,17 @@ export class FwsMemos {
       sysPage: SdPages.None,
       side: 'RIGHT',
     },
+
+    210000001: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.highLandingFieldElevation,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['210000001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: SdPages.None,
+      side: 'RIGHT',
+    },
     271000001: {
       // GND SPLRs ARMED
       flightPhaseInhib: [2, 9, 10],
@@ -150,17 +161,6 @@ export class FwsMemos {
       simVarIsActive: MappedSubject.create(([ndXfrKnob]) => ndXfrKnob !== 1, this.fws.ndXfrKnob),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000029001'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: SdPages.None,
-      side: 'RIGHT',
-    },
-    '0000230': {
-      // MAN LANDING ELEVATION
-      flightPhaseInhib: [],
-      simVarIsActive: this.fws.manLandingElevation,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000023001'],
       memoInhibit: () => false,
       failure: 0,
       sysPage: SdPages.None,

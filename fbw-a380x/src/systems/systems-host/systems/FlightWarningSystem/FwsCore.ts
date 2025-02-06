@@ -325,7 +325,9 @@ export class FwsCore {
 
   public readonly ndXfrKnob = Subject.create(0);
 
-  public readonly manLandingElevation = Subject.create(false);
+  private readonly landingElevation = Arinc429Register.empty();
+
+  public readonly highLandingFieldElevation = Subject.create(false);
 
   public readonly noMobileSwitchPosition = Subject.create(0);
 
@@ -3184,6 +3186,10 @@ export class FwsCore {
     this.pressSysFault.set(
       this.ocsm1Failure.get() && this.ocsm2Failure.get() && this.ocsm3Failure.get() && this.ocsm4Failure.get(),
     );
+
+    this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');
+
+    this.highLandingFieldElevation.set(this.landingElevation.valueOr(0) > 8550);
 
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
