@@ -504,14 +504,14 @@ void FacComputer::step()
       rtb_mach = FacComputer_U.in.bus_inputs.adr_own_bus.mach.Data;
       rtb_alpha = FacComputer_U.in.bus_inputs.adr_own_bus.aoa_corrected_deg.Data;
       rtb_p_s_c = FacComputer_U.in.bus_inputs.adr_own_bus.corrected_average_static_pressure.Data;
-      rtb_alt = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_corrected_ft.Data;
+      rtb_alt = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_standard_ft.Data;
     } else if (!rtb_DataTypeConversion_l5) {
       rtb_V_ias = FacComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.Data;
       rtb_V_tas = FacComputer_U.in.bus_inputs.adr_3_bus.airspeed_true_kn.Data;
       rtb_mach = FacComputer_U.in.bus_inputs.adr_3_bus.mach.Data;
       rtb_alpha = FacComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.Data;
       rtb_p_s_c = FacComputer_U.in.bus_inputs.adr_3_bus.corrected_average_static_pressure.Data;
-      rtb_alt = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_corrected_ft.Data;
+      rtb_alt = FacComputer_U.in.bus_inputs.adr_3_bus.altitude_standard_ft.Data;
     } else {
       rtb_V_ias = 0.0F;
       rtb_V_tas = 0.0F;

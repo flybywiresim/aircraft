@@ -330,9 +330,10 @@ class FmgcComputer final
     real_T RateLimiterVariableTs_InitialCondition;
     real_T ScheduledGain2_Table[4];
     real_T ScheduledGain4_Table[2];
+    real_T BitfromLabel1_bit;
     real_T BitfromLabel_bit;
     real_T BitfromLabel2_bit;
-    real_T BitfromLabel1_bit;
+    real_T BitfromLabel1_bit_p;
     real_T BitfromLabel3_bit;
     real_T BitfromLabel4_bit;
     real_T BitfromLabel6_bit;
@@ -385,7 +386,7 @@ class FmgcComputer final
     real_T BitfromLabel3_bit_k;
     real_T BitfromLabel_bit_fu;
     real_T BitfromLabel2_bit_m;
-    real_T BitfromLabel1_bit_p;
+    real_T BitfromLabel1_bit_pn;
     real_T BitfromLabel_bit_nk;
     real_T BitfromLabel_bit_o;
     real_T BitfromLabel1_bit_ls;
@@ -1204,10 +1205,10 @@ class FmgcComputer final
   static void FmgcComputer_LagFilter_Reset(rtDW_LagFilter_FmgcComputer_T *localDW);
   static void FmgcComputer_LagFilter(real32_T rtu_U, real_T rtu_C1, real_T rtu_dt, real32_T *rty_Y,
     rtDW_LagFilter_FmgcComputer_T *localDW);
-  static void FmgcComputer_MATLABFunction_oh_Reset(rtDW_MATLABFunction_FmgcComputer_f_T *localDW);
-  static void FmgcComputer_MATLABFunction_m(boolean_T rtu_u, real_T rtu_Ts, boolean_T *rty_y, real_T rtp_isRisingEdge,
+  static void FmgcComputer_MATLABFunction_m(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void FmgcComputer_MATLABFunction_d_Reset(rtDW_MATLABFunction_FmgcComputer_f_T *localDW);
+  static void FmgcComputer_MATLABFunction_m3(boolean_T rtu_u, real_T rtu_Ts, boolean_T *rty_y, real_T rtp_isRisingEdge,
     real_T rtp_retriggerable, real_T rtp_triggerDuration, rtDW_MATLABFunction_FmgcComputer_f_T *localDW);
-  static void FmgcComputer_MATLABFunction_f(const base_arinc_429 *rtu_u, boolean_T *rty_y);
   static void FmgcComputer_MATLABFunction_gy(const boolean_T rtu_u[19], real32_T *rty_y);
   FmgcOuterLoops LawMDLOBJ1;
 };
