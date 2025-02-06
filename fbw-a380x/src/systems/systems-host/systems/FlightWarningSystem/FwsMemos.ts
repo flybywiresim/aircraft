@@ -24,15 +24,6 @@ export class FwsMemos {
   constructor(private fws: FwsCore) {}
   /** MEMOs on right side of EWD */
   ewdMemos: EwdMemoDict = {
-    '0000050': {
-      // REFUELING
-      flightPhaseInhib: [],
-      simVarIsActive: this.fws.usrStartRefueling,
-      whichCodeToReturn: () => [0],
-      codesToReturn: ['000005001'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
-    },
-
     210000001: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.highLandingFieldElevation,
@@ -55,6 +46,14 @@ export class FwsMemos {
       whichCodeToReturn: () => [0],
       codesToReturn: ['280000001'],
       memoInhibit: () => false,
+    },
+    '280000010': {
+      // REFUEL PNL DOOR OPEN
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: this.fws.refuelPanelOpen,
+      whichCodeToReturn: () => (this.fws.oneEngineRunning.get() ? [1] : [0]),
+      memoInhibit: () => false,
+      codesToReturn: ['280000010', '280000011'],
     },
     '280000013': {
       // CROSSFEED OPEN during TO or GA
@@ -269,7 +268,7 @@ export class FwsMemos {
       // RAT OUT
       flightPhaseInhib: [],
       simVarIsActive: this.fws.ratDeployed.map((v) => v > 0),
-      whichCodeToReturn: () => [[1, 2].includes(this.fws.flightPhase.get()) ? 0 : 1],
+      whichCodeToReturn: () => [this.fws.flightPhase1211.get() ? 1 : 0],
       codesToReturn: ['242000001', '242000002'],
       memoInhibit: () => false,
     },

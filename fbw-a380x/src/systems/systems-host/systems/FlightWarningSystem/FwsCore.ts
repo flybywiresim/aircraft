@@ -62,6 +62,7 @@ import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/
 import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarningSystem/FwsSoundManager';
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
+import { InteractivePointEvents } from 'instruments/src/MsfsAvionicsCommon/providers/InteractivePointsPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -85,7 +86,7 @@ export enum FwcAuralWarning {
 
 export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
-    PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents & FuelSystemEvents & KeyEvents
+    PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents & FuelSystemEvents & KeyEvents & InteractivePointEvents
   >();
 
   private subs: Subscription[] = [];
@@ -959,6 +960,10 @@ export class FwsCore {
 
   public readonly fmsZfwOrZfwCgNotSet = Subject.create(false);
 
+  private readonly refuelPanel = ConsumerSubject.create(this.sub.on('interactive_point_open_19'), 0);
+
+  public readonly refuelPanelOpen = this.refuelPanel.map((v) => !!v);
+
   /* HYDRAULICS */
 
   public readonly ratDeployed = Subject.create(0);
@@ -1081,19 +1086,33 @@ export class FwsCore {
 
   public readonly flightPhase = Subject.create<FwcFlightPhase | null>(null);
 
-  public readonly flightPhase128 = Subject.create(false);
+  public readonly flightPhase1Or2 = this.flightPhase.map((v) => v === 1 || v === 2);
 
-  public readonly flightPhase23 = Subject.create(false);
+  public readonly flightPhase128 = this.flightPhase.map((v) => v === 1 || v === 2 || v === 8);
 
-  public readonly flightPhase345 = Subject.create(false);
+  public readonly flightPhase23 = this.flightPhase.map((v) => v === 2 || v === 3);
 
-  public readonly flightPhase34567 = Subject.create(false);
+  public readonly flightPhase345 = this.flightPhase.map((v) => v === 3 || v === 4 || v === 5);
 
-  public readonly flightPhase1211 = Subject.create(false);
+  public readonly flightPhase34567 = this.flightPhase.map((v) => v === 3 || v === 4 || v === 5 || v === 6 || v === 7);
 
-  public readonly flightPhase89 = Subject.create(false);
+  public readonly flightPhase1211 = this.flightPhase.map((v) => v === 12 || v === 11);
 
-  public readonly flightPhase910 = Subject.create(false);
+  public readonly flightPhase89 = this.flightPhase.map((v) => v === 8 || v === 9);
+
+  public readonly flightPhase910 = this.flightPhase.map((v) => v === 9 || v === 10);
+
+  private readonly flightPhase112 = this.flightPhase.map((v) => v === 1 || v === 12);
+
+  private readonly flightPhase6789 = this.flightPhase.map((v) => v === 6 || v === 7 || v === 8 || v === 9);
+
+  private readonly flightPhase189 = this.flightPhase.map((v) => v === 1 || v === 8 || v === 9);
+
+  private readonly flightPhase12Or1112 = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.flightPhase1Or2,
+    this.flightPhase1211,
+  );
 
   public readonly flightPhase1112MoreThanOneMin = Subject.create(false);
 
@@ -1161,7 +1180,7 @@ export class FwsCore {
 
   public readonly phase815MinConfNode = new NXLogicConfirmNode(900);
 
-  public readonly phase112 = Subject.create(false);
+  public readonly phase112 = this.flightPhase.map((v) => v === 1 || v === 12);
 
   public readonly lgciu1Fault = Subject.create(false);
 
@@ -1999,22 +2018,13 @@ export class FwsCore {
     const phase3 = this.flightPhase.get() === 3;
     const phase6 = this.flightPhase.get() === 6;
     this.flightPhase3PulseNode.write(phase3, deltaTime);
-    // flight phase convenience vars
-    this.flightPhase128.set([1, 2, 8].includes(this.flightPhase.get()));
-    this.flightPhase23.set([2, 3].includes(this.flightPhase.get()));
-    this.flightPhase345.set([3, 4, 5].includes(this.flightPhase.get()));
-    this.flightPhase34567.set(
-      this.flightPhase345.get() || this.flightPhase.get() === 6 || this.flightPhase.get() === 7,
-    );
-    this.flightPhase1211.set([1, 2, 11].includes(this.flightPhase.get()));
-    this.flightPhase89.set([8, 9].includes(this.flightPhase.get()));
-    this.flightPhase910.set([9, 10].includes(this.flightPhase.get()));
-    const flightPhase6789 = [6, 7, 8, 9].includes(this.flightPhase.get());
-    const flightPhase112 = [1, 12].includes(this.flightPhase.get());
-    const flightPhase189 = [1, 8, 9].includes(this.flightPhase.get());
+
+    // flight phase convinence vars
+    const flightPhase6789 = this.flightPhase6789.get();
+    const flightPhase112 = this.flightPhase112.get();
+    const flightPhase189 = this.flightPhase189.get();
 
     this.phase815MinConfNode.write(this.flightPhase.get() === 8, deltaTime);
-    this.phase112.set(flightPhase112);
 
     this.flightPhase1112MoreThanOneMinConfNode.write(this.flightPhase.get() >= 11, deltaTime);
     this.flightPhase1112MoreThanOneMin.set(this.flightPhase1112MoreThanOneMinConfNode.read());
@@ -2172,12 +2182,12 @@ export class FwsCore {
     const yLoPressure = !yellowSysPressurised;
 
     this.eng1Or2RunningAndPhaseConfirmationNode.write(
-      this.engine1Running.get() || this.engine2Running.get() || ![1, 2, 11, 12].includes(this.flightPhase.get()),
+      this.engine1Running.get() || this.engine2Running.get() || !this.flightPhase12Or1112.get(),
       deltaTime,
     );
 
     this.eng3Or4RunningAndPhaseConfirmationNode.write(
-      this.engine3Running.get() || this.engine4Running.get() || ![1, 2, 11, 12].includes(this.flightPhase.get()),
+      this.engine3Running.get() || this.engine4Running.get() || !this.flightPhase12Or1112.get(),
       deltaTime,
     );
 
