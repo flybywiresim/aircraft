@@ -2580,11 +2580,11 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
       idFmGrossWeight->get() == 0 ? Arinc429SignStatus::NoComputedData : Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.fm_weight_lbs.Data = idFmGrossWeight->get() * 2205;
   fmgcBBusOutputs.fm_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fm_cg_percent.Data = idCgPercentMac->get();
+  fmgcBBusOutputs.fm_cg_percent.Data = idCgPercentMac->get() / 100;
   fmgcBBusOutputs.fac_weight_lbs.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.fac_weight_lbs.Data = simData.total_weight_kg * 2.20462262;
   fmgcBBusOutputs.fac_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fac_cg_percent.Data = idCgPercentMac->get();
+  fmgcBBusOutputs.fac_cg_percent.Data = idCgPercentMac->get() / 100;
   fmgcBBusOutputs.n1_left_percent.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.n1_left_percent.Data = simData.engine_N1_1_percent;
   fmgcBBusOutputs.n1_right_percent.SSM = Arinc429SignStatus::NormalOperation;
