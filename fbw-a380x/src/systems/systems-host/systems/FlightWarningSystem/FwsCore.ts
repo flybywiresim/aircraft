@@ -1743,6 +1743,39 @@ export class FwsCore {
         }
       });
     });
+
+    this.subs.push(
+      this.statusNormal,
+      this.masterCautionOutput,
+      this.masterWarningOutput,
+      this.allCrossFeedValvesOpen,
+      this.crossFeedOpenMemo,
+      this.refuelPanelOpen,
+      this.isRefuelFuelTarget,
+      this.defuelInProgress,
+      this.refuelInProgress,
+      this.airDataCaptOn3,
+      this.airDataFoOn3,
+      this.flightPhase1Or2,
+      this.flightPhase128,
+      this.flightPhase23,
+      this.flightPhase345,
+      this.flightPhase34567,
+      this.flightPhase1211,
+      this.flightPhase89,
+      this.flightPhase910,
+      this.flightPhase112,
+      this.flightPhase6789,
+      this.flightPhase189,
+      this.flightPhase1112,
+      this.flightPhase12Or1112,
+      this.computedAirSpeedToNearest2,
+      this.machSelectedFromAdr,
+      this.engine1AboveIdle,
+      this.engine2AboveIdle,
+      this.engine1CoreAtOrAboveMinIdle,
+      this.engine2CoreAtOrAboveMinIdle,
+    );
   }
 
   init(): void {
