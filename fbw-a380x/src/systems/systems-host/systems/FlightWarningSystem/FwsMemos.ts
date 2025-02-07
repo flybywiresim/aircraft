@@ -25,7 +25,7 @@ export class FwsMemos {
   /** MEMOs on right side of EWD */
   ewdMemos: EwdMemoDict = {
     210000001: {
-      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10], //FIX ME remove phase 1 & 2 once departure elevation logic implemented
       simVarIsActive: this.fws.highLandingFieldElevation,
       whichCodeToReturn: () => [0],
       codesToReturn: ['210000001'],

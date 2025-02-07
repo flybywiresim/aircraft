@@ -3230,6 +3230,7 @@ export class FwsCore {
 
     this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');
 
+    // FIX ME Use departure elevation during phase 1 or 2 and fallback to manual selection in case of manual pressurization control
     this.highLandingFieldElevation.set(this.landingElevation.valueOr(0) > 8550);
 
     // 0: Man, 1: Low, 2: Norm, 3: High
