@@ -960,7 +960,7 @@ export class FwsCore {
 
   private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board'), 0);
 
-  private readonly refuelPanel = ConsumerSubject.create(this.sub.on('interactive_point_open_19'), 0);
+  private readonly refuelPanel = ConsumerSubject.create(this.sub.on('interactive_point_open_18'), 0);
 
   private readonly fuelingInitiated = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
 

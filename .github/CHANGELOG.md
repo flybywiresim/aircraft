@@ -158,6 +158,7 @@
 1. [A32NX/MCDU] Show ground & cruise temperature sign on init page if positive - @BravoMike99 (bruno_pt99)
 1. [A380X/OANS] Fix BTV fallback mode; Enable BTV fallback if ARPT NAV reset button is pulled - @flogross89 (floridude)
 1. [A380X/Flight Model] Flight model update incl stall & auto-rotate fix for FS2020 & 2024 - @donstim (donbikes) & @saschl (saschl)
+1. [A380X/FWS] Add RAT OUT, REFUEL PNL DOOR & REFUELING/DEFUELING memos - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
