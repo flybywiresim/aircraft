@@ -476,6 +476,10 @@ export class FwsCore {
 
   public readonly manCabinAltMode = Subject.create(false);
 
+  private readonly cabinAltitude = Arinc429Register.empty();
+
+  private readonly cabinAltitudeTarget = Subject.create(0);
+
   /* 22 - AUTOFLIGHT */
 
   public readonly toConfigAndNoToSpeedsPulseNode = new NXLogicPulseNode();
@@ -1959,12 +1963,6 @@ export class FwsCore {
   update(_deltaTime: number) {
     const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
 
-    if (!this.fuelingInitiated.get()) {
-      this.fuelOnBoard.pause();
-    } else {
-      this.fuelOnBoard.resume();
-    }
-
     const ecpNotReachable =
       !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
@@ -2019,6 +2017,12 @@ export class FwsCore {
       return;
     }
 
+    if (!this.fuelingInitiated.get()) {
+      this.fuelOnBoard.pause();
+    } else {
+      this.fuelOnBoard.resume();
+    }
+
     // A380X hack: Inject healthy messages for some systems which are not yet implemented
     this.healthInjector();
 
@@ -2049,6 +2053,7 @@ export class FwsCore {
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
     const phase3 = this.flightPhase.get() === 3;
     const phase6 = this.flightPhase.get() === 6;
+    const flightPhase8 = this.flightPhase.get() === 8;
     this.flightPhase3PulseNode.write(phase3, deltaTime);
 
     // flight phase convinence vars
@@ -3228,15 +3233,30 @@ export class FwsCore {
       this.ocsm1Failure.get() && this.ocsm2Failure.get() && this.ocsm3Failure.get() && this.ocsm4Failure.get(),
     );
 
-    this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');
+    this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
 
-    // FIX ME Use departure elevation during phase 1 or 2 and fallback to manual selection in case of manual pressurization control
-    this.highLandingFieldElevation.set(this.landingElevation.valueOr(0) > 8550);
+    if (this.flightPhase12Or1112.get()) {
+      this.cabinAltitude.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_${cpcsToUseId}`);
+    }
+
+    if (flightPhase8) {
+      this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');
+      this.cabinAltitudeTarget.set(
+        SimVar.GetSimVarValue(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_${cpcsToUseId}`, SimVarValueType.Number),
+      );
+    }
+
+    // Cabin altitude in phase 1,2 11 or 12
+    this.highLandingFieldElevation.set(
+      (this.flightPhase.get() === 8
+        ? this.manCabinAltMode.get()
+          ? this.cabinAltitudeTarget.get()
+          : this.landingElevation.valueOr(0)
+        : this.cabinAltitude.valueOr(0)) >= 8550,
+    );
 
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
-
-    this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
 
     /* 23 - COMMUNICATION */
     this.rmp1Fault.set(false); // Don't want to use failure consumer here, rather use health signal
@@ -3698,7 +3718,6 @@ export class FwsCore {
     const fwcFlightPhase = this.flightPhase.get();
     const flightPhase4567 =
       fwcFlightPhase === 4 || fwcFlightPhase === 5 || fwcFlightPhase === 6 || fwcFlightPhase === 7;
-    const flightPhase8 = fwcFlightPhase === 8;
     const below750Ra =
       Math.min(
         this.radioHeight1.valueOr(Infinity),
