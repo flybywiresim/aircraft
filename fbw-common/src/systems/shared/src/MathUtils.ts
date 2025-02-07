@@ -554,6 +554,26 @@ export class MathUtils {
     return Math.round(value / quantum) * quantum;
   }
 
+  /**
+   * Round a number up to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
+   */
+  public static ceil(value: number, quantum = 1): number {
+    return Math.ceil(value / quantum) * quantum;
+  }
+
+  /**
+   * Round a number down to a specified quantum.
+   * @param value The number to round.
+   * @param quantum The quantum to round to, defaults to 1.
+   * @returns The rounded number.
+   */
+  public static floor(value: number, quantum = 1): number {
+    return Math.floor(value / quantum) * quantum;
+  }
+
   static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
     return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
   }
