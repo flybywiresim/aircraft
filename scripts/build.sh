@@ -23,6 +23,7 @@ for arg in "$@"; do
     rm -rf /external/fbw-a32nx/bundles
     rm -rf /external/fbw-a380x/out
     rm -rf /external/fbw-ingamepanels-checklist-fix/out
+    rm -rf /external/fbw-lvar-provider/out
   # If the argument is "-4k", build with 4k textures instead of maximum resolution
   elif [ "$arg" = "-4k" ]; then
     USE_4K_TEXTURES="true"
