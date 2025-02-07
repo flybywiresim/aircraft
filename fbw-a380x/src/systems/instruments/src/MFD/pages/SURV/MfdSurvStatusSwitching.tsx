@@ -7,8 +7,8 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { SurvStatusButton } from 'instruments/src/MFD/pages/common/SurvStatusButton';
-import { SurvStatusItem } from 'instruments/src/MFD/pages/common/SurvStatusItem';
+import { SurvStatusButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvStatusButton';
+import { SurvStatusItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvStatusItem';
 
 interface MfdSurvStatusSwitchingProps extends AbstractMfdPageProps {}
 
@@ -20,7 +20,7 @@ export enum StatusItemState {
 
 export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitchingProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
@@ -60,11 +60,15 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subs.push(this.tcas1Failed);
   }
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
-    this.subs.forEach((x) => x.destroy());
+    for (const s of this.subs) {
+      s.destroy();
+    }
 
     super.destroy();
   }
