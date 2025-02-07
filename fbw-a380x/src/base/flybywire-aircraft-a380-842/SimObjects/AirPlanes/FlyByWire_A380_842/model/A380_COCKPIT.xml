@@ -4991,6 +4991,12 @@
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <NAME>FMC_C</NAME>
                     </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FWS1</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FWS2</NAME>
+                    </UseTemplate>
                 </Component>
             </Component>
 
