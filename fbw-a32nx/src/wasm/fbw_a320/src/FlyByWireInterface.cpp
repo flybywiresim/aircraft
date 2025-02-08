@@ -345,7 +345,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmsSpeedMarginLow = std::make_unique<LocalVariable>("A32NX_PFD_LOWER_SPEED_MARGIN");
   idFmsSpeedMarginVisible = std::make_unique<LocalVariable>("A32NX_PFD_SHOW_SPEED_MARGINS");
 
-  idFmLateralPathAvail = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
+  idFmLateralPlanAvail = std::make_unique<LocalVariable>("A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL");
   idFmCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
   idFmTrackAngleError = std::make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
   idFmPhiCommand = std::make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
@@ -1788,7 +1788,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_unrealistic_gs_angle_deg = (simData.nav_gs_valid != 0) ? -simData.nav_gs_deg : 0;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_weight_lbs = simData.total_weight_kg * 2.205;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_cg_percent = simData.CG_percent_MAC;
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.lateral_flight_plan_valid = idFmLateralPathAvail->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.lateral_flight_plan_valid = idFmLateralPlanAvail->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = std::abs(idFmCrossTrackError->get()) < 1;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_c_deg = idFmPhiCommand->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.xtk_nmi = idFmCrossTrackError->get();

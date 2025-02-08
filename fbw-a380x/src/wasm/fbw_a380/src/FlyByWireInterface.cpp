@@ -378,7 +378,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcCruiseAltitude = std::make_unique<LocalVariable>("A32NX_AIRLINER_CRUISE_ALTITUDE");
   idFmgcFlexTemperature = std::make_unique<LocalVariable>("A32NX_AIRLINER_TO_FLEX_TEMP");
 
-  idFmAvailable = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
+  idFmLateralPlanAvail = std::make_unique<LocalVariable>("A32NX_A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL");
   idFmCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
   idFmTrackAngleError = std::make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
   idFmPhiCommand = std::make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
@@ -867,7 +867,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          idFmgcV_APP->get(),
                                                          idFmgcV_LS->get(),
                                                          idFmgcV_MAX->get(),
-                                                         idFmAvailable->get(),
+                                                         idFmLateralPlanAvail->get(),
                                                          idFmgcAltitudeConstraint->get(),
                                                          fmThrustReductionAltitude->valueOr(0),
                                                          fmThrustReductionAltitudeGoAround->valueOr(0),
@@ -2122,7 +2122,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
     autopilotStateMachineInput.in.data.VMAX_kn =
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
-    autopilotStateMachineInput.in.data.is_flight_plan_available = idFmAvailable->get();
+    autopilotStateMachineInput.in.data.is_flight_plan_available = idFmLateralPlanAvail->get();
     autopilotStateMachineInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotStateMachineInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
     autopilotStateMachineInput.in.data.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
@@ -2475,7 +2475,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
     autopilotLawsInput.in.data.VMAX_kn =
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
-    autopilotLawsInput.in.data.is_flight_plan_available = idFmAvailable->get();
+    autopilotLawsInput.in.data.is_flight_plan_available = idFmLateralPlanAvail->get();
     autopilotLawsInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotLawsInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
     autopilotLawsInput.in.data.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);

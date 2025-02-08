@@ -236,7 +236,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuModeReversionTrkFpaActive;
   std::unique_ptr<LocalVariable> idFcuModeReversionTargetFpm;
 
-  std::unique_ptr<LocalVariable> idFmAvailable;
+  std::unique_ptr<LocalVariable> idFmLateralPlanAvail;
   std::unique_ptr<LocalVariable> idFmCrossTrackError;
   std::unique_ptr<LocalVariable> idFmTrackAngleError;
   std::unique_ptr<LocalVariable> idFmPhiCommand;
