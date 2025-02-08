@@ -116,10 +116,10 @@ export class CDUDirectToPage {
       }
 
       mcdu.eraseTemporaryFlightPlan(() => {
-        // TODO delete is really bad
-        if (isDirectWithAbeam(directToObject)) delete directToObject.withAbeam;
-        else if (isDirectWithCourseIn(directToObject)) delete directToObject.courseIn;
-        else if (isDirectWithCourseOut(directToObject)) delete directToObject.courseOut;
+        directToObject = {
+          flightPlanLegIndex: directToObject.flightPlanLegIndex,
+          nonFlightPlanFix: directToObject.nonFlightPlanFix,
+        };
 
         mcdu
           .directTo(directToObject)
@@ -195,10 +195,11 @@ export class CDUDirectToPage {
       }
 
       mcdu.eraseTemporaryFlightPlan(() => {
-        // TODO delete is really bad
-        if (isDirectWithAbeam(directToObject)) delete directToObject.withAbeam;
-        else if (isDirectWithCourseIn(directToObject)) directToObject.courseIn = course % 360;
-        else if (isDirectWithCourseOut(directToObject)) delete directToObject.courseOut;
+        directToObject = {
+          flightPlanLegIndex: directToObject.flightPlanLegIndex,
+          nonFlightPlanFix: directToObject.nonFlightPlanFix,
+          courseIn: course % 360,
+        };
 
         mcdu
           .directTo(directToObject)
@@ -235,9 +236,11 @@ export class CDUDirectToPage {
       }
 
       mcdu.eraseTemporaryFlightPlan(() => {
-        if (isDirectWithAbeam(directToObject)) delete directToObject.withAbeam;
-        else if (isDirectWithCourseIn(directToObject)) delete directToObject.courseIn;
-        else if (isDirectWithCourseOut(directToObject)) directToObject.courseOut = course % 360;
+        directToObject = {
+          flightPlanLegIndex: directToObject.flightPlanLegIndex,
+          nonFlightPlanFix: directToObject.nonFlightPlanFix,
+          courseOut: course % 360,
+        };
 
         mcdu
           .directTo(directToObject)

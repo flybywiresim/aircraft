@@ -349,6 +349,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       L: new EfisInterface('L', this.currFlightPlanService),
       R: new EfisInterface('R', this.currFlightPlanService),
     };
+    this.navigation = new Navigation(this.bus, this.currFlightPlanService);
     this.guidanceController = new GuidanceController(
       this.bus,
       this,
@@ -358,7 +359,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       a320EfisRangeSettings,
       A320AircraftConfig,
     );
-    this.navigation = new Navigation(this.bus, this.currFlightPlanService);
     this.efisSymbols = new EfisSymbols(
       this.bus,
       this.guidanceController,
