@@ -198,7 +198,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSideStickPositionY;
   std::unique_ptr<LocalVariable> idRudderPedalPosition;
 
-  std::unique_ptr<LocalVariable> idFmLateralPathAvail;
+  std::unique_ptr<LocalVariable> idFmLateralPlanAvail;
   std::unique_ptr<LocalVariable> idFmCrossTrackError;
   std::unique_ptr<LocalVariable> idFmTrackAngleError;
   std::unique_ptr<LocalVariable> idFmPhiCommand;
