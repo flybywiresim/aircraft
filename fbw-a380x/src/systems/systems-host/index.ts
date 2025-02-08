@@ -46,6 +46,7 @@ import {
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { A380Failure } from '@failures';
+import { AutoThsTrimmer } from './systems/AutoThsTrimmer';
 
 CpiomAvailableSimvarPublisher;
 class SystemsHost extends BaseInstrument {
@@ -143,6 +144,9 @@ class SystemsHost extends BaseInstrument {
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
+  // FIXME delete this when PRIM gets the THS auto trim
+  private readonly autoThsTrimmer = new AutoThsTrimmer(this.bus, this);
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -175,6 +179,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
+    this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();
