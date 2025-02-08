@@ -17,7 +17,7 @@ import {
   AltitudeDescriptor,
   EfisSide,
   Arinc429SignStatusMatrix,
-  Arinc429OutputWord,
+  Arinc429LocalVarOutputWord,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -78,14 +78,14 @@ export class EfisSymbols<T extends number> {
 
   private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
 
-  private mapReferenceLatitude: Record<EfisSide, Arinc429OutputWord> = {
-    L: new Arinc429OutputWord('L:A32NX_EFIS_L_MRP_LAT'),
-    R: new Arinc429OutputWord('L:A32NX_EFIS_R_MRP_LAT'),
+  private mapReferenceLatitude: Record<EfisSide, Arinc429LocalVarOutputWord> = {
+    L: new Arinc429LocalVarOutputWord('L:A32NX_EFIS_L_MRP_LAT'),
+    R: new Arinc429LocalVarOutputWord('L:A32NX_EFIS_R_MRP_LAT'),
   };
 
-  private mapReferenceLongitude: Record<EfisSide, Arinc429OutputWord> = {
-    L: new Arinc429OutputWord('L:A32NX_EFIS_L_MRP_LONG'),
-    R: new Arinc429OutputWord('L:A32NX_EFIS_R_MRP_LONG'),
+  private mapReferenceLongitude: Record<EfisSide, Arinc429LocalVarOutputWord> = {
+    L: new Arinc429LocalVarOutputWord('L:A32NX_EFIS_L_MRP_LONG'),
+    R: new Arinc429LocalVarOutputWord('L:A32NX_EFIS_R_MRP_LONG'),
   };
 
   private readonly flightPhase = ConsumerValue.create(
