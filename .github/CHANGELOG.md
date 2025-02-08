@@ -152,6 +152,7 @@
 1. [FMS] Fix approach ident only showing on ND when approach is being flown - @BravoMike99 (bruno_pt99)
 1. [A380X/FWS] Add support for deferred procedures, abnormal (non-)sensed procedures - @flogross89 (floridude)
 1. [A380X/FWS] Enable FWS failures (FWS 1/2, FWS 1+2, ECP, Audio Function) - @flogross89 (floridude)
+1. [A32NX/ECP] Implemented realistic simulation of the ECAM control panel - @tracernz (Mike)
 
 ## 0.12.0
 
