@@ -14,6 +14,7 @@ import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
+import { DefaultPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -288,15 +289,11 @@ export class FmgcData {
 
   public readonly climbPreSelSpeed = Subject.create<Knots | null>(null);
 
-  public readonly climbSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
-
   public readonly cruisePreSelMach = Subject.create<number | null>(null);
 
   public readonly cruisePreSelSpeed = Subject.create<Knots | null>(null);
 
   public readonly descentPreSelSpeed = Subject.create<Knots | null>(null);
-
-  public readonly descentSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
   /** in feet/min. null if not set. */
   public readonly descentCabinRate = Subject.create<number>(-350);
@@ -478,12 +475,30 @@ export class FmgcDataService implements Fmgc {
     return this.data.cruisePreSelMach.get() ?? 0.85;
   }
 
-  getClimbSpeedLimit(): SpeedLimit {
-    return { speed: 250, underAltitude: 10_000 };
+  getClimbSpeedLimit(): SpeedLimit | null {
+    return this.flightPlanService.has(FlightPlanIndex.Active)
+      ? {
+          speed:
+            this.flightPlanService.active.performanceData.climbSpeedLimitSpeed ??
+            DefaultPerformanceData.ClimbSpeedLimitSpeed,
+          underAltitude:
+            this.flightPlanService.active.performanceData.climbSpeedLimitAltitude ??
+            DefaultPerformanceData.ClimbSpeedLimitAltitude,
+        }
+      : null;
   }
 
-  getDescentSpeedLimit(): SpeedLimit {
-    return { speed: 250, underAltitude: 10_000 };
+  getDescentSpeedLimit(): SpeedLimit | null {
+    return this.flightPlanService.has(FlightPlanIndex.Active)
+      ? {
+          speed:
+            this.flightPlanService.active.performanceData.descentSpeedLimitSpeed ??
+            DefaultPerformanceData.ClimbSpeedLimitSpeed,
+          underAltitude:
+            this.flightPlanService.active.performanceData.defaultAccelerationAltitude ??
+            DefaultPerformanceData.ClimbSpeedLimitAltitude,
+        }
+      : null;
   }
 
   /** in knots */
