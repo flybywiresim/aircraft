@@ -4412,7 +4412,7 @@
             </UseTemplate>
         </Component>
 
-        <Component ID="Airbus_EICAS">
+        <Component ID="ECAM_LOWER_ECP">
             <DefaultTemplateParameters>
                 <!-- disable lock mode blue highlight -->
                 <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
@@ -4423,11 +4423,7 @@
                 <NODE_ID>DYN_SCREEN</NODE_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_ECAM_PAGE_SELECTION_Template">
-                <POTENTIOMETER>85</POTENTIOMETER>
-                <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
+            <UseTemplate Name="FBW_A32NX_ECP_Template"/>
 
             <CameraTitle>ECAM</CameraTitle>
         </Component>

@@ -1,0 +1,171 @@
+<!-- Copyright (c) 2025 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_A32NX_ECP_Template">
+        <Parameters Type="Default">
+            <NO_ID_IN_PARTID>True</NO_ID_IN_PARTID>
+            <INPUT_EVENT_ID_SOURCE>A32NX_PED_ECP</INPUT_EVENT_ID_SOURCE>
+            <!-- FIXME CB 4LF 122VU -->
+            <ECP_INTEG_ELEC>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</ECP_INTEG_ELEC>
+            <!-- FIXME CB 15WT 49VU -->
+            <ECP_LIGHT_ELEC>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED)</ECP_LIGHT_ELEC>
+            <!-- PEDESTAL INTEG -->
+            <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+            <SEQ1_EMISSIVE_CODE>1</SEQ1_EMISSIVE_CODE>
+        </Parameters>
+
+        <Component ID="ECP">
+            <Component ID="WARNING_KEYS">
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_CLR</NODE_ID>
+                    <BUTTON_NAME>CLR_1</BUTTON_NAME>
+                    <TOOLTIP_TITLE>A32NX.TOOLTIPS.ECP_CLR_TITLE</TOOLTIP_TITLE>
+                    <TT_DESCRIPTION_ID>A32NX.TOOLTIPS.ECP_CLR_ACTION</TT_DESCRIPTION_ID>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_STS</NODE_ID>
+                    <BUTTON_NAME>STS</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_RCL</NODE_ID>
+                    <BUTTON_NAME>RCL</BUTTON_NAME>
+                    <NO_SEQ2/>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_CLR2</NODE_ID>
+                    <BUTTON_NAME>CLR_2</BUTTON_NAME>
+                    <TOOLTIP_TITLE>A32NX.TOOLTIPS.ECP_CLR_TITLE</TOOLTIP_TITLE>
+                    <TT_DESCRIPTION_ID>A32NX.TOOLTIPS.ECP_CLR_ACTION</TT_DESCRIPTION_ID>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_EmerCanc_Button">
+                    <NODE_ID>PUSH_ECAM_EMERCANC</NODE_ID>
+                    <BUTTON_NAME>EMER_CANCEL</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_TOCONFIG</NODE_ID>
+                    <BUTTON_NAME>TO_CONF_TEST</BUTTON_NAME>
+                    <NO_SEQ2/>
+                </UseTemplate>
+            </Component>
+            <Component ID="SYSTEM_KEYS">
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_ENG</NODE_ID>
+                    <BUTTON_NAME>ENG</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_BLEED</NODE_ID>
+                    <BUTTON_NAME>BLEED</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_APU</NODE_ID>
+                    <BUTTON_NAME>APU</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_HYD</NODE_ID>
+                    <BUTTON_NAME>HYD</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_ELEC</NODE_ID>
+                    <BUTTON_NAME>ELEC</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_COND</NODE_ID>
+                    <BUTTON_NAME>COND</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_PRESS</NODE_ID>
+                    <BUTTON_NAME>PRESS</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_FUEL</NODE_ID>
+                    <BUTTON_NAME>FUEL</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_FTCL</NODE_ID>
+                    <BUTTON_NAME>FLT_CTL</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_DOOR</NODE_ID>
+                    <BUTTON_NAME>DOOR</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_WHEEL</NODE_ID>
+                    <BUTTON_NAME>BRAKES</BUTTON_NAME>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A32NX_ECP_Button">
+                    <NODE_ID>PUSH_ECAM_ALL</NODE_ID>
+                    <BUTTON_NAME>ALL</BUTTON_NAME>
+                    <NO_SEQ2/>
+                </UseTemplate>
+            </Component>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_A32NX_ECP_Button">
+        <Parameters Type="Default">
+            <NODE_ID>BUTTON</NODE_ID>
+            <BUTTON_NAME></BUTTON_NAME>
+            <ID></ID>
+            <SEQ1_EMISSIVE_CODE>1</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>(L:A32NX_ECP_LIGHT_#BUTTON_NAME#)</SEQ2_EMISSIVE_CODE>
+            <BUTTON_EMISSIVE_CODE>1</BUTTON_EMISSIVE_CODE>
+            <IS_AIRLINER>True</IS_AIRLINER>
+        </Parameters>
+        <Parameters Type="Default">
+            <IE_NAME>#BUTTON_NAME#_PB</IE_NAME>
+            <PART_ID>PUSH_ECP_#BUTTON_NAME#</PART_ID>
+            <H_EVENT>A32NX_ECP_#BUTTON_NAME#</H_EVENT>
+            <Condition Valid="COVER_NODE_ID">
+                <True>
+                    <COVER_ANIM_NAME>#COVER_NODE_ID#</COVER_ANIM_NAME>
+                    <COVER_IE_NAME>#BUTTON_NAME#_COVER</COVER_IE_NAME>
+                    <COVER_USE_INPUT_EVENT>#INPUT_EVENT_ID_SOURCE#</COVER_USE_INPUT_EVENT>
+                    <!-- TODO -->
+                    <!--WWISE_COVER_EVENT_OPEN></WWISE_COVER_EVENT_OPEN>
+                    <WWISE_COVER_EVENT_CLOSE></WWISE_COVER_EVENT_CLOSE-->
+                </True>
+            </Condition>
+        </Parameters>
+        <Parameters Type="Default">
+            <NODE_ID>#PART_ID#</NODE_ID>
+            <ANIM_LAG>500</ANIM_LAG>
+            <!-- TODO WWISE -->
+            <TOOLTIP_TITLE>A32NX.TOOLTIPS.ECP_#BUTTON_NAME#_TITLE</TOOLTIP_TITLE>
+            <TT_DESCRIPTION_ID>A32NX.TOOLTIPS.ECP_#BUTTON_NAME#_ACTION</TT_DESCRIPTION_ID>
+        </Parameters>
+        <Parameters Type="Default">
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+        </Parameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <USE_INPUT_EVENT_ID>#INPUT_EVENT_ID_SOURCE#</USE_INPUT_EVENT_ID>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <EXTRA_OPTION>_Held</EXTRA_OPTION>
+                <SET_STATE_EXTERNAL>if{ (&gt;H:#H_EVENT#_PRESSED) } els{ (&gt;H:#H_EVENT#_RELEASED) }</SET_STATE_EXTERNAL>
+                <SEQ1_FAILURE>#ECP_INTEG_ELEC#</SEQ1_FAILURE>
+                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ2_FAILURE>#ECP_LIGHT_ELEC#</SEQ2_FAILURE>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <CREATE_COMPONENT>False</CREATE_COMPONENT>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_A32NX_ECP_EmerCanc_Button">
+        <Parameters Type="Default">
+            <COVER_NODE_ID>LOCK_ECAM_EMERCANC</COVER_NODE_ID>
+            <BUTTON_NAME>EMER_CANCEL</BUTTON_NAME>
+            <NO_SEQ2/>
+        </Parameters>
+
+        <UseTemplate Name="FBW_A32NX_ECP_Button"/>
+
+        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+            <COMPONENT_ID>#NODE_ID#_EMIS</COMPONENT_ID>
+            <EMISSIVE_CODE>1</EMISSIVE_CODE>
+            <FAILURE>#ECP_INTEG_ELEC#</FAILURE>
+            <POTENTIOMETER>#POTENTIOMETER_SEQ1#</POTENTIOMETER>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

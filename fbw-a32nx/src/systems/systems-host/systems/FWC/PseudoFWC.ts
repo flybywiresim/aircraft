@@ -39,6 +39,7 @@ import { FuelSystemEvents } from '../../../instruments/src/MsfsAvionicsCommon/pr
 import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
 import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -82,7 +83,7 @@ enum FwcAuralWarning {
 
 export class PseudoFWC {
   private readonly sub = this.bus.getSubscriber<
-    PseudoFwcSimvars & StallWarningEvents & KeyEvents & A32NXFcuBusEvents
+    A32NXEcpBusEvents & A32NXFcuBusEvents & KeyEvents & PseudoFwcSimvars & StallWarningEvents
   >();
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
@@ -120,9 +121,6 @@ export class PseudoFWC {
   );
 
   // Input buffering
-  public readonly toConfigInputBuffer = new NXLogicMemoryNode(false);
-  public readonly clearButtonInputBuffer = new NXLogicMemoryNode(false);
-  public readonly recallButtonInputBuffer = new NXLogicMemoryNode(false);
   public readonly aThrDiscInputBuffer = new NXLogicMemoryNode(false);
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
 
@@ -674,15 +672,7 @@ export class PseudoFWC {
 
   private readonly toInhibitTimer = new NXLogicConfirmNode(3);
 
-  /** TO CONFIG TEST raw button input */
-  private toConfigTestRaw = false;
-
-  /** TO CONFIG TEST pulse with 0.5s monostable trigger */
-  private toConfigTest = false;
-
   private readonly toConfigPulseNode = new NXLogicPulseNode();
-
-  private readonly toConfigTriggerNode = new NXLogicTriggeredMonostableNode(0.5, true);
 
   private readonly toConfigTestHeldMin1s5PulseNode = new NXLogicTriggeredMonostableNode(1.5, true);
 
@@ -691,25 +681,23 @@ export class PseudoFWC {
 
   private toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
 
-  private readonly clr1PulseNode = new NXLogicPulseNode();
-
-  private readonly clr2PulseNode = new NXLogicPulseNode();
-
-  private readonly clrPulseUpTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
-
-  private clrTriggerRisingEdge = false;
-
-  private readonly rclUpPulseNode = new NXLogicPulseNode();
-
-  private readonly rclUpTriggerNode = new NXLogicTriggeredMonostableNode(0.5, true);
-
-  private recallTriggerRisingEdge = false;
-
   private readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
   private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
   private readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
+
+  /* 31 - ECP */
+  private readonly ecpStatusButtonHardwired = ConsumerValue.create(this.sub.on('a32nx_ecp_discrete_out_sts'), false);
+  private readonly ecpRecallButtonHardwired = ConsumerValue.create(this.sub.on('a32nx_ecp_discrete_out_rcl'), false);
+  private readonly ecpClearButtonHardwired = ConsumerValue.create(this.sub.on('a32nx_ecp_discrete_out_clr'), false);
+  private readonly ecpEmergencyCancelButtonHardwired = ConsumerValue.create(
+    this.sub.on('a32nx_ecp_discrete_out_emer_canc'),
+    false,
+  );
+  private readonly ecpWarningButtonStatus = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_ecp_warning_switch_word'),
+  );
 
   /* LANDING GEAR AND LIGHTS */
 
@@ -1238,30 +1226,94 @@ export class PseudoFWC {
     return rowChoice;
   }
 
+  private readonly ecpClear1Pulse = new NXLogicPulseNode(true);
+  private readonly ecpClear2Pulse = new NXLogicPulseNode(true);
+  private readonly ecpClearWirePulse = new NXLogicPulseNode(true);
+  private readonly ecpClearPulseTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  private ecpClearPulseUp = false;
+  private readonly ecpRecallBusPulseUp = new NXLogicPulseNode(true);
+  private readonly ecpRecallWirePulseUp = new NXLogicPulseNode(true);
+  private readonly ecpRecallBusPulseDown = new NXLogicPulseNode(false);
+  private readonly ecpRecallWirePulseDown = new NXLogicPulseNode(false);
+  private readonly ecpRecallPulseUpTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  private readonly ecpRecallPulseDownTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  private ecpRecallPulseUp = false;
+  private ecpRecallPulseDown = false;
+  private ecpRecallLevel = false;
+  private readonly ecpStatusBusPulseUp = new NXLogicPulseNode(true);
+  private readonly ecpStatusWirePulseUp = new NXLogicPulseNode(true);
+  private readonly ecpStatusBusPulseDown = new NXLogicPulseNode(false);
+  private readonly ecpStatusWirePulseDown = new NXLogicPulseNode(false);
+  private readonly ecpStatusPulseUpTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  private readonly ecpStatusPulseDownTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  private ecpStatusPulseUp = false;
+  private ecpStatusPulseDown = false;
+  private ecpStatusLevel = false;
+  private readonly ecpEmergencyCancelBusPulseUp = new NXLogicPulseNode(true);
+  private readonly ecpEmergencyCancelWirePulseUp = new NXLogicPulseNode(true);
+  private readonly ecpEmergencyCancelBusPulseDown = new NXLogicPulseNode(false);
+  private readonly ecpEmergencyCancelWirePulseDown = new NXLogicPulseNode(false);
+  private readonly ecpEmergencyCancelPulseUpTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  private readonly ecpEmergencyCancelPulseDownTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
+  private ecpEmergencyCancelPulseUp = false;
+  private ecpEmergencyCancelPulseDown = false;
+  private ecpEmergencyCancelLevel = false;
+
+  private processEcpButtons(deltaTime: number): void {
+    const warningButtons = this.ecpWarningButtonStatus.get();
+
+    this.ecpClearPulseUp = this.ecpClearPulseTrigger.write(
+      this.ecpClear1Pulse.write(warningButtons.bitValue(11), deltaTime) ||
+        this.ecpClear2Pulse.write(warningButtons.bitValue(16), deltaTime) ||
+        this.ecpClearWirePulse.write(this.ecpClearButtonHardwired.get(), deltaTime),
+      deltaTime,
+    );
+
+    this.ecpRecallPulseUp = this.ecpRecallPulseUpTrigger.write(
+      this.ecpRecallBusPulseUp.write(warningButtons.bitValue(14), deltaTime) ||
+        this.ecpRecallWirePulseUp.write(this.ecpRecallButtonHardwired.get(), deltaTime),
+      deltaTime,
+    );
+    this.ecpRecallPulseDown =
+      this.ecpRecallPulseDownTrigger.write(
+        this.ecpRecallBusPulseDown.write(warningButtons.bitValue(14), deltaTime) ||
+          this.ecpRecallWirePulseDown.write(this.ecpRecallButtonHardwired.get(), deltaTime),
+        deltaTime,
+      ) && !warningButtons.isFailureWarning();
+    this.ecpRecallLevel = warningButtons.bitValue(14) || this.ecpRecallButtonHardwired.get();
+
+    this.ecpStatusPulseUp = this.ecpStatusPulseUpTrigger.write(
+      this.ecpStatusBusPulseUp.write(warningButtons.bitValue(13), deltaTime) ||
+        this.ecpStatusWirePulseUp.write(this.ecpStatusButtonHardwired.get(), deltaTime),
+      deltaTime,
+    );
+    this.ecpStatusPulseDown =
+      this.ecpStatusPulseDownTrigger.write(
+        this.ecpStatusBusPulseDown.write(warningButtons.bitValue(13), deltaTime) ||
+          this.ecpStatusWirePulseDown.write(this.ecpStatusButtonHardwired.get(), deltaTime),
+        deltaTime,
+      ) && !warningButtons.isFailureWarning();
+    this.ecpStatusLevel = warningButtons.bitValue(13) || this.ecpStatusButtonHardwired.get();
+
+    this.ecpEmergencyCancelPulseUp = this.ecpEmergencyCancelPulseUpTrigger.write(
+      this.ecpEmergencyCancelBusPulseUp.write(warningButtons.bitValue(17), deltaTime) ||
+        this.ecpEmergencyCancelWirePulseUp.write(this.ecpEmergencyCancelButtonHardwired.get(), deltaTime),
+      deltaTime,
+    );
+    this.ecpEmergencyCancelPulseDown =
+      this.ecpEmergencyCancelPulseDownTrigger.write(
+        this.ecpEmergencyCancelBusPulseDown.write(warningButtons.bitValue(17), deltaTime) ||
+          this.ecpEmergencyCancelWirePulseDown.write(this.ecpEmergencyCancelButtonHardwired.get(), deltaTime),
+        deltaTime,
+      ) && !warningButtons.isFailureWarning();
+    this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
+  }
+
   /**
    * Periodic update
    */
   update(_deltaTime: number) {
     const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
-
-    // Acquire discrete inputs at a higher frequency, buffer them until the next FWS cycle.
-    // T.O CONFIG button
-    if (SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool')) {
-      this.toConfigInputBuffer.write(true, false);
-    }
-
-    // CLR buttons
-    const clearButtonLeft = SimVar.GetSimVarValue('L:A32NX_BTN_CLR', 'bool');
-    const clearButtonRight = SimVar.GetSimVarValue('L:A32NX_BTN_CLR2', 'bool');
-    if (clearButtonLeft || clearButtonRight) {
-      this.clearButtonInputBuffer.write(true, false);
-    }
-
-    // RCL button
-    const recallButton = SimVar.GetSimVarValue('L:A32NX_BTN_RCL', 'bool');
-    if (recallButton) {
-      this.recallButtonInputBuffer.write(true, false);
-    }
 
     // Enforce cycle time for the logic computation (otherwise pulse nodes would be broken)
     if (deltaTime === -1 || _deltaTime === 0) {
@@ -1272,14 +1324,12 @@ export class PseudoFWC {
     this.soundManager.onUpdate(deltaTime);
 
     // Write pulse nodes for buffered inputs
-    this.toConfigPulseNode.write(this.toConfigInputBuffer.read(), deltaTime);
-    this.clr1PulseNode.write(this.clearButtonInputBuffer.read(), deltaTime);
-    this.clr2PulseNode.write(this.clearButtonInputBuffer.read(), deltaTime);
-    this.rclUpPulseNode.write(this.recallButtonInputBuffer.read(), deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(this.aThrDiscInputBuffer.read(), deltaTime);
     this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
 
     // Inputs update
+    this.processEcpButtons(deltaTime);
+
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
@@ -1295,31 +1345,14 @@ export class PseudoFWC {
     const flightPhase567 = [5, 6, 7].includes(this.fwcFlightPhase.get());
     const flightPhase167 = [1, 6, 7].includes(this.fwcFlightPhase.get());
 
-    // TO CONFIG button
-    this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0;
-    this.toConfigPulseNode.write(this.toConfigTestRaw, _deltaTime);
-    const toConfigTest = this.toConfigTriggerNode.write(this.toConfigPulseNode.read(), deltaTime);
-    if (toConfigTest !== this.toConfigTest) {
-      // temporary var for the old FWC stuff
-      SimVar.SetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean', toConfigTest);
-      this.toConfigTest = toConfigTest;
-    }
+    // TO Config convenience vars
+    const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
+    this.toConfigPulseNode.write(toConfigTest, deltaTime);
     this.toConfigTestHeldMin1s5Pulse.set(
-      this.toConfigTestHeldMin1s5PulseNode.write(this.toConfigTestRaw, deltaTime) || this.toConfigTestRaw,
+      this.toConfigTestHeldMin1s5PulseNode.write(toConfigTest, deltaTime) || toConfigTest,
     );
 
-    // CLR buttons
-    const previousClrPulseUpTrigger = this.clrPulseUpTrigger.read();
-    this.clrPulseUpTrigger.write(this.clr1PulseNode.read() || this.clr2PulseNode.read(), deltaTime);
-    this.clrTriggerRisingEdge = !previousClrPulseUpTrigger && this.clrPulseUpTrigger.read();
-
-    // RCL button
-    const previousRclUpTriggerNode = this.rclUpTriggerNode.read();
-    this.rclUpTriggerNode.write(recallButton, deltaTime);
-
-    this.recallTriggerRisingEdge = !previousRclUpTriggerNode && this.rclUpTriggerNode.read();
-
-    this.flightPhaseInhibitOverrideNode.write(this.rclUpPulseNode.read(), this.flightPhaseEndedPulseNode.read());
+    this.flightPhaseInhibitOverrideNode.write(this.ecpRecallPulseUp, this.flightPhaseEndedPulseNode.read());
 
     this.showTakeoffInhibit.set(
       this.toInhibitTimer.write(this.flightPhase345.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime),
@@ -1749,7 +1782,7 @@ export class PseudoFWC {
 
     if (!this.flightPhase23.get()) {
       this.toConfigCheckedInPhase2Or3 = false;
-    } else if (this.toConfigTestRaw) {
+    } else if (toConfigTest) {
       this.toConfigCheckedInPhase2Or3 = true;
     }
 
@@ -1780,13 +1813,9 @@ export class PseudoFWC {
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
 
-    this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && this.toConfigTestRaw, deltaTime);
+    this.toConfigAndNoToSpeedsPulseNode.write(fmToSpeedsNotInserted && toConfigTest, deltaTime);
 
-    if (
-      fmToSpeedsNotInserted &&
-      (this.toConfigTestRaw || this.fwcFlightPhase.get() === 3) &&
-      !this.toSpeedsNotInserted
-    ) {
+    if (fmToSpeedsNotInserted && (toConfigTest || this.fwcFlightPhase.get() === 3) && !this.toSpeedsNotInserted) {
       this.toSpeedsNotInserted = true;
     }
     if (!(this.flightPhase23.get() && fmToSpeedsNotInserted) && this.toSpeedsNotInserted) {
@@ -2574,7 +2603,7 @@ export class PseudoFWC {
 
     /* T.O. CONFIG CHECK */
 
-    if (this.toMemo.get() && this.toConfigTestRaw) {
+    if (this.toMemo.get() && toConfigTest) {
       // TODO Note that fuel tank low pressure and gravity feed warnings are not included
       const systemStatus =
         this.engine1Generator.get() &&
@@ -2607,13 +2636,13 @@ export class PseudoFWC {
     }
 
     /* CLEAR AND RECALL */
-    if (this.clrTriggerRisingEdge) {
+    if (this.ecpClearPulseUp) {
       // delete the first failure
       this.failuresLeft.splice(0, 1);
       this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
     }
 
-    if (this.recallTriggerRisingEdge) {
+    if (this.ecpRecallPulseUp) {
       if (this.recallFailures.length > 0) {
         this.failuresLeft.push(this.recallFailures.shift());
       }
@@ -2899,9 +2928,6 @@ export class PseudoFWC {
     this.updateRowRopWarnings();
 
     // Reset all buffered inputs
-    this.toConfigInputBuffer.write(false, true);
-    this.clearButtonInputBuffer.write(false, true);
-    this.recallButtonInputBuffer.write(false, true);
     this.aThrDiscInputBuffer.write(false, true);
     this.apDiscInputBuffer.write(false, true);
     this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
