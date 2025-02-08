@@ -19,7 +19,8 @@
         </Component>
     </Template>
 
-    <Component ID="Pedestal_Fwd">
+    <Template Name="FBW_A380X_Components_Pedestal">
+        <Component ID="Pedestal_Fwd">
             <!-- Throttle 1 -->
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_1</NODE_ID>
@@ -85,7 +86,6 @@
 
             <CameraTitle>PedestalFwd</CameraTitle>
         </Component>
-
         <Component ID="Pedestal_Aft">
             <Component ID="Engines">
 
@@ -297,4 +297,5 @@
 
             <CameraTitle>PedestalAft</CameraTitle>
         </Component>
+    </Template>
 </ModelBehaviors>

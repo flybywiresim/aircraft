@@ -112,12 +112,10 @@ export class AutoThsTrimmer implements Instrument {
         this.oneThrustLeverMovedOutOfIdle.read());
 
     if (startupCondition || touchAndGoCondition) {
-      console.log('enable auto trim');
       this.shouldAutoTrim = true;
     }
 
     if (!this.onGround.get()) {
-      console.log('enable auto trim due to flight condition');
       this.shouldAutoTrim = false;
     }
 
@@ -129,19 +127,16 @@ export class AutoThsTrimmer implements Instrument {
       const targetThsPosition = PitchTrimUtils.cgToPitchTrim(this.cgPercent.get());
       const thsTrimDiff = targetThsPosition - this.trimPositionDeg.get();
 
-      const maxTrimStep = THS_TRIM_DEGREES_PER_SECOND * this.instrument.deltaTime;
+      const maxTrimStep = THS_TRIM_DEGREES_PER_SECOND * (this.instrument.deltaTime / 1_000);
 
-      if (thsTrimDiff < maxTrimStep) {
-        console.log('disable auto trim');
+      if (Math.abs(thsTrimDiff) < maxTrimStep) {
         this.shouldAutoTrim = false;
       } else {
-        const newTrim = this.trimPositionDeg.get() + Math.min(thsTrimDiff, Math.sign(thsTrimDiff) * maxTrimStep);
-        console.log('trim Step', newTrim, thsTrimDiff, targetThsPosition);
-        SimVar.SetSimVarValue(
-          'ELEVATOR TRIM POSITION',
-          SimVarValueType.Radians,
-          newTrim * MathUtils.DEGREES_TO_RADIANS,
-        );
+        if (thsTrimDiff > 0) {
+          SimVar.SetSimVarValue('K:ELEV_TRIM_UP', SimVarValueType.Number, 1);
+        } else {
+          SimVar.SetSimVarValue('K:ELEV_TRIM_DN', SimVarValueType.Number, 1);
+        }
       }
     }
   }

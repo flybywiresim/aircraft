@@ -36,8 +36,8 @@
         <Include RelativeFile="behaviour\overhead\fire.xml" />
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
         <Include RelativeFile="behaviour\overhead\reset.xml" />
-        <Include RelativeFile="behaviour\pedestal\pedestal.xml" />
         <Include RelativeFile="behaviour\pedestal\pedestal-inputs.xml" />
+        <Include RelativeFile="behaviour\pedestal\pedestal.xml" />
         <Include RelativeFile="behaviour\door_animations.xml" />
         <Include RelativeFile="behaviour\efis-cp.xml" />
         <Include RelativeFile="behaviour\ecam-cp.xml" />
@@ -108,6 +108,9 @@
         </Component>
         <Component ID="KCCU">
             <UseTemplate Name="FBW_A380X_Components_KCCU" />
+        </Component>
+        <Component ID="PEDESTAL">
+            <UseTemplate Name="FBW_A380X_Components_Pedestal" />
         </Component>
 
         <!-- TEMPORARY A32NX VARIABLE MAPPING -->
