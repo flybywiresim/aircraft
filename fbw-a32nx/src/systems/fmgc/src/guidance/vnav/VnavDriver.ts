@@ -171,6 +171,12 @@ export class VnavDriver implements GuidanceComponent {
       // TODO: This doesn't really do much, the profile is automatically updated by reference.
       this.descentGuidance.updateProfile(this.profileManager.descentProfile);
       this.decelPoint = this.profileManager.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
+
+      SimVar.SetSimVarValue(
+        'L:A32NX_FM_VERTICAL_PROFILE_AVAIL',
+        'Bool',
+        this.profileManager.mcduProfile.isReadyToDisplay,
+      );
     }
 
     this.updateLegSpeedPredictions();
@@ -196,6 +202,8 @@ export class VnavDriver implements GuidanceComponent {
       this.oldLegs.clear();
       this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
       this.previousManagedDescentSpeedTarget = undefined;
+
+      SimVar.SetSimVarValue('L:A32NX_FM_VERTICAL_PROFILE_AVAIL', 'Bool', false);
     }
   }
 

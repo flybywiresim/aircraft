@@ -2106,6 +2106,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Used for laternal guidance in mode NAV
     - Bank angle command
 
+- A32NX_FM_VERTICAL_PROFILE_AVAIL
+    - Boolean
+    - Indicates to the FG if the FM vertical flight profile is valid, for vertical managed modes.
+    - Internal to FM/FG communication, other avionics should use the FG bus var
+
 - A32NX_FG_REQUESTED_VERTICAL_MODE
     - Enum
     - Indicates the requested vertical mode in DES
