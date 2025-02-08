@@ -77,7 +77,28 @@ export class AutoThsTrimmer implements Instrument {
   private readonly trimPositionDeg = this.trimPosition.map((tp) => tp * MathUtils.RADIANS_TO_DEGREES);
 
   init() {
-    this.subscriptions.push(this.leftLgCompressed, this.rightLgCompressed, this.onGround);
+    this.subscriptions.push(
+      this.leftLgCompressed,
+      this.rightLgCompressed,
+      this.onGround,
+      this.greenPressurized,
+      this.yellowPressurized,
+      this.fcdcDiscreteWord4[0],
+      this.fcdcDiscreteWord4[1],
+      this.cas,
+      this.flapsLever,
+      this.cgPercent,
+      this.trimPosition,
+      this.trimPositionDeg,
+    );
+
+    for (const s of this.engineState) {
+      this.subscriptions.push(s);
+    }
+
+    for (const s of this.thrustLever) {
+      this.subscriptions.push(s);
+    }
   }
 
   private shouldAutoTrim = false;
