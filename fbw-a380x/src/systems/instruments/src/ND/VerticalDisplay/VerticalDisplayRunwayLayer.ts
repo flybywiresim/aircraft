@@ -10,13 +10,18 @@ import { VerticalDisplayPaintUtils } from 'instruments/src/ND/VerticalDisplay/Ve
 export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSymbol> {
   public data: NdSymbol[] = [];
 
-  paintShadowLayer(context: CanvasRenderingContext2D, vdRange: number, verticalRange: [number, number]) {
+  paintShadowLayer(
+    context: CanvasRenderingContext2D,
+    vdRange: number,
+    verticalRange: [number, number],
+    distanceOffset: number,
+  ) {
     for (const symbol of this.data) {
       if (!symbol.distanceFromAirplane || !symbol.predictedAltitude) {
         continue;
       }
 
-      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
+      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange, distanceOffset);
       const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       if (symbol.type & NdSymbolTypeFlags.Runway) {
@@ -29,13 +34,18 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
     }
   }
 
-  paintColorLayer(context: CanvasRenderingContext2D, vdRange: number, verticalRange: [number, number]) {
+  paintColorLayer(
+    context: CanvasRenderingContext2D,
+    vdRange: number,
+    verticalRange: [number, number],
+    distanceOffset: number,
+  ) {
     for (const symbol of this.data) {
       if (!symbol.distanceFromAirplane || !symbol.predictedAltitude) {
         continue;
       }
 
-      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
+      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange, distanceOffset);
       const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       if (symbol.type & NdSymbolTypeFlags.Runway) {
@@ -126,8 +136,8 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
     context.rotate(-rotation * MathUtils.DEGREES_TO_RADIANS);
     context.translate(-(x + 40), -(y - 20));
 
-    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 40, y - 30, identIcao, 'white');
-    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 40, y - 10, identRwy.padEnd(4, '\xa0'), 'white');
+    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 40, y - 100, identIcao, 'white');
+    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 40, y - 80, identRwy.padEnd(4, '\xa0'), 'white');
 
     context.restore();
   }

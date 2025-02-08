@@ -26,6 +26,8 @@ import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/Sim
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
+import { VdSimvars } from '../VdSimvarPublisher';
+import { VerticalMode } from '@shared/autopilot';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
@@ -37,14 +39,18 @@ export interface GenericFcuEvents {
   ndRangeSetting: A380EfisNdRangeValue;
 }
 
-const VERTICAL_DISPLAY_MAX_ALTITUDE = 70000;
-const VERTICAL_DISPLAY_MIN_ALTITUDE = -500;
+export const VERTICAL_DISPLAY_MAX_ALTITUDE = 70000;
+export const VERTICAL_DISPLAY_MIN_ALTITUDE = -500;
+export const VERTICAL_DISPLAY_CANVAS_WIDTH = 540;
+export const VERTICAL_DISPLAY_CANVAS_HEIGHT = 200;
+export const VD_FPA_TO_DISPLAY_ANGLE =
+  (Math.asin(VERTICAL_DISPLAY_CANVAS_HEIGHT / VERTICAL_DISPLAY_CANVAS_WIDTH) * MathUtils.RADIANS_TO_DEGREES) / 4; // multiply FPA with this angle to get display angle in VD
 
 export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly sub = this.props.bus.getArincSubscriber<
-    GenericFcuEvents & NDSimvars & DmcLogicEvents & SimplaneValues & FmsSymbolsData & NDControlEvents
+    GenericFcuEvents & NDSimvars & VdSimvars & DmcLogicEvents & SimplaneValues & FmsSymbolsData & NDControlEvents
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
@@ -54,22 +60,27 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly ndRangeSetting = ConsumerSubject.create(this.sub.on('ndRangeSetting'), 10).map(
     (r) => a380EfisRangeSettings[r],
   );
-  private readonly vdRange = this.ndRangeSetting.map((r) => Math.max(10, Math.min(r, 160)));
+  private readonly vdRange = MappedSubject.create(
+    ([mode, range]) =>
+      mode === EfisNdMode.ARC ? Math.max(10, Math.min(range, 160)) : Math.max(5, Math.min(range / 2, 160)),
+    this.ndMode,
+    this.ndRangeSetting,
+  );
 
-  private readonly fmsPath = ConsumerSubject.create(this.sub.on('verticalPath'), []);
+  private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('verticalPath'), []);
   private readonly displayedFmsPath = MappedSubject.create(
     ([path, ndRange]) => {
       const fmsPathToDisplay: VerticalPathCheckpoint[] = [];
 
       for (const p of path) {
         fmsPathToDisplay.push(p);
-        if (p.distanceFromAircraft > ndRange) {
+        if (p.distanceFromAircraft > ndRange * 1.2) {
           break;
         }
       }
       return fmsPathToDisplay;
     },
-    this.fmsPath,
+    this.fmsVerticalPath,
     this.vdRange,
   );
 
@@ -85,10 +96,10 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly rangeChangeFlagVisibility = this.mapRecomputing.map((v) => (v ? 'inherit' : 'hidden'));
 
   /** either magnetic or true heading depending on true ref mode */
-  private readonly headingWord = Arinc429ConsumerSubject.create(this.sub.on('heading'));
+  private readonly headingWord = Arinc429ConsumerSubject.create(this.sub.on('heading').atFrequency(0.5));
 
   /** either magnetic or true track depending on true ref mode */
-  private readonly trackWord = Arinc429ConsumerSubject.create(this.sub.on('track'));
+  private readonly trackWord = Arinc429ConsumerSubject.create(this.sub.on('track').atFrequency(0.5));
 
   private readonly vdAvailable = MappedSubject.create(
     ([hdg, trk]) => hdg.isNormalOperation() && trk.isNormalOperation(),
@@ -122,15 +133,49 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.verticalRange,
   );
 
+  // FIXME ADIRS selection missing for ND
+  /* private readonly fpaMain = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(getDisplayIndex() === 1 ? 'fpa_1' : 'fpa_2'),
+  );
+  private readonly fpaBackup = Arinc429LocalVarConsumerSubject.create(this.sub.on('fpa_3'));
+  private readonly attHdgSelect = ConsumerSubject.create(this.sub.on('attHdgKnob'), 1);
+  private readonly fpa = MappedSubject.create(
+    ([attHdg, main, bkup]) => (attHdg === 1 ? main : bkup),
+    this.attHdgSelect,
+    this.fpaMain,
+    this.fpaBackup,
+  );*/
+  private readonly fpa = Arinc429LocalVarConsumerSubject.create(this.sub.on('fpaRaw'));
+  private readonly planeSymbolTransform = MappedSubject.create(
+    ([y, fpa]) => `translate (132 ${y - 14}) rotate (${-fpa.valueOr(0) * VD_FPA_TO_DISPLAY_ANGLE}, 20, 10) scale(0.9)`,
+    this.planeSymbolY,
+    this.fpa,
+  );
+  private readonly planeRotationVisibility = MappedSubject.create(
+    ([fpa, avail]) => (!fpa.isFailureWarning() && avail ? 'inherit' : 'hidden'),
+    this.fpa,
+    this.vdAvailable,
+  );
+
   private readonly planeSymbolVisibility = MappedSubject.create(
     ([alt, avail]) =>
-      alt.isNormalOperation() && alt.value < VERTICAL_DISPLAY_MAX_ALTITUDE && avail ? 'visible' : 'hidden',
+      alt.isNormalOperation() && alt.value < VERTICAL_DISPLAY_MAX_ALTITUDE && avail ? 'inherit' : 'hidden',
     this.baroCorrectedAltitude,
     this.vdAvailable,
   );
 
   private readonly rangeMarkerVisibility = this.vdAvailable.map((a) => (a ? 'visible' : 'hidden'));
-  private readonly rangeOver160ArrowVisible = this.ndRangeSetting.map((r) => (r > 160 ? 'visible' : 'hidden'));
+  private readonly rangeOver160ArrowVisible = MappedSubject.create(
+    ([mode, range]) => {
+      if (mode === EfisNdMode.ARC) {
+        return range > 160 ? 'inherit' : 'hidden';
+      } else {
+        return range > 320 ? 'inherit' : 'hidden';
+      }
+    },
+    this.ndMode,
+    this.ndRangeSetting,
+  );
 
   private readonly rangeMarkerText = [
     this.vdRange.map((value) => (value / 4) * 1),
@@ -138,6 +183,66 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.vdRange.map((value) => (value / 4) * 3),
     this.vdRange.map((value) => (value / 4) * 4),
   ];
+
+  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
+  private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('altConstraint'), 0);
+  private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
+  private readonly isSelectedVerticalMode = MappedSubject.create(
+    ([mode, cstr]) =>
+      cstr === 0 &&
+      (mode === VerticalMode.OP_CLB ||
+        mode === VerticalMode.OP_DES ||
+        mode === VerticalMode.VS ||
+        mode === VerticalMode.FPA),
+    this.activeVerticalMode,
+    this.fgAltConstraint,
+  );
+  private readonly targetAltitude = MappedSubject.create(
+    ([selAlt, isSelected, altCstr]) => (isSelected || !altCstr ? selAlt : altCstr),
+    this.selectedAltitude,
+    this.isSelectedVerticalMode,
+    this.fgAltConstraint,
+  );
+  private readonly targetAltitudeFormatted = MappedSubject.create(
+    ([alt, baroMode]) => (baroMode === 'STD' ? `FL ${Math.floor(alt / 100).toFixed(0)}` : alt.toFixed(0)),
+    this.targetAltitude,
+    this.baroMode,
+  );
+
+  private readonly targetAltitudeTextVisibility = MappedSubject.create(
+    ([alt, range]) => (alt < range[0] || alt > range[1] ? 'inherit' : 'hidden'),
+    this.targetAltitude,
+    this.verticalRange,
+  );
+  private readonly targetAltitudeSymbolVisibility = this.targetAltitudeTextVisibility.map((v) =>
+    v === 'hidden' ? 'inherit' : 'hidden',
+  );
+
+  private readonly altitudeTargetTransform = MappedSubject.create(
+    ([alt, verticalRange]) => `translate (99 ${VerticalDisplay.altToY(alt, verticalRange) - 19})`,
+    this.targetAltitude,
+    this.verticalRange,
+  );
+
+  private readonly altitudeTargetColor = MappedSubject.create(
+    ([mode, altCstr]) => {
+      if (mode === VerticalMode.ALT_CST || mode === VerticalMode.ALT_CST_CPT || altCstr) {
+        return '#ff94ff';
+      } else if (
+        mode === VerticalMode.FINAL ||
+        mode === VerticalMode.GS_CPT ||
+        mode === VerticalMode.GS_TRACK ||
+        mode === VerticalMode.LAND ||
+        mode === VerticalMode.FLARE ||
+        mode === VerticalMode.ROLL_OUT
+      ) {
+        return '#ffffff';
+      }
+      return '#00ffff';
+    },
+    this.activeVerticalMode,
+    this.fgAltConstraint,
+  );
 
   private readonly altitudeTapeLineY = Array.from(Array(8), (_, index) =>
     MappedSubject.create(
@@ -156,7 +261,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     MappedSubject.create(
       ([vdRange, verticalRange, baroMode]) => {
         const dashAlt = VerticalDisplay.altitudeTapeAlt(index, vdRange, verticalRange);
-        return baroMode === 'STD' ? Math.floor(dashAlt / 100) : dashAlt;
+        return baroMode === 'STD' ? Math.floor(dashAlt / 100).toFixed(0) : dashAlt.toFixed(0);
       },
       this.vdRange,
       this.verticalRange,
@@ -171,7 +276,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.ndMode,
       this.ndRangeSetting,
       this.vdRange,
-      this.fmsPath,
+      this.fmsVerticalPath,
       this.displayedFmsPath,
       this.mapRecomputing,
       this.visible,
@@ -184,10 +289,26 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.baroCorrectedAltitude,
       this.verticalRange,
       this.planeSymbolY,
+      // this.fpaMain,
+      // this.fpaBackup,
+      //this.attHdgSelect,
+      this.fpa,
+      this.planeSymbolTransform,
+      this.planeRotationVisibility,
       this.planeSymbolVisibility,
       this.rangeMarkerVisibility,
       this.rangeOver160ArrowVisible,
       this.altitudeFlTextVisible,
+      this.activeVerticalMode,
+      this.fgAltConstraint,
+      this.selectedAltitude,
+      this.isSelectedVerticalMode,
+      this.targetAltitude,
+      this.altitudeTargetTransform,
+      this.targetAltitudeSymbolVisibility,
+      this.altitudeTargetColor,
+      this.targetAltitudeFormatted,
+      this.targetAltitudeTextVisibility,
     );
 
     for (const rm of this.rangeMarkerText) {
@@ -296,9 +417,12 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
         <VerticalDisplayCanvasMap
           bus={this.props.bus}
           visible={this.visible}
-          displayedFmsPath={this.displayedFmsPath}
+          fmsVerticalPath={this.fmsVerticalPath}
           vdRange={this.vdRange}
           verticalRange={this.verticalRange}
+          isSelectedVerticalMode={this.isSelectedVerticalMode}
+          fpa={this.fpa}
+          selectedAltitude={this.selectedAltitude}
         />
         <svg
           ref={this.labelSvgRef}
@@ -307,7 +431,12 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           xmlns="http://www.w3.org/2000/svg"
           style={{ display: this.visible }}
         >
-          <g>
+          <defs>
+            <clipPath id="AltitudeTapeMask">
+              <path d="m 0,1000 v-200 h130 v200 z" />
+            </clipPath>
+          </defs>
+          <g clip-path="url(#AltitudeTapeMask)">
             <line x1="105" x2="105" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" />
             {[0, 1, 2, 3, 4, 5, 6, 7].map((_, index) => {
               if (index % 2 === 0) {
@@ -344,7 +473,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
                 );
               }
             })}
-            <text x="10" y="900" class="White FontSmallest" visibility={this.altitudeFlTextVisible}>
+            <text x="5" y="900" class="White FontSmallest" visibility={this.altitudeFlTextVisible}>
               FL
             </text>
             <line
@@ -355,6 +484,43 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
               stroke="yellow"
               stroke-width="4"
               visibility={this.planeSymbolVisibility}
+            />
+          </g>
+          <text
+            x="100"
+            y="800"
+            class="EndAlign FontSmall"
+            fill={this.altitudeTargetColor}
+            visibility={this.targetAltitudeTextVisibility}
+          >
+            {this.targetAltitudeFormatted}
+          </text>
+          <g transform={this.planeSymbolTransform} visibility={this.planeRotationVisibility}>
+            <line
+              fill="none"
+              stroke="#ffff00"
+              x1="5.31255"
+              y1="15.74998"
+              x2="33.81273"
+              y2="15.74998"
+              stroke-width="4"
+              stroke-linecap="round"
+            />
+            <path
+              d="m4.96875,15.81249l-0.03125,-11.0625l11.4375,11"
+              fill="#ffff00"
+              stroke="#ffff00"
+              stroke-width="3"
+              stroke-linejoin="round"
+            />
+          </g>
+          <g visibility={this.targetAltitudeSymbolVisibility} clip-path="url(#AltitudeTapeMask)">
+            <path
+              fill="none"
+              stroke={this.altitudeTargetColor}
+              transform={this.altitudeTargetTransform}
+              stroke-width="2"
+              d="m1,35l0,-34l12,0l0,12l-6,6l6,6l0,12l-12,0l0,-2z"
             />
           </g>
           <g>

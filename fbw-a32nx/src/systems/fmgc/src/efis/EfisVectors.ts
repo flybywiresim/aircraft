@@ -214,7 +214,7 @@ export class EfisVectors {
     const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
     const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
 
-    // ACTIVE vertical geometry until 160nm distance from aircraft
+    // ACTIVE vertical geometry
     const predictions = this.guidanceController.vnavDriver?.mcduProfile?.waypointPredictions;
     if (predictions) {
       const verticalVectors: VerticalPathCheckpoint[] = [];
@@ -226,10 +226,6 @@ export class EfisVectors {
             altitudeConstraint: predictions.get(legIndex).altitudeConstraint,
             isAltitudeConstraintMet: predictions.get(legIndex).isAltitudeConstraintMet,
           });
-        }
-
-        if (predictions.has(legIndex) && predictions.get(legIndex).distanceFromAircraft > 160) {
-          return;
         }
       });
       this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_VERTICAL_PATH`, verticalVectors);

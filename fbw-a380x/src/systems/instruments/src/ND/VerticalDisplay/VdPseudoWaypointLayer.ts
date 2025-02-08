@@ -17,26 +17,36 @@ export class VdPseudoWaypointLayer implements VerticalDisplayMapLayer<NdSymbol> 
 
   constructor() {}
 
-  paintShadowLayer(context: CanvasRenderingContext2D, vdRange: number, verticalRange: [number, number]) {
+  paintShadowLayer(
+    context: CanvasRenderingContext2D,
+    vdRange: number,
+    verticalRange: [number, number],
+    offsetDistance: number,
+  ) {
     for (const symbol of this.data) {
       if (!symbol.distanceFromAirplane || !symbol.predictedAltitude) {
         continue;
       }
 
-      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
+      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange, offsetDistance);
       const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       this.paintPseudoWaypoint(false, context, rx, ry, symbol);
     }
   }
 
-  paintColorLayer(context: CanvasRenderingContext2D, vdRange: number, verticalRange: [number, number]) {
+  paintColorLayer(
+    context: CanvasRenderingContext2D,
+    vdRange: number,
+    verticalRange: [number, number],
+    offsetDistance: number,
+  ) {
     for (const symbol of this.data) {
       if (!symbol.distanceFromAirplane || !symbol.predictedAltitude) {
         continue;
       }
 
-      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
+      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange, offsetDistance);
       const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       this.paintPseudoWaypoint(true, context, rx, ry, symbol);

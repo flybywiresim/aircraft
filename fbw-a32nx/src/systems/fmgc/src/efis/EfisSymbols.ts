@@ -23,7 +23,7 @@ import {
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { bearingTo, distanceTo } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
@@ -42,6 +42,7 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { getAlongTrackDistanceTo } from '../guidance/lnav/CommonGeometry';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -755,6 +756,10 @@ export class EfisSymbols<T extends number> {
         type,
         constraints: constraints.length > 0 ? constraints : undefined,
         altConstraint: leg.altitudeConstraint,
+        isAltitudeConstraintMet:
+          predictions && predictions.waypointPredictions.has(i)
+            ? predictions.waypointPredictions.get(i).isAltitudeConstraintMet
+            : true,
         direction,
         distanceFromAirplane: distanceFromAirplane,
         predictedAltitude: predictedAltitude,
@@ -797,6 +802,11 @@ export class EfisSymbols<T extends number> {
 
       if (runway) {
         if (this.isWithinEditArea(runway.startLocation, mapReferencePoint, mapOrientation, editArea)) {
+          const runwayEndCoordinates = placeBearingDistance(
+            runway.startLocation,
+            runway.bearing,
+            runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
+          );
           ret.push({
             databaseId,
             ident: runway.ident,
@@ -804,7 +814,7 @@ export class EfisSymbols<T extends number> {
             direction: runway.bearing,
             length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
             type: NdSymbolTypeFlags.Runway,
-            distanceFromAirplane: distanceTo(this.lastPpos, runway.location),
+            distanceFromAirplane: -getAlongTrackDistanceTo(runway.startLocation, runwayEndCoordinates, this.lastPpos),
             predictedAltitude: runway.thresholdLocation.alt,
           });
         }

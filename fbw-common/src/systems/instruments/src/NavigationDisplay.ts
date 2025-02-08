@@ -81,6 +81,7 @@ export interface NdSymbol {
   type: NdSymbolTypeFlags;
   constraints?: string[];
   altConstraint?: AltitudeConstraint;
+  isAltitudeConstraintMet?: boolean;
   radials?: number[];
   radii?: number[];
   distanceFromAirplane?: number;

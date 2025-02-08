@@ -8,6 +8,7 @@ import { BitFlags } from '@microsoft/msfs-sdk';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
 import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
 import { VerticalDisplayPaintUtils } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayPaintUtils';
+import { VERTICAL_DISPLAY_MAX_ALTITUDE, VERTICAL_DISPLAY_MIN_ALTITUDE } from './VerticalDisplay';
 
 const BELOW_CONSTRAINT_PATH = new Path2D('M 0 0 l 5 -10 h -10 l 5 10');
 const ABOVE_CONSTRAINT_PATH = new Path2D('M 0 0 l 5 10 h -10 l 5 -10');
@@ -17,38 +18,50 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
 
   constructor() {}
 
-  paintShadowLayer(context: CanvasRenderingContext2D, vdRange: number, verticalRange: [number, number]) {
+  paintShadowLayer(
+    context: CanvasRenderingContext2D,
+    vdRange: number,
+    verticalRange: [number, number],
+    distanceOffset: number,
+    isSelectedModeVertical: boolean,
+  ) {
     for (const symbol of this.data) {
       if (!symbol.distanceFromAirplane || !symbol.predictedAltitude) {
         continue;
       }
 
-      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
+      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange, distanceOffset);
       const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.Runway)) {
         this.paintAirport(false, context, rx, ry, symbol);
       } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
-        this.paintFlightPlanWaypoint(false, context, rx, ry, symbol, verticalRange);
+        this.paintFlightPlanWaypoint(false, context, rx, ry, symbol, verticalRange, isSelectedModeVertical);
       } else {
         this.paintWaypoint(false, context, rx, ry, symbol);
       }
     }
   }
 
-  paintColorLayer(context: CanvasRenderingContext2D, vdRange: number, verticalRange: [number, number]) {
+  paintColorLayer(
+    context: CanvasRenderingContext2D,
+    vdRange: number,
+    verticalRange: [number, number],
+    distanceOffset: number,
+    isSelectedModeVertical: boolean,
+  ) {
     for (const symbol of this.data) {
       if (!symbol.distanceFromAirplane || !symbol.predictedAltitude) {
         continue;
       }
 
-      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange);
+      const rx = VerticalDisplayCanvasMap.distanceToX(symbol.distanceFromAirplane, vdRange, distanceOffset);
       const ry = VerticalDisplayCanvasMap.altToY(symbol.predictedAltitude, verticalRange);
 
       if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.Runway)) {
         this.paintAirport(true, context, rx, ry, symbol);
       } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
-        this.paintFlightPlanWaypoint(true, context, rx, ry, symbol, verticalRange);
+        this.paintFlightPlanWaypoint(true, context, rx, ry, symbol, verticalRange, isSelectedModeVertical);
       } else {
         this.paintWaypoint(true, context, rx, ry, symbol);
       }
@@ -90,6 +103,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
     y: number,
     symbol: NdSymbol,
     verticalRange: [number, number],
+    isSelectedModeVertical: boolean,
   ) {
     const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
 
@@ -97,6 +111,18 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
 
     if (symbol.altConstraint) {
       const cst = symbol.altConstraint;
+      const constraintStrokeColor = isSelectedModeVertical
+        ? '#fff'
+        : symbol.isAltitudeConstraintMet
+          ? '#ff94ff'
+          : '#e68000';
+      const constraintFillColor = !isSelectedModeVertical && !symbol.isAltitudeConstraintMet ? '#e68000' : 'none';
+
+      // If alt constraint not met, draw vertical dashed amber line
+      if (!isSelectedModeVertical && !symbol.isAltitudeConstraintMet) {
+        this.paintMissedConstraintDashedLine(context, x);
+      }
+
       switch (cst.altitudeDescriptor) {
         case AltitudeDescriptor.AtAlt1:
         case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
@@ -107,12 +133,15 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
               x,
               VerticalDisplayCanvasMap.altToY(cst.altitude1, verticalRange),
               BELOW_CONSTRAINT_PATH,
+              constraintStrokeColor,
+              constraintFillColor,
             );
             this.paintPath(
               context,
               x,
               VerticalDisplayCanvasMap.altToY(cst.altitude1, verticalRange),
               ABOVE_CONSTRAINT_PATH,
+              '#ff94ff',
             );
           }
           break;
@@ -125,6 +154,8 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
               x,
               VerticalDisplayCanvasMap.altToY(cst.altitude1, verticalRange),
               ABOVE_CONSTRAINT_PATH,
+              constraintStrokeColor,
+              constraintFillColor,
             );
           }
           break;
@@ -137,6 +168,8 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
               x,
               VerticalDisplayCanvasMap.altToY(cst.altitude1, verticalRange),
               BELOW_CONSTRAINT_PATH,
+              constraintStrokeColor,
+              constraintFillColor,
             );
           }
           break;
@@ -147,12 +180,16 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
               x,
               VerticalDisplayCanvasMap.altToY(cst.altitude1, verticalRange),
               BELOW_CONSTRAINT_PATH,
+              constraintStrokeColor,
+              constraintFillColor,
             );
             this.paintPath(
               context,
               x,
               VerticalDisplayCanvasMap.altToY(cst.altitude2, verticalRange),
               ABOVE_CONSTRAINT_PATH,
+              constraintStrokeColor,
+              constraintFillColor,
             );
           }
           break;
@@ -163,6 +200,8 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
               x,
               VerticalDisplayCanvasMap.altToY(cst.altitude2, verticalRange),
               ABOVE_CONSTRAINT_PATH,
+              constraintStrokeColor,
+              constraintFillColor,
             );
           }
           break;
@@ -214,13 +253,34 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
     context.resetTransform();
   }
 
-  private paintPath(context: CanvasRenderingContext2D, x: number, y: number, path: Path2D) {
-    context.strokeStyle = '#ff94ff';
+  private paintPath(
+    context: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    path: Path2D,
+    strokeColor: string,
+    fillColor?: string,
+  ) {
+    context.strokeStyle = strokeColor;
+    context.fillStyle = fillColor ?? 'none';
     context.lineWidth = 2;
     context.translate(x, y);
     context.beginPath();
     context.stroke(path);
     context.closePath();
     context.resetTransform();
+  }
+
+  private paintMissedConstraintDashedLine(context: CanvasRenderingContext2D, x: number) {
+    context.strokeStyle = '#e68000';
+    context.setLineDash([2, 2]);
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, 200);
+    context.stroke();
+
+    context.resetTransform();
+    context.setLineDash([]);
   }
 }

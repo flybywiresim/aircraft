@@ -56,6 +56,7 @@ import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/provid
 import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
+import { VdSimvarPublisher } from './VdSimvarPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -72,6 +73,8 @@ class NDInstrument implements FsInstrument {
   private readonly backplane = new InstrumentBackplane();
 
   private readonly simVarPublisher: NDSimvarPublisher;
+
+  private readonly vdSimVarPublisher: VdSimvarPublisher;
 
   private readonly fcuBusPublisher: FcuBusPublisher;
 
@@ -196,6 +199,7 @@ class NDInstrument implements FsInstrument {
     this.bus = new ArincEventBus();
 
     this.simVarPublisher = new NDSimvarPublisher(this.bus);
+    this.vdSimVarPublisher = new VdSimvarPublisher(this.bus);
     this.fcuBusPublisher = new FcuBusPublisher(this.bus, side);
     this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
     this.fmsOansSimvarPublisher = new FmsOansSimvarPublisher(this.bus);
@@ -216,6 +220,7 @@ class NDInstrument implements FsInstrument {
     this.clock = new Clock(this.bus);
 
     this.backplane.addPublisher('ndSimVars', this.simVarPublisher);
+    this.backplane.addPublisher('vdSimvars', this.vdSimVarPublisher);
     this.backplane.addPublisher('fcu', this.fcuBusPublisher);
     this.backplane.addPublisher('fms', this.fmsDataPublisher);
     this.backplane.addPublisher('fms-oans', this.fmsOansSimvarPublisher);
