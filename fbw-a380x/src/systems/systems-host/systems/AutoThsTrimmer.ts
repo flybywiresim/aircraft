@@ -140,7 +140,8 @@ export class AutoThsTrimmer implements Instrument {
       const trimPositionDeg = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', SimVarValueType.Degree);
       const thsTrimDiff = this.targetThsPosition.get() - trimPositionDeg;
 
-      if (Math.abs(thsTrimDiff) < 0.05) {
+      // Difference by 0.008° guarantees accuracy within 0.05% CG, but we have to account for some lag of the THS actuation, so stop early
+      if (Math.abs(thsTrimDiff) < 0.02) {
         this.shouldAutoTrim = false;
       } else {
         if (thsTrimDiff > 0) {
