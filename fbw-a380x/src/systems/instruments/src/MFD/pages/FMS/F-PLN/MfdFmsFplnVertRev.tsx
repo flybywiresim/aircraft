@@ -94,6 +94,23 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly cannotDeleteSpeedConstraint = Subject.create(false);
 
+  private readonly climbSpeedLimit = Subject.create(true);
+
+  private readonly speedLimit = Subject.create<number | null>(null);
+
+  private readonly speedLimitAltitude = Subject.create<number | null>(null);
+
+  private readonly speedLimitTransition = Subject.create<number | null>(null);
+
+  private readonly showSpeedLimitVisibility = MappedSubject.create(
+    ([knotSpeedLimit, altitudeSpeedLimit]) =>
+      knotSpeedLimit !== null && altitudeSpeedLimit !== null ? 'visible' : 'hidden',
+    this.speedLimit,
+    this.speedLimitAltitude,
+  );
+
+  private readonly speedLimitText = this.climbSpeedLimit.map((v) => `${v ? 'CLB' : 'DES'} SPD LIMIT`);
+
   // CMS page
 
   // ALT page
@@ -243,6 +260,25 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.altConstraintDisabled.set(false);
 
     // Load speed constraints
+
+    this.climbSpeedLimit.set(
+      leg.constraintType === WaypointConstraintType.CLB || this.activeFlightPhase.get() <= FmgcFlightPhase.Cruise,
+    );
+
+    const climbSpeedLimit = this.climbSpeedLimit.get();
+    const speedLimit = climbSpeedLimit
+      ? this.props.fmcService.master.fmgc.getClimbSpeedLimit()
+      : this.props.fmcService.master.fmgc.getDescentSpeedLimit();
+    if (speedLimit && speedLimit.speed && speedLimit.underAltitude) {
+      this.speedLimit.set(speedLimit.speed);
+      this.speedLimitAltitude.set(speedLimit.underAltitude);
+      this.speedLimitTransition.set(
+        climbSpeedLimit
+          ? this.loadedFlightPlan.performanceData.transitionAltitude
+          : this.loadedFlightPlan.performanceData.transitionLevel,
+      );
+    }
+
     this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
     this.constraintType.set(
       leg.constraintType === WaypointConstraintType.CLB
@@ -509,6 +545,42 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
   }
 
+  private async tryUpdateSpeedLimitValue(value: number | null) {
+    if (this.checkLegModificationAllowed() && this.loadedFlightPlan?.performanceData) {
+      if (this.climbSpeedLimit.get()) {
+        this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed = value;
+        if (!value) {
+          this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude = null;
+        }
+      } else {
+        this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed = value;
+        if (!value) {
+          this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude = value;
+        }
+      }
+    }
+  }
+
+  private async tryUpdateSpeedLimitAltitude(value: number | null) {
+    if (this.checkLegModificationAllowed() && this.loadedFlightPlan?.performanceData) {
+      if (this.climbSpeedLimit.get()) {
+        this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude = value;
+        if (!value) {
+          this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed = null;
+        }
+      } else {
+        this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude = value;
+        if (!value) {
+          this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed = value;
+        }
+      }
+    }
+  }
+
+  private async deleteSpeedLimit() {
+    this.tryUpdateSpeedLimitAltitude(null);
+  }
+
   /**
    * Copied from A32NX
    * Check a couple of rules about insertion of step:
@@ -710,6 +782,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.selectedAltitudeConstraintDisabled,
       this.selectedAltitudeConstraintInvisible,
       this.stepNotAllowedAtVisibility,
+      this.showSpeedLimitVisibility,
+      this.speedLimitText,
     );
 
     this.subs.push(
@@ -814,6 +888,50 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       disabled={this.cannotDeleteSpeedConstraint}
                       buttonStyle="adding-right: 2px;"
                     />
+                  </div>
+                  <div tyle={{ visibility: this.showSpeedLimitVisibility }}>
+                    <span class="mfd-label bigger mfd-spacing-right">{this.speedLimitText}</span>
+                    <div class="fr">
+                      <InputField<number>
+                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                        dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitValue(val)}
+                        mandatory={Subject.create(false)}
+                        value={this.speedLimit}
+                        alignText="flex-end"
+                        tmpyActive={this.tmpyActive}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        hEventConsumer={this.props.mfd.hEventConsumer}
+                        interactionMode={this.props.mfd.interactionMode}
+                      />
+                      <span class="mfd-label bigger">AT OR BELOW</span>
+                      <InputField<number>
+                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.speedLimitTransition)}
+                        dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitAltitude(val)}
+                        mandatory={Subject.create(false)}
+                        value={this.speedLimitAltitude}
+                        alignText="flex-end"
+                        tmpyActive={this.tmpyActive}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        hEventConsumer={this.props.mfd.hEventConsumer}
+                        interactionMode={this.props.mfd.interactionMode}
+                      />
+                      <Button
+                        label={Subject.create(
+                          <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                            <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                              DELETE
+                              <br />
+                              SPD LIM
+                            </span>
+                            <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                          </div>,
+                        )}
+                        onClick={() => {
+                          this.deleteSpeedLimit();
+                        }}
+                        buttonStyle="adding-right: 2px;"
+                      />
+                    </div>
                   </div>
                 </div>
               </TopTabNavigatorPage>
