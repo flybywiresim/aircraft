@@ -41,7 +41,7 @@ export class MfdUiService {
     extra: '',
   });
 
-  private navigationStack: string[] = [];
+  private readonly navigationStack: string[] = [];
 
   public parseUri(uri: string): ActiveUriInformation {
     const uriParts = uri.split('/');

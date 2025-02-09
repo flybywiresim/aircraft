@@ -1,18 +1,18 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
+import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 
 /*
  * Complete header for the FMS system
  */
 export class FmsHeader extends AbstractHeader {
-  private activeIsSelected = Subject.create(false);
+  private readonly activeIsSelected = Subject.create(false);
 
-  private positionIsSelected = Subject.create(false);
+  private readonly positionIsSelected = Subject.create(false);
 
-  private secIndexIsSelected = Subject.create(false);
+  private readonly secIndexIsSelected = Subject.create(false);
 
-  private dataIsSelected = Subject.create(false);
+  private readonly dataIsSelected = Subject.create(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

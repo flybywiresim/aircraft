@@ -2,12 +2,21 @@
 // SPDX-License-Identifier: GPL-3.0
 
 @import "../MsfsAvionicsCommon/definitions.scss";
+@import "../MFD/pages/common/widget-style.scss"; // Re-use MFD widget style
 @import "../../../../../../fbw-common/src/systems/instruments/src/ND/style.scss";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
   src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FBW-Display-EIS-A380-SlashedZero";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -33,4 +42,9 @@
 
 .a380xInvisible {
   display: none;
+}
+
+.TerrTextLabel {
+  transform: translateX(5px) translateY(4px);
+  font-size: 25px;
 }

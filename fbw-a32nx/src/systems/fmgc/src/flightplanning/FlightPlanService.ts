@@ -149,7 +149,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
             lat,
             long,
           },
-        },
+        } as Waypoint, // Needed to avoid type error with ElevatedCoordinates on Airport.
       });
     }
 

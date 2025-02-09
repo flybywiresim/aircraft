@@ -375,6 +375,7 @@ export class FmsClient {
   }
 
   public flightNumber(): string {
+    // FIXME get FMS flight number from ARINC word
     return SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
   }
 

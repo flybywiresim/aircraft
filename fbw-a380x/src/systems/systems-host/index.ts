@@ -12,6 +12,8 @@ import {
   SubscribableMapFunctions,
   WeightBalanceSimvarPublisher,
   StallWarningPublisher,
+  SimVarValueType,
+  Subject,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
 import { LegacyFuel } from 'systems-host/systems/LegacyFuel';
@@ -35,11 +37,21 @@ import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import {
+  ResetPanelSimvarPublisher,
+  ResetPanelSimvars,
+} from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import {
+  CpiomAvailableSimvarPublisher,
+  CpiomAvailableSimvars,
+} from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
+import { A380Failure } from '@failures';
 
+CpiomAvailableSimvarPublisher;
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
-  private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes>();
+  private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes & ResetPanelSimvars & CpiomAvailableSimvars>();
 
   private readonly backplane = new InstrumentBackplane();
 
@@ -50,9 +62,9 @@ class SystemsHost extends BaseInstrument {
   private readonly failuresConsumer = new FailuresConsumer();
 
   // TODO: Migrate PowerSupplyBusses, if needed
-  private gpws: LegacyGpws;
+  private gpws: LegacyGpws | undefined;
 
-  private soundManager: LegacySoundManager;
+  private soundManager: LegacySoundManager | undefined;
 
   private readonly acEssBusPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
   private readonly acBus2Powered = ConsumerSubject.create(this.sub.on('acBus2'), false);
@@ -99,7 +111,34 @@ class SystemsHost extends BaseInstrument {
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
-  private readonly fwsCore = new FwsCore(1, this.bus);
+  private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
+
+  private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
+
+  private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
+  private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
+
+  private readonly fws1Powered = ConsumerSubject.create(this.sub.on('cpiomC1Avail'), true);
+  private readonly fws2Powered = ConsumerSubject.create(this.sub.on('cpiomC2Avail'), true);
+
+  private readonly fws1Failed = Subject.create(false);
+  private readonly fws2Failed = Subject.create(false);
+
+  private readonly fwsEcpFailed = Subject.create(false);
+
+  private readonly fwsAvailable = MappedSubject.create(
+    ([failed1, failed2]) => !(failed1 && failed2),
+    this.fws1Failed,
+    this.fws2Failed,
+  );
+
+  private fwsCore: FwsCore | undefined = new FwsCore(
+    1,
+    this.bus,
+    this.failuresConsumer,
+    this.fws1Failed,
+    this.fws2Failed,
+  );
 
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
@@ -133,6 +172,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
     this.backplane.addPublisher('StallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
+    this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
@@ -154,8 +195,23 @@ class SystemsHost extends BaseInstrument {
 
         this.soundManager.update(dt);
         this.gpws.update(dt);
-        this.fwsCore.update(dt);
+        this.fwsCore?.update(dt);
       });
+
+    this.fwsAvailable.sub((a) => {
+      if (!a && this.fwsCore !== undefined) {
+        this.fwsCore.destroy();
+        this.fwsCore = undefined;
+        FwsCore.sendFailureWarning(this.bus);
+      } else if (a && this.fwsCore === undefined) {
+        this.fwsCore = new FwsCore(1, this.bus, this.failuresConsumer, this.fws1Failed, this.fws2Failed);
+        this.fwsCore.init();
+      }
+    }, true);
+    this.fws1Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, !f), true);
+    this.fws2Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, !f), true);
+
+    this.fwsEcpFailed.sub((v) => SimVar.SetSimVarValue('L:A32NX_FWS_ECP_FAILED', SimVarValueType.Bool, v), true);
   }
 
   get templateID(): string {
@@ -182,6 +238,12 @@ class SystemsHost extends BaseInstrument {
       true,
     );
 
+    this.failuresConsumer.register(A380Failure.Fws1);
+    this.failuresConsumer.register(A380Failure.Fws2);
+    this.failuresConsumer.register(A380Failure.Fws1AudioFunction);
+    this.failuresConsumer.register(A380Failure.Fws2AudioFunction);
+    this.failuresConsumer.register(A380Failure.FwsEcp);
+
     this.backplane.init();
   }
 
@@ -189,6 +251,21 @@ class SystemsHost extends BaseInstrument {
     super.Update();
 
     this.failuresConsumer.update();
+    this.fws1Failed.set(
+      this.failuresConsumer.isActive(A380Failure.Fws1) || this.fws1ResetPbStatus.get() || !this.fws1Powered.get(),
+    );
+    this.fws2Failed.set(
+      this.failuresConsumer.isActive(A380Failure.Fws2) || this.fws2ResetPbStatus.get() || !this.fws2Powered.get(),
+    );
+
+    const ecpNotReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_4_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_14_REACHABLE', SimVarValueType.Bool);
+    this.fwsEcpFailed.set(
+      this.failuresConsumer.isActive(A380Failure.FwsEcp) || !this.dcEssBusPowered.get() || ecpNotReachable,
+    );
 
     if (this.gameState !== 3) {
       const gamestate = this.getGameState();

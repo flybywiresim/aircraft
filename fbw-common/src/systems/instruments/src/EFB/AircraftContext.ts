@@ -41,6 +41,7 @@ interface PinProgramOptions {
 interface RealismOptions {
   mcduKeyboard: boolean;
   pauseOnTod: boolean;
+  autoStepClimb: boolean;
   pilotAvatars: boolean;
   eclSoftKeys: boolean;
 }
@@ -92,6 +93,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
     realism: {
       mcduKeyboard: false,
       pauseOnTod: false,
+      autoStepClimb: false,
       pilotAvatars: false,
       eclSoftKeys: false,
     },
