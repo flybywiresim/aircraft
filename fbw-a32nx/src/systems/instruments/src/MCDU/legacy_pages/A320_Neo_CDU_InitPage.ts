@@ -138,7 +138,7 @@ export class CDUInitPage {
         //This is done so pilot enters a FL first, rather than using the computed one
         if (mcdu.cruiseLevel) {
           cruiseFl.update('FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0'), Column.cyan);
-          if (mcdu.cruiseTemperature) {
+          if (mcdu.cruiseTemperature !== undefined) {
             cruiseTemp.update(CDUInitPage.formatTemperature(mcdu.cruiseTemperature), Column.cyan);
             cruiseFlTempSeparator.updateAttributes(Column.cyan);
           } else {
