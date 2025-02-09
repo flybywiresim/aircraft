@@ -1,12 +1,7 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  Arinc429LocalVarConsumerSubject,
-  MathUtils,
-  NXLogicConfirmNode,
-  NXLogicPulseNode,
-} from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, NXLogicConfirmNode, NXLogicPulseNode } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,
   EventBus,
@@ -21,8 +16,6 @@ import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/P
 /**
  * Utility class for auto-setting the THS trim. Will be superseded by the proper PRIM implementation in some point in the future
  */
-
-const THS_TRIM_DEGREES_PER_SECOND = 0.25;
 
 export class AutoThsTrimmer implements Instrument {
   private readonly subscriptions: Subscription[] = [];
@@ -72,9 +65,9 @@ export class AutoThsTrimmer implements Instrument {
 
   /** in percent */
   private readonly cgPercent = ConsumerSubject.create(this.sub.on('gw_cg_percent'), 0);
+  private readonly targetThsPosition = this.cgPercent.map((cg) => PitchTrimUtils.cgToPitchTrim(cg));
   /** in radians */
   private readonly trimPosition = ConsumerSubject.create(this.sub.on('ths_position'), 0);
-  private readonly trimPositionDeg = this.trimPosition.map((tp) => tp * MathUtils.RADIANS_TO_DEGREES);
 
   init() {
     this.subscriptions.push(
@@ -88,8 +81,8 @@ export class AutoThsTrimmer implements Instrument {
       this.cas,
       this.flapsLever,
       this.cgPercent,
+      this.targetThsPosition,
       this.trimPosition,
-      this.trimPositionDeg,
     );
 
     for (const s of this.engineState) {
@@ -139,18 +132,15 @@ export class AutoThsTrimmer implements Instrument {
     if (!this.onGround.get()) {
       this.shouldAutoTrim = false;
     }
-
-    this.autoTrim();
   }
 
-  private autoTrim() {
+  /** This needs to be called with a high frequency (at least the FBW CPP code frequency) to ensure adequate trimming rates */
+  public autoTrim() {
     if (this.shouldAutoTrim) {
-      const targetThsPosition = PitchTrimUtils.cgToPitchTrim(this.cgPercent.get());
-      const thsTrimDiff = targetThsPosition - this.trimPositionDeg.get();
+      const trimPositionDeg = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', SimVarValueType.Degree);
+      const thsTrimDiff = this.targetThsPosition.get() - trimPositionDeg;
 
-      const maxTrimStep = THS_TRIM_DEGREES_PER_SECOND * (this.instrument.deltaTime / 1_000);
-
-      if (Math.abs(thsTrimDiff) < maxTrimStep) {
+      if (Math.abs(thsTrimDiff) < 0.05) {
         this.shouldAutoTrim = false;
       } else {
         if (thsTrimDiff > 0) {

@@ -201,6 +201,7 @@ class SystemsHost extends BaseInstrument {
         this.soundManager.update(dt);
         this.gpws.update(dt);
         this.fwsCore?.update(dt);
+        this.autoThsTrimmer.autoTrim();
       });
 
     this.fwsAvailable.sub((a) => {
