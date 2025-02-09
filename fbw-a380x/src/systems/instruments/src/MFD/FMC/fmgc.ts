@@ -14,7 +14,6 @@ import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
-import { DefaultPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,

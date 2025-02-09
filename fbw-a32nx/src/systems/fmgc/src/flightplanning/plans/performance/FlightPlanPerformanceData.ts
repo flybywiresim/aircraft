@@ -227,6 +227,11 @@ export interface FlightPlanPerformanceData {
   isClimbSpeedLimitPilotEntered: boolean;
 
   /**
+   * Whether the climb speed limit altitude is pilot entered
+   */
+  isClimbSpeedLimitAltitudePilotEntered?: boolean;
+
+  /**
    * The maximum speed imposed by the descent speed limit of the main flight plan or null if not set.
    */
   descentSpeedLimitSpeed: number | null;
@@ -240,6 +245,11 @@ export interface FlightPlanPerformanceData {
    * Whether the descent speed limit of the main flight plan is pilot entered.
    */
   isDescentSpeedLimitPilotEntered: boolean;
+
+  /**
+   * Whether the descent speed limit altitude is pilot entered
+   */
+  isDescentSpeedLimitAltitudePilotEntered?: boolean;
 
   /**
    * The maximum speed imposed by the climb speed limit of the alternate flight plan or null if not set.
@@ -257,6 +267,11 @@ export interface FlightPlanPerformanceData {
   isAlternateClimbSpeedLimitPilotEntered: boolean;
 
   /**
+   * Whether the climb speed limit altitude of the alternate flight plan is pilot entered
+   */
+  isAlternateClimbSpeedLimitAltitudePilotEntered?: boolean;
+
+  /**
    * The maximum speed imposed by the descent speed limit of the alternate flight plan or null if not set.
    */
   alternateDescentSpeedLimitSpeed: number | null;
@@ -270,6 +285,11 @@ export interface FlightPlanPerformanceData {
    * Whether the descent speed limit of the alternate flight plan is pilot entered.
    */
   isAlternateDescentSpeedLimitPilotEntered: boolean;
+
+  /**
+   * Whether the climb speed limit altitude of the alternate flight plan is pilot entered
+   */
+  isAlternateDescentSpeedLimitAltitudePilotEntered?: boolean;
 
   clone(): this;
 }
@@ -691,6 +711,34 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   }
 }
 
+export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData {
+  isClimbSpeedLimitAltitudePilotEntered: boolean = false;
+
+  isDescentSpeedLimitAltitudePilotEntered: boolean = false;
+
+  isAlternateClimbSpeedLimitAltitudePilotEntered: boolean = false;
+
+  isAlternateDescentSpeedLimitAltitudePilotEntered: boolean = false;
+
+  public clone(): this {
+    const cloned = super.clone();
+    cloned.isClimbSpeedLimitAltitudePilotEntered = this.isClimbSpeedLimitAltitudePilotEntered;
+    cloned.isDescentSpeedLimitAltitudePilotEntered = this.isDescentSpeedLimitAltitudePilotEntered;
+    cloned.isAlternateClimbSpeedLimitAltitudePilotEntered = this.isAlternateClimbSpeedLimitAltitudePilotEntered;
+    cloned.isAlternateDescentSpeedLimitAltitudePilotEntered = this.isAlternateDescentSpeedLimitAltitudePilotEntered;
+    return cloned;
+  }
+
+  public serialize(): SerializedFlightPlanPerformanceData {
+    const serialized = super.serialize();
+    serialized.isClimbSpeedLimitAltitudePilotEntered = this.isClimbSpeedLimitAltitudePilotEntered;
+    serialized.isDescentSpeedLimitAltitudePilotEntered = this.isDescentSpeedLimitAltitudePilotEntered;
+    serialized.isAlternateClimbSpeedLimitAltitudePilotEntered = this.isClimbSpeedLimitAltitudePilotEntered;
+    serialized.isAlternateDescentSpeedLimitAltitudePilotEntered = this.isAlternateDescentSpeedLimitAltitudePilotEntered;
+    return serialized;
+  }
+}
+
 export interface SerializedFlightPlanPerformanceData {
   cruiseFlightLevel: number | null;
   costIndex: number | null;
@@ -730,18 +778,22 @@ export interface SerializedFlightPlanPerformanceData {
   climbSpeedLimitSpeed: number | null;
   climbSpeedLimitAltitude: number | null;
   isClimbSpeedLimitPilotEntered: boolean;
+  isClimbSpeedLimitAltitudePilotEntered?: boolean;
 
   descentSpeedLimitSpeed: number | null;
   descentSpeedLimitAltitude: number | null;
   isDescentSpeedLimitPilotEntered: boolean;
+  isDescentSpeedLimitAltitudePilotEntered?: boolean;
 
   alternateClimbSpeedLimitSpeed: number | null;
   alternateClimbSpeedLimitAltitude: number | null;
   isAlternateClimbSpeedLimitPilotEntered: boolean;
+  isAlternateClimbSpeedLimitAltitudePilotEntered?: boolean;
 
   alternateDescentSpeedLimitSpeed: number | null;
   alternateDescentSpeedLimitAltitude: number | null;
   isAlternateDescentSpeedLimitPilotEntered: boolean;
+  isAlternateDescentSpeedLimitAltitudePilotEntered?: boolean;
 }
 
 export class DefaultPerformanceData {
