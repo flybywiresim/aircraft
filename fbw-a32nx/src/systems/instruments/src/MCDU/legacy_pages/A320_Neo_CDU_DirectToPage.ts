@@ -15,6 +15,7 @@ import {
 import { isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { A32NX_Util } from '@shared/A32NX_Util';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 // TODO this whole thing is thales layout...
 
@@ -198,7 +199,7 @@ export class CDUDirectToPage {
         directToObject = {
           flightPlanLegIndex: directToObject.flightPlanLegIndex,
           nonFlightPlanFix: directToObject.nonFlightPlanFix,
-          courseIn: course % 360,
+          courseIn: MathUtils.normalise360(course),
         };
 
         mcdu
@@ -239,7 +240,7 @@ export class CDUDirectToPage {
         directToObject = {
           flightPlanLegIndex: directToObject.flightPlanLegIndex,
           nonFlightPlanFix: directToObject.nonFlightPlanFix,
-          courseOut: course % 360,
+          courseOut: MathUtils.normalise360(course),
         };
 
         mcdu
