@@ -476,29 +476,33 @@ export class FmgcDataService implements Fmgc {
   }
 
   getClimbSpeedLimit(): SpeedLimit | null {
-    return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? {
-          speed:
-            this.flightPlanService.active.performanceData.climbSpeedLimitSpeed ??
-            DefaultPerformanceData.ClimbSpeedLimitSpeed,
-          underAltitude:
-            this.flightPlanService.active.performanceData.climbSpeedLimitAltitude ??
-            DefaultPerformanceData.ClimbSpeedLimitAltitude,
-        }
-      : null;
+    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+      return null;
+    }
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.climbSpeedLimitSpeed;
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.climbSpeedLimitAltitude;
+    if (speedLimitSpeed && speedLimitAltitude) {
+      return {
+        speed: speedLimitSpeed,
+        underAltitude: speedLimitAltitude,
+      };
+    }
+    return null;
   }
 
   getDescentSpeedLimit(): SpeedLimit | null {
-    return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? {
-          speed:
-            this.flightPlanService.active.performanceData.descentSpeedLimitSpeed ??
-            DefaultPerformanceData.ClimbSpeedLimitSpeed,
-          underAltitude:
-            this.flightPlanService.active.performanceData.defaultAccelerationAltitude ??
-            DefaultPerformanceData.ClimbSpeedLimitAltitude,
-        }
-      : null;
+    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+      return null;
+    }
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.descentSpeedLimitSpeed;
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.descentSpeedLimitAltitude;
+    if (speedLimitSpeed && speedLimitAltitude) {
+      return {
+        speed: speedLimitSpeed,
+        underAltitude: speedLimitAltitude,
+      };
+    }
+    return null;
   }
 
   /** in knots */
