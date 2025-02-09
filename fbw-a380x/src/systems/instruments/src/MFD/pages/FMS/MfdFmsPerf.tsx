@@ -528,8 +528,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       return;
     }
 
-    console.time('PERF:onNewData');
-
     this.crzFl.set(pd.cruiseFlightLevel);
     this.crzFlIsMandatory.set(
       (this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent,
@@ -690,12 +688,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation();
     if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent && vDev != null) {
-      this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `-${vDev.toFixed(0)}FT`);
+      this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `${vDev.toFixed(0)}FT`);
     } else {
       this.apprVerticalDeviation.set('+-----');
     }
-
-    console.timeEnd('PERF:onNewData');
   }
 
   public onAfterRender(node: VNode): void {
