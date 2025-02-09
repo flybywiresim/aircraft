@@ -73,9 +73,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.ndRangeSetting,
   );
 
-  private readonly pposLat = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'), 0);
-  private readonly pposLon = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'), 0);
-
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
   private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('verticalPath'), []);
   private readonly displayedFmsPath = MappedSubject.create(
