@@ -5,6 +5,7 @@ import {
   Arinc429LocalVarConsumerSubject,
   Arinc429LocalVarOutputWord,
   Arinc429SignStatusMatrix,
+  FailuresConsumer,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import {
@@ -27,6 +28,7 @@ import {
   A32NXOverheadDiscreteEvents,
 } from '../../../shared/src/publishers/A32NXOverheadDiscretePublisher';
 import { DmcEcpLightStatus, FakeDmcEvents } from './FakeDmc';
+import { A320Failure } from '../../../failures/src/a320';
 
 // TODO
 const OUTPUT_BUS_TRANSMIT_INTERVAL_MS = 100;
@@ -41,13 +43,17 @@ class EcpKey {
 
   constructor(
     public readonly name: string,
-    private readonly setPressed: (v: boolean) => void,
-    protected readonly ecpHealthy: Subscribable<boolean>,
-  ) {}
+    private readonly setBusOutputPressed: (v: boolean) => void,
+    protected readonly ecpOperatingNormally: Subscribable<boolean>,
+  ) {
+    this.ecpOperatingNormally.sub((v) => !v && (this.holdTime = 0));
+  }
 
   public handlePress(): void {
     this.isPhysicalKeyPressed = true;
-    this.holdTime = EcpKey.MIN_HOLD_TIME_MS;
+    if (this.ecpOperatingNormally.get()) {
+      this.holdTime = EcpKey.MIN_HOLD_TIME_MS;
+    }
   }
 
   public handleRelease(): void {
@@ -55,12 +61,12 @@ class EcpKey {
   }
 
   public update(deltaMs: number): void {
-    this.setPressed(this.isPressed());
+    this.setBusOutputPressed(this.isPhysicalKeyPressed || this.holdTime > 0);
     this.holdTime = Math.max(0, this.holdTime - deltaMs);
   }
 
   public isPressed(): boolean {
-    return this.isPhysicalKeyPressed || this.holdTime > 0;
+    return this.isPhysicalKeyPressed;
   }
 }
 
@@ -82,7 +88,7 @@ class LitEcpKey extends EcpKey {
           return 0;
       }
     },
-    this.ecpHealthy,
+    this.ecpOperatingNormally,
     this.lightTest,
     this.dim,
     this.litRequested,
@@ -91,15 +97,15 @@ class LitEcpKey extends EcpKey {
 
   constructor(
     name: string,
-    setPressed: (v: boolean) => void,
-    ecpHealthy: Subscribable<boolean>,
+    setBusOutputPressed: (v: boolean) => void,
+    ecpOperatingNormally: Subscribable<boolean>,
     private readonly lightTest: Subscribable<boolean>,
     private readonly dim: Subscribable<boolean>,
     private readonly litRequested: Subscribable<boolean>,
     setLightOn: (v: boolean) => void,
     private readonly flashingOn?: Subscribable<boolean>,
   ) {
-    super(name, setPressed, ecpHealthy);
+    super(name, setBusOutputPressed, ecpOperatingNormally);
     this.lightBrightness.sub((v) => SimVar.SetSimVarValue(this.lightLocalVar, SimVarValueType.Number, v), true);
     this.litRequested.map((v) => setLightOn(v));
   }
@@ -120,9 +126,19 @@ export class Ecp implements Instrument {
   private lastSimTime = 0;
 
   // FIXME CB 15WT 49VU
-  private readonly isPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_ess_bus_is_powered'), false);
-  private readonly healthTimer = new DebounceTimer();
-  private readonly isHealthy = Subject.create(false);
+  private readonly isInputPowerHealthy = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_ess_bus_is_powered'), false);
+  private readonly powerRideThroughTimer = new DebounceTimer();
+  private readonly isPowerHealthy = Subject.create(false);
+  private readonly isEcpFailed = Subject.create(false);
+  private readonly canBoot = MappedSubject.create(
+    ([isPowerHealthy, isEcpFailed]) => isPowerHealthy && !isEcpFailed,
+    this.isPowerHealthy,
+    this.isEcpFailed,
+  );
+  private readonly bootTimer = new DebounceTimer();
+  private readonly isOperatingNormally = Subject.create(false);
+
+  private readonly failuresConsumer = new FailuresConsumer('A32NX');
 
   /** Hardwired input from the ANN LT switch. */
   private readonly lightTestInput = ConsumerSubject.create(this.sub.on('ovhd_ann_lt_test'), false);
@@ -168,7 +184,7 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'CLR_1',
         (v) => this.warningSwitchesOutputWord.setBitValue(11, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
         this.clrLightRequested,
@@ -180,27 +196,20 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'STS',
         (v) => this.warningSwitchesOutputWord.setBitValue(13, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(26, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(26),
         (v) => this.lightStatusOutputWord.setBitValue(16, v),
       ),
     ],
-    ['RCL', new EcpKey('RCL', (v) => this.warningSwitchesOutputWord.setBitValue(14, v), this.isHealthy)],
+    ['RCL', new EcpKey('RCL', (v) => this.warningSwitchesOutputWord.setBitValue(14, v), this.isOperatingNormally)],
     [
       'CLR_2',
       new LitEcpKey(
         'CLR_2',
         (v) => this.warningSwitchesOutputWord.setBitValue(16, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
         this.clrLightRequested,
@@ -209,11 +218,11 @@ export class Ecp implements Instrument {
     ],
     [
       'EMER_CANCEL',
-      new EcpKey('EMER_CANCEL', (v) => this.warningSwitchesOutputWord.setBitValue(17, v), this.isHealthy),
+      new EcpKey('EMER_CANCEL', (v) => this.warningSwitchesOutputWord.setBitValue(17, v), this.isOperatingNormally),
     ],
     [
       'TO_CONF_TEST',
-      new EcpKey('TO_CONF_TEST', (v) => this.warningSwitchesOutputWord.setBitValue(18, v), this.isHealthy),
+      new EcpKey('TO_CONF_TEST', (v) => this.warningSwitchesOutputWord.setBitValue(18, v), this.isOperatingNormally),
     ],
   ]);
 
@@ -223,17 +232,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'ENG',
         (v) => this.systemSwitchesOutputWord.setBitValue(11, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(12, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(12),
         (v) => this.lightStatusOutputWord.setBitValue(11, v),
         this.flashOn,
       ),
@@ -243,17 +245,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'BLEED',
         (v) => this.systemSwitchesOutputWord.setBitValue(12, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(13, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(13),
         (v) => this.lightStatusOutputWord.setBitValue(12, v),
         this.flashOn,
       ),
@@ -263,17 +258,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'APU',
         (v) => this.systemSwitchesOutputWord.setBitValue(13, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(18, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(18),
         (v) => this.lightStatusOutputWord.setBitValue(13, v),
         this.flashOn,
       ),
@@ -283,17 +271,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'HYD',
         (v) => this.systemSwitchesOutputWord.setBitValue(14, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(15, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(15),
         (v) => this.lightStatusOutputWord.setBitValue(14, v),
         this.flashOn,
       ),
@@ -303,17 +284,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'ELEC',
         (v) => this.systemSwitchesOutputWord.setBitValue(15, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(16, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(16),
         (v) => this.lightStatusOutputWord.setBitValue(15, v),
         this.flashOn,
       ),
@@ -323,17 +297,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'COND',
         (v) => this.systemSwitchesOutputWord.setBitValue(17, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(19, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(19),
         (v) => this.lightStatusOutputWord.setBitValue(17, v),
         this.flashOn,
       ),
@@ -343,17 +310,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'PRESS',
         (v) => this.systemSwitchesOutputWord.setBitValue(18, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(14, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(14),
         (v) => this.lightStatusOutputWord.setBitValue(18, v),
         this.flashOn,
       ),
@@ -363,17 +323,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'FUEL',
         (v) => this.systemSwitchesOutputWord.setBitValue(19, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(17, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(17),
         (v) => this.lightStatusOutputWord.setBitValue(19, v),
         this.flashOn,
       ),
@@ -383,17 +336,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'FLT_CTL',
         (v) => this.systemSwitchesOutputWord.setBitValue(20, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(21, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(21),
         (v) => this.lightStatusOutputWord.setBitValue(20, v),
         this.flashOn,
       ),
@@ -403,17 +349,10 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'DOOR',
         (v) => this.systemSwitchesOutputWord.setBitValue(21, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(20, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(20),
         (v) => this.lightStatusOutputWord.setBitValue(21, v),
         this.flashOn,
       ),
@@ -423,27 +362,21 @@ export class Ecp implements Instrument {
       new LitEcpKey(
         'BRAKES',
         (v) => this.systemSwitchesOutputWord.setBitValue(22, v),
-        this.isHealthy,
+        this.isOperatingNormally,
         this.lightTestInput,
         this.dimInput,
-        MappedSubject.create(
-          ([dmcCode, requestWord]) =>
-            requestWord.bitValueOr(22, false) &&
-            dmcCode !== DmcEcpLightStatus.EngineWarning &&
-            dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
-          this.dmcCode,
-          this.lightRequestInputWord,
-        ),
+        this.dmcPageLightRequestFactory(22),
         (v) => this.lightStatusOutputWord.setBitValue(22, v),
         this.flashOn,
       ),
     ],
-    ['ALL', new EcpKey('ALL', (v) => this.systemSwitchesOutputWord.setBitValue(23, v), this.isHealthy)],
+    ['ALL', new EcpKey('ALL', (v) => this.systemSwitchesOutputWord.setBitValue(23, v), this.isOperatingNormally)],
   ]);
 
   private readonly subs: Subscription[] = [
     this.sub.on('hEvent').handle(this.onHEvent.bind(this), true),
-    this.isPowered.sub(this.onPowerStateChanged.bind(this), true),
+    this.isInputPowerHealthy.sub(this.onPowerStateChanged.bind(this), true),
+    this.canBoot.sub(this.onBootStatusChanged.bind(this), true),
     MappedSubject.create(
       ([isHealthy, inputWord]) =>
         isHealthy
@@ -451,7 +384,7 @@ export class Ecp implements Instrument {
             ? Arinc429SignStatusMatrix.NoComputedData
             : Arinc429SignStatusMatrix.NormalOperation
           : Arinc429SignStatusMatrix.FailureWarning,
-      this.isHealthy,
+      this.isOperatingNormally,
       this.lightRequestInputWord,
     ).sub((ssm) => this.lightStatusOutputWord.setSsm(ssm), true, true),
     this.ecpStatusHardwiredState.sub(
@@ -503,10 +436,18 @@ export class Ecp implements Instrument {
    */
   constructor(private readonly bus: EventBus) {}
 
+  private dmcPageLightRequestFactory(bit: number) {
+    return MappedSubject.create(
+      ([dmcCode, requestWord]) =>
+        requestWord.bitValueOr(bit, false) &&
+        dmcCode !== DmcEcpLightStatus.EngineWarning &&
+        dmcCode !== DmcEcpLightStatus.AutomaticStatusSystems,
+      this.dmcCode,
+      this.lightRequestInputWord,
+    );
+  }
+
   private onHEvent(ev: string): void {
-    if (!this.isHealthy.get()) {
-      return;
-    }
     const match = ev.match(Ecp.HEVENT_REGEX);
     if (match !== null) {
       const key = this.warningKeys.get(match[1]) ?? this.systemKeys.get(match[1]);
@@ -520,14 +461,26 @@ export class Ecp implements Instrument {
 
   private onPowerStateChanged(isPowered: boolean): void {
     if (isPowered) {
-      this.healthTimer.schedule(() => this.isHealthy.set(true), Ecp.BOOT_TIME_MS);
+      this.powerRideThroughTimer.clear();
+      this.isPowerHealthy.set(true);
     } else {
-      this.healthTimer.schedule(() => this.isHealthy.set(false), Ecp.POWER_RIDETHROUGH_MS);
+      this.powerRideThroughTimer.schedule(() => this.isPowerHealthy.set(false), Ecp.POWER_RIDETHROUGH_MS);
+    }
+  }
+
+  private onBootStatusChanged(canBoot: boolean): void {
+    if (canBoot) {
+      this.bootTimer.schedule(() => this.isOperatingNormally.set(true), Ecp.BOOT_TIME_MS);
+    } else {
+      this.bootTimer.clear();
+      this.isOperatingNormally.set(false);
     }
   }
 
   /** @inheritdoc */
   public init(): void {
+    this.failuresConsumer.register(A320Failure.EcamControlPanel);
+
     for (const sub of this.subs) {
       sub.resume(true);
     }
@@ -540,21 +493,22 @@ export class Ecp implements Instrument {
   }
 
   private updateHardwiredDiscretes(): void {
-    const isHealthy = this.isHealthy.get();
-
-    this.ecpStatusHardwiredState.set(isHealthy && this.warningKeys.get('STS')?.isPressed() === true);
-    this.ecpRecallHardwiredState.set(isHealthy && this.warningKeys.get('RCL')?.isPressed() === true);
+    // These do not depend on the ECP being healthy, for critical buttons.
+    this.ecpStatusHardwiredState.set(this.warningKeys.get('STS')?.isPressed() === true);
+    this.ecpRecallHardwiredState.set(this.warningKeys.get('RCL')?.isPressed() === true);
     this.ecpClearHardwiredState.set(
-      isHealthy &&
-        (this.warningKeys.get('CLR_1')?.isPressed() === true || this.warningKeys.get('CLR_2')?.isPressed() === true),
+      this.warningKeys.get('CLR_1')?.isPressed() === true || this.warningKeys.get('CLR_2')?.isPressed() === true,
     );
-    this.ecpEmerCancelHardwiredState.set(isHealthy && this.warningKeys.get('EMER_CANCEL')?.isPressed() === true);
+    this.ecpEmerCancelHardwiredState.set(this.warningKeys.get('EMER_CANCEL')?.isPressed() === true);
 
-    this.ecpAllHardwiredState.set(isHealthy && this.systemKeys.get('ALL')?.isPressed() === true);
+    this.ecpAllHardwiredState.set(this.systemKeys.get('ALL')?.isPressed() === true);
   }
 
   /** @inheritdoc */
   public onUpdate(): void {
+    this.failuresConsumer.update();
+    this.isEcpFailed.set(this.failuresConsumer.isActive(A320Failure.EcamControlPanel));
+
     const simTime = this.simTime.get();
     const deltaTime = simTime - this.lastSimTime;
     this.lastSimTime = simTime;
@@ -565,12 +519,13 @@ export class Ecp implements Instrument {
 
       this.updateHardwiredDiscretes();
 
-      const isHealthy = this.isHealthy.get();
+      const isOperatingNormally = this.isOperatingNormally.get();
       for (const word of this.outputWords) {
-        if (isHealthy) {
+        if (isOperatingNormally) {
           word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
         } else {
           word.setRawValue(0);
+          word.setSsm(Arinc429SignStatusMatrix.FailureWarning);
         }
         word.writeToSimVarIfDirty();
       }
