@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -11,7 +16,8 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -131,7 +137,60 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
   314800004: {
     title: '\x1b<4m\x1b4mFWS\x1bm FWS 1+2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'ECAM SD',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'OVHD PNL',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'FUNCTIONS NOT AVAIL:',
+        sensed: true,
+        style: ChecklistLineStyle.White,
+        level: 2,
+      },
+      {
+        name: 'ECAM WARNINGS & CAUTIONS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ABN PROCEDURES',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'LIMITATIONS & STATUS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ALTITUDE ALERT',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'AUTO CALLOUT',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'NORM C/L & MEMO',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+    ],
   },
   314800005: {
     title: '\x1b<4m\x1b4mFWS\x1bm ATQC DATABASE REJECTED',
@@ -139,14 +198,52 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   314800006: {
-    title: '\x1b<4m\x1b4mFWS\x1bm AUDIO FUNCTION LOSS',
+    title: '\x1b<4m\x1b4mFWS\x1bm AUDIO FUNCTION LOST',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'AUDIOS NOT AVAIL:',
+        style: ChecklistLineStyle.White,
+        sensed: true,
+      },
+      {
+        name: 'ALTITUDE ALERT',
+        style: ChecklistLineStyle.Cyan,
+        sensed: true,
+      },
+      {
+        name: 'AUTO CALLOUT',
+        style: ChecklistLineStyle.Cyan,
+        sensed: true,
+      },
+      {
+        name: 'AURAL ATTENTION GETTERS',
+        style: ChecklistLineStyle.Cyan,
+        sensed: true,
+      },
+    ],
   },
   314800007: {
     title: '\x1b<4m\x1b4mFWS\x1bm ECP FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'ECP KEYS NOT AVAIL:',
+        style: ChecklistLineStyle.Green,
+        sensed: true,
+      },
+      {
+        name: 'SYSTEMS, MORE, TO CONFIG, RCL LAST',
+        style: ChecklistLineStyle.Green,
+        sensed: true,
+        level: 1,
+      },
+      {
+        name: 'FOR SYS PAGES: "ALL" AVAIL',
+        style: ChecklistLineStyle.Green,
+        sensed: true,
+      },
+    ],
   },
   314800008: {
     title: '\x1b<4m\x1b4mFWS\x1bm FWS 1 FAULT',
@@ -1105,5 +1202,70 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE PRESS LO',
     sensed: true,
     items: [],
+  },
+  320900001: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH ABNORM NOSE L/G',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900002: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM L/Gs ON SAME SIDE',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900003: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 1 ABNORM WING OR BODY L/G',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900004: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM BODY L/Gs',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900005: {
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM WING L/Gs',
+    sensed: false,
+    items: [], // TODO
+  },
+  320900006: {
+    title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE DAMAGE SUSPECTED',
+    sensed: false,
+    items: [], // TODO
+  },
+};
+
+export const EcamDeferredProcAta313233: { [n: number]: DeferredProcedure } = {
+  320700001: {
+    fromAbnormalProcs: ['290800035', '290800036', '290800039'],
+    title: 'L/G GRVTY EXTN',
+    type: DeferredProcedureType.FOR_LANDING,
+    items: [
+      {
+        name: 'FOR L/G GRVTY EXTN: MAX SPEED 220 KT',
+        sensed: false,
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'L/G GRVTY (EXTN MAX 2 MIN)',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+      },
+      {
+        name: 'WHEN L/G LOCKED DOWN OR AFTER 120S',
+        condition: true,
+        sensed: true,
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+        level: 1,
+      },
+    ],
   },
 };

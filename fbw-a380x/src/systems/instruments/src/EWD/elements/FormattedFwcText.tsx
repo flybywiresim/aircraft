@@ -2,22 +2,26 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subscribable, SubscribableUtils, VNode } from '@microsoft/msfs-sdk';
 
 interface FormattedFwcTextProps {
-  message: Subscribable<string>;
+  message: Subscribable<string> | string;
   x: number;
   y: number;
+  /** Whether this line will be rendered in the PFD. Has impact on font-size */
+  pfd?: boolean;
 }
 export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
   private linesRef = FSComponent.createRef<SVGGElement>();
 
   private decorationRef = FSComponent.createRef<SVGGElement>();
 
+  private readonly messageSub = SubscribableUtils.toSubscribable(this.props.message, true);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.message.sub((message) => {
+    this.messageSub.sub((message) => {
       const LINE_SPACING = 30;
       const LETTER_WIDTH = 16;
 
@@ -163,7 +167,10 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
       if (buffer !== '') {
         spans.push(
-          <tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>
+          <tspan
+            key={buffer}
+            class={{ [color]: true, EWDWarn: !this.props.pfd, FontMediumSmaller: this.props.pfd ?? false }}
+          >
             {buffer}
           </tspan>,
         );
@@ -179,7 +186,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
         this.linesRef.instance.appendChild(e);
         yOffset += LINE_SPACING;
       }
-    });
+    }, true);
   }
 
   render(): VNode {
