@@ -20,15 +20,15 @@ namespace navigationdisplay {
 class Collection {
  private:
   struct EgpwcData {
-    types::Arinc429Word<types::Angle>    destinationLatitude;
-    types::Arinc429Word<types::Angle>    destinationLongitude;
-    types::Arinc429Word<types::Angle>    presentLatitude;
-    types::Arinc429Word<types::Angle>    presentLongitude;
-    types::Arinc429Word<types::Length>   altitude;
-    types::Arinc429Word<types::Angle>    heading;
+    types::Arinc429Word<types::Angle> destinationLatitude;
+    types::Arinc429Word<types::Angle> destinationLongitude;
+    types::Arinc429Word<types::Angle> presentLatitude;
+    types::Arinc429Word<types::Angle> presentLongitude;
+    types::Arinc429Word<types::Length> altitude;
+    types::Arinc429Word<types::Angle> heading;
     types::Arinc429Word<types::Velocity> verticalSpeed;
-    bool                                 gearIsDown;
-    std::uint8_t                         terrOnNdRenderingMode;
+    bool gearIsDown;
+    std::uint8_t terrOnNdRenderingMode;
   };
 
   struct GroundTruthPosition {
@@ -37,16 +37,14 @@ class Collection {
   };
 
   std::map<FsContext, std::shared_ptr<DisplayBase>> _displays;
-  GroundTruthPosition                               _groundTruth;
-  EgpwcData                                         _egpwcData;
-  DisplayBase::NdConfiguration                      _configurationLeft;
-  DisplayBase::NdConfiguration                      _configurationRight;
-  std::chrono::system_clock::time_point             _lastAircraftStatusTransmission;
-  std::chrono::system_clock::time_point             _lastVerticalPathTransmission;
-  bool                                              _sendAircraftStatus;
-  bool                                              _sendVerticalPath;
-  bool                                              _reconfigureDisplayLeft;
-  bool                                              _reconfigureDisplayRight;
+  GroundTruthPosition _groundTruth;
+  EgpwcData _egpwcData;
+  DisplayBase::NdConfiguration _configurationLeft;
+  DisplayBase::NdConfiguration _configurationRight;
+  std::chrono::system_clock::time_point _lastAircraftStatusTransmission;
+  bool _sendAircraftStatus;
+  bool _reconfigureDisplayLeft;
+  bool _reconfigureDisplayRight;
 
   // inputs
   std::shared_ptr<simconnect::SimObject<types::SimulatorData>> _simulatorData;
@@ -59,8 +57,7 @@ class Collection {
                                          EgpwcHeading,
                                          EgpwcVerticalSpeed,
                                          EgpwcGearIsDown>>
-                                                                                     _aircraftStatus;
-  std::shared_ptr<simconnect::LVarObject<EgpwcDestinationLat, EgpwcDestinationLong>> _verticalPath;
+      _aircraftStatus;
   std::shared_ptr<simconnect::LVarObject<EgpwcNdLeftRange,
                                          EfisNdLeftMode,
                                          EgpwcTerrOnNdLeftActive,
@@ -73,7 +70,6 @@ class Collection {
 
   // outputs
   std::shared_ptr<simconnect::ClientDataArea<types::AircraftStatusData>> _simconnectAircraftStatus;
-  std::shared_ptr<simconnect::ClientDataArea<types::VerticalPathData>>   _simconnectVerticalPathData;
 
  public:
   /**
