@@ -48,7 +48,7 @@ import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
 import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A380FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { Navigation } from '@fmgc/navigation/Navigation';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
@@ -96,8 +96,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.#operatingMode = value;
   }
 
-  // FIXME A320 data
-  #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData(), FpmConfigs.A380);
+  #flightPlanService = new FlightPlanService(this.bus, new A380FlightPlanPerformanceData(), FpmConfigs.A380);
 
   get flightPlanService() {
     return this.#flightPlanService;
