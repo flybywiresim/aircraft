@@ -1,11 +1,12 @@
 ﻿import {
-  A380EfisNdRangeValue,
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
   ArincEventBus,
   EfisNdMode,
   EfisSide,
   MathUtils,
+  NdSymbol,
+  NdSymbolTypeFlags,
   VerticalPathCheckpoint,
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
@@ -27,16 +28,14 @@ import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
 import { VdSimvars } from '../VdSimvarPublisher';
-import { VerticalMode } from '@shared/autopilot';
+import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
+import { pathVectorLength, pathVectorPoint } from '@fmgc/guidance/lnav/PathVector';
+import { bearingTo } from 'msfs-geo';
+import { GenericFcuEvents, GenericTawsEvents } from '@flybywiresim/navigation-display';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
   side: EfisSide;
-}
-
-export interface GenericFcuEvents {
-  ndMode: EfisNdMode;
-  ndRangeSetting: A380EfisNdRangeValue;
 }
 
 export const VERTICAL_DISPLAY_MAX_ALTITUDE = 70000;
@@ -50,7 +49,14 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly sub = this.props.bus.getArincSubscriber<
-    GenericFcuEvents & NDSimvars & VdSimvars & DmcLogicEvents & SimplaneValues & FmsSymbolsData & NDControlEvents
+    GenericFcuEvents &
+      GenericTawsEvents &
+      NDSimvars &
+      VdSimvars &
+      DmcLogicEvents &
+      SimplaneValues &
+      FmsSymbolsData &
+      NDControlEvents
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
@@ -67,6 +73,10 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.ndRangeSetting,
   );
 
+  private readonly pposLat = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'), 0);
+  private readonly pposLon = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'), 0);
+
+  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
   private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('verticalPath'), []);
   private readonly displayedFmsPath = MappedSubject.create(
     ([path, ndRange]) => {
@@ -184,6 +194,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.vdRange.map((value) => (value / 4) * 4),
   ];
 
+  private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
+  private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('armedLateralMode'), 0);
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
   private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('altConstraint'), 0);
   private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
@@ -326,6 +338,13 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     for (const rm of this.altitudeTapeText) {
       this.subscriptions.push(rm);
     }
+
+    this.subscriptions.push(
+      this.vdRange.sub(() => this.calculateAndTransmitEndOfVdMarker()),
+      this.fmsLateralPath.sub(() => this.calculateAndTransmitEndOfVdMarker()),
+    );
+
+    this.calculateAndTransmitEndOfVdMarker();
   }
 
   /**
@@ -401,6 +420,57 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
         break;
     }
     return Math.max(0, Math.ceil(verticalRange[0] / altitudePerDash) * altitudePerDash) + altitudePerDash * index;
+  }
+
+  calculateAndTransmitEndOfVdMarker() {
+    const shouldShowTrackLine =
+      (this.activeLateralMode.get() === LateralMode.NONE ||
+        this.activeLateralMode.get() === LateralMode.HDG ||
+        this.activeLateralMode.get() === LateralMode.TRACK ||
+        this.activeLateralMode.get() === LateralMode.RWY ||
+        this.activeLateralMode.get() === LateralMode.RWY_TRACK ||
+        this.activeLateralMode.get() === LateralMode.GA_TRACK) &&
+      !isArmed(this.armedLateralMode.get(), ArmedLateralMode.NAV);
+    if (!shouldShowTrackLine) {
+      let totalDistanceFromAircraft = 0;
+      for (const path of this.fmsLateralPath.get()) {
+        const pathDistance = pathVectorLength(path);
+
+        if (totalDistanceFromAircraft + pathDistance > this.vdRange.get()) {
+          const symbolLocation = pathVectorPoint(path, this.vdRange.get() - totalDistanceFromAircraft);
+          const justBeforeSymbolLocation = pathVectorPoint(path, this.vdRange.get() - totalDistanceFromAircraft - 0.05);
+
+          if (symbolLocation && justBeforeSymbolLocation) {
+            const bearing = bearingTo(symbolLocation, justBeforeSymbolLocation);
+            const symbol: NdSymbol = {
+              location: symbolLocation,
+              direction: bearing,
+              databaseId: 'END_OF_VD',
+              ident: 'END_OF_VD',
+              type: NdSymbolTypeFlags.CyanColor,
+              distanceFromAirplane: this.vdRange.get(),
+            };
+            this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', symbol);
+          }
+          return;
+        } else {
+          totalDistanceFromAircraft += pathDistance;
+        }
+      }
+      this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', null);
+    } else if (this.ndRangeSetting.get() !== this.vdRange.get()) {
+      // Track line
+      const symbol: NdSymbol = {
+        location: null,
+        databaseId: 'END_OF_VD',
+        ident: 'END_OF_VD',
+        type: NdSymbolTypeFlags.CyanColor,
+        distanceFromAirplane: this.vdRange.get(),
+      };
+      this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', symbol);
+    } else {
+      this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', null);
+    }
   }
 
   destroy(): void {

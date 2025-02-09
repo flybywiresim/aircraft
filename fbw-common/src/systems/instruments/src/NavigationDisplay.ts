@@ -74,7 +74,7 @@ export enum NdSymbolTypeFlags {
 export interface NdSymbol {
   databaseId: string;
   ident: string;
-  location: Coordinates;
+  location: Coordinates | null;
   predictedAltitude?: number;
   direction?: number; // true
   length?: number; // nautical miles

@@ -24,7 +24,6 @@ import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import {
-  GenericFcuEvents,
   VD_FPA_TO_DISPLAY_ANGLE,
   VERTICAL_DISPLAY_CANVAS_HEIGHT,
   VERTICAL_DISPLAY_CANVAS_WIDTH,
@@ -38,6 +37,7 @@ import { VerticalMode } from '@shared/autopilot';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { pathVectorLength } from '@fmgc/guidance/lnav/PathVector';
 import { GenericFmsEvents } from '../../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFmsEvents';
+import { GenericFcuEvents } from '@flybywiresim/navigation-display';
 
 export interface VerticalDisplayCanvasMapProps {
   bus: ArincEventBus;
@@ -75,20 +75,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
   );
 
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
-
-  private readonly crossTrackError = ConsumerSubject.create(this.sub.on('crossTrackError').atFrequency(1), 0);
-  private readonly crossTrackDistanceOffset = this.crossTrackError.map((cte) => {
-    const crossTrackAbs = Math.min(99.9, Math.abs(cte));
-    return crossTrackAbs >= 0.02 - Number.EPSILON ? crossTrackAbs : 0;
-  });
-
-  private readonly offsetDistance = MappedSubject.create(
-    ([_verticalPath, _crossTrackError]) => {
-      return 0;
-    },
-    this.props.fmsVerticalPath,
-    this.crossTrackError,
-  );
+  private readonly offsetDistance = this.props.fmsVerticalPath.map((_path) => 0);
 
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
   private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), 0);
@@ -294,6 +281,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       .filter(
         (it) =>
           it.type & NdSymbolTypeFlags.Runway &&
+          it.location &&
           (bearingTo(ppos, it.location) < 30 || distanceTo(ppos, it.location) < 10),
       ); // FIXME: Need to somehow include runways in the vertical path, or filter out runways before the active leg
 
