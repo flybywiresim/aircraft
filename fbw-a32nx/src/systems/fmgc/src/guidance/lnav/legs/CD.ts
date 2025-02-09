@@ -6,7 +6,7 @@
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
-import { NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo, firstSmallCircleIntersection } from 'msfs-geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
@@ -25,7 +25,7 @@ export class CDLeg extends Leg {
   constructor(
     private readonly course: DegreesTrue,
     private readonly dmeDistance: NauticalMiles,
-    private readonly origin: Waypoint | VhfNavaid | NdbNavaid,
+    private readonly origin: Fix,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
