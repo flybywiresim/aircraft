@@ -6,6 +6,8 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { FMMessageTypes } from '@flybywiresim/fbw-sdk';
 
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
+import { FlightPlanService } from '../../flightplanning/FlightPlanService';
+import { Navigation } from '../../navigation/Navigation';
 
 export class TooSteepPathAhead implements FMMessageSelector {
   message = FMMessageTypes.TooSteepPathAhead;
@@ -14,8 +16,8 @@ export class TooSteepPathAhead implements FMMessageSelector {
 
   private lastState = false;
 
-  init(baseInstrument: BaseInstrument): void {
-    this.guidanceController = baseInstrument.guidanceController;
+  init(_navigation: Navigation, guidanceController: GuidanceController, _flightPlanService: FlightPlanService): void {
+    this.guidanceController = guidanceController;
   }
 
   process(_: number): FMMessageUpdate {
