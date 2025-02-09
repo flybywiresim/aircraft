@@ -10,6 +10,7 @@ import {
   FSComponent,
   MappedSubject,
   Subscribable,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
@@ -23,6 +24,7 @@ enum PitchTrimStatus {
 }
 
 export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible: Subscribable<boolean> }> {
+  private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
 
   private readonly cgGroup = FSComponent.createRef<SVGGElement>();
@@ -33,16 +35,33 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
 
   private readonly arrowRef = FSComponent.createRef<SVGPolygonElement>();
 
-  private readonly gwCgGroup = FSComponent.createRef<SVGGElement>();
+  private readonly pitchTrimVisibility = this.props.visible.map((it) => (it ? 'visible' : 'hidden'));
 
   private readonly trimPosition = ConsumerSubject.create(this.sub.on('trimPosition').whenChanged(), 0).map(
     (it) => it * MathUtils.RADIANS_TO_DEGREES,
   );
+  private readonly thsForText = this.trimPosition.map((it) => PitchTrimUtils.pitchTrimToCg(it).toFixed(1));
+
+  private readonly rightWheelY = this.trimPosition.map((it) => (it + 2) * 31 + 23 - 400);
+
+  private readonly trimAreasTransform = this.trimPosition.map(
+    (it) => `translate(276 ${-(this.degreesToPixel(it) - 103.5) + 23})`,
+  );
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+  private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((it) => (it > 9 ? 'hidden' : 'visible'));
 
   private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(4), 0).map(
     (it) => it * 100,
+  );
+  private readonly cgPercentText = this.cgPercent.map((it) => it.toFixed(1));
+
+  private readonly greenHydPressurized = ConsumerSubject.create(this.sub.on('hydGreenSysPressurized'), false);
+  private readonly yellowHydPressurized = ConsumerSubject.create(this.sub.on('hydYellowSysPressurized'), false);
+  private readonly oneHydPressurized = MappedSubject.create(
+    ([g, y]) => g || y,
+    this.greenHydPressurized,
+    this.yellowHydPressurized,
   );
 
   private readonly cgStatus = MappedSubject.create(
@@ -79,10 +98,16 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   }
 
   /** in pixels, where magenta GW CG box is */
-  private readonly gwCgPosition = MappedSubject.create(
-    ([pitch, optimal]) => (pitch - optimal) * 17.25,
+  private readonly gwCgPositionTransform = MappedSubject.create(
+    ([pitch, optimal]) => `translate(0 ${(pitch - optimal) * 17.25 - 5})`,
     this.trimPosition,
     this.optimalPitchTrim,
+  );
+
+  private readonly gwCgVisibility = MappedSubject.create(
+    ([flightPhase, hydPress]) => (flightPhase >= 2 && flightPhase <= 6 && hydPress ? 'inherit' : 'hidden'),
+    this.fwcFlightPhase,
+    this.oneHydPressurized,
   );
 
   /** in pixels, where upper magenta box starts */
@@ -144,19 +169,51 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.cgStatus.sub(() => this.updateCgStatus(), true);
+    this.subscriptions.push(this.cgStatus.sub(() => this.updateCgStatus(), true));
+
+    this.subscriptions.push(
+      this.pitchTrimVisibility,
+      this.trimPosition,
+      this.thsForText,
+      this.rightWheelY,
+      this.trimAreasTransform,
+      this.fwcFlightPhase,
+      this.flightPhaseAfterTouchdown,
+      this.cgPercent,
+      this.cgPercentText,
+      this.greenHydPressurized,
+      this.yellowHydPressurized,
+      this.oneHydPressurized,
+      this.cgStatus,
+      this.optimalPitchTrim,
+      this.gwCgPositionTransform,
+      this.gwCgVisibility,
+      this.optimalPitchTrimCenter,
+      this.optimalPitchTrimLowerBoxEnd,
+      this.optimalPitchTrimLowerBoxHeight,
+      this.optimalPitchTrimUpperBoxHeight,
+      this.optimalPitchTrimUpperBoxStart,
+    );
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {
     return (
-      <div style={{ visibility: this.props.visible.map((it) => (it ? 'visible' : 'hidden')) }}>
+      <div style={{ visibility: this.pitchTrimVisibility }}>
         <img src="/Images/fbw-a380x/TRIM_INDICATOR.png" class="TrimIndicatorImage" />
         <svg class="TrimIndicatorSvg" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="rightWheelGradient" x1="0%" x2="0%" y1="0%" y2="100%">
               {Array(16)
                 .fill(1)
-                .map((a, index) => {
+                .map((_, index) => {
                   return (
                     <>
                       <stop offset={`${index * 6.25 + 0.001}%`} stop-color="#555f72" />
@@ -198,7 +255,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 FOR
               </text>
               <text x={162} y={140} font-size={26.6} class="White" ref={this.cgValue}>
-                {this.trimPosition.map((it) => PitchTrimUtils.pitchTrimToCg(it).toFixed(1))}
+                {this.thsForText}
               </text>
               <text x={232} y={140} font-size={21.7} class="Cyan">
                 %
@@ -212,10 +269,10 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 RANGE
               </text>
             </g>
-            <g ref={this.gwCgGroup} transform={this.gwCgPosition.map((it) => `translate(0 ${it - 5})`)}>
+            <g transform={this.gwCgPositionTransform} visibility={this.gwCgVisibility}>
               <rect x={360} y={117} width={71} height={30} stroke="#ff94ff" stroke-width={2} />
               <text x={362} y={140} font-size={21.7} class="Magenta">
-                {this.cgPercent.map((it) => it.toFixed(1))}
+                {this.cgPercentText}
               </text>
               <text x={416} y={140} font-size={21.7} class="Cyan">
                 %
@@ -223,20 +280,11 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
             </g>
           </g>
           <g clip-path="url(#cut-right)">
-            <rect
-              width="14"
-              height="600"
-              x="320"
-              y={this.trimPosition.map((it) => (it + 2) * 31 + 23 - 400)}
-              stroke="black"
-              fill="url(#rightWheelGradient)"
-            />
+            <rect width="14" height="600" x="320" y={this.rightWheelY} stroke="black" fill="url(#rightWheelGradient)" />
             <rect x="319" y="23" width="16" height="207" fill="url(#shadowGradient)" />
           </g>
           <g clip-path="url(#cut-left)">
-            <g transform={this.trimPosition.map((it) => `translate(276 ${-(this.degreesToPixel(it) - 103.5) + 23})`)}>
-              {' '}
-              {/* 276 23 */}
+            <g transform={this.trimAreasTransform}>
               <rect width="28" height="414" x="0" y="0" stroke="black" fill="#555f72" />
               <rect width="25" height="207" x="2" y="103.5" fill="none" stroke="white" stroke-width="2" />
               <rect width="23" height="103.5" x="3" y="175.95" fill="none" stroke="#00ff00" stroke-width="4" />
@@ -248,7 +296,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 fill="none"
                 stroke="#ff94ff"
                 stroke-width="4"
-                visibility={this.fwcFlightPhase.map((it) => (it > 9 ? 'hidden' : 'visible'))}
+                visibility={this.flightPhaseAfterTouchdown}
               />
               <rect
                 width="16"
@@ -258,16 +306,9 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 fill="none"
                 stroke="#ff94ff"
                 stroke-width="4"
-                visibility={this.fwcFlightPhase.map((it) => (it > 9 ? 'hidden' : 'visible'))}
+                visibility={this.flightPhaseAfterTouchdown}
               />
-              <rect
-                width="20"
-                height="4"
-                x="5"
-                y="274"
-                fill="white"
-                visibility={this.fwcFlightPhase.map((it) => (it > 9 ? 'visible' : 'hidden'))}
-              />
+              <rect width="20" height="4" x="5" y="274" fill="white" visibility={this.flightPhaseAfterTouchdown} />
             </g>
             <rect x="275" y="23" width="30" height="207" fill="url(#shadowGradient)" />
           </g>
