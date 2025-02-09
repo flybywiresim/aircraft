@@ -150,6 +150,9 @@
 1. [A380X/FMS] Add STEP ALTs tab on VERT REV page & auto step climb functionality - @flogross89 (floridude)
 1. [A380X/FMS] Add selection of CLB/DES constraint if constraint type is unknown - @flogross89 (floridude)
 1. [FMS] Fix approach ident only showing on ND when approach is being flown - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Add support for deferred procedures, abnormal (non-)sensed procedures - @flogross89 (floridude)
+1. [A380X/FWS] Enable FWS failures (FWS 1/2, FWS 1+2, ECP, Audio Function) - @flogross89 (floridude)
+1. [A380X/PDF] Fix inverted color in the meter altitude indicator below and above the MDA - @ItzARz (Albert)
 1. [A380X/BTV] Add EXIT MISSED indication on FMA and aural triple click - @flogross89 (floridude)
 1. [A380X/OANS] Add flags/crosses capability, change cursor to magenta, implement ARPT NAV reset button - @flogross89 (floridude)
 
