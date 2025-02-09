@@ -36,6 +36,7 @@ import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { getEtaFromUtcOrPresent } from 'instruments/src/MFD/shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { DefaultPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {}
 
@@ -95,6 +96,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly cannotDeleteSpeedConstraint = Subject.create(false);
 
   private readonly climbSpeedLimit = Subject.create(true);
+
+  private readonly speedLimitPilotEntered = Subject.create(false);
 
   private readonly speedLimit = Subject.create<number | null>(null);
 
@@ -270,6 +273,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       ? this.props.fmcService.master.fmgc.getClimbSpeedLimit()
       : this.props.fmcService.master.fmgc.getDescentSpeedLimit();
     if (speedLimit && speedLimit.speed && speedLimit.underAltitude) {
+      this.speedLimitPilotEntered.set(
+        climbSpeedLimit
+          ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered
+          : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered,
+      );
       this.speedLimit.set(speedLimit.speed);
       this.speedLimitAltitude.set(speedLimit.underAltitude);
       this.speedLimitTransition.set(
@@ -547,33 +555,33 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private async tryUpdateSpeedLimitValue(value: number | null) {
     if (this.checkLegModificationAllowed() && this.loadedFlightPlan?.performanceData) {
-      if (this.climbSpeedLimit.get()) {
-        this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed = value;
-        if (!value) {
-          this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude = null;
-        }
-      } else {
-        this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed = value;
-        if (!value) {
-          this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude = value;
-        }
-      }
+      const clbSpdLimit = this.climbSpeedLimit.get();
+      this.loadedFlightPlan.setPerformanceData(
+        clbSpdLimit ? 'climbSpeedLimitSpeed' : 'descentSpeedLimitSpeed',
+        value ??
+          (clbSpdLimit ? DefaultPerformanceData.ClimbSpeedLimitSpeed : DefaultPerformanceData.DescentSpeedLimitSpeed),
+      );
+      this.loadedFlightPlan.setPerformanceData(
+        clbSpdLimit ? 'isClimbSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
+        value !== null,
+      );
     }
   }
 
   private async tryUpdateSpeedLimitAltitude(value: number | null) {
     if (this.checkLegModificationAllowed() && this.loadedFlightPlan?.performanceData) {
-      if (this.climbSpeedLimit.get()) {
-        this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude = value;
-        if (!value) {
-          this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed = null;
-        }
-      } else {
-        this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude = value;
-        if (!value) {
-          this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed = value;
-        }
-      }
+      const clbSpdLimit = this.climbSpeedLimit.get();
+      this.loadedFlightPlan.setPerformanceData(
+        clbSpdLimit ? 'climbSpeedLimitAltitude' : 'descentSpeedLimitAltitude',
+        value ??
+          (clbSpdLimit
+            ? DefaultPerformanceData.ClimbSpeedLimitAltitude
+            : DefaultPerformanceData.DescentSpeedLimitAltitude),
+      );
+      this.loadedFlightPlan.setPerformanceData(
+        clbSpdLimit ? 'isClimbSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
+        value !== null,
+      );
     }
   }
 
@@ -899,6 +907,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         value={this.speedLimit}
                         alignText="flex-end"
                         tmpyActive={this.tmpyActive}
+                        enteredByPilot={this.speedLimitPilotEntered}
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
@@ -909,6 +918,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitAltitude(val)}
                         mandatory={Subject.create(false)}
                         value={this.speedLimitAltitude}
+                        enteredByPilot={this.speedLimitPilotEntered}
                         alignText="flex-end"
                         tmpyActive={this.tmpyActive}
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
