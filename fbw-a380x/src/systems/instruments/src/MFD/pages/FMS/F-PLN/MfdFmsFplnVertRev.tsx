@@ -99,8 +99,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly speedLimitPilotEntered = Subject.create(false);
 
-  private readonly speedLimitAltitudePilotEntered = Subject.create(false);
-
   private readonly speedLimit = Subject.create<number | null>(null);
 
   private readonly speedLimitAltitude = Subject.create<number | null>(null);
@@ -279,11 +277,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         climbSpeedLimit
           ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered
           : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered,
-      );
-      this.speedLimitAltitudePilotEntered.set(
-        climbSpeedLimit
-          ? (this.loadedFlightPlan.performanceData.isClimbSpeedLimitAltitudePilotEntered ??= false)
-          : (this.loadedFlightPlan.performanceData.isDescentSpeedLimitAltitudePilotEntered ??= false),
       );
       this.speedLimit.set(speedLimit.speed);
       this.speedLimitAltitude.set(speedLimit.underAltitude);
@@ -586,31 +579,14 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             : DefaultPerformanceData.DescentSpeedLimitAltitude),
       );
       this.loadedFlightPlan.setPerformanceData(
-        clbSpdLimit ? 'isClimbSpeedLimitAltitudePilotEntered' : 'isDescentSpeedLimitAltitudePilotEntered',
+        clbSpdLimit ? 'isClimbSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
         value !== null,
       );
     }
   }
 
   private async deleteSpeedLimit() {
-    if (this.checkLegModificationAllowed() && this.loadedFlightPlan?.performanceData) {
-      const clbSpdLimit = this.climbSpeedLimit.get();
-
-      this.loadedFlightPlan.setPerformanceData(
-        clbSpdLimit ? 'climbSpeedLimitAltitude' : 'descentSpeedLimitAltitude',
-        null,
-      );
-      this.loadedFlightPlan.setPerformanceData(
-        clbSpdLimit ? 'isClimbSpeedLimitAltitudePilotEntered' : 'isDescentSpeedLimitAltitudePilotEntered',
-        null,
-      );
-
-      this.loadedFlightPlan.setPerformanceData(clbSpdLimit ? 'climbSpeedLimitSpeed' : 'descentSpeedLimitSpeed', null);
-      this.loadedFlightPlan.setPerformanceData(
-        clbSpdLimit ? 'isClimbSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
-        null,
-      );
-    }
+    this.tryUpdateSpeedLimitAltitude(null);
   }
 
   /**
@@ -942,7 +918,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitAltitude(val)}
                         mandatory={Subject.create(false)}
                         value={this.speedLimitAltitude}
-                        enteredByPilot={this.speedLimitAltitudePilotEntered}
+                        enteredByPilot={this.speedLimitPilotEntered}
                         alignText="flex-end"
                         tmpyActive={this.tmpyActive}
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
