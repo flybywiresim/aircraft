@@ -18,12 +18,14 @@ export const TransformerRectifier: FC<TransformerRectifierProps> = ({ x, y, bus 
   const [current] = useSimVar(`L:A32NX_ELEC_TR_${bus}_CURRENT`, 'volts', 500);
 
   let title: string;
+  let skipCurrentCheck: boolean = false;
   if (bus <= 2) {
     title = `TR ${bus}`;
   } else if (bus === DcElecBus.DcEssBus) {
     title = 'ESS TR';
   } else {
     title = 'APU TR';
+    skipCurrentCheck = true;
   }
 
   let acBusTitle: string;
@@ -58,17 +60,14 @@ export const TransformerRectifier: FC<TransformerRectifierProps> = ({ x, y, bus 
 
   const [acBusPowered] = useSimVar(`L:A32NX_ELEC_AC_${acBusLvar}_BUS_IS_POWERED`, 'bool', 500);
 
-  const trCurrentNormal = current > TR_CURRENT_NORMAL_RANGE_LOWER;
+  const trCurrentNormal = skipCurrentCheck || current > TR_CURRENT_NORMAL_RANGE_LOWER;
   const trVoltageNormal = potential > TR_VOLTAGE_NORMAL_RANGE_LOWER && potential < TR_VOLTAGE_NORMAL_RANGE_UPPER;
+  const trNormal = bus == DcElecBus.DcApu || (trCurrentNormal && trVoltageNormal);
 
   return (
     <g id={`tr-${bus}-indication`} transform={`translate(${x} ${y})`}>
       <path className="LightGrey SW3 NoFill" d="M 0,0 l 0,106 l 112,0 l 0,-106 z" />
-      <text
-        x={57}
-        y={22}
-        className={`F25 MiddleAlign ${trVoltageNormal && trCurrentNormal ? 'White' : 'Amber'} LS1 WS-8`}
-      >
+      <text x={57} y={22} className={`F25 MiddleAlign ${trNormal ? 'White' : 'Amber'} LS1 WS-8`}>
         {title}
       </text>
       <g>
