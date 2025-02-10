@@ -209,6 +209,7 @@ export class VnavDriver implements GuidanceComponent {
       this.previousManagedDescentSpeedTarget = undefined;
 
       SimVar.SetSimVarValue('L:A32NX_FM_VERTICAL_PROFILE_AVAIL', 'Bool', false);
+      this.prevMcduPredReadyToDisplay = false;
     }
   }
 
