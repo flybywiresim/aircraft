@@ -71,6 +71,8 @@ export class VnavDriver implements GuidanceComponent {
    */
   private requestDescentProfileRecomputation: boolean = false;
 
+  private prevMcduPredReadyToDisplay = false;
+
   constructor(
     private readonly flightPlanService: FlightPlanService,
     private readonly guidanceController: GuidanceController,
@@ -171,12 +173,15 @@ export class VnavDriver implements GuidanceComponent {
       // TODO: This doesn't really do much, the profile is automatically updated by reference.
       this.descentGuidance.updateProfile(this.profileManager.descentProfile);
       this.decelPoint = this.profileManager.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
+    }
 
+    if (this.profileManager.mcduProfile.isReadyToDisplay !== this.prevMcduPredReadyToDisplay) {
       SimVar.SetSimVarValue(
         'L:A32NX_FM_VERTICAL_PROFILE_AVAIL',
         'Bool',
         this.profileManager.mcduProfile.isReadyToDisplay,
       );
+      this.prevMcduPredReadyToDisplay = this.profileManager.mcduProfile.isReadyToDisplay;
     }
 
     this.updateLegSpeedPredictions();
