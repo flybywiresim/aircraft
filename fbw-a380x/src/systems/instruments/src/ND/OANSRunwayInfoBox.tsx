@@ -3,10 +3,10 @@
 
 import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import './oans-style.scss';
-import { EntityTypes } from './OansControlPanel';
+import { ControlPanelMapDataSearchMode } from '@flybywiresim/oanc';
 
 interface OansRunwayInfoBoxProps {
-  rwyOrStand: Subscribable<EntityTypes | null>;
+  rwyOrStand: Subscribable<ControlPanelMapDataSearchMode | null>;
   selectedEntity: Subscribable<string | null>;
   tora: Subscribable<string | null>;
   lda: Subscribable<string | null>;
@@ -22,10 +22,10 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
     this.rwyDivRef.instance.style.display = 'none';
     this.standDivRef.instance.style.display = 'none';
 
-    if (this.props.rwyOrStand.get() === EntityTypes.RWY && this.props.selectedEntity.get()) {
+    if (this.props.rwyOrStand.get() === ControlPanelMapDataSearchMode.Runway && this.props.selectedEntity.get()) {
       this.rwyDivRef.instance.style.display = 'grid';
       this.standDivRef.instance.style.display = 'none';
-    } else if (this.props.rwyOrStand.get() === EntityTypes.STAND && this.props.selectedEntity.get()) {
+    } else if (this.props.rwyOrStand.get() === ControlPanelMapDataSearchMode.Stand && this.props.selectedEntity.get()) {
       this.rwyDivRef.instance.style.display = 'none';
       this.standDivRef.instance.style.display = 'flex';
     } else {
