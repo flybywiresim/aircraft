@@ -23,6 +23,7 @@ import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import {
   ArincEventBus,
   BtvSimvarPublisher,
+  EfisTawsBridgePublisher,
   FailuresConsumer,
   PilotSeatPublisher,
   VhfComIndices,
@@ -46,6 +47,7 @@ import {
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { A380Failure } from '@failures';
+import { EfisTawsBridge } from './systems/EfisTawsBridge';
 
 CpiomAvailableSimvarPublisher;
 class SystemsHost extends BaseInstrument {
@@ -115,6 +117,9 @@ class SystemsHost extends BaseInstrument {
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
 
+  private readonly efisTawsBridgePublisher = new EfisTawsBridgePublisher(this.bus);
+  private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this);
+
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
 
@@ -163,7 +168,9 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
+    this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
     this.backplane.addInstrument('BtvDistanceUpdater', this.btvDistanceUpdater);
+    this.backplane.addInstrument('EfisTawsBridge', this.efisTawsBridge);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
@@ -174,7 +181,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
-    this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
+    this.backplane.addPublisher('EfisTawsBridgePublisher', this.efisTawsBridgePublisher);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();

@@ -3,5 +3,17 @@ import { CompanyRoute } from './components/Coroute';
 import { Viewer } from './components/Viewer';
 import { Health } from './components/Health';
 import { McduServerClient } from './components/McduServerClient';
+import { TawsData } from './components/TawsData';
+import { TawsAircraftStatusDataDto, TawsEfisDataDto } from './Taws/taws';
 
-export { ClientState, SimBridgeClientState, Health, CompanyRoute, Viewer, McduServerClient };
+export {
+  ClientState,
+  SimBridgeClientState,
+  Health,
+  CompanyRoute,
+  Viewer,
+  McduServerClient,
+  TawsData,
+  TawsAircraftStatusDataDto,
+  TawsEfisDataDto,
+};
