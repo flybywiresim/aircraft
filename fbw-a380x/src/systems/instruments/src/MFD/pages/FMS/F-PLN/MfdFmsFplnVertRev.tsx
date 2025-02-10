@@ -225,6 +225,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
 
     const leg = this.loadedFlightPlan.legElementAt(this.selectedLegIndex);
+    const previousElement = this.loadedFlightPlan.maybeElementAt(this.selectedLegIndex - 1);
+    const isPartOfTooSteepPathSegment =
+      leg.calculated?.endsInTooSteepPath ||
+      (previousElement?.isDiscontinuity === false && previousElement.calculated?.endsInTooSteepPath);
 
     if (!MfdFmsFplnVertRev.isEligibleForVerticalRevision(this.selectedLegIndex, leg, this.loadedFlightPlan)) {
       this.speedMessageArea.set(`SPD CSTR NOT ALLOWED AT ${leg.ident}`);
@@ -235,7 +239,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
     this.speedMessageArea.set('');
     this.spdConstraintDisabled.set(false);
-    this.altitudeMessageArea.set('');
+    this.altitudeMessageArea.set(isPartOfTooSteepPathSegment ? 'TOO STEEP PATH AHEAD' : '');
     this.altConstraintDisabled.set(false);
 
     // Load speed constraints
