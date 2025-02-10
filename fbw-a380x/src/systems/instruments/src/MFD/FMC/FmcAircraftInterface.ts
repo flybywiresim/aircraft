@@ -1859,6 +1859,24 @@ export class FmcAircraftInterface {
 
     return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
   }
+
+  private hasTooSteepPathAhead = false;
+
+  checkTooSteepPath() {
+    const hasTooSteepPathAhead = this.fmc.guidanceController?.vnavDriver?.shouldShowTooSteepPathAhead();
+
+    if (hasTooSteepPathAhead !== this.hasTooSteepPathAhead) {
+      this.hasTooSteepPathAhead = hasTooSteepPathAhead;
+
+      if (hasTooSteepPathAhead) {
+        this.fmc.addMessageToQueue(
+          NXSystemMessages.tooSteepPathAhead,
+          () => !this.fmc.guidanceController?.vnavDriver?.shouldShowTooSteepPathAhead(),
+          undefined,
+        );
+      }
+    }
+  }
 }
 
 class FmArinc429OutputWord extends Arinc429Word {

@@ -5,7 +5,6 @@
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { FlightPathAngleStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { PlannedGeometricSegment } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
 import { StepResults, VnavStepError } from '@fmgc/guidance/vnav/Predictions';
 import {
   MaxSpeedConstraint,
@@ -14,10 +13,13 @@ import {
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { PlannedGeometricSegment } from '@fmgc/guidance/vnav/descent/GeometricPathPlanner';
+import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
+import { DescentPathBuilder } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
+import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 
 export class GeometricPathBuilder {
   private flightPathAngleStrategy: FlightPathAngleStrategy;
@@ -25,6 +27,7 @@ export class GeometricPathBuilder {
   constructor(
     private observer: VerticalProfileComputationParametersObserver,
     atmosphericConditions: AtmosphericConditions,
+    private readonly descentPathBuilder: DescentPathBuilder,
     private readonly acConfig: AircraftConfig,
   ) {
     this.flightPathAngleStrategy = new FlightPathAngleStrategy(observer, atmosphericConditions, -3.0, this.acConfig);
@@ -33,14 +36,19 @@ export class GeometricPathBuilder {
   executeGeometricSegments(
     sequence: TemporaryCheckpointSequence,
     segments: PlannedGeometricSegment[],
-    speedConstraints: MaxSpeedConstraint[],
+    profile: BaseGeometryProfile,
+    speedProfile: SpeedProfile,
     windProfile: HeadwindProfile,
   ) {
+    const speedConstraints = profile.descentSpeedConstraints;
+
     const accelerationTargets = this.buildAccelerationTargets(sequence.lastCheckpoint, segments, speedConstraints);
     const lastTarget: AccelerationTarget = null;
 
     for (const segment of segments) {
       const currentSegmentSequence = new TemporaryCheckpointSequence(sequence.lastCheckpoint);
+      this.flightPathAngleStrategy.flightPathAngle =
+        MathUtils.RADIANS_TO_DEGREES * Math.atan(segment.gradient / 6076.12);
 
       if (
         !this.executeGeometricSegment(
@@ -62,23 +70,38 @@ export class GeometricPathBuilder {
             lastTarget,
           )
         ) {
-          // Marking the segment as too steep, so that we ignore speed constraints on the next try and just fly at the maximum possible gradient
-          segment.isTooSteep = true;
-
-          this.executeGeometricSegment(
+          // If we cannot do meet the constraint with speedbrakes, build a new descent path to the constraint
+          this.descentPathBuilder.computeManagedDescentPath(
             currentSegmentSequence,
-            segment,
-            accelerationTargets,
+            profile,
+            speedProfile,
             windProfile,
-            true,
-            lastTarget,
+            Infinity,
+            segment.end.distanceFromStart,
           );
 
+          // The path built above is only a "sub-path" of the full descent path, so we want to remove any checkpoints
+          // with significance to the full path
+          currentSegmentSequence.checkpoints.forEach((checkpoint) => {
+            if (
+              checkpoint.reason === VerticalCheckpointReason.GeometricPathStart ||
+              checkpoint.reason === VerticalCheckpointReason.GeometricPathEnd ||
+              checkpoint.reason === VerticalCheckpointReason.IdlePathEnd ||
+              checkpoint.reason === VerticalCheckpointReason.TopOfDescent
+            ) {
+              checkpoint.reason = VerticalCheckpointReason.AtmosphericConditions;
+            }
+          });
+
           sequence.push(...currentSegmentSequence.get());
+          sequence.lastCheckpoint.reason = VerticalCheckpointReason.GeometricPathTooSteep;
+
           sequence.copyLastCheckpoint({
-            reason: VerticalCheckpointReason.GeometricPathTooSteep,
+            reason: VerticalCheckpointReason.AltitudeConstraint,
             altitude: segment.end.altitude,
           });
+
+          segment.end.leg.calculated.endsInTooSteepPath = true;
 
           continue;
         }
@@ -97,9 +120,8 @@ export class GeometricPathBuilder {
     lastTarget: AccelerationTarget,
   ) {
     const { managedDescentSpeedMach } = this.observer.get();
-    this.flightPathAngleStrategy.flightPathAngle = MathUtils.RADIANS_TO_DEGREES * Math.atan(segment.gradient / 6076.12);
 
-    for (let i = 0; i < accelerationTargets.length && !segment.isTooSteep; i++) {
+    for (let i = 0; i < accelerationTargets.length; i++) {
       const accelerationTarget = accelerationTargets[i];
       const maxDistance = segment.end.distanceFromStart - sequence.lastCheckpoint.distanceFromStart;
 
@@ -123,22 +145,6 @@ export class GeometricPathBuilder {
       );
 
       if (decelerationStep.error === VnavStepError.AVAILABLE_GRADIENT_INSUFFICIENT) {
-        if (!useSpeedbrakes) {
-          if (VnavConfig.DEBUG_PROFILE) {
-            console.log(
-              `[FMS/VNAV]: Too steep: ${this.flightPathAngleStrategy.flightPathAngle}°. Trying with speedbrakes.`,
-            );
-          }
-
-          // Break out and try the whole segment with speedbrakes
-          return false;
-        }
-
-        if (VnavConfig.DEBUG_PROFILE) {
-          console.log(`[FMS/VNAV]: Too steep: ${this.flightPathAngleStrategy.flightPathAngle}°.`);
-        }
-
-        segment.gradient = Math.tan(decelerationStep.pathAngle * MathUtils.DEGREES_TO_RADIANS) * 6076.12;
         return false;
       }
 
