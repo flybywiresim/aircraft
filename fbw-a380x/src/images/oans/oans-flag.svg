@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" version="1.1" viewBox="125.128 151.914 39.804 59.914">
+  <defs>
+    <linearGradient id="gradient-2">
+      <stop style="stop-color: rgb(75, 193, 70);" offset="0"/>
+      <stop offset="0.257" style="stop-color: rgb(213, 238, 214);"/>
+      <stop offset="0.449" style="stop-color: rgb(184, 226, 184);"/>
+      <stop style="stop-color: rgb(0, 119, 3);" offset="0.971"/>
+      <stop offset="1" style="stop-color: rgb(204, 239, 200);"/>
+    </linearGradient>
+  </defs>
+  <g transform="matrix(1, 0, 0, 1, 186.60524, 161.414047)"/>
+  <rect x="126.526" y="161.974" width="2.443" height="48.65" style="fill: rgb(213, 213, 213); stroke: rgb(0, 0, 0); stroke-width: 0.5px;" rx="2.012" ry="2.012"/>
+  <path style="stroke: rgb(0, 0, 0); paint-order: fill; fill-rule: nonzero; fill: url(&quot;#gradient-2&quot;); stroke-width: 0.5px;" d="M 128.532 185.718 C 128.532 185.718 131.43 187.593 133.412 183.186 C 135.394 178.779 136.38 175.496 141.501 176.044 C 146.622 176.592 143.234 185.384 148.172 185.384 C 153.11 185.384 163.901 182.126 163.901 182.126 L 163.718 161.608 C 163.718 161.608 157.994 165.491 153.97 165.857 C 149.946 166.223 148.51 165.491 147.667 161.83 C 146.824 158.169 146.598 157.668 144.586 154.742 C 142.574 151.816 137.045 152.901 133.753 156.559 C 130.461 160.217 128.237 162.157 128.237 162.157 L 128.532 185.718 Z"/>
+</svg>

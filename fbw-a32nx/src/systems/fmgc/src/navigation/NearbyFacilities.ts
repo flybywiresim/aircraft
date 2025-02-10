@@ -65,7 +65,7 @@ export class NearbyFacilities {
     const database = NavigationDatabaseService.activeDatabase.backendDatabase;
 
     if (this.pposValid && database) {
-      // FIXME implement a more efficient diff-type interface in msfs-navdata
+      // FIXME implement a more efficient diff-type interface in the navdb
       this.nearbyAirports = await database.getNearbyAirports(
         this.ppos,
         this.radius,
@@ -75,7 +75,7 @@ export class NearbyFacilities {
       );
       this.nearbyNdbNavaids = await database.getNearbyNdbNavaids(this.ppos, this.radius, this.limit);
       this.nearbyVhfNavaids = await database.getNearbyVhfNavaids(this.ppos, this.radius, this.limit);
-      // FIXME rename this method in msfs-navdata
+      // FIXME rename this method in navdb
       this.nearbyWaypoints = await database.getWaypointsInRange(this.ppos, this.radius, this.limit);
     }
   }

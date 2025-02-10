@@ -17,13 +17,13 @@ interface ConditionalComponentProps extends ComponentProps {
  */
 export class ConditionalComponent extends DisplayComponent<ConditionalComponentProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private containerRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly containerRef = FSComponent.createRef<HTMLDivElement>();
 
-  private trueComponentRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly trueComponentRef = FSComponent.createRef<HTMLDivElement>();
 
-  private falseComponentRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly falseComponentRef = FSComponent.createRef<HTMLDivElement>();
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

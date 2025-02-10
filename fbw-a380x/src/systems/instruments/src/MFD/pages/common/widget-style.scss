@@ -50,7 +50,7 @@
   font-size: 25px;
 }
 
-.mfd-value.tmpy {
+.mfd-value.tmpy, .tmpy .mfd-value {
   color: $display-yellow;
   font-size: 25px;
 }
@@ -378,6 +378,10 @@
   background: $display-green;
 }
 
+.mfd-radio-button.amber input[type="radio"]:checked {
+  background: $display-amber;
+}
+
 .mfd-radio-button.white input[type="radio"]:checked {
   background: $display-white;
 }
@@ -406,6 +410,10 @@
 
 .mfd-radio-button.green input[type="radio"]:checked ~ * {
   color: $display-green;
+}
+
+.mfd-radio-button.amber input[type="radio"]:checked ~ * {
+  color: $display-amber;
 }
 
 .mfd-radio-button.white input[type="radio"]:checked ~ * {
@@ -488,6 +496,10 @@
   background-color: $display-mfd-darker-grey;
 }
 
+.mfd-input-field-container.disabled:hover {
+  border: 2px inset $display-light-grey;
+}
+
 .mfd-input-field-container:hover {
   border: 2px inset $display-cyan;
 }
@@ -524,7 +536,7 @@
 
 .mfd-input-field-text-input.disabled {
   background-color: $display-mfd-darker-grey;
-  color: $display-light-grey;
+  color: $display-dark-grey;
 }
 
 .mfd-input-field-text-input.mandatory {
