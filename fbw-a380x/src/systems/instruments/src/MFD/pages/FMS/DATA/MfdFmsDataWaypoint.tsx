@@ -40,6 +40,18 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
 
     this.anyPilotStoredWaypoints.set(pilotStoredWaypoints.length > 0);
     this.pilotStoredWaypointsList.set(pilotStoredWaypoints);
+    this.pilotStoredWaypointNames.set(this.waypointNamesToString(pilotStoredWaypoints)!);
+  }
+
+  private waypointNamesToString(list: PilotWaypoint[]): string[] | undefined {
+    const waypointNameArray = [];
+    for (let i = 0; i < this.pilotStoredWaypointsList.length; i++) {
+      if (this.pilotStoredWaypointsList.get(1) === null) {
+        return [];
+      } else {
+        waypointNameArray[i] = list[i]?.waypoint.name?.toString;
+      }
+    }
   }
 
   private async loadWaypoint(ident: string | null) {
@@ -144,7 +156,7 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
                       WPT IDENT
                     </div>
                     <DropdownMenu
-                      values={undefined}
+                      values={this.pilotStoredWaypointNames}
                       selectedIndex={this.pilotStoredWaypointsIndex}
                       freeTextAllowed={false}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataWaypointListDropdown`}
