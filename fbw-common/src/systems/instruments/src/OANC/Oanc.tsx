@@ -1648,33 +1648,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
               >
                 <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
               </div>
-
-              <OancAircraftIcon
-                isVisible={this.showAircraft}
-                x={this.aircraftX}
-                y={this.aircraftY}
-                rotation={this.aircraftRotation}
-              />
-
-              <svg
-                class="nd-svg nd-top-layer"
-                viewBox="0 0 768 768"
-                style={this.efisNDModeSub.map(
-                  (mode) => `transform: translateY(${mode === EfisNdMode.ARC ? -236 : 0}px);`,
-                )}
-              >
-                <LubberLine
-                  bus={this.props.bus}
-                  visible={MappedSubject.create(
-                    ([ac, mode]) => ac && mode !== EfisNdMode.PLAN,
-                    this.showAircraft,
-                    this.efisNDModeSub,
-                  )}
-                  rotation={Subject.create(0)}
-                  ndMode={this.efisNDModeSub}
-                  colorClass="Magenta"
-                />
-              </svg>
             </div>
           </div>
 
@@ -1683,20 +1656,59 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`}
           />
 
+          <OancStaticModeOverlay
+            bus={this.props.bus}
+            oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
+            ndMode={this.overlayNDModeSub}
+            rotation={this.interpolatedMapHeading}
+            isMapPanned={this.isMapPanned}
+            airportWithinRange={this.airportWithinRange}
+            airportBearing={this.airportBearing}
+            airportIcao={this.dataAirportIcao}
+          />
+
           <div
             ref={this.animationContainerRef[1]}
             style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear; pointer-events: none;`}
           >
-            <div ref={this.panContainerRef[1]} style="position: absolute;">
-              <OancMovingModeOverlay
+            <OancMovingModeOverlay
+              bus={this.props.bus}
+              oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
+              ndMode={this.overlayNDModeSub}
+              rotation={this.interpolatedMapHeading}
+              isMapPanned={this.isMapPanned}
+              airportWithinRange={this.airportWithinRange}
+              airportBearing={this.airportBearing}
+              airportIcao={this.dataAirportIcao}
+            />
+
+            <svg
+              class="nd-svg nd-top-layer"
+              viewBox="0 0 768 768"
+              style={this.efisNDModeSub.map(
+                (mode) =>
+                  `transform: translateY(${mode === EfisNdMode.ARC ? -236 : 0}px); pointer-events: none; z-index: 99;`,
+              )}
+            >
+              <LubberLine
                 bus={this.props.bus}
-                oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
-                ndMode={this.overlayNDModeSub}
-                rotation={this.interpolatedMapHeading}
-                isMapPanned={this.isMapPanned}
-                airportWithinRange={this.airportWithinRange}
-                airportBearing={this.airportBearing}
-                airportIcao={this.dataAirportIcao}
+                visible={MappedSubject.create(
+                  ([ac, mode]) => ac && mode !== EfisNdMode.PLAN,
+                  this.showAircraft,
+                  this.efisNDModeSub,
+                )}
+                rotation={Subject.create(0)}
+                ndMode={this.efisNDModeSub}
+                colorClass="Magenta"
+              />
+            </svg>
+
+            <div ref={this.panContainerRef[1]} style="position: absolute;">
+              <OancAircraftIcon
+                isVisible={this.showAircraft}
+                x={this.aircraftX}
+                y={this.aircraftY}
+                rotation={this.aircraftRotation}
               />
             </div>
           </div>
@@ -1740,17 +1752,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
               ACTIVE F/PLN
             </span>
           </div>
-
-          <OancStaticModeOverlay
-            bus={this.props.bus}
-            oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
-            ndMode={this.overlayNDModeSub}
-            rotation={this.interpolatedMapHeading}
-            isMapPanned={this.isMapPanned}
-            airportWithinRange={this.airportWithinRange}
-            airportBearing={this.airportBearing}
-            airportIcao={this.dataAirportIcao}
-          />
         </div>
       </>
     );
