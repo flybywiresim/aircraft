@@ -166,7 +166,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeightKg());
 
             // CG only displayed after engine start. Value received from FQMS, or falls back to value from WBBC
-            const cg: number = SimVar.GetSimVarValue('CG PERCENT', 'Percent over 100') * 100;
+            const cg: number = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
             this.centerOfGravity.set(cg);
 
             // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC

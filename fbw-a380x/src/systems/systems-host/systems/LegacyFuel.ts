@@ -46,7 +46,7 @@ export class LegacyFuel implements Instrument {
   private readonly trimTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_11'), 0);
   private readonly refuelStarted = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
 
-  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cg_percent'), 0);
+  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cg_percent_gw'), 0);
   private readonly aircraftWeightInLBS = ConsumerSubject.create(this.sub.on('total_weight'), 0);
 
   private readonly triggerStates = new Map<number, ConsumerSubject<boolean>>();
