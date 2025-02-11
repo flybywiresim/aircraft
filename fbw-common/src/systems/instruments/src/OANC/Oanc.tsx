@@ -473,9 +473,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.oansPerformanceModeHide.sub((hide) => {
       if (hide) {
-        this.unloadAirportMap();
+        this.unloadAirportMap(true);
       } else if (this.dataAirportIcao.get()) {
-        this.loadAirportMap(this.dataAirportIcao.get());
+        this.loadAirportMap(this.dataAirportIcao.get(), true);
       }
     });
 
@@ -615,8 +615,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     setTimeout(() => (this.labelManager.showLabels = true), ZOOM_TRANSITION_TIME_MS + 200);
   }
 
-  public unloadAirportMap() {
-    this.btvUtils.clearSelection();
+  public unloadAirportMap(performanceModeUnload: boolean = false) {
+    if (!performanceModeUnload) {
+      this.btvUtils.clearSelection();
+    }
     this.markerManager.eraseAllCrosses();
     this.markerManager.eraseAllFlags();
     this.clearMap();
@@ -632,11 +634,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
    * @param icao four letter ICAO code of airport to load
    * @returns
    */
-  public async loadAirportMap(icao: string) {
+  public async loadAirportMap(icao: string, performanceModeUnload: boolean = false) {
     this.dataLoading = true;
     this.airportLoading.set(true);
 
-    this.unloadAirportMap();
+    this.unloadAirportMap(performanceModeUnload);
 
     if (!icao) {
       this.dataLoading = false;
@@ -1084,7 +1086,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.lastTime = now;
 
     if (this.data && this.resetPulled.get()) {
-      this.unloadAirportMap();
+      this.unloadAirportMap(true);
     }
 
     if (!this.data || this.dataLoading || this.resetPulled.get()) return;
@@ -1648,33 +1650,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
               >
                 <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
               </div>
-
-              <OancAircraftIcon
-                isVisible={this.showAircraft}
-                x={this.aircraftX}
-                y={this.aircraftY}
-                rotation={this.aircraftRotation}
-              />
-
-              <svg
-                class="nd-svg nd-top-layer"
-                viewBox="0 0 768 768"
-                style={this.efisNDModeSub.map(
-                  (mode) => `transform: translateY(${mode === EfisNdMode.ARC ? -236 : 0}px);`,
-                )}
-              >
-                <LubberLine
-                  bus={this.props.bus}
-                  visible={MappedSubject.create(
-                    ([ac, mode]) => ac && mode !== EfisNdMode.PLAN,
-                    this.showAircraft,
-                    this.efisNDModeSub,
-                  )}
-                  rotation={Subject.create(0)}
-                  ndMode={this.efisNDModeSub}
-                  colorClass="Magenta"
-                />
-              </svg>
             </div>
           </div>
 
@@ -1683,20 +1658,59 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`}
           />
 
+          <OancStaticModeOverlay
+            bus={this.props.bus}
+            oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
+            ndMode={this.overlayNDModeSub}
+            rotation={this.interpolatedMapHeading}
+            isMapPanned={this.isMapPanned}
+            airportWithinRange={this.airportWithinRange}
+            airportBearing={this.airportBearing}
+            airportIcao={this.dataAirportIcao}
+          />
+
           <div
             ref={this.animationContainerRef[1]}
             style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear; pointer-events: none;`}
           >
-            <div ref={this.panContainerRef[1]} style="position: absolute;">
-              <OancMovingModeOverlay
+            <OancMovingModeOverlay
+              bus={this.props.bus}
+              oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
+              ndMode={this.overlayNDModeSub}
+              rotation={this.interpolatedMapHeading}
+              isMapPanned={this.isMapPanned}
+              airportWithinRange={this.airportWithinRange}
+              airportBearing={this.airportBearing}
+              airportIcao={this.dataAirportIcao}
+            />
+
+            <svg
+              class="nd-svg nd-top-layer"
+              viewBox="0 0 768 768"
+              style={this.efisNDModeSub.map(
+                (mode) =>
+                  `transform: translateY(${mode === EfisNdMode.ARC ? -236 : 0}px); pointer-events: none; z-index: 99;`,
+              )}
+            >
+              <LubberLine
                 bus={this.props.bus}
-                oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
-                ndMode={this.overlayNDModeSub}
-                rotation={this.interpolatedMapHeading}
-                isMapPanned={this.isMapPanned}
-                airportWithinRange={this.airportWithinRange}
-                airportBearing={this.airportBearing}
-                airportIcao={this.dataAirportIcao}
+                visible={MappedSubject.create(
+                  ([ac, mode]) => ac && mode !== EfisNdMode.PLAN,
+                  this.showAircraft,
+                  this.efisNDModeSub,
+                )}
+                rotation={Subject.create(0)}
+                ndMode={this.efisNDModeSub}
+                colorClass="Magenta"
+              />
+            </svg>
+
+            <div ref={this.panContainerRef[1]} style="position: absolute;">
+              <OancAircraftIcon
+                isVisible={this.showAircraft}
+                x={this.aircraftX}
+                y={this.aircraftY}
+                rotation={this.aircraftRotation}
               />
             </div>
           </div>
@@ -1740,17 +1754,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
               ACTIVE F/PLN
             </span>
           </div>
-
-          <OancStaticModeOverlay
-            bus={this.props.bus}
-            oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
-            ndMode={this.overlayNDModeSub}
-            rotation={this.interpolatedMapHeading}
-            isMapPanned={this.isMapPanned}
-            airportWithinRange={this.airportWithinRange}
-            airportBearing={this.airportBearing}
-            airportIcao={this.dataAirportIcao}
-          />
         </div>
       </>
     );
