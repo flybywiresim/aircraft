@@ -145,6 +145,12 @@ export const A380Failure = Object.freeze({
   EnginePump4AOHeat: 29016,
   EnginePump4BOHeat: 29017,
 
+  Fws1: 31100,
+  Fws2: 31101,
+  Fws1AudioFunction: 31102,
+  Fws2AudioFunction: 31103,
+  FwsEcp: 31104,
+
   LgciuPowerSupply1: 32000,
   LgciuPowerSupply2: 32001,
   LgciuInternalError1: 32002,
@@ -318,6 +324,12 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [29, A380Failure.EnginePump3BOHeat, 'Engine 3 pump B overheat'],
   [29, A380Failure.EnginePump4AOHeat, 'Engine 4 pump A overheat'],
   [29, A380Failure.EnginePump4BOHeat, 'Engine 4 pump B overheat'],
+
+  [31, A380Failure.Fws1, 'FWS 1'],
+  [31, A380Failure.Fws2, 'FWS 2'],
+  [31, A380Failure.Fws1AudioFunction, 'FWS 1 Audio Function'],
+  [31, A380Failure.Fws2AudioFunction, 'FWS 2 Audio Function'],
+  [31, A380Failure.FwsEcp, 'ECAM Control Panel'],
 
   [32, A380Failure.LgciuPowerSupply1, 'LGCIU 1 Power supply'],
   [32, A380Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],

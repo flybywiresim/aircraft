@@ -343,6 +343,8 @@ export class MfdComponent
 
   destroy(): void {
     this.topRef.getOrDefault()?.removeEventListener('mousemove', this.onMouseMoveHandler);
+    this.mouseCursorRef.getOrDefault()?.destroy();
+    this.duplicateNamesRef.getOrDefault()?.destroy();
 
     for (const s of this.subs) {
       s.destroy();
