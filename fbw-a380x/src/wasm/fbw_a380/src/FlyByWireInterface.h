@@ -236,14 +236,14 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuModeReversionTrkFpaActive;
   std::unique_ptr<LocalVariable> idFcuModeReversionTargetFpm;
 
-  std::unique_ptr<LocalVariable> idFlightGuidanceAvailable;
-  std::unique_ptr<LocalVariable> idFlightGuidanceCrossTrackError;
-  std::unique_ptr<LocalVariable> idFlightGuidanceTrackAngleError;
-  std::unique_ptr<LocalVariable> idFlightGuidancePhiCommand;
-  std::unique_ptr<LocalVariable> idFlightGuidancePhiLimit;
-  std::unique_ptr<LocalVariable> idFlightGuidanceRequestedVerticalMode;
-  std::unique_ptr<LocalVariable> idFlightGuidanceTargetAltitude;
-  std::unique_ptr<LocalVariable> idFlightGuidanceTargetVerticalSpeed;
+  std::unique_ptr<LocalVariable> idFmLateralPlanAvail;
+  std::unique_ptr<LocalVariable> idFmCrossTrackError;
+  std::unique_ptr<LocalVariable> idFmTrackAngleError;
+  std::unique_ptr<LocalVariable> idFmPhiCommand;
+  std::unique_ptr<LocalVariable> idFmPhiLimit;
+  std::unique_ptr<LocalVariable> idFmRequestedVerticalMode;
+  std::unique_ptr<LocalVariable> idFmTargetAltitude;
+  std::unique_ptr<LocalVariable> idFmTargetVerticalSpeed;
   std::unique_ptr<LocalVariable> idFmRnavAppSelected;
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
 

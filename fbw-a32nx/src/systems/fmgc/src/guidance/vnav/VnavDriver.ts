@@ -71,6 +71,8 @@ export class VnavDriver implements GuidanceComponent {
    */
   private requestDescentProfileRecomputation: boolean = false;
 
+  private prevMcduPredReadyToDisplay = false;
+
   constructor(
     private readonly flightPlanService: FlightPlanService,
     private readonly guidanceController: GuidanceController,
@@ -173,6 +175,15 @@ export class VnavDriver implements GuidanceComponent {
       this.decelPoint = this.profileManager.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
     }
 
+    if (this.profileManager.mcduProfile.isReadyToDisplay !== this.prevMcduPredReadyToDisplay) {
+      SimVar.SetSimVarValue(
+        'L:A32NX_FM_VERTICAL_PROFILE_AVAIL',
+        'Bool',
+        this.profileManager.mcduProfile.isReadyToDisplay,
+      );
+      this.prevMcduPredReadyToDisplay = this.profileManager.mcduProfile.isReadyToDisplay;
+    }
+
     this.updateLegSpeedPredictions();
 
     this.profileManager.computeTacticalNdProfile();
@@ -196,6 +207,9 @@ export class VnavDriver implements GuidanceComponent {
       this.oldLegs.clear();
       this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
       this.previousManagedDescentSpeedTarget = undefined;
+
+      SimVar.SetSimVarValue('L:A32NX_FM_VERTICAL_PROFILE_AVAIL', 'Bool', false);
+      this.prevMcduPredReadyToDisplay = false;
     }
   }
 
