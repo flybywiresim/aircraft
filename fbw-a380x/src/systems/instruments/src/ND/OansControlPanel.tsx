@@ -203,8 +203,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     it.isNormalOperation() ? Math.round(it.value + MIN_TOUCHDOWN_ZONE_DISTANCE) : null,
   );
 
-  private readonly fmsLandingRunwayVisibility = this.fmsDataStore.landingRunway.map((rwy) =>
-    rwy ? 'inherit' : 'hidden',
+  private readonly fmsLandingRunwayNotSelectedInFallback = MappedSubject.create(
+    ([ldgRwy, navigraph]) => !navigraph && ldgRwy === null,
+    this.fmsDataStore.landingRunway,
+    this.navigraphAvailable,
+  );
+  private readonly fmsLandingRunwayVisibility = this.fmsLandingRunwayNotSelectedInFallback.map((notSelected) =>
+    !notSelected ? 'inherit' : 'hidden',
   );
 
   private arpCoordinates: Coordinates | undefined;
@@ -735,6 +740,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       idPrefix="oanc-search-letter"
                       freeTextAllowed={false}
                       onModified={(i) => this.selectedEntityIndex.set(i)}
+                      inactive={this.fmsLandingRunwayNotSelectedInFallback}
                       hEventConsumer={this.hEventConsumer}
                       interactionMode={this.interactionMode}
                     />
@@ -864,7 +870,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           dataHandlerDuringValidation={async (val) => this.btvFallbackSetDistance(val)}
                           readonlyValue={this.reqStoppingDistance}
                           mandatory={Subject.create(false)}
-                          inactive={this.selectedEntityString.map((it) => !it)}
+                          inactive={this.fmsLandingRunwayNotSelectedInFallback}
                           hEventConsumer={this.hEventConsumer}
                           interactionMode={this.interactionMode}
                         />
