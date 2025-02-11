@@ -51,9 +51,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
   private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((it) => (it > 9 ? 'hidden' : 'visible'));
 
-  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(4), 0).map(
-    (it) => it * 100,
-  );
+  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(1), 0);
   private readonly cgPercentText = this.cgPercent.map((it) => it.toFixed(1));
 
   private readonly greenHydPressurized = ConsumerSubject.create(this.sub.on('hydGreenSysPressurized'), false);

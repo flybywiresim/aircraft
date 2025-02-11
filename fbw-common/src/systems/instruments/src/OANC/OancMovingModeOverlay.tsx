@@ -1,8 +1,16 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, EfisNdMode } from '@flybywiresim/fbw-sdk';
+import {
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  MappedSubject,
+  Subscribable,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
+import { Arinc429RegisterSubject, Arinc429SignStatusMatrix, EfisNdMode } from '@flybywiresim/fbw-sdk';
 
 import { OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './';
 import { ArcModeUnderlay } from './OancArcModeCompass';
@@ -28,6 +36,8 @@ export interface OancMapOverlayProps {
 }
 
 export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps> {
+  private subs: Subscription[] = [];
+
   private readonly arcModeVisible = MappedSubject.create(
     ([ndMode, isPanning]) => ndMode === EfisNdMode.ARC && isPanning,
     this.props.ndMode,
@@ -40,6 +50,26 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
     this.props.isMapPanned,
   );
 
+  private readonly rotationArinc429Word = Arinc429RegisterSubject.createEmpty();
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subs.push(
+      this.props.rotation.sub((r) => {
+        this.rotationArinc429Word.setValueSsm(r, Arinc429SignStatusMatrix.NormalOperation);
+      }, true),
+    );
+
+    this.subs.push(this.arcModeVisible, this.roseModeVisible);
+  }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+  }
+
   render(): VNode | null {
     return (
       <svg
@@ -50,14 +80,7 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
         <RoseModeUnderlay
           bus={this.props.bus}
           visible={this.roseModeVisible}
-          rotation={this.props.rotation.map((r) => {
-            const word = Arinc429Word.empty();
-
-            word.ssm = Arinc429SignStatusMatrix.NormalOperation;
-            word.value = r;
-
-            return word;
-          })}
+          rotation={this.rotationArinc429Word}
           oansRange={this.props.oansRange}
           doClip={false}
         />
@@ -65,14 +88,7 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
         <ArcModeUnderlay
           bus={this.props.bus}
           visible={this.arcModeVisible}
-          rotation={this.props.rotation.map((r) => {
-            const word = Arinc429Word.empty();
-
-            word.ssm = Arinc429SignStatusMatrix.NormalOperation;
-            word.value = r;
-
-            return word;
-          })}
+          rotation={this.rotationArinc429Word}
           oansRange={this.props.oansRange}
           doClip={false}
           yOffset={620 - 384}
@@ -86,6 +102,8 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
 }
 
 export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps> {
+  private subs: Subscription[] = [];
+
   private readonly arcModeVisible = MappedSubject.create(
     ([ndMode, isPanning]) => ndMode === EfisNdMode.ARC && !isPanning,
     this.props.ndMode,
@@ -98,6 +116,24 @@ export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps>
     this.props.isMapPanned,
   );
 
+  private readonly rotationArinc429Word = Arinc429RegisterSubject.createEmpty();
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subs.push(
+      this.props.rotation.sub((r) => {
+        this.rotationArinc429Word.setValueSsm(r, Arinc429SignStatusMatrix.NormalOperation);
+      }, true),
+    );
+  }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+  }
+
   render(): VNode | null {
     return (
       <svg
@@ -108,14 +144,7 @@ export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps>
         <RoseModeUnderlay
           bus={this.props.bus}
           visible={this.roseModeVisible}
-          rotation={this.props.rotation.map((r) => {
-            const word = Arinc429Word.empty();
-
-            word.ssm = Arinc429SignStatusMatrix.NormalOperation;
-            word.value = r;
-
-            return word;
-          })}
+          rotation={this.rotationArinc429Word}
           oansRange={this.props.oansRange}
           doClip
         />
@@ -123,14 +152,7 @@ export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps>
         <ArcModeUnderlay
           bus={this.props.bus}
           visible={this.arcModeVisible}
-          rotation={this.props.rotation.map((r) => {
-            const word = Arinc429Word.empty();
-
-            word.ssm = Arinc429SignStatusMatrix.NormalOperation;
-            word.value = r;
-
-            return word;
-          })}
+          rotation={this.rotationArinc429Word}
           oansRange={this.props.oansRange}
           doClip
           yOffset={0}

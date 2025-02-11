@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FeatureCollection, Geometry } from '@turf/turf';
+import { FeatureCollection, Geometry, Point } from '@turf/turf';
 import { LatLonInterface } from '@microsoft/msfs-sdk';
 
 export enum AmdbProjection {
@@ -183,6 +183,8 @@ export interface AmdbProperties {
   brngmag?: number;
 
   brngtrue?: number;
+
+  midpoint?: Point;
 }
 
 export type AmdbFeatureCollection = FeatureCollection<Geometry, AmdbProperties>;

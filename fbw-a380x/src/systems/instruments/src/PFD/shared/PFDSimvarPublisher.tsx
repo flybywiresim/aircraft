@@ -167,6 +167,7 @@ export interface PFDSimvars {
   spoilersArmed: boolean;
   fcuLeftVelocityVectorOn: boolean;
   fcuRightVelocityVectorOn: boolean;
+  btvExitMissed: boolean;
   hydGreenSysPressurized: boolean;
   hydYellowSysPressurized: boolean;
 }
@@ -331,11 +332,12 @@ export enum PFDVars {
   lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   trimPosition = 'ELEVATOR TRIM POSITION',
-  cgPercent = 'CG PERCENT',
+  cgPercent = 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
   fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
   fcuRightVelocityVectorOn = 'L:A380X_EFIS_R_VV_BUTTON_IS_ON',
+  btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
   hydGreenSysPressurized = 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH',
   hydYellowSysPressurized = 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH',
 }
@@ -504,6 +506,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
     ['fcuLeftVelocityVectorOn', { name: PFDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],
     ['fcuRightVelocityVectorOn', { name: PFDVars.fcuRightVelocityVectorOn, type: SimVarValueType.Bool }],
+    ['btvExitMissed', { name: PFDVars.btvExitMissed, type: SimVarValueType.Bool }],
     ['hydGreenSysPressurized', { name: PFDVars.hydGreenSysPressurized, type: SimVarValueType.Bool }],
     ['hydYellowSysPressurized', { name: PFDVars.hydYellowSysPressurized, type: SimVarValueType.Bool }],
   ]);

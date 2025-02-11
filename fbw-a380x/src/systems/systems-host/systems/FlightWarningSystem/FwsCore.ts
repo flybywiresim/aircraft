@@ -1233,6 +1233,8 @@ export class FwsCore {
 
   public autoBrakeOffMemoInhibited = false;
 
+  public btvExitMissedPulseNode = new NXLogicPulseNode();
+
   /* NAVIGATION */
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
@@ -2772,6 +2774,15 @@ export class FwsCore {
       this.autoBrakeOffAuralTriggered = true;
     }
 
+    this.btvExitMissedPulseNode.write(
+      SimVar.GetSimVarValue('L:A32NX_BTV_EXIT_MISSED', SimVarValueType.Bool),
+      deltaTime,
+    );
+
+    if (this.btvExitMissedPulseNode.read()) {
+      this.soundManager.enqueueSound('tripleClick');
+    }
+
     // Engine Logic
     this.thrustLeverNotSet.set(this.autothrustLeverWarningFlex.get() || this.autothrustLeverWarningToga.get());
     // FIXME ECU doesn't have the necessary output words so we go purely on TLA
@@ -3492,7 +3503,7 @@ export class FwsCore {
 
     // pitch trim not takeoff
     const stabPos = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', 'degree');
-    const cgPercent = SimVar.GetSimVarValue('CG PERCENT', 'number') * 100;
+    const cgPercent = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
 
     // A320neo config
     const pitchConfig = !PitchTrimUtils.pitchTrimInGreenBand(stabPos);
