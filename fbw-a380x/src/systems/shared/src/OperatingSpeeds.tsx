@@ -439,7 +439,7 @@ export class A380OperatingSpeeds {
     altitude: Feet,
     wind: Knots = 0,
   ) {
-    const cg = SimVar.GetSimVarValue('CG PERCENT', 'percent');
+    const cg = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
 
     if (fPos === 0) {
       this.vls = SpeedsLookupTables.VLS_CONF_0.get(altitude, m);
@@ -595,16 +595,30 @@ export class A380SpeedsUtils {
   static getVs1g(mass: number, conf: number, takeoff: boolean): Knots {
     // FIXME rough, dirty hack
     if (takeoff === true) {
-      return SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.15;
+      return (
+        SpeedsLookupTables.getApproachVls(
+          conf,
+          SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
+          mass,
+        ) / 1.15
+      );
     }
     if (conf === 5) {
       return Math.max(
-        SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.18,
+        SpeedsLookupTables.getApproachVls(
+          conf,
+          SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
+          mass,
+        ) / 1.18,
         Vmcl,
       );
     }
     return Math.max(
-      SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.23,
+      SpeedsLookupTables.getApproachVls(
+        conf,
+        SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
+        mass,
+      ) / 1.23,
       Vmcl,
     );
   }

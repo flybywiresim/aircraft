@@ -644,4 +644,23 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     return false;
   }
+
+  /**
+   * Check if there is a TOO STEEP PATH segment on a leg after the active leg
+   * @returns true if there is a TOO STEEP PATH segment
+   */
+  hasTooSteepPathAhead(): boolean {
+    for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex; i++) {
+      const element = this.maybeElementAt(i);
+      if (element?.isDiscontinuity === true) {
+        continue;
+      }
+
+      if (element?.calculated?.endsInTooSteepPath) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

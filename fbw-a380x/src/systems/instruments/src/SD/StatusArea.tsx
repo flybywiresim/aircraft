@@ -41,7 +41,7 @@ export const StatusArea = () => {
 
   const userWeightUnit = NXUnits.userWeightUnit();
 
-  const [cg] = useSimVar('CG PERCENT', 'percent');
+  const [cg] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
   const [emptyWeight] = useSimVar('EMPTY WEIGHT', 'kg');
   const [payloadCount] = useSimVar('PAYLOAD STATION COUNT', 'number');
 

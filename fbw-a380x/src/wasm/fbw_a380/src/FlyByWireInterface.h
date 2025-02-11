@@ -356,6 +356,8 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFmGrossWeight;
 
+  std::unique_ptr<LocalVariable> idCgPercentMac;
+
   // CPIOM status
   std::unique_ptr<LocalVariable> idCpiomCxAvailable[2];
 

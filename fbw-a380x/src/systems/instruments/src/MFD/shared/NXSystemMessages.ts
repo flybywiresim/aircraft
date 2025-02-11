@@ -111,6 +111,7 @@ export const NXSystemMessages = {
   stepAboveMaxFl: new TypeIIMessage('STEP ABOVE MAX FL'),
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
+  tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
 };
 
 export const NXFictionalMessages = {
