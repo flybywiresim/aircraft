@@ -58,7 +58,7 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
     this.subs.push(
       this.props.rotation.sub((r) => {
         this.rotationArinc429Word.setValueSsm(r, Arinc429SignStatusMatrix.NormalOperation);
-      }),
+      }, true),
     );
 
     this.subs.push(this.arcModeVisible, this.roseModeVisible);
@@ -124,7 +124,7 @@ export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps>
     this.subs.push(
       this.props.rotation.sub((r) => {
         this.rotationArinc429Word.setValueSsm(r, Arinc429SignStatusMatrix.NormalOperation);
-      }),
+      }, true),
     );
   }
 
