@@ -3503,7 +3503,7 @@ export class FwsCore {
 
     // pitch trim not takeoff
     const stabPos = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', 'degree');
-    const cgPercent = SimVar.GetSimVarValue('CG PERCENT', 'number') * 100;
+    const cgPercent = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
 
     // A320neo config
     const pitchConfig = !PitchTrimUtils.pitchTrimInGreenBand(stabPos);
