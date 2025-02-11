@@ -473,7 +473,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.oansPerformanceModeHide.sub((hide) => {
       if (hide) {
-        this.unloadAirportMap();
+        this.unloadAirportMap(true);
       } else if (this.dataAirportIcao.get()) {
         this.loadAirportMap(this.dataAirportIcao.get());
       }
@@ -615,10 +615,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     setTimeout(() => (this.labelManager.showLabels = true), ZOOM_TRANSITION_TIME_MS + 200);
   }
 
-  public unloadAirportMap() {
-    this.btvUtils.clearSelection();
-    this.markerManager.eraseAllCrosses();
-    this.markerManager.eraseAllFlags();
+  public unloadAirportMap(performanceModeUnload: boolean = false) {
+    if (!performanceModeUnload) {
+      this.btvUtils.clearSelection();
+      this.markerManager.eraseAllCrosses();
+      this.markerManager.eraseAllFlags();
+    }
     this.clearMap();
     this.clearData();
 
@@ -1084,7 +1086,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.lastTime = now;
 
     if (this.data && this.resetPulled.get()) {
-      this.unloadAirportMap();
+      this.markerManager.eraseAllCrosses();
+      this.markerManager.eraseAllFlags();
+      this.unloadAirportMap(true);
     }
 
     if (!this.data || this.dataLoading || this.resetPulled.get()) return;
