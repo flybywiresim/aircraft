@@ -475,7 +475,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       if (hide) {
         this.unloadAirportMap(true);
       } else if (this.dataAirportIcao.get()) {
-        this.loadAirportMap(this.dataAirportIcao.get());
+        this.loadAirportMap(this.dataAirportIcao.get(), true);
       }
     });
 
@@ -618,9 +618,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   public unloadAirportMap(performanceModeUnload: boolean = false) {
     if (!performanceModeUnload) {
       this.btvUtils.clearSelection();
-      this.markerManager.eraseAllCrosses();
-      this.markerManager.eraseAllFlags();
     }
+    this.markerManager.eraseAllCrosses();
+    this.markerManager.eraseAllFlags();
     this.clearMap();
     this.clearData();
 
@@ -634,11 +634,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
    * @param icao four letter ICAO code of airport to load
    * @returns
    */
-  public async loadAirportMap(icao: string) {
+  public async loadAirportMap(icao: string, performanceModeUnload: boolean = false) {
     this.dataLoading = true;
     this.airportLoading.set(true);
 
-    this.unloadAirportMap();
+    this.unloadAirportMap(performanceModeUnload);
 
     if (!icao) {
       this.dataLoading = false;
@@ -1086,8 +1086,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.lastTime = now;
 
     if (this.data && this.resetPulled.get()) {
-      this.markerManager.eraseAllCrosses();
-      this.markerManager.eraseAllFlags();
       this.unloadAirportMap(true);
     }
 
