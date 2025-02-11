@@ -478,7 +478,7 @@ export class FwsCore {
 
   private readonly cabinAltitude = Arinc429Register.empty();
 
-  private readonly cabinAltitudeTarget = Subject.create(0);
+  private readonly cabinAltitudeTarget = Arinc429Register.empty();
 
   /* 22 - AUTOFLIGHT */
 
@@ -3290,21 +3290,19 @@ export class FwsCore {
     this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
 
     if (this.flightPhase12Or1112.get()) {
-      this.cabinAltitude.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_${cpcsToUseId}`);
+      this.cabinAltitude.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUseId}`);
     }
 
     if (flightPhase8) {
       this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');
-      this.cabinAltitudeTarget.set(
-        SimVar.GetSimVarValue(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_${cpcsToUseId}`, SimVarValueType.Number),
-      );
+      this.cabinAltitudeTarget.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_B${cpcsToUseId}`);
     }
 
     // Cabin altitude in phase 1,2 11 or 12
     this.highLandingFieldElevation.set(
       (this.flightPhase.get() === 8
         ? this.manCabinAltMode.get()
-          ? this.cabinAltitudeTarget.get()
+          ? this.cabinAltitudeTarget.valueOr(0)
           : this.landingElevation.valueOr(0)
         : this.cabinAltitude.valueOr(0)) >= 8550,
     );
