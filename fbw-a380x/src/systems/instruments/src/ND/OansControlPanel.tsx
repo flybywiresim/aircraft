@@ -82,7 +82,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   /** If navigraph not available, this class will compute BTV features */
   private readonly navigraphAvailable = Subject.create(false);
-
   private readonly oansResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_arpt_nav'), false);
 
   private oansPerformanceModeSettingSub = () => {};
@@ -204,9 +203,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   );
 
   private readonly fmsLandingRunwayNotSelectedInFallback = MappedSubject.create(
-    ([ldgRwy, navigraph]) => !navigraph && ldgRwy === null,
+    ([ldgRwy, avail]) => !avail && ldgRwy === null,
     this.fmsDataStore.landingRunway,
-    this.navigraphAvailable,
+    this.oansAvailable,
   );
   private readonly fmsLandingRunwayVisibility = this.fmsLandingRunwayNotSelectedInFallback.map((notSelected) =>
     !notSelected ? 'inherit' : 'hidden',
@@ -323,7 +322,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         if (it) {
           // Load runway data
           const destination = this.fmsDataStore.destination.get();
-          if (destination && this.navigraphAvailable.get() === false) {
+          if (destination && this.oansAvailable.get() === false) {
             this.setBtvRunwayFromFmsRunway();
           }
         }
@@ -369,7 +368,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         .on('realTime')
         .atFrequency(5)
         .handle((_) => {
-          if (this.arpCoordinates && this.navigraphAvailable.get() === false) {
+          if (this.arpCoordinates && !this.oansAvailable.get()) {
             globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
             this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
           }
@@ -410,7 +409,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
             this.runwayLda.set(this.mapDataFeatures[idx].properties.lda?.toFixed(0) ?? '');
             this.runwayTora.set(this.mapDataFeatures[idx].properties.tora?.toFixed(0) ?? '');
           }
-        } else {
+        } else if (this.oansAvailable.get()) {
           this.selectedEntityString.set('');
           this.runwayLda.set('');
           this.runwayTora.set('');
@@ -675,11 +674,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         destination,
         rwyIdent,
       );
+      this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
+      this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
     }
   }
 
   private async btvFallbackSetDistance(distance: number | null) {
-    if (this.navigraphAvailable.get() === false) {
+    if (!this.oansAvailable.get()) {
       if (distance && distance > MIN_TOUCHDOWN_ZONE_DISTANCE && this.landingRunwayNavdata && this.arpCoordinates) {
         const exitLocation = placeBearingDistance(
           this.landingRunwayNavdata.thresholdLocation,
@@ -1021,7 +1022,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   <div class="oans-cp-status-2">
                     <Button
                       label="SWAP"
-                      disabled={this.navigraphAvailable}
+                      disabled={this.oansAvailable}
                       onClick={() => this.loadOansDb()}
                       buttonStyle="padding: 20px 30px 20px 30px;"
                     />
