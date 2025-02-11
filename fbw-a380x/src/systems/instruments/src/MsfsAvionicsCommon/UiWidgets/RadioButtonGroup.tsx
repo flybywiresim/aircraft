@@ -11,7 +11,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-type RADIO_BUTTON_COLOR = 'yellow' | 'green' | 'cyan' | 'white';
+export enum RadioButtonColor {
+  Yellow,
+  Green,
+  Amber,
+  Cyan,
+  White,
+}
 
 interface RadioButtonGroupProps extends ComponentProps {
   values: string[];
@@ -21,11 +27,18 @@ interface RadioButtonGroupProps extends ComponentProps {
   /** If this function is defined, selectedIndex is not automatically updated. This function should take care of that. */
   onModified?: (newSelectedIndex: number) => void;
   additionalVerticalSpacing?: number;
-  color?: Subscribable<RADIO_BUTTON_COLOR>;
+  color?: Subscribable<RadioButtonColor>;
 }
 export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
+
+  private readonly labelRefs = Array.from(Array(this.props.values.length), () =>
+    FSComponent.createRef<HTMLLabelElement>(),
+  );
+  private readonly inputRefs = Array.from(Array(this.props.values.length), () =>
+    FSComponent.createRef<HTMLLabelElement>(),
+  );
 
   private changeEventHandler(i: number) {
     if (this.props.onModified) {
@@ -39,51 +52,48 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     super.onAfterRender(node);
 
     if (this.props.color === undefined) {
-      this.props.color = Subject.create<RADIO_BUTTON_COLOR>('cyan');
+      this.props.color = Subject.create<RadioButtonColor>(RadioButtonColor.Cyan);
     }
     if (this.props.valuesDisabled === undefined) {
       this.props.valuesDisabled = Subject.create<boolean[]>(this.props.values.map(() => false));
     }
 
-    for (let i = 0; i < this.props.values.length; i++) {
-      document
-        .getElementById(`${this.props.idPrefix}_${i}`)
-        ?.addEventListener('change', this.changeEventHandler.bind(this, i));
-    }
+    this.inputRefs.forEach((ref, index) =>
+      ref.instance.addEventListener('change', this.changeEventHandler.bind(this, index)),
+    );
 
     this.subs.push(
       this.props.selectedIndex.sub((val) => {
-        for (let i = 0; i < this.props.values.length; i++) {
-          if (i === val) {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.setAttribute('checked', 'checked');
+        this.inputRefs.forEach((ref, index) => {
+          if (index === val) {
+            ref.instance.setAttribute('checked', 'checked');
           } else {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.removeAttribute('checked');
+            ref.instance.removeAttribute('checked');
           }
-        }
+        });
       }, true),
     );
 
     this.subs.push(
       this.props.valuesDisabled.sub((val) => {
-        for (let i = 0; i < this.props.values.length; i++) {
-          if (val[i]) {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.setAttribute('disabled', 'disabled');
+        this.inputRefs.forEach((ref, index) => {
+          if (val[index]) {
+            ref.instance.setAttribute('disabled', 'disabled');
           } else {
-            document.getElementById(`${this.props.idPrefix}_${i}`)?.removeAttribute('disabled');
+            ref.instance.removeAttribute('disabled');
           }
-        }
+        });
       }, true),
     );
 
     this.subs.push(
       this.props.color.sub((v) => {
-        this.props.values.forEach((val, idx) => {
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('yellow');
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('green');
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('cyan');
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.remove('white');
-
-          document.getElementById(`${this.props.idPrefix}_label_${idx}`)?.classList.add(v);
+        this.labelRefs.forEach((ref) => {
+          ref.instance.classList.toggle('yellow', v === RadioButtonColor.Yellow);
+          ref.instance.classList.toggle('green', v === RadioButtonColor.Green);
+          ref.instance.classList.toggle('amber', v === RadioButtonColor.Amber);
+          ref.instance.classList.toggle('cyan', v === RadioButtonColor.Cyan);
+          ref.instance.classList.toggle('white', v === RadioButtonColor.White);
         });
       }, true),
     );
@@ -93,11 +103,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    for (let i = 0; i < this.props.values.length; i++) {
-      document
-        .getElementById(`${this.props.idPrefix}_${i}`)
-        ?.removeEventListener('change', this.changeEventHandler.bind(this, i));
-    }
+    this.inputRefs.forEach((ref, index) =>
+      ref.instance.removeEventListener('change', this.changeEventHandler.bind(this, index)),
+    );
 
     super.destroy();
   }
@@ -107,12 +115,18 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
       <form>
         {this.props.values.map((el, idx) => (
           <label
+            ref={this.labelRefs[idx]}
             class="mfd-radio-button"
             htmlFor={`${this.props.idPrefix}_${idx}`}
             style={this.props.additionalVerticalSpacing ? `margin-top: ${this.props.additionalVerticalSpacing}px;` : ''}
             id={`${this.props.idPrefix}_label_${idx}`}
           >
-            <input type="radio" name={`${this.props.idPrefix}`} id={`${this.props.idPrefix}_${idx}`} />
+            <input
+              ref={this.inputRefs[idx]}
+              type="radio"
+              name={`${this.props.idPrefix}`}
+              id={`${this.props.idPrefix}_${idx}`}
+            />
             <span>{el}</span>
           </label>
         ))}

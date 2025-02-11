@@ -50,6 +50,7 @@ render(
         realism: {
           mcduKeyboard: true,
           pauseOnTod: true,
+          autoStepClimb: false,
           pilotAvatars: true,
           eclSoftKeys: false,
         },
@@ -60,6 +61,7 @@ render(
           registrationDecal: true,
           wheelChocks: true,
           cabinLighting: false,
+          oansPerformanceMode: false,
         },
         throttle: {
           numberOfAircraftThrottles: 2,

@@ -29,9 +29,9 @@ export interface AdscButtonProps extends ComponentProps {
  */
 export class AdscButton extends DisplayComponent<AdscButtonProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly upperLabelGreen = MappedSubject.create(
     ([state, disabled]) => state && !disabled,

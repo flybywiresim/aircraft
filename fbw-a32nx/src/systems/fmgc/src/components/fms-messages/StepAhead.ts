@@ -7,18 +7,19 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FMMessageTypes } from '@flybywiresim/fbw-sdk';
 
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
+import { Navigation } from '@fmgc/navigation/Navigation';
 
 export class StepAhead implements FMMessageSelector {
   message = FMMessageTypes.StepAhead;
 
-  private guidanceController: GuidanceController;
+  private guidanceController?: GuidanceController;
 
-  private flightPlanService: FlightPlanService;
+  private flightPlanService?: FlightPlanService;
 
   private lastState = false;
 
-  init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
-    this.guidanceController = baseInstrument.guidanceController;
+  init(_navigation: Navigation, guidanceController: GuidanceController, flightPlanService: FlightPlanService): void {
+    this.guidanceController = guidanceController;
     this.flightPlanService = flightPlanService;
   }
 

@@ -631,6 +631,7 @@
     "Real": "حقيقي",
     "Realism": {
       "AdirsAlignTime": "وقت محاذاة ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "ملئ تلقائي لقوائم الفحص",
       "BoardingTime": "وقت الصعود",
       "DmcSelfTestTime": "وقت الاختبار الذاتي DMC",
