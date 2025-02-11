@@ -233,9 +233,13 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     });
 
     sub
-      .on('ndShowOans')
+      .on('nd_show_oans')
       .whenChanged()
-      .handle((show) => this.showOans.set(show));
+      .handle((data) => {
+        if (data.side === this.props.side) {
+          this.showOans.set(data.show);
+        }
+      });
   }
 
   // eslint-disable-next-line arrow-body-style

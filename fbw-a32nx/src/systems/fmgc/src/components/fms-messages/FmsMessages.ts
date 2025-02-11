@@ -22,6 +22,9 @@ import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
 import { GpsPrimaryLost } from './GpsPrimaryLost';
 import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisplayed';
+import { Navigation } from '@fmgc/navigation/Navigation';
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { TooSteepPathAhead } from '@fmgc/components/fms-messages/TooSteepPathAhead';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -37,8 +40,6 @@ import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisp
  */
 export class FmsMessages implements FmgcComponent {
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
-
-  private baseInstrument: BaseInstrument;
 
   private ndMessageFlags: Record<'L' | 'R', number> = {
     L: 0,
@@ -63,14 +64,13 @@ export class FmsMessages implements FmgcComponent {
     new TdReached(),
     new StepAhead(),
     new StepDeleted(),
+    new TooSteepPathAhead(),
   ];
 
-  init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
-    this.baseInstrument = baseInstrument;
-
+  init(navigation: Navigation, guidanceController: GuidanceController, flightPlanService: FlightPlanService): void {
     for (const selector of this.messageSelectors) {
       if (selector.init) {
-        selector.init(this.baseInstrument, flightPlanService);
+        selector.init(navigation, guidanceController, flightPlanService);
       }
     }
   }
@@ -209,7 +209,7 @@ export interface FMMessageSelector {
 
   efisSide?: 'L' | 'R';
 
-  init?(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void;
+  init?(navigation: Navigation, guidanceController: GuidanceController, flightPlanService: FlightPlanService): void;
 
   /**
    * Optionally triggers a message when there isn't any other system or Redux update triggering it.

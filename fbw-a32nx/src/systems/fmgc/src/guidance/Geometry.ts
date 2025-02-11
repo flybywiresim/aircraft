@@ -557,14 +557,16 @@ export class Geometry {
         cumulativeDistance += distance;
         cumulativeDistanceWithTransitions += distanceWithTransitions;
 
-        flightPlanLeg.calculated = {
-          distance,
-          distanceWithTransitions,
-          cumulativeDistance,
-          cumulativeDistanceWithTransitions,
-          cumulativeDistanceToEnd: undefined,
-          cumulativeDistanceToEndWithTransitions: undefined,
-        };
+        if (!flightPlanLeg.calculated) {
+          this.initializeCalculatedDistances(flightPlanLeg, geometryLeg);
+        }
+
+        flightPlanLeg.calculated.distance = distance;
+        flightPlanLeg.calculated.distanceWithTransitions = distanceWithTransitions;
+        flightPlanLeg.calculated.cumulativeDistance = cumulativeDistance;
+        flightPlanLeg.calculated.cumulativeDistanceWithTransitions = cumulativeDistanceWithTransitions;
+        flightPlanLeg.calculated.cumulativeDistanceToEnd = undefined;
+        flightPlanLeg.calculated.cumulativeDistanceToEndWithTransitions = undefined;
 
         geometryLeg.calculated = flightPlanLeg.calculated;
       }
@@ -586,6 +588,7 @@ export class Geometry {
       cumulativeDistanceWithTransitions: 0,
       cumulativeDistanceToEnd: undefined,
       cumulativeDistanceToEndWithTransitions: undefined,
+      endsInTooSteepPath: false,
     };
 
     if (geometryLeg) {

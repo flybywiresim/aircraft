@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -21,6 +21,7 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -343,10 +344,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
     const planFixInfo = this.fixInfos as FixInfoEntry[];
 
-    planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo.radii, fixInfo.radials) : undefined;
+    planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo?.radii, fixInfo?.radials) : undefined;
 
     if (notify) {
-      this.sendEvent('flightPlan.setFixInfoEntry', { planIndex: this.index, forAlternate: false, index, fixInfo });
+      this.sendEvent('flightPlan.setFixInfoEntry', {
+        planIndex: this.index,
+        forAlternate: false,
+        index,
+        fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
+      });
     }
 
     this.incrementVersion();
@@ -362,7 +368,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     if (notify) {
-      this.sendEvent('flightPlan.setFixInfoEntry', { planIndex: this.index, forAlternate: false, index, fixInfo: res });
+      this.sendEvent('flightPlan.setFixInfoEntry', {
+        planIndex: this.index,
+        forAlternate: false,
+        index,
+        fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
+      });
     }
 
     this.incrementVersion();
@@ -426,8 +437,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param data performance data available in uplink
    */
   setImportedPerformanceData(data: ImportedPerformanceData) {
-    this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
-    this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
+    // Workaround for MSFS2020 not having transition alt/level in the navdata
+    if (!isMsfs2024()) {
+      this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
+      this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
+    }
     this.setPerformanceData('costIndex', data.costIndex);
     this.setPerformanceData('cruiseFlightLevel', data.cruiseFlightLevel);
     this.setPerformanceData('pilotTropopause', data.pilotTropopause);
@@ -475,6 +489,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotThrustReductionAltitude', null);
     plan.setPerformanceData('pilotAccelerationAltitude', null);
     plan.setPerformanceData('pilotEngineOutAccelerationAltitude', null);
+
+    plan.setPerformanceData('databaseTransitionAltitude', airport?.transitionAltitude ?? null);
   }
 
   /**
@@ -511,6 +527,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotMissedThrustReductionAltitude', null);
     plan.setPerformanceData('pilotMissedAccelerationAltitude', null);
     plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', null);
+
+    plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
   }
 
   static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
@@ -622,6 +640,25 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       );
 
       return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if there is a TOO STEEP PATH segment on a leg after the active leg
+   * @returns true if there is a TOO STEEP PATH segment
+   */
+  hasTooSteepPathAhead(): boolean {
+    for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex; i++) {
+      const element = this.maybeElementAt(i);
+      if (element?.isDiscontinuity === true) {
+        continue;
+      }
+
+      if (element?.calculated?.endsInTooSteepPath) {
+        return true;
+      }
     }
 
     return false;

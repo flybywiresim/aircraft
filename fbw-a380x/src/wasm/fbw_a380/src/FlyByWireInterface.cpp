@@ -489,6 +489,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idFmGrossWeight = std::make_unique<LocalVariable>("A32NX_FM_GROSS_WEIGHT");
 
+  idCgPercentMac = std::make_unique<LocalVariable>("A32NX_AIRFRAME_GW_CG_PERCENT_MAC");
+
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
     idRadioAltimeterHeight[i] = std::make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
@@ -1458,8 +1460,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
       powerSupplyAvailable = idElecDc1BusPowered->get();
     }
 
-    prims[primIndex].update(sampleTime, simData.simulationTime,
-                            failuresConsumer.isActive(primIndex == 0 ? Failures::Elac1 : Failures::Elac2), powerSupplyAvailable);
+    Failures failureIndex = primIndex == 0 ? Failures::Prim1 : (primIndex == 1 ? Failures::Prim2 : Failures::Prim3);
+    prims[primIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), powerSupplyAvailable);
 
     primsDiscreteOutputs[primIndex] = prims[primIndex].getDiscreteOutputs();
     primsAnalogOutputs[primIndex] = prims[primIndex].getAnalogOutputs();
@@ -1830,8 +1832,15 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
     facsAnalogOutputs[facIndex] = simConnectInterface.getClientDataFacAnalogsOutput();
     facsBusOutputs[facIndex] = simConnectInterface.getClientDataFacBusOutput();
   } else {
-    facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(facIndex == 0 ? Failures::Fac1 : Failures::Fac2),
-                          true);
+    // Check failure state of master PRIM
+    Failures failureIndex = Failures::Prim1;
+    for (int i = 0; i < 3; i++) {
+      if (primsDiscreteOutputs[i].prim_healthy) {
+        failureIndex = i == 0 ? Failures::Prim1 : (i == 1 ? Failures::Prim2 : Failures::Prim3);
+        break;
+      }
+    }
+    facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex), true);
 
     facsDiscreteOutputs[facIndex] = facs[facIndex].getDiscreteOutputs();
     facsAnalogOutputs[facIndex] = facs[facIndex].getAnalogOutputs();
@@ -2571,11 +2580,11 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
       idFmGrossWeight->get() == 0 ? Arinc429SignStatus::NoComputedData : Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.fm_weight_lbs.Data = idFmGrossWeight->get() * 2205;
   fmgcBBusOutputs.fm_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fm_cg_percent.Data = simData.CG_percent_MAC;
+  fmgcBBusOutputs.fm_cg_percent.Data = idCgPercentMac->get() / 100;
   fmgcBBusOutputs.fac_weight_lbs.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.fac_weight_lbs.Data = simData.total_weight_kg * 2.20462262;
   fmgcBBusOutputs.fac_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fac_cg_percent.Data = simData.CG_percent_MAC;
+  fmgcBBusOutputs.fac_cg_percent.Data = idCgPercentMac->get() / 100;
   fmgcBBusOutputs.n1_left_percent.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.n1_left_percent.Data = simData.engine_N1_1_percent;
   fmgcBBusOutputs.n1_right_percent.SSM = Arinc429SignStatus::NormalOperation;
