@@ -153,6 +153,12 @@
 1. [A380X/FWS] Add support for deferred procedures, abnormal (non-)sensed procedures - @flogross89 (floridude)
 1. [A380X/FWS] Enable FWS failures (FWS 1/2, FWS 1+2, ECP, Audio Function) - @flogross89 (floridude)
 1. [A380X/PDF] Fix inverted color in the meter altitude indicator below and above the MDA - @ItzARz (Albert)
+1. [A380X/BTV] Add EXIT MISSED indication on FMA and aural triple click - @flogross89 (floridude)
+1. [A380X/OANS] Add flags/crosses capability, change cursor to magenta, implement ARPT NAV reset button - @flogross89 (floridude)
+1. [A32NX/MCDU] Show ground & cruise temperature sign on init page if positive - @BravoMike99 (bruno_pt99)
+1. [A380X/OANS] Fix BTV fallback mode; Enable BTV fallback if ARPT NAV reset button is pulled - @flogross89 (floridude)
+1. [A380X/Flight Model] Flight model update incl stall & auto-rotate fix for FS2020 & 2024 - @donstim (donbikes) & @saschl (saschl)
+1. [EFB] Navigraph subscriptions other than Ultimate are now shown on the EFB to reduce confusion with "Unknown" - @tracernz (Mike)
 
 ## 0.12.0
 
