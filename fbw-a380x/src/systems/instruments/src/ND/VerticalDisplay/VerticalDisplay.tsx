@@ -4,10 +4,14 @@
   ArincEventBus,
   EfisNdMode,
   EfisSide,
+  ElevationSamplePathDto,
   MathUtils,
   NdSymbol,
   NdSymbolTypeFlags,
+  PathVectorType,
+  TawsData,
   VerticalPathCheckpoint,
+  WaypointDto,
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
 import {
@@ -91,6 +95,25 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.fmsVerticalPath,
     this.vdRange,
   );
+
+  private readonly terrVdPathData = MappedSubject.create(([fmsPath]) => {
+    const waypoints = fmsPath
+      .filter((p) => p.type !== PathVectorType.DebugPoint)
+      .map((p) => {
+        const waypoint: WaypointDto = {
+          latitude: p.startPoint.lat,
+          longitude: p.startPoint.long,
+        };
+        return waypoint;
+      });
+
+    const data: ElevationSamplePathDto = {
+      pathWidth: 1,
+      trackChangesSignificantlyAtDistance: 10,
+      waypoints: waypoints,
+    };
+    return data;
+  }, this.fmsLateralPath);
 
   private readonly mapRecomputing = ConsumerSubject.create(this.sub.on('set_map_recomputing'), false);
 
@@ -197,6 +220,18 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
   private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('armedLateralMode'), 0);
+  private readonly shouldShowTrackLine = MappedSubject.create(
+    ([active, armed]) =>
+      (active === LateralMode.NONE ||
+        active === LateralMode.HDG ||
+        active === LateralMode.TRACK ||
+        active === LateralMode.RWY ||
+        active === LateralMode.RWY_TRACK ||
+        active === LateralMode.GA_TRACK) &&
+      !isArmed(armed, ArmedLateralMode.NAV),
+    this.activeLateralMode,
+    this.armedLateralMode,
+  );
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
   private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('altConstraint'), 0);
   private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
@@ -291,6 +326,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.vdRange,
       this.fmsVerticalPath,
       this.displayedFmsPath,
+      this.terrVdPathData,
       this.mapRecomputing,
       this.visible,
       this.rangeChangeFlagVisibility,
@@ -343,6 +379,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.subscriptions.push(
       this.vdRange.sub(() => this.calculateAndTransmitEndOfVdMarker()),
       this.fmsLateralPath.sub(() => this.calculateAndTransmitEndOfVdMarker()),
+      this.terrVdPathData.sub((data) => TawsData.postVerticalDisplayPath(this.props.side, data)),
     );
 
     this.calculateAndTransmitEndOfVdMarker();
@@ -424,15 +461,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   }
 
   calculateAndTransmitEndOfVdMarker() {
-    const shouldShowTrackLine =
-      (this.activeLateralMode.get() === LateralMode.NONE ||
-        this.activeLateralMode.get() === LateralMode.HDG ||
-        this.activeLateralMode.get() === LateralMode.TRACK ||
-        this.activeLateralMode.get() === LateralMode.RWY ||
-        this.activeLateralMode.get() === LateralMode.RWY_TRACK ||
-        this.activeLateralMode.get() === LateralMode.GA_TRACK) &&
-      !isArmed(this.armedLateralMode.get(), ArmedLateralMode.NAV);
-    if (!shouldShowTrackLine) {
+    if (!this.shouldShowTrackLine.get()) {
       let totalDistanceFromAircraft = 0;
       for (const path of this.fmsLateralPath.get()) {
         const pathDistance = pathVectorLength(path);

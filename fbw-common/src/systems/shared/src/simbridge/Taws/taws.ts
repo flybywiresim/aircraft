@@ -59,5 +59,7 @@ export interface WaypointDto {
 export interface ElevationSamplePathDto {
   pathWidth: number;
 
+  trackChangesSignificantlyAtDistance: number;
+
   waypoints: WaypointDto[];
 }

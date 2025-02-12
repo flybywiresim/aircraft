@@ -48,6 +48,7 @@ import {
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { A380Failure } from '@failures';
 import { EfisTawsBridge } from './systems/EfisTawsBridge';
+import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 CpiomAvailableSimvarPublisher;
 class SystemsHost extends BaseInstrument {
@@ -117,6 +118,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
 
+  private readonly fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, 'L'); // FIXME figure out side dependency
   private readonly efisTawsBridgePublisher = new EfisTawsBridgePublisher(this.bus);
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this);
 
@@ -181,6 +183,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
+    this.backplane.addPublisher('FmsSymbolsPublisher', this.fmsSymbolsPublisher);
     this.backplane.addPublisher('EfisTawsBridgePublisher', this.efisTawsBridgePublisher);
 
     this.hEventPublisher = new HEventPublisher(this.bus);

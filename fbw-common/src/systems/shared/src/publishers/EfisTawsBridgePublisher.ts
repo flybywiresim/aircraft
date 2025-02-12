@@ -31,6 +31,9 @@ export interface EfisTawsBridgeSimVars {
   terrOnNdRenderingMode: number;
   groundTruthLatitude: number;
   groundTruthLongitude: number;
+
+  activeLateralMode: number;
+  armedLateralMode: number;
 }
 
 export class EfisTawsBridgePublisher extends SimVarPublisher<EfisTawsBridgeSimVars> {
@@ -63,6 +66,9 @@ export class EfisTawsBridgePublisher extends SimVarPublisher<EfisTawsBridgeSimVa
         ['terrOnNdRenderingMode', { name: 'L:A32NX_EGPWC_TERRONND_RENDERING_MODE', type: SimVarValueType.Number }],
         ['groundTruthLatitude', { name: 'PLANE LATITUDE', type: SimVarValueType.Degree }],
         ['groundTruthLongitude', { name: 'PLANE LONGITUDE', type: SimVarValueType.Degree }],
+
+        ['activeLateralMode', { name: 'L:A32NX_FMA_LATERAL_MODE', type: SimVarValueType.Number }],
+        ['armedLateralMode', { name: 'L:A32NX_FMA_LATERAL_ARMED', type: SimVarValueType.Number }],
       ]),
       bus,
     );

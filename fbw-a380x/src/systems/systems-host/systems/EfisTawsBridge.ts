@@ -4,6 +4,8 @@
 import {
   a380EfisRangeSettings,
   Arinc429LocalVarConsumerSubject,
+  Arinc429WordData,
+  ArincEventBus,
   EfisNdMode,
   EfisTawsBridgeSimVars,
   TawsAircraftStatusDataDto,
@@ -11,7 +13,9 @@ import {
   TawsEfisDataDto,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
-import { ConsumerSubject, EventBus, Instrument, Subscription } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, Instrument, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
+import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
+import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 /**
  * Utility class to send data to the TAWS from the EFIS CP
@@ -19,19 +23,44 @@ import { ConsumerSubject, EventBus, Instrument, Subscription } from '@microsoft/
 
 export class EfisTawsBridge implements Instrument {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.bus.getSubscriber<EfisTawsBridgeSimVars>();
+  private readonly sub = this.bus.getSubscriber<EfisTawsBridgeSimVars & FmsSymbolsData>();
 
-  private readonly updadeThrottler = new UpdateThrottler(100);
+  private readonly updateThrottler = new UpdateThrottler(100);
 
-  private readonly latitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitudeRaw'));
-  private readonly longitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitudeRaw'));
-  private readonly altitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('altitudeRaw'));
-  private readonly heading = Arinc429LocalVarConsumerSubject.create(this.sub.on('headingRaw'));
-  private readonly verticalSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeedRaw'));
-  private readonly destinationLatitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('destinationLatitudeRaw'));
+  private coordinateEqualityWithPrecisionFunc = (a: Arinc429WordData, b: Arinc429WordData) => {
+    return a.ssm === b.ssm && a.value.toPrecision(4) === b.value.toPrecision(4);
+  };
+
+  private roundedEqualityWithPrecisionFunc = (a: Arinc429WordData, b: Arinc429WordData) => {
+    return a.ssm === b.ssm && Math.round(a.value) === Math.round(b.value);
+  };
+
+  private readonly latitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitudeRaw')).map(
+    (v) => v,
+    this.coordinateEqualityWithPrecisionFunc,
+  );
+  private readonly longitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitudeRaw')).map(
+    (v) => v,
+    this.coordinateEqualityWithPrecisionFunc,
+  );
+  private readonly altitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('altitudeRaw')).map(
+    (v) => v,
+    this.roundedEqualityWithPrecisionFunc,
+  );
+  private readonly heading = Arinc429LocalVarConsumerSubject.create(this.sub.on('headingRaw')).map(
+    (v) => v,
+    this.roundedEqualityWithPrecisionFunc,
+  );
+  private readonly verticalSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeedRaw')).map(
+    (v) => v,
+    this.roundedEqualityWithPrecisionFunc,
+  );
+  private readonly destinationLatitude = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('destinationLatitudeRaw'),
+  ).map((v) => v, this.coordinateEqualityWithPrecisionFunc);
   private readonly destinationLongitude = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('destinationLongitudeRaw'),
-  );
+  ).map((v) => v, this.coordinateEqualityWithPrecisionFunc);
 
   private readonly ndRange = [
     ConsumerSubject.create(this.sub.on('nd_range_capt'), 0),
@@ -46,88 +75,158 @@ export class EfisTawsBridge implements Instrument {
     ConsumerSubject.create(this.sub.on('terr_active_fo'), false),
   ];
   private readonly vdRangeLower = [
-    ConsumerSubject.create(this.sub.on('vd_range_lower_capt'), 0),
-    ConsumerSubject.create(this.sub.on('vd_range_lower_fo'), 0),
+    ConsumerSubject.create(this.sub.on('vd_range_lower_capt').whenChangedBy(5), 0),
+    ConsumerSubject.create(this.sub.on('vd_range_lower_fo').whenChangedBy(5), 0),
   ];
   private readonly vdRangeUpper = [
-    ConsumerSubject.create(this.sub.on('vd_range_upper_capt'), 0),
-    ConsumerSubject.create(this.sub.on('vd_range_upper_fo'), 0),
+    ConsumerSubject.create(this.sub.on('vd_range_upper_capt').whenChangedBy(5), 0),
+    ConsumerSubject.create(this.sub.on('vd_range_upper_fo').whenChangedBy(5), 0),
   ];
 
   private readonly gearIsDown = ConsumerSubject.create(this.sub.on('gearIsDown'), true);
   private readonly terrOnNdRenderingMode = ConsumerSubject.create(this.sub.on('terrOnNdRenderingMode'), 0);
-  private readonly groundTruthLatitude = ConsumerSubject.create(this.sub.on('groundTruthLatitude'), 0);
-  private readonly groundTruthLongitude = ConsumerSubject.create(this.sub.on('groundTruthLongitude'), 0);
+  private readonly groundTruthLatitude = ConsumerSubject.create(this.sub.on('groundTruthLatitude').withPrecision(4), 0);
+  private readonly groundTruthLongitude = ConsumerSubject.create(
+    this.sub.on('groundTruthLongitude').withPrecision(4),
+    0,
+  );
+
+  private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
+  private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('armedLateralMode'), 0);
+  private readonly shouldShowTrackLine = MappedSubject.create(
+    ([active, armed]) =>
+      (active === LateralMode.NONE ||
+        active === LateralMode.HDG ||
+        active === LateralMode.TRACK ||
+        active === LateralMode.RWY ||
+        active === LateralMode.RWY_TRACK ||
+        active === LateralMode.GA_TRACK) &&
+      !isArmed(armed, ArmedLateralMode.NAV),
+    this.activeLateralMode,
+    this.armedLateralMode,
+  );
+
+  private readonly efisDataCapt = MappedSubject.create(
+    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper]) => {
+      return {
+        ndRange: a380EfisRangeSettings[ndRange],
+        arcMode: ndMode === EfisNdMode.ARC,
+        terrSelected: ndMode !== EfisNdMode.PLAN && terrActive,
+        efisMode: ndMode,
+        vdRangeLower: vdRangeLower,
+        vdRangeUpper: vdRangeUpper,
+      } as TawsEfisDataDto;
+    },
+    this.ndRange[0],
+    this.ndMode[0],
+    this.terrActive[0],
+    this.vdRangeLower[0],
+    this.vdRangeUpper[0],
+  );
+  private readonly efisDataFO = MappedSubject.create(
+    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper]) => {
+      return {
+        ndRange: a380EfisRangeSettings[ndRange],
+        arcMode: ndMode === EfisNdMode.ARC,
+        terrSelected: ndMode !== EfisNdMode.PLAN && terrActive,
+        efisMode: ndMode,
+        vdRangeLower: vdRangeLower,
+        vdRangeUpper: vdRangeUpper,
+      } as TawsEfisDataDto;
+    },
+    this.ndRange[1],
+    this.ndMode[1],
+    this.terrActive[1],
+    this.vdRangeLower[1],
+    this.vdRangeUpper[1],
+  );
+
+  private readonly aircraftStatusData = MappedSubject.create(
+    ([
+      latitude,
+      longitude,
+      altitude,
+      heading,
+      verticalSpeed,
+      gearIsDown,
+      destinationLatitude,
+      destinationLongitude,
+      efisDataCapt,
+      efisDataFO,
+      terrOnNdRenderingMode,
+      groundTruthLatitude,
+      groundTruthLongitude,
+      trackLineShown,
+    ]) => {
+      const adiruDataValid =
+        longitude.isNormalOperation() &&
+        latitude.isNormalOperation() &&
+        altitude.isNormalOperation() &&
+        heading.isNormalOperation() &&
+        verticalSpeed.isNormalOperation();
+
+      return {
+        adiruDataValid,
+        tawsInop: false,
+        latitude: latitude.value,
+        longitude: longitude.value,
+        altitude: altitude.value,
+        heading: heading.value,
+        verticalSpeed: verticalSpeed.value,
+        gearIsDown: !!gearIsDown,
+        runwayDataValid: destinationLatitude.isNormalOperation() && destinationLongitude.isNormalOperation(),
+        runwayLatitude: destinationLatitude.value,
+        runwayLongitude: destinationLongitude.value,
+        efisDataCapt: efisDataCapt,
+        efisDataFO: efisDataFO,
+        navigationDisplayRenderingMode: terrOnNdRenderingMode,
+        manualAzimEnabled: trackLineShown,
+        manualAzimDegrees: heading.value,
+        groundTruthLatitude: groundTruthLatitude,
+        groundTruthLongitude: groundTruthLongitude,
+      } as TawsAircraftStatusDataDto;
+    },
+    this.latitude,
+    this.longitude,
+    this.altitude,
+    this.heading,
+    this.verticalSpeed,
+    this.gearIsDown,
+    this.destinationLatitude,
+    this.destinationLongitude,
+    this.efisDataCapt,
+    this.efisDataFO,
+    this.terrOnNdRenderingMode,
+    this.groundTruthLatitude,
+    this.groundTruthLongitude,
+    this.shouldShowTrackLine,
+  );
+
+  private aircraftStatusShouldBeUpdated = true;
+
+  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
 
   constructor(
-    private readonly bus: EventBus,
+    private readonly bus: ArincEventBus,
     private readonly instrument: BaseInstrument,
   ) {}
 
-  init() {}
+  init() {
+    this.aircraftStatusData.sub(() => {
+      this.aircraftStatusShouldBeUpdated = true;
+    }, true);
+  }
 
   public onUpdate(): void {
-    const deltaTime = this.updadeThrottler.canUpdate(this.instrument.deltaTime);
+    const deltaTime = this.updateThrottler.canUpdate(this.instrument.deltaTime);
 
     if (deltaTime < 0) {
       return;
     }
 
-    const adiruDataValid =
-      this.longitude.get().isNormalOperation() &&
-      this.latitude.get().isNormalOperation() &&
-      this.altitude.get().isNormalOperation() &&
-      this.heading.get().isNormalOperation() &&
-      this.verticalSpeed.get().isNormalOperation();
-
-    const efisDataCapt: TawsEfisDataDto = {
-      ndRange: a380EfisRangeSettings[this.ndRange[0].get()],
-      arcMode: this.ndMode[0].get() === EfisNdMode.ARC,
-      terrSelected: this.ndMode[0].get() !== EfisNdMode.PLAN && this.terrActive[0].get(),
-      efisMode: this.ndMode[0].get(),
-      vdRangeLower: this.vdRangeLower[0].get(),
-      vdRangeUpper: this.vdRangeUpper[0].get(),
-    };
-    const efisDataFO: TawsEfisDataDto = {
-      ndRange: a380EfisRangeSettings[this.ndRange[1].get()],
-      arcMode: this.ndMode[1].get() === EfisNdMode.ARC,
-      terrSelected: this.ndMode[1].get() !== EfisNdMode.PLAN && this.terrActive[1].get(),
-      efisMode: this.ndMode[1].get(),
-      vdRangeLower: this.vdRangeLower[1].get(),
-      vdRangeUpper: this.vdRangeUpper[1].get(),
-    };
-
-    const data: TawsAircraftStatusDataDto = {
-      adiruDataValid,
-      tawsInop: false,
-      latitude: this.latitude.get().value,
-      longitude: this.longitude.get().value,
-      altitude: this.altitude.get().value,
-      heading: this.heading.get().value,
-      verticalSpeed: this.verticalSpeed.get().value,
-      gearIsDown: !!this.gearIsDown.get(),
-      runwayDataValid:
-        this.destinationLatitude.get().isNormalOperation() && this.destinationLongitude.get().isNormalOperation(),
-      runwayLatitude: this.destinationLatitude.get().value,
-      runwayLongitude: this.destinationLongitude.get().value,
-      efisDataCapt: efisDataCapt,
-      efisDataFO: efisDataFO,
-      navigationDisplayRenderingMode: this.terrOnNdRenderingMode.get(),
-      manualAzimEnabled: true,
-      manualAzimDegrees: 80,
-      groundTruthLatitude: this.groundTruthLatitude.get(),
-      groundTruthLongitude: this.groundTruthLongitude.get(),
-    };
-    TawsData.postAircraftStatusData(data);
-
-    /* TawsData.postVerticalDisplayPath({
-      pathWidth: 1,
-      waypoints: [
-        {
-          latitude: 42.197,
-          longitude: 13.225,
-        },
-      ],
-    });*/
+    if (this.aircraftStatusShouldBeUpdated) {
+      TawsData.postAircraftStatusData(this.aircraftStatusData.get());
+      this.aircraftStatusShouldBeUpdated = false;
+    }
   }
 }
