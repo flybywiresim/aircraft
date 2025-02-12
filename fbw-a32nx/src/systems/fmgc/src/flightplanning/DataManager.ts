@@ -4,11 +4,12 @@
 
 import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { Coordinates } from 'msfs-geo';
+import { A32NX_Util } from '../../../shared/src/A32NX_Util';
 
-enum PilotWaypointType {
+export enum PilotWaypointType {
   Pbd = 1,
   Pbx = 2,
   LatLon = 3,
@@ -61,7 +62,7 @@ export class DataManager {
 
   private latLonExtendedFormat = false;
 
-  constructor(private fmc: DisplayInterface) {
+  constructor(private fmc: FmsDisplayInterface) {
     // we keep these in localStorage so they live for the same length of time as the flightplan (that they could appear in)
     // if the f-pln is not stored there anymore we can delete this
     const stored = localStorage.getItem(DataManager.STORED_WP_KEY);
@@ -140,6 +141,10 @@ export class DataManager {
   storeWaypoint(wp: PilotWaypoint, index: number) {
     this.storedWaypoints[index] = wp;
     this.updateLocalStorage();
+  }
+
+  public getStoredWaypoint(index: number): PilotWaypoint | undefined {
+    return this.storedWaypoints[index];
   }
 
   async deleteStoredWaypoint(index: number, updateStorage = true) {

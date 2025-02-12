@@ -1,10 +1,16 @@
 import { NauticalMiles } from 'msfs-geo';
-import { BaseFix } from '..';
-import { KiloHertz } from './Common';
+import { BaseFix, WaypointArea } from '..';
+import { DatabaseItem, KiloHertz } from './Common';
 import { AirportSubsectionCode, NavaidSubsectionCode, SectionCode } from './SectionCode';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
-export interface NdbNavaid extends BaseFix<SectionCode.Navaid> {
-  subSectionCode: NavaidSubsectionCode.NdbNavaid;
+interface BaseNdbNavaid extends DatabaseItem<SectionCode.Airport | SectionCode.Navaid> {
+  sectionCode: SectionCode.Airport | SectionCode.Navaid;
+  subSectionCode: AirportSubsectionCode.TerminalNdb | NavaidSubsectionCode.NdbNavaid;
+
+  location: Coordinates;
+
+  area: WaypointArea;
 
   frequency: KiloHertz;
   name?: string;
@@ -20,12 +26,37 @@ export interface NdbNavaid extends BaseFix<SectionCode.Navaid> {
   distance?: NauticalMiles;
 }
 
-export function isNdbNavaid(o: any): o is NdbNavaid {
+export interface TerminalNdbNavaid extends BaseNdbNavaid, BaseFix<SectionCode.Airport> {
+  sectionCode: SectionCode.Airport;
+  subSectionCode: AirportSubsectionCode.TerminalNdb;
+  airportIdent: string;
+  area: WaypointArea.Terminal;
+}
+
+export interface EnrouteNdbNavaid extends BaseNdbNavaid, BaseFix<SectionCode.Navaid> {
+  sectionCode: SectionCode.Navaid;
+  subSectionCode: NavaidSubsectionCode.NdbNavaid;
+  area: WaypointArea.Enroute;
+}
+
+export type NdbNavaid = TerminalNdbNavaid | EnrouteNdbNavaid;
+
+export function isTerminalNdbNavaid(o: any): o is TerminalNdbNavaid {
   return (
     typeof o === 'object' &&
-    ((o.sectionCode === SectionCode.Navaid && o.subSectionCode === NavaidSubsectionCode.NdbNavaid) ||
-      (o.sectionCode === SectionCode.Airport && o.subSectionCode === AirportSubsectionCode.TerminalNdb))
+    o.sectionCode === SectionCode.Airport &&
+    o.subSectionCode === AirportSubsectionCode.TerminalNdb
   );
+}
+
+export function isEnrouteNdbNavaid(o: any): o is TerminalNdbNavaid {
+  return (
+    typeof o === 'object' && o.sectionCode === SectionCode.Navaid && o.subSectionCode === NavaidSubsectionCode.NdbNavaid
+  );
+}
+
+export function isNdbNavaid(o: any): o is NdbNavaid {
+  return isTerminalNdbNavaid(o) || isEnrouteNdbNavaid(o);
 }
 
 export enum NdbClass {

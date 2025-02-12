@@ -37,6 +37,8 @@ export interface BaseFuelSystemEvents {
   fuel_junction_setting: number;
   /** Whether refuel has been started as boolean */
   fuel_refuel_started_by_user: boolean;
+  /** The CG percent of the GW */
+  cg_percent_gw: number;
 }
 
 type IndexedTopics =
@@ -98,6 +100,7 @@ export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
         'fuel_refuel_started_by_user',
         { name: 'L:A32NX_REFUEL_STARTED_BY_USR', type: SimVarValueType.Bool, indexed: false, map: (v) => !!v },
       ],
+      ['cg_percent_gw', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number, indexed: false }],
     ];
 
     super(new Map(simvars), bus, pacer);

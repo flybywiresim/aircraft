@@ -71,7 +71,7 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
   render() {
     return (
       <>
-        <div class="MemosContainer" style={{ display: this.props.visible.map((it) => (it ? 'block' : 'none')) }}>
+        <div class="MemosContainer" style={{ display: this.props.visible.map((it) => (it ? 'flex' : 'none')) }}>
           <div class="MemosDividedArea">
             <div class="MemosLeft">
               <svg ref={this.memosLeftSvgRef} version="1.1" xmlns="http://www.w3.org/2000/svg">

@@ -631,6 +631,7 @@
     "Real": "אמיתי",
     "Realism": {
       "AdirsAlignTime": "זמן יישור ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "מלא רשימות בדיקה אוטומטית",
       "BoardingTime": "זמן עלייה למטוס",
       "DmcSelfTestTime": "DMC - זמן בדיקה עצמית",

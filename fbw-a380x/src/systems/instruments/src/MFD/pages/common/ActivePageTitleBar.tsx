@@ -13,9 +13,9 @@ interface ActivePageTitleBarProps extends ComponentProps {
  */
 export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private offsetText = this.props.offset.map((it) => (it ? `     OFFSET${this.props.offset.get()}` : ''));
+  private readonly offsetText = this.props.offset.map((it) => (it ? `     OFFSET${this.props.offset.get()}` : ''));
 
   private eoRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -38,6 +38,8 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
         }
       }, true),
     );
+
+    this.subs.push(this.offsetText);
   }
 
   public destroy(): void {

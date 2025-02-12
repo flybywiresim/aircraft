@@ -88,7 +88,9 @@ type FacilityType<T> = T extends JS_FacilityIntersection
     ? NdbNavaid
     : T extends JS_FacilityVOR
       ? VhfNavaid
-      : never;
+      : T extends JS_FacilityAirport
+        ? Airport
+        : never;
 
 export class MsfsMapping {
   private static readonly letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -148,11 +150,15 @@ export class MsfsMapping {
         ? Math.round(msAirport.transitionLevel / 30.48)
         : undefined;
 
+    const ident = this.mapAirportIdent(msAirport);
+
     return {
       databaseId: msAirport.icao,
       sectionCode: SectionCode.Airport,
       subSectionCode: AirportSubsectionCode.ReferencePoints,
-      ident: this.mapAirportIdent(msAirport),
+      area: WaypointArea.Terminal,
+      ident,
+      airportIdent: ident, // needed for terminal fix
       icaoCode: msAirport.icao.substring(1, 3), // TODO
       name: Utils.Translate(msAirport.name),
       location: { lat: msAirport.lat, long: msAirport.lon, alt: elevation },
@@ -936,6 +942,10 @@ export class MsfsMapping {
 
     const icaos = Array.from(icaoSet);
 
+    const airports = await this.cache.getFacilities(
+      icaos.filter((icao) => icao.charAt(0) === 'A'),
+      LoadType.Airport,
+    );
     const vors = await this.cache.getFacilities(
       icaos.filter((icao) => icao.charAt(0) === 'V'),
       LoadType.Vor,
@@ -949,7 +959,7 @@ export class MsfsMapping {
       LoadType.Intersection,
     );
 
-    return new Map<string, JS_Facility>([...wps, ...ndbs, ...vors]);
+    return new Map<string, JS_Facility>([...wps, ...ndbs, ...vors, ...airports]);
   }
 
   private mapApproachTransitions(
@@ -1246,7 +1256,6 @@ export class MsfsMapping {
 
   public mapFacilityToWaypoint<T extends JS_Facility>(facility: T): FacilityType<T> {
     const airportIdent = facility.icao.substring(3, 7).trim();
-    // TODO this is a hack
     const isTerminalVsEnroute = airportIdent.length > 0;
 
     const databaseItem = {
@@ -1266,11 +1275,12 @@ export class MsfsMapping {
         const ndb = facility as any as JS_FacilityNDB;
         return {
           ...databaseItem,
-          sectionCode: SectionCode.Navaid,
-          subSectionCode: NavaidSubsectionCode.NdbNavaid,
+          sectionCode: isTerminalVsEnroute ? SectionCode.Airport : SectionCode.Navaid,
+          subSectionCode: isTerminalVsEnroute ? AirportSubsectionCode.TerminalNdb : NavaidSubsectionCode.NdbNavaid,
           frequency: ndb.freqMHz, // actually kHz
           class: this.mapNdbType(ndb.type),
           bfoOperation: false, // TODO can we?
+          airportIdent: isTerminalVsEnroute ? airportIdent : undefined,
         } as unknown as FacilityType<T>;
       }
       case 'V': {
@@ -1290,6 +1300,8 @@ export class MsfsMapping {
           class: this.mapVorClass(vor),
         } as unknown as FacilityType<T>;
       }
+      case 'A':
+        return this.mapAirport(facility as JS_FacilityAirport) as FacilityType<T>;
       case 'W':
       default:
         return {

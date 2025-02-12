@@ -631,6 +631,7 @@
     "Realism": {
       "AdirsAlignTime": "ADIRS Align Time",
       "AutofillChecklists": "Autofill Checklists",
+      "AutoStepClimb": "Automatic Step Climb",
       "BoardingTime": "Boarding Time",
       "DmcSelfTestTime": "DMC Self Test Time",
       "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
@@ -663,6 +664,7 @@
       "Left": "Left",
       "LoadOnly": "Load Only",
       "None": "None",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Off",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -693,6 +695,7 @@
         "Unlink": "Unlink Account",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unlimited": "Navigraph Unlimited",
           "Unknown": "Unknown"
         },

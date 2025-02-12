@@ -18,6 +18,9 @@ export class OancPositionComputer<T extends number> {
   constructor(private readonly oanc: Oanc<T>) {}
 
   public computePosition(): string | undefined {
+    if (!this.oanc.data) {
+      return;
+    }
     const features = this.oanc.data.features;
 
     for (const feature of features) {
@@ -39,7 +42,7 @@ export class OancPositionComputer<T extends number> {
             return feature.properties.idlin;
           case FeatureType.RunwayElement:
           case FeatureType.Stopway:
-            return feature.properties.idrwy.replace('.', '-');
+            return feature.properties.idrwy?.replace('.', '-');
           case FeatureType.BlastPad:
           case FeatureType.RunwayDisplacedArea:
             return feature.properties.idthr;
