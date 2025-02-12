@@ -695,6 +695,7 @@
         "Unlink": "Unlink Account",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unlimited": "Navigraph Unlimited",
           "Unknown": "Unknown"
         },
