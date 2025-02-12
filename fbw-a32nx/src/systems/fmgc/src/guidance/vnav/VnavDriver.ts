@@ -30,8 +30,6 @@ import {
   VerticalCheckpointReason,
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
-import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class VnavDriver implements GuidanceComponent {
