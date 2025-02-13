@@ -8,11 +8,11 @@ import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvioni
 import './MfdFmsDataWaypoint.scss';
 import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
-import { NavigationDatabaseService } from '@fmgc/index';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 interface MfdFmsDataWaypointProps extends AbstractMfdPageProps {}
 
@@ -36,22 +36,10 @@ export class MfdFmsDataWaypoint extends FmsPage<MfdFmsDataWaypointProps> {
   private readonly anyPilotStoredWaypoints = Subject.create<boolean>(false);
 
   protected onNewData(): void {
-    const pilotStoredWaypoints = this.props.fmcService.master?.getDataManager()?.getAllStoredWaypoints()!;
+    const pilotStoredWaypoints = this.props.fmcService.master?.getDataManager()?.getAllStoredWaypoints() ?? [];
 
     this.anyPilotStoredWaypoints.set(pilotStoredWaypoints.length > 0);
     this.pilotStoredWaypointsList.set(pilotStoredWaypoints);
-    this.pilotStoredWaypointNames.set(this.waypointNamesToString(pilotStoredWaypoints)!);
-  }
-
-  private waypointNamesToString(list: PilotWaypoint[]): string[] | undefined {
-    const waypointNameArray = [];
-    for (let i = 0; i < this.pilotStoredWaypointsList.length; i++) {
-      if (this.pilotStoredWaypointsList.get(1) === null) {
-        return [];
-      } else {
-        waypointNameArray[i] = list[i]?.waypoint.name?.toString;
-      }
-    }
   }
 
   private async loadWaypoint(ident: string | null) {
