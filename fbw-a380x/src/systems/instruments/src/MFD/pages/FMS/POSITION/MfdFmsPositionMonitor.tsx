@@ -5,18 +5,21 @@ import { FmsPage } from '../../common/FmsPage';
 import { Arinc429Register, coordinateToString, Fix } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Footer } from '../../common/Footer';
-import { RnpFormat, WaypointFormat } from '../../common/DataEntryFormats';
+import { FixFormat, RnpFormat } from '../../common/DataEntryFormats';
 import './MfdFmsPositionMonitor.scss';
 import { distanceTo } from 'msfs-geo';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import { FmsErrorType } from '@fmgc/FmsError';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { getEtaFromUtcOrPresent } from 'instruments/src/MFD/shared/utils';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { A32NX_Util } from '@shared/A32NX_Util';
 
 interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProps> {
+  private readonly cptSide = Subject.create(false);
+
   private readonly fmsRnp = Subject.create<number | null>(null);
 
   private readonly rnpEnteredByPilot = Subject.create(false);
@@ -75,27 +78,29 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly gpsPositionText = Subject.create('');
 
-  private monitorWaypoint: Fix | null = null;
-
-  private readonly waypointIdent = Subject.create('');
+  private monitorWaypoint = Subject.create<Fix | null>(null);
 
   private readonly bearingToWaypoint = Subject.create('');
 
   private readonly distanceToWaypoint = Subject.create('');
 
-  private readonly waypointEntered = Subject.create(false);
+  private readonly waypointEntered = this.monitorWaypoint.map((v) => v !== null);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const side = this.props.mfd.uiService.captOrFo;
-    this.onSideFms.set(side === 'CAPT' ? 'FMS1' : 'FMS2');
-    this.offSideFms.set(side === 'CAPT' ? 'FMS2' : 'FMS1');
+
+    const cptSide = side === 'CAPT';
+    this.cptSide.set(cptSide);
+    this.onSideFms.set(cptSide ? 'FMS1' : 'FMS2');
+    this.offSideFms.set(cptSide ? 'FMS2' : 'FMS1');
     const sub = this.props.bus.getSubscriber<ClockEvents>();
-    this.monitorWaypoint = this.props.mfd.positionMonitorFix;
-    if (this.monitorWaypoint) {
-      this.waypointIdent.set(this.monitorWaypoint.ident);
-      this.waypointEntered.set(true);
+
+    if (this.props.fmcService.master) {
+      this.monitorWaypoint = cptSide
+        ? this.props.fmcService.master.fmgc.data.positionMonitorFixLeft
+        : this.props.fmcService.master.fmgc.data.positionMonitorFixRight;
     }
     this.subs.push(
       sub
@@ -104,6 +109,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
         .handle((_t) => {
           this.onNewData();
         }),
+      this.waypointEntered,
+      this.positionFrozenLabel,
     );
   }
 
@@ -160,13 +167,13 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       this.gpsPositionText.set(coordinateToString(this.gpsCoordinates, false));
     }
 
-    if (this.monitorWaypoint && fmCoordinates) {
-      const distanceToWaypointNm = distanceTo(fmCoordinates, this.monitorWaypoint.location);
+    if (this.monitorWaypoint.get() && fmCoordinates) {
+      const distanceToWaypointNm = distanceTo(fmCoordinates, this.monitorWaypoint.get()!.location);
       const distDigits = distanceToWaypointNm > 9999 ? 0 : 1;
       this.distanceToWaypoint.set(distanceToWaypointNm.toFixed(distDigits).padStart(6));
       this.bearingToWaypoint.set(
         A32NX_Util.trueToMagnetic(
-          Avionics.Utils.computeGreatCircleHeading(fmCoordinates, this.monitorWaypoint.location),
+          Avionics.Utils.computeGreatCircleHeading(fmCoordinates, this.monitorWaypoint.get()!.location),
         )
           .toFixed(0)
           .padStart(3, '0'),
@@ -367,33 +374,23 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">BRG / DIST TO</span>
-                <InputField<string>
-                  dataEntryFormat={new WaypointFormat()}
-                  value={this.waypointIdent}
-                  dataHandlerDuringValidation={async (v) => {
+                <InputField<Fix, string>
+                  dataEntryFormat={new FixFormat()}
+                  readonlyValue={this.monitorWaypoint}
+                  onModified={async (v) => {
                     if (v) {
                       if (this.props.fmcService.master) {
-                        const wpt = await WaypointEntryUtils.getOrCreateWaypoint(
-                          this.props.fmcService.master,
-                          v,
-                          true,
-                          undefined,
-                        );
+                        const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, v, true);
                         if (!wpt) {
-                          this.props.fmcService.master.showFmsErrorMessage(FmsErrorType.NotInDatabase);
-                          return false;
+                          throw new FmsError(FmsErrorType.NotInDatabase);
                         }
-                        this.monitorWaypoint = wpt;
-                        this.waypointEntered.set(true);
+                        this.monitorWaypoint.set(wpt);
                       } else {
-                        return false;
+                        this.monitorWaypoint.set(null);
                       }
                     } else {
-                      this.waypointEntered.set(false);
-                      this.monitorWaypoint = null;
+                      this.monitorWaypoint.set(null);
                     }
-                    this.props.mfd.positionMonitorFix = this.monitorWaypoint;
-                    return true;
                   }}
                   enteredByPilot={this.waypointEntered}
                   canBeCleared={Subject.create(true)}
