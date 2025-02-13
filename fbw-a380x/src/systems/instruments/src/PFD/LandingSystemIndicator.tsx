@@ -666,7 +666,7 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly lsReminderVisible = MappedSubject.create(
     ([locPushed, approachModePushed, lsPushed]) => {
-      return (locPushed || approachModePushed) && !lsPushed; // TODO Check if LOC or G/S scales are invalid
+      return (locPushed || approachModePushed) && !lsPushed; // TODO Check if LOC or G/S scales are invalid (MMR words)
     },
     this.locPushed,
     this.approachModePushed,

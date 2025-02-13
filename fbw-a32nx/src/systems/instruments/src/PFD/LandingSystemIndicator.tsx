@@ -15,16 +15,13 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject, MathUtils, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
-import { FmgcFlightPhase } from '@shared/flightphase';
-import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
-import { FgBus } from './shared/FgBusProvider';
 
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
@@ -94,9 +91,6 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
             }}
             d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
           />
-        </g>
-        <g>
-          <LsReminderIndicator bus={this.props.bus} />
         </g>
         <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
           <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
@@ -744,67 +738,6 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       <text id="ILSMarkerText" class={this.classNames} x="98.339211" y="125.12898">
         {this.markerText}
       </text>
-    );
-  }
-}
-
-class LsReminderIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FcuBus & FgBus>();
-
-  private readonly glsMlsFlsOrLocVnavInstalled = Subject.create(false);
-
-  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
-
-  private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), FmgcFlightPhase.Preflight);
-
-  private readonly fmgcDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord2'));
-
-  private readonly fmgcDiscreteWord3 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord3'));
-
-  private readonly fmgcDiscreteWord4 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord4'));
-
-  private readonly fcuEisDiscreteWord2 = Arinc429ConsumerSubject.create(this.sub.on('fcuEisDiscreteWord2'));
-
-  private readonly locArmedOrActive = MappedSubject.create(
-    ([fmgcDiscreteWord2, fmgcDiscreteWord3]) =>
-      fmgcDiscreteWord2.bitValueOr(13, false) ||
-      fmgcDiscreteWord2.bitValueOr(14, false) ||
-      fmgcDiscreteWord3.bitValueOr(16, false),
-    this.fmgcDiscreteWord2,
-    this.fmgcDiscreteWord3,
-  );
-
-  private readonly landModeArmedOrActive = MappedSubject.create(
-    ([fmgcDiscreteWord3, fmgcDiscreteWord4]) =>
-      fmgcDiscreteWord4.bitValueOr(14, false) || fmgcDiscreteWord3.bitValueOr(20, false),
-    this.fmgcDiscreteWord3,
-    this.fmgcDiscreteWord4,
-  );
-
-  private readonly lsPushed = this.fcuEisDiscreteWord2.map((w) => w.bitValueOr(22, false));
-
-  private readonly lsReminderVisible = MappedSubject.create(
-    ([landModeArmedOrActive, locArmedOrActive, lsPushed]) => {
-      return (
-        (landModeArmedOrActive || locArmedOrActive) && !lsPushed // TODO Check if LOC or G/S scales are invalid
-      );
-    },
-    this.landModeArmedOrActive,
-    this.locArmedOrActive,
-    this.lsPushed,
-  );
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-  }
-
-  render(): VNode {
-    return (
-      <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.lsReminderVisible}>
-        <text class="FontLargest Amber EndAlign" x="112.80" y="124.8">
-          {this.glsMlsFlsOrLocVnavInstalled.map((v) => (v ? 'LS' : 'ILS'))}
-        </text>
-      </FlashOneHertz>
     );
   }
 }
