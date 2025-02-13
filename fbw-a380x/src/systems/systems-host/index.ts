@@ -24,6 +24,7 @@ import {
   ArincEventBus,
   BtvSimvarPublisher,
   FailuresConsumer,
+  MsfsFlightModelPublisher,
   PilotSeatPublisher,
   VhfComIndices,
 } from '@flybywiresim/fbw-sdk';
@@ -46,7 +47,6 @@ import {
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { A380Failure } from '@failures';
-import { InteractivePointsPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/InteractivePointsPublisher';
 
 CpiomAvailableSimvarPublisher;
 class SystemsHost extends BaseInstrument {
@@ -116,7 +116,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
 
-  private readonly interactivePointsPublisher = new InteractivePointsPublisher(this.bus);
+  private readonly interactivePointsPublisher = new MsfsFlightModelPublisher(this.bus);
 
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);

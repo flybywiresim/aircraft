@@ -29,6 +29,7 @@ import {
   Arinc429Word,
   FailuresConsumer,
   FrequencyMode,
+  MsfsFlightModelEvents,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicPulseNode,
@@ -61,7 +62,6 @@ import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/
 import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarningSystem/FwsSoundManager';
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
-import { InteractivePointEvents } from 'instruments/src/MsfsAvionicsCommon/providers/InteractivePointsPublisher';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -86,7 +86,7 @@ export enum FwcAuralWarning {
 
 export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
-    PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents & FuelSystemEvents & KeyEvents & InteractivePointEvents
+    PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents & FuelSystemEvents & KeyEvents & MsfsFlightModelEvents
   >();
 
   private subs: Subscription[] = [];
@@ -964,7 +964,7 @@ export class FwsCore {
 
   private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board'), 0);
 
-  private readonly refuelPanel = ConsumerSubject.create(this.sub.on('interactive_point_open_18'), 0);
+  private readonly refuelPanel = ConsumerSubject.create(this.sub.on('msfs_interactive_point_open_18'), 0);
 
   private readonly fuelingInitiated = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
 
@@ -1729,8 +1729,6 @@ export class FwsCore {
         true,
       ),
     );
-
-    SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
 
     const ecamMemoKeys = Object.keys(EcamMemos);
     Object.keys(this.memos.ewdToLdgMemos).forEach((key) => {
