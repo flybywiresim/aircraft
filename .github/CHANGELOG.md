@@ -159,6 +159,8 @@
 1. [A380X/OANS] Fix BTV fallback mode; Enable BTV fallback if ARPT NAV reset button is pulled - @flogross89 (floridude)
 1. [A380X/Flight Model] Flight model update incl stall & auto-rotate fix for FS2020 & 2024 - @donstim (donbikes) & @saschl (saschl)
 1. [EFB] Navigraph subscriptions other than Ultimate are now shown on the EFB to reduce confusion with "Unknown" - @tracernz (Mike)
+1. [A380X/FWS] Add RAT OUT, REFUEL PNL DOOR, HI ALT AIRPORT & REFUELING/DEFUELING memos - @BravoMike99 (bruno_pt99)
+1. [A380X/ND] Correct positioning of TCAS Messages and added TCAS STBY - @MrJigs7 (MrJigs)
 
 ## 0.12.0
 
@@ -279,6 +281,7 @@
 1. [FMS] Run vertical predictions without V-speeds - @BlueberryKing (BlueberryKing)
 1. [ELEC] Use ADIRU and LGCIU signals for speed and in flight determination - @Gurgel100 (Pascal)
 1. [FMS] Do not transmit bearing information to ND on manual legs - @BravoMike99 (bruno_pt99)
+1. [FMS] Remove forced turn on following leg after leg insertion - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 

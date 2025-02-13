@@ -35,7 +35,7 @@ import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/pow
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
 import { AtsuSystem } from 'systems-host/systems/atsu';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
-import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
+import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {
@@ -47,6 +47,7 @@ import {
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { A380Failure } from '@failures';
+import { InteractivePointsPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/InteractivePointsPublisher';
 import { EfisTawsBridge } from './systems/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
@@ -118,6 +119,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
 
+  private readonly interactivePointsPublisher = new InteractivePointsPublisher(this.bus);
+
   private readonly fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, 'L'); // FIXME figure out side dependency
   private readonly efisTawsBridgePublisher = new EfisTawsBridgePublisher(this.bus);
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this);
@@ -183,6 +186,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
+    this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
     this.backplane.addPublisher('FmsSymbolsPublisher', this.fmsSymbolsPublisher);
     this.backplane.addPublisher('EfisTawsBridgePublisher', this.efisTawsBridgePublisher);
 
