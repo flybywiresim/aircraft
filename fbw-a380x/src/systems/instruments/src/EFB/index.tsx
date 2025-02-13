@@ -58,6 +58,7 @@ render(
           registrationDecal: false, // TODO FIXME: Enable when dynamic registration decal is completed
           wheelChocks: false,
           cabinLighting: true,
+          oansPerformanceMode: true,
         },
         throttle: {
           numberOfAircraftThrottles: 4,

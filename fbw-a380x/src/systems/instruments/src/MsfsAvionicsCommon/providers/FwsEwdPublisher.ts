@@ -5,7 +5,7 @@
 export interface ChecklistState {
   id: string;
   procedureCompleted?: boolean;
-  procedureActivated?: boolean;
+  procedureActivated: boolean;
   itemsChecked: boolean[];
   itemsToShow: boolean[];
   itemsActive: boolean[];

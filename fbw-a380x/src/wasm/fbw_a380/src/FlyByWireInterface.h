@@ -358,6 +358,8 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFmGrossWeight;
 
+  std::unique_ptr<LocalVariable> idCgPercentMac;
+
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[3];
 
