@@ -370,7 +370,8 @@ export class DataManager {
   getAllStoredWaypoints(): PilotWaypoint[] {
     if (this.storedWaypoints === undefined) {
       return [];
+    } else {
+      return this.storedWaypoints;
     }
-    return this.storedWaypoints;
   }
 }

@@ -10,6 +10,7 @@ export enum FmsErrorType {
   NotInDatabase,
   NotYetImplemented,
   FormatError,
+  FplnElementRetained,
   EntryOutOfRange,
   ListOf99InUse,
   AwyWptMismatch,
