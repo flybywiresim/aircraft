@@ -40,6 +40,17 @@ enum class lateral_efcs_law
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
+#define DEFINED_TYPEDEF_FOR_base_arinc_429_
+
+struct base_arinc_429
+{
+  uint32_T SSM;
+  real32_T Data;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -131,24 +142,14 @@ struct base_elac_analog_inputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
-#define DEFINED_TYPEDEF_FOR_base_arinc_429_
-
-struct base_arinc_429
-{
-  uint32_T SSM;
-  real32_T Data;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_adr_bus_
 #define DEFINED_TYPEDEF_FOR_base_adr_bus_
 
 struct base_adr_bus
 {
   base_arinc_429 altitude_standard_ft;
-  base_arinc_429 altitude_corrected_ft;
+  base_arinc_429 altitude_corrected_1_ft;
+  base_arinc_429 altitude_corrected_2_ft;
   base_arinc_429 mach;
   base_arinc_429 airspeed_computed_kn;
   base_arinc_429 airspeed_true_kn;

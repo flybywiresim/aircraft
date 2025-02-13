@@ -25,6 +25,21 @@ struct base_arinc_429
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+
+struct base_fac_discrete_outputs
+{
+  boolean_T fac_healthy;
+  boolean_T yaw_damper_engaged;
+  boolean_T rudder_trim_engaged;
+  boolean_T rudder_travel_lim_engaged;
+  boolean_T rudder_travel_lim_emergency_reset;
+  boolean_T yaw_damper_avail_for_norm_law;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_fac_bus_
 #define DEFINED_TYPEDEF_FOR_base_fac_bus_
 
@@ -70,21 +85,6 @@ struct base_fac_analog_outputs
   real_T yaw_damper_order_deg;
   real_T rudder_trim_order_deg;
   real_T rudder_travel_limit_order_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-
-struct base_fac_discrete_outputs
-{
-  boolean_T fac_healthy;
-  boolean_T yaw_damper_engaged;
-  boolean_T rudder_trim_engaged;
-  boolean_T rudder_travel_lim_engaged;
-  boolean_T rudder_travel_lim_emergency_reset;
-  boolean_T yaw_damper_avail_for_norm_law;
 };
 
 #endif
@@ -164,7 +164,8 @@ struct base_fac_analog_inputs
 struct base_adr_bus
 {
   base_arinc_429 altitude_standard_ft;
-  base_arinc_429 altitude_corrected_ft;
+  base_arinc_429 altitude_corrected_1_ft;
+  base_arinc_429 altitude_corrected_2_ft;
   base_arinc_429 mach;
   base_arinc_429 airspeed_computed_kn;
   base_arinc_429 airspeed_true_kn;
