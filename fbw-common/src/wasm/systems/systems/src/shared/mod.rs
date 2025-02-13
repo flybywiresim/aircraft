@@ -150,14 +150,14 @@ pub trait ReverserPosition {
     fn reverser_position(&self) -> Ratio;
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 #[repr(usize)]
 pub enum LgciuId {
     Lgciu1 = 0,
     Lgciu2 = 1,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProximityDetectorId {
     UplockGearNose1,
     UplockGearNose2,
@@ -186,7 +186,7 @@ pub enum ProximityDetectorId {
     DownlockDoorRight2,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum GearActuatorId {
     GearNose,
     GearDoorNose,
@@ -276,7 +276,7 @@ pub trait SectionPressure {
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum HydraulicColor {
     Green,
     Blue,
@@ -292,7 +292,7 @@ impl Display for HydraulicColor {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AirbusEngineDrivenPumpId {
     Edp1a,
     Edp1b,
@@ -322,7 +322,7 @@ impl Display for AirbusEngineDrivenPumpId {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AirbusElectricPumpId {
     GreenA,
     GreenB,
@@ -1062,7 +1062,7 @@ impl Resolution for f64 {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub enum FireDetectionZone {
     Engine(usize),
     Apu,
@@ -1079,7 +1079,7 @@ impl Display for FireDetectionZone {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub enum FireDetectionLoopID {
     A,
     B,
