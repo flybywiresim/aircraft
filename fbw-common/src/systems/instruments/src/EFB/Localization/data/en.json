@@ -759,7 +759,8 @@
       "TwelveHours": "12h",
       "TwentyFourHours": "24h",
       "Utc": "UTC",
-      "UtcAndLocal": "UTC and Local"
+      "UtcAndLocal": "UTC and Local",
+      "DisablePushbackConflictWarning": "Disable pushback system conflict warning"
     }
   },
   "StatusBar": {
