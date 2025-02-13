@@ -16,7 +16,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 
 import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
 
@@ -75,6 +75,8 @@ export class MfdComponent
   get uiService() {
     return this.#uiService;
   }
+
+  public positionMonitorFix: Fix | null = null;
 
   public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
