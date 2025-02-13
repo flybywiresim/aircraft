@@ -1,8 +1,5 @@
 {
-  "index": "./index.tsx",
-  "isInteractive": true,
-  "dimensions": {
-    "width": 1024,
-    "height": 768
-  }
+  "index": "./instrument.tsx",
+  "name": "OIT",
+  "isInteractive": true
 }

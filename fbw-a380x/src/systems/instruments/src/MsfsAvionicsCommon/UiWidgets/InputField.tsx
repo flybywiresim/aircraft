@@ -15,7 +15,11 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { InteractionMode } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+
+export enum InteractionMode {
+  Touchscreen,
+  Kccu,
+}
 
 interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T, U>;
@@ -54,6 +58,8 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   /** Additional class */
   class?: string;
 
+  /** Used for OIT, where placeholders are [] for mandatory fields */
+  overrideEmptyMandatoryPlaceholder?: string;
   // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
 }
 
@@ -327,7 +333,8 @@ export class InputField<
     this.trailingUnit.set(unitTrailing ?? '');
 
     if (this.props.mandatory?.get() && !this.props.inactive?.get() && !this.props.disabled?.get()) {
-      this.textInputRef.instance.innerHTML = formatted?.replace(/-/gi, '\u25AF') ?? '';
+      this.textInputRef.instance.innerHTML =
+        formatted?.replace(/-/gi, this.props.overrideEmptyMandatoryPlaceholder ?? '\u25AF') ?? '';
     } else {
       this.textInputRef.instance.innerText = formatted ?? '';
     }
