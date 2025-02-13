@@ -137,10 +137,10 @@ exec(localazyCommand,
             console.warn(`error: ${error.message}`);
             process.exit(1);
         }
-        if (stderr) {
-            console.warn(`stderr: ${stderr}`);
-            process.exit(1);
-        }
+        // if (stderr) {
+        //     console.warn(`stderr: ${stderr}`);
+        //     process.exit(1);
+        // }
 
         // Localazy outputs the file names to stdout, so we can parse them from there.
         stdout.split('\n').forEach((item) => {
