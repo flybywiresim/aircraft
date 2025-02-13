@@ -34,6 +34,10 @@ export interface EfisTawsBridgeSimVars {
 
   activeLateralMode: number;
   armedLateralMode: number;
+
+  trueTrack1Raw: number;
+  trueTrack2Raw: number;
+  trueTrack3Raw: number;
 }
 
 export class EfisTawsBridgePublisher extends SimVarPublisher<EfisTawsBridgeSimVars> {
@@ -69,6 +73,10 @@ export class EfisTawsBridgePublisher extends SimVarPublisher<EfisTawsBridgeSimVa
 
         ['activeLateralMode', { name: 'L:A32NX_FMA_LATERAL_MODE', type: SimVarValueType.Number }],
         ['armedLateralMode', { name: 'L:A32NX_FMA_LATERAL_ARMED', type: SimVarValueType.Number }],
+
+        ['trueTrack1Raw', { name: 'L:A32NX_ADIRS_IR_1_TRUE_TRACK', type: SimVarValueType.Number }],
+        ['trueTrack2Raw', { name: 'L:A32NX_ADIRS_IR_2_TRUE_TRACK', type: SimVarValueType.Number }],
+        ['trueTrack3Raw', { name: 'L:A32NX_ADIRS_IR_3_TRUE_TRACK', type: SimVarValueType.Number }],
       ]),
       bus,
     );

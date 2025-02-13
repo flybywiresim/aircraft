@@ -4,17 +4,16 @@
 import { EfisSide } from '../../../..';
 import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { ElevationSamplePathDto, TawsAircraftStatusDataDto } from '../Taws/taws';
-import { ClientState } from './ClientState';
 
 /**
  * Class responsible for retrieving data related to company routes from SimBridge
  */
 export class TawsData {
   /**
-   * Used to send aircraft status data (EFIS, ...) to the TAWS
+   * Used to send aircraft status data (EFIS, ...) to the TAWS.
    */
   public static async postAircraftStatusData(data: TawsAircraftStatusDataDto): Promise<boolean> {
-    if (ClientState.getInstance().isConnected() && data) {
+    if (data) {
       const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/terrain/aircraftStatusData`, {
         method: 'POST',
         headers: {
@@ -26,13 +25,12 @@ export class TawsData {
       if (response.ok) {
         return true;
       }
-
-      return false;
     }
+    return false;
   }
 
   public static async postVerticalDisplayPath(side: EfisSide, data: ElevationSamplePathDto): Promise<boolean> {
-    if (ClientState.getInstance().isConnected() && data) {
+    if (data) {
       const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/terrain/verticalDisplayPath?side=${side}`, {
         method: 'POST',
         headers: {
@@ -44,8 +42,7 @@ export class TawsData {
       if (response.ok) {
         return true;
       }
-
-      return false;
     }
+    return false;
   }
 }

@@ -4,17 +4,14 @@
   ArincEventBus,
   EfisNdMode,
   EfisSide,
-  ElevationSamplePathDto,
   MathUtils,
   NdSymbol,
   NdSymbolTypeFlags,
-  PathVectorType,
-  TawsData,
   VerticalPathCheckpoint,
-  WaypointDto,
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
 import {
+  ClockEvents,
   ComponentProps,
   ConsumerSubject,
   DisplayComponent,
@@ -61,7 +58,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       DmcLogicEvents &
       SimplaneValues &
       FmsSymbolsData &
-      NDControlEvents
+      NDControlEvents &
+      ClockEvents
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
@@ -95,25 +93,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.fmsVerticalPath,
     this.vdRange,
   );
-
-  private readonly terrVdPathData = MappedSubject.create(([fmsPath]) => {
-    const waypoints = fmsPath
-      .filter((p) => p.type !== PathVectorType.DebugPoint)
-      .map((p) => {
-        const waypoint: WaypointDto = {
-          latitude: p.startPoint.lat,
-          longitude: p.startPoint.long,
-        };
-        return waypoint;
-      });
-
-    const data: ElevationSamplePathDto = {
-      pathWidth: 1,
-      trackChangesSignificantlyAtDistance: 10,
-      waypoints: waypoints,
-    };
-    return data;
-  }, this.fmsLateralPath);
 
   private readonly mapRecomputing = ConsumerSubject.create(this.sub.on('set_map_recomputing'), false);
 
@@ -326,7 +305,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.vdRange,
       this.fmsVerticalPath,
       this.displayedFmsPath,
-      this.terrVdPathData,
       this.mapRecomputing,
       this.visible,
       this.rangeChangeFlagVisibility,
@@ -379,7 +357,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.subscriptions.push(
       this.vdRange.sub(() => this.calculateAndTransmitEndOfVdMarker()),
       this.fmsLateralPath.sub(() => this.calculateAndTransmitEndOfVdMarker()),
-      this.terrVdPathData.sub((data) => TawsData.postVerticalDisplayPath(this.props.side, data)),
     );
 
     this.calculateAndTransmitEndOfVdMarker();

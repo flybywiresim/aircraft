@@ -3,7 +3,9 @@ export interface TawsEfisDataDto {
 
   arcMode: boolean;
 
-  terrSelected: boolean;
+  terrOnNd: boolean;
+
+  terrOnVd: boolean;
 
   efisMode: number;
 

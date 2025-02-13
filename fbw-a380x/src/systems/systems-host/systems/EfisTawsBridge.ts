@@ -6,16 +6,22 @@ import {
   Arinc429LocalVarConsumerSubject,
   Arinc429WordData,
   ArincEventBus,
+  ClientState,
   EfisNdMode,
   EfisTawsBridgeSimVars,
+  ElevationSamplePathDto,
+  PathVectorType,
   TawsAircraftStatusDataDto,
   TawsData,
   TawsEfisDataDto,
   UpdateThrottler,
+  WaypointDto,
 } from '@flybywiresim/fbw-sdk';
-import { ConsumerSubject, Instrument, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
+import { pathVectorLength } from '@fmgc/guidance/lnav/PathVector';
+import { ClockEvents, ConsumerSubject, Instrument, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
+import { bearingTo } from 'msfs-geo';
 
 /**
  * Utility class to send data to the TAWS from the EFIS CP
@@ -23,9 +29,11 @@ import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 export class EfisTawsBridge implements Instrument {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.bus.getSubscriber<EfisTawsBridgeSimVars & FmsSymbolsData>();
+  private readonly sub = this.bus.getSubscriber<EfisTawsBridgeSimVars & FmsSymbolsData & ClockEvents>();
 
-  private readonly updateThrottler = new UpdateThrottler(100);
+  private readonly updateThrottler = new UpdateThrottler(2_000);
+
+  private readonly simBridgeClient = ClientState.getInstance();
 
   private coordinateEqualityWithPrecisionFunc = (a: Arinc429WordData, b: Arinc429WordData) => {
     return a.ssm === b.ssm && a.value.toPrecision(4) === b.value.toPrecision(4);
@@ -109,9 +117,10 @@ export class EfisTawsBridge implements Instrument {
   private readonly efisDataCapt = MappedSubject.create(
     ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper]) => {
       return {
-        ndRange: a380EfisRangeSettings[ndRange],
+        ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrSelected: ndMode !== EfisNdMode.PLAN && terrActive,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive,
+        terrOnVd: ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
@@ -126,9 +135,10 @@ export class EfisTawsBridge implements Instrument {
   private readonly efisDataFO = MappedSubject.create(
     ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper]) => {
       return {
-        ndRange: a380EfisRangeSettings[ndRange],
+        ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrSelected: ndMode !== EfisNdMode.PLAN && terrActive,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive,
+        terrOnVd: ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
@@ -204,7 +214,79 @@ export class EfisTawsBridge implements Instrument {
 
   private aircraftStatusShouldBeUpdated = true;
 
+  // FIXME receive path over complete distance
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
+
+  private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueTrack1Raw'));
+  private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueTrack2Raw'));
+  private readonly track3Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueTrack3Raw'));
+  private readonly validTrack = MappedSubject.create(
+    ([t1, t2, t3]) => {
+      if (t1.isNormalOperation()) {
+        return t1.value;
+      } else if (t2.isNormalOperation()) {
+        return t2.value;
+      } else if (t3.isNormalOperation()) {
+        return t3.value;
+      }
+      return null;
+    },
+    this.track1Word,
+    this.track2Word,
+    this.track3Word,
+  );
+
+  /** If track from one segment differs more than 3° from previous track, paint grey area */
+  private readonly trackChangeDistance = MappedSubject.create(
+    ([path, track]) => {
+      if (track === null || path.length === 0) {
+        return -1;
+      }
+
+      let currentTrack = track;
+      let traveledDistance = 0;
+      for (const vector of path) {
+        if (vector.type === PathVectorType.DebugPoint) {
+          continue;
+        }
+        const newTrack = bearingTo(vector.startPoint, vector.endPoint);
+
+        if (newTrack - currentTrack > 3) {
+          return traveledDistance;
+        }
+        currentTrack = newTrack;
+        traveledDistance += pathVectorLength(vector);
+      }
+      return -1;
+    },
+    this.fmsLateralPath,
+    this.validTrack,
+  );
+
+  private readonly terrVdPathData = MappedSubject.create(
+    ([fmsPath, trackChangeDistance]) => {
+      const waypoints = fmsPath
+        .filter((p) => p.type !== PathVectorType.DebugPoint)
+        .map((p) => {
+          const waypoint: WaypointDto = {
+            latitude: p.startPoint.lat,
+            longitude: p.startPoint.long,
+          };
+          return waypoint;
+        });
+
+      const data: ElevationSamplePathDto = {
+        pathWidth: 1,
+        trackChangesSignificantlyAtDistance: trackChangeDistance,
+        waypoints: waypoints,
+      };
+      return data;
+    },
+    this.fmsLateralPath,
+    this.trackChangeDistance,
+  );
+
+  private verticalPathShouldBeUpdated = true;
 
   constructor(
     private readonly bus: ArincEventBus,
@@ -215,18 +297,36 @@ export class EfisTawsBridge implements Instrument {
     this.aircraftStatusData.sub(() => {
       this.aircraftStatusShouldBeUpdated = true;
     }, true);
+    this.terrVdPathData.sub(() => {
+      this.verticalPathShouldBeUpdated = true;
+    }, true);
+    this.sub
+      .on('realTime')
+      .atFrequency(0.1)
+      .handle(() => {
+        this.aircraftStatusShouldBeUpdated = true;
+        this.verticalPathShouldBeUpdated = true;
+      });
   }
 
-  public onUpdate(): void {
+  public async onUpdate() {
     const deltaTime = this.updateThrottler.canUpdate(this.instrument.deltaTime);
 
     if (deltaTime < 0) {
       return;
     }
 
-    if (this.aircraftStatusShouldBeUpdated) {
-      TawsData.postAircraftStatusData(this.aircraftStatusData.get());
-      this.aircraftStatusShouldBeUpdated = false;
+    if (this.aircraftStatusShouldBeUpdated && this.simBridgeClient.isConnected()) {
+      const success = await TawsData.postAircraftStatusData(this.aircraftStatusData.get());
+      this.aircraftStatusShouldBeUpdated = !success;
+    }
+
+    if (this.verticalPathShouldBeUpdated && this.simBridgeClient.isConnected()) {
+      const success = Promise.all([
+        TawsData.postVerticalDisplayPath('L', this.terrVdPathData.get()),
+        TawsData.postVerticalDisplayPath('R', this.terrVdPathData.get()),
+      ]);
+      this.verticalPathShouldBeUpdated = !success;
     }
   }
 }

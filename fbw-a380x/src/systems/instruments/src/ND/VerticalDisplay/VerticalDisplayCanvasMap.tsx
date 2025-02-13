@@ -1,11 +1,9 @@
 ﻿import {
-  Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
   Arinc429WordData,
   ArincEventBus,
   MathUtils,
   NdSymbolTypeFlags,
-  PathVectorType,
   VerticalPathCheckpoint,
 } from '@flybywiresim/fbw-sdk';
 import {
@@ -35,7 +33,6 @@ import { VerticalDisplayRunwayLayer } from 'instruments/src/ND/VerticalDisplay/V
 import { VdSimvars } from '../VdSimvarPublisher';
 import { VerticalMode } from '@shared/autopilot';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
-import { pathVectorLength } from '@fmgc/guidance/lnav/PathVector';
 import { GenericFmsEvents } from '../../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFmsEvents';
 import { GenericFcuEvents } from '@flybywiresim/navigation-display';
 
@@ -96,35 +93,6 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
   private readonly runwayLayer = new VerticalDisplayRunwayLayer();
 
   private readonly pwpLayer = new VdPseudoWaypointLayer();
-
-  private readonly trackWord = Arinc429ConsumerSubject.create(this.sub.on('track'));
-
-  /** If track from one segment differs more than 3° from previous track, paint grey area */
-  private readonly greyAreaStartsAtX = MappedSubject.create(
-    ([path, track]) => {
-      let currentTrack = track.value;
-      let traveledDistance = 0;
-      for (const vector of path) {
-        if (vector.type === PathVectorType.DebugPoint) {
-          continue;
-        }
-        const newTrack = bearingTo(vector.startPoint, vector.endPoint);
-
-        if (newTrack - currentTrack > 3) {
-          return VerticalDisplayCanvasMap.distanceToX(
-            traveledDistance,
-            this.props.vdRange.get(),
-            this.offsetDistance.get(),
-          );
-        }
-        currentTrack = newTrack;
-        traveledDistance += pathVectorLength(vector);
-      }
-      return VERTICAL_DISPLAY_CANVAS_WIDTH;
-    },
-    this.fmsLateralPath,
-    this.trackWord,
-  );
 
   private handlePathFrame() {
     const canvas = this.canvasRef.instance;
