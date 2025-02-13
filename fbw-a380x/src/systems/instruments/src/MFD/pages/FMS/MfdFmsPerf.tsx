@@ -289,6 +289,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     true,
   ]);
 
+  private readonly speedConstraintSpeed = Subject.create<number | null>(null);
+
+  private readonly speedConstraintAltitude = Subject.create<number | null>(null);
+
+  private readonly speedConstraintReason = this.speedConstraintAltitude.map((v) => (v ? (v / 100).toFixed(0) : null));
+
   // CLB page subjects, refs and methods
   private clbNoiseFieldsRefs = [
     FSComponent.createRef<HTMLDivElement>(),
@@ -692,6 +698,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     } else {
       this.apprVerticalDeviation.set('+-----');
     }
+
+    const speedLimit = this.props.fmcService.master?.fmgc.getClimbSpeedLimit();
+    if (speedLimit) {
+      this.speedConstraintSpeed.set(speedLimit.speed);
+      this.speedConstraintAltitude.set(speedLimit.underAltitude);
+    }
   }
 
   public onAfterRender(node: VNode): void {
@@ -1079,13 +1091,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
 
     this.subs.push(
+      this.speedConstraintReason,
       this.climbPreSelSpeedGreen,
       this.climbPreSelManagedSpeedGreen,
       this.crzPreSelManagedGreenLine1,
       this.crzPreSelManagedGreenLine2,
       this.desTableModeLine1Green,
       this.desTableModeLine2Green,
-
       this.flightPhaseInFlight,
       this.toPageInactive,
       this.clbPageInactive,
@@ -1986,13 +1998,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       style="grid-row-start: span 3; display: flex; justify-content: flex-start; align-items: center;"
                     >
                       <div class="mfd-label-value-container">
-                        <span class="mfd-value"></span>
+                        <span class="mfd-value">{this.speedConstraintSpeed}</span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <span class="mfd-value">/</span>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                        <span class="mfd-value"></span>
+                        <span class="mfd-value">{this.speedConstraintReason}</span>
                       </div>
                     </div>
                     <div ref={this.clbNoiseEndInputRef}>
