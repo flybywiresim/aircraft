@@ -1,3 +1,11 @@
+#ifdef A380X
+#define VD_ALWAYS_ACTIVE 1
+#endif
+
+#ifndef A380X
+#define VD_ALWAYS_ACTIVE 0
+#endif
+
 #include "collection.h"
 
 using namespace navigationdisplay;
@@ -34,10 +42,10 @@ Collection::Collection(simconnect::Connection& connection)
     this->_egpwcData.presentLongitude =
         types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcPresentLong>(), types::degree);
     this->_egpwcData.altitude = types::Arinc429Word<types::Length>::fromSimVar(this->_aircraftStatus->value<EgpwcAltitude>(), types::feet);
-    this->_egpwcData.heading = types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcHeading>(), types::degree);
+    this->_egpwcData.heading  = types::Arinc429Word<types::Angle>::fromSimVar(this->_aircraftStatus->value<EgpwcHeading>(), types::degree);
     this->_egpwcData.verticalSpeed =
         types::Arinc429Word<types::Velocity>::fromSimVar(this->_aircraftStatus->value<EgpwcVerticalSpeed>(), types::ftpmin);
-    this->_egpwcData.gearIsDown = static_cast<std::uint8_t>(this->_aircraftStatus->value<EgpwcGearIsDown>()) != 0;
+    this->_egpwcData.gearIsDown            = static_cast<std::uint8_t>(this->_aircraftStatus->value<EgpwcGearIsDown>()) != 0;
     this->_egpwcData.terrOnNdRenderingMode = static_cast<std::uint8_t>(this->_aircraftStatus->value<EgpwcTerrOnNdRenderingMode>());
 
     this->_sendAircraftStatus = true;
@@ -47,19 +55,21 @@ Collection::Collection(simconnect::Connection& connection)
                                                  EfisNdRightMode, EgpwcTerrOnNdRightActive, AcEssBus, Ac2Bus>();
   this->_ndConfiguration->setUpdateCycleTime(200 * types::millisecond);
   this->_ndConfiguration->setOnChangeCallback([=]() {
-    this->_configurationLeft.range = static_cast<float>(this->_ndConfiguration->value<EgpwcNdLeftRange>()) * types::nauticmile;
-    this->_configurationLeft.mode = static_cast<std::uint8_t>(this->_ndConfiguration->value<EfisNdLeftMode>());
-    this->_configurationLeft.terrainActive = static_cast<std::uint8_t>(this->_ndConfiguration->value<EgpwcTerrOnNdLeftActive>()) != 0;
-    this->_configurationLeft.powered = static_cast<std::uint8_t>(this->_ndConfiguration->value<AcEssBus>()) != 0;
+    this->_configurationLeft.range    = static_cast<float>(this->_ndConfiguration->value<EgpwcNdLeftRange>()) * types::nauticmile;
+    this->_configurationLeft.mode     = static_cast<std::uint8_t>(this->_ndConfiguration->value<EfisNdLeftMode>());
+    this->_configurationLeft.terrOnNd = static_cast<std::uint8_t>(this->_ndConfiguration->value<EgpwcTerrOnNdLeftActive>()) != 0;
+    this->_configurationLeft.terrOnVd = VD_ALWAYS_ACTIVE == 1;
+    this->_configurationLeft.powered  = static_cast<std::uint8_t>(this->_ndConfiguration->value<AcEssBus>()) != 0;
 
-    this->_configurationRight.range = static_cast<float>(this->_ndConfiguration->value<EgpwcNdRightRange>()) * types::nauticmile;
-    this->_configurationRight.mode = static_cast<std::uint8_t>(this->_ndConfiguration->value<EfisNdRightMode>());
-    this->_configurationRight.terrainActive = static_cast<std::uint8_t>(this->_ndConfiguration->value<EgpwcTerrOnNdRightActive>()) != 0;
-    this->_configurationRight.powered = static_cast<std::uint8_t>(this->_ndConfiguration->value<Ac2Bus>()) != 0;
+    this->_configurationRight.range    = static_cast<float>(this->_ndConfiguration->value<EgpwcNdRightRange>()) * types::nauticmile;
+    this->_configurationRight.mode     = static_cast<std::uint8_t>(this->_ndConfiguration->value<EfisNdRightMode>());
+    this->_configurationRight.terrOnNd = static_cast<std::uint8_t>(this->_ndConfiguration->value<EgpwcTerrOnNdRightActive>()) != 0;
+    this->_configurationRight.terrOnVd = VD_ALWAYS_ACTIVE == 1;
+    this->_configurationRight.powered  = static_cast<std::uint8_t>(this->_ndConfiguration->value<Ac2Bus>()) != 0;
 
-    this->_reconfigureDisplayLeft = true;
+    this->_reconfigureDisplayLeft  = true;
     this->_reconfigureDisplayRight = true;
-    this->_sendAircraftStatus = true;
+    this->_sendAircraftStatus      = true;
   });
 
   this->_simulatorData = connection.simObject<types::SimulatorData>();
@@ -70,17 +80,17 @@ Collection::Collection(simconnect::Connection& connection)
   this->_simulatorData->defineObject();
   this->_simulatorData->requestData(SIMCONNECT_PERIOD_VISUAL_FRAME);
   this->_simulatorData->setOnChangeCallback([=]() {
-    this->_configurationLeft.potentiometer = static_cast<float>(this->_simulatorData->data().potentiometerLeft);
+    this->_configurationLeft.potentiometer  = static_cast<float>(this->_simulatorData->data().potentiometerLeft);
     this->_configurationRight.potentiometer = static_cast<float>(this->_simulatorData->data().potentiometerRight);
-    this->_reconfigureDisplayLeft = true;
-    this->_reconfigureDisplayRight = true;
+    this->_reconfigureDisplayLeft           = true;
+    this->_reconfigureDisplayRight          = true;
 
-    types::Angle latitude = static_cast<float>(this->_simulatorData->data().latitude) * types::degree;
+    types::Angle latitude  = static_cast<float>(this->_simulatorData->data().latitude) * types::degree;
     types::Angle longitude = static_cast<float>(this->_simulatorData->data().longitude) * types::degree;
     if (latitude != this->_groundTruth.latitude || longitude != this->_groundTruth.longitude) {
-      this->_groundTruth.latitude = latitude;
+      this->_groundTruth.latitude  = latitude;
       this->_groundTruth.longitude = longitude;
-      this->_sendAircraftStatus = true;
+      this->_sendAircraftStatus    = true;
     }
   });
 }
@@ -116,20 +126,20 @@ void Collection::updateDisplay(FsContext context) {
     this->_simconnectAircraftStatus->data().adiruValid = this->_egpwcData.presentLatitude.isNo() &&
                                                          this->_egpwcData.presentLongitude.isNo() && this->_egpwcData.altitude.isNo() &&
                                                          this->_egpwcData.heading.isNo() && this->_egpwcData.verticalSpeed.isNo();
-    this->_simconnectAircraftStatus->data().latitude = this->_egpwcData.presentLatitude.value().convert(types::degree);
+    this->_simconnectAircraftStatus->data().latitude  = this->_egpwcData.presentLatitude.value().convert(types::degree);
     this->_simconnectAircraftStatus->data().longitude = this->_egpwcData.presentLongitude.value().convert(types::degree);
-    this->_simconnectAircraftStatus->data().altitude = static_cast<std::int32_t>(this->_egpwcData.altitude.value().convert(types::feet));
-    this->_simconnectAircraftStatus->data().heading = static_cast<std::int16_t>(this->_egpwcData.heading.value().convert(types::degree));
+    this->_simconnectAircraftStatus->data().altitude  = static_cast<std::int32_t>(this->_egpwcData.altitude.value().convert(types::feet));
+    this->_simconnectAircraftStatus->data().heading   = static_cast<std::int16_t>(this->_egpwcData.heading.value().convert(types::degree));
     this->_simconnectAircraftStatus->data().verticalSpeed =
         static_cast<std::int16_t>(this->_egpwcData.verticalSpeed.value().convert(types::ftpmin));
     this->_simconnectAircraftStatus->data().gearIsDown = static_cast<std::uint8_t>(this->_egpwcData.gearIsDown);
 
     this->_simconnectAircraftStatus->data().destinationValid =
         this->_egpwcData.destinationLatitude.isNo() && this->_egpwcData.destinationLongitude.isNo();
-    this->_simconnectAircraftStatus->data().destinationLatitude = this->_egpwcData.destinationLatitude.value().convert(types::degree);
+    this->_simconnectAircraftStatus->data().destinationLatitude  = this->_egpwcData.destinationLatitude.value().convert(types::degree);
     this->_simconnectAircraftStatus->data().destinationLongitude = this->_egpwcData.destinationLongitude.value().convert(types::degree);
 
-    bool arcMode = this->_configurationLeft.mode == NavigationDisplayArcModeId;
+    bool arcMode        = this->_configurationLeft.mode == NavigationDisplayArcModeId;
     bool terrainMapMode = this->_configurationLeft.mode == NavigationDisplayRoseLsModeId ||
                           this->_configurationLeft.mode == NavigationDisplayRoseVorModeId ||
                           this->_configurationLeft.mode == NavigationDisplayRoseNavModeId || arcMode;
@@ -137,10 +147,10 @@ void Collection::updateDisplay(FsContext context) {
         static_cast<std::uint16_t>(this->_configurationLeft.range.convert(types::nauticmile));
     this->_simconnectAircraftStatus->data().ndArcModeCapt = this->_configurationLeft.mode == NavigationDisplayArcModeId;
     this->_simconnectAircraftStatus->data().ndTerrainOnNdActiveCapt =
-        static_cast<std::uint8_t>(this->_configurationLeft.terrainActive && terrainMapMode);
+        static_cast<std::uint8_t>((this->_configurationLeft.terrOnNd || this->_configurationLeft.terrOnVd) && terrainMapMode);
     this->_simconnectAircraftStatus->data().efisModeCapt = this->_configurationLeft.mode;
 
-    arcMode = this->_configurationRight.mode == NavigationDisplayArcModeId;
+    arcMode        = this->_configurationRight.mode == NavigationDisplayArcModeId;
     terrainMapMode = this->_configurationRight.mode == NavigationDisplayRoseLsModeId ||
                      this->_configurationRight.mode == NavigationDisplayRoseVorModeId ||
                      this->_configurationRight.mode == NavigationDisplayRoseNavModeId || arcMode;
@@ -148,16 +158,16 @@ void Collection::updateDisplay(FsContext context) {
         static_cast<std::uint16_t>(this->_configurationRight.range.convert(types::nauticmile));
     this->_simconnectAircraftStatus->data().ndArcModeFO = this->_configurationRight.mode == NavigationDisplayArcModeId;
     this->_simconnectAircraftStatus->data().ndTerrainOnNdActiveFO =
-        static_cast<std::uint8_t>(this->_configurationRight.terrainActive && terrainMapMode);
+        static_cast<std::uint8_t>((this->_configurationRight.terrOnNd || this->_configurationRight.terrOnVd) && terrainMapMode);
     this->_simconnectAircraftStatus->data().efisModeFO = this->_configurationRight.mode;
 
     this->_simconnectAircraftStatus->data().ndTerrainOnNdRenderingMode = this->_egpwcData.terrOnNdRenderingMode;
-    this->_simconnectAircraftStatus->data().groundTruthLatitude = this->_groundTruth.latitude.convert(types::degree);
-    this->_simconnectAircraftStatus->data().groundTruthLongitude = this->_groundTruth.longitude.convert(types::degree);
+    this->_simconnectAircraftStatus->data().groundTruthLatitude        = this->_groundTruth.latitude.convert(types::degree);
+    this->_simconnectAircraftStatus->data().groundTruthLongitude       = this->_groundTruth.longitude.convert(types::degree);
 
     this->_simconnectAircraftStatus->setArea();
     this->_lastAircraftStatusTransmission = now;
-    this->_sendAircraftStatus = false;
+    this->_sendAircraftStatus             = false;
   }
 
   // update the display
