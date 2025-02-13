@@ -366,4 +366,12 @@ export class DataManager {
   getStoredWaypointsByIdent(ident: string): PilotWaypoint[] {
     return this.storedWaypoints.filter((wp) => wp && wp.waypoint.ident === ident);
   }
+
+  getAllStoredWaypoints(): PilotWaypoint[] {
+    if (this.storedWaypoints === undefined) {
+      return [];
+    } else {
+      return this.storedWaypoints;
+    }
+  }
 }
