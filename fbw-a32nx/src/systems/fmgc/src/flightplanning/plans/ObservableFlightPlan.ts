@@ -66,9 +66,11 @@ export class ObservableFlightPlan {
     const equalityFunc = (a: FixInfoData | null, b: FixInfoData | null): boolean => {
       if ((a === null) !== (b === null)) {
         return false;
+      } else if (a === null && b === null) {
+        return true;
       }
 
-      if (a?.fix.databaseId !== b?.fix.databaseId) {
+      if (a.fix.databaseId !== b.fix.databaseId) {
         return false;
       }
 
@@ -76,7 +78,7 @@ export class ObservableFlightPlan {
         return false;
       }
 
-      for (let i = 0; i < a?.radials?.length ?? 0; i++) {
+      for (let i = 0; i < (a.radials?.length ?? 0); i++) {
         const aRadial = a?.radials[i];
         const bRadial = b?.radials[i];
 
@@ -89,7 +91,7 @@ export class ObservableFlightPlan {
         return false;
       }
 
-      for (let i = 0; i < a?.radii?.length ?? 0; i++) {
+      for (let i = 0; i < (a.radii?.length ?? 0); i++) {
         const aRadius = a?.radii[i];
         const bRadius = b?.radii[i];
 
