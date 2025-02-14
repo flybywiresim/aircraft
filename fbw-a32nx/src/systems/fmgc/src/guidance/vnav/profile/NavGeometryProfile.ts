@@ -9,6 +9,7 @@ import { isAltitudeConstraintMet } from '@fmgc/guidance/vnav/descent/DescentPath
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 // TODO: Merge this with VerticalCheckpoint
 export interface VerticalWaypointPrediction {
@@ -128,6 +129,7 @@ export interface MaxSpeedConstraint {
 export interface DescentAltitudeConstraint {
   distanceFromStart: NauticalMiles;
   constraint: AltitudeConstraint;
+  leg: FlightPlanLeg;
 }
 
 export interface GeographicCruiseStep {

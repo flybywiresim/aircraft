@@ -430,7 +430,10 @@ export class ProcedureLinesGenerator {
         if (isChecklistAction(item)) {
           text += clStyle !== ChecklistLineStyle.SubHeadline ? '-' : '';
           text += item.name;
-          if (!this.checklistState.itemsActive[itemIndex] && clStyle === ChecklistLineStyle.ChecklistItem) {
+          if (
+            (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
+            clStyle === ChecklistLineStyle.ChecklistItem
+          ) {
             clStyle = ChecklistLineStyle.ChecklistItemInactive;
           }
           if (this.checklistState.itemsChecked[itemIndex] && item.labelCompleted) {

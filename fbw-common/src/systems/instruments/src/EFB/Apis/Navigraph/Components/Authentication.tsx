@@ -10,7 +10,7 @@ import { NavigraphKeys, NavigraphSubscriptionStatus } from '@flybywiresim/fbw-sd
 import { useHistory } from 'react-router-dom';
 import { t } from '../../../Localization/translation';
 import { useNavigraphAuth } from '../../../../react/navigraph';
-import { CancelToken } from '@navigraph/auth';
+import { CancelToken, User } from '@navigraph/auth';
 
 const NAVIGRAPH_SUBSCRIPTION_CHARTS = 'charts';
 const NAVIGRAPH_SUBSCRIPTION_FMSDATA = 'fmsdata';
@@ -27,6 +27,20 @@ export type NavigraphAuthInfo =
       subscriptionStatus: NavigraphSubscriptionStatus;
     };
 
+function getNavigraphSubscriptionStatus(user: User) {
+  switch (true) {
+    case user.subscriptions.length === 0:
+      return NavigraphSubscriptionStatus.None;
+    case [NAVIGRAPH_SUBSCRIPTION_CHARTS, NAVIGRAPH_SUBSCRIPTION_FMSDATA].every((it) => user.subscriptions.includes(it)):
+      return NavigraphSubscriptionStatus.Unlimited;
+    case user.subscriptions.includes(NAVIGRAPH_SUBSCRIPTION_FMSDATA):
+      // no longer offered but people may have on longer-term subscription
+      return NavigraphSubscriptionStatus.Standard;
+    default:
+      return NavigraphSubscriptionStatus.Unknown;
+  }
+}
+
 export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
   const [info, setInfo] = useState<NavigraphAuthInfo>({ loggedIn: false });
 
@@ -36,11 +50,7 @@ export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
     setInfo({
       loggedIn: true,
       username: navigraphAuth.user.preferred_username,
-      subscriptionStatus: [NAVIGRAPH_SUBSCRIPTION_CHARTS, NAVIGRAPH_SUBSCRIPTION_FMSDATA].every((it) =>
-        navigraphAuth.user.subscriptions.includes(it),
-      )
-        ? NavigraphSubscriptionStatus.Unlimited
-        : NavigraphSubscriptionStatus.Unknown,
+      subscriptionStatus: getNavigraphSubscriptionStatus(navigraphAuth.user),
     });
   } else if (!navigraphAuth.user && info.loggedIn === true) {
     setInfo({ loggedIn: false });
