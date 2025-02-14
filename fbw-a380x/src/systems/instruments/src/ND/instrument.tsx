@@ -16,6 +16,8 @@ import {
 import {
   A380EfisNdRangeValue,
   a380EfisRangeSettings,
+  a380NdModeChange,
+  a380NdRangeChange,
   a380TerrainThresholdPadValue,
   ArincEventBus,
   BtvSimvarPublisher,
@@ -243,6 +245,8 @@ class NDInstrument implements FsInstrument {
             side={this.efisSide}
             rangeValues={a380EfisRangeSettings}
             terrainThresholdPaddingText={a380TerrainThresholdPadValue}
+            rangeChangeMessage={a380NdRangeChange}
+            modeChangeMessage={a380NdModeChange}
           />
           <ContextMenu
             ref={this.contextMenuRef}

@@ -17,6 +17,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { NDControlEvents } from './NDControlEvents';
 
 import './style.scss';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
@@ -36,7 +37,7 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
   private readonly maxAlt = 24000;
 
   private readonly sub = this.props.bus.getArincSubscriber<
-    GenericFcuEvents & NDSimvars & DmcLogicEvents & SimplaneValues
+    GenericFcuEvents & NDSimvars & DmcLogicEvents & SimplaneValues & NDControlEvents
   >();
 
   private topRef = FSComponent.createRef<SVGElement>();
@@ -46,6 +47,8 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
   private readonly ndRangeSetting = ConsumerSubject.create(this.sub.on('ndRangeSetting').whenChanged(), 10).map(
     (r) => a380EfisRangeSettings[r],
   );
+
+  private readonly rangeChangeInProgress = ConsumerSubject.create(this.sub.on('set_range_change').whenChanged(), false);
 
   private readonly visible = MappedSubject.create(
     ([mode, range]) =>
@@ -187,6 +190,11 @@ export class VerticalDisplayDummy extends DisplayComponent<VerticalDisplayProps>
             visibility={this.baroMode.map((m) => (m === 'STD' ? 'visible' : 'hidden'))}
           >
             FL
+          </text>
+        </g>
+        <g visibility={this.rangeChangeInProgress.map((it) => (it ? 'visible' : 'hidden'))}>
+          <text x="422" y="920" class="Green FontSmall MiddleAlign">
+            VD RANGE CHANGE
           </text>
         </g>
       </svg>
