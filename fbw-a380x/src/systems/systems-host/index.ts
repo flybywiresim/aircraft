@@ -24,6 +24,7 @@ import {
   ArincEventBus,
   BtvSimvarPublisher,
   FailuresConsumer,
+  MsfsFlightModelPublisher,
   PilotSeatPublisher,
   VhfComIndices,
 } from '@flybywiresim/fbw-sdk';
@@ -34,7 +35,7 @@ import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/pow
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
 import { AtsuSystem } from 'systems-host/systems/atsu';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
-import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
+import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {
@@ -115,6 +116,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
 
+  private readonly interactivePointsPublisher = new MsfsFlightModelPublisher(this.bus);
+
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
 
@@ -174,6 +177,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
+    this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
 
     this.hEventPublisher = new HEventPublisher(this.bus);

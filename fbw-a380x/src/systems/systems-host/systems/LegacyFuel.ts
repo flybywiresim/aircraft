@@ -9,7 +9,7 @@ import {
   WeightBalanceEvents,
 } from '@microsoft/msfs-sdk';
 
-import { FuelSystemEvents } from 'systems-host/systems/FuelSystemPublisher';
+import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 enum ValveState {
   Closed,
   Open,
