@@ -6,17 +6,17 @@ import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiW
  * Complete header for the ATCCOM system
  */
 export class AtccomHeader extends AbstractHeader {
-  private connectIsSelected = Subject.create(false);
+  private readonly connectIsSelected = Subject.create(false);
 
-  private requestIsSelected = Subject.create(false);
+  private readonly requestIsSelected = Subject.create(false);
 
-  private reportModifyIsSelected = Subject.create(false);
+  private readonly reportModifyIsSelected = Subject.create(false);
 
-  private msgRecordIsSelected = Subject.create(false);
+  private readonly msgRecordIsSelected = Subject.create(false);
 
-  private atisIsSelected = Subject.create(false);
+  private readonly atisIsSelected = Subject.create(false);
 
-  private emerIsSelected = Subject.create(false);
+  private readonly emerIsSelected = Subject.create(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

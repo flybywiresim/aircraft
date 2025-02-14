@@ -631,6 +631,7 @@
     "Real": "仿真",
     "Realism": {
       "AdirsAlignTime": "ADRS 對準需時",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Checklist 自動填充",
       "BoardingTime": "登機需時",
       "DmcSelfTestTime": "DMC 自檢需時",

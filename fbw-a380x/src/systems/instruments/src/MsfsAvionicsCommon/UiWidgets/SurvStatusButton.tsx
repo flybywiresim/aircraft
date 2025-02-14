@@ -15,9 +15,9 @@ export interface SurvStatusButtonProps extends ComponentProps {
  */
 export class SurvStatusButton extends DisplayComponent<SurvStatusButtonProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private buttonRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly buttonRef = FSComponent.createRef<HTMLSpanElement>();
 
   private clickHandler(): void {
     console.log(this.props.label + 'button clicked');
