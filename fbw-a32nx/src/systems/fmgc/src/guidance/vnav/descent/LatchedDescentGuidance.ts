@@ -12,6 +12,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { TodGuidance } from './TodGuidance';
 import { SpeedMargin } from './SpeedMargin';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 enum DescentVerticalGuidanceState {
   InvalidProfile,
@@ -53,12 +54,13 @@ export class LatchedDescentGuidance {
   private isInOverspeedCondition: boolean = false;
 
   constructor(
+    config: AircraftConfig,
     private guidanceController: GuidanceController,
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation,
     private observer: VerticalProfileComputationParametersObserver,
     private atmosphericConditions: AtmosphericConditions,
   ) {
-    this.speedMargin = new SpeedMargin(this.observer);
+    this.speedMargin = new SpeedMargin(config, this.observer);
     this.todGuidance = new TodGuidance(
       this.aircraftToDescentProfileRelation,
       this.observer,
