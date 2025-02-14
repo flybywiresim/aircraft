@@ -10,6 +10,7 @@ import { LandingWidget } from './Widgets/LandingWidget';
 import { TakeoffWidget } from './Widgets/TakeoffWidget';
 import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 import { AircraftContext } from '../AircraftContext';
+import { TemperatureCorrectionWidget } from 'instruments/src/EFB/Performance/Widgets/TemperatureCorrectionWidget';
 
 export const Performance = () => {
   const calculators = useContext(AircraftContext).performanceCalculators;
@@ -22,6 +23,11 @@ export const Performance = () => {
     calculators.landing
       ? { name: 'Landing', alias: t('Performance.Landing.Title'), component: <LandingWidget /> }
       : null,
+    {
+      name: 'Temperature Correction',
+      alias: t('Performance.TemperatureCorrection.Title'),
+      component: <TemperatureCorrectionWidget />,
+    },
   ].filter((t) => t !== null);
 
   return (
