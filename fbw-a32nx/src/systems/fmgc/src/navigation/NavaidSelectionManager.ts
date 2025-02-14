@@ -9,6 +9,7 @@ import {
   NdbNavaid,
   VhfNavaid,
   VhfNavaidType,
+  isNdbNavaid,
 } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -163,7 +164,7 @@ export class NavaidSelectionManager {
       const distance = distanceTo(this.ppos, facility.dmeLocation ?? facility.location);
 
       if (this.isInLineOfSight(facility, distance)) {
-        // FIXME BCD frequency type in msfs-navdata... comparing floats is problematic
+        // FIXME BCD frequency type in nav db... comparing floats is problematic
         if (frequencies.has(facility.frequency)) {
           duplicateFrequencies.add(facility.frequency);
         }
@@ -494,7 +495,7 @@ export class NavaidSelectionManager {
 
       // eslint-disable-next-line no-underscore-dangle
       const facility = segment.lastLeg?.definition.recommendedNavaid ?? null;
-      if (facility !== null && facility.subSectionCode === NavaidSubsectionCode.NdbNavaid) {
+      if (facility !== null && isNdbNavaid(facility)) {
         return facility;
       }
     }

@@ -12,6 +12,7 @@ import {
   IlsNavaid,
   MsfsBackend,
   NdbNavaid,
+  ProcedureLeg,
   VhfNavaid,
   Waypoint,
 } from '@flybywiresim/fbw-sdk';
@@ -48,7 +49,7 @@ export class NavigationDatabase {
     return this.backendDatabase.getWaypoints([ident]);
   }
 
-  async searchAllFix(ident: string): Promise<(Waypoint | VhfNavaid | NdbNavaid)[]> {
+  async searchAllFix(ident: string): Promise<Fix[]> {
     return [
       ...(await this.backendDatabase.getWaypoints([ident])),
       ...(await this.backendDatabase.getNavaids([ident])),
@@ -81,6 +82,10 @@ export class NavigationDatabase {
 
     // This does not work in the MSFS backend
     return this.backendDatabase.getAirways([ident]);
+  }
+
+  public getHolds(fixIdentifier: string, airportIdentifier: string): Promise<ProcedureLeg[]> {
+    return this.backendDatabase.getHolds(fixIdentifier, airportIdentifier);
   }
 
   public getDatabaseIdent(): Promise<DatabaseIdent> {

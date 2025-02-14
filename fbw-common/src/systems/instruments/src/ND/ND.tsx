@@ -70,6 +70,8 @@ export interface NDProps<T extends number> {
   side: EfisSide;
 
   rangeValues: T[];
+
+  terrainThresholdPaddingText: string;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -223,9 +225,13 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     });
 
     sub
-      .on('ndShowOans')
+      .on('nd_show_oans')
       .whenChanged()
-      .handle((show) => this.showOans.set(show));
+      .handle((data) => {
+        if (data.side === this.props.side) {
+          this.showOans.set(data.show);
+        }
+      });
   }
 
   // eslint-disable-next-line arrow-body-style
@@ -463,7 +469,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               MODE CHANGE
             </Flag>
 
-            <TerrainMapThresholds bus={this.props.bus} />
+            <TerrainMapThresholds bus={this.props.bus} paddingText={this.props.terrainThresholdPaddingText} />
 
             <RadioNavInfo bus={this.props.bus} index={1} mode={this.currentPageMode} />
             <RadioNavInfo bus={this.props.bus} index={2} mode={this.currentPageMode} />

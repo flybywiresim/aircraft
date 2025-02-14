@@ -1,96 +1,55 @@
-import { ConsumerSubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import {
-  ChecklistLineStyle,
-  EcamAbnormalSensedProcedures,
-  isChecklistAction,
-  WdSpecialLine,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+  ProcedureLinesGenerator,
+  ProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
+
 import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
+import { EcamAbnormalSensedProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 
 export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   private readonly procedures = ConsumerSubject.create(this.sub.on('fws_abn_sensed_procedures'), []);
 
+  private readonly activeProcedureId = ConsumerSubject.create(this.sub.on('fws_active_procedure'), '0');
+
   public updateChecklists() {
     this.lineData.length = 0;
 
-    this.procedures.get().forEach((procState, procIndex, array) => {
-      if (procState && EcamAbnormalSensedProcedures[procState.id]) {
-        const cl = EcamAbnormalSensedProcedures[procState.id];
+    if (!this.props.fwsAvail || this.props.fwsAvail.get()) {
+      this.procedures.get().forEach((procState, index) => {
+        const procGen = new ProcedureLinesGenerator(
+          procState.id,
+          this.activeProcedureId.map((id) => id === procState.id),
+          ProcedureType.Abnormal,
+          procState,
+          undefined,
+          undefined,
+          undefined,
+          EcamAbnormalSensedProcedures[procState.id].recommendation,
+          index === 0,
+        );
+        this.lineData.push(...procGen.toLineData());
+      });
+    } else {
+      // FWS 1+2 failed, show fallback
+      const fallbackClState: ChecklistState = {
+        id: '314800004',
+        procedureActivated: true,
+        procedureCompleted: false,
+        itemsActive: [true, true, true, true, true, true, true, true, true],
+        itemsChecked: [false, false, true, true, true, true, true, true, true],
+        itemsToShow: [true, true, true, true, true, true, true, true, true],
+      };
+      const procGenFallback = new ProcedureLinesGenerator(
+        '314800004',
+        Subject.create(false),
+        ProcedureType.FwsFailedFallback,
+        fallbackClState,
+      );
+      this.lineData.push(...procGenFallback.toLineData());
+    }
 
-        this.lineData.push({
-          abnormalProcedure: true,
-          activeProcedure: procIndex === 0,
-          sensed: true,
-          checked: false,
-          text: cl.title,
-          style: ChecklistLineStyle.Headline,
-          firstLine: true,
-          lastLine: procIndex !== 0 ? true : false,
-        });
-
-        cl.items.forEach((item, itemIndex) => {
-          if (procState.itemsToShow[itemIndex] === false) {
-            return;
-          }
-
-          let text = item.level ? '\xa0'.repeat(item.level * 2) : '';
-          if (isChecklistAction(item)) {
-            text += item.style !== ChecklistLineStyle.SubHeadline ? '-' : '';
-            text += item.name;
-            if (procState.itemsChecked[itemIndex] && item.labelCompleted) {
-              text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
-            } else if (procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
-              text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
-            } else if (!procState.itemsChecked[itemIndex] && item.labelNotCompleted) {
-              // Pad to 39 characters max
-              const paddingNeeded = 39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 2 + 2);
-              text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
-            }
-          } else {
-            text += `${item.name.substring(0, 3) === 'IF' ? '.' : ''}${item.name}`;
-          }
-
-          this.lineData.push({
-            abnormalProcedure: true,
-            activeProcedure: procIndex === 0,
-            sensed: item.sensed,
-            checked: procState.itemsChecked[itemIndex],
-            text: text,
-            style: item.style ? item.style : ChecklistLineStyle.ChecklistItem,
-            firstLine: procIndex !== 0 ? true : false,
-            lastLine: procIndex !== 0 ? true : false,
-          });
-        });
-
-        if (procIndex === 0) {
-          this.lineData.push({
-            abnormalProcedure: true,
-            activeProcedure: true,
-            sensed: false,
-            checked: false,
-            text: `${'\xa0'.repeat(34)}CLEAR`,
-            style: ChecklistLineStyle.ChecklistItem,
-            firstLine: false,
-            lastLine: true,
-          });
-        }
-
-        // Empty line after procedure
-        if (procIndex < array.length - 1) {
-          this.lineData.push({
-            abnormalProcedure: true,
-            activeProcedure: procIndex === 0,
-            sensed: true,
-            checked: false,
-            text: '',
-            style: ChecklistLineStyle.ChecklistItem,
-            firstLine: true,
-            lastLine: true,
-            specialLine: WdSpecialLine.Empty,
-          });
-        }
-      }
-    });
     super.updateChecklists();
   }
 
@@ -98,6 +57,8 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
     super.onAfterRender(node);
 
     this.procedures.sub(() => this.updateChecklists(), true);
+    this.activeProcedureId.sub(() => this.updateChecklists(), true);
+    this.props.fwsAvail?.sub(() => this.updateChecklists(), true);
   }
 
   render() {

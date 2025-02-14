@@ -29,6 +29,10 @@
   animation-iteration-count: 9;
 }
 
+.DisappearAfter10Seconds {
+  animation: Disappear 0s 10s forwards;
+}
+
 .BarAmber {
   fill: $display-amber;
   stroke: $display-amber;
