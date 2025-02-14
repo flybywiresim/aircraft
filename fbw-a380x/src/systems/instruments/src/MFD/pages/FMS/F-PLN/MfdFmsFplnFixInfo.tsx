@@ -59,7 +59,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
         {/* begin page content */}
         <div class="mfd-fms-fpln-fix-info-header"></div>
         <TopTabNavigator pageTitles={['FIX 1', 'FIX 2', 'FIX 3', 'FIX 4']} selectedPageIndex={this.selectedTab}>
-          {([1, 2, 3, 4] as const).map((value) => (
+          {...([1, 2, 3, 4] as const).map((value) => (
             <TopTabNavigatorPage containerStyle="max-height: 45rem;">
               <div class="fr aic mfd-fms-fpln-fix-info-ref-ident">
                 <span class="mfd-fms-fpln-fix-info-ref-ident-label">REF IDENT</span>
