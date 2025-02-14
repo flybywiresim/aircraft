@@ -76,6 +76,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
 
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
   private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), 0);
+  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), 0);
   private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0); // FIXME ADIRS selection for ND not implemented yet
 
   private readonly mapRecomputing = ConsumerSubject.create(this.sub.on('set_map_recomputing'), false);
@@ -135,6 +136,12 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
             !this.groundSpeed.get().isFailureWarning() && this.groundSpeed.get().value > 10
               ? Math.atan2(this.groundSpeed.get().value, this.selectedVs.get()) * VD_FPA_TO_DISPLAY_ANGLE
               : 0;
+          break;
+        case VerticalMode.FPA:
+          selectedVerticalAngle = this.selectedFpa.get() * VD_FPA_TO_DISPLAY_ANGLE;
+          break;
+        default:
+          selectedVerticalAngle = this.props.fpa.get().valueOr(0) * VD_FPA_TO_DISPLAY_ANGLE;
           break;
       }
       const selectedM = Math.tan(selectedVerticalAngle * MathUtils.DEGREES_TO_RADIANS);
