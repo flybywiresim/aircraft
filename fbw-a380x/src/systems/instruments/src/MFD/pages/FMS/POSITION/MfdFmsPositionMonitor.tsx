@@ -18,15 +18,17 @@ import { A32NX_Util } from '@shared/A32NX_Util';
 interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProps> {
-  private readonly cptSide = Subject.create(false);
-
   private readonly fmsRnp = Subject.create<number | null>(null);
 
   private readonly rnpEnteredByPilot = Subject.create(false);
 
-  private readonly fmsEpu = Subject.create('-.--');
+  private readonly fmsAccuracyHigh = Subject.create(false);
 
-  private readonly fmsAccuracy = Subject.create('');
+  private readonly fmsEpe = Subject.create<number>(Infinity);
+
+  private readonly fmsEpeDisplay = this.fmsEpe.map((v) => (v === Infinity ? '--.-' : v.toFixed(2)));
+
+  private readonly fmsAccuracy = this.fmsAccuracyHigh.map((v) => (v ? 'HIGH' : 'LO'));
 
   private readonly ir1LatitudeRegister = Arinc429Register.empty();
 
@@ -80,9 +82,21 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private monitorWaypoint = Subject.create<Fix | null>(null);
 
-  private readonly bearingToWaypoint = Subject.create('');
+  private readonly bearingToWaypoint = Subject.create<number | null>(null);
 
-  private readonly distanceToWaypoint = Subject.create('');
+  private readonly distanceToWaypoint = Subject.create<number | null>(null);
+
+  private readonly bearingToWaypointDisplay = this.bearingToWaypoint.map((v) =>
+    v ? v.toFixed(0).padStart(3, '0') : '---',
+  );
+
+  private readonly distanceToWaypointDisplay = this.distanceToWaypoint.map((v) =>
+    v ? v.toFixed(v > 9999 ? 0 : 1).padStart(6) : '----.-',
+  );
+
+  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? ' ° ' : '   '));
+
+  private readonly distanceToWaypointUnit = this.bearingToWaypoint.map((v) => (v ? 'NM' : '  '));
 
   private readonly waypointEntered = this.monitorWaypoint.map((v) => v !== null);
 
@@ -92,7 +106,6 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     const side = this.props.mfd.uiService.captOrFo;
 
     const cptSide = side === 'CAPT';
-    this.cptSide.set(cptSide);
     this.onSideFms.set(cptSide ? 'FMS1' : 'FMS2');
     this.offSideFms.set(cptSide ? 'FMS2' : 'FMS1');
     const sub = this.props.bus.getSubscriber<ClockEvents>();
@@ -111,6 +124,12 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
         }),
       this.waypointEntered,
       this.positionFrozenLabel,
+      this.fmsAccuracy,
+      this.fmsEpeDisplay,
+      this.bearingToWaypointDisplay,
+      this.distanceToWaypointDisplay,
+      this.bearingUnit,
+      this.distanceToWaypointUnit,
     );
   }
 
@@ -121,18 +140,15 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
     const navigation = this.props.fmcService.master.navigation;
     const rnp = navigation.getActiveRnp();
-    this.fmsAccuracy.set(navigation.isAcurracyHigh() ? 'HIGH' : 'LO');
-    this.fmsEpu.set(navigation.getEpe() != Infinity ? navigation.getEpe().toFixed(2) : '--.-');
+
+    this.fmsAccuracyHigh.set(navigation.isAcurracyHigh());
+    this.fmsEpe.set(navigation.getEpe());
     this.fmsRnp.set(rnp ?? null);
     this.rnpEnteredByPilot.set(navigation.isPilotRnp());
     const fmCoordinates = this.props.fmcService.master.navigation.getPpos();
     const fmPositionAvailable = fmCoordinates != null;
     if (!this.positionFrozen.get()) {
-      this.fmPosition.set(
-        fmPositionAvailable
-          ? coordinateToString(this.props.fmcService.master.navigation.getPpos()!, false)
-          : '--°--.--/---°--.--',
-      );
+      this.fmPosition.set(fmPositionAvailable ? coordinateToString(fmCoordinates, false) : '--°--.--/---°--.--');
       this.fillIrData(
         1,
         this.ir1LatitudeRegister,
@@ -167,20 +183,16 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       this.gpsPositionText.set(coordinateToString(this.gpsCoordinates, false));
     }
 
-    if (this.monitorWaypoint.get() && fmCoordinates) {
-      const distanceToWaypointNm = distanceTo(fmCoordinates, this.monitorWaypoint.get()!.location);
-      const distDigits = distanceToWaypointNm > 9999 ? 0 : 1;
-      this.distanceToWaypoint.set(distanceToWaypointNm.toFixed(distDigits).padStart(6));
+    const waypoint = this.monitorWaypoint.get();
+    if (waypoint && fmCoordinates) {
+      const distanceToWaypointNm = distanceTo(fmCoordinates, waypoint.location);
+      this.distanceToWaypoint.set(distanceToWaypointNm);
       this.bearingToWaypoint.set(
-        A32NX_Util.trueToMagnetic(
-          Avionics.Utils.computeGreatCircleHeading(fmCoordinates, this.monitorWaypoint.get()!.location),
-        )
-          .toFixed(0)
-          .padStart(3, '0'),
+        A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(fmCoordinates, waypoint.location)),
       );
     } else {
-      this.distanceToWaypoint.set('----.-');
-      this.bearingToWaypoint.set('---');
+      this.distanceToWaypoint.set(null);
+      this.bearingToWaypoint.set(null);
     }
   }
 
@@ -242,7 +254,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label bigger mfd-spacing-right" style="width: 54px;">
                 EPU
               </span>
-              <span class="mfd-value bigger">{this.fmsEpu}</span>
+              <span class="mfd-value bigger">{this.fmsEpeDisplay}</span>
               <span class="mfd-label-unit mfd-unit-trailing">NM</span>
             </div>
           </div>
@@ -401,10 +413,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 />
               </div>
               <div class="mfd-label-value-container">
-                <span class="mfd-value">{this.bearingToWaypoint}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">° </span>
-                <span class="mfd-value">/{this.distanceToWaypoint}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+                <span class="mfd-value">{this.bearingToWaypointDisplay}</span>
+                <span class="mfd-label-unit mfd-unit-trailing">{this.bearingUnit}</span>
+                <span class="mfd-value">/{this.distanceToWaypointDisplay}</span>
+                <span class="mfd-label-unit mfd-unit-trailing">{this.distanceToWaypointUnit}</span>
               </div>
             </div>
           </div>
