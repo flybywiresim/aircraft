@@ -30,49 +30,6 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
-#define DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
-
-struct base_prim_discrete_inputs
-{
-  boolean_T prim_overhead_button_pressed;
-  boolean_T is_unit_1;
-  boolean_T is_unit_2;
-  boolean_T is_unit_3;
-  boolean_T capt_priority_takeover_pressed;
-  boolean_T fo_priority_takeover_pressed;
-  boolean_T ap_1_pushbutton_pressed;
-  boolean_T ap_2_pushbutton_pressed;
-  boolean_T fcu_healthy;
-  boolean_T athr_pushbutton;
-  boolean_T ir_3_on_capt;
-  boolean_T ir_3_on_fo;
-  boolean_T adr_3_on_capt;
-  boolean_T adr_3_on_fo;
-  boolean_T rat_deployed;
-  boolean_T rat_contactor_closed;
-  boolean_T pitch_trim_up_pressed;
-  boolean_T pitch_trim_down_pressed;
-  boolean_T green_low_pressure;
-  boolean_T yellow_low_pressure;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-
-struct base_prim_pitch_surface_positions
-{
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
 #define DEFINED_TYPEDEF_FOR_base_arinc_429_
 
@@ -182,15 +139,16 @@ struct base_prim_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
 
-struct base_lgciu_bus
+struct base_prim_pitch_surface_positions
 {
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
 };
 
 #endif
@@ -217,6 +175,35 @@ struct base_sim_data
   boolean_T tracking_mode_on_override;
   boolean_T tailstrike_protection_on;
   boolean_T computer_running;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
+#define DEFINED_TYPEDEF_FOR_base_prim_discrete_inputs_
+
+struct base_prim_discrete_inputs
+{
+  boolean_T prim_overhead_button_pressed;
+  boolean_T is_unit_1;
+  boolean_T is_unit_2;
+  boolean_T is_unit_3;
+  boolean_T capt_priority_takeover_pressed;
+  boolean_T fo_priority_takeover_pressed;
+  boolean_T ap_1_pushbutton_pressed;
+  boolean_T ap_2_pushbutton_pressed;
+  boolean_T fcu_healthy;
+  boolean_T athr_pushbutton;
+  boolean_T ir_3_on_capt;
+  boolean_T ir_3_on_fo;
+  boolean_T adr_3_on_capt;
+  boolean_T adr_3_on_fo;
+  boolean_T rat_deployed;
+  boolean_T rat_contactor_closed;
+  boolean_T pitch_trim_up_pressed;
+  boolean_T pitch_trim_down_pressed;
+  boolean_T green_low_pressure;
+  boolean_T yellow_low_pressure;
 };
 
 #endif
@@ -341,6 +328,19 @@ struct base_sfcc_bus
   base_arinc_429 slat_flap_actual_position_word;
   base_arinc_429 slat_actual_position_deg;
   base_arinc_429 flap_actual_position_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
