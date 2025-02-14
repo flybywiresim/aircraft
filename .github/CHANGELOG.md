@@ -161,6 +161,7 @@
 1. [EFB] Navigraph subscriptions other than Ultimate are now shown on the EFB to reduce confusion with "Unknown" - @tracernz (Mike)
 1. [A380X/FWS] Add RAT OUT, REFUEL PNL DOOR, HI ALT AIRPORT & REFUELING/DEFUELING memos - @BravoMike99 (bruno_pt99)
 1. [A380X/ND] Correct positioning of TCAS Messages and added TCAS STBY - @MrJigs7 (MrJigs)
+1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
 
 ## 0.12.0
 
