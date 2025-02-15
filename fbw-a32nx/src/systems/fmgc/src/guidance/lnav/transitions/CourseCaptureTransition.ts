@@ -126,7 +126,7 @@ export class CourseCaptureTransition extends Transition {
 
     // Course change and delta track?
     const radius =
-      (gs ** 2 / (Constants.G * tan(Math.abs(maxBank(tas, false)))) / 6997.84) * LnavConfig.TURN_RADIUS_FACTOR;
+      (gs ** 2 / (Constants.G * tan(Math.abs(maxBank(tas, false)))) / 6997.84) * LnavConfig.TurnRadiusFactor;
     const turnCenter = Geo.computeDestinationPoint(
       initialTurningPoint,
       radius,

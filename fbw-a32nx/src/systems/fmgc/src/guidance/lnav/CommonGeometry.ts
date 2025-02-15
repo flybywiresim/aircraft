@@ -234,7 +234,7 @@ export function sideOfPointOnCourseToFix(fix: Coordinates, course: DegreesTrue, 
 }
 
 export function getAlongTrackDistanceTo(start: Coordinates, end: Coordinates, ppos: Coordinates): number {
-  const R = Constants.EARTH_RADIUS_NM;
+  const R = Constants.EarthRadiusNm;
 
   const d13 = distanceTo(start, ppos) / R;
   const Theta13 = MathUtils.DEGREES_TO_RADIANS * bearingTo(start, ppos);
@@ -304,11 +304,11 @@ export function fixToFixGuidance(
   const desiredOffset = 0;
   const actualOffset =
     Math.asin(
-      Math.sin(MathUtils.DEGREES_TO_RADIANS * (distanceAC / Constants.EARTH_RADIUS_NM)) *
+      Math.sin(MathUtils.DEGREES_TO_RADIANS * (distanceAC / Constants.EarthRadiusNm)) *
         Math.sin(MathUtils.DEGREES_TO_RADIANS * (bearingAC - bearingAB)),
     ) *
     MathUtils.RADIANS_TO_DEGREES *
-    Constants.EARTH_RADIUS_NM;
+    Constants.EarthRadiusNm;
   const crossTrackError = desiredOffset - actualOffset;
 
   return {

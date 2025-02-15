@@ -198,7 +198,7 @@ export class PathCaptureTransition extends Transition {
     let turnDirection = Math.sign(deltaTrack);
 
     // Theta variable should be stored based on turn direction and max roll, but it is only used once in an absolute sense, so it is useless
-    const radius = (gs ** 2 / (Constants.G * tan(maxBank(tas, true)) * 6997.84)) * LnavConfig.TURN_RADIUS_FACTOR;
+    const radius = (gs ** 2 / (Constants.G * tan(maxBank(tas, true)) * 6997.84)) * LnavConfig.TurnRadiusFactor;
     const distanceLimit = radius * cos(48);
 
     // TODO: Turn center is slightly off for some reason, fix
@@ -298,7 +298,7 @@ export class PathCaptureTransition extends Transition {
 
           this.distance = arcLength(radius, Math.abs(deltaTrack) * turnDirection);
 
-          if (LnavConfig.DEBUG_PREDICTED_PATH) {
+          if (LnavConfig.DebugPredictedPath) {
             this.predictedPath.push(
               {
                 type: PathVectorType.DebugPoint,
@@ -398,7 +398,7 @@ export class PathCaptureTransition extends Transition {
 
     this.distance = arcLength(radius, courseChange) + (overshot ? 0 : distanceTo(finalTurningPoint, intercept));
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,
@@ -446,7 +446,7 @@ export class PathCaptureTransition extends Transition {
       endPoint: intercept,
     });
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,

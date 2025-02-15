@@ -31,7 +31,7 @@ export class ConstraintReader {
   public totalFlightPlanDistance = 0;
 
   public get distanceToEnd(): NauticalMiles {
-    if (VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION) {
+    if (VnavConfig.AllowDebugParameterInjection) {
       return SimVar.GetSimVarValue('L:A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END', 'nautical miles');
     }
 

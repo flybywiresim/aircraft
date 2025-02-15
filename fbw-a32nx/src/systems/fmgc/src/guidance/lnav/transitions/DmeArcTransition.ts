@@ -117,7 +117,7 @@ export class DmeArcTransition extends Transition {
 
       this.isComputed = true;
 
-      if (LnavConfig.DEBUG_PREDICTED_PATH) {
+      if (LnavConfig.DebugPredictedPath) {
         this.addDebugPoints();
       }
     } else if (this.nextLeg instanceof AFLeg) {
@@ -210,7 +210,7 @@ export class DmeArcTransition extends Transition {
 
       this.isComputed = true;
 
-      if (LnavConfig.DEBUG_PREDICTED_PATH) {
+      if (LnavConfig.DebugPredictedPath) {
         this.predictedPath.push({
           type: PathVectorType.DebugPoint,
           startPoint: reference,

@@ -85,7 +85,7 @@ export class FixedRadiusTransition extends Transition {
 
   recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue) {
     if (this.isFrozen) {
-      if (LnavConfig.DEBUG_GEOMETRY) {
+      if (LnavConfig.DebugGeometry) {
         console.log('[FMS/Geometry] Not recomputing Type I transition as it is frozen.');
       }
       return;
@@ -103,7 +103,7 @@ export class FixedRadiusTransition extends Transition {
     // Turn radius
     this.radius =
       (tas ** 2 / (9.81 * Math.tan(finalBankAngle * MathUtils.DEGREES_TO_RADIANS)) / 6997.84) *
-      LnavConfig.TURN_RADIUS_FACTOR;
+      LnavConfig.TurnRadiusFactor;
 
     // Turn anticipation distance
     this.tad = this.radius * Math.tan(Math.abs(this.sweepAngle / 2) * MathUtils.DEGREES_TO_RADIANS);

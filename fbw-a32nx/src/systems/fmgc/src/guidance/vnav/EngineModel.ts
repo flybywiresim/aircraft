@@ -129,7 +129,7 @@ export class EngineModel {
       coefficients[19] * mach * alt ** 2 +
       coefficients[20] * alt ** 3;
 
-    return config.fuelBurnFactor * flow;
+    return config.FuelBurnFactor * flow;
   }
 
   // static getCN1fromUncorrectedThrust(thrust: number)
@@ -167,11 +167,11 @@ export class EngineModel {
     const delta = Common.getDelta(altitude, altitude > tropoAltitude);
     const iap = 1 / delta;
 
-    const lowMachCn2 = EngineModel.tableInterpolation(parameters.table1503, 0, iap);
-    const highMachCn2 = EngineModel.tableInterpolation(parameters.table1504, 0, iap);
+    const lowMachCn2 = EngineModel.tableInterpolation(parameters.Table1503, 0, iap);
+    const highMachCn2 = EngineModel.tableInterpolation(parameters.Table1504, 0, iap);
 
     const cn2 = Common.interpolate(mach, 0, 0.9, lowMachCn2, highMachCn2);
-    const cn1 = EngineModel.tableInterpolation(parameters.table1502, cn2, mach);
+    const cn1 = EngineModel.tableInterpolation(parameters.Table1502, cn2, mach);
 
     return cn1;
   }
@@ -185,11 +185,11 @@ export class EngineModel {
     let hiAltRow = 0;
 
     // Check for over/under flows. Else, find top row value
-    if (pressureAltitude >= parameters.cn1ClimbLimit[parameters.cn1ClimbLimit.length - 1][0]) {
-      hiAltRow = parameters.cn1ClimbLimit.length - 1;
-      loAltRow = parameters.cn1ClimbLimit.length - 1;
+    if (pressureAltitude >= parameters.Cn1ClimbLimit[parameters.Cn1ClimbLimit.length - 1][0]) {
+      hiAltRow = parameters.Cn1ClimbLimit.length - 1;
+      loAltRow = parameters.Cn1ClimbLimit.length - 1;
     } else {
-      hiAltRow = parameters.cn1ClimbLimit.reduce((acc, val, idx) => {
+      hiAltRow = parameters.Cn1ClimbLimit.reduce((acc, val, idx) => {
         return val[0] <= pressureAltitude ? idx + 1 : acc;
       }, 0);
       loAltRow = hiAltRow - 1;
@@ -198,31 +198,31 @@ export class EngineModel {
     // Define key table variables and interpolation
     const cp = Common.interpolate(
       pressureAltitude,
-      parameters.cn1ClimbLimit[loAltRow][0],
-      parameters.cn1ClimbLimit[hiAltRow][0],
-      parameters.cn1ClimbLimit[loAltRow][1],
-      parameters.cn1ClimbLimit[hiAltRow][1],
+      parameters.Cn1ClimbLimit[loAltRow][0],
+      parameters.Cn1ClimbLimit[hiAltRow][0],
+      parameters.Cn1ClimbLimit[loAltRow][1],
+      parameters.Cn1ClimbLimit[hiAltRow][1],
     );
     const lp = Common.interpolate(
       pressureAltitude,
-      parameters.cn1ClimbLimit[loAltRow][0],
-      parameters.cn1ClimbLimit[hiAltRow][0],
-      parameters.cn1ClimbLimit[loAltRow][2],
-      parameters.cn1ClimbLimit[hiAltRow][2],
+      parameters.Cn1ClimbLimit[loAltRow][0],
+      parameters.Cn1ClimbLimit[hiAltRow][0],
+      parameters.Cn1ClimbLimit[loAltRow][2],
+      parameters.Cn1ClimbLimit[hiAltRow][2],
     );
     const cn1Flat = Common.interpolate(
       pressureAltitude,
-      parameters.cn1ClimbLimit[loAltRow][0],
-      parameters.cn1ClimbLimit[hiAltRow][0],
-      parameters.cn1ClimbLimit[loAltRow][3],
-      parameters.cn1ClimbLimit[hiAltRow][3],
+      parameters.Cn1ClimbLimit[loAltRow][0],
+      parameters.Cn1ClimbLimit[hiAltRow][0],
+      parameters.Cn1ClimbLimit[loAltRow][3],
+      parameters.Cn1ClimbLimit[hiAltRow][3],
     );
     const cn1Last = Common.interpolate(
       pressureAltitude,
-      parameters.cn1ClimbLimit[loAltRow][0],
-      parameters.cn1ClimbLimit[hiAltRow][0],
-      parameters.cn1ClimbLimit[loAltRow][4],
-      parameters.cn1ClimbLimit[hiAltRow][4],
+      parameters.Cn1ClimbLimit[loAltRow][0],
+      parameters.Cn1ClimbLimit[hiAltRow][0],
+      parameters.Cn1ClimbLimit[loAltRow][4],
+      parameters.Cn1ClimbLimit[hiAltRow][4],
     );
 
     if (outsideTemperature <= cp) {

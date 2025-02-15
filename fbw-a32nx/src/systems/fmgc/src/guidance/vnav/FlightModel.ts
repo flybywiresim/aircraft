@@ -22,11 +22,11 @@ export class FlightModel {
     delta: number,
     loadFactor = 1,
   ): number {
-    return (weight * loadFactor) / (1481.4 * mach ** 2 * delta * config.wingArea);
+    return (weight * loadFactor) / (1481.4 * mach ** 2 * delta * config.WingArea);
   }
 
   static getLiftCoefficientFromEAS(config: FlightModelParameters, lift: number, eas: number): number {
-    return (295.369 * lift) / (eas ** 2 * config.wingArea);
+    return (295.369 * lift) / (eas ** 2 * config.WingArea);
   }
 
   /**
@@ -44,10 +44,10 @@ export class FlightModel {
     gearExtended = false,
     flapConf = FlapConf.CLEAN,
   ): number {
-    const baseDrag = config.dragPolarCoefficients[flapConf].reduce((acc, curr, index) => acc + curr * Cl ** index, 0);
+    const baseDrag = config.DragPolarCoefficients[flapConf].reduce((acc, curr, index) => acc + curr * Cl ** index, 0);
 
-    const spdBrkIncrement = spdBrkDeflected ? config.speedBrakeDrag : 0;
-    const gearIncrement = gearExtended ? config.gearDrag : 0;
+    const spdBrkIncrement = spdBrkDeflected ? config.SpeedBrakeDrag : 0;
+    const gearIncrement = gearExtended ? config.GearDrag : 0;
     return baseDrag + spdBrkIncrement + gearIncrement;
   }
 
@@ -74,7 +74,7 @@ export class FlightModel {
     const Cd = this.getDragCoefficient(config, Cl, spdBrkDeflected, gearExtended, flapConf);
     const deltaCd = this.getMachCorrection(config, mach, flapConf);
 
-    return 1481.4 * mach ** 2 * delta * config.wingArea * (Cd + deltaCd);
+    return 1481.4 * mach ** 2 * delta * config.WingArea * (Cd + deltaCd);
   }
 
   static getMachCorrection(config: FlightModelParameters, mach: Mach, flapConf: FlapConf): number {
@@ -82,7 +82,7 @@ export class FlightModel {
       return 0;
     }
 
-    return this.interpolate(mach, config.machValues, config.dragCoefficientCorrections);
+    return this.interpolate(mach, config.MachValues, config.DragCoefficientCorrections);
   }
 
   /**
@@ -179,7 +179,7 @@ export class FlightModel {
   }
 
   static getSpeedChangePathAngle(config: FlightModelParameters, thrust: number, weight: number, drag: number): number {
-    return Math.asin((thrust - drag) / weight - (1 / config.gravityConstMS2) * config.requiredAccelRateMS2);
+    return Math.asin((thrust - drag) / weight - (1 / config.GravityConstMS2) * config.RequiredAccelRateMS2);
   }
 
   static getSpeedChangePathAngleFromCoefficients(
@@ -189,7 +189,7 @@ export class FlightModel {
     Cl: number,
     Cd: number,
   ): number {
-    return Math.asin(thrust / weight - Cd / Cl - (1 / config.gravityConstMS2) * config.requiredAccelRateMS2);
+    return Math.asin(thrust / weight - Cd / Cl - (1 / config.GravityConstMS2) * config.RequiredAccelRateMS2);
   }
 
   static getAccelRateFromIdleGeoPath(
@@ -201,7 +201,7 @@ export class FlightModel {
   ): number {
     // fpa is in degrees
     const fpaRad = fpaDeg * MathUtils.DEGREES_TO_RADIANS;
-    return config.gravityConstKNS * ((thrust - drag) / weight - Math.sin(fpaRad));
+    return config.GravityConstKNS * ((thrust - drag) / weight - Math.sin(fpaRad));
   }
 
   static getAccelRateFromIdleGeoPathCoefficients(
@@ -214,7 +214,7 @@ export class FlightModel {
   ): number {
     // fpa is in degrees
     const fpaRad = fpaDeg * MathUtils.DEGREES_TO_RADIANS;
-    return config.gravityConstKNS * (thrust / weight - Cd / Cl - Math.sin(fpaRad));
+    return config.GravityConstKNS * (thrust / weight - Cd / Cl - Math.sin(fpaRad));
   }
 
   /**

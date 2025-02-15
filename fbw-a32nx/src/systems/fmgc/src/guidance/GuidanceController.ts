@@ -218,7 +218,7 @@ export class GuidanceController {
 
     const phase = this.flightPhase.get();
 
-    if (this.symbolConfig.publishDepartureIdent && phase < FmgcFlightPhase.Cruise) {
+    if (this.symbolConfig.PublishDepartureIdent && phase < FmgcFlightPhase.Cruise) {
       if (this.flightPlanService.active.isDepartureProcedureActive) {
         apprMsg = this.flightPlanService.active.originDeparture.ident;
       }

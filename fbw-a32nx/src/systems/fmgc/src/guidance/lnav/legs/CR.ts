@@ -77,7 +77,7 @@ export class CRLeg extends Leg {
       this.isNull = false;
       this.isComputed = true;
 
-      if (LnavConfig.DEBUG_PREDICTED_PATH) {
+      if (LnavConfig.DebugPredictedPath) {
         this.computedPath.push(
           {
             type: PathVectorType.DebugPoint,

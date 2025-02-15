@@ -315,7 +315,7 @@ export class ApproachPathBuilder {
       );
       currentDecelerationAttempt.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.AltitudeConstraint);
 
-      if (VnavConfig.DEBUG_PROFILE && descentSegment.distanceTraveled > 0) {
+      if (VnavConfig.DebugProfile && descentSegment.distanceTraveled > 0) {
         throw new Error('[FMS/VNAV] Descent segment should have a negative distance traveled');
       }
 

@@ -130,7 +130,7 @@ export class DirectToFixTransition extends Transition {
     // FIXME fix for FX legs
     const nextFix = this.nextLeg.fix.location;
 
-    this.radius = (gs ** 2 / (Constants.G * tan(maxBank(tas, true))) / 6997.84) * LnavConfig.TURN_RADIUS_FACTOR;
+    this.radius = (gs ** 2 / (Constants.G * tan(maxBank(tas, true))) / 6997.84) * LnavConfig.TurnRadiusFactor;
 
     let trackChange = MathUtils.diffAngle(
       this.previousLeg.outboundCourse,
@@ -182,7 +182,7 @@ export class DirectToFixTransition extends Transition {
           endPoint: this.lineEndPoint,
         });
 
-        if (LnavConfig.DEBUG_PREDICTED_PATH) {
+        if (LnavConfig.DebugPredictedPath) {
           this.predictedPath.push(...this.getPathDebugPoints());
         }
 
@@ -248,7 +248,7 @@ export class DirectToFixTransition extends Transition {
       sweepAngle: this.arcSweepAngle,
     });
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.predictedPath.push(...this.getPathDebugPoints());
     }
 

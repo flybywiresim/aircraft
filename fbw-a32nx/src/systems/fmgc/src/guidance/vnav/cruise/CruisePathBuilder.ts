@@ -125,7 +125,7 @@ export class CruisePathBuilder {
       sequence.addCheckpointFromStep(accelerationStep, VerticalCheckpointReason.AtmosphericConditions);
     }
 
-    if (VnavConfig.DEBUG_PROFILE && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
+    if (VnavConfig.DebugProfile && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
       console.warn(
         '[FMS/VNAV] An acceleration step in the cruise took us past T/D. This is not implemented properly yet. Blame BBK',
       );

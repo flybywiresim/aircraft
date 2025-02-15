@@ -70,7 +70,7 @@ export class DFLeg extends XFLeg {
       },
     ];
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.computedPath.push(
         {
           type: PathVectorType.DebugPoint,

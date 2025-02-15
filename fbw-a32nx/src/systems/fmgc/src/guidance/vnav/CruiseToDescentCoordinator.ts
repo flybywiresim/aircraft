@@ -33,7 +33,7 @@ export class CruiseToDescentCoordinator {
 
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid unrealistic entries from erroneous pilot input.
     this.lastEstimatedFuelAtDestination = Number.isFinite(estimatedDestinationFuel)
-      ? Math.min(Math.max(estimatedDestinationFuel, 0), this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE)
+      ? Math.min(Math.max(estimatedDestinationFuel, 0), this.acConfig.vnavConfig.MaximumFuelEstimate)
       : 4000;
     this.lastEstimatedTimeAtDestination = 0;
   }

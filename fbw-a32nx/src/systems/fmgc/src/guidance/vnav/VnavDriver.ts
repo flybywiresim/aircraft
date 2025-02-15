@@ -86,7 +86,7 @@ export class VnavDriver implements GuidanceComponent {
     this.constraintReader = new ConstraintReader(flightPlanService, guidanceController);
 
     this.aircraftToDescentProfileRelation = new AircraftToDescentProfileRelation(this.computationParametersObserver);
-    this.descentGuidance = this.acConfig.vnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
+    this.descentGuidance = this.acConfig.vnavConfig.VnavUseLatchedDescentMode
       ? new LatchedDescentGuidance(
           this.acConfig,
           this.guidanceController,
@@ -566,7 +566,7 @@ export class VnavDriver implements GuidanceComponent {
   }
 
   updateDebugInformation() {
-    if (!VnavConfig.DEBUG_GUIDANCE) {
+    if (!VnavConfig.DebugGuidance) {
       return;
     }
 

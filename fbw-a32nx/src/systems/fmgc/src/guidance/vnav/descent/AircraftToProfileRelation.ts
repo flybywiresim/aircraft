@@ -49,7 +49,7 @@ export class AircraftToDescentProfileRelation {
       this.invalidate();
 
       // If the profile is empty, we don't bother logging that it's invalid, because it probably just hasn't been computed yet.
-      if (VnavConfig.DEBUG_PROFILE && profile.checkpoints.length >= 0) {
+      if (VnavConfig.DebugProfile && profile.checkpoints.length >= 0) {
         console.warn('[FMS/VNAV] Invalid profile');
       }
 

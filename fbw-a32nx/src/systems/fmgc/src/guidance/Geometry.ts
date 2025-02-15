@@ -106,7 +106,7 @@ export class Geometry {
 
       // TODO don't transmit any course reversals when this side range >= 160
       const transmitCourseReversal =
-        LnavConfig.DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS ||
+        LnavConfig.DebugForceIncludeCourseReversalVectors ||
         index === activeLegIndex ||
         index === activeLegIndex + 1;
 
@@ -160,7 +160,7 @@ export class Geometry {
   ) {
     this.version++;
 
-    if (LnavConfig.DEBUG_GEOMETRY) {
+    if (LnavConfig.DebugGeometry) {
       console.log(`[FMS/Geometry] Recomputing geometry with current_tas: ${tas}kts`);
       console.time('geometry_recompute');
     }
@@ -181,17 +181,17 @@ export class Geometry {
       }
     }
 
-    if (LnavConfig.DEBUG_GEOMETRY) {
+    if (LnavConfig.DebugGeometry) {
       console.timeEnd('geometry_recompute');
     }
   }
 
   static getLegPredictedTas(leg: Leg, currentTas: number) {
-    return Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, leg.predictedTas ?? currentTas);
+    return Math.max(LnavConfig.DefaultMinPredictedTas, leg.predictedTas ?? currentTas);
   }
 
   static getLegPredictedGs(leg: Leg, currentGs: number) {
-    return Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, leg.predictedGs ?? currentGs);
+    return Math.max(LnavConfig.DefaultMinPredictedTas, leg.predictedGs ?? currentGs);
   }
 
   private computeLeg(
@@ -221,16 +221,16 @@ export class Geometry {
       if (nextLeg) {
         let newInboundTransition: Transition;
         if (
-          LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE === -1 ||
-          index - activeLegIdx < LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE
+          LnavConfig.NumComputedTransitionsAfterActive === -1 ||
+          index - activeLegIdx < LnavConfig.NumComputedTransitionsAfterActive
         ) {
           newInboundTransition = TransitionPicker.forLegs(prevLeg, nextLeg);
         }
 
         let newOutboundTransition: Transition;
         if (
-          (nextNextLeg && LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE === -1) ||
-          index + 1 - activeLegIdx < LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE
+          (nextNextLeg && LnavConfig.NumComputedTransitionsAfterActive === -1) ||
+          index + 1 - activeLegIdx < LnavConfig.NumComputedTransitionsAfterActive
         ) {
           newOutboundTransition = TransitionPicker.forLegs(nextLeg, nextNextLeg);
         }
@@ -409,7 +409,7 @@ export class Geometry {
       }
     }
 
-    if (LnavConfig.DEBUG_GUIDANCE) {
+    if (LnavConfig.DebugGuidance) {
       this.listener.triggerToAllSubscribers(
         'A32NX_FM_DEBUG_LNAV_STATUS',
         // eslint-disable-next-line prefer-template
@@ -544,7 +544,7 @@ export class Geometry {
           flightPlanLeg.calculated = undefined;
         }
 
-        if (LnavConfig.DEBUG_GEOMETRY) {
+        if (LnavConfig.DebugGeometry) {
           console.warn(`[FMS/Geometry] No geometry leg found for flight plan leg ${flightPlanLeg.ident}`);
         }
       } else {

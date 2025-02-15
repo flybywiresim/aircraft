@@ -7,7 +7,7 @@ import {
   PseudoWaypointFlightPlanInfo,
   PseudoWaypointSequencingAction,
 } from '@fmgc/guidance/PseudoWaypoint';
-import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
+import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { NdSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -16,7 +16,7 @@ import { LateralMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { AircraftConfig, VnavDescentMode } from '@fmgc/flightplanning/AircraftConfigTypes';
 
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
@@ -86,14 +86,14 @@ export class PseudoWaypoints implements GuidanceComponent {
   ) {}
 
   acceptVerticalProfile() {
-    if (VnavConfig.DEBUG_PROFILE) {
+    if (VnavConfig.DebugProfile) {
       console.log('[FMS/PWP] Computed new pseudo waypoints because of new vertical profile.');
     }
     this.recompute();
   }
 
   acceptMultipleLegGeometry(_geometry: Geometry) {
-    if (VnavConfig.DEBUG_PROFILE) {
+    if (VnavConfig.DebugProfile) {
       console.log('[FMS/PWP] Computed new pseudo waypoints because of new lateral geometry.');
     }
     this.recompute();
@@ -117,8 +117,7 @@ export class PseudoWaypoints implements GuidanceComponent {
     const totalDistance = navGeometryProfile.totalFlightPlanDistance;
 
     const shouldEmitCdaPwp =
-      this.acConfig.vnavConfig.VNAV_DESCENT_MODE === VnavDescentMode.CDA &&
-      this.acConfig.vnavConfig.VNAV_EMIT_CDA_FLAP_PWP;
+      this.acConfig.vnavConfig.VnavDescentMode === VnavDescentMode.Cda && this.acConfig.vnavConfig.VnavEmitCdaFlapPwp;
 
     // We do this so we only draw the first of each waypoint type
     const waypointsLeftToDraw = new Set([...CHECKPOINTS_TO_PUT_IN_MCDU, ...CHECKPOINTS_TO_DRAW_ON_ND]);
@@ -172,7 +171,7 @@ export class PseudoWaypoints implements GuidanceComponent {
       });
     }
 
-    if (VnavConfig.DEBUG_PROFILE || VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION) {
+    if (VnavConfig.DebugProfile || VnavConfig.AllowDebugParameterInjection) {
       const debugPoint = this.createDebugPwp(geometry, wptCount, totalDistance);
       if (debugPoint) {
         newPseudoWaypoints.push(debugPoint);
@@ -223,7 +222,7 @@ export class PseudoWaypoints implements GuidanceComponent {
    * @param pseudoWaypoint the {@link PseudoWaypoint} to sequence.
    */
   sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
-    if (VnavConfig.DEBUG_GUIDANCE) {
+    if (VnavConfig.DebugGuidance) {
       console.log(`[FMS/PseudoWaypoints] Pseudo-waypoint '${pseudoWaypoint.ident}' sequenced.`);
     }
 
@@ -261,14 +260,14 @@ export class PseudoWaypoints implements GuidanceComponent {
     debugString?: string,
   ): [lla: Coordinates, distanceFromLegTermination: number, legIndex: number] | undefined {
     if (!distanceFromEnd || distanceFromEnd < 0) {
-      if (VnavConfig.DEBUG_PROFILE) {
+      if (VnavConfig.DebugProfile) {
         console.warn('[FMS/PWP](pointFromEndOfPath) distanceFromEnd was negative or undefined');
       }
 
       return undefined;
     }
 
-    if (VnavConfig.DEBUG_PROFILE) {
+    if (VnavConfig.DebugProfile) {
       console.log(`[FMS/PWP] Starting placement of PWP '${debugString}': dist: ${distanceFromEnd.toFixed(2)}nm`);
     }
 
@@ -299,7 +298,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         let lla: Coordinates | undefined;
         if (distanceFromEndOfLeg > totalLegPathLength) {
           // PWP in disco
-          if (VnavConfig.DEBUG_PROFILE) {
+          if (VnavConfig.DebugProfile) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' in discontinuity before leg #${i} (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
             );
@@ -310,7 +309,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in outbound transition segment
           const distanceBeforeTerminator = distanceFromEndOfLeg;
 
-          if (VnavConfig.DEBUG_PROFILE) {
+          if (VnavConfig.DebugProfile) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
             );
@@ -324,7 +323,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in leg segment
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength;
 
-          if (VnavConfig.DEBUG_PROFILE) {
+          if (VnavConfig.DebugProfile) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} leg segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
             );
@@ -335,7 +334,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           // Point is in inbound transition segment
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength - legPartLength;
 
-          if (VnavConfig.DEBUG_PROFILE) {
+          if (VnavConfig.DebugProfile) {
             console.log(
               `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} inbound segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
             );
@@ -348,7 +347,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           return [lla, distanceFromEndOfLeg, i];
         }
 
-        if (VnavConfig.DEBUG_PROFILE) {
+        if (VnavConfig.DebugProfile) {
           console.error(`[FMS/PseudoWaypoints] Tried to place PWP ${debugString} on ${geometryLeg.repr}, but failed`);
         }
 
@@ -371,7 +370,7 @@ export class PseudoWaypoints implements GuidanceComponent {
   ): PseudoWaypoint | undefined {
     let [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = [undefined, undefined, undefined];
 
-    const PWP_IDENT_SPD_LIM = this.acConfig.vnavConfig.LIM_PSEUDO_WPT_LABEL;
+    const PWP_IDENT_SPD_LIM = this.acConfig.vnavConfig.LimPseudoWptLabel;
     const PWP_SPD_LIM_HEADER = PWP_IDENT_SPD_LIM === '(LIM)' ? '\xa0(SPD)' : undefined;
 
     const isLatAutoControlArmedOrActive =

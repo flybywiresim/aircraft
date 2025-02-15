@@ -23,7 +23,7 @@ export class BisectionMethod {
     maxIterations: number = 10,
   ): number {
     if (a > b) {
-      if (VnavConfig.DEBUG_PROFILE) {
+      if (VnavConfig.DebugProfile) {
         console.warn(
           `[FMS/VNAV] Expected b > a in bisection method (${a.toFixed(2)} > ${b.toFixed(2)}). Swapping a, b...`,
         );
@@ -48,7 +48,7 @@ export class BisectionMethod {
         const fc = f(c);
 
         if (isWithinTolerance(fc)) {
-          if (VnavConfig.DEBUG_PROFILE) {
+          if (VnavConfig.DebugProfile) {
             console.log(`[FMS/VNAV] Final error ${fc} after ${i} iterations.`);
           }
 

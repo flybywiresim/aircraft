@@ -14,35 +14,35 @@ import {
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 
 const lnavConfig: LnavConfig = {
-  DEFAULT_MIN_PREDICTED_TAS: 160,
-  TURN_RADIUS_FACTOR: 1.0,
-  NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: -1,
+  DefaultMinPredictedTas: 160,
+  TurnRadiusFactor: 1.0,
+  NumComputedTransitionsAfterActive: -1,
 };
 
 const vnavConfig: VnavConfig = {
-  VNAV_DESCENT_MODE: VnavDescentMode.NORMAL,
-  VNAV_EMIT_CDA_FLAP_PWP: false,
-  VNAV_USE_LATCHED_DESCENT_MODE: false,
-  IDLE_N1_MARGIN: 3,
-  MAXIMUM_FUEL_ESTIMATE: 250_000,
-  LIM_PSEUDO_WPT_LABEL: '(SPDLIM)',
-  VMO: 340,
-  MMO: 0.89,
+  VnavDescentMode: VnavDescentMode.Normal,
+  VnavEmitCdaFlapPwp: false,
+  VnavUseLatchedDescentMode: false,
+  IdleN1Margin: 3,
+  MaximumFuelEstimate: 250_000,
+  LimPseudoWptLabel: '(SPDLIM)',
+  Vmo: 340,
+  Mmo: 0.89,
 };
 
 const flightModelParams: FlightModelParameters = {
-  wingSpan: 262.467,
-  wingArea: 9096,
-  wingEffcyFactor: 0.7,
-  requiredAccelRateKNS: 1.33,
-  requiredAccelRateMS2: 0.684,
-  gravityConstKNS: 19.0626,
-  gravityConstMS2: 9.806665,
-  machValues: [0, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0],
-  dragCoefficientCorrections: [0, 0, 0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0013, 0.002, 0.005, 0.016, 0.1],
-  speedBrakeDrag: 0.0201,
-  gearDrag: 0.00872,
-  dragPolarCoefficients: {
+  WingSpan: 262.467,
+  WingArea: 9096,
+  WingEffcyFactor: 0.7,
+  RequiredAccelRateKNS: 1.33,
+  RequiredAccelRateMS2: 0.684,
+  GravityConstKNS: 19.0626,
+  GravityConstMS2: 9.806665,
+  MachValues: [0, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0],
+  DragCoefficientCorrections: [0, 0, 0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0013, 0.002, 0.005, 0.016, 0.1],
+  SpeedBrakeDrag: 0.0201,
+  GearDrag: 0.00872,
+  DragPolarCoefficients: {
     [FlapConf.CLEAN]: [0.025, -5.48e-3, -0.0192, 0.0582],
     [FlapConf.CONF_1]: [0.0398, -0.0538, 0.1166, -0.064, 0.0303],
     [FlapConf.CONF_2]: [0.0729, -0.0037, -0.0018, 0.0168],
@@ -52,10 +52,10 @@ const flightModelParams: FlightModelParameters = {
 };
 
 const engineModelParams: EngineModelParameters = {
-  maxThrust: 80_213,
-  numberOfEngines: 4,
-  fuelBurnFactor: 1.33,
-  cn1ClimbLimit: [
+  MaxThrust: 80_213,
+  NumberOfEngines: 4,
+  FuelBurnFactor: 1.33,
+  Cn1ClimbLimit: [
     [-2000, 30.8, 56.87, 80.28, 72.0],
     [2000, 20.99, 48.157, 82.58, 74.159],
     [5000, 16.139, 43.216, 84.642, 75.737],
@@ -81,7 +81,7 @@ const engineModelParams: EngineModelParameters = {
    * @param j 1 = Mach 0, 2 = Mach 0.2, 3 = Mach 0.9
    * @returns Corrected N1 (CN1)
    */
-  table1502: [
+  Table1502: [
     [0, 0, 0.2, 0.9],
     [18.2, 0.0, 0.0, 17.0],
     [22.0, 1.9, 1.9, 17.4],
@@ -104,7 +104,7 @@ const engineModelParams: EngineModelParameters = {
    * @param j IAP ratio
    * @returns Corrected N2 (CN2)
    */
-  table1503: [
+  Table1503: [
     [0, 1.0, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313],
     [0.0, 68.2, 69.402657, 70.671269, 73.432244, 76.544349, 78.644882, 78.644882],
     [0.1, 76.0, 77.340205, 78.753906, 81.830654, 85.298688, 87.639458, 87.639458],
@@ -122,7 +122,7 @@ const engineModelParams: EngineModelParameters = {
    * @param j IAP ratio
    * @returns Corrected N2 (CN2)
    */
-  table1504: [
+  Table1504: [
     [0, 1.0, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313],
     [0.0, 63.267593, 64.383271, 65.560133, 68.121427, 71.008456, 72.957073, 72.957073],
     [0.1, 70.503476, 71.746753, 73.058212, 75.912441, 79.129658, 81.301137, 81.301137],
@@ -140,7 +140,7 @@ const engineModelParams: EngineModelParameters = {
    * @param j mach
    * @returns Corrected net thrust (pounds of force)
    */
-  table1506: [
+  Table1506: [
     [0, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     [0, 0.015, -0.15, 0, 0, 0, 0, 0, 0, 0, 0],
     [20, 0.1286, -0.008, 0.015, 0.0337152, -0.0207408, -0.0447408, -0.0684924, -0.2470092, -0.3784788, -0.5864604],
@@ -166,7 +166,7 @@ const engineModelParams: EngineModelParameters = {
 };
 
 const fmsSymbolConfig: FMSymbolsConfig = {
-  publishDepartureIdent: true,
+  PublishDepartureIdent: true,
 };
 
 export const A380AircraftConfig: AircraftConfig = {

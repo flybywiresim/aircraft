@@ -14,36 +14,36 @@ import {
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 
 const lnavConfig: LnavConfig = {
-  DEFAULT_MIN_PREDICTED_TAS: 160,
-  TURN_RADIUS_FACTOR: 1.0,
-  NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: -1,
+  DefaultMinPredictedTas: 160,
+  TurnRadiusFactor: 1.0,
+  NumComputedTransitionsAfterActive: -1,
 };
 
 const vnavConfig: VnavConfig = {
-  VNAV_DESCENT_MODE: VnavDescentMode.NORMAL,
-  VNAV_EMIT_CDA_FLAP_PWP: false,
-  VNAV_USE_LATCHED_DESCENT_MODE: false,
-  IDLE_N1_MARGIN: 2,
-  MAXIMUM_FUEL_ESTIMATE: 40000,
-  LIM_PSEUDO_WPT_LABEL: '(LIM)',
-  VMO: 350,
-  MMO: 0.82,
+  VnavDescentMode: VnavDescentMode.Normal,
+  VnavEmitCdaFlapPwp: false,
+  VnavUseLatchedDescentMode: false,
+  IdleN1Margin: 2,
+  MaximumFuelEstimate: 40000,
+  LimPseudoWptLabel: '(LIM)',
+  Vmo: 350,
+  Mmo: 0.82,
 };
 
 const flightModelParams: FlightModelParameters = {
   Cd0: 0.01873,
-  wingSpan: 117.454,
-  wingArea: 1317.47,
-  wingEffcyFactor: 0.7,
-  requiredAccelRateKNS: 1.33,
-  requiredAccelRateMS2: 0.684,
-  gravityConstKNS: 19.0626,
-  gravityConstMS2: 9.806665,
-  machValues: [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85],
-  dragCoefficientCorrections: [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01],
-  speedBrakeDrag: 0.01008,
-  gearDrag: 0.0372,
-  dragPolarCoefficients: {
+  WingSpan: 117.454,
+  WingArea: 1317.47,
+  WingEffcyFactor: 0.7,
+  RequiredAccelRateKNS: 1.33,
+  RequiredAccelRateMS2: 0.684,
+  GravityConstKNS: 19.0626,
+  GravityConstMS2: 9.806665,
+  MachValues: [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85],
+  DragCoefficientCorrections: [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01],
+  SpeedBrakeDrag: 0.01008,
+  GearDrag: 0.0372,
+  DragPolarCoefficients: {
     [FlapConf.CLEAN]: [0.0215, -0.015, 0.0412, 0.0211],
     [FlapConf.CONF_1]: [0.0398, -0.0538, 0.1166, -0.064, 0.0303],
     [FlapConf.CONF_2]: [0.0729, -0.0037, -0.0018, 0.0168],
@@ -53,10 +53,10 @@ const flightModelParams: FlightModelParameters = {
 };
 
 const engineModelParams: EngineModelParameters = {
-  maxThrust: 27120,
-  numberOfEngines: 2,
-  fuelBurnFactor: 1.0,
-  cn1ClimbLimit: [
+  MaxThrust: 27120,
+  NumberOfEngines: 2,
+  FuelBurnFactor: 1.0,
+  Cn1ClimbLimit: [
     [-2000, 30.8, 56.87, 80.28, 72.0],
     [2000, 20.99, 48.157, 82.58, 74.159],
     [5000, 16.139, 43.216, 84.642, 75.737],
@@ -75,7 +75,7 @@ const engineModelParams: EngineModelParameters = {
     [39000, -45.679, -17.15, 96.205, 84.346],
     [41500, -45.679, -17.15, 95.676, 83.745],
   ],
-  table1502: [
+  Table1502: [
     [0, 0, 0.2, 0.9],
     [18.2, 0.0, 0.0, 17.0],
     [22.0, 1.9, 1.9, 17.4],
@@ -91,7 +91,7 @@ const engineModelParams: EngineModelParameters = {
     [104.0, 85.0, 85.0, 85.5],
     [116.5, 101.0, 101.0, 101.0],
   ],
-  table1503: [
+  Table1503: [
     [0, 1.0, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313],
     [0.0, 68.2, 69.402657, 70.671269, 73.432244, 76.544349, 78.644882, 78.644882],
     [0.1, 76.0, 77.340205, 78.753906, 81.830654, 85.298688, 87.639458, 87.639458],
@@ -102,7 +102,7 @@ const engineModelParams: EngineModelParameters = {
     [0.9, 103.0, 104.81633, 106.0, 110.90207, 115.60217, 118.774528, 118.774528],
     [1.0, 104.2, 106.037491, 107.97575, 112.194133, 116.948991, 120.158309, 120.158309],
   ],
-  table1504: [
+  Table1504: [
     [0, 1.0, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313],
     [0.0, 63.267593, 64.383271, 65.560133, 68.121427, 71.008456, 72.957073, 72.957073],
     [0.1, 70.503476, 71.746753, 73.058212, 75.912441, 79.129658, 81.301137, 81.301137],
@@ -113,7 +113,7 @@ const engineModelParams: EngineModelParameters = {
     [0.9, 95.550763, 97.235732, 98.333795, 102.881334, 107.24151, 110.184435, 110.184435],
     [1.0, 104.2, 106.037491, 107.97575, 112.194133, 116.948991, 120.158309, 120.158309],
   ],
-  table1506: [
+  Table1506: [
     [0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     [20.0, 0.091741, 0.05702, 0.052029, 0.028096, -0.017284, -0.037284, -0.057077, -0.205841, -0.315399, -0.488717],
@@ -139,7 +139,7 @@ const engineModelParams: EngineModelParameters = {
 };
 
 const fmsSymbolConfig: FMSymbolsConfig = {
-  publishDepartureIdent: false,
+  PublishDepartureIdent: false,
 };
 
 export const A320AircraftConfig: AircraftConfig = {
@@ -149,3 +149,5 @@ export const A320AircraftConfig: AircraftConfig = {
   flightModelParameters: flightModelParams,
   fmSymbolConfig: fmsSymbolConfig,
 };
+
+A320AircraftConfig.lnavConfig.DefaultMinPredictedTas = 250;

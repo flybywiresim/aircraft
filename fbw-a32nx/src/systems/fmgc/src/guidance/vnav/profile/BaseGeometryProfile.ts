@@ -509,7 +509,7 @@ export abstract class BaseGeometryProfile {
       secondsFromPresent: 0,
       altitude: presentPosition.alt,
       remainingFuelOnBoard,
-      speed: VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION
+      speed: VnavConfig.AllowDebugParameterInjection
         ? SimVar.GetSimVarValue('L:A32NX_FM_VNAV_DEBUG_SPEED', 'knots')
         : // Not sure what the initial speed should be, but we want it to be above maneuvering speed because predictions will predict a stall and crash otherwise.
           Math.max(SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots'), vman),

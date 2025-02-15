@@ -652,7 +652,7 @@ export class EfisSymbols<T extends number> {
         isCourseReversal &&
         i > flightPlan.activeLegIndex + 1 &&
         range <= 80 &&
-        !LnavConfig.DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS
+        !LnavConfig.DebugForceIncludeCourseReversalVectors
       ) {
         if (leg.definition.turnDirection === 'L') {
           type |= NdSymbolTypeFlags.CourseReversalLeft;
@@ -729,7 +729,7 @@ export class EfisSymbols<T extends number> {
         }
       }
 
-      if (VnavConfig.DEBUG_GUIDANCE && leg.calculated) {
+      if (VnavConfig.DebugGuidance && leg.calculated) {
         constraints.push(`${Math.round(leg.calculated.cumulativeDistanceWithTransitions)}NM`);
         constraints.push(`${Math.round(leg.calculated.cumulativeDistanceToEndWithTransitions)}NM`);
       }

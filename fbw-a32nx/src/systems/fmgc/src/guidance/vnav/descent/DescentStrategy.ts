@@ -214,7 +214,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(midwayAltitude, speed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, midwayAltitude, computedMach, tropoPause) +
-      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IdleN1Margin;
 
     return Predictions.altitudeStep(
       this.acConfig,
@@ -250,7 +250,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
-      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IdleN1Margin;
 
     return Predictions.distanceStep(
       this.acConfig,
@@ -286,7 +286,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
-      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IdleN1Margin;
 
     const initialMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const finalMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, finalSpeed), mach);

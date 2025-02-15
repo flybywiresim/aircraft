@@ -100,7 +100,7 @@ export class AFLeg extends XFLeg {
       sweepAngle: this.sweepAngle,
     });
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,

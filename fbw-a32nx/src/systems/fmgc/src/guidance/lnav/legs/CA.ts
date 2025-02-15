@@ -94,7 +94,7 @@ export class CALeg extends Leg {
       },
     ];
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.computedPath.push(
         {
           type: PathVectorType.DebugPoint,

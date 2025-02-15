@@ -133,7 +133,7 @@ export class PILeg extends Leg {
     this.straight.ftp = this.turn1.itp;
     this.straight.length = distanceTo(this.fix.location, this.turn1.itp);
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.debugPoints.push({
         type: PathVectorType.DebugPoint,
         startPoint: tp,
@@ -191,7 +191,7 @@ export class PILeg extends Leg {
 
     this.outbound.ftp = this.turn2.itp;
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.debugPoints.push({
         type: PathVectorType.DebugPoint,
         startPoint: this.turn2.itp,

@@ -776,7 +776,7 @@ export class HoldEntryTransition extends Transition {
       }
     }
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.computedPath.push(...this.getPathDebugPoints());
     }
 

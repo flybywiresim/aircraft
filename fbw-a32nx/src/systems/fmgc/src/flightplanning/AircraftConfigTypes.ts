@@ -5,9 +5,9 @@
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 
 export enum VnavDescentMode {
-  NORMAL,
-  CDA,
-  DPO,
+  Normal,
+  Cda,
+  Dpo,
 }
 
 export interface AircraftConfig {
@@ -22,43 +22,43 @@ export interface VnavConfig {
   /**
    * VNAV descent calculation mode (NORMAL, CDA or DPO)
    */
-  VNAV_DESCENT_MODE: VnavDescentMode;
+  VnavDescentMode: VnavDescentMode;
 
   /**
    * Whether to emit CDA flap1/2 pseudo-waypoints (only if VNAV_DESCENT_MODE is CDA)
    */
-  VNAV_EMIT_CDA_FLAP_PWP: boolean;
+  VnavEmitCdaFlapPwp: boolean;
 
-  VNAV_USE_LATCHED_DESCENT_MODE: boolean;
+  VnavUseLatchedDescentMode: boolean;
 
   /**
    * Percent N1 to add to the predicted idle N1. The real aircraft does also use a margin for this, but I don't know how much
    */
-  IDLE_N1_MARGIN: number;
+  IdleN1Margin: number;
 
   /**
    * VNAV needs to make an initial estimate of the fuel on board at destination to compute the descent path.
    * We don't want this figure to be too large as it might crash the predictions. So we clamp it to this value.
    * This value is in lbs.
    */
-  MAXIMUM_FUEL_ESTIMATE: number;
+  MaximumFuelEstimate: number;
 
   /**
    * Label used for pseudo-waypoints that mark where the aircraft crosses
    * climb/descent speed limit altitudes.
    * Configurable since different Airbus aircraft use different labels (e.g. A320 vs A380).
    */
-  LIM_PSEUDO_WPT_LABEL: '(LIM)' | '(SPDLIM)';
+  LimPseudoWptLabel: '(LIM)' | '(SPDLIM)';
 
   /**
    * The maximum operating speed in knots
    */
-  VMO: number;
+  Vmo: number;
 
   /**
    * The maximum operating Mach number
    */
-  MMO: number;
+  Mmo: number;
 }
 
 /** Only covers aircraft specific configs, no debug switches */
@@ -68,28 +68,28 @@ export interface LnavConfig {
   /**
    * The minimum TAS we ever compute guidables with
    */
-  DEFAULT_MIN_PREDICTED_TAS: number;
+  DefaultMinPredictedTas: number;
 
   /**
    * Coefficient applied to all transition turn radii
    */
-  TURN_RADIUS_FACTOR: number;
+  TurnRadiusFactor: number;
 
   /**
    * The number of transitions to compute after the active leg (-1: no limit, compute all transitions)
    */
-  NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: number;
+  NumComputedTransitionsAfterActive: number;
 }
 
 export interface EngineModelParameters {
   /** In pounds of force. Used as a multiplier for results of table 1506 */
-  maxThrust: number;
+  MaxThrust: number;
 
   /** Well... how many engines the plen has */
-  numberOfEngines: number;
+  NumberOfEngines: number;
 
   /** Fuel burn relative to A320 / base implementation */
-  fuelBurnFactor: number;
+  FuelBurnFactor: number;
 
   /**
    * Maximum corrected N1 in CLB thrust
@@ -102,7 +102,7 @@ export interface EngineModelParameters {
    * 5. CN1 Last - the engine's N1 fan speed limit at the LP temperature.
    * @returns Corrected N1 (CN1)
    */
-  cn1ClimbLimit: readonly (readonly number[])[];
+  Cn1ClimbLimit: readonly (readonly number[])[];
 
   /**
    * Table 1502 - CN2 vs CN1 @ Mach 0, 0.2, 0.9
@@ -111,7 +111,7 @@ export interface EngineModelParameters {
    * @param j 1 = Mach 0, 2 = Mach 0.2, 3 = Mach 0.9
    * @returns Corrected N1 (CN1)
    */
-  table1502: readonly (readonly number[])[];
+  Table1502: readonly (readonly number[])[];
 
   /**
    * Table 1503 - Turbine LoMach (0) CN2 vs. Throttle @ IAP Ratio 1.00000000, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313
@@ -120,7 +120,7 @@ export interface EngineModelParameters {
    * @param j IAP ratio
    * @returns Corrected N2 (CN2)
    */
-  table1503: readonly (readonly number[])[];
+  Table1503: readonly (readonly number[])[];
 
   /**
    * Table 1504 - Turbine HiMach (0.9) CN2 vs. Throttle @ IAP Ratio 1.00000000, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313
@@ -129,7 +129,7 @@ export interface EngineModelParameters {
    * @param j IAP ratio
    * @returns Corrected N2 (CN2)
    */
-  table1504: readonly (readonly number[])[];
+  Table1504: readonly (readonly number[])[];
 
   /**
    * Table 1506 - Corrected net Thrust vs CN1 @ Mach 0 to 0.9 in 0.1 steps
@@ -138,48 +138,48 @@ export interface EngineModelParameters {
    * @param j mach
    * @returns Corrected net thrust (pounds of force)
    */
-  table1506: readonly (readonly number[])[];
+  Table1506: readonly (readonly number[])[];
 }
 
 export interface FlightModelParameters {
   Cd0?: number;
 
-  wingSpan: number;
+  WingSpan: number;
 
-  wingArea: number;
+  WingArea: number;
 
-  wingEffcyFactor: number;
-
-  /** in knots/second */
-  requiredAccelRateKNS: number;
-
-  /** in m/s^2 */
-  requiredAccelRateMS2: number;
+  WingEffcyFactor: number;
 
   /** in knots/second */
-  gravityConstKNS: number;
+  RequiredAccelRateKNS: number;
 
   /** in m/s^2 */
-  gravityConstMS2: number;
+  RequiredAccelRateMS2: number;
+
+  /** in knots/second */
+  GravityConstKNS: number;
+
+  /** in m/s^2 */
+  GravityConstMS2: number;
 
   /** From https://github.com/flybywiresim/a32nx/pull/6903#issuecomment-1073168320 */
-  machValues: Mach[];
+  MachValues: Mach[];
 
-  dragCoefficientCorrections: number[];
-
-  /** Drag coefficient increase due to extended speed brake */
-  speedBrakeDrag: number;
+  DragCoefficientCorrections: number[];
 
   /** Drag coefficient increase due to extended speed brake */
-  gearDrag: number;
+  SpeedBrakeDrag: number;
+
+  /** Drag coefficient increase due to extended speed brake */
+  GearDrag: number;
 
   /**
    * Coefficents for the drag polar polynomial. The drag polar polynomial maps Cl to Cd.
    * The coefficients are ordered in increasing powers of Cl.
    */
-  dragPolarCoefficients: Record<FlapConf, number[]>;
+  DragPolarCoefficients: Record<FlapConf, number[]>;
 }
 
 export interface FMSymbolsConfig {
-  publishDepartureIdent: boolean;
+  PublishDepartureIdent: boolean;
 }

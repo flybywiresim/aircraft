@@ -151,7 +151,7 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
             initialAltitude,
             computedMach,
             tropoPause,
-          ) + this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+          ) + this.acConfig.vnavConfig.IdleN1Margin;
 
     return Predictions.verticalSpeedStepWithSpeedChange(
       this.acConfig,
@@ -277,7 +277,7 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
             initialAltitude,
             computedMach,
             tropoPause,
-          ) + this.acConfig.vnavConfig.IDLE_N1_MARGIN;
+          ) + this.acConfig.vnavConfig.IdleN1Margin;
 
     return Predictions.speedChangeStep(
       this.acConfig,

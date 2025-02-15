@@ -119,7 +119,7 @@ export class TacticalDescentPathBuilder {
       );
     }
 
-    if (VnavConfig.DEBUG_PROFILE && numRecomputations >= 100) {
+    if (VnavConfig.DebugProfile && numRecomputations >= 100) {
       console.warn('[FMS/VNAV] Tactical path iteration terminated after 100 iterations. This indicates a logic error.');
     }
 
@@ -188,7 +188,7 @@ export class TacticalDescentPathBuilder {
       sequence.lastCheckpoint.reason = VerticalCheckpointReason.CrossingFcuAltitudeDescent;
     }
 
-    if (VnavConfig.DEBUG_PROFILE && numRecomputations >= 100) {
+    if (VnavConfig.DebugProfile && numRecomputations >= 100) {
       console.warn('[FMS/VNAV] Tactical path iteration terminated after 100 iterations. This is a bug.');
     }
 

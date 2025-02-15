@@ -35,9 +35,9 @@ export class CostIndex {
     const correctedThrust = thrust / delta2 / 2;
     // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
     const correctedN1 = EngineModel.reverseTableInterpolation(
-      config.engineModelParameters.table1506,
+      config.engineModelParameters.Table1506,
       mach,
-      correctedThrust / config.engineModelParameters.maxThrust,
+      correctedThrust / config.engineModelParameters.MaxThrust,
     );
 
     // Fuel flow units are lbs/hr
@@ -60,7 +60,7 @@ export class CostIndex {
    * @returns mach
    */
   static initialMachEstimate(config: AircraftConfig, weight: number, delta: number): number {
-    return 1.565 * Math.sqrt(weight / (1481 * config.flightModelParameters.wingArea * delta));
+    return 1.565 * Math.sqrt(weight / (1481 * config.flightModelParameters.WingArea * delta));
   }
 
   /**

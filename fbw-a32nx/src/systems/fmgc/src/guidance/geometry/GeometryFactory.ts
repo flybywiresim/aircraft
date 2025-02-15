@@ -101,7 +101,7 @@ export namespace GeometryFactory {
   export function updateFromFlightPlan(geometry: Geometry, flightPlan: BaseFlightPlan, doGenerateTransitions = true) {
     geometry.version++;
 
-    if (LnavConfig.DEBUG_GEOMETRY) {
+    if (LnavConfig.DebugGeometry) {
       console.log('[Fms/Geometry/Update] Starting geometry update.');
     }
 
@@ -145,7 +145,7 @@ export namespace GeometryFactory {
         newLeg.isNull = true;
       }
 
-      if (LnavConfig.DEBUG_GEOMETRY) {
+      if (LnavConfig.DebugGeometry) {
         console.log(`[FMS/Geometry/Update] Old leg #${i} = ${oldLeg?.repr ?? '<none>'}`);
         console.log(`[FMS/Geometry/Update] New leg #${i} = ${newLeg?.repr ?? '<none>'}`);
       }
@@ -153,7 +153,7 @@ export namespace GeometryFactory {
       const legsMatch = oldLeg?.repr === newLeg?.repr;
 
       if (legsMatch) {
-        if (LnavConfig.DEBUG_GEOMETRY) {
+        if (LnavConfig.DebugGeometry) {
           console.log('[FMS/Geometry/Update] Old and new leg are the same. Keeping old leg.');
         }
 
@@ -180,7 +180,7 @@ export namespace GeometryFactory {
           }
         }
       } else {
-        if (LnavConfig.DEBUG_GEOMETRY) {
+        if (LnavConfig.DebugGeometry) {
           if (!oldLeg) console.log('[FMS/Geometry/Update] No old leg. Adding new leg.');
           else if (!newLeg) console.log('[FMS/Geometry/Update] No new leg. Removing old leg.');
           else console.log('[FMS/Geometry/Update] Old and new leg are different. Keeping new leg.');
@@ -194,7 +194,7 @@ export namespace GeometryFactory {
           if (prevLeg && doGenerateTransitions && doGenerateTransitionsForLeg(newLeg, i, flightPlan)) {
             const newInboundTransition = TransitionPicker.forLegs(prevLeg, newLeg);
 
-            if (LnavConfig.DEBUG_GEOMETRY) {
+            if (LnavConfig.DebugGeometry) {
               console.log(
                 `[FMS/Geometry/Update] Set new inbound transition for new leg (${newInboundTransition?.repr ?? '<none>'})`,
               );
@@ -223,7 +223,7 @@ export namespace GeometryFactory {
       const legAfterLastWpt = index >= flightPlan.legCount;
 
       if (legBeforePrev || legAfterLastWpt) {
-        if (LnavConfig.DEBUG_GEOMETRY) {
+        if (LnavConfig.DebugGeometry) {
           console.log(
             `[FMS/Geometry/Update] Removed leg #${index} (${geometry.legs.get(index)?.repr ?? '<unknown>'}) because of trimming.`,
           );
@@ -234,7 +234,7 @@ export namespace GeometryFactory {
       }
     }
 
-    if (LnavConfig.DEBUG_GEOMETRY) {
+    if (LnavConfig.DebugGeometry) {
       console.log('[Fms/Geometry/Update] Done with geometry update.');
     }
   }
@@ -357,7 +357,7 @@ function geometryLegFromFlightPlanLeg(
 }
 
 function doGenerateTransitionsForLeg(leg: Leg, legIndex: number, plan: BaseFlightPlan) {
-  const generateAllTransitions = LnavConfig.NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE === -1;
+  const generateAllTransitions = LnavConfig.NumComputedTransitionsAfterActive === -1;
   const positionFromActiveLeg = legIndex - plan.activeLegIndex;
 
   const inRange = generateAllTransitions || positionFromActiveLeg < 2;

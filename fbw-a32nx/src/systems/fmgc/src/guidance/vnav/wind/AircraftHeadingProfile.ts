@@ -67,7 +67,7 @@ export class NavHeadingProfile implements AircraftHeadingProfile {
       distanceFromStart += legDistance;
 
       if (!Number.isFinite(leg.outboundCourse)) {
-        if (VnavConfig.DEBUG_PROFILE) {
+        if (VnavConfig.DebugProfile) {
           console.warn('[FMS/VNAV] Non-numerical outbound course encountered on leg: ', leg);
         }
 

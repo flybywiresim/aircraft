@@ -106,7 +106,7 @@ export class CFLeg extends XFLeg {
 
     this.isComputed = true;
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.computedPath.push(
         {
           type: PathVectorType.DebugPoint,

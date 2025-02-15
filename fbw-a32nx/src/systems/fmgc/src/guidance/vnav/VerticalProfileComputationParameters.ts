@@ -138,7 +138,7 @@ export class VerticalProfileComputationParametersObserver {
       cleanSpeed: this.fmgc.getCleanSpeed(),
     };
 
-    if (VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION) {
+    if (VnavConfig.AllowDebugParameterInjection) {
       this.parameters.flightPhase = FmgcFlightPhase.Descent;
       this.parameters.presentPosition.alt = SimVar.GetSimVarValue('L:A32NX_FM_VNAV_DEBUG_ALTITUDE', 'feet');
       this.parameters.fcuVerticalMode = VerticalMode.DES;

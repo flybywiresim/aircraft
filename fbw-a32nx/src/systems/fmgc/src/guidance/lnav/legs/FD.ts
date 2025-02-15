@@ -57,7 +57,7 @@ export class FDLeg extends Leg {
       endPoint: this.getPathEndPoint(),
     });
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,
@@ -99,7 +99,7 @@ export class FDLeg extends Leg {
       endPoint: this.getPathEndPoint(),
     });
 
-    if (LnavConfig.DEBUG_PREDICTED_PATH) {
+    if (LnavConfig.DebugPredictedPath) {
       this.predictedPath.push(
         {
           type: PathVectorType.DebugPoint,

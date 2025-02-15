@@ -387,7 +387,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   queuedOperations: [op: FlightPlanQueuedOperation, param: any][] = [];
 
   enqueueOperation(op: FlightPlanQueuedOperation, param?: any): void {
-    if (LnavConfig.VERBOSE_FPM_LOG) {
+    if (LnavConfig.VerboseFpmLog) {
       console.trace('[fpm] enqueueOperation', op, param);
     }
 
@@ -406,7 +406,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   async flushOperationQueue() {
-    if (LnavConfig.VERBOSE_FPM_LOG) {
+    if (LnavConfig.VerboseFpmLog) {
       console.trace('[fpm] flushOperationQueue');
     }
 
@@ -460,7 +460,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   syncSegmentLegsChange(segment: FlightPlanSegment) {
-    if (LnavConfig.VERBOSE_FPM_LOG) {
+    if (LnavConfig.VerboseFpmLog) {
       console.log(`[fpm] syncSegmentLegsChange - ${segment.constructor.name}`);
     }
 
@@ -1217,7 +1217,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   protected removeForcedTurnAt(index: number) {
     const leg = this.maybeElementAt(index);
     if (leg?.isDiscontinuity === false) {
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.log(`[fpm] removeForcedTurnAt - ${leg.ident}`);
       }
 
@@ -1961,7 +1961,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   private stringSegmentsForwards(first: FlightPlanSegment, second: FlightPlanSegment) {
-    if (LnavConfig.VERBOSE_FPM_LOG) {
+    if (LnavConfig.VerboseFpmLog) {
       console.log(`[fpm] stringSegmentsForwards (${first.constructor.name}, ${second.constructor.name})`);
     }
 
@@ -1973,7 +1973,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       second.allLegs.length === 0 ||
       (second instanceof EnrouteSegment && second.isSequencedMissedApproach)
     ) {
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsForwards - RETURN');
       }
       return;
@@ -1988,7 +1988,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     const lastLegInFirst = first.allLegs[lastElementInFirstIndex];
     if (!lastLegInFirst || lastLegInFirst?.isDiscontinuity === true) {
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsForwards - RETURN - no lastLegInFirst or lastLegInFirst is discontinuity');
       }
       return;
@@ -1996,7 +1996,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (first instanceof OriginSegment && first.lastLeg?.waypointDescriptor === WaypointDescriptor.Runway) {
       // Always string origin with only a runway to next segment
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsForwards - RETURN - last leg of OriginSegment as first segment is a runway');
       }
       first.strung = true;
@@ -2011,7 +2011,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     // Arrival and approach will be strung backwards
     if (firstIsArrival && secondIsApproach) {
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsForwards - RETURN - first is arrival + second is approach');
       }
       return;
@@ -2020,7 +2020,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (first instanceof ApproachSegment && second instanceof DestinationSegment) {
       // Always string approach to destination
       first.strung = true;
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsForwards - first.strung = true');
         console.trace('[fpm] stringSegmentsForwards - RETURN - first is approach + second is destination');
       }
@@ -2033,7 +2033,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     ) {
       // Always string approach to missed
       first.strung = true;
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsForwards - first.strung = true');
         console.trace('[fpm] stringSegmentsForwards - RETURN - first is destination or approach + second is missed');
       }
@@ -2068,7 +2068,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             this.mergeConstraints(element, lastLegInFirst);
 
-            if (LnavConfig.VERBOSE_FPM_LOG) {
+            if (LnavConfig.VerboseFpmLog) {
               console.trace('[fpm] stringSegmentsForwards - popping legs of first');
             }
 
@@ -2082,7 +2082,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const xfToFx = lastLegInFirst.isXF() && element.isFX();
 
         if (xfToFx && lastLegInFirst.terminatesWithWaypoint(element.terminationWaypoint())) {
-          if (LnavConfig.VERBOSE_FPM_LOG) {
+          if (LnavConfig.VerboseFpmLog) {
             console.log(`[fpm] stringSegmentsForwards - cutBefore (xfToFx) = ${i}`);
           }
           cutBefore = i;
@@ -2092,7 +2092,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const xiToXf = lastLegInFirst.isXI() && element.isXF();
 
         if (xiToXf) {
-          if (LnavConfig.VERBOSE_FPM_LOG) {
+          if (LnavConfig.VerboseFpmLog) {
             console.log(`[fpm] stringSegmentsForwards - cutBefore (xiToXf)) = ${i}`);
           }
 
@@ -2124,7 +2124,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     // If no matching leg is found, insert a discontinuity (if there isn't one already) at the end of the first segment
     if (cutBefore === -1 || originAndDestination) {
       if (lastElementInFirst.isDiscontinuity === false && second.allLegs[0]?.isDiscontinuity === false) {
-        if (LnavConfig.VERBOSE_FPM_LOG) {
+        if (LnavConfig.VerboseFpmLog) {
           console.trace('[fpm] stringSegmentsForwards - add discontinuity to first');
         }
         first.allLegs.push({ isDiscontinuity: true });
@@ -2137,7 +2137,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     // Otherwise, clear a possible discontinuity and remove all elements before the matching leg and the last leg of the first segment
     if (lastElementInFirst.isDiscontinuity === true) {
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsForwards - popping legs of first');
       }
       first.allLegs.pop();
@@ -2145,7 +2145,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     for (let i = 0; i < cutBefore; i++) {
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsForwards - popping legs of second');
       }
       second.allLegs.shift();
@@ -2157,12 +2157,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   private stringSegmentsBackwards(first: FlightPlanSegment, second: FlightPlanSegment) {
-    if (LnavConfig.VERBOSE_FPM_LOG) {
+    if (LnavConfig.VerboseFpmLog) {
       console.log(`[fpm] stringSegmentsBackwards (${first.constructor.name}, ${second.constructor.name})`);
     }
 
     if (!first || !second || first.allLegs.length === 0 || second.allLegs.length === 0) {
-      if (LnavConfig.VERBOSE_FPM_LOG) {
+      if (LnavConfig.VerboseFpmLog) {
         console.trace('[fpm] stringSegmentsBackwards cancelled');
       }
       return;

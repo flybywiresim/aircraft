@@ -109,7 +109,7 @@ export class CILeg extends Leg {
 
       this.isComputed = true;
 
-      if (LnavConfig.DEBUG_PREDICTED_PATH) {
+      if (LnavConfig.DebugPredictedPath) {
         this.computedPath.push(
           {
             type: PathVectorType.DebugPoint,

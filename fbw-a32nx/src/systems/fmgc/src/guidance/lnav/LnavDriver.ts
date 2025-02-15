@@ -110,7 +110,7 @@ export class LnavDriver implements GuidanceComponent {
       const outboundTrans = geometry.transitions.get(activeLegIdx) ? geometry.transitions.get(activeLegIdx) : null;
 
       if (!activeLeg) {
-        if (LnavConfig.DEBUG_GUIDANCE) {
+        if (LnavConfig.DebugGuidance) {
           console.log('[FMS/LNAV] No leg at activeLegIdx!');
         }
         return;
@@ -358,7 +358,7 @@ export class LnavDriver implements GuidanceComponent {
         console.error('[FMS/LNAV] Guidance parameters from geometry are null.');
       }
 
-      if (LnavConfig.DEBUG_GUIDANCE) {
+      if (LnavConfig.DebugGuidance) {
         SimVar.SetSimVarValue('L:A32NX_FM_TURN_STATE', 'Enum', this.turnState);
       }
 
@@ -453,7 +453,7 @@ export class LnavDriver implements GuidanceComponent {
     const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
 
     const nauticalMilesToGo = distanceTo(this.ppos, termination);
-    const secondsToGo = (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
+    const secondsToGo = (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DefaultMinPredictedTas, gs)) * 3600;
 
     const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
 

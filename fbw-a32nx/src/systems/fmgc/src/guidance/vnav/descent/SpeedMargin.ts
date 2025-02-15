@@ -14,8 +14,8 @@ export class SpeedMargin {
     private aircraftConfig: AircraftConfig,
     private observer: VerticalProfileComputationParametersObserver,
   ) {
-    this.vmo = this.aircraftConfig.vnavConfig.VMO;
-    this.mmo = this.aircraftConfig.vnavConfig.MMO;
+    this.vmo = this.aircraftConfig.vnavConfig.Vmo;
+    this.mmo = this.aircraftConfig.vnavConfig.Mmo;
   }
 
   getTarget(indicatedAirspeed: Knots, targetSpeed: Knots): Knots {

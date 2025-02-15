@@ -3,22 +3,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-export enum VnavDescentMode {
-  NORMAL,
-  CDA,
-  DPO,
-}
-
 export const VnavConfig = {
   /**
    * Whether to pring debug information and errors during the VNAV computation.
    */
-  DEBUG_PROFILE: false,
+  DebugProfile: false,
 
   /**
    * Whether to print guidance debug information on the ND
    */
-  DEBUG_GUIDANCE: false,
+  DebugGuidance: false,
 
   /**
    * Whether to use debug simvars (VNAV_DEBUG_*) to determine aircraft position and state.
@@ -29,5 +23,5 @@ export const VnavConfig = {
    * - A32NX_FM_VNAV_DEBUG_SPEED: Indicates the indicated airspeed (kts) VNAV uses for predictions
    * - A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END: Indicates the distance (NM) to end VNAV uses for predictions
    */
-  ALLOW_DEBUG_PARAMETER_INJECTION: false,
+  AllowDebugParameterInjection: false,
 };
