@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "resolveJsonModule" : true,
+    "paths": {
+      "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
+      "@flybywiresim/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
+      "@flybywiresim/checklists": ["../../../fbw-common/src/systems/shared/src/checklists/index.ts"]
+    }
+  }
+}

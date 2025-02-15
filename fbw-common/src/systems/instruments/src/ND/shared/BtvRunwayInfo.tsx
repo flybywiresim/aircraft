@@ -3,11 +3,11 @@
 
 import { FSComponent, DisplayComponent, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
 
-import { Arinc429LocalVarConsumerSubject, ArincEventBus, BtvData, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, ArincEventBus, BtvData, FmsOansData, FmsData } from '@flybywiresim/fbw-sdk';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<FmsOansData & BtvData>();
+  private readonly sub = this.props.bus.getArincSubscriber<FmsOansData & FmsData & BtvData>();
 
   private readonly fmsRwyIdent = ConsumerSubject.create(this.sub.on('fmsLandingRunway'), null);
 
