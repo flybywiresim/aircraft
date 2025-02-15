@@ -631,6 +631,7 @@
     "Real": "Tikra",
     "Realism": {
       "AdirsAlignTime": "ADIRS sulygiavimo trukmė",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Automatinis patikrinimų sąrašo pildymas",
       "BoardingTime": "Laipinimo trukmė",
       "DmcSelfTestTime": "DMC automatinio patikrinimo trukmė",

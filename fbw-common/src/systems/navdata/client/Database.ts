@@ -19,6 +19,9 @@ import {
   DatabaseIdent,
   DataInterface,
   RestrictiveAirspace,
+  Fix,
+  SectionCode,
+  AirportSubsectionCode,
 } from '../shared';
 import { AirportCommunication } from '../shared/types/Communication';
 import { ControlledAirspace } from '../shared/types/Airspace';
@@ -129,7 +132,10 @@ export class Database {
     return this.backend.getAirways(idents);
   }
 
-  public async getAirwaysByFix(fix: Waypoint | NdbNavaid | VhfNavaid, airwayIdent?: string): Promise<Airway[]> {
+  public async getAirwaysByFix(fix: Fix, airwayIdent?: string): Promise<Airway[]> {
+    if (fix.sectionCode === SectionCode.Airport && fix.subSectionCode === AirportSubsectionCode.ReferencePoints) {
+      return [];
+    }
     return this.backend.getAirwaysByFix(fix.ident, fix.icaoCode, airwayIdent);
   }
 

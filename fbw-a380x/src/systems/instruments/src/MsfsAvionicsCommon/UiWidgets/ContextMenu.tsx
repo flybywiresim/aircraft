@@ -28,9 +28,9 @@ interface ContextMenuProps extends ComponentProps {
  */
 export class ContextMenu extends DisplayComponent<ContextMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private contextMenuRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly contextMenuRef = FSComponent.createRef<HTMLDivElement>();
 
   private renderedMenuItems: ContextMenuElement[] = [];
 
@@ -122,5 +122,19 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
 
   render(): VNode {
     return <div ref={this.contextMenuRef} class="mfd-context-menu" />;
+  }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+
+    this.renderedMenuItems?.forEach((val, i) => {
+      document
+        .getElementById(`${this.props.idPrefix}_${i}`)
+        ?.removeEventListener('click', this.onItemClick.bind(this, val));
+    });
+
+    super.destroy();
   }
 }

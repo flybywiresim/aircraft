@@ -137,6 +137,30 @@
 1. [ATSU] Add MSFS as TAF source in MSFS2024 - @tracernz (Mike)
 1. [A380X/MFD] Fix wrong Landing weight calculation & block fuel not editable across flights in FUEL & LOAD - @BravoMike99 (bruno_pt99)
 1. [A32NX/FMS] Add terminal area database holds for MSFS2024 - @tracernz (Mike)
+1. [EFB] Set EFB Auto Brightness to default to On - @MrJigs7 (MrJigs)
+1. [FMS] Allow airport to be loaded as fixes in instrument procedures - @tracernz (Mike)
+1. [A380X/ND] Fix Terr text wrong position on terrain radar - @MrJigs7 (MrJigs.)
+1. [A380X/FMS] Vapp wind correction calculation fix - @Waveif (waveif)
+1. [A380X/MFD] Fixed FLT NBR not displaying as a mandatory input field - @jet2code (john.xyz)
+1. [A380X/PFD] Add FCU ALT ABOVE/BELOW A/C FMA messages - @Pruznak (Pruznak)
+1. [A380X/MFD] Updated disabled input field styling - @jet2code (john)
+1. [A380X/FMS] Add page scroll via soft keys & individual scroll via KCCU on MFD F-PLN - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Added nav database swap confirmation - @tracernz (Mike)
+1. [A380X/FMS] Add basic FIX INFO functionality - @Benjozork (Benjamin Dupont)
+1. [A380X/FMS] Add STEP ALTs tab on VERT REV page & auto step climb functionality - @flogross89 (floridude)
+1. [A380X/FMS] Add selection of CLB/DES constraint if constraint type is unknown - @flogross89 (floridude)
+1. [FMS] Fix approach ident only showing on ND when approach is being flown - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Add support for deferred procedures, abnormal (non-)sensed procedures - @flogross89 (floridude)
+1. [A380X/FWS] Enable FWS failures (FWS 1/2, FWS 1+2, ECP, Audio Function) - @flogross89 (floridude)
+1. [A380X/PDF] Fix inverted color in the meter altitude indicator below and above the MDA - @ItzARz (Albert)
+1. [A380X/BTV] Add EXIT MISSED indication on FMA and aural triple click - @flogross89 (floridude)
+1. [A380X/OANS] Add flags/crosses capability, change cursor to magenta, implement ARPT NAV reset button - @flogross89 (floridude)
+1. [A32NX/MCDU] Show ground & cruise temperature sign on init page if positive - @BravoMike99 (bruno_pt99)
+1. [A380X/OANS] Fix BTV fallback mode; Enable BTV fallback if ARPT NAV reset button is pulled - @flogross89 (floridude)
+1. [A380X/Flight Model] Flight model update incl stall & auto-rotate fix for FS2020 & 2024 - @donstim (donbikes) & @saschl (saschl)
+1. [EFB] Navigraph subscriptions other than Ultimate are now shown on the EFB to reduce confusion with "Unknown" - @tracernz (Mike)
+1. [A380X/FWS] Add RAT OUT, REFUEL PNL DOOR, HI ALT AIRPORT & REFUELING/DEFUELING memos - @BravoMike99 (bruno_pt99)
+1. [A380X/ND] Correct positioning of TCAS Messages and added TCAS STBY - @MrJigs7 (MrJigs)
 
 ## 0.12.0
 
@@ -257,6 +281,7 @@
 1. [FMS] Run vertical predictions without V-speeds - @BlueberryKing (BlueberryKing)
 1. [ELEC] Use ADIRU and LGCIU signals for speed and in flight determination - @Gurgel100 (Pascal)
 1. [FMS] Do not transmit bearing information to ND on manual legs - @BravoMike99 (bruno_pt99)
+1. [FMS] Remove forced turn on following leg after leg insertion - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 

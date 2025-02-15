@@ -631,6 +631,7 @@
     "Real": "Todellinen",
     "Realism": {
       "AdirsAlignTime": "ADIRS:in kohdistuksen kesto",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Tarkistuslistan täyttö automaattisesti",
       "BoardingTime": "Koneeseennousuaika",
       "DmcSelfTestTime": "DMC itsenäisen testauksen aika",

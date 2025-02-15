@@ -47,6 +47,11 @@ export const SimOptionsPage = () => {
   const [cabinManualBrightness, setCabinManualBrightness] = usePersistentNumberProperty('CABIN_MANUAL_BRIGHTNESS', 0);
   const [pilotSeat, setPilotSeat] = usePersistentProperty('CONFIG_PILOT_SEAT', DefaultPilotSeatConfig);
 
+  const [oansPerformanceMode, setOansPerformanceMode] = usePersistentNumberProperty(
+    'CONFIG_A380X_OANS_PERFORMANCE_MODE',
+    0,
+  );
+
   const defaultBaroButtons: ButtonType[] = [
     { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
     { name: t('Settings.SimOptions.inHg'), setting: 'IN HG' },
@@ -280,6 +285,12 @@ export const SimOptionsPage = () => {
                 </SettingItem>
               )}
             </SettingGroup>
+          )}
+
+          {aircraftContext.settingsPages.sim.oansPerformanceMode && (
+            <SettingItem name={t('Settings.SimOptions.OansPerformanceMode')}>
+              <Toggle value={!!oansPerformanceMode} onToggle={(value) => setOansPerformanceMode(value ? 1 : 0)} />
+            </SettingItem>
           )}
         </SettingsPage>
       )}

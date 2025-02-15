@@ -25,7 +25,7 @@ export interface PFDSimvars {
   fmaModeReversion: boolean;
   fmaSpeedProtection: boolean;
   AThrMode: number;
-  apVsSelected: number;
+  selectedVs: number;
   approachCapability: number;
   ap1Active: boolean;
   ap2Active: boolean;
@@ -167,6 +167,7 @@ export interface PFDSimvars {
   spoilersArmed: boolean;
   fcuLeftVelocityVectorOn: boolean;
   fcuRightVelocityVectorOn: boolean;
+  btvExitMissed: boolean;
 }
 
 export enum PFDVars {
@@ -193,7 +194,7 @@ export enum PFDVars {
   fmaModeReversion = 'L:A32NX_FMA_MODE_REVERSION',
   fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
   AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
-  apVsSelected = 'L:A32NX_AUTOPILOT_VS_SELECTED',
+  selectedVs = 'L:A32NX_AUTOPILOT_VS_SELECTED',
   approachCapability = 'L:A32NX_APPROACH_CAPABILITY',
   ap1Active = 'L:A32NX_AUTOPILOT_1_ACTIVE',
   ap2Active = 'L:A32NX_AUTOPILOT_2_ACTIVE',
@@ -329,11 +330,12 @@ export enum PFDVars {
   lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   trimPosition = 'ELEVATOR TRIM POSITION',
-  cgPercent = 'CG PERCENT',
+  cgPercent = 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
   fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
   fcuRightVelocityVectorOn = 'L:A380X_EFIS_R_VV_BUTTON_IS_ON',
+  btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -361,7 +363,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fmaModeReversion', { name: PFDVars.fmaModeReversion, type: SimVarValueType.Bool }],
     ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Bool }],
     ['AThrMode', { name: PFDVars.AThrMode, type: SimVarValueType.Number }],
-    ['apVsSelected', { name: PFDVars.apVsSelected, type: SimVarValueType.FPM }],
+    ['selectedVs', { name: PFDVars.selectedVs, type: SimVarValueType.FPM }],
     ['approachCapability', { name: PFDVars.approachCapability, type: SimVarValueType.Number }],
     ['ap1Active', { name: PFDVars.ap1Active, type: SimVarValueType.Bool }],
     ['ap2Active', { name: PFDVars.ap2Active, type: SimVarValueType.Bool }],
@@ -500,6 +502,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
     ['fcuLeftVelocityVectorOn', { name: PFDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],
     ['fcuRightVelocityVectorOn', { name: PFDVars.fcuRightVelocityVectorOn, type: SimVarValueType.Bool }],
+    ['btvExitMissed', { name: PFDVars.btvExitMissed, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
