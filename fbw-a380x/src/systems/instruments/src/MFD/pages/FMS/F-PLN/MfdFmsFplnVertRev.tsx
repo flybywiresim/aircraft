@@ -36,9 +36,13 @@ import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { getEtaFromUtcOrPresent } from 'instruments/src/MFD/shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { SpeedLimitType } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {}
+
+enum SpeedLimitType {
+  CLB,
+  DES,
+}
 
 export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly selectedPageIndex = Subject.create(0);
@@ -571,12 +575,19 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     if (value === null) {
       this.deleteSpeedLimit();
     } else if (this.checkPerformanceDataEditCondition()) {
-      this.props.fmcService.master?.flightPlanService.setPilotEntrySpeedLimitSpeed(
-        this.speedLimitType.get(),
-        value,
-        this.loadedFlightPlanIndex.get(),
-        false,
-      );
+      if (this.speedLimitType.get() === SpeedLimitType.CLB) {
+        this.props.fmcService.master?.flightPlanService.setPilotEntryClimbSpeedLimitSpeed(
+          value,
+          this.loadedFlightPlanIndex.get(),
+          false,
+        );
+      } else {
+        this.props.fmcService.master?.flightPlanService.setPilotEntryDescentSpeedLimitSpeed(
+          value,
+          this.loadedFlightPlanIndex.get(),
+          false,
+        );
+      }
     }
   }
 
@@ -584,22 +595,32 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     if (value === null) {
       this.deleteSpeedLimit();
     } else if (this.checkPerformanceDataEditCondition()) {
-      this.props.fmcService.master?.flightPlanService.setPilotEntrySpeedLimitAltitude(
-        this.speedLimitType.get(),
-        value,
-        this.loadedFlightPlanIndex.get(),
-        false,
-      );
+      if (this.speedLimitType.get() === SpeedLimitType.CLB) {
+        this.props.fmcService.master?.flightPlanService.setPilotEntryClimbSpeedLimitAltitude(
+          value,
+          this.loadedFlightPlanIndex.get(),
+          false,
+        );
+      } else {
+        this.props.fmcService.master?.flightPlanService.setPilotEntryDescentSpeedLimitAltitude(
+          value,
+          this.loadedFlightPlanIndex.get(),
+          false,
+        );
+      }
     }
   }
 
   private async deleteSpeedLimit() {
     if (this.checkPerformanceDataEditCondition()) {
-      this.props.fmcService.master?.flightPlanService.deleteSpeedLimit(
-        this.speedLimitType.get(),
-        this.loadedFlightPlanIndex.get(),
-        false,
-      );
+      if (this.speedLimitType.get() === SpeedLimitType.CLB) {
+        this.props.fmcService.master?.flightPlanService.deleteClimbSpeedLimit(this.loadedFlightPlanIndex.get(), false);
+      } else {
+        this.props.fmcService.master?.flightPlanService.deleteDescentSpeedLimit(
+          this.loadedFlightPlanIndex.get(),
+          false,
+        );
+      }
     }
   }
 

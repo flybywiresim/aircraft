@@ -753,8 +753,3 @@ export class DefaultPerformanceData {
 
   static readonly DescentSpeedLimitAltitude = 10_000;
 }
-
-export enum SpeedLimitType {
-  CLB,
-  DES,
-}
