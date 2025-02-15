@@ -19,7 +19,6 @@ import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import {
   DefaultPerformanceData,
   FlightPlanPerformanceData,
-  SpeedLimitType,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
@@ -578,106 +577,114 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.editFixInfoEntry(index, callback);
   }
 
-  async setPilotEntrySpeedLimitAltitude(
-    type: SpeedLimitType,
-    value: number,
-    planIndex = FlightPlanIndex.Active,
-    alternate = false,
-  ) {
+  async setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    const performanceDataSpeedKey = this.getSpeedLimitPerformanceDataKey(type, alternate);
-
-    if (plan.performanceData[performanceDataSpeedKey] === null) {
-      plan.setPerformanceData(
-        performanceDataSpeedKey,
-        type === SpeedLimitType.CLB
-          ? DefaultPerformanceData.ClimbSpeedLimitSpeed
-          : DefaultPerformanceData.DescentSpeedLimitSpeed,
-      );
-    }
-
-    plan.setPerformanceData(this.getSpeedLimitAltitudePerformanceDataKey(type, alternate), value);
-    plan.setPerformanceData(this.getSpeedLimitPilotEntryPerformanceDataKey(type, alternate), true);
-
-    plan.incrementVersion();
-  }
-
-  async setPilotEntrySpeedLimitSpeed(
-    type: SpeedLimitType,
-    value: number,
-    planIndex = FlightPlanIndex.Active,
-    alternate = false,
-  ) {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
-
-    const plan = this.flightPlanManager.get(finalIndex);
-
-    const performanceDataAltitudeKey = this.getSpeedLimitAltitudePerformanceDataKey(type, alternate);
+    const performanceDataAltitudeKey = alternate ? 'alternateClimbSpeedLimitAltitude' : 'climbSpeedLimitAltitude';
 
     if (plan.performanceData[performanceDataAltitudeKey] === null) {
-      plan.setPerformanceData(
-        performanceDataAltitudeKey,
-        type === SpeedLimitType.CLB
-          ? DefaultPerformanceData.ClimbSpeedLimitAltitude
-          : DefaultPerformanceData.DescentSpeedLimitAltitude,
-      );
+      plan.setPerformanceData(performanceDataAltitudeKey, DefaultPerformanceData.ClimbSpeedLimitAltitude);
     }
 
-    plan.setPerformanceData(this.getSpeedLimitPerformanceDataKey(type, alternate), value);
-    plan.setPerformanceData(this.getSpeedLimitPilotEntryPerformanceDataKey(type, alternate), true);
+    plan.setPerformanceData(alternate ? 'alternateClimbSpeedLimitSpeed' : 'climbSpeedLimitSpeed', value);
+    plan.setPerformanceData(
+      alternate ? 'isAlternateClimbSpeedLimitPilotEntered' : 'isClimbSpeedLimitPilotEntered',
+      true,
+    );
 
     plan.incrementVersion();
   }
 
-  async deleteSpeedLimit(type: SpeedLimitType, planIndex = FlightPlanIndex.Active, alternate = false) {
+  async setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    const speedLimitSpeedKey = this.getSpeedLimitPerformanceDataKey(type, alternate);
+    const performanceDataSpeedKey = alternate ? 'alternateClimbSpeedLimitSpeed' : 'climbSpeedLimitSpeed';
 
-    const altitudeSpeedLimitKey = this.getSpeedLimitAltitudePerformanceDataKey(type, alternate);
+    if (plan.performanceData[performanceDataSpeedKey] === null) {
+      plan.setPerformanceData(performanceDataSpeedKey, DefaultPerformanceData.ClimbSpeedLimitSpeed);
+    }
 
-    const pilotEnteredKey = this.getSpeedLimitPilotEntryPerformanceDataKey(type, alternate);
-
-    plan.setPerformanceData(speedLimitSpeedKey, null);
-    plan.setPerformanceData(altitudeSpeedLimitKey, null);
-    plan.setPerformanceData(pilotEnteredKey, null);
+    plan.setPerformanceData(alternate ? 'alternateClimbSpeedLimitAltitude' : 'climbSpeedLimitAltitude', value);
+    plan.setPerformanceData(
+      alternate ? 'isAlternateClimbSpeedLimitPilotEntered' : 'isClimbSpeedLimitPilotEntered',
+      true,
+    );
 
     plan.incrementVersion();
   }
 
-  private getSpeedLimitPerformanceDataKey(type: SpeedLimitType, alternate: boolean) {
-    return type === SpeedLimitType.CLB
-      ? alternate
-        ? 'alternateClimbSpeedLimitSpeed'
-        : 'climbSpeedLimitSpeed'
-      : alternate
-        ? 'alternateDescentSpeedLimitSpeed'
-        : 'descentSpeedLimitSpeed';
+  async deleteClimbSpeedLimit(planIndex = FlightPlanIndex.Active, alternate = false) {
+    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+    const plan = this.flightPlanManager.get(finalIndex);
+
+    plan.setPerformanceData(alternate ? 'alternateClimbSpeedLimitSpeed' : 'climbSpeedLimitSpeed', null);
+    plan.setPerformanceData(alternate ? 'alternateClimbSpeedLimitAltitude' : 'climbSpeedLimitAltitude', null);
+    plan.setPerformanceData(
+      alternate ? 'isAlternateClimbSpeedLimitPilotEntered' : 'isClimbSpeedLimitPilotEntered',
+      null,
+    );
+
+    plan.incrementVersion();
   }
 
-  private getSpeedLimitAltitudePerformanceDataKey(type: SpeedLimitType, alternate: boolean) {
-    return type === SpeedLimitType.CLB
-      ? alternate
-        ? 'alternateClimbSpeedLimitAltitude'
-        : 'climbSpeedLimitAltitude'
-      : alternate
-        ? 'alternateDescentSpeedLimitAltitude'
-        : 'descentSpeedLimitAltitude';
+  async setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
+    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+    const plan = this.flightPlanManager.get(finalIndex);
+
+    const performanceDataAltitudeKey = alternate ? 'alternateDescentSpeedLimitAltitude' : 'descentSpeedLimitAltitude';
+
+    if (plan.performanceData[performanceDataAltitudeKey] === null) {
+      plan.setPerformanceData(performanceDataAltitudeKey, DefaultPerformanceData.DescentSpeedLimitAltitude);
+    }
+
+    plan.setPerformanceData(alternate ? 'alternateDescentSpeedLimitSpeed' : 'descentSpeedLimitSpeed', value);
+    plan.setPerformanceData(
+      alternate ? 'isAlternateDescentSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
+      true,
+    );
+
+    plan.incrementVersion();
   }
 
-  private getSpeedLimitPilotEntryPerformanceDataKey(type: SpeedLimitType, alternate: boolean) {
-    return type === SpeedLimitType.CLB
-      ? alternate
-        ? 'isAlternateClimbSpeedLimitPilotEntered'
-        : 'isClimbSpeedLimitPilotEntered'
-      : alternate
-        ? 'isAlternateDescentSpeedLimitPilotEntered'
-        : 'isDescentSpeedLimitPilotEntered';
+  async setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
+    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+    const plan = this.flightPlanManager.get(finalIndex);
+
+    const performanceDataSpeedKey = alternate ? 'alternateDescentSpeedLimitSpeed' : 'descentSpeedLimitSpeed';
+
+    if (plan.performanceData[performanceDataSpeedKey] === null) {
+      plan.setPerformanceData(performanceDataSpeedKey, DefaultPerformanceData.DescentSpeedLimitSpeed);
+    }
+
+    plan.setPerformanceData(alternate ? 'alternateDescentSpeedLimitAltitude' : 'descentSpeedLimitAltitude', value);
+    plan.setPerformanceData(
+      alternate ? 'isAlternateDescentSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
+      true,
+    );
+
+    plan.incrementVersion();
+  }
+
+  async deleteDescentSpeedLimit(planIndex = FlightPlanIndex.Active, alternate = false) {
+    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+    const plan = this.flightPlanManager.get(finalIndex);
+
+    plan.setPerformanceData(alternate ? 'alternateDescentSpeedLimitSpeed' : 'descentSpeedLimitSpeed', null);
+    plan.setPerformanceData(alternate ? 'alternateDescentSpeedLimitAltitude' : 'descentSpeedLimitAltitude', null);
+    plan.setPerformanceData(
+      alternate ? 'isAlternateDescentSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
+      null,
+    );
+
+    plan.incrementVersion();
   }
 
   get activeLegIndex(): number {
