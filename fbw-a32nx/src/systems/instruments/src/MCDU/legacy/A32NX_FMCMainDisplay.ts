@@ -833,7 +833,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.activatePreSelSpeedMach(this.preSelectedCrzSpeed);
         }
 
-        /** Arm preselected speed/mach for next flight phase */
+        /** Disarm preselected speed/mach for next flight phase */
         this.updatePreSelSpeedMach(undefined);
 
         break;
