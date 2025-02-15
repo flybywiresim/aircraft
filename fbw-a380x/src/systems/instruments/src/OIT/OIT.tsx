@@ -10,6 +10,7 @@ import {
   MappedSubject,
   SimVarValueType,
   Subject,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -41,6 +42,7 @@ export interface OitProps {
 }
 
 export class OIT extends DisplayComponent<OitProps> {
+  private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & OitSimvars>();
 
   #uiService = new OitUiService(this.props.captOrFo, this.props.bus);
@@ -74,28 +76,29 @@ export class OIT extends DisplayComponent<OitProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.uiService.activeUri.sub((uri) => {
-      this.activeUriChanged(uri);
-    });
-
-    MappedSubject.create(
-      ([uri, displayFailed, displayPowered, operationMode]) => {
-        // Activate EFB overlay if on charts or flt-folder page
-        SimVar.SetSimVarValue(
-          `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`,
-          SimVarValueType.Bool,
-          uri.uri === 'flt-ops/charts' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
-        );
-        SimVar.SetSimVarValue(
-          `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`,
-          SimVarValueType.Bool,
-          uri.uri === 'flt-ops/flt-folder' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
-        );
-      },
-      this.uiService.activeUri,
-      this.displayUnitRef.instance.failed,
-      this.displayUnitRef.instance.powered,
-      this.operationMode,
+    this.subscriptions.push(
+      this.uiService.activeUri.sub((uri) => {
+        this.activeUriChanged(uri);
+      }),
+      MappedSubject.create(
+        ([uri, displayFailed, displayPowered, operationMode]) => {
+          // Activate EFB overlay if on charts or flt-folder page
+          SimVar.SetSimVarValue(
+            `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`,
+            SimVarValueType.Bool,
+            uri.uri === 'flt-ops/charts' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
+          );
+          SimVar.SetSimVarValue(
+            `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`,
+            SimVarValueType.Bool,
+            uri.uri === 'flt-ops/flt-folder' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
+          );
+        },
+        this.uiService.activeUri,
+        this.displayUnitRef.instance.failed,
+        this.displayUnitRef.instance.powered,
+        this.operationMode,
+      ),
     );
 
     this.uiService.navigateTo('flt-ops/sts'); // should be /sts
@@ -123,6 +126,10 @@ export class OIT extends DisplayComponent<OitProps> {
   }
 
   destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
     super.destroy();
   }
 

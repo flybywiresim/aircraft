@@ -69,11 +69,9 @@ export class OitUiService {
       if (this.navigationStack.length < 2) {
         return;
       }
-      console.info('Navigate back');
       this.navigationStack.pop();
       nextUri = this.navigationStack[this.navigationStack.length - 1];
     } else {
-      console.info(`Navigate to ${uri}`);
       this.navigationStack.push(uri);
       nextUri = uri;
     }

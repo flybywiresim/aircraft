@@ -1,7 +1,15 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, Instrument, SimVarValueType, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  EventBus,
+  Instrument,
+  SimVarValueType,
+  Subject,
+  Subscribable,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { FailuresConsumer, FmsData } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { OisInternalData } from './OisInternalPublisher';
@@ -9,6 +17,8 @@ import { OisInternalData } from './OisInternalPublisher';
 type LaptopIndex = 1 | 2;
 
 export class OisLaptop implements Instrument {
+  private readonly subscriptions: Subscription[] = [];
+
   public readonly data = new OisLaptopData();
 
   private readonly failureKey = this.index === 1 ? A380Failure.CaptainLaptop : A380Failure.FirstOfficerLaptop;
@@ -17,6 +27,7 @@ export class OisLaptop implements Instrument {
 
   private readonly _isHealthy = Subject.create(false);
   public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
+  private readonly isHealthySimVar = `L:A32NX_FLTOPS_LAPTOP_${this.index.toFixed(0)}_IS_HEALTHY`;
 
   private readonly sub = this.bus.getSubscriber<FmsData & OisInternalData>();
 
@@ -43,7 +54,12 @@ export class OisLaptop implements Instrument {
   init(): void {
     this.failuresConsumer.register(this.failureKey);
 
-    this.sub.on('synchroAvncs').handle(() => this.synchroAvionics());
+    this.subscriptions.push(
+      this.sub.on('synchroAvncs').handle(() => this.synchroAvionics()),
+      this._isHealthy.sub((v) => SimVar.SetSimVarValue(this.isHealthySimVar, SimVarValueType.Bool, v)),
+    );
+
+    this.subscriptions.push(this.fltNumberBus, this.fromAirportBus, this.toAirportBus);
   }
 
   /** @inheritdoc */
@@ -60,11 +76,12 @@ export class OisLaptop implements Instrument {
     }
 
     this._isHealthy.set(!failed && this.powered.get());
-    SimVar.SetSimVarValue(
-      `L:A32NX_FLTOPS_LAPTOP_${this.index.toFixed(0)}_IS_HEALTHY`,
-      SimVarValueType.Bool,
-      this._isHealthy.get(),
-    );
+  }
+
+  destroy() {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
   }
 }
 
