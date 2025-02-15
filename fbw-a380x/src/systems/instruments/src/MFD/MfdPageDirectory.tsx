@@ -33,6 +33,7 @@ import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls'
 import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
 import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataAirport';
+import { MfdFmsDataWaypoint } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataWaypoint';
 
 export function pageForUrl(
   url: string,
@@ -96,6 +97,8 @@ export function pageForUrl(
       return <MfdFmsPositionNavaids pageTitle="NAVAIDS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/status':
       return <MfdFmsDataStatus pageTitle="STATUS" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fms/data/waypoint':
+      return <MfdFmsDataWaypoint pageTitle="WAYPOINT" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/debug':
       return <MfdFmsDataDebug pageTitle="DEBUG" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/airport':
