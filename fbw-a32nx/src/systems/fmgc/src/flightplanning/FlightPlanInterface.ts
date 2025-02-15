@@ -11,10 +11,7 @@ import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
-import {
-  FlightPlanPerformanceData,
-  SpeedLimitType,
-} from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 /**
@@ -303,21 +300,17 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     planIndex: number,
   ): Promise<void>;
 
-  setPilotEntrySpeedLimitAltitude(
-    type: SpeedLimitType,
-    value: number,
-    planIndex: FlightPlanIndex,
-    alternate: boolean,
-  ): void;
+  setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): void;
 
-  setPilotEntrySpeedLimitSpeed(
-    type: SpeedLimitType,
-    value: number,
-    planIndex: FlightPlanIndex,
-    alternate: boolean,
-  ): void;
+  setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): void;
 
-  deleteSpeedLimit(type: SpeedLimitType, planIndex: FlightPlanIndex, alternate: boolean): void;
+  deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): void;
+
+  setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): void;
+
+  setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): void;
+
+  deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): void;
 
   // TODO do not pass in waypoint object (rpc)
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
