@@ -21,7 +21,7 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
     return (
       <>
         <ActivePageTitleBar
-          activePage={Subject.create('MSG RECORD/ALL MSG')}
+          activePage={Subject.create('MSG RECORD/MONITORED MSG')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
           tmpyIsActive={Subject.create(false)}
