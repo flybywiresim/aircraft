@@ -682,7 +682,7 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
       } else {
         this.lsReminder.instance.style.display = 'none';
       }
-    });
+    }, true);
   }
 
   render(): VNode {
