@@ -32,10 +32,10 @@ export enum VdVars {
   activeOverlayCapt = 'L:A380X_EFIS_L_ACTIVE_OVERLAY',
   activeOverlayFO = 'L:A380X_EFIS_R_ACTIVE_OVERLAY',
   wxrTawsSysSelected = 'L:A32NX_WXR_TAWS_SYS_SELECTED',
-  terr1Failed = 'L:A32NS_TERR_1_FAILED',
-  terr2Failed = 'L:A32NS_TERR_2_FAILED',
-  wxr1Failed = 'L:A32NS_WXR_1_FAILED',
-  wxr2Failed = 'L:A32NS_WXR_2_FAILED',
+  terr1Failed = 'L:A32NX_TERR_1_FAILED',
+  terr2Failed = 'L:A32NX_TERR_2_FAILED',
+  wxr1Failed = 'L:A32NX_WXR_1_FAILED',
+  wxr2Failed = 'L:A32NX_WXR_2_FAILED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */

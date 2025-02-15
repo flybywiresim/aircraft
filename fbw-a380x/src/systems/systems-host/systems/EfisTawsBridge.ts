@@ -45,7 +45,7 @@ export class EfisTawsBridge implements Instrument {
     EfisTawsBridgeSimVars & FmsSymbolsData & ClockEvents & ResetPanelSimvars & PowerSupplyBusTypes
   >();
 
-  private readonly updateThrottler = new UpdateThrottler(2_000);
+  private readonly updateThrottler = new UpdateThrottler(200);
 
   private readonly simBridgeClient = ClientState.getInstance();
 
@@ -312,6 +312,13 @@ export class EfisTawsBridge implements Instrument {
 
   private verticalPathShouldBeUpdated = true;
 
+  private readonly terr1Failed = Subject.create(false);
+  private readonly terr2Failed = Subject.create(false);
+  private readonly gpws1Failed = Subject.create(false);
+  private readonly gpws2Failed = Subject.create(false);
+  private readonly wxr1Failed = Subject.create(true);
+  private readonly wxr2Failed = Subject.create(true);
+
   constructor(
     private readonly bus: ArincEventBus,
     private readonly instrument: BaseInstrument,
@@ -319,19 +326,27 @@ export class EfisTawsBridge implements Instrument {
   ) {}
 
   init() {
-    this.aircraftStatusData.sub(() => {
-      this.aircraftStatusShouldBeUpdated = true;
-    }, true);
-    this.terrVdPathData.sub(() => {
-      this.verticalPathShouldBeUpdated = true;
-    }, true);
-    this.sub
-      .on('realTime')
-      .atFrequency(0.1)
-      .handle(() => {
+    this.subscriptions.push(
+      this.aircraftStatusData.sub(() => {
         this.aircraftStatusShouldBeUpdated = true;
+      }, true),
+      this.terrVdPathData.sub(() => {
         this.verticalPathShouldBeUpdated = true;
-      });
+      }, true),
+      this.sub
+        .on('realTime')
+        .atFrequency(0.1)
+        .handle(() => {
+          this.aircraftStatusShouldBeUpdated = true;
+          this.verticalPathShouldBeUpdated = true;
+        }),
+      this.terr1Failed.sub((v) => SimVar.SetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool, v), true),
+      this.terr2Failed.sub((v) => SimVar.SetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool, v), true),
+      this.gpws1Failed.sub((v) => SimVar.SetSimVarValue('L:A32NX_GPWS_1_FAILED', SimVarValueType.Bool, v), true),
+      this.gpws2Failed.sub((v) => SimVar.SetSimVarValue('L:A32NX_GPWS_2_FAILED', SimVarValueType.Bool, v), true),
+      this.wxr1Failed.sub((v) => SimVar.SetSimVarValue('L:A32NX_WXR_1_FAILED', SimVarValueType.Bool, v), true),
+      this.wxr2Failed.sub((v) => SimVar.SetSimVarValue('L:A32NX_WXR_2_FAILED', SimVarValueType.Bool, v), true),
+    );
 
     this.failuresConsumer.register(A380Failure.Terr1);
     this.failuresConsumer.register(A380Failure.Terr2);
@@ -347,21 +362,22 @@ export class EfisTawsBridge implements Instrument {
     }
 
     const tawsWxrSelected = SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number);
-    const terr1Failed =
-      this.failuresConsumer.isActive(A380Failure.Terr1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get();
-    const terr2Failed =
-      this.failuresConsumer.isActive(A380Failure.Terr2) || this.aesu2ResetPulled.get() || !this.ac4Powered.get();
-    const gpws1Failed =
-      this.failuresConsumer.isActive(A380Failure.Gpws1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get();
-    const gpws2Failed =
-      this.failuresConsumer.isActive(A380Failure.Gpws2) || this.aesu2ResetPulled.get() || !this.ac4Powered.get();
+    this.terr1Failed.set(
+      this.failuresConsumer.isActive(A380Failure.Terr1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get(),
+    );
+    this.terr2Failed.set(
+      this.failuresConsumer.isActive(A380Failure.Terr2) || this.aesu2ResetPulled.get() || !this.ac4Powered.get(),
+    );
+    this.gpws1Failed.set(
+      this.failuresConsumer.isActive(A380Failure.Gpws1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get(),
+    );
+    this.gpws2Failed.set(
+      this.failuresConsumer.isActive(A380Failure.Gpws2) || this.aesu2ResetPulled.get() || !this.ac4Powered.get(),
+    );
 
-    SimVar.SetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool, terr1Failed);
-    SimVar.SetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool, terr2Failed);
-    SimVar.SetSimVarValue('L:A32NX_GPWS_1_FAILED', SimVarValueType.Bool, gpws1Failed);
-    SimVar.SetSimVarValue('L:A32NX_GPWS_2_FAILED', SimVarValueType.Bool, gpws2Failed);
-
-    this.terrFailed.set(tawsWxrSelected === 1 ? terr1Failed : tawsWxrSelected === 2 ? terr2Failed : true);
+    this.terrFailed.set(
+      tawsWxrSelected === 1 ? this.terr1Failed.get() : tawsWxrSelected === 2 ? this.terr2Failed.get() : true,
+    );
 
     if (this.aircraftStatusShouldBeUpdated && this.simBridgeClient.isConnected()) {
       const success = await TawsData.postAircraftStatusData(this.aircraftStatusData.get());

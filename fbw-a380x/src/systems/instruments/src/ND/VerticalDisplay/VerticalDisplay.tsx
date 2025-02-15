@@ -315,33 +315,30 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly noTerrAndWxDataAvailFlagCondition = MappedSubject.create(([terrOff]) => terrOff, this.terrSysOff);
 
   private readonly terr1Failed = ConsumerSubject.create(this.sub.on('terr1Failed'), false);
-  private readonly terr2Failed = ConsumerSubject.create(this.sub.on('terr1Failed'), false);
+  private readonly terr2Failed = ConsumerSubject.create(this.sub.on('terr2Failed'), false);
   private readonly wxr1Failed = ConsumerSubject.create(this.sub.on('wxr1Failed'), false);
   private readonly wxr2Failed = ConsumerSubject.create(this.sub.on('wxr2Failed'), false);
   private readonly activeTerrFailed = MappedSubject.create(
-    ([sel, t1, t2]) => (sel === 1 ? t1 : sel === 2 ? t2 : false),
+    ([sel, t1, t2]) => (sel === 1 ? t1 : sel === 2 ? t2 : true),
     this.wxrTawsSysSelected,
     this.terr1Failed,
     this.terr2Failed,
   );
   private readonly activeWxrFailed = MappedSubject.create(
-    ([sel, w1, w2]) => (sel === 1 ? w1 : sel === 2 ? w2 : false),
+    ([sel, w1, w2]) => (sel === 1 ? w1 : sel === 2 ? w2 : true),
     this.wxrTawsSysSelected,
     this.wxr1Failed,
     this.wxr2Failed,
   );
 
   private readonly terrInop = MappedSubject.create(
-    ([activeFailed, selected, polar]) => selected === 0 || activeFailed || polar,
+    ([activeFailed, polar]) => activeFailed || polar,
     this.activeTerrFailed,
-    this.wxrTawsSysSelected,
     this.extremeLatitude,
   );
   private readonly wxrInop = MappedSubject.create(
-    ([activeFailed, selected, polar, activeOverlay]) =>
-      activeOverlay === 1 && (selected === 0 || activeFailed || polar),
+    ([activeFailed, polar, activeOverlay]) => activeOverlay === 1 && (activeFailed || polar),
     this.activeWxrFailed,
-    this.wxrTawsSysSelected,
     this.extremeLatitude,
     this.activeOverlay,
   );
