@@ -137,12 +137,12 @@ export class EfisTawsBridge implements Instrument {
   private readonly ac4Powered = ConsumerSubject.create(this.sub.on('acBus4'), false);
 
   private readonly efisDataCapt = MappedSubject.create(
-    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper, failed]) => {
+    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper, terrFailed]) => {
       return {
         ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive && !failed,
-        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !failed,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive && !terrFailed,
+        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !terrFailed,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
@@ -156,12 +156,12 @@ export class EfisTawsBridge implements Instrument {
     this.terrFailed,
   );
   private readonly efisDataFO = MappedSubject.create(
-    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper, failed]) => {
+    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper, terrFailed]) => {
       return {
         ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive && !failed,
-        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !failed,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive && !terrFailed,
+        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !terrFailed,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,

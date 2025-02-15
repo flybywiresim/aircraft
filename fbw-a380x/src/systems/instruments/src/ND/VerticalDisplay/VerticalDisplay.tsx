@@ -398,8 +398,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   private readonly wxrInopFlagVisibility = MappedSubject.create(
-    ([_rangeChange, _modeChange, _trajNotAvail, _noTerrAndWx, terrInop, wxrInop]) =>
-      !terrInop && wxrInop ? 'inherit' : 'hidden',
+    ([_rangeChange, _modeChange, _trajNotAvail, _noTerrAndWx, _terrInop, wxrInop]) => (wxrInop ? 'inherit' : 'hidden'),
     this.rangeChangeFlagCondition,
     this.modeChangeFlagCondition,
     this.trajNotAvailFlagCondition,
@@ -768,7 +767,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
             </g>
           </g>
           <text
-            x={422}
+            x={418}
             y={929}
             class="Green FontSmall MiddleAlign shadow"
             style={{ visibility: this.modeChangeFlagVisibility }}
@@ -785,23 +784,23 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           </text>
           <text
             x={422}
-            y={929}
+            y={890}
             class="White FontSmall MiddleAlign shadow"
             style={{ visibility: this.noTerrAndWxDataAvailFlagVisibility }}
           >
             NO TERR AND WX DATA AVAILABLE
           </text>
           <text
-            x={422}
-            y={929}
+            x={285}
+            y={960}
             class="Amber FontSmall MiddleAlign shadow"
             style={{ visibility: this.terrInopFlagVisibility }}
           >
             TERR INOP
           </text>
           <text
-            x={422}
-            y={929}
+            x={565}
+            y={960}
             class="Amber FontSmall MiddleAlign shadow"
             style={{ visibility: this.wxrInopFlagVisibility }}
           >
@@ -809,7 +808,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           </text>
           <text
             x={422}
-            y={929}
+            y={990}
             class="Amber FontSmall MiddleAlign shadow"
             style={{ visibility: this.trajNotAvailFlagVisibility }}
           >
