@@ -25,6 +25,7 @@ import {
   BtvSimvarPublisher,
   EfisTawsBridgePublisher,
   FailuresConsumer,
+  MsfsFlightModelPublisher,
   PilotSeatPublisher,
   VhfComIndices,
 } from '@flybywiresim/fbw-sdk';
@@ -47,7 +48,6 @@ import {
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { A380Failure } from '@failures';
-import { InteractivePointsPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/InteractivePointsPublisher';
 import { EfisTawsBridge } from './systems/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
@@ -119,7 +119,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
 
-  private readonly interactivePointsPublisher = new InteractivePointsPublisher(this.bus);
+  private readonly interactivePointsPublisher = new MsfsFlightModelPublisher(this.bus);
 
   private readonly fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, 'L'); // FIXME figure out side dependency
   private readonly efisTawsBridgePublisher = new EfisTawsBridgePublisher(this.bus);
