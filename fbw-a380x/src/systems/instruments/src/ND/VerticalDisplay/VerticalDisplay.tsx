@@ -573,7 +573,11 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   }
 
   calculateAndTransmitEndOfVdMarker() {
-    if (!this.shouldShowTrackLine.get()) {
+    const isInVdMapMode = this.ndMode.get() === EfisNdMode.ARC || this.ndMode.get() === EfisNdMode.ROSE_NAV;
+    const ndRange =
+      this.ndMode.get() === EfisNdMode.ROSE_NAV ? this.ndRangeSetting.get() / 2 : this.ndRangeSetting.get();
+    const vdAndNdRangeDisagreeing = this.vdRange.get() !== ndRange;
+    if (isInVdMapMode && !this.shouldShowTrackLine.get()) {
       let totalDistanceFromAircraft = 0;
       for (const path of this.fmsLateralPath.get()) {
         const pathDistance = pathVectorLength(path);
@@ -600,7 +604,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
         }
       }
       this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', null);
-    } else if (this.ndRangeSetting.get() !== this.vdRange.get()) {
+    } else if (isInVdMapMode && vdAndNdRangeDisagreeing) {
       // Track line
       const symbol: NdSymbol = {
         location: null,
