@@ -10,6 +10,7 @@ import {
   FSComponent,
   MappedSubject,
   Subscribable,
+  SubscribableMapFunctions,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -57,7 +58,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   private readonly greenHydPressurized = ConsumerSubject.create(this.sub.on('hydGreenSysPressurized'), false);
   private readonly yellowHydPressurized = ConsumerSubject.create(this.sub.on('hydYellowSysPressurized'), false);
   private readonly oneHydPressurized = MappedSubject.create(
-    ([g, y]) => g || y,
+    SubscribableMapFunctions.or(),
     this.greenHydPressurized,
     this.yellowHydPressurized,
   );
