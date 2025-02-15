@@ -720,7 +720,7 @@ export class CDUFlightPlanPage {
         scrollWindow[rowI] = waypointsAndMarkers[winI];
         addLskAt(rowI, 0, (value, scratchpadCallback) => {
           if (value === Keypad.clrValue) {
-            if (marker.marker === Markers.FPLN_DISCONTINUITY) {
+            if (marker === Markers.FPLN_DISCONTINUITY) {
               CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
             } else {
               mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
