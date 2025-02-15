@@ -47,7 +47,7 @@ import { TrackLine } from './shared/TrackLine';
 import { TrackBug } from './shared/TrackBug';
 import { GenericFcuEvents } from './types/GenericFcuEvents';
 import { ArincEventBus } from '../../../shared/src/ArincEventBus';
-import { EfisNdMode, EfisSide } from '../NavigationDisplay';
+import { EfisNdMode, EfisRecomputingReason, EfisSide } from '../NavigationDisplay';
 import { Arinc429RegisterSubject } from '../../../shared/src/Arinc429RegisterSubject';
 import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSubject';
 import { FmsOansData } from '../../../shared/src/publishers/OansBtv/FmsOansPublisher';
@@ -222,6 +222,16 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
     this.mapRecomputing.sub((recomputing) => {
       this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
+      this.props.bus
+        .getPublisher<NDControlEvents>()
+        .pub(
+          'set_map_recomputing_reason',
+          this.pageChangeInProgress.get()
+            ? EfisRecomputingReason.ModeChange
+            : this.rangeChangeInProgress.get()
+              ? EfisRecomputingReason.RangeChange
+              : EfisRecomputingReason.None,
+        );
     });
 
     sub

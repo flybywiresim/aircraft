@@ -123,7 +123,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, 'L'); // FIXME figure out side dependency
   private readonly efisTawsBridgePublisher = new EfisTawsBridgePublisher(this.bus);
-  private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this);
+  private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
 
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);

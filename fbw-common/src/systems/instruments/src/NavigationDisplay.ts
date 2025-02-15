@@ -71,6 +71,12 @@ export enum NdSymbolTypeFlags {
   MagentaColor = 1 << 31,
 }
 
+export enum EfisRecomputingReason {
+  None,
+  RangeChange,
+  ModeChange,
+}
+
 export interface NdSymbol {
   databaseId: string;
   ident: string;

@@ -1,6 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { A380Failure } from '@failures';
 import {
   a380EfisRangeSettings,
   Arinc429LocalVarConsumerSubject,
@@ -10,6 +11,7 @@ import {
   EfisNdMode,
   EfisTawsBridgeSimVars,
   ElevationSamplePathDto,
+  FailuresConsumer,
   PathVectorType,
   TawsAircraftStatusDataDto,
   TawsData,
@@ -18,10 +20,20 @@ import {
   WaypointDto,
 } from '@flybywiresim/fbw-sdk';
 import { pathVectorLength } from '@fmgc/guidance/lnav/PathVector';
-import { ClockEvents, ConsumerSubject, Instrument, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  ConsumerSubject,
+  Instrument,
+  MappedSubject,
+  SimVarValueType,
+  Subject,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
+import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { bearingTo } from 'msfs-geo';
+import { PowerSupplyBusTypes } from './powersupply';
 
 /**
  * Utility class to send data to the TAWS from the EFIS CP
@@ -29,7 +41,9 @@ import { bearingTo } from 'msfs-geo';
 
 export class EfisTawsBridge implements Instrument {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.bus.getSubscriber<EfisTawsBridgeSimVars & FmsSymbolsData & ClockEvents>();
+  private readonly sub = this.bus.getSubscriber<
+    EfisTawsBridgeSimVars & FmsSymbolsData & ClockEvents & ResetPanelSimvars & PowerSupplyBusTypes
+  >();
 
   private readonly updateThrottler = new UpdateThrottler(2_000);
 
@@ -114,13 +128,21 @@ export class EfisTawsBridge implements Instrument {
     this.armedLateralMode,
   );
 
+  private readonly terrFailed = Subject.create(false);
+
+  private readonly aesu1ResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_aesu1'), false);
+  private readonly aesu2ResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_aesu2'), false);
+
+  private readonly acEssPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
+  private readonly ac4Powered = ConsumerSubject.create(this.sub.on('acBus4'), false);
+
   private readonly efisDataCapt = MappedSubject.create(
-    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper]) => {
+    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper, failed]) => {
       return {
         ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive,
-        terrOnVd: ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive && !failed,
+        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !failed,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
@@ -131,14 +153,15 @@ export class EfisTawsBridge implements Instrument {
     this.terrActive[0],
     this.vdRangeLower[0],
     this.vdRangeUpper[0],
+    this.terrFailed,
   );
   private readonly efisDataFO = MappedSubject.create(
-    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper]) => {
+    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper, failed]) => {
       return {
         ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive,
-        terrOnVd: ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive && !failed,
+        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !failed,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
@@ -149,6 +172,7 @@ export class EfisTawsBridge implements Instrument {
     this.terrActive[1],
     this.vdRangeLower[1],
     this.vdRangeUpper[1],
+    this.terrFailed,
   );
 
   private readonly aircraftStatusData = MappedSubject.create(
@@ -291,6 +315,7 @@ export class EfisTawsBridge implements Instrument {
   constructor(
     private readonly bus: ArincEventBus,
     private readonly instrument: BaseInstrument,
+    private readonly failuresConsumer: FailuresConsumer,
   ) {}
 
   init() {
@@ -307,6 +332,11 @@ export class EfisTawsBridge implements Instrument {
         this.aircraftStatusShouldBeUpdated = true;
         this.verticalPathShouldBeUpdated = true;
       });
+
+    this.failuresConsumer.register(A380Failure.Terr1);
+    this.failuresConsumer.register(A380Failure.Terr2);
+    this.failuresConsumer.register(A380Failure.Gpws1);
+    this.failuresConsumer.register(A380Failure.Gpws2);
   }
 
   public async onUpdate() {
@@ -315,6 +345,23 @@ export class EfisTawsBridge implements Instrument {
     if (deltaTime < 0) {
       return;
     }
+
+    const tawsWxrSelected = SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number);
+    const terr1Failed =
+      this.failuresConsumer.isActive(A380Failure.Terr1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get();
+    const terr2Failed =
+      this.failuresConsumer.isActive(A380Failure.Terr2) || this.aesu2ResetPulled.get() || !this.ac4Powered.get();
+    const gpws1Failed =
+      this.failuresConsumer.isActive(A380Failure.Gpws1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get();
+    const gpws2Failed =
+      this.failuresConsumer.isActive(A380Failure.Gpws2) || this.aesu2ResetPulled.get() || !this.ac4Powered.get();
+
+    SimVar.SetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool, terr1Failed);
+    SimVar.SetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool, terr2Failed);
+    SimVar.SetSimVarValue('L:A32NX_GPWS_1_FAILED', SimVarValueType.Bool, gpws1Failed);
+    SimVar.SetSimVarValue('L:A32NX_GPWS_2_FAILED', SimVarValueType.Bool, gpws2Failed);
+
+    this.terrFailed.set(tawsWxrSelected === 1 ? terr1Failed : tawsWxrSelected === 2 ? terr2Failed : true);
 
     if (this.aircraftStatusShouldBeUpdated && this.simBridgeClient.isConnected()) {
       const success = await TawsData.postAircraftStatusData(this.aircraftStatusData.get());

@@ -8,6 +8,7 @@
 } from '@flybywiresim/fbw-sdk';
 import {
   BitFlags,
+  ComponentProps,
   ConsumerSubject,
   DisplayComponent,
   FSComponent,
@@ -36,7 +37,7 @@ import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { GenericFmsEvents } from '../../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFmsEvents';
 import { GenericFcuEvents } from '@flybywiresim/navigation-display';
 
-export interface VerticalDisplayCanvasMapProps {
+export interface VerticalDisplayCanvasMapProps extends ComponentProps {
   bus: ArincEventBus;
   visible: Subscribable<'block' | 'none'>;
   fmsVerticalPath: Subscribable<VerticalPathCheckpoint[]>;
@@ -71,7 +72,13 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     0,
   );
 
-  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
+  public readonly canvasInvalid = MappedSubject.create(
+    ([lat, long, baro]) => lat.isFailureWarning() || long.isFailureWarning() || baro.isFailureWarning(),
+    this.pposLat,
+    this.pposLon,
+    this.baroCorrectedAltitude,
+  );
+
   private readonly offsetDistance = this.props.fmsVerticalPath.map((_path) => 0);
 
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);

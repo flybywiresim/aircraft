@@ -3,6 +3,7 @@
   Arinc429LocalVarConsumerSubject,
   ArincEventBus,
   EfisNdMode,
+  EfisRecomputingReason,
   EfisSide,
   MathUtils,
   NdSymbol,
@@ -18,6 +19,7 @@ import {
   FSComponent,
   MappedSubject,
   SimVarValueType,
+  Subject,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -64,6 +66,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
 
+  private readonly canvasMapRef = FSComponent.createRef<VerticalDisplayCanvasMap>();
+
   private readonly ndMode = ConsumerSubject.create(this.sub.on('ndMode'), EfisNdMode.ARC);
 
   private readonly ndRangeSetting = ConsumerSubject.create(this.sub.on('ndRangeSetting'), 10).map(
@@ -95,6 +99,10 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   private readonly mapRecomputing = ConsumerSubject.create(this.sub.on('set_map_recomputing'), false);
+  private readonly mapRecomputingReason = ConsumerSubject.create(
+    this.sub.on('set_map_recomputing_reason'),
+    EfisRecomputingReason.None,
+  );
 
   private readonly visible = MappedSubject.create(
     ([mode, range]) =>
@@ -103,13 +111,14 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.ndRangeSetting,
   );
 
-  private readonly rangeChangeFlagVisibility = this.mapRecomputing.map((v) => (v ? 'inherit' : 'hidden'));
-
   /** either magnetic or true heading depending on true ref mode */
   private readonly headingWord = Arinc429ConsumerSubject.create(this.sub.on('heading').atFrequency(0.5));
 
   /** either magnetic or true track depending on true ref mode */
   private readonly trackWord = Arinc429ConsumerSubject.create(this.sub.on('track').atFrequency(0.5));
+
+  private readonly irMaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('irMaintWordRaw'));
+  private readonly extremeLatitude = this.irMaintWord.map((w) => w.bitValueOr(15, false));
 
   private readonly vdAvailable = MappedSubject.create(
     ([hdg, trk]) => hdg.isNormalOperation() && trk.isNormalOperation(),
@@ -146,18 +155,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.verticalRange,
   );
 
-  // FIXME ADIRS selection missing for ND
-  /* private readonly fpaMain = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on(getDisplayIndex() === 1 ? 'fpa_1' : 'fpa_2'),
-  );
-  private readonly fpaBackup = Arinc429LocalVarConsumerSubject.create(this.sub.on('fpa_3'));
-  private readonly attHdgSelect = ConsumerSubject.create(this.sub.on('attHdgKnob'), 1);
-  private readonly fpa = MappedSubject.create(
-    ([attHdg, main, bkup]) => (attHdg === 1 ? main : bkup),
-    this.attHdgSelect,
-    this.fpaMain,
-    this.fpaBackup,
-  );*/
   private readonly fpa = Arinc429LocalVarConsumerSubject.create(this.sub.on('fpaRaw'));
   private readonly planeSymbolTransform = MappedSubject.create(
     ([y, fpa]) => `translate (132 ${y - 14}) rotate (${-fpa.valueOr(0) * VD_FPA_TO_DISPLAY_ANGLE}, 20, 10) scale(0.9)`,
@@ -297,45 +294,186 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
   private readonly altitudeFlTextVisible = this.baroMode.map((m) => (m === 'STD' ? 'visible' : 'hidden'));
 
+  private readonly wxrTawsSysSelected = ConsumerSubject.create(this.sub.on('wxrTawsSysSelected'), 1);
+  private readonly terrSysOff = ConsumerSubject.create(this.sub.on('terrSysOff'), false);
+  private readonly activeOverlay = ConsumerSubject.create(
+    this.sub.on(this.props.side === 'L' ? 'activeOverlayCapt' : 'activeOverlayFO'),
+    0,
+  );
+
+  private readonly rangeChangeFlagCondition = MappedSubject.create(
+    ([flagShown, flagReason]) => flagShown && flagReason === EfisRecomputingReason.RangeChange,
+    this.mapRecomputing,
+    this.mapRecomputingReason,
+  );
+  private readonly modeChangeFlagCondition = MappedSubject.create(
+    ([flagShown, flagReason]) => flagShown && flagReason === EfisRecomputingReason.ModeChange,
+    this.mapRecomputing,
+    this.mapRecomputingReason,
+  );
+  private readonly trajNotAvailFlagCondition = Subject.create(false);
+  private readonly noTerrAndWxDataAvailFlagCondition = MappedSubject.create(([terrOff]) => terrOff, this.terrSysOff);
+
+  private readonly terr1Failed = ConsumerSubject.create(this.sub.on('terr1Failed'), false);
+  private readonly terr2Failed = ConsumerSubject.create(this.sub.on('terr1Failed'), false);
+  private readonly wxr1Failed = ConsumerSubject.create(this.sub.on('wxr1Failed'), false);
+  private readonly wxr2Failed = ConsumerSubject.create(this.sub.on('wxr2Failed'), false);
+  private readonly activeTerrFailed = MappedSubject.create(
+    ([sel, t1, t2]) => (sel === 1 ? t1 : sel === 2 ? t2 : false),
+    this.wxrTawsSysSelected,
+    this.terr1Failed,
+    this.terr2Failed,
+  );
+  private readonly activeWxrFailed = MappedSubject.create(
+    ([sel, w1, w2]) => (sel === 1 ? w1 : sel === 2 ? w2 : false),
+    this.wxrTawsSysSelected,
+    this.wxr1Failed,
+    this.wxr2Failed,
+  );
+
+  private readonly terrInop = MappedSubject.create(
+    ([activeFailed, selected, polar]) => selected === 0 || activeFailed || polar,
+    this.activeTerrFailed,
+    this.wxrTawsSysSelected,
+    this.extremeLatitude,
+  );
+  private readonly wxrInop = MappedSubject.create(
+    ([activeFailed, selected, polar, activeOverlay]) =>
+      activeOverlay === 1 && (selected === 0 || activeFailed || polar),
+    this.activeWxrFailed,
+    this.wxrTawsSysSelected,
+    this.extremeLatitude,
+    this.activeOverlay,
+  );
+
+  private readonly rangeChangeFlagVisibility = MappedSubject.create(
+    ([rangeChange, _modeChange, trajNotAvail, noTerrAndWx, terrInop, wxrInop]) =>
+      rangeChange && !trajNotAvail && !noTerrAndWx && !terrInop && !wxrInop ? 'inherit' : 'hidden',
+    this.rangeChangeFlagCondition,
+    this.modeChangeFlagCondition,
+    this.trajNotAvailFlagCondition,
+    this.noTerrAndWxDataAvailFlagCondition,
+    this.terrInop,
+    this.wxrInop,
+  );
+
+  private readonly modeChangeFlagVisibility = MappedSubject.create(
+    ([_rangeChange, modeChange, trajNotAvail, noTerrAndWx, terrInop, wxrInop]) =>
+      modeChange && !trajNotAvail && !noTerrAndWx && !terrInop && !wxrInop ? 'inherit' : 'hidden',
+    this.rangeChangeFlagCondition,
+    this.modeChangeFlagCondition,
+    this.trajNotAvailFlagCondition,
+    this.noTerrAndWxDataAvailFlagCondition,
+    this.terrInop,
+    this.wxrInop,
+  );
+
+  private readonly trajNotAvailFlagVisibility = MappedSubject.create(
+    ([_rangeChange, _modeChange, trajNotAvail, noTerrAndWx, terrInop, wxrInop]) =>
+      trajNotAvail && !noTerrAndWx && !terrInop && !wxrInop ? 'inherit' : 'hidden',
+    this.rangeChangeFlagCondition,
+    this.modeChangeFlagCondition,
+    this.trajNotAvailFlagCondition,
+    this.noTerrAndWxDataAvailFlagCondition,
+    this.terrInop,
+    this.wxrInop,
+  );
+
+  private readonly noTerrAndWxDataAvailFlagVisibility = MappedSubject.create(
+    ([_rangeChange, _modeChange, _trajNotAvail, noTerrAndWx, terrInop, wxrInop]) =>
+      noTerrAndWx && !terrInop && !wxrInop ? 'inherit' : 'hidden',
+    this.rangeChangeFlagCondition,
+    this.modeChangeFlagCondition,
+    this.trajNotAvailFlagCondition,
+    this.noTerrAndWxDataAvailFlagCondition,
+    this.terrInop,
+    this.wxrInop,
+  );
+
+  private readonly terrInopFlagVisibility = MappedSubject.create(
+    ([_rangeChange, _modeChange, _trajNotAvail, _noTerrAndWx, terrInop, _wxrInop]) => (terrInop ? 'inherit' : 'hidden'),
+    this.rangeChangeFlagCondition,
+    this.modeChangeFlagCondition,
+    this.trajNotAvailFlagCondition,
+    this.noTerrAndWxDataAvailFlagCondition,
+    this.terrInop,
+    this.wxrInop,
+  );
+
+  private readonly wxrInopFlagVisibility = MappedSubject.create(
+    ([_rangeChange, _modeChange, _trajNotAvail, _noTerrAndWx, terrInop, wxrInop]) =>
+      !terrInop && wxrInop ? 'inherit' : 'hidden',
+    this.rangeChangeFlagCondition,
+    this.modeChangeFlagCondition,
+    this.trajNotAvailFlagCondition,
+    this.noTerrAndWxDataAvailFlagCondition,
+    this.terrInop,
+    this.wxrInop,
+  );
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.subscriptions.push(
       this.ndMode,
       this.ndRangeSetting,
       this.vdRange,
+      this.fmsLateralPath,
       this.fmsVerticalPath,
       this.displayedFmsPath,
       this.mapRecomputing,
+      this.mapRecomputingReason,
       this.visible,
-      this.rangeChangeFlagVisibility,
       this.headingWord,
       this.trackWord,
+      this.irMaintWord,
+      this.extremeLatitude,
       this.vdAvailable,
       this.lineColor,
       this.baroMode,
       this.baroCorrectedAltitude,
       this.verticalRange,
       this.planeSymbolY,
-      // this.fpaMain,
-      // this.fpaBackup,
-      //this.attHdgSelect,
       this.fpa,
       this.planeSymbolTransform,
       this.planeRotationVisibility,
       this.planeSymbolVisibility,
       this.rangeMarkerVisibility,
       this.rangeOver160ArrowVisible,
-      this.altitudeFlTextVisible,
+      this.activeLateralMode,
+      this.armedLateralMode,
+      this.shouldShowTrackLine,
       this.activeVerticalMode,
       this.fgAltConstraint,
       this.selectedAltitude,
       this.isSelectedVerticalMode,
       this.targetAltitude,
       this.altitudeTargetTransform,
-      this.targetAltitudeSymbolVisibility,
-      this.altitudeTargetColor,
-      this.targetAltitudeFormatted,
       this.targetAltitudeTextVisibility,
+      this.targetAltitudeSymbolVisibility,
+      this.altitudeTargetTransform,
+      this.altitudeTargetColor,
+      this.altitudeFlTextVisible,
+      this.wxrTawsSysSelected,
+      this.terrSysOff,
+      this.activeOverlay,
+      this.rangeChangeFlagCondition,
+      this.modeChangeFlagCondition,
+      this.noTerrAndWxDataAvailFlagCondition,
+      this.terr1Failed,
+      this.terr2Failed,
+      this.wxr1Failed,
+      this.wxr2Failed,
+      this.activeTerrFailed,
+      this.activeWxrFailed,
+      this.terrInop,
+      this.wxrInop,
+      this.rangeChangeFlagVisibility,
+      this.modeChangeFlagVisibility,
+      this.trajNotAvailFlagVisibility,
+      this.noTerrAndWxDataAvailFlagVisibility,
+      this.terrInopFlagVisibility,
+      this.wxrInopFlagVisibility,
+      this.targetAltitudeFormatted,
     );
 
     for (const rm of this.rangeMarkerText) {
@@ -357,6 +495,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.subscriptions.push(
       this.vdRange.sub(() => this.calculateAndTransmitEndOfVdMarker()),
       this.fmsLateralPath.sub(() => this.calculateAndTransmitEndOfVdMarker()),
+      this.canvasMapRef.instance.canvasInvalid.pipe(this.trajNotAvailFlagCondition),
     );
 
     this.calculateAndTransmitEndOfVdMarker();
@@ -492,6 +631,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     return (
       <>
         <VerticalDisplayCanvasMap
+          ref={this.canvasMapRef}
           bus={this.props.bus}
           visible={this.visible}
           fmsVerticalPath={this.fmsVerticalPath}
@@ -634,9 +774,49 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
             x={422}
             y={929}
             class="Green FontSmall MiddleAlign shadow"
+            style={{ visibility: this.modeChangeFlagVisibility }}
+          >
+            VD MODE CHANGE
+          </text>
+          <text
+            x={422}
+            y={929}
+            class="Green FontSmall MiddleAlign shadow"
             style={{ visibility: this.rangeChangeFlagVisibility }}
           >
             VD RANGE CHANGE
+          </text>
+          <text
+            x={422}
+            y={929}
+            class="White FontSmall MiddleAlign shadow"
+            style={{ visibility: this.noTerrAndWxDataAvailFlagVisibility }}
+          >
+            NO TERR AND WX DATA AVAILABLE
+          </text>
+          <text
+            x={422}
+            y={929}
+            class="Amber FontSmall MiddleAlign shadow"
+            style={{ visibility: this.terrInopFlagVisibility }}
+          >
+            TERR INOP
+          </text>
+          <text
+            x={422}
+            y={929}
+            class="Amber FontSmall MiddleAlign shadow"
+            style={{ visibility: this.wxrInopFlagVisibility }}
+          >
+            WXR INOP
+          </text>
+          <text
+            x={422}
+            y={929}
+            class="Amber FontSmall MiddleAlign shadow"
+            style={{ visibility: this.trajNotAvailFlagVisibility }}
+          >
+            TRAJ NOT AVAIL
           </text>
         </svg>
       </>
