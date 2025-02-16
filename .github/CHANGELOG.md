@@ -188,6 +188,7 @@
 1. [FMS] Reduced in-flight stutter due to facility loading - @tracernz (Mike)
 1. [A32NX/FMS] Improved approach procedure sorting - @tracernz (Mike)
 1. [A380X/FMS] The (RNP) flag is now shown for approaches with only the missed approach segment as RNP AR on MSFS2024 - @tracernz (Mike)
+1. [A380X/MFD] Add speed limit modification on VERT REV SPD page
 
 ## 0.12.0
 
