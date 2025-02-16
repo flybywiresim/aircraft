@@ -932,52 +932,53 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       buttonStyle="adding-right: 2px;"
                     />
                   </div>
-                  <div>
-                    <span class="mfd-label bigger mfd-spacing-right">{this.speedLimitText}</span>
-                    <div class="fr">
-                      <InputField<number>
-                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                        dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitValue(val)}
-                        mandatory={Subject.create(false)}
-                        value={this.speedLimitSpeed}
-                        alignText="flex-end"
-                        tmpyActive={this.tmpyActive}
-                        enteredByPilot={this.speedLimitPilotEntered}
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                        hEventConsumer={this.props.mfd.hEventConsumer}
-                        interactionMode={this.props.mfd.interactionMode}
-                      />
-                      <span class="mfd-label bigger">AT OR BELOW</span>
-                      <InputField<number>
-                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.speedLimitTransition)}
-                        dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitAltitude(val)}
-                        mandatory={Subject.create(false)}
-                        value={this.speedLimitAltitude}
-                        enteredByPilot={this.speedLimitPilotEntered}
-                        alignText="flex-end"
-                        tmpyActive={this.tmpyActive}
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                        hEventConsumer={this.props.mfd.hEventConsumer}
-                        interactionMode={this.props.mfd.interactionMode}
-                      />
-                      <Button
-                        label={Subject.create(
-                          <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                            <span style="text-align: center; vertical-align: center; margin-right: 10px;">
-                              DELETE
-                              <br />
-                              SPD LIM
-                            </span>
-                            <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                          </div>,
-                        )}
-                        onClick={() => {
-                          this.deleteSpeedLimit();
-                        }}
-                        disabled={this.deleteSpeedLimitDisabled}
-                        buttonStyle="adding-right: 2px;"
-                      />
-                    </div>
+                  <span class="mfd-vert-rev-spd-lim-header mfd-label bigger mfd-spacing-right">
+                    {this.speedLimitText}
+                  </span>
+                  <div class="mfd-vert-rev-spd-lim">
+                    <InputField<number>
+                      dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                      dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitValue(val)}
+                      mandatory={Subject.create(false)}
+                      value={this.speedLimitSpeed}
+                      alignText="flex-end"
+                      tmpyActive={this.tmpyActive}
+                      enteredByPilot={this.speedLimitPilotEntered}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
+                    />
+                    <span class="mfd-label bigger">AT OR BELOW</span>
+                    <InputField<number>
+                      dataEntryFormat={new AltitudeOrFlightLevelFormat(this.speedLimitTransition)}
+                      dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitAltitude(val)}
+                      mandatory={Subject.create(false)}
+                      value={this.speedLimitAltitude}
+                      enteredByPilot={this.speedLimitPilotEntered}
+                      alignText="flex-end"
+                      tmpyActive={this.tmpyActive}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
+                    />
+
+                    <Button
+                      label={Subject.create(
+                        <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                          <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                            DELETE
+                            <br />
+                            SPD LIMIT
+                          </span>
+                          <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                        </div>,
+                      )}
+                      onClick={() => {
+                        this.deleteSpeedLimit();
+                      }}
+                      disabled={this.deleteSpeedLimitDisabled}
+                      buttonStyle="adding-right: 2px;"
+                    />
                   </div>
                 </div>
               </TopTabNavigatorPage>
