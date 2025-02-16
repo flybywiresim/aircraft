@@ -300,17 +300,17 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     planIndex: number,
   ): Promise<void>;
 
-  setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): void;
+  setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
 
-  setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): void;
+  setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
 
-  deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): void;
+  deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
 
-  setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): void;
+  setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
 
-  setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): void;
+  setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
 
-  deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): void;
+  deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
 
   // TODO do not pass in waypoint object (rpc)
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
