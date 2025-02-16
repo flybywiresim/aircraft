@@ -95,10 +95,13 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
             <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <MarkerBeaconIndicator bus={this.props.bus} />
-            <LsReminder bus={this.props.bus} />
+            <LsTitle bus={this.props.bus} />
           </g>
-
           <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
+        </g>
+
+        <g>
+          <LsReminderIndicator bus={this.props.bus} />
         </g>
         <g id="DeviationGroup" ref={this.deviationGroup} style="display: none">
           <g id="LateralDeviationGroup" ref={this.ldevRef} style="display: none">
@@ -609,14 +612,14 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
   }
 }
 
-class LsReminder extends DisplayComponent<{ bus: EventBus }> {
-  private readonly lsReminderRef = FSComponent.createRef<SVGTextElement>();
+class LsTitle extends DisplayComponent<{ bus: EventBus }> {
+  private readonly lsTitle = FSComponent.createRef<SVGTextElement>();
 
   private readonly hasLoc = ConsumerSubject.create(null, false);
 
   private readonly lsButton = ConsumerSubject.create(null, false);
 
-  private readonly ilsReminderShown = MappedSubject.create(
+  private readonly ilsTitleShown = MappedSubject.create(
     ([hasLoc, lsButton]) => hasLoc && lsButton,
     this.hasLoc,
     this.lsButton,
@@ -631,19 +634,61 @@ class LsReminder extends DisplayComponent<{ bus: EventBus }> {
     this.lsButton.setConsumer(sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button').whenChanged());
 
     // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-    this.ilsReminderShown.sub((it) => {
+    this.ilsTitleShown.sub((it) => {
       if (it) {
-        this.lsReminderRef.instance.style.display = 'inline';
+        this.lsTitle.instance.style.display = 'inline';
       } else {
-        this.lsReminderRef.instance.style.display = 'none';
+        this.lsTitle.instance.style.display = 'none';
       }
     });
   }
 
   render(): VNode {
     return (
-      <text class="FontLargest Magenta MiddleAlign Blink9Seconds" ref={this.lsReminderRef} x="104" y="126">
+      <text class="FontLargest Magenta MiddleAlign" ref={this.lsTitle} x="104" y="126">
         ILS
+      </text>
+    );
+  }
+}
+
+class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+  private readonly lsReminder = FSComponent.createRef<SVGTextElement>();
+
+  // TODO replace with proper FG signals once implemented
+  private readonly locPushed = ConsumerSubject.create(this.sub.on('fcuLocModeActive'), false);
+
+  private readonly approachModePushed = ConsumerSubject.create(this.sub.on('fcuApproachModeActive'), false);
+
+  private readonly lsButton = ConsumerSubject.create(null, false);
+
+  private readonly lsReminderVisible = MappedSubject.create(
+    ([locPushed, approachModePushed, lsPushed]) => {
+      return (locPushed || approachModePushed) && !lsPushed; // TODO Check if LOC or G/S scales are invalid (MMR words)
+    },
+    this.locPushed,
+    this.approachModePushed,
+    this.lsButton,
+  );
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+    this.lsButton.setConsumer(this.sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button'));
+    this.lsReminderVisible.sub((v) => {
+      if (v) {
+        this.lsReminder.instance.style.display = 'inline';
+      } else {
+        this.lsReminder.instance.style.display = 'none';
+      }
+    }, true);
+  }
+
+  render(): VNode {
+    return (
+      <text class="FontLargest Amber Blink9Seconds" x="104.33" y="124.8" ref={this.lsReminder}>
+        LS
       </text>
     );
   }
