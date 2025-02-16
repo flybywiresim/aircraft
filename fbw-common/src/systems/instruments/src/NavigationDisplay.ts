@@ -83,6 +83,7 @@ export enum EfisRecomputingReason {
   None,
   RangeChange,
   ModeChange,
+  ModeAndRangeChange,
 }
 
 export interface NdSymbol {

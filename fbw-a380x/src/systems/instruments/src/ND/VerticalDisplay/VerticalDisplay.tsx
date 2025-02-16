@@ -302,7 +302,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   private readonly rangeChangeFlagCondition = MappedSubject.create(
-    ([flagShown, flagReason]) => flagShown && flagReason === EfisRecomputingReason.RangeChange,
+    ([flagShown, flagReason]) =>
+      flagShown &&
+      (flagReason === EfisRecomputingReason.RangeChange || flagReason === EfisRecomputingReason.ModeAndRangeChange),
     this.mapRecomputing,
     this.mapRecomputingReason,
   );

@@ -226,16 +226,16 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
     this.mapRecomputing.sub((recomputing) => {
       this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
-      this.props.bus
-        .getPublisher<NDControlEvents>()
-        .pub(
-          'set_map_recomputing_reason',
-          this.pageChangeInProgress.get()
-            ? EfisRecomputingReason.ModeChange
-            : this.rangeChangeInProgress.get()
-              ? EfisRecomputingReason.RangeChange
-              : EfisRecomputingReason.None,
-        );
+
+      let reason = EfisRecomputingReason.None;
+      if (this.pageChangeInProgress.get() && this.rangeChangeInProgress.get()) {
+        reason = EfisRecomputingReason.ModeAndRangeChange;
+      } else if (this.pageChangeInProgress.get()) {
+        reason = EfisRecomputingReason.ModeChange;
+      } else if (this.rangeChangeInProgress.get()) {
+        reason = EfisRecomputingReason.RangeChange;
+      }
+      this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing_reason', reason);
     });
 
     sub
