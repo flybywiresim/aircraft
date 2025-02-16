@@ -1,4 +1,4 @@
-import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint } from 'fmgc/constraint';
 import { Coordinates } from 'msfs-geo';
 
 export enum PathVectorType {

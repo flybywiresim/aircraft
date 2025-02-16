@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
-import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 

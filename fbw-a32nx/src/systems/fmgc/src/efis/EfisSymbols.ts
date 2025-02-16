@@ -18,6 +18,7 @@ import {
   EfisSide,
   Arinc429SignStatusMatrix,
   Arinc429OutputWord,
+  WaypointConstraintType,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -38,7 +39,6 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';

@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';

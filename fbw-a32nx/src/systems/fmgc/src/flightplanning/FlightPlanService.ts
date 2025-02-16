@@ -6,7 +6,7 @@
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
@@ -14,7 +14,6 @@ import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 

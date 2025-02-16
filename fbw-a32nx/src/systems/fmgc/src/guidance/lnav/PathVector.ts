@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { arcLength, pointOnArc, pointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { bearingTo, distanceTo } from 'msfs-geo';
