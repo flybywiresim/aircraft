@@ -91,8 +91,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-arrival`),
     },
     {
-      name: '(N/A) OFFSET',
-      disabled: true,
+      name: 'OFFSET',
+      disabled: !fpln.loadedFlightPlan?.legElementAt(legIndex).isXF,
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-offset`),
     },
