@@ -1,5 +1,5 @@
-import { AltitudeConstraint } from 'fmgc/constraint';
 import { Coordinates } from 'msfs-geo';
+import { AltitudeConstraint } from '../../fmgc';
 
 export enum PathVectorType {
   Line,
