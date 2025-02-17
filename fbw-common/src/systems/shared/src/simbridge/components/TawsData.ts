@@ -1,7 +1,7 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide } from '../../../..';
+import { EfisSide } from '../../../../index-no-react';
 import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { ElevationSamplePathDto, TawsAircraftStatusDataDto } from '../Taws/taws';
 
