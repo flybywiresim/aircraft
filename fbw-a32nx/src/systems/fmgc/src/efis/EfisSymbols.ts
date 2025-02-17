@@ -42,7 +42,7 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { getAlongTrackDistanceTo } from '../guidance/lnav/CommonGeometry';
+import { getAlongTrackDistanceTo } from '@fmgc/guidance/lnav/CommonGeometry';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
