@@ -48,11 +48,11 @@ import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
 
 import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
-import { VdSimvarPublisher } from './VdSimvarPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -69,8 +69,6 @@ class NDInstrument implements FsInstrument {
   private readonly backplane = new InstrumentBackplane();
 
   private readonly simVarPublisher: NDSimvarPublisher;
-
-  private readonly vdSimVarPublisher: VdSimvarPublisher;
 
   private readonly fcuBusPublisher: FcuBusPublisher;
 
@@ -103,6 +101,8 @@ class NDInstrument implements FsInstrument {
   private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
   private readonly simplaneValueProvider: SimplaneValueProvider;
+
+  private readonly aesuPublisher: AesuBusPublisher;
 
   private readonly clock: Clock;
 
@@ -156,7 +156,6 @@ class NDInstrument implements FsInstrument {
     this.bus = new ArincEventBus();
 
     this.simVarPublisher = new NDSimvarPublisher(this.bus);
-    this.vdSimVarPublisher = new VdSimvarPublisher(this.bus);
     this.fcuBusPublisher = new FcuBusPublisher(this.bus, side);
     this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
     this.fmsOansSimvarPublisher = new FmsOansSimvarPublisher(this.bus);
@@ -171,6 +170,7 @@ class NDInstrument implements FsInstrument {
     this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
+    this.aesuPublisher = new AesuBusPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
     this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
@@ -178,7 +178,6 @@ class NDInstrument implements FsInstrument {
     this.clock = new Clock(this.bus);
 
     this.backplane.addPublisher('ndSimVars', this.simVarPublisher);
-    this.backplane.addPublisher('vdSimvars', this.vdSimVarPublisher);
     this.backplane.addPublisher('fcu', this.fcuBusPublisher);
     this.backplane.addPublisher('fms', this.fmsDataPublisher);
     this.backplane.addPublisher('fms-oans', this.fmsOansSimvarPublisher);
@@ -193,6 +192,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('egpwc', this.egpwcBusPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('aesu', this.aesuPublisher);
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);

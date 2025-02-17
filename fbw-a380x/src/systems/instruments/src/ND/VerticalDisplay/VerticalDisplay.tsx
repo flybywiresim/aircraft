@@ -5,6 +5,7 @@
   EfisNdMode,
   EfisRecomputingReason,
   EfisSide,
+  FcuSimVars,
   MathUtils,
   NdSymbol,
   NdSymbolTypeFlags,
@@ -31,11 +32,13 @@ import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/Sim
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
-import { VdSimvars } from '../VdSimvarPublisher';
 import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { pathVectorLength, pathVectorPoint } from '@fmgc/guidance/lnav/PathVector';
 import { bearingTo } from 'msfs-geo';
 import { GenericFcuEvents, GenericTawsEvents } from '@flybywiresim/navigation-display';
+import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
+import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { A380XFcuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/A380XFcuBusPublisher';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
@@ -56,12 +59,15 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     GenericFcuEvents &
       GenericTawsEvents &
       NDSimvars &
-      VdSimvars &
       DmcLogicEvents &
       SimplaneValues &
       FmsSymbolsData &
       NDControlEvents &
-      ClockEvents
+      ClockEvents &
+      AesuBusEvents &
+      FGVars &
+      A380XFcuBusEvents &
+      FcuSimVars
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
@@ -194,8 +200,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.vdRange.map((value) => (value / 4) * 4),
   ];
 
-  private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
-  private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('armedLateralMode'), 0);
+  private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode'), 0);
+  private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask'), 0);
   private readonly shouldShowTrackLine = MappedSubject.create(
     ([active, armed]) =>
       (active === LateralMode.NONE ||
@@ -208,8 +214,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.activeLateralMode,
     this.armedLateralMode,
   );
-  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
-  private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('altConstraint'), 0);
+  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
+  private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('fg.altitudeConstraint'), 0);
   private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
   private readonly isSelectedVerticalMode = MappedSubject.create(
     ([mode, cstr]) =>
@@ -294,12 +300,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
   private readonly altitudeFlTextVisible = this.baroMode.map((m) => (m === 'STD' ? 'visible' : 'hidden'));
 
-  private readonly wxrTawsSysSelected = ConsumerSubject.create(this.sub.on('wxrTawsSysSelected'), 1);
-  private readonly terrSysOff = ConsumerSubject.create(this.sub.on('terrSysOff'), false);
-  private readonly activeOverlay = ConsumerSubject.create(
-    this.sub.on(this.props.side === 'L' ? 'activeOverlayCapt' : 'activeOverlayFO'),
-    0,
-  );
+  private readonly wxrTawsSysSelected = ConsumerSubject.create(this.sub.on('a32nx_aesu_wxr_taws_sys_selected'), 1);
+  private readonly terrSysOff = ConsumerSubject.create(this.sub.on('a32nx_aesu_terr_sys_off'), false);
+  private readonly activeOverlay = ConsumerSubject.create(this.sub.on('a380x_efis_cp_active_overlay'), 0);
 
   private readonly rangeChangeFlagCondition = MappedSubject.create(
     ([flagShown, flagReason]) => flagShown && flagReason === EfisRecomputingReason.RangeChange,
@@ -316,10 +319,10 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly trajNotAvailFlagCondition = Subject.create(false);
   private readonly noTerrAndWxDataAvailFlagCondition = MappedSubject.create(([terrOff]) => terrOff, this.terrSysOff);
 
-  private readonly terr1Failed = ConsumerSubject.create(this.sub.on('terr1Failed'), false);
-  private readonly terr2Failed = ConsumerSubject.create(this.sub.on('terr2Failed'), false);
-  private readonly wxr1Failed = ConsumerSubject.create(this.sub.on('wxr1Failed'), false);
-  private readonly wxr2Failed = ConsumerSubject.create(this.sub.on('wxr2Failed'), false);
+  private readonly terr1Failed = ConsumerSubject.create(this.sub.on('a32nx_aesu_terr_failed_1'), false);
+  private readonly terr2Failed = ConsumerSubject.create(this.sub.on('a32nx_aesu_terr_failed_2'), false);
+  private readonly wxr1Failed = ConsumerSubject.create(this.sub.on('a32nx_aesu_wxr_failed_1'), false);
+  private readonly wxr2Failed = ConsumerSubject.create(this.sub.on('a32nx_aesu_wxr_failed_2'), false);
   private readonly activeTerrFailed = MappedSubject.create(
     ([sel, t1, t2]) => (sel === 1 ? t1 : sel === 2 ? t2 : true),
     this.wxrTawsSysSelected,

@@ -31,11 +31,12 @@ import {
 import { VerticalDisplayWaypointLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayWaypointLayer';
 import { VdPseudoWaypointLayer } from './VdPseudoWaypointLayer';
 import { VerticalDisplayRunwayLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayRunwayLayer';
-import { VdSimvars } from '../VdSimvarPublisher';
 import { VerticalMode } from '@shared/autopilot';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { GenericFmsEvents } from '../../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFmsEvents';
 import { GenericFcuEvents } from '@flybywiresim/navigation-display';
+import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { A380XFcuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/A380XFcuBusPublisher';
 
 export interface VerticalDisplayCanvasMapProps extends ComponentProps {
   bus: ArincEventBus;
@@ -54,12 +55,13 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
   private readonly sub = this.props.bus.getArincSubscriber<
     GenericFcuEvents &
       NDSimvars &
-      VdSimvars &
       DmcLogicEvents &
       SimplaneValues &
       FmsSymbolsData &
       NDControlEvents &
-      GenericFmsEvents
+      GenericFmsEvents &
+      FGVars &
+      A380XFcuBusEvents
   >();
 
   private readonly fmsSymbols = ConsumerSubject.create(this.sub.on('symbols'), []);
@@ -81,9 +83,9 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
 
   private readonly offsetDistance = this.props.fmsVerticalPath.map((_path) => 0);
 
-  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
-  private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), 0);
-  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('selectedFpa'), 0);
+  private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
+  private readonly selectedVs = ConsumerSubject.create(this.sub.on('a380x_fcu_selected_vertical_speed'), 0);
+  private readonly selectedFpa = ConsumerSubject.create(this.sub.on('a380x_fcu_selected_fpa'), 0);
   private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0); // FIXME ADIRS selection for ND not implemented yet
 
   private readonly mapRecomputing = ConsumerSubject.create(this.sub.on('set_map_recomputing'), false);
