@@ -1,6 +1,7 @@
 {
   "isInteractive": true,
   "extraDeps": [
-    "/fbw-common/src/systems/navdata"
+    "/fbw-common/src/systems/navdata",
+    "/fbw-a32nx/src/systems/fmgc"
   ]
 }
