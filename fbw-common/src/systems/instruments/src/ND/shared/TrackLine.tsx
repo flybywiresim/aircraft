@@ -17,7 +17,12 @@ import { MathUtils, EfisNdMode, Arinc429ConsumerSubject } from '@flybywiresim/fb
 import { NDSimvars } from '../NDSimvarPublisher';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
 import { GenericFcuEvents } from '../types/GenericFcuEvents';
-import { ArmedLateralMode, GenericFlightGuidanceEvents, LateralMode } from '../types/GenericFlightGuidanceEvents';
+import {
+  ArmedLateralMode,
+  GenericFlightGuidanceEvents,
+  isArmed,
+  LateralMode,
+} from '../types/GenericFlightGuidanceEvents';
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 export interface TrackLineProps {
@@ -110,7 +115,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
         lateralMode === LateralMode.TRACK ||
         lateralMode === LateralMode.GA_TRACK ||
         lateralMode === LateralMode.RWY_TRACK) &&
-      (lateralArmed !== ArmedLateralMode.NAV || !areActiveVectorsTransmitted);
+      (!isArmed(lateralArmed, ArmedLateralMode.NAV) || !areActiveVectorsTransmitted);
 
     if (wrongNDMode || headingInvalid || trackInvalid || !shouldShowLine) {
       this.visibility.set('hidden');
