@@ -302,7 +302,7 @@ export class EfisTawsBridge implements Instrument {
   /** If track from one segment differs more than 3° from previous track, paint grey area */
   private readonly trackChangeDistance = MappedSubject.create(
     ([path, track]) => {
-      if (track === null || path.length === 0) {
+      if (track === null || !path || path.length === 0) {
         return -1;
       }
 
@@ -328,15 +328,17 @@ export class EfisTawsBridge implements Instrument {
 
   private readonly terrVdPathData = MappedSubject.create(
     ([fmsPath, trackChangeDistance]) => {
-      const waypoints = fmsPath
-        .filter((p) => p.type !== PathVectorType.DebugPoint)
-        .map((p) => {
-          const waypoint: WaypointDto = {
-            latitude: p.startPoint.lat,
-            longitude: p.startPoint.long,
-          };
-          return waypoint;
-        });
+      const waypoints = !fmsPath
+        ? []
+        : fmsPath
+            .filter((p) => p.type !== PathVectorType.DebugPoint)
+            .map((p) => {
+              const waypoint: WaypointDto = {
+                latitude: p.startPoint.lat,
+                longitude: p.startPoint.long,
+              };
+              return waypoint;
+            });
 
       const data: ElevationSamplePathDto = {
         pathWidth: 1,
