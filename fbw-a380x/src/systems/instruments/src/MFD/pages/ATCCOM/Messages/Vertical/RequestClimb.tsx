@@ -1,13 +1,7 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
-import {
-  AircraftType,
-  AirportFormat,
-  AtisCode,
-  LongAlphanumericFormat,
-  ShortAlphanumericFormat,
-} from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { AirportFormat, ShortAlphanumericFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { MessageVisualizationProps } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
 
 export class RequestClimb extends DisplayComponent<MessageVisualizationProps> {
