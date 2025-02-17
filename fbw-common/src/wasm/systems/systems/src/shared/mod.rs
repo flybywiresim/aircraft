@@ -389,6 +389,11 @@ pub enum ElectricalBusType {
     /// As sub buses represent such a small area, their state is not exported towards
     /// the simulator.
     Sub(&'static str),
+
+    /// A virtual bus is a bus which exists to help to provide a more realistic simulation
+    /// but doesn't exist in the real plane.
+    /// It's used for example to simulate that a device is powered by multiple powersources.
+    Virtual(&'static str),
 }
 impl Display for ElectricalBusType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -407,6 +412,7 @@ impl Display for ElectricalBusType {
             ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
             ElectricalBusType::DirectCurrentNamed(name) => write!(f, "{}", name),
             ElectricalBusType::Sub(name) => write!(f, "SUB_{}", name),
+            ElectricalBusType::Virtual(name) => write!(f, "VIRTUAL_{name}"),
         }
     }
 }
