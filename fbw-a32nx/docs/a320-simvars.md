@@ -2091,6 +2091,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates to the FG if the FM lateral flight plan is valid, for lateral managed modes (NAV).
     - Internal to FM/FG communication.
 
+- A32NX_FM_NAV_CAPTURE_CONDITION
+    - Boolean
+    - Indicates to the FG whetehr the NAV capture condition is satisfied
+
 - A32NX_FG_PHI_LIMIT
     - Number in Degrees
     - Indicates the current bank limit requested by the FM

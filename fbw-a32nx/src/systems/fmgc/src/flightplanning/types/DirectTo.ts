@@ -3,11 +3,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix } from '@flybywiresim/fbw-sdk';
 
 interface FlightPlanDirectTo {
   flightPlanLegIndex?: number;
-  nonFlightPlanWaypoint?: Waypoint;
+  nonFlightPlanFix?: Fix;
 }
 
 type CourseInFlightPlanDirectTo = FlightPlanDirectTo & {
@@ -27,3 +27,15 @@ export type DirectTo =
   | CourseInFlightPlanDirectTo
   | CourseOutFlightPlanDirectTo
   | WithAbeamFlightPlanDirectTo;
+
+export function isDirectWithAbeam(directTo: DirectTo): directTo is WithAbeamFlightPlanDirectTo {
+  return 'withAbeam' in directTo && directTo.withAbeam;
+}
+
+export function isDirectWithCourseIn(directTo: DirectTo): directTo is CourseInFlightPlanDirectTo {
+  return 'courseIn' in directTo && Number.isFinite(directTo.courseIn);
+}
+
+export function isDirectWithCourseOut(directTo: DirectTo): directTo is CourseOutFlightPlanDirectTo {
+  return 'courseOut' in directTo && Number.isFinite(directTo.courseOut);
+}
