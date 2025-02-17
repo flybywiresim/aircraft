@@ -1,8 +1,8 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AltitudeConstraint } from 'fmgc/constraint';
 import { Coordinates } from 'msfs-geo';
+import { AltitudeConstraint } from '../../fmgc/constraint';
 
 export type EfisSide = 'L' | 'R';
 
