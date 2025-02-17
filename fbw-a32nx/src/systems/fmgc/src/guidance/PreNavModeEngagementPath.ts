@@ -54,6 +54,10 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   private shouldInterceptPathExist: boolean = false;
 
+  private crossTrackError: number = 0;
+
+  private previousNavCaptureCondition: boolean = false;
+
   constructor(
     private readonly fmgcIndex: number,
     private navigation: NavigationProvider,
@@ -102,7 +106,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
     const ciLeg = this.geometry.legs.get(activePlan.activeLegIndex - 1);
 
-    const referenceLegIndex = !ciLeg.isAbeam(this.ppos) ? activePlan.activeLegIndex : activePlan.activeLegIndex - 1;
+    const referenceLegIndex = !ciLeg?.isAbeam(this.ppos) ? activePlan.activeLegIndex : activePlan.activeLegIndex - 1;
     const referenceInboundTransition = this.geometry.transitions.get(referenceLegIndex - 1);
     const referenceLeg = this.geometry.legs.get(referenceLegIndex);
     const referenceOutboundTransition = this.geometry.transitions.get(referenceLegIndex);
@@ -117,7 +121,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       referenceOutboundTransition,
     );
 
-    if (ciLeg.isAbeam(this.ppos)) {
+    if (ciLeg?.isAbeam(this.ppos)) {
       atdtg +=
         activePlan.activeLeg?.isDiscontinuity === false ? activePlan.activeLeg.calculated.distanceWithTransitions : 0;
     }
@@ -126,6 +130,8 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   }
 
   private updateState() {
+    this.crossTrackError = SimVar.GetSimVarValue('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
+
     const isNavModeArmed = this.register
       .setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_3`)
       .bitValueOr(14, false);
@@ -170,11 +176,13 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   private onNavModeActivated() {
     this.shouldInterceptPathExist = false;
+    this.sequence();
   }
 
   private onNavModeDisengaged() {
     this.shouldInterceptPathExist = false;
     this.resetPath();
+    this.setNavCaptureCondition(false);
   }
 
   private onNavModeArmed() {
@@ -185,6 +193,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   private onNavModeDisarmed() {
     this.shouldInterceptPathExist = false;
     this.resetPath();
+    this.setNavCaptureCondition(false);
   }
 
   private updateWhileDisengaged() {}
@@ -196,6 +205,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     }
 
     this.recomputeInterceptPath(activeGeometry);
+    this.updateNavCaptureCondition();
   }
 
   private recomputeInterceptPath(activeGeometry: Geometry) {
@@ -213,6 +223,10 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     if (!this.shouldComputeInterceptPath(activeFlightPlanLeg)) {
       this.resetPath();
       return;
+    }
+
+    if ((this.ppos === null) !== (this.navigation.getPpos() === null)) {
+      this.ppos = this.navigation.getPpos();
     }
 
     const trueTrack = this.navigation.getTrueTrack();
@@ -338,9 +352,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       return;
     }
 
-    const crossTrackError = SimVar.GetSimVarValue('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
-
-    if (Math.abs(crossTrackError) < 0.2) {
+    if (Math.abs(this.crossTrackError) < 0.2) {
       this.resetPath();
     }
   }
@@ -367,6 +379,50 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   private enqueueRecomputation() {
     this.recomputationTimer = this.RECOMPUTATION_INTERVAL;
+  }
+
+  private isPreNavEngagementPathCaptureConditionMet(): boolean | undefined {
+    if (!this.doesExist() || !this.flightPlanService.hasActive) {
+      return undefined;
+    }
+
+    const plan = this.flightPlanService.active;
+    const ciLeg = this.geometry.legs.get(plan.activeLegIndex - 1);
+    const transition = this.geometry.transitions.get(plan.activeLegIndex - 1);
+    const gs = this.navigation.getGroundSpeed();
+
+    if (!ciLeg || !transition || gs === null) {
+      return undefined;
+    }
+
+    const rad = this.geometry.getGuidableRollAnticipationDistance(gs, ciLeg, transition);
+
+    return ciLeg.getDistanceToGo(this.ppos) < rad;
+  }
+
+  private updateNavCaptureCondition() {
+    this.setNavCaptureCondition(this.isPreNavEngagementPathCaptureConditionMet() ?? Math.abs(this.crossTrackError) < 1);
+  }
+
+  private setNavCaptureCondition(navCaptureCondition: boolean) {
+    if (navCaptureCondition !== this.previousNavCaptureCondition) {
+      SimVar.SetSimVarValue('L:A32NX_FM_NAV_CAPTURE_CONDITION', 'bool', navCaptureCondition);
+      this.previousNavCaptureCondition = navCaptureCondition;
+    }
+  }
+
+  private sequence() {
+    if (!this.doesExist() || !this.flightPlanService.hasActive) {
+      return;
+    }
+
+    const plan = this.flightPlanService.active;
+    const transition = this.geometry.transitions.get(plan.activeLegIndex - 1);
+
+    transition?.freeze();
+    this.geometry.legs.delete(plan.activeLegIndex - 2);
+    this.geometry.legs.delete(plan.activeLegIndex - 1);
+    this.geometry.version++;
   }
 }
 
