@@ -8,7 +8,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import './style.scss';
-import { TriangleLeft } from 'instruments/src/MFD/pages/common/shapes';
+import { TriangleLeft } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/shapes';
 
 export type ButtonMenuItem = {
   label: string;
