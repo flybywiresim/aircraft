@@ -206,7 +206,7 @@ class SystemsHost extends BaseInstrument {
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
-    this.fwsCore.init();
+    this.fwsCore?.init();
 
     this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
@@ -219,8 +219,8 @@ class SystemsHost extends BaseInstrument {
         const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
         lastUpdateTime = now;
 
-        this.soundManager.update(dt);
-        this.gpws.update(dt);
+        this.soundManager?.update(dt);
+        this.gpws?.update(dt);
         this.fwsCore?.update(dt);
       });
 
