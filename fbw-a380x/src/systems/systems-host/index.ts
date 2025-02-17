@@ -21,11 +21,12 @@ import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import {
+  AdiruBusPublisher,
   ArincEventBus,
   BtvSimvarPublisher,
-  EfisTawsBridgePublisher,
   FailuresConsumer,
   MsfsFlightModelPublisher,
+  MsfsMiscPublisher,
   PilotSeatPublisher,
   VhfComIndices,
 } from '@flybywiresim/fbw-sdk';
@@ -47,6 +48,9 @@ import {
   CpiomAvailableSimvarPublisher,
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
+import { EgpwcBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
+import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { AesuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { A380Failure } from '@failures';
 import { EfisTawsBridge } from './systems/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
@@ -122,7 +126,11 @@ class SystemsHost extends BaseInstrument {
   private readonly interactivePointsPublisher = new MsfsFlightModelPublisher(this.bus);
 
   private readonly fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, 'L'); // FIXME figure out side dependency
-  private readonly efisTawsBridgePublisher = new EfisTawsBridgePublisher(this.bus);
+  private readonly egpwcPublisher = new EgpwcBusPublisher(this.bus, 'L');
+  private readonly fgDataPublisher = new FGDataPublisher(this.bus);
+  private readonly msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
+  private readonly adiruBusPublisher = new AdiruBusPublisher(this.bus);
+  private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
 
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
@@ -188,7 +196,11 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
     this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
     this.backplane.addPublisher('FmsSymbolsPublisher', this.fmsSymbolsPublisher);
-    this.backplane.addPublisher('EfisTawsBridgePublisher', this.efisTawsBridgePublisher);
+    this.backplane.addPublisher('EgpwcPublisher', this.egpwcPublisher);
+    this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
+    this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
+    this.backplane.addPublisher('AdiruBusPublisher', this.adiruBusPublisher);
+    this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();

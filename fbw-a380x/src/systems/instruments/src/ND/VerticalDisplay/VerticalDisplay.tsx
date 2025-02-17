@@ -146,8 +146,16 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       const firstAltitude = fmsPath.length > 0 ? fmsPath[0].altitude : undefined;
       const lastAltitude = fmsPath.length > 0 ? fmsPath[fmsPath.length - 1].altitude : undefined;
       const range = VerticalDisplay.minMaxVerticalRange(vdRange, egoAltitude.valueOr(0), firstAltitude, lastAltitude);
-      SimVar.SetSimVarValue(`L:A32NX_EFIS_${this.props.side}_VD_RANGE_LOWER`, SimVarValueType.Number, range[0]);
-      SimVar.SetSimVarValue(`L:A32NX_EFIS_${this.props.side}_VD_RANGE_UPPER`, SimVarValueType.Number, range[1]);
+      SimVar.SetSimVarValue(
+        `L:A32NX_VD_${this.props.side === 'L' ? 1 : 2}_RANGE_LOWER`,
+        SimVarValueType.Number,
+        range[0],
+      );
+      SimVar.SetSimVarValue(
+        `L:A32NX_VD_${this.props.side === 'L' ? 1 : 2}_RANGE_UPPER`,
+        SimVarValueType.Number,
+        range[1],
+      );
       return range;
     },
     this.vdRange,

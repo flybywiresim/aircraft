@@ -4,14 +4,18 @@
 import { A380Failure } from '@failures';
 import {
   a380EfisRangeSettings,
+  AdiruBusEvents,
   Arinc429LocalVarConsumerSubject,
   Arinc429WordData,
   ArincEventBus,
   ClientState,
   EfisNdMode,
-  EfisTawsBridgeSimVars,
+  EfisSide,
   ElevationSamplePathDto,
   FailuresConsumer,
+  FcuBusPublisher,
+  FcuSimVars,
+  MsfsMiscEvents,
   PathVectorType,
   TawsAircraftStatusDataDto,
   TawsData,
@@ -23,7 +27,9 @@ import { pathVectorLength } from '@fmgc/guidance/lnav/PathVector';
 import {
   ClockEvents,
   ConsumerSubject,
+  EventBus,
   Instrument,
+  InstrumentBackplane,
   MappedSubject,
   SimVarValueType,
   Subject,
@@ -34,6 +40,44 @@ import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { bearingTo } from 'msfs-geo';
 import { PowerSupplyBusTypes } from './powersupply';
+import { EgpwcSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
+import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
+
+/**
+ * Collects EFIS information for a given EFIS side. Has to be used together with private bus since switchable publishers are used, don't want that to spill to the parent components
+ */
+class EfisDataSync implements Instrument {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly bus = new EventBus();
+  private readonly sub = this.bus.getSubscriber<FcuSimVars>();
+  private readonly backplane = new InstrumentBackplane();
+  private readonly fcuBusPublisher = new FcuBusPublisher(this.bus, this.side);
+
+  public readonly ndRange = ConsumerSubject.create(this.sub.on('ndRangeSetting'), 0);
+  public readonly ndMode = ConsumerSubject.create(this.sub.on('ndMode'), 0);
+  public readonly ndOverlay = ConsumerSubject.create(this.sub.on('a380x_efis_cp_active_overlay'), 0);
+
+  constructor(private readonly side: EfisSide) {
+    this.backplane.addPublisher('fcubus', this.fcuBusPublisher);
+
+    this.subscriptions.push(this.ndMode, this.ndRange, this.ndOverlay);
+  }
+
+  init(): void {
+    this.backplane.init();
+  }
+
+  onUpdate(): void {
+    this.backplane.onUpdate();
+  }
+
+  destroy() {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+  }
+}
 
 /**
  * Utility class to send data to the TAWS from the EFIS CP
@@ -42,7 +86,15 @@ import { PowerSupplyBusTypes } from './powersupply';
 export class EfisTawsBridge implements Instrument {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.bus.getSubscriber<
-    EfisTawsBridgeSimVars & FmsSymbolsData & ClockEvents & ResetPanelSimvars & PowerSupplyBusTypes
+    FmsSymbolsData &
+      ClockEvents &
+      ResetPanelSimvars &
+      PowerSupplyBusTypes &
+      EgpwcSimVars &
+      FGVars &
+      MsfsMiscEvents &
+      AdiruBusEvents &
+      AesuBusEvents
   >();
 
   private readonly updateThrottler = new UpdateThrottler(200);
@@ -57,64 +109,51 @@ export class EfisTawsBridge implements Instrument {
     return a.ssm === b.ssm && Math.round(a.value) === Math.round(b.value);
   };
 
-  private readonly latitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitudeRaw')).map(
+  private readonly latitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('egpwc.presentLatitude')).map(
     (v) => v,
     this.coordinateEqualityWithPrecisionFunc,
   );
-  private readonly longitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitudeRaw')).map(
+  private readonly longitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('egpwc.presentLongitude')).map(
     (v) => v,
     this.coordinateEqualityWithPrecisionFunc,
   );
-  private readonly altitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('altitudeRaw')).map(
+  private readonly altitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('egpwc.presentAltitude')).map(
     (v) => v,
     this.roundedEqualityWithPrecisionFunc,
   );
-  private readonly heading = Arinc429LocalVarConsumerSubject.create(this.sub.on('headingRaw')).map(
+  private readonly heading = Arinc429LocalVarConsumerSubject.create(this.sub.on('egpwc.presentHeading')).map(
     (v) => v,
     this.roundedEqualityWithPrecisionFunc,
   );
-  private readonly verticalSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeedRaw')).map(
-    (v) => v,
-    this.roundedEqualityWithPrecisionFunc,
-  );
+  private readonly verticalSpeed = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('egpwc.presentVerticalSpeed'),
+  ).map((v) => v, this.roundedEqualityWithPrecisionFunc);
   private readonly destinationLatitude = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('destinationLatitudeRaw'),
+    this.sub.on('egpwc.destinationLatitude'),
   ).map((v) => v, this.coordinateEqualityWithPrecisionFunc);
   private readonly destinationLongitude = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('destinationLongitudeRaw'),
+    this.sub.on('egpwc.destinationLongitude'),
   ).map((v) => v, this.coordinateEqualityWithPrecisionFunc);
 
-  private readonly ndRange = [
-    ConsumerSubject.create(this.sub.on('nd_range_capt'), 0),
-    ConsumerSubject.create(this.sub.on('nd_range_fo'), 0),
-  ];
-  private readonly ndMode = [
-    ConsumerSubject.create(this.sub.on('nd_mode_capt'), 0),
-    ConsumerSubject.create(this.sub.on('nd_mode_fo'), 0),
-  ];
-  private readonly terrActive = [
-    ConsumerSubject.create(this.sub.on('terr_active_capt'), false),
-    ConsumerSubject.create(this.sub.on('terr_active_fo'), false),
-  ];
+  private readonly efisDataSyncCapt = new EfisDataSync('L');
+  private readonly efisDataSyncFO = new EfisDataSync('R');
+
   private readonly vdRangeLower = [
-    ConsumerSubject.create(this.sub.on('vd_range_lower_capt').whenChangedBy(5), 0),
-    ConsumerSubject.create(this.sub.on('vd_range_lower_fo').whenChangedBy(5), 0),
+    ConsumerSubject.create(this.sub.on('a32nx_aesu_vd_range_lower_1').whenChangedBy(5), 0),
+    ConsumerSubject.create(this.sub.on('a32nx_aesu_vd_range_lower_2').whenChangedBy(5), 0),
   ];
   private readonly vdRangeUpper = [
-    ConsumerSubject.create(this.sub.on('vd_range_upper_capt').whenChangedBy(5), 0),
-    ConsumerSubject.create(this.sub.on('vd_range_upper_fo').whenChangedBy(5), 0),
+    ConsumerSubject.create(this.sub.on('a32nx_aesu_vd_range_upper_1').whenChangedBy(5), 0),
+    ConsumerSubject.create(this.sub.on('a32nx_aesu_vd_range_upper_2').whenChangedBy(5), 0),
   ];
 
-  private readonly gearIsDown = ConsumerSubject.create(this.sub.on('gearIsDown'), true);
-  private readonly terrOnNdRenderingMode = ConsumerSubject.create(this.sub.on('terrOnNdRenderingMode'), 0);
-  private readonly groundTruthLatitude = ConsumerSubject.create(this.sub.on('groundTruthLatitude').withPrecision(4), 0);
-  private readonly groundTruthLongitude = ConsumerSubject.create(
-    this.sub.on('groundTruthLongitude').withPrecision(4),
-    0,
-  );
+  private readonly gearIsDown = ConsumerSubject.create(this.sub.on('egpwc.gearIsDown'), 1);
+  private readonly terrOnNdRenderingMode = ConsumerSubject.create(this.sub.on('egpwc.terrOnNdRenderingMode'), 0);
+  private readonly groundTruthLatitude = ConsumerSubject.create(this.sub.on('msfs_latitude').withPrecision(4), 0);
+  private readonly groundTruthLongitude = ConsumerSubject.create(this.sub.on('msfs_longitude').withPrecision(4), 0);
 
-  private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
-  private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('armedLateralMode'), 0);
+  private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode'), 0);
+  private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask'), 0);
   private readonly shouldShowTrackLine = MappedSubject.create(
     ([active, armed]) =>
       (active === LateralMode.NONE ||
@@ -137,39 +176,39 @@ export class EfisTawsBridge implements Instrument {
   private readonly ac4Powered = ConsumerSubject.create(this.sub.on('acBus4'), false);
 
   private readonly efisDataCapt = MappedSubject.create(
-    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper, terrFailed]) => {
+    ([ndRange, ndMode, ndOverlay, vdRangeLower, vdRangeUpper, terrFailed]) => {
       return {
         ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive && !terrFailed,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && ndOverlay === 2 && !terrFailed,
         terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !terrFailed,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
       } as TawsEfisDataDto;
     },
-    this.ndRange[0],
-    this.ndMode[0],
-    this.terrActive[0],
+    this.efisDataSyncCapt.ndRange,
+    this.efisDataSyncCapt.ndMode,
+    this.efisDataSyncCapt.ndOverlay,
     this.vdRangeLower[0],
     this.vdRangeUpper[0],
     this.terrFailed,
   );
   private readonly efisDataFO = MappedSubject.create(
-    ([ndRange, ndMode, terrActive, vdRangeLower, vdRangeUpper, terrFailed]) => {
+    ([ndRange, ndMode, ndOverlay, vdRangeLower, vdRangeUpper, terrFailed]) => {
       return {
         ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrOnNd: ndMode !== EfisNdMode.PLAN && terrActive && !terrFailed,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && ndOverlay === 2 && !terrFailed,
         terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !terrFailed,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
       } as TawsEfisDataDto;
     },
-    this.ndRange[1],
-    this.ndMode[1],
-    this.terrActive[1],
+    this.efisDataSyncFO.ndRange,
+    this.efisDataSyncFO.ndMode,
+    this.efisDataSyncFO.ndOverlay,
     this.vdRangeLower[1],
     this.vdRangeUpper[1],
     this.terrFailed,
@@ -241,9 +280,9 @@ export class EfisTawsBridge implements Instrument {
   // FIXME receive path over complete distance
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
 
-  private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueTrack1Raw'));
-  private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueTrack2Raw'));
-  private readonly track3Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueTrack3Raw'));
+  private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adiru_true_track_1'));
+  private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adiru_true_track_2'));
+  private readonly track3Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adiru_true_track_3'));
   private readonly validTrack = MappedSubject.create(
     ([t1, t2, t3]) => {
       if (t1.isNormalOperation()) {
@@ -326,6 +365,9 @@ export class EfisTawsBridge implements Instrument {
   ) {}
 
   init() {
+    this.efisDataSyncCapt.init();
+    this.efisDataSyncFO.init();
+
     this.subscriptions.push(
       this.aircraftStatusData.sub(() => {
         this.aircraftStatusShouldBeUpdated = true;
@@ -356,6 +398,9 @@ export class EfisTawsBridge implements Instrument {
 
   public async onUpdate() {
     const deltaTime = this.updateThrottler.canUpdate(this.instrument.deltaTime);
+
+    this.efisDataSyncCapt.onUpdate();
+    this.efisDataSyncFO.onUpdate();
 
     if (deltaTime < 0) {
       return;
@@ -391,5 +436,13 @@ export class EfisTawsBridge implements Instrument {
       ]);
       this.verticalPathShouldBeUpdated = !success;
     }
+  }
+
+  destroy() {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+    this.efisDataCapt.destroy();
+    this.efisDataFO.destroy();
   }
 }

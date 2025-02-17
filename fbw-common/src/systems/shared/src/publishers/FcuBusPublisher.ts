@@ -30,7 +30,7 @@ export class FcuBusPublisher extends SimVarPublisher<FcuSimVars> {
         ['oansRange', { name: `L:A32NX_EFIS_${efisSide}_OANS_RANGE`, type: SimVarValueType.Number }],
         [
           'a380x_efis_cp_active_overlay',
-          { name: `L:A32NX_EFIS_${efisSide}_ACTIVE_OVERLAY`, type: SimVarValueType.Number },
+          { name: `L:A380X_EFIS_${efisSide}_ACTIVE_OVERLAY`, type: SimVarValueType.Number },
         ],
       ]),
       bus,
