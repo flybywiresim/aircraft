@@ -339,6 +339,8 @@ export class CDUDirectToPage {
 
     const isWithAbeamSelected = directToObject && isDirectWithAbeam(directToObject);
     const canSelectWithAbeam = directToObject && !isWithAbeamSelected;
+    // FIXME implement
+    const isAbeamImplemented = false;
 
     const isRadialInSelected = directToObject && isDirectWithCourseIn(directToObject);
     const canSelectRadialIn = directToObject && !isRadialInSelected;
@@ -372,7 +374,7 @@ export class CDUDirectToPage {
       ['', 'WITH\xa0'],
       [
         waypointsCell[1],
-        `ABEAM PTS ${canSelectWithAbeam ? '}' : ' '}[color]${isWithAbeamSelected ? 'yellow' : 'cyan'}[color]inop`,
+        `ABEAM PTS ${canSelectWithAbeam ? '}' : ' '}[color]${isAbeamImplemented ? (isWithAbeamSelected ? 'yellow' : 'cyan') : 'inop'}`,
       ],
       ['', 'RADIAL IN\xa0'],
       [

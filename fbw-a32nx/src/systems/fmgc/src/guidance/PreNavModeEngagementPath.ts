@@ -1,19 +1,19 @@
 import { Arinc429Register, LegType, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
-import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { Geo } from '@fmgc/utils/Geo';
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Geometry } from '@fmgc/guidance/Geometry';
-import { PointSide, sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
-import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { Coordinates, distanceTo } from 'msfs-geo';
-import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
-import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
-import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
-import { LegMetadata } from '@fmgc/guidance/lnav/legs';
-import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { FlightPlanElement, FlightPlanLeg, isDiscontinuity } from '../flightplanning/legs/FlightPlanLeg';
+import { NavigationProvider } from '../navigation/NavigationProvider';
+import { Geo } from '../utils/Geo';
+import { FlightPlanService } from '../flightplanning/FlightPlanService';
+import { FlightPlanIndex } from '../flightplanning/FlightPlanManager';
+import { Geometry } from './Geometry';
+import { PointSide, sideOfPointOnCourseToFix } from './lnav/CommonGeometry';
+import { WaypointFactory } from '../flightplanning/waypoints/WaypointFactory';
+import { GeometryFactory } from './geometry/GeometryFactory';
+import { CILeg } from './lnav/legs/CI';
+import { IFLeg } from './lnav/legs/IF';
+import { TransitionPicker } from './lnav/TransitionPicker';
+import { LegMetadata } from './lnav/legs';
+import { Leg } from './lnav/legs/Leg';
 
 enum State {
   NavDisarmed,
@@ -135,17 +135,13 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     const isNavModeArmed = this.register
       .setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_3`)
       .bitValueOr(14, false);
-
-    this.register.setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_2`);
-    const isNavModeActive = this.register.bitValueOr(12, false);
-    const isHdgModeActive = this.register.bitValueOr(16, false);
-    const isTrkModeActive = this.register.bitValueOr(17, false);
-
-    const shouldComputeInterceptPath = isNavModeArmed && (isHdgModeActive || isTrkModeActive);
+    const isNavModeActive = this.register
+      .setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_2`)
+      .bitValueOr(12, false);
 
     switch (this.state) {
       case State.NavDisarmed:
-        if (shouldComputeInterceptPath) {
+        if (isNavModeArmed) {
           this.state = State.NavArmed;
           this.onNavModeArmed();
         } else if (isNavModeActive) {
@@ -157,13 +153,13 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
         if (isNavModeActive) {
           this.state = State.NavActive;
           this.onNavModeActivated();
-        } else if (!shouldComputeInterceptPath) {
+        } else if (!isNavModeArmed) {
           this.state = State.NavDisarmed;
           this.onNavModeDisarmed();
         }
         break;
       case State.NavActive:
-        if (shouldComputeInterceptPath) {
+        if (isNavModeArmed) {
           this.state = State.NavArmed;
           this.onNavModeArmed();
         } else if (!isNavModeActive) {
@@ -204,7 +200,14 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       return;
     }
 
-    this.recomputeInterceptPath(activeGeometry);
+    this.register.setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_2`);
+    const isHdgModeActive = this.register.bitValueOr(16, false);
+    const isTrkModeActive = this.register.bitValueOr(17, false);
+
+    if (isHdgModeActive || isTrkModeActive) {
+      this.recomputeInterceptPath(activeGeometry);
+    }
+
     this.updateNavCaptureCondition();
   }
 
@@ -357,14 +360,19 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     }
   }
 
+  private canAlwaysCapture(leg: FlightPlanLeg) {
+    return leg.isVx() || (leg.isCx() && leg.type !== LegType.CF);
+  }
+
   private shouldComputeInterceptPath(leg?: FlightPlanElement): leg is FlightPlanLeg {
+    // TODO check for the correct lateral modes here too?
+
     // Possible leg types we can intercept AF, CF, DF, FA, FC, FD, FM, (IF), (HA, HF, HM), (PI), (RF), TF
     // We know Vx and Cx (except CF) legs don't get intercepts drawn,
     // the others I've excluded here because I don't see how they should word
     return (
       leg?.isDiscontinuity === false &&
-      !leg.isVx() &&
-      (!leg.isCx() || leg.type === LegType.CF) &&
+      !this.canAlwaysCapture(leg) &&
       leg.type !== LegType.IF &&
       !leg.isHX() &&
       leg.type !== LegType.RF &&
@@ -387,6 +395,11 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     }
 
     const plan = this.flightPlanService.active;
+    const activeLeg = plan.activeLeg;
+    if (!isDiscontinuity(activeLeg) && this.canAlwaysCapture(activeLeg)) {
+      return true;
+    }
+
     const ciLeg = this.geometry.legs.get(plan.activeLegIndex - 1);
     const transition = this.geometry.transitions.get(plan.activeLegIndex - 1);
     const gs = this.navigation.getGroundSpeed();
@@ -406,7 +419,9 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   private setNavCaptureCondition(navCaptureCondition: boolean) {
     if (navCaptureCondition !== this.previousNavCaptureCondition) {
-      SimVar.SetSimVarValue('L:A32NX_FM_NAV_CAPTURE_CONDITION', 'bool', navCaptureCondition);
+      SimVar.SetSimVarValue(`L:A32NX_FM${this.fmgcIndex}_NAV_CAPTURE_CONDITION`, 'bool', navCaptureCondition);
+      // FIXME remove
+      SimVar.SetSimVarValue(`L:A32NX_FM${(this.fmgcIndex % 2) + 1}_NAV_CAPTURE_CONDITION`, 'bool', navCaptureCondition);
       this.previousNavCaptureCondition = navCaptureCondition;
     }
   }
