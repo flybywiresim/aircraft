@@ -313,14 +313,14 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly activeOverlay = ConsumerSubject.create(this.sub.on('a380x_efis_cp_active_overlay'), 0);
 
   private readonly rangeChangeFlagCondition = MappedSubject.create(
-    ([flagShown, flagReason]) => flagShown && flagReason === EfisRecomputingReason.RangeChange,
+    ([flagShown, flagReason]) =>
+      flagShown &&
+      (flagReason === EfisRecomputingReason.RangeChange || flagReason === EfisRecomputingReason.ModeAndRangeChange),
     this.mapRecomputing,
     this.mapRecomputingReason,
   );
   private readonly modeChangeFlagCondition = MappedSubject.create(
-    ([flagShown, flagReason]) =>
-      flagShown &&
-      (flagReason === EfisRecomputingReason.ModeChange || flagReason === EfisRecomputingReason.ModeAndRangeChange),
+    ([flagShown, flagReason]) => flagShown && flagReason === EfisRecomputingReason.ModeChange,
     this.mapRecomputing,
     this.mapRecomputingReason,
   );
