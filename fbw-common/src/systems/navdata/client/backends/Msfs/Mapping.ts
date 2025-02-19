@@ -182,7 +182,7 @@ export class MsfsMapping {
       .filter((icao) => icao.charAt(0) === 'V');
     const navaids = await this.cache.getFacilities(Array.from(new Set(navaidIcaos)), LoadType.Vor);
 
-    const magVar = msAirport.magvar ?? Facilities.getMagVar(msAirport.lat, msAirport.lon);
+    const magVar = Facilities.getMagVar(msAirport.lat, msAirport.lon);
 
     msAirport.runways.forEach((msRunway) => {
       const gradient =
@@ -272,7 +272,7 @@ export class MsfsMapping {
 
     const icaoCode = this.getIcaoCodeFromAirport(msAirport);
 
-    const magVar = msAirport.magvar ?? Facilities.getMagVar(msAirport.lat, msAirport.lon);
+    const magVar = Facilities.getMagVar(msAirport.lat, msAirport.lon);
 
     msAirport.runways.forEach((msRunway) => {
       const gradient =
