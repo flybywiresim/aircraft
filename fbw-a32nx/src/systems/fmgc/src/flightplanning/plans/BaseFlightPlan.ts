@@ -2658,6 +2658,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
+  /**
+   * Finds the index of the final approach fix
+   * @returns The leg index, or -1 if not found.
+   */
   getFinalApproachCourseFixIndex(): number {
     return this.allLegs.findIndex(
       (el) =>
