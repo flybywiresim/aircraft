@@ -168,7 +168,6 @@ export class MsfsMapping {
       longestRunwaySurfaceType: this.mapRunwaySurface(longestRunway[1]?.surface),
       transitionAltitude,
       transitionLevel,
-      magneticVariation: msAirport.magvar,
     };
   }
 
