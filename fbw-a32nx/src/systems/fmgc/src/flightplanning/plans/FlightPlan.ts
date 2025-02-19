@@ -5,7 +5,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { EventBus, MagVar } from '@microsoft/msfs-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -203,7 +203,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         turningPoint.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
       }
     } else {
-      const magVar = MagVar.get(ppos.lat, ppos.long);
+      const magVar = Facilities.getMagVar(ppos.lat, ppos.long);
       const aircraftMagneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
 
       turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, aircraftMagneticCourse);
