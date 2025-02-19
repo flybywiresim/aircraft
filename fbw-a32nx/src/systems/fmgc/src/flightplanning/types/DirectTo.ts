@@ -29,13 +29,13 @@ export type DirectTo =
   | WithAbeamFlightPlanDirectTo;
 
 export function isDirectWithAbeam(directTo: DirectTo): directTo is WithAbeamFlightPlanDirectTo {
-  return 'withAbeam' in directTo && directTo.withAbeam;
+  return typeof directTo === 'object' && 'withAbeam' in directTo;
 }
 
 export function isDirectWithCourseIn(directTo: DirectTo): directTo is CourseInFlightPlanDirectTo {
-  return 'courseIn' in directTo && Number.isFinite(directTo.courseIn);
+  return typeof directTo === 'object' && 'courseIn' in directTo;
 }
 
 export function isDirectWithCourseOut(directTo: DirectTo): directTo is CourseOutFlightPlanDirectTo {
-  return 'courseOut' in directTo && Number.isFinite(directTo.courseOut);
+  return typeof directTo === 'object' && 'courseOut' in directTo;
 }
