@@ -31,6 +31,7 @@ import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 import { HALeg, HFLeg, HMLeg } from '../lnav/legs/HX';
 import { MagVar } from '@microsoft/msfs-sdk';
+import { A32NX_Util } from '@shared/A32NX_Util';
 
 export namespace GeometryFactory {
   export function createFromFlightPlan(plan: BaseFlightPlan, doGenerateTransitions = true): Geometry {
