@@ -15,6 +15,7 @@ import {
   UpdateThrottler,
   LocalSimVar,
   AirDataSwitchingKnob,
+  registerTrafficListener,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { TcasComponent } from '../lib/TcasComponent';
@@ -170,10 +171,6 @@ export class ResAdvisory {
 export class TcasComputer implements TcasComponent {
   private static _instance?: TcasComputer; // for debug
 
-  private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
-    this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', false);
-  }); // bind to listener
-
   private debug: boolean; // TCAS_DEBUG on/off
 
   private syncer: GenericDataListenerSync = new GenericDataListenerSync();
@@ -252,6 +249,10 @@ export class TcasComputer implements TcasComponent {
       this._instance = new TcasComputer();
     }
     return this._instance;
+  }
+
+  constructor() {
+    registerTrafficListener();
   }
 
   /**
