@@ -223,7 +223,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     const activePlan = this.flightPlanService.active;
     const activeLegIndex = activePlan.activeLegIndex;
     const activeFlightPlanLeg: FlightPlanElement | null = activePlan.activeLeg;
-    if (!this.shouldComputeInterceptPath(activeFlightPlanLeg)) {
+    if (!this.shouldInterceptLeg(activeFlightPlanLeg)) {
       this.resetPath();
       return;
     }
@@ -364,7 +364,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     return leg.isVx() || (leg.isCx() && leg.type !== LegType.CF);
   }
 
-  private shouldComputeInterceptPath(leg?: FlightPlanElement): leg is FlightPlanLeg {
+  private shouldInterceptLeg(leg?: FlightPlanElement): leg is FlightPlanLeg {
     // TODO check for the correct lateral modes here too?
 
     // Possible leg types we can intercept AF, CF, DF, FA, FC, FD, FM, (IF), (HA, HF, HM), (PI), (RF), TF
@@ -390,7 +390,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   }
 
   private isPreNavEngagementPathCaptureConditionMet(): boolean | undefined {
-    if (!this.doesExist() || !this.flightPlanService.hasActive) {
+    if (!this.flightPlanService.hasActive) {
       return undefined;
     }
 
@@ -398,6 +398,10 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     const activeLeg = plan.activeLeg;
     if (!isDiscontinuity(activeLeg) && this.canAlwaysCapture(activeLeg)) {
       return true;
+    }
+
+    if (!this.doesExist()) {
+      return undefined;
     }
 
     const ciLeg = this.geometry.legs.get(plan.activeLegIndex - 1);
