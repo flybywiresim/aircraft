@@ -390,7 +390,7 @@ export class EfisSymbols<T extends number> {
           upsertSymbol({
             databaseId: 'NAV_MODE_INTERCEPT',
             ident: 'INTCPT',
-            type: NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.Waypoint,
+            type: NdSymbolTypeFlags.FlightPlan,
             location: intercept.location,
             distanceFromAirplane: intercept.distanceToIntercept,
           });
