@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable no-underscore-dangle */
-import { TcasComponent } from '../lib/TcasComponent';
 import { RaSound } from '../lib/TcasConstants';
 
 // TODO: Turn into abstract SoundManager singleton for all .ts components
@@ -19,7 +17,7 @@ class PeriodicSound {
   }
 }
 
-export class TcasSoundManager implements TcasComponent {
+export class TcasSoundManager {
   private static _instance?: TcasSoundManager;
 
   public static get instance(): TcasSoundManager {

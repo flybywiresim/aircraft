@@ -2,23 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable camelcase */
-/* eslint-disable no-empty-function */
-/* eslint-disable no-useless-constructor */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable no-console */
 import {
   MathUtils,
   Arinc429Word,
   GenericDataListenerSync,
-  NXDataStore,
   UpdateThrottler,
   LocalSimVar,
   AirDataSwitchingKnob,
   registerTrafficListener,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { TcasComponent } from '../lib/TcasComponent';
 import {
   TCAS_CONST as TCAS,
   JS_NPCPlane,
@@ -168,10 +161,11 @@ export class ResAdvisory {
 /**
  * TCAS computer singleton
  */
-export class TcasComputer implements TcasComponent {
-  private static _instance?: TcasComputer; // for debug
+export class TcasComputer {
+  private static instance?: TcasComputer;
 
-  private debug: boolean; // TCAS_DEBUG on/off
+  /** TCAS_DEBUG on/off */
+  private debug = false;
 
   private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
@@ -243,25 +237,26 @@ export class TcasComputer implements TcasComponent {
 
   private gpwsWarning: boolean; // GPWS warning on/off
 
-  public static get instance(): TcasComputer {
-    // for debug
-    if (!this._instance) {
-      this._instance = new TcasComputer();
-    }
-    return this._instance;
-  }
-
-  constructor() {
+  // private since this is a singleton class
+  private constructor() {
     registerTrafficListener();
   }
 
   /**
    * Initialise TCAS singleton
    */
-  init(): void {
+  public static init(): void {
+    if (!this.instance) {
+      this.instance = new TcasComputer();
+    }
+    this.instance.init();
+  }
+
+  /**
+   * Initialise TCAS singleton
+   */
+  private init(): void {
     SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
-    this.debug = false;
-    NXDataStore.set('TCAS_DEBUG', '0'); // force debug off
     this.tcasPower = false;
     this.tcasMode = new LocalSimVar('L:A32NX_TCAS_MODE', 'Enum');
     this.tcasState = new LocalSimVar('L:A32NX_TCAS_STATE', 'Enum');
@@ -291,7 +286,6 @@ export class TcasComputer implements TcasComponent {
    */
   private updateVars(): void {
     // Note: these values are calculated/not used in the real TCAS computer, here we just read SimVars
-    // this.debug = NXDataStore.get('TCAS_DEBUG', '0') !== '0';
     this.verticalSpeed = SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per minute');
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
@@ -1305,9 +1299,17 @@ export class TcasComputer implements TcasComponent {
 
   /**
    * Main update loop
+   * @param deltaTime delta time of this frame
+   */
+  public static update(deltaTime: number): void {
+    this.instance?.update(deltaTime);
+  }
+
+  /**
+   * Main update loop
    * @param _deltaTime delta time of this frame
    */
-  update(_deltaTime: number): void {
+  private update(_deltaTime: number): void {
     this.soundManager.update(_deltaTime);
 
     const deltaTime = this.updateThrottler.canUpdate(_deltaTime * (this.simRate || 1));
