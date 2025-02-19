@@ -338,13 +338,9 @@ function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
 
   let airportMagVar = 0;
   if (legIndex <= plan.findLastDepartureLeg()[2]) {
-    airportMagVar =
-      plan.originAirport.magneticVariation ??
-      Facilities.getMagVar(plan.originAirport.location.lat, plan.originAirport.location.long);
+    airportMagVar = Facilities.getMagVar(plan.originAirport.location.lat, plan.originAirport.location.long);
   } else if (legIndex >= plan.findFirstArrivalLeg()[2]) {
-    airportMagVar =
-      plan.destinationAirport.magneticVariation ??
-      Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long);
+    airportMagVar = Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long);
   }
 
   const isLegOnApproach =
