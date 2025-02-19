@@ -30,7 +30,6 @@ import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
 import { HALeg, HFLeg, HMLeg } from '../lnav/legs/HX';
-import { MagVar } from '@microsoft/msfs-sdk';
 import { A32NX_Util } from '@shared/A32NX_Util';
 
 export namespace GeometryFactory {
@@ -341,11 +340,11 @@ function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
   if (legIndex <= plan.findLastDepartureLeg()[2]) {
     airportMagVar =
       plan.originAirport.magneticVariation ??
-      MagVar.get(plan.originAirport.location.lat, plan.originAirport.location.long);
+      Facilities.getMagVar(plan.originAirport.location.lat, plan.originAirport.location.long);
   } else if (legIndex >= plan.findFirstArrivalLeg()[2]) {
     airportMagVar =
       plan.destinationAirport.magneticVariation ??
-      MagVar.get(plan.destinationAirport.location.lat, plan.destinationAirport.location.long);
+      Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long);
   }
 
   const isLegOnApproach =
