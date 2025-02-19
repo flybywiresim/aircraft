@@ -23,7 +23,7 @@ import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from 
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { DirectTo, isDirectWithCourseIn, isDirectWithCourseOut } from '@fmgc/flightplanning/types/DirectTo';
-import { IN_BND_IDENT, OUT_BND_IDENT } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
+import { InBndIdent, OutBndIdent } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -181,7 +181,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (isDirectWithCourseIn(directTo)) {
       const magneticInboundCourse = MathUtils.normalise360(directTo.courseIn + 180);
 
-      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, IN_BND_IDENT, ppos);
+      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, InBndIdent, ppos);
       turningPoint.flags |= FlightPlanLegFlags.DirectToInBound;
 
       turnEnd = FlightPlanLeg.radialInLeg(this.enrouteSegment, terminationWaypoint, magneticInboundCourse);
@@ -194,7 +194,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     } else if (isDirectWithCourseOut(directTo)) {
       const magneticOutboundCourse = MathUtils.normalise360(directTo.courseOut);
 
-      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, OUT_BND_IDENT, terminationWaypoint.location);
+      turningPoint = FlightPlanLeg.ppos(this.enrouteSegment, OutBndIdent, terminationWaypoint.location);
       turningPoint.flags |= FlightPlanLegFlags.DirectToOutBound;
 
       turnEnd = FlightPlanLeg.radialOutLeg(this.enrouteSegment, terminationWaypoint, magneticOutboundCourse);

@@ -15,7 +15,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
-import { procedureLegIdentAndAnnotation, T_P_IDENT } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
+import { procedureLegIdentAndAnnotation, TpIdent } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
@@ -358,10 +358,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         procedureIdent: '',
         type: LegType.CF,
         overfly: false,
-        waypoint: WaypointFactory.fromLocation(T_P_IDENT, location),
+        waypoint: WaypointFactory.fromLocation(TpIdent, location),
         magneticCourse,
       },
-      T_P_IDENT,
+      TpIdent,
       '',
       undefined,
     );

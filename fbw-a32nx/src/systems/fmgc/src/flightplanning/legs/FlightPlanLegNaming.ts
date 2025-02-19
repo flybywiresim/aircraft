@@ -84,10 +84,10 @@ export function procedureLegIdentAndAnnotation(
   return [`(UNKN ${LegType[legType]})`, 'UNKNOWN'];
 }
 
-export const PPOS_IDENT = 'PPOS';
+export const PposIdent = 'PPOS';
 
-export const T_P_IDENT = 'T-P';
+export const TpIdent = 'T-P';
 
-export const IN_BND_IDENT = 'IN-BND';
+export const InBndIdent = 'IN-BND';
 
-export const OUT_BND_IDENT = 'OUT-BND';
+export const OutBndIdent = 'OUT-BND';
