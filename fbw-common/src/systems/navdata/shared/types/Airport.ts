@@ -45,11 +45,6 @@ export interface Airport extends DatabaseItem<SectionCode.Airport> {
    */
   distance?: NauticalMiles;
 
-  /**
-   * Magnetic variation at the airport
-   */
-  magneticVariation?: number;
-
   // These two are needed to satisfy the terminal fix interface, for use as procedure fix.
   area: WaypointArea.Terminal;
   airportIdent: string;
