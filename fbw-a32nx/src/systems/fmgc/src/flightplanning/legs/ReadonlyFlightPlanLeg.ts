@@ -8,7 +8,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLeg
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { LegCalculations } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { LegCalculations } from './FlightPlanLeg';
 
 export interface ReadonlyFlightPlanLeg {
   readonly uuid: string;
