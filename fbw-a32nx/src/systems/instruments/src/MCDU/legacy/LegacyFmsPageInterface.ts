@@ -98,7 +98,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   logTroubleshootingError(msg: any): void;
   updateTowerHeadwind(): void;
   onToRwyChanged(): void;
-  setGroundTempFromOrigin(forPlan: number): void;
+  setGroundTempFromOrigin(forPlan: FlightPlanIndex): void;
   directToWaypoint(waypoint: Fix): Promise<void>;
   directToLeg(legIndex: number): Promise<void>;
   toggleWaypointOverfly(index, fpIndex, forAlternate, callback?: typeof EmptyCallback.Void): void;
@@ -266,8 +266,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;
   isTropoPilotEntered: boolean;
-  groundTemp?: number;
-  groundTempPilot?: number;
   taxiFuelWeight: number;
   blockFuel?: number;
   takeOffWeight: number;
