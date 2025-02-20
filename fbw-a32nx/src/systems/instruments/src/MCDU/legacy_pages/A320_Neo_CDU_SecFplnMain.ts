@@ -8,6 +8,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { CDUPerformancePage } from './A320_Neo_CDU_PerformancePage';
+import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 
 export class CDUSecFplnMain {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -47,7 +48,7 @@ export class CDUSecFplnMain {
 
       canCopyOrSwapSec =
         !mcdu.navModeEngaged() ||
-        (Fmgc.FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
+        (FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
           activePlan.activeLegIndex === secPlan.activeLegIndex);
     }
 
@@ -56,7 +57,7 @@ export class CDUSecFplnMain {
       activateSecColumn.update('*ACTIVATE SEC');
 
       mcdu.onLeftInput[3] = () => {
-        mcdu.flightPlanService.secondaryReset(1);
+        mcdu.flightPlanService.secondaryActivate(1);
       };
     }
 
