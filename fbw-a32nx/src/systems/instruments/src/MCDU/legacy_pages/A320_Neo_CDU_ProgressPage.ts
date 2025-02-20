@@ -5,6 +5,7 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class CDUProgressPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -97,7 +98,7 @@ export class CDUProgressPage {
     }
 
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-      if (mcdu.trySetCruiseFlCheckInput(value)) {
+      if (mcdu.trySetCruiseFlCheckInput(value, FlightPlanIndex.Active)) {
         CDUProgressPage.ShowPage(mcdu);
       } else {
         scratchpadCallback();
