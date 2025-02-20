@@ -57,7 +57,9 @@ export class CDUSecFplnMain {
       activateSecColumn.update('*ACTIVATE SEC');
 
       mcdu.onLeftInput[3] = () => {
-        mcdu.flightPlanService.secondaryActivate(1);
+        mcdu.flightPlanService.secondaryActivate(1).then(() => {
+          CDUFlightPlanPage.ShowPage(mcdu);
+        });
       };
     }
 
