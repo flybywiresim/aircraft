@@ -150,7 +150,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   tryUpdateTropo(tropo: string, forPlan: FlightPlanIndex): boolean;
   tryUpdateFromTo(fromTo: string, forPlan: FlightPlanIndex, callback?: typeof EmptyCallback.Boolean): void;
   trySetGroundTemp(scratchpadValue: string, forPlan: FlightPlanIndex): void;
-  goToFuelPredPage(): void;
+  goToFuelPredPage(forPlan: FlightPlanIndex): void;
   trySetBlockFuel(s: string): boolean;
   tryFuelPlanning(): boolean;
   trySetTaxiFuelWeight(s: string): boolean;

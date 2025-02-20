@@ -345,10 +345,10 @@ export class CDUInitPage {
     );
 
     mcdu.onPrevPage = () => {
-      mcdu.goToFuelPredPage();
+      mcdu.goToFuelPredPage(forPlan);
     };
     mcdu.onNextPage = () => {
-      mcdu.goToFuelPredPage();
+      mcdu.goToFuelPredPage(forPlan);
     };
 
     mcdu.onRightInput[3] = () => {

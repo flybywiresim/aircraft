@@ -18,6 +18,7 @@ import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
 import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 import { LegacyFmsPageInterface, LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
 import { LegacyAtsuPageInterface } from './LegacyAtsuPageInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class A320_Neo_CDU_MainDisplay
   extends FMCMainDisplay
@@ -1661,11 +1662,11 @@ export class A320_Neo_CDU_MainDisplay
 
   /* END OF WEBSOCKET */
 
-  public goToFuelPredPage() {
+  public goToFuelPredPage(forPlan: FlightPlanIndex) {
     if (this.isAnEngineOn()) {
       CDUFuelPredPage.ShowPage(this);
     } else {
-      CDUInitPage.ShowPage2(this);
+      CDUInitPage.ShowPage2(this, forPlan);
     }
   }
 
