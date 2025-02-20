@@ -18,30 +18,13 @@ class PeriodicSound {
 }
 
 export class TcasSoundManager {
-  private static _instance?: TcasSoundManager;
+  private periodicList: PeriodicSound[] = [];
 
-  public static get instance(): TcasSoundManager {
-    if (!this._instance) {
-      this._instance = new TcasSoundManager();
-    }
-    return this._instance;
-  }
+  private soundQueue: RaSound[] = [];
 
-  private periodicList: PeriodicSound[];
+  private playingSound: RaSound | null = null;
 
-  private soundQueue: RaSound[];
-
-  private playingSound: RaSound | null;
-
-  private playingSoundRemaining: number;
-
-  constructor() {
-    this.periodicList = [];
-    this.soundQueue = [];
-
-    this.playingSound = null;
-    this.playingSoundRemaining = NaN;
-  }
+  private playingSoundRemaining: number = NaN;
 
   init(): void {
     // do nothing
