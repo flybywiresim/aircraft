@@ -2597,8 +2597,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public onUplinkDone(forPlan: FlightPlanIndex) {
     this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg.text);
-    this.setScratchpadMessage(NXSystemMessages.aocActFplnUplink);
-    this.setScratchpadMessage(
+    this.addMessageToQueue(
       forPlan === FlightPlanIndex.Active ? NXSystemMessages.aocActFplnUplink : NXSystemMessages.aocSecFplnUplink,
     );
   }
