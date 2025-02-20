@@ -11,6 +11,7 @@ export interface LubberLineProps {
   visible: Subscribable<boolean>;
   ndMode: Subscribable<EfisNdMode>;
   rotation: Subscribable<number>;
+  colorClass?: 'Yellow' | 'Magenta';
 }
 
 export class LubberLine extends DisplayComponent<LubberLineProps> {
@@ -34,7 +35,7 @@ export class LubberLine extends DisplayComponent<LubberLineProps> {
           y1={this.props.ndMode.map((mode) => (mode === EfisNdMode.ARC ? 108 : 116))}
           x2={384}
           y2={this.props.ndMode.map((mode) => (mode === EfisNdMode.ARC ? 148 : 152))}
-          class="Yellow"
+          class={this.props.colorClass ?? 'Yellow'}
           stroke-width={5}
           stroke-linejoin="round"
           stroke-linecap="round"

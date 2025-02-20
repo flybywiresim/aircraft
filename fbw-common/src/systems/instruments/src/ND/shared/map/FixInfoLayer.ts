@@ -30,15 +30,19 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
       context.setLineDash(FIX_INFO_DASHES);
       context.beginPath();
 
-      for (const radial of radials) {
-        if (Number.isFinite(radial)) {
-          this.drawFixInfoRadial(context, rx, ry, Math.round(radial), mapParameters, '#000', 3.25);
+      if (radials) {
+        for (const radial of radials) {
+          if (Number.isFinite(radial)) {
+            this.drawFixInfoRadial(context, rx, ry, Math.round(radial), mapParameters, '#000', 3.25);
+          }
         }
       }
 
-      for (const radius of radii) {
-        if (Number.isFinite(radius)) {
-          this.drawFixInfoRadius(context, rx, ry, radius * mapParameters.nmToPx, '#000', 3.25);
+      if (radii) {
+        for (const radius of radii) {
+          if (Number.isFinite(radius)) {
+            this.drawFixInfoRadius(context, rx, ry, radius * mapParameters.nmToPx, '#000', 3.25);
+          }
         }
       }
 
@@ -64,15 +68,19 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
       context.setLineDash(FIX_INFO_DASHES);
       context.beginPath();
 
-      for (const radial of radials) {
-        if (Number.isFinite(radial)) {
-          this.drawFixInfoRadial(context, rx, ry, Math.round(radial), mapParameters, '#0ff', 1.75);
+      if (radials) {
+        for (const radial of radials) {
+          if (Number.isFinite(radial)) {
+            this.drawFixInfoRadial(context, rx, ry, Math.round(radial), mapParameters, '#0ff', 1.75);
+          }
         }
       }
 
-      for (const radius of radii) {
-        if (Number.isFinite(radius)) {
-          this.drawFixInfoRadius(context, rx, ry, radius * mapParameters.nmToPx, '#0ff', 1.75);
+      if (radii) {
+        for (const radius of radii) {
+          if (Number.isFinite(radius)) {
+            this.drawFixInfoRadius(context, rx, ry, radius * mapParameters.nmToPx, '#0ff', 1.75);
+          }
         }
       }
 

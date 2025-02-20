@@ -72,6 +72,8 @@ export interface LegCalculations {
   cumulativeDistanceWithTransitions: number;
   /** The cumulative distance in nautical miles from this point to the missed approach point, with leg transition turns taken into account. */
   cumulativeDistanceToEndWithTransitions: number;
+  /** Whether the leg terminates in a vertical discontinuity */
+  endsInTooSteepPath: boolean;
 }
 
 /**
@@ -524,3 +526,7 @@ export interface Discontinuity {
 }
 
 export type FlightPlanElement = FlightPlanLeg | Discontinuity;
+
+export function isDiscontinuity(o: any): o is Discontinuity {
+  return typeof o === 'object' && o.isDiscontinuity === true;
+}

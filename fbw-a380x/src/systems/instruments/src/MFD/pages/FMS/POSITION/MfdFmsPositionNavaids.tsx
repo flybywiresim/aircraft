@@ -1,5 +1,5 @@
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import {
   FrequencyILSFormat,
   FrequencyVORDMEFormat,
@@ -9,17 +9,18 @@ import {
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 
 import { coordinateToString, NavaidSubsectionCode } from '@flybywiresim/fbw-sdk';
-import { NavigationDatabaseService, SelectedNavaidType } from '@fmgc/index';
 import { NavRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsPositionNavaids.scss';
+import { SelectedNavaidType } from '@fmgc/navigation/Navigation';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 interface MfdFmsPositionNavaidsProps extends AbstractMfdPageProps {}
 
@@ -42,47 +43,47 @@ const NAVAID_TYPE_STRINGS: Record<SelectedNavaidType, string> = {
 };
 
 export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
-  private navaidsSelectedPageIndex = Subject.create<number>(0);
+  private readonly navaidsSelectedPageIndex = Subject.create<number>(0);
 
-  private vor1Ident = Subject.create<string | null>(null);
+  private readonly vor1Ident = Subject.create<string | null>(null);
 
-  private vor1IdentEnteredByPilot = Subject.create<boolean>(false);
+  private readonly vor1IdentEnteredByPilot = Subject.create<boolean>(false);
 
-  private vor1Freq = Subject.create<number | null>(null);
+  private readonly vor1Freq = Subject.create<number | null>(null);
 
-  private vor1FreqEnteredByPilot = Subject.create<boolean>(false);
+  private readonly vor1FreqEnteredByPilot = Subject.create<boolean>(false);
 
-  private vor1Course = Subject.create<number | null>(null);
+  private readonly vor1Course = Subject.create<number | null>(null);
 
-  private vor1Class = Subject.create<string | null>(null);
+  private readonly vor1Class = Subject.create<string | null>(null);
 
-  private vor2Ident = Subject.create<string | null>(null);
+  private readonly vor2Ident = Subject.create<string | null>(null);
 
-  private vor2IdentEnteredByPilot = Subject.create<boolean>(false);
+  private readonly vor2IdentEnteredByPilot = Subject.create<boolean>(false);
 
-  private vor2Freq = Subject.create<number | null>(null);
+  private readonly vor2Freq = Subject.create<number | null>(null);
 
-  private vor2FreqEnteredByPilot = Subject.create<boolean>(false);
+  private readonly vor2FreqEnteredByPilot = Subject.create<boolean>(false);
 
-  private vor2Course = Subject.create<number | null>(null);
+  private readonly vor2Course = Subject.create<number | null>(null);
 
-  private vor2Class = Subject.create<string | null>(null);
+  private readonly vor2Class = Subject.create<string | null>(null);
 
-  private lsIdent = Subject.create<string | null>(null);
+  private readonly lsIdent = Subject.create<string | null>(null);
 
-  private lsFreq = Subject.create<number | null>(null);
+  private readonly lsFreq = Subject.create<number | null>(null);
 
-  private lsCourse = Subject.create<number | null>(null);
+  private readonly lsCourse = Subject.create<number | null>(null);
 
-  private lsSlope = Subject.create<string | null>(null);
+  private readonly lsSlope = Subject.create<string | null>(null);
 
-  private lsClass = Subject.create<string | null>(null);
+  private readonly lsClass = Subject.create<string | null>(null);
 
-  private lsIdentEnteredByPilot = Subject.create<boolean>(false);
+  private readonly lsIdentEnteredByPilot = Subject.create<boolean>(false);
 
-  private lsFrequencyEnteredByPilot = Subject.create<boolean>(false);
+  private readonly lsFrequencyEnteredByPilot = Subject.create<boolean>(false);
 
-  private lsCourseEnteredByPilot = Subject.create<boolean>(false);
+  private readonly lsCourseEnteredByPilot = Subject.create<boolean>(false);
 
   private readonly selectedNavaids: SelectedNavaid[] = Array.from({ length: 3 }, () => ({
     ident: Subject.create(''),
@@ -94,7 +95,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
   private readonly radioNavPosition = Subject.create('');
 
-  private deselectedNavaids = [
+  private readonly deselectedNavaids = [
     Subject.create<string | null>(null),
     Subject.create<string | null>(null),
     Subject.create<string | null>(null),
@@ -102,6 +103,18 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     Subject.create<string | null>(null),
     Subject.create<string | null>(null),
   ];
+
+  private readonly navaidDetailsButtonInvisible = Array.from(Array(3), (_, x) =>
+    this.selectedNavaids[x].ident.map((v) => v.length === 0),
+  );
+
+  private readonly navaidDetailsButtonText = Array.from(Array(3), (_, x) =>
+    this.selectedNavaids[x].ident.map((it) => <>{it}</>),
+  );
+
+  private readonly deselectedNavaidIsEmpty = Array.from(Array(5), (_, x) =>
+    this.deselectedNavaids[x].map((it) => it === null),
+  );
 
   private static isNavRadioIdentManual(navStatus?: NavRadioTuningStatus): boolean {
     return !!(navStatus?.manual && navStatus?.facility !== undefined);
@@ -332,6 +345,22 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     );
   }
 
+  public destroy(): void {
+    for (const s of this.navaidDetailsButtonInvisible) {
+      this.subs.push(s);
+    }
+
+    for (const s of this.navaidDetailsButtonText) {
+      this.subs.push(s);
+    }
+
+    for (const s of this.deselectedNavaidIsEmpty) {
+      this.subs.push(s);
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <>
@@ -463,11 +492,9 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div class="mfd-label br bb">FREQ/CHAN</div>
                 <div class="mfd-label bb">CLASS</div>
                 <div class="mfd-label br">
-                  <div class={{ invisible: this.selectedNavaids[0].ident.map((v) => v.length === 0) }}>
+                  <div class={{ invisible: this.navaidDetailsButtonInvisible[0] }}>
                     <Button
-                      label={this.selectedNavaids[0].ident.map((it) => (
-                        <>{it}</>
-                      ))}
+                      label={this.navaidDetailsButtonText[0]}
                       onClick={() => {}}
                       showArrow
                       menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
@@ -480,11 +507,9 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div class="mfd-value br">{this.selectedNavaids[0].frequencyOrChannel}</div>
                 <div class="mfd-value">{this.selectedNavaids[0].class}</div>
                 <div class="mfd-label br">
-                  <div class={{ invisible: this.selectedNavaids[1].ident.map((v) => v.length === 0) }}>
+                  <div class={{ invisible: this.navaidDetailsButtonInvisible[1] }}>
                     <Button
-                      label={this.selectedNavaids[1].ident.map((it) => (
-                        <>{it}</>
-                      ))}
+                      label={this.navaidDetailsButtonText[1]}
                       onClick={() => {}}
                       showArrow
                       menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
@@ -497,11 +522,9 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div class="mfd-value br">{this.selectedNavaids[1].frequencyOrChannel}</div>
                 <div class="mfd-value">{this.selectedNavaids[1].class}</div>
                 <div class="mfd-label br">
-                  <div class={{ invisible: this.selectedNavaids[2].ident.map((v) => v.length === 0) }}>
+                  <div class={{ invisible: this.navaidDetailsButtonInvisible[2] }}>
                     <Button
-                      label={this.selectedNavaids[2].ident.map((it) => (
-                        <>{it}</>
-                      ))}
+                      label={this.navaidDetailsButtonText[2]}
                       onClick={() => {}}
                       showArrow
                       menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
@@ -550,7 +573,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[1]}
                     alignText="center"
-                    disabled={this.deselectedNavaids[0].map((it) => it === null)}
+                    disabled={this.deselectedNavaidIsEmpty[0]}
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
@@ -562,7 +585,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[2]}
                     alignText="center"
-                    disabled={this.deselectedNavaids[1].map((it) => it === null)}
+                    disabled={this.deselectedNavaidIsEmpty[1]}
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
@@ -576,7 +599,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[3]}
                     alignText="center"
-                    disabled={this.deselectedNavaids[2].map((it) => it === null)}
+                    disabled={this.deselectedNavaidIsEmpty[2]}
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
@@ -588,7 +611,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[4]}
                     alignText="center"
-                    disabled={this.deselectedNavaids[3].map((it) => it === null)}
+                    disabled={this.deselectedNavaidIsEmpty[3]}
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
@@ -600,7 +623,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[5]}
                     alignText="center"
-                    disabled={this.deselectedNavaids[4].map((it) => it === null)}
+                    disabled={this.deselectedNavaidIsEmpty[4]}
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, 2022 FlyByWire Simulations
+// Copyright (c) 2021, 2022, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable camelcase */
@@ -19,8 +19,10 @@ import {
   JS_FacilityIntersection,
   JS_FacilityNDB,
   JS_FacilityVOR,
+  JS_Leg,
 } from './FsTypes';
 import { Airport, NdbNavaid, VhfNavaid, Waypoint } from '../../../shared';
+import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
 
 // @microsoft/msfs-sdk does not export this, so we declare it
 declare class CoherentNearestSearchSession implements NearestSearchSession<string, string> {
@@ -232,7 +234,7 @@ export class FacilityCache {
 
   private insert(key: string, facility: JS_Facility): void {
     if (this.facilityCache.size > FacilityCache.cacheSize - 1) {
-      const oldestKey: string = this.facilityCache.keys().next().value;
+      const oldestKey: string = this.facilityCache.keys().next().value!;
       this.facilityCache.delete(oldestKey);
     }
     this.facilityCache.set(key, facility);
@@ -244,6 +246,56 @@ export class FacilityCache {
 
   static ident(icao: string): string {
     return icao.substring(7).trim();
+  }
+
+  private static readonly AIRPORT_REGION_REGEX = /^A[A-Z0-9]{2}/;
+  private static readonly AIRPORT_REGION_REPLACE = 'A  ';
+
+  /** Removes the region code from any airport ICAOs in an array of procedure legs. */
+  private static fixupLegAirportRegions(legs: JS_Leg[]): void {
+    for (const leg of legs) {
+      leg.fixIcao = leg.fixIcao.replace(FacilityCache.AIRPORT_REGION_REGEX, FacilityCache.AIRPORT_REGION_REPLACE);
+      leg.originIcao = leg.originIcao.replace(FacilityCache.AIRPORT_REGION_REGEX, FacilityCache.AIRPORT_REGION_REPLACE);
+      leg.arcCenterFixIcao = leg.arcCenterFixIcao.replace(
+        FacilityCache.AIRPORT_REGION_REGEX,
+        FacilityCache.AIRPORT_REGION_REPLACE,
+      );
+    }
+  }
+
+  /**
+   * Fix up airport ICAOs to a format that MSFS2020 can understand and load.
+   * Note: this is **not** required for MSFS2024.
+   * @param airport The airport facility to fix up.
+   */
+  private static fixupAirportRegions(airport: JS_FacilityAirport): void {
+    for (const appr of airport.approaches) {
+      for (const trans of appr.transitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+      FacilityCache.fixupLegAirportRegions(appr.finalLegs);
+      FacilityCache.fixupLegAirportRegions(appr.missedLegs);
+    }
+
+    for (const sid of airport.departures) {
+      for (const trans of sid.runwayTransitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+      FacilityCache.fixupLegAirportRegions(sid.commonLegs);
+      for (const trans of sid.enRouteTransitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+    }
+
+    for (const star of airport.arrivals) {
+      for (const trans of star.enRouteTransitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+      FacilityCache.fixupLegAirportRegions(star.commonLegs);
+      for (const trans of star.runwayTransitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+    }
   }
 
   private receiveFacility(facility: JS_Facility): void {
@@ -268,6 +320,10 @@ export class FacilityCache {
 
     if (loadType === LoadType.Intersection) {
       this.addToAirwayCache(facility as any as JS_FacilityIntersection);
+    }
+
+    if (!isMsfs2024() && loadType === LoadType.Airport) {
+      FacilityCache.fixupAirportRegions(facility as JS_FacilityAirport);
     }
 
     const key = FacilityCache.key(facility.icao, loadType);

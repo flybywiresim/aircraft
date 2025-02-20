@@ -32,6 +32,7 @@ import {
 } from './profile/NavGeometryProfile';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
@@ -69,6 +70,8 @@ export class VnavDriver implements GuidanceComponent {
    * To check
    */
   private requestDescentProfileRecomputation: boolean = false;
+
+  private prevMcduPredReadyToDisplay = false;
 
   constructor(
     private readonly flightPlanService: FlightPlanService,
@@ -172,6 +175,15 @@ export class VnavDriver implements GuidanceComponent {
       this.decelPoint = this.profileManager.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
     }
 
+    if (this.profileManager.mcduProfile.isReadyToDisplay !== this.prevMcduPredReadyToDisplay) {
+      SimVar.SetSimVarValue(
+        'L:A32NX_FM_VERTICAL_PROFILE_AVAIL',
+        'Bool',
+        this.profileManager.mcduProfile.isReadyToDisplay,
+      );
+      this.prevMcduPredReadyToDisplay = this.profileManager.mcduProfile.isReadyToDisplay;
+    }
+
     this.updateLegSpeedPredictions();
 
     this.profileManager.computeTacticalNdProfile();
@@ -195,6 +207,9 @@ export class VnavDriver implements GuidanceComponent {
       this.oldLegs.clear();
       this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
       this.previousManagedDescentSpeedTarget = undefined;
+
+      SimVar.SetSimVarValue('L:A32NX_FM_VERTICAL_PROFILE_AVAIL', 'Bool', false);
+      this.prevMcduPredReadyToDisplay = false;
     }
   }
 
@@ -288,11 +303,10 @@ export class VnavDriver implements GuidanceComponent {
 
       const isPastCstrDeceleration =
         checkpoint.reason === VerticalCheckpointReason.StartDecelerationToConstraint &&
-        currentDistanceFromStart - checkpoint.distanceFromStart > -1e-4;
+        MathUtils.isCloseToGreaterThan(currentDistanceFromStart, checkpoint.distanceFromStart);
       const isPastLimitDeceleration =
         checkpoint.reason === VerticalCheckpointReason.StartDecelerationToLimit &&
-        currentAltitude - checkpoint.altitude < 1e-4;
-
+        MathUtils.isCloseToLessThan(currentAltitude, checkpoint.altitude);
       if (
         isSpeedChangePoint(checkpoint) &&
         checkpoint.targetSpeed >= decelPointSpeed &&
@@ -629,6 +643,10 @@ export class VnavDriver implements GuidanceComponent {
     )
       ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
       : undefined;
+  }
+
+  shouldShowTooSteepPathAhead(): boolean {
+    return this.profileManager.shouldShowTooSteepPathAhead();
   }
 }
 

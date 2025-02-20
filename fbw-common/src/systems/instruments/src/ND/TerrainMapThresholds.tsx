@@ -4,6 +4,7 @@ import { GenericTawsEvents, TerrainLevelMode } from './types/GenericTawsEvents';
 
 export interface TerrainMapThresholdsProps {
   bus: EventBus;
+  paddingText: string;
 }
 
 export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsProps> {
@@ -24,13 +25,14 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
   );
 
   private readonly upperBorder = this.maxElevationSub.map((elevation) => {
+    let roundedElevation: string;
     if (elevation !== 0) {
-      return Math.round(elevation / 100 + 0.5)
-        .toString()
-        .padStart(3, '0');
+      roundedElevation = Math.round(elevation / 100 + 0.5).toString();
+    } else {
+      roundedElevation = '0';
     }
 
-    return '000';
+    return roundedElevation.padStart(3, this.props.paddingText);
   });
 
   private readonly upperBorderColor = this.maxElevationModeSub.map((mode) => {
@@ -45,10 +47,10 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
   });
 
   private readonly lowerBorder = this.minElevationSub.map((elevation) => {
-    if (elevation >= 0) {
+    if (elevation > 0) {
       return Math.floor(elevation / 100)
         .toString()
-        .padStart(3, '0');
+        .padStart(3, this.props.paddingText);
     }
 
     return '';
@@ -68,7 +70,7 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
   render(): VNode | null {
     return (
       <g visibility={this.shown.map((v) => (v ? 'inherit' : 'hidden'))}>
-        <text x={688} y={612} font-size={23} fill="rgb(0,255,255)">
+        <text class="TerrTextLabel" x={688} y={612} font-size={23} fill="rgb(0,255,255)">
           TERR
         </text>
 

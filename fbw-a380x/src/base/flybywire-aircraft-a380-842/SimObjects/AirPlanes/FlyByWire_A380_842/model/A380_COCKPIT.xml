@@ -35,6 +35,7 @@
         <Include RelativeFile="behaviour\overhead\cargo-air-cond.xml" />
         <Include RelativeFile="behaviour\overhead\fire.xml" />
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
+        <Include RelativeFile="behaviour\overhead\reset.xml" />
         <Include RelativeFile="behaviour\pedestal\pedestal-inputs.xml" />
         <Include RelativeFile="behaviour\door_animations.xml" />
         <Include RelativeFile="behaviour\efis-cp.xml" />
@@ -4977,6 +4978,27 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                    </UseTemplate>
+                </Component>
+
+                <Component ID="Overhead_Reset_Panel">
+                <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>ARPT_NAV</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FMC_A</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FMC_B</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FMC_C</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FWS1</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FWS2</NAME>
                     </UseTemplate>
                 </Component>
             </Component>
