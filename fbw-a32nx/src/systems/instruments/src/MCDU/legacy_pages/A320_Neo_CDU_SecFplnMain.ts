@@ -23,7 +23,7 @@ export class CDUSecFplnMain {
 
     const hasSecondary = mcdu.flightPlanService.hasSecondary(1);
 
-    const deleteSecColumn = new Column(0, '');
+    const deleteSecColumn = new Column(0, '', Column.cyan);
 
     // <DELETE SEC
     if (hasSecondary) {
@@ -34,7 +34,7 @@ export class CDUSecFplnMain {
       };
     }
 
-    const activateSecColumn = new Column(0, '');
+    const activateSecColumn = new Column(0, '', Column.amber);
 
     const activePlan = mcdu.flightPlanService.active;
 
@@ -72,7 +72,7 @@ export class CDUSecFplnMain {
       CDUInitPage.ShowPage1(mcdu, FlightPlanIndex.FirstSecondary);
     };
 
-    // >SEC F-PLN
+    // <SEC F-PLN
     mcdu.onLeftInput[1] = () => {
       CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
     };
@@ -87,7 +87,7 @@ export class CDUSecFplnMain {
       };
     }
 
-    const secSwapActiveColumn = new Column(0, '');
+    const secSwapActiveColumn = new Column(0, '', Column.amber);
     if (hasSecondary && canCopyOrSwapSec) {
       secSwapActiveColumn.update('*SWAP ACTIVE   ');
 
@@ -100,7 +100,7 @@ export class CDUSecFplnMain {
       FormatTemplate([
         [new Column(7, 'SEC INDEX')],
         [],
-        [new Column(0, '{COPY ACTIVE'), new Column(23, 'INIT>', Column.right)],
+        [new Column(0, '{COPY ACTIVE', Column.cyan), new Column(23, 'INIT>', Column.right)],
         [],
         [new Column(0, '<SEC F-PLN'), secPerfColumn],
         [],
