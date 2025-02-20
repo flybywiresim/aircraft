@@ -13,3 +13,5 @@ systems = { path = "../systems" }
 msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }
 fxhash = "0.2.1"
 enum_dispatch = "0.3.7"
+serde = "1.0"
+serde_json = "1.0"

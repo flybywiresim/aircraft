@@ -61,9 +61,6 @@ void FlyByWireInterface::disconnect() {
 bool FlyByWireInterface::update(double sampleTime) {
   bool result = true;
 
-  // update failures handler
-  failuresConsumer.update();
-
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 

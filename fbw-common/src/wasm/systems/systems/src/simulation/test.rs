@@ -1,4 +1,4 @@
-use fxhash::FxHashMap;
+use fxhash::{FxHashMap, FxHashSet};
 use rand::Rng;
 use std::{cell::Ref, time::Duration};
 use uom::si::{
@@ -237,6 +237,7 @@ pub struct SimulationTestBed<T: Aircraft> {
     reader_writer: TestReaderWriter,
     simulation: Simulation<T>,
     variable_registry: TestVariableRegistry,
+    failures: FxHashSet<FailureType>,
 }
 impl<T: Aircraft> SimulationTestBed<T> {
     pub fn new<U: FnOnce(&mut InitContext) -> T>(aircraft_ctor_fn: U) -> Self {
@@ -252,6 +253,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
             reader_writer: TestReaderWriter::new(),
             simulation: Simulation::new(start_state, aircraft_ctor_fn, &mut variable_registry),
             variable_registry,
+            failures: FxHashSet::default(),
         };
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
@@ -322,11 +324,15 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     fn fail(&mut self, failure_type: FailureType) {
-        self.simulation.activate_failure(failure_type);
+        self.failures.insert(failure_type);
+        self.simulation
+            .update_active_failures(self.failures.clone());
     }
 
     fn unfail(&mut self, failure_type: FailureType) {
-        self.simulation.deactivate_failure(failure_type);
+        self.failures.remove(&failure_type);
+        self.simulation
+            .update_active_failures(self.failures.clone());
     }
 
     fn aircraft(&self) -> &T {
