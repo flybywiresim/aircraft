@@ -74,7 +74,7 @@ export interface FlightPlanPerformanceData {
   /**
    * Cruise flight level; Unit: degrees C Null if not set.
    */
-  cruiseTemperature: number;
+  cruiseTemperature: number | null;
 
   /**
    * Default ground temperature; Unit: degrees C; Null if not set.

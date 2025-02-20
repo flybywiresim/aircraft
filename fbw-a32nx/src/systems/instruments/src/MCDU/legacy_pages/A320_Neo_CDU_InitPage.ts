@@ -300,11 +300,11 @@ export class CDUInitPage {
 
     const planGroundTemp = plan.performanceData.groundTemperature;
 
-    if (planGroundTemp !== undefined) {
+    if (planGroundTemp !== null) {
       groundTemp.update(
         CDUInitPage.formatTemperature(planGroundTemp),
         Column.cyan,
-        plan.performanceData.groundTemperatureIsPilotEntered !== undefined ? Column.big : Column.small,
+        plan.performanceData.groundTemperatureIsPilotEntered ? Column.big : Column.small,
       );
     }
 
