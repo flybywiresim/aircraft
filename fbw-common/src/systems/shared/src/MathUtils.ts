@@ -597,4 +597,57 @@ export class MathUtils {
 
     return MathUtils.interpolate(j, table[0][c1], table[0][c2], interpolatedRowAtC1, interpolatedRowAtC2);
   }
+
+  /**
+   * Checks whether two numbers are within a certain epsilon of each other.
+   * @param a
+   * @param b
+   * @param epsilon the absolute tolerance
+   * @returns true if the numbers are within epsilon of each other
+   */
+  public static isAboutEqual(a: number, b: number, epsilon = 1e-4): boolean {
+    return Math.abs(a - b) < epsilon;
+  }
+
+  /**
+   * Checks whether a number is positive and within a certain epsilon of zero.
+   * @param num
+   * @param epsilon the absolute tolerance
+   * @returns true if the number is positive and within epsilon of zero
+   */
+  public static isCloseToPositive(num: number, epsilon = 1e-4): boolean {
+    return num > -Math.abs(epsilon);
+  }
+
+  /**
+   * Checks whether a number is negative and within a certain epsilon of zero.
+   * @param num
+   * @param epsilon the absolute tolerance
+   * @returns true if the number is negative and within epsilon of zero
+   */
+  public static isCloseToNegative(num: number, epsilon = 1e-4): boolean {
+    return this.isCloseToPositive(-num, epsilon);
+  }
+
+  /**
+   * Checks whether a > b or a is within a certain epsilon of b.
+   * @param a
+   * @param b
+   * @param epsilon the absolute tolerance
+   * @returns true if the number is greater than or within epsilon of the other
+   */
+  public static isCloseToGreaterThan(a: number, b: number, epsilon = 1e-4): boolean {
+    return this.isCloseToPositive(a - b, epsilon);
+  }
+
+  /**
+   * Checks whether a < b or a is within a certain epsilon of b.
+   * @param a
+   * @param b
+   * @param epsilon the absolute tolerance
+   * @returns true if the number is less than or within epsilon of the other
+   */
+  public static isCloseToLessThan(a: number, b: number, epsilon = 1e-4): boolean {
+    return this.isCloseToNegative(a - b, epsilon);
+  }
 }

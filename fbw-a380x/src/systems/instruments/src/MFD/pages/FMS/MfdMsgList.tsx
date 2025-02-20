@@ -21,11 +21,11 @@ interface MfdMsgListProps {
 
 export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private msgListContainer = FSComponent.createRef<HTMLDivElement>();
+  private readonly msgListContainer = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData = () => {};
 

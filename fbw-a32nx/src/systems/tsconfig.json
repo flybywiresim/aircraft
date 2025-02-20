@@ -12,6 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "paths": {
+      "@atsu/fmsclient": ["./atsu/fmsclient/src/index.ts"],
       "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],
       "@datalink/atc": ["../../../fbw-common/src/systems/datalink/atc/src/index.ts"],
       "@datalink/common": ["../../../fbw-common/src/systems/datalink/common/src/index.ts"],
