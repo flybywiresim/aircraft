@@ -309,7 +309,7 @@
 
             <!-- PUSH_LEFT -->
             <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
-                <KEY>SIDE</KEY>
+                <KEY>LEFT</KEY>
                 <TOOLTIPID>LEFT KEY ON KCCU KEYBOARD</TOOLTIPID>
             </UseTemplate>
 
