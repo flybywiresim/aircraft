@@ -99,7 +99,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
           const sortedDepartures = flightPlan.availableDepartures.sort((a, b) => a.ident.localeCompare(b.ident));
           sortedDepartures.forEach((dep) => {
             sids.push({
-              label: dep.ident,
+              label: dep.authorisationRequired ? `${dep.ident} (RNP)` : dep.ident,
               action: async () => {
                 await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(
                   dep.databaseId,
