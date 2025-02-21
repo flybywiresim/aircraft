@@ -6,7 +6,7 @@
 import { EfisNdMode, EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
+import { PathVector, pathVectorLength, pathVectorValid, VerticalPathCheckpoint } from '@fmgc/guidance/lnav/PathVector';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -212,8 +212,24 @@ export class EfisVectors {
     // ACTIVE
 
     const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
-
     const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
+
+    // ACTIVE vertical geometry
+    const predictions = this.guidanceController.vnavDriver?.mcduProfile?.waypointPredictions;
+    if (predictions) {
+      const verticalVectors: VerticalPathCheckpoint[] = [];
+      plan.allLegs.slice(plan.activeLegIndex).forEach((leg, legIndex) => {
+        if (leg.isDiscontinuity === false && predictions.has(legIndex)) {
+          verticalVectors.push({
+            distanceFromAircraft: predictions.get(legIndex).distanceFromAircraft,
+            altitude: predictions.get(legIndex).altitude,
+            altitudeConstraint: predictions.get(legIndex).altitudeConstraint,
+            isAltitudeConstraintMet: predictions.get(legIndex).isAltitudeConstraintMet,
+          });
+        }
+      });
+      this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_VERTICAL_PATH`, verticalVectors);
+    }
 
     // ACTIVE missed
 

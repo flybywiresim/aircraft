@@ -3,12 +3,18 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Approach, Runway, ApproachUtils, LegType, areDatabaseItemsEqual } from '@flybywiresim/fbw-sdk';
+import {
+  Approach,
+  Runway,
+  ApproachUtils,
+  LegType,
+  areDatabaseItemsEqual,
+  WaypointConstraintType,
+} from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from '../plans/RestringOptions';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 

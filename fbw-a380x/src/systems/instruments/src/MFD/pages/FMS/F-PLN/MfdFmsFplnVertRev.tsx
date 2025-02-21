@@ -25,11 +25,10 @@ import {
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { maxCertifiedAlt, Vmo } from '@shared/PerformanceConstants';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { FmgcData } from 'instruments/src/MFD/FMC/fmgc';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
