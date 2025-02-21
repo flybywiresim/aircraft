@@ -6,6 +6,7 @@ import { AtsuMessage, AtsuMessageSerializationFormat } from '../../../common/src
 import { DatalinkProviders, OwnAircraft, MaxSearchRange } from './Common';
 import { Vhf } from './VHF';
 import { AtsuFlightPhase } from '../../../common/src/types/AtsuFlightPhase';
+import { registerTrafficListener } from '../../../../shared/src/TrafficListener';
 
 interface NPCPlane {
   name: string;
@@ -35,10 +36,6 @@ const BytesPerSlot = 62;
 export class Vdl {
   public static TransmissionTimePerPacket = 40;
 
-  private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
-    this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', true);
-  });
-
   private inboundDelay = { updateTime: 0, messages: 0, delay: 0 };
 
   private outboundDelay = { updateTime: 0, messages: 0, delay: 0 };
@@ -52,6 +49,10 @@ export class Vdl {
   private lowerAirspaceTraffic: number = 0;
 
   private perPacketDelay: number[] = Array(DatalinkProviders.ProviderCount).fill(500);
+
+  constructor() {
+    registerTrafficListener();
+  }
 
   private updatePresentPosition() {
     this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
