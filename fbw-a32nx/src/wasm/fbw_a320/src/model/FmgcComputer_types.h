@@ -108,19 +108,6 @@ struct base_fmgc_b_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
-#define DEFINED_TYPEDEF_FOR_base_ils_bus_
-
-struct base_ils_bus
-{
-  base_arinc_429 runway_heading_deg;
-  base_arinc_429 ils_frequency_mhz;
-  base_arinc_429 localizer_deviation_deg;
-  base_arinc_429 glideslope_deviation_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
 
@@ -161,6 +148,19 @@ struct base_fmgc_discrete_inputs
   boolean_T eng_opp_stop;
   boolean_T eng_own_stop;
   boolean_T tcas_ta_display;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
+#define DEFINED_TYPEDEF_FOR_base_ils_bus_
+
+struct base_ils_bus
+{
+  base_arinc_429 runway_heading_deg;
+  base_arinc_429 ils_frequency_mhz;
+  base_arinc_429 localizer_deviation_deg;
+  base_arinc_429 glideslope_deviation_deg;
 };
 
 #endif
@@ -833,4 +833,3 @@ struct fmgc_outputs
 
 #endif
 #endif
-
