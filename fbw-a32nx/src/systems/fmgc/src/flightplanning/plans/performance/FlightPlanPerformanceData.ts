@@ -222,9 +222,9 @@ export interface FlightPlanPerformanceData {
   climbSpeedLimitAltitude: number | null;
 
   /**
-   * Whether the climb speed limit is pilot entered.
+   * Whether the climb speed limit is pilot entered. Null if the speed limit has been deleted.
    */
-  isClimbSpeedLimitPilotEntered: boolean;
+  isClimbSpeedLimitPilotEntered: boolean | null;
 
   /**
    * The maximum speed imposed by the descent speed limit of the main flight plan or null if not set.
@@ -237,9 +237,9 @@ export interface FlightPlanPerformanceData {
   descentSpeedLimitAltitude: number | null;
 
   /**
-   * Whether the descent speed limit of the main flight plan is pilot entered.
+   * Whether the descent speed limit of the main flight plan is pilot entered. Null if the speed limit has been deleted.
    */
-  isDescentSpeedLimitPilotEntered: boolean;
+  isDescentSpeedLimitPilotEntered: boolean | null;
 
   /**
    * The maximum speed imposed by the climb speed limit of the alternate flight plan or null if not set.
@@ -252,9 +252,9 @@ export interface FlightPlanPerformanceData {
   alternateClimbSpeedLimitAltitude: number | null;
 
   /**
-   * Whether the climb speed limit of the alternate flight plan is pilot entered.
+   * Whether the climb speed limit of the alternate flight plan is pilot entered. Null if the speed limit has been deleted.
    */
-  isAlternateClimbSpeedLimitPilotEntered: boolean;
+  isAlternateClimbSpeedLimitPilotEntered: boolean | null;
 
   /**
    * The maximum speed imposed by the descent speed limit of the alternate flight plan or null if not set.
@@ -267,9 +267,9 @@ export interface FlightPlanPerformanceData {
   alternateDescentSpeedLimitAltitude: number | null;
 
   /**
-   * Whether the descent speed limit of the alternate flight plan is pilot entered.
+   * Whether the descent speed limit of the alternate flight plan is pilot entered. Null if the speed limit has been deleted.
    */
-  isAlternateDescentSpeedLimitPilotEntered: boolean;
+  isAlternateDescentSpeedLimitPilotEntered: boolean | null;
 
   clone(): this;
 }
@@ -601,9 +601,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   climbSpeedLimitAltitude: number | null = DefaultPerformanceData.ClimbSpeedLimitAltitude;
 
   /**
-   * Whether the climb speed limit is pilot entered.
+   * Whether the climb speed limit is pilot entered. Null if the speed limit has been deleted
    */
-  isClimbSpeedLimitPilotEntered: boolean = false;
+  isClimbSpeedLimitPilotEntered: boolean | null = false;
 
   /**
    * The maximum speed imposed by the descent speed limit of the main flight plan or null if not set.
@@ -616,9 +616,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   descentSpeedLimitAltitude: number | null = DefaultPerformanceData.DescentSpeedLimitAltitude;
 
   /**
-   * Whether the descent speed limit of the main flight plan is pilot entered.
+   * Whether the descent speed limit of the main flight plan is pilot entered. Null if the speed limit has been deleted
    */
-  isDescentSpeedLimitPilotEntered: boolean = false;
+  isDescentSpeedLimitPilotEntered: boolean | null = false;
 
   /**
    * The maximum speed imposed by the climb speed limit of the alternate flight plan or null if not set.
@@ -631,9 +631,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   alternateClimbSpeedLimitAltitude: number | null = DefaultPerformanceData.ClimbSpeedLimitAltitude;
 
   /**
-   * Whether the climb speed limit of the alternate flight plan is pilot entered.
+   * Whether the climb speed limit of the alternate flight plan is pilot entered. Null if the speed limit has been deleted
    */
-  isAlternateClimbSpeedLimitPilotEntered: boolean = false;
+  isAlternateClimbSpeedLimitPilotEntered: boolean | null = false;
 
   /**
    * The maximum speed imposed by the descent speed limit of the alternate flight plan or null if not set.
@@ -646,9 +646,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   alternateDescentSpeedLimitAltitude: number | null = DefaultPerformanceData.DescentSpeedLimitAltitude;
 
   /**
-   * Whether the descent speed limit of the alternate flight plan is pilot entered.
+   * Whether the descent speed limit of the alternate flight plan is pilot entered. Null if the speed limit has been deleted
    */
-  isAlternateDescentSpeedLimitPilotEntered: boolean = false;
+  isAlternateDescentSpeedLimitPilotEntered: boolean | null = false;
 
   serialize(): SerializedFlightPlanPerformanceData {
     return {

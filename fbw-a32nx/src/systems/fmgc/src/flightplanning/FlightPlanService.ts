@@ -626,7 +626,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.setPerformanceData(alternate ? 'alternateClimbSpeedLimitAltitude' : 'climbSpeedLimitAltitude', null);
     plan.setPerformanceData(
       alternate ? 'isAlternateClimbSpeedLimitPilotEntered' : 'isClimbSpeedLimitPilotEntered',
-      false,
+      null,
     );
 
     plan.incrementVersion();
@@ -681,7 +681,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.setPerformanceData(alternate ? 'alternateDescentSpeedLimitAltitude' : 'descentSpeedLimitAltitude', null);
     plan.setPerformanceData(
       alternate ? 'isAlternateDescentSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
-      false,
+      null,
     );
 
     plan.incrementVersion();
