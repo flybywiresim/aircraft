@@ -24,6 +24,8 @@ export interface Arinc429Values {
   fcdcDiscreteWord1: Arinc429Word;
   fcdc1DiscreteWord1: Arinc429Word;
   fcdc2DiscreteWord1: Arinc429Word;
+  fcdc1DiscreteWord2: Arinc429Word;
+  fcdc2DiscreteWord2: Arinc429Word;
   facToUse: number;
   vAlphaMax: Arinc429Word;
   vAlphaProt: Arinc429Word;
@@ -81,6 +83,16 @@ export class ArincValueProvider implements Instrument {
   private oppLandingElevation = new Arinc429Word(0);
 
   private staticPressure = new Arinc429Word(0);
+
+  private fcdc1DiscreteWord1 = new Arinc429Word(0);
+
+  private fcdc2DiscreteWord1 = new Arinc429Word(0);
+
+  private fcdc1DiscreteWord2 = new Arinc429Word(0);
+
+  private fcdc2DiscreteWord2 = new Arinc429Word(0);
+
+  private fcdcToUse = 0;
 
   private fac1Healthy = false;
 
@@ -399,12 +411,33 @@ export class ArincValueProvider implements Instrument {
       publisher.pub('lgciuDiscreteWord1', this.lgciuDiscreteWord1);
     });
 
-    // Word with Normal Operation status indicating that pitch and roll are in normal law. To be replaced by proper FCDC implementation.
-    const pitchRollNormalLawNOWord = 14076346368;
+    subscriber.on('fcdc1DiscreteWord1Raw').handle((discreteWord1) => {
+      this.fcdc1DiscreteWord1 = new Arinc429Word(discreteWord1);
+      this.fcdcToUse = this.determineFcdcToUse();
+      publisher.pub('fcdc1DiscreteWord1', this.fcdc1DiscreteWord1);
+      if (this.fcdcToUse === 1) {
+        publisher.pub('fcdcDiscreteWord1', this.fcdc1DiscreteWord1);
+      }
+    });
 
-    publisher.pub('fcdcDiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
-    publisher.pub('fcdc1DiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
-    publisher.pub('fcdc2DiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
+    subscriber.on('fcdc2DiscreteWord1Raw').handle((discreteWord1) => {
+      this.fcdc2DiscreteWord1 = new Arinc429Word(discreteWord1);
+      this.fcdcToUse = this.determineFcdcToUse();
+      publisher.pub('fcdc2DiscreteWord1', this.fcdc2DiscreteWord1);
+      if (this.fcdcToUse === 2) {
+        publisher.pub('fcdcDiscreteWord1', this.fcdc2DiscreteWord1);
+      }
+    });
+
+    subscriber.on('fcdc1DiscreteWord2Raw').handle((discreteWord2) => {
+      this.fcdc1DiscreteWord2 = new Arinc429Word(discreteWord2);
+      publisher.pub('fcdc1DiscreteWord2', this.fcdc1DiscreteWord2);
+    });
+
+    subscriber.on('fcdc2DiscreteWord2Raw').handle((discreteWord2) => {
+      this.fcdc2DiscreteWord2 = new Arinc429Word(discreteWord2);
+      publisher.pub('fcdc2DiscreteWord2', this.fcdc2DiscreteWord2);
+    });
 
     this.fm1Subs.push(
       subscriber.on('fm1EisDiscrete2Raw').handle((raw) => publisher.pub('fmEisDiscreteWord2Raw', raw), true),
@@ -507,6 +540,27 @@ export class ArincValueProvider implements Instrument {
     } else {
       publisher.pub('landingElevation', this.ownLandingElevation);
     }
+  }
+
+  private determineFcdcToUse() {
+    if (getDisplayIndex() === 1) {
+      if (
+        (this.fcdc1DiscreteWord1.isFailureWarning() && !this.fcdc2DiscreteWord1.isFailureWarning()) ||
+        (!this.fcdc1DiscreteWord1.bitValueOr(24, false) && this.fcdc2DiscreteWord1.bitValueOr(24, false))
+      ) {
+        return 2;
+      }
+      return 1;
+    }
+    if (
+      !(
+        (!this.fcdc1DiscreteWord1.isFailureWarning() && this.fcdc2DiscreteWord1.isFailureWarning()) ||
+        (this.fcdc1DiscreteWord1.bitValueOr(24, false) && !this.fcdc2DiscreteWord1.bitValueOr(24, false))
+      )
+    ) {
+      return 2;
+    }
+    return 1;
   }
 
   // Determine which FAC bus to use for FE function. If FAC HEALTHY discrete is low or any word is coded FW,
