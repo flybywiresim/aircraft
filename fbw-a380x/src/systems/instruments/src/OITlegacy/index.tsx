@@ -1,17 +1,13 @@
 import React from 'react';
 import { getRootElement } from '@instruments/common/defaults';
-import { HashRouter as Router } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import { renderTarget } from '../util.js';
-import { OnboardInformationTerminal } from './OnboardInformationTerminal';
 import { render } from '../Common';
+import { OitEfbWrapper } from 'instruments/src/OITlegacy/OitLegacy.js';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 if (renderTarget) {
-  render(
-    <Router>
-      <OnboardInformationTerminal />
-    </Router>,
-  );
+  render(<OitEfbWrapper eventBus={new EventBus()} />);
 }
 
 getRootElement().addEventListener('unload', () => {
