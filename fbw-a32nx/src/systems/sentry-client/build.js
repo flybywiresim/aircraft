@@ -10,4 +10,4 @@ const { createModuleBuild } = require('#build-utils');
 
 const outFile = 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client/sentry-client.js';
 
-esbuild.build(createModuleBuild('fbw-a32nx', undefined, path.join(__dirname, 'src/index.ts'), outFile, __dirname));
+esbuild.build(createModuleBuild('fbw-a32nx', undefined, path.join(__dirname, 'src' , 'index.ts'), outFile, __dirname));
