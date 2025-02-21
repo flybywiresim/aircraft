@@ -59,6 +59,18 @@ export class CDUFlightPlanPage {
     };
     mcdu.activeSystem = 'FMGC';
 
+    if (forPlan >= FlightPlanIndex.FirstSecondary) {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.onUnload = () => {
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+      };
+    } else {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+    }
+
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.FlightPlanPage) {

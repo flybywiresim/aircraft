@@ -105,6 +105,7 @@ type CoRoute = {
 export class CoRouteUplinkAdapter {
   static async uplinkFlightPlanFromCoRoute(
     fms: FmsDataInterface & FmsDisplayInterface,
+    intoPlan: number,
     flightPlanService: FlightPlanService,
     ofp: CoRoute,
   ) {
@@ -375,7 +376,7 @@ export class CoRouteUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(intoPlan);
   }
 
   static getRouteFromOfp(ofp: CoRoute): OfpRoute {
@@ -391,7 +392,7 @@ export class CoRouteUplinkAdapter {
     const instructions: OfpRouteChunk[] = [];
 
     // `navlog` is undefined when the route is DCT
-    for (let i = 0; i < ofp.navlog?.length ?? 0; i++) {
+    for (let i = 0; i < (ofp.navlog?.length ?? 0); i++) {
       const lastFix = ofp.navlog[i - 1];
       const fix = ofp.navlog[i];
 

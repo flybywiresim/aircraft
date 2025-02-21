@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FmsClient } from '@atsu/fmsclient';
-import { LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
+import { LskCallback, LskDelayFunction, SimbriefOfpState } from './LegacyFmsPageInterface';
 import { AtsuStatusCodes } from '@datalink/common';
 import { McduMessage } from '../messages/NXSystemMessages';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPhaseManager } from '@fmgc/flightphase';
+import { ISimbriefData } from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 
 interface LegacyAtsuPageDrawingInterface {
   clearDisplay(webSocketDraw?: boolean): void;
@@ -60,6 +61,10 @@ interface LegacyAtsuPageFmsInterface {
   flightPhaseManager: FlightPhaseManager;
   // NO!
   simbrief: any;
+  // NO!
+  simbriefOfp: ISimbriefData;
+  // NO!
+  simbriefOfpState: SimbriefOfpState;
   // Move to ATSU
   aocTimes: {
     doors: number;

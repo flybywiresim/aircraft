@@ -12,6 +12,7 @@ import {
   ProcedureLeg,
   Runway,
   WaypointDescriptor,
+  PathVector,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -22,14 +23,18 @@ import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { BitFlags } from '@microsoft/msfs-sdk';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { v4 } from 'uuid';
+import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
  */
 export interface SerializedFlightPlanLeg {
+  uuid: string;
   ident: string;
   flags: number;
   annotation: string;
@@ -42,15 +47,19 @@ export interface SerializedFlightPlanLeg {
   cruiseStep: CruiseStepEntry | undefined;
   pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
   pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
+  calculated: LegCalculations;
 }
 
 export enum FlightPlanLegFlags {
   DirectToTurningPoint = 1 << 0,
   PendingDirectToTurningPoint = 1 << 1,
   Origin = 1 << 2,
+  CopiedWithPredictions = 1 << 2,
 }
 
 export interface LegCalculations {
+  path: PathVector[];
+
   /** The leg's total distance in nautical miles, not cut short by ingress/egress turn radii. */
   distance: number;
   /** The cumulative distance in nautical miles up to this point in the flight plan. */
@@ -71,6 +80,8 @@ export interface LegCalculations {
  * A leg in a flight plan. Not to be confused with a geometry leg or a procedure leg
  */
 export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
+  uuid = v4();
+
   type: LegType;
 
   flags = 0;
@@ -109,6 +120,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
 
   serialize(): SerializedFlightPlanLeg {
     return {
+      uuid: this.uuid,
       ident: this.ident,
       flags: this.flags,
       annotation: this.annotation,
@@ -125,16 +137,25 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       pilotEnteredSpeedConstraint: this.pilotEnteredSpeedConstraint
         ? JSON.parse(JSON.stringify(this.pilotEnteredSpeedConstraint))
         : undefined,
+      calculated: this.calculated ? JSON.parse(JSON.stringify(this.calculated)) : undefined,
     };
   }
 
-  clone(forSegment: FlightPlanSegment): FlightPlanLeg {
-    return FlightPlanLeg.deserialize(this.serialize(), forSegment);
+  clone(forSegment: FlightPlanSegment, options?: number): FlightPlanLeg {
+    const leg = FlightPlanLeg.deserialize(this.serialize(), forSegment);
+
+    if (BitFlags.isAll(options, CopyOptions.CopyPredictions)) {
+      leg.calculated = JSON.parse(JSON.stringify(this.calculated));
+      leg.flags |= FlightPlanLegFlags.CopiedWithPredictions;
+    }
+
+    return leg;
   }
 
   static deserialize(serialized: SerializedFlightPlanLeg, segment: FlightPlanSegment): FlightPlanLeg {
     const leg = FlightPlanLeg.fromProcedureLeg(segment, serialized.definition, serialized.definition.procedureIdent);
 
+    leg.uuid = serialized.uuid;
     leg.ident = serialized.ident;
     leg.flags = serialized.flags;
     leg.annotation = serialized.annotation;
@@ -145,6 +166,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     leg.cruiseStep = serialized.cruiseStep;
     leg.pilotEnteredAltitudeConstraint = serialized.pilotEnteredAltitudeConstraint;
     leg.pilotEnteredSpeedConstraint = serialized.pilotEnteredSpeedConstraint;
+    leg.calculated = serialized.calculated;
 
     return leg;
   }

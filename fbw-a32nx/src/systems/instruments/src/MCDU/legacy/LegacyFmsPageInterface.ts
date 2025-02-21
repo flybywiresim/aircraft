@@ -37,6 +37,13 @@ export type LskCallback = (
 
 export type LskDelayFunction = () => number;
 
+// TODO should this be here?
+export enum SimbriefOfpState {
+  NotLoaded = 0,
+  Requested = 1,
+  Loaded = 2,
+}
+
 interface LegacyFmsPageDrawingInterface {
   clearDisplay(webSocketDraw?: boolean): void;
   setTemplate(template: any[][], large?: boolean): void;
@@ -91,7 +98,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   logTroubleshootingError(msg: any): void;
   updateTowerHeadwind(): void;
   onToRwyChanged(): void;
-  setGroundTempFromOrigin(): void;
+  setGroundTempFromOrigin(forPlan: FlightPlanIndex): void;
   directToWaypoint(waypoint: Fix): Promise<void>;
   directToLeg(legIndex: number): Promise<void>;
   toggleWaypointOverfly(index, fpIndex, forAlternate, callback?: typeof EmptyCallback.Void): void;
@@ -137,13 +144,13 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   /** This one is a mess.. */
   updateCoRoute(coRouteNum, callback?: typeof EmptyCallback.Boolean): Promise<void>;
   updateFlightNo(flightNo: string, callback?: typeof EmptyCallback.Boolean): Promise<void>;
-  setCruiseFlightLevelAndTemperature(input: string): boolean;
+  setCruiseFlightLevelAndTemperature(input: string, forPlan: FlightPlanIndex): boolean;
   getCoRouteList(): Promise<void>;
   tryUpdateAltDestination(altDestIdent: string): Promise<boolean>;
-  tryUpdateTropo(tropo: string): boolean;
-  tryUpdateFromTo(fromTo: string, callback?: typeof EmptyCallback.Boolean): void;
-  trySetGroundTemp(scratchpadValue: string): void;
-  goToFuelPredPage(): void;
+  tryUpdateTropo(tropo: string, forPlan: FlightPlanIndex): boolean;
+  tryUpdateFromTo(fromTo: string, forPlan: FlightPlanIndex, callback?: typeof EmptyCallback.Boolean): void;
+  trySetGroundTemp(scratchpadValue: string, forPlan: FlightPlanIndex): void;
+  goToFuelPredPage(forPlan: FlightPlanIndex): void;
   trySetBlockFuel(s: string): boolean;
   tryFuelPlanning(): boolean;
   trySetTaxiFuelWeight(s: string): boolean;
@@ -205,7 +212,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   computeManualCrossoverAltitude(mach: number): number;
   getMaxFlCorrected(fl?: number): number;
   isAllEngineOn(): boolean;
-  trySetCruiseFlCheckInput(input: string): boolean;
+  trySetCruiseFlCheckInput(input: string, forPlan: FlightPlanIndex): boolean;
   trySetProgWaypoint(s: string, callback?: typeof EmptyCallback.Boolean): void;
   isOnGround(): boolean;
   getSelectedNavaids(): SelectedNavaid[];
@@ -246,19 +253,19 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   _minDestFob: number;
   _isBelowMinDestFob: boolean;
   flightNumber?: string;
+  // TODO add types
+  simbriefOfp: any;
+  simbriefOfpState: SimbriefOfpState;
   /** another mess */
   simbrief: any;
   isCostIndexSet: boolean;
   costIndex: number | undefined;
   cruiseLevel: number | undefined;
-  cruiseTemperature?: number;
   tempCurve: any; // we don't have the MSFS SDK typings for these curves
   casToMachManualCrossoverCurve: any;
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;
   isTropoPilotEntered: boolean;
-  groundTemp?: number;
-  groundTempPilot?: number;
   taxiFuelWeight: number;
   blockFuel?: number;
   takeOffWeight: number;

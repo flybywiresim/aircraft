@@ -9,8 +9,10 @@ import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FmsFormatters } from '../legacy/FmsFormatters';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class CDUFuelPredPage {
+  // TODO sec?
   static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FuelPredPage;
@@ -57,7 +59,7 @@ export class CDUFuelPredPage {
       } else {
         if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
           CDUFuelPredPage.ShowPage(mcdu);
-          CDUInitPage.trySetFuelPred(mcdu);
+          CDUInitPage.trySetFuelPred(mcdu, FlightPlanIndex.Active);
           mcdu.removeMessageFromQueue(NXSystemMessages.initializeWeightOrCg.text);
           mcdu.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
           mcdu._checkWeightSettable = true;
