@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2024 FlyByWire Simulations -->
+<!-- Copyright (c) 2024-2025 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
@@ -23,21 +23,4 @@
             </Extend>
         </Presets>
     </InputEvent>
-
-    <Template Name="A380X_SWITCH_PITCH_TRIM">
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Switch_3States">
-                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-                <PART_ID>#NODE_ID#</PART_ID>
-                <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
-                <WWISE_EVENT>clds</WWISE_EVENT>
-                <CODE_POS_0>(&gt;K:ELEV_TRIM_DN)</CODE_POS_0>
-                <CODE_POS_2>(&gt;K:ELEV_TRIM_UP)</CODE_POS_2>
-                <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
-                <STATE0_TIMER>0.01</STATE0_TIMER>
-                <MOMENTARY_SWITCH>True</MOMENTARY_SWITCH>
-                <MOMENTARY_REPEAT_FREQUENCY>75</MOMENTARY_REPEAT_FREQUENCY>
-            </UseTemplate>
-        </Component>
-    </Template>
 </ModelBehaviors>
