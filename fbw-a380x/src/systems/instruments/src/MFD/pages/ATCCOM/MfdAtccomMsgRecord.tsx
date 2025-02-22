@@ -48,25 +48,6 @@ export class MfdAtccomMsgRecord extends DisplayComponent<MfdAtccomMsgRecordProps
             </div>
           </div>
         </div>
-        {/* <div
-          id="atccom-inop"
-          style="
-    position: absolute;
-    top: 132px;
-    width: 768px;
-    height: 818px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 35px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: #e68000"
-        >
-          <span>NOT YET IMPLEMENTED</span>
-        </div> */}
-        <div style="position: absolute; top: 36px; opacity: 0.3; visibility: hidden;">
-          <img src="/Images/fbw-a380x/msg-record-all-msg.png" alt="" />
-        </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>
     );

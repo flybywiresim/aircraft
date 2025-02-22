@@ -64,7 +64,7 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
             </div>
           </div>
         </div>
-        {/* <div
+        <div
           id="atccom-inop"
           style="
     position: absolute;
@@ -79,7 +79,7 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
     color: #e68000"
         >
           <span>NOT YET IMPLEMENTED</span>
-        </div> */}
+        </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>
     );

@@ -56,7 +56,7 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
           </div>
           <div class="mfd-atccom-msg-record-footer"></div>
         </div>
-        {/* <div
+        <div
           id="atccom-inop"
           style="
     position: absolute;
@@ -71,9 +71,6 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
     color: #e68000"
         >
           <span>NOT YET IMPLEMENTED</span>
-        </div> */}
-        <div style="position: absolute; top: 36px; opacity: 0.3; visibility: hidden;">
-          <img src="/Images/fbw-a380x/msg-record-all-msg.png" alt="" />
         </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>
