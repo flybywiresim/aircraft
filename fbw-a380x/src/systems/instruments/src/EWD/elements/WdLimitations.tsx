@@ -84,7 +84,7 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
               SubscribableMapFunctions.and(),
               this.limitationsDisplay,
               this.props.visible,
-            ).map((it) => (it ? 'block' : 'none')),
+            ).map((it) => (it ? 'flex' : 'none')),
           }}
         >
           <span class="LimitationsHeading Underline">LIMITATIONS</span>

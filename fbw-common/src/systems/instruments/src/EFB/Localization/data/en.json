@@ -664,6 +664,7 @@
       "Left": "Left",
       "LoadOnly": "Load Only",
       "None": "None",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Off",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -694,6 +695,7 @@
         "Unlink": "Unlink Account",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unlimited": "Navigraph Unlimited",
           "Unknown": "Unknown"
         },

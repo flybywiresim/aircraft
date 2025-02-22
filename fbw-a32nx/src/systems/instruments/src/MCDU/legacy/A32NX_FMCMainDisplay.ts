@@ -2097,10 +2097,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
     }
     if (tempString) {
-      const temp = parseInt(tempString.replace('M', '-'));
-      console.log('tS: ' + tempString);
-      console.log('ti: ' + temp);
+      let temp = parseInt(tempString);
       if (isFinite(temp) && this.cruiseLevel) {
+        if (!tempString.startsWith('+') && !tempString.startsWith('-')) {
+          temp = -temp;
+        }
         if (temp > -270 && temp < 100) {
           this.cruiseTemperature = temp;
           return true;
