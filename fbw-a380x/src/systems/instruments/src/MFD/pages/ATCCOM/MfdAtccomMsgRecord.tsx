@@ -40,7 +40,7 @@ export class MfdAtccomMsgRecord extends DisplayComponent<MfdAtccomMsgRecordProps
             <div style="position:absolute; top:165px; left:65px;">
               <Button
                 label="MONITORED MSG"
-                buttonStyle="width:205px; height:64px"
+                buttonStyle="width:205px; height:64px; padding: 9px 5px 5px 5px;"
                 onClick={() => {
                   this.props.mfd.uiService.navigateTo('atccom/msg-record/monitored-msg');
                 }}
