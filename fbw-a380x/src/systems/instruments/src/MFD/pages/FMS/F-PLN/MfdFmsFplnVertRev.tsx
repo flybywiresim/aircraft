@@ -292,8 +292,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.speedLimitAltitude.set(speedLimitAltitude);
     this.speedLimitPilotEntered.set(
       climbSpeedLimit
-        ? (this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered ?? false)
-        : (this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered ?? false),
+        ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered
+        : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered,
     );
     this.speedLimitTransition.set(
       climbSpeedLimit
