@@ -228,7 +228,7 @@ export class CDUVerticalRevisionPage {
           );
           mainTargetPlan.setPerformanceData(
             inAlternate ? 'isAlternateDescentSpeedLimitPilotEntered' : 'isDescentSpeedLimitPilotEntered',
-            null,
+            false,
           );
         } else {
           mainTargetPlan.setPerformanceData(
@@ -241,7 +241,7 @@ export class CDUVerticalRevisionPage {
           );
           mainTargetPlan.setPerformanceData(
             inAlternate ? 'isAlternateClimbSpeedLimitPilotEntered' : 'isClimbSpeedLimitPilotEntered',
-            null,
+            false,
           );
         }
         CDUVerticalRevisionPage.ShowPage(
