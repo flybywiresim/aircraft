@@ -162,6 +162,7 @@
 1. [A380X/FWS] Add RAT OUT, REFUEL PNL DOOR, HI ALT AIRPORT & REFUELING/DEFUELING memos - @BravoMike99 (bruno_pt99)
 1. [A380X/ND] Correct positioning of TCAS Messages and added TCAS STBY - @MrJigs7 (MrJigs)
 1. [A32NX/AFS] Add new vertical profile validity LVar for managed vertical modes - @lukecologne (luke)
+1. [A380X/FMS] Added (RNP) label on RNP AR SIDs and approach vias (MSFS2024 only) - @tracernz (Mike)
 1. [A380X/KCCU] Fix unclickable left directional arrow key on KCCU - @heclak (Heclak)
 
 ## 0.12.0
