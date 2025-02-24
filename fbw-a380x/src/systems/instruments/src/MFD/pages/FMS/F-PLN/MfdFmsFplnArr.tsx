@@ -1,4 +1,5 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
@@ -8,7 +9,6 @@ import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { LandingSystemUtils } from '@fmgc/flightplanning/data/landingsystem';
 
 import './MfdFmsFpln.scss';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 const ApproachTypeOrder = Object.freeze({
   [ApproachType.Mls]: 0,

@@ -16,6 +16,10 @@ import {
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { NXUnits } from '@flybywiresim/fbw-sdk';
+import './style.scss';
+import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { InteractionMode } from 'instruments/src/MFD/MFD';
 
 export enum InteractionMode {
   Touchscreen,
