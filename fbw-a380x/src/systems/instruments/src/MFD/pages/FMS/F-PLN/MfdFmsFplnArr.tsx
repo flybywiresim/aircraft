@@ -202,6 +202,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         // FIXME handle non-localizer types
         this.approachLsFrequencyChannel.set(ls?.frequency.toFixed(2) ?? '');
         this.approachLsIdent.set(ls?.ident ?? '');
+        const isRnp = !!flightPlan.approach.authorisationRequired;
 
         if (flightPlan.availableApproachVias.length > 0) {
           const vias: ButtonMenuItem[] = [
@@ -230,7 +231,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             })
             .forEach((via) => {
               vias.push({
-                label: via.ident,
+                label: isRnp ? `${via.ident} (RNP)` : via.ident,
                 action: async () => {
                   await this.props.fmcService.master?.flightPlanService.setApproachVia(
                     via.databaseId,
