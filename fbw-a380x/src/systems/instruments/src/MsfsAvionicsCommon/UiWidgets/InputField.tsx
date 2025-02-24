@@ -313,8 +313,7 @@ export class InputField<
       this.updateDisplayElement();
 
       if (validateAndUpdate) {
-        if (this.modifiedFieldValue.get() === null && this.readValue.get() !== null) {
-          console.log('Enter pressed after no modification');
+        if (this.modifiedFieldValue.get() == null && this.readValue.get() !== null) {
           // Enter is pressed after no modification
           const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
           await this.validateAndUpdate(formatted ?? '');
