@@ -12,7 +12,7 @@ interface OansRunwayInfoBoxProps {
   lda: Subscribable<string | null>;
   ldaIsReduced: Subscribable<boolean>;
   coordinate: Subscribable<string>;
-  unit: Subscribable<Unit<UnitFamily.Distance>>;
+  lengthUnit: Subscribable<Unit<UnitFamily.Distance>>;
 }
 export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> {
   private rwyDivRef = FSComponent.createRef<HTMLDivElement>();
@@ -68,10 +68,12 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
           <span class="mfd-value smaller">
             {this.props.tora
               ? Number(this.props.tora)
-                ? this.props.unit.get().convertFrom(Number(this.props.tora), UnitType.METER)
+                ? this.props.lengthUnit.get().convertFrom(Number(this.props.tora), UnitType.METER)
                 : this.props.tora
               : ''}
-            <span style="color: rgb(33, 33, 255)">{this.props.unit.map((v) => this.distanceUnitFormatter(v))}</span>
+            <span style="color: rgb(33, 33, 255)">
+              {this.props.lengthUnit.map((v) => this.distanceUnitFormatter(v))}
+            </span>
           </span>
           <span
             class="mfd-label"
@@ -80,10 +82,12 @@ export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> 
           <span class="mfd-value smaller" style={this.props.ldaIsReduced.get() ? 'color: cyan;' : ''}>
             {this.props.lda
               ? Number(this.props.lda)
-                ? this.props.unit.get().convertFrom(Number(this.props.lda), UnitType.METER)
+                ? this.props.lengthUnit.get().convertFrom(Number(this.props.lda), UnitType.METER)
                 : this.props.lda
               : ''}
-            <span style="color: rgb(33, 33, 255)">{this.props.unit.map((v) => this.distanceUnitFormatter(v))}</span>
+            <span style="color: rgb(33, 33, 255)">
+              {this.props.lengthUnit.map((v) => this.distanceUnitFormatter(v))}
+            </span>
           </span>
         </div>
         <div

@@ -160,9 +160,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
   private showOans = Subject.create<boolean>(false);
 
-  private unit = Subject.create<Unit<UnitFamily.Distance>>(
-    NXDataStore.get('CONFIG_USING_METRIC_UNIT') === '1' ? UnitType.METER : UnitType.FOOT,
-  );
+  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -247,7 +245,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         if (data.side === this.props.side) {
           this.showOans.set(data.show);
           NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key, value) => {
-            value === '1' ? this.unit.set(UnitType.METER) : this.unit.set(UnitType.FOOT);
+            value === '1' ? this.lengthUnit.set(UnitType.METER) : this.lengthUnit.set(UnitType.FOOT);
           });
         }
       });
@@ -379,7 +377,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-              <BtvRunwayInfo bus={this.props.bus} unit={this.unit} />
+              <BtvRunwayInfo bus={this.props.bus} lengthUnit={this.lengthUnit} />
               <SpeedIndicator bus={this.props.bus} />
             </svg>
           </div>
