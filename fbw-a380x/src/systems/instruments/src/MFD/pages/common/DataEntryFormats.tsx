@@ -2,6 +2,7 @@ import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 import { Fix } from '@flybywiresim/fbw-sdk';
 
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
@@ -338,9 +339,9 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, 'M'] as FieldFormatTuple;
+      return [this.placeholder, null, NXUnits.userDistanceUnit()] as FieldFormatTuple;
     }
-    return [value.toString(), null, 'M'] as FieldFormatTuple;
+    return [value.toString(), null, NXUnits.userDistanceUnit()] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -384,9 +385,9 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, 'T'] as FieldFormatTuple;
+      return [this.placeholder, null, NXUnits.userWeightUnitTons()] as FieldFormatTuple;
     }
-    return [(value / 1000).toFixed(1), null, 'T'] as FieldFormatTuple;
+    return [(value / 1000).toFixed(1), null, NXUnits.userWeightUnitTons()] as FieldFormatTuple;
   }
 
   public async parse(input: string) {

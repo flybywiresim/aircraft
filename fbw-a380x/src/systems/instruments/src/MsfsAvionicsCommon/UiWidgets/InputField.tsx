@@ -16,8 +16,13 @@ import {
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { InteractionMode } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 
-interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
+export interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
+  dataEntryFormat: DataEntryFormat<T, U>;
+}
+
+export interface InputFieldProps<T, U> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T, U>;
   /** Renders empty values with orange rectangles */
   mandatory?: Subscribable<boolean>;
@@ -55,6 +60,8 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   class?: string;
 
   // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
+  /** Only used for unit conversion in WeightFormat/LengthFormat, lbs to kg - kg to lbs, m to feet - feet to m */
+  unitConversion?: 'unitWeightConversion' | 'unitDistanceConversion';
 }
 
 export type ConditionalInputFieldProps<T, U, S extends boolean> = S extends true
@@ -109,6 +116,36 @@ export class InputField<
     true,
   );
 
+  private valueToUserUnit(unitConversion: string | undefined, value: any) {
+    if (!unitConversion) {
+      return value;
+    }
+
+    switch (unitConversion) {
+      case 'unitWeightConversion':
+        return NXUnits.kgToUser(value);
+      case 'unitDistanceConversion':
+        return NXUnits.mToUser(value);
+      default:
+        break;
+    }
+  }
+
+  private userUnitToValue(unitConversion: string | undefined, value: any) {
+    if (!unitConversion) {
+      return value;
+    }
+
+    switch (unitConversion) {
+      case 'unitWeightConversion':
+        return NXUnits.userToKg(value);
+      case 'unitDistanceConversion':
+        return NXUnits.userToM(value);
+      default:
+        break;
+    }
+  }
+
   private onNewValue() {
     // Don't update if field is being edited
     if (this.isFocused.get() || this.isValidating.get()) {
@@ -119,10 +156,11 @@ export class InputField<
     if (this.modifiedFieldValue.get() !== null) {
       this.modifiedFieldValue.set(null);
     }
-    if (this.readValue.get() !== null) {
+    const valueAsUserUnit = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
+    if (valueAsUserUnit != null) {
       if (this.props.canOverflow) {
         // If item was overflowing, check whether overflow is still needed
-        this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
+        this.overflow((valueAsUserUnit?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
 
       if (this.props.mandatory?.get()) {
@@ -138,7 +176,8 @@ export class InputField<
       if (this.readValue.get() === null) {
         this.populatePlaceholders();
       } else {
-        const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.readValue.get());
+        const userUnitValue = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
+        const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(userUnitValue);
         this.textInputRef.instance.innerText = formatted ?? '';
         this.leadingUnit.set(leadingUnit ?? '');
         this.trailingUnit.set(trailingUnit ?? '');
@@ -268,7 +307,8 @@ export class InputField<
       !this.props.inactive?.get()
     ) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
-        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.readValue.get(), false);
+        const userUnitValue = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
+        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', userUnitValue, false);
       }
       this.isFocused.set(true);
 
@@ -302,9 +342,10 @@ export class InputField<
       this.updateDisplayElement();
 
       if (validateAndUpdate) {
-        if (this.modifiedFieldValue.get() == null && this.readValue.get() !== null) {
+        if (this.modifiedFieldValue.get() == null && this.props.value.get() != null) {
+          const userUnitValue = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
           // Enter is pressed after no modification
-          const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
+          const [formatted] = this.props.dataEntryFormat.format(userUnitValue);
           await this.validateAndUpdate(formatted ?? '');
         } else {
           await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
@@ -338,7 +379,8 @@ export class InputField<
 
     let newValue = null;
     try {
-      newValue = await this.props.dataEntryFormat.parse(input);
+      const convertedInput = this.userUnitToValue(this.props.unitConversion, input);
+      newValue = await this.props.dataEntryFormat.parse(convertedInput);
     } catch (msg: unknown) {
       if (msg instanceof FmsError && this.props.errorHandler) {
         this.props.errorHandler(msg.type);
@@ -350,7 +392,8 @@ export class InputField<
     const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
     if (this.props.dataHandlerDuringValidation) {
       try {
-        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
+        const userUnitValue = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
+        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, userUnitValue);
         const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
         if (validation === false) {
@@ -580,7 +623,8 @@ export class InputField<
       }
 
       if (key === 'ESC' || key === 'ESC2') {
-        const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
+        const valueAsUserUnit = this.valueToUserUnit(this.props.unitConversion, this.props.value.get());
+        const [formatted] = this.props.dataEntryFormat.format(valueAsUserUnit);
         this.modifiedFieldValue.set(formatted);
         this.handleEnter();
       }
