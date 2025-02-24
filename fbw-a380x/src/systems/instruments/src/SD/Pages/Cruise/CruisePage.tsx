@@ -8,6 +8,7 @@ import CruisePressure from './elements/CruisePressure';
 import CruiseCond from './elements/CruiseCond';
 
 import '../../../index.scss';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 export const CruisePage = () => {
   const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
@@ -69,7 +70,7 @@ export const CruisePage = () => {
         FF
       </text>
       <text className="F22 MiddleAlign Cyan" x={383} y={131}>
-        KG/H
+        {NXUnits.userWeightUnit}/H
       </text>
 
       {/* Fuel Used */}
@@ -101,7 +102,7 @@ export const CruisePage = () => {
         {engineTotalFuelUsedDisplay}
       </text>
       <text className="F22 MiddleAlign Cyan" x={383} y={285}>
-        KG
+        {NXUnits.userWeightUnit()}
       </text>
 
       <text className="F29 Underline White" x={18} y={330}>

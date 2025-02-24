@@ -164,6 +164,7 @@
 1. [A32NX/AFS] Add new vertical profile validity LVar for managed vertical modes - @lukecologne (luke)
 1. [A380X/FMS] Added (RNP) label on RNP AR SIDs and approach vias (MSFS2024 only) - @tracernz (Mike)
 1. [A380X/KCCU] Fix unclickable left directional arrow key on KCCU - @heclak (Heclak)
+1. [A380X/MFD] Added unit conversion for lbs/ft - MikioDK (Mikio)
 
 ## 0.12.0
 
