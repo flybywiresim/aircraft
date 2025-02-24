@@ -1,4 +1,11 @@
-import { AirlineModifiableInformation, AirlineModifiableInformationDatabase } from '@flybywiresim/fbw-sdk';
+import {
+  AirlineModifiableInformation,
+  AirlineModifiableInformationDatabase,
+  DefaultValuesAmiDatabaseLayer,
+  LiveryAmiDatabaseLayer,
+  UserSettingsAmiDatabaseLayer,
+} from '@flybywiresim/fbw-sdk';
+import { DefaultUserSettingManager, EventBus } from '@microsoft/msfs-sdk';
 
 const defaultAmiData: AirlineModifiableInformation = {
   perfFactor: 0, // %
@@ -17,4 +24,15 @@ const defaultAmiData: AirlineModifiableInformation = {
   finalDest: 'A', // P or A
 };
 
-export const AmiDatabase = new AirlineModifiableInformationDatabase(defaultAmiData);
+/** This will probably come from persistence.ts when NXDataStore is gone */
+const bus = new EventBus();
+const userSettings = new DefaultUserSettingManager<AirlineModifiableInformation>(
+  bus,
+  Object.entries(defaultAmiData).map(([key, value]) => ({ name: key, defaultValue: value })),
+);
+
+export const AmiDatabase = new AirlineModifiableInformationDatabase(
+  new UserSettingsAmiDatabaseLayer(userSettings),
+  new LiveryAmiDatabaseLayer(),
+  new DefaultValuesAmiDatabaseLayer(defaultAmiData),
+);
