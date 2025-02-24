@@ -525,9 +525,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private unit = Subject.create<Unit<UnitFamily.Distance>>(
-    NXDataStore.get('CONFIG_USING_METRIC_UNIT') === '1' ? UnitType.METER : UnitType.FOOT,
-  );
+  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -1130,7 +1128,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.apprWindSpeedValue,
     );
     NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key, value) => {
-      value === '1' ? this.unit.set(UnitType.METER) : this.unit.set(UnitType.FOOT);
+      value === '1' ? this.lengthUnit.set(UnitType.METER) : this.lengthUnit.set(UnitType.FOOT);
     });
   }
 
@@ -1184,7 +1182,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                     <InputField<number>
-                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength, this.unit)}
+                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength, this.lengthUnit)}
                       dataHandlerDuringValidation={async (v) =>
                         this.props.fmcService.master?.fmgc.data.takeoffShift.set(v)
                       }
