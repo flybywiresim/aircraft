@@ -16,6 +16,7 @@ export interface DataEntryFormat<T, U = T> {
   reFormatTrigger?: Subscribable<boolean>;
 
   unitFamily?: Subscribable<Unit<UnitFamily>>;
+  destroy?: () => void;
 }
 
 const distanceUnitFormatter = (unit: Unit<UnitFamily.Distance>) => {
