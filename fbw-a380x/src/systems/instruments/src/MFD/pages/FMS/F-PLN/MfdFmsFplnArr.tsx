@@ -443,7 +443,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       if (flightPlan.destinationAirport) {
         this.GenerateRunwayOptions(flightPlan, isAltn);
       }
-    });
+    }, true);
   }
 
   render(): VNode {

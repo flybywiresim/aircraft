@@ -1142,13 +1142,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             <div style="margin: 15px; display: flex; justify-content: space-between;">
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">CRZ</span>
-                <InputField<number | null>
+                <InputField<number>
                   dataEntryFormat={new FlightLevelFormat()}
                   dataHandlerDuringValidation={async (v) =>
                     v ? this.props.fmcService.master?.acInterface.setCruiseFl(v) : false
                   }
                   mandatory={this.crzFlIsMandatory}
-                  value={this.crzFl ?? null}
+                  value={this.crzFl}
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}

@@ -146,7 +146,7 @@ export class InputField<
   private updateDisplayElement() {
     // If input was not modified, render props' value
     if (this.modifiedFieldValue.get() == null) {
-      if (this.readValue.get() !== null) {
+      if (this.readValue.get() === null) {
         this.populatePlaceholders();
       } else {
         const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.readValue.get());
@@ -317,9 +317,9 @@ export class InputField<
           console.log('Enter pressed after no modification');
           // Enter is pressed after no modification
           const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
-          await this.validateAndUpdate(formatted);
+          await this.validateAndUpdate(formatted ?? '');
         } else {
-          await this.validateAndUpdate(this.modifiedFieldValue.get());
+          await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
         }
       }
 
@@ -349,7 +349,15 @@ export class InputField<
   private async validateAndUpdate(input: string) {
     this.isValidating.set(true);
 
-    const newValue = await this.props.dataEntryFormat.parse(input);
+    let newValue = null;
+    try {
+      newValue = await this.props.dataEntryFormat.parse(input);
+    } catch (msg: unknown) {
+      if (msg instanceof FmsError && this.props.errorHandler) {
+        this.props.errorHandler(msg.type);
+        newValue = null;
+      }
+    }
 
     let updateWasSuccessful = true;
     const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
@@ -432,7 +440,7 @@ export class InputField<
     }
 
     // Aspect ratio for font: 2:3 WxH
-    this.spanningDivRef.instance.style.minWidth = `${Math.round((this.props.dataEntryFormat.maxDigits * (27.0 * 0.629)) / 1.5)}px`;
+    this.spanningDivRef.instance.style.minWidth = `${Math.round((this.props.dataEntryFormat.maxDigits * 27.0) / 1.5)}px`;
 
     // Hide caret
     this.caretRef.instance.style.display = 'none';
@@ -443,10 +451,10 @@ export class InputField<
     this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
     this.subs.push(
       this.isValidating.sub((val) => {
-        if (val === true) {
-          this.textInputRef.getOrDefault().classList.add('validating');
+        if (val) {
+          this.textInputRef.instance.classList.add('validating');
         } else {
-          this.textInputRef.getOrDefault().classList.remove('validating');
+          this.textInputRef.instance.classList.remove('validating');
         }
       }),
     );
@@ -454,9 +462,9 @@ export class InputField<
     this.subs.push(
       this.props.mandatory.sub((val) => {
         if (val && this.readValue.get() === null) {
-          this.textInputRef.getOrDefault().classList.add('mandatory');
+          this.textInputRef.instance.classList.add('mandatory');
         } else {
-          this.textInputRef.getOrDefault().classList.remove('mandatory');
+          this.textInputRef.instance.classList.remove('mandatory');
         }
         this.updateDisplayElement();
       }, true),
@@ -464,17 +472,17 @@ export class InputField<
 
     this.subs.push(
       this.props.inactive.sub((val) => {
-        if (val === true) {
-          this.containerRef.getOrDefault().classList.add('inactive');
-          this.textInputRef.getOrDefault().classList.add('inactive');
+        if (val) {
+          this.containerRef.instance.classList.add('inactive');
+          this.textInputRef.instance.classList.add('inactive');
 
-          this.textInputRef.getOrDefault().tabIndex = null;
+          this.textInputRef.instance.tabIndex = 0;
         } else {
-          this.containerRef.getOrDefault().classList.remove('inactive');
-          this.textInputRef.getOrDefault().classList.remove('inactive');
+          this.containerRef.instance.classList.remove('inactive');
+          this.textInputRef.instance.classList.remove('inactive');
 
-          if (this.props.disabled.get() === false) {
-            this.textInputRef.getOrDefault().tabIndex = -1;
+          if (!this.props.disabled?.get()) {
+            this.textInputRef.instance.tabIndex = -1;
           }
         }
         this.updateDisplayElement();
@@ -483,22 +491,22 @@ export class InputField<
 
     this.subs.push(
       this.props.disabled.sub((val) => {
-        if (this.props.inactive.get() !== true) {
-          if (val === true) {
-            this.textInputRef.getOrDefault().tabIndex = null;
-            this.containerRef.getOrDefault().classList.add('disabled');
-            this.textInputRef.getOrDefault().classList.add('disabled');
+        if (!this.props.inactive?.get()) {
+          if (val) {
+            this.textInputRef.instance.tabIndex = 0;
+            this.containerRef.instance.classList.add('disabled');
+            this.textInputRef.instance.classList.add('disabled');
 
             if (this.props.mandatory?.get() && this.readValue.get() === null) {
-              this.textInputRef.getOrDefault().classList.remove('mandatory');
+              this.textInputRef.instance.classList.remove('mandatory');
             }
           } else {
-            this.textInputRef.getOrDefault().tabIndex = -1;
-            this.containerRef.getOrDefault().classList.remove('disabled');
-            this.textInputRef.getOrDefault().classList.remove('disabled');
+            this.textInputRef.instance.tabIndex = -1;
+            this.containerRef.instance.classList.remove('disabled');
+            this.textInputRef.instance.classList.remove('disabled');
 
             if (this.props.mandatory?.get() && this.readValue.get() === null) {
-              this.textInputRef.getOrDefault().classList.add('mandatory');
+              this.textInputRef.instance.classList.add('mandatory');
             }
           }
         }
@@ -508,17 +516,17 @@ export class InputField<
 
     this.subs.push(
       this.props.enteredByPilot.sub((val) => {
-        if (val === false) {
-          this.textInputRef.getOrDefault().classList.add('computedByFms');
+        if (!val) {
+          this.textInputRef.instance.classList.add('computedByFms');
         } else {
-          this.textInputRef.getOrDefault().classList.remove('computedByFms');
+          this.textInputRef.instance.classList.remove('computedByFms');
         }
       }, true),
     );
 
     this.subs.push(
       this.props.tmpyActive.sub((v) => {
-        if (v === true) {
+        if (v) {
           this.textInputRef.instance.classList.add('tmpy');
         } else {
           this.textInputRef.instance.classList.remove('tmpy');
@@ -530,24 +538,101 @@ export class InputField<
       this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
     }
 
-    this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
-    this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
+    this.textInputRef.instance.addEventListener('keypress', this.onKeyPressHandler);
+    this.textInputRef.instance.addEventListener('keydown', this.onKeyDownHandler);
 
     if (!this.props.handleFocusBlurExternally) {
-      this.textInputRef.instance.addEventListener('focus', () => this.onFocus());
-      this.textInputRef.instance.addEventListener('blur', () => {
-        this.onBlur();
-      });
-      this.spanningDivRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
-      this.leadingUnitRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
-      this.trailingUnitRef.instance.addEventListener('click', () => {
-        this.textInputRef.instance.focus();
-      });
+      this.textInputRef.instance.addEventListener('focus', this.onFocusHandler);
+      this.textInputRef.instance.addEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.instance.addEventListener('click', this.onFocusTextInputHandler);
+      this.leadingUnitRef.instance.addEventListener('click', this.onFocusTextInputHandler);
+      this.trailingUnitRef.instance.addEventListener('click', this.onFocusTextInputHandler);
     }
+
+    this.props.hEventConsumer.handle((key) => {
+      if (!this.isFocused.get()) {
+        return;
+      }
+
+      // Un-select the text
+      this.textInputRef.instance.classList.remove('valueSelected');
+
+      if (key.match(/^[a-zA-Z0-9]{1}$/)) {
+        this.handleKeyInput(key);
+      }
+
+      if (key === 'ENT') {
+        this.handleEnter();
+      }
+
+      if (key === 'SP') {
+        this.handleKeyInput(' ');
+      }
+
+      if (key === 'SLASH') {
+        this.handleKeyInput('/');
+      }
+
+      if (key === 'DOT') {
+        this.handleKeyInput('.');
+      }
+
+      if (key === 'PLUSMINUS') {
+        const val = this.modifiedFieldValue.get();
+        if (val && val.substring(0, 1) === '+') {
+          this.modifiedFieldValue.set(`-${val.substring(1)}`);
+        } else if (val && val.substring(0, 1) === '-') {
+          this.modifiedFieldValue.set(`+${val.substring(1)}`);
+        } else {
+          this.modifiedFieldValue.set(`-${this.modifiedFieldValue.get() ?? ''}`);
+        }
+      }
+
+      if (key === 'BACKSPACE') {
+        this.handleBackspace();
+      }
+
+      if (key === 'ESC' || key === 'ESC2') {
+        const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
+        this.modifiedFieldValue.set(formatted);
+        this.handleEnter();
+      }
+
+      if (key === 'UP' || key === 'RIGHT' || key === 'DOWN' || key === 'LEFT') {
+        // Unsupported atm
+      }
+    });
+
+    // preparation for automatic un-focusing if the node isn't in view anymore. Model changes needed FIXME
+    /* if (this.props.inViewEvent) {
+            this.subs.push(this.props.inViewEvent.whenChanged().handle((inView) =>
+            {
+                console.warn('inView: ' + inView);
+                if (!inView) {
+                    this.onBlur();
+                }
+            }));
+        } */
+  }
+
+  destroy(): void {
+    // Destroy all subscriptions to remove all references to this instance.
+    this.subs.forEach((x) => x.destroy());
+
+    this.textInputRef.getOrDefault()?.removeEventListener('keypress', this.onKeyPressHandler);
+    this.textInputRef.getOrDefault()?.removeEventListener('keydown', this.onKeyDownHandler);
+
+    if (!this.props.handleFocusBlurExternally) {
+      this.textInputRef.getOrDefault()?.removeEventListener('focus', this.onFocusHandler);
+      this.textInputRef.getOrDefault()?.removeEventListener('blur', this.onBlur.bind(this, true));
+      this.spanningDivRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+      this.leadingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+      this.trailingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
+    }
+
+    this.props.dataEntryFormat?.destroy();
+
+    super.destroy();
   }
 
   render(): VNode {
