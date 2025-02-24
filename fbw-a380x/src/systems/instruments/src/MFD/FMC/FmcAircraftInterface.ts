@@ -129,6 +129,12 @@ export class FmcAircraftInterface {
     0,
   );
 
+  private readonly fmsOrigin = Subject.create<string | null>('');
+  private readonly fmsDepartureRunway = Subject.create<string | null>('');
+  private readonly fmsDestination = Subject.create<string | null>('');
+  private readonly fmsLandingRunway = Subject.create<string | null>('');
+  private readonly fmsAlternate = Subject.create<string | null>('');
+
   constructor(
     private bus: EventBus,
     private fmc: FmcInterface,
@@ -197,6 +203,16 @@ export class FmcAircraftInterface {
           0,
         ),
       ),
+    );
+
+    const pub = this.bus.getPublisher<FmsData>();
+    this.subs.push(
+      this.fmsOrigin.sub((v) => pub.pub('fmsOrigin', v, true), true),
+      this.fmsDepartureRunway.sub((v) => pub.pub('fmsDepartureRunway', v, true), true),
+      this.fmsDestination.sub((v) => pub.pub('fmsDestination', v, true), true),
+      this.fmsLandingRunway.sub((v) => pub.pub('fmsLandingRunway', v, true), true),
+      this.fmsAlternate.sub((v) => pub.pub('fmsAlternate', v, true), true),
+      this.fmgc.data.atcCallsign.sub((v) => pub.pub('fmsFlightNumber', v, true), true),
     );
   }
 
@@ -527,48 +543,35 @@ export class FmcAircraftInterface {
   }
 
   updateFmsData() {
-    const pub = this.bus.getPublisher<FmsData>();
-    pub.pub(
-      'fmsOrigin',
+    this.fmsOrigin.set(
       this.flightPlanService.hasActive && this.flightPlanService.active?.originAirport?.ident
         ? this.flightPlanService.active.originAirport.ident
         : null,
-      true,
     );
 
-    pub.pub(
-      'fmsDepartureRunway',
+    this.fmsDepartureRunway.set(
       this.flightPlanService.hasActive && this.flightPlanService.active?.originRunway?.ident
         ? this.flightPlanService.active.originRunway.ident
         : null,
-      true,
     );
 
-    pub.pub(
-      'fmsDestination',
+    this.fmsDestination.set(
       this.flightPlanService.hasActive && this.flightPlanService.active?.destinationAirport?.ident
         ? this.flightPlanService.active.destinationAirport.ident
         : null,
-      true,
     );
 
-    pub.pub(
-      'fmsLandingRunway',
+    this.fmsLandingRunway.set(
       this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway?.ident
         ? this.flightPlanService.active.destinationRunway.ident
         : null,
-      true,
     );
 
-    pub.pub(
-      'fmsAlternate',
+    this.fmsAlternate.set(
       this.flightPlanService.hasActive && this.flightPlanService.active?.alternateDestinationAirport?.ident
         ? this.flightPlanService.active.alternateDestinationAirport.ident
         : null,
-      true,
     );
-
-    pub.pub('fmsFlightNumber', this.fmgc.data.atcCallsign.get(), true);
   }
 
   activatePreSelSpeedMach(preSel: number) {
