@@ -15,10 +15,15 @@ export class CDUProgressPage {
       CDUProgressPage.ShowPage(mcdu);
     };
     mcdu.activeSystem = 'FMGC';
-    const flightNo = mcdu.flightNumber ?? '';
+
+    const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
+
+    const flightNo = plan.flightNumber ?? '';
     const flMax = mcdu.getMaxFlCorrected();
     const flOpt =
-      mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || mcdu.isOnGround())
+      plan.performanceData.zeroFuelWeightCenterOfGravity !== null &&
+      plan.performanceData.blockFuel !== null &&
+      (mcdu.isAllEngineOn() || mcdu.isOnGround())
         ? '{green}FL' + (Math.floor(flMax / 5) * 5).toString() + '{end}'
         : '-----';
     const adirsUsesGpsAsPrimary = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool');

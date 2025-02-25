@@ -421,7 +421,7 @@ export class CDUPerformancePage {
     const targetPlan = mcdu.getFlightPlan(forPlan);
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
-    const showManagedSpeed = hasFromToPair && mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex);
+    const showManagedSpeed = hasFromToPair && targetPlan.performanceData.costIndex !== null;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Climb;
     const isTakeoffOrClimbActive = isPhaseActive || mcdu.flightPhaseManager.phase === FmgcFlightPhase.Takeoff;
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
@@ -430,7 +430,12 @@ export class CDUPerformancePage {
       (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) ||
       (!isPhaseActive && mcdu.preSelectedClbSpeed !== undefined);
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(mcdu, isActivePlan, hasFromToPair, true);
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
+      targetPlan.performanceData.costIndex,
+      isActivePlan,
+      hasFromToPair,
+      true,
+    );
     const canClickManagedSpeed = showManagedSpeed && mcdu.preSelectedClbSpeed !== undefined && !isPhaseActive;
 
     // Predictions to altitude
@@ -506,7 +511,7 @@ export class CDUPerformancePage {
 
     if (hasFromToPair) {
       mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value)) {
+        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
           CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
@@ -617,10 +622,15 @@ export class CDUPerformancePage {
       (!isPhaseActive && mcdu.preSelectedCrzSpeed !== undefined);
     const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(mcdu, isActivePlan, hasFromToPair, true);
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
+      targetPlan.performanceData.costIndex,
+      isActivePlan,
+      hasFromToPair,
+      true,
+    );
 
     // TODO: Figure out correct condition
-    const showManagedSpeed = hasFromToPair && mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex);
+    const showManagedSpeed = hasFromToPair && targetPlan.performanceData.costIndex !== null;
     const canClickManagedSpeed = showManagedSpeed && mcdu.preSelectedCrzSpeed !== undefined && !isPhaseActive;
     let managedSpeedCell = '{small}\xa0---/---{end}[color]white';
     if (
@@ -645,7 +655,7 @@ export class CDUPerformancePage {
 
     if (hasFromToPair) {
       mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value)) {
+        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
           CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
@@ -794,7 +804,12 @@ export class CDUPerformancePage {
       );
     }
 
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(mcdu, isActivePlan, hasFromToPair, !isPhaseActive);
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
+      targetPlan.performanceData.costIndex,
+      isActivePlan,
+      hasFromToPair,
+      !isPhaseActive,
+    );
 
     const econDesPilotEntered = mcdu.managedSpeedDescendPilot !== undefined;
     const econDes = econDesPilotEntered ? mcdu.managedSpeedDescendPilot : mcdu.managedSpeedDescend;
@@ -804,8 +819,7 @@ export class CDUPerformancePage {
     // TODO: Figure out correct condition
     const showManagedSpeed =
       hasFromToPair &&
-      mcdu.isCostIndexSet &&
-      Number.isFinite(mcdu.costIndex) &&
+      targetPlan.performanceData.costIndex !== null &&
       econDesMach !== undefined &&
       econDes !== undefined;
     const managedDescentSpeedCellMach = `{${econDesMachPilotEntered ? 'big' : 'small'}}${econDesMach.toFixed(2).replace('0.', '.')}{end}`;
@@ -859,7 +873,7 @@ export class CDUPerformancePage {
     // Can only modify cost index until the phase is active
     if (hasFromToPair && !isPhaseActive) {
       mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value)) {
+        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
           CDUPerformancePage.ShowDESPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
@@ -1423,17 +1437,17 @@ export class CDUPerformancePage {
   }
 
   static formatCostIndexCell(
-    mcdu: LegacyFmsPageInterface,
+    costIndex: number | null,
     isActive: boolean,
     hasFromToPair: boolean,
     allowModification: boolean,
   ) {
     let costIndexCell = '---';
     if (hasFromToPair) {
-      if (mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex)) {
-        costIndexCell = `${mcdu.costIndex.toFixed(0)}[color]${allowModification ? 'cyan' : 'green'}`;
-      } else if (isActive) {
-        costIndexCell = '___[color]amber';
+      if (costIndex !== null) {
+        costIndexCell = `${costIndex.toFixed(0)}[color]${allowModification ? 'cyan' : 'green'}`;
+      } else {
+        costIndexCell = isActive ? '___[color]amber' : '[\xa0][color]cyan';
       }
     }
 

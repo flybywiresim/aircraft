@@ -30,7 +30,7 @@ export class Keypad {
       CDUDirectToPage.ShowPage(this.mcdu);
     },
     FPLN: () => CDUFlightPlanPage.ShowPage(this.mcdu),
-    FUEL: () => this.mcdu.goToFuelPredPage(),
+    FUEL: () => this.mcdu.goToFuelPredPage(FlightPlanIndex.Active),
     INIT: () => {
       if (this.mcdu.flightPhaseManager.phase === FmgcFlightPhase.Done) {
         this.mcdu.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);

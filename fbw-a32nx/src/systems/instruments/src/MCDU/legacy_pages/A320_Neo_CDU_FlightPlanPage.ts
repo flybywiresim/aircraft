@@ -102,7 +102,7 @@ export class CDUFlightPlanPage {
 
     let flightNumberText = '';
     if (forActiveOrTemporary) {
-      flightNumberText = mcdu.flightNumber ?? '';
+      flightNumberText = targetPlan.flightNumber ?? '';
     }
 
     const waypointsAndMarkers = [];
@@ -963,7 +963,7 @@ export class CDUFlightPlanPage {
       let destEFOBCell = '---.-';
 
       if (targetPlan.destinationAirport) {
-        if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
+        if (CDUInitPage.fuelPredConditionsMet(mcdu, forPlan) && mcdu._fuelPredDone) {
           mcdu.tryUpdateRouteTrip(isFlying);
         }
 

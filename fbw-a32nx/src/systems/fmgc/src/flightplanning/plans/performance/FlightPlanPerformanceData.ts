@@ -296,6 +296,107 @@ export interface FlightPlanPerformanceData {
    */
   isAlternateDescentSpeedLimitPilotEntered: boolean;
 
+  /**
+   * The zero fuel weight entered by the pilot in tonnes, or null if not set.
+   */
+  zeroFuelWeight: number | null;
+
+  /**
+   * The zero fuel weight center of gravity entered by the pilot as a percentage, or null if not set
+   */
+  zeroFuelWeightCenterOfGravity: number | null;
+
+  /**
+   * The block fuel entered by the pilot in tonnes, or null if not set.
+   */
+  blockFuel: number | null;
+
+  /**
+   * The taxi fuel entered by the pilot in tonnes, or null if not set.
+   */
+  pilotTaxiFuel: number | null;
+
+  /**
+   * The taxi fuel from the AMI database in tonnes
+   */
+  defaultTaxiFuel: number;
+
+  /**
+   * Returns the pilot entered taxi fuel if set, the AMI taxi fuel value otherwise; Unit: tonnes; Null if not set.
+   */
+  get taxiFuel(): number | null;
+
+  /**
+   * Whether taxi fuel is pilot entered.
+   */
+  get taxiFuelIsPilotEntered(): boolean;
+
+  /**
+   * The route reserve fuel entered by the pilot in tonnes, or null if not set.
+   */
+  pilotRouteReserveFuel: number | null;
+
+  /**
+   * The route reserve fuel percentage entered by the pilot as a percentage, or null if not set.
+   */
+  pilotRouteReserveFuelPercentage: number | null;
+
+  /**
+   * The route reserve fuel percentage from the AMI database
+   */
+  defaultRouteReserveFuelPercentage: number;
+
+  /**
+   * Returns the pilot entered route reserve fuel percentage if set, the AMI route reserve fuel percentage value otherwise
+   */
+  get routeReserveFuelPercentage(): number;
+
+  /**
+   * Whether the route reserve fuel percentage is pilot entered.
+   */
+  get isRouteReserveFuelPrecentagePilotEntered(): boolean;
+
+  /**
+   * The alternate fuel entered by the pilot in tonnes, or null if not set.
+   */
+  pilotAlternateFuel: number | null;
+
+  /**
+   * The final holding fuel entered by the pilot in tonnes, or null if not set.
+   */
+  pilotFinalHoldingFuel: number | null;
+
+  /**
+   * The final holding time entered by the pilot in minutes, or null if not set.
+   */
+  pilotFinalHoldingTime: number | null;
+
+  /**
+   * The final holding time from the AMI database in minutes
+   */
+  defaultFinalHoldingTime: number;
+
+  /**
+   * Returns the pilot entered final holding time in minutes if set, the AMI final holding time value otherwise
+   */
+  get finalHoldingTime(): number;
+
+  /**
+   * Whether final holding time is pilot entered.
+   */
+  get isFinalHoldingTimePilotEntered(): boolean;
+
+  /**
+   * The minimum fuel on board at the destination entered by the pilot in tonnes, or null if not set.
+   */
+  pilotMinimumDestinationFuelOnBoard: number | null;
+
+  /**
+   * The trip wind value entered by the pilot in kts, or null if not set.
+   * Positive values indicate a tailwind, negative values indicate a headwind.
+   */
+  pilotTripWind: number | null;
+
   clone(): this;
 }
 
@@ -358,6 +459,21 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.alternateDescentSpeedLimitSpeed = this.alternateDescentSpeedLimitSpeed;
     cloned.alternateDescentSpeedLimitAltitude = this.alternateDescentSpeedLimitAltitude;
     cloned.isAlternateDescentSpeedLimitPilotEntered = this.isAlternateDescentSpeedLimitPilotEntered;
+
+    cloned.zeroFuelWeight = this.zeroFuelWeight;
+    cloned.zeroFuelWeightCenterOfGravity = this.zeroFuelWeightCenterOfGravity;
+    cloned.blockFuel = this.blockFuel;
+    cloned.pilotTaxiFuel = this.pilotTaxiFuel;
+    cloned.defaultTaxiFuel = this.defaultTaxiFuel;
+    cloned.pilotRouteReserveFuel = this.pilotRouteReserveFuel;
+    cloned.pilotRouteReserveFuelPercentage = this.pilotRouteReserveFuelPercentage;
+    cloned.defaultRouteReserveFuelPercentage = this.defaultRouteReserveFuelPercentage;
+    cloned.pilotAlternateFuel = this.pilotAlternateFuel;
+    cloned.pilotFinalHoldingFuel = this.pilotFinalHoldingFuel;
+    cloned.pilotFinalHoldingTime = this.pilotFinalHoldingTime;
+    cloned.defaultFinalHoldingTime = this.defaultFinalHoldingTime;
+    cloned.pilotMinimumDestinationFuelOnBoard = this.pilotMinimumDestinationFuelOnBoard;
+    cloned.pilotTripWind = this.pilotTripWind;
 
     return cloned as this;
   }
@@ -689,6 +805,115 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   isAlternateDescentSpeedLimitPilotEntered: boolean = false;
 
+  /**
+   * The zero fuel weight entered by the pilot in tonnes, or null if not set.
+   */
+  zeroFuelWeight: number | null = null;
+
+  /**
+   * The zero fuel weight center of gravity entered by the pilot as a percentage, or null if not set
+   */
+  zeroFuelWeightCenterOfGravity: number | null = null;
+
+  /**
+   * The block fuel entered by the pilot in tonnes, or null if not set.
+   */
+  blockFuel: number | null = null;
+
+  /**
+   * The taxi fuel entered by the pilot in tonnes, or null if not set.
+   */
+  pilotTaxiFuel: number | null = null;
+
+  /**
+   * The taxi fuel from the AMI database in tonnes
+   * FIXME should come from the AMI database
+   */
+  defaultTaxiFuel: number = 0.2;
+
+  get taxiFuel() {
+    return this.pilotTaxiFuel ?? this.defaultTaxiFuel;
+  }
+
+  get taxiFuelIsPilotEntered() {
+    return this.pilotTaxiFuel !== null;
+  }
+
+  /**
+   * The route reserve fuel entered by the pilot in tonnes, or null if not set.
+   */
+  pilotRouteReserveFuel: number | null = null;
+
+  /**
+   * The route reserve percentage entered by the pilot as a percentage, or null if not set.
+   */
+  pilotRouteReserveFuelPercentage: number | null = null;
+
+  /**
+   * The route reserve percentage from the AMI database
+   * FIXME should come from the AMI database
+   */
+  defaultRouteReserveFuelPercentage: number = 5;
+
+  /**
+   * Returns the pilot entered route reserve fuel percentage if set, the AMI route reserve fuel percentage value otherwise
+   */
+  get routeReserveFuelPercentage() {
+    return this.pilotRouteReserveFuelPercentage ?? this.defaultRouteReserveFuelPercentage;
+  }
+
+  /**
+   * Whether the route reserve fuel percentage is pilot entered.
+   */
+  get isRouteReserveFuelPrecentagePilotEntered() {
+    return this.pilotRouteReserveFuelPercentage !== null;
+  }
+
+  /**
+   * The alternate fuel entered by the pilot in tonnes, or null if not set.
+   */
+  pilotAlternateFuel: number | null = null;
+
+  /**
+   * The final holding fuel entered by the pilot in tonnes, or null if not set.
+   */
+  pilotFinalHoldingFuel: number | null = null;
+
+  /**
+   * The final holding time entered by the pilot in minutes, or null if not set.
+   */
+  pilotFinalHoldingTime: number | null = null;
+
+  /**
+   * The final holding time from the AMI database in minutes
+   */
+  defaultFinalHoldingTime: number = 30;
+
+  /**
+   * Returns the pilot entered final holding time in minutes if set, the AMI final holding time value otherwise
+   */
+  get finalHoldingTime() {
+    return this.pilotFinalHoldingTime ?? this.defaultFinalHoldingTime;
+  }
+
+  /**
+   * Whether final holding time is pilot entered.
+   */
+  get isFinalHoldingTimePilotEntered() {
+    return this.pilotFinalHoldingTime !== null;
+  }
+
+  /**
+   * The minimum fuel on board at the destination entered by the pilot in tonnes, or null if not set.
+   */
+  pilotMinimumDestinationFuelOnBoard: number | null = null;
+
+  /**
+   * The trip wind value entered by the pilot in kts, or null if not set.
+   * +ve for tailwind, -ve for headwind
+   */
+  pilotTripWind: number | null = null;
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel,
@@ -729,6 +954,20 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       alternateDescentSpeedLimitSpeed: this.alternateDescentSpeedLimitSpeed,
       alternateDescentSpeedLimitAltitude: this.alternateDescentSpeedLimitAltitude,
       isAlternateDescentSpeedLimitPilotEntered: this.isAlternateDescentSpeedLimitPilotEntered,
+      zeroFuelWeight: this.zeroFuelWeight,
+      zeroFuelWeightCenterOfGravity: this.zeroFuelWeightCenterOfGravity,
+      blockFuel: this.blockFuel,
+      pilotTaxiFuel: this.pilotTaxiFuel,
+      defaultTaxiFuel: this.defaultTaxiFuel,
+      pilotRouteReserveFuel: this.pilotRouteReserveFuel,
+      pilotRouteReserveFuelPercentage: this.pilotRouteReserveFuelPercentage,
+      defaultRouteReserveFuelPercentage: this.defaultRouteReserveFuelPercentage,
+      pilotAlternateFuel: this.pilotAlternateFuel,
+      pilotFinalHoldingFuel: this.pilotFinalHoldingFuel,
+      pilotFinalHoldingTime: this.pilotFinalHoldingTime,
+      defaultFinalHoldingTime: this.defaultFinalHoldingTime,
+      pilotMinimumDestinationFuelOnBoard: this.pilotMinimumDestinationFuelOnBoard,
+      pilotTripWind: this.pilotTripWind,
     };
   }
 }
@@ -787,8 +1026,24 @@ export interface SerializedFlightPlanPerformanceData {
   alternateDescentSpeedLimitSpeed: number | null;
   alternateDescentSpeedLimitAltitude: number | null;
   isAlternateDescentSpeedLimitPilotEntered: boolean;
+
+  zeroFuelWeight: number | null;
+  zeroFuelWeightCenterOfGravity: number | null;
+  blockFuel: number | null;
+  pilotTaxiFuel: number | null;
+  defaultTaxiFuel: number;
+  pilotRouteReserveFuel: number | null;
+  pilotRouteReserveFuelPercentage: number | null;
+  defaultRouteReserveFuelPercentage: number;
+  pilotAlternateFuel: number | null;
+  pilotFinalHoldingFuel: number | null;
+  pilotFinalHoldingTime: number | null;
+  defaultFinalHoldingTime: number;
+  pilotMinimumDestinationFuelOnBoard: number | null;
+  pilotTripWind: number | null;
 }
 
+// FIXME move to AMI database
 export class DefaultPerformanceData {
   static readonly ClimbSpeedLimitSpeed = 250;
 
