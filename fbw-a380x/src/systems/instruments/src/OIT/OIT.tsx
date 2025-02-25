@@ -2,7 +2,6 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
-  ClockEvents,
   ComponentProps,
   DisplayComponent,
   EventBus,
@@ -15,7 +14,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './style.scss';
-import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
+import { InternalKbdKeyEvent } from './OitSimvarPublisher';
 import { OitUiService, OitUriInformation } from './OitUiService';
 import { OitNotFound } from './Pages/OitNotFound';
 import { pageForUrl } from './OitPageDirectory';
@@ -43,7 +42,6 @@ export interface OitProps {
 
 export class OIT extends DisplayComponent<OitProps> {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getSubscriber<ClockEvents & OitSimvars>();
 
   #uiService = new OitUiService(this.props.captOrFo, this.props.bus);
 
@@ -73,6 +71,9 @@ export class OIT extends DisplayComponent<OitProps> {
 
   private activePage: VNode = (<OitNotFound bus={this.props.bus} oit={this} />);
 
+  private readonly showChartsSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`;
+  private readonly showOfpSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`;
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -84,12 +85,12 @@ export class OIT extends DisplayComponent<OitProps> {
         ([uri, displayFailed, displayPowered, operationMode]) => {
           // Activate EFB overlay if on charts or flt-folder page
           SimVar.SetSimVarValue(
-            `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`,
+            this.showChartsSimvar,
             SimVarValueType.Bool,
             uri.uri === 'flt-ops/charts' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
           );
           SimVar.SetSimVarValue(
-            `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`,
+            this.showOfpSimvar,
             SimVarValueType.Bool,
             uri.uri === 'flt-ops/flt-folder' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
           );
@@ -101,7 +102,7 @@ export class OIT extends DisplayComponent<OitProps> {
       ),
     );
 
-    this.uiService.navigateTo('flt-ops/sts'); // should be /sts
+    this.uiService.navigateTo('flt-ops/sts');
   }
 
   private activeUriChanged(uri: OitUriInformation) {

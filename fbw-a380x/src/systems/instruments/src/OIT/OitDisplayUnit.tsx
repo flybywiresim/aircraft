@@ -140,6 +140,10 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
 
   private readonly failedDisplay = this.failed.map((v) => (v ? 'block' : 'none'));
 
+  private readonly bus1Simvar = `L:A32NX_ELEC_${DisplayUnitToDCBus[this.props.displayUnitId][0]}_BUS_IS_POWERED`;
+  private readonly bus2Simvar = `L:A32NX_ELEC_${DisplayUnitToDCBus[this.props.displayUnitId][1]}_BUS_IS_POWERED`;
+  private readonly bus3Simvar = `L:A32NX_ELEC_${DisplayUnitToDCBus[this.props.displayUnitId][2]}_BUS_IS_POWERED`;
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -202,13 +206,13 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
 
   public update() {
     const poweredByBus1 = DisplayUnitToDCBus[this.props.displayUnitId][0]
-      ? SimVar.GetSimVarValue(`L:A32NX_ELEC_${DisplayUnitToDCBus[this.props.displayUnitId][0]}_BUS_IS_POWERED`, 'Bool')
+      ? SimVar.GetSimVarValue(this.bus1Simvar, 'Bool')
       : true;
     const poweredByBus2 = DisplayUnitToDCBus[this.props.displayUnitId][1]
-      ? SimVar.GetSimVarValue(`L:A32NX_ELEC_${DisplayUnitToDCBus[this.props.displayUnitId][1]}_BUS_IS_POWERED`, 'Bool')
+      ? SimVar.GetSimVarValue(this.bus2Simvar, 'Bool')
       : true;
     const poweredByBus3 = DisplayUnitToDCBus[this.props.displayUnitId][2]
-      ? SimVar.GetSimVarValue(`L:A32NX_ELEC_${DisplayUnitToDCBus[this.props.displayUnitId][2]}_BUS_IS_POWERED`, 'Bool')
+      ? SimVar.GetSimVarValue(this.bus3Simvar, 'Bool')
       : true;
     this.powered.set(
       (poweredByBus1 || poweredByBus2 || poweredByBus3) && !this.props.failuresConsumer.isActive(this.failureKey),

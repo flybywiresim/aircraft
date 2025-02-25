@@ -108,6 +108,7 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
             pauseOnTod: true,
             pilotAvatars: false,
             eclSoftKeys: true,
+            autoStepClimb: true,
           },
           sim: {
             cones: false,
@@ -116,6 +117,7 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
             registrationDecal: false, // TODO FIXME: Enable when dynamic registration decal is completed
             wheelChocks: false,
             cabinLighting: true,
+            oansPerformanceMode: true,
           },
           throttle: {
             numberOfAircraftThrottles: 4,
@@ -157,11 +159,14 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
   );
 };
 
+const showChartSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`;
+const showOfpSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`;
+
 export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
   const dispatch = useAppDispatch();
 
-  const [showCharts] = useSimVar(`L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`, 'Bool', 100);
-  const [showOfp] = useSimVar(`L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`, 'Bool', 100);
+  const [showCharts] = useSimVar(showChartSimvar, 'Bool', 100);
+  const [showOfp] = useSimVar(showOfpSimvar, 'Bool', 100);
   const [synchroAvionics] = useSimVar('L:A32NX_OIS_SYNCHRO_AVIONICS', 'number', 100);
 
   const [fromAirport, setFromAirport] = useState<string>('');
