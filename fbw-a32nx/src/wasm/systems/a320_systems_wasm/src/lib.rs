@@ -65,7 +65,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
     .with_engine_anti_ice(2)?
     .with_wing_anti_ice()?
-    .with_failures(vec![
+    .with_failures([
         (
             21_000,
             FailureType::Acsc(AcscId::Acsc1(Channel::ChannelOne)),

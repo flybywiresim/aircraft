@@ -64,7 +64,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   constructor(props: PFDProps) {
     super(props);
-    this.failuresConsumer = new FailuresConsumer('A32NX');
+    this.failuresConsumer = new FailuresConsumer();
   }
 
   public onAfterRender(node: VNode): void {
