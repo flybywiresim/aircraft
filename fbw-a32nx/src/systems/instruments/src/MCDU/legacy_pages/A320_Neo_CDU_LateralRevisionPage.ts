@@ -161,7 +161,7 @@ export class CDULateralRevisionPage {
             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
           }
 
-          mcdu.returnPageCallback();
+          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
         }
       };
     }
@@ -175,7 +175,7 @@ export class CDULateralRevisionPage {
       mcdu.onRightInput[3] = async (value) => {
         await mcdu.flightPlanService.newDest(legIndexFP, value, forPlan, inAlternate);
 
-        mcdu.returnPageCallback();
+        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
       };
     }
 
