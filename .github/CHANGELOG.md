@@ -166,6 +166,7 @@
 1. [A380X/KCCU] Fix unclickable left directional arrow key on KCCU - @heclak (Heclak)
 1. [A380X/OIS] Initial implementation of OIS/OIT with charts and OFP - @flogross89 (floridude)
 1. [A380X/PFD] Add LS button reminder - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Sort runways by identifier in the runway selection page - @BlueberryKing (BlueberryKing)
 
 ## 0.12.0
 
