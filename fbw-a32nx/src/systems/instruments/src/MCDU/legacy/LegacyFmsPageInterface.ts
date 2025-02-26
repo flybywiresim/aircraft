@@ -44,6 +44,24 @@ export enum SimbriefOfpState {
   Loaded = 2,
 }
 
+export type FuelPredComputations = {
+  tripFuel: number | null;
+  tripTime: number | null;
+  routeReserveFuel: number | null;
+  routeReserveFuelPercentage: number | null;
+  alternateFuel: number | null;
+  alternateTime: number | null;
+  finalHoldingFuel: number | null;
+  finalHoldingTime: number | null;
+  minimumDestinationFuel: number | null;
+  takeoffWeight: number | null;
+  landingWeight: number | null;
+  destinationFuelOnBoard: number | null;
+  alternateDestinationFuelOnBoard: number | null;
+  extraFuel: number | null;
+  extraTime: number | null;
+};
+
 interface LegacyFmsPageDrawingInterface {
   clearDisplay(webSocketDraw?: boolean): void;
   setTemplate(template: any[][], large?: boolean): void;
@@ -111,7 +129,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
     callback?: typeof EmptyCallback.Boolean,
     bypassTmpy?: boolean,
   ): void;
-  tryUpdateRouteTrip(_dynamic?: boolean): void;
   navModeEngaged(): boolean;
   isFlying(): boolean;
   trySetZeroFuelWeightZFWCG(s: string, forPlan: FlightPlanIndex): boolean;
@@ -119,27 +136,12 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getGW(): number;
   getCG(): number;
   getFOB(): number | undefined;
-  tryUpdateRouteFinalFuel(): void;
-  getRouteFinalFuelWeight(): number | undefined;
-  /** @deprecated */
-  getRouteFinalFuelTime(): number;
   trySetRouteFinalFuel(s: string, forPlan: FlightPlanIndex): boolean;
-  tryUpdateRouteAlternate(): void;
-  /** @deprecated */
-  getRouteAltFuelWeight(): number | null;
-  /** @deprecated */
-  getRouteAltFuelTime(): number | null;
   trySetRouteAlternateFuel(altFuel: string, forPlan: FlightPlanIndex): Promise<boolean>;
-  getDestEFOB(useFOB?: boolean): number | null;
-  getAltEFOB(useFOB?: boolean): number | null;
-  getRouteReservedWeight(): number;
-  getRouteReservedPercent(): number;
+  getDestEFOB(): number | null;
   trySetRouteReservedFuel(s: string, forPlan: FlightPlanIndex): boolean;
-  tryUpdateMinDestFob(): void;
   trySetMinDestFob(fuel: string, forPlan: FlightPlanIndex): Promise<boolean>;
   checkEFOBBelowMin(): void;
-  tryGetExtraFuel(forPlan: FlightPlanIndex, useFOB?: boolean): number;
-  tryGetExtraTime(forPlan: FlightPlanIndex, useFOB?: boolean): number;
   getNavDatabaseIdent(): DatabaseIdent | null;
   switchNavDatabase(): Promise<void>;
   /** This one is a mess.. */
@@ -158,8 +160,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   trySetRouteReservedPercent(s: string, forPlan: FlightPlanIndex): boolean;
   trySetRouteFinalTime(s: string, forPlan: FlightPlanIndex): boolean;
   trySetAverageWind(s: string, forPlan: FlightPlanIndex): boolean;
-  getTotalTripFuelCons(): number;
-  getTotalTripTime(): number;
   getOrSelectNavaidsByIdent(
     ident: string,
     callback: (navaid: EnrouteNdbNavaid | TerminalNdbNavaid | VhfNavaid) => void,
@@ -220,6 +220,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   reselectNavaid(icao: string): void;
   getOrSelectWaypointByIdent(ident: string, callback: (fix: Fix) => void): void;
   getIsaTemp(alt: number): number;
+  runFuelComputations(forPlan: FlightPlanIndex, computations: FuelPredComputations): FuelPredComputations;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
@@ -241,9 +242,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   _checkWeightSettable: boolean;
   /** @deprecated */
   zeroFuelWeight?: number;
-  _routeTripTime: number;
-  _rteRsvPercentOOR: boolean;
-  _minDestFob: number;
   _isBelowMinDestFob: boolean;
   // TODO add types
   simbriefOfp: any;
@@ -259,11 +257,8 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   tropo: number | undefined;
   isTropoPilotEntered: boolean;
   /** @deprecated get value from flight plan performance data */
-  taxiFuelWeight: number;
-  /** @deprecated get value from flight plan performance data */
   blockFuel?: number;
   get takeOffWeight(): number;
-  get landingWeight(): number;
   _fuelPlanningPhase: FuelPlanningPhases;
   _deltaTime: number;
   unconfirmedV1Speed?: number;

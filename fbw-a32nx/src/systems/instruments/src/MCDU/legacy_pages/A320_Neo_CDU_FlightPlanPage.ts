@@ -8,7 +8,6 @@ import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { AltitudeDescriptor, NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
@@ -963,10 +962,6 @@ export class CDUFlightPlanPage {
       let destEFOBCell = '---.-';
 
       if (targetPlan.destinationAirport) {
-        if (CDUInitPage.fuelPredConditionsMet(mcdu, forPlan) && mcdu._fuelPredDone) {
-          mcdu.tryUpdateRouteTrip(isFlying);
-        }
-
         const destDist = mcdu.guidanceController.alongTrackDistanceToDestination;
 
         if (Number.isFinite(destDist)) {

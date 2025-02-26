@@ -66,7 +66,7 @@ import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { ISimbriefData } from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
-import { SimbriefOfpState } from './LegacyFmsPageInterface';
+import { FuelPredComputations, SimbriefOfpState } from './LegacyFmsPageInterface';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -95,11 +95,36 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private recMaxCruiseFL = 398;
   public coRoute = { routeNumber: undefined, routes: undefined };
   public perfTOTemp = NaN;
-  private _routeFinalFuelWeight = 0;
-  private _routeFinalFuelTime = 30;
-  private _routeFinalFuelTimeDefault = 30;
-  private _routeReservedWeight = 0;
-  private _routeReservedPercent = 5;
+
+  /**
+   * To compute:
+   *  - trip fuel / time (from vnav)
+   *  - route reserve / route reserve pct (one is entered, the other is calculated from it)
+   *  - alternate fuel / time (from vnav)
+   *  - final fuel / time (one is entered, the other is calculated from it)
+   *  - min dest fob (just alternate + final)
+   *  - tow / lw (computed from other values on the page)
+   *  - extra / time (weight is computed from other values, time from weight)
+   */
+
+  private static fuelComputationsCache: FuelPredComputations = {
+    tripFuel: null,
+    tripTime: null,
+    routeReserveFuel: null,
+    routeReserveFuelPercentage: null,
+    alternateFuel: null,
+    alternateTime: null,
+    finalHoldingFuel: null,
+    finalHoldingTime: null,
+    minimumDestinationFuel: null,
+    takeoffWeight: null,
+    landingWeight: null,
+    destinationFuelOnBoard: null,
+    alternateDestinationFuelOnBoard: null,
+    extraFuel: null,
+    extraTime: null,
+  };
+
   public perfApprQNH = NaN;
   public perfApprTemp = NaN;
   public perfApprWindHeading = NaN;
@@ -114,17 +139,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public perfApprDH: 'NO DH' | number | null = null;
   public perfApprFlaps3 = false;
   private _debug = undefined;
-  private _DistanceToAlt = undefined;
-  private _routeAltFuelWeight: number | null = 0;
-  private _routeAltFuelTime: number | null = 0;
-  private _routeTripFuelWeight = 0;
-  public _routeTripTime = 0;
-  private _defaultTaxiFuelWeight = 0.2;
-  public _rteRsvPercentOOR = false;
-  private _rteFinalCoeffecient = undefined;
-  public _minDestFob = 0;
   public _isBelowMinDestFob = false;
-  private _defaultRouteFinalTime = undefined;
   public _fuelPredDone = false;
   public _fuelPlanningPhase = undefined;
   private _initMessageSettable = undefined;
@@ -432,11 +447,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.maxCruiseFL = 390;
     this.recMaxCruiseFL = 398;
     this.resetCoroute();
-    this._routeFinalFuelWeight = 0;
-    this._routeFinalFuelTime = 30;
-    this._routeFinalFuelTimeDefault = 30;
-    this._routeReservedWeight = 0;
-    this._routeReservedPercent = 5;
     // +ve for tailwind, -ve for headwind
     this.perfApprQNH = NaN;
     this.perfApprTemp = NaN;
@@ -452,17 +462,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.perfApprDH = null;
     this.perfApprFlaps3 = false;
     this._debug = 0;
-    this._DistanceToAlt = 0;
-    this._routeAltFuelWeight = 0;
-    this._routeAltFuelTime = 0;
-    this._routeTripFuelWeight = 0;
-    this._routeTripTime = 0;
-    this._defaultTaxiFuelWeight = 0.2;
-    this._rteRsvPercentOOR = false;
-    this._rteFinalCoeffecient = 0;
-    this._minDestFob = 0;
     this._isBelowMinDestFob = false;
-    this._defaultRouteFinalTime = 45;
     this._fuelPredDone = false;
     this._fuelPlanningPhase = FuelPlanningPhases.PLANNING;
     this._initMessageSettable = false;
@@ -738,8 +738,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
         /** Arm preselected speed/mach for next flight phase */
         this.updatePreSelSpeedMach(this.preSelectedClbSpeed);
-
-        this._rteRsvPercentOOR = false;
 
         break;
       }
@@ -1468,22 +1466,26 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.computedVss = SimVar.GetSimVarValue('L:A32NX_SPEEDS_S', 'number');
     this.computedVls = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
 
-    let weight = this.tryEstimateLandingWeight();
+    const plan = this.getFlightPlan(FlightPlanIndex.Active);
+    const prediction = this.runFuelComputations(FlightPlanIndex.Active, FMCMainDisplay.fuelComputationsCache);
+
+    let weight = prediction.landingWeight;
     const vnavPrediction = this.guidanceController.vnavDriver.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
     // Fallback gross weight set to 64.3T (MZFW), which is replaced by FMGW once input in FMS to avoid function returning undefined results.
-    if (this.flightPhaseManager.phase >= FmgcFlightPhase.Approach || !isFinite(weight)) {
-      weight = this.getGW() == 0 ? 64.3 : this.getGW();
+    if (this.flightPhaseManager.phase >= FmgcFlightPhase.Approach || !Number.isFinite(weight)) {
+      weight = this.getGrossWeight() ?? 64.3;
     } else if (vnavPrediction && Number.isFinite(vnavPrediction.estimatedFuelOnBoard)) {
-      weight = this.zeroFuelWeight + Math.max(0, (vnavPrediction.estimatedFuelOnBoard * 0.4535934) / 1000);
+      weight =
+        plan.performanceData.zeroFuelWeight + Math.max(0, (vnavPrediction.estimatedFuelOnBoard * 0.4535934) / 1000);
     }
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
-    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+    if (Number.isFinite(this.perfApprWindSpeed) && Number.isFinite(this.perfApprWindHeading)) {
       this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3, this._towerHeadwind);
     } else {
       this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3);
     }
-    this.approachSpeeds.valid = this.flightPhaseManager.phase >= FmgcFlightPhase.Approach || isFinite(weight);
+    this.approachSpeeds.valid = this.flightPhaseManager.phase >= FmgcFlightPhase.Approach || Number.isFinite(weight);
   }
 
   public updateConstraints() {
@@ -2043,20 +2045,18 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const tempString = input.split('/')[1];
     const onlyTemp = flString.length === 0;
 
-    if (
-      !!flString &&
-      !onlyTemp &&
-      this.trySetCruiseFl(parseFloat(flString), forPlan) &&
-      forPlan === FlightPlanIndex.Active
-    ) {
-      if (
-        SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 &&
-        SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1
-      ) {
-        SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', this.cruiseLevel);
-      } else {
-        SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
+    if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), forPlan)) {
+      if (forPlan === FlightPlanIndex.Active) {
+        if (
+          SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 &&
+          SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1
+        ) {
+          SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', this.cruiseLevel);
+        } else {
+          SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
+        }
       }
+
       if (!tempString) {
         return true;
       }
@@ -2207,29 +2207,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     });
   }
 
-  /**
-   * Computes distance between destination and alternate destination
-   */
-  private tryUpdateDistanceToAlt() {
-    const activePlan = this.flightPlanService.active;
-
-    if (activePlan && activePlan.destinationAirport && activePlan.alternateDestinationAirport) {
-      this._DistanceToAlt = Avionics.Utils.computeGreatCircleDistance(
-        activePlan.destinationAirport.location,
-        activePlan.alternateDestinationAirport.location,
-      );
-    } else {
-      this._DistanceToAlt = 0;
-    }
-  }
-
   // only used by trySetRouteAlternateFuel
-  private isAltFuelInRange(fuel) {
-    if (Number.isFinite(this.blockFuel)) {
-      return 0 < fuel && fuel < this.blockFuel - this._routeTripFuelWeight;
-    }
-
-    return 0 < fuel;
+  private isAltFuelInRange(fuel: number) {
+    return 0 < fuel && fuel <= 80;
   }
 
   public async trySetRouteAlternateFuel(altFuel: string, forPlan: FlightPlanIndex): Promise<boolean> {
@@ -2245,11 +2225,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     const value = NXUnits.userToKg(parseFloat(altFuel));
-    if (isFinite(value)) {
+    if (Number.isFinite(value)) {
       if (this.isAltFuelInRange(value)) {
-        this._routeAltFuelWeight = value;
-        this._routeAltFuelTime = null;
-
         this.flightPlanService.setPerformanceData('pilotAlternateFuel', value, forPlan);
 
         return true;
@@ -2272,10 +2249,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
+    const predictions = this.runFuelComputations(forPlan, FMCMainDisplay.fuelComputationsCache);
+
     const value = NXUnits.userToKg(parseFloat(fuel));
-    if (isFinite(value)) {
+    if (Number.isFinite(value)) {
       if (this.isMinDestFobInRange(value)) {
-        if (value < this._routeAltFuelWeight + this.getRouteFinalFuelWeight()) {
+        if (value < predictions.finalHoldingFuel + predictions.alternateFuel) {
           this.addMessageToQueue(NXSystemMessages.checkMinDestFob);
         }
         this.flightPlanService.setPerformanceData('pilotMinimumDestinationFuelOnBoard', value, forPlan);
@@ -2294,10 +2273,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.atsu.resetAtisAutoUpdate();
       this.flightPlanService.setAlternate(undefined, forPlan);
 
-      if (forPlan === FlightPlanIndex.Active) {
-        this._DistanceToAlt = 0;
-      }
-
       return true;
     }
 
@@ -2306,97 +2281,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.atsu.resetAtisAutoUpdate();
       await this.flightPlanService.setAlternate(altDestIdent, forPlan);
 
-      if (forPlan === FlightPlanIndex.Active) {
-        this.tryUpdateDistanceToAlt();
-      }
-
       return true;
     }
 
     this.setScratchpadMessage(NXSystemMessages.notInDatabase);
     return false;
-  }
-
-  /**
-   * Updates the Fuel weight cell to tons. Uses a place holder FL120 for 30 min
-   */
-  public tryUpdateRouteFinalFuel() {
-    if (this._routeFinalFuelTime <= 0) {
-      this._routeFinalFuelTime = this._defaultRouteFinalTime;
-    }
-    this._routeFinalFuelWeight = A32NX_FuelPred.computeHoldingTrackFF(this.zeroFuelWeight, 120) / 1000;
-    this._rteFinalCoeffecient = A32NX_FuelPred.computeHoldingTrackFF(this.zeroFuelWeight, 120) / 30;
-  }
-
-  /**
-   * Updates the alternate fuel and time values using a place holder FL of 330 until that can be set
-   */
-  public tryUpdateRouteAlternate() {
-    // TODO sec?
-    const plan = this.flightPlanService.active;
-
-    if (this._DistanceToAlt < 20) {
-      this._routeAltFuelWeight = 0;
-      this._routeAltFuelTime = 0;
-    } else {
-      const placeholderFl = 120;
-      const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), 0);
-
-      const deviation =
-        (plan.performanceData.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) *
-        A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
-      if (20 < airDistance && airDistance < 200 && 100 < placeholderFl && placeholderFl < 290) {
-        //This will always be true until we can setup alternate routes
-        this._routeAltFuelWeight =
-          (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) +
-            deviation) /
-          1000;
-        this._routeAltFuelTime =
-          plan.performanceData.pilotAlternateFuel !== null
-            ? null
-            : A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
-      }
-    }
-  }
-
-  /**
-   * Attempts to calculate trip information. Is dynamic in that it will use liveDistanceTo the destination rather than a
-   * static distance. Works down to 20NM airDistance and FL100 Up to 3100NM airDistance and FL390, anything out of those ranges and values
-   * won't be updated.
-   */
-  public tryUpdateRouteTrip(_dynamic = false) {
-    // TODO sec?
-    const plan = this.flightPlanService.active;
-
-    // TODO Use static distance for `dynamic = false` (fms-v2)
-    const groundDistance = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
-    const airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, plan.performanceData.pilotTripWind ?? 0);
-
-    let altToUse = this.cruiseLevel;
-    // Use the cruise level for calculations otherwise after cruise use descent altitude down to 10,000 feet.
-    if (this.flightPhaseManager.phase >= FmgcFlightPhase.Descent) {
-      altToUse = SimVar.GetSimVarValue('PLANE ALTITUDE', 'Feet') / 100;
-    }
-
-    if (20 <= airDistance && airDistance <= 3100 && 100 <= altToUse && altToUse <= 390) {
-      const deviation =
-        (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) *
-        A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, false);
-
-      this._routeTripFuelWeight =
-        (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) /
-        1000;
-      this._routeTripTime = A32NX_FuelPred.computeNumbers(
-        airDistance,
-        altToUse,
-        A32NX_FuelPred.computations.TIME,
-        false,
-      );
-    }
-  }
-
-  public tryUpdateMinDestFob() {
-    this._minDestFob = this._routeAltFuelWeight + this.getRouteFinalFuelWeight();
   }
 
   public get takeOffWeight(): number | null {
@@ -2415,61 +2304,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     return plan.performanceData.zeroFuelWeight + plan.performanceData.blockFuel - plan.performanceData.taxiFuel;
-  }
-
-  public get landingWeight(): number | null {
-    if (this.takeOffWeight === null || this._routeTripFuelWeight === null) {
-      return null;
-    }
-
-    return this.takeOffWeight - this._routeTripFuelWeight;
-  }
-
-  /**
-   * Computes extra fuel
-   * @param useFOB - States whether to use the FOB rather than block fuel when computing extra fuel
-   */
-  public tryGetExtraFuel(forPlan: FlightPlanIndex, useFOB: boolean = false): number {
-    const plan = this.getFlightPlan(forPlan);
-
-    if (useFOB) {
-      return (
-        this.getFOB() -
-        this.getTotalTripFuelCons() -
-        this._minDestFob -
-        plan.performanceData.taxiFuel -
-        this.getRouteReservedWeight()
-      );
-    } else {
-      return (
-        this.blockFuel -
-        this.getTotalTripFuelCons() -
-        this._minDestFob -
-        plan.performanceData.taxiFuel -
-        this.getRouteReservedWeight()
-      );
-    }
-  }
-
-  /**getRouteReservedWeight
-   * EXPERIMENTAL
-   * Attempts to calculate the extra time
-   */
-  public tryGetExtraTime(forPlan: FlightPlanIndex, useFOB = false) {
-    if (this.tryGetExtraFuel(forPlan, useFOB) <= 0) {
-      return 0;
-    }
-    const tempWeight = this.getGW() - this._minDestFob;
-    const tempFFCoefficient = A32NX_FuelPred.computeHoldingTrackFF(tempWeight, 180) / 30;
-    return (this.tryGetExtraFuel(forPlan, useFOB) * 1000) / tempFFCoefficient;
-  }
-
-  public getRouteAltFuelWeight() {
-    return this._routeAltFuelWeight;
-  }
-
-  public getRouteAltFuelTime() {
-    return this._routeAltFuelTime;
   }
 
   //-----------------------------------------------------------------------------------
@@ -2584,14 +2418,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     } catch (error) {
       console.info(`Error retrieving coroute list ${error}`);
     }
-  }
-
-  public getTotalTripTime() {
-    return this._routeTripTime;
-  }
-
-  public getTotalTripFuelCons() {
-    return this._routeTripFuelWeight;
   }
 
   public onUplinkInProgress() {
@@ -2926,7 +2752,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const tow = grossWeight - (this.isAnEngineOn() || this.taxiFuelWeight === undefined ? 0 : this.taxiFuelWeight);
+    const taxiFuel = this.getFlightPlan(FlightPlanIndex.Active)?.performanceData?.taxiFuel ?? undefined;
+    const tow = grossWeight - (this.isAnEngineOn() || taxiFuel === undefined ? 0 : taxiFuel);
 
     return (
       (this.v1Speed == null ? Infinity : this.v1Speed) < Math.trunc(NXSpeedsUtils.getVmcg(zp)) ||
@@ -3425,18 +3252,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this._fuelPlanningPhase = FuelPlanningPhases.COMPLETED;
       return true;
     }
-    const tempRouteFinalFuelTime = this._routeFinalFuelTime;
-    this.tryUpdateRouteFinalFuel();
-    this.tryUpdateRouteAlternate();
-    this.tryUpdateRouteTrip();
 
-    this._routeFinalFuelTime = tempRouteFinalFuelTime;
-    this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
-
-    this.tryUpdateMinDestFob();
+    const plan = this.getFlightPlan(FlightPlanIndex.Active);
+    const predictions = this.runFuelComputations(FlightPlanIndex.Active, FMCMainDisplay.fuelComputationsCache);
 
     this.blockFuel =
-      this.getTotalTripFuelCons() + this._minDestFob + this.taxiFuelWeight + this.getRouteReservedWeight();
+      predictions.tripFuel +
+      predictions.minimumDestinationFuel +
+      plan.performanceData.taxiFuel +
+      predictions.routeReserveFuel;
+
     this._fuelPlanningPhase = FuelPlanningPhases.IN_PROGRESS;
     return true;
   }
@@ -3464,17 +3289,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return false;
   }
 
-  public getRouteFinalFuelWeight() {
-    if (isFinite(this._routeFinalFuelWeight)) {
-      this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
-      return this._routeFinalFuelWeight;
-    }
-  }
-
-  public getRouteFinalFuelTime() {
-    return this._routeFinalFuelTime;
-  }
-
   /**
    * This method is used to set initial Final Time for when INIT B is making predictions
    * @param {String} s - containing time value
@@ -3483,8 +3297,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public trySetRouteFinalTime(s: string, forPlan: FlightPlanIndex): boolean {
     if (s) {
       if (s === Keypad.clrValue) {
-        this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
-
         this.flightPlanService.setPerformanceData('pilotFinalHoldingTime', null, forPlan);
         this.flightPlanService.setPerformanceData('pilotFinalHoldingFuel', null, forPlan);
 
@@ -3502,8 +3314,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         if (this.isFinalTimeInRange(rteFinalTime)) {
           const routeFinalTimeMinutes = FmsFormatters.hhmmToMinutes(rteFinalTime.padStart(4, '0'));
 
-          this._routeFinalFuelTime = routeFinalTimeMinutes;
-
           this.flightPlanService.setPerformanceData('pilotFinalHoldingTime', routeFinalTimeMinutes, forPlan);
           this.flightPlanService.setPerformanceData('pilotFinalHoldingFuel', null, forPlan);
 
@@ -3520,8 +3330,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public trySetRouteFinalFuel(s: string, forPlan: FlightPlanIndex): boolean {
     if (s === Keypad.clrValue) {
-      this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
-
       this.flightPlanService.setPerformanceData('pilotFinalHoldingTime', null, forPlan);
       this.flightPlanService.setPerformanceData('pilotFinalHoldingFuel', null, forPlan);
 
@@ -3544,9 +3352,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         const rteFinalWeight = NXUnits.userToKg(parseFloat(enteredValue));
 
         if (this.isFinalFuelInRange(rteFinalWeight)) {
-          this._routeFinalFuelWeight = rteFinalWeight;
-          this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
-
           this.flightPlanService.setPerformanceData('pilotFinalHoldingFuel', rteFinalWeight, forPlan);
           this.flightPlanService.setPerformanceData('pilotFinalHoldingTime', null, forPlan);
 
@@ -3561,52 +3366,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return false;
   }
 
-  public getRouteReservedWeight() {
-    // TODO sec
-    const plan = this.getFlightPlan(FlightPlanIndex.Active);
-
-    if (this.isFlying()) {
-      return 0;
-    }
-
-    const isRouteReservedEntered =
-      plan.performanceData.pilotRouteReserveFuel !== null ||
-      plan.performanceData.isRouteReserveFuelPrecentagePilotEntered;
-
-    if (!isRouteReservedEntered && this._rteFinalCoeffecient !== 0) {
-      const fivePercentWeight = (this._routeReservedPercent * this._routeTripFuelWeight) / 100;
-      const fiveMinuteHoldingWeight = (5 * this._rteFinalCoeffecient) / 1000;
-
-      return fivePercentWeight > fiveMinuteHoldingWeight ? fivePercentWeight : fiveMinuteHoldingWeight;
-    }
-    if (isFinite(this._routeReservedWeight) && this._routeReservedWeight !== 0) {
-      return this._routeReservedWeight;
-    } else {
-      return (this._routeReservedPercent * this._routeTripFuelWeight) / 100;
-    }
-  }
-
-  public getRouteReservedPercent() {
-    if (this.isFlying()) {
-      return 0;
-    }
-    if (isFinite(this._routeReservedWeight) && isFinite(this.blockFuel) && this._routeReservedWeight !== 0) {
-      return (this._routeReservedWeight / this._routeTripFuelWeight) * 100;
-    }
-    return this._routeReservedPercent;
-  }
-
   public trySetRouteReservedPercent(s: string, forPlan: FlightPlanIndex): boolean {
     if (!this.isFlying()) {
       if (s) {
         if (s === Keypad.clrValue) {
-          this._routeReservedWeight = 0;
-          this._routeReservedPercent = 5;
-
           this.flightPlanService.setPerformanceData('pilotRouteReserveFuel', null, forPlan);
           this.flightPlanService.setPerformanceData('pilotRouteReserveFuelPercentage', null, forPlan);
 
-          this._rteRsvPercentOOR = false;
           return true;
         }
         // Percentage entry must start with '/'
@@ -3625,12 +3391,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             return false;
           }
 
-          this._rteRsvPercentOOR = false;
-
           if (isFinite(rteRsvPercent)) {
-            this._routeReservedWeight = NaN;
-            this._routeReservedPercent = rteRsvPercent;
-
             this.flightPlanService.setPerformanceData('pilotRouteReserveFuel', null, forPlan);
             this.flightPlanService.setPerformanceData('pilotRouteReserveFuelPercentage', rteRsvPercent, forPlan);
 
@@ -3685,9 +3446,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     // TODO check if it's correct to skip this logic for SEC
     if (
-      forPlan !== FlightPlanIndex.Active ||
-      (fl < selFl &&
-        (phase === FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Approach || phase === FmgcFlightPhase.GoAround))
+      forPlan === FlightPlanIndex.Active &&
+      fl < selFl &&
+      (phase === FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Approach || phase === FmgcFlightPhase.GoAround)
     ) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
@@ -3725,9 +3486,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.flightPlanService.setPerformanceData('pilotRouteReserveFuel', null, forPlan);
           this.flightPlanService.setPerformanceData('pilotRouteReserveFuelPercentage', null, forPlan);
 
-          this._routeReservedWeight = 0;
-          this._routeReservedPercent = 5;
-          this._rteRsvPercentOOR = false;
           return true;
         }
         // Percentage entry must start with '/'
@@ -3753,14 +3511,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           if (isFinite(rteRsvWeight)) {
             this.flightPlanService.setPerformanceData('pilotRouteReserveFuel', rteRsvWeight, forPlan);
             this.flightPlanService.setPerformanceData('pilotRouteReserveFuelPercentage', null, forPlan);
-
-            this._routeReservedWeight = rteRsvWeight;
-            this._routeReservedPercent = 0;
-
-            if (!this.isRteRsvPercentInRange(this.getRouteReservedPercent())) {
-              // Bit of a hacky method due previous tight coupling of weight and percentage calculations
-              this._rteRsvPercentOOR = true;
-            }
 
             return true;
           }
@@ -3824,15 +3574,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    *
    * @returns {number} Returns estimated fuel on board when arriving at the destination
    */
-  public getDestEFOB(useFOB = false) {
-    return (useFOB ? this.getFOB() : this.blockFuel) - this._routeTripFuelWeight - this.taxiFuelWeight;
-  }
+  public getDestEFOB() {
+    const predictions = this.runFuelComputations(FlightPlanIndex.Active, FMCMainDisplay.fuelComputationsCache);
+    const plan = this.getFlightPlan(FlightPlanIndex.Active);
 
-  /**
-   * @returns {number} Returns EFOB when arriving at the alternate dest
-   */
-  public getAltEFOB(useFOB = false) {
-    return this.getDestEFOB(useFOB) - this._routeAltFuelWeight;
+    return predictions.landingWeight - plan.performanceData.zeroFuelWeight;
   }
 
   public trySetBlockFuel(s: string, forPlan: FlightPlanIndex): boolean {
@@ -4117,21 +3863,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return false;
   }
 
-  /**
-   * Tries to estimate the landing weight at destination
-   * NaN on failure
-   */
-  public tryEstimateLandingWeight() {
-    const altActive = false;
-
-    if (this.zeroFuelWeight === null) {
-      return NaN;
-    }
-
-    const landingWeight = this.zeroFuelWeight + (altActive ? this.getAltEFOB(true) : this.getDestEFOB(true));
-    return isFinite(landingWeight) ? landingWeight : NaN;
-  }
-
   public setPerfApprMDA(s: string): boolean {
     if (s === Keypad.clrValue) {
       this.perfApprMDA = null;
@@ -4393,17 +4124,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public checkEFOBBelowMin() {
-    const plan = this.flightPlanService.active;
+    const predictions = this.runFuelComputations(FlightPlanIndex.Active, FMCMainDisplay.fuelComputationsCache);
+    const minDestFob = predictions.minimumDestinationFuel;
 
     if (this._fuelPredDone) {
-      if (plan.performanceData.pilotMinimumDestinationFuelOnBoard === null) {
-        this.tryUpdateMinDestFob();
-      }
-
-      if (this._minDestFob) {
+      if (minDestFob) {
         // round & only use 100kgs precision since thats how it is displayed in fuel pred
-        const destEfob = Math.round(this.getDestEFOB(this.isAnEngineOn()) * 10) / 10;
-        const roundedMinDestFob = Math.round(this._minDestFob * 10) / 10;
+        const destEfob = Math.round(predictions.destinationFuelOnBoard * 10) / 10;
+        const roundedMinDestFob = Math.round(minDestFob * 10) / 10;
         if (!this._isBelowMinDestFob) {
           if (destEfob < roundedMinDestFob) {
             this._isBelowMinDestFob = true;
@@ -5112,13 +4840,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return plan ? plan.performanceData.blockFuel : undefined;
   }
 
-  /** @deprecated */
-  get taxiFuelWeight() {
-    const plan = this.currFlightPlanService.active;
-
-    return plan?.performanceData.taxiFuel ?? this._defaultTaxiFuelWeight;
-  }
-
   public getFlightPhase() {
     return this.flightPhaseManager.phase;
   }
@@ -5426,6 +5147,166 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    */
   public getNavDatabaseIdent(): DatabaseIdent | null {
     return this.navDbIdent;
+  }
+
+  public runFuelComputations(forPlan: FlightPlanIndex, computations: FuelPredComputations) {
+    const plan = this.getFlightPlan(forPlan);
+
+    if (plan.performanceData.zeroFuelWeight === null) {
+      computations.tripFuel = null;
+      computations.tripTime = null;
+      computations.routeReserveFuel = null;
+      computations.routeReserveFuelPercentage = plan.performanceData.routeReserveFuelPercentage;
+      computations.alternateFuel = null;
+      computations.alternateTime = null;
+      computations.finalHoldingFuel = null;
+      computations.finalHoldingTime = plan.performanceData.finalHoldingTime;
+      computations.minimumDestinationFuel = null;
+      computations.takeoffWeight = null;
+      computations.landingWeight = null;
+      computations.destinationFuelOnBoard = null;
+      computations.alternateDestinationFuelOnBoard = null;
+      computations.extraFuel = null;
+      computations.extraTime = null;
+
+      return computations;
+    }
+
+    const zfw = plan.performanceData.zeroFuelWeight;
+
+    // Route final
+    // TODO get final holding level from AMI
+    const finalHoldingFuelFlow = 2 * A32NX_FuelPred.computeHoldingTrackFF(zfw, 120); // kg / h
+
+    if (plan.performanceData.pilotFinalHoldingFuel !== null && plan.performanceData.pilotFinalHoldingTime !== null) {
+      console.error('Cannot have both pilot entered final holding fuel and time');
+    }
+
+    computations.finalHoldingFuel =
+      plan.performanceData.pilotFinalHoldingFuel !== null
+        ? plan.performanceData.pilotFinalHoldingFuel
+        : (plan.performanceData.finalHoldingTime / 60) * (finalHoldingFuelFlow / 1000);
+    computations.finalHoldingTime =
+      plan.performanceData.pilotFinalHoldingFuel !== null
+        ? (plan.performanceData.pilotFinalHoldingFuel * 1000) / (finalHoldingFuelFlow / 60)
+        : plan.performanceData.finalHoldingTime;
+
+    // Route alternate
+
+    if (plan.performanceData.pilotAlternateFuel !== null) {
+      computations.alternateFuel = plan.performanceData.pilotAlternateFuel;
+      computations.alternateTime = null;
+    } else if (plan.destinationAirport && plan.alternateDestinationAirport) {
+      const distanceToAlt = Avionics.Utils.computeGreatCircleDistance(
+        plan.destinationAirport.location,
+        plan.alternateDestinationAirport.location,
+      );
+
+      if (distanceToAlt < 20) {
+        computations.alternateFuel = 0;
+        computations.alternateTime = 0;
+      } else {
+        // TODO get cruise from alternate plan
+        const placeholderFl = 120;
+        // TODO get trip wind from alternate plan
+        const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(distanceToAlt), 0);
+
+        const deviation =
+          (zfw + computations.finalHoldingFuel - A32NX_FuelPred.refWeight) *
+          A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
+        if (20 < airDistance && airDistance < 200 && 100 < placeholderFl && placeholderFl < 290) {
+          computations.alternateFuel =
+            (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) +
+              deviation) /
+            1000;
+          computations.alternateTime = A32NX_FuelPred.computeNumbers(
+            airDistance,
+            placeholderFl,
+            A32NX_FuelPred.computations.TIME,
+            true,
+          );
+        }
+      }
+    }
+
+    // Route trip
+
+    const groundDistance = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
+    const airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, plan.performanceData.pilotTripWind ?? 0);
+
+    // Use the cruise level for calculations otherwise after cruise use descent altitude down to 10,000 feet.
+    const altToUse =
+      this.flightPhaseManager.phase >= FmgcFlightPhase.Descent
+        ? SimVar.GetSimVarValue('PLANE ALTITUDE', 'Feet') / 100
+        : plan.performanceData.cruiseFlightLevel;
+
+    if (20 <= airDistance && airDistance <= 3100 && 100 <= altToUse && altToUse <= 390) {
+      const deviation =
+        (zfw + (computations.finalHoldingFuel ?? 0) + (computations.alternateFuel ?? 0) - A32NX_FuelPred.refWeight) *
+        A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, false);
+
+      computations.tripFuel =
+        (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) /
+        1000;
+      computations.tripTime = A32NX_FuelPred.computeNumbers(
+        airDistance,
+        altToUse,
+        A32NX_FuelPred.computations.TIME,
+        false,
+      );
+    }
+
+    // Route reserve
+
+    if (this.isFlying()) {
+      computations.routeReserveFuel = 0;
+      computations.routeReserveFuelPercentage = 0;
+    } else {
+      if (plan.performanceData.pilotRouteReserveFuel === null) {
+        const fivePercentWeight = (plan.performanceData.routeReserveFuelPercentage * computations.tripFuel) / 100;
+        const fiveMinuteHoldingWeight = (5 * (finalHoldingFuelFlow / 60)) / 1000;
+
+        computations.routeReserveFuel = Math.max(fivePercentWeight, fiveMinuteHoldingWeight);
+        computations.routeReserveFuelPercentage = plan.performanceData.routeReserveFuelPercentage;
+      } else {
+        computations.routeReserveFuel = plan.performanceData.pilotRouteReserveFuel;
+        computations.routeReserveFuelPercentage =
+          (plan.performanceData.pilotRouteReserveFuel * 100) / computations.tripFuel;
+      }
+    }
+
+    // Minimum destination fuel on board
+    computations.minimumDestinationFuel =
+      plan.performanceData.pilotMinimumDestinationFuelOnBoard ??
+      computations.alternateFuel + computations.finalHoldingFuel;
+
+    // TOW / LW
+    computations.takeoffWeight = this.computeTakeoffWeight(forPlan);
+    computations.landingWeight =
+      computations.takeoffWeight !== null ? computations.takeoffWeight - computations.tripFuel : null;
+
+    // EFOB
+    computations.destinationFuelOnBoard = computations.landingWeight !== null ? computations.landingWeight - zfw : null;
+    computations.destinationFuelOnBoard = computations.landingWeight
+      ? computations.landingWeight - computations.alternateFuel - zfw
+      : null;
+
+    // Extra fuel
+    if (plan.performanceData.blockFuel === null) {
+      computations.extraFuel = 0;
+      computations.extraTime = 0;
+    } else {
+      const fuelOnBoard = this.isAnEngineOn() ? this.getFOB() : plan.performanceData.blockFuel;
+
+      computations.extraFuel =
+        fuelOnBoard -
+        computations.tripFuel -
+        computations.minimumDestinationFuel -
+        (this.isFlying() ? 0 : plan.performanceData.taxiFuel + computations.routeReserveFuel);
+      computations.extraTime = (computations.extraFuel * 1000) / (finalHoldingFuelFlow / 60);
+    }
+
+    return computations;
   }
 
   // ---------------------------
