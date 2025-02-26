@@ -165,6 +165,7 @@
 1. [A380X/FMS] Added (RNP) label on RNP AR SIDs and approach vias (MSFS2024 only) - @tracernz (Mike)
 1. [A380X/KCCU] Fix unclickable left directional arrow key on KCCU - @heclak (Heclak)
 1. [A380X/OIS] Initial implementation of OIS/OIT with charts and OFP - @flogross89 (floridude)
+1. [A380X/FMS] Latitude/Longitude waypoints now always have the extended ident format - @tracernz (Mike)
 
 ## 0.12.0
 
