@@ -10,7 +10,7 @@ import {
   Subscription,
   UnitType,
 } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, FmsData, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Vmcl, Vmo, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
@@ -129,6 +129,12 @@ export class FmcAircraftInterface {
     0,
   );
 
+  private readonly fmsOrigin = Subject.create<string | null>('');
+  private readonly fmsDepartureRunway = Subject.create<string | null>('');
+  private readonly fmsDestination = Subject.create<string | null>('');
+  private readonly fmsLandingRunway = Subject.create<string | null>('');
+  private readonly fmsAlternate = Subject.create<string | null>('');
+
   constructor(
     private bus: EventBus,
     private fmc: FmcInterface,
@@ -197,6 +203,16 @@ export class FmcAircraftInterface {
           0,
         ),
       ),
+    );
+
+    const pub = this.bus.getPublisher<FmsData>();
+    this.subs.push(
+      this.fmsOrigin.sub((v) => pub.pub('fmsOrigin', v, true), true),
+      this.fmsDepartureRunway.sub((v) => pub.pub('fmsDepartureRunway', v, true), true),
+      this.fmsDestination.sub((v) => pub.pub('fmsDestination', v, true), true),
+      this.fmsLandingRunway.sub((v) => pub.pub('fmsLandingRunway', v, true), true),
+      this.fmsAlternate.sub((v) => pub.pub('fmsAlternate', v, true), true),
+      this.fmgc.data.atcCallsign.sub((v) => pub.pub('fmsFlightNumber', v, true), true),
     );
   }
 
@@ -527,29 +543,36 @@ export class FmcAircraftInterface {
     return phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && isCloseToDestination);
   }
 
-  updateOansAirports() {
-    if (this.flightPlanService.hasActive) {
-      const pub = this.bus.getPublisher<FmsOansData>();
-      if (this.flightPlanService.active?.originAirport?.ident) {
-        pub.pub('fmsOrigin', this.flightPlanService.active.originAirport.ident, true);
-      }
+  updateFmsData() {
+    this.fmsOrigin.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.originAirport?.ident
+        ? this.flightPlanService.active.originAirport.ident
+        : null,
+    );
 
-      if (this.flightPlanService.active?.originRunway?.ident) {
-        pub.pub('fmsDepartureRunway', this.flightPlanService.active.originRunway.ident, true);
-      }
+    this.fmsDepartureRunway.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.originRunway?.ident
+        ? this.flightPlanService.active.originRunway.ident
+        : null,
+    );
 
-      if (this.flightPlanService.active?.destinationAirport?.ident) {
-        pub.pub('fmsDestination', this.flightPlanService.active.destinationAirport.ident, true);
-      }
+    this.fmsDestination.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.destinationAirport?.ident
+        ? this.flightPlanService.active.destinationAirport.ident
+        : null,
+    );
 
-      if (this.flightPlanService.active?.destinationRunway?.ident) {
-        pub.pub('fmsLandingRunway', this.flightPlanService.active.destinationRunway.ident, true);
-      }
+    this.fmsLandingRunway.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway?.ident
+        ? this.flightPlanService.active.destinationRunway.ident
+        : null,
+    );
 
-      if (this.flightPlanService.active?.alternateDestinationAirport?.ident) {
-        pub.pub('fmsAlternate', this.flightPlanService.active.alternateDestinationAirport.ident, true);
-      }
-    }
+    this.fmsAlternate.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.alternateDestinationAirport?.ident
+        ? this.flightPlanService.active.alternateDestinationAirport.ident
+        : null,
+    );
   }
 
   activatePreSelSpeedMach(preSel: number) {
@@ -1859,6 +1882,24 @@ export class FmcAircraftInterface {
     }
 
     return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
+  }
+
+  private hasTooSteepPathAhead = false;
+
+  checkTooSteepPath() {
+    const hasTooSteepPathAhead = this.fmc.guidanceController?.vnavDriver?.shouldShowTooSteepPathAhead();
+
+    if (hasTooSteepPathAhead !== this.hasTooSteepPathAhead) {
+      this.hasTooSteepPathAhead = hasTooSteepPathAhead;
+
+      if (hasTooSteepPathAhead) {
+        this.fmc.addMessageToQueue(
+          NXSystemMessages.tooSteepPathAhead,
+          () => !this.fmc.guidanceController?.vnavDriver?.shouldShowTooSteepPathAhead(),
+          undefined,
+        );
+      }
+    }
   }
 }
 

@@ -140,9 +140,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
-    // If we ended beyond flightplan end due to TMPY deletion, scroll back to fit the flightplan
-    const lastAllowableIndex = this.getLastDisplayAllowableIndex();
-    if (this.displayFplnFromLineIndex.get() > this.getLastDisplayAllowableIndex()) {
+    // If we ended beyond flightplan end due to TMPY deletion, scroll back to last element of the flightplan
+    const lastAllowableIndex = this.lineData.length;
+    if (this.displayFplnFromLineIndex.get() > lastAllowableIndex) {
       this.displayFplnFromLineIndex.set(lastAllowableIndex);
       return;
     }
@@ -374,6 +374,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           leg?.calculated?.cumulativeDistanceWithTransitions ??
           lastDistanceFromStart + (this.derivedFplnLegData[i].distanceFromLastWpt ?? 0) - reduceDistanceBy;
         this.lineData.push(data);
+
+        if (leg.calculated?.endsInTooSteepPath) {
+          this.lineData.push({
+            type: FplnLineType.Special,
+            originalLegIndex: null,
+            label: 'TOO STEEP PATH',
+          });
+        }
       } else {
         const data: FplnLineSpecialDisplayData = {
           type: FplnLineType.Special,
@@ -663,9 +671,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         if (k === 'UP') {
           this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
         } else if (k === 'DOWN') {
-          this.displayFplnFromLineIndex.set(
-            Math.min(this.displayFplnFromLineIndex.get() + 1, this.getLastDisplayAllowableIndex()),
-          );
+          this.displayFplnFromLineIndex.set(Math.min(this.displayFplnFromLineIndex.get() + 1, this.lineData.length));
         }
       }),
     );
@@ -679,7 +685,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       !this.lineData || this.displayFplnFromLineIndex.get() <= (this.loadedFlightPlan?.activeLegIndex ?? 1) - 1,
     );
     this.disabledScrollDown.set(
-      !this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastDisplayAllowableIndex(),
+      !this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastPageAllowableIndex(),
     );
   }
 
@@ -812,7 +818,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         targetIndex = this.displayFplnFromLineIndex.get() + 1 - this.renderedLineData.length;
       } else {
         targetIndex = this.displayFplnFromLineIndex.get() + this.renderedLineData.length - 1;
-        const maxBottomIndex = this.getLastDisplayAllowableIndex();
+        const maxBottomIndex = this.getLastPageAllowableIndex();
         if (targetIndex > maxBottomIndex) {
           targetIndex = maxBottomIndex;
         }
@@ -821,7 +827,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
   }
 
-  private getLastDisplayAllowableIndex() {
+  private getLastPageAllowableIndex() {
     return this.lineData.length - this.renderedLineData.length;
   }
 

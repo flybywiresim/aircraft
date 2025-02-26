@@ -7,7 +7,7 @@ import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
-import { AircraftConfiguration, AircraftConfigurationProfile } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
+import { AircraftConfiguration, AircraftConfigurationRegister } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
@@ -605,6 +605,8 @@ class PhaseTable {
 
   phases: SubPhase[] = [];
 
+  private readonly configuration: AircraftConfigurationRegister = new AircraftConfigurationRegister();
+
   constructor(
     private readonly parameters: VerticalProfileComputationParameters,
     private readonly winds: HeadwindProfile,
@@ -627,12 +629,10 @@ class PhaseTable {
           sequence.lastCheckpoint.distanceFromStart,
           sequence.lastCheckpoint.altitude,
         );
-        const configuration = AircraftConfigurationProfile.getBySpeed(sequence.lastCheckpoint.speed, this.parameters);
-
         const phaseResult = phase.execute(phase.shouldFlyAsLevelSegment ? levelFlightStrategy : descentStrategy)(
           sequence.lastCheckpoint,
           headwind,
-          configuration,
+          this.configuration.setFromSpeed(sequence.lastCheckpoint.speed, this.parameters),
         );
 
         if (phase instanceof DescendingDeceleration) {

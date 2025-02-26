@@ -32,7 +32,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
           this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
           this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
         );
-        this.props.fmcService.master?.acInterface.updateOansAirports();
+        this.props.fmcService.master?.acInterface.updateFmsData();
       }
       this.props.visible.set(false);
       this.newDest.set('');
