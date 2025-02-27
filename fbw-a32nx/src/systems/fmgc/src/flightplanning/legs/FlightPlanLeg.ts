@@ -415,7 +415,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
   }
 
   static radialOutLeg(segment: EnrouteSegment, waypoint: Fix, outboundCourse: DegreesMagnetic): FlightPlanLeg {
-    return new FlightPlanLeg(
+    return this.fromProcedureLeg(
       segment,
       {
         procedureIdent: '',
@@ -424,9 +424,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         waypoint,
         magneticCourse: outboundCourse,
       },
-      'MANUAL',
       '',
-      undefined,
     );
   }
 
