@@ -16,6 +16,7 @@ import { isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { A32NX_Util } from '@shared/A32NX_Util';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { Wait } from '@microsoft/msfs-sdk';
 
 // TODO this whole thing is thales layout...
 
@@ -60,9 +61,18 @@ export class CDUDirectToPage {
         });
       };
       mcdu.onRightInput[5] = () => {
-        mcdu.insertTemporaryFlightPlan(() => {
-          SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
+        mcdu.insertTemporaryFlightPlan(async () => {
           CDUFlightPlanPage.ShowPage(mcdu);
+
+          const oldValidity = SimVar.GetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool');
+          if (oldValidity && (isDirectWithCourseIn(directToObject) || isDirectWithCourseOut(directToObject))) {
+            // Disengage NAV
+            SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', false);
+            await Wait.awaitDelay(300);
+            SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
+          }
+
+          SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
         });
       };
     }
