@@ -1,4 +1,4 @@
-import { Arinc429Register, LegType, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Constants, LegType, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { FlightPlanElement, FlightPlanLeg, isDiscontinuity } from '../flightplanning/legs/FlightPlanLeg';
 import { NavigationProvider } from '../navigation/NavigationProvider';
@@ -6,7 +6,7 @@ import { Geo } from '../utils/Geo';
 import { FlightPlanService } from '../flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '../flightplanning/FlightPlanManager';
 import { Geometry } from './Geometry';
-import { PointSide, sideOfPointOnCourseToFix } from './lnav/CommonGeometry';
+import { maxBank, minBank, PointSide, sideOfPointOnCourseToFix } from './lnav/CommonGeometry';
 import { WaypointFactory } from '../flightplanning/waypoints/WaypointFactory';
 import { GeometryFactory } from './geometry/GeometryFactory';
 import { CILeg } from './lnav/legs/CI';
@@ -56,6 +56,8 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   private crossTrackError: number = 0;
 
+  private trackAngleError: number = 0;
+
   private previousNavCaptureCondition: boolean = false;
 
   constructor(
@@ -68,6 +70,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   update(deltaTime: number, geometry: Geometry) {
     this.updateState();
+    this.updateNavCaptureCondition(geometry);
 
     switch (this.state) {
       case State.NavDisarmed:
@@ -131,6 +134,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
   private updateState() {
     this.crossTrackError = SimVar.GetSimVarValue('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
+    this.trackAngleError = SimVar.GetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree');
 
     const isNavModeArmed = this.register
       .setFromSimVar(`L:A32NX_FMGC_${this.fmgcIndex}_DISCRETE_WORD_3`)
@@ -207,8 +211,6 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     if (isHdgModeActive || isTrkModeActive) {
       this.recomputeInterceptPath(activeGeometry);
     }
-
-    this.updateNavCaptureCondition();
   }
 
   private recomputeInterceptPath(activeGeometry: Geometry) {
@@ -417,8 +419,52 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     return ciLeg.getDistanceToGo(this.ppos) < rad;
   }
 
-  private updateNavCaptureCondition() {
-    this.setNavCaptureCondition(this.isPreNavEngagementPathCaptureConditionMet() ?? Math.abs(this.crossTrackError) < 1);
+  private updateNavCaptureCondition(activeGeometry: Geometry) {
+    if (!this.flightPlanService.hasActive) {
+      this.setNavCaptureCondition(false);
+      return;
+    }
+
+    const plan = this.flightPlanService.active;
+    const activeLeg = plan.activeLeg;
+
+    if (!activeLeg || isDiscontinuity(activeLeg)) {
+      this.setNavCaptureCondition(false);
+      return;
+    } else if (this.canAlwaysCapture(activeLeg)) {
+      this.setNavCaptureCondition(true);
+      return;
+    } else {
+      const activeGeometryLeg = activeGeometry.legs.get(plan.activeLegIndex);
+
+      const tas = this.navigation.getTrueAirspeed();
+      const gs = this.navigation.getGroundSpeed();
+
+      if (!activeGeometryLeg || tas === null || gs === null) {
+        this.setNavCaptureCondition(false);
+        return;
+      }
+
+      const bankAngle = Math.abs(this.trackAngleError) / 2;
+      const finalBankAngle = Math.max(Math.min(bankAngle, maxBank(tas, true)), minBank(activeGeometryLeg.segment));
+
+      const currentTurnRadius = tas ** 2 / Math.tan(finalBankAngle * MathUtils.DEGREES_TO_RADIANS) / HpathLaw.g;
+      const unsaturatedTrackAngleError = MathUtils.clamp(this.trackAngleError, -45, 45);
+
+      const saturatedCaptureZone =
+        Math.sign(this.trackAngleError) *
+        currentTurnRadius *
+        (Math.cos(unsaturatedTrackAngleError * MathUtils.DEGREES_TO_RADIANS) -
+          Math.cos(this.trackAngleError * MathUtils.DEGREES_TO_RADIANS));
+
+      const nominalRollAngle = activeGeometryLeg.getNominalRollAngle(gs) ?? 0;
+      const unsaturatedCaptureZone = (nominalRollAngle / HpathLaw.k2 - unsaturatedTrackAngleError * gs) / HpathLaw.k1;
+
+      const optimalCaptureZone = Math.abs(saturatedCaptureZone - unsaturatedCaptureZone);
+      const minimumCaptureZone = currentTurnRadius;
+
+      this.setNavCaptureCondition(Math.abs(this.crossTrackError) <= Math.max(optimalCaptureZone, minimumCaptureZone));
+    }
   }
 
   private setNavCaptureCondition(navCaptureCondition: boolean) {
@@ -451,4 +497,13 @@ export interface PreNavModeEngagementPath {
   getIntercept(): Readonly<NavModeIntercept> | null;
   shouldShowNoNavInterceptMessage(): boolean;
   getAlongTrackDistanceToGo(trueTrack: number): number | null;
+}
+
+class HpathLaw {
+  static readonly Tau = 3;
+  static readonly Zeta = 0.8;
+  static readonly g = Constants.G * 6997.84; // kts/h
+  static readonly t = this.Tau / 3600;
+  static readonly k1 = 180 / 4 / Math.PI ** 2 / this.Zeta / this.t;
+  static readonly k2 = this.Zeta / Math.PI / this.g / this.t;
 }
