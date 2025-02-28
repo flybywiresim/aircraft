@@ -168,6 +168,8 @@ export interface PFDSimvars {
   fcuLeftVelocityVectorOn: boolean;
   fcuRightVelocityVectorOn: boolean;
   btvExitMissed: boolean;
+  fcuApproachModeActive: boolean;
+  fcuLocModeActive: boolean;
   hydGreenSysPressurized: boolean;
   hydYellowSysPressurized: boolean;
 }
@@ -338,6 +340,8 @@ export enum PFDVars {
   fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
   fcuRightVelocityVectorOn = 'L:A380X_EFIS_R_VV_BUTTON_IS_ON',
   btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
+  fcuApproachModeActive = 'L:A32NX_FCU_APPR_MODE_ACTIVE',
+  fcuLocModeActive = 'L:A32NX_FCU_LOC_MODE_ACTIVE',
   hydGreenSysPressurized = 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH',
   hydYellowSysPressurized = 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH',
 }
@@ -507,6 +511,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fcuLeftVelocityVectorOn', { name: PFDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],
     ['fcuRightVelocityVectorOn', { name: PFDVars.fcuRightVelocityVectorOn, type: SimVarValueType.Bool }],
     ['btvExitMissed', { name: PFDVars.btvExitMissed, type: SimVarValueType.Bool }],
+    ['fcuApproachModeActive', { name: PFDVars.fcuApproachModeActive, type: SimVarValueType.Bool }],
+    ['fcuLocModeActive', { name: PFDVars.fcuLocModeActive, type: SimVarValueType.Bool }],
     ['hydGreenSysPressurized', { name: PFDVars.hydGreenSysPressurized, type: SimVarValueType.Bool }],
     ['hydYellowSysPressurized', { name: PFDVars.hydYellowSysPressurized, type: SimVarValueType.Bool }],
   ]);
