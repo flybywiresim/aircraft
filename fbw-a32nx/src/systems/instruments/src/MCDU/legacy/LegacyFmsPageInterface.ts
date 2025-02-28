@@ -155,7 +155,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   trySetGroundTemp(scratchpadValue: string, forPlan: FlightPlanIndex): void;
   goToFuelPredPage(forPlan: FlightPlanIndex): void;
   trySetBlockFuel(s: string, forPlan: FlightPlanIndex): boolean;
-  tryFuelPlanning(): boolean;
+  tryFuelPlanning(forPlan: FlightPlanIndex): boolean;
   trySetTaxiFuelWeight(s: string, forPlan: FlightPlanIndex): boolean;
   trySetRouteReservedPercent(s: string, forPlan: FlightPlanIndex): boolean;
   trySetRouteFinalTime(s: string, forPlan: FlightPlanIndex): boolean;
@@ -256,10 +256,10 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;
   isTropoPilotEntered: boolean;
-  /** @deprecated get value from flight plan performance data */
-  blockFuel?: number;
-  get takeOffWeight(): number;
-  _fuelPlanningPhase: FuelPlanningPhases;
+  activeUnconfirmedBlockFuel?: number;
+  secUnconfirmedBlockFuel?: number;
+  activeFuelPlanningPhase: FuelPlanningPhases;
+  secFuelPlanningPhase: FuelPlanningPhases;
   _deltaTime: number;
   unconfirmedV1Speed?: number;
   unconfirmedVRSpeed?: number;

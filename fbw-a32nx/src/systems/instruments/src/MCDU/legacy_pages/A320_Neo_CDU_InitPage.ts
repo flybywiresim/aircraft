@@ -277,7 +277,6 @@ export class CDUInitPage {
 
                 const plan = mcdu.getFlightPlan(forPlan);
 
-                // TODO differentiate for sec
                 mcdu.updateFlightNo(plan.flightNumber, forPlan);
                 mcdu.setGroundTempFromOrigin(forPlan);
 
@@ -481,12 +480,24 @@ export class CDUInitPage {
       Column.right,
     );
 
-    // TODO handle fuel planning phase for sec
-    if (plan.performanceData.blockFuel !== null || mcdu._fuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS) {
-      if (isFinite(plan.performanceData.blockFuel)) {
+    if (plan.performanceData.blockFuel !== null) {
+      if (Number.isFinite(plan.performanceData.blockFuel)) {
         blockFuel.update(NXUnits.kgToUser(plan.performanceData.blockFuel).toFixed(1), Column.cyan);
       }
+    } else if (
+      isForPrimary &&
+      mcdu.activeFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS &&
+      Number.isFinite(mcdu.activeUnconfirmedBlockFuel)
+    ) {
+      blockFuel.update(NXUnits.kgToUser(mcdu.activeUnconfirmedBlockFuel).toFixed(1), Column.cyan);
+    } else if (
+      !isForPrimary &&
+      mcdu.secFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS &&
+      Number.isFinite(mcdu.secUnconfirmedBlockFuel)
+    ) {
+      blockFuel.update(NXUnits.kgToUser(mcdu.secUnconfirmedBlockFuel).toFixed(1), Column.cyan);
     }
+
     mcdu.onRightInput[1] = async (value, scratchpadCallback) => {
       if (plan.performanceData.zeroFuelWeight !== null && value !== Keypad.clrValue) {
         //Simulate delay if calculating trip data
@@ -511,16 +522,21 @@ export class CDUInitPage {
       fuelPlanTopTitle.text = 'FUEL ';
       fuelPlanBottomTitle.text = 'PLANNING }';
       mcdu.onRightInput[2] = async () => {
-        if (mcdu.tryFuelPlanning()) {
+        if (mcdu.tryFuelPlanning(forPlan)) {
           CDUInitPage.ShowPage2(mcdu, forPlan);
         }
       };
     }
-    if (mcdu._fuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS) {
+
+    const isFuelPlanningInProgress =
+      (isForPrimary && mcdu.activeFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS) ||
+      (!isForPrimary && mcdu.secFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS);
+
+    if (isFuelPlanningInProgress) {
       fuelPlanTopTitle.update('BLOCK ', Column.green);
       fuelPlanBottomTitle.update('CONFIRM', Column.green);
       mcdu.onRightInput[2] = async () => {
-        if (mcdu.tryFuelPlanning()) {
+        if (mcdu.tryFuelPlanning(forPlan)) {
           CDUInitPage.ShowPage2(mcdu, forPlan);
           CDUInitPage.trySetFuelPred(mcdu, forPlan);
         }
