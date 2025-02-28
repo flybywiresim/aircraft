@@ -96,34 +96,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public coRoute = { routeNumber: undefined, routes: undefined };
   public perfTOTemp = NaN;
 
-  /**
-   * To compute:
-   *  - trip fuel / time (from vnav)
-   *  - route reserve / route reserve pct (one is entered, the other is calculated from it)
-   *  - alternate fuel / time (from vnav)
-   *  - final fuel / time (one is entered, the other is calculated from it)
-   *  - min dest fob (just alternate + final)
-   *  - tow / lw (computed from other values on the page)
-   *  - extra / time (weight is computed from other values, time from weight)
-   */
-
-  private static fuelComputationsCache: FuelPredComputations = {
-    tripFuel: null,
-    tripTime: null,
-    routeReserveFuel: null,
-    routeReserveFuelPercentage: null,
-    alternateFuel: null,
-    alternateTime: null,
-    finalHoldingFuel: null,
-    finalHoldingTime: null,
-    minimumDestinationFuel: null,
-    takeoffWeight: null,
-    landingWeight: null,
-    destinationFuelOnBoard: null,
-    alternateDestinationFuelOnBoard: null,
-    extraFuel: null,
-    extraTime: null,
-  };
+  private readonly fuelComputationsCache: Map<FlightPlanIndex, FuelPredComputations> = new Map();
 
   public perfApprQNH = NaN;
   public perfApprTemp = NaN;
@@ -663,6 +636,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (this._progBrgDistUpdateThrottler.canUpdate(_deltaTime) !== -1) {
       this.updateProgDistance();
+      this.runFuelComputations(FlightPlanIndex.Active);
     }
 
     if (this.guidanceController) {
@@ -1472,7 +1446,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.computedVls = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
 
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
-    const prediction = this.runFuelComputations(FlightPlanIndex.Active, FMCMainDisplay.fuelComputationsCache);
+    const prediction = this.getFuelPredComputation(FlightPlanIndex.Active);
 
     let weight = prediction.landingWeight;
     const vnavPrediction = this.guidanceController.vnavDriver.getDestinationPrediction();
@@ -2254,7 +2228,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const predictions = this.runFuelComputations(forPlan, FMCMainDisplay.fuelComputationsCache);
+    const predictions = this.getFuelPredComputation(forPlan);
 
     const value = NXUnits.userToKg(parseFloat(fuel));
     if (Number.isFinite(value)) {
@@ -3263,7 +3237,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     const plan = this.getFlightPlan(forPlan);
-    const predictions = this.runFuelComputations(forPlan, FMCMainDisplay.fuelComputationsCache);
+    const predictions = this.getFuelPredComputation(forPlan);
 
     const blockFuel =
       predictions.tripFuel +
@@ -3590,8 +3564,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @returns {number} Returns estimated fuel on board when arriving at the destination
    */
   public getDestEFOB() {
-    const predictions = this.runFuelComputations(FlightPlanIndex.Active, FMCMainDisplay.fuelComputationsCache);
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
+    const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
 
     return predictions.landingWeight - plan.performanceData.zeroFuelWeight;
   }
@@ -4145,7 +4119,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public checkEFOBBelowMin() {
-    const predictions = this.runFuelComputations(FlightPlanIndex.Active, FMCMainDisplay.fuelComputationsCache);
+    const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
     const minDestFob = predictions.minimumDestinationFuel;
 
     if (this._fuelPredDone) {
@@ -5158,27 +5132,22 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.navDbIdent;
   }
 
-  public runFuelComputations(forPlan: FlightPlanIndex, computations: FuelPredComputations) {
+  public getFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {
+    if (!this.fuelComputationsCache.has(forPlan)) {
+      return this.runFuelComputations(forPlan);
+    }
+
+    return this.fuelComputationsCache.get(forPlan);
+  }
+
+  private runFuelComputations(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {
     const plan = this.getFlightPlan(forPlan);
+    if (!this.fuelComputationsCache.has(forPlan)) this.fuelComputationsCache.set(forPlan, new FuelPredComputations());
+
+    const computations = this.fuelComputationsCache.get(forPlan);
 
     if (plan.performanceData.zeroFuelWeight === null) {
-      computations.tripFuel = null;
-      computations.tripTime = null;
-      computations.routeReserveFuel = null;
-      computations.routeReserveFuelPercentage = plan.performanceData.routeReserveFuelPercentage;
-      computations.alternateFuel = null;
-      computations.alternateTime = null;
-      computations.finalHoldingFuel = null;
-      computations.finalHoldingTime = plan.performanceData.finalHoldingTime;
-      computations.minimumDestinationFuel = null;
-      computations.takeoffWeight = null;
-      computations.landingWeight = null;
-      computations.destinationFuelOnBoard = null;
-      computations.alternateDestinationFuelOnBoard = null;
-      computations.extraFuel = null;
-      computations.extraTime = null;
-
-      return computations;
+      return computations.reset();
     }
 
     const zfw = plan.performanceData.zeroFuelWeight;

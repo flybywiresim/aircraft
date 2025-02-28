@@ -11,31 +11,13 @@ import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { FuelPredComputations, LegacyFmsPageInterface, SimbriefOfpState } from '../legacy/LegacyFmsPageInterface';
+import { LegacyFmsPageInterface, SimbriefOfpState } from '../legacy/LegacyFmsPageInterface';
 import { FuelPlanningPhases } from '../legacy/A32NX_Core/A32NX_FuelPred';
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class CDUInitPage {
-  static computationsCache: FuelPredComputations = {
-    tripFuel: null,
-    tripTime: null,
-    routeReserveFuel: null,
-    routeReserveFuelPercentage: null,
-    alternateFuel: null,
-    alternateTime: null,
-    finalHoldingFuel: null,
-    finalHoldingTime: null,
-    minimumDestinationFuel: null,
-    takeoffWeight: null,
-    landingWeight: null,
-    destinationFuelOnBoard: null,
-    alternateDestinationFuelOnBoard: null,
-    extraFuel: null,
-    extraTime: null,
-  };
-
   static ShowPage1(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
       mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
@@ -421,7 +403,7 @@ export class CDUInitPage {
     const plan = mcdu.getFlightPlan(forPlan);
     const isForPrimary = forPlan < FlightPlanIndex.FirstSecondary;
 
-    const predictions = mcdu.runFuelComputations(forPlan, CDUInitPage.computationsCache);
+    const predictions = mcdu.getFuelPredComputation(forPlan);
 
     const alternate = mcdu.flightPlanService.active
       ? mcdu.flightPlanService.active.alternateDestinationAirport

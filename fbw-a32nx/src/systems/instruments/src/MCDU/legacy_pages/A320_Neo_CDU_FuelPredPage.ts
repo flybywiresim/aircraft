@@ -21,7 +21,7 @@ export class CDUFuelPredPage {
     const isFlying = mcdu.isFlying();
 
     const plan = mcdu.flightPlanService.active;
-    const predictions = mcdu.runFuelComputations(FlightPlanIndex.Active, CDUInitPage.computationsCache);
+    const predictions = mcdu.getFuelPredComputation(FlightPlanIndex.Active);
 
     const destination = plan ? plan.destinationAirport : undefined;
     const alternate = plan ? plan.alternateDestinationAirport : undefined;
