@@ -37,7 +37,7 @@ import {
   TypeIIMessage,
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
+import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 import { distanceTo, Coordinates } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
@@ -81,7 +81,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.#mfdReference = value;
 
     if (value) {
-      this.dataManager = new DataManager(value);
+      this.dataManager = new DataManager(value, { latLonFormat: LatLonFormatType.ExtendedFormat });
     }
   }
 
