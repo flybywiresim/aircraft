@@ -117,7 +117,7 @@ export class CDUFuelPredPage {
       cgCell = mcdu.getCG().toFixed(1) + '{end}';
       gwCgCellColor = '[color]green';
 
-      fobCell = '{small}' + NXUnits.kgToUser(mcdu.getFOB()).toFixed(1) + '{end}';
+      fobCell = '{small}' + NXUnits.kgToUser(mcdu.getFOB(FlightPlanIndex.Active)).toFixed(1) + '{end}';
       fobOtherCell = '{inop}FF{end}';
       fobCellColor = '[color]cyan';
     }

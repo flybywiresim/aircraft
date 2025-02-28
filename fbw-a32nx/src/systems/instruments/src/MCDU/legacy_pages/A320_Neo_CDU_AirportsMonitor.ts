@@ -9,6 +9,7 @@ import { bearingTo, distanceTo } from 'msfs-geo';
 import { Predictions } from '@fmgc/guidance/vnav/Predictions';
 import { UnitType } from '@microsoft/msfs-sdk';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface AirportRow {
   airport?: Airport;
@@ -188,7 +189,7 @@ export class CDUAirportsMonitor {
   private static updatePredictions(mcdu: LegacyFmsPageInterface) {
     const ppos = mcdu.navigation.getPpos();
     const zfwLb = UnitType.POUND.convertFrom(mcdu.zeroFuelWeight ?? 0, UnitType.TONNE);
-    const fobT = mcdu.getFOB();
+    const fobT = mcdu.getFOB(FlightPlanIndex.Active);
     const fobLb = UnitType.POUND.convertFrom(fobT ?? 0, UnitType.TONNE);
     const sat = mcdu.navigation?.getStaticAirTemperature() ?? null;
 

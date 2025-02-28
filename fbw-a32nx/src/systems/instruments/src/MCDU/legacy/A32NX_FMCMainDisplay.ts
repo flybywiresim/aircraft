@@ -2727,7 +2727,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @returns {number | null} gross weight in tons or null if not available.
    */
   public getGrossWeight() {
-    const fob = this.getFOB();
+    const fob = this.getFOB(FlightPlanIndex.Active);
 
     if (this.zeroFuelWeight === null || fob === undefined) {
       return null;
@@ -4571,11 +4571,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @returns current fuel on board in tons, or undefined if fuel readings are not available.
    */
   //TODO: Can this be util?
-  public getFOB(): number | undefined {
+  public getFOB(forPlan: FlightPlanIndex): number | undefined {
     const useFqi = this.isAnEngineOn();
 
-    // TODO sec?
-    const plan = this.getFlightPlan(FlightPlanIndex.Active);
+    const plan = this.getFlightPlan(forPlan);
 
     // If an engine is not running, use pilot entered block fuel to calculate fuel predictions
     return useFqi
@@ -5306,10 +5305,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       computations.extraFuel = 0;
       computations.extraTime = 0;
     } else {
-      const fuelOnBoard = this.isAnEngineOn() ? this.getFOB() : plan.performanceData.blockFuel;
-
       computations.extraFuel =
-        fuelOnBoard -
+        this.getFOB(forPlan) -
         computations.tripFuel -
         computations.minimumDestinationFuel -
         (this.isFlying() ? 0 : plan.performanceData.taxiFuel + computations.routeReserveFuel);

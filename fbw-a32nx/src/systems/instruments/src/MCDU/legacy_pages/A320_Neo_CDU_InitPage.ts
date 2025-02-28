@@ -374,7 +374,14 @@ export class CDUInitPage {
   static fuelPredConditionsMet(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     const plan = mcdu.getFlightPlan(forPlan);
 
-    const fob = mcdu.getFOB();
+    const unconfirmedBlockFuel =
+      forPlan === FlightPlanIndex.Active
+        ? mcdu.activeUnconfirmedBlockFuel
+        : forPlan === FlightPlanIndex.FirstSecondary
+          ? mcdu.secUnconfirmedBlockFuel
+          : undefined;
+
+    const fob = mcdu.getFOB(forPlan) ?? unconfirmedBlockFuel;
 
     return (
       Number.isFinite(fob) &&
@@ -618,12 +625,18 @@ export class CDUInitPage {
     const tripWindAvgCell = new Column(21, '---');
 
     if (mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport) {
+      const isTripWindPilotEntered = plan.performanceData.pilotTripWind !== null;
+
       tripWindDirCell.update(
         CDUInitPage.formatWindDirection(plan.performanceData.pilotTripWind ?? 0),
         Column.cyan,
         Column.small,
       );
-      tripWindAvgCell.update(CDUInitPage.formatWindComponent(plan.performanceData.pilotTripWind ?? 0), Column.cyan);
+      tripWindAvgCell.update(
+        CDUInitPage.formatWindComponent(plan.performanceData.pilotTripWind ?? 0),
+        Column.cyan,
+        isTripWindPilotEntered ? Column.big : Column.small,
+      );
 
       mcdu.onRightInput[4] = (value, scratchpadCallback) => {
         if (mcdu.trySetAverageWind(value, forPlan)) {
@@ -635,9 +648,6 @@ export class CDUInitPage {
     }
 
     if (CDUInitPage.fuelPredConditionsMet(mcdu, forPlan)) {
-      fuelPlanTopTitle.text = '';
-      fuelPlanBottomTitle.text = '';
-
       if (Number.isFinite(predictions.takeoffWeight)) {
         towCell.update(NXUnits.kgToUser(predictions.takeoffWeight).toFixed(1), Column.green, Column.small);
       }
@@ -761,11 +771,6 @@ export class CDUInitPage {
 
         lwCell.update(NXUnits.kgToUser(predictions.landingWeight).toFixed(1), Column.green, Column.small);
         towLwCellDivider.updateAttributes(Column.green, Column.small);
-
-        const windComponent = plan.performanceData.pilotTripWind ?? 0;
-
-        tripWindDirCell.update(CDUInitPage.formatWindDirection(windComponent), Column.small);
-        tripWindAvgCell.update(CDUInitPage.formatWindComponent(windComponent), Column.big);
 
         mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
           setTimeout(() => {

@@ -135,7 +135,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   /** @deprecated use getGrossWeight */
   getGW(): number;
   getCG(): number;
-  getFOB(): number | undefined;
+  getFOB(forPlan: FlightPlanIndex): number | undefined;
   trySetRouteFinalFuel(s: string, forPlan: FlightPlanIndex): boolean;
   trySetRouteAlternateFuel(altFuel: string, forPlan: FlightPlanIndex): Promise<boolean>;
   getDestEFOB(): number | null;
