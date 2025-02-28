@@ -15,6 +15,7 @@ import {
   MathUtils,
   NdbNavaid,
   NXDataStore,
+  NXLogicConfirmNode,
   NXUnits,
   TerminalNdbNavaid,
   UpdateThrottler,
@@ -112,7 +113,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public perfApprDH: 'NO DH' | number | null = null;
   public perfApprFlaps3 = false;
   private _debug = undefined;
-  public _isBelowMinDestFob = false;
+  public isDestEfobAmber = false;
+  private isBelowMinDestFobForTwoMinutes?: NXLogicConfirmNode;
+  private shouldShowBelowMinDestEfobMessage = false;
   public _fuelPredDone = false;
   public activeFuelPlanningPhase = undefined;
   public activeUnconfirmedBlockFuel = undefined;
@@ -438,7 +441,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.perfApprDH = null;
     this.perfApprFlaps3 = false;
     this._debug = 0;
-    this._isBelowMinDestFob = false;
+    this.isDestEfobAmber = false;
+    this.isBelowMinDestFobForTwoMinutes = new NXLogicConfirmNode(120_000, true);
+    this.shouldShowBelowMinDestEfobMessage = false;
     this._fuelPredDone = false;
     this.activeFuelPlanningPhase = FuelPlanningPhases.PLANNING;
     this.secFuelPlanningPhase = FuelPlanningPhases.PLANNING;
@@ -589,8 +594,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.setRequest('FMGC');
   }
 
-  public onUpdate(_deltaTime) {
-    this._deltaTime = _deltaTime;
+  public onUpdate(deltaTime: number) {
+    this._deltaTime = deltaTime;
     // this.flightPlanManager.update(_deltaTime);
     const flightPlanChanged = this.flightPlanService.activeOrTemporary.version !== this.lastFlightPlanVersion;
     if (flightPlanChanged) {
@@ -598,21 +603,21 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.setRequest('FMGC');
     }
 
-    updateComponents(_deltaTime);
+    updateComponents(deltaTime);
 
     this.isTrueRefMode = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean');
 
     if (this._debug++ > 180) {
       this._debug = 0;
     }
-    const flightPhaseManagerDelta = this.flightPhaseUpdateThrottler.canUpdate(_deltaTime);
+    const flightPhaseManagerDelta = this.flightPhaseUpdateThrottler.canUpdate(deltaTime);
     if (flightPhaseManagerDelta !== -1) {
       this.flightPhaseManager.shouldActivateNextPhase(flightPhaseManagerDelta);
     }
 
-    if (this.fmsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+    if (this.fmsUpdateThrottler.canUpdate(deltaTime) !== -1) {
       this.checkSpeedLimit();
-      this.navigation.update(_deltaTime);
+      this.navigation.update(deltaTime);
       this.getGW();
       this.checkGWParams();
       this.toSpeedsChecks();
@@ -622,7 +627,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.updateMinimums();
       this.updateIlsCourse();
       this.updatePerfPageAltPredictions();
-      this.checkEFOBBelowMin();
+      this.updateAmberEfob();
+      // this.checkEfobBelowMin(deltaTime);
     }
 
     this.A32NXCore.update();
@@ -634,17 +640,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this.updateAutopilot();
 
-    if (this._progBrgDistUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+    if (this._progBrgDistUpdateThrottler.canUpdate(deltaTime) !== -1) {
       this.updateProgDistance();
-      this.runFuelComputations(FlightPlanIndex.Active);
+      this.runFuelPredComputation(FlightPlanIndex.Active);
     }
 
     if (this.guidanceController) {
-      this.guidanceController.update(_deltaTime);
+      this.guidanceController.update(deltaTime);
     }
 
     if (this.efisSymbols) {
-      this.efisSymbols.update(_deltaTime);
+      this.efisSymbols.update(deltaTime);
     }
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
   }
@@ -778,6 +784,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
 
         this.checkDestData();
+        this._EfobBelowMinClr = false;
 
         Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO)
           .catch(console.error)
@@ -4118,53 +4125,53 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return true;
   }
 
-  public checkEFOBBelowMin() {
+  public updateAmberEfob() {
     const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
     const minDestFob = predictions.minimumDestinationFuel;
+    const destEfob = predictions.destinationFuelOnBoard;
 
-    if (this._fuelPredDone) {
-      if (minDestFob) {
-        // round & only use 100kgs precision since thats how it is displayed in fuel pred
-        const destEfob = Math.round(predictions.destinationFuelOnBoard * 10) / 10;
-        const roundedMinDestFob = Math.round(minDestFob * 10) / 10;
-        if (!this._isBelowMinDestFob) {
-          if (destEfob < roundedMinDestFob) {
-            this._isBelowMinDestFob = true;
-            // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
-            if (this.isAnEngineOn()) {
-              setTimeout(() => {
-                this.addMessageToQueue(
-                  NXSystemMessages.destEfobBelowMin,
-                  () => {
-                    return this._EfobBelowMinClr === true;
-                  },
-                  () => {
-                    this._EfobBelowMinClr = true;
-                  },
-                );
-              }, 120000);
-            } else {
-              this.addMessageToQueue(
-                NXSystemMessages.destEfobBelowMin,
-                () => {
-                  return this._EfobBelowMinClr === true;
-                },
-                () => {
-                  this._EfobBelowMinClr = true;
-                },
-              );
-            }
-          }
-        } else {
-          // check if we are at least 300kgs above min dest efob to show green again & the ability to trigger the message
-          if (roundedMinDestFob) {
-            if (destEfob - roundedMinDestFob >= 0.3) {
-              this._isBelowMinDestFob = false;
-              this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin.text);
-            }
-          }
-        }
-      }
+    if (minDestFob !== null && destEfob !== null) {
+      const roundedDestEfob = Math.round(destEfob * 10) / 10;
+      const roundedMinDestFob = Math.round(minDestFob * 10) / 10;
+
+      this.isDestEfobAmber =
+        roundedDestEfob < roundedMinDestFob || (this.isDestEfobAmber && roundedDestEfob < roundedMinDestFob + 0.3);
+    } else {
+      this.isDestEfobAmber = false;
+    }
+  }
+
+  private checkEfobBelowMin(deltaTime: number) {
+    const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
+    const minDestFob = predictions.minimumDestinationFuel;
+    const destEfob = predictions.destinationFuelOnBoard;
+
+    if (minDestFob !== null && destEfob !== null) {
+      // round & only use 100kgs precision since thats how it is displayed in fuel pred
+      const destEfob = Math.round(predictions.destinationFuelOnBoard * 10) / 10;
+      const roundedMinDestFob = Math.round(minDestFob * 10) / 10;
+
+      this.isBelowMinDestFobForTwoMinutes.write(destEfob < roundedMinDestFob, deltaTime);
+
+      const phase = this.getFlightPhase();
+
+      this.shouldShowBelowMinDestEfobMessage =
+        this.isBelowMinDestFobForTwoMinutes.read() && phase > FmgcFlightPhase.Climb && phase < FmgcFlightPhase.Done;
+    } else {
+      this.isBelowMinDestFobForTwoMinutes.write(false, deltaTime);
+      this.shouldShowBelowMinDestEfobMessage = false;
+    }
+
+    if (this.shouldShowBelowMinDestEfobMessage) {
+      this.addMessageToQueue(
+        NXSystemMessages.destEfobBelowMin,
+        () => {
+          return !this.shouldShowBelowMinDestEfobMessage || this._EfobBelowMinClr === true;
+        },
+        () => {
+          this._EfobBelowMinClr = true;
+        },
+      );
     }
   }
 
@@ -5134,13 +5141,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public getFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {
     if (!this.fuelComputationsCache.has(forPlan)) {
-      return this.runFuelComputations(forPlan);
+      return this.runFuelPredComputation(forPlan);
     }
 
     return this.fuelComputationsCache.get(forPlan);
   }
 
-  private runFuelComputations(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {
+  public runFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {
     const plan = this.getFlightPlan(forPlan);
     if (!this.fuelComputationsCache.has(forPlan)) this.fuelComputationsCache.set(forPlan, new FuelPredComputations());
 
@@ -5265,7 +5272,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     // EFOB
     computations.destinationFuelOnBoard = computations.landingWeight !== null ? computations.landingWeight - zfw : null;
-    computations.destinationFuelOnBoard = computations.landingWeight
+    computations.alternateDestinationFuelOnBoard = computations.landingWeight
       ? computations.landingWeight - computations.alternateFuel - zfw
       : null;
 

@@ -21,7 +21,7 @@ export class CDUFuelPredPage {
     const isFlying = mcdu.isFlying();
 
     const plan = mcdu.flightPlanService.active;
-    const predictions = mcdu.getFuelPredComputation(FlightPlanIndex.Active);
+    const predictions = mcdu.runFuelPredComputation(FlightPlanIndex.Active);
 
     const destination = plan ? plan.destinationAirport : undefined;
     const alternate = plan ? plan.alternateDestinationAirport : undefined;
@@ -259,7 +259,7 @@ export class CDUFuelPredPage {
             scratchpadCallback();
           }
         };
-        mcdu.checkEFOBBelowMin();
+        mcdu.updateAmberEfob();
 
         extraFuelCell = '{small}' + NXUnits.kgToUser(predictions.extraFuel).toFixed(1);
         if (predictions.extraFuel < 0) {
@@ -280,7 +280,7 @@ export class CDUFuelPredPage {
           zfwCgCell = plan.performanceData.zeroFuelWeightCenterOfGravity.toFixed(1);
         }
 
-        destEFOBCellColor = mcdu._isBelowMinDestFob ? '[color]amber' : '[color]green';
+        destEFOBCellColor = mcdu.isDestEfobAmber ? '[color]amber' : '[color]green';
       }
     }
 

@@ -403,7 +403,7 @@ export class CDUInitPage {
     const plan = mcdu.getFlightPlan(forPlan);
     const isForPrimary = forPlan < FlightPlanIndex.FirstSecondary;
 
-    const predictions = mcdu.getFuelPredComputation(forPlan);
+    const predictions = mcdu.runFuelPredComputation(forPlan);
 
     const alternate = mcdu.flightPlanService.active
       ? mcdu.flightPlanService.active.alternateDestinationAirport
@@ -783,7 +783,7 @@ export class CDUInitPage {
             }
           }, mcdu.getDelayHigh());
         };
-        mcdu.checkEFOBBelowMin();
+        mcdu.updateAmberEfob();
 
         extraWeightCell.update(NXUnits.kgToUser(predictions.extraFuel).toFixed(1), Column.green, Column.small);
         if (predictions.extraFuel >= 0) {

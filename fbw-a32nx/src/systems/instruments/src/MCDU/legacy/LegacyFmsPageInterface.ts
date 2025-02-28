@@ -161,7 +161,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getDestEFOB(): number | null;
   trySetRouteReservedFuel(s: string, forPlan: FlightPlanIndex): boolean;
   trySetMinDestFob(fuel: string, forPlan: FlightPlanIndex): Promise<boolean>;
-  checkEFOBBelowMin(): void;
+  updateAmberEfob(): void;
   getNavDatabaseIdent(): DatabaseIdent | null;
   switchNavDatabase(): Promise<void>;
   /** This one is a mess.. */
@@ -240,6 +240,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   reselectNavaid(icao: string): void;
   getOrSelectWaypointByIdent(ident: string, callback: (fix: Fix) => void): void;
   getIsaTemp(alt: number): number;
+  runFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
   getFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
 
   flightPlanService: FlightPlanService;
@@ -262,7 +263,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   _checkWeightSettable: boolean;
   /** @deprecated */
   zeroFuelWeight?: number;
-  _isBelowMinDestFob: boolean;
+  readonly isDestEfobAmber: boolean;
   // TODO add types
   simbriefOfp: any;
   simbriefOfpState: SimbriefOfpState;
