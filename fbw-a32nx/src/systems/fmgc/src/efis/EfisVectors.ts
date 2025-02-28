@@ -3,10 +3,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisNdMode, EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+import {
+  EfisNdMode,
+  EfisSide,
+  EfisVectorsGroup,
+  GenericDataListenerSync,
+  VerticalPathCheckpoint,
+} from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { PathVector, pathVectorLength, pathVectorValid, VerticalPathCheckpoint } from '@fmgc/guidance/lnav/PathVector';
+import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';

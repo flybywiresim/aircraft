@@ -32,10 +32,10 @@ import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/Sim
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
-import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
+import { VerticalMode } from '@shared/autopilot';
 import { pathVectorLength, pathVectorPoint } from '@fmgc/guidance/lnav/PathVector';
 import { bearingTo } from 'msfs-geo';
-import { GenericFcuEvents, GenericTawsEvents } from '@flybywiresim/navigation-display';
+import { GenericFcuEvents, GenericTawsEvents, TrackLine } from '@flybywiresim/navigation-display';
 import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { A380XFcuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/A380XFcuBusPublisher';
@@ -211,14 +211,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode'), 0);
   private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask'), 0);
   private readonly shouldShowTrackLine = MappedSubject.create(
-    ([active, armed]) =>
-      (active === LateralMode.NONE ||
-        active === LateralMode.HDG ||
-        active === LateralMode.TRACK ||
-        active === LateralMode.RWY ||
-        active === LateralMode.RWY_TRACK ||
-        active === LateralMode.GA_TRACK) &&
-      !isArmed(armed, ArmedLateralMode.NAV),
+    ([active, armed]) => TrackLine.shouldShowTrackLine(active, armed),
     this.activeLateralMode,
     this.armedLateralMode,
   );

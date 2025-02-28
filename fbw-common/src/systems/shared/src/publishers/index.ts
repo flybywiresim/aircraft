@@ -1,4 +1,4 @@
-export * from './AdiruBusPublisher';
+export * from './IrBusPublisher';
 export * from './Msfs';
 export * from './OansBtv';
 export * from './FcuBusPublisher';

@@ -4,7 +4,7 @@
 import { A380Failure } from '@failures';
 import {
   a380EfisRangeSettings,
-  AdiruBusEvents,
+  IrBusEvents,
   Arinc429LocalVarConsumerSubject,
   Arinc429WordData,
   ArincEventBus,
@@ -93,7 +93,7 @@ export class EfisTawsBridge implements Instrument {
       EgpwcSimVars &
       FGVars &
       MsfsMiscEvents &
-      AdiruBusEvents &
+      IrBusEvents &
       AesuBusEvents
   >();
 
@@ -280,9 +280,9 @@ export class EfisTawsBridge implements Instrument {
   // FIXME receive path over complete distance
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
 
-  private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adiru_true_track_1'));
-  private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adiru_true_track_2'));
-  private readonly track3Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adiru_true_track_3'));
+  private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_1'));
+  private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_2'));
+  private readonly track3Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_3'));
   private readonly validTrack = MappedSubject.create(
     ([t1, t2, t3]) => {
       if (t1.isNormalOperation()) {
@@ -341,7 +341,7 @@ export class EfisTawsBridge implements Instrument {
             });
 
       const data: ElevationSamplePathDto = {
-        pathWidth: 1,
+        pathWidth: 1, // FIXME implement logic for width of vertical cut, DSC-31-CDS-20-40-10
         trackChangesSignificantlyAtDistance: trackChangeDistance,
         waypoints: waypoints,
       };

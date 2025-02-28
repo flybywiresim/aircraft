@@ -21,7 +21,7 @@ import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import {
-  AdiruBusPublisher,
+  IrBusPublisher,
   ArincEventBus,
   BtvSimvarPublisher,
   FailuresConsumer,
@@ -131,7 +131,7 @@ class SystemsHost extends BaseInstrument {
   private readonly egpwcPublisher = new EgpwcBusPublisher(this.bus, 'L');
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
   private readonly msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
-  private readonly adiruBusPublisher = new AdiruBusPublisher(this.bus);
+  private readonly irBusPublisher = new IrBusPublisher(this.bus);
   private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
 
@@ -212,7 +212,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('EgpwcPublisher', this.egpwcPublisher);
     this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
-    this.backplane.addPublisher('AdiruBusPublisher', this.adiruBusPublisher);
+    this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
     this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
