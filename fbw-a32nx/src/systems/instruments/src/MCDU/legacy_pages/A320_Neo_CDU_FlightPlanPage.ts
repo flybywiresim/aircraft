@@ -411,10 +411,10 @@ export class CDUFlightPlanPage {
 
         if (targetPlan.index !== FlightPlanIndex.Temporary && wp.type !== 'HM') {
           if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-            speedConstraint = Number.isFinite(mcdu.v1Speed)
-              ? `{big}${Math.round(mcdu.v1Speed)}{end}`
+            speedConstraint = Number.isFinite(targetPlan.performanceData.v1)
+              ? `{big}${Math.round(targetPlan.performanceData.v1)}{end}`
               : Speed.NoPrediction;
-            spdColor = Number.isFinite(mcdu.v1Speed) ? color : 'white';
+            spdColor = Number.isFinite(targetPlan.performanceData.v1) ? color : 'white';
           } else if (isFromLeg) {
             speedConstraint = Speed.Empty;
           } else if (verticalWaypoint && verticalWaypoint.speed) {

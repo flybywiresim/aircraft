@@ -40,9 +40,10 @@ export class CDULateralRevisionPage {
     }
     /** @type {BaseFlightPlan} */
     const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
 
     const isPpos = leg === undefined || (legIndexFP === 0 && leg !== targetPlan.originLeg);
-    const isFrom = legIndexFP === targetPlan.fromLegIndex && forPlan === FlightPlanIndex.Active && !inAlternate;
+    const isFrom = legIndexFP === targetPlan.fromLegIndex && isActivePlan && !inAlternate;
     const isDeparture = legIndexFP === targetPlan.originLegIndex && !isPpos; // TODO this is bogus... compare icaos
     const isDestination = legIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
     const isWaypoint = !isDeparture && !isDestination && !isPpos;
@@ -78,7 +79,7 @@ export class CDULateralRevisionPage {
       mcdu.onRightInput[0] = () => {
         CDUAvailableArrivalsPage.ShowPage(mcdu, targetPlan.destinationAirport, 0, false, forPlan, inAlternate);
       };
-    } else if (isDeparture || isPpos || isFrom) {
+    } else if (isActivePlan && (isDeparture || isPpos || isFrom)) {
       arrivalFixInfoCell = 'FIX INFO>';
       mcdu.onRightInput[0] = () => {
         CDUFixInfoPage.ShowPage(mcdu);
@@ -93,6 +94,7 @@ export class CDULateralRevisionPage {
     }
 
     let offsetCell = '';
+    // TODO hide on sec?
     if (isDeparture || isWaypoint) {
       offsetCell = '<OFFSET[color]inop';
     }

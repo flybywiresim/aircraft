@@ -255,9 +255,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   guidanceController?: GuidanceController;
   dataManager?: DataManager;
   navigation?: Navigation;
-  get v1Speed(): number | null;
-  get vRSpeed(): number | null;
-  get v2Speed(): number | null;
   holdDecelReached: boolean;
   holdIndex: number;
   holdSpeedTarget?: number;

@@ -2771,7 +2771,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.arincDiscreteWord3.setSsm(Arinc429SignStatusMatrix.NormalOperation);
   }
 
-  public get v1Speed() {
+  private get v1Speed() {
     return this.flightPlanService.active.performanceData.v1;
   }
 
@@ -2780,7 +2780,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', speed ? speed : NaN);
   }
 
-  public get vRSpeed() {
+  private get vRSpeed() {
     return this.flightPlanService.active.performanceData.vr;
   }
 
@@ -2789,7 +2789,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', speed ? speed : NaN);
   }
 
-  public get v2Speed() {
+  private get v2Speed() {
     return this.flightPlanService.active.performanceData.v2;
   }
 
@@ -2816,10 +2816,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (forPlan === FlightPlanIndex.Active) {
       this.unconfirmedV1Speed = undefined;
-      SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v ?? NaN);
     }
 
-    this.flightPlanService.setPerformanceData('v1', v, forPlan);
+    this.setV1Speed(v, forPlan);
     return true;
   }
 
@@ -2841,10 +2840,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (forPlan === FlightPlanIndex.Active) {
       this.unconfirmedVRSpeed = undefined;
-      SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', v ?? NaN);
     }
 
-    this.flightPlanService.setPerformanceData('vr', v, forPlan);
+    this.setVrSpeed(v, forPlan);
     return true;
   }
 
@@ -2866,10 +2864,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (forPlan === FlightPlanIndex.Active) {
       this.unconfirmedV2Speed = undefined;
-      SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v ?? NaN);
     }
 
-    this.flightPlanService.setPerformanceData('v2', v, forPlan);
+    this.setV2Speed(v, forPlan);
     return true;
   }
 
