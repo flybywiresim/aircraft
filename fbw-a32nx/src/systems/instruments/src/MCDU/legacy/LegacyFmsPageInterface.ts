@@ -214,7 +214,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getNavModeSpeedConstraint(): number;
   trySetPreSelectedClimbSpeed(s: string, forPlan: FlightPlanIndex): boolean;
   tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): boolean;
-  computeTakeoffWeight(forPlan: FlightPlanIndex): number;
   trySetPerfClbPredToAltitude(value: string): boolean;
   trySetPreSelectedCruiseSpeed(s: string, forPlan: FlightPlanIndex): boolean;
   trySetPerfDesPredToAltitude(value: string): boolean;

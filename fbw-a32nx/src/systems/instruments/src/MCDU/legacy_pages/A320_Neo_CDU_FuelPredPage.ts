@@ -44,7 +44,7 @@ export class CDUFuelPredPage {
     let rteRsvPctColor = '{white}';
 
     let zfwCell = '___._';
-    let zfwCgCell = ' __._';
+    let zfwCgCell = '__._';
     let zfwColor = '[color]amber';
     mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
       if (value === Keypad.clrValue) {
@@ -84,7 +84,7 @@ export class CDUFuelPredPage {
     let finalColor = '[color]white';
 
     let gwCell = '---.-';
-    let cgCell = ' --.-';
+    let cgCell = '--.-';
     let gwCgCellColor = '[color]white';
 
     let minDestFobCell = '---.-';
@@ -118,7 +118,7 @@ export class CDUFuelPredPage {
       gwCgCellColor = '[color]green';
 
       fobCell = '{small}' + NXUnits.kgToUser(mcdu.getFOB(FlightPlanIndex.Active)).toFixed(1) + '{end}';
-      fobOtherCell = '{inop}FF{end}';
+      fobOtherCell = '{inop}FF+FQ{end}';
       fobCellColor = '[color]cyan';
     }
 
@@ -199,11 +199,9 @@ export class CDUFuelPredPage {
           if (Number.isFinite(predictions.alternateTime)) {
             altTimeCell = isFlying
               ? FmsFormatters.secondsToUTC(
-                  utcTime +
-                    FmsFormatters.minuteToSeconds(predictions.tripTime) +
-                    FmsFormatters.minuteToSeconds(predictions.alternateTime),
+                  utcTime + FmsFormatters.minuteToSeconds(predictions.tripTime + predictions.alternateTime),
                 )
-              : FmsFormatters.minutesTohhmm(predictions.alternateTime);
+              : FmsFormatters.minutesTohhmm(predictions.tripTime + predictions.alternateTime);
             altTimeCellColor = '[color]green';
           } else {
             altTimeCell = '----';
@@ -293,15 +291,15 @@ export class CDUFuelPredPage {
       ['RTE RSV/%', 'ZFW/ZFWCG'],
       [
         rteRsvWeightCell + rteRsvPctColor + '/' + rteRsvPercentCell + '{end}' + rteRSvCellColor,
-        zfwCell + '/' + zfwCgCell + '{sp}' + zfwColor,
+        zfwCell + '/\xa0' + zfwCgCell + zfwColor,
       ],
       ['ALTN\xa0/TIME', 'FOB{sp}{sp}{sp}{sp}{sp}{sp}'],
       [
         altFuelCell + altTimeColor + '/' + altFuelTimeCell + '{end}' + altFuelColor,
-        fobCell + '/' + fobOtherCell + '{sp}{sp}{sp}' + fobCellColor,
+        fobCell + '/' + fobOtherCell + fobCellColor,
       ],
       ['FINAL/TIME', 'GW/{sp}{sp} CG'],
-      [finalFuelCell + '/' + finalTimeCell + finalColor, gwCell + '/ ' + cgCell + gwCgCellColor],
+      [finalFuelCell + '/' + finalTimeCell + finalColor, gwCell + '/{sp}' + cgCell + gwCgCellColor],
       ['MIN DEST FOB', 'EXTRA/TIME'],
       [
         minDestFobCell + minDestFobCellColor,
