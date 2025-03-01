@@ -589,7 +589,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   }
 
   get groundTemperatureIsPilotEntered() {
-    return this.pilotGroundTemperature !== undefined;
+    return this.pilotGroundTemperature !== null;
   }
 
   /**
