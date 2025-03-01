@@ -123,9 +123,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   /** either magnetic or true track depending on true ref mode */
   private readonly trackWord = Arinc429ConsumerSubject.create(this.sub.on('track').atFrequency(0.5));
 
-  private readonly irMaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('irMaintWordRaw'));
-  private readonly extremeLatitude = this.irMaintWord.map((w) => w.bitValueOr(15, false));
-
   private readonly vdAvailable = MappedSubject.create(
     ([hdg, trk]) => hdg.isNormalOperation() && trk.isNormalOperation(),
     this.headingWord,
@@ -324,7 +321,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly terr2Failed = ConsumerSubject.create(this.sub.on('a32nx_aesu_terr_failed_2'), false);
   private readonly wxr1Failed = ConsumerSubject.create(this.sub.on('a32nx_aesu_wxr_failed_1'), false);
   private readonly wxr2Failed = ConsumerSubject.create(this.sub.on('a32nx_aesu_wxr_failed_2'), false);
-  private readonly activeTerrFailed = MappedSubject.create(
+  private readonly terrInop = MappedSubject.create(
     ([sel, t1, t2]) => (sel === 1 ? t1 : sel === 2 ? t2 : true),
     this.wxrTawsSysSelected,
     this.terr1Failed,
@@ -337,15 +334,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.wxr2Failed,
   );
 
-  private readonly terrInop = MappedSubject.create(
-    ([activeFailed, polar]) => activeFailed || polar,
-    this.activeTerrFailed,
-    this.extremeLatitude,
-  );
   private readonly wxrInop = MappedSubject.create(
-    ([activeFailed, polar, activeOverlay]) => activeOverlay === 1 && (activeFailed || polar),
+    ([activeFailed, activeOverlay]) => activeOverlay === 1 && activeFailed,
     this.activeWxrFailed,
-    this.extremeLatitude,
     this.activeOverlay,
   );
 
@@ -427,8 +418,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.visible,
       this.headingWord,
       this.trackWord,
-      this.irMaintWord,
-      this.extremeLatitude,
       this.vdAvailable,
       this.lineColor,
       this.baroMode,
@@ -465,7 +454,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.terr2Failed,
       this.wxr1Failed,
       this.wxr2Failed,
-      this.activeTerrFailed,
       this.activeWxrFailed,
       this.terrInop,
       this.wxrInop,

@@ -4,11 +4,14 @@
 import { EventBus, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarValueType } from '@microsoft/msfs-sdk';
 
 interface IrBusBaseEvents {
-  /** The true inertial track of the aircraft in degrees. Raw Arinc 429 word. */
+  /** The true inertial track of the aircraft in degrees. Raw Arinc word. */
   a32nx_ir_true_track: number;
+
+  /** Maintenance discrete word from IR. Raw Arinc word. */
+  a32nx_ir_maint_word: number;
 }
 
-type IndexedTopics = 'a32nx_ir_true_track';
+type IndexedTopics = 'a32nx_ir_true_track' | 'a32nx_ir_maint_word';
 
 type IrIndexedEventType<T extends string> = `${T}_${1 | 2 | 3}`;
 
@@ -19,7 +22,7 @@ type IrBusIndexedEvents = {
 interface IrBusPublisherEvents extends IrBusBaseEvents, IrBusIndexedEvents {}
 
 /**
- * This class provides ADIRU data for all ADIRUs via indexed events (without the need for switchable sources).
+ * This class provides IR data for all IRs via indexed events (without the need for switchable sources).
  * Some components require non-switched data as input.
  * Extend as needed.
  */
@@ -39,6 +42,10 @@ export class IrBusPublisher extends SimVarPublisher<IrBusPublisherEvents> {
       [
         'a32nx_ir_true_track',
         { name: 'L:A32NX_ADIRS_IR_#index#_TRUE_TRACK', type: SimVarValueType.Number, indexed: true },
+      ],
+      [
+        'a32nx_ir_maint_word',
+        { name: 'L:A32NX_ADIRS_IR_#index#_MAINT_WORD', type: SimVarValueType.Number, indexed: true },
       ],
     ]);
 

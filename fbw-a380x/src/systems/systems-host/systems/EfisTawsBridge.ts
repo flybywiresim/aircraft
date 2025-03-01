@@ -299,6 +299,25 @@ export class EfisTawsBridge implements Instrument {
     this.track3Word,
   );
 
+  private readonly ir1MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_maint_word_1'));
+  private readonly ir2MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_maint_word_2'));
+  private readonly ir3MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_maint_word_3'));
+  private readonly validIrMaintWord = MappedSubject.create(
+    ([t1, t2, t3]) => {
+      if (t1.isNormalOperation()) {
+        return t1;
+      } else if (t2.isNormalOperation()) {
+        return t2;
+      } else if (t3.isNormalOperation()) {
+        return t3;
+      }
+      return null;
+    },
+    this.ir1MaintWord,
+    this.ir2MaintWord,
+    this.ir3MaintWord,
+  );
+
   /** If track from one segment differs more than 3° from previous track, paint grey area */
   private readonly trackChangeDistance = MappedSubject.create(
     ([path, track]) => {
@@ -392,6 +411,43 @@ export class EfisTawsBridge implements Instrument {
       this.wxr2Failed.sub((v) => SimVar.SetSimVarValue('L:A32NX_WXR_2_FAILED', SimVarValueType.Bool, v), true),
     );
 
+    this.subscriptions.push(
+      this.latitude,
+      this.longitude,
+      this.altitude,
+      this.heading,
+      this.verticalSpeed,
+      this.destinationLatitude,
+      this.destinationLongitude,
+      this.vdRangeLower[0],
+      this.vdRangeLower[1],
+      this.vdRangeUpper[0],
+      this.vdRangeUpper[1],
+      this.gearIsDown,
+      this.terrOnNdRenderingMode,
+      this.groundTruthLatitude,
+      this.groundTruthLongitude,
+      this.activeLateralMode,
+      this.armedLateralMode,
+      this.shouldShowTrackLine,
+      this.aesu1ResetPulled,
+      this.aesu2ResetPulled,
+      this.efisDataCapt,
+      this.efisDataFO,
+      this.aircraftStatusData,
+      this.fmsLateralPath,
+      this.track1Word,
+      this.track2Word,
+      this.track3Word,
+      this.validTrack,
+      this.ir1MaintWord,
+      this.ir2MaintWord,
+      this.ir3MaintWord,
+      this.validIrMaintWord,
+      this.trackChangeDistance,
+      this.terrVdPathData,
+    );
+
     this.failuresConsumer.register(A380Failure.Terr1);
     this.failuresConsumer.register(A380Failure.Terr2);
     this.failuresConsumer.register(A380Failure.Gpws1);
@@ -409,11 +465,18 @@ export class EfisTawsBridge implements Instrument {
     }
 
     const tawsWxrSelected = SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number);
+    const extremeLatitude = this.validIrMaintWord.get().bitValueOr(15, false);
     this.terr1Failed.set(
-      this.failuresConsumer.isActive(A380Failure.Terr1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get(),
+      this.failuresConsumer.isActive(A380Failure.Terr1) ||
+        this.aesu1ResetPulled.get() ||
+        !this.acEssPowered.get() ||
+        extremeLatitude,
     );
     this.terr2Failed.set(
-      this.failuresConsumer.isActive(A380Failure.Terr2) || this.aesu2ResetPulled.get() || !this.ac4Powered.get(),
+      this.failuresConsumer.isActive(A380Failure.Terr2) ||
+        this.aesu2ResetPulled.get() ||
+        !this.ac4Powered.get() ||
+        extremeLatitude,
     );
     this.gpws1Failed.set(
       this.failuresConsumer.isActive(A380Failure.Gpws1) || this.aesu1ResetPulled.get() || !this.acEssPowered.get(),
