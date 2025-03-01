@@ -3840,7 +3840,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private getVApp() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
 
-    if (isFinite(plan.performanceData.pilotVapp)) {
+    if (Number.isFinite(plan.performanceData.pilotVapp)) {
       return plan.performanceData.pilotVapp;
     }
     return this.approachSpeeds.vapp;
