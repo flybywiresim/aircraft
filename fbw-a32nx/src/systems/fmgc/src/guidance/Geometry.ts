@@ -92,7 +92,9 @@ export class Geometry {
 
     const ret: PathVector[] = [];
 
-    for (const [index, leg] of this.legs.entries()) {
+    // Sort map by leg number, we now do care about the sequence. Allocates, but not too often.
+    const orderedLegs = [...this.legs.entries()].sort((a, b) => a[0] - b[0]);
+    for (const [index, leg] of orderedLegs) {
       if (
         (!missedApproach && leg.metadata.isInMissedApproach) ||
         (missedApproach && !leg.metadata.isInMissedApproach)

@@ -40,7 +40,12 @@ export type PathVector = LinePathVector | ArcPathVector | DebugPointPathVector;
 
 export interface VerticalPathCheckpoint {
   distanceFromAircraft: number;
+  /** Predicted altitude */
   altitude: number;
+  /** Whether altitude constraint is present */
   altitudeConstraint?: AltitudeConstraint;
+  /** Whether altitude constraint will be met */
   isAltitudeConstraintMet?: boolean;
+  /** Track from last waypoint, in degrees. Null if can't be determined, e.g. missing termination */
+  trackToTerminationWaypoint: number | null;
 }

@@ -23,7 +23,6 @@ import {
   UpdateThrottler,
   WaypointDto,
 } from '@flybywiresim/fbw-sdk';
-import { pathVectorLength } from '@fmgc/guidance/lnav/PathVector';
 import {
   ClockEvents,
   ConsumerSubject,
@@ -38,7 +37,6 @@ import {
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
-import { bearingTo } from 'msfs-geo';
 import { PowerSupplyBusTypes } from './powersupply';
 import { EgpwcSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
@@ -279,6 +277,7 @@ export class EfisTawsBridge implements Instrument {
 
   // FIXME receive path over complete distance
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
+  private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('verticalPath'), []);
 
   private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_1'));
   private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_2'));
@@ -326,22 +325,20 @@ export class EfisTawsBridge implements Instrument {
       }
 
       let currentTrack = track;
-      let traveledDistance = 0;
-      for (const vector of path) {
-        if (vector.type === PathVectorType.DebugPoint) {
+
+      for (const segment of path) {
+        if (segment.trackToTerminationWaypoint === null) {
           continue;
         }
-        const newTrack = bearingTo(vector.startPoint, vector.endPoint);
 
-        if (newTrack - currentTrack > 3) {
-          return traveledDistance;
+        if (Math.abs(segment.trackToTerminationWaypoint - currentTrack) > 3) {
+          return segment.distanceFromAircraft;
         }
-        currentTrack = newTrack;
-        traveledDistance += pathVectorLength(vector);
+        currentTrack = segment.trackToTerminationWaypoint;
       }
       return -1;
     },
-    this.fmsLateralPath,
+    this.fmsVerticalPath,
     this.validTrack,
   );
 
@@ -436,6 +433,7 @@ export class EfisTawsBridge implements Instrument {
       this.efisDataFO,
       this.aircraftStatusData,
       this.fmsLateralPath,
+      this.fmsVerticalPath,
       this.track1Word,
       this.track2Word,
       this.track3Word,
