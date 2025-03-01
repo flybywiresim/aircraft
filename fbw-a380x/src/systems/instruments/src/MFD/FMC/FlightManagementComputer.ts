@@ -285,6 +285,14 @@ export class FlightManagementComputer implements FmcInterface {
             this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg.text);
           }
         }),
+
+        this.fmgc.data.cpnyFplnAvailable.sub((v) => {
+          if (v) {
+            this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
+          } else {
+            this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+          }
+        }),
       );
 
       this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
@@ -525,11 +533,6 @@ export class FlightManagementComputer implements FmcInterface {
    */
   onUplinkInProgress() {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(true);
-    this.addMessageToQueue(
-      NXSystemMessages.uplinkInsertInProg,
-      () => !this.fmgc.data.cpnyFplnUplinkInProgress.get(),
-      undefined,
-    );
   }
 
   /**
@@ -538,7 +541,6 @@ export class FlightManagementComputer implements FmcInterface {
   onUplinkDone() {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(false);
     this.fmgc.data.cpnyFplnAvailable.set(true);
-    this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg.text);
   }
 
   /**
