@@ -2269,20 +2269,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return false;
   }
 
-  public computeTakeoffWeight(forPlan: FlightPlanIndex): number | null {
-    const plan = this.getFlightPlan(forPlan);
-
-    if (
-      plan.performanceData.zeroFuelWeight === null ||
-      plan.performanceData.blockFuel === null ||
-      plan.performanceData.taxiFuel === null
-    ) {
-      return null;
-    }
-
-    return plan.performanceData.zeroFuelWeight + plan.performanceData.blockFuel - plan.performanceData.taxiFuel;
-  }
-
   //-----------------------------------------------------------------------------------
   // TODO:FPM REWRITE: Start of functions to refactor
   //-----------------------------------------------------------------------------------
@@ -5309,33 +5295,43 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
     }
 
+    const fob = this.getFOB(forPlan);
+
     // Minimum destination fuel on board
     computations.minimumDestinationFuel =
       plan.performanceData.pilotMinimumDestinationFuelOnBoard ??
-      computations.alternateFuel + computations.finalHoldingFuel;
-
-    // TOW / LW
-    computations.takeoffWeight = this.computeTakeoffWeight(forPlan);
-    computations.landingWeight =
-      computations.takeoffWeight !== null ? computations.takeoffWeight - computations.tripFuel : null;
+      (computations.alternateFuel ?? 0) + computations.finalHoldingFuel;
 
     // EFOB
-    computations.destinationFuelOnBoard = computations.landingWeight !== null ? computations.landingWeight - zfw : null;
-    computations.alternateDestinationFuelOnBoard = computations.landingWeight
-      ? computations.landingWeight - computations.alternateFuel - zfw
-      : null;
+    computations.destinationFuelOnBoard =
+      fob !== undefined ? fob - computations.tripFuel - (this.isFlying() ? plan.performanceData.taxiFuel : 0) : null;
+    computations.alternateDestinationFuelOnBoard =
+      computations.destinationFuelOnBoard !== null && computations.alternateFuel !== null
+        ? computations.destinationFuelOnBoard - computations.alternateFuel
+        : null;
+
+    // TOW / LW
+    computations.takeoffWeight =
+      fob !== undefined ? plan.performanceData.zeroFuelWeight + fob - plan.performanceData.taxiFuel : null;
+    computations.landingWeight =
+      computations.destinationFuelOnBoard !== null
+        ? plan.performanceData.zeroFuelWeight + computations.destinationFuelOnBoard
+        : null;
 
     // Extra fuel
-    if (plan.performanceData.blockFuel === null) {
+    if (fob === undefined) {
+      // For fuel planning to work
       computations.extraFuel = 0;
       computations.extraTime = 0;
     } else {
       computations.extraFuel =
-        this.getFOB(forPlan) -
-        computations.tripFuel -
-        computations.minimumDestinationFuel -
-        (this.isFlying() ? 0 : plan.performanceData.taxiFuel + computations.routeReserveFuel);
-      computations.extraTime = (computations.extraFuel * 1000) / (finalHoldingFuelFlow / 60);
+        computations.destinationFuelOnBoard !== null
+          ? computations.destinationFuelOnBoard -
+            (this.isFlying() ? 0 : computations.routeReserveFuel) -
+            computations.minimumDestinationFuel
+          : null;
+      computations.extraTime =
+        computations.extraFuel !== null ? (computations.extraFuel * 1000) / (finalHoldingFuelFlow / 60) : null;
     }
 
     return computations;
