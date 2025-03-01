@@ -364,14 +364,14 @@
         "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
         "InvalidData": "Geçersiz Veriler",
         "MaximumPressureAlt": "Maksimum Basınç İrtifasının Üstünde ({max_zp} ft)",
-        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
-        "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
+        "MaximumRunwaySlope": "Pist Eğim Sınırlarının Dışında (±%2)",
+        "MaximumTailwind": "Maksimum Kuyruk Rüzgarının Üstünde ({max_tailwind} knot)",
         "MaximumTemperature": "Dışarı Hava Sucaklığının Üstünde ({tmax}° C)",
         "MaximumTireSpeed": "Maksimum Lastik Hızı Tatmin Edilmedi",
         "OperatingEmptyWeight": "İşletimsel Boş Ağırlığının (OEW) Altında ({oew}{weight_unit})",
         "StructuralMtow": "Azami Kalkış Ağırlığının (MTOW) Üstünde ({structural_mtow}\n{weight_unit})\n",
         "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
-        "TooLight": "Below Minimum Takeoff Weight",
+        "TooLight": "Minimum Kalkış Ağırlığının Altında",
         "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
       },
       "Packs": "Packs",
@@ -391,7 +391,7 @@
         "Contaminated6mmSlush": "Slush - 6.3 mm/¼\"",
         "Contaminated6mmWater": "Water - 6.3 mm/¼\"",
         "ContaminatedCompactedSnow": "Compacted Snow",
-        "Dry": "Dry",
+        "Dry": "Kuru",
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
@@ -631,7 +631,7 @@
     "Real": "Gerçek",
     "Realism": {
       "AdirsAlignTime": "ADIRS Hizalama Süresi",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "Otomatik Step Climb",
       "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
       "BoardingTime": "Biniş Süresi",
       "DmcSelfTestTime": "DMC Self Test Süresi",
@@ -664,7 +664,7 @@
       "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "Hpa": "hPa",
       "Inactive": "Etkin değil",
-      "Left": "Left",
+      "Left": "Sol",
       "LoadOnly": "Yalnızca Yükle",
       "None": "Hiçbiri",
       "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
@@ -761,8 +761,8 @@
       "UtcAndLocal": "UTC ve Yerel"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
+  "Settings.SimOptions.CabinAutoBrightness": "Otomatik Kabin Aydınlatması",
+  "Settings.SimOptions.CabinManualBrightness": "Kabin Aydınlatma Parlaklığı",
   "StatusBar": {
     "Apr": "Nis",
     "Aug": "Ağu",
