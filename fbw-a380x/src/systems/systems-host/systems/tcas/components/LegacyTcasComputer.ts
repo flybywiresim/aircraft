@@ -15,6 +15,7 @@ import {
   LocalSimVar,
   Arinc429Register,
   AirDataSwitchingKnob,
+  registerTrafficListener,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import {
@@ -170,10 +171,6 @@ export class ResAdvisory {
  * This 1:1 port from the A32NX's TCAS Computer serves as temporary replacement, until a more sophisticated system simulation is in place.
  */
 export class LegacyTcasComputer implements Instrument {
-  private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
-    this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', false);
-  }); // bind to listener
-
   private debug: boolean; // TCAS_DEBUG on/off - NOTE: Do not use with ND, the debug layer has been deprecated/removed.
 
   private syncer: GenericDataListenerSync = new GenericDataListenerSync();
@@ -255,6 +252,7 @@ export class LegacyTcasComputer implements Instrument {
     legacySoundManager: LegacySoundManager,
   ) {
     this.soundManager = legacySoundManager;
+    registerTrafficListener();
   }
 
   /**
