@@ -385,7 +385,7 @@ export class CDUPerformancePage {
       };
     }
 
-    const titleCell = `${titlePrefix}TAKE\xa0OFF\xa0RWY\xa0${runway.padStart(3, '\xa0')}\xa0\xa0\xa0\xa0[color]${titleColor}`;
+    const titleCell = `${titlePrefix}TAKE\xa0OFF\xa0RWY\xa0{green}${runway.padStart(3, '\xa0')}{end}\xa0\xa0\xa0\xa0[color]${titleColor}`;
 
     mcdu.setTemplate([
       [titleCell],
