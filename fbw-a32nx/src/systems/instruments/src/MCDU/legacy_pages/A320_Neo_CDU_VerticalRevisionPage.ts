@@ -139,11 +139,11 @@ export class CDUVerticalRevisionPage {
       const distanceToDest = mcdu.getDistanceToDestination();
       const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
       l4Title = '\xa0QNH';
-      if (isFinite(mcdu.perfApprQNH)) {
-        if (mcdu.perfApprQNH < 500) {
-          l4Cell = `{cyan}${mcdu.perfApprQNH.toFixed(2)}{end}`;
+      if (Number.isFinite(mainTargetPlan.performanceData.approachQnh)) {
+        if (mainTargetPlan.performanceData.approachQnh < 500) {
+          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.toFixed(2)}{end}`;
         } else {
-          l4Cell = `{cyan}${mcdu.perfApprQNH.toFixed(0)}{end}`;
+          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.toFixed(0)}{end}`;
         }
       } else if (closeToDest) {
         l4Cell = '{amber}____{end}';
@@ -151,7 +151,7 @@ export class CDUVerticalRevisionPage {
         l4Cell = '{cyan}[\xa0\xa0]{end}';
       }
       mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
-        if (mcdu.setPerfApprQNH(value)) {
+        if (mcdu.setPerfApprQNH(value, forPlan)) {
           CDUVerticalRevisionPage.ShowPage(
             mcdu,
             waypoint,

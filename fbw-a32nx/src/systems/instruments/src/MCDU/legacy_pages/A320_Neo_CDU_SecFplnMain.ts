@@ -58,6 +58,7 @@ export class CDUSecFplnMain {
 
       mcdu.onLeftInput[3] = () => {
         mcdu.flightPlanService.secondaryActivate(1).then(() => {
+          mcdu.onSecondaryActivated();
           CDUFlightPlanPage.ShowPage(mcdu);
         });
       };
@@ -94,8 +95,10 @@ export class CDUSecFplnMain {
     if (hasSecondary && canCopyOrSwapSec) {
       secSwapActiveColumn.update('*SWAP ACTIVE   ');
 
-      mcdu.onLeftInput[5] = () => {
-        mcdu.flightPlanService.activeAndSecondarySwap(1);
+      mcdu.onLeftInput[5] = async () => {
+        await mcdu.flightPlanService.activeAndSecondarySwap(1);
+        mcdu.onSecondaryActivated();
+        CDUFlightPlanPage.ShowPage(mcdu);
       };
     }
 

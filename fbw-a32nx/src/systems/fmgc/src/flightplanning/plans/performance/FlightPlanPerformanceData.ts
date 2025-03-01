@@ -397,6 +397,87 @@ export interface FlightPlanPerformanceData {
    */
   pilotTripWind: number | null;
 
+  /**
+   * The takeoff shift entered by the pilot in metres, or null if not set.
+   */
+  takeoffShift: number | null;
+
+  /**
+   * The takeoff flaps setting entered by the pilot, or null if not set.
+   */
+  takeoffFlaps: 0 | 1 | 2 | 3 | null;
+
+  /**
+   * The THS setting entered by the pilot, or null if not set.
+   * +ve for nose up, -ve for nose down
+   */
+  trimmableHorizontalStabilizer: number | null;
+
+  /**
+   * The flex takeoff temperature entered by the pilot in degrees, or null if not set.
+   */
+  flexTakeoffTemperature: number | null;
+
+  /**
+   * The preselected climb speed entered by the pilot in knots, or null if not set.
+   */
+  preselectedClimbSpeed: number | null;
+
+  /**
+   * The preselected cruise speed entered by the pilot either in kts or as a Mach number, or null if not set.
+   */
+  preselectedCruiseSpeed: number | null;
+
+  /**
+   * The managed descent speed entered by the pilot in knots, or null if not set.
+   */
+  pilotManagedDescentSpeed: number | null;
+
+  /**
+   * The managed descent Mach number entered by the pilot in knots, or null if not set.
+   */
+  pilotManagedDescentMach: number | null;
+
+  /**
+   * The QNH at the destination airport entered by the pilot in hPa or inHg, or null if not set.
+   */
+  approachQnh: number | null;
+
+  /**
+   * The temperature at the destination airport entered by the pilot in degrees, or null if not set.
+   */
+  approachTemperature: number | null;
+
+  /**
+   * The wind direction at the destination airport entered by the pilot in degrees magnetic, or null if not set.
+   */
+  approachWindDirection: number | null;
+
+  /**
+   * The wind magnitude at the destination airport entered by the pilot in knots, or null if not set.
+   */
+  approachWindMagnitude: number | null;
+
+  /**
+   * The approach speed Vapp manually overridden by the pilot in knots, or null if not set.
+   */
+  pilotVapp: number | null;
+
+  /**
+   * The barometric minimum entered by the pilot, or null if not set.
+   */
+  approachBaroMinimum: number | null;
+
+  /**
+   * The radio minimum entered by the pilot, or null if not set.
+   */
+  approachRadioMinimum: 'NO DH' | number | null;
+
+  /**
+   * Whether the flaps three setting is selected by the pilot for the approach
+   */
+  approachFlapsThreeSelected: boolean;
+
   clone(): this;
 }
 
@@ -474,6 +555,23 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.defaultFinalHoldingTime = this.defaultFinalHoldingTime;
     cloned.pilotMinimumDestinationFuelOnBoard = this.pilotMinimumDestinationFuelOnBoard;
     cloned.pilotTripWind = this.pilotTripWind;
+
+    cloned.takeoffShift = this.takeoffShift;
+    cloned.takeoffFlaps = this.takeoffFlaps;
+    cloned.trimmableHorizontalStabilizer = this.trimmableHorizontalStabilizer;
+    cloned.flexTakeoffTemperature = this.flexTakeoffTemperature;
+    cloned.preselectedClimbSpeed = this.preselectedClimbSpeed;
+    cloned.preselectedCruiseSpeed = this.preselectedCruiseSpeed;
+    cloned.pilotManagedDescentSpeed = this.pilotManagedDescentSpeed;
+    cloned.pilotManagedDescentMach = this.pilotManagedDescentMach;
+    cloned.approachQnh = this.approachQnh;
+    cloned.approachTemperature = this.approachTemperature;
+    cloned.approachWindDirection = this.approachWindDirection;
+    cloned.approachWindMagnitude = this.approachWindMagnitude;
+    cloned.pilotVapp = this.pilotVapp;
+    cloned.approachBaroMinimum = this.approachBaroMinimum;
+    cloned.approachRadioMinimum = this.approachRadioMinimum;
+    cloned.approachFlapsThreeSelected = this.approachFlapsThreeSelected;
 
     return cloned as this;
   }
@@ -914,6 +1012,87 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   pilotTripWind: number | null = null;
 
+  /**
+   * The takeoff shift entered by the pilot in metres, or null if not set.
+   */
+  takeoffShift: number | null = null;
+
+  /**
+   * The takeoff flaps setting entered by the pilot, or null if not set.
+   */
+  takeoffFlaps: 0 | 1 | 2 | 3 | null = null;
+
+  /**
+   * The THS setting entered by the pilot, or null if not set.
+   * +ve for nose up, -ve for nose down
+   */
+  trimmableHorizontalStabilizer: number | null = null;
+
+  /**
+   * The flex takeoff temperature entered by the pilot in degrees, or null if not set.
+   */
+  flexTakeoffTemperature: number | null = null;
+
+  /**
+   * The preselected climb speed entered by the pilot in knots, or null if not set.
+   */
+  preselectedClimbSpeed: number | null = null;
+
+  /**
+   * The preselected cruise speed entered by the pilot either in kts or as a Mach number, or null if not set.
+   */
+  preselectedCruiseSpeed: number | null = null;
+
+  /**
+   * The managed descent speed entered by the pilot in knots, or null if not set.
+   */
+  pilotManagedDescentSpeed: number | null = null;
+
+  /**
+   * The managed descent Mach number entered by the pilot in knots, or null if not set.
+   */
+  pilotManagedDescentMach: number | null = null;
+
+  /**
+   * The QNH at the destination airport entered by the pilot in hPa or inHg, or null if not set.
+   */
+  approachQnh: number | null = null;
+
+  /**
+   * The temperature at the destination airport entered by the pilot in degrees, or null if not set.
+   */
+  approachTemperature: number | null = null;
+
+  /**
+   * The wind direction at the destination airport entered by the pilot in degrees magnetic, or null if not set.
+   */
+  approachWindDirection: number | null = null;
+
+  /**
+   * The wind magnitude at the destination airport entered by the pilot in knots, or null if not set.
+   */
+  approachWindMagnitude: number | null = null;
+
+  /**
+   * The approach speed Vapp manually overridden by the pilot in knots, or null if not set.
+   */
+  pilotVapp: number | null = null;
+
+  /**
+   * The barometric minimum entered by the pilot, or null if not set.
+   */
+  approachBaroMinimum: number | null = null;
+
+  /**
+   * The radio minimum entered by the pilot or 'NO DH', or null if not set.
+   */
+  approachRadioMinimum: 'NO DH' | number | null = null;
+
+  /**
+   * Whether the flaps three setting is selected by the pilot for the approach
+   */
+  approachFlapsThreeSelected: boolean = false;
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel,
@@ -968,6 +1147,22 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       defaultFinalHoldingTime: this.defaultFinalHoldingTime,
       pilotMinimumDestinationFuelOnBoard: this.pilotMinimumDestinationFuelOnBoard,
       pilotTripWind: this.pilotTripWind,
+      takeoffShift: this.takeoffShift,
+      takeoffFlaps: this.takeoffFlaps,
+      trimmableHorizontalStabilizer: this.trimmableHorizontalStabilizer,
+      flexTemperature: this.flexTakeoffTemperature,
+      preselectedClimbSpeed: this.preselectedClimbSpeed,
+      preselectedCruiseSpeed: this.preselectedCruiseSpeed,
+      pilotManagedDescentSpeed: this.pilotManagedDescentSpeed,
+      pilotManagedDescentMach: this.pilotManagedDescentMach,
+      approachQnh: this.approachQnh,
+      approachTemperature: this.approachTemperature,
+      approachWindDirection: this.approachWindDirection,
+      approachWindMagnitude: this.approachWindMagnitude,
+      pilotVapp: this.pilotVapp,
+      approachBaroMinimum: this.approachBaroMinimum,
+      approachRadioMinimum: this.approachRadioMinimum,
+      approachFlapsThreeSelected: this.approachFlapsThreeSelected,
     };
   }
 }
@@ -1041,6 +1236,23 @@ export interface SerializedFlightPlanPerformanceData {
   defaultFinalHoldingTime: number;
   pilotMinimumDestinationFuelOnBoard: number | null;
   pilotTripWind: number | null;
+
+  takeoffShift: number | null;
+  takeoffFlaps: 0 | 1 | 2 | 3 | null;
+  trimmableHorizontalStabilizer: number | null;
+  flexTemperature: number | null;
+  preselectedClimbSpeed: number | null;
+  preselectedCruiseSpeed: number | null;
+  pilotManagedDescentSpeed: number | null;
+  pilotManagedDescentMach: number | null;
+  approachQnh: number | null;
+  approachTemperature: number | null;
+  approachWindDirection: number | null;
+  approachWindMagnitude: number | null;
+  pilotVapp: number | null;
+  approachBaroMinimum: number | null;
+  approachRadioMinimum: 'NO DH' | number | null;
+  approachFlapsThreeSelected: boolean;
 }
 
 // FIXME move to AMI database
