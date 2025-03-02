@@ -167,6 +167,7 @@
 1. [A380X/OIS] Initial implementation of OIS/OIT with charts and OFP - @flogross89 (floridude)
 1. [A380X/PFD] Add LS button reminder - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Latitude/Longitude waypoints now always have the extended ident format - @tracernz (Mike)
+1. [A380X/MFD] Change flightplan uplink & initialize weights message logic - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 
