@@ -23,12 +23,14 @@ export class DestinationSegment extends FlightPlanSegment {
     return this.airport;
   }
 
-  public async setDestinationIcao(icao: string | undefined) {
+  public async setDestinationIcao(icao: string | undefined, skipUpdateLegs?: boolean) {
     if (icao === undefined) {
       this.airport = undefined;
       this.runway = undefined;
 
-      await this.refresh();
+      if (!skipUpdateLegs) {
+        await this.refresh();
+      }
       return;
     }
 
@@ -46,7 +48,9 @@ export class DestinationSegment extends FlightPlanSegment {
     this.flightPlan.availableDestinationRunways = await loadAllRunways(this.destinationAirport);
 
     // TODO do we clear arrival/via/approach ...?
-    await this.refresh();
+    if (!skipUpdateLegs) {
+      await this.refresh();
+    }
 
     this.flightPlan.availableArrivals = await loadAllArrivals(this.destinationAirport);
     this.flightPlan.availableApproaches = await loadAllApproaches(this.destinationAirport);
@@ -58,13 +62,15 @@ export class DestinationSegment extends FlightPlanSegment {
     return this.runway;
   }
 
-  public async setDestinationRunway(runwayIdent: string | undefined, setByApproach = false) {
+  public async setDestinationRunway(runwayIdent: string | undefined, setByApproach = false, skipUpdateLegs = false) {
     const oldRunwayIdent = this.runway?.ident;
 
     if (runwayIdent === undefined) {
       this.runway = undefined;
 
-      this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(undefined);
+      if (!skipUpdateLegs) {
+        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(undefined);
+      }
     } else {
       if (!this.airport) {
         throw new Error('[FMS/FPM] Cannot set destination runway without destination airport');
@@ -81,10 +87,14 @@ export class DestinationSegment extends FlightPlanSegment {
 
       this.runway = matchingRunway;
 
-      await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
+      if (!skipUpdateLegs) {
+        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
+      }
     }
 
-    await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
+    if (!skipUpdateLegs) {
+      await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
+    }
   }
 
   async refresh(doRemoveApproach = true) {

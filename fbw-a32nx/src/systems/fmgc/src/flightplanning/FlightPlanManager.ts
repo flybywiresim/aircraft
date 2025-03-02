@@ -69,14 +69,14 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
           for (const [index, serialisedPlan] of Object.entries(event.plans)) {
             const intIndex = parseInt(index);
 
-            const newPlan = FlightPlan.fromSerializedFlightPlan(
+            FlightPlan.fromSerializedFlightPlan(
               intIndex,
               serialisedPlan,
               this.bus,
               this.performanceDataInit.clone(),
-            );
-
-            this.set(intIndex, newPlan);
+            ).then((newPlan) => {
+              this.set(intIndex, newPlan);
+            })
           }
         }
       }),

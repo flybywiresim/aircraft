@@ -533,16 +533,32 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
   }
 
-  static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
+  static async fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
     index: number,
     serialized: SerializedFlightPlan,
     bus: EventBus,
     performanceDataInit: P,
-  ): FlightPlan<P> {
+  ): Promise<FlightPlan<P>> {
     const newPlan = FlightPlan.empty<P>(index, bus, performanceDataInit);
 
     newPlan.activeLegIndex = serialized.activeLegIndex;
     newPlan.fixInfos = serialized.fixInfo;
+
+    if (serialized.originAirport != '') {
+      await newPlan.originSegment.setOriginIcao(serialized.originAirport, true);
+    }
+
+    if (serialized.originRunway != '') {
+      await newPlan.originSegment.setOriginRunway(serialized.originRunway, true);
+    }
+
+    if (serialized.destinationAirport != '') {
+      await newPlan.destinationSegment.setDestinationIcao(serialized.destinationAirport, true);
+    }
+
+    if (serialized.destinationRunway != '') {
+      await newPlan.destinationSegment.setDestinationRunway(serialized.destinationRunway, false, true);
+    }
 
     newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
     newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);

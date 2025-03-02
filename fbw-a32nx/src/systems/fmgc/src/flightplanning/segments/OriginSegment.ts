@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Runway, areDatabaseItemsEqual, LegType, MathUtils as FbwMathUtils } from '@flybywiresim/fbw-sdk';
+import { Airport, areDatabaseItemsEqual, LegType, MathUtils as FbwMathUtils, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment, SerializedFlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
@@ -27,10 +27,12 @@ export class OriginSegment extends FlightPlanSegment {
     return this.airport;
   }
 
-  public async setOriginIcao(icao: string) {
+  public async setOriginIcao(icao: string, skipUpdateLegs?: boolean) {
     this.airport = await loadAirport(icao);
 
-    await this.refreshDepartureLegs();
+    if (!skipUpdateLegs) {
+      await this.refreshDepartureLegs();
+    }
 
     this.flightPlan.availableOriginRunways = await loadAllRunways(this.originAirport);
     this.flightPlan.availableDepartures = await loadAllDepartures(this.originAirport);
@@ -40,20 +42,24 @@ export class OriginSegment extends FlightPlanSegment {
     return this.runway;
   }
 
-  public async setOriginRunway(runwayIdent: string | undefined) {
+  public async setOriginRunway(runwayIdent: string | undefined, skipUpdateLegs?: boolean) {
     if (!this.originAirport) {
       throw new Error('[FMS/FPM] Cannot set origin runway with no origin airport');
     }
 
     if (runwayIdent === undefined) {
       this.runway = undefined;
-      await this.refreshDepartureLegs();
+      if (!skipUpdateLegs) {
+        await this.refreshDepartureLegs();
+      }
       return;
     }
 
     this.runway = await loadRunway(this.originAirport, runwayIdent);
 
-    await this.refreshDepartureLegs();
+    if (!skipUpdateLegs) {
+      await this.refreshDepartureLegs();
+    }
 
     this.insertNecessaryDiscontinuities();
   }
@@ -206,8 +212,6 @@ export class OriginSegment extends FlightPlanSegment {
    * @param serialized the serialized flight plan segment
    */
   setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-    // TODO sync the airport
-    // TODO sync the runway
     this.allLegs = serialized.allLegs.map((it) =>
       it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
     );

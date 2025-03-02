@@ -28,7 +28,7 @@ export abstract class ProcedureSegment<T extends { ident: string }> extends Flig
    * @param serialized the serialized flight plan segment
    */
   setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-    this.setProcedure(serialized.procedureIdent, true);
+    this.setProcedure(serialized.procedureOrRunwayIdent, true);
     this.allLegs = serialized.allLegs.map((it) =>
       it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
     );
@@ -37,7 +37,7 @@ export abstract class ProcedureSegment<T extends { ident: string }> extends Flig
   override serialize(): SerializedFlightPlanSegment {
     return {
       allLegs: this.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it)),
-      procedureIdent: this.procedure?.ident ?? undefined,
+      procedureOrRunwayIdent: this.procedure?.ident ?? undefined,
     };
   }
 }

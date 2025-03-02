@@ -29,12 +29,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
     private config = FpmConfigs.A320_HONEYWELL_H3,
+    master = false,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(
       this.bus,
       this.performanceDataInit,
       Math.round(Math.random() * 10_000),
-      true,
+      master,
     );
   }
 
