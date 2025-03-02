@@ -58,6 +58,18 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
           }
         }
       }),
+      this.sub.on('flightPlanServer_rpcCommandErrorResponse').handle(([responseId, error]) => {
+        if (this.rpcCommandsSent.has(responseId)) {
+          const [, reject] = this.rpcCommandsSent.get(responseId) ?? [];
+
+          if (reject) {
+            reject(
+              `Error from RPC server: ${typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : error.toString()}`,
+            );
+            this.rpcCommandsSent.delete(responseId);
+          }
+        }
+      }),
     );
     this.flightPlanManager = new FlightPlanManager<P>(
       this.bus,
@@ -74,9 +86,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     funcName: T,
     ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
   ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
+    console.trace('callFunctionViaRpc', funcName, ...args);
     const id = v4();
 
-    this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args], true);
+    this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args], true, false);
 
     const result =
       await this.waitForRpcCommandResponse<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>>(id);

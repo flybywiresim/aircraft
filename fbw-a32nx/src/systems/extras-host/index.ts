@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+// Copyright (c) 2021-2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable no-await-in-loop */
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
@@ -13,6 +17,7 @@ import {
   FlightDeckBounds,
   GPUManagement,
   GroundSupportPublisher,
+  isMsfs2024,
   MsfsElectricsPublisher,
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
@@ -26,6 +31,7 @@ import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
+import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -91,6 +97,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly telexCheck = new TelexCheck();
 
+  private readonly msfsFlightPlanSync: MsfsFlightPlanSync;
+
   public readonly xmlConfig: Document;
   /**interactionpoint 8 is GPU connection and 1 GPU in total */
   private readonly gpuManagement = new GPUManagement(this.bus, 8, 1);
@@ -128,6 +136,10 @@ class ExtrasHost extends BaseInstrument {
 
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+
+    if (isMsfs2024()) {
+      this.msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus);
+    }
 
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
     this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);

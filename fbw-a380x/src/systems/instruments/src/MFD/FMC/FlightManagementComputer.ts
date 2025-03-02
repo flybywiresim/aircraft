@@ -55,6 +55,7 @@ import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -98,6 +99,8 @@ export class FlightManagementComputer implements FmcInterface {
 
   // FIXME A320 data
   #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData(), FpmConfigs.A380);
+
+  #rpcServer: FlightPlanRpcServer | undefined;
 
   get flightPlanService() {
     return this.#flightPlanService;
@@ -259,6 +262,8 @@ export class FlightManagementComputer implements FmcInterface {
         this.efisInterfaces.R,
         a380EfisRangeSettings,
       );
+
+      this.#rpcServer = new FlightPlanRpcServer(this.bus, this.#flightPlanService);
 
       this.#navigation.init();
       this.efisSymbolsLeft.init();

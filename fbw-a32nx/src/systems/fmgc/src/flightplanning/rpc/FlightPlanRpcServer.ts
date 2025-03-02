@@ -10,6 +10,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 
 export interface FlightPlanServerRpcEvents {
   flightPlanServer_rpcCommandResponse: [string, any];
+  flightPlanServer_rpcCommandErrorResponse: [string, unknown];
 }
 
 export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
@@ -28,13 +29,23 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
   }
 
   private async handleRpcCommand(command: string, id: string, ...args: any): Promise<void> {
-    console.log('Handling RPC command', command, id, args);
-    const returnValue = await this.localFlightPlanService[command](...(args as any[]));
+    try {
+      const returnValue = await this.localFlightPlanService[command](...(args as any[]));
 
-    await this.respondToRpcCommand(id, returnValue);
+      await this.respondToRpcCommand(id, returnValue);
+    } catch (e: unknown) {
+      await this.respondToRpcCommandWithError(
+        id,
+        typeof e === 'object' && 'message' in e && typeof e.message === 'string' ? e.message : e,
+      );
+    }
   }
 
   private async respondToRpcCommand(id: string, response: any): Promise<void> {
-    this.pub.pub('flightPlanServer_rpcCommandResponse', [id, response], true);
+    this.pub.pub('flightPlanServer_rpcCommandResponse', [id, response], true, false);
+  }
+
+  private async respondToRpcCommandWithError(id: string, error: unknown): Promise<void> {
+    this.pub.pub('flightPlanServer_rpcCommandErrorResponse', [id, error], true, false);
   }
 }
