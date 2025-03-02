@@ -226,8 +226,9 @@ export class MsfsFlightPlanSync {
     };
 
     if (activePlan.originRunway) {
-      departureRunway.number = activePlan.originRunway.ident.substring(0, 3);
-      departureRunway.designator = activePlan.originRunway.ident.substring(3);
+      // Runway ident is prefixed with airport ident
+      departureRunway.number = activePlan.originRunway.ident.substring(4, 7);
+      departureRunway.designator = activePlan.originRunway.ident.substring(7);
     }
 
     const destinationRunway: JS_RunwayIdentifier = {
@@ -237,8 +238,9 @@ export class MsfsFlightPlanSync {
     };
 
     if (activePlan.destinationRunway) {
-      destinationRunway.number = activePlan.destinationRunway.ident.substring(0, 3);
-      destinationRunway.designator = activePlan.destinationRunway.ident.substring(3);
+      // Runway ident is prefixed with airport ident
+      destinationRunway.number = activePlan.destinationRunway.ident.substring(4, 7);
+      destinationRunway.designator = activePlan.destinationRunway.ident.substring(7);
     }
 
     const approach: JS_ApproachIdentifier = {
