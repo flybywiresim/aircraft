@@ -7,7 +7,7 @@ import { Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
+import { FlightPlanSegment } from './FlightPlanSegment';
 
 export class EnrouteSegment extends FlightPlanSegment {
   class = SegmentClass.Enroute;
