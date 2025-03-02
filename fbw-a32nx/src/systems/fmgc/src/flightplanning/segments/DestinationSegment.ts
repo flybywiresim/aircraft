@@ -9,21 +9,24 @@ import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { loadAllApproaches, loadAllArrivals, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { RestringOptions } from '@fmgc/flightplanning/plans/RestringOptions';
-import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
+import { SerializedFlightPlanSegment } from './FlightPlanSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { TerminalSegment } from '@fmgc/flightplanning/segments/TerminalSegment';
 
-export class DestinationSegment extends FlightPlanSegment {
+export class DestinationSegment extends TerminalSegment {
   class = SegmentClass.Arrival;
 
   allLegs: FlightPlanElement[] = [];
 
-  private airport: Airport;
+  protected airport: Airport | undefined;
+
+  protected runway: Runway | undefined;
 
   public get destinationAirport() {
     return this.airport;
   }
 
-  public async setDestinationIcao(icao: string | undefined, skipUpdateLegs?: boolean) {
+  public async setAirport(icao: string | undefined, skipUpdateLegs?: boolean) {
     if (icao === undefined) {
       this.airport = undefined;
       this.runway = undefined;
@@ -56,13 +59,11 @@ export class DestinationSegment extends FlightPlanSegment {
     this.flightPlan.availableApproaches = await loadAllApproaches(this.destinationAirport);
   }
 
-  private runway?: Runway;
-
   public get destinationRunway() {
     return this.runway;
   }
 
-  public async setDestinationRunway(runwayIdent: string | undefined, setByApproach = false, skipUpdateLegs = false) {
+  public async setRunway(runwayIdent: string | undefined, setByApproach = false, skipUpdateLegs = false) {
     const oldRunwayIdent = this.runway?.ident;
 
     if (runwayIdent === undefined) {
@@ -128,18 +129,5 @@ export class DestinationSegment extends FlightPlanSegment {
     newSegment.runway = this.runway;
 
     return newSegment;
-  }
-
-  /**
-   * Sets the contents of this segment using a serialized flight plan segment.
-   *
-   * @param serialized the serialized flight plan segment
-   */
-  setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-    // TODO sync the airport
-    // TODO sync the runway
-    this.allLegs = serialized.allLegs.map((it) =>
-      it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
-    );
   }
 }

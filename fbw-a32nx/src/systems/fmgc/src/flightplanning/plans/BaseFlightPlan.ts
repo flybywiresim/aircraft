@@ -110,21 +110,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
           const segment = this.orderedSegments[event.segmentIndex];
 
-          const elements: FlightPlanElement[] = event.serialized.allLegs.map((it) => {
-            if (it.isDiscontinuity === false) {
-              return FlightPlanLeg.deserialize(it, segment);
-            }
-            return it;
-          });
-
-          segment.allLegs = elements;
-          if (segment instanceof ProcedureSegment) {
-            segment.setProcedure(event.serialized.procedureDatabaseId, true);
-          }
-
-          this.incrementVersion();
-
-          flightPlanEventsPub.pub('flightPlan.setSegment', event);
+          segment
+            .setFromSerializedSegment(event.serialized)
+            .then(() => flightPlanEventsPub.pub('flightPlan.setSegment', event));
         }
       }),
     );
@@ -470,8 +458,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     const segmentIndex = this.orderedSegments.indexOf(segment);
 
-    const allLegs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
-
     this.sendEvent('flightPlan.setSegment', {
       planIndex: this.index,
       forAlternate: false,
@@ -796,7 +782,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   async setOriginAirport(icao: string) {
-    await this.originSegment.setOriginIcao(icao);
+    await this.originSegment.setAirport(icao);
 
     await this.flushOperationQueue();
     this.incrementVersion();
@@ -807,7 +793,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   async setOriginRunway(runwayIdent: string) {
-    await this.originSegment.setOriginRunway(runwayIdent);
+    await this.originSegment.setRunway(runwayIdent);
 
     await this.flushOperationQueue();
     this.incrementVersion();
@@ -912,7 +898,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   async setDestinationAirport(icao: string | undefined) {
-    await this.destinationSegment.setDestinationIcao(icao).then(() => this.incrementVersion());
+    await this.destinationSegment.setAirport(icao).then(() => this.incrementVersion());
 
     await this.flushOperationQueue();
     this.incrementVersion();
@@ -923,7 +909,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   async setDestinationRunway(runwayIdent: string | undefined) {
-    await this.destinationSegment.setDestinationRunway(runwayIdent).then(() => this.incrementVersion());
+    await this.destinationSegment.setRunway(runwayIdent).then(() => this.incrementVersion());
 
     await this.flushOperationQueue();
     this.incrementVersion();
@@ -1254,8 +1240,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.approachViaSegment.setProcedure(undefined);
     await this.arrivalEnrouteTransitionSegment.setProcedure(undefined);
     await this.arrivalSegment.setProcedure(undefined);
-    await this.destinationSegment.setDestinationIcao(airportIdent);
-    await this.destinationSegment.setDestinationRunway(undefined);
+    await this.destinationSegment.setAirport(airportIdent);
+    await this.destinationSegment.setRunway(undefined);
 
     await this.flushOperationQueue();
 

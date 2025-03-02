@@ -284,8 +284,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
-    await this.destinationSegment.setDestinationIcao(this.alternateDestinationAirport.ident);
-    await this.destinationSegment.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
+    await this.destinationSegment.setAirport(this.alternateDestinationAirport.ident);
+    await this.destinationSegment.setRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
     await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.databaseId ?? undefined);
     await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.databaseId ?? undefined);
     await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.databaseId ?? undefined);
@@ -544,39 +544,25 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     newPlan.activeLegIndex = serialized.activeLegIndex;
     newPlan.fixInfos = serialized.fixInfo;
 
-    if (serialized.originAirport != '') {
-      await newPlan.originSegment.setOriginIcao(serialized.originAirport, true);
-    }
-
-    if (serialized.originRunway != '') {
-      await newPlan.originSegment.setOriginRunway(serialized.originRunway, true);
-    }
-
-    if (serialized.destinationAirport != '') {
-      await newPlan.destinationSegment.setDestinationIcao(serialized.destinationAirport, true);
-    }
-
-    if (serialized.destinationRunway != '') {
-      await newPlan.destinationSegment.setDestinationRunway(serialized.destinationRunway, false, true);
-    }
-
-    newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
-    newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
-    newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(
+    await newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
+    await newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
+    await newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(
       serialized.segments.departureRunwayTransitionSegment,
     );
-    newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(
+    await newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(
       serialized.segments.departureEnrouteTransitionSegment,
     );
-    newPlan.enrouteSegment.setFromSerializedSegment(serialized.segments.enrouteSegment);
-    newPlan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
-    newPlan.arrivalRunwayTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalRunwayTransitionSegment);
-    newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(
+    await newPlan.enrouteSegment.setFromSerializedSegment(serialized.segments.enrouteSegment);
+    await newPlan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
+    await newPlan.arrivalRunwayTransitionSegment.setFromSerializedSegment(
+      serialized.segments.arrivalRunwayTransitionSegment,
+    );
+    await newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(
       serialized.segments.arrivalEnrouteTransitionSegment,
     );
-    newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
-    newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
-    newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
+    await newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
+    await newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
+    await newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
 
     return newPlan;
   }

@@ -27,8 +27,8 @@ export abstract class ProcedureSegment<T extends { ident: string; databaseId: st
    *
    * @param serialized the serialized flight plan segment
    */
-  setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-    this.setProcedure(serialized.procedureDatabaseId, true);
+  async setFromSerializedSegment(serialized: SerializedFlightPlanSegment): Promise<void> {
+    await this.setProcedure(serialized.procedureDatabaseId, true);
     this.allLegs = serialized.allLegs.map((it) =>
       it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
     );
