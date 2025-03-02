@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FixInfoData } from '@fmgc/flightplanning/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';

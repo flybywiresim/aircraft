@@ -9,7 +9,6 @@ import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { loadAllApproaches, loadAllArrivals, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { RestringOptions } from '@fmgc/flightplanning/plans/RestringOptions';
-import { SerializedFlightPlanSegment } from './FlightPlanSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 import { TerminalSegment } from '@fmgc/flightplanning/segments/TerminalSegment';
 

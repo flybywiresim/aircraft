@@ -56,7 +56,6 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
-import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
 
 export enum FlightPlanQueuedOperation {
   Restring,
