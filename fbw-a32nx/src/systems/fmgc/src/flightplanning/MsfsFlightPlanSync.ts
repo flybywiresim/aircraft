@@ -3,6 +3,8 @@ import { EventBus, MappedSubject, Subject, Wait } from '@microsoft/msfs-sdk';
 import {
   JS_ApproachIdentifier,
   JS_FlightPlanRoute,
+  JS_ICAO,
+  JS_RunwayIdentifier,
 } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FsTypes';
 import { FlightPlanRpcClient } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
 import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
@@ -48,23 +50,38 @@ export class MsfsFlightPlanSync {
       throw new Error('[MsfsFlightPlanSync] Cannot be instantiated in MSFS 2020');
     }
 
+    console.log('[MsfsFlightPlanSync] Created');
+
     this.listener = RegisterViewListener('JS_LISTENER_PLANNEDROUTE', () => {
+      console.log('[MsfsFlightPlanSync] Listener initialized');
+
       this.listenerReady.set(true);
     });
 
     this.rpcClient = new FlightPlanRpcClient(bus, new A320FlightPlanPerformanceData());
 
     Wait.awaitCondition(() => this.rpcClient.hasActive, 2_000).then(() => {
+      console.log('[MsfsFlightPlanSync] RPC client has active plan');
+
       this.fmsRpcClientReady.set(true);
     });
 
     Wait.awaitSubscribable(this.isReady).then(() => {
-      this.loadSimRoute();
+      console.log('[MsfsFlightPlanSync] Ready, loading route...');
+
+      this.handleSimRouteSent();
+
+      this.listener.on('AvionicsRouteSync', this.handleSimRouteSent);
+      this.listener.on('AvionicsRouteRequested', this.handleAvionicsRouteRequested);
     });
   }
 
-  public async loadSimRoute(): Promise<void> {
-    const route = await this.getSimRoute();
+  private handleSimRouteSent = async (route?: JS_FlightPlanRoute): Promise<void> => {
+    route ??= await this.getSimRoute();
+
+    if (route.departureAirport.ident === '' || route.destinationAirport.ident === '') {
+      return;
+    }
 
     const db = NavigationDatabaseService.activeDatabase;
 
@@ -178,7 +195,110 @@ export class MsfsFlightPlanSync {
     }
 
     await this.rpcClient.uplinkInsert();
-  }
+  };
+
+  private handleAvionicsRouteRequested = async (_requestID: number): Promise<void> => {
+    const activePlan = this.rpcClient.active;
+
+    if (!activePlan.originAirport || !activePlan.destinationAirport) {
+      return;
+    }
+
+    const departureAirport: JS_ICAO = {
+      __Type: 'JS_ICAO',
+      type: 'A',
+      region: activePlan.originAirport.icaoCode,
+      airport: '',
+      ident: activePlan.originAirport.ident,
+    };
+    const destinationAirport: JS_ICAO = {
+      __Type: 'JS_ICAO',
+      type: 'A',
+      region: activePlan.destinationAirport.icaoCode,
+      airport: '',
+      ident: activePlan.destinationAirport.ident,
+    };
+
+    const departureRunway: JS_RunwayIdentifier = {
+      __Type: 'JS_RunwayIdentifier',
+      number: '',
+      designator: '',
+    };
+
+    if (activePlan.originRunway) {
+      departureRunway.number = activePlan.originRunway.ident.substring(0, 3);
+      departureRunway.designator = activePlan.originRunway.ident.substring(3);
+    }
+
+    const destinationRunway: JS_RunwayIdentifier = {
+      __Type: 'JS_RunwayIdentifier',
+      number: '',
+      designator: '',
+    };
+
+    if (activePlan.destinationRunway) {
+      destinationRunway.number = activePlan.destinationRunway.ident.substring(0, 3);
+      destinationRunway.designator = activePlan.destinationRunway.ident.substring(3);
+    }
+
+    const approach: JS_ApproachIdentifier = {
+      __Type: 'JS_ApproachIdentifier',
+      type: '',
+      runway: {
+        __Type: 'JS_RunwayIdentifier',
+        number: '',
+        designator: '',
+      },
+      suffix: '',
+    };
+
+    if (activePlan.approach) {
+      approach.type = MsfsFlightPlanSync.FBW_APPROACH_TO_MSFS_APPROACH[activePlan.approach.type];
+      if (activePlan.approach.runwayIdent !== undefined) {
+        approach.runway.number = activePlan.approach.runwayIdent.substring(4, 7);
+        approach.runway.designator = activePlan.approach.runwayIdent.substring(7);
+      }
+      approach.suffix = activePlan.approach.suffix ?? '';
+    }
+
+    const route: JS_FlightPlanRoute = {
+      __Type: 'JS_FlightPlanRoute',
+      departureAirport,
+      destinationAirport,
+      departureRunway,
+      destinationRunway,
+      departure: activePlan.originDeparture?.ident ?? '',
+      departureTransition: activePlan.departureEnrouteTransition?.ident ?? '',
+      departureVfrPattern: {
+        __Type: 'JS_VfrPatternProcedure',
+        type: '',
+        altitude: 0,
+        distance: 0,
+        isLeftTraffic: false,
+      },
+      arrival: activePlan.arrival?.ident ?? '',
+      arrivalTransition: activePlan.arrivalEnrouteTransition?.ident ?? '',
+      approach,
+      approachTransition: activePlan.approachVia?.ident ?? '',
+      approachVfrPattern: {
+        __Type: 'JS_VfrPatternProcedure',
+        type: '',
+        altitude: 0,
+        distance: 0,
+        isLeftTraffic: false,
+      },
+      enroute: [],
+      isVfr: false,
+      cruiseAltitude: {
+        // FIXME fill out
+        __Type: 'JS_FlightAltitude',
+        altitude: 0,
+        isFlightLevel: false,
+      },
+    };
+
+    this.listener.call('REPLY_TO_AVIONICS_ROUTE_REQUEST', route, _requestID);
+  };
 
   private fbwApproachMatchesMsfsSdkApproach(
     airportIdent: string,

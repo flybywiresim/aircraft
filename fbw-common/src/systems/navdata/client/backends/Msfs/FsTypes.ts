@@ -739,18 +739,36 @@ export enum VorType {
 
 /** FS2024 only. */
 export interface JS_FlightPlanRoute {
+  __Type: 'JS_FlightPlanRoute';
   departureAirport: JS_ICAO;
   departureRunway: JS_RunwayIdentifier;
   departure: string;
   departureTransition: string;
+  departureVfrPattern: JS_FlightPlanRouteVfrPatternProcedure;
   destinationAirport: JS_ICAO;
   destinationRunway: JS_RunwayIdentifier;
   arrival: string;
   arrivalTransition: string;
   approach: JS_ApproachIdentifier;
   approachTransition: string;
+  approachVfrPattern: JS_FlightPlanRouteVfrPatternProcedure;
   enroute: JS_EnrouteLeg[];
   isVfr: boolean;
+  cruiseAltitude: JS_FlightAltitude;
+}
+
+export interface JS_FlightAltitude {
+  __Type: 'JS_FlightAltitude';
+  altitude: number;
+  isFlightLevel: boolean;
+}
+
+export interface JS_FlightPlanRouteVfrPatternProcedure {
+  __Type: 'JS_VfrPatternProcedure';
+  type: string;
+  distance: number;
+  altitude: number;
+  isLeftTraffic: boolean;
 }
 
 /** FS2024 only. */
