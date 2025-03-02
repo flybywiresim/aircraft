@@ -241,6 +241,6 @@ export abstract class FlightPlanSegment {
 
 export interface SerializedFlightPlanSegment {
   allLegs: (SerializedFlightPlanLeg | Discontinuity)[];
-  facilityDatabaseID?: string;
   procedureIdent?: string;
+  procedureDatabaseId?: string;
 }

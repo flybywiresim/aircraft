@@ -56,6 +56,7 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
+import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
 
 export enum FlightPlanQueuedOperation {
   Restring,
@@ -101,7 +102,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     );
 
     this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setSegmentLegs').handle((event) => {
+      subs.on('SYNC_flightPlan.setSegment').handle((event) => {
         if (!this.ignoreSync) {
           if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
             return;
@@ -109,7 +110,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
           const segment = this.orderedSegments[event.segmentIndex];
 
-          const elements: FlightPlanElement[] = event.legs.map((it) => {
+          const elements: FlightPlanElement[] = event.serialized.allLegs.map((it) => {
             if (it.isDiscontinuity === false) {
               return FlightPlanLeg.deserialize(it, segment);
             }
@@ -117,10 +118,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           });
 
           segment.allLegs = elements;
+          if (segment instanceof ProcedureSegment) {
+            segment.setProcedure(event.serialized.procedureDatabaseId, true);
+          }
 
           this.incrementVersion();
 
-          flightPlanEventsPub.pub('flightPlan.setSegmentLegs', event);
+          flightPlanEventsPub.pub('flightPlan.setSegment', event);
         }
       }),
     );
@@ -466,9 +470,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     const segmentIndex = this.orderedSegments.indexOf(segment);
 
-    const legs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
+    const allLegs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
 
-    this.sendEvent('flightPlan.setSegmentLegs', { planIndex: this.index, forAlternate: false, segmentIndex, legs });
+    this.sendEvent('flightPlan.setSegment', {
+      planIndex: this.index,
+      forAlternate: false,
+      segmentIndex,
+      serialized: segment.serialize(),
+    });
   }
 
   syncLegFlagsChange(atIndex: number) {

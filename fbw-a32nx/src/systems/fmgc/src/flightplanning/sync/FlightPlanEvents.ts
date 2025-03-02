@@ -9,6 +9,7 @@ import { FixInfoData } from '@fmgc/flightplanning/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { SerializedFlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 
 export interface FlightPlanSyncResponsePacket {
   plans: Record<number, SerializedFlightPlan>;
@@ -34,9 +35,9 @@ export interface FlightPlanSetActiveLegIndexEvent extends FlightPlanEditSyncEven
   activeLegIndex: number;
 }
 
-export interface FlightPlanSetSegmentLegsEvent extends FlightPlanEditSyncEvent {
+export interface FlightPlanSetSegmentEvent extends FlightPlanEditSyncEvent {
   segmentIndex: number;
-  legs: (SerializedFlightPlanLeg | Discontinuity)[];
+  serialized: SerializedFlightPlanSegment;
 }
 
 export interface FlightPlanLegFlagsEditEvent extends FlightPlanEditSyncEvent {
@@ -85,7 +86,7 @@ export interface FlightPlanEvents {
   'flightPlanManager.swap': FlightPlanManagerEvent;
 
   'flightPlan.setActiveLegIndex': FlightPlanSetActiveLegIndexEvent;
-  'flightPlan.setSegmentLegs': FlightPlanSetSegmentLegsEvent;
+  'flightPlan.setSegment': FlightPlanSetSegmentEvent;
   'flightPlan.legFlagsEdit': FlightPlanLegFlagsEditEvent;
   'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent;
   'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;

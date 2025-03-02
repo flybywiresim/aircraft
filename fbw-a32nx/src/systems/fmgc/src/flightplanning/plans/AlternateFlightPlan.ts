@@ -64,9 +64,12 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
   syncSegmentLegsChange(segment: FlightPlanSegment) {
     const segmentIndex = this.orderedSegments.indexOf(segment);
 
-    const legs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
-
-    this.sendEvent('flightPlan.setSegmentLegs', { planIndex: this.index, forAlternate: true, segmentIndex, legs });
+    this.sendEvent('flightPlan.setSegment', {
+      planIndex: this.index,
+      forAlternate: true,
+      segmentIndex,
+      serialized: segment.serialize(),
+    });
   }
 }
 
