@@ -21,6 +21,7 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
+  a380EfisRangeSettings,
   DatabaseItem,
   EfisSide,
   Fix,
@@ -28,7 +29,6 @@ import {
   Units,
   UpdateThrottler,
   Waypoint,
-  a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
 import {
   McduMessage,
@@ -38,7 +38,7 @@ import {
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
-import { distanceTo, Coordinates } from 'msfs-geo';
+import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -86,19 +86,18 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  #operatingMode: FmcOperatingModes;
-
   get operatingMode(): FmcOperatingModes {
     // TODO amend once
-    return this.#operatingMode;
-  }
-
-  set operatingMode(value: FmcOperatingModes) {
-    this.#operatingMode = value;
+    return this._operatingMode;
   }
 
   // FIXME A320 data
-  #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData(), FpmConfigs.A380);
+  #flightPlanService = new FlightPlanService(
+    this.bus,
+    new A320FlightPlanPerformanceData(),
+    FpmConfigs.A380,
+    this._operatingMode === FmcOperatingModes.Master, // TODO Dynamically change this within `FlightPlanService` (proxy things through to an RPC client?)
+  );
 
   #rpcServer: FlightPlanRpcServer | undefined;
 
@@ -217,12 +216,11 @@ export class FlightManagementComputer implements FmcInterface {
 
   constructor(
     private instance: FmcIndex,
-    operatingMode: FmcOperatingModes,
+    private _operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
     private readonly fmcInop: Subscribable<boolean>,
     mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null,
   ) {
-    this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
 
     const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
