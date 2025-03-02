@@ -162,7 +162,7 @@ export class MsfsFlightPlanSync {
     if (route.approach.type !== '') {
       const approaches = await db.backendDatabase.getApproaches(route.destinationAirport.ident);
       approach = approaches.find((it) =>
-        this.fbwApproachMatchesMsfsSdkApproach(route.destinationAirport.ident, it, route.approach),
+        MsfsFlightPlanSync.fbwApproachMatchesMsfsSdkApproach(route.destinationAirport.ident, it, route.approach),
       );
 
       if (approach) {
@@ -226,9 +226,7 @@ export class MsfsFlightPlanSync {
     };
 
     if (activePlan.originRunway) {
-      // Runway ident is prefixed with airport ident
-      departureRunway.number = activePlan.originRunway.ident.substring(4, 7);
-      departureRunway.designator = activePlan.originRunway.ident.substring(7);
+      MsfsFlightPlanSync.assignFbwRunwayIdentToMsfsRunwayIdent(departureRunway, activePlan.originRunway.ident);
     }
 
     const destinationRunway: JS_RunwayIdentifier = {
@@ -238,9 +236,7 @@ export class MsfsFlightPlanSync {
     };
 
     if (activePlan.destinationRunway) {
-      // Runway ident is prefixed with airport ident
-      destinationRunway.number = activePlan.destinationRunway.ident.substring(4, 7);
-      destinationRunway.designator = activePlan.destinationRunway.ident.substring(7);
+      MsfsFlightPlanSync.assignFbwRunwayIdentToMsfsRunwayIdent(destinationRunway, activePlan.destinationRunway.ident);
     }
 
     const approach: JS_ApproachIdentifier = {
@@ -257,8 +253,7 @@ export class MsfsFlightPlanSync {
     if (activePlan.approach) {
       approach.type = MsfsFlightPlanSync.FBW_APPROACH_TO_MSFS_APPROACH[activePlan.approach.type];
       if (activePlan.approach.runwayIdent !== undefined) {
-        approach.runway.number = activePlan.approach.runwayIdent.substring(4, 7);
-        approach.runway.designator = activePlan.approach.runwayIdent.substring(7);
+        MsfsFlightPlanSync.assignFbwRunwayIdentToMsfsRunwayIdent(approach.runway, activePlan.approach.runwayIdent);
       }
       approach.suffix = activePlan.approach.suffix ?? '';
     }
@@ -302,7 +297,16 @@ export class MsfsFlightPlanSync {
     this.listener.call('REPLY_TO_AVIONICS_ROUTE_REQUEST', route, _requestID);
   };
 
-  private fbwApproachMatchesMsfsSdkApproach(
+  private static assignFbwRunwayIdentToMsfsRunwayIdent(
+    msfsRunwayIdent: JS_RunwayIdentifier,
+    fbwRunwayIdent: string,
+  ): void {
+    // Runway ident is prefixed with airport ident
+    msfsRunwayIdent.number = fbwRunwayIdent.substring(4, 7);
+    msfsRunwayIdent.designator = fbwRunwayIdent.substring(7);
+  }
+
+  private static fbwApproachMatchesMsfsSdkApproach(
     airportIdent: string,
     fbwApproach: Approach,
     msfsSdkApproach: JS_ApproachIdentifier,
