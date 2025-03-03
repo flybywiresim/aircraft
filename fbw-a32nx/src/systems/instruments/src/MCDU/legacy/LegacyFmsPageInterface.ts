@@ -37,6 +37,31 @@ export type LskCallback = (
 
 export type LskDelayFunction = () => number;
 
+// TODO should this be here?
+export enum SimbriefOfpState {
+  NotLoaded = 0,
+  Requested = 1,
+  Loaded = 2,
+}
+
+export type FuelPredComputations = {
+  tripFuel: number | null;
+  tripTime: number | null;
+  routeReserveFuel: number | null;
+  routeReserveFuelPercentage: number | null;
+  alternateFuel: number | null;
+  alternateTime: number | null;
+  finalHoldingFuel: number | null;
+  finalHoldingTime: number | null;
+  minimumDestinationFuel: number | null;
+  takeoffWeight: number | null;
+  landingWeight: number | null;
+  destinationFuelOnBoard: number | null;
+  alternateDestinationFuelOnBoard: number | null;
+  extraFuel: number | null;
+  extraTime: number | null;
+};
+
 interface LegacyFmsPageDrawingInterface {
   clearDisplay(webSocketDraw?: boolean): void;
   setTemplate(template: any[][], large?: boolean): void;
@@ -91,7 +116,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   logTroubleshootingError(msg: any): void;
   updateTowerHeadwind(): void;
   onToRwyChanged(): void;
-  setGroundTempFromOrigin(): void;
+  setGroundTempFromOrigin(forPlan: FlightPlanIndex): void;
   directToWaypoint(waypoint: Fix): Promise<void>;
   directToLeg(legIndex: number): Promise<void>;
   toggleWaypointOverfly(index, fpIndex, forAlternate, callback?: typeof EmptyCallback.Void): void;
@@ -104,56 +129,37 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
     callback?: typeof EmptyCallback.Boolean,
     bypassTmpy?: boolean,
   ): void;
-  tryUpdateRouteTrip(_dynamic?: boolean): void;
   navModeEngaged(): boolean;
   isFlying(): boolean;
-  trySetZeroFuelWeightZFWCG(s: string): boolean;
+  trySetZeroFuelWeightZFWCG(s: string, forPlan: FlightPlanIndex): boolean;
   /** @deprecated use getGrossWeight */
   getGW(): number;
   getCG(): number;
   getFOB(): number | undefined;
-  routeFinalEntered(): boolean;
-  tryUpdateRouteFinalFuel(): void;
-  getRouteFinalFuelWeight(): number | undefined;
-  getRouteFinalFuelTime(): number;
-  trySetRouteFinalFuel(s: string): Promise<boolean>;
-  tryUpdateRouteAlternate(): void;
-  getRouteAltFuelWeight(): number | null;
-  getRouteAltFuelTime(): number | null;
-  trySetRouteAlternateFuel(altFuel: string): Promise<boolean>;
-  getDestEFOB(useFOB?: boolean): number | null;
-  getAltEFOB(useFOB?: boolean): number | null;
-  getRouteReservedWeight(): number;
-  getRouteReservedPercent(): number;
-  routeReservedEntered(): boolean;
-  trySetRouteReservedFuel(s: string): boolean;
-  tryUpdateMinDestFob(): void;
-  trySetMinDestFob(fuel: string): Promise<boolean>;
+  trySetRouteFinalFuel(s: string, forPlan: FlightPlanIndex): boolean;
+  trySetRouteAlternateFuel(altFuel: string, forPlan: FlightPlanIndex): Promise<boolean>;
+  getDestEFOB(): number | null;
+  trySetRouteReservedFuel(s: string, forPlan: FlightPlanIndex): boolean;
+  trySetMinDestFob(fuel: string, forPlan: FlightPlanIndex): Promise<boolean>;
   checkEFOBBelowMin(): void;
-  tryGetExtraFuel(useFOB?: boolean): number;
-  tryGetExtraTime(useFOB?: boolean): number;
   getNavDatabaseIdent(): DatabaseIdent | null;
   switchNavDatabase(): Promise<void>;
   /** This one is a mess.. */
   updateCoRoute(coRouteNum, callback?: typeof EmptyCallback.Boolean): Promise<void>;
-  updateFlightNo(flightNo: string, callback?: typeof EmptyCallback.Boolean): Promise<void>;
-  setCruiseFlightLevelAndTemperature(input: string): boolean;
+  updateFlightNo(flightNo: string, forPlan: FlightPlanIndex, callback?: typeof EmptyCallback.Boolean): Promise<void>;
+  setCruiseFlightLevelAndTemperature(input: string, forPlan: FlightPlanIndex): boolean;
   getCoRouteList(): Promise<void>;
-  tryUpdateAltDestination(altDestIdent: string): Promise<boolean>;
-  tryUpdateTropo(tropo: string): boolean;
-  tryUpdateFromTo(fromTo: string, callback?: typeof EmptyCallback.Boolean): void;
-  trySetGroundTemp(scratchpadValue: string): void;
-  goToFuelPredPage(): void;
-  trySetBlockFuel(s: string): boolean;
+  tryUpdateAltDestination(altDestIdent: string, forPlan: FlightPlanIndex): Promise<boolean>;
+  tryUpdateTropo(tropo: string, forPlan: FlightPlanIndex): boolean;
+  tryUpdateFromTo(fromTo: string, forPlan: FlightPlanIndex, callback?: typeof EmptyCallback.Boolean): void;
+  trySetGroundTemp(scratchpadValue: string, forPlan: FlightPlanIndex): void;
+  goToFuelPredPage(forPlan: FlightPlanIndex): void;
+  trySetBlockFuel(s: string, forPlan: FlightPlanIndex): boolean;
   tryFuelPlanning(): boolean;
-  trySetTaxiFuelWeight(s: string): boolean;
-  trySetRouteReservedPercent(s: string): boolean;
-  trySetRouteFinalTime(s: string): Promise<boolean>;
-  trySetAverageWind(s: string): boolean;
-  tryUpdateTOW(): void;
-  getTotalTripFuelCons(): number;
-  getTotalTripTime(): number;
-  tryUpdateLW(): void;
+  trySetTaxiFuelWeight(s: string, forPlan: FlightPlanIndex): boolean;
+  trySetRouteReservedPercent(s: string, forPlan: FlightPlanIndex): boolean;
+  trySetRouteFinalTime(s: string, forPlan: FlightPlanIndex): boolean;
+  trySetAverageWind(s: string, forPlan: FlightPlanIndex): boolean;
   getOrSelectNavaidsByIdent(
     ident: string,
     callback: (navaid: EnrouteNdbNavaid | TerminalNdbNavaid | VhfNavaid) => void,
@@ -187,7 +193,8 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getDestinationTransitionLevel(): number | undefined;
   getNavModeSpeedConstraint(): number;
   trySetPreSelectedClimbSpeed(s: string): boolean;
-  tryUpdateCostIndex(costIndex: string): boolean;
+  tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): boolean;
+  computeTakeoffWeight(forPlan: FlightPlanIndex): number;
   trySetPerfClbPredToAltitude(value: string): boolean;
   trySetPreSelectedCruiseSpeed(s: string): boolean;
   trySetPerfDesPredToAltitude(value: string): boolean;
@@ -205,7 +212,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   computeManualCrossoverAltitude(mach: number): number;
   getMaxFlCorrected(fl?: number): number;
   isAllEngineOn(): boolean;
-  trySetCruiseFlCheckInput(input: string): boolean;
+  trySetCruiseFlCheckInput(input: string, forPlan: FlightPlanIndex): boolean;
   trySetProgWaypoint(s: string, callback?: typeof EmptyCallback.Boolean): void;
   isOnGround(): boolean;
   getSelectedNavaids(): SelectedNavaid[];
@@ -213,6 +220,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   reselectNavaid(icao: string): void;
   getOrSelectWaypointByIdent(ident: string, callback: (fix: Fix) => void): void;
   getIsaTemp(alt: number): number;
+  runFuelComputations(forPlan: FlightPlanIndex, computations: FuelPredComputations): FuelPredComputations;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
@@ -232,41 +240,26 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   efisInterfaces?: Record<EfisSide, EfisInterface>;
   _fuelPredDone: boolean;
   _checkWeightSettable: boolean;
-  _zeroFuelWeightZFWCGEntered: boolean;
+  /** @deprecated */
   zeroFuelWeight?: number;
-  zeroFuelWeightMassCenter?: number;
-  _rteFinalWeightEntered: boolean;
-  _rteFinalTimeEntered: boolean;
-  _routeAltFuelEntered: boolean;
-  _routeTripTime: number;
-  _rteReservedWeightEntered: boolean;
-  _rteRsvPercentOOR: boolean;
-  _rteReservedPctEntered: boolean;
-  _minDestFobEntered: boolean;
-  _minDestFob: number;
   _isBelowMinDestFob: boolean;
-  flightNumber?: string;
+  // TODO add types
+  simbriefOfp: any;
+  simbriefOfpState: SimbriefOfpState;
   /** another mess */
   simbrief: any;
-  isCostIndexSet: boolean;
+  /** @deprecated */
   costIndex: number | undefined;
   cruiseLevel: number | undefined;
-  cruiseTemperature?: number;
   tempCurve: any; // we don't have the MSFS SDK typings for these curves
   casToMachManualCrossoverCurve: any;
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;
   isTropoPilotEntered: boolean;
-  groundTemp?: number;
-  groundTempPilot?: number;
-  taxiFuelWeight: number;
+  /** @deprecated get value from flight plan performance data */
   blockFuel?: number;
-  takeOffWeight: number;
-  landingWeight: number;
-  _blockFuelEntered: boolean;
+  get takeOffWeight(): number;
   _fuelPlanningPhase: FuelPlanningPhases;
-  _taxiEntered: boolean;
-  averageWind: number;
   _deltaTime: number;
   unconfirmedV1Speed?: number;
   unconfirmedVRSpeed?: number;

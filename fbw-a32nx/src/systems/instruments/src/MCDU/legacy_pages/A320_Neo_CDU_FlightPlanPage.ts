@@ -8,7 +8,6 @@ import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { AltitudeDescriptor, NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
@@ -59,6 +58,18 @@ export class CDUFlightPlanPage {
     };
     mcdu.activeSystem = 'FMGC';
 
+    if (forPlan >= FlightPlanIndex.FirstSecondary) {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.onUnload = () => {
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+      };
+    } else {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+    }
+
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.FlightPlanPage) {
@@ -90,7 +101,7 @@ export class CDUFlightPlanPage {
 
     let flightNumberText = '';
     if (forActiveOrTemporary) {
-      flightNumberText = mcdu.flightNumber ?? '';
+      flightNumberText = targetPlan.flightNumber ?? '';
     }
 
     const waypointsAndMarkers = [];
@@ -951,10 +962,6 @@ export class CDUFlightPlanPage {
       let destEFOBCell = '---.-';
 
       if (targetPlan.destinationAirport) {
-        if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
-          mcdu.tryUpdateRouteTrip(isFlying);
-        }
-
         const destDist = mcdu.guidanceController.alongTrackDistanceToDestination;
 
         if (Number.isFinite(destDist)) {

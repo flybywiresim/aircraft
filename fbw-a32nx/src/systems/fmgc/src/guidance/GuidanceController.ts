@@ -70,7 +70,7 @@ export interface Fmgc {
   getApproachWind(): FmcWindVector;
   getApproachQnh(): number;
   getApproachTemperature(): number;
-  getDestEFOB(useFob: boolean): number; // Metric tons
+  getDestEFOB(): number; // Metric tons
   getDepartureElevation(): Feet | null;
   getDestinationElevation(): Feet;
 }
@@ -517,6 +517,7 @@ export class GuidanceController {
       gs,
       this.lnavDriver.ppos,
       trueTrack,
+      plan,
       plan.activeLegIndex,
       plan.activeLegIndex, // TODO active transition index for temporary plan...?
     );

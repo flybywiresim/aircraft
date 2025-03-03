@@ -100,6 +100,7 @@
     "@types/react": "~17.0.11",
     "@types/react-dom": "~17.0.8",
     "@types/react-router-dom": "~5.1.7",
+    "@types/uuid": "^10.0.0",
     "@types/semver": "^7.3.13",
     "@typescript-eslint/eslint-plugin": "~6.19.1",
     "@typescript-eslint/parser": "~6.19.1",

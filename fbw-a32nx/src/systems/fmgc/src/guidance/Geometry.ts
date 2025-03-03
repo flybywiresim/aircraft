@@ -27,9 +27,10 @@ import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
 import { distanceTo } from 'msfs-geo';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { FlightPlanElement } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { BitFlags } from '@microsoft/msfs-sdk';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
   return !(
@@ -147,14 +148,16 @@ export class Geometry {
    * @param gs              predicted ground speed of the current leg
    * @param ppos            present position coordinates
    * @param trueTrack       present true track
+   * @param plan            the associated flight plan
    * @param activeLegIdx    current active leg index
-   * @param activeTransIdx  current active transition index
+   * @param _activeTransIdx current active transition index
    */
   recomputeWithParameters(
     tas: Knots,
     gs: Knots,
     ppos: Coordinates,
     trueTrack: DegreesTrue,
+    plan: BaseFlightPlan,
     activeLegIdx: number,
     _activeTransIdx: number,
   ) {
@@ -173,11 +176,11 @@ export class Geometry {
       const leg = this.legs.get(i);
       const wasNull = leg.isNull;
 
-      this.computeLeg(i, activeLegIdx, ppos, trueTrack, tas, gs);
+      this.computeLeg(plan, i, activeLegIdx, ppos, trueTrack, tas, gs);
 
       // If a leg became null/not null, we immediately recompute it to calculate the new guidables and transitions
       if ((!wasNull && leg.isNull) || (wasNull && !leg.isNull)) {
-        this.computeLeg(i, activeLegIdx, ppos, trueTrack, tas, gs);
+        this.computeLeg(plan, i, activeLegIdx, ppos, trueTrack, tas, gs);
       }
     }
 
@@ -195,6 +198,7 @@ export class Geometry {
   }
 
   private computeLeg(
+    plan: BaseFlightPlan,
     index: number,
     activeLegIdx: number,
     ppos: Coordinates,
@@ -323,6 +327,19 @@ export class Geometry {
         leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition);
         leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
       }
+    }
+
+    const element = plan.legElementAt(index);
+
+    // Only copy predictions from geometry to calculated if the leg is not using copied predictions (copied from primary to SEC)
+    if (element.calculated && !BitFlags.isAll(element.flags, FlightPlanLegFlags.CopiedWithPredictions)) {
+      element.calculated.path.length = 0;
+
+      if (inboundTransition) {
+        element.calculated.path.push(...inboundTransition.predictedPath);
+      }
+
+      element.calculated.path.push(...leg.predictedPath);
     }
   }
 
@@ -581,15 +598,25 @@ export class Geometry {
       return;
     }
 
-    flightPlanLeg.calculated = {
-      distance: 0,
-      distanceWithTransitions: 0,
-      cumulativeDistance: 0,
-      cumulativeDistanceWithTransitions: 0,
-      cumulativeDistanceToEnd: undefined,
-      cumulativeDistanceToEndWithTransitions: undefined,
-      endsInTooSteepPath: false,
-    };
+    if (!flightPlanLeg.calculated) {
+      flightPlanLeg.calculated = {
+        path: [],
+        distance: 0,
+        distanceWithTransitions: 0,
+        cumulativeDistance: 0,
+        cumulativeDistanceWithTransitions: 0,
+        cumulativeDistanceToEnd: undefined,
+        cumulativeDistanceToEndWithTransitions: undefined,
+        endsInTooSteepPath: false,
+      };
+    }
+    flightPlanLeg.calculated.distance = 0;
+    flightPlanLeg.calculated.distanceWithTransitions = 0;
+    flightPlanLeg.calculated.cumulativeDistance = 0;
+    flightPlanLeg.calculated.cumulativeDistanceWithTransitions = 0;
+    flightPlanLeg.calculated.cumulativeDistanceToEnd = undefined;
+    flightPlanLeg.calculated.cumulativeDistanceToEndWithTransitions = undefined;
+    flightPlanLeg.calculated.endsInTooSteepPath = false;
 
     if (geometryLeg) {
       geometryLeg.calculated = flightPlanLeg.calculated;

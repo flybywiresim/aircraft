@@ -1170,7 +1170,7 @@ export class FmcAircraftInterface {
     const altActive = false;
     const landingWeight =
       this.fmgc.data.zeroFuelWeight.get() ??
-      NaN + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true)) * 1_000;
+      NaN + (altActive ? this.fmgc.getAltEFOB() : this.fmgc.getDestEFOB()) * 1_000;
 
     return Number.isFinite(landingWeight) ? landingWeight : NaN;
   }

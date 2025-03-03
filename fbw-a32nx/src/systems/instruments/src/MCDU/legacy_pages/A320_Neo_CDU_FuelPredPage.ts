@@ -9,8 +9,10 @@ import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FmsFormatters } from '../legacy/FmsFormatters';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class CDUFuelPredPage {
+  // TODO sec?
   static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FuelPredPage;
@@ -18,10 +20,11 @@ export class CDUFuelPredPage {
     mcdu.activeSystem = 'FMGC';
     const isFlying = mcdu.isFlying();
 
-    const destination = mcdu.flightPlanService.active ? mcdu.flightPlanService.active.destinationAirport : undefined;
-    const alternate = mcdu.flightPlanService.active
-      ? mcdu.flightPlanService.active.alternateDestinationAirport
-      : undefined;
+    const plan = mcdu.flightPlanService.active;
+    const predictions = mcdu.runFuelComputations(FlightPlanIndex.Active, CDUInitPage.computationsCache);
+
+    const destination = plan ? plan.destinationAirport : undefined;
+    const alternate = plan ? plan.alternateDestinationAirport : undefined;
 
     let destIdentCell = 'NONE';
     let destTimeCell = '----';
@@ -55,9 +58,9 @@ export class CDUFuelPredPage {
             (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ''),
         );
       } else {
-        if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
+        if (mcdu.trySetZeroFuelWeightZFWCG(value, FlightPlanIndex.Active)) {
           CDUFuelPredPage.ShowPage(mcdu);
-          CDUInitPage.trySetFuelPred(mcdu);
+          CDUInitPage.trySetFuelPred(mcdu, FlightPlanIndex.Active);
           mcdu.removeMessageFromQueue(NXSystemMessages.initializeWeightOrCg.text);
           mcdu.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
           mcdu._checkWeightSettable = true;
@@ -92,15 +95,13 @@ export class CDUFuelPredPage {
     let extraCellColor = '[color]white';
     let extraTimeColor = '{white}';
 
-    if (mcdu._zeroFuelWeightZFWCGEntered) {
-      if (isFinite(mcdu.zeroFuelWeight)) {
-        zfwCell = NXUnits.kgToUser(mcdu.zeroFuelWeight).toFixed(1);
-        zfwColor = '[color]cyan';
-      }
-      if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
-        zfwCgCell = getZfwcg().toFixed(1);
-      }
-      if (isFinite(mcdu.zeroFuelWeight) && isFinite(getZfwcg())) {
+    if (plan.performanceData.zeroFuelWeight !== null && plan.performanceData.zeroFuelWeightCenterOfGravity !== null) {
+      zfwCell = NXUnits.kgToUser(plan.performanceData.zeroFuelWeight).toFixed(1);
+      zfwColor = '[color]cyan';
+
+      zfwCgCell = getZfwcg().toFixed(1);
+
+      if (Number.isFinite(getZfwcg())) {
         zfwColor = '[color]cyan';
       }
 
@@ -121,28 +122,28 @@ export class CDUFuelPredPage {
       fobCellColor = '[color]cyan';
     }
 
-    if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
+    if (CDUInitPage.fuelPredConditionsMet(mcdu, FlightPlanIndex.Active)) {
       const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
       if (mcdu._fuelPredDone) {
-        if (!mcdu.routeFinalEntered()) {
-          mcdu.tryUpdateRouteFinalFuel();
-        }
-        if (isFinite(mcdu.getRouteFinalFuelWeight()) && isFinite(mcdu.getRouteFinalFuelTime())) {
-          if (mcdu._rteFinalWeightEntered) {
-            finalFuelCell = '{sp}{sp}' + NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight()).toFixed(1);
+        const isRouteFinalEntered =
+          plan.performanceData.pilotFinalHoldingFuel !== null || plan.performanceData.isFinalHoldingTimePilotEntered;
+
+        if (Number.isFinite(predictions.finalHoldingFuel) && Number.isFinite(predictions.finalHoldingTime)) {
+          if (plan.performanceData.pilotFinalHoldingFuel !== null) {
+            finalFuelCell = '{sp}{sp}' + NXUnits.kgToUser(predictions.finalHoldingFuel).toFixed(1);
           } else {
-            finalFuelCell = '{sp}{sp}{small}' + NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight()).toFixed(1) + '{end}';
+            finalFuelCell = '{sp}{sp}{small}' + NXUnits.kgToUser(predictions.finalHoldingFuel).toFixed(1) + '{end}';
           }
-          if (mcdu._rteFinalTimeEntered || !mcdu.routeFinalEntered()) {
-            finalTimeCell = FmsFormatters.minutesTohhmm(mcdu.getRouteFinalFuelTime());
+          if (plan.performanceData.isFinalHoldingTimePilotEntered || !isRouteFinalEntered) {
+            finalTimeCell = FmsFormatters.minutesTohhmm(predictions.finalHoldingTime);
           } else {
-            finalTimeCell = '{small}' + FmsFormatters.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + '{end}';
+            finalTimeCell = '{small}' + FmsFormatters.minutesTohhmm(predictions.finalHoldingTime) + '{end}';
           }
           finalColor = '[color]cyan';
         }
         mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
-          if (await mcdu.trySetRouteFinalFuel(value)) {
+          if (mcdu.trySetRouteFinalFuel(value, FlightPlanIndex.Active)) {
             CDUFuelPredPage.ShowPage(mcdu);
           } else {
             scratchpadCallback();
@@ -150,17 +151,13 @@ export class CDUFuelPredPage {
         };
 
         if (alternate) {
-          const altnFuelEntered = mcdu._routeAltFuelEntered;
-          if (!altnFuelEntered) {
-            mcdu.tryUpdateRouteAlternate();
-          }
-          if (isFinite(mcdu.getRouteAltFuelWeight())) {
+          const altnFuelEntered = plan.performanceData.pilotAlternateFuel !== null;
+
+          if (Number.isFinite(predictions.alternateFuel)) {
             altFuelCell =
-              '{sp}{sp}' +
-              (altnFuelEntered ? '' : '{small}') +
-              NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1);
+              '{sp}{sp}' + (altnFuelEntered ? '' : '{small}') + NXUnits.kgToUser(predictions.alternateFuel).toFixed(1);
             altFuelColor = '[color]cyan';
-            const time = mcdu.getRouteAltFuelTime();
+            const time = predictions.alternateTime;
             if (time) {
               altFuelTimeCell = '{small}' + FmsFormatters.minutesTohhmm(time) + '{end}';
               altTimeColor = '{green}';
@@ -176,7 +173,7 @@ export class CDUFuelPredPage {
           altTimeColor = '{white}';
         }
         mcdu.onLeftInput[3] = async (value, scratchpadCallback) => {
-          if (await mcdu.trySetRouteAlternateFuel(value)) {
+          if (await mcdu.trySetRouteAlternateFuel(value, FlightPlanIndex.Active)) {
             CDUFuelPredPage.ShowPage(mcdu);
           } else {
             scratchpadCallback();
@@ -184,33 +181,29 @@ export class CDUFuelPredPage {
         };
         if (alternate) {
           altIdentCell = alternate.ident;
-          altEFOBCell = NXUnits.kgToUser(mcdu.getAltEFOB(true)).toFixed(1);
+          altEFOBCell = NXUnits.kgToUser(predictions.alternateDestinationFuelOnBoard).toFixed(1);
           altEFOBCellColor = '[color]green';
         }
 
-        mcdu.tryUpdateRouteTrip(isFlying);
-
-        const dest = mcdu.flightPlanService.active.destinationAirport;
-
-        if (dest) {
-          destIdentCell = dest.ident;
+        if (destination) {
+          destIdentCell = destination.ident;
         }
-        const efob = mcdu.getDestEFOB(true);
+        const efob = predictions.destinationFuelOnBoard;
         destEFOBCell = NXUnits.kgToUser(efob).toFixed(1);
         // Should we use predicted values or liveETATo and liveUTCto?
         destTimeCell = isFlying
-          ? FmsFormatters.secondsToUTC(utcTime + FmsFormatters.minuteToSeconds(mcdu._routeTripTime))
-          : (destTimeCell = FmsFormatters.minutesTohhmm(mcdu._routeTripTime));
+          ? FmsFormatters.secondsToUTC(utcTime + FmsFormatters.minuteToSeconds(predictions.tripTime))
+          : (destTimeCell = FmsFormatters.minutesTohhmm(predictions.tripTime));
 
         if (alternate) {
-          if (mcdu.getRouteAltFuelTime()) {
+          if (Number.isFinite(predictions.alternateTime)) {
             altTimeCell = isFlying
               ? FmsFormatters.secondsToUTC(
                   utcTime +
-                    FmsFormatters.minuteToSeconds(mcdu._routeTripTime) +
-                    FmsFormatters.minuteToSeconds(mcdu.getRouteAltFuelTime()),
+                    FmsFormatters.minuteToSeconds(predictions.tripTime) +
+                    FmsFormatters.minuteToSeconds(predictions.alternateTime),
                 )
-              : FmsFormatters.minutesTohhmm(mcdu.getRouteAltFuelTime());
+              : FmsFormatters.minutesTohhmm(predictions.alternateTime);
             altTimeCellColor = '[color]green';
           } else {
             altTimeCell = '----';
@@ -220,18 +213,22 @@ export class CDUFuelPredPage {
 
         destTimeCellColor = '[color]green';
 
-        rteRsvWeightCell = '{sp}{sp}' + NXUnits.kgToUser(mcdu.getRouteReservedWeight()).toFixed(1);
-        if (!mcdu._rteReservedWeightEntered) {
+        rteRsvWeightCell = '{sp}{sp}' + NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1);
+        if (plan.performanceData.pilotRouteReserveFuel === null) {
           rteRsvWeightCell = '{small}' + rteRsvWeightCell + '{end}';
         }
 
-        if (mcdu._rteRsvPercentOOR) {
+        // TODO should come from AMI
+        const isRouteReservePrecentageOutOfRange =
+          predictions.routeReserveFuelPercentage < 0 || predictions.routeReserveFuelPercentage > 15;
+
+        if (isRouteReservePrecentageOutOfRange) {
           rteRsvPercentCell = '--.-';
           rteRSvCellColor = '[color]cyan';
           rteRsvPctColor = '{white}';
         } else {
-          rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
-          if (isFlying || (!mcdu._rteReservedPctEntered && mcdu.routeReservedEntered())) {
+          rteRsvPercentCell = predictions.routeReserveFuelPercentage.toFixed(1);
+          if (isFlying || plan.performanceData.pilotRouteReserveFuel !== null) {
             rteRsvPercentCell = '{small}' + rteRsvPercentCell + '{end}';
           }
           rteRsvPctColor = isFlying ? '{green}' : '{cyan}';
@@ -239,23 +236,24 @@ export class CDUFuelPredPage {
         }
 
         mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
-          if (await mcdu.trySetRouteReservedFuel(value)) {
+          if (mcdu.trySetRouteReservedFuel(value, FlightPlanIndex.Active)) {
             CDUFuelPredPage.ShowPage(mcdu);
           } else {
             scratchpadCallback();
           }
         };
 
-        if (mcdu._minDestFobEntered) {
-          minDestFobCell = '{sp}{sp}' + NXUnits.kgToUser(mcdu._minDestFob).toFixed(1);
+        if (plan.performanceData.pilotMinimumDestinationFuelOnBoard !== null) {
+          minDestFobCell =
+            '{sp}{sp}' + NXUnits.kgToUser(plan.performanceData.pilotMinimumDestinationFuelOnBoard).toFixed(1);
           minDestFobCellColor = '[color]cyan';
         } else {
-          mcdu.tryUpdateMinDestFob();
-          minDestFobCell = '{sp}{sp}{small}' + NXUnits.kgToUser(mcdu._minDestFob).toFixed(1) + '{end}';
+          minDestFobCell =
+            '{sp}{sp}{small}' + NXUnits.kgToUser(predictions.minimumDestinationFuel).toFixed(1) + '{end}';
           minDestFobCellColor = '[color]cyan';
         }
         mcdu.onLeftInput[5] = async (value, scratchpadCallback) => {
-          if (await mcdu.trySetMinDestFob(value)) {
+          if (await mcdu.trySetMinDestFob(value, FlightPlanIndex.Active)) {
             CDUFuelPredPage.ShowPage(mcdu);
           } else {
             scratchpadCallback();
@@ -263,23 +261,23 @@ export class CDUFuelPredPage {
         };
         mcdu.checkEFOBBelowMin();
 
-        extraFuelCell = '{small}' + NXUnits.kgToUser(mcdu.tryGetExtraFuel(true)).toFixed(1);
-        if (mcdu.tryGetExtraFuel(true) < 0) {
+        extraFuelCell = '{small}' + NXUnits.kgToUser(predictions.extraFuel).toFixed(1);
+        if (predictions.extraFuel < 0) {
           extraTimeCell = '----{end}';
           extraTimeColor = '{white}';
         } else {
-          extraTimeCell = FmsFormatters.minutesTohhmm(mcdu.tryGetExtraTime(true)) + '{end}';
+          extraTimeCell = FmsFormatters.minutesTohhmm(predictions.extraTime) + '{end}';
           extraTimeColor = '{green}';
         }
         extraCellColor = '[color]green';
 
         // Currently not updating as there's no simvar to retrieve this.
-        if (isFinite(mcdu.zeroFuelWeight)) {
-          zfwCell = NXUnits.kgToUser(mcdu.zeroFuelWeight).toFixed(1);
+        if (plan.performanceData.zeroFuelWeight !== null) {
+          zfwCell = NXUnits.kgToUser(plan.performanceData.zeroFuelWeight).toFixed(1);
           zfwColor = '[color]cyan';
         }
-        if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
-          zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
+        if (plan.performanceData.zeroFuelWeightCenterOfGravity !== null) {
+          zfwCgCell = plan.performanceData.zeroFuelWeightCenterOfGravity.toFixed(1);
         }
 
         destEFOBCellColor = mcdu._isBelowMinDestFob ? '[color]amber' : '[color]green';
