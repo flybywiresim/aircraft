@@ -150,6 +150,25 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         Ok(self)
     }
 
+    pub fn provides_aircraft_variable_range(
+        mut self,
+        name: &str,
+        units: &str,
+        indexes: impl IntoIterator<Item = usize>,
+    ) -> Result<Self, Box<dyn Error>> {
+        if let Some(registry) = &mut self.variable_registry {
+            for index in indexes {
+                registry.register(&Variable::Aircraft(
+                    name.to_owned(),
+                    units.to_owned(),
+                    index,
+                ));
+            }
+        }
+
+        Ok(self)
+    }
+
     pub fn provides_named_variable(mut self, name: &str) -> Result<Self, Box<dyn Error>> {
         if let Some(registry) = &mut self.variable_registry {
             registry.register(&Variable::Named(name.to_owned(), false));
