@@ -1326,8 +1326,7 @@ export class FwsCore {
   );
 
   public readonly machSelectedFromAdr = MappedSubject.create(
-    ([mach1, mach2, mach3, sideOn3]) =>
-      Math.round((sideOn3 ? mach3.value : this.fwsNumber === 2 ? mach2.value : mach1.value) / 2) * 2,
+    ([mach1, mach2, mach3, sideOn3]) => (sideOn3 ? mach3.value : this.fwsNumber === 2 ? mach2.value : mach1.value),
     this.adr1Mach,
     this.adr2Mach,
     this.adr3Mach,
