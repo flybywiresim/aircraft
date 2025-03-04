@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /**
- * Transmitted from MFD to RMP
+ * Transmitted from MFD to SURV components
  */
 export interface MfdSurvEvents {
   /** (MFD SURV -> RMP) Is AUTO (true) or STBY (false). */

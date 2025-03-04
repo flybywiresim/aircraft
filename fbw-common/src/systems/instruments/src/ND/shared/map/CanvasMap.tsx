@@ -35,6 +35,7 @@ import { FixInfoLayer } from './FixInfoLayer';
 import { NDControlEvents } from '../../NDControlEvents';
 import { PseudoWaypointLayer } from './PseudoWaypointLayer';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
+import { GenericTawsEvents } from '../../types/GenericTawsEvents';
 
 // TODO move this somewhere better, need to move TCAS stuff into fbw-sdk
 enum TaRaIntrusion {
@@ -124,12 +125,14 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
   private readonly trafficLayer = new TrafficLayer(this);
 
+  private endOfVdMarkerData: NdSymbol | null = null;
+
   private lastFrameTimestamp: number = 0;
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<NDControlEvents & GenericFcuEvents>();
+    const sub = this.props.bus.getSubscriber<NDControlEvents & GenericFcuEvents & GenericTawsEvents>();
 
     sub.on('set_show_map').handle((show) => this.mapVisible.set(show));
     sub.on('set_map_recomputing').handle((show) => this.mapRecomputing.set(show));
@@ -139,6 +142,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     sub.on('set_map_up_course').handle((v) => this.mapRotation.set(v));
     sub.on('set_map_pixel_radius').handle((v) => this.mapPixelRadius.set(v));
     sub.on('set_map_range_radius').handle((v) => this.mapRangeRadius.set(v));
+    sub.on('endOfVdMarker').handle((symbol) => (this.endOfVdMarkerData = symbol));
     // sub.on('set_map_efis_mode').handle((v) => this.mapMode.set(v));
 
     sub
@@ -319,6 +323,9 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     );
 
     this.pwpLayer.data = pseudoWaypoints;
+    if (this.endOfVdMarkerData) {
+      this.pwpLayer.data.push(this.endOfVdMarkerData);
+    }
   }
 
   private handleNewTraffic(newTraffic: NdTraffic[]) {

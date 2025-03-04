@@ -47,7 +47,7 @@ import { TrackLine } from './shared/TrackLine';
 import { TrackBug } from './shared/TrackBug';
 import { GenericFcuEvents } from './types/GenericFcuEvents';
 import { ArincEventBus } from '../../../shared/src/ArincEventBus';
-import { EfisNdMode, EfisSide } from '../NavigationDisplay';
+import { EfisNdMode, EfisRecomputingReason, EfisSide } from '../NavigationDisplay';
 import { Arinc429RegisterSubject } from '../../../shared/src/Arinc429RegisterSubject';
 import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSubject';
 import { FmsOansData } from '../../../shared/src/publishers/OansBtv/FmsOansPublisher';
@@ -217,10 +217,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         this.invalidateRange();
       });
 
-    this.rangeChangeInProgress.sub((rangechange) => {
-      this.props.bus.getPublisher<NDControlEvents>().pub('set_range_change', rangechange);
-    });
-
     sub
       .on('ndMode')
       .whenChanged()
@@ -230,6 +226,16 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
     this.mapRecomputing.sub((recomputing) => {
       this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
+
+      let reason = EfisRecomputingReason.None;
+      if (this.pageChangeInProgress.get() && this.rangeChangeInProgress.get()) {
+        reason = EfisRecomputingReason.ModeAndRangeChange;
+      } else if (this.pageChangeInProgress.get()) {
+        reason = EfisRecomputingReason.ModeChange;
+      } else if (this.rangeChangeInProgress.get()) {
+        reason = EfisRecomputingReason.RangeChange;
+      }
+      this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing_reason', reason);
     });
 
     sub

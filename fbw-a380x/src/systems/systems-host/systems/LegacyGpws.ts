@@ -2,7 +2,7 @@ import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore, UpdateThrottler } 
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacySoundManager, soundList } from 'systems-host/systems/LegacySoundManager';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../shared/src/AutoCallOuts';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { FwsSoundManagerControlEvents } from 'systems-host/systems/FlightWarningSystem/FwsSoundManager';
 
 type ModesType = {
@@ -238,11 +238,33 @@ export class LegacyGpws {
     const dh = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
     const phase = SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
 
+    if (mda !== 0 || (dh !== -1 && dh !== -2 && phase === FmgcFlightPhase.Approach)) {
+      let minimumsDA; // MDA or DH
+      let minimumsIA; // radio or baro altitude
+      if (dh >= 0) {
+        minimumsDA = dh;
+        minimumsIA = radioAlt.isNormalOperation() || radioAlt.isFunctionalTest() ? radioAlt.value : NaN;
+      } else {
+        minimumsDA = mda;
+        minimumsIA = baroAlt.isNormalOperation() || baroAlt.isFunctionalTest() ? baroAlt.value : NaN;
+      }
+      if (Number.isFinite(minimumsDA) && Number.isFinite(minimumsIA)) {
+        this.gpwsMinimums(minimumsDA, minimumsIA);
+      }
+    }
+
+    const tawsSelected: number = SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number);
+    const gpwsFailed =
+      tawsSelected === 1 || tawsSelected === 2
+        ? SimVar.GetSimVarValue(`L:A32NX_GPWS_${tawsSelected}_FAILED`, 'Bool')
+        : true;
+
     if (
       radioAltValid &&
       radioAlt.value >= 10 &&
       radioAlt.value <= 2450 &&
-      !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool')
+      !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') &&
+      !gpwsFailed
     ) {
       // Activate between 10 - 2450 radio alt unless SYS is off
       const flapsThreeSelected = SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'Bool');
@@ -276,21 +298,6 @@ export class LegacyGpws {
 
     this.GPWSComputeLightsAndCallouts();
     this.gpwsUpdateDiscreteWords();
-
-    if (mda !== 0 || (dh !== -1 && dh !== -2 && phase === FmgcFlightPhase.Approach)) {
-      let minimumsDA; // MDA or DH
-      let minimumsIA; // radio or baro altitude
-      if (dh >= 0) {
-        minimumsDA = dh;
-        minimumsIA = radioAlt.isNormalOperation() || radioAlt.isFunctionalTest() ? radioAlt.value : NaN;
-      } else {
-        minimumsDA = mda;
-        minimumsIA = baroAlt.isNormalOperation() || baroAlt.isFunctionalTest() ? baroAlt.value : NaN;
-      }
-      if (Number.isFinite(minimumsDA) && Number.isFinite(minimumsIA)) {
-        this.gpwsMinimums(minimumsDA, minimumsIA);
-      }
-    }
   }
 
   /**
