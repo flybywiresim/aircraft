@@ -772,10 +772,11 @@ void A380FacComputer::step()
       rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_vs1g_h, rtb_Switch1,
       &rtb_BusAssignment_kv_flight_envelope_v_alpha_prot_kn);
     A380FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), static_cast<real_T>(rtb_Switch_i_idx_0),
-      A380FacComputer_P.alphamax1_bp01Data, A380FacComputer_P.alphamax1_bp02Data, A380FacComputer_P.alphamax1_tableData,
-      A380FacComputer_P.alphamax1_maxIndex, 4U), A380FacComputer_P.RateLimiterGenericVariableTs2_up,
-      A380FacComputer_P.RateLimiterGenericVariableTs2_lo, A380FacComputer_U.in.time.dt, A380FacComputer_P.reset_Value_i,
-      &rtb_Switch6, &A380FacComputer_DWork.sf_RateLimiter_j);
+      A380FacComputer_P.alphastallwarnmax_bp01Data, A380FacComputer_P.alphastallwarnmax_bp02Data,
+      A380FacComputer_P.alphastallwarnmax_tableData, A380FacComputer_P.alphastallwarnmax_maxIndex, 4U),
+      A380FacComputer_P.RateLimiterGenericVariableTs2_up, A380FacComputer_P.RateLimiterGenericVariableTs2_lo,
+      A380FacComputer_U.in.time.dt, A380FacComputer_P.reset_Value_i, &rtb_Switch6,
+      &A380FacComputer_DWork.sf_RateLimiter_j);
     A380FacComputer_CalculateV_alpha_max(static_cast<real_T>(rtb_V_ias),
       rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_vs1g_h, rtb_Switch6, &rtb_Switch);
     if (A380FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_weight_lbs.SSM == static_cast<uint32_T>(SignStatusMatrix::

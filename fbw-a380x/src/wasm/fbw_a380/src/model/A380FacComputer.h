@@ -228,9 +228,9 @@ class A380FacComputer final
     real_T alphaprotection_tableData_p[24];
     real_T alphaprotection_bp01Data_b[4];
     real_T alphaprotection_bp02Data_m[6];
-    real_T alphamax1_tableData[24];
-    real_T alphamax1_bp01Data[4];
-    real_T alphamax1_bp02Data[6];
+    real_T alphastallwarnmax_tableData[24];
+    real_T alphastallwarnmax_bp01Data[4];
+    real_T alphastallwarnmax_bp02Data[6];
     real_T Gain2_Gain_d;
     real_T uDLookupTable1_tableData[96];
     real_T uDLookupTable1_bp01Data[8];
@@ -317,7 +317,7 @@ class A380FacComputer final
     uint32_T alphaprotection_maxIndex[2];
     uint32_T alphamax_maxIndex_g[2];
     uint32_T alphaprotection_maxIndex_m[2];
-    uint32_T alphamax1_maxIndex[2];
+    uint32_T alphastallwarnmax_maxIndex[2];
     uint32_T uDLookupTable1_maxIndex[2];
     uint32_T nDLookupTable_maxIndex[3];
     uint32_T nDLookupTable_dimSizes[3];
