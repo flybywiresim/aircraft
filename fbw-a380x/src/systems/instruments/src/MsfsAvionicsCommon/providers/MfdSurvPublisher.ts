@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { VerticalPathCheckpoint } from '@flybywiresim/fbw-sdk';
+
 /**
  * Transmitted from MFD to SURV components
  */
@@ -14,4 +16,6 @@ export interface MfdSurvEvents {
   mfd_tcas_alert_level: number;
   /** (MFD SURV -> TCAS) TCAS Alt Select 0 - NORM | 1 - ABV | 2 - BLW */
   mfd_tcas_alt_select: number;
+  /** (FMS -> TERR SYS) FMS active flight plan predictions for vertical display */
+  a32nx_fms_vertical_path: VerticalPathCheckpoint[];
 }

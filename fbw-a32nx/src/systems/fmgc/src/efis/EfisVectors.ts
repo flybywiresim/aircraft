@@ -3,13 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  EfisNdMode,
-  EfisSide,
-  EfisVectorsGroup,
-  GenericDataListenerSync,
-  VerticalPathCheckpoint,
-} from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
@@ -21,7 +15,6 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { bearingTo, Coordinates } from 'msfs-geo';
 
 const UPDATE_TIMER = 2_500;
 
@@ -220,33 +213,6 @@ export class EfisVectors {
 
     const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
     const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
-
-    // ACTIVE vertical geometry
-    const predictions = this.guidanceController.vnavDriver?.mcduProfile?.waypointPredictions;
-    if (predictions) {
-      const verticalVectors: VerticalPathCheckpoint[] = [];
-      const activeLegIndex = plan.activeLegIndex;
-      const previousLeg = plan.allLegs[activeLegIndex - 1];
-      let lastLegLatLong: Coordinates =
-        activeLegIndex > 0 && previousLeg.isDiscontinuity === false
-          ? previousLeg.definition.waypoint.location
-          : this.guidanceController.lnavDriver.ppos;
-      plan.allLegs.slice(activeLegIndex).forEach((leg, legIndex) => {
-        if (leg.isDiscontinuity === false && predictions.has(legIndex)) {
-          verticalVectors.push({
-            distanceFromAircraft: predictions.get(legIndex).distanceFromAircraft,
-            altitude: predictions.get(legIndex).altitude,
-            altitudeConstraint: predictions.get(legIndex).altitudeConstraint,
-            isAltitudeConstraintMet: predictions.get(legIndex).isAltitudeConstraintMet,
-            trackToTerminationWaypoint: leg.definition.waypoint
-              ? bearingTo(lastLegLatLong, leg.definition.waypoint.location)
-              : null,
-          });
-          lastLegLatLong = leg.definition.waypoint?.location ?? lastLegLatLong;
-        }
-      });
-      this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_VERTICAL_PATH`, verticalVectors);
-    }
 
     // ACTIVE missed
 

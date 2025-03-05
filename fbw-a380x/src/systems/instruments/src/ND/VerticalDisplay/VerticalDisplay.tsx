@@ -39,6 +39,7 @@ import { GenericFcuEvents, GenericTawsEvents, TrackLine } from '@flybywiresim/na
 import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { A380XFcuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/A380XFcuBusPublisher';
+import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
@@ -67,7 +68,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       AesuBusEvents &
       FGVars &
       A380XFcuBusEvents &
-      FcuSimVars
+      FcuSimVars &
+      MfdSurvEvents
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
@@ -87,7 +89,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
-  private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('verticalPath'), []);
+  private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_path'), []);
   private readonly displayedFmsPath = MappedSubject.create(
     ([path, ndRange]) => {
       const fmsPathToDisplay: VerticalPathCheckpoint[] = [];

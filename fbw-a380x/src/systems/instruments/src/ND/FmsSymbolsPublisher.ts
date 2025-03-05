@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { BasePublisher, EventBus } from '@microsoft/msfs-sdk';
-import { EfisSide, NdSymbol, NdTraffic, GenericDataListenerSync, VerticalPathCheckpoint } from '@flybywiresim/fbw-sdk';
+import { EfisSide, NdSymbol, NdTraffic, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 
@@ -16,7 +16,6 @@ export interface FmsSymbolsData {
   vectorsAlternate: PathVector[];
   vectorsSecondary: PathVector[];
   traffic: NdTraffic[];
-  verticalPath: VerticalPathCheckpoint[];
 }
 
 export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
@@ -71,12 +70,6 @@ export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
       new GenericDataListenerSync((ev, data: NdTraffic[]) => {
         this.publish('traffic', data);
       }, `A32NX_TCAS_${side}_TRAFFIC`),
-    );
-
-    this.events.push(
-      new GenericDataListenerSync((ev, data: VerticalPathCheckpoint[]) => {
-        this.publish('verticalPath', data);
-      }, `A32NX_EFIS_VECTORS_${side}_VERTICAL_PATH`),
     );
   }
 }

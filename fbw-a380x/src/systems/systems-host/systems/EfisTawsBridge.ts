@@ -41,6 +41,7 @@ import { PowerSupplyBusTypes } from './powersupply';
 import { EgpwcSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
+import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 /**
  * Collects EFIS information for a given EFIS side. Has to be used together with private bus since switchable publishers are used, don't want that to spill to the parent components
@@ -92,7 +93,8 @@ export class EfisTawsBridge implements Instrument {
       FGVars &
       MsfsMiscEvents &
       IrBusEvents &
-      AesuBusEvents
+      AesuBusEvents &
+      MfdSurvEvents
   >();
 
   private readonly updateThrottler = new UpdateThrottler(200);
@@ -277,7 +279,7 @@ export class EfisTawsBridge implements Instrument {
 
   // FIXME receive path over complete distance
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
-  private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('verticalPath'), []);
+  private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_path'), []);
 
   private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_1'));
   private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_2'));
