@@ -168,6 +168,7 @@
 1. [A380X/PFD] Add LS button reminder - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Latitude/Longitude waypoints now always have the extended ident format - @tracernz (Mike)
 1. [A380X/FWS] Fix rounding error in Mach-based OVERSPEED warning - @flogross89 (floridude)
+1. [A380X/MFD] Add ATCCOM MSG RECORD page layouts - @heclak (heclak)
 
 ## 0.12.0
 
