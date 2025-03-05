@@ -16,6 +16,7 @@ type PageSelectorMenuItem = {
   label: string;
   action(): void;
   disabled?: boolean;
+  separatorBelow?: boolean;
 };
 
 interface PageSelectorDropdownMenuProps extends ComponentProps {
@@ -25,20 +26,21 @@ interface PageSelectorDropdownMenuProps extends ComponentProps {
   idPrefix: string;
   containerStyle?: string;
   labelStyle?: string;
+  dropdownMenuStyle?: string;
 }
 export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropdownMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownIsOpened = Subject.create(false);
+  private readonly dropdownIsOpened = Subject.create(false);
 
   private onMenuItemClick(val: PageSelectorMenuItem) {
     if (!val.disabled) {
@@ -53,7 +55,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
     }
   };
 
-  private onClickedOutsideHandler = this.onClickedOutside.bind(this);
+  private readonly onClickedOutsideHandler = this.onClickedOutside.bind(this);
 
   private onOpenCloseDropdown() {
     if (this.props.menuItems.length > 1) {
@@ -63,7 +65,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
     }
   }
 
-  private onOpenCloseDropdownHandler = this.onOpenCloseDropdown.bind(this);
+  private readonly onOpenCloseDropdownHandler = this.onOpenCloseDropdown.bind(this);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -108,10 +110,14 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
   render(): VNode {
     return (
-      <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
+      <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle ?? ''}>
         <div class="mfd-page-selector-outer" ref={this.dropdownSelectorRef}>
           <div class="mfd-page-selector-label-container">
-            <span class="mfd-page-selector-label" ref={this.dropdownSelectorLabelRef} style={this.props.labelStyle}>
+            <span
+              class="mfd-page-selector-label"
+              ref={this.dropdownSelectorLabelRef}
+              style={this.props.labelStyle ?? ''}
+            >
               {this.props.label}
             </span>
           </div>
@@ -126,13 +132,13 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
         <div
           ref={this.dropdownMenuRef}
           class="mfd-dropdown-menu"
-          style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}
+          style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'};${this.props.dropdownMenuStyle ?? ''}`}
         >
           {this.props.menuItems.map(
             (el, idx) => (
               <span
                 id={`${this.props.idPrefix}_${idx}`}
-                class={`mfd-dropdown-menu-element${el.disabled ? ' disabled' : ''}`}
+                class={`mfd-dropdown-menu-element${el.disabled ? ' disabled' : ''}${el.separatorBelow ? ' separator' : ''}`}
               >
                 {el.label}
               </span>

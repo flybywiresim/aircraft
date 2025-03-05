@@ -4,7 +4,7 @@
 
 /* eslint-disable no-await-in-loop */
 
-import { Coordinates, NauticalMiles } from 'msfs-geo';
+import { Coordinates, distanceTo, NauticalMiles } from 'msfs-geo';
 // FIXME remove msfs-sdk dependency
 import {
   FacilitySearchType,
@@ -434,6 +434,8 @@ export class MsfsBackend implements DataInterface {
       if (nearbyFacilities.removed.includes(dbItem.databaseId)) {
         this.facilitySearchTypeToCachedSearchResultsMap[type].splice(i, 1);
         i--;
+      } else {
+        dbItem.distance = distanceTo(center, dbItem.location);
       }
     }
 

@@ -7,6 +7,7 @@ import {
   FSComponent,
   Subject,
   Subscribable,
+  SubscribableUtils,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -14,6 +15,7 @@ import { TriangleDown, TriangleUp } from 'instruments/src/MsfsAvionicsCommon/UiW
 
 export type ButtonMenuItem = {
   label: string;
+  disabled?: boolean;
   action(): void;
 };
 
@@ -22,9 +24,10 @@ export interface ButtonProps extends ComponentProps {
   menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set
   showArrow?: boolean;
   idPrefix?: string;
-  disabled?: Subscribable<boolean>;
+  disabled?: boolean | Subscribable<boolean>;
+  visible?: boolean | Subscribable<boolean>;
   selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
-  buttonStyle?: string;
+  buttonStyle?: string | Subscribable<string>;
   containerStyle?: string;
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;
@@ -35,22 +38,26 @@ export interface ButtonProps extends ComponentProps {
  */
 export class Button extends DisplayComponent<ButtonProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private buttonRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly buttonRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownIsOpened = Subject.create(false);
+  private readonly dropdownIsOpened = Subject.create(false);
 
-  private menuOpensUpwards = Subject.create(false);
+  private readonly menuOpensUpwards = Subject.create(false);
 
   private renderedMenuItems: ButtonMenuItem[] = [];
 
+  private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? Subject.create(false), true);
+
+  private readonly visible = SubscribableUtils.toSubscribable(this.props.visible ?? Subject.create(true), true);
+
   private onClick() {
-    if (!this.props.disabled?.get()) {
+    if (!this.disabled.get()) {
       this.props.onClick();
     }
   }
@@ -93,22 +100,20 @@ export class Button extends DisplayComponent<ButtonProps> {
     this.buttonRef.instance.addEventListener('click', this.onClickHandler);
 
     this.subs.push(
-      this.props.disabled.sub((val) => {
-        if (val) {
-          this.buttonRef.getOrDefault()?.classList.add('disabled');
-        } else {
-          this.buttonRef.getOrDefault()?.classList.remove('disabled');
-        }
+      this.disabled.sub((val) => {
+        this.buttonRef.getOrDefault()?.classList.toggle('disabled', val);
+      }, true),
+    );
+
+    this.subs.push(
+      this.visible.sub((val) => {
+        this.topRef.instance.style.visibility = val ? 'inherit' : 'hidden';
       }, true),
     );
 
     this.subs.push(
       this.props.selected.sub((val) => {
-        if (val) {
-          this.buttonRef.getOrDefault()?.classList.add('selected');
-        } else {
-          this.buttonRef.getOrDefault()?.classList.remove('selected');
-        }
+        this.buttonRef.getOrDefault()?.classList.toggle('selected', val);
       }, true),
     );
 
@@ -135,7 +140,13 @@ export class Button extends DisplayComponent<ButtonProps> {
             <div>
               {items?.map<VNode>(
                 (el, idx) => (
-                  <span id={`${this.props.idPrefix}_${idx}`} class="mfd-dropdown-menu-element">
+                  <span
+                    id={`${this.props.idPrefix}_${idx}`}
+                    class={{
+                      'mfd-dropdown-menu-element': true,
+                      disabled: el.disabled === true,
+                    }}
+                  >
                     {el.label}
                   </span>
                 ),
@@ -146,11 +157,16 @@ export class Button extends DisplayComponent<ButtonProps> {
           FSComponent.render(itemNodes, this.dropdownMenuRef.instance);
 
           // Add click event listener
-          items?.forEach((val, i) => {
+          for (const val of items) {
+            if (val.disabled === true) {
+              continue;
+            }
+
+            const i = items.indexOf(val);
             document
               .getElementById(`${this.props.idPrefix}_${i}`)
               ?.addEventListener('click', this.onDropdownMenuElementClickHandler.bind(this, val));
-          });
+          }
 
           // Check if menu would overflow vertically (i.e. leave screen at the bottom). If so, open menu upwards
           // Open menu for a split second to measure size
@@ -186,9 +202,9 @@ export class Button extends DisplayComponent<ButtonProps> {
               <span class="mfd-fms-fpln-button-dropdown-label">{val}</span>
               <span class="mfd-fms-fpln-button-dropdown-arrow">
                 {this.menuOpensUpwards.get() ? (
-                  <TriangleUp color={this.props.disabled?.get() ? 'grey' : 'white'} />
+                  <TriangleUp color={this.disabled.get() ? 'grey' : 'white'} />
                 ) : (
-                  <TriangleDown color={this.props.disabled?.get() ? 'grey' : 'white'} />
+                  <TriangleDown color={this.disabled.get() ? 'grey' : 'white'} />
                 )}
               </span>
             </div>
@@ -241,7 +257,7 @@ export class Button extends DisplayComponent<ButtonProps> {
   private onCloseDropdownHandler = this.onCloseDropdown.bind(this);
 
   private onButtonClick() {
-    if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.props.disabled?.get()) {
+    if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.disabled.get()) {
       this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
     }
   }
@@ -252,9 +268,15 @@ export class Button extends DisplayComponent<ButtonProps> {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
 
-    this.buttonRef.getOrDefault()?.removeEventListener('click', this.onClickHandler);
+    this.buttonRef.instance.removeEventListener('click', this.onClickHandler);
     document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onCloseDropdownHandler);
-    this.buttonRef.getOrDefault()?.removeEventListener('click', this.onButtonClickHandler);
+    this.buttonRef.instance.removeEventListener('click', this.onButtonClickHandler);
+
+    this.renderedMenuItems?.forEach((val, i) => {
+      document
+        .getElementById(`${this.props.idPrefix}_${i}`)
+        ?.removeEventListener('click', this.onDropdownMenuElementClickHandler.bind(this, val));
+    });
 
     super.destroy();
   }

@@ -8,25 +8,25 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 
-export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayComponent<T> {
+export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  protected subs = [] as Subscription[];
+  protected readonly subs = [] as Subscription[];
 
   private newDataIntervalId: ReturnType<typeof setTimeout> | undefined = undefined;
 
-  protected activePageTitle = Subject.create<string>('');
+  protected readonly activePageTitle = Subject.create<string>('');
 
   public loadedFlightPlan: FlightPlan | null = null;
 
-  protected loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
+  protected readonly loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
 
   protected currentFlightPlanVersion: number = 0;
 
-  protected tmpyActive = Subject.create<boolean>(false);
+  protected readonly tmpyActive = Subject.create<boolean>(false);
 
-  protected secActive = Subject.create<boolean>(false);
+  protected readonly secActive = Subject.create<boolean>(false);
 
-  protected activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
+  protected readonly activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
 
   // protected mfdInViewConsumer: Consumer<boolean>;
 
@@ -188,12 +188,14 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
       }
     }
 
-    this.props.fmcService.master?.acInterface.updateOansAirports();
+    this.props.fmcService.master?.acInterface.updateFmsData();
   }
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
-    this.subs.forEach((x) => x.destroy());
+    for (const s of this.subs) {
+      s.destroy();
+    }
 
     clearInterval(this.newDataIntervalId);
     this.newDataIntervalId = undefined;
