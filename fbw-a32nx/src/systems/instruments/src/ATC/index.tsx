@@ -34,18 +34,17 @@ const PoweredXpdrDisplay = () => {
   const [displayResetTimer, setDisplayResetTimer] = useState(-1);
   const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Number', 250);
   const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 250);
-  const [tcas] = useState(() => new TcasComputer());
 
   const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'Bco16', 'K:XPNDR_SET', 'Bco16');
   const codeInDisplay = newDigits !== null ? newDigits : getDigitsFromBco16(transponderCode);
 
   useEffect(() => {
-    tcas.init();
+    TcasComputer.init();
   }, []);
 
   const updateCallback = useCallback(
     (deltaTime) => {
-      tcas.update(deltaTime);
+      TcasComputer.update(deltaTime);
       if (displayResetTimer > 0) {
         setDisplayResetTimer(Math.max(displayResetTimer - deltaTime / 1000, 0));
       }
