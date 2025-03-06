@@ -41,8 +41,8 @@ export class A380XFcuBusPublisher extends SimVarPublisher<A380XFcuBusPublisherEv
    */
   public constructor(bus: EventBus, pacer?: PublishPacer<A380XFcuBusPublisherEvents>) {
     const simvars = new Map<keyof A380XFcuBusPublisherEvents, SimVarPublisherEntry<any>>([
-      ['a380x_fcu_selected_vertical_speed', { name: 'L:A32NX_AUTOPILOT_VS_SELECTED', type: SimVarValueType.Number }],
-      ['a380x_fcu_selected_fpa', { name: 'L:A32NX_AUTOPILOT_FPA_SELECTED', type: SimVarValueType.Number }],
+      ['a380x_fcu_selected_vertical_speed', { name: 'L:A32NX_AUTOPILOT_VS_SELECTED', type: SimVarValueType.FPM }],
+      ['a380x_fcu_selected_fpa', { name: 'L:A32NX_AUTOPILOT_FPA_SELECTED', type: SimVarValueType.Degree }],
     ]);
 
     super(simvars, bus, pacer);

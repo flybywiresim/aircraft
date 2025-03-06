@@ -45,6 +45,7 @@ export interface VerticalDisplayCanvasMapProps extends ComponentProps {
   vdRange: Subscribable<number>;
   verticalRange: Subscribable<[number, number]>;
   isSelectedVerticalMode: Subscribable<boolean>;
+  shouldShowTrackLine: Subscribable<boolean>;
   selectedAltitude: Subscribable<number>;
   fpa: Subscribable<Arinc429WordData>;
 }
@@ -138,12 +139,14 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
         VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
       );
 
-      let selectedVerticalAngle = this.props.fpa.get().value * VD_FPA_TO_DISPLAY_ANGLE;
+      let selectedVerticalAngle = this.props.fpa.get().valueOr(0) * VD_FPA_TO_DISPLAY_ANGLE;
       switch (this.activeVerticalMode.get()) {
         case VerticalMode.VS:
           selectedVerticalAngle =
             !this.groundSpeed.get().isFailureWarning() && this.groundSpeed.get().value > 10
-              ? Math.atan2(this.groundSpeed.get().value, this.selectedVs.get()) * VD_FPA_TO_DISPLAY_ANGLE
+              ? Math.sign(this.selectedVs.get()) *
+                Math.atan2(this.groundSpeed.get().value, this.selectedVs.get()) *
+                VD_FPA_TO_DISPLAY_ANGLE
               : 0;
           break;
         case VerticalMode.FPA:
@@ -161,10 +164,12 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
         (selectedVerticalAngle > 0 && this.props.selectedAltitude.get() > this.baroCorrectedAltitude.get().value) ||
         (selectedVerticalAngle < 0 && this.props.selectedAltitude.get() < this.baroCorrectedAltitude.get().value);
 
-      if (isConstrained) {
+      const vsMatchesTarget = Math.sign(selectedVerticalAngle) === Math.sign(this.props.fpa.get().value);
+
+      if (isConstrained && vsMatchesTarget) {
         // Draw current FPA until constraint, then the constraint alt
         const altInterceptDistance =
-          Math.abs(this.props.selectedAltitude.get() - this.baroCorrectedAltitude.get().value) /
+          (this.props.selectedAltitude.get() - this.baroCorrectedAltitude.get().value) /
           MathUtils.FEET_TO_NAUTICAL_MILES /
           Math.sin(this.props.fpa.get().value * MathUtils.DEGREES_TO_RADIANS);
 
@@ -181,6 +186,20 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
         context.lineTo(VERTICAL_DISPLAY_CANVAS_WIDTH, fpaY(VERTICAL_DISPLAY_CANVAS_WIDTH));
       }
 
+      context.stroke();
+      context.setLineDash([10, 10]);
+    } else if (
+      this.props.shouldShowTrackLine.get() &&
+      (this.activeVerticalMode.get() === VerticalMode.ALT || this.activeVerticalMode.get() === VerticalMode.ALT_CPT)
+    ) {
+      context.moveTo(
+        VerticalDisplayCanvasMap.distanceToX(0, vdRange, this.offsetDistance.get()),
+        VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
+      );
+      context.lineTo(
+        VERTICAL_DISPLAY_CANVAS_WIDTH,
+        VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
+      );
       context.stroke();
       context.setLineDash([10, 10]);
     }

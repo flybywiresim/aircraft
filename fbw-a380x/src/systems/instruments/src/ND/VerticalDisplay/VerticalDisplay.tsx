@@ -488,6 +488,10 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.vdRange.sub(() => this.calculateAndTransmitEndOfVdMarker()),
       this.fmsLateralPath.sub(() => this.calculateAndTransmitEndOfVdMarker()),
       this.canvasMapRef.instance.canvasInvalid.pipe(this.trajNotAvailFlagCondition),
+      this.sub
+        .on('realTime')
+        .atFrequency(5)
+        .handle(() => this.calculateAndTransmitEndOfVdMarker()),
     );
 
     this.calculateAndTransmitEndOfVdMarker();
@@ -573,14 +577,15 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     const ndRange =
       this.ndMode.get() === EfisNdMode.ROSE_NAV ? this.ndRangeSetting.get() / 2 : this.ndRangeSetting.get();
     const vdAndNdRangeDisagreeing = this.vdRange.get() !== ndRange;
-    if (isInVdMapMode && !this.shouldShowTrackLine.get()) {
-      let totalDistanceFromAircraft = 0;
+    if (isInVdMapMode && !this.shouldShowTrackLine.get() && this.fmsLateralPath.get()) {
+      let totalDistanceFromAircraft = this.fmsVerticalPath?.get()[0]?.distanceFromAircraft ?? 0;
       for (const path of this.fmsLateralPath.get()) {
         const pathDistance = pathVectorLength(path);
 
         if (totalDistanceFromAircraft + pathDistance > this.vdRange.get()) {
-          const symbolLocation = pathVectorPoint(path, this.vdRange.get() - totalDistanceFromAircraft);
-          const justBeforeSymbolLocation = pathVectorPoint(path, this.vdRange.get() - totalDistanceFromAircraft - 0.05);
+          const dist = pathDistance - (this.vdRange.get() - totalDistanceFromAircraft);
+          const symbolLocation = pathVectorPoint(path, dist);
+          const justBeforeSymbolLocation = pathVectorPoint(path, dist - 0.05);
 
           if (symbolLocation && justBeforeSymbolLocation) {
             const bearing = bearingTo(symbolLocation, justBeforeSymbolLocation);
@@ -634,6 +639,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           vdRange={this.vdRange}
           verticalRange={this.verticalRange}
           isSelectedVerticalMode={this.isSelectedVerticalMode}
+          shouldShowTrackLine={this.shouldShowTrackLine}
           fpa={this.fpa}
           selectedAltitude={this.selectedAltitude}
         />
