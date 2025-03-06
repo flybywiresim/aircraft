@@ -495,10 +495,7 @@ export class EfisTawsBridge implements Instrument {
     }
 
     if (this.verticalPathShouldBeUpdated && this.simBridgeClient.isConnected()) {
-      const success = Promise.all([
-        TawsData.postVerticalDisplayPath('L', this.terrVdPathData.get()),
-        TawsData.postVerticalDisplayPath('R', this.terrVdPathData.get()),
-      ]);
+      const success = await TawsData.postVerticalDisplayPath(this.terrVdPathData.get());
       this.verticalPathShouldBeUpdated = !success;
     }
   }

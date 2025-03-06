@@ -1,7 +1,6 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide } from '../../../../index-no-react';
 import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { ElevationSamplePathDto, TawsAircraftStatusDataDto } from '../Taws/taws';
 
@@ -29,9 +28,9 @@ export class TawsData {
     return false;
   }
 
-  public static async postVerticalDisplayPath(side: EfisSide, data: ElevationSamplePathDto): Promise<boolean> {
+  public static async postVerticalDisplayPath(data: ElevationSamplePathDto): Promise<boolean> {
     if (data) {
-      const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/terrain/verticalDisplayPath?side=${side}`, {
+      const response = await fetchWithTimeout(`${getSimBridgeUrl()}/api/v1/terrain/verticalDisplayPath`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
