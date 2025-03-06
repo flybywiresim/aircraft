@@ -156,6 +156,20 @@
 1. [A380X/BTV] Add EXIT MISSED indication on FMA and aural triple click - @flogross89 (floridude)
 1. [A380X/OANS] Add flags/crosses capability, change cursor to magenta, implement ARPT NAV reset button - @flogross89 (floridude)
 1. [A32NX/MCDU] Show ground & cruise temperature sign on init page if positive - @BravoMike99 (bruno_pt99)
+1. [A380X/OANS] Fix BTV fallback mode; Enable BTV fallback if ARPT NAV reset button is pulled - @flogross89 (floridude)
+1. [A380X/Flight Model] Flight model update incl stall & auto-rotate fix for FS2020 & 2024 - @donstim (donbikes) & @saschl (saschl)
+1. [EFB] Navigraph subscriptions other than Ultimate are now shown on the EFB to reduce confusion with "Unknown" - @tracernz (Mike)
+1. [A380X/FWS] Add RAT OUT, REFUEL PNL DOOR, HI ALT AIRPORT & REFUELING/DEFUELING memos - @BravoMike99 (bruno_pt99)
+1. [A380X/ND] Correct positioning of TCAS Messages and added TCAS STBY - @MrJigs7 (MrJigs)
+1. [A32NX/AFS] Add new vertical profile validity LVar for managed vertical modes - @lukecologne (luke)
+1. [A380X/FMS] Added (RNP) label on RNP AR SIDs and approach vias (MSFS2024 only) - @tracernz (Mike)
+1. [A380X/KCCU] Fix unclickable left directional arrow key on KCCU - @heclak (Heclak)
+1. [A380X/OIS] Initial implementation of OIS/OIT with charts and OFP - @flogross89 (floridude)
+1. [A380X/PFD] Add LS button reminder - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Latitude/Longitude waypoints now always have the extended ident format - @tracernz (Mike)
+1. [A380X/FWS] Fix rounding error in Mach-based OVERSPEED warning - @flogross89 (floridude)
+1. [A380X/MFD] Add ATCCOM MSG RECORD page layouts - @heclak (heclak)
+1. [A380X/ND] Fixed active leg label to be left aligned - @MrJigs7 (MrJigs)
 1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-85)
 
 ## 0.12.0
@@ -277,6 +291,7 @@
 1. [FMS] Run vertical predictions without V-speeds - @BlueberryKing (BlueberryKing)
 1. [ELEC] Use ADIRU and LGCIU signals for speed and in flight determination - @Gurgel100 (Pascal)
 1. [FMS] Do not transmit bearing information to ND on manual legs - @BravoMike99 (bruno_pt99)
+1. [FMS] Remove forced turn on following leg after leg insertion - @BlueberryKing (BlueberryKing)
 
 ## 0.11.0
 
@@ -1593,3 +1608,4 @@
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
 1. [ECAM] Added F units to CRZ and COND pages for Cabin temps. Currently tied to kg/lbs option in EFB -Patrick Macken  (@PatM on Discord)
+1. [A32NX/FCU] Fixed bug where the FCU selected altitude would immediately switch to 1000s on selecting the 1000ft inteval knob - @elliot747 (Elliot)

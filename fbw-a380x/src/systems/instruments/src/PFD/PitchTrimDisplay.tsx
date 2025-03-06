@@ -41,9 +41,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
-  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(4), 0).map(
-    (it) => it * 100,
-  );
+  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(1), 0);
 
   private readonly cgStatus = MappedSubject.create(
     ([trim, cg, phase]) => {

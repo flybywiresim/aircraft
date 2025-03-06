@@ -1,0 +1,106 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions";
+
+#msg-record-list {
+  width:710px;
+  display: flex;
+  flex-direction: column;
+  padding-top: 18px;
+}
+
+.msg-record-msg-element {
+  border-bottom: 1px solid #fff;
+  position: relative;
+  width: 100%;
+  font-size: 26px;
+  padding: 16px;
+  line-height: 30px;
+  min-height: 124px;
+
+  .msg-time {
+    font-size: 22px;
+  }
+
+  .msg-origin-dest {
+    position: absolute;
+    left: 146px;
+    font-size: 22px;
+  }
+
+  .msg-status {
+    position: absolute;
+    top: 19px;
+    right: 6px;
+    width: 155px;
+    text-align: center;
+    font-size: 26px;
+    color: #000;
+    background: $display-green;
+    line-height: 25px;
+  }
+
+  .msg-body {
+    width: 470px;
+
+    .msg-highlight-magenta {
+      color: $display-magenta;
+    }
+
+    .msg-highlight-cyan {
+      color: $display-cyan;
+    }
+  }
+
+  .msg-body-expand {
+    font-size: 27px;
+    line-height: 40px;
+  }
+}
+
+#msg-record-scrollbar {
+  display: flex;
+  background-color: #3c3c3c;
+  color: #ffffff;
+  border: 2px outset #c4c6cf;
+  margin: 15px 0;
+  width: 20px;
+}
+
+#msg-record-nav {
+  width: 60px;
+  position: relative;
+  right: 0px;
+  top: 23px;
+  margin-left: 3px;
+}
+
+.mfd-atccom-msg-record-footer {
+  position: relative;
+  flex-flow: row;
+  padding: 3px 0;
+  min-height: 64px;
+}
+
+.monitored-msg {
+  .msg-status {
+    position: absolute;
+    top: 19px;
+    right: 190px;
+    width: 155px;
+    text-align: center;
+    font-size: 26px;
+    color: #000;
+    background: $display-cyan;
+    line-height: 25px;
+  }
+
+  .msg-body {
+    color: $display-white;
+  }
+}
+
+.msg-expand-button {
+  position: absolute;
+  right: 115px;
+  bottom: 15px;
+  color: #fff;
+}
