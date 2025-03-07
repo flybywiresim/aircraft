@@ -1663,6 +1663,7 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
         } else {
           this.textRef.instance.innerHTML = '';
         }
+        this.classNameSub.set(`FontSmallest MiddleAlign White`);
       });
 
     sub
