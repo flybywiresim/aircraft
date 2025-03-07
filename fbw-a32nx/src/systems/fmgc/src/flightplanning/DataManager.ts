@@ -55,6 +55,17 @@ type PbdWaypoint = {
 
 export type PilotWaypoint = LatLonWaypoint | PbxWaypoint | PbdWaypoint | null;
 
+export enum LatLonFormatType {
+  UserSetting = 'user-setting',
+  ShortFormat = 'short-format',
+  ExtendedFormat = 'extended-format',
+}
+
+export interface DataManagerOptions {
+  /** The format to use for lat/lon waypoint idents. Defaults to {@link LatLonFormatType.UserSetting}. */
+  latLonFormat: LatLonFormatType;
+}
+
 export class DataManager {
   private static readonly STORED_WP_KEY: string = 'A32NX.StoredWaypoints';
 
@@ -62,7 +73,10 @@ export class DataManager {
 
   private latLonExtendedFormat = false;
 
-  constructor(private fmc: FmsDisplayInterface) {
+  constructor(
+    private readonly fmc: FmsDisplayInterface,
+    private readonly options?: Partial<DataManagerOptions>,
+  ) {
     // we keep these in localStorage so they live for the same length of time as the flightplan (that they could appear in)
     // if the f-pln is not stored there anymore we can delete this
     const stored = localStorage.getItem(DataManager.STORED_WP_KEY);
@@ -72,7 +86,18 @@ export class DataManager {
       );
     }
 
-    NXDataStore.getAndSubscribe('LATLON_EXT_FMT', (_, value) => (this.latLonExtendedFormat = value === '1'), '0');
+    switch (this.options?.latLonFormat) {
+      case LatLonFormatType.ExtendedFormat:
+        this.latLonExtendedFormat = true;
+        break;
+      case LatLonFormatType.ShortFormat:
+        this.latLonExtendedFormat = false;
+        break;
+      case LatLonFormatType.UserSetting:
+      case undefined:
+        NXDataStore.getAndSubscribe('LATLON_EXT_FMT', (_, value) => (this.latLonExtendedFormat = value === '1'), '0');
+        break;
+    }
   }
 
   private serializeWaypoint(wp: PilotWaypoint): SerializedWaypoint {
