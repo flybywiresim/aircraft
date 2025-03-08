@@ -6,7 +6,7 @@ import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
-import { Coordinates } from 'msfs-geo';
+import { Coordinates, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
 import { A32NX_Util } from '../../../shared/src/A32NX_Util';
 
 export enum PilotWaypointType {
@@ -318,7 +318,7 @@ export class DataManager {
     const bearing1 = A32NX_Util.magneticToTrue(magneticBearing1, A32NX_Util.getRadialMagVar(place1));
     const bearing2 = A32NX_Util.magneticToTrue(magneticBearing2, A32NX_Util.getRadialMagVar(place2));
 
-    const coordinates = A32NX_Util.greatCircleIntersection(place1.location, bearing1, place2.location, bearing2);
+    const [coordinates] = placeBearingIntersection(place1.location, bearing1, place2.location, bearing2);
     const index = stored ? this.generateStoredWaypointIndex() : -1;
 
     if (ident === undefined) {
@@ -360,12 +360,7 @@ export class DataManager {
   ): PbdWaypoint {
     const bearing = A32NX_Util.magneticToTrue(magneticBearing, A32NX_Util.getRadialMagVar(origin));
 
-    const coordinates = Avionics.Utils.bearingDistanceToCoordinates(
-      bearing,
-      distance,
-      origin.location.lat,
-      origin.location.long,
-    );
+    const coordinates = placeBearingDistance(origin.location, bearing, distance);
     const index = stored ? this.generateStoredWaypointIndex() : -1;
 
     if (ident === undefined) {

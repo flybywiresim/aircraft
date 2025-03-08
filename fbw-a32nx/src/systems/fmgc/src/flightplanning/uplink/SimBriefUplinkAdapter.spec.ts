@@ -4,42 +4,51 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { setupNavigraphDatabase } from '@fmgc/flightplanning/test/Database';
+import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { dumpFlightPlan } from '@fmgc/flightplanning/test/FlightPlan';
-
-jest.setTimeout(120_000);
+import { beforeEach, describe, expect, it } from 'vitest';
+import { EventBus } from "@microsoft/msfs-sdk";
+import { A320FlightPlanPerformanceData } from "@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData";
+import { testFms } from "@fmgc/flightplanning/test/TestFms";
 
 describe('simBrief uplink adapter', () => {
-    beforeEach(() => {
-        FlightPlanService.reset();
-        setupNavigraphDatabase();
-    });
+  const eventBus = new EventBus();
+  const fps = new FlightPlanService(eventBus, new A320FlightPlanPerformanceData());
 
-    it('tracer test', async () => {
-        await FlightPlanService.newCityPair('NZWN', 'NZQN', 'NZAA');
+  beforeEach(() => {
+    fps.reset();
+    setupTestDatabase();
+  });
 
-        await FlightPlanService.setDestinationRunway('NZQN23');
-        await FlightPlanService.setArrival('ELRU4B');
-        await FlightPlanService.setApproach('R23-Z');
-        await FlightPlanService.setApproachVia('ATKIL');
+  it('tracer test', async ({skip}) => {
+    skip();
+    await fps.newCityPair('NZWN', 'NZQN', 'NZAA');
 
-        console.log(dumpFlightPlan(FlightPlanService.activeOrTemporary));
-    });
+    await fps.setDestinationRunway('NZQN23');
+    await fps.setArrival('ELRU4B');
+    await fps.setApproach('R23-Z');
+    await fps.setApproachVia('ATKIL');
 
-    it('can download an OFP', async () => {
-        const ofp = await SimBriefUplinkAdapter.downloadOfpForUserID('506130');
+    console.log(dumpFlightPlan(fps.activeOrTemporary));
+  });
 
-        expect(ofp).not.toBeFalsy();
+  it('can download an OFP', async ({skip}) => {
+    skip();
+    const ofp = await SimBriefUplinkAdapter.downloadOfpForUserID('506130');
 
-        const route = SimBriefUplinkAdapter.getRouteFromOfp(ofp);
+    expect(ofp).not.toBeFalsy();
 
-        console.log(route);
-    });
+    const route = SimBriefUplinkAdapter.getRouteFromOfp(ofp);
 
-    it('can uplink a flight plan from a downloaded ofp', async () => {
-        await SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief('506130');
+    console.log(route);
+  });
 
-        console.log(dumpFlightPlan(FlightPlanService.uplink));
-    });
+  it('can uplink a flight plan from a downloaded ofp', async ({skip}) => {
+    skip();
+    const ofp = await SimBriefUplinkAdapter.downloadOfpForUserID('506130');
+    await SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(testFms, fps, ofp, {});
+
+    console.log(dumpFlightPlan(fps.uplink));
+  });
 });

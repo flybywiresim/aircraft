@@ -3,76 +3,43 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { jest } from '@jest/globals';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { setupNavigraphDatabase } from '@fmgc/flightplanning/test/Database';
+import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
-import { FmsErrorType } from '@fmgc/FmsError';
-import { Coordinates, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
-import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
-import { FmsDataInterface } from './interface/FmsDataInterface';
-
-jest.setTimeout(120_000);
-
-const fms: FmsDisplayInterface & FmsDataInterface = {
-    showFmsErrorMessage(errorType: FmsErrorType) {
-        console.error(FmsErrorType[errorType]);
-    },
-
-    async deduplicateFacilities<T extends DatabaseItem>(items: T[]): Promise<T | undefined> {
-        return items[0];
-    },
-
-    async createNewWaypoint(_ident: string): Promise<Waypoint | undefined> {
-        throw new Error('Create waypoint');
-    },
-
-    createLatLonWaypoint(coordinates: Coordinates, _stored: boolean): Waypoint {
-        return WaypointFactory.fromLocation('LLA', coordinates);
-    },
-
-    createPlaceBearingDistWaypoint(place: Waypoint, bearing: DegreesTrue, distance: NauticalMiles, _stored: boolean): Waypoint {
-        const location = placeBearingDistance(place.location, bearing, distance);
-
-        return WaypointFactory.fromLocation(`PB${place.ident.substring(0, 3)}`, location);
-    },
-
-    createPlaceBearingPlaceBearingWaypoint(place1: Waypoint, bearing1: DegreesTrue, place2: Waypoint, bearing2: DegreesTrue, stored: boolean): Waypoint {
-        const [one] = placeBearingIntersection(place1.location, bearing1, place2.location, bearing2);
-
-        return WaypointFactory.fromLocation('PBD', one);
-    },
-};
+import { EventBus } from "@microsoft/msfs-sdk";
+import { A320FlightPlanPerformanceData } from "@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData";
+import { testFms } from "@fmgc/flightplanning/test/TestFms";
 
 describe('WaypointEntryUtils', () => {
-    beforeEach(() => {
-        FlightPlanService.reset();
-        setupNavigraphDatabase();
-    });
+  const service = new FlightPlanService(new EventBus(), new A320FlightPlanPerformanceData());
 
-    it('can return a database waypoint', async () => {
-        const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(fms, 'NOSUS');
+  beforeEach(() => {
+    service.reset();
+    setupTestDatabase();
+  });
 
-        expect(waypoint).not.toBeFalsy();
-    });
+  it('can return a database waypoint', async ({skip}) => {
+    const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(testFms, 'NOSUS', false);
 
-    it('can parse a lat/long waypoint', async () => {
-        const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(fms, 'N45.0/W90.0');
+    expect(waypoint).not.toBeFalsy();
+  });
 
-        expect(waypoint).not.toBeFalsy();
-    });
+  it('can parse a lat/long waypoint', async ({skip}) => {
+    const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(testFms, 'N45.0/W90.0', false);
 
-    it('can parse a PBD waypoint', async () => {
-        const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(fms, 'NOSUS/360/10');
+    expect(waypoint).not.toBeFalsy();
+  });
 
-        expect(waypoint).not.toBeFalsy();
-    });
+  it('can parse a PBD waypoint', async ({skip}) => {
+    const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(testFms, 'NOSUS/360/10', false);
 
-    it('can parse a PN/PN waypoint', async () => {
-        const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(fms, 'NOSUS-090/DEBUS-180');
+    expect(waypoint).not.toBeFalsy();
+  });
 
-        expect(waypoint).not.toBeFalsy();
-    });
+  it('can parse a PN/PN waypoint', async ({skip}) => {
+    const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(testFms, 'NOSUS-090/DEBUS-180', false);
+
+    expect(waypoint).not.toBeFalsy();
+  });
 });

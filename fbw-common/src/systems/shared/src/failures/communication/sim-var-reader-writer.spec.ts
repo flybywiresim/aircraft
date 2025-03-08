@@ -1,3 +1,5 @@
+import { describe, test, expect, vitest } from 'vitest';
+
 import { CallbackReader, SimVarReaderWriter } from '.';
 
 describe('SimVarReaderWriter', () => {
@@ -16,7 +18,7 @@ describe('SimVarReaderWriter', () => {
   });
 
   test("does't read values which aren't in the collection", async () => {
-    const callback = jest.fn();
+    const callback = vitest.fn();
     await registerAndExecute(callback, async (r) => {
       await SimVar.SetSimVarValue(simVarName, 'number', notInCollectionIdentifier);
       r.update();
@@ -26,7 +28,7 @@ describe('SimVarReaderWriter', () => {
   });
 
   test('reads values that are in the collection', async () => {
-    const callback = jest.fn();
+    const callback = vitest.fn();
     await registerAndExecute(callback, async (r) => {
       await SimVar.SetSimVarValue(simVarName, 'number', inCollectionIdentifier);
       r.update();
@@ -36,7 +38,7 @@ describe('SimVarReaderWriter', () => {
   });
 
   test('reads the same value multiple times', async () => {
-    const callback = jest.fn();
+    const callback = vitest.fn();
     await registerAndExecute(callback, async (r) => {
       await SimVar.SetSimVarValue(simVarName, 'number', inCollectionIdentifier);
       r.update();

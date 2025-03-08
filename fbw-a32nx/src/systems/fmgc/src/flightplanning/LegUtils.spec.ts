@@ -3,7 +3,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { mergeLegSets } from '@fmgc/flightplanning/LegUtils';
+import { describe, it, expect } from 'vitest';
+import { mergeLegSets } from "./LegUtils";
 
 describe('Leg Utilities', () => {
     describe('downstream leg set merging', () => {

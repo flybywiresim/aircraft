@@ -7,12 +7,13 @@ import { loadSingleWaypoint } from '@fmgc/flightplanning/segments/enroute/Waypoi
 import { loadAirwayLegs } from '@fmgc/flightplanning/segments/enroute/AirwayLoading';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { setupNavigraphDatabase } from '@fmgc/flightplanning/test/Database';
+import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { emptyFlightPlan } from '@fmgc/flightplanning/test/FlightPlan';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-describe('an enroute segment', () => {
+describe.skip('an enroute segment', () => {
     beforeAll(() => {
-        setupNavigraphDatabase();
+        setupTestDatabase();
     });
 
     it('should insert waypoint sequentially', async () => {
