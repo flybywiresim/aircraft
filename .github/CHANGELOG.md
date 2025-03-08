@@ -170,6 +170,7 @@
 1. [A380X/FWS] Fix rounding error in Mach-based OVERSPEED warning - @flogross89 (floridude)
 1. [A380X/MFD] Add ATCCOM MSG RECORD page layouts - @heclak (heclak)
 1. [A380X/ND] Fixed active leg label to be left aligned - @MrJigs7 (MrJigs)
+1. [Clock] Fixed chrono not rolling over to 00:00 when reaching 99:59 - @tracernz (Mike)
 
 ## 0.12.0
 
