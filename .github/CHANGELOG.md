@@ -167,6 +167,10 @@
 1. [A380X/OIS] Initial implementation of OIS/OIT with charts and OFP - @flogross89 (floridude)
 1. [A380X/PFD] Add LS button reminder - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Latitude/Longitude waypoints now always have the extended ident format - @tracernz (Mike)
+1. [A380X/FWS] Fix rounding error in Mach-based OVERSPEED warning - @flogross89 (floridude)
+1. [A380X/MFD] Add ATCCOM MSG RECORD page layouts - @heclak (heclak)
+1. [A380X/ND] Fixed active leg label to be left aligned - @MrJigs7 (MrJigs)
+1. [A32NX/FMS] Sort runways by identifier in the runway selection page - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Change flightplan uplink & initialize weights message logic - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
@@ -1605,3 +1609,4 @@
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
 1. [ECAM] Added F units to CRZ and COND pages for Cabin temps. Currently tied to kg/lbs option in EFB -Patrick Macken  (@PatM on Discord)
+1. [A32NX/FCU] Fixed bug where the FCU selected altitude would immediately switch to 1000s on selecting the 1000ft inteval knob - @elliot747 (Elliot)
