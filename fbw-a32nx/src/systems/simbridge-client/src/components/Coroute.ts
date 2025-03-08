@@ -5,9 +5,9 @@ import { fetchWithTimeout, getSimBridgeUrl } from '../common';
 import { CoRouteDto } from '../Coroute/coroute';
 import { ClientState } from './ClientState';
 
-type coRouteCall = {
+type coRouteCall<T extends CoRouteDto | CoRouteDto[]> = {
   success: boolean;
-  data: CoRouteDto | CoRouteDto[];
+  data: T;
 };
 
 /**
@@ -19,7 +19,7 @@ export class CompanyRoute {
    * @param route The routename in question
    * @returns Returns the CoRoute DTO
    */
-  public static async getCoRoute(route: String): Promise<coRouteCall> {
+  public static async getCoRoute(route: String): Promise<coRouteCall<CoRouteDto>> {
     if (!ClientState.getInstance().isConnected()) {
       throw new Error('SimBridge is not connected.');
     }
@@ -46,7 +46,7 @@ export class CompanyRoute {
    * @param dest the destination
    * @returns Returns a list of CoRoute DTOs
    */
-  public static async getRouteList(origin: String, dest: String): Promise<coRouteCall> {
+  public static async getRouteList(origin: String, dest: String): Promise<coRouteCall<CoRouteDto[]>> {
     if (!ClientState.getInstance().isConnected()) {
       throw new Error('SimBridge is not connected.');
     }

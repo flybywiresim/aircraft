@@ -6,9 +6,9 @@ import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiW
  * Complete header for the SURV system
  */
 export class SurvHeader extends AbstractHeader {
-  private controlsIsSelected = Subject.create(false);
+  private readonly controlsIsSelected = Subject.create(false);
 
-  private statSwitchIsSelected = Subject.create(false);
+  private readonly statSwitchIsSelected = Subject.create(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

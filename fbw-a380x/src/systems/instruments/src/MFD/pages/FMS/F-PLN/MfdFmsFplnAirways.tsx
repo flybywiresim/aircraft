@@ -20,19 +20,19 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
-  private revisedFixIdent = Subject.create<string>('');
+  private readonly revisedFixIdent = Subject.create<string>('');
 
-  private airwayLinesRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly airwayLinesRef = FSComponent.createRef<HTMLDivElement>();
 
-  private displayFromLine = Subject.create<number>(0);
+  private readonly displayFromLine = Subject.create<number>(0);
 
-  private disabledScrollDown = Subject.create(true);
+  private readonly disabledScrollDown = Subject.create(true);
 
-  private disabledScrollUp = Subject.create(true);
+  private readonly disabledScrollUp = Subject.create(true);
 
-  private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyFplnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyFplnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
     const revWpt = this.props.fmcService.master?.revisedWaypoint();
@@ -177,13 +177,13 @@ interface AirwayLineProps extends ComponentProps {
 }
 
 class AirwayLine extends DisplayComponent<AirwayLineProps> {
-  public viaField = Subject.create<string | null>(null);
+  public readonly viaField = Subject.create<string | null>(null);
 
-  private viaFieldDisabled = Subject.create(false);
+  private readonly viaFieldDisabled = Subject.create(false);
 
-  public toField = Subject.create<string | null>(null);
+  public readonly toField = Subject.create<string | null>(null);
 
-  private toFieldDisabled = Subject.create(this.props.isFirstLine);
+  private readonly toFieldDisabled = Subject.create(this.props.isFirstLine);
 
   render(): VNode {
     return (

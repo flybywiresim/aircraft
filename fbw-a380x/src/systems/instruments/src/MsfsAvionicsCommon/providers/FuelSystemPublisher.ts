@@ -1,3 +1,9 @@
+// Copyright (c) 2021-2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+/* TODO: remove this file after proper FQMS is implemented in Rust */
+
 import {
   EventBus,
   IndexedEventType,
@@ -9,7 +15,6 @@ import {
 
 /* eslint-disable camelcase */
 export interface BaseFuelSystemEvents {
-  fuel_ctr_tk_mode_sel_man: boolean;
   /** The valve's switch: */
   fuel_valve_switch: boolean;
   /** The valve's actual continous position, in percent, 0 ... 1 */
@@ -26,6 +31,19 @@ export interface BaseFuelSystemEvents {
   fuel_line_flow: number;
   /** The quantity of fuel in the selected tank (by tank index), in gallons. */
   fuel_tank_quantity: number;
+  /** The state of the trigger (by index) as boolean */
+  fuel_trigger_status: boolean;
+  /** The setting of the junction (by index) as boolean */
+  fuel_junction_setting: number;
+  /** Whether refuel has been started as boolean */
+  fuel_refuel_started_by_user: boolean;
+  /** Desired fuel target for fuelling in kilograms */
+  fuel_desired_by_user: number;
+  /** Fuel on board in kilograms */
+  fuel_on_board: number;
+
+  /** The CG percent of the GW */
+  cg_percent_gw: number;
 }
 
 type IndexedTopics =
@@ -36,7 +54,9 @@ type IndexedTopics =
   | 'fuel_engine_pressure'
   | 'fuel_line_pressure'
   | 'fuel_line_flow'
-  | 'fuel_tank_quantity';
+  | 'fuel_tank_quantity'
+  | 'fuel_trigger_status'
+  | 'fuel_junction_setting';
 
 type FuelSystemIndexedEvents = {
   [P in keyof Pick<BaseFuelSystemEvents, IndexedTopics> as IndexedEventType<P>]: BaseFuelSystemEvents[P];
@@ -50,10 +70,6 @@ export interface FuelSystemEvents extends BaseFuelSystemEvents, FuelSystemIndexe
 export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
   constructor(bus: EventBus, pacer?: PublishPacer<FuelSystemEvents>) {
     const simvars: [keyof FuelSystemEvents, SimVarPublisherEntry<any>][] = [
-      [
-        'fuel_ctr_tk_mode_sel_man',
-        { name: 'L:A32NX_OVHD_FUEL_MODESEL_MANUAL', type: SimVarValueType.Number, map: (v) => !!v },
-      ],
       [
         'fuel_valve_switch',
         { name: 'FUELSYSTEM VALVE SWITCH:#index#', type: SimVarValueType.Bool, indexed: true, map: (v) => !!v },
@@ -77,6 +93,33 @@ export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
       ],
       ['fuel_line_flow', { name: 'FUELSYSTEM LINE FUEL FLOW:#index#', type: SimVarValueType.GPH, indexed: true }],
       ['fuel_tank_quantity', { name: 'FUELSYSTEM TANK QUANTITY:#index#', type: SimVarValueType.GAL, indexed: true }],
+      [
+        'fuel_trigger_status',
+        { name: 'FUELSYSTEM TRIGGER STATUS:#index#', type: SimVarValueType.Bool, indexed: true, map: (v) => !!v },
+      ],
+      [
+        'fuel_junction_setting',
+        { name: 'FUELSYSTEM JUNCTION SETTING:#index#', type: SimVarValueType.Number, indexed: true },
+      ],
+      [
+        'fuel_refuel_started_by_user',
+        { name: 'L:A32NX_REFUEL_STARTED_BY_USR', type: SimVarValueType.Bool, indexed: false, map: (v) => !!v },
+      ],
+      [
+        'fuel_desired_by_user',
+        {
+          name: 'L:A32NX_FUEL_DESIRED',
+          type: SimVarValueType.Number,
+        },
+      ],
+      [
+        'fuel_on_board',
+        {
+          name: 'FUEL TOTAL QUANTITY WEIGHT',
+          type: SimVarValueType.Number,
+        },
+      ],
+      ['cg_percent_gw', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number, indexed: false }],
     ];
 
     super(new Map(simvars), bus, pacer);
