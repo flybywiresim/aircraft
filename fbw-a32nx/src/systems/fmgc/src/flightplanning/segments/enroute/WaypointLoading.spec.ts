@@ -6,14 +6,14 @@
 import { beforeAll, describe, it, expect } from 'vitest';
 import { loadFixes, loadSingleWaypoint } from './WaypointLoading';
 import { setupTestDatabase } from '../../test/Database';
-import { VhfNavaid } from "@flybywiresim/fbw-sdk";
+import { VhfNavaid } from '@flybywiresim/fbw-sdk';
 
 describe('waypoint loading', () => {
-    beforeAll(() => {
-        setupTestDatabase();
-    });
+  beforeAll(() => {
+    setupTestDatabase();
+  });
 
-  it('can load waypoint NOSUS', async ({skip}) => {
+  it('can load waypoint NOSUS', async ({ skip }) => {
     skip();
     const element = await loadSingleWaypoint('NOSUS', 'WCYCYULNOSUS');
 
@@ -22,7 +22,7 @@ describe('waypoint loading', () => {
     expect(element.icaoCode).toBe('CY');
   });
 
-  it('can load ALB (ALBANY) VOR', async ({skip}) => {
+  it('can load ALB (ALBANY) VOR', async ({ skip }) => {
     skip();
     const elements = await loadFixes('ALB');
 

@@ -55,11 +55,11 @@ export const testFms: FmsDisplayInterface & FmsDataInterface & { dataManager: Da
     return this.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident);
   },
 
-  getStoredWaypointsByIdent(ident: string): PilotWaypoint[] {
+  getStoredWaypointsByIdent(_ident: string): PilotWaypoint[] {
     return [];
   },
 
-  async isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
+  async isWaypointInUse(_waypoint: Waypoint): Promise<boolean> {
     return false;
   },
 };
