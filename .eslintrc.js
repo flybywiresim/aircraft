@@ -27,6 +27,7 @@ module.exports = {
     {
       files: [
         '.eslintrc.js',
+        'vitest.config.mjs',
         'scripts/**/*.js',
         '**/mach.config.js',
         '**/rollup.config.js',

@@ -22,59 +22,59 @@ import {
   ControlledAirspace,
   RestrictiveAirspace,
 } from 'navdata/shared';
-import { Gate } from 'navdata/shared/types/Gate';
+import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
-import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
+import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory'; // FIXME remove import from FMGC
 
 export class TestBackend implements DataInterface {
   getDatabaseIdent(): Promise<DatabaseIdent> {
     throw new Error('Method not implemented.');
   }
-  async getAirports(idents: string[]): Promise<Airport[]> {
+  async getAirports(_airportIdentifier: string[]): Promise<Airport[]> {
     return [];
   }
-  async getDepartures(airportIdentifier: string): Promise<Departure[]> {
+  async getDepartures(_airportIdentifier: string): Promise<Departure[]> {
     return [];
   }
-  async getArrivals(airportIdentifier: string): Promise<Arrival[]> {
+  async getArrivals(_airportIdentifier: string): Promise<Arrival[]> {
     return [];
   }
-  async getApproaches(airportIdentifier: string): PrgetAiromise<Approach[]> {
+  async getApproaches(__airportIdentifier: string): Promise<Approach[]> {
     return [];
   }
-  async getGates(airportIdentifier: string): Promise<Gate[]> {
+  async getGates(_airportIdentifier: string): Promise<Gate[]> {
     return [];
   }
-  async getHolds(airportIdentifier: string): Promise<ProcedureLeg[]> {
+  async getHolds(_airportIdentifier: string): Promise<ProcedureLeg[]> {
     return [];
   }
-  async getRunways(airportIdentifier: string): Promise<Runway[]> {
+  async getRunways(_airportIdentifier: string): Promise<Runway[]> {
     return [];
   }
-  async getWaypointsAtAirport(airportIdentifier: string): Promise<Waypoint[]> {
+  async getWaypointsAtAirport(_airportIdentifier: string): Promise<Waypoint[]> {
     return [];
   }
-  async getNdbsAtAirport(airportIdentifier: string): Promise<NdbNavaid[]> {
+  async getNdbsAtAirport(_airportIdentifier: string): Promise<NdbNavaid[]> {
     return [];
   }
-  async getIlsAtAirport(airportIdentifier: string, ident?: string, lsIcaoCode?: string): Promise<IlsNavaid[]> {
+  async getIlsAtAirport(_airportIdentifier: string, _ident?: string, _lsIcaoCode?: string): Promise<IlsNavaid[]> {
     return [];
   }
-  async getCommunicationsAtAirport(airportIdentifier: string): Promise<AirportCommunication[]> {
+  async getCommunicationsAtAirport(_airportIdentifier: string): Promise<AirportCommunication[]> {
     return [];
   }
-  async getLsMarkers(airportIdentifier: string, runwayIdentifier: string, lsIdentifier: string): Promise<Marker[]> {
+  async getLsMarkers(_airportIdentifier: string, _runwayIdentifier: string, _lsIdentifier: string): Promise<Marker[]> {
     return [];
   }
   async getWaypoints(
-    idents: string[],
-    ppos?: Coordinates,
-    icaoCode?: string,
-    airportIdent?: string,
+    _airportIdentifier: string[],
+    _ppos?: Coordinates,
+    _icaoCode?: string,
+    _airportIdent?: string,
   ): Promise<Waypoint[]> {
     const ret: Waypoint[] = [];
 
-    for (const ident of idents) {
+    for (const ident of _airportIdentifier) {
       if (ident === 'NOSUS') {
         ret.push(WaypointFactory.fromLocation('NOSUS', { lat: 0, long: 0 }));
       } else if (ident === 'DEBUS') {
@@ -85,87 +85,87 @@ export class TestBackend implements DataInterface {
     return ret;
   }
   async getNdbNavaids(
-    idents: string[],
-    ppos?: Coordinates,
-    icaoCode?: string,
-    airportIdent?: string,
+    _airportIdentifier: string[],
+    _ppos?: Coordinates,
+    _icaoCode?: string,
+    _airportIdent?: string,
   ): Promise<NdbNavaid[]> {
     return [];
   }
   async getVhfNavaids(
-    idents: string[],
-    ppos?: Coordinates,
-    icaoCode?: string,
-    airportIdent?: string,
+    _idents: string[],
+    _ppos?: Coordinates,
+    _icaoCode?: string,
+    _airportIdent?: string,
   ): Promise<VhfNavaid[]> {
     return [];
   }
   async getIlsNavaids(
-    idents: string[],
-    ppos?: Coordinates,
-    icaoCode?: string,
-    airportIdent?: string,
+    _idents: string[],
+    _ppos?: Coordinates,
+    _icaoCode?: string,
+    _airportIdent?: string,
   ): Promise<IlsNavaid[]> {
     return [];
   }
-  async getFixes(idents: string[], ppos?: Coordinates, icaoCode?: string, airportIdent?: string): Promise<Fix[]> {
+  async getFixes(_idents: string[], _ppos?: Coordinates, _icaoCode?: string, _airportIdent?: string): Promise<Fix[]> {
     return [];
   }
-  async getAirways(idents: string[]): Promise<Airway[]> {
+  async getAirways(_idents: string[]): Promise<Airway[]> {
     return [];
   }
-  async getAirwaysByFix(ident: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
+  async getAirwaysByFix(_ident: string, _icaoCode: string, _airwayIdent?: string): Promise<Airway[]> {
     return [];
   }
   async getNearbyAirports(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    longestRunwaySurfaces?: number,
-    longestRunwayLength?: number,
+    _center: Coordinates,
+    _range: NauticalMiles,
+    _limit?: number,
+    _longestRunwaySurfaces?: number,
+    _longestRunwayLength?: number,
   ): Promise<readonly Airport[]> {
     return [];
   }
   async getNearbyAirways(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    levels?: AirwayLevel,
+    _center: Coordinates,
+    _range: NauticalMiles,
+    _limit?: number,
+    _levels?: AirwayLevel,
   ): Promise<readonly Airway[]> {
     return [];
   }
   async getNearbyVhfNavaids(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    classes?: VorClass,
-    types?: VhfNavaidType,
+    _center: Coordinates,
+    _range: number,
+    _limit?: number,
+    _classes?: VorClass,
+    _types?: VhfNavaidType,
   ): Promise<readonly VhfNavaid[]> {
     return [];
   }
   async getNearbyNdbNavaids(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    classes?: NdbClass,
+    _center: Coordinates,
+    _range: NauticalMiles,
+    _limit?: number,
+    _classes?: NdbClass,
   ): Promise<readonly NdbNavaid[]> {
     return [];
   }
-  async getNearbyWaypoints(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Waypoint[]> {
+  async getNearbyWaypoints(_center: Coordinates, _range: NauticalMiles, _limit?: number): Promise<readonly Waypoint[]> {
     return [];
   }
-  async getNearbyFixes(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Fix[]> {
+  async getNearbyFixes(_center: Coordinates, _range: NauticalMiles, _limit?: number): Promise<readonly Fix[]> {
     return [];
   }
   async getControlledAirspaceInRange(
-    center: Coordinates,
-    range: NauticalMiles,
+    _center: Coordinates,
+    _range: NauticalMiles,
   ): Promise<readonly ControlledAirspace[]> {
     return [];
   }
   async getRestrictiveAirspaceInRange(
-    center: Coordinates,
-    range: NauticalMiles,
+    _center: Coordinates,
+    _range: NauticalMiles,
   ): Promise<readonly RestrictiveAirspace[]> {
     return [];
   }
