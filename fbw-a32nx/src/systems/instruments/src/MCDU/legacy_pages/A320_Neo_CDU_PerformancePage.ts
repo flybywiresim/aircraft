@@ -924,11 +924,11 @@ export class CDUPerformancePage {
       }
     };
     let magWindHeadingCell = '[\xa0]';
-    if (isFinite(mcdu.perfApprWindHeading)) {
+    if (mcdu.perfApprWindHeading != null) {
       magWindHeadingCell = ('' + mcdu.perfApprWindHeading.toFixed(0)).padStart(3, '0');
     }
     let magWindSpeedCell = '[\xa0]';
-    if (isFinite(mcdu.perfApprWindSpeed)) {
+    if (mcdu.perfApprWindSpeed != null) {
       magWindSpeedCell = mcdu.perfApprWindSpeed.toFixed(0).padStart(3, '0');
     }
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
