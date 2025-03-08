@@ -705,7 +705,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
       return;
     }
 
@@ -755,7 +755,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
     }
 
     if (alt !== undefined) {
@@ -772,7 +772,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
     }
   }
 
