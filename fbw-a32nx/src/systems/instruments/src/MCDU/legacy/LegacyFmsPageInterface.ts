@@ -213,6 +213,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   reselectNavaid(icao: string): void;
   getOrSelectWaypointByIdent(ident: string, callback: (fix: Fix) => void): void;
   getIsaTemp(alt: number): number;
+  disengageNavMode(): void;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
