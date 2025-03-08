@@ -221,7 +221,7 @@ export class CDULateralRevisionPage {
       return mcdu.getDelaySwitchPage();
     };
     mcdu.onLeftInput[5] = () => {
-      CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+      mcdu.returnPageCallback();
     };
   }
 

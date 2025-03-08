@@ -155,7 +155,7 @@ export class CDUAvailableArrivalsPage {
     }
 
     const approaches = targetPlan.availableApproaches;
-    const runways = targetPlan.availableDestinationRunways;
+    const runways = [...targetPlan.availableDestinationRunways].sort((a, b) => a.ident.localeCompare(b.ident));
 
     // Sort the approaches in Honeywell's documented order
     const sortedApproaches = approaches
@@ -508,7 +508,7 @@ export class CDUAvailableArrivalsPage {
             Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1,
           )
         : Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1
-      : Math.ceil(sortedApproaches.length / ArrivalPagination.ARR_PAGE) - 1;
+      : Math.ceil(allApproaches.length / ArrivalPagination.ARR_PAGE) - 1;
     if (pageCurrent < maxPage) {
       mcdu.onUp = () => {
         pageCurrent++;
