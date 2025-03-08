@@ -208,7 +208,7 @@ export class OancMarkerManager<T extends number> {
       for (const label of symbols) {
         if (label.associatedFeature?.properties.id === id && label.associatedFeature.properties.feattype === feattype) {
           taxiwayName = label.associatedFeature.properties.idlin ?? '';
-          return;
+          break;
         }
       }
 
