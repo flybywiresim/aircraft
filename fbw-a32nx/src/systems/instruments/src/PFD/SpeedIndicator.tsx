@@ -1303,12 +1303,10 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
     }
 
     const stdBaro = this.fcuEisDiscreteWord2.bitValueOr(28, false) || this.fcuEisDiscreteWord2.isFailureWarning();
-    const lsDisplay = this.fcuEisDiscreteWord2.bitValueOr(22, false) || this.fcuEisDiscreteWord2.isFailureWarning();
 
     const hideMachDisplay =
       (!this.machHysteresis && this.mach.isNormalOperation()) ||
-      (!this.mach.isNormalOperation() && (this.onGround || stdBaro)) ||
-      lsDisplay;
+      (!this.mach.isNormalOperation() && (this.onGround || stdBaro));
 
     if (hideMachDisplay) {
       this.machFlagVisible.set(false);
