@@ -67,10 +67,7 @@ impl CockpitVibration {
         nose_ground_weight: Mass,
     ) {
         // Speed factor so vibration kicks in from an empirical ground speed function
-        let speed_factor = f64::min(
-            1.0,
-            f64::max(0.0, 0.00001 * current_speed.get::<knot>().powi(3)),
-        );
+        let speed_factor = (0.00001 * current_speed.get::<knot>().powi(3)).clamp(0.0, 1.0);
 
         let ground_noise = self.ground_noise_amplitude(current_speed);
         let runway_lights_impact_amplitude =
