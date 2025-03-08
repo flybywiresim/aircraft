@@ -216,6 +216,26 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return legType === LegType.CA || legType === LegType.FA || legType === LegType.HA || legType === LegType.VA;
   }
 
+  isCx() {
+    return (
+      this.definition.type === LegType.CA ||
+      this.definition.type === LegType.CD ||
+      this.definition.type === LegType.CF ||
+      this.definition.type === LegType.CI ||
+      this.definition.type === LegType.CR
+    );
+  }
+
+  isVx() {
+    return (
+      this.definition.type === LegType.VA ||
+      this.definition.type === LegType.VD ||
+      this.definition.type === LegType.VI ||
+      this.definition.type === LegType.VM ||
+      this.definition.type === LegType.VR
+    );
+  }
+
   isVectors() {
     const legType = this.definition.type;
 
