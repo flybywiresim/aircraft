@@ -5121,7 +5121,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public getDistanceToDestination() {
-    return this.guidanceController.alongTrackDistanceToDestination;
+    return this.guidanceController.getAlongTrackDistanceToDestination();
   }
 
   /**

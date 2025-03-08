@@ -19,11 +19,10 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { distanceTo } from 'msfs-geo';
-import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
+import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 
 /**
  * Represents the current turn state of the LNAV driver
@@ -96,19 +95,14 @@ export class LnavDriver implements GuidanceComponent {
     if (geometry && geometry.legs.size > 0) {
       const dtg = geometry.getDistanceToGo(this.guidanceController.activeLegIndex, this.ppos);
 
-      const activeLegAlongTrackCompletePathDtg = this.computeAlongTrackDistanceToGo(geometry, activeLegIdx, trueTrack);
-      if (
-        activeLegAlongTrackCompletePathDtg === undefined &&
-        this.guidanceController.activeLegAlongTrackCompletePathDtg !== undefined
-      ) {
-        console.log('[FMS/LNAV] No reference leg found to compute alongTrackDistanceToGo');
-      }
-
-      this.guidanceController.activeLegAlongTrackCompletePathDtg = activeLegAlongTrackCompletePathDtg;
-
       const inboundTrans = geometry.transitions.get(activeLegIdx - 1);
       const activeLeg = geometry.legs.get(activeLegIdx);
       const outboundTrans = geometry.transitions.get(activeLegIdx) ? geometry.transitions.get(activeLegIdx) : null;
+
+      this.guidanceController.setAlongTrackDistanceToDestination(
+        geometry.computeAlongTrackDistanceToDestination(activeLegIdx, this.ppos, trueTrack),
+        FlightPlanIndex.Active,
+      );
 
       if (!activeLeg) {
         if (LnavConfig.DEBUG_GUIDANCE) {
@@ -392,6 +386,18 @@ export class LnavDriver implements GuidanceComponent {
           geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
         }
       }
+    } else {
+      this.guidanceController.setAlongTrackDistanceToDestination(0);
+    }
+
+    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
+    if (secGeometry && secGeometry.legs.size > 0) {
+      this.guidanceController.setAlongTrackDistanceToDestination(
+        secGeometry.computeAlongTrackDistanceToDestination(activeLegIdx, this.ppos, trueTrack),
+        FlightPlanIndex.FirstSecondary,
+      );
+    } else {
+      this.guidanceController.setAlongTrackDistanceToDestination(0);
     }
 
     /* Set FG parameters */
@@ -408,44 +414,6 @@ export class LnavDriver implements GuidanceComponent {
       this.lastPhi = null;
       this.turnState = LnavTurnState.Normal;
     }
-  }
-
-  /**
-   *
-   * @param geometry active geometry
-   * @param activeLegIdx index of active leg in the geometry
-   * @param trueTrack true track of the aircraft
-   * @returns distance to go along the active leg
-   */
-  private computeAlongTrackDistanceToGo(
-    geometry: Geometry,
-    activeLegIdx: number,
-    trueTrack: DegreesTrue,
-  ): NauticalMiles {
-    // Iterate over the upcoming legs until we find one that has a distance to go.
-    // If we sequence a discontinuity for example, there is no geometry leg for the active leg, so we iterate downpath until we find one.
-    // This will typically be an IF leg
-    for (let i = activeLegIdx ?? 0; geometry.legs.has(i) || geometry.legs.has(i + 1); i++) {
-      const leg = geometry.legs.get(i);
-      if (!leg || leg instanceof VMLeg || leg instanceof FMLeg) {
-        continue;
-      }
-
-      const inboundTrans = geometry.transitions.get(i - 1);
-      const outboundTrans = geometry.transitions.get(i);
-
-      const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
-        this.ppos,
-        trueTrack,
-        leg,
-        inboundTrans,
-        outboundTrans,
-      );
-
-      return completeLegAlongTrackPathDtg;
-    }
-
-    return undefined;
   }
 
   public legEta(gs: Knots, termination: Coordinates): number {

@@ -766,4 +766,44 @@ export class Geometry {
 
     return [inboundLength, leg.distance, outboundLength];
   }
+
+  computeAlongTrackDistanceToDestination(
+    activeLegIndex: number,
+    ppos: Coordinates,
+    trueTrack: number,
+  ): number | undefined {
+    const referenceLegIndex = this.chooseReferenceLegIndex(activeLegIndex);
+    const referenceLeg = this.legs.get(referenceLegIndex);
+
+    if (!referenceLeg) {
+      return undefined;
+    }
+
+    const inboundTransition = this.transitions.get(referenceLegIndex - 1);
+    const outboundTransition = this.transitions.get(referenceLegIndex);
+
+    const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
+      ppos,
+      trueTrack,
+      referenceLeg,
+      inboundTransition,
+      outboundTransition,
+    );
+
+    return Number.isFinite(referenceLeg.calculated?.cumulativeDistanceToEndWithTransitions)
+      ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
+      : undefined;
+  }
+
+  private chooseReferenceLegIndex(activeLegIndex: number): number {
+    const activeLeg = this.legs.get(activeLegIndex);
+
+    if (!activeLeg) {
+      return activeLegIndex + 1;
+    } else if (activeLeg instanceof VMLeg || activeLeg instanceof FMLeg) {
+      return activeLegIndex + 2;
+    }
+
+    return activeLegIndex;
+  }
 }

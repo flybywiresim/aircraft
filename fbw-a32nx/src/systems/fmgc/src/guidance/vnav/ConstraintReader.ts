@@ -35,7 +35,7 @@ export class ConstraintReader {
       return SimVar.GetSimVarValue('L:A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END', 'nautical miles');
     }
 
-    return this.guidanceController.alongTrackDistanceToDestination;
+    return this.guidanceController.getAlongTrackDistanceToDestination();
   }
 
   // If you change this property here, make sure you also reset it properly in `reset`

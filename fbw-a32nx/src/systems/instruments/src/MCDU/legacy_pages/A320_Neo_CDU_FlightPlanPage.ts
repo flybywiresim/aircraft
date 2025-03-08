@@ -113,11 +113,9 @@ export class CDUFlightPlanPage {
     const fmsGeometryProfile = mcdu.guidanceController.vnavDriver.mcduProfile;
     const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
 
-    /** @type {Map<number, VerticalWaypointPrediction>} */
-    let vnavPredictionsMapByWaypoint = null;
-    if (fmsGeometryProfile && fmsGeometryProfile.isReadyToDisplay) {
-      vnavPredictionsMapByWaypoint = fmsGeometryProfile.waypointPredictions;
-    }
+    const vnavPredictionsMapByWaypoint = fmsGeometryProfile?.isReadyToDisplay
+      ? fmsGeometryProfile.waypointPredictions
+      : null;
 
     let cumulativeDistance = 0;
     // Primary F-PLAN
@@ -388,9 +386,10 @@ export class CDUFlightPlanPage {
         let distance = '';
         // Active waypoint is live distance, others are distances in the flight plan
         if (isActive) {
-          if (Number.isFinite(mcdu.guidanceController.activeLegAlongTrackCompletePathDtg)) {
+          // TODO sec
+          if (Number.isFinite(mcdu.guidanceController.activeLegCompleteLegPathDtg)) {
             distance = Math.round(
-              Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegAlongTrackCompletePathDtg)),
+              Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegCompleteLegPathDtg)),
             ).toFixed(0);
           }
         } else {
@@ -698,7 +697,7 @@ export class CDUFlightPlanPage {
         let distance = undefined;
         if (!shouldHidePredictions) {
           distance = isActive
-            ? mcdu.guidanceController.activeLegAlongTrackCompletePathDtg - pwp.distanceFromLegTermination
+            ? mcdu.guidanceController.activeLegCompleteLegPathDtg - pwp.distanceFromLegTermination
             : distanceFromLastLine;
         }
 
@@ -720,12 +719,16 @@ export class CDUFlightPlanPage {
           isOverfly: false,
         };
 
-        addLskAt(rowI, 0, (value) => {
-          if (value === Keypad.clrValue) {
-            // TODO
-            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-          }
-        });
+        addLskAt(
+          rowI,
+          () => mcdu.getDelaySwitchPage(),
+          (value) => {
+            if (value === Keypad.clrValue) {
+              // TODO
+              mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            }
+          },
+        );
       } else if (marker) {
         // Marker
         scrollWindow[rowI] = waypointsAndMarkers[winI];
@@ -962,7 +965,7 @@ export class CDUFlightPlanPage {
       let destEFOBCell = '---.-';
 
       if (targetPlan.destinationAirport) {
-        const destDist = mcdu.guidanceController.alongTrackDistanceToDestination;
+        const destDist = mcdu.guidanceController.getAlongTrackDistanceToDestination(forPlan);
 
         if (Number.isFinite(destDist)) {
           destDistCell = Math.round(destDist).toFixed(0);
