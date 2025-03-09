@@ -48,7 +48,7 @@ import { FmsClient } from '@atsu/fmsclient';
 import { AtsuStatusCodes } from '@datalink/common';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { FmsErrorType } from '@fmgc/FmsError';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -2753,7 +2753,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           },
         )
         .catch((err) => {
-          if (err.type !== undefined) {
+          if (err instanceof FmsError && err.type !== undefined) {
             this.showFmsErrorMessage(err.type);
           } else if (err instanceof McduMessage) {
             this.setScratchpadMessage(err);
