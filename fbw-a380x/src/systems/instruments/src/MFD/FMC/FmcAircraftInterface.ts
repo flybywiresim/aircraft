@@ -979,7 +979,7 @@ export class FmcAircraftInterface {
     let towerHeadwind = 0;
     const appWind = this.fmgc.data.approachWind.get();
     const destRwy = this.fmgc.getDestinationRunway();
-    if (appWind) {
+    if (appWind !== null) {
       if (destRwy) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(appWind.speed, appWind.direction, destRwy.magneticBearing);
       }
@@ -1196,7 +1196,7 @@ export class FmcAircraftInterface {
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
     const appWind = this.fmgc.data.approachWind.get();
     let towerHeadwind = 0;
-    if (appWind) {
+    if (appWind !== null) {
       if (this.flightPlanService.active.destinationRunway) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(
           appWind.speed,
