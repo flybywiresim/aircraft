@@ -794,7 +794,11 @@ void FcuComputer::step()
     }
 
     if (FcuComputer_U.in.sim_input.spd_mach != -1.0F) {
-      FcuComputer_DWork.pValue_n = FcuComputer_U.in.sim_input.spd_mach;
+      if (rtb_BusAssignment_jg_logic_afs_mach_active) {
+        FcuComputer_DWork.pValue_n = FcuComputer_U.in.sim_input.spd_mach / 100.0F;
+      } else {
+        FcuComputer_DWork.pValue_n = FcuComputer_U.in.sim_input.spd_mach;
+      }
     }
 
     if (FcuComputer_DWork.prevMachActive != rtb_BusAssignment_jg_logic_afs_mach_active) {
