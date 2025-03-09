@@ -21,7 +21,7 @@ import {
   NdbClass,
   ControlledAirspace,
   RestrictiveAirspace,
-} from 'navdata/shared';
+} from '../../../shared';
 import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory'; // FIXME remove import from FMGC
