@@ -59,12 +59,7 @@ export class MsfsFlightPlanSync {
     });
 
     this.rpcClient = new FlightPlanRpcClient(bus, new A320FlightPlanPerformanceData());
-
-    Wait.awaitCondition(() => this.rpcClient.hasActive, 2_000).then(() => {
-      console.log('[MsfsFlightPlanSync] RPC client has active plan');
-
-      this.fmsRpcClientReady.set(true);
-    });
+    this.rpcClient.onAvailable.on(() => this.fmsRpcClientReady.set(true));
 
     Wait.awaitSubscribable(this.isReady).then(() => {
       console.log('[MsfsFlightPlanSync] Ready, loading route...');

@@ -37,7 +37,15 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 import {
+  FlightPlanEditSyncEvent,
   FlightPlanEvents,
+  FlightPlanLegCruiseStepEditEvent,
+  FlightPlanLegDefinitionEditEvent,
+  FlightPlanLegFlagsEditEvent,
+  FlightPlanSetActiveLegIndexEvent,
+  FlightPlanSetFixInfoEntryEvent,
+  FlightPlanSetSegmentEvent,
+  FlightPlanSyncEvent,
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
@@ -72,121 +80,143 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   private subscriptions: Subscription[] = [];
 
+  private processingSyncEvents = false;
+
+  private readonly syncEventQueue: [keyof SyncFlightPlanEvents, FlightPlanSyncEvent][] = [];
+
   protected constructor(
     public readonly index: number,
     public readonly bus: EventBus,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
 
-    const subs = this.bus.getSubscriber<SyncFlightPlanEvents>();
+    this.subscriptions.push(
+      this.bus.onAll((key, event) => {
+        if (!key.startsWith('SYNC_')) {
+          return;
+        }
 
+        console.log(`FP SYNC EVENT - ${key.replace('SYNC_', '')}`, event);
+      }),
+      this.bus.onAll((key, event: FlightPlanEditSyncEvent) => {
+        if (key.startsWith('SYNC_flightPlan')) {
+          const isAlternatePlan = this instanceof AlternateFlightPlan;
+
+          if (!this.ignoreSync) {
+            if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
+              return;
+            }
+
+            this.syncEventQueue.push([key as keyof SyncFlightPlanEvents, event]);
+            if (!this.processingSyncEvents) {
+              this.processSyncEventQueue();
+            }
+          }
+        }
+      }),
+    );
+  }
+
+  private async processSyncEventQueue(): Promise<void> {
+    if (this.syncEventQueue.length === 0) {
+      this.processingSyncEvents = false;
+      return;
+    }
+
+    this.processingSyncEvents = true;
+
+    const [event, data] = this.syncEventQueue.shift();
+
+    switch (event) {
+      case 'SYNC_flightPlan.setActiveLegIndex': {
+        this.handleSetActiveLegIndexSyncEvent(data as FlightPlanSetActiveLegIndexEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.setSegment': {
+        await this.handleSetSegmentSyncEvent(data as FlightPlanSetSegmentEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.legFlagsEdit': {
+        this.handleLegFlagsEditSyncEvent(data as FlightPlanLegFlagsEditEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.legDefinitionEdit': {
+        this.handleLegDefinitionEditSyncEvent(data as FlightPlanLegDefinitionEditEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.setLegCruiseStep': {
+        this.handleSetLegCruiseStepSyncEvent(data as FlightPlanLegCruiseStepEditEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.setFixInfoEntry': {
+        this.handleSetPlanFixInfoEntry(data as FlightPlanSetFixInfoEntryEvent);
+        break;
+      }
+    }
+
+    const flightPlanEventsPub = this.bus.getPublisher<FlightPlanEvents>();
+
+    flightPlanEventsPub.pub(event.replace('SYNC_', '') as keyof FlightPlanEvents, data);
+
+    await this.processSyncEventQueue();
+  }
+
+  private handleSetActiveLegIndexSyncEvent(event: FlightPlanSetActiveLegIndexEvent): void {
+    this.activeLegIndex = event.activeLegIndex;
+
+    this.incrementVersion();
+  }
+
+  private async handleSetSegmentSyncEvent(event: FlightPlanSetSegmentEvent): Promise<void> {
+    const segment = this.orderedSegments[event.segmentIndex];
+
+    await segment.setFromSerializedSegment(event.serialized);
+
+    this.incrementVersion();
+  }
+
+  private handleLegFlagsEditSyncEvent(event: FlightPlanLegFlagsEditEvent): void {
+    const element = this.legElementAt(event.atIndex);
+
+    element.flags = event.newFlags;
+
+    this.incrementVersion();
+  }
+
+  private handleLegDefinitionEditSyncEvent(event: FlightPlanLegDefinitionEditEvent): void {
+    const element = this.legElementAt(event.atIndex);
+
+    Object.assign(element.definition, event.newDefinition);
+
+    this.incrementVersion();
+  }
+
+  private handleSetLegCruiseStepSyncEvent(event: FlightPlanLegCruiseStepEditEvent): void {
+    const element = this.legElementAt(event.atIndex);
+
+    element.cruiseStep = event.cruiseStep;
+
+    this.incrementVersion();
+  }
+
+  private handleSetPlanFixInfoEntry(event: FlightPlanSetFixInfoEntryEvent): void {
     const isAlternatePlan = this instanceof AlternateFlightPlan;
 
     const flightPlanEventsPub = this.bus.getPublisher<FlightPlanEvents>();
 
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setActiveLegIndex').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
+    if (!this.ignoreSync) {
+      if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
+        return;
+      }
 
-          this.activeLegIndex = event.activeLegIndex;
+      if (this instanceof FlightPlan) {
+        this.setFixInfoEntry(event.index, event.fixInfo, false);
 
-          this.incrementVersion();
+        this.incrementVersion();
 
-          flightPlanEventsPub.pub('flightPlan.setActiveLegIndex', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setSegment').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          const segment = this.orderedSegments[event.segmentIndex];
-
-          segment
-            .setFromSerializedSegment(event.serialized)
-            .then(() => flightPlanEventsPub.pub('flightPlan.setSegment', event));
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.legFlagsEdit').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          const element = this.legElementAt(event.atIndex);
-
-          element.flags = event.newFlags;
-
-          this.incrementVersion();
-
-          flightPlanEventsPub.pub('flightPlan.legFlagsEdit', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.legDefinitionEdit').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          const element = this.legElementAt(event.atIndex);
-
-          Object.assign(element.definition, event.newDefinition);
-
-          this.incrementVersion();
-
-          flightPlanEventsPub.pub('flightPlan.legDefinitionEdit', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setLegCruiseStep').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          const element = this.legElementAt(event.atIndex);
-
-          element.cruiseStep = event.cruiseStep;
-
-          this.incrementVersion();
-
-          flightPlanEventsPub.pub('flightPlan.setLegCruiseStep', event);
-        }
-      }),
-    );
-
-    this.subscriptions.push(
-      subs.on('SYNC_flightPlan.setFixInfoEntry').handle((event) => {
-        if (!this.ignoreSync) {
-          if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-            return;
-          }
-
-          if (this instanceof FlightPlan) {
-            this.setFixInfoEntry(event.index, event.fixInfo, false);
-
-            this.incrementVersion();
-
-            flightPlanEventsPub.pub('flightPlan.setFixInfoEntry', event);
-          }
-        }
-      }),
-    );
+        flightPlanEventsPub.pub('flightPlan.setFixInfoEntry', event);
+      }
+    }
   }
 
   destroy() {

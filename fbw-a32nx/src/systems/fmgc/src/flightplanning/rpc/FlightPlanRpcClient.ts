@@ -5,7 +5,15 @@
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { EventBus, EventSubscriber, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import {
+  EventBus,
+  EventSubscriber,
+  MappedSubject,
+  Publisher,
+  SubEvent,
+  Subject,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -34,7 +42,13 @@ export interface FlightPlanRemoteClientRpcEvents<P extends FlightPlanPerformance
 export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements FlightPlanInterface<P> {
   private subs: Subscription[] = [];
 
+  public readonly onAvailable = new SubEvent();
+
   private readonly flightPlanManager: FlightPlanManager<P>;
+
+  private readonly rpcAvailable = Subject.create(false);
+
+  private readonly flightPlanManagerInitialized = Subject.create(false);
 
   private readonly pub: Publisher<FlightPlanRemoteClientRpcEvents<P>>;
 
@@ -48,7 +62,11 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     this.sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
 
     this.subs.push(
+      this.sub.on('flightPlanServer_heartbeat').handle(() => {
+        this.rpcAvailable.set(true);
+      }),
       this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
+        console.log(`RPC COMMAND RESPONSE - ${responseId}`, response);
         if (this.rpcCommandsSent.has(responseId)) {
           const [resolve] = this.rpcCommandsSent.get(responseId) ?? [];
 
@@ -71,12 +89,24 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
         }
       }),
     );
+
     this.flightPlanManager = new FlightPlanManager<P>(
       this.bus,
       this
         .performanceDataInit as P /*  TODO, is this comment still valid? "This flight plan manager will never create plans, so this is fine" */,
       Math.round(Math.random() * 10_000),
       false,
+    );
+    this.flightPlanManager.initialized.on(() => this.flightPlanManagerInitialized.set(true));
+
+    MappedSubject.create(
+      ([rpcAvailable, flightPlanManagerInitialized]) => {
+        if (rpcAvailable && flightPlanManagerInitialized) {
+          this.onAvailable.notify(undefined, undefined);
+        }
+      },
+      this.rpcAvailable,
+      this.flightPlanManagerInitialized,
     );
   }
 

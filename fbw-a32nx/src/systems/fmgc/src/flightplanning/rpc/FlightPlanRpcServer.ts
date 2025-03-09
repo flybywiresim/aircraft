@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Publisher } from '@microsoft/msfs-sdk';
+import { EventBus, GameStateProvider, Publisher } from '@microsoft/msfs-sdk';
 
 import { FlightPlanRemoteClientRpcEvents } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 export interface FlightPlanServerRpcEvents {
+  flightPlanServer_heartbeat: void;
   flightPlanServer_rpcCommandResponse: [string, any];
   flightPlanServer_rpcCommandErrorResponse: [string, unknown];
 }
@@ -23,17 +24,34 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
     const sub = bus.getSubscriber<FlightPlanRemoteClientRpcEvents<P>>();
     this.pub = bus.getPublisher<FlightPlanServerRpcEvents>();
 
+    const gameStateSub = GameStateProvider.get().sub((state) => {
+      if (state === GameState.ingame) {
+        this.handleSendHeartbeat();
+        setInterval(() => this.handleSendHeartbeat(), 2_500);
+
+        gameStateSub.destroy();
+      }
+    });
+
     sub.on('flightPlanRemoteClient_rpcCommand').handle(([command, id, ...args]) => {
+      console.log('[FlightPlanRpcServer] Handling RPC command', command, id, ...args);
       this.handleRpcCommand(command, id, ...args);
     });
+  }
+
+  private handleSendHeartbeat(): void {
+    this.pub.pub('flightPlanServer_heartbeat', undefined, true, false);
   }
 
   private async handleRpcCommand(command: string, id: string, ...args: any): Promise<void> {
     try {
       const returnValue = await this.localFlightPlanService[command](...(args as any[]));
+      console.log('[FlightPlanRpcServer](handleRpcCommand) RPC command handled successfully');
 
       await this.respondToRpcCommand(id, returnValue);
     } catch (e: unknown) {
+      console.log('[FlightPlanRpcServer](handleRpcCommand) Error while handling RPC command', e);
+
       await this.respondToRpcCommandWithError(
         id,
         typeof e === 'object' && 'message' in e && typeof e.message === 'string' ? e.message : e,

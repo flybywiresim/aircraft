@@ -545,6 +545,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     newPlan.fixInfos = serialized.fixInfo;
 
     await newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
+    await newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
+
     await newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
     await newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(
       serialized.segments.departureRunwayTransitionSegment,
@@ -562,7 +564,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     );
     await newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
     await newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
-    await newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
 
     return newPlan;
   }

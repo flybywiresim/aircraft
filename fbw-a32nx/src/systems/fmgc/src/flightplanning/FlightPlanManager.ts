@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-import { EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import { EventBus, Publisher, SubEvent, Subject, Subscription } from '@microsoft/msfs-sdk';
 import {
   FlightPlanEvents,
   FlightPlanSyncResponsePacket,
@@ -24,9 +24,13 @@ export enum FlightPlanIndex {
 export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   private plans: FlightPlan<P>[] = [];
 
+  private _initialized = Subject.create(false);
+
   private ignoreSync = false;
 
   private subs: Subscription[] = [];
+
+  public initialized = new SubEvent();
 
   public destroy() {
     this.subs.forEach((sub) => sub.destroy());
@@ -62,22 +66,24 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     );
 
     this.subs.push(
-      sub.on('flightPlanManager.syncResponse').handle((event) => {
+      sub.on('flightPlanManager.syncResponse').handle(async (event) => {
         if (!this.ignoreSync) {
           console.log('[FpmSync] SyncResponse()');
 
           for (const [index, serialisedPlan] of Object.entries(event.plans)) {
             const intIndex = parseInt(index);
 
-            FlightPlan.fromSerializedFlightPlan(
+            const newPlan = await FlightPlan.fromSerializedFlightPlan(
               intIndex,
               serialisedPlan,
               this.bus,
               this.performanceDataInit.clone(),
-            ).then((newPlan) => {
-              this.set(intIndex, newPlan);
-            })
+            );
+
+            this.set(intIndex, newPlan);
           }
+
+          this._initialized.set(true);
         }
       }),
     );
@@ -127,8 +133,12 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       }),
     );
 
+    this.subs.push(this._initialized.sub(() => this.initialized.notify(undefined, undefined)));
+
     if (!this.master) {
       setTimeout(() => this.sendEvent('flightPlanManager.syncRequest', undefined), 5_000);
+    } else {
+      this._initialized.set(true);
     }
 
     this.syncPub = this.bus.getPublisher<FlightPlanEvents>();
