@@ -1,12 +1,25 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
+import {
+  FSComponent,
+  DisplayComponent,
+  VNode,
+  MappedSubject,
+  ConsumerSubject,
+  Subscribable,
+  Unit,
+  UnitFamily,
+  UnitType,
+} from '@microsoft/msfs-sdk';
 
 import { Arinc429LocalVarConsumerSubject, ArincEventBus, BtvData, FmsOansData, FmsData } from '@flybywiresim/fbw-sdk';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
-export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
+export class BtvRunwayInfo extends DisplayComponent<{
+  bus: ArincEventBus;
+  lengthUnit: Subscribable<Unit<UnitFamily.Distance>>;
+}> {
   private readonly sub = this.props.bus.getArincSubscriber<FmsOansData & FmsData & BtvData>();
 
   private readonly fmsRwyIdent = ConsumerSubject.create(this.sub.on('fmsLandingRunway'), null);
@@ -24,7 +37,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly runwayInfoString = MappedSubject.create(
     ([ident, length]) =>
       ident && length.isNormalOperation()
-        ? `${ident.substring(4).padStart(5, '\xa0')}${length.value.toFixed(0).padStart(6, '\xa0')}`
+        ? `${ident.substring(4).padStart(5, '\xa0')}${this.props.lengthUnit.get().convertFrom(length.value, UnitType.METER).toFixed(0).padStart(6, '\xa0')}`
         : '',
     this.runwayIdent,
     this.runwayLength,
@@ -44,7 +57,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly exitInfoString = MappedSubject.create(
     ([ident, dist]) =>
       ident && dist.isNormalOperation()
-        ? `${ident.padStart(4, '\xa0')}${dist.value.toFixed(0).padStart(6, '\xa0')}`
+        ? `${ident.padStart(4, '\xa0')}${this.props.lengthUnit.get().convertFrom(dist.value, UnitType.METER).toFixed(0).padStart(6, '\xa0')}`
         : '',
     this.exitIdent,
     this.exitDistance,
@@ -59,6 +72,10 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly turnaroundMaxRev = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvTurnAroundMaxReverse'));
 
   private readonly turnaroundIdleRev = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvTurnAroundIdleReverse'));
+
+  private distanceUnitFormatter(unit: Unit<UnitFamily.Distance>) {
+    return unit === UnitType.METER ? 'M' : 'FT';
+  }
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -76,7 +93,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
               {this.runwayInfoString}
             </text>
             <text x={205} y={0} class="Cyan FontSmallest">
-              M
+              {this.props.lengthUnit.map((v) => this.distanceUnitFormatter(v))}
             </text>
             <text x={225} y={0} class="White FontSmallest">
               -
@@ -122,7 +139,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
               {this.exitInfoString}
             </text>
             <text x={205} y={0} class="Cyan FontSmallest">
-              M
+              {this.props.lengthUnit.map((v) => this.distanceUnitFormatter(v))}
             </text>
           </Layer>
         </g>

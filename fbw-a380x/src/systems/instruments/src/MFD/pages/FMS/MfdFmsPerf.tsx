@@ -2,7 +2,17 @@ import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Dropd
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
-import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  ClockEvents,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  Unit,
+  UnitFamily,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
@@ -36,7 +46,7 @@ import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometr
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } from '../../shared/utils';
-import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { ApproachType, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
@@ -514,6 +524,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private missedEngineOutAccelAlt = Subject.create<number | null>(null);
 
   private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -1115,6 +1127,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.apprWindDirectionValue,
       this.apprWindSpeedValue,
     );
+    NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key, value) => {
+      value === '1' ? this.lengthUnit.set(UnitType.METER) : this.lengthUnit.set(UnitType.FOOT);
+    });
   }
 
   render(): VNode {
@@ -1167,7 +1182,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                     <InputField<number>
-                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
+                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength, this.lengthUnit)}
                       dataHandlerDuringValidation={async (v) =>
                         this.props.fmcService.master?.fmgc.data.takeoffShift.set(v)
                       }
