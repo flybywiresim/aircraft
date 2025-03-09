@@ -1294,12 +1294,12 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
       this.machHysteresis = false;
     }
 
-    const hideMachDisplay = !this.machHysteresis && this.mach.isNormalOperation();
+    const hideMachDisplay = !this.machHysteresis && (this.mach.isNormalOperation() || this.mach.isFunctionalTest());
 
     if (hideMachDisplay) {
       this.machFlagVisible.set(false);
       this.machTextSub.set('');
-    } else if (!this.mach.isNormalOperation()) {
+    } else if (!this.mach.isNormalOperation() && !this.mach.isFunctionalTest()) {
       this.machFlagVisible.set(true);
       this.machTextSub.set('');
     } else {
