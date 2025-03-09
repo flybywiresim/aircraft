@@ -777,8 +777,9 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
     return (
       <>
         <Layer x={384} y={28}>
-          {/* TODO verify */}
-          <text class="Green FontIntermediate MiddleAlign">{this.approachMessageValue}</text>
+          <text class="Green FontIntermediate MiddleAlign" style="white-space: pre">
+            {this.approachMessageValue}
+          </text>
         </Layer>
         <Layer
           x={384}
