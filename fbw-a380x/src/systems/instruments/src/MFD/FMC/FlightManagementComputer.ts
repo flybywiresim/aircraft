@@ -216,7 +216,7 @@ export class FlightManagementComputer implements FmcInterface {
   );
 
   private readonly destDataEntered = MappedSubject.create(
-    ([qnh, temperature, wind]) => qnh !== null && temperature != null && wind !== null,
+    ([qnh, temperature, wind]) => qnh !== null && temperature !== null && wind !== null,
     this.fmgc.data.approachQnh,
     this.fmgc.data.approachTemperature,
     this.fmgc.data.approachWind,

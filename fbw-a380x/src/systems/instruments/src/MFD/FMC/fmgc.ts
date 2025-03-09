@@ -237,7 +237,7 @@ export class FmgcData {
   public readonly approachWindSpeed = Subject.create<number | null>(null);
 
   public readonly approachWind: MappedSubject<number[], FmcWindVector | null> = MappedSubject.create(
-    ([direction, speed]) => (direction != null && speed !== null ? { direction: direction, speed: speed } : null),
+    ([direction, speed]) => (direction !== null && speed !== null ? { direction: direction, speed: speed } : null),
     this.approachSpeed,
     this.approachWindSpeed,
   );
