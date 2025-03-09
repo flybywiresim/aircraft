@@ -36,10 +36,6 @@ export class NXUnits {
     return NXUnits.metricWeight ? value / 2.204625 : value;
   }
 
-  static userWeightUnitTons() {
-    return NXUnits.metricWeight ? 'T' : 'LBS';
-  }
-
   static userWeightUnit() {
     return NXUnits.metricWeight ? 'KG' : 'LBS'; // EIS uses S suffix on LB
   }
@@ -51,15 +47,6 @@ export class NXUnits {
    */
   static mToUser(value) {
     return NXUnits.metricWeight ? value : value * 3.28084;
-  }
-
-  /**
-   * Converts ft into meters if metric units are selected
-   * @param value {number} in unit ft
-   * @returns {number} in metric or ft
-   */
-  static userToM(value) {
-    return NXUnits.metricWeight ? value : value / 3.28084;
   }
 
   /**
