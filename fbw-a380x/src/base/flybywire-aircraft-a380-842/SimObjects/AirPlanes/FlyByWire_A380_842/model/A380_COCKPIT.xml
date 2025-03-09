@@ -5027,6 +5027,12 @@
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <NAME>FWS2</NAME>
                     </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>AESU1</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>AESU2</NAME>
+                    </UseTemplate>
                 </Component>
             </Component>
 

@@ -21,10 +21,12 @@ import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
 import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
 import {
+  IrBusPublisher,
   ArincEventBus,
   BtvSimvarPublisher,
   FailuresConsumer,
   MsfsFlightModelPublisher,
+  MsfsMiscPublisher,
   PilotSeatPublisher,
   VhfComIndices,
 } from '@flybywiresim/fbw-sdk';
@@ -46,7 +48,12 @@ import {
   CpiomAvailableSimvarPublisher,
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
+import { EgpwcBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
+import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { AesuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { A380Failure } from '@failures';
+import { EfisTawsBridge } from './systems/EfisTawsBridge';
+import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 CpiomAvailableSimvarPublisher;
 import { AircraftNetworkServerUnit } from 'systems-host/systems/InformationSystems/AircraftNetworkServerUnit';
@@ -120,6 +127,14 @@ class SystemsHost extends BaseInstrument {
 
   private readonly interactivePointsPublisher = new MsfsFlightModelPublisher(this.bus);
 
+  private readonly fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, 'L'); // FIXME figure out side dependency
+  private readonly egpwcPublisher = new EgpwcBusPublisher(this.bus, 'L');
+  private readonly fgDataPublisher = new FGDataPublisher(this.bus);
+  private readonly msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
+  private readonly irBusPublisher = new IrBusPublisher(this.bus);
+  private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
+  private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
+
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
 
@@ -179,7 +194,9 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
+    this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
     this.backplane.addInstrument('BtvDistanceUpdater', this.btvDistanceUpdater);
+    this.backplane.addInstrument('EfisTawsBridge', this.efisTawsBridge);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerPublisher);
@@ -191,7 +208,12 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
     this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
-    this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
+    this.backplane.addPublisher('FmsSymbolsPublisher', this.fmsSymbolsPublisher);
+    this.backplane.addPublisher('EgpwcPublisher', this.egpwcPublisher);
+    this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
+    this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
+    this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
+    this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
     this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
     this.backplane.addInstrument('fltOpsAnsu1', this.fltOpsAnsu1, true);
@@ -200,7 +222,7 @@ class SystemsHost extends BaseInstrument {
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
-    this.fwsCore.init();
+    this.fwsCore?.init();
 
     this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
@@ -213,8 +235,8 @@ class SystemsHost extends BaseInstrument {
         const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
         lastUpdateTime = now;
 
-        this.soundManager.update(dt);
-        this.gpws.update(dt);
+        this.soundManager?.update(dt);
+        this.gpws?.update(dt);
         this.fwsCore?.update(dt);
       });
 

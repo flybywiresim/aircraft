@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+
+  "compilerOptions": {
+    "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+  }
+}

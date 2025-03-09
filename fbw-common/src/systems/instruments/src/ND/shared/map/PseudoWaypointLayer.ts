@@ -26,6 +26,7 @@ const LEVEL_OFF_CLIMB_PATH = new Path2D('M -42 16.2 l 19.8 -16.2 h 22.2 m -4.2 -
 const START_OF_DESCENT_PATH = new Path2D('M 0 0 h 22.2 l 19.8 16.2 m -6 0 h 6 v -6');
 const LEVEL_OFF_DESCENT_PATH = new Path2D('M -42 -16.2 l 19.8 16.2 h 22.2 m -4.2 -4.2 l 4.2 4.2 l -4.2 4.2');
 const INTERCEPT_PROFILE_PATH = new Path2D('M -38, 0 l 14, -17 v 34 l 14 -17 h10 m -5 -5 l 5 5 l -5 5');
+const END_OF_VD_PATH = new Path2D('M -15 15 v-15 h30 v15');
 
 export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
   data: NdSymbol[] = [];
@@ -66,12 +67,13 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
         context.rotate((rotate * Math.PI) / 180);
 
         this.paintPseudoWaypoint(false, context, 0, -dy, symbol);
-      } else {
+      } else if (symbol.location) {
         const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
         const rx = x + mapWidth / 2;
         const ry = y + mapHeight / 2;
+        const rotate = symbol.direction ? mapParameters.rotation(symbol.direction) : undefined;
 
-        this.paintPseudoWaypoint(false, context, rx, ry, symbol);
+        this.paintPseudoWaypoint(false, context, rx, ry, symbol, rotate);
       }
       this.lastUpdateTime = Date.now();
     }
@@ -91,16 +93,17 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
             (this.groundSpeed.value * (Date.now() - this.lastUpdateTime)) / 1000 / 60 / 60) *
           mapParameters.nmToPx;
         const rotate = MathUtils.diffAngle(this.headingWord.get().value, this.trackWord.get().value);
-        context.translate(384, 620);
+        context.translate(384, 378 + mapParameters.centerYBias); // bug for ROSE NAV modes, didn't consider centerYBias
         context.rotate((rotate * Math.PI) / 180);
 
         this.paintPseudoWaypoint(true, context, 0, -dy, symbol);
-      } else {
+      } else if (symbol.location) {
         const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
         const rx = x + mapWidth / 2;
         const ry = y + mapHeight / 2;
+        const rotate = symbol.direction ? mapParameters.rotation(symbol.direction) : undefined;
 
-        this.paintPseudoWaypoint(true, context, rx, ry, symbol);
+        this.paintPseudoWaypoint(true, context, rx, ry, symbol, rotate);
       }
     }
     this.lastUpdateTime = Date.now();
@@ -112,6 +115,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
     x: number,
     y: number,
     symbol: NdSymbol,
+    rotate?: number,
   ) {
     const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
     context.strokeStyle = color;
@@ -138,11 +142,17 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
       context.fillStyle = color;
       context.strokeStyle = 'none';
       this.paintSpeedChange(context, x, y);
+    } else if (symbol.ident === 'END_OF_VD' && NdSymbolTypeFlags.CyanColor) {
+      context.fillStyle = color;
+      this.paintPath(context, x, y, END_OF_VD_PATH, rotate);
     }
   }
 
-  private paintPath(context: CanvasRenderingContext2D, x: number, y: number, path: Path2D) {
+  private paintPath(context: CanvasRenderingContext2D, x: number, y: number, path: Path2D, rotate?: number) {
     context.translate(x, y);
+    if (rotate) {
+      context.rotate((rotate * Math.PI) / 180);
+    }
     context.beginPath();
     context.stroke(path);
     context.closePath();
