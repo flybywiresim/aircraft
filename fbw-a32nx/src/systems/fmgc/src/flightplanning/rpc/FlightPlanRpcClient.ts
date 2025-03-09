@@ -66,7 +66,6 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
         this.rpcAvailable.set(true);
       }),
       this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
-        console.log(`RPC COMMAND RESPONSE - ${responseId}`, response);
         if (this.rpcCommandsSent.has(responseId)) {
           const [resolve] = this.rpcCommandsSent.get(responseId) ?? [];
 

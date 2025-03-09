@@ -91,13 +91,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
 
     this.subscriptions.push(
-      this.bus.onAll((key, event) => {
-        if (!key.startsWith('SYNC_')) {
-          return;
-        }
-
-        console.log(`FP SYNC EVENT - ${key.replace('SYNC_', '')}`, event);
-      }),
       this.bus.onAll((key, event: FlightPlanEditSyncEvent) => {
         if (key.startsWith('SYNC_flightPlan')) {
           const isAlternatePlan = this instanceof AlternateFlightPlan;
