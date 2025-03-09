@@ -10,6 +10,7 @@ import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { SerializedFlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { PendingAirwayEntry } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 
 export interface FlightPlanSyncEvent {
   syncClientID: number;
@@ -79,7 +80,9 @@ export interface FlightPlanFlightNumberEditEvent extends FlightPlanEditSyncEvent
   flightNumber: string;
 }
 
-export interface FlightPlanPendingAirwaysEditEvent extends FlightPlanEditSyncEvent {}
+export interface FlightPlanPendingAirwaysEditEvent extends FlightPlanEditSyncEvent {
+  elements: PendingAirwayEntry[];
+}
 
 export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceData> = {
   [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;

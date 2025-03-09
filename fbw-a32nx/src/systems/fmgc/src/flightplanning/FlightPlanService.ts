@@ -110,7 +110,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async secondaryReset(index: number) {
     if (this.hasSecondary(index)) {
-      this.secondaryDelete(index);
+      await this.secondaryDelete(index);
     }
 
     this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
@@ -120,11 +120,11 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const temporaryPlan = this.flightPlanManager.get(FlightPlanIndex.Temporary);
 
     if (temporaryPlan.pendingAirways) {
-      await temporaryPlan.pendingAirways.finalize();
+      await temporaryPlan.finaliseAirwayEntry();
     }
 
     if (temporaryPlan.alternateFlightPlan.pendingAirways) {
-      await temporaryPlan.alternateFlightPlan.pendingAirways.finalize();
+      await temporaryPlan.finaliseAirwayEntry();
     }
 
     const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
@@ -408,43 +408,28 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.startAirwayEntry(at);
   }
 
-  async continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<void> {
+  public async continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<boolean> {
     const plan = alternate
       ? this.flightPlanManager.get(planIndex).alternateFlightPlan
       : this.flightPlanManager.get(planIndex);
 
-    if (!plan.pendingAirways) {
-      throw new Error('[FlightPlanService](continueAirwayEntryViaAirway) No pending airways exist on the plan');
-    }
-
-    await plan.pendingAirways.thenAirway(airway);
+    return await plan.continueAirwayEntryViaAirway(airway);
   }
 
-  async continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<void> {
+  public async continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<boolean> {
     const plan = alternate
       ? this.flightPlanManager.get(planIndex).alternateFlightPlan
       : this.flightPlanManager.get(planIndex);
 
-    if (!plan.pendingAirways) {
-      throw new Error('[FlightPlanService](continueAirwayEntryDirectToFix) No pending airways exist on the plan');
-    }
-
-    await plan.pendingAirways.thenTo(fix);
+    return await plan.continueAirwayEntryDirectToFix(fix);
   }
 
-  async finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void> {
+  public async finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void> {
     const plan = alternate
       ? this.flightPlanManager.get(planIndex).alternateFlightPlan
       : this.flightPlanManager.get(planIndex);
 
-    if (!plan.pendingAirways) {
-      throw new Error('[FlightPlanService](finaliseAirwayEntry) No pending airways exist on the plan');
-    }
-
-    await plan.pendingAirways.finalize();
-
-    // TODO broadcast some kind of event indicating the pending airways don't exist anymore
-    plan.pendingAirways = undefined;
+    await plan.finaliseAirwayEntry();
   }
 
   async directToWaypoint(

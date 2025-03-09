@@ -8,10 +8,9 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { PendingAirwayEntry } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
-import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
+import { PendingAirwayEntry, ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 
-export class LocalPendingAirways implements PendingAirways {
+export class LocalPendingAirways implements ReadonlyPendingAirways {
   elements: PendingAirwayEntry[] = [];
 
   private legs: FlightPlanLeg[] = [];
@@ -48,6 +47,7 @@ export class LocalPendingAirways implements PendingAirways {
     if (fixAlongAirway) {
       return fixAlongAirway;
     }
+
     throw new FmsError(FmsErrorType.NotInDatabase);
   }
 

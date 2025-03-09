@@ -230,18 +230,18 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param planIndex which flight plan to make the change on
    * @param alternate whether to edit the plan's alternate flight plan
    */
-  continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<void>;
+  continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<boolean>;
 
   /**
-   * Continues an existing AIRWAYS revision, inserting a DCT fix,
+   * Continues an existing AIRWAYS revision, inserting a DCT fix.
    * @param fix the fix to insert
    * @param planIndex which flight plan to make the change on
    * @param alternate whether to edit the plan's alternate flight plan
    */
-  continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<void>;
+  continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<boolean>;
 
   /**
-   * Finalises an existing AIRWAYS revision,
+   * Finalises an existing AIRWAYS revision.
    * @param planIndex which flight plan to make the change on
    * @param alternate whether to edit the plan's alternate flight plan
    */

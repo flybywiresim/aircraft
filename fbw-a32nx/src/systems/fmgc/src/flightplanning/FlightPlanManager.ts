@@ -328,11 +328,11 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       const [event, data] = this.syncEventQueue.shift();
 
       // Dispatch the sync event to a specific plan, if necessary
-      if ('planIndex' in data) {
+      if (event.startsWith('SYNC_flightPlan.') && 'planIndex' in data) {
         if (this.has(data.planIndex)) {
           const plan = data.forAlternate ? this.get(data.planIndex).alternateFlightPlan : this.get(data.planIndex);
 
-          await plan.processSyncEvent(event, data);
+          await plan.processSyncEvent(event as keyof SyncFlightPlanEvents & `SYNC_flightPlan.${string}`, data);
         }
       }
 

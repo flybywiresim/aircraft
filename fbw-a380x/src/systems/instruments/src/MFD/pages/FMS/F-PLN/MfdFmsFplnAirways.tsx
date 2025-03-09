@@ -6,7 +6,6 @@ import { AbstractMfdPageProps, MfdDisplayInterface } from 'instruments/src/MFD/M
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { LocalPendingAirways } from '@fmgc/flightplanning/plans/LocalPendingAirways';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirwayFormat, WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
@@ -16,6 +15,7 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {}
 
@@ -53,7 +53,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
           <AirwayLine
             fmc={this.props.fmcService.master}
             mfd={this.props.mfd}
-            pendingAirways={this.loadedFlightPlan.pendingAirways}
+            loadedFlightPlan={this.loadedFlightPlan}
             fromFix={fromFix}
             isFirstLine={false}
             nextLineCallback={(fix) => this.renderNextLine(fix)}
@@ -87,7 +87,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
         <AirwayLine
           fmc={this.props.fmcService.master}
           mfd={this.props.mfd}
-          pendingAirways={this.loadedFlightPlan.pendingAirways}
+          loadedFlightPlan={this.loadedFlightPlan}
           fromFix={revWpt}
           isFirstLine
           nextLineCallback={(fix) => this.renderNextLine(fix)}
@@ -150,7 +150,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
               label="TMPY F-PLN"
               onClick={async () => {
                 if (this.loadedFlightPlan) {
-                  await this.loadedFlightPlan.pendingAirways?.finalize();
+                  await this.loadedFlightPlan.finaliseAirwayEntry();
                   this.loadedFlightPlan.pendingAirways = undefined; // Reset, so it's not finalized twice when performing tmpy insert
                   this.props.fmcService.master?.resetRevisedWaypoint();
                   this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
@@ -170,7 +170,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
 interface AirwayLineProps extends ComponentProps {
   fmc: FmcInterface;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
-  pendingAirways: LocalPendingAirways;
+  loadedFlightPlan: FlightPlan;
   fromFix: Fix;
   isFirstLine: boolean;
   nextLineCallback: (f: Fix) => void;
@@ -210,7 +210,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              const success = await this.props.pendingAirways.thenAirway(airways[0]);
+              const success = await this.props.loadedFlightPlan.continueAirwayEntryViaAirway(airways[0]);
               if (success) {
                 this.viaFieldDisabled.set(true);
                 this.toFieldDisabled.set(false);
@@ -248,7 +248,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
 
               if (this.viaField.get() !== 'DCT') {
                 try {
-                  chosenFix = await this.props.pendingAirways.fixAlongTailAirway(v);
+                  chosenFix = this.props.loadedFlightPlan.pendingAirways?.fixAlongTailAirway(v);
                 } catch (msg: unknown) {
                   if (msg instanceof FmsError) {
                     this.props.fmc.showFmsErrorMessage(msg.type);
@@ -274,7 +274,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              const success = await this.props.pendingAirways.thenTo(chosenFix);
+              const success = await this.props.loadedFlightPlan.continueAirwayEntryDirectToFix(chosenFix);
               if (success) {
                 this.toFieldDisabled.set(true);
                 this.props.nextLineCallback(chosenFix);

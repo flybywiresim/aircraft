@@ -5,6 +5,7 @@
 
 import {
   Airport,
+  Airway,
   AltitudeDescriptor,
   Approach,
   ApproachType,
@@ -42,6 +43,7 @@ import {
   FlightPlanLegCruiseStepEditEvent,
   FlightPlanLegDefinitionEditEvent,
   FlightPlanLegFlagsEditEvent,
+  FlightPlanPendingAirwaysEditEvent,
   FlightPlanSetActiveLegIndexEvent,
   FlightPlanSetFixInfoEntryEvent,
   FlightPlanSetSegmentEvent,
@@ -64,6 +66,8 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
+import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
+import { RemotePendingAirways } from '@fmgc/flightplanning/plans/RemotePendingAirways';
 
 export enum FlightPlanQueuedOperation {
   Restring,
@@ -76,7 +80,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 {
   private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
-  public pendingAirways: LocalPendingAirways | undefined;
+  public pendingAirways: ReadonlyPendingAirways | undefined;
 
   private subscriptions: Subscription[] = [];
 
@@ -88,7 +92,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
   }
 
-  public async processSyncEvent(event: keyof SyncFlightPlanEvents, data: FlightPlanEditSyncEvent): Promise<void> {
+  public async processSyncEvent(
+    event: keyof SyncFlightPlanEvents & `SYNC_flightPlan.${string}`,
+    data: FlightPlanEditSyncEvent,
+  ): Promise<void> {
     // Protection against sync events coming from the same instrument
     if (this.ignoreSync || data.syncClientID === this.parentFlightPlanInterface.syncClientID) {
       return;
@@ -117,6 +124,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       }
       case 'SYNC_flightPlan.setFixInfoEntry': {
         this.handleSetPlanFixInfoEntry(data as FlightPlanSetFixInfoEntryEvent);
+        break;
+      }
+      case 'SYNC_flightPlan.pendingAirwaysEdit': {
+        this.handlePendingAirwaysEdit(data as FlightPlanPendingAirwaysEditEvent);
         break;
       }
     }
@@ -178,6 +189,20 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         flightPlanEventsPub.pub('flightPlan.setFixInfoEntry', event);
       }
     }
+  }
+
+  private handlePendingAirwaysEdit(event: FlightPlanPendingAirwaysEditEvent): void {
+    if (!this.pendingAirways) {
+      throw new Error('[BaseFlightPlan](handlePendingAirwaysEdit) No pending airways exist');
+    }
+
+    if (!(this.pendingAirways instanceof RemotePendingAirways)) {
+      throw new Error(
+        '[BaseFlightPlan](handlePendingAirwaysEdit) Pending airways exist, but they are not RemotePendingAirways. This should never happen when handlePendingAirwaysEdit is called',
+      );
+    }
+
+    this.pendingAirways.elements = event.elements;
   }
 
   destroy() {
@@ -1269,6 +1294,87 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     this.pendingAirways = new LocalPendingAirways(this, revisedLegIndex, leg);
+  }
+
+  /**
+   * Continues an existing AIRWAYS revision, starting a VIA entry.
+   * @param airway the airway to insert
+   */
+  public async continueAirwayEntryViaAirway(airway: Airway): Promise<boolean> {
+    if (!this.pendingAirways) {
+      throw new Error('[BaseFlightPlan](continueAirwayEntryViaAirway) No airway entry is pending');
+    }
+
+    if (!(this.pendingAirways instanceof LocalPendingAirways)) {
+      throw new Error(
+        '[BaseFlightPlan](continueAirwayEntryViaAirway) Pending airways exist, but they are not LocalPendingAirways. This should never happen when continueAirwayEntryViaAirway is called',
+      );
+    }
+
+    const result = this.pendingAirways.thenAirway(airway);
+
+    this.sendEvent('flightPlan.pendingAirwaysEdit', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
+      planIndex: this.index,
+      batchStack: this.parentFlightPlanInterface.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+      elements: this.pendingAirways.elements,
+    });
+
+    return result;
+  }
+
+  /**
+   * Continues an existing AIRWAYS revision, inserting a DCT fix.
+   * @param fix the fix to insert
+   */
+  public async continueAirwayEntryDirectToFix(fix: Fix): Promise<boolean> {
+    if (!this.pendingAirways) {
+      throw new Error('[BaseFlightPlan](continueAirwayEntryDirectToFix) No airway entry is pending');
+    }
+
+    if (!(this.pendingAirways instanceof LocalPendingAirways)) {
+      throw new Error(
+        '[BaseFlightPlan](continueAirwayEntryDirectToFix) Pending airways exist, but they are not LocalPendingAirways. This should never happen when continueAirwayEntryDirectToFix is called',
+      );
+    }
+
+    const result = await this.pendingAirways.thenTo(fix);
+
+    this.sendEvent('flightPlan.pendingAirwaysEdit', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
+      planIndex: this.index,
+      batchStack: this.parentFlightPlanInterface.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+      elements: this.pendingAirways.elements,
+    });
+
+    return result;
+  }
+
+  /**
+   * Finalises an existing AIRWAYS revision.
+   */
+  public async finaliseAirwayEntry(): Promise<void> {
+    if (!this.pendingAirways) {
+      throw new Error('[BaseFlightPlan](finaliseAirwayEntry) No airway entry is pending');
+    }
+
+    if (!(this.pendingAirways instanceof LocalPendingAirways)) {
+      throw new Error(
+        '[BaseFlightPlan](finaliseAirwayEntry) Pending airways exist, but they are not LocalPendingAirways. This should never happen when finaliseAirwayEntry is called',
+      );
+    }
+
+    await this.pendingAirways.finalize();
+
+    this.sendEvent('flightPlan.pendingAirwaysEdit', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
+      planIndex: this.index,
+      batchStack: this.parentFlightPlanInterface.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+      elements: this.pendingAirways.elements,
+    });
   }
 
   async addOrEditManualHold(

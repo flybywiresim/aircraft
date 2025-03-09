@@ -1,4 +1,4 @@
-import { Airway, Fix } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 
 export interface PendingAirwayEntry {
   fromIndex?: number;
@@ -16,5 +16,5 @@ export interface ReadonlyPendingAirways {
   elements: PendingAirwayEntry[];
 
   /** Find a fix by ident along the tail airway */
-  fixAlongTailAirway(ident: string): void;
+  fixAlongTailAirway(ident: string): Waypoint;
 }
