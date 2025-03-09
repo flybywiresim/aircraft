@@ -320,29 +320,25 @@ export class EfisTawsBridge implements Instrument {
   );
 
   /** If track from one segment differs more than 3° from previous track, paint grey area */
-  private readonly trackChangeDistance = MappedSubject.create(
-    ([path, track]) => {
-      if (track === null || !path || path.length === 0) {
-        return -1;
-      }
-
-      let currentTrack = track;
-
-      for (const segment of path) {
-        if (segment.trackToTerminationWaypoint === null) {
-          continue;
-        }
-
-        if (Math.abs(segment.trackToTerminationWaypoint - currentTrack) > 3) {
-          return segment.distanceFromAircraft;
-        }
-        currentTrack = segment.trackToTerminationWaypoint;
-      }
+  private readonly trackChangeDistance = MappedSubject.create(([path]) => {
+    if (!path || path.length === 0) {
       return -1;
-    },
-    this.fmsVerticalPath,
-    this.validTrack,
-  );
+    }
+
+    let currentTrack = null;
+
+    for (const segment of path) {
+      if (segment.trackToTerminationWaypoint === null) {
+        continue;
+      }
+
+      if (currentTrack !== null && Math.abs(segment.trackToTerminationWaypoint - currentTrack) > 3) {
+        return segment.distanceFromAircraft;
+      }
+      currentTrack = segment.trackToTerminationWaypoint;
+    }
+    return -1;
+  }, this.fmsVerticalPath);
 
   private readonly terrVdPathData = MappedSubject.create(
     ([fmsPath, trackChangeDistance]) => {
