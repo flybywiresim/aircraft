@@ -26,7 +26,7 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
   dataEntryFormat: DataEntryFormat<T, U>;
 }
 
-export interface InputFieldProps<T, U> extends ComponentProps {
+export interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T, U>;
   /** Renders empty values with orange rectangles */
   mandatory?: Subscribable<boolean>;
@@ -38,7 +38,7 @@ export interface InputFieldProps<T, U> extends ComponentProps {
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
   canOverflow?: boolean;
-  value: Subject<T> | Subscribable<T>;
+  modifyValue?: S;
   /** If defined, this component does not update the value prop, but rather calls this method. */
   onModified?: (newValue: U | null) => void | Promise<unknown>;
   /** Called for every character that is being typed */
@@ -99,6 +99,8 @@ export class InputField<
 
   private readonly caretRef = FSComponent.createRef<HTMLSpanElement>();
 
+  private readonly readValue = 'value' in this.props ? this.props.value : this.props.readonlyValue;
+
   private readonly leadingUnit = Subject.create<string>('');
 
   private readonly trailingUnit = Subject.create<string>('');
@@ -128,10 +130,10 @@ export class InputField<
     if (this.modifiedFieldValue.get() !== null) {
       this.modifiedFieldValue.set(null);
     }
-    if (this.props.value?.get() != null) {
+    if (this.readValue.get() !== null) {
       if (this.props.canOverflow) {
         // If item was overflowing, check whether overflow is still needed
-        this.overflow((this.props.value.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
+        this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
 
       if (this.props.mandatory?.get()) {
@@ -144,10 +146,10 @@ export class InputField<
   private updateDisplayElement() {
     // If input was not modified, render props' value
     if (this.modifiedFieldValue.get() == null) {
-      if (!this.props.value.get()) {
+      if (this.readValue.get() !== null) {
         this.populatePlaceholders();
       } else {
-        const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.props.value.get());
+        const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.readValue.get());
         this.textInputRef.instance.innerText = formatted ?? '';
         this.leadingUnit.set(leadingUnit ?? '');
         this.trailingUnit.set(trailingUnit ?? '');
@@ -277,7 +279,7 @@ export class InputField<
       !this.props.inactive?.get()
     ) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
-        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.props.value.get(), false);
+        Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.readValue.get(), false);
       }
       this.isFocused.set(true);
 
@@ -311,10 +313,10 @@ export class InputField<
       this.updateDisplayElement();
 
       if (validateAndUpdate) {
-        if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
+        if (this.modifiedFieldValue.get() === null && this.readValue.get() !== null) {
           console.log('Enter pressed after no modification');
           // Enter is pressed after no modification
-          const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
+          const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
           await this.validateAndUpdate(formatted);
         } else {
           await this.validateAndUpdate(this.modifiedFieldValue.get());
@@ -322,8 +324,8 @@ export class InputField<
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-      if (!this.props.value.get() && this.props.mandatory.get() === true) {
-        this.textInputRef.getOrDefault().classList.add('mandatory');
+      if (this.readValue.get() === null && this.props.mandatory?.get()) {
+        this.textInputRef.instance.classList.add('mandatory');
       }
 
       this.spanningDivRef.instance.style.justifyContent = this.alignTextSub.get();
@@ -347,21 +349,13 @@ export class InputField<
   private async validateAndUpdate(input: string) {
     this.isValidating.set(true);
 
-    let newValue = null;
-    try {
-      newValue = await this.props.dataEntryFormat.parse(input);
-    } catch (msg: unknown) {
-      if (msg instanceof FmsError && this.props.errorHandler) {
-        this.props.errorHandler(msg.type);
-        newValue = null;
-      }
-    }
+    const newValue = await this.props.dataEntryFormat.parse(input);
 
     let updateWasSuccessful = true;
     const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
     if (this.props.dataHandlerDuringValidation) {
       try {
-        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.props.value.get());
+        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
         const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
         if (validation === false) {
@@ -444,7 +438,8 @@ export class InputField<
     this.caretRef.instance.style.display = 'none';
     this.caretRef.instance.innerText = '';
 
-    this.subs.push(this.props.value.sub(() => this.onNewValue(), true));
+    // TODO sub leak!
+    this.subs.push(this.readValue.sub(() => this.onNewValue(), true));
     this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
     this.subs.push(
       this.isValidating.sub((val) => {
@@ -458,7 +453,7 @@ export class InputField<
 
     this.subs.push(
       this.props.mandatory.sub((val) => {
-        if (val === true && !this.props.value.get()) {
+        if (val && this.readValue.get() === null) {
           this.textInputRef.getOrDefault().classList.add('mandatory');
         } else {
           this.textInputRef.getOrDefault().classList.remove('mandatory');
@@ -494,7 +489,7 @@ export class InputField<
             this.containerRef.getOrDefault().classList.add('disabled');
             this.textInputRef.getOrDefault().classList.add('disabled');
 
-            if (this.props.mandatory.get() === true && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && this.readValue.get() === null) {
               this.textInputRef.getOrDefault().classList.remove('mandatory');
             }
           } else {
@@ -502,7 +497,7 @@ export class InputField<
             this.containerRef.getOrDefault().classList.remove('disabled');
             this.textInputRef.getOrDefault().classList.remove('disabled');
 
-            if (this.props.mandatory.get() === true && !this.props.value.get()) {
+            if (this.props.mandatory?.get() && this.readValue.get() === null) {
               this.textInputRef.getOrDefault().classList.add('mandatory');
             }
           }
