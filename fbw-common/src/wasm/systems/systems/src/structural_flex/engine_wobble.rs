@@ -81,9 +81,8 @@ impl EngineFlexPhysics {
     fn update_animation_position(&mut self) {
         let cg_position = self.wobble_physics.position();
 
-        let limited_pos = (self.position_output_gain * (cg_position[0] + cg_position[1]))
-            .min(1.)
-            .max(-1.);
+        let limited_pos =
+            (self.position_output_gain * (cg_position[0] + cg_position[1])).clamp(-1., 1.);
 
         self.animation_position = (limited_pos + 1.) / 2.;
     }

@@ -184,8 +184,7 @@ impl Starting {
                 + (APU_N_X11 * ignition_turned_on_secs.powi(11))
                 + (APU_N_X12 * ignition_turned_on_secs.powi(12))
                 + (APU_N_X13 * ignition_turned_on_secs.powi(13)))
-            .min(100.)
-            .max(0.);
+            .clamp(0., 100.);
 
             Ratio::new::<percent>(n)
         } else {
@@ -519,8 +518,7 @@ impl Stopping {
             + (APU_N_X9 * since.powi(9))
             + (APU_N_X10 * since.powi(10))
             + (APU_N_X11 * since.powi(11)))
-        .min(100.)
-        .max(0.);
+        .clamp(0., 100.);
 
         Ratio::new::<percent>(n)
     }
