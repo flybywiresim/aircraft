@@ -1431,13 +1431,13 @@ export class FwsCore {
 
   public readonly oneEngineRunning = Subject.create(false);
 
-  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
+  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine_master_1'), 0);
 
-  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), 0);
+  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine_master_2'), 0);
 
-  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine3Master'), 0);
+  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine_master_3'), 0);
 
-  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine4Master'), 0);
+  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine_master_4'), 0);
 
   public readonly engine1State = Subject.create(0);
 

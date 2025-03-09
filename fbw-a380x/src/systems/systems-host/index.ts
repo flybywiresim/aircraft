@@ -47,6 +47,7 @@ import {
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { A380Failure } from '@failures';
+import { AutoThsTrimmer } from './systems/AutoThsTrimmer';
 
 CpiomAvailableSimvarPublisher;
 import { AircraftNetworkServerUnit } from 'systems-host/systems/InformationSystems/AircraftNetworkServerUnit';
@@ -159,6 +160,9 @@ class SystemsHost extends BaseInstrument {
     this.atsu,
   );
 
+  // FIXME delete this when PRIM gets the THS auto trim
+  private readonly autoThsTrimmer = new AutoThsTrimmer(this.bus, this);
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -195,6 +199,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
     this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
     this.backplane.addInstrument('fltOpsAnsu1', this.fltOpsAnsu1, true);
+    this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();
@@ -216,6 +221,7 @@ class SystemsHost extends BaseInstrument {
         this.soundManager.update(dt);
         this.gpws.update(dt);
         this.fwsCore?.update(dt);
+        this.autoThsTrimmer.autoTrim();
       });
 
     this.fwsAvailable.sub((a) => {
