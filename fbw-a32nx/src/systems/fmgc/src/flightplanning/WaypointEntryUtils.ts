@@ -81,10 +81,16 @@ export class WaypointEntryUtils {
     // In this case, we only want to return the actual VOR facility
     const items = WaypointEntryUtils.mergeNavaidsWithWaypoints(navaids, waypoints);
 
+    if (items.length === 0) {
+      throw new FmsError(FmsErrorType.NotInDatabase);
+    }
+
     const ret = fms.deduplicateFacilities(items);
+
     if (ret === undefined) {
       throw new FmsError(FmsErrorType.NotInDatabase);
     }
+
     return ret;
   }
 
