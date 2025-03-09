@@ -46,7 +46,7 @@ export class ApproachUtils {
     }
 
     const runway = appr.runway;
-    const suffix = appr.designator ? `${runway.length > 2 ? '' : '-'}${appr.designator}` : '';
+    const suffix = appr.designator ? `-${appr.designator}` : '';
 
     return `${appr.type.replace('RNAV', 'RNV')}${runway}${suffix}`;
   }
