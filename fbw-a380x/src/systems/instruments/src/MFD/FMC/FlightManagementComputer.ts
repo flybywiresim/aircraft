@@ -27,6 +27,7 @@ import {
   NXDataStore,
   Units,
   UpdateThrottler,
+  VerticalPathCheckpoint,
   Waypoint,
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
@@ -38,7 +39,7 @@ import {
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
-import { distanceTo, Coordinates } from 'msfs-geo';
+import { distanceTo, Coordinates, bearingTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -55,6 +56,7 @@ import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -1013,6 +1015,7 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateMinimums(destPred.distanceFromAircraft);
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
+        this.updateVerticalPath();
       }
       this.checkZfwParams();
       this.updateMessageQueue();
@@ -1080,6 +1083,53 @@ export class FlightManagementComputer implements FmcInterface {
 
   tryGoInApproachPhase(): void {
     this.flightPhaseManager.tryGoInApproachPhase();
+  }
+
+  private updateVerticalPath() {
+    // Transmit active vertical geometry
+    const predictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+    const pwp = this.guidanceController.pseudoWaypoints.pseudoWaypoints;
+    const plan: ReadonlyFlightPlan = this.flightPlanService.active;
+
+    if (predictions) {
+      const verticalVectors: VerticalPathCheckpoint[] = [];
+      const activeLegIndex = plan.activeLegIndex;
+      const previousLeg = plan.allLegs[activeLegIndex - 1];
+      let lastLegLatLong: Coordinates =
+        activeLegIndex > 0 && previousLeg.isDiscontinuity === false && previousLeg.definition.waypoint
+          ? previousLeg.definition.waypoint.location
+          : this.guidanceController.lnavDriver.ppos;
+      plan.allLegs.slice(activeLegIndex).forEach((leg, legIndex) => {
+        const legPrediction = predictions.get(legIndex);
+        if (leg.isDiscontinuity === false && legPrediction) {
+          pwp.forEach((pw) => {
+            if (pw.alongLegIndex === legIndex && pw.displayedOnMcdu && pw.flightPlanInfo?.altitude) {
+              verticalVectors.push({
+                distanceFromAircraft: legPrediction.distanceFromAircraft - pw.distanceFromLegTermination,
+                altitude: pw.flightPlanInfo?.altitude,
+                altitudeConstraint: undefined,
+                isAltitudeConstraintMet: undefined,
+                trackToTerminationWaypoint: leg.definition.waypoint
+                  ? bearingTo(lastLegLatLong, leg.definition.waypoint.location)
+                  : null,
+              });
+            }
+          });
+
+          verticalVectors.push({
+            distanceFromAircraft: legPrediction.distanceFromAircraft,
+            altitude: legPrediction.altitude,
+            altitudeConstraint: legPrediction.altitudeConstraint,
+            isAltitudeConstraintMet: legPrediction.isAltitudeConstraintMet,
+            trackToTerminationWaypoint: leg.definition.waypoint
+              ? bearingTo(lastLegLatLong, leg.definition.waypoint.location)
+              : null,
+          });
+          lastLegLatLong = leg.definition.waypoint?.location ?? lastLegLatLong;
+        }
+      });
+      this.acInterface.transmitVerticalPath(verticalVectors);
+    }
   }
 
   async swapNavDatabase(): Promise<void> {

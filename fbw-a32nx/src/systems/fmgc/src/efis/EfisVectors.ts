@@ -212,7 +212,6 @@ export class EfisVectors {
     // ACTIVE
 
     const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
-
     const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
 
     // ACTIVE missed

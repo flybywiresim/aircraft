@@ -48,10 +48,12 @@ import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
 
 import './style.scss';
 import './oans-style.scss';
-import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
+import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
+import { A380XFcuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/A380XFcuBusPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -70,6 +72,7 @@ class NDInstrument implements FsInstrument {
   private readonly simVarPublisher: NDSimvarPublisher;
 
   private readonly fcuBusPublisher: FcuBusPublisher;
+  private readonly a380xFcuBusPublisher: A380XFcuBusPublisher;
 
   private readonly fmsDataPublisher: FmsDataPublisher;
 
@@ -100,6 +103,8 @@ class NDInstrument implements FsInstrument {
   private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
   private readonly simplaneValueProvider: SimplaneValueProvider;
+
+  private readonly aesuPublisher: AesuBusPublisher;
 
   private readonly clock: Clock;
 
@@ -154,6 +159,7 @@ class NDInstrument implements FsInstrument {
 
     this.simVarPublisher = new NDSimvarPublisher(this.bus);
     this.fcuBusPublisher = new FcuBusPublisher(this.bus, side);
+    this.a380xFcuBusPublisher = new A380XFcuBusPublisher(this.bus);
     this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
     this.fmsOansSimvarPublisher = new FmsOansSimvarPublisher(this.bus);
     this.ropRowOansPublisher = new RopRowOansPublisher(this.bus);
@@ -167,6 +173,7 @@ class NDInstrument implements FsInstrument {
     this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
+    this.aesuPublisher = new AesuBusPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
     this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
@@ -175,6 +182,7 @@ class NDInstrument implements FsInstrument {
 
     this.backplane.addPublisher('ndSimVars', this.simVarPublisher);
     this.backplane.addPublisher('fcu', this.fcuBusPublisher);
+    this.backplane.addPublisher('a380Fcu', this.a380xFcuBusPublisher);
     this.backplane.addPublisher('fms', this.fmsDataPublisher);
     this.backplane.addPublisher('fms-oans', this.fmsOansSimvarPublisher);
     this.backplane.addPublisher('rop-row-oans', this.ropRowOansPublisher);
@@ -188,6 +196,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('egpwc', this.egpwcBusPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('aesu', this.aesuPublisher);
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);
@@ -299,7 +308,7 @@ class NDInstrument implements FsInstrument {
             visible={this.cursorVisible}
             color={this.oansShown.map((it) => (it ? MouseCursorColor.Magenta : MouseCursorColor.Yellow))}
           />
-          <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
+          <VerticalDisplay bus={this.bus} side={this.efisSide} />
         </CdsDisplayUnit>
       </div>,
       document.getElementById('ND_CONTENT'),
