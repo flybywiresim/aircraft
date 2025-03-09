@@ -7,6 +7,7 @@ import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges
 import { PageTitle } from '../Generic/PageTitle';
 import { ApuGenerator } from 'instruments/src/SD/Pages/Apu/elements/ApuGenerator';
 import Valve from '../../../Common/Valve';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 export const ApuPage = () => {
   const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'Bool', 1000);
@@ -141,7 +142,7 @@ const ApuFuelUsed = () => {
   const apuFuelUsed = useArinc429Var('L:A32NX_APU_FUEL_USED', 100);
   // APU fuel used is shown in steps of 10. The value is visible even if the ECB is unpowered.
   // Todo: If the value is not being calculated by the ECB it should show a crossed out value.
-  const displayedApuFuelUsed = Math.round(apuFuelUsed.value / 10) * 10;
+  const displayedApuFuelUsed = Math.round(NXUnits.kgToUser(apuFuelUsed.value) / 10) * 10;
 
   return (
     <g>
@@ -152,7 +153,7 @@ const ApuFuelUsed = () => {
         {displayedApuFuelUsed}
       </text>
       <text x={474} y={271} className="F23 Cyan LS2">
-        KG
+        {NXUnits.userWeightUnit()}
       </text>
     </g>
   );

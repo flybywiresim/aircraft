@@ -15,13 +15,18 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import './style.scss';
 
 export enum InteractionMode {
   Touchscreen,
   Kccu,
 }
 
-interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
+export interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
+  dataEntryFormat: DataEntryFormat<T, U>;
+}
+
+export interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T, U>;
   /** Renders empty values with orange rectangles */
   mandatory?: Subscribable<boolean>;
