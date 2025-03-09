@@ -187,6 +187,8 @@ export class EfisSymbols<T extends number> {
     const vnavPredictionsChanged = this.lastVnavDriverVersion !== this.guidanceController.vnavDriver.version;
     this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
 
+    const intercept = this.guidanceController.getPreNavModeEngagementPathIntercept();
+
     const hasSuitableRunway = (airport: Airport): boolean =>
       airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
@@ -364,7 +366,7 @@ export class EfisSymbols<T extends number> {
       // (currently sequences with guidance which is too early)
       // eslint-disable-next-line no-lone-blocks
 
-      // ALTN
+      // ACTIVE
       if (
         this.flightPlanService.hasActive &&
         this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)
@@ -383,6 +385,16 @@ export class EfisSymbols<T extends number> {
           formatConstraintAlt,
           formatConstraintSpeed,
         );
+
+        if (this.guidanceController.doesPreNavModeEngagementPathExist()) {
+          upsertSymbol({
+            databaseId: 'NAV_MODE_INTERCEPT',
+            ident: 'INTCPT',
+            type: NdSymbolTypeFlags.FlightPlan,
+            location: intercept.location,
+            distanceFromAirplane: intercept.distanceToIntercept,
+          });
+        }
 
         for (const symbol of symbols) {
           upsertSymbol(symbol);

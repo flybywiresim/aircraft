@@ -42,7 +42,8 @@ export class CFLeg extends XFLeg {
   }
 
   getPathStartPoint(): Coordinates | undefined {
-    if (this.inboundGuidable instanceof IFLeg) {
+    // Make sure an inbound radial doesn't connect to the actual IN-BND waypoint which is at PPOS
+    if (this.inboundGuidable instanceof IFLeg && !this.inboundGuidable.isInbndOrOutbnd()) {
       return this.inboundGuidable.fix.location;
     }
 

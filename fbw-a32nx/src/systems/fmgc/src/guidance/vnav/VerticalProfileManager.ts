@@ -282,9 +282,10 @@ export class VerticalProfileManager {
   computeTacticalNdProfile(): void {
     const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed } = this.observer.get();
 
-    const ndProfile = this.fcuModes.isLatAutoControlActive()
-      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions)
-      : new SelectedGeometryProfile();
+    const ndProfile =
+      this.fcuModes.isLatAutoControlActive() || this.guidanceController.doesPreNavModeEngagementPathExist()
+        ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions)
+        : new SelectedGeometryProfile();
 
     let speedProfile: SpeedProfile;
     if (this.fcuModes.isExpediteModeActive()) {
