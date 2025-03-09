@@ -10,6 +10,7 @@ use uom::si::f64::*;
 #[cfg(test)]
 mod test;
 
+#[allow(dead_code)]
 pub trait FuelLevel {
     fn left_inner_tank_has_fuel(&self) -> bool;
     fn right_inner_tank_has_fuel(&self) -> bool;

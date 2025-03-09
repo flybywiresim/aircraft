@@ -118,9 +118,9 @@ impl VariablesToObject for GearPosition {
             + (values[7] / 100.) * FAKE_GEAR_POSITION_FOR_LANDING_LIGHT_DRAG
             + values[2] / 100.;
 
-        self.nose_position = nose_value_after_drag.min(1.).max(0.);
-        self.left_position = left_value_after_drag.min(1.).max(0.);
-        self.right_position = right_value_after_drag.min(1.).max(0.);
+        self.nose_position = nose_value_after_drag.clamp(0., 1.);
+        self.left_position = left_value_after_drag.clamp(0., 1.);
+        self.right_position = right_value_after_drag.clamp(0., 1.);
 
         self.gear_handle_position = if gear_deployed { 1. } else { 0. };
 

@@ -796,7 +796,7 @@ impl EventToVariable {
                 value -= delta.as_secs_f64() * release_factor;
             }
 
-            variables.write(&self.target, value.min(1.).max(0.));
+            variables.write(&self.target, value.clamp(0., 1.));
         }
     }
 }

@@ -4705,14 +4705,14 @@ impl A380BrakingForce {
         let left_force_altn = 50. * altn_brakes.left_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.left_braking_force = left_force_norm + left_force_altn;
-        self.left_braking_force = self.left_braking_force.max(0.).min(1.);
+        self.left_braking_force = self.left_braking_force.clamp(0., 1.);
 
         let right_force_norm = 50. * norm_brakes.right_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         let right_force_altn = 50. * altn_brakes.right_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.right_braking_force = right_force_norm + right_force_altn;
-        self.right_braking_force = self.right_braking_force.max(0.).min(1.);
+        self.right_braking_force = self.right_braking_force.clamp(0., 1.);
 
         self.correct_with_flaps_state(context);
 
@@ -5830,11 +5830,7 @@ impl ElevatorSystemHydraulicController {
     }
 
     fn elevator_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
-        Ratio::new::<ratio>(
-            (-surface_angle.get::<degree>() / 50. + 20. / 50.)
-                .min(1.)
-                .max(0.),
-        )
+        Ratio::new::<ratio>((-surface_angle.get::<degree>() / 50. + 20. / 50.).clamp(0., 1.))
     }
 }
 impl SimulationElement for ElevatorSystemHydraulicController {
@@ -6919,7 +6915,7 @@ impl SpoilerController {
     }
 
     fn spoiler_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
-        Ratio::new::<ratio>((surface_angle.get::<degree>() / 50.).min(1.).max(0.))
+        Ratio::new::<ratio>((surface_angle.get::<degree>() / 50.).clamp(0., 1.))
     }
 }
 impl HydraulicAssemblyController for SpoilerController {
