@@ -1,4 +1,6 @@
 import { vitest, beforeEach } from 'vitest';
+import { bearingTo, placeBearingDistance } from 'msfs-geo';
+import { LatLongInterface } from '@microsoft/msfs-sdk';
 
 let values;
 
@@ -56,7 +58,20 @@ global.BaseInstrument = class {};
 global.Avionics = {
   Utils: {
     DEG2RAD: Math.PI / 180,
+    computeGreatCircleHeading(from: LatLongInterface, to: LatLongInterface): number {
+      return bearingTo(from, to);
+    },
+    bearingDistanceToCoordinates(bearing: number, distance: number, lat: number, long: number) {
+      return placeBearingDistance({ lat, long }, bearing, distance);
+    },
   },
+};
+
+global.LatLong = class {
+  constructor(
+    public readonly lat: number,
+    public readonly long: number,
+  ) {}
 };
 
 global.RunwayDesignator = {
