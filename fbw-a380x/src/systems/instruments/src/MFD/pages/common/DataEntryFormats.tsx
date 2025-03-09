@@ -235,6 +235,53 @@ export class AltitudeFormat extends SubscriptionCollector implements DataEntryFo
   }
 }
 
+type RadioMinimumEntry = 'NONE' | 'NO' | 'NO DH' | 'NODH' | number;
+export class RadioMinimumFormat implements DataEntryFormat<string | number> {
+  public placeholder = '-----';
+
+  public maxDigits = 5;
+
+  private minValue = 1;
+
+  private maxValue = maxCertifiedAlt;
+
+  constructor(
+    minValue: Subscribable<number> = Subject.create(1),
+    maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
+  ) {
+    minValue.sub((val) => (this.minValue = val), true);
+    maxValue.sub((val) => (this.maxValue = val), true);
+  }
+
+  public format(value: RadioMinimumEntry) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, 'FT'] as FieldFormatTuple;
+    } else if (value === 'NONE' || value === 'NO' || value === 'NO DH' || value === 'NODH') {
+      return [value, null, null] as FieldFormatTuple;
+    }
+    return [Number(value).toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+    if (input === 'NONE' || input === 'NO' || input === 'NO DH' || input === 'NODH') {
+      return input;
+    }
+
+    const nbr = Number(input);
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
+
 /**
  * Unit of value: Feet (i.e. FL * 100)
  */
