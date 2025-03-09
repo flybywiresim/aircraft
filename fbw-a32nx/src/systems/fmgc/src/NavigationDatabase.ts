@@ -13,6 +13,7 @@ import {
   MsfsBackend,
   NdbNavaid,
   ProcedureLeg,
+  TestBackend,
   VhfNavaid,
   Waypoint,
 } from '@flybywiresim/fbw-sdk';
@@ -23,6 +24,7 @@ import {
 export enum NavigationDatabaseBackend {
   Msfs,
   Navigraph,
+  Test,
 }
 
 /**
@@ -35,9 +37,11 @@ export class NavigationDatabase {
 
   constructor(backend: NavigationDatabaseBackend) {
     if (backend === NavigationDatabaseBackend.Msfs) {
-      this.backendDatabase = new Database(new MsfsBackend() as any);
+      this.backendDatabase = new Database(new MsfsBackend());
+    } else if (backend === NavigationDatabaseBackend.Test) {
+      this.backendDatabase = new Database(new TestBackend());
     } else {
-      throw new Error("[FMS/DB] Cannot instantiate NavigationDatabase with backend other than 'Msfs'");
+      throw new Error("[FMS/DB] Cannot instantiate NavigationDatabase with backend other than 'Msfs' or 'Test'");
     }
   }
 
