@@ -494,7 +494,7 @@ export class CDUVerticalRevisionPage {
     }; // STEP ALTS
     if (!confirmConstraint) {
       mcdu.onLeftInput[5] = () => {
-        CDUFlightPlanPage.ShowPage(mcdu);
+        mcdu.returnPageCallback();
       };
     } else {
       mcdu.onLeftInput[5] = async () => {

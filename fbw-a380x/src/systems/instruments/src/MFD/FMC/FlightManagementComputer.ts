@@ -207,6 +207,12 @@ export class FlightManagementComputer implements FmcInterface {
 
   private wasReset = false;
 
+  private readonly ZfwOrZfwCgUndefined = MappedSubject.create(
+    ([zfw, zfwCg]) => zfw == null || zfwCg == null,
+    this.fmgc.data.zeroFuelWeight,
+    this.fmgc.data.zeroFuelWeightCenterOfGravity,
+  );
+
   constructor(
     private instance: FmcIndex,
     operatingMode: FmcOperatingModes,
@@ -274,6 +280,21 @@ export class FlightManagementComputer implements FmcInterface {
           SimVar.SetSimVarValue('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean', v);
           SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', v);
         }, true),
+
+        this.ZfwOrZfwCgUndefined,
+        this.ZfwOrZfwCgUndefined.sub((v) => {
+          if (!v) {
+            this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg.text);
+          }
+        }),
+
+        this.fmgc.data.cpnyFplnAvailable.sub((v) => {
+          if (v) {
+            this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
+          } else {
+            this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+          }
+        }),
       );
 
       this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
@@ -514,11 +535,6 @@ export class FlightManagementComputer implements FmcInterface {
    */
   onUplinkInProgress() {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(true);
-    this.addMessageToQueue(
-      NXSystemMessages.uplinkInsertInProg,
-      () => !this.fmgc.data.cpnyFplnUplinkInProgress.get(),
-      undefined,
-    );
   }
 
   /**
@@ -527,7 +543,6 @@ export class FlightManagementComputer implements FmcInterface {
   onUplinkDone() {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(false);
     this.fmgc.data.cpnyFplnAvailable.set(true);
-    this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg.text);
   }
 
   /**
@@ -910,27 +925,23 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  private gwInitDisplayed = 0;
+  private zfwInitDisplayed = 0;
 
   private initMessageSettable = false;
 
-  private checkGWParams(): void {
-    const fmGW = SimVar.GetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number');
+  private checkZfwParams(): void {
     const eng2state = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Number');
     const eng3state = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:3', 'Number');
 
     if (eng2state === 2 || eng3state === 2) {
-      if (this.gwInitDisplayed < 1 && this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
+      if (this.zfwInitDisplayed < 1 && this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
         this.initMessageSettable = true;
       }
     }
-    // INITIALIZE WEIGHT/CG
-    if (this.fmgc.isAnEngineOn() && fmGW === 0 && this.initMessageSettable) {
-      this.addMessageToQueue(
-        NXSystemMessages.initializeWeightOrCg,
-        () => SimVar.GetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number') !== 0,
-      );
-      this.gwInitDisplayed++;
+    // INITIALIZE ZFW/ZFW CG
+    if (this.fmgc.isAnEngineOn() && this.ZfwOrZfwCgUndefined.get() && this.initMessageSettable) {
+      this.addMessageToQueue(NXSystemMessages.initializeZfwOrZfwCg);
+      this.zfwInitDisplayed++;
       this.initMessageSettable = false;
     }
   }
@@ -1006,7 +1017,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
         this.updateVerticalPath();
       }
-      this.checkGWParams();
+      this.checkZfwParams();
       this.updateMessageQueue();
 
       this.acInterface.checkSpeedLimit();
