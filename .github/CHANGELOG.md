@@ -174,6 +174,7 @@
 1. [A380X/MFD] Change flightplan uplink & initialize weights message logic - @BravoMike99 (bruno_pt99)
 1. [A32NX/FMS] Fixed an error preventing the create waypoint page being shown when a not in database is encountered - @tracernz (Mike)
 1. [A32NX/FMS] Fixed an error preventing the RETURN LSK from working on the create waypoint page in some cases - @tracernz (Mike)
+1. [A32NX/FMS] Disallow editing of waypoint ident on the create waypoint page - @tracernz (Mike)
 
 ## 0.12.0
 

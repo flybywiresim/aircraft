@@ -89,11 +89,11 @@ export class CDUNewWaypoint {
 
     // ident
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-      if (/^[A-Z0-9]{2,7}$/.test(value)) {
-        if (_inProgressData === undefined) {
-          _inProgressData = {};
-        }
-        _inProgressData.ident = value;
+      if (_inProgressData.ident !== undefined) {
+        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+        scratchpadCallback();
+      } else if (/^[A-Z0-9]{2,7}$/.test(value)) {
+        _inProgressData = { ident: value };
         requestAnimationFrame(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, _inProgressData));
       } else {
         mcdu.setScratchpadMessage(NXSystemMessages.formatError);
