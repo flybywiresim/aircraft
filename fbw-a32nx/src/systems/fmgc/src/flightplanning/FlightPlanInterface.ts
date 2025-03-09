@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -216,6 +216,29 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param alternate whether to edit the plan's alternate flight plan
    */
   startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
+
+  /**
+   * Continues an existing AIRWAYS revision, starting a VIA entry.
+   * @param airway the airway to insert
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<void>;
+
+  /**
+   * Continues an existing AIRWAYS revision, inserting a DCT fix,
+   * @param fix the fix to insert
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<void>;
+
+  /**
+   * Finalises an existing AIRWAYS revision,
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void>;
 
   directToLeg(
     ppos: Coordinates,

@@ -55,7 +55,7 @@ import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightP
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { WaypointConstraintType, ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
-import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
+import { LocalPendingAirways } from '@fmgc/flightplanning/plans/LocalPendingAirways';
 import {
   FlightPlanPerformanceData,
   SerializedFlightPlanPerformanceData,
@@ -76,7 +76,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 {
   private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
-  public pendingAirways: PendingAirways | undefined;
+  public pendingAirways: LocalPendingAirways | undefined;
 
   private subscriptions: Subscription[] = [];
 
@@ -1290,7 +1290,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       throw new Error('Cannot create a pending airways entry from a non XF or HX leg');
     }
 
-    this.pendingAirways = new PendingAirways(this, revisedLegIndex, leg);
+    this.pendingAirways = new LocalPendingAirways(this, revisedLegIndex, leg);
   }
 
   async addOrEditManualHold(

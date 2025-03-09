@@ -49,7 +49,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
       rowBottomLine = ['<RETURN', 'INSERT*[color]cyan'];
 
       mcdu.onRightInput[5] = async () => {
-        targetPlan.pendingAirways.finalize(); // TODO replace with fps call (fms-v2)
+        await targetPlan.pendingAirways.finalize(); // TODO replace with fps call (fms-v2)
 
         mcdu.updateConstraints();
 
@@ -107,7 +107,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
               ).catch(console.error);
 
               if (airway) {
-                const result = targetPlan.pendingAirways.thenAirway(airway);
+                const result = await targetPlan.pendingAirways.thenAirway(airway);
 
                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                   mcdu,
@@ -127,27 +127,27 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
           subRows[i] = ['\xa0VIA', 'TO\xa0'];
           rows[i] = [`${pendingAirway.ident}[color]cyan`, '[\xa0\xa0\xa0][color]cyan'];
 
-          mcdu.onRightInput[i] = (value, scratchpadCallback) => {
+          mcdu.onRightInput[i] = async (value, scratchpadCallback) => {
             const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
 
             if (value.length > 0) {
-              WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then((wp) => {
-                if (wp) {
-                  const result = targetPlan.pendingAirways.thenTo(wp);
+              const wp = await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false);
 
-                  A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
-                    mcdu,
-                    reviseIndex,
-                    undefined,
-                    result ? 1 : -1,
-                    forPlan,
-                    inAlternate,
-                  );
-                } else {
-                  mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
-                  scratchpadCallback();
-                }
-              });
+              if (wp) {
+                const result = await targetPlan.pendingAirways.thenTo(wp);
+
+                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
+                  mcdu,
+                  reviseIndex,
+                  undefined,
+                  result ? 1 : -1,
+                  forPlan,
+                  inAlternate,
+                );
+              } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
+                scratchpadCallback();
+              }
             }
           };
           if (i + 1 < rows.length) {
@@ -162,7 +162,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
                   console.error,
                 );
                 if (airway) {
-                  const result = targetPlan.pendingAirways.thenAirway(airway);
+                  const result = await targetPlan.pendingAirways.thenAirway(airway);
 
                   A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                     mcdu,

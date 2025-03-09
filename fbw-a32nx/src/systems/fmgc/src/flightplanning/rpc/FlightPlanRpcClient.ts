@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   EventBus,
@@ -286,6 +286,18 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   startAirwayEntry(at: number, planIndex: number, alternate: boolean): Promise<void> {
     return this.callFunctionViaRpc('startAirwayEntry', at, planIndex, alternate);
+  }
+
+  continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<void> {
+    return this.callFunctionViaRpc('continueAirwayEntryViaAirway', airway, planIndex, alternate);
+  }
+
+  continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<void> {
+    return this.callFunctionViaRpc('continueAirwayEntryDirectToFix', fix, planIndex, alternate);
+  }
+
+  finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void> {
+    return this.callFunctionViaRpc('finaliseAirwayEntry', planIndex, alternate);
   }
 
   directToLeg(

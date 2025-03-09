@@ -57,6 +57,8 @@ export class OriginSegment extends TerminalSegment {
       await this.refreshDepartureLegs();
 
       this.insertNecessaryDiscontinuities();
+
+      this.flightPlan.syncSegmentLegsChange(this);
     }
   }
 

@@ -67,6 +67,8 @@ export interface FlightPlanFlightNumberEditEvent extends FlightPlanEditSyncEvent
   flightNumber: string;
 }
 
+export interface FlightPlanPendingAirwaysEditEvent extends FlightPlanEditSyncEvent {}
+
 export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceData> = {
   [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;
 };
@@ -91,6 +93,7 @@ export interface FlightPlanEvents {
   'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;
   'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent;
   'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent;
+  'flightPlan.pendingAirwaysEdit': FlightPlanPendingAirwaysEditEvent;
 }
 
 /**
