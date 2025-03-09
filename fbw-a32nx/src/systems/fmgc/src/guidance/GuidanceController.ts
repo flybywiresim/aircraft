@@ -122,7 +122,7 @@ export class GuidanceController {
 
   activeTransIndex: number;
 
-  activeLegDtg: NauticalMiles;
+  activeLegDtg?: NauticalMiles;
 
   /** Used for lateral guidance */
   activeLegCompleteLegPathDtg: NauticalMiles;
