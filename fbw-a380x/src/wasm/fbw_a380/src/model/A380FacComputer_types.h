@@ -1,5 +1,5 @@
-#ifndef FacComputer_types_h_
-#define FacComputer_types_h_
+#ifndef A380FacComputer_types_h_
+#define A380FacComputer_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 #define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
@@ -14,14 +14,17 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
 
-struct base_fac_analog_outputs
+struct base_fac_discrete_outputs
 {
-  real_T yaw_damper_order_deg;
-  real_T rudder_trim_order_deg;
-  real_T rudder_travel_limit_order_deg;
+  boolean_T fac_healthy;
+  boolean_T yaw_damper_engaged;
+  boolean_T rudder_trim_engaged;
+  boolean_T rudder_travel_lim_engaged;
+  boolean_T rudder_travel_lim_emergency_reset;
+  boolean_T yaw_damper_avail_for_norm_law;
 };
 
 #endif
@@ -74,17 +77,14 @@ struct base_fac_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fac_discrete_outputs_
+#ifndef DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fac_analog_outputs_
 
-struct base_fac_discrete_outputs
+struct base_fac_analog_outputs
 {
-  boolean_T fac_healthy;
-  boolean_T yaw_damper_engaged;
-  boolean_T rudder_trim_engaged;
-  boolean_T rudder_travel_lim_engaged;
-  boolean_T rudder_travel_lim_emergency_reset;
-  boolean_T yaw_damper_avail_for_norm_law;
+  real_T yaw_damper_order_deg;
+  real_T rudder_trim_order_deg;
+  real_T rudder_travel_limit_order_deg;
 };
 
 #endif
