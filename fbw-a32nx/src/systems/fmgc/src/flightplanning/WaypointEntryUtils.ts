@@ -44,7 +44,13 @@ export class WaypointEntryUtils {
 
       return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored, ident).waypoint;
     } else if (WaypointEntryUtils.isPlaceFormat(place)) {
-      return WaypointEntryUtils.parsePlace(fms, place).then((fix) => fix ?? fms.createNewWaypoint(place));
+      return WaypointEntryUtils.parsePlace(fms, place).catch((e) => {
+        if (e instanceof FmsError && e.type === FmsErrorType.NotInDatabase) {
+          fms.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+          return fms.createNewWaypoint(place);
+        }
+        throw e;
+      });
     }
 
     throw new FmsError(FmsErrorType.FormatError);
