@@ -240,7 +240,7 @@ export class CDUNewWaypoint {
 
     if (_inProgressData !== undefined) {
       mcdu.onRightInput[5] = () => {
-        let stored;
+        let stored: PilotWaypoint;
         switch (_inProgressData.type) {
           case PilotWaypointType.LatLon:
             stored = mcdu.dataManager.createLatLonWaypoint(_inProgressData.coordinates, true, _inProgressData.ident);
@@ -270,7 +270,7 @@ export class CDUNewWaypoint {
         }
         requestAnimationFrame(() => {
           if (doneCallback !== undefined) {
-            doneCallback(stored.waypoint);
+            doneCallback(stored);
           } else {
             CDUPilotsWaypoint.ShowPage(mcdu, stored.storedIndex);
           }
