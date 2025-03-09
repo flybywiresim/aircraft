@@ -172,6 +172,7 @@
 1. [A380X/ND] Fixed active leg label to be left aligned - @MrJigs7 (MrJigs)
 1. [A32NX/FMS] Sort runways by identifier in the runway selection page - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Change flightplan uplink & initialize weights message logic - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed ENTER DEST DATA message not clearing automatically - @BravoMike99 (bruno_pt99)
 
 ## 0.12.0
 

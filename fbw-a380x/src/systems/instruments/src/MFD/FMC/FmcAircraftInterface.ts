@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -979,7 +979,7 @@ export class FmcAircraftInterface {
     let towerHeadwind = 0;
     const appWind = this.fmgc.data.approachWind.get();
     const destRwy = this.fmgc.getDestinationRunway();
-    if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
+    if (appWind !== null) {
       if (destRwy) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(appWind.speed, appWind.direction, destRwy.magneticBearing);
       }
@@ -1196,7 +1196,7 @@ export class FmcAircraftInterface {
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
     const appWind = this.fmgc.data.approachWind.get();
     let towerHeadwind = 0;
-    if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
+    if (appWind !== null) {
       if (this.flightPlanService.active.destinationRunway) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(
           appWind.speed,

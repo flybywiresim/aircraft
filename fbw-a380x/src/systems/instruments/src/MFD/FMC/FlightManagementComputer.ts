@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -211,6 +211,15 @@ export class FlightManagementComputer implements FmcInterface {
     this.fmgc.data.zeroFuelWeightCenterOfGravity,
   );
 
+  private readonly destDataEntered = MappedSubject.create(
+    ([qnh, temperature, wind]) => qnh !== null && temperature !== null && wind !== null,
+    this.fmgc.data.approachQnh,
+    this.fmgc.data.approachTemperature,
+    this.fmgc.data.approachWind,
+  );
+
+  private destDataChecked = false;
+
   constructor(
     private instance: FmcIndex,
     operatingMode: FmcOperatingModes,
@@ -291,6 +300,12 @@ export class FlightManagementComputer implements FmcInterface {
             this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
           } else {
             this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+          }
+        }),
+        this.destDataEntered,
+        this.destDataEntered.sub((v) => {
+          if (v) {
+            this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
           }
         }),
       );
@@ -673,8 +688,6 @@ export class FlightManagementComputer implements FmcInterface {
     return this.dataManager?.getStoredWaypointsByIdent(ident) ?? [];
   }
 
-  private destDataChecked = false;
-
   /**
    * This method is called by the FlightPhaseManager after a flight phase change
    * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
@@ -904,21 +917,8 @@ export class FlightManagementComputer implements FmcInterface {
       this.flightPhaseManager.phase >= FmgcFlightPhase.Descent ||
       (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && destPred && destPred.distanceFromAircraft < 180)
     ) {
-      if (
-        !Number.isFinite(this.fmgc.data.approachQnh.get()) ||
-        !Number.isFinite(this.fmgc.data.approachTemperature.get()) ||
-        !Number.isFinite(this.fmgc.data.approachWind.get()?.direction) ||
-        !Number.isFinite(this.fmgc.data.approachWind.get()?.speed)
-      ) {
-        this.addMessageToQueue(
-          NXSystemMessages.enterDestData,
-          () =>
-            Number.isFinite(this.fmgc.data.approachQnh.get()) &&
-            Number.isFinite(this.fmgc.data.approachTemperature.get()) &&
-            Number.isFinite(this.fmgc.data.approachWind.get()?.direction) &&
-            Number.isFinite(this.fmgc.data.approachWind.get()?.speed),
-          () => {},
-        );
+      if (!this.destDataEntered.get()) {
+        this.addMessageToQueue(NXSystemMessages.enterDestData);
       }
     }
   }

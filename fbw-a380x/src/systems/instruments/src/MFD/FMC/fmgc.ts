@@ -232,7 +232,15 @@ export class FmgcData {
 
   public readonly approachSpeed = Subject.create<Knots | null>(null);
 
-  public readonly approachWind = Subject.create<FmcWindVector | null>(null);
+  public readonly approachWindDirection = Subject.create<number | null>(null);
+
+  public readonly approachWindSpeed = Subject.create<number | null>(null);
+
+  public readonly approachWind: MappedSubject<number[], FmcWindVector | null> = MappedSubject.create(
+    ([direction, speed]) => (direction !== null && speed !== null ? { direction: direction, speed: speed } : null),
+    this.approachSpeed,
+    this.approachWindSpeed,
+  );
 
   public readonly approachQnh = Subject.create<number | null>(null);
 
@@ -565,8 +573,8 @@ export class FmgcDataService implements Fmgc {
     };
   }
 
-  getApproachWind(): FmcWindVector {
-    return this.data.approachWind.get() ?? { direction: 0, speed: 0 };
+  getApproachWind(): FmcWindVector | null {
+    return this.data.approachWind.get();
   }
 
   /** in hPa */

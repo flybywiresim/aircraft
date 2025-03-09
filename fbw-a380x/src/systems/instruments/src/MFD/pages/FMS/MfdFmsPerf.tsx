@@ -39,7 +39,6 @@ import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } fro
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -494,14 +493,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private apprVerticalDeviation = Subject.create<string>('+-----');
 
   private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
-
-  private readonly apprWindDirectionValue = (
-    this.props.fmcService.master?.fmgc.data.approachWind ?? Subject.create<FmcWindVector | null>(null)
-  ).map((it) => (it ? it.direction : null));
-
-  private readonly apprWindSpeedValue = (
-    this.props.fmcService.master?.fmgc.data.approachWind ?? Subject.create<FmcWindVector | null>(null)
-  ).map((it) => (it ? it.speed : null));
 
   private missedThrRedAlt = Subject.create<number | null>(null);
 
@@ -1112,8 +1103,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.transFlToAlt,
       this.apprLandingWeightFormatted,
       this.apprRadioText,
-      this.apprWindDirectionValue,
-      this.apprWindSpeedValue,
     );
   }
 
@@ -2504,31 +2493,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div style="display: flex; flex-direction: row;">
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">MAG WIND</span>
                         <div style="border: 1px solid lightgrey; display: flex; flex-direction: row; padding: 2px;">
-                          <InputField<number, number, false>
+                          <InputField<number>
                             dataEntryFormat={new WindDirectionFormat()}
                             mandatory={Subject.create(false)}
-                            readonlyValue={this.apprWindDirectionValue ?? Subject.create(null)}
-                            onModified={(v) =>
-                              this.props.fmcService.master?.fmgc.data.approachWind.set({
-                                direction: v ?? 0,
-                                speed: this.props.fmcService.master.fmgc.data.approachWind.get()?.speed ?? 0,
-                              })
-                            }
+                            value={this.props.fmcService.master?.fmgc.data.approachWindDirection}
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
                           />
-                          <InputField<number, number, false>
+                          <InputField<number>
                             dataEntryFormat={new WindSpeedFormat()}
                             mandatory={Subject.create(false)}
-                            readonlyValue={this.apprWindSpeedValue ?? Subject.create(null)}
-                            onModified={(v) =>
-                              this.props.fmcService.master?.fmgc.data.approachWind.set({
-                                direction: this.props.fmcService.master.fmgc.data.approachWind.get()?.direction ?? 0,
-                                speed: v ?? 0,
-                              })
-                            }
+                            value={this.props.fmcService.master.fmgc.data.approachWindSpeed}
                             containerStyle="margin-left: 10px;"
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
