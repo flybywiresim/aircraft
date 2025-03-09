@@ -16,13 +16,14 @@ import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
 {
   private readonly flightPlanManager: FlightPlanManager<P>;
 
-  navigationDatabase: NavigationDatabase;
+  public syncClientID = Math.round(Math.random() * 10_000_000);
 
   constructor(
     private readonly bus: EventBus,
@@ -31,9 +32,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     master = false,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(
+      this,
       this.bus,
       this.performanceDataInit,
-      Math.round(Math.random() * 10_000),
+      this.syncClientID,
       master,
     );
   }
@@ -42,6 +44,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.create(FlightPlanIndex.Active);
     this.flightPlanManager.create(FlightPlanIndex.Uplink);
     this.flightPlanManager.create(FlightPlanIndex.FirstSecondary);
+  }
+
+  get batchStack(): FlightPlanBatch[] {
+    return this.flightPlanManager.batchStack;
   }
 
   get(index: number) {
@@ -190,6 +196,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.deleteAll();
 
     this.createFlightPlans();
+  }
+
+  async deleteAll(): Promise<void> {
+    this.flightPlanManager.deleteAll();
   }
 
   private prepareDestructiveModification(planIndex: FlightPlanIndex) {
@@ -676,5 +686,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const plan = this.flightPlanManager.get(planIndex);
 
     return plan.stringMissedApproach(onConstraintsDeleted);
+  }
+
+  public openBatch(name: string): Promise<FlightPlanBatch> {
+    return this.flightPlanManager.openBatch(name);
+  }
+
+  public closeBatch(uuid: string): Promise<FlightPlanBatch> {
+    return this.flightPlanManager.closeBatch(uuid);
   }
 }

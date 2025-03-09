@@ -13,6 +13,7 @@ import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -26,6 +27,10 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
  * - {@link FlightPlanRpcClient} - a remote implementation using RPC calls to a distant `FlightPlanService` - for use in remote FMS UIs
  */
 export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
+  get syncClientID(): number;
+
+  get batchStack(): FlightPlanBatch[];
+
   get(index: number): FlightPlan<P>;
 
   has(index: number): boolean;
@@ -61,6 +66,8 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   uplinkDelete(): Promise<void>;
 
   reset(): Promise<void>;
+
+  deleteAll(): Promise<void>;
 
   /**
    * Resets the flight plan with a new FROM/TO/ALTN city pair
@@ -331,4 +338,8 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   setPerformanceData<T extends keyof P & string>(key: T, value: P[T], planIndex: number): Promise<void>;
 
   stringMissedApproach(onConstraintsDeleted?: (map: FlightPlanLeg) => void, planIndex?: number): Promise<void>;
+
+  openBatch(name: string): Promise<FlightPlanBatch>;
+
+  closeBatch(uuid: string): Promise<FlightPlanBatch>;
 }

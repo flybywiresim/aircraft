@@ -45,7 +45,6 @@ import {
   FlightPlanSetActiveLegIndexEvent,
   FlightPlanSetFixInfoEntryEvent,
   FlightPlanSetSegmentEvent,
-  FlightPlanSyncEvent,
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
@@ -64,6 +63,7 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export enum FlightPlanQueuedOperation {
   Restring,
@@ -80,45 +80,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   private subscriptions: Subscription[] = [];
 
-  private processingSyncEvents = false;
-
-  private readonly syncEventQueue: [keyof SyncFlightPlanEvents, FlightPlanSyncEvent][] = [];
-
   protected constructor(
+    protected readonly parentFlightPlanInterface: FlightPlanInterface,
     public readonly index: number,
     public readonly bus: EventBus,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
-
-    this.subscriptions.push(
-      this.bus.onAll((key, event: FlightPlanEditSyncEvent) => {
-        if (key.startsWith('SYNC_flightPlan')) {
-          const isAlternatePlan = this instanceof AlternateFlightPlan;
-
-          if (!this.ignoreSync) {
-            if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
-              return;
-            }
-
-            this.syncEventQueue.push([key as keyof SyncFlightPlanEvents, event]);
-            if (!this.processingSyncEvents) {
-              this.processSyncEventQueue();
-            }
-          }
-        }
-      }),
-    );
   }
 
-  private async processSyncEventQueue(): Promise<void> {
-    if (this.syncEventQueue.length === 0) {
-      this.processingSyncEvents = false;
+  public async processSyncEvent(event: keyof SyncFlightPlanEvents, data: FlightPlanEditSyncEvent): Promise<void> {
+    // Protection against sync events coming from the same instrument
+    if (this.ignoreSync || data.syncClientID === this.parentFlightPlanInterface.syncClientID) {
       return;
     }
-
-    this.processingSyncEvents = true;
-
-    const [event, data] = this.syncEventQueue.shift();
 
     switch (event) {
       case 'SYNC_flightPlan.setActiveLegIndex': {
@@ -146,12 +120,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         break;
       }
     }
-
-    const flightPlanEventsPub = this.bus.getPublisher<FlightPlanEvents>();
-
-    flightPlanEventsPub.pub(event.replace('SYNC_', '') as keyof FlightPlanEvents, data);
-
-    await this.processSyncEventQueue();
   }
 
   private handleSetActiveLegIndexSyncEvent(event: FlightPlanSetActiveLegIndexEvent): void {
@@ -243,6 +211,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   protected setActiveLegIndex(index: number) {
     this.activeLegIndex = index;
     this.sendEvent('flightPlan.setActiveLegIndex', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
+      batchStack: this.parentFlightPlanInterface.batchStack,
       planIndex: this.index,
       forAlternate: this instanceof AlternateFlightPlan,
       activeLegIndex: index,
@@ -321,7 +291,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.activeLegIndex++;
 
     this.sendEvent('flightPlan.setActiveLegIndex', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
       planIndex: this.index,
+      batchStack: this.parentFlightPlanInterface.batchStack,
       forAlternate: false,
       activeLegIndex: this.activeLegIndex,
     });
@@ -481,7 +453,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     const segmentIndex = this.orderedSegments.indexOf(segment);
 
     this.sendEvent('flightPlan.setSegment', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
       planIndex: this.index,
+      batchStack: this.parentFlightPlanInterface.batchStack,
       forAlternate: false,
       segmentIndex,
       serialized: segment.serialize(),
@@ -493,7 +467,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (leg.isDiscontinuity === false) {
       this.sendEvent('flightPlan.legFlagsEdit', {
+        syncClientID: this.parentFlightPlanInterface.syncClientID,
         planIndex: this.index,
+        batchStack: this.parentFlightPlanInterface.batchStack,
         atIndex,
         forAlternate: this instanceof AlternateFlightPlan,
         newFlags: leg.flags,
@@ -506,9 +482,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (leg.isDiscontinuity === false) {
       this.sendEvent('flightPlan.legDefinitionEdit', {
+        syncClientID: this.parentFlightPlanInterface.syncClientID,
         planIndex: this.index,
-        atIndex,
+        batchStack: this.parentFlightPlanInterface.batchStack,
         forAlternate: this instanceof AlternateFlightPlan,
+        atIndex,
         newDefinition: leg.definition,
       });
     }
@@ -1582,59 +1560,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  setAltitudeDescriptionAt(index: number, value: AltitudeDescriptor) {
-    const element = this.elementAt(index);
-
-    if (element.isDiscontinuity === true) {
-      return;
-    }
-
-    element.definition.altitudeDescriptor = value;
-    this.syncLegDefinitionChange(index);
-
-    this.incrementVersion();
-  }
-
-  setAltitudeAt(index: number, value: number, isDescentConstraint?: boolean) {
-    const element = this.elementAt(index);
-
-    if (element.isDiscontinuity === true) {
-      return;
-    }
-
-    element.definition.altitude1 = value;
-    this.syncLegDefinitionChange(index);
-
-    if (element.constraintType === WaypointConstraintType.Unknown) {
-      if (isDescentConstraint) {
-        this.setFirstDesConstraintWaypoint(index);
-      } else {
-        this.setLastClbConstraintWaypoint(index);
-      }
-    }
-
-    this.incrementVersion();
-  }
-
-  setSpeedAt(index: number, value: number, isDescentConstraint?: boolean) {
-    const element = this.elementAt(index);
-
-    if (element.isDiscontinuity === true) {
-      return;
-    }
-
-    element.definition.speed = value;
-    this.syncLegDefinitionChange(index);
-
-    if (isDescentConstraint) {
-      this.setFirstDesConstraintWaypoint(index);
-    } else {
-      this.setLastClbConstraintWaypoint(index);
-    }
-
-    this.incrementVersion();
-  }
-
   addOrUpdateCruiseStep(index: number, toAltitude: number) {
     const leg = this.legElementAt(index);
 
@@ -1645,7 +1570,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       isIgnored: false,
     };
     this.sendEvent('flightPlan.setLegCruiseStep', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
       planIndex: this.index,
+      batchStack: this.parentFlightPlanInterface.batchStack,
       forAlternate: this instanceof AlternateFlightPlan,
       atIndex: index,
       cruiseStep: leg.cruiseStep,
@@ -1661,7 +1588,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     leg.cruiseStep = undefined;
     this.sendEvent('flightPlan.setLegCruiseStep', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
       planIndex: this.index,
+      batchStack: this.parentFlightPlanInterface.batchStack,
       forAlternate: this instanceof AlternateFlightPlan,
       atIndex: index,
       cruiseStep: undefined,
@@ -1686,7 +1615,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
       element.cruiseStep.isIgnored = false;
       this.sendEvent('flightPlan.setLegCruiseStep', {
+        syncClientID: this.parentFlightPlanInterface.syncClientID,
         planIndex: this.index,
+        batchStack: this.parentFlightPlanInterface.batchStack,
         forAlternate: this instanceof AlternateFlightPlan,
         atIndex: i,
         cruiseStep: element.cruiseStep,

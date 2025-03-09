@@ -9,16 +9,21 @@ import { SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan'
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { SerializedFlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 
-export interface FlightPlanSyncResponsePacket {
+export interface FlightPlanSyncEvent {
+  syncClientID: number;
+}
+
+export interface FlightPlanSyncResponsePacket extends FlightPlanSyncEvent {
   plans: Record<number, SerializedFlightPlan>;
 }
 
-export interface FlightPlanSyncEvent {
+export interface FlightPlanSpecificSyncEvent extends FlightPlanSyncEvent {
   planIndex: number;
 }
 
-export interface FlightPlanManagerEvent extends FlightPlanSyncEvent {
+export interface FlightPlanManagerEvent extends FlightPlanSpecificSyncEvent {
   targetPlanIndex?: number;
 }
 
@@ -26,8 +31,15 @@ export interface FlightPlanCopyEvent extends FlightPlanManagerEvent {
   options: number;
 }
 
-export interface FlightPlanEditSyncEvent extends FlightPlanSyncEvent {
+export interface FlightPlanEditSyncEvent extends FlightPlanSpecificSyncEvent {
+  batchStack: readonly FlightPlanBatch[];
   forAlternate: boolean;
+}
+
+export interface FlightPlanBatchChangeEvent extends FlightPlanSyncEvent {
+  type: 'open' | 'close';
+  batch: FlightPlanBatch;
+  batchStack: readonly FlightPlanBatch[];
 }
 
 export interface FlightPlanSetActiveLegIndexEvent extends FlightPlanEditSyncEvent {
@@ -85,6 +97,8 @@ export interface FlightPlanEvents {
   'flightPlanManager.deleteAll': undefined;
   'flightPlanManager.copy': FlightPlanCopyEvent;
   'flightPlanManager.swap': FlightPlanManagerEvent;
+
+  'flightPlanService.batchChange': FlightPlanBatchChangeEvent;
 
   'flightPlan.setActiveLegIndex': FlightPlanSetActiveLegIndexEvent;
   'flightPlan.setSegment': FlightPlanSetSegmentEvent;

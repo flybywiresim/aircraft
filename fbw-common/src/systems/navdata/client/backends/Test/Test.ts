@@ -1,32 +1,43 @@
 import { Coordinates } from 'msfs-geo';
 import {
-  DatabaseIdent,
   Airport,
-  Departure,
-  Arrival,
+  AirportCommunication,
+  Airway,
   Approach,
+  Arrival,
+  DatabaseIdent,
+  Departure,
+  Fix,
+  IlsNavaid,
+  Marker,
+  NdbNavaid,
   ProcedureLeg,
   Runway,
-  Waypoint,
-  NdbNavaid,
-  IlsNavaid,
-  AirportCommunication,
-  Marker,
   VhfNavaid,
-  Fix,
-  Airway,
+  Waypoint,
 } from '../../../shared';
 import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory'; // FIXME remove import from FMGC
+import { TEST_AIRPORTS } from './TestData';
 import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
 
 export class TestBackend implements DataInterface {
   getDatabaseIdent(): Promise<DatabaseIdent> {
     throw new Error('Method not implemented.');
   }
-  async getAirports(_airportIdentifier: string[]): Promise<Airport[]> {
-    return [];
+  async getAirports(idents: string[]): Promise<Airport[]> {
+    const ret: Airport[] = [];
+
+    for (const ident of idents) {
+      const testAirport = TEST_AIRPORTS.get(ident);
+
+      if (testAirport) {
+        ret.push(testAirport.airport);
+      }
+    }
+
+    return ret;
   }
   async getDepartures(_airportIdentifier: string): Promise<Departure[]> {
     return [];
@@ -43,8 +54,14 @@ export class TestBackend implements DataInterface {
   async getHolds(_airportIdentifier: string): Promise<ProcedureLeg[]> {
     return [];
   }
-  async getRunways(_airportIdentifier: string): Promise<Runway[]> {
-    return [];
+  async getRunways(airportIdentifier: string): Promise<Runway[]> {
+    const testAirport = TEST_AIRPORTS.get(airportIdentifier);
+
+    if (!testAirport) {
+      return [];
+    }
+
+    return testAirport.runways;
   }
   async getWaypointsAtAirport(_airportIdentifier: string): Promise<Waypoint[]> {
     return [];

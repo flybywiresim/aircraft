@@ -34,7 +34,6 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
     });
 
     sub.on('flightPlanRemoteClient_rpcCommand').handle(([command, id, ...args]) => {
-      console.log('[FlightPlanRpcServer] Handling RPC command', command, id, ...args);
       this.handleRpcCommand(command, id, ...args);
     });
   }
@@ -46,12 +45,9 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
   private async handleRpcCommand(command: string, id: string, ...args: any): Promise<void> {
     try {
       const returnValue = await this.localFlightPlanService[command](...(args as any[]));
-      console.log('[FlightPlanRpcServer](handleRpcCommand) RPC command handled successfully');
 
       await this.respondToRpcCommand(id, returnValue);
     } catch (e: unknown) {
-      console.log('[FlightPlanRpcServer](handleRpcCommand) Error while handling RPC command', e);
-
       await this.respondToRpcCommandWithError(
         id,
         typeof e === 'object' && 'message' in e && typeof e.message === 'string' ? e.message : e,

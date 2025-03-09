@@ -3,16 +3,28 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { beforeAll, describe, it, expect } from 'vitest';
+import { beforeAll, describe, it, expect, vi, beforeEach } from 'vitest';
 import { setupTestDatabase } from '../test/Database';
 import { assertDiscontinuity, assertNotDiscontinuity } from '../test/LegUtils';
 import { LegType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { loadAirwayLegs } from '../segments/enroute/AirwayLoading';
 import { emptyFlightPlan } from '../test/FlightPlan';
+import { testEventBus, testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import {
+  FlightPlanBatchChangeEvent,
+  FlightPlanEvents,
+  FlightPlanSetFixInfoEntryEvent,
+} from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
-describe.skip('a base flight plan', () => {
+describe('a base flight plan', () => {
   beforeAll(() => {
     setupTestDatabase();
+  });
+
+  beforeEach(() => {
+    testFlightPlanService.reset();
   });
 
   it.skip('can insert a leg', async () => {
@@ -42,7 +54,7 @@ describe.skip('a base flight plan', () => {
     expect(fp.allLegs).toHaveLength(23);
   });
 
-  describe('deleting legs', () => {
+  describe.skip('deleting legs', () => {
     it('without inserting a discontinuity', async () => {
       const fp = emptyFlightPlan();
 
@@ -81,7 +93,7 @@ describe.skip('a base flight plan', () => {
     });
   });
 
-  describe('editing the departure or arrival', () => {
+  describe.skip('editing the departure or arrival', () => {
     it('should truncate departure segment after it is edited', async () => {
       const flightPlan = emptyFlightPlan();
 
@@ -123,7 +135,7 @@ describe.skip('a base flight plan', () => {
     });
   });
 
-  describe('collapsing waypoints', () => {
+  describe.skip('collapsing waypoints', () => {
     it('should collapse waypoints within one segment', async () => {
       const flightPlan = emptyFlightPlan();
       // const segment = flightPlan.enrouteSegment;
@@ -185,7 +197,7 @@ describe.skip('a base flight plan', () => {
     });
   });
 
-  it('connects segments by merging TF -> FX legs with the same waypoint', async () => {
+  it.skip('connects segments by merging TF -> FX legs with the same waypoint', async () => {
     const fp = emptyFlightPlan();
 
     await fp.setDestinationAirport('EGLL');
@@ -203,7 +215,7 @@ describe.skip('a base flight plan', () => {
     expect(assertNotDiscontinuity(leg5).type).toBe(LegType.FD);
   });
 
-  it('does not connect segments by merging TF -> FX legs with a different waypoint', async () => {
+  it.skip('does not connect segments by merging TF -> FX legs with a different waypoint', async () => {
     const fp = emptyFlightPlan();
 
     await fp.setOriginAirport('EGLL');
@@ -229,7 +241,7 @@ describe.skip('a base flight plan', () => {
     expect(assertNotDiscontinuity(leg7).type).toBe(LegType.IF);
   });
 
-  describe('plan info', () => {
+  describe.skip('plan info', () => {
     describe('destination leg', () => {
       it('returns the right leg for an approach ending at the runway', async () => {
         const fp = emptyFlightPlan();
@@ -256,6 +268,80 @@ describe.skip('a base flight plan', () => {
         expect(destinationLeg.ident).toBe('MA260');
         expect(destinationLeg.definition.waypointDescriptor).not.toEqual(WaypointDescriptor.Runway);
       });
+    });
+  });
+
+  describe('batches', () => {
+    it('can open a flight plan batch', async ({ onTestFinished }) => {
+      const handlerFn = vi.fn(() => {});
+
+      const sub = testEventBus.getSubscriber<FlightPlanEvents>().on('flightPlanService.batchChange').handle(handlerFn);
+      onTestFinished(() => sub.destroy());
+
+      const batch = await testFlightPlanService.openBatch('test_batch');
+
+      expect(batch).toBeTruthy();
+      expect(handlerFn).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({
+          type: 'open',
+          batchStack: [expect.objectContaining<Partial<FlightPlanBatch>>({ id: batch.id, name: 'test_batch' })],
+          batch: expect.objectContaining<Partial<FlightPlanBatch>>({ id: batch.id, name: 'test_batch' }),
+        } satisfies Partial<FlightPlanBatchChangeEvent>),
+      );
+
+      await testFlightPlanService.closeBatch(batch.id);
+    });
+
+    it('can open a flight plan batch and then close it', async ({ onTestFinished }) => {
+      const handlerFn = vi.fn(() => {});
+
+      const batch = await testFlightPlanService.openBatch('test_batch');
+
+      const sub = testEventBus.getSubscriber<FlightPlanEvents>().on('flightPlanService.batchChange').handle(handlerFn);
+      onTestFinished(() => sub.destroy());
+
+      const closedBatch = await testFlightPlanService.closeBatch(batch.id);
+
+      expect(closedBatch.id).toBe(batch.id);
+      expect(closedBatch.name).toBe(batch.name);
+      expect(handlerFn).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ type: 'close' } satisfies Partial<FlightPlanBatchChangeEvent>),
+      );
+    });
+
+    it('cannot close a batch that is not the innermost one', async () => {
+      const batch1 = await testFlightPlanService.openBatch('test_batch_1');
+      const batch2 = await testFlightPlanService.openBatch('test_batch_2');
+
+      await expect(testFlightPlanService.closeBatch(batch1.id)).rejects.toThrow();
+
+      await testFlightPlanService.closeBatch(batch2.id);
+      await testFlightPlanService.closeBatch(batch1.id);
+    });
+
+    it('contains currently open batches in flight plan events', async ({ onTestFinished }) => {
+      const handlerFn = vi.fn(() => {});
+
+      const fp = testFlightPlanService.active;
+
+      const sub = testEventBus.getSubscriber<FlightPlanEvents>().on('flightPlan.setFixInfoEntry').handle(handlerFn);
+      onTestFinished(() => sub.destroy());
+
+      const batch1 = await testFlightPlanService.openBatch('test_batch_1');
+      const batch2 = await testFlightPlanService.openBatch('test_batch_2');
+
+      const fix = (await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS'))[0];
+      fp.setFixInfoEntry(1, { fix });
+
+      expect(handlerFn).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({
+          batchStack: [
+            expect.objectContaining<FlightPlanBatch>({ id: batch1.id, name: batch1.name }),
+            expect.objectContaining<FlightPlanBatch>({ id: batch2.id, name: batch2.name }),
+          ],
+          index: 1,
+        } satisfies Partial<FlightPlanSetFixInfoEntryEvent>),
+      );
     });
   });
 });

@@ -13,6 +13,7 @@ import {
   SubEvent,
   Subject,
   Subscription,
+  Wait,
 } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
@@ -24,6 +25,8 @@ import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
 import { FlightPlan } from '../plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
   [k in keyof T as T[k] extends (...args: any) => Promise<any> ? k : never]: T[k] extends (
@@ -44,6 +47,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   public readonly onAvailable = new SubEvent();
 
+  public readonly batchStack: FlightPlanBatch[] = [];
+
   private readonly flightPlanManager: FlightPlanManager<P>;
 
   private readonly rpcAvailable = Subject.create(false);
@@ -53,6 +58,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
   private readonly pub: Publisher<FlightPlanRemoteClientRpcEvents<P>>;
 
   private readonly sub: EventSubscriber<FlightPlanServerRpcEvents>;
+
+  public syncClientID = Math.round(Math.random() * 10_000_000);
 
   constructor(
     private readonly bus: EventBus,
@@ -90,10 +97,11 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     );
 
     this.flightPlanManager = new FlightPlanManager<P>(
+      this,
       this.bus,
       this
         .performanceDataInit as P /*  TODO, is this comment still valid? "This flight plan manager will never create plans, so this is fine" */,
-      Math.round(Math.random() * 10_000),
+      this.syncClientID,
       false,
     );
     this.flightPlanManager.initialized.on(() => this.flightPlanManagerInitialized.set(true));
@@ -115,7 +123,35 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     funcName: T,
     ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
   ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
-    console.trace('callFunctionViaRpc', funcName, ...args);
+    const batchState = { batch: null, state: false };
+
+    this.bus
+      .getSubscriber<FlightPlanEvents>()
+      .on('flightPlanService.batchChange')
+      .handle((event) => {
+        if (
+          batchState.batch &&
+          event.syncClientID === this.syncClientID &&
+          event.type === 'close' &&
+          event.batch.id === batchState.batch.id
+        ) {
+          batchState.state = true;
+        }
+      });
+    batchState.batch = await this.doCallFunctionViaRpc('openBatch', `rpcFunctionExec_${funcName}`);
+
+    const result = await this.doCallFunctionViaRpc(funcName, ...args);
+
+    await this.doCallFunctionViaRpc('closeBatch', batchState.batch.id);
+    await Wait.awaitCondition(() => batchState.state === true);
+
+    return result;
+  }
+
+  private async doCallFunctionViaRpc<T extends keyof FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>> & string>(
+    funcName: T,
+    ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
+  ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
     const id = v4();
 
     this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args], true, false);
@@ -213,6 +249,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   reset(): Promise<void> {
     return this.callFunctionViaRpc('reset');
+  }
+
+  deleteAll(): Promise<void> {
+    return this.callFunctionViaRpc('deleteAll');
   }
 
   newCityPair(fromIcao: string, toIcao: string, altnIcao?: string, planIndex?: number): Promise<void> {
@@ -424,5 +464,13 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   stringMissedApproach(onConstraintsDeleted?: (_: FlightPlanLeg) => void, planIndex?: number): Promise<void> {
     return this.callFunctionViaRpc('stringMissedApproach', onConstraintsDeleted, planIndex);
+  }
+
+  openBatch(name: string): Promise<FlightPlanBatch> {
+    return this.callFunctionViaRpc('openBatch', name);
+  }
+
+  closeBatch(uuid: string): Promise<FlightPlanBatch> {
+    return this.callFunctionViaRpc('closeBatch', uuid);
   }
 }

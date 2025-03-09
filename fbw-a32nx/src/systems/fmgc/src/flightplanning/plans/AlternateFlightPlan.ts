@@ -9,6 +9,7 @@ import { DestinationSegment } from '@fmgc/flightplanning/segments/DestinationSeg
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 /**
  * An alternate flight plan shares its origin with the destination of a regular flight plan
@@ -17,10 +18,11 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
   override originSegment: AlternateOriginSegment = undefined;
 
   constructor(
+    parentFlightPlanInterface: FlightPlanInterface,
     index: number,
     private mainFlightPlan: BaseFlightPlan<P>,
   ) {
-    super(index, mainFlightPlan.bus);
+    super(parentFlightPlanInterface, index, mainFlightPlan.bus);
 
     this.originSegment = new AlternateOriginSegment(this, this.mainFlightPlan.destinationSegment);
   }
@@ -29,8 +31,8 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
     return this.mainFlightPlan.destinationAirport;
   }
 
-  clone(fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {
-    const newPlan = new AlternateFlightPlan(fromMainFlightPlan.index, fromMainFlightPlan);
+  clone(parentFlightPlanInterface: FlightPlanInterface, fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {
+    const newPlan = new AlternateFlightPlan(parentFlightPlanInterface, fromMainFlightPlan.index, fromMainFlightPlan);
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan);
@@ -65,7 +67,9 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
     const segmentIndex = this.orderedSegments.indexOf(segment);
 
     this.sendEvent('flightPlan.setSegment', {
+      syncClientID: this.parentFlightPlanInterface.syncClientID,
       planIndex: this.index,
+      batchStack: this.parentFlightPlanInterface.batchStack,
       forAlternate: true,
       segmentIndex,
       serialized: segment.serialize(),
