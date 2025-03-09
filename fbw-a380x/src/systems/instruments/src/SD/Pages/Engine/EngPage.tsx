@@ -5,6 +5,7 @@ import { PageTitle } from '../Generic/PageTitle';
 import EngineColumn from './elements/EngineColumn';
 
 import '../../../index.scss';
+import { NXUnits } from '../../../../../../../../fbw-common/src/systems/instruments/src/NXUnits';
 
 export const EngPage = () => {
   // const sdacDatum = true;
@@ -45,7 +46,7 @@ export const EngPage = () => {
         FF
       </text>
       <text x={410} y={182} className="F25 EndAlign Cyan">
-        KG/H
+        {NXUnits.userWeightUnit()}/H
       </text>
 
       <text x={410} y={240} className="F25 EndAlign White">

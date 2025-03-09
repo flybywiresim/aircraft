@@ -3,7 +3,7 @@ import { Position } from '@instruments/common/types';
 import { useSimVar } from '@instruments/common/simVars';
 import { MoreLabel, PageTitle } from './Generic/PageTitle';
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { useInterval } from '@flybywiresim/fbw-sdk';
+import { NXUnits, useInterval } from '@flybywiresim/fbw-sdk';
 
 export const FuelPage = () => {
   const CROSS_FEED_VALVE_CLOSED_THRESHOLD = 0.1;
@@ -20,9 +20,9 @@ export const FuelPage = () => {
 
   const apuFuelUsed = useArinc429Var('L:A32NX_APU_FUEL_USED', 1000);
 
-  const totalEngFuelUsed = eng1FuelUsed + eng2FuelUsed + eng3FuelUsed + eng4FuelUsed;
+  const totalEngFuelUsed = NXUnits.kgToUser(eng1FuelUsed + eng2FuelUsed + eng3FuelUsed + eng4FuelUsed);
   const totalFuelUsedDisplayed = apuFuelUsed.isNormalOperation()
-    ? Math.floor((totalEngFuelUsed + apuFuelUsed.value) / 50) * 50
+    ? Math.floor((totalEngFuelUsed + NXUnits.kgToUser(apuFuelUsed.value)) / 50) * 50
     : Math.floor(totalEngFuelUsed / 50) * 50;
 
   const [eng1FuelFlowPph] = useSimVar('L:A32NX_ENGINE_FF:1', 'number', 1000); // kg/h
@@ -31,7 +31,7 @@ export const FuelPage = () => {
   const [eng4FuelFlowPph] = useSimVar('L:A32NX_ENGINE_FF:4', 'number', 1000); // kg/h
 
   const allEngFuelFlow = eng1FuelFlowPph + eng2FuelFlowPph + eng3FuelFlowPph + eng4FuelFlowPph;
-  const allEngFuelFlowDisplayed = Math.floor(allEngFuelFlow / 60 / 10) * 10; // kg/min
+  const allEngFuelFlowDisplayed = Math.floor(NXUnits.kgToUser(allEngFuelFlow) / 60 / 10) * 10; // kg/min
 
   // LP valves
   const [engine1Valve] = useSimVar('FUELSYSTEM VALVE OPEN:1', 'Percent over 100', 1000);
@@ -750,9 +750,8 @@ export const FuelPage = () => {
         {totalFuelUsedDisplayed}
       </text>
 
-      {/* TODO unit switching? */}
       <text textAnchor="middle" x={384} y={126} className="Cyan T2">
-        KG
+        {NXUnits.userWeightUnit()}
       </text>
 
       {/* Engines and LP valves */}
@@ -770,7 +769,7 @@ export const FuelPage = () => {
         endArrowSize={12}
       />
       <text textAnchor="middle" x={111} y={84} className="Green T3">
-        {Math.floor(eng1FuelUsed / 50) * 50}
+        {Math.floor(NXUnits.kgToUser(eng1FuelUsed) / 50) * 50}
       </text>
 
       <Engine x={236} y={81} index={2} />
@@ -787,7 +786,7 @@ export const FuelPage = () => {
         endArrowSize={12}
       />
       <text textAnchor="middle" x={273} y={68} className="Green T3">
-        {Math.floor(eng2FuelUsed / 50) * 50}
+        {Math.floor(NXUnits.kgToUser(eng2FuelUsed) / 50) * 50}
       </text>
 
       <Engine x={456} y={81} index={3} />
@@ -804,7 +803,7 @@ export const FuelPage = () => {
         endArrowSize={12}
       />
       <text textAnchor="middle" x={493} y={68} className="Green T3">
-        {Math.floor(eng3FuelUsed / 50) * 50}
+        {Math.floor(NXUnits.kgToUser(eng3FuelUsed) / 50) * 50}
       </text>
 
       <Engine x={618} y={105} index={4} />
@@ -821,7 +820,7 @@ export const FuelPage = () => {
         endArrowSize={12}
       />
       <text textAnchor="middle" x={655} y={84} className="Green T3">
-        {Math.floor(eng4FuelUsed / 50) * 50}
+        {Math.floor(NXUnits.kgToUser(eng4FuelUsed) / 50) * 50}
       </text>
 
       <image
@@ -994,9 +993,8 @@ export const FuelPage = () => {
       <text x={24} y={644} className="Green T2">
         {allEngFuelFlowDisplayed}
       </text>
-      {/* TODO unit switching? */}
       <text x={68} y={644} className="Cyan T2">
-        KG/MIN
+        {NXUnits.userWeightUnit}/MIN
       </text>
 
       <image
@@ -1588,7 +1586,7 @@ interface TankQuantityProps extends Position {
 }
 
 const TankQuantity: FC<TankQuantityProps> = ({ x, y, smallFont = false, quantity, hasFault }) => {
-  const displayQuantity = Math.floor(quantity / 20) * 20;
+  const displayQuantity = Math.floor(NXUnits.kgToUser(quantity) / 20) * 20;
 
   return (
     <text x={x} y={y} className={`${hasFault ? 'Amber' : 'Green'} ${smallFont ? 'T3' : 'T4'}`} textAnchor="end">

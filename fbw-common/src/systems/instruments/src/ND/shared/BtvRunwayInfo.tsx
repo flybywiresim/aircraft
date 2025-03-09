@@ -3,7 +3,14 @@
 
 import { FSComponent, DisplayComponent, VNode, MappedSubject, ConsumerSubject } from '@microsoft/msfs-sdk';
 
-import { Arinc429LocalVarConsumerSubject, ArincEventBus, BtvData, FmsOansData, FmsData } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429LocalVarConsumerSubject,
+  ArincEventBus,
+  BtvData,
+  FmsOansData,
+  FmsData,
+  NXUnits,
+} from '@flybywiresim/fbw-sdk';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
 export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
@@ -24,7 +31,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly runwayInfoString = MappedSubject.create(
     ([ident, length]) =>
       ident && length.isNormalOperation()
-        ? `${ident.substring(4).padStart(5, '\xa0')}${length.value.toFixed(0).padStart(6, '\xa0')}`
+        ? `${ident.substring(4).padStart(5, '\xa0')}${NXUnits.mToUser(length.value).toFixed(0).padStart(6, '\xa0')}`
         : '',
     this.runwayIdent,
     this.runwayLength,
@@ -44,7 +51,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly exitInfoString = MappedSubject.create(
     ([ident, dist]) =>
       ident && dist.isNormalOperation()
-        ? `${ident.padStart(4, '\xa0')}${dist.value.toFixed(0).padStart(6, '\xa0')}`
+        ? `${ident.padStart(4, '\xa0')}${NXUnits.mToUser(dist.value).toFixed(0).padStart(6, '\xa0')}`
         : '',
     this.exitIdent,
     this.exitDistance,
@@ -76,7 +83,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
               {this.runwayInfoString}
             </text>
             <text x={205} y={0} class="Cyan FontSmallest">
-              M
+              {NXUnits.userDistanceUnit()}
             </text>
             <text x={225} y={0} class="White FontSmallest">
               -
@@ -122,7 +129,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
               {this.exitInfoString}
             </text>
             <text x={205} y={0} class="Cyan FontSmallest">
-              M
+              {NXUnits.userDistanceUnit()}
             </text>
           </Layer>
         </g>
