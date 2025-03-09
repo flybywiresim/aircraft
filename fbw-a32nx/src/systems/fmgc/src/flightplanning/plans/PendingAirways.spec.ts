@@ -3,20 +3,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 // import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 // import { loadSingleWaypoint } from '@fmgc/flightplanning/segments/enroute/WaypointLoading';
 // import { dumpFlightPlan } from '@fmgc/flightplanning/test/FlightPlan';
-import { EventBus } from '@microsoft/msfs-sdk';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { beforeEach, describe } from 'vitest';
+import { testFlightPlanService } from '../test/TestFlightPlanService';
 
 describe.skip('pending airways entry', () => {
-  const fps = new FlightPlanService(new EventBus(), new A320FlightPlanPerformanceData());
-
   beforeEach(() => {
-    fps.reset();
+    testFlightPlanService.reset();
     setupTestDatabase();
   });
 

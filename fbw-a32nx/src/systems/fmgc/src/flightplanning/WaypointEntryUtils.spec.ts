@@ -4,18 +4,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import { EventBus } from '@microsoft/msfs-sdk';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { testFms } from '@fmgc/flightplanning/test/TestFms';
+import { testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
 
 describe('WaypointEntryUtils', () => {
-  const service = new FlightPlanService(new EventBus(), new A320FlightPlanPerformanceData());
-
   beforeEach(() => {
-    service.reset();
+    testFlightPlanService.reset();
     setupTestDatabase();
   });
 

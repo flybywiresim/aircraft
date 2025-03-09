@@ -3,34 +3,29 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { dumpFlightPlan } from '@fmgc/flightplanning/test/FlightPlan';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { EventBus } from '@microsoft/msfs-sdk';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { testFms } from '@fmgc/flightplanning/test/TestFms';
+import { testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
 
 describe('simBrief uplink adapter', () => {
-  const eventBus = new EventBus();
-  const fps = new FlightPlanService(eventBus, new A320FlightPlanPerformanceData());
-
   beforeEach(() => {
-    fps.reset();
+    testFlightPlanService.reset();
     setupTestDatabase();
   });
 
   it('tracer test', async ({ skip }) => {
     skip();
-    await fps.newCityPair('NZWN', 'NZQN', 'NZAA');
+    await testFlightPlanService.newCityPair('NZWN', 'NZQN', 'NZAA');
 
-    await fps.setDestinationRunway('NZQN23');
-    await fps.setArrival('ELRU4B');
-    await fps.setApproach('R23-Z');
-    await fps.setApproachVia('ATKIL');
+    await testFlightPlanService.setDestinationRunway('NZQN23');
+    await testFlightPlanService.setArrival('ELRU4B');
+    await testFlightPlanService.setApproach('R23-Z');
+    await testFlightPlanService.setApproachVia('ATKIL');
 
-    console.log(dumpFlightPlan(fps.activeOrTemporary));
+    console.log(dumpFlightPlan(testFlightPlanService.activeOrTemporary));
   });
 
   it('can download an OFP', async ({ skip }) => {
@@ -47,8 +42,8 @@ describe('simBrief uplink adapter', () => {
   it('can uplink a flight plan from a downloaded ofp', async ({ skip }) => {
     skip();
     const ofp = await SimBriefUplinkAdapter.downloadOfpForUserID('506130');
-    await SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(testFms, fps, ofp, {});
+    await SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(testFms, testFlightPlanService, ofp, {});
 
-    console.log(dumpFlightPlan(fps.uplink));
+    console.log(dumpFlightPlan(testFlightPlanService.uplink));
   });
 });
