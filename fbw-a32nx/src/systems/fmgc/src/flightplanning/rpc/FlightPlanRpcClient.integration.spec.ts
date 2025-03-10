@@ -1,10 +1,12 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
-import { testEventBus, testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
+import { testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
 import { FlightPlanRpcClient } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
 import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';
 
 describe('rpc client', () => {
   const server = new FlightPlanRpcServer(testEventBus, testFlightPlanService);
@@ -45,5 +47,15 @@ describe('rpc client', () => {
 
     expect(testFlightPlanService.uplink.originRunway.ident).toBe('CYYZ06R');
     expect(client.uplink.originRunway.ident).toBe('CYYZ06R');
+  });
+
+  it('correctly syncs airway entries', async () => {
+    await client.newCityPair('CYYZ', 'CYVR', undefined, FlightPlanIndex.Uplink);
+
+    const fix = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
+    await client.nextWaypoint(0, fix[0], FlightPlanIndex.Uplink);
+
+    await client.startAirwayEntry(1, FlightPlanIndex.Uplink);
+    expect(client.uplink.pendingAirways).not.toBeUndefined();
   });
 });

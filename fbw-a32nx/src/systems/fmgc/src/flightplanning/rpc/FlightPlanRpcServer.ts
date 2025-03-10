@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, GameStateProvider, Publisher } from '@microsoft/msfs-sdk';
+import { EventBus, GameStateProvider, Publisher, Subscription } from '@microsoft/msfs-sdk';
 
 import { FlightPlanRemoteClientRpcEvents } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -15,6 +15,8 @@ export interface FlightPlanServerRpcEvents {
 }
 
 export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
+  private readonly subscriptions: Subscription[] = [];
+
   private readonly pub: Publisher<FlightPlanServerRpcEvents>;
 
   constructor(
@@ -33,9 +35,17 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
       }
     });
 
-    sub.on('flightPlanRemoteClient_rpcCommand').handle(([command, id, ...args]) => {
-      this.handleRpcCommand(command, id, ...args);
-    });
+    this.subscriptions.push(
+      sub.on('flightPlanRemoteClient_rpcCommand').handle(([command, id, ...args]) => {
+        this.handleRpcCommand(command, id, ...args);
+      }),
+    );
+  }
+
+  public destroy(): void {
+    for (const subscription of this.subscriptions) {
+      subscription.destroy();
+    }
   }
 
   private handleSendHeartbeat(): void {

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -13,10 +13,9 @@ import {
   PerformanceDataFlightPlanSyncEvents,
   SyncFlightPlanEvents,
 } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { FlightPlanContext, SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { FlightPlanBatch, FlightPlanBatchUtils } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 
 export enum FlightPlanIndex {
@@ -28,8 +27,6 @@ export enum FlightPlanIndex {
 
 export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   private plans: FlightPlan<P>[] = [];
-
-  public readonly batchStack: FlightPlanBatch[] = [];
 
   private _initialized = Subject.create(false);
 
@@ -51,7 +48,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   }
 
   constructor(
-    private readonly parentFlightPlanInterface: FlightPlanInterface,
+    private readonly context: FlightPlanContext,
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
     private readonly syncClientID: number,
@@ -86,7 +83,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
             const intIndex = parseInt(index);
 
             const newPlan = await FlightPlan.fromSerializedFlightPlan(
-              this.parentFlightPlanInterface,
+              this.context,
               intIndex,
               serialisedPlan,
               this.bus,
@@ -186,12 +183,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   create(index: number, notify = true) {
     this.assertFlightPlanDoesntExist(index);
 
-    this.plans[index] = FlightPlan.empty(
-      this.parentFlightPlanInterface,
-      index,
-      this.bus,
-      this.performanceDataInit.clone(),
-    );
+    this.plans[index] = FlightPlan.empty(this.context, index, this.bus, this.performanceDataInit.clone());
 
     if (notify) {
       this.sendEvent('flightPlanManager.create', { syncClientID: this.syncClientID, planIndex: index });
@@ -264,10 +256,10 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   public async openBatch(name: string): Promise<FlightPlanBatch> {
     const newBatch = FlightPlanBatchUtils.createBatch(name);
 
-    this.batchStack.push(newBatch);
+    this.context.batchStack.push(newBatch);
     this.sendEvent('flightPlanService.batchChange', {
       syncClientID: this.syncClientID,
-      batchStack: this.batchStack,
+      batchStack: this.context.batchStack,
       type: 'open',
       batch: newBatch,
     });
@@ -276,22 +268,32 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   }
 
   public async closeBatch(uuid: string): Promise<FlightPlanBatch> {
-    if (this.batchStack.length === 0) {
+    if (this.context.batchStack.length === 0) {
       throw new Error('[BaseFlightPlan](closeBatch) No batches to close');
     }
 
-    const innermostBatch = this.batchStack[this.batchStack.length - 1];
+    const innermostBatch = this.context.batchStack[this.context.batchStack.length - 1];
 
     if (innermostBatch.id !== uuid) {
-      throw new Error(
-        `[FlightPlanService](closeBatch) Only the innermost batch can be closed, which is: (id=${innermostBatch.id}, name="${innermostBatch.name}")`,
-      );
+      const targetBatch = this.context.batchStack.find((it) => it.id === uuid);
+
+      if (targetBatch) {
+        throw new Error(
+          `[FlightPlanService](closeBatch) Only the innermost batch can be closed, which is: (id=${innermostBatch.id.substring(0, 8)}..., name="${innermostBatch.name}").
+Tried to close (id=${targetBatch.id.substring(0, 8)}..., name="${targetBatch.name}").
+Make sure any calls to an RPC client are \`await\`ed`,
+        );
+      } else {
+        throw new Error(
+          `[FlightPlanService](closeBatch) Only the innermost batch can be closed, which is: (id=${innermostBatch.id.substring(0, 8)}..., name="${innermostBatch.name}"). A batch with id '${uuid.substring(0, 8)}...' was not found.`,
+        );
+      }
     }
 
-    this.batchStack.pop();
+    this.context.batchStack.pop();
     this.sendEvent('flightPlanService.batchChange', {
       syncClientID: this.syncClientID,
-      batchStack: this.batchStack,
+      batchStack: this.context.batchStack,
       type: 'close',
       batch: innermostBatch,
     });
@@ -338,11 +340,18 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
 
       const flightPlanEventsPub = this.bus.getPublisher<FlightPlanEvents>();
 
-      // Send the event on the event bus locally, so things can react to it
-      flightPlanEventsPub.pub(event.replace('SYNC_', '') as keyof FlightPlanEvents, {
-        ...data,
-        syncClientID: this.syncClientID,
-      });
+      if (data.syncClientID !== this.syncClientID) {
+        // Send the event on the event bus locally, so things can react to it
+        flightPlanEventsPub.pub(
+          event.replace('SYNC_', '') as keyof FlightPlanEvents,
+          {
+            ...data,
+            syncClientID: this.syncClientID,
+          },
+          false,
+          false,
+        );
+      }
     }
 
     this.processingSyncEvents = false;

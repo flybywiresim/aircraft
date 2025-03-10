@@ -61,7 +61,7 @@ export const TEST_AIRPORTS: Map<string, { airport: Airport; runways: Runway[] }>
     'CYVR',
     {
       airport: fakeAirport('CY', 'CYVR', { lat: 0, long: 0, alt: 0 }),
-      runways: [],
+      runways: [fakeRunway('CY', 'CYVR', '08', 'R', 46, { long: -79.60958194444444, lat: 43.66679444444444 })],
     },
   ],
 ]);

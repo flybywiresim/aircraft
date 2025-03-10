@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Airport } from '@flybywiresim/fbw-sdk';
-import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan, FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { DestinationSegment } from '@fmgc/flightplanning/segments/DestinationSegment';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
@@ -18,11 +18,11 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
   override originSegment: AlternateOriginSegment = undefined;
 
   constructor(
-    parentFlightPlanInterface: FlightPlanInterface,
+    context: FlightPlanContext,
     index: number,
     private mainFlightPlan: BaseFlightPlan<P>,
   ) {
-    super(parentFlightPlanInterface, index, mainFlightPlan.bus);
+    super(context, index, mainFlightPlan.bus);
 
     this.originSegment = new AlternateOriginSegment(this, this.mainFlightPlan.destinationSegment);
   }
@@ -31,8 +31,8 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
     return this.mainFlightPlan.destinationAirport;
   }
 
-  clone(parentFlightPlanInterface: FlightPlanInterface, fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {
-    const newPlan = new AlternateFlightPlan(parentFlightPlanInterface, fromMainFlightPlan.index, fromMainFlightPlan);
+  clone(context: FlightPlanContext, fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {
+    const newPlan = new AlternateFlightPlan(context, fromMainFlightPlan.index, fromMainFlightPlan);
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan);
@@ -67,9 +67,9 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
     const segmentIndex = this.orderedSegments.indexOf(segment);
 
     this.sendEvent('flightPlan.setSegment', {
-      syncClientID: this.parentFlightPlanInterface.syncClientID,
+      syncClientID: this.context.syncClientID,
       planIndex: this.index,
-      batchStack: this.parentFlightPlanInterface.batchStack,
+      batchStack: this.context.batchStack,
       forAlternate: true,
       segmentIndex,
       serialized: segment.serialize(),

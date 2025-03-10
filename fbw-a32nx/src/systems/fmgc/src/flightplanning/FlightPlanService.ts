@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -25,6 +25,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   public syncClientID = Math.round(Math.random() * 10_000_000);
 
+  public batchStack: FlightPlanBatch[] = [];
+
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
@@ -44,10 +46,6 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.create(FlightPlanIndex.Active);
     this.flightPlanManager.create(FlightPlanIndex.Uplink);
     this.flightPlanManager.create(FlightPlanIndex.FirstSecondary);
-  }
-
-  get batchStack(): FlightPlanBatch[] {
-    return this.flightPlanManager.batchStack;
   }
 
   get(index: number) {

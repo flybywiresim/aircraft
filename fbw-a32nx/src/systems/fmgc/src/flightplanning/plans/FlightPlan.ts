@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -19,25 +19,24 @@ import {
   FlightPlanPerformanceData,
   FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
+import { BaseFlightPlan, FlightPlanContext, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
-import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
-    parentFlightPlanInterface: FlightPlanInterface,
+    context: FlightPlanContext,
     index: number,
     bus: EventBus,
     performanceDataInit: P,
   ): FlightPlan<P> {
-    return new FlightPlan(parentFlightPlanInterface, index, bus, performanceDataInit);
+    return new FlightPlan(context, index, bus, performanceDataInit);
   }
 
   /**
    * Alternate flight plan associated with this flight plan
    */
-  alternateFlightPlan = new AlternateFlightPlan<P>(this.parentFlightPlanInterface, this.index, this);
+  alternateFlightPlan = new AlternateFlightPlan<P>(this.context, this.index, this);
 
   /**
    * Performance data for this flight plan
@@ -54,8 +53,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   flightNumber: string | undefined = undefined;
 
-  constructor(parentFlightPlanInterface: FlightPlanInterface, index: number, bus: EventBus, performanceDataInit: P) {
-    super(parentFlightPlanInterface, index, bus);
+  constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P) {
+    super(context, index, bus);
     this.performanceData = performanceDataInit;
   }
 
@@ -66,7 +65,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan<P> {
-    const newPlan = FlightPlan.empty(this.parentFlightPlanInterface, newIndex, this.bus, this.performanceData.clone());
+    const newPlan = FlightPlan.empty(this.context, newIndex, this.bus, this.performanceData.clone());
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan);
@@ -82,7 +81,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     newPlan.destinationSegment = this.destinationSegment.clone(newPlan);
     newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan);
 
-    newPlan.alternateFlightPlan = this.alternateFlightPlan.clone(this.parentFlightPlanInterface, newPlan);
+    newPlan.alternateFlightPlan = this.alternateFlightPlan.clone(this.context, newPlan);
 
     newPlan.availableOriginRunways = [...this.availableOriginRunways];
     newPlan.availableDepartures = [...this.availableDepartures];
@@ -352,9 +351,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (notify) {
       this.sendEvent('flightPlan.setFixInfoEntry', {
-        syncClientID: this.parentFlightPlanInterface.syncClientID,
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
-        batchStack: this.parentFlightPlanInterface.batchStack,
+        batchStack: this.context.batchStack,
         forAlternate: false,
         index,
         fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
@@ -375,9 +374,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (notify) {
       this.sendEvent('flightPlan.setFixInfoEntry', {
-        syncClientID: this.parentFlightPlanInterface.syncClientID,
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
-        batchStack: this.parentFlightPlanInterface.batchStack,
+        batchStack: this.context.batchStack,
         forAlternate: false,
         index,
         fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
@@ -460,9 +459,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (notify) {
       this.sendEvent('flightPlan.setFlightNumber', {
-        syncClientID: this.parentFlightPlanInterface.syncClientID,
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
-        batchStack: this.parentFlightPlanInterface.batchStack,
+        batchStack: this.context.batchStack,
         forAlternate: false,
         flightNumber,
       });
@@ -546,13 +545,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   static async fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
-    parentFlightPlanInterface: FlightPlanInterface,
+    context: FlightPlanContext,
     index: number,
     serialized: SerializedFlightPlan,
     bus: EventBus,
     performanceDataInit: P,
   ): Promise<FlightPlan<P>> {
-    const newPlan = FlightPlan.empty<P>(parentFlightPlanInterface, index, bus, performanceDataInit);
+    const newPlan = FlightPlan.empty<P>(context, index, bus, performanceDataInit);
 
     newPlan.activeLegIndex = serialized.activeLegIndex;
     newPlan.fixInfos = serialized.fixInfo;
