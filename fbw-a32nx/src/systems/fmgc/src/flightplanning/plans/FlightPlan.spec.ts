@@ -23,31 +23,22 @@ describe('a base flight plan', () => {
     testFlightPlanService.reset(true);
   });
 
-  it.skip('can insert a leg', async () => {
+  it('can insert a leg', async () => {
     const fp = emptyFlightPlan();
 
-    await fp.setOriginAirport('CYUL');
-    await fp.setOriginRunway('CYYZ06R');
-    await fp.setDeparture('CYUL1');
-
+    await fp.setOriginAirport('CYVR');
     await fp.setDestinationAirport('CYYZ');
-    await fp.setDestinationRunway('CYYZ05');
-    await fp.setApproach('I05');
-    await fp.setArrival('BOXUM5');
 
-    // const waypoint = await loadSingleWaypoint('NOSUS', 'WCYCYULNOSUS');
+    const waypoint = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
 
-    // const leg = FlightPlanLeg.fromEnrouteFix(fp.enrouteSegment, waypoint);
+    await fp.insertWaypointBefore(1, waypoint[0]);
 
-    // FIXME fix when un-skipping
-    // await fp.insertElementAfter(3, leg, true);
-
-    const fpLeg = assertNotDiscontinuity(fp.allLegs[4]);
+    const fpLeg = fp.legElementAt(1);
 
     expect(fpLeg.ident).toBe('NOSUS');
-    expect(fp.allLegs[5].isDiscontinuity).toBeTruthy();
+    expect(fp.allLegs[2].isDiscontinuity).toBeTruthy();
 
-    expect(fp.allLegs).toHaveLength(23);
+    expect(fp.allLegs).toHaveLength(4);
   });
 
   it('can insert an airway', async ({ onTestFinished }) => {
