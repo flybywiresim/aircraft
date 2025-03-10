@@ -64,6 +64,7 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
+    private readonly useBatches = true,
   ) {
     this.pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
     this.sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
@@ -125,25 +126,29 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
   ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
     const batchState = { batch: null, state: false };
 
-    this.bus
-      .getSubscriber<FlightPlanEvents>()
-      .on('flightPlanService.batchChange')
-      .handle((event) => {
-        if (
-          batchState.batch &&
-          event.syncClientID === this.syncClientID &&
-          event.type === 'close' &&
-          event.batch.id === batchState.batch.id
-        ) {
-          batchState.state = true;
-        }
-      });
-    batchState.batch = await this.doCallFunctionViaRpc('openBatch', `rpcFunctionExec_${funcName}`);
+    if (this.useBatches) {
+      this.bus
+        .getSubscriber<FlightPlanEvents>()
+        .on('flightPlanService.batchChange')
+        .handle((event) => {
+          if (
+            batchState.batch &&
+            event.syncClientID === this.syncClientID &&
+            event.type === 'close' &&
+            event.batch.id === batchState.batch.id
+          ) {
+            batchState.state = true;
+          }
+        });
+      batchState.batch = await this.doCallFunctionViaRpc('openBatch', `rpcFunctionExec_${funcName}`);
+    }
 
     const result = await this.doCallFunctionViaRpc(funcName, ...args);
 
-    await this.doCallFunctionViaRpc('closeBatch', batchState.batch.id);
-    await Wait.awaitCondition(() => batchState.state === true);
+    if (this.useBatches) {
+      await this.doCallFunctionViaRpc('closeBatch', batchState.batch.id);
+      await Wait.awaitCondition(() => batchState.state === true);
+    }
 
     return result;
   }
@@ -154,17 +159,19 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
   ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
     const id = v4();
 
-    this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args], true, false);
-
-    const result =
-      await this.waitForRpcCommandResponse<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>>(id);
+    const result = await this.waitForRpcCommandResponse<
+      ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
+    >(id, funcName, ...args);
 
     return result;
   }
 
-  private waitForRpcCommandResponse<T>(id: string): Promise<T> {
+  private waitForRpcCommandResponse<T>(id: string, command: keyof FlightPlanInterface<P>, ...args: any[]): Promise<T> {
     return new Promise((resolve, reject) => {
       this.rpcCommandsSent.set(id, [resolve, reject]);
+
+      this.pub.pub('flightPlanRemoteClient_rpcCommand', [command, id, ...args], true, false);
+
       setTimeout(() => {
         if (this.rpcCommandsSent.has(id)) {
           this.rpcCommandsSent.delete(id);
