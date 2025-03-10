@@ -81,6 +81,7 @@ export interface FlightPlanFlightNumberEditEvent extends FlightPlanEditSyncEvent
 }
 
 export interface FlightPlanPendingAirwaysEditEvent extends FlightPlanEditSyncEvent {
+  type: 'edit' | 'create' | 'delete';
   elements: PendingAirwayEntry[];
 }
 

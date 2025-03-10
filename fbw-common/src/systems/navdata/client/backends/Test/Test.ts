@@ -19,7 +19,7 @@ import {
 import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory'; // FIXME remove import from FMGC
-import { TEST_AIRPORTS } from './TestData';
+import { FAKE_AIRWAYS, FAKE_WAYPOINTS, TEST_AIRPORTS } from './TestData';
 import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
 
 export class TestBackend implements DataInterface {
@@ -87,10 +87,8 @@ export class TestBackend implements DataInterface {
     const ret: Waypoint[] = [];
 
     for (const ident of _airportIdentifier) {
-      if (ident === 'NOSUS') {
-        ret.push(WaypointFactory.fromLocation('NOSUS', { lat: 0, long: 0 }));
-      } else if (ident === 'DEBUS') {
-        ret.push(WaypointFactory.fromLocation('DEBUS', { lat: 0, long: 0 }));
+      if (ident in FAKE_WAYPOINTS) {
+        ret.push(FAKE_WAYPOINTS[ident as keyof typeof FAKE_WAYPOINTS]);
       }
     }
 
@@ -123,11 +121,28 @@ export class TestBackend implements DataInterface {
   async getFixes(_idents: string[], _ppos?: Coordinates, _icaoCode?: string, _airportIdent?: string): Promise<Fix[]> {
     return [];
   }
-  async getAirways(_idents: string[]): Promise<Airway[]> {
-    return [];
+  async getAirways(idents: string[]): Promise<Airway[]> {
+    const ret: Airway[] = [];
+
+    for (const ident of idents) {
+      if (ident in FAKE_AIRWAYS) {
+        ret.push(FAKE_AIRWAYS[ident as keyof typeof FAKE_AIRWAYS]);
+      }
+    }
+
+    return ret;
   }
-  async getAirwaysByFix(_ident: string, _icaoCode: string, _airwayIdent?: string): Promise<Airway[]> {
-    return [];
+  async getAirwaysByFix(ident: string, _icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
+    const ret: Airway[] = [];
+
+    for (const [testAirwayIdent, airway] of Object.entries(FAKE_AIRWAYS)) {
+      if (airwayIdent === testAirwayIdent) {
+        // TODO check fixes
+        ret.push(airway);
+      }
+    }
+
+    return ret;
   }
   createNearbyFacilityMonitor(_type: NearbyFacilityType): NearbyFacilityMonitor {
     return {

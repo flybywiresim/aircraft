@@ -198,17 +198,33 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   private handlePendingAirwaysEdit(event: FlightPlanPendingAirwaysEditEvent): void {
-    if (!this.pendingAirways) {
-      throw new Error('[BaseFlightPlan](handlePendingAirwaysEdit) No pending airways exist');
-    }
+    switch (event.type) {
+      case 'create': {
+        if (this.pendingAirways) {
+          throw new Error('[BaseFlightPlan](handlePendingAirwaysEdit) Pending airways already exist');
+        }
 
-    if (!(this.pendingAirways instanceof RemotePendingAirways)) {
-      throw new Error(
-        '[BaseFlightPlan](handlePendingAirwaysEdit) Pending airways exist, but they are not RemotePendingAirways. This should never happen when handlePendingAirwaysEdit is called',
-      );
-    }
+        this.pendingAirways = new RemotePendingAirways();
+        break;
+      }
+      case 'edit': {
+        if (!this.pendingAirways) {
+          throw new Error('[BaseFlightPlan](handlePendingAirwaysEdit) No pending airways exist');
+        }
 
-    this.pendingAirways.elements = event.elements;
+        if (!(this.pendingAirways instanceof RemotePendingAirways)) {
+          throw new Error(
+            '[BaseFlightPlan](handlePendingAirwaysEdit) Pending airways exist, but they are not RemotePendingAirways. This should never happen when handlePendingAirwaysEdit is called',
+          );
+        }
+
+        this.pendingAirways.elements = event.elements;
+        break;
+      }
+      case 'delete': {
+        this.pendingAirways = undefined;
+      }
+    }
   }
 
   destroy() {
@@ -1300,6 +1316,15 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     this.pendingAirways = new LocalPendingAirways(this, revisedLegIndex, leg);
+
+    this.sendEvent('flightPlan.pendingAirwaysEdit', {
+      syncClientID: this.context.syncClientID,
+      planIndex: this.index,
+      batchStack: this.context.batchStack,
+      forAlternate: this instanceof AlternateFlightPlan,
+      type: 'create',
+      elements: this.pendingAirways.elements,
+    });
   }
 
   /**
@@ -1324,6 +1349,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       planIndex: this.index,
       batchStack: this.context.batchStack,
       forAlternate: this instanceof AlternateFlightPlan,
+      type: 'edit',
       elements: this.pendingAirways.elements,
     });
 
@@ -1352,6 +1378,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       planIndex: this.index,
       batchStack: this.context.batchStack,
       forAlternate: this instanceof AlternateFlightPlan,
+      type: 'edit',
       elements: this.pendingAirways.elements,
     });
 
@@ -1379,6 +1406,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       planIndex: this.index,
       batchStack: this.context.batchStack,
       forAlternate: this instanceof AlternateFlightPlan,
+      type: 'delete',
       elements: this.pendingAirways.elements,
     });
   }

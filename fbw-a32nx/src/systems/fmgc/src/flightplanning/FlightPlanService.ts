@@ -190,8 +190,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.delete(FlightPlanIndex.Uplink);
   }
 
-  async reset(): Promise<void> {
+  async reset(destroySubs = false): Promise<void> {
     this.flightPlanManager.deleteAll();
+
+    if (destroySubs) {
+      this.flightPlanManager.destroy();
+    }
 
     this.createFlightPlans();
   }

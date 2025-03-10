@@ -50,6 +50,37 @@ describe('a base flight plan', () => {
     expect(fp.allLegs).toHaveLength(23);
   });
 
+  it('can insert an airway', async ({ onTestFinished }) => {
+    const handlerFn = vi.fn(() => {});
+
+    const sub = testEventBus.getSubscriber<FlightPlanEvents>().on('flightPlan.pendingAirwaysEdit').handle(handlerFn);
+    onTestFinished(() => sub.destroy());
+
+    const fp = emptyFlightPlan();
+    await fp.setOriginAirport('CYYZ');
+    await fp.setDestinationAirport('CYVR');
+
+    const fix = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
+
+    await fp.nextWaypoint(1, fix[0]);
+
+    await fp.startAirwayEntry(2);
+
+    const airway = await NavigationDatabaseService.activeDatabase.searchAirway('A1', fix[0]);
+
+    await fp.continueAirwayEntryViaAirway(airway[0]);
+
+    const terminationFix = await NavigationDatabaseService.activeDatabase.searchWaypoint('DUTIL');
+
+    await fp.continueAirwayEntryDirectToFix(terminationFix[0]);
+
+    await fp.finaliseAirwayEntry();
+
+    expect(fp.legElementAt(2).terminationWaypoint().ident).toBe('NOSUS');
+    expect(fp.legElementAt(3).terminationWaypoint().ident).toBe('DEBUS');
+    expect(fp.legElementAt(4).terminationWaypoint().ident).toBe('DUTIL');
+  });
+
   describe.skip('deleting legs', () => {
     it('without inserting a discontinuity', async () => {
       const fp = emptyFlightPlan();

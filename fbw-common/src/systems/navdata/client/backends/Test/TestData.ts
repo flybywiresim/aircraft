@@ -1,9 +1,10 @@
 import { Airport } from 'navdata/shared/types/Airport';
 import { ElevatedCoordinates } from '../../../shared/types/Common';
-import { AirportSubsectionCode, SectionCode } from '../../../shared/types/SectionCode';
+import { AirportSubsectionCode, EnrouteSubsectionCode, SectionCode } from '../../../shared/types/SectionCode';
 import { Runway, RunwaySurfaceType } from '../../../shared/types/Runway';
-import { WaypointArea } from '../../../shared/types/Waypoint';
+import { Waypoint, WaypointArea } from '../../../shared/types/Waypoint';
 import { Coordinates } from 'msfs-geo';
+import { Airway, AirwayDirection, AirwayLevel } from '../../../shared/types/Airway';
 
 const fakeAirport = (icaoCode: string, ident: string, location: ElevatedCoordinates): Airport => ({
   sectionCode: SectionCode.Airport,
@@ -45,6 +46,24 @@ const fakeRunway = (
   area: WaypointArea.Terminal,
 });
 
+const fakeAirway = (ident: string, fixes: Waypoint[]): Airway => ({
+  databaseId: `AIRWAY-${ident}`,
+  ident,
+  level: AirwayLevel.Both,
+  fixes,
+  direction: AirwayDirection.Either,
+});
+
+const fakeWaypoint = (icaoCode: string, ident: string, location: Coordinates): Waypoint => ({
+  sectionCode: SectionCode.Enroute,
+  subSectionCode: EnrouteSubsectionCode.Waypoints,
+  databaseId: `WAYPOINT-${icaoCode}-${ident}`,
+  icaoCode,
+  area: WaypointArea.Enroute,
+  ident,
+  location,
+});
+
 export const TEST_AIRPORTS: Map<string, { airport: Airport; runways: Runway[] }> = new Map([
   [
     'CYYZ',
@@ -65,3 +84,13 @@ export const TEST_AIRPORTS: Map<string, { airport: Airport; runways: Runway[] }>
     },
   ],
 ]);
+
+export const FAKE_WAYPOINTS = {
+  NOSUS: fakeWaypoint('CY', 'NOSUS', { lat: 0, long: 0 }),
+  DEBUS: fakeWaypoint('CY', 'DEBUS', { lat: 0, long: 0 }),
+  DUTIL: fakeWaypoint('CY', 'DUTIL', { lat: 0, long: 0 }),
+};
+
+export const FAKE_AIRWAYS = {
+  A1: fakeAirway('A1', [FAKE_WAYPOINTS.NOSUS, FAKE_WAYPOINTS.DEBUS, FAKE_WAYPOINTS.DUTIL]),
+};
