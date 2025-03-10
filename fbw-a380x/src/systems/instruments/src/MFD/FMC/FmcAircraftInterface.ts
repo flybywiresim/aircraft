@@ -520,7 +520,8 @@ export class FmcAircraftInterface {
     const inRange = this.shouldTransmitMinimums(distanceToDestination);
 
     const mda = this.fmgc.data.approachBaroMinimum.get();
-    const dh = this.fmgc.data.approachRadioMinimum.get();
+    const dh =
+      typeof this.fmgc.data.approachRadioMinimum.get() === 'string' ? null : this.fmgc.data.approachRadioMinimum.get();
 
     const mdaValid = inRange && mda !== null;
     const dhValid = !mdaValid && inRange && typeof dh === 'number';
