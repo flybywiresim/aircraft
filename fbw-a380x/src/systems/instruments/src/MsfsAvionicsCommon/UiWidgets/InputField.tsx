@@ -24,10 +24,6 @@ export enum InteractionMode {
 
 export interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
   dataEntryFormat: DataEntryFormat<T, U>;
-}
-
-export interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends ComponentProps {
-  dataEntryFormat: DataEntryFormat<T, U>;
   /** Renders empty values with orange rectangles */
   mandatory?: Subscribable<boolean>;
   /** If inactive, will be rendered as static value (green text) */
