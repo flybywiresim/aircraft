@@ -631,6 +631,7 @@
     "Real": "Gerçek",
     "Realism": {
       "AdirsAlignTime": "ADIRS Hizalama Süresi",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Kontrol listelerini Otomatik Doldur",
       "BoardingTime": "Biniş Süresi",
       "DmcSelfTestTime": "DMC Self Test Süresi",

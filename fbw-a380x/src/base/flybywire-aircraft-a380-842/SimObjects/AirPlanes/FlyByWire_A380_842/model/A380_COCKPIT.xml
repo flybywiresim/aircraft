@@ -35,6 +35,7 @@
         <Include RelativeFile="behaviour\overhead\cargo-air-cond.xml" />
         <Include RelativeFile="behaviour\overhead\fire.xml" />
         <Include RelativeFile="behaviour\overhead\flight-control.xml" />
+        <Include RelativeFile="behaviour\overhead\reset.xml" />
         <Include RelativeFile="behaviour\pedestal\pedestal-inputs.xml" />
         <Include RelativeFile="behaviour\door_animations.xml" />
         <Include RelativeFile="behaviour\efis-cp.xml" />
@@ -356,14 +357,26 @@
                 </Component>
             </Component>
 
-            <!-- FIXME I don't know the bus for this yet -->
-            <!-- FIXME wrong node -->
+            <!-- FIXME backlight missing -->
             <!-- OIT_L -->
             <Component ID="OITL">
                 <Component ID="SCREEN_OITL">
-                    <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
-                        <NODE_ID>EFB</NODE_ID>
-                        <EMISSIVE_CODE>0.75</EMISSIVE_CODE>
+                    <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                        <NODE_ID>SCREEN_OIT_LEFT</NODE_ID>
+                        <POTENTIOMETER>81</POTENTIOMETER>
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+                    </UseTemplate>
+                </Component>
+            </Component>
+
+            <!-- FIXME backlight missing -->
+            <!-- OIT_R -->
+            <Component ID="OITR">
+                <Component ID="SCREEN_OITR">
+                    <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                        <NODE_ID>SCREEN_OIT_RIGHT</NODE_ID>
+                        <POTENTIOMETER>82</POTENTIOMETER>
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
                 </Component>
             </Component>
@@ -387,7 +400,6 @@
         </Component>
 
         <!-- EFB -->
-
         <Component ID="EFB">
             <Component ID="SCREEN_EFB" Node="SCREEN_EFB">
                 <DefaultTemplateParameters>
@@ -1244,10 +1256,17 @@
                     <!-- CPT MFD POTENTIOMETER -->
                     <UseTemplate Name="FBW_Stepless_Potentiometer">
                         <NODE_ID>KNOB_EFIS_CS_MFD</NODE_ID>
-                        <PART_ID>ND_Brightness</PART_ID>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_MFD_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_MFD_INCREASE</ANIMTIP_1>
                         <POTENTIOMETER>98</POTENTIOMETER>
+                    </UseTemplate>
+
+                    <!-- CPT OIT POTENTIOMETER -->
+                    <UseTemplate Name="FBW_Stepless_Potentiometer">
+                        <NODE_ID>KNOB_EFIS_CS_OIT</NODE_ID>
+                        <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_OIT_DECREASE</ANIMTIP_0>
+                        <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_OIT_INCREASE</ANIMTIP_1>
+                        <POTENTIOMETER>81</POTENTIOMETER>
                     </UseTemplate>
                 </Component>
 
@@ -1390,6 +1409,15 @@
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_MFD_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_MFD_INCREASE</ANIMTIP_1>
                         <POTENTIOMETER>99</POTENTIOMETER>
+                    </UseTemplate>
+
+                    <!-- CPT OIT POTENTIOMETER -->
+                    <UseTemplate Name="FBW_Stepless_Potentiometer">
+                        <NODE_ID>KNOB_EFIS_FO_OIT</NODE_ID>
+                        <PART_ID>OIT_Brightness_FO</PART_ID>
+                        <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_OIT_DECREASE</ANIMTIP_0>
+                        <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_OIT_INCREASE</ANIMTIP_1>
+                        <POTENTIOMETER>82</POTENTIOMETER>
                     </UseTemplate>
                 </Component>
 
@@ -4977,6 +5005,27 @@
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                    </UseTemplate>
+                </Component>
+
+                <Component ID="Overhead_Reset_Panel">
+                <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>ARPT_NAV</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FMC_A</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FMC_B</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FMC_C</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FWS1</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>FWS2</NAME>
                     </UseTemplate>
                 </Component>
             </Component>

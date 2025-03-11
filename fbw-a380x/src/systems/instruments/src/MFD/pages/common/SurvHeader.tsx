@@ -1,14 +1,14 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
+import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 
 /*
  * Complete header for the SURV system
  */
 export class SurvHeader extends AbstractHeader {
-  private controlsIsSelected = Subject.create(false);
+  private readonly controlsIsSelected = Subject.create(false);
 
-  private statSwitchIsSelected = Subject.create(false);
+  private readonly statSwitchIsSelected = Subject.create(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

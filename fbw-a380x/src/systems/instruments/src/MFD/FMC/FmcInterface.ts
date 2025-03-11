@@ -1,7 +1,6 @@
 import { FmsErrorType } from '@fmgc/FmsError';
-import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
-import { DataManager, FlightPlanIndex, FlightPlanService, GuidanceController } from '@fmgc/index';
+import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { ArraySubject, Subject } from '@microsoft/msfs-sdk';
@@ -11,6 +10,10 @@ import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { EfisSide, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { DataManager } from '@fmgc/flightplanning/DataManager';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export enum FmcOperatingModes {
   Master,
@@ -34,7 +37,7 @@ export interface FlightPhaseManagerProxyInterface {
  * Handles requests inside each FlightManagementComputer (FMC).
  * DisplayInterface shouldn't be here, but WaypointEntryUtils requires on parameter with both DisplayInterface and DataInterface
  */
-export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInterface, DisplayInterface {
+export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataInterface, FmsDisplayInterface {
   /**
    * Which operation mode is FMC in? Can be master, slave or standby.
    */
@@ -44,8 +47,8 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
   /**
    * Mfd reference, used for navigating to pages and opening prompts
    */
-  get mfdReference(): (DisplayInterface & MfdDisplayInterface) | null;
-  set mfdReference(value: DisplayInterface & MfdDisplayInterface);
+  get mfdReference(): (FmsDisplayInterface & MfdDisplayInterface) | null;
+  set mfdReference(value: FmsDisplayInterface & MfdDisplayInterface);
 
   /**
    * FlightPlanService interface
@@ -88,17 +91,17 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
   /**
    * Returns leg index (in the flight plan) of currently revised waypoint
    */
-  get revisedWaypointIndex(): Subject<number | null>;
+  get revisedLegIndex(): Subject<number | null>;
 
   /**
    * Returns flight plan index of currently revised waypoint
    */
-  get revisedWaypointPlanIndex(): Subject<FlightPlanIndex | null>;
+  get revisedLegPlanIndex(): Subject<FlightPlanIndex | null>;
 
   /**
    * Returns, whether currently revised waypoint is part of ALTN flight plan
    */
-  get revisedWaypointIsAltn(): Subject<boolean | null>;
+  get revisedLegIsAltn(): Subject<boolean | null>;
 
   /**
    * Returns, whether number 2&3 engines were started
@@ -150,6 +153,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
 
   /** in kilograms */
   getTripFuel(): number | null;
+
+  /** in kilograms */
+  getExtraFuel(): number | null;
 
   /** as flight level */
   getRecMaxFlightLevel(): number | null;
@@ -206,4 +212,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, DataInte
   ): void;
 
   clearCheckSpeedModeMessage(): void;
+
+  reset(): void;
+
+  /** Clean up all subscriptions */
+  destroy(): void;
 }

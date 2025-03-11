@@ -9,24 +9,14 @@ import { Position } from '@turf/turf';
  * Transmitted from FMS to OANS
  */
 export interface FmsOansData {
-  /** (FMS -> OANS) Selected origin airport. */
-  fmsOrigin: string;
-  /** (FMS -> OANS) Selected destination airport. */
-  fmsDestination: string;
-  /** (FMS -> OANS) Selected alternate airport. */
-  fmsAlternate: string;
-  /** (FMS -> OANS) Identifier of departure runway. */
-  fmsDepartureRunway: string;
-  /** (FMS -> OANS) Identifier of landing runway selected through FMS. */
-  fmsLandingRunway: string;
   /** Identifier of landing runway selected for BTV through OANS. */
-  oansSelectedLandingRunway: string;
+  oansSelectedLandingRunway: string | null;
   /** Arinc429: Length of landing runway selected for BTV through OANS, in meters. */
   oansSelectedLandingRunwayLength: number;
   /** Arinc429: Bearing of landing runway selected for BTV through OANS, in degrees. */
   oansSelectedLandingRunwayBearing: number;
   /** Identifier of exit selected for BTV through OANS. */
-  oansSelectedExit: string;
+  oansSelectedExit: string | null;
   /** (OANS -> ND) QFU to be displayed in flashing RWY AHEAD warning in ND */
   ndRwyAheadQfu: string;
   /** (OANS -> BTV) Arinc429: Requested stopping distance (through OANS), in meters. */

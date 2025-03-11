@@ -1,4 +1,3 @@
-import { A380Failure } from '@flybywiresim/failures';
 import {
   ClockEvents,
   ComponentProps,
@@ -103,8 +102,6 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.failuresConsumer.register(getDisplayIndex() === 1 ? A380Failure.LeftPfdDisplay : A380Failure.RightPfdDisplay);
-
     this.sub.on('headingAr').handle((h) => {
       if (this.headingFailed.get() !== h.isNormalOperation()) {
         this.headingFailed.set(!h.isNormalOperation());
@@ -124,11 +121,6 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
       .atFrequency(1)
       .handle((_t) => {
         this.failuresConsumer.update();
-        this.displayFailed.set(
-          this.failuresConsumer.isActive(
-            getDisplayIndex() === 1 ? A380Failure.LeftPfdDisplay : A380Failure.RightPfdDisplay,
-          ),
-        );
         if (
           !this.isAttExcessive.get() &&
           ((this.pitch.isNormalOperation() && (this.pitch.value > 25 || this.pitch.value < -13)) ||
@@ -175,7 +167,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     return (
       <CdsDisplayUnit
         bus={this.props.bus}
-        displayUnitId={DisplayUnitID.CaptPfd}
+        displayUnitId={getDisplayIndex() === 1 ? DisplayUnitID.CaptPfd : DisplayUnitID.FoPfd}
         test={Subject.create(-1)}
         failed={Subject.create(false)}
       >

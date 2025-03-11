@@ -1,11 +1,11 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, FlightPlanService } from '@fmgc/index';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightArea } from './FlightArea';
-import { ConsumerValue } from '@microsoft/msfs-sdk';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+import { FlightPlanService } from '../flightplanning/FlightPlanService';
 
 const rnpDefaults: Record<FlightArea, number> = {
   [FlightArea.Takeoff]: 1,

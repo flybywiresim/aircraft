@@ -12,6 +12,8 @@ import {
   IlsNavaid,
   MsfsBackend,
   NdbNavaid,
+  ProcedureLeg,
+  TestBackend,
   VhfNavaid,
   Waypoint,
 } from '@flybywiresim/fbw-sdk';
@@ -22,6 +24,7 @@ import {
 export enum NavigationDatabaseBackend {
   Msfs,
   Navigraph,
+  Test,
 }
 
 /**
@@ -34,9 +37,11 @@ export class NavigationDatabase {
 
   constructor(backend: NavigationDatabaseBackend) {
     if (backend === NavigationDatabaseBackend.Msfs) {
-      this.backendDatabase = new Database(new MsfsBackend() as any);
+      this.backendDatabase = new Database(new MsfsBackend());
+    } else if (backend === NavigationDatabaseBackend.Test) {
+      this.backendDatabase = new Database(new TestBackend());
     } else {
-      throw new Error("[FMS/DB] Cannot instantiate NavigationDatabase with backend other than 'Msfs'");
+      throw new Error("[FMS/DB] Cannot instantiate NavigationDatabase with backend other than 'Msfs' or 'Test'");
     }
   }
 
@@ -48,7 +53,7 @@ export class NavigationDatabase {
     return this.backendDatabase.getWaypoints([ident]);
   }
 
-  async searchAllFix(ident: string): Promise<(Waypoint | VhfNavaid | NdbNavaid)[]> {
+  async searchAllFix(ident: string): Promise<Fix[]> {
     return [
       ...(await this.backendDatabase.getWaypoints([ident])),
       ...(await this.backendDatabase.getNavaids([ident])),
@@ -81,6 +86,10 @@ export class NavigationDatabase {
 
     // This does not work in the MSFS backend
     return this.backendDatabase.getAirways([ident]);
+  }
+
+  public getHolds(fixIdentifier: string, airportIdentifier: string): Promise<ProcedureLeg[]> {
+    return this.backendDatabase.getHolds(fixIdentifier, airportIdentifier);
   }
 
   public getDatabaseIdent(): Promise<DatabaseIdent> {
