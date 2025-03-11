@@ -1,3 +1,4 @@
+import { describe, expect, test, vitest } from 'vitest';
 import { FailuresConsumer } from './failures-consumer';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 
@@ -24,7 +25,7 @@ describe('FailuresConsumer', () => {
   describe('calls the callback', () => {
     test('when the failure is activated', async () => {
       const c = consumer();
-      const callback = jest.fn();
+      const callback = vitest.fn();
       c.register(1, callback);
 
       await SimVar.SetSimVarValue(activateSimVarName, 'number', 1);
@@ -36,7 +37,7 @@ describe('FailuresConsumer', () => {
 
     test('when the failure is deactivated', async () => {
       const c = consumer();
-      const callback = jest.fn();
+      const callback = vitest.fn();
       c.register(1, callback);
 
       await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 1);
