@@ -15,7 +15,6 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import './style.scss';
 
 export enum InteractionMode {
   Touchscreen,
