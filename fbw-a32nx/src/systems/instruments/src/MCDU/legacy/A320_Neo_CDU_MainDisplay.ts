@@ -897,11 +897,11 @@ export class A320_Neo_CDU_MainDisplay
     this.arrowHorizontal.style.opacity = left || right ? '1' : '0';
     this.arrowVertical.style.opacity = up || down ? '1' : '0';
     if (up && down) {
-      this.arrowVertical.innerHTML = '↓↑\xa0';
+      this.arrowVertical.innerHTML = '↑↓\xa0';
     } else if (up) {
-      this.arrowVertical.innerHTML = '↑\xa0';
+      this.arrowVertical.innerHTML = '↑\xa0\xa0';
     } else {
-      this.arrowVertical.innerHTML = '↓\xa0\xa0';
+      this.arrowVertical.innerHTML = '↓\xa0';
     }
     if (left && right) {
       this.arrowHorizontal.innerHTML = '←→\xa0';
