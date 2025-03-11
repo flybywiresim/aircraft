@@ -47,7 +47,7 @@ export class CDUAvailableDeparturesPage {
 
     const showEosid = selectedRunway && sidSelection;
 
-    const availableRunways = [...targetPlan.availableOriginRunways];
+    const availableRunways = [...targetPlan.availableOriginRunways].sort((a, b) => a.ident.localeCompare(b.ident));
     let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident)) as (
       | Departure
       | (typeof Labels)['NO_SID']
