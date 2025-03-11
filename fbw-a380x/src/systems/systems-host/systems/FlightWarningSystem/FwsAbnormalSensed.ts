@@ -3721,6 +3721,49 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
+    341800020: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: this.fws.terrSys1Failed,
+      notActiveWhenFaults: ['341800022'],
+      whichItemsToShow: () => [
+        !this.fws.terrSys2Failed.get(),
+        this.fws.terrSys2Failed.get(),
+        this.fws.terrSys2Failed.get(),
+      ],
+      whichItemsChecked: () => [this.fws.tawsWxrSelected.get() === 2, false, false],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800021: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: this.fws.terrSys2Failed,
+      notActiveWhenFaults: ['341800022'],
+      whichItemsToShow: () => [
+        !this.fws.terrSys1Failed.get(),
+        this.fws.terrSys1Failed.get(),
+        this.fws.terrSys1Failed.get(),
+      ],
+      whichItemsChecked: () => [this.fws.tawsWxrSelected.get() === 1, false, false],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800022: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.terrSys1Failed,
+        this.fws.terrSys2Failed,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        !this.fws.terrSys1Failed.get(),
+        this.fws.terrSys1Failed.get(),
+        this.fws.terrSys1Failed.get(),
+      ],
+      whichItemsChecked: () => [this.fws.tawsWxrSelected.get() === 1, false, false],
+      failure: 2,
+      sysPage: -1,
+    },
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL
