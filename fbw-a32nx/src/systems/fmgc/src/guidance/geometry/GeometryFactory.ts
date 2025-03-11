@@ -49,15 +49,14 @@ export namespace GeometryFactory {
         continue;
       }
 
-      const magVar = getMagCorrection(i, plan);
-
       let nextGeometryLeg: Leg;
       if (nextElement?.isDiscontinuity === false && !nextElement.isXI()) {
         nextGeometryLeg = isXiIfXf(element, nextElement, nextNextElement)
-          ? geometryLegFromFlightPlanLeg(magVar, nextElement, nextNextElement)
-          : geometryLegFromFlightPlanLeg(magVar, element, nextElement);
+          ? geometryLegFromFlightPlanLeg(getMagCorrection(i + 2, plan), nextElement, nextNextElement)
+          : geometryLegFromFlightPlanLeg(getMagCorrection(i + 1, plan), element, nextElement);
       }
 
+      const magVar = getMagCorrection(i, plan);
       const geometryLeg = geometryLegFromFlightPlanLeg(magVar, prevElement, element, nextGeometryLeg);
 
       if (isXiIfXf(prevElement, element, nextElement)) {
@@ -99,15 +98,14 @@ export namespace GeometryFactory {
         continue;
       }
 
-      const magVar = planLeg.isDiscontinuity === false ? getMagCorrection(i, flightPlan) : 0;
-
       let nextLeg: Leg = undefined;
       if (nextPlanLeg?.isDiscontinuity === false && !nextPlanLeg.isXI()) {
         nextLeg = isXiIfXf(planLeg, nextPlanLeg, nextNextPlanLeg)
-          ? geometryLegFromFlightPlanLeg(magVar, nextPlanLeg, nextNextPlanLeg)
-          : geometryLegFromFlightPlanLeg(magVar, planLeg, nextPlanLeg);
+          ? geometryLegFromFlightPlanLeg(getMagCorrection(i + 2, flightPlan), nextPlanLeg, nextNextPlanLeg)
+          : geometryLegFromFlightPlanLeg(getMagCorrection(i + 1, flightPlan), planLeg, nextPlanLeg);
       }
 
+      const magVar = planLeg.isDiscontinuity === false ? getMagCorrection(i, flightPlan) : 0;
       const newLeg =
         planLeg?.isDiscontinuity === false
           ? geometryLegFromFlightPlanLeg(magVar, prevPlanLeg, planLeg, nextLeg)
@@ -227,8 +225,8 @@ function geometryLegFromFlightPlanLeg(
   const metadata = legMetadataFromFlightPlanLeg(flightPlanLeg);
 
   const waypoint = flightPlanLeg.terminationWaypoint();
-  const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
   const trueCourse = A32NX_Util.magneticToTrue(flightPlanLeg.definition.magneticCourse, magVar);
+  const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
   const length = flightPlanLeg.definition.length;
 
   switch (legType) {
@@ -311,7 +309,6 @@ function geometryLegFromFlightPlanLeg(
       }
 
       const prevWaypoint = prev.terminationWaypoint();
-      const waypoint = flightPlanLeg.terminationWaypoint();
       const center = flightPlanLeg.definition.arcCentreFix;
 
       if (legType === LegType.RF) {
