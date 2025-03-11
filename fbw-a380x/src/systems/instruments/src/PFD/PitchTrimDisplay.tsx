@@ -50,7 +50,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   );
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
-  private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((it) => (it > 9 ? 'hidden' : 'visible'));
+  private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((it) => (it > 9 ? 'hidden' : 'inherit'));
 
   private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(1), 0);
   private readonly cgPercentText = this.cgPercent.map((it) => it.toFixed(1));
@@ -140,24 +140,24 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
 
     switch (this.cgStatus.get()) {
       case PitchTrimStatus.AfterLanding:
-        this.cgGroup.instance.style.visibility = 'visible';
+        this.cgGroup.instance.style.visibility = 'inherit';
         this.outOfRangeGroup.instance.style.visibility = 'hidden';
         this.cgValue.instance.classList.add('White');
         this.arrowRef.instance.style.fill = 'white';
         break;
       case PitchTrimStatus.OutOfRange:
         this.cgGroup.instance.style.visibility = 'hidden';
-        this.outOfRangeGroup.instance.style.visibility = 'visible';
+        this.outOfRangeGroup.instance.style.visibility = 'inherit';
         this.arrowRef.instance.style.fill = 'red';
         break;
       case PitchTrimStatus.AtTarget:
-        this.cgGroup.instance.style.visibility = 'visible';
+        this.cgGroup.instance.style.visibility = 'inherit';
         this.outOfRangeGroup.instance.style.visibility = 'hidden';
         this.cgValue.instance.classList.add('Green');
         this.arrowRef.instance.style.fill = '#00ff00';
         break;
       case PitchTrimStatus.NotAtTarget:
-        this.cgGroup.instance.style.visibility = 'visible';
+        this.cgGroup.instance.style.visibility = 'inherit';
         this.outOfRangeGroup.instance.style.visibility = 'hidden';
         this.cgValue.instance.classList.add('Amber');
         this.arrowRef.instance.style.fill = '#e68000';
