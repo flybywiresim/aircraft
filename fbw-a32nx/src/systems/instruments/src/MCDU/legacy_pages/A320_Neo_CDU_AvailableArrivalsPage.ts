@@ -56,7 +56,7 @@ const ApproachTypeOrder = Object.freeze({
 const ArrivalPagination = Object.freeze({
   ARR_PAGE: 3,
   TRNS_PAGE: 2,
-  VIA_PAGE: 3,
+  VIA_PAGE: 4,
 });
 
 const Labels = Object.freeze({
@@ -570,8 +570,6 @@ export class CDUAvailableArrivalsPage {
     const isTemporary = targetPlan.index === FlightPlanIndex.Temporary;
     const planColor = isTemporary ? 'yellow' : 'green';
 
-    const availableApproachVias = targetPlan.availableApproachVias;
-
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AvailableArrivalsPageVias;
     let selectedApproachCell = '------';
@@ -609,19 +607,69 @@ export class CDUAvailableArrivalsPage {
       selectedStarCellColor = planColor;
     }
 
-    const rows = [[''], [''], [''], [''], [''], ['']];
+    const rows = [[''], [''], [''], [''], [''], [''], [''], ['']];
+
+    const starFixes = [];
+    if (targetPlan.arrivalEnrouteTransition?.legs.length > 0) {
+      for (const leg of targetPlan.arrivalEnrouteTransition.legs) {
+        if (leg.waypoint) {
+          starFixes.push(leg.waypoint.databaseId);
+        }
+      }
+    }
+    if (targetPlan.arrival?.commonLegs.length > 0) {
+      for (const leg of targetPlan.arrival.commonLegs) {
+        if (leg.waypoint) {
+          starFixes.push(leg.waypoint.databaseId);
+        }
+      }
+    }
+    if (targetPlan.arrivalRunwayTransition?.legs.length > 0) {
+      for (const leg of targetPlan.arrivalRunwayTransition.legs) {
+        if (leg.waypoint) {
+          starFixes.push(leg.waypoint.databaseId);
+        }
+      }
+    }
+
+    const shouldFilterVias = starFixes.length > 0;
+    const vias: { ident: string; databaseId: string | null; isOtherVia: boolean }[] =
+      targetPlan.availableApproachVias.map((t) => ({
+        ident: t.ident,
+        databaseId: t.databaseId,
+        isOtherVia: shouldFilterVias && !starFixes.find((id) => t.legs[0].waypoint?.databaseId === id),
+      }));
+    vias.unshift({
+      ident: 'NO VIA',
+      databaseId: null,
+      isOtherVia: false,
+    });
+
+    if (shouldFilterVias) {
+      vias.sort((a, b) => (a.isOtherVia && !b.isOtherVia ? 1 : !a.isOtherVia && b.isOtherVia ? -1 : 0));
+    }
+    const firstOtherViaIndex = shouldFilterVias ? vias.findIndex((v) => v.isOtherVia) : -1;
 
     for (let i = 0; i < ArrivalPagination.VIA_PAGE; i++) {
       const index = i + pageCurrent * ArrivalPagination.VIA_PAGE;
-      const via = availableApproachVias[index];
 
-      if (selectedApproach && via) {
-        const isSelected = selectedApproachVia && via.databaseId === selectedApproachVia.databaseId;
+      const via = vias[index];
+      if (via) {
+        const isFirstAvailableVia = i === 0 && !via.isOtherVia;
+        const isFirstOtherVia = index === firstOtherViaIndex || (i === 0 && via.isOtherVia);
+        const isSelected =
+          (via.databaseId === null && selectedApproachVia === null) ||
+          via.databaseId === selectedApproachVia?.databaseId;
         const color = isSelected && !isTemporary ? 'green' : 'cyan';
 
+        if (isFirstAvailableVia) {
+          rows[2 * i][0] = 'APPR VIAS AVAILABLE';
+        } else if (isFirstOtherVia) {
+          rows[2 * i][0] = '----OTHER APPR VIAS-----';
+        }
         rows[2 * i + 1][0] = `{${color}}${!isSelected ? '{' : '{sp}'}${via.ident}{end}`;
 
-        mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
+        mcdu.onLeftInput[i + 1] = async (_, scratchpadCallback) => {
           // Clicking the already selected via is not allowed
           if (!isSelected) {
             try {
@@ -646,32 +694,10 @@ export class CDUAvailableArrivalsPage {
       }
     }
 
-    let bottomLine = ['<RETURN'];
-
-    if (mcdu.flightPlanService.hasTemporary) {
-      bottomLine = ['{ERASE[color]amber', 'INSERT*[color]amber'];
-
-      mcdu.onLeftInput[5] = async () => {
-        mcdu.eraseTemporaryFlightPlan(() => {
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-        });
-      };
-
-      mcdu.onRightInput[5] = async () => {
-        mcdu.insertTemporaryFlightPlan(() => {
-          mcdu.updateTowerHeadwind();
-          mcdu.updateConstraints();
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-        });
-      };
-    } else {
-      mcdu.onLeftInput[5] = () => {
-        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-      };
-    }
-
-    const isNoViaSelected = selectedApproachVia === null;
-    const color = isNoViaSelected && !isTemporary ? 'green' : 'cyan';
+    // <RETURN
+    mcdu.onLeftInput[5] = () => {
+      CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+    };
 
     mcdu.setTemplate([
       ['APPROACH VIAS'],
@@ -680,8 +706,6 @@ export class CDUAvailableArrivalsPage {
         `{${selectedApproachCellColor}}${selectedApproachCell.padEnd(10)}{end}{${selectedViasCellColor}}${selectedViasCell}{end}`,
         selectedStarCell + '[color]' + selectedStarCellColor,
       ],
-      ['APPR VIAS'],
-      [`${!isNoViaSelected ? '{' : '{sp}'}${Labels.NO_VIA}[color]${color}`],
       rows[0],
       rows[1],
       rows[2],
@@ -689,27 +713,15 @@ export class CDUAvailableArrivalsPage {
       rows[4],
       rows[5],
       rows[6],
-      bottomLine,
+      rows[7],
+      rows[8],
+      ['<RETURN'],
     ]);
-    mcdu.onLeftInput[1] = async () => {
-      try {
-        await mcdu.flightPlanService.setApproachVia(null, forPlan, inAlternate);
 
-        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
-      } catch (e) {
-        console.error(e);
-        mcdu.logTroubleshootingError(e);
-        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-
-        mcdu.eraseTemporaryFlightPlan(() => {
-          CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, false, forPlan, inAlternate);
-        });
-      }
-    };
     let up = false;
     let down = false;
 
-    if (pageCurrent < Math.ceil(selectedApproach.transitions.length / ArrivalPagination.VIA_PAGE) - 1) {
+    if (pageCurrent < Math.ceil(vias.length / ArrivalPagination.VIA_PAGE) - 1) {
       mcdu.onUp = () => {
         pageCurrent++;
         if (pageCurrent < 0) {
