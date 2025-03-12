@@ -2624,7 +2624,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               }
                               dataHandlerDuringValidation={async (v) => {
                                 if (!this.props.fmcService.master?.fmgc.data.approachBaroMinimum.get()) {
-                                  if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH' || v === null) {
+                                  if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH') {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -3);
+                                  } else if (v === null) {
                                     SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
                                   } else if (v === undefined) {
                                     SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
