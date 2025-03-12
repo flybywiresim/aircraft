@@ -172,6 +172,7 @@
 1. [A380X/ND] Fixed active leg label to be left aligned - @MrJigs7 (MrJigs)
 1. [A32NX/FMS] Sort runways by identifier in the runway selection page - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Change flightplan uplink & initialize weights message logic - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Fixed approach name format for suffixed approaches on the MCDU pages - @tracernz (Mike)
 1. [A32NX/FMS] Added differentiation between compatible and incompatible approach vias (H4) - @tracernz (Mike)
 1. [A32NX/FMS] Removed insert/erase prompts on approach via page - @tracernz (Mike)
 
