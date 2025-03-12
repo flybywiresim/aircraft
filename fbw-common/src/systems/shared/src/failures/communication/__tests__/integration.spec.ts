@@ -1,3 +1,4 @@
+import { test, expect, vitest } from 'vitest';
 import { QueuedSimVarReader, SimVarReaderWriter, TransactionReader, QueuedSimVarWriter, TransactionWriter } from '..';
 import { flushPromises } from '../../test-functions';
 
@@ -5,12 +6,12 @@ test('read/write', async () => {
   const failureIdentifier = 1;
 
   const w = writer(failuresToFailableActivateSimVarName);
-  const writeCallback = jest.fn();
+  const writeCallback = vitest.fn();
   w.write(failureIdentifier).then(writeCallback);
   w.update();
 
   const r = reader(failuresToFailableActivateSimVarName);
-  const readCallback = jest.fn();
+  const readCallback = vitest.fn();
   r.register(failureIdentifier, readCallback);
   r.update();
 
@@ -28,10 +29,10 @@ test('transaction read/write', async () => {
   const failureIdentifier = 1;
 
   const tw = transactionWriter(failuresToOrchestratorActivateSimVarName, failuresToOrchestratorTransactionSimVarName);
-  const writeCallback = jest.fn();
+  const writeCallback = vitest.fn();
 
   const tr = transactionReader(failuresToOrchestratorActivateSimVarName, failuresToOrchestratorTransactionSimVarName);
-  const readCallback = jest.fn();
+  const readCallback = vitest.fn();
   tr.register(failureIdentifier, readCallback);
 
   tw.write(failureIdentifier).then(writeCallback);

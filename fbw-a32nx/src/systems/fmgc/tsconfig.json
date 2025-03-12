@@ -1,6 +1,5 @@
 {
   "extends": "../tsconfig.json",
-  "exclude": ["**/*.spec.ts", "**/test/*.ts"],
   "compilerOptions": {
     "paths": {
       "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],
