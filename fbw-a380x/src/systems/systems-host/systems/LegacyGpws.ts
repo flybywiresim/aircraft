@@ -277,7 +277,7 @@ export class LegacyGpws {
     this.GPWSComputeLightsAndCallouts();
     this.gpwsUpdateDiscreteWords();
 
-    if (mda !== 0 || (dh !== -1 && dh !== -2 && phase === FmgcFlightPhase.Approach)) {
+    if (mda !== 0 || (dh !== -1 && dh !== -2 && dh !== -3 && phase === FmgcFlightPhase.Approach)) {
       let minimumsDA; // MDA or DH
       let minimumsIA; // radio or baro altitude
       if (dh >= 0) {

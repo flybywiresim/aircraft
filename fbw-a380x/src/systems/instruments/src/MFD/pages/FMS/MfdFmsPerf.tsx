@@ -13,6 +13,7 @@ import './MfdFmsPerf.scss';
 import {
   AltitudeFormat,
   AltitudeOrFlightLevelFormat,
+  RadioMinimumFormat,
   CostIndexFormat,
   DescentRateFormat,
   FlightLevelFormat,
@@ -2588,12 +2589,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div style="display: flex; flex-direction: row;">
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">BARO</span>
                         <InputField<number>
-                          dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                          dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                           dataHandlerDuringValidation={async (v) => {
-                            SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                            if (!this.props.fmcService.master?.fmgc.data.approachRadioMinimum.get()) {
+                              if (v === null) {
+                                SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
+                              } else {
+                                SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
+                              }
+                            }
                           }}
                           mandatory={Subject.create(false)}
-                          value={this.props.fmcService.master.fmgc.data.approachBaroMinimum}
+                          value={this.props.fmcService.master?.fmgc.data.approachBaroMinimum}
+                          onModified={(v) => {
+                            if (!this.props.fmcService.master?.fmgc.data.approachRadioMinimum.get()) {
+                              this.props.fmcService.master?.fmgc.data.approachBaroMinimum.set(v);
+                            }
+                          }}
                           containerStyle="width: 150px;"
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2606,19 +2618,34 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <ConditionalComponent
                           condition={this.precisionApproachSelected}
                           componentIfTrue={
-                            <InputField<number>
-                              dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                            <InputField<string | number>
+                              dataEntryFormat={
+                                new RadioMinimumFormat(Subject.create(1), Subject.create(maxCertifiedAlt))
+                              }
                               dataHandlerDuringValidation={async (v) => {
-                                if (v === undefined) {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                                } else if (v === null) {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
-                                } else {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
+                                if (!this.props.fmcService.master?.fmgc.data.approachBaroMinimum.get()) {
+                                  if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH') {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -3);
+                                  } else if (v === null) {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
+                                  } else if (v === undefined) {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
+                                  } else {
+                                    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
+                                  }
                                 }
                               }}
                               mandatory={Subject.create(false)}
-                              value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
+                              value={this.props.fmcService.master?.fmgc.data.approachRadioMinimum}
+                              onModified={(v) => {
+                                if (!this.props.fmcService.master?.fmgc.data.approachBaroMinimum.get()) {
+                                  if (v === 'NONE' || v === 'NO' || v === 'NO DH' || v === 'NODH' || v === null) {
+                                    this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(v);
+                                  } else {
+                                    this.props.fmcService.master?.fmgc.data.approachRadioMinimum.set(Number(v));
+                                  }
+                                }
+                              }}
                               containerStyle="width: 150px;"
                               alignText="flex-end"
                               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}

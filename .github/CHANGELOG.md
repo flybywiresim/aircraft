@@ -173,6 +173,7 @@
 1. [A32NX/FMS] Sort runways by identifier in the runway selection page - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Change flightplan uplink & initialize weights message logic - @BravoMike99 (bruno_pt99)
 1. [A32NX/FMS] Fixed approach name format for suffixed approaches on the MCDU pages - @tracernz (Mike)
+1. [A380X/MFD] Fix PERF APPR minimums input logic - @Pruznak (Pruznak)
 
 ## 0.12.0
 

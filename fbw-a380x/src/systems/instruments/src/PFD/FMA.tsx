@@ -1671,13 +1671,13 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
       .handle((dh) => {
         let fontSize = 'FontSmallest';
 
-        if (dh !== -1 && dh !== -2) {
+        if (dh !== -1 && dh !== -2 && dh !== -3) {
           const DHText = Math.round(dh).toString().padStart(4, ' ');
 
           this.textRef.instance.innerHTML = `
                         <tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>
                     `;
-        } else if (dh === -2) {
+        } else if (dh === -2 || dh === -3) {
           this.textRef.instance.innerHTML = '<tspan>NO DH</tspan>';
           fontSize = 'FontMedium';
         } else {
