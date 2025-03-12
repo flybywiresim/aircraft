@@ -76,7 +76,7 @@ export class NearbyFacilities {
       this.nearbyNdbNavaids = await database.getNearbyNdbNavaids(this.ppos, this.radius, this.limit);
       this.nearbyVhfNavaids = await database.getNearbyVhfNavaids(this.ppos, this.radius, this.limit);
       // FIXME rename this method in navdb
-      this.nearbyWaypoints = await database.getWaypointsInRange(this.ppos, this.radius, this.limit);
+      this.nearbyWaypoints = []; //await database.getWaypointsInRange(this.ppos, this.radius, this.limit);
     }
   }
 

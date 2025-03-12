@@ -518,7 +518,7 @@ export class MsfsBackend implements DataInterface {
   ): Promise<readonly Waypoint[]> {
     await Wait.awaitCondition(() => this.waypointSearchSession !== undefined);
 
-    return this.searchForFacilities(FacilitySearchType.Intersection, center, range, limit);
+    return Promise.resolve([]); //this.searchForFacilities(FacilitySearchType.Intersection, center, range, limit);
   }
 
   /** @inheritdoc */
