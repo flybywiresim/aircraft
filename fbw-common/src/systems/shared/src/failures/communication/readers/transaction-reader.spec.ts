@@ -1,3 +1,4 @@
+import { describe, test, expect, vitest } from 'vitest';
 import { QueuedSimVarReader, TransactionReader } from '.';
 import { CallbackReader, SimVarReaderWriter, QueuedSimVarWriter } from '..';
 import { flushPromises } from '../../test-functions';
@@ -18,7 +19,7 @@ describe('TransactionReader', () => {
   test('calls the registered callback when a value is read', async () => {
     const failureIdentifier = 1;
     const r = reader();
-    const callback = jest.fn();
+    const callback = vitest.fn();
     r.register(failureIdentifier, callback);
 
     await SimVar.SetSimVarValue(failuresSimVar, 'number', failureIdentifier);

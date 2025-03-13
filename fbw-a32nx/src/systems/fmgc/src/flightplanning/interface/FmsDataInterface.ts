@@ -8,7 +8,7 @@ import { Fix } from '@flybywiresim/fbw-sdk';
 import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 
 export interface FmsDataInterface {
-  createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): PilotWaypoint;
+  createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): PilotWaypoint | null;
 
   createPlaceBearingPlaceBearingWaypoint(
     place1: Fix,
@@ -17,7 +17,7 @@ export interface FmsDataInterface {
     bearing2: DegreesMagnetic,
     stored?: boolean,
     ident?: string,
-  ): PilotWaypoint;
+  ): PilotWaypoint | null;
 
   createPlaceBearingDistWaypoint(
     place: Fix,
@@ -25,7 +25,7 @@ export interface FmsDataInterface {
     distance: NauticalMiles,
     stored?: boolean,
     ident?: string,
-  ): PilotWaypoint;
+  ): PilotWaypoint | null;
 
   getStoredWaypointsByIdent(ident: string): PilotWaypoint[];
 }
