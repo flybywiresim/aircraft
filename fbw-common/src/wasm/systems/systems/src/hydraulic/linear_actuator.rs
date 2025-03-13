@@ -185,7 +185,8 @@ impl LowPressureAccumulator {
         Self {
             pressure: LowPassFilter::<Pressure>::new_with_init_value(
                 Self::PRESSURE_TIME_CONSTANT,
-                Pressure::new::<psi>(init_pressure_psi.max(0.).min(
+                Pressure::new::<psi>(init_pressure_psi.clamp(
+                    0.,
                     Self::MAX_ACCUMULATOR_PRESSURE_PSI
                         - Self::MAX_ACCUMULATOR_PRESSURE_THRESHOLD_FOR_REFILL_FLOW_PSI,
                 )),
