@@ -1,3 +1,4 @@
+import { describe, test, expect, vitest } from 'vitest';
 import { TransactionWriter } from './transaction-writer';
 import { SimVarReaderWriter, Updatable, Writer, QueuedSimVarWriter } from '..';
 import { flushPromises } from '../../test-functions';
@@ -8,7 +9,7 @@ describe('TransationWriter', () => {
     const w = writer();
 
     const write = await writeAndConsumeValue(w, failureIdentifier);
-    const callback = jest.fn();
+    const callback = vitest.fn();
     write.innerPromise.then(callback);
 
     updateWriter(w, retryAfterNumberOfUpdates - 1);
@@ -38,7 +39,7 @@ describe('TransationWriter', () => {
     const w = writer();
 
     const write = await writeAndConsumeValue(w, failureIdentifier);
-    const callback = jest.fn();
+    const callback = vitest.fn();
     const promise = write.innerPromise.then(callback);
 
     updateWriter(w, retryAfterNumberOfUpdates);

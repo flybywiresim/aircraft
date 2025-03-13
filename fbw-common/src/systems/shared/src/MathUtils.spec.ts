@@ -1,6 +1,7 @@
 // Copyright (c) 2022, 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { describe, it, expect } from 'vitest';
 import { MathUtils } from './MathUtils';
 
 describe('MathUtils.clamp', () => {
