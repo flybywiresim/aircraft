@@ -63,6 +63,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { DirectTo } from '@fmgc/flightplanning/types/DirectTo';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -348,15 +349,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       L: new EfisInterface('L', this.currFlightPlanService),
       R: new EfisInterface('R', this.currFlightPlanService),
     };
+    this.navigation = new Navigation(this.bus, this.currFlightPlanService);
     this.guidanceController = new GuidanceController(
       this.bus,
       this,
       this.currFlightPlanService,
       this.efisInterfaces,
+      this.navigation,
       a320EfisRangeSettings,
       A320AircraftConfig,
     );
-    this.navigation = new Navigation(this.bus, this.currFlightPlanService);
     this.efisSymbols = new EfisSymbols(
       this.bus,
       this.guidanceController,
@@ -5293,9 +5295,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   * Modifies the active flight plan to go direct to a specific waypoint, not necessarily in the flight plan
+   * Modifies the active flight plan to perform a DIR to operation
+   * @param directTo The object containing the direct to information
    */
-  public async directToWaypoint(waypoint: Fix) {
+  async directTo(directTo: DirectTo) {
     // FIXME fm pos
     const adirLat = ADIRS.getLatitude();
     const adirLong = ADIRS.getLongitude();
@@ -5310,29 +5313,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       long: adirLong.value,
     };
 
-    await this.flightPlanService.directToWaypoint(ppos, trueTrack.value, waypoint);
-  }
-
-  /**
-   * Modifies the active flight plan to go direct to a specific leg
-   * @param legIndex index of leg to go direct to
-   */
-  public async directToLeg(legIndex: number) {
-    // FIXME fm pos
-    const adirLat = ADIRS.getLatitude();
-    const adirLong = ADIRS.getLongitude();
-    const trueTrack = ADIRS.getTrueTrack();
-
-    if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
-      return;
-    }
-
-    const ppos = {
-      lat: adirLat.value,
-      long: adirLong.value,
-    };
-
-    await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex);
+    await this.flightPlanService.directTo(ppos, trueTrack.value, directTo);
   }
 
   /**

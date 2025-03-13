@@ -7,7 +7,7 @@ import { EfisNdMode, EfisSide, EfisVectorsGroup, GenericDataListenerSync } from 
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
-import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
+import { LateralMode } from '@shared/autopilot';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -133,23 +133,15 @@ export class EfisVectors {
     switch (planIndex) {
       case FlightPlanIndex.Active: {
         const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
-        const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
-        const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
-        const flightPhase = this.flightPhase.get();
 
-        // FIXME implement
-        const doesPreNavEngagePathExist = engagedLateralMode !== LateralMode.GA_TRACK;
+        const doesPreNavEngagePathExist = this.guidanceController.doesPreNavModeEngagementPathExist();
 
         const transmitActive =
-          // In preflight phase, the flight plan line is solid even when NAV is not armed
-          flightPhase === FmgcFlightPhase.Preflight ||
-          engagedLateralMode === LateralMode.NAV ||
-          engagedLateralMode === LateralMode.LOC_CPT ||
-          engagedLateralMode === LateralMode.LOC_TRACK ||
-          engagedLateralMode === LateralMode.LAND ||
-          engagedLateralMode === LateralMode.FLARE ||
-          engagedLateralMode === LateralMode.ROLL_OUT ||
-          (navArmed && doesPreNavEngagePathExist);
+          (engagedLateralMode !== LateralMode.HDG &&
+            engagedLateralMode !== LateralMode.TRACK &&
+            engagedLateralMode !== LateralMode.GA_TRACK &&
+            engagedLateralMode !== LateralMode.RWY_TRACK) ||
+          doesPreNavEngagePathExist;
 
         if (transmitActive) {
           this.transmitFlightPlan(
@@ -211,9 +203,14 @@ export class EfisVectors {
 
     // ACTIVE
 
-    const geometry = this.guidanceController.getGeometryForFlightPlan(plan.index);
+    const geometry = this.guidanceController.doesPreNavModeEngagementPathExist()
+      ? this.guidanceController.getPreNavModeEngagementPathGeometry()
+      : this.guidanceController.getGeometryForFlightPlan(plan.index);
+    const activeLegIndex = this.guidanceController.doesPreNavModeEngagementPathExist()
+      ? plan.activeLegIndex - 1
+      : plan.activeLegIndex;
 
-    const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
+    const vectors = geometry.getAllPathVectors(activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
 
     // ACTIVE missed
 

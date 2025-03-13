@@ -224,4 +224,10 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     color: 'Amber',
     clearable: true,
   },
+  NoNavIntercept: {
+    id: 21,
+    text: 'NO NAV INTERCEPT',
+    color: 'Amber',
+    clearable: true,
+  },
 };
