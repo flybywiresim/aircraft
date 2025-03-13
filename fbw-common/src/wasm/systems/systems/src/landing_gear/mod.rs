@@ -110,8 +110,7 @@ impl TiltingGear {
             let ground_tilt_raw = Ratio::new::<ratio>(
                 (1. - (fwd_current_tire_height.abs() / self.tilt_height_from_low_to_up)
                     .get::<ratio>())
-                .min(1.)
-                .max(0.),
+                .clamp(0., 1.),
             );
 
             ground_tilt_raw.max(self.max_ground_tilt_from_plane_pitch(context))
@@ -124,8 +123,7 @@ impl TiltingGear {
         {
             Ratio::new::<ratio>(
                 ((aft_current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
-                    .min(1.)
-                    .max(0.),
+                    .clamp(0., 1.),
             )
         } else {
             Ratio::default()
@@ -1554,8 +1552,8 @@ mod tests {
                 }
             }
 
-            self.door_position = self.door_position.max(1).min(Self::UP_LOCK_TRESHOLD);
-            self.gear_position = self.gear_position.max(1).min(Self::UP_LOCK_TRESHOLD);
+            self.door_position = self.door_position.clamp(1, Self::UP_LOCK_TRESHOLD);
+            self.gear_position = self.gear_position.clamp(1, Self::UP_LOCK_TRESHOLD);
 
             // Ensuring gear and doors never move at the same time
             if self.door_position != 1 && self.door_position != Self::UP_LOCK_TRESHOLD {
