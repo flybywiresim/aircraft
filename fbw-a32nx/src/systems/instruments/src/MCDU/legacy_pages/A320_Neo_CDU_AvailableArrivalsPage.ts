@@ -640,7 +640,7 @@ export class CDUAvailableArrivalsPage {
         isOtherVia: shouldFilterVias && !starFixes.find((id) => t.legs[0].waypoint?.databaseId === id),
       }));
     vias.unshift({
-      ident: 'NO VIA',
+      ident: Labels.NO_VIA,
       databaseId: null,
       isOtherVia: false,
     });
