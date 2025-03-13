@@ -369,8 +369,7 @@ impl FlapSlatAssembly {
             (0.0004 * press_corrected.powi(2)
                 / (circuit_target_pressure.get::<psi>()
                     - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
-                .min(1.)
-                .max(0.)
+                .clamp(0., 1.)
         } else {
             0.
         }
