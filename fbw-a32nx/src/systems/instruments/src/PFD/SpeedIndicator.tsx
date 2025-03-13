@@ -1285,15 +1285,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private machHysteresis = false;
 
-  private onGround = false;
-
   private mach = new Arinc429Word(0);
-
-  private fcuEisDiscreteWord2 = new Arinc429Word(0);
-
-  private leftMainGearCompressed = true;
-
-  private rightMainGearCompressed = true;
 
   private handleMachDisplay() {
     if (this.mach.value > 0.5) {
@@ -1302,18 +1294,12 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
       this.machHysteresis = false;
     }
 
-    const stdBaro = this.fcuEisDiscreteWord2.bitValueOr(28, false) || this.fcuEisDiscreteWord2.isFailureWarning();
-    const lsDisplay = this.fcuEisDiscreteWord2.bitValueOr(22, false) || this.fcuEisDiscreteWord2.isFailureWarning();
-
-    const hideMachDisplay =
-      (!this.machHysteresis && this.mach.isNormalOperation()) ||
-      (!this.mach.isNormalOperation() && (this.onGround || stdBaro)) ||
-      lsDisplay;
+    const hideMachDisplay = !this.machHysteresis && (this.mach.isNormalOperation() || this.mach.isFunctionalTest());
 
     if (hideMachDisplay) {
       this.machFlagVisible.set(false);
       this.machTextSub.set('');
-    } else if (!this.mach.isNormalOperation()) {
+    } else if (!this.mach.isNormalOperation() && !this.mach.isFunctionalTest()) {
       this.machFlagVisible.set(true);
       this.machTextSub.set('');
     } else {
@@ -1333,32 +1319,6 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
       .withArinc429Precision(3)
       .handle((mach) => {
         this.mach = mach;
-        this.handleMachDisplay();
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.leftMainGearCompressed = g;
-        this.onGround = this.rightMainGearCompressed || g;
-        this.handleMachDisplay();
-      });
-
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.rightMainGearCompressed = g;
-        this.onGround = this.leftMainGearCompressed || g;
-        this.handleMachDisplay();
-      });
-
-    sub
-      .on('fcuEisDiscreteWord2')
-      .whenChanged()
-      .handle((word) => {
-        this.fcuEisDiscreteWord2 = word;
         this.handleMachDisplay();
       });
   }
