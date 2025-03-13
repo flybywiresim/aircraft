@@ -1003,6 +1003,73 @@ export class LongAlphanumericFormat implements DataEntryFormat<string> {
   }
 }
 
+export class ShortAlphanumericFormat implements DataEntryFormat<string> {
+  public placeholder = '-----';
+
+  public maxDigits = 5;
+
+  public format(value: string) {
+    if (!value) {
+      return [this.placeholder, null, null] as FieldFormatTuple;
+    }
+    return [value, null, null] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '' || input === this.placeholder) {
+      return null;
+    }
+
+    return input;
+  }
+}
+
+export class AircraftType implements DataEntryFormat<string> {
+  public placeholder = '----';
+
+  public maxDigits = 4;
+
+  public format(value: string) {
+    if (!value) {
+      return [this.placeholder, null, null] as FieldFormatTuple;
+    }
+    return [value, null, null] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '' || input === this.placeholder) {
+      return null;
+    }
+
+    return input;
+  }
+}
+
+export class AtisCode implements DataEntryFormat<string> {
+  public placeholder = '-';
+
+  public maxDigits = 1;
+
+  public format(value: string) {
+    if (!value) {
+      return [this.placeholder, null, null] as FieldFormatTuple;
+    }
+    return [value, null, null] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '' || input === this.placeholder) {
+      return null;
+    }
+
+    if (/^[a-zA-Z]+$/.test(input)) {
+      return input;
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
+
 export class PaxNbrFormat implements DataEntryFormat<number> {
   public placeholder = '---';
 
