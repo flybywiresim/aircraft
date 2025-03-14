@@ -1,4 +1,4 @@
-import { Coordinates, NauticalMiles } from 'msfs-geo';
+import { Coordinates } from 'msfs-geo';
 import {
   DatabaseIdent,
   Airport,
@@ -15,9 +15,6 @@ import {
   VhfNavaid,
   Fix,
   Airway,
-  VorClass,
-  VhfNavaidType,
-  NdbClass,
 } from '../../../shared';
 import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
@@ -113,38 +110,6 @@ export class TestBackend implements DataInterface {
     return [];
   }
   async getAirwaysByFix(_ident: string, _icaoCode: string, _airwayIdent?: string): Promise<Airway[]> {
-    return [];
-  }
-  async getNearbyAirports(
-    _center: Coordinates,
-    _range: NauticalMiles,
-    _limit?: number,
-    _longestRunwaySurfaces?: number,
-    _longestRunwayLength?: number,
-  ): Promise<readonly Airport[]> {
-    return [];
-  }
-  async getNearbyVhfNavaids(
-    _center: Coordinates,
-    _range: number,
-    _limit?: number,
-    _classes?: VorClass,
-    _types?: VhfNavaidType,
-  ): Promise<readonly VhfNavaid[]> {
-    return [];
-  }
-  async getNearbyNdbNavaids(
-    _center: Coordinates,
-    _range: NauticalMiles,
-    _limit?: number,
-    _classes?: NdbClass,
-  ): Promise<readonly NdbNavaid[]> {
-    return [];
-  }
-  async getNearbyWaypoints(_center: Coordinates, _range: NauticalMiles, _limit?: number): Promise<readonly Waypoint[]> {
-    return [];
-  }
-  async getNearbyFixes(_center: Coordinates, _range: NauticalMiles, _limit?: number): Promise<readonly Fix[]> {
     return [];
   }
   createNearbyFacilityMonitor(_type: NearbyFacilityType): NearbyFacilityMonitor {

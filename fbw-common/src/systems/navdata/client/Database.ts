@@ -1,4 +1,3 @@
-import { Coordinates } from 'msfs-geo';
 import {
   Airport,
   Approach,
@@ -8,12 +7,9 @@ import {
   Airway,
   IlsNavaid,
   NdbNavaid,
-  NdbClass,
   Marker,
   ProcedureLeg,
   VhfNavaid,
-  VhfNavaidType,
-  VorClass,
   Waypoint,
   DatabaseIdent,
   DataInterface,
@@ -135,39 +131,6 @@ export class Database {
       return [];
     }
     return this.backend.getAirwaysByFix(fix.ident, fix.icaoCode, airwayIdent);
-  }
-
-  public getNearbyAirports(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    longestRunwaySurfaces?: number,
-    longestRunwayLength?: number,
-  ): Promise<readonly Airport[]> {
-    return this.backend.getNearbyAirports(center, range, limit, longestRunwaySurfaces, longestRunwayLength);
-  }
-
-  public getNearbyVhfNavaids(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    classes?: VorClass,
-    types?: VhfNavaidType,
-  ): Promise<readonly VhfNavaid[]> {
-    return this.backend.getNearbyVhfNavaids(center, range, limit, classes, types);
-  }
-
-  public getNearbyNdbNavaids(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    classes?: NdbClass,
-  ): Promise<readonly NdbNavaid[]> {
-    return this.backend.getNearbyNdbNavaids(center, range, limit, classes);
-  }
-
-  public getWaypointsInRange(center: Coordinates, range: number, limit?: number): Promise<readonly Waypoint[]> {
-    return this.backend.getNearbyWaypoints(center, range, limit);
   }
 
   public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {

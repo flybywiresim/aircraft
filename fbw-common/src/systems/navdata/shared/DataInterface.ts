@@ -1,15 +1,15 @@
-import { Coordinates, NauticalMiles } from 'msfs-geo';
+import { Coordinates } from 'msfs-geo';
 import { Airport } from './types/Airport';
 import { Departure } from './types/Departure';
 import { Arrival } from './types/Arrival';
 import { Approach } from './types/Approach';
 import { DatabaseIdent } from './types/DatabaseIdent';
 import { Waypoint } from './types/Waypoint';
-import { NdbNavaid, NdbClass } from './types/NdbNavaid';
+import { NdbNavaid } from './types/NdbNavaid';
 import { IlsNavaid } from './types/IlsNavaid';
 import { Runway } from './types/Runway';
 import { Airway } from './types/Airway';
-import { VhfNavaid, VhfNavaidType, VorClass } from './types/VhfNavaid';
+import { VhfNavaid } from './types/VhfNavaid';
 import { AirportCommunication } from './types/Communication';
 import { Fix, ProcedureLeg } from '.';
 import { Marker } from './types/Marker';
@@ -169,34 +169,6 @@ export interface DataInterface {
    * @param airwayIdent optional airway identifier to filter results by, no filter is applied if undefined
    */
   getAirwaysByFix(ident: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]>;
-
-  /** @deprecated */
-  getNearbyAirports(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    longestRunwaySurfaces?: number,
-    longestRunwayLength?: number,
-  ): Promise<readonly Airport[]>;
-  /** @deprecated */
-  getNearbyVhfNavaids(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    classes?: VorClass,
-    types?: VhfNavaidType,
-  ): Promise<readonly VhfNavaid[]>;
-  /** @deprecated */
-  getNearbyNdbNavaids(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    classes?: NdbClass,
-  ): Promise<readonly NdbNavaid[]>;
-  /** @deprecated */
-  getNearbyWaypoints(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Waypoint[]>;
-  /** @deprecated */
-  getNearbyFixes(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Fix[]>;
 
   createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor;
 
