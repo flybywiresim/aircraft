@@ -258,16 +258,22 @@ function geometryLegFromFlightPlanLeg(
   const waypoint = flightPlanLeg.terminationWaypoint();
   const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
   const trueCourse = flightPlanLeg.definition.magneticCourse + runningMagvar;
-  const trueTheta = flightPlanLeg.definition.theta + runningMagvar;
   const length = flightPlanLeg.definition.length;
 
   switch (legType) {
     case LegType.AF: {
-      const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
-      const navaid = recommendedNavaid.location;
-      const rho = flightPlanLeg.definition.rho;
-
-      return new AFLeg(waypoint, navaid, rho, trueTheta, trueCourse, metadata, SegmentType.Departure);
+      if (!isVhfNavaid(recommendedNavaid)) {
+        throw new Error('[FMS/Geometry] Cannot create an AF leg with invalid recommended navaid');
+      }
+      return new AFLeg(
+        waypoint,
+        recommendedNavaid,
+        flightPlanLeg.definition.rho,
+        flightPlanLeg.definition.theta,
+        flightPlanLeg.definition.magneticCourse,
+        metadata,
+        SegmentType.Departure,
+      );
     }
     case LegType.CA:
     case LegType.VA: {
