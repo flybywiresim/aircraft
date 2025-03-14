@@ -177,6 +177,8 @@
 1. [A32NX/FMS] Fixed an error preventing the RETURN LSK from working on the create waypoint page in some cases - @tracernz (Mike)
 1. [A32NX/FMS] Disallow editing of waypoint ident on the create waypoint page - @tracernz (Mike)
 1. [A380X/MFD] Changed flightplan time header to show correct TIME or UTC - @MrJigs7 (MrJigs.)
+1. [A32NX/FMS] Improved approach procedure sorting - @tracernz (Mike)
+1. [A380X/FMS] The (RNP) flag is now shown for approaches with only the missed approach segment as RNP AR on MSFS2024 - @tracernz (Mike)
 
 ## 0.12.0
 
