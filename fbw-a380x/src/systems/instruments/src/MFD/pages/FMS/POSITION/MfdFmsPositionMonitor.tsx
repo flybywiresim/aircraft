@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { FmsPage } from '../../common/FmsPage';
@@ -64,10 +63,6 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly noPositionImplemented = Subject.create('--°--.--/---°--.--'); // TODO remove & replace with RADIO, MIX IRS & GPIRS position once implemented
 
-  private readonly onSideFms = Subject.create('');
-
-  private readonly offSideFms = Subject.create('');
-
   private readonly positionFrozen = Subject.create(false);
 
   private readonly positionFrozenLabel = this.positionFrozen.map((v) => (v ? 'UNFREEZE' : 'FREEZE'));
@@ -80,7 +75,14 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly gpsPositionText = Subject.create('');
 
-  private monitorWaypoint = Subject.create<Fix | null>(null);
+  private readonly cptSide = this.props.mfd.uiService.captOrFo === 'CAPT';
+
+  private readonly monitorWaypoint =
+    this.props.fmcService.master?.fmgc.data.positionMonitorFix ?? Subject.create<Fix | null>(null);
+
+  private readonly onSideFms = Subject.create(this.cptSide ? 'FMS1' : 'FMS2');
+
+  private readonly offSideFms = Subject.create(this.cptSide ? 'FMS2' : 'FMS1');
 
   private readonly bearingToWaypoint = Subject.create<number | null>(null);
 
@@ -102,19 +104,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const side = this.props.mfd.uiService.captOrFo;
-
-    const cptSide = side === 'CAPT';
-    this.onSideFms.set(cptSide ? 'FMS1' : 'FMS2');
-    this.offSideFms.set(cptSide ? 'FMS2' : 'FMS1');
     const sub = this.props.bus.getSubscriber<ClockEvents>();
-
-    if (this.props.fmcService.master) {
-      this.monitorWaypoint = cptSide
-        ? this.props.fmcService.master.fmgc.data.positionMonitorFixLeft
-        : this.props.fmcService.master.fmgc.data.positionMonitorFixRight;
-    }
     this.subs.push(
       sub
         .on('realTime')
@@ -202,8 +192,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     longitude: Arinc429Register,
     coordinates: Coordinates,
     fmPosition: Coordinates | null,
-    irPositionSubject: Subject<string>,
-    irFmPositionDeviationSubject: Subject<string>,
+    irPosition: Subject<string>,
+    irFmPositionDeviation: Subject<string>,
   ): void {
     latitude.setFromSimVar(`L:A32NX_ADIRS_IR_${irIndex}_LATITUDE`);
     longitude.setFromSimVar(`L:A32NX_ADIRS_IR_${irIndex}_LONGITUDE`);
@@ -213,16 +203,16 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       !longitude.isNormalOperation() ||
       longitude.isNoComputedData()
     ) {
-      irPositionSubject.set('--°--.--/---°--.--');
-      irFmPositionDeviationSubject.set('-.-');
+      irPosition.set('--°--.--/---°--.--');
+      irFmPositionDeviation.set('-.-');
       return;
     }
     coordinates.lat = latitude.value;
     coordinates.long = longitude.value;
 
     if (fmPosition) {
-      irPositionSubject.set(coordinateToString(coordinates, false));
-      irFmPositionDeviationSubject.set(distanceTo(coordinates, fmPosition).toFixed(1));
+      irPosition.set(coordinateToString(coordinates, false));
+      irFmPositionDeviation.set(distanceTo(coordinates, fmPosition).toFixed(1));
     }
   }
 
@@ -386,7 +376,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">BRG / DIST TO</span>
-                <InputField<Fix, string>
+                <InputField<Fix, string, false>
                   dataEntryFormat={new FixFormat()}
                   readonlyValue={this.monitorWaypoint}
                   onModified={async (v) => {
