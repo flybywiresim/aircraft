@@ -2613,6 +2613,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
                                 } else if (v === null) {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
+                                } else if (v > 1) {
+                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
                                 } else {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
                                 }
