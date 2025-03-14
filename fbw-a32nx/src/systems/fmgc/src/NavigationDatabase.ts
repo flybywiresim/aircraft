@@ -98,7 +98,17 @@ export class NavigationDatabase {
     return this.backendDatabase.getDatabaseIdent();
   }
 
-  createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
+  public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
     return this.backendDatabase.createNearbyFacilityMonitor(type);
+  }
+
+  /**
+   * Gets a VHF navaid from the database given the database ID.
+   * @param databaseId The database ID.
+   * @returns The VHF navaid.
+   * @throws If the navaid doesn't exist (only call this if you already know it exists!).
+   */
+  public getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {
+    return this.backendDatabase.getVhfNavaidFromId(databaseId);
   }
 }

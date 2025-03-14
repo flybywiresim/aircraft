@@ -528,6 +528,15 @@ export class MsfsBackend implements DataInterface {
     return res;
   }
 
+  public async getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {
+    const fac = await this.cache.getFacility(databaseId, LoadType.Vor);
+    if (!fac) {
+      throw new Error(`Could not fetch facility "${databaseId}"!`);
+    }
+
+    return this.mapping.mapFacilityToWaypoint(fac);
+  }
+
   private async fetchMsfsAirport(ident: string): Promise<JS_FacilityAirport | undefined> {
     if (ident.trim().length !== 4) {
       return undefined;

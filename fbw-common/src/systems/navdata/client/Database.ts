@@ -173,4 +173,8 @@ export class Database {
   public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
     return this.backend.createNearbyFacilityMonitor(type);
   }
+
+  public getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {
+    return this.backend.getVhfNavaidFromId(databaseId);
+  }
 }

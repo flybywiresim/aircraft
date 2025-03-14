@@ -199,4 +199,6 @@ export interface DataInterface {
   getNearbyFixes(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Fix[]>;
 
   createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor;
+
+  getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid>;
 }

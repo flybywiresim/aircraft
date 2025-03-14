@@ -157,4 +157,7 @@ export class TestBackend implements DataInterface {
       destroy: EmptyCallback.Void,
     };
   }
+  getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {
+    throw new Error(`Could not fetch facility "${databaseId}"!`);
+  }
 }
