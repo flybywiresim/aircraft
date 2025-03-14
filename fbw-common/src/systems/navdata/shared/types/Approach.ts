@@ -1,4 +1,4 @@
-import { RunwayDesignator } from 'navdata/shared/types/Runway';
+import { RunwayDesignator } from './Runway';
 import { DatabaseItem, ProcedureTransition } from './Common';
 import { ProcedureLeg } from './ProcedureLeg';
 import { AirportSubsectionCode, SectionCode } from './SectionCode';
