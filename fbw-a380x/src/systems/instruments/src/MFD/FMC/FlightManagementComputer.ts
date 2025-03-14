@@ -558,6 +558,9 @@ export class FlightManagementComputer implements FmcInterface {
       case FmsErrorType.FormatError:
         this.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
         break;
+      case FmsErrorType.FplnElementRetained:
+        this.addMessageToQueue(NXSystemMessages.fplnElementRetained, undefined, undefined);
+        break;
       case FmsErrorType.NotInDatabase:
         this.addMessageToQueue(NXSystemMessages.notInDatabase, undefined, undefined);
         break;
