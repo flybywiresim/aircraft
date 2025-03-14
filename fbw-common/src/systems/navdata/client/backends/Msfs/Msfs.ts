@@ -19,8 +19,6 @@ import {
 import {
   AirportCommunication,
   Airway,
-  AirwayLevel,
-  ControlledAirspace,
   DatabaseIdent,
   Fix,
   IlsNavaid,
@@ -28,7 +26,6 @@ import {
   NdbClass,
   NdbNavaid,
   ProcedureLeg,
-  RestrictiveAirspace,
   VhfNavaid,
   VhfNavaidType,
   VorClass,
@@ -472,16 +469,6 @@ export class MsfsBackend implements DataInterface {
   }
 
   /** @inheritdoc */
-  public async getNearbyAirways(
-    _center: Coordinates,
-    _range: NauticalMiles,
-    _limit?: number,
-    _levels?: AirwayLevel,
-  ): Promise<readonly Airway[]> {
-    return [];
-  }
-
-  /** @inheritdoc */
   public async getNearbyVhfNavaids(
     center: Coordinates,
     range: number,
@@ -532,22 +519,6 @@ export class MsfsBackend implements DataInterface {
     const res = [...waypoints, ...vors, ...ndbs];
 
     return res;
-  }
-
-  /** @inheritdoc */
-  public async getControlledAirspaceInRange(
-    _center: Coordinates,
-    _range: NauticalMiles,
-  ): Promise<readonly ControlledAirspace[]> {
-    return [];
-  }
-
-  /** @inheritdoc */
-  public async getRestrictiveAirspaceInRange(
-    _center: Coordinates,
-    _range: NauticalMiles,
-  ): Promise<readonly RestrictiveAirspace[]> {
-    return [];
   }
 
   private async fetchMsfsAirport(ident: string): Promise<JS_FacilityAirport | undefined> {

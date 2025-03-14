@@ -15,12 +15,9 @@ import {
   VhfNavaid,
   Fix,
   Airway,
-  AirwayLevel,
   VorClass,
   VhfNavaidType,
   NdbClass,
-  ControlledAirspace,
-  RestrictiveAirspace,
 } from '../../../shared';
 import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
@@ -126,14 +123,6 @@ export class TestBackend implements DataInterface {
   ): Promise<readonly Airport[]> {
     return [];
   }
-  async getNearbyAirways(
-    _center: Coordinates,
-    _range: NauticalMiles,
-    _limit?: number,
-    _levels?: AirwayLevel,
-  ): Promise<readonly Airway[]> {
-    return [];
-  }
   async getNearbyVhfNavaids(
     _center: Coordinates,
     _range: number,
@@ -155,18 +144,6 @@ export class TestBackend implements DataInterface {
     return [];
   }
   async getNearbyFixes(_center: Coordinates, _range: NauticalMiles, _limit?: number): Promise<readonly Fix[]> {
-    return [];
-  }
-  async getControlledAirspaceInRange(
-    _center: Coordinates,
-    _range: NauticalMiles,
-  ): Promise<readonly ControlledAirspace[]> {
-    return [];
-  }
-  async getRestrictiveAirspaceInRange(
-    _center: Coordinates,
-    _range: NauticalMiles,
-  ): Promise<readonly RestrictiveAirspace[]> {
     return [];
   }
 }

@@ -1,7 +1,6 @@
-import { Coordinates, NauticalMiles } from 'msfs-geo';
+import { Coordinates } from 'msfs-geo';
 import {
   Airport,
-  AirwayLevel,
   Approach,
   Arrival,
   Departure,
@@ -18,13 +17,11 @@ import {
   Waypoint,
   DatabaseIdent,
   DataInterface,
-  RestrictiveAirspace,
   Fix,
   SectionCode,
   AirportSubsectionCode,
 } from '../shared';
 import { AirportCommunication } from '../shared/types/Communication';
-import { ControlledAirspace } from '../shared/types/Airspace';
 import { Gate } from '../shared/types/Gate';
 
 export class Database {
@@ -149,15 +146,6 @@ export class Database {
     return this.backend.getNearbyAirports(center, range, limit, longestRunwaySurfaces, longestRunwayLength);
   }
 
-  public getNearbyAirways(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    levels?: AirwayLevel,
-  ): Promise<readonly Airway[]> {
-    return this.backend.getNearbyAirways(center, range, limit, levels);
-  }
-
   public getNearbyVhfNavaids(
     center: Coordinates,
     range: number,
@@ -179,19 +167,5 @@ export class Database {
 
   public getWaypointsInRange(center: Coordinates, range: number, limit?: number): Promise<readonly Waypoint[]> {
     return this.backend.getNearbyWaypoints(center, range, limit);
-  }
-
-  public getControlledAirspacesInRange(
-    center: Coordinates,
-    range: NauticalMiles,
-  ): Promise<readonly ControlledAirspace[]> {
-    return this.backend.getControlledAirspaceInRange(center, range);
-  }
-
-  public getRestrictiveAirspacesInRange(
-    center: Coordinates,
-    range: NauticalMiles,
-  ): Promise<readonly RestrictiveAirspace[]> {
-    return this.backend.getRestrictiveAirspaceInRange(center, range);
   }
 }
