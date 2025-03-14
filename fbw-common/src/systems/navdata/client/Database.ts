@@ -23,6 +23,7 @@ import {
 } from '../shared';
 import { AirportCommunication } from '../shared/types/Communication';
 import { Gate } from '../shared/types/Gate';
+import { NearbyFacilityMonitor, NearbyFacilityType } from './NearbyFacilityMonitor';
 
 export class Database {
   backend: DataInterface;
@@ -167,5 +168,9 @@ export class Database {
 
   public getWaypointsInRange(center: Coordinates, range: number, limit?: number): Promise<readonly Waypoint[]> {
     return this.backend.getNearbyWaypoints(center, range, limit);
+  }
+
+  public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
+    return this.backend.createNearbyFacilityMonitor(type);
   }
 }

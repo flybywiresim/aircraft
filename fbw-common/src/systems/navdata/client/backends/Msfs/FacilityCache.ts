@@ -20,6 +20,7 @@ import {
   JS_FacilityNDB,
   JS_FacilityVOR,
   JS_Leg,
+  JSAirportRequestFlags,
 } from './FsTypes';
 import { Airport, NdbNavaid, VhfNavaid, Waypoint } from '../../../shared';
 import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
@@ -120,7 +121,7 @@ export class FacilityCache {
   private airwayFixCache = new Map<string, Waypoint[]>();
 
   constructor() {
-    this.listener = RegisterViewListener('JS_LISTENER_FACILITY');
+    this.listener = RegisterViewListener('JS_LISTENER_FACILITY', EmptyCallback.Void, true);
 
     Coherent.on('SendAirport', this.receiveFacility.bind(this));
     Coherent.on('SendIntersection', this.receiveFacility.bind(this));
@@ -322,8 +323,16 @@ export class FacilityCache {
       this.addToAirwayCache(facility as any as JS_FacilityIntersection);
     }
 
-    if (!isMsfs2024() && loadType === LoadType.Airport) {
-      FacilityCache.fixupAirportRegions(facility as JS_FacilityAirport);
+    if (loadType === LoadType.Airport) {
+      const dataFlags = (facility as JS_FacilityAirport).loadedDataFlags;
+      if (dataFlags !== undefined && (dataFlags & JSAirportRequestFlags.All) !== JSAirportRequestFlags.All) {
+        // ignore minimal airports
+        return;
+      }
+
+      if (!isMsfs2024() && loadType === LoadType.Airport) {
+        FacilityCache.fixupAirportRegions(facility as JS_FacilityAirport);
+      }
     }
 
     const key = FacilityCache.key(facility.icao, loadType);

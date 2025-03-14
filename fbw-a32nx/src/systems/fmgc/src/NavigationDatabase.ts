@@ -12,6 +12,8 @@ import {
   IlsNavaid,
   MsfsBackend,
   NdbNavaid,
+  NearbyFacilityMonitor,
+  NearbyFacilityType,
   ProcedureLeg,
   TestBackend,
   VhfNavaid,
@@ -94,5 +96,9 @@ export class NavigationDatabase {
 
   public getDatabaseIdent(): Promise<DatabaseIdent> {
     return this.backendDatabase.getDatabaseIdent();
+  }
+
+  createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
+    return this.backendDatabase.createNearbyFacilityMonitor(type);
   }
 }

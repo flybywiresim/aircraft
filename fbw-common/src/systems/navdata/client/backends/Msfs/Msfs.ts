@@ -47,6 +47,9 @@ import {
 } from './FacilityCache';
 import { MsfsMapping } from './Mapping';
 import { Gate } from '../../../shared/types/Gate';
+import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
+import { isMsfs2024 } from 'shared/src';
+import { Msfs2020NearbyFacilityMonitor, MsfsNearbyFacilityMonitor } from './MsfsNearbyFacilityMonitor';
 
 // @microsoft/msfs-sdk does not export this, so we declare it
 declare class CoherentNearestSearchSession implements NearestSearchSession<string, string> {
@@ -163,6 +166,10 @@ export class MsfsBackend implements DataInterface {
     );
 
     return out;
+  }
+
+  public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
+    return isMsfs2024() ? new MsfsNearbyFacilityMonitor(type) : new Msfs2020NearbyFacilityMonitor(type);
   }
 
   /** @inheritdoc */

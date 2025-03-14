@@ -22,6 +22,7 @@ import {
 import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory'; // FIXME remove import from FMGC
+import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
 
 export class TestBackend implements DataInterface {
   getDatabaseIdent(): Promise<DatabaseIdent> {
@@ -145,5 +146,15 @@ export class TestBackend implements DataInterface {
   }
   async getNearbyFixes(_center: Coordinates, _range: NauticalMiles, _limit?: number): Promise<readonly Fix[]> {
     return [];
+  }
+  createNearbyFacilityMonitor(_type: NearbyFacilityType): NearbyFacilityMonitor {
+    return {
+      setLocation: EmptyCallback.Void,
+      setRadius: EmptyCallback.Void,
+      setMaxResults: EmptyCallback.Void,
+      addListener: EmptyCallback.Void,
+      getCurrentFacilities: () => [],
+      destroy: EmptyCallback.Void,
+    };
   }
 }

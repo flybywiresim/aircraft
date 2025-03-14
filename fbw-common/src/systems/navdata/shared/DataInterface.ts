@@ -14,6 +14,7 @@ import { AirportCommunication } from './types/Communication';
 import { Fix, ProcedureLeg } from '.';
 import { Marker } from './types/Marker';
 import { Gate } from './types/Gate';
+import { NearbyFacilityMonitor, NearbyFacilityType } from '../client/NearbyFacilityMonitor';
 
 // FIXME move to more appropriate place..
 export enum NavaidArea {
@@ -197,6 +198,5 @@ export interface DataInterface {
   /** @deprecated */
   getNearbyFixes(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Fix[]>;
 
-  getControlledAirspaceInRange(center: Coordinates, range: NauticalMiles): Promise<readonly ControlledAirspace[]>;
-  getRestrictiveAirspaceInRange(center: Coordinates, range: NauticalMiles): Promise<readonly RestrictiveAirspace[]>;
+  createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor;
 }
