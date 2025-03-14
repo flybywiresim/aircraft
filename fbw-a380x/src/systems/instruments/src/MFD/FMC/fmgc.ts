@@ -339,10 +339,7 @@ export class FmgcData {
 
   public readonly approachVls = Subject.create<Knots | null>(null);
 
-  // FIX ME Remove when multiple FMS implemented
-  public readonly positionMonitorFixLeft = Subject.create<Fix | null>(null);
-
-  public readonly positionMonitorFixRight = Subject.create<Fix | null>(null);
+  public readonly positionMonitorFix = Subject.create<Fix | null>(null);
 
   /**
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
