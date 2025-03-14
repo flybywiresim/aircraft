@@ -178,6 +178,7 @@
 1. [A32NX/FMS] Disallow editing of waypoint ident on the create waypoint page - @tracernz (Mike)
 1. [A380X/MFD] Changed flightplan time header to show correct TIME or UTC - @MrJigs7 (MrJigs.)
 1. [FMS] EFIS overlay symbols for the ND are now available in plan mode away from the aircraft position in MSFS2024 - @tracernz (Mike)
+1. [FMS] Reduced in-flight stutter due to facility loading - @tracernz (Mike)
 
 ## 0.12.0
 
