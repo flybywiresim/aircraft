@@ -2792,8 +2792,8 @@ export class FwsCore {
       tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4;
     }
 
-    let cpcsDiscreteWordToUse;
-    let cpcsToUseId;
+    let cpcsDiscreteWordToUse: Arinc429Register;
+    let cpcsToUseId: number;
 
     if (cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
       cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord1;
@@ -2932,10 +2932,10 @@ export class FwsCore {
     const outflowValve3OpenAmount = Arinc429Register.empty();
     const outflowValve4OpenAmount = Arinc429Register.empty();
 
-    outflowValve1OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve2OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve3OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
-    outflowValve4OpenAmount.setFromSimVar(`PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_${cpcsToUseId}`);
+    outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
 
     this.allOutflowValvesOpen.set(
       outflowValve1OpenAmount.value > 99 &&
@@ -3327,14 +3327,14 @@ export class FwsCore {
     );
 
     // rudder trim not takeoff
-    const fac1RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_1_RUDDER_TRIM_POS');
-    const fac2RudderTrimPosition = Arinc429Word.fromSimVarValue('L:A32NX_FAC_2_RUDDER_TRIM_POS');
-    const fac1Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_1_HEALTHY', 'boolean') > 0;
-    const fac2Healthy = SimVar.GetSimVarValue('L:A32NX_FAC_2_HEALTHY', 'boolean') > 0;
+    const sec1RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_1_RUDDER_ACTUAL_POSITION');
+    const sec3RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_3_RUDDER_ACTUAL_POSITION');
+    const sec1Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'boolean') > 0;
+    const sec3Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'boolean') > 0;
 
     const rudderTrimConfig =
-      (fac1Healthy && Math.abs(fac1RudderTrimPosition.valueOr(0)) > 3.6) ||
-      (fac2Healthy && Math.abs(fac2RudderTrimPosition.valueOr(0)) > 3.6);
+      (sec1Healthy && Math.abs(sec1RudderTrimActualPos.valueOr(0)) > 3.6) ||
+      (sec3Healthy && Math.abs(sec3RudderTrimActualPos.valueOr(0)) > 3.6);
 
     this.rudderTrimNotTo.set(this.flightPhase1211.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
