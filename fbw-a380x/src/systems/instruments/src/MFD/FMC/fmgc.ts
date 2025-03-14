@@ -10,7 +10,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
 import { MappedSubject, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
@@ -312,6 +312,8 @@ export class FmgcData {
   public readonly approachFlapConfig = Subject.create<FlapConf>(FlapConf.CONF_FULL);
 
   public readonly approachVls = Subject.create<Knots | null>(null);
+
+  public readonly positionMonitorFix = Subject.create<Fix | null>(null);
 
   /**
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set

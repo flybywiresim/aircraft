@@ -151,33 +151,31 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.airportIcao.sub((icao: string | null) => {
-      if (icao && icao.length === 4) {
-        this.loadAirportRunways(icao);
-        this.isAirportInfoVisible.set(true);
-        this.isRunwayButtonListVisible.set(true);
-        this.isRunwayDataVisible.set(false);
-      } else {
-        this.isAirportInfoVisible.set(false);
-        this.isRunwayDataVisible.set(false);
-        this.isRunwayButtonListVisible.set(false);
-      }
-    });
-
-    this.selectedRunwayIndex.sub((index: number | null) => {
-      if (index === null) {
-        this.isRunwayButtonListVisible.set(true);
-        this.isRunwayDataVisible.set(false);
-      } else {
-        this.isRunwayButtonListVisible.set(false);
-        this.checkScrollButtons();
-        this.currentIndex.set(index + 1);
-        const runwayData = this.airportRunways.get()[index];
-        this.renderRunwayData(runwayData);
-      }
-    });
-
     this.subs.push(
+      this.airportIcao.sub((icao: string | null) => {
+        if (icao && icao.length === 4) {
+          this.loadAirportRunways(icao);
+          this.isAirportInfoVisible.set(true);
+          this.isRunwayButtonListVisible.set(true);
+          this.isRunwayDataVisible.set(false);
+        } else {
+          this.isAirportInfoVisible.set(false);
+          this.isRunwayDataVisible.set(false);
+          this.isRunwayButtonListVisible.set(false);
+        }
+      }),
+      this.selectedRunwayIndex.sub((index: number | null) => {
+        if (index === null) {
+          this.isRunwayButtonListVisible.set(true);
+          this.isRunwayDataVisible.set(false);
+        } else {
+          this.isRunwayButtonListVisible.set(false);
+          this.checkScrollButtons();
+          this.currentIndex.set(index + 1);
+          const runwayData = this.airportRunways.get()[index];
+          this.renderRunwayData(runwayData);
+        }
+      }),
       this.props.mfd.uiService.activeUri.sub((val) => {
         if (val.extra === 'database') {
           this.selectedPageIndex.set(0);
