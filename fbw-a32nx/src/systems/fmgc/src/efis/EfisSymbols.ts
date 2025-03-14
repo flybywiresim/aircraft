@@ -50,19 +50,15 @@ type EditArea = [number, number, number];
 export class EfisSymbols<T extends number> {
   private blockUpdate = false;
 
-  private guidanceController: GuidanceController;
-
   private nearby: NearbyFacilities;
 
   private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
-  private static sides: EfisSide[] = ['L', 'R'];
+  private lastMode = -1;
 
-  private lastMode = { L: -1, R: -1 };
+  private lastRange = 0;
 
-  private lastRange = { L: 0, R: 0 };
-
-  private lastEfisOption = { L: 0, R: 0 };
+  private lastEfisOption = 0;
 
   private lastPpos: Coordinates = { lat: 0, long: 0 };
 
@@ -76,32 +72,28 @@ export class EfisSymbols<T extends number> {
 
   private lastVnavDriverVersion: number = -1;
 
-  private lastEfisInterfaceVersions: Record<EfisSide, number> = { L: -1, R: -1 };
+  private lastEfisInterfaceVersion = -1;
 
-  private mapReferenceLatitude: Record<EfisSide, Arinc429OutputWord> = {
-    L: new Arinc429OutputWord('L:A32NX_EFIS_L_MRP_LAT'),
-    R: new Arinc429OutputWord('L:A32NX_EFIS_R_MRP_LAT'),
-  };
+  private mapReferenceLatitude = new Arinc429OutputWord(`L:A32NX_EFIS_${this.side}_MRP_LAT`);
 
-  private mapReferenceLongitude: Record<EfisSide, Arinc429OutputWord> = {
-    L: new Arinc429OutputWord('L:A32NX_EFIS_L_MRP_LONG'),
-    R: new Arinc429OutputWord('L:A32NX_EFIS_R_MRP_LONG'),
-  };
+  private mapReferenceLongitude = new Arinc429OutputWord(`L:A32NX_EFIS_${this.side}_MRP_LONG`);
 
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
     FmgcFlightPhase.Preflight,
   );
 
+  private readonly syncEvent = `A32NX_EFIS_${this.side}_SYMBOLS` as const;
+
   constructor(
     private readonly bus: EventBus,
-    guidanceController: GuidanceController,
+    private readonly side: EfisSide,
+    private readonly guidanceController: GuidanceController,
     private readonly flightPlanService: FlightPlanService,
     private readonly navaidTuner: NavaidTuner,
-    private readonly efisInterfaces: Record<EfisSide, EfisInterface>,
-    private readonly rangeValues: T[],
+    private readonly efisInterface: EfisInterface,
+    private readonly rangeValues: T[], // TODO factor this out of here. The EfisInterface should directly supply a edit area
   ) {
-    this.guidanceController = guidanceController;
     this.nearby = NearbyFacilities.getInstance();
   }
 
@@ -190,356 +182,349 @@ export class EfisSymbols<T extends number> {
     const hasSuitableRunway = (airport: Airport): boolean =>
       airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
-    for (const side of EfisSymbols.sides) {
-      const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
-      const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
-      const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
+    const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.side}_ND_RANGE`, 'number')];
+    const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.side}_ND_MODE`, 'number');
+    const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.side}_OPTION`, 'Enum');
 
-      const rangeChange = this.lastRange[side] !== range;
-      this.lastRange[side] = range;
-      const modeChange = this.lastMode[side] !== mode;
-      this.lastMode[side] = mode;
-      const efisOptionChange = this.lastEfisOption[side] !== efisOption;
-      this.lastEfisOption[side] = efisOption;
-      const nearbyOverlayChanged = (efisOption & ~EfisOption.Constraints) > 0 && nearbyFacilitiesChanged;
-      const efisInterfaceChanged = this.lastEfisInterfaceVersions[side] !== this.efisInterfaces[side].version;
-      this.lastEfisInterfaceVersions[side] = this.efisInterfaces[side].version;
+    const rangeChange = this.lastRange !== range;
+    this.lastRange = range;
+    const modeChange = this.lastMode !== mode;
+    this.lastMode = mode;
+    const efisOptionChange = this.lastEfisOption !== efisOption;
+    this.lastEfisOption = efisOption;
+    const nearbyOverlayChanged = (efisOption & ~EfisOption.Constraints) > 0 && nearbyFacilitiesChanged;
+    const efisInterfaceChanged = this.lastEfisInterfaceVersion !== this.efisInterface.version;
+    this.lastEfisInterfaceVersion = this.efisInterface.version;
 
-      if (
-        !pposChanged &&
-        !trueHeadingChanged &&
-        !rangeChange &&
-        !modeChange &&
-        !efisOptionChange &&
-        !nearbyOverlayChanged &&
-        !fpChanged &&
-        !navaidsChanged &&
-        !vnavPredictionsChanged &&
-        !efisInterfaceChanged
-      ) {
-        continue;
-      }
-
-      const mapReferencePoint = mode === EfisNdMode.PLAN ? this.findPlanCentreCoordinates(side) : ppos;
-      if (mapReferencePoint) {
-        this.mapReferenceLatitude[side].setBnrValue(
-          mapReferencePoint.lat,
-          Arinc429SignStatusMatrix.NormalOperation,
-          20,
-          90,
-          -90,
-        );
-        this.mapReferenceLongitude[side].setBnrValue(
-          mapReferencePoint.long,
-          Arinc429SignStatusMatrix.NormalOperation,
-          20,
-          180,
-          -180,
-        );
-      } else {
-        this.mapReferenceLatitude[side].setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 20, 90, -90);
-        this.mapReferenceLongitude[side].setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 20, 180, -180);
-      }
-
-      this.mapReferenceLatitude[side].writeToSimVarIfDirty();
-      this.mapReferenceLongitude[side].writeToSimVarIfDirty();
-
-      if (mode === EfisNdMode.PLAN && !mapReferencePoint) {
-        this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
-        return;
-      }
-
-      /** True bearing of the up direction of the map in degrees. */
-      const mapOrientation = mode === EfisNdMode.PLAN ? 0 : trueHeading;
-      const editArea = this.calculateEditArea(range, mode);
-
-      const symbols: NdSymbol[] = [];
-
-      // symbols most recently inserted always end up at the end of the array
-      // we reverse the array at the end to make sure symbols are drawn in the correct order
-      // eslint-disable-next-line no-loop-func
-      const upsertSymbol = (symbol: NdSymbol): void => {
-        // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
-        const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
-        if (symbolIdx !== -1) {
-          const oldSymbol = symbols.splice(symbolIdx, 1)[0];
-          symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
-          symbol.direction = symbol.direction ?? oldSymbol.direction;
-          symbol.length = symbol.length ?? oldSymbol.length;
-          symbol.location = symbol.location ?? oldSymbol.location;
-          symbol.type |= oldSymbol.type;
-          if (oldSymbol.radials) {
-            if (symbol.radials) {
-              symbol.radials.push(...oldSymbol.radials);
-            } else {
-              symbol.radials = oldSymbol.radials;
-            }
-          }
-          if (oldSymbol.radii) {
-            if (symbol.radii) {
-              symbol.radii.push(...oldSymbol.radii);
-            } else {
-              symbol.radii = oldSymbol.radii;
-            }
-          }
-        }
-        symbols.push(symbol);
-      };
-
-      // TODO ADIRs aligned (except in plan mode...?)
-      if ((efisOption & EfisOption.VorDmes) > 0) {
-        for (const vor of this.nearby.getVhfNavaids()) {
-          const symbolType = this.vorDmeTypeFlag(vor.type);
-          if (symbolType === 0) {
-            continue;
-          }
-          if (this.isWithinEditArea(vor.location, mapReferencePoint, mapOrientation, editArea)) {
-            upsertSymbol({
-              databaseId: vor.databaseId,
-              ident: vor.ident,
-              location: vor.location,
-              type: this.vorDmeTypeFlag(vor.type) | NdSymbolTypeFlags.EfisOption,
-            });
-          }
-        }
-      }
-      if ((efisOption & EfisOption.Ndbs) > 0) {
-        for (const ndb of this.nearby.getNdbNavaids()) {
-          if (this.isWithinEditArea(ndb.location, mapReferencePoint, mapOrientation, editArea)) {
-            upsertSymbol({
-              databaseId: ndb.databaseId,
-              ident: ndb.ident,
-              location: ndb.location,
-              type: NdSymbolTypeFlags.Ndb | NdSymbolTypeFlags.EfisOption,
-            });
-          }
-        }
-      }
-      if ((efisOption & EfisOption.Airports) > 0) {
-        for (const ap of this.nearby.getAirports()) {
-          if (
-            this.isWithinEditArea(ap.location, mapReferencePoint, mapOrientation, editArea) &&
-            hasSuitableRunway(ap)
-          ) {
-            upsertSymbol({
-              databaseId: ap.databaseId,
-              ident: ap.ident,
-              location: ap.location,
-              type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.EfisOption,
-            });
-          }
-        }
-      }
-      if ((efisOption & EfisOption.Waypoints) > 0) {
-        for (const wp of this.nearby.getWaypoints()) {
-          if (this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)) {
-            upsertSymbol({
-              databaseId: wp.databaseId,
-              ident: wp.ident,
-              location: wp.location,
-              type: NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.EfisOption,
-            });
-          }
-        }
-      }
-
-      const formatConstraintAlt = (alt: number, descent: boolean, prefix: string = '') => {
-        const transAlt = this.flightPlanService.active?.performanceData.transitionAltitude;
-        const transFl = this.flightPlanService.active?.performanceData.transitionLevel;
-
-        if (descent) {
-          const fl = Math.round(alt / 100);
-          if (transFl && fl >= transFl) {
-            return `${prefix}FL${fl}`;
-          }
-        } else if (transAlt && alt >= transAlt) {
-          return `${prefix}FL${Math.round(alt / 100)}`;
-        }
-        return `${prefix}${Math.round(alt)}`;
-      };
-
-      const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)}KT`;
-
-      // TODO don't send the waypoint before active once FP sequencing is properly implemented
-      // (currently sequences with guidance which is too early)
-      // eslint-disable-next-line no-lone-blocks
-
-      // ALTN
-      if (
-        this.flightPlanService.hasActive &&
-        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)
-      ) {
-        const symbols = this.getFlightPlanSymbols(
-          false,
-          this.flightPlanService.active,
-          this.guidanceController.activeGeometry,
-          range,
-          efisOption,
-          mode,
-          side,
-          mapReferencePoint,
-          mapOrientation,
-          editArea,
-          formatConstraintAlt,
-          formatConstraintSpeed,
-        );
-
-        for (const symbol of symbols) {
-          upsertSymbol(symbol);
-        }
-
-        // ACTIVE ALTN
-        if (
-          this.flightPlanService.active.alternateFlightPlan.legCount > 0 &&
-          this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active) &&
-          this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.PLAN)
-        ) {
-          const symbols = this.getFlightPlanSymbols(
-            true,
-            this.flightPlanService.active.alternateFlightPlan,
-            this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.Active, true),
-            range,
-            efisOption,
-            mode,
-            side,
-            mapReferencePoint,
-            mapOrientation,
-            editArea,
-            formatConstraintAlt,
-            formatConstraintSpeed,
-          );
-
-          for (const symbol of symbols) {
-            upsertSymbol(symbol);
-          }
-        }
-      }
-
-      // TMPY
-      if (
-        this.flightPlanService.hasTemporary &&
-        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Temporary)
-      ) {
-        const symbols = this.getFlightPlanSymbols(
-          false,
-          this.flightPlanService.temporary,
-          this.guidanceController.temporaryGeometry,
-          range,
-          efisOption,
-          mode,
-          side,
-          mapReferencePoint,
-          mapOrientation,
-          editArea,
-          formatConstraintAlt,
-          formatConstraintSpeed,
-        );
-
-        for (const symbol of symbols) {
-          upsertSymbol(symbol);
-        }
-      }
-
-      // SEC
-      if (
-        this.flightPlanService.hasSecondary(1) &&
-        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
-        this.efisInterfaces[side].shouldTransmitSecondary()
-      ) {
-        const symbols = this.getFlightPlanSymbols(
-          false,
-          this.flightPlanService.secondary(1),
-          this.guidanceController.secondaryGeometry,
-          range,
-          efisOption,
-          mode,
-          side,
-          mapReferencePoint,
-          mapOrientation,
-          editArea,
-          formatConstraintAlt,
-          formatConstraintSpeed,
-        );
-
-        for (const symbol of symbols) {
-          upsertSymbol(symbol);
-        }
-
-        // SEC ALTN
-        if (
-          this.flightPlanService.secondary(1).alternateFlightPlan.legCount > 0 &&
-          this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
-          this.efisInterfaces[side].shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.PLAN)
-        ) {
-          const symbols = this.getFlightPlanSymbols(
-            true,
-            this.flightPlanService.secondary(1).alternateFlightPlan,
-            this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary, true),
-            range,
-            efisOption,
-            mode,
-            side,
-            mapReferencePoint,
-            mapOrientation,
-            editArea,
-            formatConstraintAlt,
-            formatConstraintSpeed,
-          );
-
-          for (const symbol of symbols) {
-            upsertSymbol(symbol);
-          }
-        }
-      }
-
-      // Pseudo waypoints
-
-      for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
-        upsertSymbol({
-          databaseId: `W      ${pwp.ident}`,
-          ident: pwp.ident,
-          location: pwp.efisSymbolLla,
-          type: pwp.efisSymbolFlag,
-          // When in HDG/TRK, this defines where on the track line the PWP lies
-          distanceFromAirplane: pwp.distanceFromStart,
-        });
-      }
-
-      for (const ndb of this.navaidTuner.tunedNdbs) {
-        upsertSymbol({
-          databaseId: ndb.databaseId,
-          ident: ndb.ident,
-          location: ndb.location,
-          type: NdSymbolTypeFlags.Ndb | NdSymbolTypeFlags.Tuned,
-        });
-      }
-
-      for (const vor of this.navaidTuner.tunedVors) {
-        upsertSymbol({
-          databaseId: vor.databaseId,
-          ident: vor.ident,
-          location: vor.location,
-          type: this.vorDmeTypeFlag(vor.type) | NdSymbolTypeFlags.Tuned,
-        });
-      }
-
-      const wordsPerSymbol = 6;
-      const maxSymbols = 640 / wordsPerSymbol;
-      if (symbols.length > maxSymbols) {
-        symbols.splice(0, symbols.length - maxSymbols);
-        this.guidanceController.efisStateForSide[side].dataLimitReached = true;
-      } else {
-        this.guidanceController.efisStateForSide[side].dataLimitReached = false;
-      }
-
-      this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, symbols);
-
-      // make sure we don't run too often
-      this.blockUpdate = true;
-      setTimeout(() => {
-        this.blockUpdate = false;
-      }, 200);
+    if (
+      !pposChanged &&
+      !trueHeadingChanged &&
+      !rangeChange &&
+      !modeChange &&
+      !efisOptionChange &&
+      !nearbyOverlayChanged &&
+      !fpChanged &&
+      !navaidsChanged &&
+      !vnavPredictionsChanged &&
+      !efisInterfaceChanged
+    ) {
+      return;
     }
+
+    const mapReferencePoint = mode === EfisNdMode.PLAN ? this.findPlanCentreCoordinates() : ppos;
+    if (mapReferencePoint) {
+      this.mapReferenceLatitude.setBnrValue(
+        mapReferencePoint.lat,
+        Arinc429SignStatusMatrix.NormalOperation,
+        20,
+        90,
+        -90,
+      );
+      this.mapReferenceLongitude.setBnrValue(
+        mapReferencePoint.long,
+        Arinc429SignStatusMatrix.NormalOperation,
+        20,
+        180,
+        -180,
+      );
+    } else {
+      this.mapReferenceLatitude.setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 20, 90, -90);
+      this.mapReferenceLongitude.setBnrValue(0, Arinc429SignStatusMatrix.NoComputedData, 20, 180, -180);
+    }
+
+    this.mapReferenceLatitude.writeToSimVarIfDirty();
+    this.mapReferenceLongitude.writeToSimVarIfDirty();
+
+    if (mode === EfisNdMode.PLAN && !mapReferencePoint) {
+      this.syncer.sendEvent(this.syncEvent, []);
+      return;
+    }
+
+    /** True bearing of the up direction of the map in degrees. */
+    const mapOrientation = mode === EfisNdMode.PLAN ? 0 : trueHeading;
+    const editArea = this.calculateEditArea(range, mode);
+
+    const symbols: NdSymbol[] = [];
+
+    // symbols most recently inserted always end up at the end of the array
+    // we reverse the array at the end to make sure symbols are drawn in the correct order
+    // eslint-disable-next-line no-loop-func
+    const upsertSymbol = (symbol: NdSymbol): void => {
+      // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
+      const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
+      if (symbolIdx !== -1) {
+        const oldSymbol = symbols.splice(symbolIdx, 1)[0];
+        symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
+        symbol.direction = symbol.direction ?? oldSymbol.direction;
+        symbol.length = symbol.length ?? oldSymbol.length;
+        symbol.location = symbol.location ?? oldSymbol.location;
+        symbol.type |= oldSymbol.type;
+        if (oldSymbol.radials) {
+          if (symbol.radials) {
+            symbol.radials.push(...oldSymbol.radials);
+          } else {
+            symbol.radials = oldSymbol.radials;
+          }
+        }
+        if (oldSymbol.radii) {
+          if (symbol.radii) {
+            symbol.radii.push(...oldSymbol.radii);
+          } else {
+            symbol.radii = oldSymbol.radii;
+          }
+        }
+      }
+      symbols.push(symbol);
+    };
+
+    // TODO ADIRs aligned (except in plan mode...?)
+    if ((efisOption & EfisOption.VorDmes) > 0) {
+      for (const vor of this.nearby.getVhfNavaids()) {
+        const symbolType = this.vorDmeTypeFlag(vor.type);
+        if (symbolType === 0) {
+          continue;
+        }
+        if (this.isWithinEditArea(vor.location, mapReferencePoint, mapOrientation, editArea)) {
+          upsertSymbol({
+            databaseId: vor.databaseId,
+            ident: vor.ident,
+            location: vor.location,
+            type: this.vorDmeTypeFlag(vor.type) | NdSymbolTypeFlags.EfisOption,
+          });
+        }
+      }
+    }
+    if ((efisOption & EfisOption.Ndbs) > 0) {
+      for (const ndb of this.nearby.getNdbNavaids()) {
+        if (this.isWithinEditArea(ndb.location, mapReferencePoint, mapOrientation, editArea)) {
+          upsertSymbol({
+            databaseId: ndb.databaseId,
+            ident: ndb.ident,
+            location: ndb.location,
+            type: NdSymbolTypeFlags.Ndb | NdSymbolTypeFlags.EfisOption,
+          });
+        }
+      }
+    }
+    if ((efisOption & EfisOption.Airports) > 0) {
+      for (const ap of this.nearby.getAirports()) {
+        if (this.isWithinEditArea(ap.location, mapReferencePoint, mapOrientation, editArea) && hasSuitableRunway(ap)) {
+          upsertSymbol({
+            databaseId: ap.databaseId,
+            ident: ap.ident,
+            location: ap.location,
+            type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.EfisOption,
+          });
+        }
+      }
+    }
+    if ((efisOption & EfisOption.Waypoints) > 0) {
+      for (const wp of this.nearby.getWaypoints()) {
+        if (this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)) {
+          upsertSymbol({
+            databaseId: wp.databaseId,
+            ident: wp.ident,
+            location: wp.location,
+            type: NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.EfisOption,
+          });
+        }
+      }
+    }
+
+    const formatConstraintAlt = (alt: number, descent: boolean, prefix: string = '') => {
+      const transAlt = this.flightPlanService.active?.performanceData.transitionAltitude;
+      const transFl = this.flightPlanService.active?.performanceData.transitionLevel;
+
+      if (descent) {
+        const fl = Math.round(alt / 100);
+        if (transFl && fl >= transFl) {
+          return `${prefix}FL${fl}`;
+        }
+      } else if (transAlt && alt >= transAlt) {
+        return `${prefix}FL${Math.round(alt / 100)}`;
+      }
+      return `${prefix}${Math.round(alt)}`;
+    };
+
+    const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)}KT`;
+
+    // TODO don't send the waypoint before active once FP sequencing is properly implemented
+    // (currently sequences with guidance which is too early)
+    // eslint-disable-next-line no-lone-blocks
+
+    // ALTN
+    if (this.flightPlanService.hasActive && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)) {
+      const symbols = this.getFlightPlanSymbols(
+        false,
+        this.flightPlanService.active,
+        this.guidanceController.activeGeometry,
+        range,
+        efisOption,
+        mode,
+        this.side,
+        mapReferencePoint,
+        mapOrientation,
+        editArea,
+        formatConstraintAlt,
+        formatConstraintSpeed,
+      );
+
+      for (const symbol of symbols) {
+        upsertSymbol(symbol);
+      }
+
+      // ACTIVE ALTN
+      if (
+        this.flightPlanService.active.alternateFlightPlan.legCount > 0 &&
+        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active) &&
+        this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.PLAN)
+      ) {
+        const symbols = this.getFlightPlanSymbols(
+          true,
+          this.flightPlanService.active.alternateFlightPlan,
+          this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.Active, true),
+          range,
+          efisOption,
+          mode,
+          this.side,
+          mapReferencePoint,
+          mapOrientation,
+          editArea,
+          formatConstraintAlt,
+          formatConstraintSpeed,
+        );
+
+        for (const symbol of symbols) {
+          upsertSymbol(symbol);
+        }
+      }
+    }
+
+    // TMPY
+    if (
+      this.flightPlanService.hasTemporary &&
+      this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Temporary)
+    ) {
+      const symbols = this.getFlightPlanSymbols(
+        false,
+        this.flightPlanService.temporary,
+        this.guidanceController.temporaryGeometry,
+        range,
+        efisOption,
+        mode,
+        this.side,
+        mapReferencePoint,
+        mapOrientation,
+        editArea,
+        formatConstraintAlt,
+        formatConstraintSpeed,
+      );
+
+      for (const symbol of symbols) {
+        upsertSymbol(symbol);
+      }
+    }
+
+    // SEC
+    if (
+      this.flightPlanService.hasSecondary(1) &&
+      this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
+      this.efisInterface.shouldTransmitSecondary()
+    ) {
+      const symbols = this.getFlightPlanSymbols(
+        false,
+        this.flightPlanService.secondary(1),
+        this.guidanceController.secondaryGeometry,
+        range,
+        efisOption,
+        mode,
+        this.side,
+        mapReferencePoint,
+        mapOrientation,
+        editArea,
+        formatConstraintAlt,
+        formatConstraintSpeed,
+      );
+
+      for (const symbol of symbols) {
+        upsertSymbol(symbol);
+      }
+
+      // SEC ALTN
+      if (
+        this.flightPlanService.secondary(1).alternateFlightPlan.legCount > 0 &&
+        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
+        this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.PLAN)
+      ) {
+        const symbols = this.getFlightPlanSymbols(
+          true,
+          this.flightPlanService.secondary(1).alternateFlightPlan,
+          this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary, true),
+          range,
+          efisOption,
+          mode,
+          this.side,
+          mapReferencePoint,
+          mapOrientation,
+          editArea,
+          formatConstraintAlt,
+          formatConstraintSpeed,
+        );
+
+        for (const symbol of symbols) {
+          upsertSymbol(symbol);
+        }
+      }
+    }
+
+    // Pseudo waypoints
+
+    for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
+      upsertSymbol({
+        databaseId: `W      ${pwp.ident}`,
+        ident: pwp.ident,
+        location: pwp.efisSymbolLla,
+        type: pwp.efisSymbolFlag,
+        // When in HDG/TRK, this defines where on the track line the PWP lies
+        distanceFromAirplane: pwp.distanceFromStart,
+      });
+    }
+
+    for (const ndb of this.navaidTuner.tunedNdbs) {
+      upsertSymbol({
+        databaseId: ndb.databaseId,
+        ident: ndb.ident,
+        location: ndb.location,
+        type: NdSymbolTypeFlags.Ndb | NdSymbolTypeFlags.Tuned,
+      });
+    }
+
+    for (const vor of this.navaidTuner.tunedVors) {
+      upsertSymbol({
+        databaseId: vor.databaseId,
+        ident: vor.ident,
+        location: vor.location,
+        type: this.vorDmeTypeFlag(vor.type) | NdSymbolTypeFlags.Tuned,
+      });
+    }
+
+    const wordsPerSymbol = 6;
+    const maxSymbols = 640 / wordsPerSymbol;
+    if (symbols.length > maxSymbols) {
+      symbols.splice(0, symbols.length - maxSymbols);
+      // FIXME should not reach into guidanceController like that. It should really be part of EfisInterface anyhow
+      this.guidanceController.efisStateForSide[this.side].dataLimitReached = true;
+    } else {
+      this.guidanceController.efisStateForSide[this.side].dataLimitReached = false;
+    }
+
+    this.syncer.sendEvent(this.syncEvent, symbols);
+
+    // make sure we don't run too often
+    this.blockUpdate = true;
+    setTimeout(() => {
+      this.blockUpdate = false;
+    }, 200);
   }
 
   private getFlightPlanSymbols(
@@ -565,8 +550,8 @@ export class EfisSymbols<T extends number> {
     const isPlanMode = mode === EfisNdMode.PLAN;
 
     const transmitMissed = isAlternate
-      ? this.efisInterfaces[side].shouldTransmitAlternateMissed(flightPlan.index, isPlanMode)
-      : this.efisInterfaces[side].shouldTransmitMissed(flightPlan.index, isPlanMode);
+      ? this.efisInterface.shouldTransmitAlternateMissed(flightPlan.index, isPlanMode)
+      : this.efisInterface.shouldTransmitMissed(flightPlan.index, isPlanMode);
 
     const ret: NdSymbol[] = [];
 
@@ -895,13 +880,13 @@ export class EfisSymbols<T extends number> {
     }
   }
 
-  private findPlanCentreCoordinates(side: EfisSide): Coordinates | null {
+  private findPlanCentreCoordinates(): Coordinates | null {
     // PLAN mode center
     const {
       fpIndex: focusedWpFpIndex,
       index: focusedWpIndex,
       inAlternate: focusedWpInAlternate,
-    } = this.efisInterfaces[side].planCentre;
+    } = this.efisInterface.planCentre;
 
     if (!this.flightPlanService.has(focusedWpFpIndex)) {
       return null;
