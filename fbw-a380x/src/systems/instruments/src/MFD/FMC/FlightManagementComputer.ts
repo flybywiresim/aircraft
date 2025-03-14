@@ -1058,8 +1058,8 @@ export class FlightManagementComputer implements FmcInterface {
 
     this.guidanceController.update(dt);
 
-    this.efisSymbolsLeft.update(dt);
-    this.efisSymbolsRight.update(dt);
+    this.efisSymbolsLeft.update();
+    this.efisSymbolsRight.update();
 
     this.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
   }

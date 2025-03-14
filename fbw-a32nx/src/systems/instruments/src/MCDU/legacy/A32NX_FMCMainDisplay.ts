@@ -712,8 +712,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.guidanceController.update(_deltaTime);
     }
 
-    this.efisSymbolsLeft?.update(_deltaTime);
-    this.efisSymbolsRight.update(_deltaTime);
+    this.efisSymbolsLeft?.update();
+    this.efisSymbolsRight.update();
 
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
   }

@@ -7,7 +7,6 @@ import {
   Airport,
   LegType,
   Runway,
-  RunwaySurfaceType,
   VhfNavaidType,
   WaypointDescriptor,
   EfisOption,
@@ -18,6 +17,9 @@ import {
   EfisSide,
   Arinc429SignStatusMatrix,
   Arinc429OutputWord,
+  NearbyFacilityType,
+  isNearbyVhfFacility,
+  isMsfs2024,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -30,7 +32,6 @@ import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -41,6 +42,7 @@ import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -50,8 +52,6 @@ type EditArea = [number, number, number];
 export class EfisSymbols<T extends number> {
   private blockUpdate = false;
 
-  private nearby: NearbyFacilities;
-
   private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
   private lastMode = -1;
@@ -60,11 +60,11 @@ export class EfisSymbols<T extends number> {
 
   private lastEfisOption = 0;
 
-  private lastPpos: Coordinates = { lat: 0, long: 0 };
+  private lastMrp: Coordinates = { lat: 0, long: 0 };
 
   private lastTrueHeading: number = -1;
 
-  private lastNearbyFacilitiesVersion;
+  private nearbyFacilitesChanged = false;
 
   private lastFpVersions: Record<number, number> = {};
 
@@ -85,6 +85,19 @@ export class EfisSymbols<T extends number> {
 
   private readonly syncEvent = `A32NX_EFIS_${this.side}_SYMBOLS` as const;
 
+  private readonly nearbyAirportMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
+    NearbyFacilityType.Airport,
+  );
+  private readonly nearbyNdbNavaidMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
+    NearbyFacilityType.NdbNavaid,
+  );
+  private readonly nearbyVhfNavaidMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
+    NearbyFacilityType.VhfNavaid,
+  );
+  private readonly nearbyWaypointMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
+    NearbyFacilityType.Waypoint,
+  );
+
   constructor(
     private readonly bus: EventBus,
     private readonly side: EfisSide,
@@ -94,12 +107,20 @@ export class EfisSymbols<T extends number> {
     private readonly efisInterface: EfisInterface,
     private readonly rangeValues: T[], // TODO factor this out of here. The EfisInterface should directly supply a edit area
   ) {
-    this.nearby = NearbyFacilities.getInstance();
+    this.nearbyAirportMonitor.setMaxResults(100);
+    this.nearbyNdbNavaidMonitor.setMaxResults(100);
+    this.nearbyVhfNavaidMonitor.setMaxResults(100);
+    this.nearbyWaypointMonitor.setMaxResults(200);
+
+    const setNearbyFacilitiesChanged = () => (this.nearbyFacilitesChanged = true);
+
+    this.nearbyAirportMonitor.addListener(setNearbyFacilitiesChanged, setNearbyFacilitiesChanged);
+    this.nearbyNdbNavaidMonitor.addListener(setNearbyFacilitiesChanged, setNearbyFacilitiesChanged);
+    this.nearbyVhfNavaidMonitor.addListener(setNearbyFacilitiesChanged, setNearbyFacilitiesChanged);
+    this.nearbyWaypointMonitor.addListener(setNearbyFacilitiesChanged, setNearbyFacilitiesChanged);
   }
 
-  init(): void {
-    this.nearby.init();
-  }
+  init(): void {}
 
   /**
    *
@@ -126,9 +147,7 @@ export class EfisSymbols<T extends number> {
     return Math.abs(dx) < editArea[2] && dy > -editArea[1] && dy < editArea[0];
   }
 
-  async update(deltaTime: number): Promise<void> {
-    this.nearby.update(deltaTime);
-
+  async update(): Promise<void> {
     if (this.blockUpdate) {
       return;
     }
@@ -140,18 +159,18 @@ export class EfisSymbols<T extends number> {
     };
     const trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
 
+    const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.side}_ND_MODE`, 'number');
+
     // TODO planar distance in msfs-geo
-    const pposChanged = distanceTo(this.lastPpos, ppos) > 2;
-    if (pposChanged) {
-      this.lastPpos = ppos;
+    const mapReferencePoint = mode === EfisNdMode.PLAN ? this.findPlanCentreCoordinates() ?? ppos : ppos;
+    const mrpChanged = distanceTo(this.lastMrp, mapReferencePoint) > 2;
+    if (mrpChanged) {
+      this.lastMrp = mapReferencePoint;
     }
     const trueHeadingChanged = MathUtils.diffAngle(trueHeading, this.lastTrueHeading) > 2;
     if (trueHeadingChanged) {
       this.lastTrueHeading = trueHeading;
     }
-
-    const nearbyFacilitiesChanged = this.nearby.version !== this.lastNearbyFacilitiesVersion;
-    this.lastNearbyFacilitiesVersion = this.nearby.version;
 
     const activeFpVersion = this.flightPlanService.has(FlightPlanIndex.Active)
       ? this.flightPlanService.active.version
@@ -179,11 +198,10 @@ export class EfisSymbols<T extends number> {
     const vnavPredictionsChanged = this.lastVnavDriverVersion !== this.guidanceController.vnavDriver.version;
     this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
 
-    const hasSuitableRunway = (airport: Airport): boolean =>
-      airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
+    // const hasSuitableRunway = (airport: Airport): boolean =>
+    //   airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
     const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.side}_ND_RANGE`, 'number')];
-    const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.side}_ND_MODE`, 'number');
     const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.side}_OPTION`, 'Enum');
 
     const rangeChange = this.lastRange !== range;
@@ -192,17 +210,38 @@ export class EfisSymbols<T extends number> {
     this.lastMode = mode;
     const efisOptionChange = this.lastEfisOption !== efisOption;
     this.lastEfisOption = efisOption;
-    const nearbyOverlayChanged = (efisOption & ~EfisOption.Constraints) > 0 && nearbyFacilitiesChanged;
+    this.nearbyFacilitesChanged &&= (efisOption & ~EfisOption.Constraints) > 0;
     const efisInterfaceChanged = this.lastEfisInterfaceVersion !== this.efisInterface.version;
     this.lastEfisInterfaceVersion = this.efisInterface.version;
 
+    const editArea = this.calculateEditArea(range, mode);
+    // MSFS2024 can load facs much more efficiently with minimal facilities, so we can afford to follow the MRP in plan mode.
+    const nearbyCentre = isMsfs2024() ? mapReferencePoint : ppos;
+    const nearbyRadius = Math.max(...editArea);
+    if (efisOption & EfisOption.Airports) {
+      this.nearbyAirportMonitor.setLocation(nearbyCentre.lat, nearbyCentre.long);
+      this.nearbyAirportMonitor.setRadius(nearbyRadius);
+    }
+    if (efisOption & EfisOption.Ndbs) {
+      this.nearbyNdbNavaidMonitor.setLocation(nearbyCentre.lat, nearbyCentre.long);
+      this.nearbyNdbNavaidMonitor.setRadius(nearbyRadius);
+    }
+    if (efisOption & EfisOption.VorDmes) {
+      this.nearbyVhfNavaidMonitor.setLocation(nearbyCentre.lat, nearbyCentre.long);
+      this.nearbyVhfNavaidMonitor.setRadius(nearbyRadius);
+    }
+    if (efisOption & EfisOption.Waypoints) {
+      this.nearbyWaypointMonitor.setLocation(nearbyCentre.lat, nearbyCentre.long);
+      this.nearbyWaypointMonitor.setRadius(nearbyRadius);
+    }
+
     if (
-      !pposChanged &&
+      !mrpChanged &&
       !trueHeadingChanged &&
       !rangeChange &&
       !modeChange &&
       !efisOptionChange &&
-      !nearbyOverlayChanged &&
+      !this.nearbyFacilitesChanged &&
       !fpChanged &&
       !navaidsChanged &&
       !vnavPredictionsChanged &&
@@ -211,7 +250,6 @@ export class EfisSymbols<T extends number> {
       return;
     }
 
-    const mapReferencePoint = mode === EfisNdMode.PLAN ? this.findPlanCentreCoordinates() : ppos;
     if (mapReferencePoint) {
       this.mapReferenceLatitude.setBnrValue(
         mapReferencePoint.lat,
@@ -242,7 +280,6 @@ export class EfisSymbols<T extends number> {
 
     /** True bearing of the up direction of the map in degrees. */
     const mapOrientation = mode === EfisNdMode.PLAN ? 0 : trueHeading;
-    const editArea = this.calculateEditArea(range, mode);
 
     const symbols: NdSymbol[] = [];
 
@@ -279,8 +316,11 @@ export class EfisSymbols<T extends number> {
 
     // TODO ADIRs aligned (except in plan mode...?)
     if ((efisOption & EfisOption.VorDmes) > 0) {
-      for (const vor of this.nearby.getVhfNavaids()) {
-        const symbolType = this.vorDmeTypeFlag(vor.type);
+      for (const vor of this.nearbyVhfNavaidMonitor.getCurrentFacilities()) {
+        if (!isNearbyVhfFacility(vor)) {
+          continue;
+        }
+        const symbolType = this.vorDmeTypeFlag(vor.vhfType);
         if (symbolType === 0) {
           continue;
         }
@@ -289,13 +329,13 @@ export class EfisSymbols<T extends number> {
             databaseId: vor.databaseId,
             ident: vor.ident,
             location: vor.location,
-            type: this.vorDmeTypeFlag(vor.type) | NdSymbolTypeFlags.EfisOption,
+            type: symbolType | NdSymbolTypeFlags.EfisOption,
           });
         }
       }
     }
     if ((efisOption & EfisOption.Ndbs) > 0) {
-      for (const ndb of this.nearby.getNdbNavaids()) {
+      for (const ndb of this.nearbyNdbNavaidMonitor.getCurrentFacilities()) {
         if (this.isWithinEditArea(ndb.location, mapReferencePoint, mapOrientation, editArea)) {
           upsertSymbol({
             databaseId: ndb.databaseId,
@@ -307,8 +347,10 @@ export class EfisSymbols<T extends number> {
       }
     }
     if ((efisOption & EfisOption.Airports) > 0) {
-      for (const ap of this.nearby.getAirports()) {
-        if (this.isWithinEditArea(ap.location, mapReferencePoint, mapOrientation, editArea) && hasSuitableRunway(ap)) {
+      for (const ap of this.nearbyAirportMonitor.getCurrentFacilities()) {
+        if (
+          this.isWithinEditArea(ap.location, mapReferencePoint, mapOrientation, editArea) /* && hasSuitableRunway(ap)*/
+        ) {
           upsertSymbol({
             databaseId: ap.databaseId,
             ident: ap.ident,
@@ -319,7 +361,7 @@ export class EfisSymbols<T extends number> {
       }
     }
     if ((efisOption & EfisOption.Waypoints) > 0) {
-      for (const wp of this.nearby.getWaypoints()) {
+      for (const wp of this.nearbyWaypointMonitor.getCurrentFacilities()) {
         if (this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)) {
           upsertSymbol({
             databaseId: wp.databaseId,
