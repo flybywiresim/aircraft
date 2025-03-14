@@ -1294,7 +1294,10 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private machHysteresis = false;
 
-  private readonly machAr = ConsumerSubject.create(this.sub.on('machAr').withArinc429Precision(3), Arinc429Register.empty());
+  private readonly machAr = ConsumerSubject.create(
+    this.sub.on('machAr').withArinc429Precision(3),
+    Arinc429Register.empty(),
+  );
 
   private readonly mach = Arinc429RegisterSubject.createEmpty();
 
