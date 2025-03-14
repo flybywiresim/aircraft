@@ -177,6 +177,8 @@
 1. [A32NX/FMS] Fixed an error preventing the RETURN LSK from working on the create waypoint page in some cases - @tracernz (Mike)
 1. [A32NX/FMS] Disallow editing of waypoint ident on the create waypoint page - @tracernz (Mike)
 1. [A380X/MFD] Changed flightplan time header to show correct TIME or UTC - @MrJigs7 (MrJigs.)
+1. [FMS] Use proper DME location for AF, CD, FD legs on MSFS2024 and add MSFS2020 fallback to improve AF legs - @tracernz (Mike)
+1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
 
 ## 0.12.0
 
