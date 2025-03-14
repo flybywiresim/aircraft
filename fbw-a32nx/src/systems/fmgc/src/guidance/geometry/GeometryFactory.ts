@@ -294,13 +294,10 @@ function geometryLegFromFlightPlanLeg(
     }
     case LegType.CR:
     case LegType.VR: // TODO VR leg in geometry
-      return new CRLeg(
-        trueCourse,
-        { ident: recommendedNavaid.ident, coordinates: recommendedNavaid.location, theta: trueTheta - runningMagvar },
-        trueTheta,
-        metadata,
-        SegmentType.Departure,
-      );
+      if (!isVhfNavaid(recommendedNavaid)) {
+        throw new Error('[FMS/Geometry] Cannot create a CR or VR leg with invalid recommended navaid');
+      }
+      return new CRLeg(trueCourse, recommendedNavaid, flightPlanLeg.definition.theta, metadata, SegmentType.Departure);
     case LegType.HA:
       return new HALeg(waypoint, metadata, SegmentType.Departure);
     case LegType.HF:
