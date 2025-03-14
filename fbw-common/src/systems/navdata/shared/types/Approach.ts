@@ -1,3 +1,4 @@
+import { RunwayDesignator } from './Runway';
 import { DatabaseItem, ProcedureTransition } from './Common';
 import { ProcedureLeg } from './ProcedureLeg';
 import { AirportSubsectionCode, SectionCode } from './SectionCode';
@@ -36,23 +37,20 @@ export enum LevelOfService {
 export interface Approach extends DatabaseItem<SectionCode.Airport> {
   subSectionCode: AirportSubsectionCode.ApproachProcedures;
 
-  /**
-   * Runway this approach is to, or not if multiple runways
-   */
-  runwayIdent?: string;
+  /** Runway this approach is for. */
+  runwayIdent: string;
+  /** Runway number this approach is for. */
+  runwayNumber: number;
+  /** Runway designator this approach is for.  */
+  runwayDesignator: RunwayDesignator;
 
-  /**
-   * Multiple indicator
-   */
+  /** Multiple indicator/suffix. Empty string when none. */
   multipleIndicator: string;
 
   /**
    * Type of approach guidance
    */
   type: ApproachType;
-
-  /** The approach suffix char for multiple approaches, or undefined if none. */
-  suffix?: string;
 
   /**
    * RNP-AR approach?
