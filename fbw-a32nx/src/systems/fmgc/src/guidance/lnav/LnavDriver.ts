@@ -496,7 +496,7 @@ export class LnavDriver implements GuidanceComponent {
 
     if (lateralModel === LateralMode.NAV) {
       // Set HDG (current heading)
-      SimVar.SetSimVarValue('H:A320_Neo_FCU_HDG_PULL', 'number', 0);
+      SimVar.SetSimVarValue('K:A32NX.FCU_HDG_PULL', 'number', 0);
       SimVar.SetSimVarValue('L:A32NX_FM_HEADING_SYNC', 'boolean', true);
       reverted = true;
     }
