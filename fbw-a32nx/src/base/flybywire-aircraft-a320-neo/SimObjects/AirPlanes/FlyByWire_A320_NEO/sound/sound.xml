@@ -2094,7 +2094,7 @@
 
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV1">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_VOR1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
@@ -2104,7 +2104,7 @@
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV2">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_VOR2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
@@ -2114,7 +2114,7 @@
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV3">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ILS">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:3" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>

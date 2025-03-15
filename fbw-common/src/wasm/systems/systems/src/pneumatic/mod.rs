@@ -953,7 +953,7 @@ mod tests {
         electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, InternationalStandardAtmosphere, MachNumber},
-        simulation::{test::TestVariableRegistry, UpdateContext},
+        simulation::{test::TestVariableRegistry, SideControlling, UpdateContext},
     };
     use ntest::assert_about_eq;
     use std::time::Duration;
@@ -1053,6 +1053,7 @@ mod tests {
             Angle::new::<radian>(0.),
             MachNumber(0.),
             Angle::new::<degree>(0.),
+            SideControlling::CAPTAIN,
         )
     }
 

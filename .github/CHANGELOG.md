@@ -177,6 +177,7 @@
 1. [A32NX/FMS] Fixed an error preventing the RETURN LSK from working on the create waypoint page in some cases - @tracernz (Mike)
 1. [A32NX/FMS] Disallow editing of waypoint ident on the create waypoint page - @tracernz (Mike)
 1. [A380X/MFD] Changed flightplan time header to show correct TIME or UTC - @MrJigs7 (MrJigs.)
+1. [A32NX/COMMS] Enabled all components of communications panels with Rust - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.12.0
 

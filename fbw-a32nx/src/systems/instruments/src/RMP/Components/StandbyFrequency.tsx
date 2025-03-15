@@ -15,10 +15,9 @@ declare const Utils; // this can also be replaced once /typings are available
 
 export enum TransceiverType {
   RADIO_VHF,
+  RADIO_HF,
   VOR,
   ILS,
-  GLS,
-  MLS,
   ADF,
 }
 
@@ -156,6 +155,9 @@ export const StandbyFrequency = (props: Props) => {
         let newInteger = 0;
         if (props.transceiver === TransceiverType.RADIO_VHF) {
           newInteger = Utils.Clamp(integer, 118, 136);
+        }
+        if (props.transceiver === TransceiverType.RADIO_HF) {
+          newInteger = Utils.Clamp(integer, 2, 23);
         } else if (props.transceiver === TransceiverType.ILS) {
           newInteger = Utils.Clamp(integer, 108, 111);
         } else if (props.transceiver === TransceiverType.VOR) {
@@ -188,11 +190,16 @@ export const StandbyFrequency = (props: Props) => {
         const integer = Math.floor(frequency / 1000);
         let decimal = 0;
 
-        if (props.transceiver !== TransceiverType.ADF) {
-          decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
-        } else {
-          // offsetFrequencyChannel does not fit ADF needs
+        // offsetFrequencyChannel does not fit ADF needs nor HF
+        if (props.transceiver === TransceiverType.ADF) {
           decimal = frequency % 1000 === 0 ? 500 : 0;
+        } else if (props.transceiver === TransceiverType.RADIO_HF) {
+          decimal = (frequency % 1000) + offset;
+          if (decimal < 0) {
+            decimal = 1000 - Math.abs(decimal);
+          }
+        } else {
+          decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
         }
         props.setValue((integer * 1000 + (decimal % 1000)) * toMhz);
       } else {
