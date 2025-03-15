@@ -1,9 +1,8 @@
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
-import { Airport, NXUnits } from '@flybywiresim/fbw-sdk';
+import { Airport, NearbyFacility, NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { Predictions } from '@fmgc/guidance/vnav/Predictions';
@@ -11,7 +10,7 @@ import { UnitType } from '@microsoft/msfs-sdk';
 import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
 
 interface AirportRow {
-  airport?: Airport;
+  airport?: Airport | NearbyFacility;
 
   /** Bearing to the airport in degrees from true north. */
   bearing?: number;
@@ -75,7 +74,9 @@ export class CDUAirportsMonitor {
     }
 
     if (!frozen && !showEfob) {
-      const newAirports = [...NearbyFacilities.getInstance().getAirports()];
+      const newAirports =
+        mcdu.navigation?.getNearbyAirports().map((ap) => ({ ...ap, distance: distanceTo(ppos, ap.location) })) ?? [];
+
       newAirports.sort((a, b) => a.distance - b.distance);
       newAirports.length = CDUAirportsMonitor.NUM_AIRPORTS;
       for (let i = 0; i < this.NUM_AIRPORTS; i++) {
@@ -208,7 +209,7 @@ export class CDUAirportsMonitor {
         rowData.distance = distanceTo(ppos, rowData.airport.location);
 
         if (doCruisePreds) {
-          const desAlt = mcdu.cruiseLevel * 100 - rowData.airport.location.alt;
+          const desAlt = mcdu.cruiseLevel * 100 - (rowData.airport.location.alt ?? 0);
           const desFuelCoef = 0.412;
           const desBurn = (desFuelCoef * desAlt) / 41000;
           const desDistCoef = 123;

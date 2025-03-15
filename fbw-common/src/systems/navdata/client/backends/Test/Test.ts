@@ -1,4 +1,4 @@
-import { Coordinates, NauticalMiles } from 'msfs-geo';
+import { Coordinates } from 'msfs-geo';
 import {
   DatabaseIdent,
   Airport,
@@ -15,16 +15,11 @@ import {
   VhfNavaid,
   Fix,
   Airway,
-  AirwayLevel,
-  VorClass,
-  VhfNavaidType,
-  NdbClass,
-  ControlledAirspace,
-  RestrictiveAirspace,
 } from '../../../shared';
 import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory'; // FIXME remove import from FMGC
+import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
 
 export class TestBackend implements DataInterface {
   getDatabaseIdent(): Promise<DatabaseIdent> {
@@ -117,56 +112,17 @@ export class TestBackend implements DataInterface {
   async getAirwaysByFix(_ident: string, _icaoCode: string, _airwayIdent?: string): Promise<Airway[]> {
     return [];
   }
-  async getNearbyAirports(
-    _center: Coordinates,
-    _range: NauticalMiles,
-    _limit?: number,
-    _longestRunwaySurfaces?: number,
-    _longestRunwayLength?: number,
-  ): Promise<readonly Airport[]> {
-    return [];
+  createNearbyFacilityMonitor(_type: NearbyFacilityType): NearbyFacilityMonitor {
+    return {
+      setLocation: EmptyCallback.Void,
+      setRadius: EmptyCallback.Void,
+      setMaxResults: EmptyCallback.Void,
+      addListener: EmptyCallback.Void,
+      getCurrentFacilities: () => [],
+      destroy: EmptyCallback.Void,
+    };
   }
-  async getNearbyAirways(
-    _center: Coordinates,
-    _range: NauticalMiles,
-    _limit?: number,
-    _levels?: AirwayLevel,
-  ): Promise<readonly Airway[]> {
-    return [];
-  }
-  async getNearbyVhfNavaids(
-    _center: Coordinates,
-    _range: number,
-    _limit?: number,
-    _classes?: VorClass,
-    _types?: VhfNavaidType,
-  ): Promise<readonly VhfNavaid[]> {
-    return [];
-  }
-  async getNearbyNdbNavaids(
-    _center: Coordinates,
-    _range: NauticalMiles,
-    _limit?: number,
-    _classes?: NdbClass,
-  ): Promise<readonly NdbNavaid[]> {
-    return [];
-  }
-  async getNearbyWaypoints(_center: Coordinates, _range: NauticalMiles, _limit?: number): Promise<readonly Waypoint[]> {
-    return [];
-  }
-  async getNearbyFixes(_center: Coordinates, _range: NauticalMiles, _limit?: number): Promise<readonly Fix[]> {
-    return [];
-  }
-  async getControlledAirspaceInRange(
-    _center: Coordinates,
-    _range: NauticalMiles,
-  ): Promise<readonly ControlledAirspace[]> {
-    return [];
-  }
-  async getRestrictiveAirspaceInRange(
-    _center: Coordinates,
-    _range: NauticalMiles,
-  ): Promise<readonly RestrictiveAirspace[]> {
-    return [];
+  getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {
+    throw new Error(`Could not fetch facility "${databaseId}"!`);
   }
 }
