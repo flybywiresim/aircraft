@@ -43,7 +43,10 @@ add_executable(flybywire-a380x-fbw
     src/SpoilersHandler.cpp
     src/fac/Fac.cpp
     src/failures/FailuresConsumer.cpp
+    src/fcdc/Fcdc.cpp
     src/interface/SimConnectInterface.cpp
+    src/model/A380FacComputer_data.cpp
+    src/model/A380FacComputer.cpp
     src/model/A380LateralDirectLaw.cpp
     src/model/A380LateralNormalLaw.cpp
     src/model/A380PitchAlternateLaw.cpp
@@ -61,8 +64,6 @@ add_executable(flybywire-a380x-fbw
     src/model/Autothrust.cpp
     src/model/binsearch_u32d.cpp
     src/model/Double2MultiWord.cpp
-    src/model/FacComputer_data.cpp
-    src/model/FacComputer.cpp
     src/model/intrp3d_l_pw.cpp
     src/model/look1_binlxpw.cpp
     src/model/look2_binlxpw.cpp
