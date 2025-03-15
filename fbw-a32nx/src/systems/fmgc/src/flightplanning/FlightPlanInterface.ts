@@ -4,7 +4,7 @@
 
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { HoldData } from '@fmgc/flightplanning/data/flightplan';
+import { HoldData, OffsetData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
@@ -252,6 +252,23 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     planIndex: number,
     alternate?: boolean,
   ): Promise<number>;
+
+  /**
+   * OFFSET revision. Inserts or eidts an offset with a defined start and end point.
+   *
+   * @param startIndex the index of the leg to start the offset at
+   * @param endIndex the index of the leg to end the offset at
+   * @param desiredOffset the desired offset
+   * @param planIndex the flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  setOffsetParams(
+    startIndex: number,
+    endIndex: number,
+    desiredOffset: OffsetData,
+    planIndex: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<void>;
 
   /**
    * Reverts a hold parented to a leg to a computed hold.
