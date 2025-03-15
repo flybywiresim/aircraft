@@ -8,14 +8,9 @@ import {
   NearbyFacilityMonitorAddedCallback,
   NearbyFacilityMonitorRemovedCallback,
   NearbyFacilityType,
-  NearbyVhfFacility,
 } from '../../NearbyFacilityMonitor';
 import {
   AirportClass,
-  JS_FacilityAirport,
-  JS_FacilityIntersection,
-  JS_FacilityNDB,
-  JS_FacilityVOR,
   JS_ICAO,
   JSAirportRequestFlags,
   MsfsFacilityType,
@@ -26,19 +21,19 @@ import {
   VorClass,
   VorType,
 } from './FsTypes';
-import { MsfsMapping } from './Mapping';
+import { NearbyFacilityCache } from './NearbyFacilityCache';
 
 /** A nearby facility monitor for MSFS2024 and above. See {@link Msfs2020NearbyFacilityMonitor} for legacy support. */
 export class MsfsNearbyFacilityMonitor implements NearbyFacilityMonitor {
   private static readonly UPDATE_INTERVAL_MS = 200;
 
-  // TODO limit cache size
-  // We keep our own cache as we will only load minimal facilities where possible.
-  protected static readonly facilityCache: NearbyFacility[] = [];
-  protected static cacheUserCount = 0;
+  /**
+   * Cache the nearby facility instances to avoid churn.
+   * The cache is shared among instances to reduce memory and fetching cost.
+   */
+  protected readonly facilityCache = NearbyFacilityCache.create();
 
   protected readonly currentFacilities: NearbyFacility[] = [];
-  protected readonly pendingFacilities: string[] = [];
 
   protected readonly listeners: {
     added: NearbyFacilityMonitorAddedCallback;
@@ -57,38 +52,18 @@ export class MsfsNearbyFacilityMonitor implements NearbyFacilityMonitor {
   protected sessionId?: number;
 
   private updateInterval: ReturnType<typeof setInterval> | null;
-  private coherentSubs: { clear: typeof EmptyCallback.Void }[] = [];
+  private searchCompletedListener: { clear: typeof EmptyCallback.Void };
 
   constructor(protected readonly facilityType: NearbyFacilityType) {
-    MsfsNearbyFacilityMonitor.cacheUserCount++;
+    this.facilityCache.awaitInit().then(() => {
+      this.startSession().then((s) => {
+        this.sessionId = s;
+        this.setFilter();
+        this.isInit = true;
+      });
+    });
 
-    RegisterViewListener(
-      'JS_LISTENER_FACILITY',
-      () => {
-        this.startSession().then((s) => {
-          this.sessionId = s;
-          this.setFilter();
-          this.isInit = true;
-        });
-      },
-      true,
-    );
-
-    this.coherentSubs.push(this.hookEventListener());
-    switch (this.facilityType) {
-      case NearbyFacilityType.Airport:
-        this.coherentSubs.push(Coherent.on('SendAirport', this.onReceiveAirport.bind(this)));
-        break;
-      case NearbyFacilityType.NdbNavaid:
-        this.coherentSubs.push(Coherent.on('SendNdb', this.onReceiveFacility.bind(this)));
-        break;
-      case NearbyFacilityType.VhfNavaid:
-        this.coherentSubs.push(Coherent.on('SendVor', this.onReceiveVor.bind(this)));
-        break;
-      case NearbyFacilityType.Waypoint:
-        this.coherentSubs.push(Coherent.on('SendIntersection', this.onReceiveFacility.bind(this)));
-        break;
-    }
+    this.searchCompletedListener = this.hookEventListener();
 
     this.updateInterval = setInterval(this.onUpdate.bind(this), MsfsNearbyFacilityMonitor.UPDATE_INTERVAL_MS);
   }
@@ -116,32 +91,14 @@ export class MsfsNearbyFacilityMonitor implements NearbyFacilityMonitor {
 
     for (const added of result.added) {
       const databaseId = MsfsNearbyFacilityMonitor.mapStructToDatabaseId(added);
-      const cachedFac = MsfsNearbyFacilityMonitor.facilityCache.find((f) => f.databaseId === databaseId);
-      if (cachedFac) {
-        this.onFacilityAdded(cachedFac);
-      } else {
-        this.pendingFacilities.push(databaseId);
-        this.loadFacility(databaseId, added).then((exists) => {
-          if (!exists) {
-            this.removeFromPending(databaseId);
-          }
-        });
-      }
+      this.facilityCache.get(databaseId).then((fac) => {
+        if (fac !== null) {
+          this.onFacilityAdded(fac);
+        } else {
+          console.warn(`MsfsNearbyFacilityMonitor: Could not fetch facility with id '${databaseId}'`);
+        }
+      });
     }
-  }
-
-  /**
-   * Removes an item from the pending list.
-   * @param databaseId DB ID of the item (MSFS ICAO).
-   * @returns true if the facility was removed from the pending list, else false.
-   */
-  protected removeFromPending(databaseId: string): boolean {
-    const pendingIndex = this.pendingFacilities.findIndex((id) => id === databaseId);
-    if (pendingIndex >= 0) {
-      this.pendingFacilities.splice(pendingIndex, 1);
-      return true;
-    }
-    return false;
   }
 
   protected loadFacility(icao: string, icaoStruct?: JS_ICAO): Promise<boolean> {
@@ -173,81 +130,12 @@ export class MsfsNearbyFacilityMonitor implements NearbyFacilityMonitor {
         break;
       }
     }
-    this.removeFromPending(databaseId);
-  }
-
-  protected onFacilityLoaded(facility: NearbyFacility): void {
-    // avoid double cache entries in case somebody else grabbed it while we were waiting for the sim to load as well
-    if (!MsfsNearbyFacilityMonitor.facilityCache.find((f) => f.databaseId === facility.databaseId)) {
-      MsfsNearbyFacilityMonitor.facilityCache.push(facility);
-    }
-    this.onFacilityAdded(facility);
   }
 
   protected onFacilityAdded(facility: NearbyFacility): void {
     this.currentFacilities.push(facility);
     for (const listener of this.listeners) {
       listener.added(facility);
-    }
-  }
-
-  private onReceiveFacility(msfsFac: JS_FacilityAirport | JS_FacilityIntersection | JS_FacilityNDB): void {
-    const type = MsfsNearbyFacilityMonitor.getNearbyTypeFromIcao(msfsFac.icao);
-    if (type === NearbyFacilityType.VhfNavaid) {
-      throw new Error('VORs should never get here');
-    }
-    if (type === this.facilityType && this.removeFromPending(msfsFac.icao)) {
-      const nearbyFac: NearbyFacility = {
-        databaseId: msfsFac.icao,
-        type,
-        location:
-          'alt' in msfsFac
-            ? { lat: msfsFac.lat, long: msfsFac.lon, alt: msfsFac.alt / 0.3048 }
-            : { lat: msfsFac.lat, long: msfsFac.lon },
-        ident: msfsFac.icaoStruct ? msfsFac.icaoStruct.ident : msfsFac.icao.substring(7).trimEnd(),
-      };
-
-      this.onFacilityLoaded(nearbyFac);
-    }
-  }
-
-  private onReceiveAirport(msfsFac: JS_FacilityAirport): void {
-    // filter out non-navdata airports
-    if (msfsFac.icaoStruct && msfsFac.icaoStruct.ident.length > 4) {
-      return;
-    }
-    this.onReceiveFacility(msfsFac);
-  }
-
-  private static getNearbyTypeFromIcao(icao: string): NearbyFacilityType | undefined {
-    switch (icao[0]) {
-      case 'A':
-        return NearbyFacilityType.Airport;
-      case 'N':
-        return NearbyFacilityType.NdbNavaid;
-      case 'V':
-        return NearbyFacilityType.VhfNavaid;
-      case 'W':
-        return NearbyFacilityType.Waypoint;
-    }
-  }
-
-  private onReceiveVor(vor: JS_FacilityVOR): void {
-    const type = MsfsNearbyFacilityMonitor.getNearbyTypeFromIcao(vor.icao);
-    if (type !== NearbyFacilityType.VhfNavaid) {
-      throw new Error('Only VORs should ever get here');
-    }
-    if (type === this.facilityType && this.removeFromPending(vor.icao)) {
-      const fac: NearbyVhfFacility = {
-        databaseId: vor.icao,
-        type: NearbyFacilityType.VhfNavaid,
-        location: vor.dme ? { lat: vor.dme.lat, long: vor.dme.lon, alt: vor.dme.alt } : { lat: vor.lat, long: vor.lon },
-        ident: vor.icaoStruct ? vor.icaoStruct.ident : vor.icao.substring(7).trimEnd(),
-        vhfType: MsfsMapping.mapVorType(vor),
-        vhfClass: MsfsMapping.mapVorClass(vor),
-      };
-
-      this.onFacilityLoaded(fac);
     }
   }
 
@@ -371,19 +259,13 @@ export class MsfsNearbyFacilityMonitor implements NearbyFacilityMonitor {
       clearInterval(this.updateInterval);
       this.updateInterval = null;
 
-      for (const sub of this.coherentSubs) {
-        sub.clear();
-      }
-      this.coherentSubs.length = 0;
+      this.searchCompletedListener.clear();
       // Set filter down to minimal and do one last update to free as much FS mem as possible
       Coherent.call('SEARCH_NEAREST', this.sessionId, this.lat, this.lon, 0, 0);
 
       // free some refs for gc collection
       this.currentFacilities.length = 0;
-      this.pendingFacilities.length = 0;
-      if (--MsfsNearbyFacilityMonitor.cacheUserCount === 0) {
-        MsfsNearbyFacilityMonitor.facilityCache.length = 0;
-      }
+      this.facilityCache.destroy();
     }
   }
 }
@@ -407,17 +289,13 @@ export class Msfs2020NearbyFacilityMonitor extends MsfsNearbyFacilityMonitor {
     }
 
     for (const added of result.added) {
-      const cachedFac = MsfsNearbyFacilityMonitor.facilityCache.find((f) => f.databaseId === added);
-      if (cachedFac) {
-        this.onFacilityAdded(cachedFac);
-      } else {
-        this.pendingFacilities.push(added);
-        this.loadFacility(added).then((exists) => {
-          if (!exists) {
-            this.removeFromPending(added);
-          }
-        });
-      }
+      this.facilityCache.get(added).then((fac) => {
+        if (fac !== null) {
+          this.onFacilityAdded(fac);
+        } else {
+          console.warn(`MsfsNearbyFacilityMonitor: Could not fetch facility with id '${added}'`);
+        }
+      });
     }
   }
 }
