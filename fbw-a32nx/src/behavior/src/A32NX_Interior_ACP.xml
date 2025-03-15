@@ -410,7 +410,7 @@
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <!-- Green light -->
-            <SEQ1_EMISSIVE_CODE>#SEQ1_POWERED# (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == and #EMISSIVE_TEST# or #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #SEQ1_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
             <!-- Button name light (for example CALL or MECH) -->
             <SEQ2_EMISSIVE_CODE>#SEQ1_POWERED# #EMISSIVE_TEST# and</SEQ2_EMISSIVE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>

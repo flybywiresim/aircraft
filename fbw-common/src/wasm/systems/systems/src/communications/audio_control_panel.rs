@@ -72,6 +72,7 @@ pub struct AudioControlPanel {
 
     list_arinc_words: Vec<WordAudioManagementUnitAudioControlPanelInfo>,
     last_complete_cycle_sent: Duration,
+    time_since_last_data_received: Duration,
 }
 impl AudioControlPanel {
     pub fn new(context: &mut InitContext, id_acp: u32, power_supply: ElectricalBusType) -> Self {
@@ -199,6 +200,7 @@ impl AudioControlPanel {
                 ),
             ]),
             last_complete_cycle_sent: Duration::from_millis(0),
+            time_since_last_data_received: Duration::from_millis(0),
         }
     }
 
@@ -300,6 +302,7 @@ impl AudioControlPanel {
 
     pub fn update(&mut self, context: &UpdateContext, bus_acp: &mut Vec<Arinc429Word<u32>>) {
         self.last_complete_cycle_sent += context.delta();
+        self.time_since_last_data_received += context.delta();
 
         if self.is_power_supply_powered {
             if !bus_acp.is_empty() {
@@ -317,12 +320,20 @@ impl AudioControlPanel {
                     for index in 2..(self.list_arinc_words.len()) {
                         self.send_volume_control(bus_acp, index);
                     }
+
+                    self.time_since_last_data_received = Duration::from_millis(0);
                 }
             }
 
             if self.last_complete_cycle_sent >= TIMEOUT {
                 self.send_word_0(bus_acp);
                 self.last_complete_cycle_sent = Duration::from_millis(0);
+
+                // TIMEOUT * 3 based on real life observations
+                // If somebody has more accurate value, go ahead
+                if self.time_since_last_data_received >= TIMEOUT * 3 {
+                    self.transmit_channel = TransmitId::None;
+                }
             }
 
             let transmission_pb_pushed = self.transmit_channel != self.transmit_pushed;
@@ -390,6 +401,9 @@ impl AudioControlPanel {
             if self.adfs[1].has_changed() {
                 self.send_volume_control(bus_acp, 15);
             }
+        } else {
+            bus_acp.clear();
+            self.transmit_channel = TransmitId::None;
         }
     }
 }
@@ -419,9 +433,7 @@ impl SimulationElement for AudioControlPanel {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        if self.is_power_supply_powered {
-            writer.write(&self.transmit_channel_id, self.transmit_channel as u32);
-        }
+        writer.write(&self.transmit_channel_id, self.transmit_channel as u32);
 
         writer.write(&self.reset_button_id, 0);
     }
