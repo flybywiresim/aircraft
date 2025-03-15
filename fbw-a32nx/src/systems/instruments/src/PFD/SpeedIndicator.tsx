@@ -4,7 +4,6 @@
 
 import {
   ClockEvents,
-  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -18,7 +17,7 @@ import {
   Arinc429Word,
   Arinc429WordData,
   Arinc429Register,
-  Arinc429RegisterSubject,
+  Arinc429LocalVarConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
@@ -1286,7 +1285,7 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars>();
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars>();
 
   private readonly machTextSub = Subject.create('');
 
@@ -1294,14 +1293,13 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private machHysteresis = false;
 
-  private readonly machAr = ConsumerSubject.create(
-    this.sub.on('machAr').withArinc429Precision(3),
-    Arinc429Register.empty(),
+  private readonly mach = Arinc429LocalVarConsumerSubject.create(this.sub.on('mach'), Arinc429Register.empty().rawWord);
+
+  private readonly machPreMile = this.mach.map((w) =>
+    w.isNormalOperation() || w.isFunctionalTest() ? Math.round(w.value * 1000) : 0,
   );
 
-  private readonly mach = Arinc429RegisterSubject.createEmpty();
-
-  private handleMachDisplay(mach: Arinc429Register) {
+  private handleMachDisplay(mach: Arinc429WordData) {
     if (mach.value > 0.5) {
       this.machHysteresis = true;
     } else if (mach.value < 0.45) {
@@ -1318,15 +1316,12 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
       this.machTextSub.set('');
     } else {
       this.machFlagVisible.set(false);
-      const machPermille = Math.round(mach.value * 1000);
-      this.machTextSub.set(`.${machPermille}`);
+      this.machTextSub.set(`.${this.machPreMile.get()}`);
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.machAr.sub((v) => this.mach.setWord(v.rawWord), true);
     this.mach.sub((v) => {
       this.handleMachDisplay(v);
     }, true);
