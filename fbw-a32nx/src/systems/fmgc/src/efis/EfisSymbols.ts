@@ -25,7 +25,7 @@ import {
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { bearingTo, distanceTo } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
@@ -147,6 +147,26 @@ export class EfisSymbols<T extends number> {
     return Math.abs(dx) < editArea[2] && dy > -editArea[1] && dy < editArea[0];
   }
 
+  /**
+   * Calculates the smallest circle that encompasses the entire edit area.
+   * @param editArea The edit area.
+   * @param mrp The map reference point associated with the edit area.
+   * @param mapOrientation The upward direction of the map in degrees true.
+   * @returns The required radius and centre point.
+   */
+  private static calculateNearbyParams(
+    editArea: EditArea,
+    mrp: Coordinates,
+    mapOrientation: number,
+  ): [number, Coordinates] {
+    const halfWidth = editArea[2];
+    const halfHeight = (editArea[0] + editArea[1]) / 2;
+    const radius = Math.hypot(halfWidth, halfHeight);
+    const upOffset = halfHeight - editArea[1];
+    const centre = placeBearingDistance(mrp, mapOrientation, upOffset);
+    return [radius, centre];
+  }
+
   async update(): Promise<void> {
     if (this.blockUpdate) {
       return;
@@ -214,10 +234,13 @@ export class EfisSymbols<T extends number> {
     const efisInterfaceChanged = this.lastEfisInterfaceVersion !== this.efisInterface.version;
     this.lastEfisInterfaceVersion = this.efisInterface.version;
 
+    /** True bearing of the up direction of the map in degrees. */
+    const mapOrientation = mode === EfisNdMode.PLAN ? 0 : trueHeading;
     const editArea = this.calculateEditArea(range, mode);
+
     // MSFS2024 can load facs much more efficiently with minimal facilities, so we can afford to follow the MRP in plan mode.
-    const nearbyCentre = isMsfs2024() ? mapReferencePoint : ppos;
-    const nearbyRadius = Math.max(...editArea);
+    const nearbyMrp = isMsfs2024() ? mapReferencePoint : ppos;
+    const [nearbyRadius, nearbyCentre] = EfisSymbols.calculateNearbyParams(editArea, nearbyMrp, mapOrientation);
     if (efisOption & EfisOption.Airports) {
       this.nearbyAirportMonitor.setLocation(nearbyCentre.lat, nearbyCentre.long);
       this.nearbyAirportMonitor.setRadius(nearbyRadius);
@@ -277,9 +300,6 @@ export class EfisSymbols<T extends number> {
       this.syncer.sendEvent(this.syncEvent, []);
       return;
     }
-
-    /** True bearing of the up direction of the map in degrees. */
-    const mapOrientation = mode === EfisNdMode.PLAN ? 0 : trueHeading;
 
     const symbols: NdSymbol[] = [];
 
