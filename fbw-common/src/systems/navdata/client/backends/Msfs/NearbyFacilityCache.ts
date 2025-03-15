@@ -149,7 +149,7 @@ export class NearbyFacilityCache {
           'alt' in msfsFac
             ? { lat: msfsFac.lat, long: msfsFac.lon, alt: msfsFac.alt / 0.3048 }
             : { lat: msfsFac.lat, long: msfsFac.lon },
-        ident: msfsFac.icaoStruct ? msfsFac.icaoStruct.ident : msfsFac.icao.substring(7).trimEnd(),
+        ident: msfsFac.icaoStruct ? msfsFac.icaoStruct.ident : msfsFac.icao.substring(7).trim(),
       };
 
       this.addNewFacility(nearbyFac);
@@ -175,7 +175,7 @@ export class NearbyFacilityCache {
         databaseId: vor.icao,
         type: NearbyFacilityType.VhfNavaid,
         location: vor.dme ? { lat: vor.dme.lat, long: vor.dme.lon, alt: vor.dme.alt } : { lat: vor.lat, long: vor.lon },
-        ident: vor.icaoStruct ? vor.icaoStruct.ident : vor.icao.substring(7).trimEnd(),
+        ident: vor.icaoStruct ? vor.icaoStruct.ident : vor.icao.substring(7).trim(),
         vhfType: MsfsMapping.mapVorType(vor),
         vhfClass: MsfsMapping.mapVorClass(vor),
       };
