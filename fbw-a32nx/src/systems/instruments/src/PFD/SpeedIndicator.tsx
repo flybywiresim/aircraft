@@ -1295,7 +1295,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly mach = Arinc429LocalVarConsumerSubject.create(this.sub.on('mach'), Arinc429Register.empty().rawWord);
 
-  private readonly machPreMile = this.mach.map((w) =>
+  private readonly machPermille = this.mach.map((w) =>
     w.isNormalOperation() || w.isFunctionalTest() ? Math.round(w.value * 1000) : 0,
   );
 
@@ -1316,7 +1316,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
       this.machTextSub.set('');
     } else {
       this.machFlagVisible.set(false);
-      this.machTextSub.set(`.${this.machPreMile.get()}`);
+      this.machTextSub.set(`.${this.machPermille.get()}`);
     }
   }
 
