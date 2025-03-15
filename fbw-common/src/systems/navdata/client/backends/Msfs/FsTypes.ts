@@ -105,7 +105,7 @@ export interface JS_FacilityAirport {
   /** The MSFS database identifier in object form; MSFS2024 only. */
   icaoStruct?: JS_ICAO;
   /** airport refernce point altitude in metres */
-  alt: number;
+  altitude: number;
   /** airport reference point latitude */
   lat: number;
   /** airport reference point longitude */

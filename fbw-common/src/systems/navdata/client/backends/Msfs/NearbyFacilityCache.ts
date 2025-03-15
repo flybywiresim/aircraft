@@ -146,8 +146,8 @@ export class NearbyFacilityCache {
         databaseId: msfsFac.icao,
         type,
         location:
-          'alt' in msfsFac
-            ? { lat: msfsFac.lat, long: msfsFac.lon, alt: msfsFac.alt / 0.3048 }
+          'altitude' in msfsFac
+            ? { lat: msfsFac.lat, long: msfsFac.lon, alt: msfsFac.altitude / 0.3048 }
             : { lat: msfsFac.lat, long: msfsFac.lon },
         ident: msfsFac.icaoStruct ? msfsFac.icaoStruct.ident : msfsFac.icao.substring(7).trim(),
       };
