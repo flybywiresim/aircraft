@@ -1,7 +1,7 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { MathUtils } from 'shared/src';
+import { MathUtils } from '../../../../shared/src/MathUtils';
 import {
   NearbyFacility,
   NearbyFacilityMonitor,

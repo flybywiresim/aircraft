@@ -29,7 +29,7 @@ import { FacilityCache, LoadType } from './FacilityCache';
 import { MsfsMapping } from './Mapping';
 import { Gate } from '../../../shared/types/Gate';
 import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
-import { isMsfs2024 } from 'shared/src';
+import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
 import { Msfs2020NearbyFacilityMonitor, MsfsNearbyFacilityMonitor } from './MsfsNearbyFacilityMonitor';
 
 export class MsfsBackend implements DataInterface {
