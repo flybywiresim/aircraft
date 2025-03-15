@@ -55,6 +55,7 @@ import { MathUtils } from '../../../shared/src/MathUtils';
 import { SimVarString } from '../../../shared/src/simvar';
 import { GenericDisplayManagementEvents } from './types/GenericDisplayManagementEvents';
 import { OansControlEvents } from '../OANC';
+import { MapOptions } from './types/MapOptions';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -76,6 +77,8 @@ export interface NDProps<T extends number> {
   rangeChangeMessage: string;
 
   modeChangeMessage: string;
+
+  mapOptions?: Partial<MapOptions>;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -484,7 +487,12 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </svg>
 
           {/* ND Raster map - middle layer */}
-          <CanvasMap bus={this.props.bus} x={Subject.create(384)} y={Subject.create(384)} />
+          <CanvasMap
+            bus={this.props.bus}
+            x={Subject.create(384)}
+            y={Subject.create(384)}
+            options={this.props.mapOptions}
+          />
 
           {/* ND Vector graphics - top layer */}
           <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
