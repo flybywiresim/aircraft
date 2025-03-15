@@ -1329,7 +1329,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
     this.machAr.sub((v) => this.mach.setWord(v.rawWord), true);
     this.mach.sub((v) => {
       this.handleMachDisplay(v);
-    });
+    }, true);
   }
 
   render(): VNode {
