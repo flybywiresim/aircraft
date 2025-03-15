@@ -16,7 +16,7 @@ import {
 import { Arinc429Word, ConfirmationNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
-import { EventBus, Subject } from '@microsoft/msfs-sdk';
+import { EventBus, GameStateProvider, SimVarValueType, Subject, Wait } from '@microsoft/msfs-sdk';
 
 export interface FlightPhaseManagerEvents {
   /** The FMGC flight phase. */
@@ -38,7 +38,7 @@ function canInitiateDes(distanceToDestination: number): boolean {
 export class FlightPhaseManager {
   private onGroundConfirmationNode = new ConfirmationNode(30 * 1000);
 
-  private readonly activePhase = Subject.create(this.initialPhase || FmgcFlightPhase.Preflight);
+  private readonly activePhase = Subject.create(FmgcFlightPhase.Preflight);
 
   private phases: { [key in FmgcFlightPhase]: Phase } = {
     [FmgcFlightPhase.Preflight]: new PreFlightPhase(),
@@ -57,16 +57,31 @@ export class FlightPhaseManager {
     return this.activePhase.get();
   }
 
-  get initialPhase(): FmgcFlightPhase {
-    return SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number');
-  }
-
   constructor(private readonly bus: EventBus) {}
   init(): void {
     console.log(`FMGC Flight Phase: ${this.phase}`);
     this.phases[this.phase].init();
     this.changePhase(this.phase);
-    this.activePhase.sub((v) => this.bus.getPublisher<FlightPhaseManagerEvents>().pub('fmgc_flight_phase', v));
+    this.activePhase.sub((v) => this.bus.getPublisher<FlightPhaseManagerEvents>().pub('fmgc_flight_phase', v), true);
+
+    // For simulation purposes we need to handle loading or spawning in various states.
+    // In here we should not rely on aircraft systems, but instead simvars from MSFS.
+    Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame).then(() => {
+      switch (true) {
+        case SimVar.GetSimVarValue('GEAR IS ON GROUND', SimVarValueType.Bool) > 0:
+          this.changePhase(FmgcFlightPhase.Preflight);
+          break;
+        case SimVar.GetSimVarValue('PLANE ALTITUDE', SimVarValueType.Feet) > 18_000:
+          this.changePhase(FmgcFlightPhase.Cruise);
+          break;
+        case SimVar.GetSimVarValue('FLAPS HANDLE INDEX', SimVarValueType.Enum) > 0:
+          this.changePhase(FmgcFlightPhase.Approach);
+          break;
+        default:
+          this.changePhase(FmgcFlightPhase.Climb);
+          break;
+      }
+    });
   }
 
   shouldActivateNextPhase(_deltaTime: number): void {
@@ -79,10 +94,6 @@ export class FlightPhaseManager {
       }
     } else if (isReady() && isSlewActive()) {
       this.handleSlewSituation(_deltaTime);
-    } else if (this.phase !== this.initialPhase) {
-      // ensure correct init of phase
-
-      this.changePhase(this.initialPhase);
     }
   }
 
