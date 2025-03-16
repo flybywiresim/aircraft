@@ -202,8 +202,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
    * into the appropriate message for the UI
    *
    * @param errorType the message to show
+   * @param details aditional text information to be appended to the message
    */
-  showFmsErrorMessage(errorType: FmsErrorType): void;
+  showFmsErrorMessage(errorType: FmsErrorType, details?: string): void;
 
   /**
    * Used to update the ND display
