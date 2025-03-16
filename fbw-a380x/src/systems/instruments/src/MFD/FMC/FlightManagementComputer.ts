@@ -623,14 +623,15 @@ export class FlightManagementComputer implements FmcInterface {
    * into the appropriate message for the UI
    *
    * @param errorType the message to show
+   * @param details extra text information to be appended to the message
    */
-  showFmsErrorMessage(errorType: FmsErrorType) {
+  showFmsErrorMessage(errorType: FmsErrorType, details?: string) {
     switch (errorType) {
       case FmsErrorType.EntryOutOfRange:
-        this.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
+        this.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined, details);
         break;
       case FmsErrorType.FormatError:
-        this.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
+        this.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined, details);
         break;
       case FmsErrorType.NotInDatabase:
         this.addMessageToQueue(NXSystemMessages.notInDatabase, undefined, undefined);
@@ -669,6 +670,7 @@ export class FlightManagementComputer implements FmcInterface {
     _message: TypeIMessage | TypeIIMessage,
     _isResolvedOverride: (() => boolean) | undefined = undefined,
     _onClearOverride: (() => void) | undefined = undefined,
+    details?: string,
   ) {
     const message =
       _isResolvedOverride === undefined && _onClearOverride === undefined
@@ -677,7 +679,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     const msg: FmsErrorMessage = {
       message: _message,
-      messageText: message.text,
+      messageText: details ? message.text + '\n' + details : message.text,
       backgroundColor: message.isAmber ? 'amber' : 'white',
       cleared: false,
       onClearOverride: isTypeIIMessage(message) ? message.onClear : () => {},
