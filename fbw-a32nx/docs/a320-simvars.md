@@ -22,6 +22,7 @@
       - [FCU AFS CP](#fcu-afs-cp)
       - [FCU Output Bus](#fcu-output-bus)
     - [Flight Augmentation Computer (FAC)](#flight-augmentation-computer-fac)
+    - [Flight Management and Guidance Computer (FMGC, Flight Management Section)](#flight-management-and-guidance-computer-fmgc-flight-management-section)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
@@ -3431,6 +3432,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 19  | Right Main Gear Pressed           |
       | 20  | Main Gear Out                     |
       | 29  | Alpha Floor Condition             |
+
+### Flight Management and Guidance Computer (FMGC, Flight Management Section)
+
+- `L:A32NX_FM{1|2}_APPROACH_SPEED`
+  - The approach speed either calcualted by the FMS or pilot-entered. Does not include GSmini (FG calculated). NCD when no speed available.
+  - Arinc429<Knots>
+
+- `L:A32NX_FM{1|2}_FG_MANAGED_SPEED`
+  - The managed speed target for the FG part. Does not include GSmini (FG calculated). NCD when no speed available.
+  - Arinc429<Knots>
+
+- `L:A32NX_FM{1|2}_FG_TOWER_HEADWIND`
+  - The tower headwind for the FG part, for GSmini calculation. NCD when not entered on the PERF APPR page.
+  - Arinc429<Knots>
 
 ## Flaps / Slats (ATA 27)
 
