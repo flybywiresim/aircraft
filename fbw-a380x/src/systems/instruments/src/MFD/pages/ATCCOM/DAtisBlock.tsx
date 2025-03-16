@@ -212,7 +212,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             value={this.atisIcao}
             containerStyle="width: 106px; margin-left: 5px; position: absolute; top: 12px; height:40px"
             alignText="center"
-            errorHandler={(e) => this.props.atcService.showAtcErrorMessage(e)}
+            errorHandler={(e) => this.props.atcService?.showAtcErrorMessage(e.type)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
           />

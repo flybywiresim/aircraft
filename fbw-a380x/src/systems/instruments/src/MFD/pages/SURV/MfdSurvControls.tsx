@@ -283,7 +283,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   }
                   value={this.squawkCode}
                   containerStyle="width: 100px; margin-bottom: 5px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   alignText={'center'}

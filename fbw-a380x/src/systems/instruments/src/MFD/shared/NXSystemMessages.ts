@@ -91,6 +91,7 @@ export const NXSystemMessages = {
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
+  entryOutOfRangeWithFormat: new TypeIIMessage('ENTRY OUT OF RANGE \n RNG: HHH TO HHH H'),
   formatError: new TypeIMessage('FORMAT ERROR'),
   fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'),
   initializeZfwOrZfwCg: new TypeIIMessage('INITIALIZE ZFW / ZFWCG', true),
