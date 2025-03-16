@@ -119,6 +119,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private readonly preflightPhase = this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight);
 
+  private readonly flightplanTimeHeader = this.activeFlightPhase.map((v) =>
+    v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
+  );
+
   protected onNewData(): void {
     if (!this.loadedFlightPlan) {
       return;
@@ -860,7 +864,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               <span class="mfd-label">FROM</span>
             </div>
             <div class="mfd-fms-fpln-header-time">
-              <span class="mfd-label">TIME</span>
+              <span class="mfd-label">{this.flightplanTimeHeader}</span>
             </div>
             <div ref={this.spdAltEfobWindRef} class="mfd-fms-fpln-header-speed-alt">
               <Button
