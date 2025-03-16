@@ -57,7 +57,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             value={this.props.atisIcao}
             containerStyle="width: 106px; margin-left: 5px; position: absolute; top: 12px; height:40px"
             alignText="center"
-            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
           />
