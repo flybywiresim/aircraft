@@ -63,6 +63,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { LateralMode, VerticalMode } from '@shared/autopilot';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -179,7 +180,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   };
   public preSelectedClbSpeed?: number;
   public preSelectedCrzSpeed?: number;
-  public managedSpeedTarget = NaN;
+  public managedSpeedTarget: number | null = null;
   public managedSpeedTargetIsMach = false;
   public managedSpeedClimb = 290;
   private managedSpeedClimbIsPilotEntered = false;
@@ -1170,8 +1171,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.clearCheckSpeedModeMessage();
 
     if (SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1) {
-      const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');
-      if (verticalMode === 12) {
+      const verticalMode: VerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');
+      if (verticalMode === VerticalMode.OP_CLB) {
         switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
           case 0: {
             this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
@@ -1185,7 +1186,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
           }
         }
-      } else if (verticalMode === 13) {
+      } else if (verticalMode === VerticalMode.OP_DES) {
         this.managedSpeedTarget =
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number') === 0
             ? Math.min(340, SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', 0.8))
@@ -2004,6 +2005,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
+  private static readonly VERTICAL_MODES_FOR_FCU_CRUISE_LEVEL_SET = [
+    VerticalMode.ALT_CPT,
+    VerticalMode.OP_CLB,
+    VerticalMode.OP_DES,
+    VerticalMode.VS,
+    VerticalMode.FPA,
+    VerticalMode.ALT_CST_CPT,
+    VerticalMode.CLB,
+    VerticalMode.DES,
+  ];
   /***
    * Executed on every alt knob turn, checks whether or not the crz fl can be changed to the newly selected fcu altitude
    * It creates a timeout to simulate real life delay which resets every time the fcu knob alt increases or decreases.
@@ -2019,12 +2030,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return;
     }
 
-    const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const activeVerticalMode: VerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
-    if (
-      (activeVerticalMode >= 11 && activeVerticalMode <= 15) ||
-      (activeVerticalMode >= 21 && activeVerticalMode <= 23)
-    ) {
+    if (FMCMainDisplay.VERTICAL_MODES_FOR_FCU_CRUISE_LEVEL_SET.includes(activeVerticalMode)) {
       const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
       if (
@@ -4677,14 +4685,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public navModeEngaged() {
-    const lateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
+    const lateralMode: LateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
     switch (lateralMode) {
-      case 20: // NAV
-      case 30: // LOC*
-      case 31: // LOC
-      case 32: // LAND
-      case 33: // FLARE
-      case 34: // ROLL OUT
+      case LateralMode.NAV: // NAV
+      case LateralMode.LOC_CPT: // LOC*
+      case LateralMode.LOC_TRACK: // LOC
+      case LateralMode.LAND: // LAND
+      case LateralMode.FLARE: // FLARE
+      case LateralMode.ROLL_OUT: // ROLL OUT
         return true;
     }
     return false;
