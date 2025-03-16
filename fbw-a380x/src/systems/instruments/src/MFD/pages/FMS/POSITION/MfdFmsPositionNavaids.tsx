@@ -388,7 +388,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor1Ident}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -402,7 +402,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor1Freq}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -417,7 +417,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor1Course}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -444,7 +444,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor2Ident}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -458,7 +458,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor2Freq}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -473,7 +473,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor2Course}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -562,7 +562,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[0]}
                     alignText="center"
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -574,7 +574,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[1]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[0]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -586,7 +586,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[2]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[1]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -600,7 +600,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[3]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[2]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -612,7 +612,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[4]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[3]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -624,7 +624,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[5]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[4]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -652,7 +652,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                   value={this.lsIdent}
                   containerStyle="width: 125px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -666,7 +666,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                   value={this.lsFreq}
                   containerStyle="width: 125px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -685,7 +685,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                   value={this.lsCourse}
                   containerStyle="width: 125px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
