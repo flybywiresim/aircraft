@@ -181,6 +181,8 @@
 1. [A32NX/FMS] Added differentiation between compatible and incompatible approach vias (H4) - @tracernz (Mike)
 1. [A32NX/FMS] Removed insert/erase prompts on approach via page - @tracernz (Mike)
 1. [ND] Fixed alignment of approach message - @tracernz (Mike)
+1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
+1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
 
 ## 0.12.0
 
