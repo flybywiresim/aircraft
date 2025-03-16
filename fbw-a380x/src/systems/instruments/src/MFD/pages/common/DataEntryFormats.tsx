@@ -2,14 +2,38 @@ import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 import { Fix } from '@flybywiresim/fbw-sdk';
 
-import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { A380FmsError } from 'instruments/src/MsfsAvionicsCommon/A380FmsError';
 
 type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitTrailing: string | null];
+const LOWER_RANGE_KEY = '{FROM}';
+const UPPER_RANGE_KEY = '{TO}';
+const ERROR_UNIT = '{UNIT}';
+const FORMAT = '{FORMAT}';
+const FORMAT_ERROR_DETAILS_MESSAGE = `FORMAT: ${FORMAT} ${ERROR_UNIT}`;
+const ENTRY_OUT_OF_RANGE_DETAILS_MESSAGE = `RNG: ${LOWER_RANGE_KEY} TO ${UPPER_RANGE_KEY} ${ERROR_UNIT}`;
+
+function getFormattedEntryOutOfRangeError(minValue: string, maxValue: string, unit: string): A380FmsError {
+  return new A380FmsError(
+    FmsErrorType.EntryOutOfRange,
+    ENTRY_OUT_OF_RANGE_DETAILS_MESSAGE.replace(LOWER_RANGE_KEY, minValue)
+      .replace(UPPER_RANGE_KEY, maxValue)
+      .replace(ERROR_UNIT, unit),
+  );
+}
+
+function getFormattedFormatError(format: string, unit: string): A380FmsError {
+  return new A380FmsError(
+    FmsErrorType.FormatError,
+    FORMAT_ERROR_DETAILS_MESSAGE.replace(FORMAT, format).replace(ERROR_UNIT, unit),
+  );
+}
 export interface DataEntryFormat<T, U = T> {
   placeholder: string;
   maxDigits: number;
+  unit?: string;
   format(value: T | null): FieldFormatTuple;
   parse(input: string): Promise<U | null>;
   /**
@@ -34,6 +58,8 @@ export class SpeedKnotsFormat extends SubscriptionCollector implements DataEntry
 
   public maxDigits = 3;
 
+  public unit = 'KT';
+
   private minValue = 0;
 
   private maxValue = Number.POSITIVE_INFINITY;
@@ -49,9 +75,9 @@ export class SpeedKnotsFormat extends SubscriptionCollector implements DataEntry
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, 'KT'] as FieldFormatTuple;
+      return [this.placeholder, null, this.unit] as FieldFormatTuple;
     }
-    return [value.toString(), null, 'KT'] as FieldFormatTuple;
+    return [value.toString(), null, this.unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -64,9 +90,9 @@ export class SpeedKnotsFormat extends SubscriptionCollector implements DataEntry
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toString(), this.unit);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -113,9 +139,9 @@ export class SpeedMachFormat extends SubscriptionCollector implements DataEntryF
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -178,9 +204,9 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -224,9 +250,9 @@ export class AltitudeFormat extends SubscriptionCollector implements DataEntryFo
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -274,9 +300,9 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -311,9 +337,9 @@ export class TropoFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -353,9 +379,9 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -399,9 +425,9 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -416,6 +442,10 @@ export class PercentageFormat extends SubscriptionCollector implements DataEntry
   public maxDigits = 4;
 
   public isValidating = Subject.create(false);
+
+  public unit = '%';
+
+  private requiredFormat = 'NN.N';
 
   private minValue = 0;
 
@@ -432,9 +462,9 @@ export class PercentageFormat extends SubscriptionCollector implements DataEntry
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, '%'] as FieldFormatTuple;
+      return [this.placeholder, null, this.unit] as FieldFormatTuple;
     }
-    return [value.toFixed(1), null, '%'] as FieldFormatTuple;
+    return [value.toFixed(1), null, this.unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -447,9 +477,9 @@ export class PercentageFormat extends SubscriptionCollector implements DataEntry
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(1), this.maxValue.toFixed(1), this.unit);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw getFormattedFormatError(this.requiredFormat, this.unit);
     }
   }
 
@@ -496,9 +526,9 @@ export class TemperatureFormat extends SubscriptionCollector implements DataEntr
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -541,9 +571,9 @@ export class CrzTempFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -574,9 +604,9 @@ export class WindDirectionFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -607,9 +637,9 @@ export class WindSpeedFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -670,9 +700,9 @@ export class TripWindFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -712,7 +742,7 @@ export class QnhFormat implements DataEntryFormat<number> {
     if (!Number.isNaN(nbr) && nbr > this.minInHgValue * 100 && nbr <= this.maxInHgValue * 100) {
       return nbr / 100;
     }
-    throw new FmsError(FmsErrorType.EntryOutOfRange);
+    throw new A380FmsError(FmsErrorType.EntryOutOfRange);
   }
 }
 
@@ -742,9 +772,9 @@ export class CostIndexFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -784,9 +814,9 @@ export class VerticalSpeedFormat extends SubscriptionCollector implements DataEn
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -835,9 +865,9 @@ export class DescentRateFormat extends SubscriptionCollector implements DataEntr
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -860,7 +890,7 @@ export class FixFormat implements DataEntryFormat<Fix, string> {
       return input;
     }
 
-    throw new FmsError(FmsErrorType.FormatError);
+    throw new A380FmsError(FmsErrorType.FormatError);
   }
 
   format(value: Fix | null): FieldFormatTuple {
@@ -1029,9 +1059,9 @@ export class PaxNbrFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1080,9 +1110,9 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1142,9 +1172,9 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1175,9 +1205,9 @@ export class LatitudeFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1217,9 +1247,9 @@ export class HeadingFormat extends SubscriptionCollector implements DataEntryFor
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -1264,9 +1294,9 @@ export class InboundCourseFormat extends SubscriptionCollector implements DataEn
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -1310,9 +1340,9 @@ export class HoldDistFormat extends SubscriptionCollector implements DataEntryFo
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -1356,9 +1386,9 @@ export class HoldTimeFormat extends SubscriptionCollector implements DataEntryFo
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 
@@ -1393,9 +1423,9 @@ export class FrequencyILSFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1426,9 +1456,9 @@ export class FrequencyVORDMEFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1459,9 +1489,9 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1501,16 +1531,16 @@ export class LsCourseFormat extends SubscriptionCollector implements DataEntryFo
     }
 
     // FIXME Delete next line as soon as back course is implemented
-    if (input[0] === 'B') throw new FmsError(FmsErrorType.FormatError);
+    if (input[0] === 'B') throw new A380FmsError(FmsErrorType.FormatError);
 
     const nbr = Number(numberPart);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return sign * nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1537,9 +1567,9 @@ export class SquawkFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (!/^[0-7]{4}$/.test(input)) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1575,9 +1605,9 @@ export class RadialFormat implements DataEntryFormat<number> {
     }
 
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
@@ -1613,9 +1643,9 @@ export class RadiusFormat implements DataEntryFormat<number> {
     }
 
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw new A380FmsError(FmsErrorType.FormatError);
     }
   }
 }
