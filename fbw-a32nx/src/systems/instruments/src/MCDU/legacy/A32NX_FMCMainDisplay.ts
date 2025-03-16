@@ -1211,6 +1211,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             vPfd = this.v2Speed;
             this.managedSpeedTarget = this.v2Speed + 10;
           }
+          this.setSpeedTargetBusOutput(this.v2Speed !== null ? this.v2Speed + 10 : null);
           break;
         }
         case FmgcFlightPhase.Takeoff: {
@@ -1223,6 +1224,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
                 )
               : this.v2Speed + 10;
           }
+          this.setSpeedTargetBusOutput(this.v2Speed !== null ? this.managedSpeedTarget : null);
           break;
         }
         case FmgcFlightPhase.Climb: {
@@ -1239,6 +1241,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedClimbMach);
           vPfd = this.managedSpeedTarget ?? NaN;
+          this.setSpeedTargetBusOutput(isFinite(this.managedSpeedTarget) ? this.managedSpeedTarget : null);
           break;
         }
         case FmgcFlightPhase.Cruise: {
@@ -1253,6 +1256,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedCruiseMach);
           vPfd = this.managedSpeedTarget ?? NaN;
+          this.setSpeedTargetBusOutput(isFinite(this.managedSpeedTarget) ? this.managedSpeedTarget : null);
           break;
         }
         case FmgcFlightPhase.Descent: {
@@ -1263,6 +1267,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
           // Also, VNAV already does the conversion from Mach if necessary
           isMach = this.getManagedTargets(this.getManagedDescentSpeed(), this.getManagedDescentSpeedMach())[1];
+          this.setSpeedTargetBusOutput(isFinite(this.managedSpeedTarget) ? this.managedSpeedTarget : null);
           break;
         }
         case FmgcFlightPhase.Approach: {
@@ -1274,8 +1279,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           vPfd = this.getVAppGsMini();
 
           // FIXME GSmini should be calculated in the FG, we should just set Vapp here
-          // this.managedSpeedTarget = Math.max(speed, this.getVApp());
           this.managedSpeedTarget = Math.max(speed, vPfd);
+          this.setSpeedTargetBusOutput(speed);
           break;
         }
         case FmgcFlightPhase.GoAround: {
@@ -1295,6 +1300,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             vPfd = speed;
             this.managedSpeedTarget = speed;
           }
+          this.setSpeedTargetBusOutput(isFinite(this.managedSpeedTarget) ? this.managedSpeedTarget : null);
           break;
         }
       }
@@ -1316,8 +1322,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // FIXME this should be calculated by the FG
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', vPfd);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', Vtap);
-
-    this.setSpeedTargetBusOutput(Vtap !== null && isFinite(Vtap) ? Vtap : null);
 
     if (this.isAirspeedManaged()) {
       Coherent.call('AP_SPD_VAR_SET', 0, Vtap).catch(console.error);
@@ -1823,7 +1827,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return 288 * (1 - dCI) + 300 * dCI;
   }
 
-  private getAppManagedSpeed() {
+  private getAppManagedSpeed(): number | null {
     switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
       case 0:
         return this.computedVgd;
