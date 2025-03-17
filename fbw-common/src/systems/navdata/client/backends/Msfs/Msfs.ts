@@ -4,7 +4,7 @@
 
 /* eslint-disable no-await-in-loop */
 
-import { Coordinates, NauticalMiles } from 'msfs-geo';
+import { Coordinates, distanceTo, NauticalMiles } from 'msfs-geo';
 // FIXME remove msfs-sdk dependency
 import {
   FacilitySearchType,
@@ -221,9 +221,14 @@ export class MsfsBackend implements DataInterface {
     return this.mapping.mapGates(airport);
   }
 
-  /** MSFS database does not contain enroute holds */
-  public async getHolds(_airportIdentifier: string): Promise<ProcedureLeg[]> {
-    return [];
+  public async getHolds(airportIdentifier: string): Promise<ProcedureLeg[]> {
+    const airport = await this.fetchMsfsAirport(airportIdentifier);
+
+    if (!airport) {
+      return [];
+    }
+
+    return this.mapping.mapHolds(airport);
   }
 
   /** @inheritdoc */
@@ -429,6 +434,8 @@ export class MsfsBackend implements DataInterface {
       if (nearbyFacilities.removed.includes(dbItem.databaseId)) {
         this.facilitySearchTypeToCachedSearchResultsMap[type].splice(i, 1);
         i--;
+      } else {
+        dbItem.distance = distanceTo(center, dbItem.location);
       }
     }
 

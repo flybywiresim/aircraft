@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { FailuresOrchestrator } from '.';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 import { flushPromises } from './test-functions';

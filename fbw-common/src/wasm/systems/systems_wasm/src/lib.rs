@@ -93,7 +93,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     /// as a power source for the other buses which will all be connected to it.
     pub fn with_electrical_buses<const N: usize>(
         self,
-        buses: [(ElectricalBusType, usize); N],
+        buses: [(ElectricalBusType, u32); N],
     ) -> Result<Self, Box<dyn Error>> {
         self.with_aspect(electrical_buses(buses))
     }
@@ -616,14 +616,14 @@ pub fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: sys::DWORD) -> f64 {
     let casted_value = (sim_connect_axis_value as i32) as f64;
     let scaled_value =
         (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
-    scaled_value.min(1.).max(0.)
+    scaled_value.clamp(0., 1.)
 }
 // Takes a 32k position type from simconnect, returns a value from scaled from 0 to 1 (inverted)
 pub fn sim_connect_32k_pos_inv_to_f64(sim_connect_axis_value: sys::DWORD) -> f64 {
     let casted_value = -1. * (sim_connect_axis_value as i32) as f64;
     let scaled_value =
         (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
-    scaled_value.min(1.).max(0.)
+    scaled_value.clamp(0., 1.)
 }
 // Takes a [0:1] f64 and returns a simconnect 32k position type
 pub fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> sys::DWORD {

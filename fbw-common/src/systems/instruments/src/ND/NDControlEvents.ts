@@ -77,4 +77,9 @@ export interface NDControlEvents {
    * Event for the CHRONO button being pushed
    */
   chrono_pushed: void;
+
+  /**
+   * Set if a range change is in progress for VD (true, false)
+   */
+  set_range_change: boolean;
 }

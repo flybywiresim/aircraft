@@ -4,10 +4,10 @@ import './MfdFmsPositionIrs.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { HeadingFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, coordinateToString } from '@flybywiresim/fbw-sdk';
 
@@ -23,82 +23,82 @@ enum IrsDataFor {
 type IrsStatus = 'NAV' | 'ALIGN' | 'ATT' | 'INVALID' | 'OFF' | '';
 
 export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
-  private ir1MaintWord = Arinc429RegisterSubject.createEmpty();
+  private readonly ir1MaintWord = Arinc429RegisterSubject.createEmpty();
 
-  private ir2MaintWord = Arinc429RegisterSubject.createEmpty();
+  private readonly ir2MaintWord = Arinc429RegisterSubject.createEmpty();
 
-  private ir3MaintWord = Arinc429RegisterSubject.createEmpty();
+  private readonly ir3MaintWord = Arinc429RegisterSubject.createEmpty();
 
-  private alignmentLabel = Subject.create<string>('----');
+  private readonly alignmentLabel = Subject.create<string>('----');
 
-  private alignmentPosition = Subject.create<string>('---');
+  private readonly alignmentPosition = Subject.create<string>('---');
 
-  private alignOnOtherRefDisabled = Subject.create<boolean>(true);
+  private readonly alignOnOtherRefDisabled = Subject.create<boolean>(true);
 
-  private irs1Status = Subject.create<IrsStatus>('');
+  private readonly irs1Status = Subject.create<IrsStatus>('');
 
-  private irs1SecondColumn = Subject.create<string>('');
+  private readonly irs1SecondColumn = Subject.create<string>('');
 
-  private irs1ThirdColumn = Subject.create<string>('');
+  private readonly irs1ThirdColumn = Subject.create<string>('');
 
-  private irs2Status = Subject.create<IrsStatus>('');
+  private readonly irs2Status = Subject.create<IrsStatus>('');
 
-  private irs2SecondColumn = Subject.create<string>('');
+  private readonly irs2SecondColumn = Subject.create<string>('');
 
-  private irs2ThirdColumn = Subject.create<string>('');
+  private readonly irs2ThirdColumn = Subject.create<string>('');
 
-  private irs3Status = Subject.create<IrsStatus>('');
+  private readonly irs3Status = Subject.create<IrsStatus>('');
 
-  private irs3SecondColumn = Subject.create<string>('');
+  private readonly irs3SecondColumn = Subject.create<string>('');
 
-  private irs3ThirdColumn = Subject.create<string>('');
+  private readonly irs3ThirdColumn = Subject.create<string>('');
 
-  private setHdgDivRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly setHdgDivRef = FSComponent.createRef<HTMLDivElement>();
 
-  private setHdgValue = Subject.create<number | null>(null);
+  private readonly setHdgValue = Subject.create<number | null>(null);
 
-  private irsDataRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly irsDataRef = FSComponent.createRef<HTMLDivElement>();
 
-  private showIrsDataFor = Subject.create<IrsDataFor>(IrsDataFor.IRS_1);
+  private readonly showIrsDataFor = Subject.create<IrsDataFor>(IrsDataFor.IRS_1);
 
-  private irs1DataVisible = Subject.create<boolean>(false);
+  private readonly irs1DataVisible = Subject.create<boolean>(false);
 
-  private irs2DataVisible = Subject.create<boolean>(false);
+  private readonly irs2DataVisible = Subject.create<boolean>(false);
 
-  private irs3DataVisible = Subject.create<boolean>(false);
+  private readonly irs3DataVisible = Subject.create<boolean>(false);
 
-  private irsDataFreezeButtonDisabled = Subject.create(true);
+  private readonly irsDataFreezeButtonDisabled = Subject.create(true);
 
-  private irsDataPosition = Subject.create<string>('');
+  private readonly irsDataPosition = Subject.create<string>('');
 
-  private irsDataTrueTrack = Subject.create<string>('');
+  private readonly irsDataTrueTrack = Subject.create<string>('');
 
-  private irsDataGroundSpeed = Subject.create<string>('');
+  private readonly irsDataGroundSpeed = Subject.create<string>('');
 
-  private irsDataTrueWindDirection = Subject.create<string>('');
+  private readonly irsDataTrueWindDirection = Subject.create<string>('');
 
-  private irsDataTrueWindSpeed = Subject.create<string>('');
+  private readonly irsDataTrueWindSpeed = Subject.create<string>('');
 
-  private irsDataTrueHeading = Subject.create<string>('');
+  private readonly irsDataTrueHeading = Subject.create<string>('');
 
-  private irsDataMagneticHeading = Subject.create<string>('');
+  private readonly irsDataMagneticHeading = Subject.create<string>('');
 
-  private irsDataMagneticVariation = Subject.create<string>('');
+  private readonly irsDataMagneticVariation = Subject.create<string>('');
 
-  private irsDataMagneticVariationUnit = Subject.create<string>('');
+  private readonly irsDataMagneticVariationUnit = Subject.create<string>('');
 
-  private irsDataGpirsPosition = Subject.create<string>('');
+  private readonly irsDataGpirsPosition = Subject.create<string>('');
 
-  private irsDataAccuracy = Subject.create<string>('');
+  private readonly irsDataAccuracy = Subject.create<string>('');
 
-  private irsAreAligned = MappedSubject.create(
+  private readonly irsAreAligned = MappedSubject.create(
     ([ir1, ir2, ir3]) => ['NAV', 'ATT'].includes(ir1) && ['NAV', 'ATT'].includes(ir2) && ['NAV', 'ATT'].includes(ir3),
     this.irs1Status,
     this.irs2Status,
     this.irs3Status,
   );
 
-  private irsAreAlignedOnRefPos = Subject.create<boolean>(false);
+  private readonly irsAreAlignedOnRefPos = Subject.create<boolean>(false);
 
   protected onNewData() {}
 
@@ -172,6 +172,8 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
           this.updateIrsData();
         }),
     );
+
+    this.subs.push(this.irsAreAligned);
 
     this.setHdgDivRef.instance.style.visibility = 'hidden';
   }

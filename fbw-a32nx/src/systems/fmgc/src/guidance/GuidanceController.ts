@@ -34,6 +34,7 @@ import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+import { A32NX_Util } from '../../../shared/src/A32NX_Util';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
@@ -135,8 +136,11 @@ export class GuidanceController {
    */
   activeLegAlongTrackCompletePathDtg: NauticalMiles;
 
-  /** * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA */
-  alongTrackDistanceToDestination: NauticalMiles;
+  /**
+   * Along track distance to destination in nautical miles.
+   * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA
+   */
+  alongTrackDistanceToDestination?: number;
 
   focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -219,14 +223,14 @@ export class GuidanceController {
         apprMsg = this.flightPlanService.active.originDeparture.ident;
       }
     } else {
-      const runway = this.flightPlanService.active.isApproachActive;
+      const runway = this.flightPlanService.active.destinationRunway;
       if (runway) {
         const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
 
         if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
           const appr = this.flightPlanService.active.approach;
           // Nothing is shown on the ND for runway-by-itself approaches
-          apprMsg = appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr) : '';
+          apprMsg = appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr).padEnd(9) : '';
         }
       }
     }
@@ -306,7 +310,7 @@ export class GuidanceController {
       this.windProfileFactory,
       this.acConfig,
     );
-    this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
+    this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
     this.symbolConfig = acConfig.fmSymbolConfig;
   }

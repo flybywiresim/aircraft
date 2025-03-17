@@ -4,45 +4,49 @@ import './MfdFmsFpln.scss';
 import './MfdFmsFplnHold.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { TurnDirection } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnHoldProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
-  private holdType = Subject.create<string>('MODIFIED HOLD AT');
+  private readonly holdType = Subject.create<string>('MODIFIED HOLD AT');
 
-  private waypointIdent = Subject.create<string>('WAYPOINT');
+  private readonly waypointIdent = Subject.create<string>('WAYPOINT');
 
-  private inboundCourse = Subject.create<number | null>(null);
+  private readonly inboundCourse = Subject.create<number | null>(null);
 
-  private turnSelectedIndex = Subject.create<number | null>(null);
+  private readonly turnSelectedIndex = Subject.create<number | null>(null);
 
-  private legDefiningParameterSelectedIndex = Subject.create<number | null>(null);
+  private readonly legDefiningParameterSelectedIndex = Subject.create<number | null>(null);
 
-  private legTime = Subject.create<number | null>(null);
+  private readonly legTime = Subject.create<number | null>(null);
 
-  private legTimeRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly legTimeRef = FSComponent.createRef<HTMLDivElement>();
 
-  private legDistance = Subject.create<number | null>(null);
+  private readonly legDistance = Subject.create<number | null>(null);
 
-  private legDistanceRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly legDistanceRef = FSComponent.createRef<HTMLDivElement>();
 
-  private lastExitUtc = Subject.create<string | null>(null);
+  private readonly lastExitUtc = Subject.create<string | null>(null);
 
-  private lastExitEfob = Subject.create<string | null>(null);
+  private readonly lastExitEfob = Subject.create<string | null>(null);
 
-  private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
+  private readonly radioButtonColor = this.tmpyActive.map((it) =>
+    it ? RadioButtonColor.Yellow : RadioButtonColor.Cyan,
+  );
 
   protected onNewData(): void {
-    const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+    const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
     if (this.props.fmcService.master?.revisedWaypoint() && revWptIdx) {
       const leg = this.loadedFlightPlan?.legElementAt(revWptIdx);
       const hold = leg?.modifiedHold !== undefined ? leg.modifiedHold : leg?.defaultHold;
@@ -72,7 +76,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
   }
 
   private async modifyHold() {
-    const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+    const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
     if (revWptIdx && this.props.fmcService.master?.revisedWaypoint()) {
       const desiredHold: HoldData = {
         type: HoldType.Pilot,
@@ -95,8 +99,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         { ...desiredHold },
         desiredHold,
         this.loadedFlightPlan?.legElementAt(revWptIdx).defaultHold ?? fallbackDefaultHold,
-        this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
-        this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
+        this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
+        this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
       );
       this.onNewData();
     }
@@ -177,7 +181,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_holdTurnRadio`}
                 selectedIndex={this.turnSelectedIndex}
                 values={['LEFT', 'RIGHT']}
-                color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
+                color={this.radioButtonColor}
               />
             </div>
             <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">
@@ -188,7 +192,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_holdDefiningParameterRadio`}
                 selectedIndex={this.legDefiningParameterSelectedIndex}
                 values={['TIME', 'DIST']}
-                color={this.tmpyActive.map((it) => (it ? 'yellow' : 'cyan'))}
+                color={this.radioButtonColor}
               />
               <div class="mfd-fpln-hold-timedist-box">
                 <div ref={this.legTimeRef}>
@@ -238,12 +242,12 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
             <Button
               label="COMPUTED"
               onClick={() => {
-                const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+                const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
                 if (revWptIdx && this.props.fmcService.master?.revisedWaypoint()) {
                   this.props.fmcService.master.flightPlanService.revertHoldToComputed(
                     revWptIdx,
-                    this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
-                    this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
+                    this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
+                    this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
                   );
                 }
               }}

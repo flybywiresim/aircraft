@@ -158,10 +158,10 @@ void FcuComputer::FcuComputer_MATLABFunction_e_Reset(rtDW_MATLABFunction_FcuComp
 void FcuComputer::FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_T rtu_knob_pull, boolean_T rtu_qfe_avail,
   boolean_T *rty_std, boolean_T *rty_qnh, boolean_T *rty_qfe, rtDW_MATLABFunction_FcuComputer_d_T *localDW)
 {
+  boolean_T tmp;
   if (rtu_knob_push && localDW->std_active) {
     localDW->std_active = false;
   } else {
-    boolean_T tmp;
     tmp = !localDW->std_active;
     if (rtu_knob_push && tmp) {
       localDW->qnh_active = !localDW->qnh_active;
@@ -177,8 +177,9 @@ void FcuComputer::FcuComputer_MATLABFunction_o(boolean_T rtu_knob_push, boolean_
   }
 
   *rty_std = localDW->std_active;
-  *rty_qnh = localDW->qnh_active;
-  *rty_qfe = localDW->qfe_active;
+  tmp = !localDW->std_active;
+  *rty_qnh = (localDW->qnh_active && tmp);
+  *rty_qfe = (localDW->qfe_active && tmp);
 }
 
 void FcuComputer::FcuComputer_MATLABFunction1_n_Init(rtDW_MATLABFunction1_FcuComputer_j_T *localDW)
@@ -323,7 +324,7 @@ void FcuComputer::step()
   base_fcu_efis_logic_outputs rtb_BusAssignment_b_logic_capt_efis;
   base_fcu_efis_logic_outputs rtb_BusAssignment_b_logic_fo_efis;
   fcu_outputs rtb_BusAssignment_m;
-  int32_T tmp;
+  int32_T y_tmp;
   real32_T rtb_y;
   real32_T rtb_y_f;
   real32_T rtb_y_j3;
@@ -793,7 +794,11 @@ void FcuComputer::step()
     }
 
     if (FcuComputer_U.in.sim_input.spd_mach != -1.0F) {
-      FcuComputer_DWork.pValue_n = FcuComputer_U.in.sim_input.spd_mach;
+      if (rtb_BusAssignment_jg_logic_afs_mach_active) {
+        FcuComputer_DWork.pValue_n = FcuComputer_U.in.sim_input.spd_mach / 100.0F;
+      } else {
+        FcuComputer_DWork.pValue_n = FcuComputer_U.in.sim_input.spd_mach;
+      }
     }
 
     if (FcuComputer_DWork.prevMachActive != rtb_BusAssignment_jg_logic_afs_mach_active) {
@@ -932,8 +937,10 @@ void FcuComputer::step()
     FcuComputer_DWork.prevTrkFpaActive_m = FcuComputer_DWork.p_trk_fpa_active;
     rtb_BusAssignment_m.logic.afs.hdg_trk_display_value = FcuComputer_DWork.pValue_b;
     rtb_BusAssignment_m.logic.afs.hdg_trk_dashes = rtb_dashes_n;
+    y_tmp = FcuComputer_U.in.discrete_inputs.afs_inputs.alt_increment_1000 * 900;
     if (!FcuComputer_DWork.pValue_not_empty_p) {
-      FcuComputer_DWork.pValue_h = rtb_BusAssignment_m.logic.afs.chosen_fmgc_data.alt_ft;
+      FcuComputer_DWork.pValue_h = std::round(rtb_BusAssignment_m.logic.afs.chosen_fmgc_data.alt_ft /
+        static_cast<real32_T>(y_tmp + 100)) * (static_cast<real32_T>(y_tmp) + 100.0F);
       FcuComputer_DWork.pValue_not_empty_p = true;
     }
 
@@ -941,14 +948,11 @@ void FcuComputer::step()
       FcuComputer_DWork.pValue_h = FcuComputer_U.in.sim_input.alt;
     }
 
-    if (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_increment_1000) {
-      FcuComputer_DWork.pValue_h = std::round((static_cast<real32_T>
-        (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns) * 1000.0F + FcuComputer_DWork.pValue_h) / 1000.0F) *
-        1000.0F;
-    } else {
-      FcuComputer_DWork.pValue_h = std::round((static_cast<real32_T>
-        (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns) * 100.0F + FcuComputer_DWork.pValue_h) / 100.0F) *
-        100.0F;
+    if ((FcuComputer_U.in.sim_input.alt != -1.0F) || (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns != 0))
+    {
+      FcuComputer_DWork.pValue_h = std::round(((static_cast<real32_T>(y_tmp + 100) / 2.0F + 1.0F) * static_cast<real32_T>
+        (FcuComputer_U.in.discrete_inputs.afs_inputs.alt_knob.turns) + FcuComputer_DWork.pValue_h) /
+        static_cast<real32_T>(y_tmp + 100)) * (static_cast<real32_T>(y_tmp) + 100.0F);
     }
 
     FcuComputer_DWork.pValue_h = std::fmax(std::fmin(FcuComputer_DWork.pValue_h, 49000.0F), 100.0F);
@@ -1037,12 +1041,12 @@ void FcuComputer::step()
         FcuComputer_DWork.pValue = 500.0F;
       } else {
         if (rtb_y_f < 0.0F) {
-          tmp = -1;
+          y_tmp = -1;
         } else {
-          tmp = (rtb_y_f > 0.0F);
+          y_tmp = (rtb_y_f > 0.0F);
         }
 
-        FcuComputer_DWork.pValue = 1000.0F * static_cast<real32_T>(tmp);
+        FcuComputer_DWork.pValue = 1000.0F * static_cast<real32_T>(y_tmp);
       }
     }
 

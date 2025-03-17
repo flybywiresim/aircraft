@@ -8,7 +8,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsDataDebugProps extends AbstractMfdPageProps {}

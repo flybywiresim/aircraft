@@ -6,6 +6,7 @@ import { FMMessage, FMMessageTypes, Trigger } from '@flybywiresim/fbw-sdk';
 
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
+import { Navigation } from '@fmgc/navigation/Navigation';
 
 abstract class RwyLsMismatch implements FMMessageSelector {
   message: FMMessage = FMMessageTypes.RwyLsMismatch;
@@ -16,10 +17,10 @@ abstract class RwyLsMismatch implements FMMessageSelector {
 
   private trigFalling = new Trigger(true);
 
-  private navaidTuner: NavaidTuner;
+  private navaidTuner?: NavaidTuner;
 
-  init(baseInstrument: BaseInstrument): void {
-    this.navaidTuner = baseInstrument.navigation.getNavaidTuner();
+  init(navigation: Navigation): void {
+    this.navaidTuner = navigation.getNavaidTuner();
   }
 
   process(deltaTime: number): FMMessageUpdate {
