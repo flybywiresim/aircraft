@@ -50,7 +50,21 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   );
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
-  private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((it) => (it > 9 ? 'hidden' : 'inherit'));
+  private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((fp) =>
+    fp < 2 || fp > 9 ? 'hidden' : 'inherit',
+  );
+
+  private readonly engOneRunning = ConsumerSubject.create(this.sub.on('engOneRunning'), false);
+  private readonly engTwoRunning = ConsumerSubject.create(this.sub.on('engTwoRunning'), false);
+  private readonly engThreeRunning = ConsumerSubject.create(this.sub.on('engThreeRunning'), false);
+  private readonly engFourRunning = ConsumerSubject.create(this.sub.on('engFourRunning'), false);
+  private readonly anyEngRunning = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.engOneRunning,
+    this.engTwoRunning,
+    this.engThreeRunning,
+    this.engFourRunning,
+  );
 
   private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(1), 0);
   private readonly cgPercentText = this.cgPercent.map((it) => it.toFixed(1));
@@ -64,8 +78,8 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   );
 
   private readonly cgStatus = MappedSubject.create(
-    ([trim, cg, phase]) => {
-      if (phase > 9) {
+    ([trim, cg, phase, engRunning]) => {
+      if (!engRunning || phase > 9) {
         return PitchTrimStatus.AfterLanding;
       } else {
         if (PitchTrimUtils.pitchTrimOutOfRange(trim)) {
@@ -78,6 +92,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
     this.trimPosition,
     this.cgPercent,
     this.fwcFlightPhase,
+    this.anyEngRunning,
   );
 
   private readonly optimalPitchTrim = MappedSubject.create(
@@ -104,9 +119,10 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   );
 
   private readonly gwCgVisibility = MappedSubject.create(
-    ([flightPhase, hydPress]) => (flightPhase >= 2 && flightPhase <= 6 && hydPress ? 'inherit' : 'hidden'),
+    ([flightPhase, hydPress, engRunning]) => (engRunning && flightPhase <= 6 && hydPress ? 'inherit' : 'hidden'),
     this.fwcFlightPhase,
     this.oneHydPressurized,
+    this.anyEngRunning,
   );
 
   /** in pixels, where upper magenta box starts */
@@ -178,6 +194,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
       this.trimAreasTransform,
       this.fwcFlightPhase,
       this.flightPhaseAfterTouchdown,
+      this.anyEngRunning,
       this.cgPercent,
       this.cgPercentText,
       this.greenHydPressurized,
