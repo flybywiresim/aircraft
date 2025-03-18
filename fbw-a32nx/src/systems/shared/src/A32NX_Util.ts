@@ -67,7 +67,7 @@ export class A32NX_Util {
    * @param {Number=} magVar falls back to current aircraft position magvar
    * @returns true heading
    */
-  public static magneticToTrue(heading, magVar) {
+  public static magneticToTrue(heading: number, magVar: number) {
     return (720 + heading + (magVar || SimVar.GetSimVarValue('MAGVAR', 'degree'))) % 360;
   }
 
