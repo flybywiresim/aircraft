@@ -4710,7 +4710,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', level, forPlan);
       // used by FlightPhaseManager - only set for active plan
       if (forPlan === FlightPlanIndex.Active) {
-        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
+        SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
       }
     }
   }
