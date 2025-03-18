@@ -214,7 +214,7 @@ export namespace GeometryFactory {
 }
 
 function geometryLegFromFlightPlanLeg(
-  magVar: Degrees,
+  courseMagVar: Degrees,
   previousFlightPlanLeg: FlightPlanElement | undefined,
   flightPlanLeg: FlightPlanLeg,
   nextGeometryLeg?: Leg,
@@ -228,17 +228,17 @@ function geometryLegFromFlightPlanLeg(
   const metadata = legMetadataFromFlightPlanLeg(flightPlanLeg);
 
   const waypoint = flightPlanLeg.terminationWaypoint();
-  const trueCourse = A32NX_Util.magneticToTrue(flightPlanLeg.definition.magneticCourse, magVar);
+  const magneticCourse = flightPlanLeg.definition.magneticCourse;
+  const trueCourse = A32NX_Util.magneticToTrue(magneticCourse, courseMagVar);
   const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
   const length = flightPlanLeg.definition.length;
 
   const magneticTheta = flightPlanLeg.definition.theta;
   // For theta, we always use the corresponding navaid's station declination since it's always a VHF navaid
   // for the legs that use theta (AF, CR, VR)
-  const trueTheta = A32NX_Util.magneticToTrue(
-    magneticTheta,
-    recommendedNavaid ? A32NX_Util.getRadialMagVar(recommendedNavaid) : 0,
-  );
+  const trueTheta = recommendedNavaid
+    ? A32NX_Util.magneticToTrue(magneticTheta, A32NX_Util.getRadialMagVar(recommendedNavaid))
+    : magneticTheta;
 
   switch (legType) {
     case LegType.AF: {
@@ -251,6 +251,10 @@ function geometryLegFromFlightPlanLeg(
           recommendedNavaid,
         );
       }
+
+      const trueCourse = recommendedNavaid
+        ? A32NX_Util.magneticToTrue(magneticCourse, A32NX_Util.getRadialMagVar(recommendedNavaid))
+        : magneticCourse;
 
       return new AFLeg(waypoint, navaid, rho, trueTheta, trueCourse, metadata, SegmentType.Departure);
     }
@@ -394,7 +398,7 @@ function getApproachMagCorrection(legIndex: number, plan: BaseFlightPlan): numbe
     // find a leg with the reference navaid for the procedure
     for (
       let i = plan.firstMissedApproachLegIndex - 1;
-      i >= plan.firstMissedApproachLegIndex - plan.approachViaSegment.legCount;
+      i >= plan.firstApproachLegIndex - plan.approachViaSegment.legCount;
       i--
     ) {
       const leg = plan.allLegs[i];

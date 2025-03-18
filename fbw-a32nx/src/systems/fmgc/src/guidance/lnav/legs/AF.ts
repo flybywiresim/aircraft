@@ -23,8 +23,8 @@ export class AFLeg extends XFLeg {
     fix: Fix,
     private navaid: Coordinates,
     private rho: NauticalMiles,
-    private theta: NauticalMiles,
-    public boundaryRadial: NauticalMiles,
+    private theta: DegreesTrue,
+    public boundaryRadial: DegreesTrue,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
