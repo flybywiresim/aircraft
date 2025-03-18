@@ -897,11 +897,12 @@ export class FwsCore {
 
   public readonly allFuelPumpsOff = Subject.create(false);
 
-  public readonly centerFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_1'), false);
+  // Only check feed pumps for now, heavy enough
+  private readonly feedTankPumps = Array.from(Array(8), (_, idx) =>
+    ConsumerSubject.create(this.sub.on(`fuel_pump_active_${idx + 1}`), false),
+  );
 
   public readonly feedTank1Low = Subject.create(false);
-
-  public readonly centerFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_4'), false);
 
   public readonly feedTank1LowConfirm = new NXLogicConfirmNode(30, true);
 
@@ -915,17 +916,9 @@ export class FwsCore {
 
   public readonly feedTank4Low = Subject.create(false);
 
-  public readonly leftFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_2'), false);
-
-  public readonly leftFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_5'), false);
-
   public readonly rightFuelLow = Subject.create(false);
 
   public readonly rightFuelLowConfirm = new NXLogicConfirmNode(30, true);
-
-  public readonly rightFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_3'), false);
-
-  public readonly rightFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_6'), false);
 
   public readonly feedTank4LowConfirm = new NXLogicConfirmNode(30, true);
 
@@ -1741,16 +1734,14 @@ export class FwsCore {
       });
     });
 
+    for (const s of this.feedTankPumps) {
+      this.subs.push(s);
+    }
+
     this.subs.push(
       this.statusNormal,
       this.masterCautionOutput,
       this.masterWarningOutput,
-      this.centerFuelPump1Auto,
-      this.centerFuelPump2Auto,
-      this.leftFuelPump1Auto,
-      this.leftFuelPump2Auto,
-      this.rightFuelPump1Auto,
-      this.rightFuelPump2Auto,
       this.fuelOnBoard,
       this.fuelingInitiated,
       this.fuelingTarget,
@@ -3379,26 +3370,12 @@ export class FwsCore {
     );
 
     this.allEngineSwitchOff.set(
-      !(
-        this.engine1ValueSwitch.get() ||
-        this.engine2ValueSwitch.get() ||
-        this.engine3ValueSwitch.get() ||
-        this.engine4ValueSwitch.get()
-      ),
-    );
-    this.allFuelPumpsOff.set(
       !this.engine1ValueSwitch.get() &&
         !this.engine2ValueSwitch.get() &&
         !this.engine3ValueSwitch.get() &&
-        !this.engine4ValueSwitch.get() &&
-        !this.centerFuelPump1Auto.get() &&
-        !this.centerFuelPump2Auto.get() &&
-        !this.leftFuelPump1Auto.get() &&
-        !this.leftFuelPump2Auto.get() &&
-        !this.rightFuelPump1Auto.get() &&
-        !this.rightFuelPump2Auto.get() &&
-        this.allEngineSwitchOff.get(),
+        !this.engine4ValueSwitch.get(),
     );
+    this.allFuelPumpsOff.set(!this.feedTankPumps.some((v) => v.get()) && this.allEngineSwitchOff.get());
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
