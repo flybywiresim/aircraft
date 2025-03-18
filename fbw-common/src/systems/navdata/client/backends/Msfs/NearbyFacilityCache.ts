@@ -1,6 +1,7 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { ResourceHeap } from '@microsoft/msfs-sdk';
 import { NearbyFacility, NearbyFacilityType, NearbyVhfFacility } from '../../NearbyFacilityMonitor';
 import {
   JS_FacilityAirport,
@@ -12,6 +13,13 @@ import {
 } from './FsTypes';
 import { MsfsMapping } from './Mapping';
 
+interface PendingRequest {
+  icao: string;
+  icaoStruct?: JS_ICAO;
+  requestors: ((fac: NearbyFacility | null) => void)[];
+  remainingRetries: number;
+}
+
 /**
  * A shared cache for {@link NearbyFacility} instances.
  * We only request minimal facilities from MSFS where possible, so we don't use the main facility cache.
@@ -19,11 +27,21 @@ import { MsfsMapping } from './Mapping';
 export class NearbyFacilityCache {
   // we want to make sure this is bigger than the largest max result limit in use to avoid thrashing
   private static readonly MAX_CACHE_ENTRIES = 400;
+  private static readonly RETRY_TIMEOUT_MS = 300;
+  private static readonly RETRY_TIMEOUT_AIRPORT_MS = 15_000;
+  private static readonly RETRY_COUNT = 1;
+
+  private readonly pendingHeap = new ResourceHeap<PendingRequest>(
+    () => ({ icao: '', requestors: [], remainingRetries: NearbyFacilityCache.RETRY_COUNT }),
+    EmptyCallback.Void,
+    (r) => (r.remainingRetries = NearbyFacilityCache.RETRY_COUNT),
+    (r) => (r.requestors.length = 0),
+  );
 
   private readonly facilities: NearbyFacility[] = [];
   private static userCount = 0;
 
-  private readonly pendingRequests = new Map<string, ((fac: NearbyFacility | null) => void)[]>();
+  private readonly pendingRequests = new Map<string, PendingRequest>();
 
   private isInit = false;
   private readonly initRequests: (() => void)[] = [];
@@ -91,35 +109,71 @@ export class NearbyFacilityCache {
     return this.fetch(icao, icaoStruct);
   }
 
-  private async fetch(icao: string, icaoStruct?: JS_ICAO): Promise<NearbyFacility | null> {
-    let success = false;
+  private coherentFetch(icao: string, icaoStruct?: JS_ICAO): Promise<boolean> {
     switch (icao[0]) {
       case 'A':
         if (icaoStruct) {
           // MSFS2024 optimisation
-          success = await Coherent.call('LOAD_AIRPORT_FROM_STRUCT', icaoStruct, JSAirportRequestFlags.Minimal);
+          return Coherent.call('LOAD_AIRPORT_FROM_STRUCT', icaoStruct, JSAirportRequestFlags.Minimal);
         } else {
-          success = await Coherent.call('LOAD_AIRPORT', icao);
+          return Coherent.call('LOAD_AIRPORT', icao);
         }
-        break;
       case 'N':
-        success = await Coherent.call('LOAD_NDB', icao);
-        break;
+        return Coherent.call('LOAD_NDB', icao);
       case 'V':
-        success = await Coherent.call('LOAD_VOR', icao);
-        break;
+        return Coherent.call('LOAD_VOR', icao);
       case 'W':
-        success = await Coherent.call('LOAD_INTERSECTION', icao);
-        break;
+        return Coherent.call('LOAD_INTERSECTION', icao);
+      default:
+        throw new Error(`Invalid ICAO type ${icao[0]}`);
+    }
+  }
+
+  private async fetch(icao: string, icaoStruct?: JS_ICAO): Promise<NearbyFacility | null> {
+    const request = this.pendingRequests.get(icao);
+    if (request !== undefined) {
+      return new Promise<NearbyFacility | null>((resolve) => {
+        request.requestors.push(resolve);
+      });
     }
 
+    const success = await this.coherentFetch(icao, icaoStruct);
     if (!success) {
       return null;
     }
 
     return new Promise<NearbyFacility | null>((resolve) => {
-      (this.pendingRequests.get(icao) ?? this.pendingRequests.set(icao, []).get(icao)!).push(resolve);
+      const request = this.pendingHeap.allocate();
+      request.requestors.push(resolve);
+      request.icao = icao;
+      request.icaoStruct = icaoStruct;
+      this.pendingRequests.set(icao, request);
+      setTimeout(
+        () => this.onRetryTimer(request),
+        icao[0] === 'A' ? NearbyFacilityCache.RETRY_TIMEOUT_AIRPORT_MS : NearbyFacilityCache.RETRY_TIMEOUT_MS,
+      );
     });
+  }
+
+  private onRetryTimer(request: PendingRequest): void {
+    if (!this.pendingRequests.has(request.icao)) {
+      // The facility was loaded
+      return;
+    }
+
+    if (request.remainingRetries-- > 0) {
+      this.coherentFetch(request.icao, request.icaoStruct);
+      setTimeout(
+        () => this.onRetryTimer(request),
+        request.icao[0] === 'A' ? NearbyFacilityCache.RETRY_TIMEOUT_AIRPORT_MS : NearbyFacilityCache.RETRY_TIMEOUT_MS,
+      );
+    } else {
+      this.pendingRequests.delete(request.icao);
+      for (const resolve of request.requestors) {
+        resolve(null);
+      }
+      this.pendingHeap.free(request);
+    }
   }
 
   private static getNearbyTypeFromIcao(icao: string): NearbyFacilityType | undefined {
@@ -187,15 +241,17 @@ export class NearbyFacilityCache {
   private addNewFacility(fac: NearbyFacility): void {
     this.addToCache(fac);
 
-    const requests = this.pendingRequests.get(fac.databaseId);
-    if (!requests) {
+    const request = this.pendingRequests.get(fac.databaseId);
+    if (!request) {
       return;
     }
     this.pendingRequests.delete(fac.databaseId);
 
-    for (const req of requests) {
-      req(fac);
+    for (const resolve of request.requestors) {
+      resolve(fac);
     }
+
+    this.pendingHeap.free(request);
   }
 
   private addToCache(fac: NearbyFacility): void {
