@@ -686,12 +686,7 @@ export class OansBrakeToVacateSelection<T extends number> {
       this.groundSpeed.get().value < 1 ||
       !aircraftPpos
     ) {
-      // Transmit no advisory
-      this.rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
-      this.rwyAheadArinc.setBitValue(11, false);
-      this.rwyAheadArinc.writeToSimVar('L:A32NX_OANS_WORD_1');
-
-      this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', '', true);
+      this.transmitNoRwyAheadAdvisory();
       return;
     }
 
@@ -798,5 +793,15 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.rwyAheadArinc.writeToSimVar('L:A32NX_OANS_WORD_1');
 
     this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', this.rwyAheadQfu, true);
+  }
+
+  transmitNoRwyAheadAdvisory() {
+    // Transmit no advisory
+    this.rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
+    this.rwyAheadArinc.setBitValue(11, false);
+    this.rwyAheadArinc.writeToSimVar('L:A32NX_OANS_WORD_1');
+
+    this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', '', true);
+    return;
   }
 }

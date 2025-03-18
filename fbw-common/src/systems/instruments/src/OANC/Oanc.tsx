@@ -1089,7 +1089,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.unloadAirportMap(true);
     }
 
-    if (!this.data || this.dataLoading || this.resetPulled.get()) return;
+    if (!this.data || this.dataLoading || this.resetPulled.get()) {
+      this.btvUtils.transmitNoRwyAheadAdvisory();
+      return;
+    }
 
     this.aircraftOnGround.set(
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
