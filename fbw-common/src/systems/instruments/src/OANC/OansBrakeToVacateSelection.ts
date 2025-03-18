@@ -795,9 +795,11 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', this.rwyAheadQfu, true);
   }
 
-  transmitNoRwyAheadAdvisory() {
+  transmitNoRwyAheadAdvisory(faulty = false) {
     // Transmit no advisory
-    this.rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
+    this.rwyAheadArinc.ssm = faulty
+      ? Arinc429SignStatusMatrix.FailureWarning
+      : Arinc429SignStatusMatrix.NormalOperation;
     this.rwyAheadArinc.setBitValue(11, false);
     this.rwyAheadArinc.writeToSimVar('L:A32NX_OANS_WORD_1');
 
