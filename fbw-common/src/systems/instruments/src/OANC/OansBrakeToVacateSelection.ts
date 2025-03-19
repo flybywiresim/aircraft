@@ -686,7 +686,7 @@ export class OansBrakeToVacateSelection<T extends number> {
       this.groundSpeed.get().value < 1 ||
       !aircraftPpos
     ) {
-      this.transmitNoRwyAheadAdvisory();
+      this.transmitRwyAheadAdvisory(false, '', true);
       return;
     }
 
@@ -788,22 +788,18 @@ export class OansBrakeToVacateSelection<T extends number> {
     }
 
     // Transmit on bus
-    this.rwyAheadArinc.ssm = Arinc429SignStatusMatrix.NormalOperation;
-    this.rwyAheadArinc.setBitValue(11, this.rwyAheadTriggered && this.rwyAheadQfu !== '');
-    this.rwyAheadArinc.writeToSimVar('L:A32NX_OANS_WORD_1');
-
-    this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', this.rwyAheadQfu, true);
+    this.transmitRwyAheadAdvisory(this.rwyAheadTriggered && this.rwyAheadQfu !== '', this.rwyAheadQfu);
   }
 
-  transmitNoRwyAheadAdvisory(faulty = false) {
+  transmitRwyAheadAdvisory(bitValue: boolean, qfu: string, faulty = false) {
     // Transmit no advisory
-    this.rwyAheadArinc.ssm = faulty
-      ? Arinc429SignStatusMatrix.FailureWarning
-      : Arinc429SignStatusMatrix.NormalOperation;
-    this.rwyAheadArinc.setBitValue(11, false);
+    this.rwyAheadArinc.setSsm(
+      faulty ? Arinc429SignStatusMatrix.FailureWarning : Arinc429SignStatusMatrix.NormalOperation,
+    );
+    this.rwyAheadArinc.setBitValue(11, bitValue);
     this.rwyAheadArinc.writeToSimVar('L:A32NX_OANS_WORD_1');
 
-    this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', '', true);
+    this.bus.getPublisher<FmsOansData>().pub('ndRwyAheadQfu', qfu, true);
     return;
   }
 }
