@@ -44,7 +44,13 @@ export class WaypointEntryUtils {
 
       return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored, ident).waypoint;
     } else if (WaypointEntryUtils.isPlaceFormat(place)) {
-      return WaypointEntryUtils.parsePlace(fms, place).then((fix) => fix ?? fms.createNewWaypoint(place));
+      return WaypointEntryUtils.parsePlace(fms, place).catch((e) => {
+        if (e instanceof FmsError && e.type === FmsErrorType.NotInDatabase) {
+          fms.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+          return fms.createNewWaypoint(place);
+        }
+        throw e;
+      });
     }
 
     throw new FmsError(FmsErrorType.FormatError);
@@ -75,10 +81,16 @@ export class WaypointEntryUtils {
     // In this case, we only want to return the actual VOR facility
     const items = WaypointEntryUtils.mergeNavaidsWithWaypoints(navaids, waypoints);
 
+    if (items.length === 0) {
+      throw new FmsError(FmsErrorType.NotInDatabase);
+    }
+
     const ret = fms.deduplicateFacilities(items);
+
     if (ret === undefined) {
       throw new FmsError(FmsErrorType.NotInDatabase);
     }
+
     return ret;
   }
 

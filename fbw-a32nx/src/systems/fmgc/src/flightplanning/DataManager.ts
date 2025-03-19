@@ -53,7 +53,18 @@ type PbdWaypoint = {
   pbdDistance: NauticalMiles;
 };
 
-export type PilotWaypoint = LatLonWaypoint | PbxWaypoint | PbdWaypoint | null;
+export type PilotWaypoint = LatLonWaypoint | PbxWaypoint | PbdWaypoint;
+
+export enum LatLonFormatType {
+  UserSetting = 'user-setting',
+  ShortFormat = 'short-format',
+  ExtendedFormat = 'extended-format',
+}
+
+export interface DataManagerOptions {
+  /** The format to use for lat/lon waypoint idents. Defaults to {@link LatLonFormatType.UserSetting}. */
+  latLonFormat: LatLonFormatType;
+}
 
 export enum LatLonFormatType {
   UserSetting = 'user-setting',

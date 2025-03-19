@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { NavigationDatabase, NavigationDatabaseBackend } from '../../NavigationDatabase';
+import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
-export function setupNavigraphDatabase() {
-  NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Navigraph);
+export function setupTestDatabase() {
+  NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Test);
 }

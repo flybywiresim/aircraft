@@ -190,5 +190,6 @@ bool MsfsHandler::shutdown() {
   modules.clear();
   unregister_key_event_handler_EX1(reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(keyEventHandlerEx1), nullptr);
   unregister_all_named_vars();
+  SimConnect_Close(hSimConnect);
   return result;
 }
