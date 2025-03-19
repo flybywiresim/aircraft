@@ -3925,11 +3925,11 @@ export class FwsCore {
         this.radioHeight3.valueOr(Infinity) > 1500,
     );
 
-    this.terrSys1Failed.set(SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', 'Bool'));
-    this.terrSys1Failed.set(SimVar.GetSimVarValue('L:A32NX_TERR_2_FAILED', 'Bool'));
+    this.terrSys1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool));
+    this.terrSys2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool));
 
-    this.taws1Failed.set(SimVar.GetSimVarValue('L:A32NX_TAWS_1_FAILED', 'Bool'));
-    this.taws2Failed.set(SimVar.GetSimVarValue('L:A32NX_TAWS_2_FAILED', 'Bool'));
+    this.taws1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool));
+    this.taws2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool));
 
     this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
 
