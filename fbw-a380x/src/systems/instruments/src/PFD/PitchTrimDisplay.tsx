@@ -50,9 +50,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   );
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
-  private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((fp) =>
-    fp < 2 || fp > 9 ? 'hidden' : 'inherit',
-  );
+  private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((fp) => (fp > 9 ? 'hidden' : 'inherit'));
 
   private readonly engOneRunning = ConsumerSubject.create(this.sub.on('engOneRunning'), false);
   private readonly engTwoRunning = ConsumerSubject.create(this.sub.on('engTwoRunning'), false);
@@ -312,7 +310,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 fill="none"
                 stroke="#ff94ff"
                 stroke-width="4"
-                visibility={this.flightPhaseAfterTouchdown}
+                visibility={this.gwCgVisibility}
               />
               <rect
                 width="16"
@@ -322,7 +320,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 fill="none"
                 stroke="#ff94ff"
                 stroke-width="4"
-                visibility={this.flightPhaseAfterTouchdown}
+                visibility={this.gwCgVisibility}
               />
               <rect width="20" height="4" x="5" y="274" fill="white" visibility={this.flightPhaseAfterTouchdown} />
             </g>
