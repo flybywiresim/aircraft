@@ -193,6 +193,7 @@ bool MsfsHandler::shutdown() {
   if (hSimConnect != 0) {
     SimConnect_Close(hSimConnect);
   }
+  hSimConnect = 0;
 
   return result;
 }
