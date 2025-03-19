@@ -1090,7 +1090,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     if (!this.data || this.dataLoading || this.resetPulled.get()) {
-      this.btvUtils.transmitRwyAheadAdvisory(true);
+      this.btvUtils.transmitRwyAheadAdvisory(false, '', true);
       return;
     }
 
