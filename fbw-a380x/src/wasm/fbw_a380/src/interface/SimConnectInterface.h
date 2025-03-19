@@ -10,9 +10,9 @@
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
+#include "../model/A380FacComputer_types.h"
 #include "../model/A380PrimComputer_types.h"
 #include "../model/A380SecComputer_types.h"
-#include "../model/FacComputer_types.h"
 
 class SimConnectInterface {
  public:
