@@ -70,7 +70,10 @@ Use React-based implementation for now, hence no dev. effort needed here.
 | 🟥 | atccom/report-modify/position | 6 |
 | 🟥 | atccom/report-modify/modify | 6 |
 | 🟥 | atccom/report-modify/other-reports | 6 |
-| 🟥 | atccom/msg-record | 6 |
+| 2️⃣ | atccom/msg-record | 6 |
+| 2️⃣ | atccom/msg-record/all-msg | 6 |
+| 2️⃣ | atccom/msg-record/monitored-msg | 6 |
+| 2️⃣ | atccom/msg-record/all-msg-expand | 6 |
 | 2️⃣ | atccom/d-atis/list | 6 |
 | 2️⃣ | atccom/d-atis/received | 6 |
 | 🟥 | atccom/emer | 6 |

@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { flushPromises } from '../../test-functions';
 import { QueuedSimVarWriter } from '.';
 import { SimVarReaderWriter } from '..';
