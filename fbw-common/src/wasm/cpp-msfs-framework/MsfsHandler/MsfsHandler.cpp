@@ -194,6 +194,7 @@ bool MsfsHandler::shutdown() {
   unregister_all_named_vars();
   if (simConnectInitialized) {
     SimConnect_Close(hSimConnect);
+    simConnectInitialized = false;
   }
   return result;
 }
