@@ -22,7 +22,7 @@ void MsfsHandler::registerModule(Module* pModule) {
 bool MsfsHandler::initialize() {
   // Initialize SimConnect
 
-  simConnectInitialized = SUCCEEDED(SimConnect_Open(&hSimConnect, simConnectName.c_str(), nullptr, 0, 0, 0));
+  simConnectInitialized = SimConnect_Open(&hSimConnect, simConnectName.c_str(), nullptr, 0, 0, 0) == S_OK;
   if (!simConnectInitialized) {
     LOG_ERROR(simConnectName + ": Failed to initialize SimConnect");
     return false;
@@ -195,6 +195,7 @@ bool MsfsHandler::shutdown() {
   if (simConnectInitialized) {
     SimConnect_Close(hSimConnect);
     simConnectInitialized = false;
+    hSimConnect           = 0;
   }
   return result;
 }
