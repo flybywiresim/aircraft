@@ -84,8 +84,6 @@ impl A320Fuel {
         (
             2,
             FuelPumpProperties {
-                // TODO: implement Gen 1 line
-                // ElectricalBusType::AlternatingCurrent(1) or Gen1
                 powered_by: ElectricalBusType::Virtual("FUEL_PUMP_1_SUPPLY"),
                 consumption_current_ampere: 8.,
             },
@@ -102,8 +100,6 @@ impl A320Fuel {
         (
             3,
             FuelPumpProperties {
-                // TODO: implement Gen 1 line
-                // ElectricalBusType::AlternatingCurrent(1) or Gen1
                 powered_by: ElectricalBusType::Virtual("FUEL_PUMP_1_SUPPLY"),
                 consumption_current_ampere: 8.,
             },
