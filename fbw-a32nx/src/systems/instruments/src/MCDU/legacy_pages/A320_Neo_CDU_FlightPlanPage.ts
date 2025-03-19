@@ -110,8 +110,8 @@ export class CDUFlightPlanPage {
     let alternateAirportOffset = 0;
 
     // VNAV
-    const fmsGeometryProfile = mcdu.guidanceController.vnavDriver.mcduProfile;
-    const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
+    const fmsGeometryProfile = forActiveOrTemporary ? mcdu.guidanceController.vnavDriver.mcduProfile : undefined;
+    const fmsPseudoWaypoints = forActiveOrTemporary ? mcdu.guidanceController.currentPseudoWaypoints : [];
 
     const vnavPredictionsMapByWaypoint = fmsGeometryProfile?.isReadyToDisplay
       ? fmsGeometryProfile.waypointPredictions

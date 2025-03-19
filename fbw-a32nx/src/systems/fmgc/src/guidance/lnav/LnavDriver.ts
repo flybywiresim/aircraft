@@ -397,7 +397,7 @@ export class LnavDriver implements GuidanceComponent {
         FlightPlanIndex.FirstSecondary,
       );
     } else {
-      this.guidanceController.setAlongTrackDistanceToDestination(0);
+      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary);
     }
 
     /* Set FG parameters */
