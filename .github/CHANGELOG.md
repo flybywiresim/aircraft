@@ -109,6 +109,7 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
+1. [A380X/PRIM] Adapt protection speeds to new flight model - @flogross89 (floridude)
 1. [A380X/EFB] Improved Aircraft Presets configuration for the A380X - @frankkopp (cdr_maverick)
 1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
@@ -181,6 +182,7 @@
 1. [A32NX/FMS] Added differentiation between compatible and incompatible approach vias (H4) - @tracernz (Mike)
 1. [A32NX/FMS] Removed insert/erase prompts on approach via page - @tracernz (Mike)
 1. [ND] Fixed alignment of approach message - @tracernz (Mike)
+1. [A380X/OANS] Fix RWY AHEAD not disappearing when OANS Performance Mode is active - @flogross89 (floridude)
 1. [ELEC] Add power consumption for fuel pumps - @Gurgel100 (Pascal)
 
 ## 0.12.0
