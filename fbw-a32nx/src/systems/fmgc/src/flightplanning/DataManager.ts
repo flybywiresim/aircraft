@@ -66,17 +66,6 @@ export interface DataManagerOptions {
   latLonFormat: LatLonFormatType;
 }
 
-export enum LatLonFormatType {
-  UserSetting = 'user-setting',
-  ShortFormat = 'short-format',
-  ExtendedFormat = 'extended-format',
-}
-
-export interface DataManagerOptions {
-  /** The format to use for lat/lon waypoint idents. Defaults to {@link LatLonFormatType.UserSetting}. */
-  latLonFormat: LatLonFormatType;
-}
-
 export class DataManager {
   private static readonly STORED_WP_KEY: string = 'A32NX.StoredWaypoints';
 
