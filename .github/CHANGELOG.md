@@ -183,6 +183,7 @@
 1. [A32NX/FMS] Removed insert/erase prompts on approach via page - @tracernz (Mike)
 1. [ND] Fixed alignment of approach message - @tracernz (Mike)
 1. [A380X/OANS] Fix RWY AHEAD not disappearing when OANS Performance Mode is active - @flogross89 (floridude)
+1. [ELEC] Add power consumption for fuel pumps - @Gurgel100 (Pascal)
 
 ## 0.12.0
 
