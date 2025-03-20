@@ -117,7 +117,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   );
 
   private readonly gwCgVisibility = MappedSubject.create(
-    ([flightPhase, hydPress, engRunning]) => (engRunning && flightPhase <= 6 && hydPress ? 'inherit' : 'hidden'),
+    ([flightPhase, hydPress, engRunning]) => (engRunning && flightPhase <= 10 && hydPress ? 'inherit' : 'hidden'),
     this.fwcFlightPhase,
     this.oneHydPressurized,
     this.anyEngRunning,
