@@ -16,6 +16,7 @@ interface TPerformanceLanding {
   icao: string;
   windDirection?: number;
   windMagnitude?: number;
+  windEntry?: string;
   weight?: number;
   runwayHeading?: number;
   approachSpeed?: number;
@@ -81,6 +82,7 @@ export const initialState: TPerformanceState = {
     icao: '',
     windDirection: undefined,
     windMagnitude: undefined,
+    windEntry: undefined,
     weight: undefined,
     runwayHeading: undefined,
     approachSpeed: undefined,

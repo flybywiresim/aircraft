@@ -13,6 +13,7 @@ import {
   ConfigWeatherMap,
   LandingFlapsConfig,
   LandingRunwayConditions,
+  MathUtils,
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
@@ -25,6 +26,14 @@ import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
+import {
+  isValidIcao,
+  isWindMagnitudeAndDirection,
+  isWindMagnitudeOnly,
+  WIND_MAGNITUDE_AND_DIR_REGEX,
+  WIND_MAGNITUDE_ONLY_REGEX,
+} from '../Data/Utils';
+import { getAirportMagVar } from '../Data/Runways';
 
 interface OutputDisplayProps {
   label: string;
@@ -71,6 +80,7 @@ export const LandingWidget = () => {
     icao,
     windDirection,
     windMagnitude,
+    windEntry,
     weight,
     runwayHeading,
     approachSpeed,
@@ -139,8 +149,21 @@ export const LandingWidget = () => {
     );
   };
 
+  const clearResult = () => {
+    dispatch(
+      setLandingValues({
+        maxAutobrakeLandingDist: 0,
+        mediumAutobrakeLandingDist: 0,
+        lowAutobrakeLandingDist: 0,
+        runwayVisualizationLabels: [],
+      }),
+    );
+  };
+
   const syncValuesWithApiMetar = async (icao: string): Promise<void> => {
-    if (!isValidIcao(icao)) return;
+    if (!isValidIcao(icao)) {
+      return;
+    }
 
     let parsedMetar: MetarParserType | undefined = undefined;
 
@@ -150,7 +173,7 @@ export const LandingWidget = () => {
       try {
         metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
         if (metar.icao !== icao.toUpperCase()) {
-          toast.error('No METAR available');
+          throw new Error('No METAR available');
         }
         parsedMetar = parseMetar(metar.metarString);
       } catch (err) {
@@ -160,7 +183,7 @@ export const LandingWidget = () => {
       try {
         const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
         if (!response.metar) {
-          toast.error('No METAR available');
+          throw new Error('No METAR available');
         }
         parsedMetar = parseMetar(response.metar);
       } catch (err) {
@@ -172,43 +195,66 @@ export const LandingWidget = () => {
       return;
     }
 
-    const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+    try {
+      const magvar = await getAirportMagVar(icao);
+      const windDirection = MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
+      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
 
-    dispatch(
-      setLandingValues({
-        weight: weightKgs,
-        windDirection: parsedMetar.wind.degrees,
-        windMagnitude: parsedMetar.wind.speed_kts,
-        temperature: parsedMetar.temperature.celsius,
-        pressure: parsedMetar.barometer.mb,
-      }),
-    );
+      dispatch(
+        setLandingValues({
+          windDirection,
+          windMagnitude: parsedMetar.wind.speed_kts,
+          windEntry,
+          temperature: parsedMetar.temperature.celsius,
+          pressure: parsedMetar.barometer.mb,
+        }),
+      );
+    } catch (err) {
+      toast.error('Could not fetch airport');
+    }
   };
 
-  const isValidIcao = (icao: string): boolean => icao.length === 4;
-
   const handleICAOChange = (icao: string): void => {
+    clearResult();
     dispatch(setLandingValues({ icao }));
   };
 
-  const handleWindDirectionChange = (value: string): void => {
-    let windDirection: number | undefined = parseInt(value);
+  const handleWindChange = (input: string): void => {
+    clearResult();
 
-    if (Number.isNaN(windDirection)) {
-      windDirection = undefined;
+    if (input === '0') {
+      dispatch(setLandingValues({ windMagnitude: 0, windDirection: undefined, windEntry: input }));
+      return;
     }
 
-    dispatch(setLandingValues({ windDirection }));
-  };
-
-  const handleWindMagnitudeChange = (value: string): void => {
-    let windMagnitude: number | undefined = parseInt(value);
-
-    if (Number.isNaN(windMagnitude)) {
-      windMagnitude = undefined;
+    if (isWindMagnitudeOnly(input)) {
+      const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_ONLY_REGEX);
+      const windMagnitude = parseFloat(magnitudeOnlyMatch[2]);
+      switch (magnitudeOnlyMatch[1]) {
+        case 'TL':
+        case 'T':
+        case '-':
+          dispatch(setLandingValues({ windMagnitude: -windMagnitude, windDirection: undefined, windEntry: input }));
+          return;
+        case 'HD':
+        case 'H':
+        case '+':
+        default:
+          dispatch(setLandingValues({ windMagnitude, windDirection: undefined, windEntry: input }));
+          return;
+      }
+    } else if (isWindMagnitudeAndDirection(input)) {
+      const directionMagnitudeMatch = input.match(WIND_MAGNITUDE_AND_DIR_REGEX);
+      dispatch(
+        setLandingValues({
+          windDirection: parseInt(directionMagnitudeMatch[1]),
+          windMagnitude: parseFloat(directionMagnitudeMatch[2]),
+          windEntry: input,
+        }),
+      );
+      return;
     }
-
-    dispatch(setLandingValues({ windMagnitude }));
+    dispatch(setLandingValues({ windMagnitude: undefined, windDirection: undefined, windEntry: input }));
   };
 
   const handleWeightChange = (value: string): void => {
@@ -224,6 +270,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwayHeadingChange = (value: string): void => {
+    clearResult();
     let runwayHeading: number | undefined = parseInt(value);
 
     if (Number.isNaN(runwayHeading)) {
@@ -234,6 +281,7 @@ export const LandingWidget = () => {
   };
 
   const handleApproachSpeedChange = (value: string): void => {
+    clearResult();
     let approachSpeed: number | undefined = parseInt(value);
 
     if (Number.isNaN(approachSpeed)) {
@@ -243,7 +291,8 @@ export const LandingWidget = () => {
     dispatch(setLandingValues({ approachSpeed }));
   };
 
-  const handleAltitudeChange = (value: string): void => {
+  const handleElevationChange = (value: string): void => {
+    clearResult();
     let altitude: number | undefined = parseInt(value);
 
     if (Number.isNaN(altitude)) {
@@ -254,6 +303,7 @@ export const LandingWidget = () => {
   };
 
   const handleTemperatureChange = (value: string): void => {
+    clearResult();
     let temperature: number | undefined = parseFloat(value);
 
     if (Number.isNaN(temperature)) {
@@ -266,6 +316,7 @@ export const LandingWidget = () => {
   };
 
   const handleFlapsChange = (newValue: number | string): void => {
+    clearResult();
     let flaps: LandingFlapsConfig = parseInt(newValue.toString());
 
     if (flaps !== LandingFlapsConfig.Full && flaps !== LandingFlapsConfig.Conf3) {
@@ -276,6 +327,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwayConditionChange = (newValue: number | string): void => {
+    clearResult();
     let runwayCondition: LandingRunwayConditions = parseInt(newValue.toString());
 
     if (!runwayCondition) {
@@ -286,18 +338,21 @@ export const LandingWidget = () => {
   };
 
   const handleReverseThrustChange = (newValue: boolean): void => {
+    clearResult();
     const reverseThrust: boolean = newValue;
 
     dispatch(setLandingValues({ reverseThrust }));
   };
 
   const handleAutolandChange = (newValue: boolean): void => {
+    clearResult();
     const autoland: boolean = newValue;
 
     dispatch(setLandingValues({ autoland }));
   };
 
   const handleRunwaySlopeChange = (value: string): void => {
+    clearResult();
     let slope: number | undefined = parseFloat(value);
 
     if (Number.isNaN(slope)) {
@@ -308,6 +363,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwayLengthChange = (value: string): void => {
+    clearResult();
     let runwayLength: number | undefined = parseInt(value);
 
     if (Number.isNaN(runwayLength)) {
@@ -320,12 +376,14 @@ export const LandingWidget = () => {
   };
 
   const handleOverweightProcedureChange = (newValue: boolean): void => {
+    clearResult();
     const overweightProcedure: boolean = newValue;
 
     dispatch(setLandingValues({ overweightProcedure }));
   };
 
   const handlePressureChange = (value: string): void => {
+    clearResult();
     let pressure: number | undefined = parseFloat(value);
 
     if (Number.isNaN(pressure)) {
@@ -354,6 +412,7 @@ export const LandingWidget = () => {
     runwayLength !== undefined;
 
   const handleAutoFill = () => {
+    clearResult();
     if (autoFillSource === 'METAR') {
       syncValuesWithApiMetar(icao);
     } else {
@@ -540,7 +599,7 @@ export const LandingWidget = () => {
                     min={-2000}
                     max={20000}
                     decimalPrecision={0}
-                    onChange={handleAltitudeChange}
+                    onChange={handleElevationChange}
                     number
                   />
                 </Label>
@@ -575,28 +634,14 @@ export const LandingWidget = () => {
                     ]}
                   />
                 </Label>
-                <Label text={t('Performance.Landing.WindDirection')}>
+                <Label text={t('Performance.Landing.Wind')}>
                   <SimpleInput
                     className="w-64"
-                    value={windDirection}
-                    placeholder={t('Performance.Landing.WindDirectionUnit')}
-                    min={0}
-                    max={360}
-                    padding={3}
-                    decimalPrecision={0}
-                    onChange={handleWindDirectionChange}
-                    number
-                  />
-                </Label>
-                <Label text={t('Performance.Landing.WindMagnitude')}>
-                  <SimpleInput
-                    className="w-64"
-                    value={windMagnitude}
+                    value={windEntry}
                     placeholder={t('Performance.Landing.WindMagnitudeUnit')}
-                    min={0}
-                    decimalPrecision={1}
-                    onChange={handleWindMagnitudeChange}
-                    number
+                    onChange={handleWindChange}
+                    uppercase
+                    wind
                   />
                 </Label>
                 <Label text={t('Performance.Landing.Temperature')}>

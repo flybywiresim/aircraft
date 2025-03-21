@@ -34,6 +34,13 @@ import {
   setTakeoffValues,
 } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
+import {
+  isValidIcao,
+  isWindMagnitudeAndDirection,
+  isWindMagnitudeOnly,
+  WIND_MAGNITUDE_AND_DIR_REGEX,
+  WIND_MAGNITUDE_ONLY_REGEX,
+} from '../Data/Utils';
 
 interface LabelProps {
   className?: string;
@@ -48,9 +55,6 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 );
 
 export const TakeoffWidget = () => {
-  const WIND_MAGNITUDE_ONLY_REGEX = /^(TL|HD|T|H|\+|-)?(\d{1,2}(?:\.\d)?)$/;
-  const WIND_MAGNITUDE_AND_DIR_REGEX = /^(\d{1,3})\/(\d{1,2}(?:\.\d)?)$/;
-
   const dispatch = useAppDispatch();
 
   const calculators = useContext(AircraftContext).performanceCalculators;
@@ -281,8 +285,6 @@ export const TakeoffWidget = () => {
     }
   };
 
-  const isValidIcao = (icao: string): boolean => icao?.length === 4;
-
   const clearAirportRunways = () => {
     dispatch(
       setTakeoffValues({
@@ -492,16 +494,6 @@ export const TakeoffWidget = () => {
 
   const handleClearInputs = (): void => {
     dispatch(clearTakeoffValues());
-  };
-
-  const isWindMagnitudeOnly = (input: string): boolean => {
-    const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_ONLY_REGEX);
-    return magnitudeOnlyMatch !== null && (magnitudeOnlyMatch[1] !== '' || input === '0');
-  };
-
-  const isWindMagnitudeAndDirection = (input: string): boolean => {
-    const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_AND_DIR_REGEX);
-    return magnitudeOnlyMatch !== null;
   };
 
   const handleWindChange = (input: string): void => {

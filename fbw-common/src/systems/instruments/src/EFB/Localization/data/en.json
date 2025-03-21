@@ -305,8 +305,6 @@
       "OverweightProcedure": "Overweight Procedure",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Runway Elevation",
-      "RunwayAltitudeUnit": "ft AMSL",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Dry": "Dry (6)",
@@ -317,7 +315,7 @@
         "Poor": "Poor (1)"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Runway Heading",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Runway LDA",
@@ -333,9 +331,6 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Weight",
-      "WindDirection": "Wind Direction",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Wind Magnitude",
       "Wind": "Wind",
       "WindMagnitudeUnit": "kts or °/kts"
     },
