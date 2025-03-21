@@ -448,15 +448,16 @@ export const LandingWidget = () => {
         <div className="flex h-full w-full flex-col justify-between">
           <div className="mb-4">
             <div className="mb-8 mt-4">
-              <p>{t('Performance.Landing.AirportIcao')}</p>
               <div className="mt-4 flex flex-row justify-between">
-                <SimpleInput
-                  className="w-64 uppercase"
-                  value={icao}
-                  placeholder="ICAO"
-                  onChange={handleICAOChange}
-                  maxLength={4}
-                />
+                <Label text={t('Performance.Landing.Airport')}>
+                  <SimpleInput
+                    className="w-24 text-center uppercase"
+                    value={icao}
+                    placeholder="ICAO"
+                    onChange={handleICAOChange}
+                    maxLength={4}
+                  />
+                </Label>
                 <div className="flex flex-row">
                   <TooltipWrapper text={fillDataTooltip()}>
                     <button
@@ -486,8 +487,94 @@ export const LandingWidget = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-row justify-between">
-              <div className="flex flex-col space-y-4">
+            <div className="grid w-full grid-cols-2 justify-between">
+              <div className="flex w-full flex-col space-y-4 pb-10 pr-12">
+                <Label text={t('Performance.Landing.RunwayHeading')}>
+                  <SimpleInput
+                    className="w-64"
+                    value={runwayHeading}
+                    placeholder={t('Performance.Landing.RunwayHeadingUnit')}
+                    min={0}
+                    max={360}
+                    padding={3}
+                    decimalPrecision={0}
+                    onChange={handleRunwayHeadingChange}
+                    number
+                  />
+                </Label>
+                <Label text={t('Performance.Landing.RunwayLda')}>
+                  <div className="flex w-64 flex-row">
+                    <SimpleInput
+                      className="w-full rounded-r-none"
+                      value={getVariableUnitDisplayValue<'ft' | 'm'>(
+                        runwayLength,
+                        distanceUnit as 'ft' | 'm',
+                        'ft',
+                        Units.metreToFoot,
+                      )}
+                      placeholder={distanceUnit}
+                      min={0}
+                      max={distanceUnit === 'm' ? 6000 : 19685.04}
+                      decimalPrecision={0}
+                      onChange={handleRunwayLengthChange}
+                      number
+                    />
+                    <SelectInput
+                      value={distanceUnit}
+                      className="w-28 rounded-l-none"
+                      options={[
+                        { value: 'ft', displayValue: `${t('Performance.Landing.RunwayLdaUnitFt')}` },
+                        { value: 'm', displayValue: `${t('Performance.Landing.RunwayLdaUnitMeter')}` },
+                      ]}
+                      onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
+                    />
+                  </div>
+                </Label>
+              </div>
+              <div className="flex w-full flex-col space-y-4 pb-10 pl-12">
+                <Label text={t('Performance.Landing.RunwayElevation')}>
+                  <SimpleInput
+                    className="w-64"
+                    value={altitude}
+                    placeholder={t('Performance.Landing.RunwayElevationUnit')}
+                    min={-2000}
+                    max={20000}
+                    decimalPrecision={0}
+                    onChange={handleAltitudeChange}
+                    number
+                  />
+                </Label>
+                <Label text={t('Performance.Landing.RunwaySlope')}>
+                  <SimpleInput
+                    className="w-64"
+                    value={slope}
+                    placeholder="%"
+                    min={-2}
+                    max={2}
+                    decimalPrecision={1}
+                    onChange={handleRunwaySlopeChange}
+                    number
+                    reverse
+                  />
+                </Label>
+              </div>
+              <div className="flex w-full flex-col space-y-4 pr-12">
+                <Label text={t('Performance.Landing.RunwayCondition')}>
+                  <SelectInput
+                    className="w-64"
+                    defaultValue={initialState.landing.runwayCondition}
+                    value={runwayCondition}
+                    onChange={handleRunwayConditionChange}
+                    options={[
+                      { value: 0, displayValue: t('Performance.Landing.RunwayConditions.Dry') },
+                      { value: 1, displayValue: t('Performance.Landing.RunwayConditions.Good') },
+                      { value: 2, displayValue: t('Performance.Landing.RunwayConditions.GoodMedium') },
+                      { value: 3, displayValue: t('Performance.Landing.RunwayConditions.Medium') },
+                      { value: 4, displayValue: t('Performance.Landing.RunwayConditions.MediumPoor') },
+                      { value: 5, displayValue: t('Performance.Landing.RunwayConditions.Poor') },
+                    ]}
+                  />
+                </Label>
                 <Label text={t('Performance.Landing.WindDirection')}>
                   <SimpleInput
                     className="w-64"
@@ -568,90 +655,8 @@ export const LandingWidget = () => {
                     />
                   </div>
                 </Label>
-                <Label text={t('Performance.Landing.RunwayAltitude')}>
-                  <SimpleInput
-                    className="w-64"
-                    value={altitude}
-                    placeholder={t('Performance.Landing.RunwayAltitudeUnit')}
-                    min={-2000}
-                    max={20000}
-                    decimalPrecision={0}
-                    onChange={handleAltitudeChange}
-                    number
-                  />
-                </Label>
-                <Label text={t('Performance.Landing.RunwayHeading')}>
-                  <SimpleInput
-                    className="w-64"
-                    value={runwayHeading}
-                    placeholder={t('Performance.Landing.RunwayHeadingUnit')}
-                    min={0}
-                    max={360}
-                    padding={3}
-                    decimalPrecision={0}
-                    onChange={handleRunwayHeadingChange}
-                    number
-                  />
-                </Label>
-                <Label text={t('Performance.Landing.RunwayCondition')}>
-                  <SelectInput
-                    className="w-64"
-                    defaultValue={initialState.landing.runwayCondition}
-                    value={runwayCondition}
-                    onChange={handleRunwayConditionChange}
-                    options={[
-                      { value: 0, displayValue: t('Performance.Landing.RunwayConditions.Dry') },
-                      { value: 1, displayValue: t('Performance.Landing.RunwayConditions.Good') },
-                      { value: 2, displayValue: t('Performance.Landing.RunwayConditions.GoodMedium') },
-                      { value: 3, displayValue: t('Performance.Landing.RunwayConditions.Medium') },
-                      { value: 4, displayValue: t('Performance.Landing.RunwayConditions.MediumPoor') },
-                      { value: 5, displayValue: t('Performance.Landing.RunwayConditions.Poor') },
-                    ]}
-                  />
-                </Label>
               </div>
-              <div className="flex flex-col space-y-4">
-                <Label text={t('Performance.Landing.RunwaySlope')}>
-                  <SimpleInput
-                    className="w-64"
-                    value={slope}
-                    placeholder="%"
-                    min={-2}
-                    max={2}
-                    decimalPrecision={1}
-                    onChange={handleRunwaySlopeChange}
-                    number
-                    reverse
-                  />
-                </Label>
-                <Label text={t('Performance.Landing.RunwayLda')}>
-                  <div className="flex w-64 flex-row">
-                    <SimpleInput
-                      className="w-full rounded-r-none"
-                      value={getVariableUnitDisplayValue<'ft' | 'm'>(
-                        runwayLength,
-                        distanceUnit as 'ft' | 'm',
-                        'ft',
-                        Units.metreToFoot,
-                      )}
-                      placeholder={distanceUnit}
-                      min={0}
-                      max={distanceUnit === 'm' ? 6000 : 19685.04}
-                      decimalPrecision={0}
-                      onChange={handleRunwayLengthChange}
-                      number
-                    />
-                    <SelectInput
-                      value={distanceUnit}
-                      className="w-28 rounded-l-none"
-                      options={[
-                        { value: 'ft', displayValue: `${t('Performance.Landing.RunwayLdaUnitFt')}` },
-                        { value: 'm', displayValue: `${t('Performance.Landing.RunwayLdaUnitMeter')}` },
-                      ]}
-                      onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
-                    />
-                  </div>
-                </Label>
+              <div className="flex w-full flex-col space-y-4 pl-12">
                 <Label text={t('Performance.Landing.ApproachSpeed')}>
                   <SimpleInput
                     className="w-64"

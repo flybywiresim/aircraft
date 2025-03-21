@@ -286,6 +286,7 @@
   "Performance": {
     "Data": "Data",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Airport ICAO",
       "ApproachSpeed": "Approach Speed",
       "ApproachSpeedUnit": "kts",
@@ -305,7 +306,7 @@
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
       "RunwayAltitude": "Runway Elevation",
-      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayAltitudeUnit": "ft AMSL",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Dry": "Dry (6)",
@@ -315,6 +316,8 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft",
       "RunwayHeading": "Runway Heading",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Runway LDA",
@@ -333,7 +336,8 @@
       "WindDirection": "Wind Direction",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Wind Magnitude",
-      "WindMagnitudeUnit": "kts"
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts or °/kts"
     },
     "SYNC": "SYNC",
     "Takeoff": {
@@ -394,7 +398,7 @@
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\""
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
