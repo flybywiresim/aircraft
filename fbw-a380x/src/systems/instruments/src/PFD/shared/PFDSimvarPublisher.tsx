@@ -174,6 +174,8 @@ export interface PFDSimvars {
   btvExitMissed: boolean;
   fcuApproachModeActive: boolean;
   fcuLocModeActive: boolean;
+  hydGreenSysPressurized: boolean;
+  hydYellowSysPressurized: boolean;
 }
 
 export enum PFDVars {
@@ -348,6 +350,8 @@ export enum PFDVars {
   btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
   fcuApproachModeActive = 'L:A32NX_FCU_APPR_MODE_ACTIVE',
   fcuLocModeActive = 'L:A32NX_FCU_LOC_MODE_ACTIVE',
+  hydGreenSysPressurized = 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH',
+  hydYellowSysPressurized = 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -521,6 +525,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['btvExitMissed', { name: PFDVars.btvExitMissed, type: SimVarValueType.Bool }],
     ['fcuApproachModeActive', { name: PFDVars.fcuApproachModeActive, type: SimVarValueType.Bool }],
     ['fcuLocModeActive', { name: PFDVars.fcuLocModeActive, type: SimVarValueType.Bool }],
+    ['hydGreenSysPressurized', { name: PFDVars.hydGreenSysPressurized, type: SimVarValueType.Bool }],
+    ['hydYellowSysPressurized', { name: PFDVars.hydYellowSysPressurized, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

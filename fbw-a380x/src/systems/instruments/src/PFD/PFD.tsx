@@ -4,7 +4,10 @@ import {
   ConsumerSubject,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   Subject,
+  SubscribableMapFunctions,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { LowerArea } from 'instruments/src/PFD/LowerArea';
@@ -52,7 +55,8 @@ interface PFDProps extends ComponentProps {
 }
 
 export class PFDComponent extends DisplayComponent<PFDProps> {
-  private sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & PFDSimvars>();
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & PFDSimvars>();
 
   private headingFailed = Subject.create(true);
 
@@ -70,13 +74,26 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private radioAltitudeFilter = new LagFilter(5);
 
-  private failuresConsumer;
+  private failuresConsumer: FailuresConsumer;
 
   private readonly groundSpeed = ConsumerSubject.create(this.sub.on('groundSpeed').whenChanged(), 0);
 
   private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
 
-  private readonly thrustTla = ConsumerSubject.create(this.sub.on('tla1').whenChanged(), 0);
+  private readonly thrustTla = [
+    ConsumerSubject.create(this.sub.on('tla1').whenChanged(), 0),
+    ConsumerSubject.create(this.sub.on('tla2').whenChanged(), 0),
+    ConsumerSubject.create(this.sub.on('tla3').whenChanged(), 0),
+    ConsumerSubject.create(this.sub.on('tla4').whenChanged(), 0),
+  ];
+
+  private readonly leftMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), false);
+  private readonly rightMainGearCompressed = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), false);
+  private readonly eitherMainLgCompressed = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.leftMainGearCompressed,
+    this.rightMainGearCompressed,
+  );
 
   private previousFlapHandlePosition = 0;
 
@@ -88,7 +105,13 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
       this.pitchTrimIndicatorVisible.set(false);
     } else if (gs < 30) {
       this.pitchTrimIndicatorVisible.set(true);
-    } else if (gs < 80 && (this.spoilersArmed.get() === false || flapsRetracted === true || this.thrustTla.get() > 5)) {
+    } else if (
+      this.eitherMainLgCompressed.get() &&
+      gs > 80 &&
+      (this.spoilersArmed.get() === false ||
+        flapsRetracted === true ||
+        this.thrustTla.filter((v) => v.get() > 5).length > 2)
+    ) {
       // FIXME add "flight crew presses pitch trim switches"
       this.pitchTrimIndicatorVisible.set(true);
     }
@@ -102,65 +125,88 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub.on('headingAr').handle((h) => {
-      if (this.headingFailed.get() !== h.isNormalOperation()) {
-        this.headingFailed.set(!h.isNormalOperation());
-      }
-    });
-
-    this.sub.on('rollAr').handle((r) => {
-      this.roll = r;
-    });
-
-    this.sub.on('pitchAr').handle((p) => {
-      this.pitch = p;
-    });
-
-    this.sub
-      .on('realTime')
-      .atFrequency(1)
-      .handle((_t) => {
-        this.failuresConsumer.update();
-        if (
-          !this.isAttExcessive.get() &&
-          ((this.pitch.isNormalOperation() && (this.pitch.value > 25 || this.pitch.value < -13)) ||
-            (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45))
-        ) {
-          this.isAttExcessive.set(true);
-        } else if (
-          this.isAttExcessive.get() &&
-          this.pitch.isNormalOperation() &&
-          this.pitch.value < 22 &&
-          this.pitch.value > -10 &&
-          this.roll.isNormalOperation() &&
-          Math.abs(this.roll.value) < 40
-        ) {
-          this.isAttExcessive.set(false);
+    this.subscriptions.push(
+      this.sub.on('headingAr').handle((h) => {
+        if (this.headingFailed.get() !== h.isNormalOperation()) {
+          this.headingFailed.set(!h.isNormalOperation());
         }
-      });
+      }),
+    );
 
-    this.sub.on('chosenRa').handle((ra) => {
-      this.ownRadioAltitude = ra;
-      const filteredRadioAltitude = this.radioAltitudeFilter.step(
-        this.ownRadioAltitude.value,
-        this.props.instrument.deltaTime / 1000,
-      );
-      this.filteredRadioAltitude.set(filteredRadioAltitude);
-      this.updatePitchTrimVisible();
-    });
+    this.subscriptions.push(
+      this.sub.on('rollAr').handle((r) => {
+        this.roll = r;
+      }),
+    );
 
-    this.sub
-      .on('flapHandleIndex')
-      .whenChanged()
-      .handle((fh) => {
-        if (this.previousFlapHandlePosition > fh) {
-          this.updatePitchTrimVisible(true);
-        }
-        this.previousFlapHandlePosition = fh;
-      });
+    this.subscriptions.push(
+      this.sub.on('pitchAr').handle((p) => {
+        this.pitch = p;
+      }),
+    );
 
-    this.groundSpeed.sub(() => this.updatePitchTrimVisible());
-    this.spoilersArmed.sub(() => this.updatePitchTrimVisible());
+    this.subscriptions.push(
+      this.sub
+        .on('realTime')
+        .atFrequency(1)
+        .handle((_t) => {
+          this.failuresConsumer.update();
+          if (
+            !this.isAttExcessive.get() &&
+            ((this.pitch.isNormalOperation() && (this.pitch.value > 25 || this.pitch.value < -13)) ||
+              (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45))
+          ) {
+            this.isAttExcessive.set(true);
+          } else if (
+            this.isAttExcessive.get() &&
+            this.pitch.isNormalOperation() &&
+            this.pitch.value < 22 &&
+            this.pitch.value > -10 &&
+            this.roll.isNormalOperation() &&
+            Math.abs(this.roll.value) < 40
+          ) {
+            this.isAttExcessive.set(false);
+          }
+        }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('chosenRa').handle((ra) => {
+        this.ownRadioAltitude = ra;
+        const filteredRadioAltitude = this.radioAltitudeFilter.step(
+          this.ownRadioAltitude.value,
+          this.props.instrument.deltaTime / 1000,
+        );
+        this.filteredRadioAltitude.set(filteredRadioAltitude);
+        this.updatePitchTrimVisible();
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub
+        .on('flapHandleIndex')
+        .whenChanged()
+        .handle((fh) => {
+          if (this.previousFlapHandlePosition > fh) {
+            this.updatePitchTrimVisible(true);
+          }
+          this.previousFlapHandlePosition = fh;
+        }),
+    );
+
+    this.subscriptions.push(
+      this.groundSpeed.sub(() => this.updatePitchTrimVisible()),
+      this.spoilersArmed.sub(() => this.updatePitchTrimVisible()),
+      this.groundSpeed,
+      this.spoilersArmed,
+      this.leftMainGearCompressed,
+      this.rightMainGearCompressed,
+      this.eitherMainLgCompressed,
+    );
+
+    for (const s of this.thrustTla) {
+      this.subscriptions.push(s);
+    }
   }
 
   render(): VNode {
@@ -223,5 +269,13 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
         <PitchTrimDisplay bus={this.props.bus} visible={this.pitchTrimIndicatorVisible} />
       </CdsDisplayUnit>
     );
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 }
