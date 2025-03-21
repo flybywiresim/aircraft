@@ -48,7 +48,7 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 );
 
 export const TakeoffWidget = () => {
-  const WIND_MAGNITUDE_ONLY_REGEX = /^(TL|HD|\+|-)?(\d{1,2}(?:\.\d)?)$/;
+  const WIND_MAGNITUDE_ONLY_REGEX = /^(TL|HD|T|H|\+|-)?(\d{1,2}(?:\.\d)?)$/;
   const WIND_MAGNITUDE_AND_DIR_REGEX = /^(\d{1,3})\/(\d{1,2}(?:\.\d)?)$/;
 
   const dispatch = useAppDispatch();
@@ -517,10 +517,12 @@ export const TakeoffWidget = () => {
       const windMagnitude = parseFloat(magnitudeOnlyMatch[2]);
       switch (magnitudeOnlyMatch[1]) {
         case 'TL':
+        case 'T':
         case '-':
           dispatch(setTakeoffValues({ windMagnitude: -windMagnitude, windDirection: undefined, windEntry: input }));
           return;
         case 'HD':
+        case 'H':
         case '+':
         default:
           dispatch(setTakeoffValues({ windMagnitude, windDirection: undefined, windEntry: input }));
@@ -868,6 +870,7 @@ export const TakeoffWidget = () => {
                       placeholder={t('Performance.Takeoff.WindMagnitudeUnit')}
                       onChange={handleWindChange}
                       uppercase
+                      wind
                     />
                   </Label>
                   <Label text={t('Performance.Takeoff.Temperature')}>
