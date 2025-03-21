@@ -184,6 +184,8 @@
 1. [ND] Fixed alignment of approach message - @tracernz (Mike)
 1. [A380X/OANS] Fix RWY AHEAD not disappearing when OANS Performance Mode is active - @flogross89 (floridude)
 1. [ELEC] Add power consumption for fuel pumps - @Gurgel100 (Pascal)
+1. [FMS] EFIS overlay symbols for the ND are now available in plan mode away from the aircraft position in MSFS2024 - @tracernz (Mike)
+1. [FMS] Reduced in-flight stutter due to facility loading - @tracernz (Mike)
 
 ## 0.12.0
 
