@@ -64,6 +64,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { LateralMode, VerticalMode } from '@shared/autopilot';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -110,7 +111,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public unconfirmedV2Speed = undefined;
   public _toFlexChecked = true;
   private toRunway = undefined;
-  public vApp = NaN;
+  /** The pilot-entered Vapp, or null if no entry (FM will calculate Vapp). */
+  public pilotVapp: number | null = null;
   public perfApprMDA: number | null = null;
   public perfApprDH: 'NO DH' | number | null = null;
   public perfApprFlaps3 = false;
@@ -142,7 +144,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private _gwInitDisplayed = undefined;
   /* CPDLC Fields */
   private _destDataChecked = undefined;
-  private _towerHeadwind = undefined;
+  private _towerHeadwind: number | null = null;
   private _EfobBelowMinClr = undefined;
   public simbrief = undefined;
   public aocTimes = {
@@ -179,7 +181,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   };
   public preSelectedClbSpeed?: number;
   public preSelectedCrzSpeed?: number;
-  public managedSpeedTarget = NaN;
+  public managedSpeedTarget: number | null = null;
   public managedSpeedTargetIsMach = false;
   public managedSpeedClimb = 290;
   private managedSpeedClimbIsPilotEntered = false;
@@ -275,6 +277,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly arincTransitionLevel = new FmArinc429OutputWord('TRANS_LVL');
   /** contains fm messages (not yet implemented) and nodh bit */
   private readonly arincEisWord2 = new FmArinc429OutputWord('EIS_DISCRETE_WORD_2');
+  private readonly arincVapp = new FmArinc429OutputWord('APPROACH_SPEED');
+  private readonly arincFgManagedSpeed = new FmArinc429OutputWord('FG_MANAGED_SPEED');
+  private readonly arincTowerHeadwind = new FmArinc429OutputWord('FG_TOWER_HEADWIND');
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   private readonly arincBusOutputs = [
@@ -295,6 +300,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.arincTransitionAltitude,
     this.arincTransitionLevel,
     this.arincEisWord2,
+    this.arincVapp,
+    this.arincFgManagedSpeed,
+    this.arincTowerHeadwind,
   ];
 
   private navDbIdent: DatabaseIdent | null = null;
@@ -477,7 +485,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.unconfirmedV2Speed = undefined;
     this._toFlexChecked = true;
     this.toRunway = '';
-    this.vApp = NaN;
+    this.pilotVapp = null;
     this.perfApprMDA = null;
     this.perfApprDH = null;
     this.perfApprFlaps3 = false;
@@ -510,7 +518,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     /* CPDLC Fields */
     this.tropo = undefined;
     this._destDataChecked = false;
-    this._towerHeadwind = 0;
+    this._towerHeadwind = null;
     this._EfobBelowMinClr = false;
     this.simbrief = {
       route: '',
@@ -560,7 +568,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this._progBrgDist = undefined;
     this.preSelectedClbSpeed = undefined;
     this.preSelectedCrzSpeed = undefined;
-    this.managedSpeedTarget = NaN;
+    this.managedSpeedTarget = null;
     this.managedSpeedTargetIsMach = false;
     this.managedSpeedClimb = 290;
     this.managedSpeedClimbIsPilotEntered = false;
@@ -693,6 +701,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.updateIlsCourse();
       this.updatePerfPageAltPredictions();
       this.checkEFOBBelowMin();
+      this.setVappBusOutput(this.getVApp());
+      this.setTowerHeadwindBusOutput(this._towerHeadwind);
     }
 
     this.A32NXCore.update();
@@ -1174,8 +1184,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.clearCheckSpeedModeMessage();
 
     if (SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1) {
-      const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');
-      if (verticalMode === 12) {
+      const verticalMode: VerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number');
+      if (verticalMode === VerticalMode.OP_CLB) {
         switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
           case 0: {
             this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
@@ -1189,13 +1199,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
           }
         }
-      } else if (verticalMode === 13) {
+      } else if (verticalMode === VerticalMode.OP_DES) {
         this.managedSpeedTarget =
           SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number') === 0
             ? Math.min(340, SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', 0.8))
             : SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number') - 10;
       }
-      vPfd = this.managedSpeedTarget;
+      vPfd = this.managedSpeedTarget ?? NaN;
     } else if (this.holdDecelReached) {
       vPfd = this.holdSpeedTarget;
       this.managedSpeedTarget = this.holdSpeedTarget;
@@ -1214,6 +1224,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             vPfd = this.v2Speed;
             this.managedSpeedTarget = this.v2Speed + 10;
           }
+          this.setSpeedTargetBusOutput(this.v2Speed !== null ? this.v2Speed + 10 : null);
           break;
         }
         case FmgcFlightPhase.Takeoff: {
@@ -1226,6 +1237,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
                 )
               : this.v2Speed + 10;
           }
+          this.setSpeedTargetBusOutput(this.v2Speed !== null ? this.managedSpeedTarget : null);
           break;
         }
         case FmgcFlightPhase.Climb: {
@@ -1241,7 +1253,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           speed = Math.min(speed, this.getSpeedConstraint());
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedClimbMach);
-          vPfd = this.managedSpeedTarget;
+          vPfd = this.managedSpeedTarget ?? NaN;
+          this.setSpeedTargetBusOutput(isFinite(this.managedSpeedTarget) ? this.managedSpeedTarget : null);
           break;
         }
         case FmgcFlightPhase.Cruise: {
@@ -1255,7 +1268,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           }
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedCruiseMach);
-          vPfd = this.managedSpeedTarget;
+          vPfd = this.managedSpeedTarget ?? NaN;
+          this.setSpeedTargetBusOutput(isFinite(this.managedSpeedTarget) ? this.managedSpeedTarget : null);
           break;
         }
         case FmgcFlightPhase.Descent: {
@@ -1266,6 +1280,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
           // Also, VNAV already does the conversion from Mach if necessary
           isMach = this.getManagedTargets(this.getManagedDescentSpeed(), this.getManagedDescentSpeedMach())[1];
+          this.setSpeedTargetBusOutput(isFinite(this.managedSpeedTarget) ? this.managedSpeedTarget : null);
           break;
         }
         case FmgcFlightPhase.Approach: {
@@ -1273,13 +1288,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           // the guidance target is lower limited by FAC manouvering speeds (O, S, F) unless in landing config
           // constraints are not considered
           const speed = this.getAppManagedSpeed();
+          // FIXME GSmini is calculated in the FG
           vPfd = this.getVAppGsMini();
 
+          // FIXME GSmini should be calculated in the FG, we should just set Vapp here
           this.managedSpeedTarget = Math.max(speed, vPfd);
+          this.setSpeedTargetBusOutput(speed);
           break;
         }
         case FmgcFlightPhase.GoAround: {
-          if (SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number') === 41 /* SRS GA */) {
+          if (SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number') === VerticalMode.SRS_GA) {
             const speed = Math.min(
               this.computedVls + (engineOut ? 15 : 25),
               Math.max(SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'), this.getVApp()),
@@ -1295,6 +1313,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             vPfd = speed;
             this.managedSpeedTarget = speed;
           }
+          this.setSpeedTargetBusOutput(isFinite(this.managedSpeedTarget) ? this.managedSpeedTarget : null);
           break;
         }
       }
@@ -1311,8 +1330,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     // Overspeed protection
-    const Vtap = Math.min(this.managedSpeedTarget, SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number'));
+    const Vtap = Math.min(this.managedSpeedTarget ?? 0, SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number'));
 
+    // FIXME this should be calculated by the FG
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', vPfd);
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', Vtap);
 
@@ -1326,6 +1346,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.vRSpeed = null;
       this.v2Speed = null;
     }
+  }
+
+  /**
+   * Sets the managed speed target outputs to the FG.
+   * @param value The guidance speed target, or null if not available.
+   */
+  private setSpeedTargetBusOutput(value: number | null): void {
+    this.arincFgManagedSpeed.setBnrValue(
+      value ?? 0,
+      value !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+      15,
+      512,
+      -512,
+    );
   }
 
   private activatePreSelSpeedMach(preSel) {
@@ -1529,7 +1563,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
     if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-      this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3, this._towerHeadwind);
+      this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3, this._towerHeadwind ?? 0);
     } else {
       this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3);
     }
@@ -1806,7 +1840,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return 288 * (1 - dCI) + 300 * dCI;
   }
 
-  private getAppManagedSpeed() {
+  private getAppManagedSpeed(): number | null {
     switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
       case 0:
         return this.computedVgd;
@@ -1988,6 +2022,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
+  private static readonly VERTICAL_MODES_FOR_FCU_CRUISE_LEVEL_SET = [
+    VerticalMode.ALT_CPT,
+    VerticalMode.OP_CLB,
+    VerticalMode.OP_DES,
+    VerticalMode.VS,
+    VerticalMode.FPA,
+    VerticalMode.ALT_CST_CPT,
+    VerticalMode.CLB,
+    VerticalMode.DES,
+  ];
   /***
    * Executed on every alt knob turn, checks whether or not the crz fl can be changed to the newly selected fcu altitude
    * It creates a timeout to simulate real life delay which resets every time the fcu knob alt increases or decreases.
@@ -2003,12 +2047,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return;
     }
 
-    const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const activeVerticalMode: VerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
-    if (
-      (activeVerticalMode >= 11 && activeVerticalMode <= 15) ||
-      (activeVerticalMode >= 21 && activeVerticalMode <= 23)
-    ) {
+    if (FMCMainDisplay.VERTICAL_MODES_FOR_FCU_CRUISE_LEVEL_SET.includes(activeVerticalMode)) {
       const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
       if (
@@ -4039,31 +4080,36 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   * VApp for _selected_ landing config
+   * Gets the current Vapp in knots. If the pilot has entered one, that will be returned, otherwise Vapp calculated by FM.
+   * @returns Vapp in knots, or null if not available.
    */
-  private getVApp() {
-    if (isFinite(this.vApp)) {
-      return this.vApp;
+  private getVApp(): number | null {
+    if (this.pilotVapp !== null) {
+      return this.pilotVapp;
     }
-    return this.approachSpeeds.vapp;
+    return this._zeroFuelWeightZFWCGEntered && this.approachSpeeds?.valid ? this.approachSpeeds.vapp : null;
   }
 
   /**
    * VApp for _selected_ landing config with GSMini correction
+   * @deprecated GSmini is an FG function, not FM.
    */
   private getVAppGsMini() {
     let vAppTarget = this.getVApp();
     if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-      vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
+      vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind ?? 0));
     }
     return vAppTarget;
   }
 
   public setPerfApprVApp(s: string): boolean {
     if (s === Keypad.clrValue) {
-      if (isFinite(this.vApp)) {
-        this.vApp = NaN;
+      if (this.pilotVapp !== null) {
+        this.pilotVapp = null;
         return true;
+      } else {
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+        return false;
       }
     } else {
       if (s.includes('.')) {
@@ -4072,14 +4118,26 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
       const value = parseInt(s);
       if (isFinite(value) && value >= 90 && value <= 350) {
-        this.vApp = value;
+        this.pilotVapp = value;
         return true;
       }
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
-    this.setScratchpadMessage(NXSystemMessages.notAllowed);
-    return false;
+  }
+
+  /**
+   * Sets the approach speed bus output.
+   * @param value The approach speed, or null if not available.
+   */
+  private setVappBusOutput(value: number | null): void {
+    this.arincVapp.setBnrValue(
+      value ?? 0,
+      value !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+      15,
+      512,
+      -512,
+    );
   }
 
   /**
@@ -4418,6 +4476,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
+   * Sets the tower headwind bus output to the FG.
+   * @param value The tower headwind, or null if not available.
+   */
+  private setTowerHeadwindBusOutput(value: number | null): void {
+    this.arincTowerHeadwind.setBnrValue(
+      value ?? 0,
+      value !== null ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+      15,
+      512,
+      -512,
+    );
+  }
+
+  /**
    * Called after Flaps or THS change
    */
   private tryCheckToData() {
@@ -4630,14 +4702,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public navModeEngaged() {
-    const lateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
+    const lateralMode: LateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
     switch (lateralMode) {
-      case 20: // NAV
-      case 30: // LOC*
-      case 31: // LOC
-      case 32: // LAND
-      case 33: // FLARE
-      case 34: // ROLL OUT
+      case LateralMode.NAV: // NAV
+      case LateralMode.LOC_CPT: // LOC*
+      case LateralMode.LOC_TRACK: // LOC
+      case LateralMode.LAND: // LAND
+      case LateralMode.FLARE: // FLARE
+      case LateralMode.ROLL_OUT: // ROLL OUT
         return true;
     }
     return false;
