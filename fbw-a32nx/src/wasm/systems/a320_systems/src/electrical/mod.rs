@@ -132,6 +132,9 @@ impl A320Electrical {
             spd_cond,
         );
 
+        self.alternating_current
+            .update_auxiliary(electricity, emergency_overhead);
+
         self.main_galley
             .update(context, electricity, &self.alternating_current, overhead);
         self.secondary_galley
