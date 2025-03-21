@@ -41,8 +41,8 @@ export enum RunwaySurfaceType {
 // Maintain in sort order for FMS
 export enum RunwayDesignator {
   None = 0,
+  Centre,
   Left,
   Right,
-  Centre,
   True,
 }
