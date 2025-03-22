@@ -500,7 +500,7 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
+                <NODE_ID>LIGHTING_Knob_Ambient</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
@@ -2271,9 +2271,9 @@
                     <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
-                <Component ID="SWITCH_OVHD_INTLT_DOME" Node="SWITCH_OVHD_INTLT_DOME">
+                <Component ID="LIGHTING_Knob_Ambient" Node="LIGHTING_Knob_Ambient">
                     <UseTemplate Name="FBW_Stepless_Potentiometer">
-                        <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
+                        <NODE_ID>LIGHTING_Knob_Ambient</NODE_ID>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_INCREASE</ANIMTIP_1>
                         <POTENTIOMETER>7</POTENTIOMETER>
