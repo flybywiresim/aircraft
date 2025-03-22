@@ -180,12 +180,9 @@ impl A380AlternatingCurrentElectrical {
         emergency_generator: &EmergencyGenerator,
         electricity: &mut Electricity,
     ) {
-        let ac_bus_or_emergency_gen_provides_power = self
-            .ac_buses
-            .iter()
-            .map(|bus| electricity.is_powered(bus))
-            .any(|v| v)
-            || electricity.is_powered(emergency_generator);
+        let ac_bus_or_emergency_gen_provides_power =
+            self.ac_buses.iter().any(|bus| electricity.is_powered(bus))
+                || electricity.is_powered(emergency_generator);
         self.ac_emer_contactor[0].close_when(ac_bus_or_emergency_gen_provides_power);
         self.ac_emer_contactor[1].close_when(!ac_bus_or_emergency_gen_provides_power);
 
@@ -259,10 +256,7 @@ impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical
 }
 impl AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical {
     fn any_non_essential_bus_powered(&self, electricity: &Electricity) -> bool {
-        self.ac_buses
-            .iter()
-            .map(|bus| electricity.is_powered(bus))
-            .any(|v| v)
+        self.ac_buses.iter().any(|bus| electricity.is_powered(bus))
     }
 }
 impl SimulationElement for A380AlternatingCurrentElectrical {
