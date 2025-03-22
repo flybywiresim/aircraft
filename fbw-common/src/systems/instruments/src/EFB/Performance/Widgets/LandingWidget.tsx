@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { FC, useContext, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import {
@@ -104,6 +104,13 @@ export const LandingWidget = () => {
   } = useAppSelector((state) => state.performance.landing);
 
   const { arrivingAirport, arrivingMetar } = useAppSelector((state) => state.simbrief.data);
+
+  useEffect(() => {
+    // in case of head- or tailwind entry only, the runway heading is used to set the wind direction
+    if (windEntry?.length) {
+      handleWindChange(windEntry);
+    }
+  }, [runwayHeading]);
 
   const handleCalculateLanding = (): void => {
     if (!areInputsValid()) return;
@@ -283,7 +290,7 @@ export const LandingWidget = () => {
     clearResult();
 
     if (input === '0') {
-      dispatch(setLandingValues({ windMagnitude: 0, windDirection: undefined, windEntry: input }));
+      dispatch(setLandingValues({ windMagnitude: 0, windDirection: runwayHeading, windEntry: input }));
       return;
     }
 
@@ -294,13 +301,13 @@ export const LandingWidget = () => {
         case 'TL':
         case 'T':
         case '-':
-          dispatch(setLandingValues({ windMagnitude: -windMagnitude, windDirection: undefined, windEntry: input }));
+          dispatch(setLandingValues({ windMagnitude: -windMagnitude, windDirection: runwayHeading, windEntry: input }));
           return;
         case 'HD':
         case 'H':
         case '+':
         default:
-          dispatch(setLandingValues({ windMagnitude, windDirection: undefined, windEntry: input }));
+          dispatch(setLandingValues({ windMagnitude, windDirection: runwayHeading, windEntry: input }));
           return;
       }
     } else if (isWindMagnitudeAndDirection(input)) {
