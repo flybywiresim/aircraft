@@ -200,7 +200,7 @@ export const LandingWidget = () => {
     try {
       const magvar = await getAirportMagVar(icao);
       const windDirection = MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
-      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
+      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}`;
 
       dispatch(
         setLandingValues({
