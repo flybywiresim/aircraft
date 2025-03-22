@@ -7,6 +7,7 @@
 
 ## 0.13.0
 
+1. [EFB/PERF] Harmonize takeoff and landing performance calculators - @FoxtrotSierra6829 (FoxtrotSierra)
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
 1. [A32NX/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
