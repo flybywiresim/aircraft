@@ -68,25 +68,26 @@ export const TakeoffWidget = () => {
 
   const {
     icao,
-    windDirection,
-    windMagnitude,
-    windEntry,
-    weight,
-    takeoffCg,
+    availableRunways,
+    selectedRunwayIndex,
     runwayBearing,
-    config,
+    runwayLength,
     elevation,
     runwaySlope,
     lineupAngle,
+    windDirection,
+    windMagnitude,
+    windEntry,
     oat,
     qnh,
-    runwayLength,
+    weight,
+    takeoffCg,
+    config,
     antiIce,
     packs,
     forceToga,
     result,
-    availableRunways,
-    selectedRunwayIndex,
+
     runwayCondition,
     cg,
   } = useAppSelector((state) => state.performance.takeoff);
@@ -713,11 +714,11 @@ export const TakeoffWidget = () => {
                       disabled={availableRunways.length === 0}
                     />
                   </Label>
-                  <Label text={t('Performance.Takeoff.RunwayBearing')}>
+                  <Label text={t('Performance.Takeoff.RunwayHeading')}>
                     <SimpleInput
                       className="w-60"
                       value={runwayBearing}
-                      placeholder={t('Performance.Takeoff.RunwayBearingUnit')}
+                      placeholder={t('Performance.Takeoff.RunwayHeadingUnit')}
                       min={0}
                       max={360}
                       padding={3}
