@@ -214,8 +214,7 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
-
-  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>()
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
   private greenDotBug = FSComponent.createRef<SVGGElement>();
 
@@ -231,69 +230,63 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly leftMainGearCompressedConsumer = ConsumerSubject.create(
     this.sub.on('leftMainGearCompressed').whenChanged(),
     true,
-  )
+  );
 
   private readonly rightMainGearCompressedConsumer = ConsumerSubject.create(
     this.sub.on('rightMainGearCompressed').whenChanged(),
     true,
-  )
+  );
 
   private readonly airspeedRaw = ConsumerSubject.create(this.sub.on('speed').whenChanged(), null);
 
   private readonly airspeed = Arinc429RegisterSubject.createEmpty();
 
-  private readonly shortTermManagedSpeedExists =
-  MappedSubject.create(
-    ([shortTermManagedSpeed, leftGearCompressed, rightGearCompressed, ]) => shortTermManagedSpeed > 0 && (!leftGearCompressed || !rightGearCompressed),
+  private readonly shortTermManagedSpeedExists = MappedSubject.create(
+    ([shortTermManagedSpeed, leftGearCompressed, rightGearCompressed]) =>
+      shortTermManagedSpeed > 0 && (!leftGearCompressed || !rightGearCompressed),
     this.shortTermManagedSpeedConsumer,
     this.leftMainGearCompressedConsumer,
-    this.rightMainGearCompressedConsumer
-  )
+    this.rightMainGearCompressedConsumer,
+  );
 
   private readonly shortTermVisibility = this.shortTermManagedSpeedExists.map((v) => (v ? 'visible' : 'hidden'));
 
   private readonly shortTermPath = MappedSubject.create(
     ([ias, shortTermSpeed]) => {
-      if(ias.isNormalOperation() && shortTermSpeed) {
-      const diff = Math.abs(ias.value - shortTermSpeed);
-      if(diff < DisplayRange ) {
-        return 'm20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z'
-      } else if (ias.value > shortTermSpeed) {
-        return 'm 17.91,80.60c 4.07e-4,0.6238 0.5384,1.1293 1.2019,1.1293 0.6635,0 1.2015,-0.5055 1.2019,-1.1293h -1.2019z';
+      if (ias.isNormalOperation() && shortTermSpeed) {
+        const diff = Math.abs(ias.value - shortTermSpeed);
+        if (diff < DisplayRange) {
+          return 'm20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z';
+        } else if (ias.value > shortTermSpeed) {
+          return 'm 17.91,80.60c 4.07e-4,0.6238 0.5384,1.1293 1.2019,1.1293 0.6635,0 1.2015,-0.5055 1.2019,-1.1293h -1.2019z';
+        } else {
+          return 'm 17.91,80.60c 4.07e-4,0.6743 0.5612,1.2207 1.2530,1.2207 0.6917,0 1.2525,-0.5464 1.2530,-1.2207h -1.2530z';
+        }
       } else {
-        return 'm 17.91,80.60c 4.07e-4,0.6743 0.5612,1.2207 1.2530,1.2207 0.6917,0 1.2525,-0.5464 1.2530,-1.2207h -1.2530z';
-      } 
-    } else {
-      return '';
-    }
+        return '';
+      }
     },
     this.airspeed,
-    this.shortTermManagedSpeedConsumer
-  )
+    this.shortTermManagedSpeedConsumer,
+  );
 
-
-  private readonly shortTermStyle =
-  MappedSubject.create(
+  private readonly shortTermStyle = MappedSubject.create(
     ([shortTermVisible, ias, shortTermManagedSpeed]) => {
-      if(shortTermVisible && ias.isNormalOperation()) {
-        return `transform: translate(0px, ${getSpeedTapeOffsetAlwaysVisible(ias.value, 
-          shortTermManagedSpeed)}px)`
+      if (shortTermVisible && ias.isNormalOperation()) {
+        return `transform: translate(0px, ${getSpeedTapeOffsetAlwaysVisible(ias.value, shortTermManagedSpeed)}px)`;
       }
       return '';
     },
     this.shortTermManagedSpeedExists,
     this.airspeed,
-    this.shortTermManagedSpeedConsumer
-  )
+    this.shortTermManagedSpeedConsumer,
+  );
 
   render(): VNode {
     return (
       <>
-          <g id="ShortTermManagedSpeed" visibility={this.shortTermVisibility} style={this.shortTermStyle}>
-          <path
-            class="Fill Magenta"
-            d={this.shortTermPath}
-          />
+        <g id="ShortTermManagedSpeed" visibility={this.shortTermVisibility} style={this.shortTermStyle}>
+          <path class="Fill Magenta" d={this.shortTermPath} />
         </g>
         <g id="GreenDotSpeedMarker" ref={this.greenDotBug} style="transform:translate3d(0px, 0px,0px)">
           <path class="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
@@ -311,14 +304,12 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
             S
           </text>
         </g>
-
       </>
     );
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
 
     this.airspeedRaw.sub((w) => this.airspeed.setWord(w));
 
@@ -359,14 +350,14 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 const getSpeedTapeOffset = (speed: number): number => (-speed * DistanceSpacing) / ValueSpacing;
-const getSpeedTapeOffsetAlwaysVisible = (currentSpeed : number, bugSpeed : number) => {
+const getSpeedTapeOffsetAlwaysVisible = (currentSpeed: number, bugSpeed: number) => {
   const diff = Math.abs(currentSpeed - bugSpeed);
-  if(diff < DisplayRange) { 
+  if (diff < DisplayRange) {
     return getSpeedTapeOffset(bugSpeed);
   } else {
-   return getSpeedTapeOffset(currentSpeed > bugSpeed? currentSpeed - DisplayRange : currentSpeed + DisplayRange); // speed always visible on tape
+    return getSpeedTapeOffset(currentSpeed > bugSpeed ? currentSpeed - DisplayRange : currentSpeed + DisplayRange); // speed always visible on tape
   }
-}
+};
 
 export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEventBus }> {
   private lowerRef = FSComponent.createRef<SVGGElement>();
@@ -1469,7 +1460,7 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
 
   private handleVProtBugDisplay() {
     const showVProt = this.Vmax.value > 240 && this.Vmax.isNormalOperation();
-    const offset = (-(this.Vmax.value + 6) * DistanceSpacing) / ValueSpacing;
+    const offset = (-(this.Vmax.value + 10) * DistanceSpacing) / ValueSpacing;
 
     const isNormalLawActive = this.fcdcWord1.bitValue(11) && !this.fcdcWord1.isFailureWarning();
 
@@ -1490,6 +1481,16 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
       .whenChanged()
       .handle((vm) => {
         this.Vmax = vm;
+        // console.log(vm);
+
+        this.handleVProtBugDisplay();
+      });
+
+    sub
+      .on('fcdcDiscreteWord1')
+      .whenChanged()
+      .handle((dw) => {
+        this.fcdcWord1 = dw;
 
         this.handleVProtBugDisplay();
       });

@@ -1296,8 +1296,8 @@ export class MsfsMapping {
           stationDeclination: MathUtils.normalise180(360 - vor.magneticVariation),
           trueReferenced: vor.trueReferenced,
           dmeLocation: (vor.type & VorType.DME) > 0 ? databaseItem.location : undefined,
-          type: this.mapVorType(vor),
-          class: this.mapVorClass(vor),
+          type: MsfsMapping.mapVorType(vor),
+          class: MsfsMapping.mapVorClass(vor),
         } as unknown as FacilityType<T>;
       }
       case 'A':
@@ -1539,7 +1539,7 @@ export class MsfsMapping {
     }
   }
 
-  private mapVorType(vor: JS_FacilityVOR): VhfNavaidType {
+  public static mapVorType(vor: JS_FacilityVOR): VhfNavaidType {
     switch (vor.type) {
       case VorType.DME:
         return VhfNavaidType.Dme;
@@ -1561,7 +1561,7 @@ export class MsfsMapping {
     }
   }
 
-  private mapVorClass(vor: JS_FacilityVOR): VorClass {
+  public static mapVorClass(vor: JS_FacilityVOR): VorClass {
     switch (vor.vorClass) {
       case MSVorClass.LowAltitude:
         return VorClass.LowAlt;
