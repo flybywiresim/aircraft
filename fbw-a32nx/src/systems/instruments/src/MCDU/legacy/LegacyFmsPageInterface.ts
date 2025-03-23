@@ -259,7 +259,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   holdSpeedTarget?: number;
   fmgcMesssagesListener: ViewListener.ViewListener;
   efisInterfaces?: Record<EfisSide, EfisInterface>;
-  _fuelPredDone: boolean;
   _checkWeightSettable: boolean;
   /** @deprecated */
   zeroFuelWeight?: number;
