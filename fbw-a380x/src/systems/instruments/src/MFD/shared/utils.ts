@@ -54,8 +54,9 @@ const approachTypeNames: Record<ApproachType, string> = {
 
 export function getApproachName(approach: Approach, withRnpSuffix = true): string {
   // we don't need to worry about circling approaches as they aren't available, so we can always expect a runway ident
-  // FIXME add (RNP) suffix for RNP-AR missed approaches (even on non-RNAV approaches)
-  const approachSuffix = approach.suffix ? `-${approach.suffix}` : '';
-  const arSuffix = withRnpSuffix && approach.authorisationRequired ? ' (RNP)' : '';
-  return `${approachTypeNames[approach.type]}${approach.runwayIdent?.substring(4)}${approachSuffix}${arSuffix}`;
+  // The (RNP) suffix is added RNP-AR approaches, and for RNP-AR missed approaches (even on non-RNAV approaches).
+  const approachSuffix = approach.multipleIndicator ? `-${approach.multipleIndicator}` : '';
+  const arSuffix =
+    withRnpSuffix && (approach.authorisationRequired || approach.missedApproachAuthorisationRequired) ? ' (RNP)' : '';
+  return `${approachTypeNames[approach.type]}${approach.runwayIdent.substring(4)}${approachSuffix}${arSuffix}`;
 }
