@@ -6,7 +6,7 @@ import { Fix } from '@flybywiresim/fbw-sdk';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import { A380FmsError } from 'instruments/src/MsfsAvionicsCommon/A380FmsError';
+import { A380FmsError } from 'instruments/src/MFD/shared/A380FmsError';
 
 type FieldFormatTuple = [value: string | null, unitLeading: string | null, unitTrailing: string | null];
 const RANGE_FROM_KEY = '{FROM}';
