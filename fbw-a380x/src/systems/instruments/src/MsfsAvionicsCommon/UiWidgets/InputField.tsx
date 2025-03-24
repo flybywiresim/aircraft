@@ -15,7 +15,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { A380FmsError } from '../A380FmsError';
+import { A380FmsError } from '../../MFD/shared/A380FmsError';
 import { FmsError } from '@fmgc/FmsError';
 
 export enum InteractionMode {
@@ -386,7 +386,7 @@ export class InputField<
         try {
           await this.props.onModified(newValue);
         } catch (msg: unknown) {
-          if (msg instanceof A380FmsError && this.props.errorHandler) {
+          if (msg instanceof FmsError && this.props.errorHandler) {
             this.props.errorHandler(msg);
           }
         }
