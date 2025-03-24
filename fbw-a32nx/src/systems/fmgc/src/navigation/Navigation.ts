@@ -2,17 +2,27 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType, Icao } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429Register,
+  IlsNavaid,
+  NdbNavaid,
+  VhfNavaid,
+  VhfNavaidType,
+  Icao,
+  NearbyFacilityMonitor,
+  NearbyFacilityType,
+  NearbyFacility,
+} from '@flybywiresim/fbw-sdk';
 
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanService } from '../flightplanning/FlightPlanService';
+import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
 
 export enum SelectedNavaidType {
   None,
@@ -111,6 +121,8 @@ export class Navigation implements NavigationProvider {
     facility: null,
   }));
 
+  private nearbyAirportMonitor: NearbyFacilityMonitor;
+
   constructor(
     private readonly bus: EventBus,
     private flightPlanService: FlightPlanService,
@@ -123,6 +135,12 @@ export class Navigation implements NavigationProvider {
 
   init(): void {
     this.navaidTuner.init();
+
+    this.nearbyAirportMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
+      NearbyFacilityType.Airport,
+    );
+    this.nearbyAirportMonitor.setMaxResults(25);
+    this.nearbyAirportMonitor.setRadius(250);
   }
 
   update(deltaTime: number): void {
@@ -133,8 +151,6 @@ export class Navigation implements NavigationProvider {
     this.updatePosition();
     this.updateRadioHeight();
     this.updateAirData();
-
-    NearbyFacilities.getInstance().update(deltaTime);
 
     this.navaidSelectionManager.update(deltaTime);
     this.landingSystemSelectionManager.update(deltaTime);
@@ -204,8 +220,7 @@ export class Navigation implements NavigationProvider {
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
     this.groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
-    // pass to submodules
-    NearbyFacilities.getInstance().setPpos(this.ppos);
+    this.nearbyAirportMonitor.setLocation(this.ppos.lat, this.ppos.long);
   }
 
   public getBaroCorrectedAltitude(): number | null {
@@ -340,5 +355,9 @@ export class Navigation implements NavigationProvider {
       default:
         return SelectedNavaidType.None;
     }
+  }
+
+  public getNearbyAirports(): Readonly<Readonly<NearbyFacility>[]> {
+    return this.nearbyAirportMonitor.getCurrentFacilities();
   }
 }
