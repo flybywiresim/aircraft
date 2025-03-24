@@ -623,7 +623,7 @@ export class FlightManagementComputer implements FmcInterface {
    * into the appropriate message for the UI
    *
    * @param errorType the message to show
-   * @param details extra text information to be appended to the message
+   * @param details extra text to be appended on the second line of the message area
    */
   showFmsErrorMessage(errorType: FmsErrorType, details?: string) {
     switch (errorType) {
@@ -679,7 +679,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     const msg: FmsErrorMessage = {
       message: _message,
-      messageText: details ? message.text + '\n' + details : message.text,
+      messageText: details ? `${message.text}'\n'${details}` : message.text,
       backgroundColor: message.isAmber ? 'amber' : 'white',
       cleared: false,
       onClearOverride: isTypeIIMessage(message) ? message.onClear : () => {},
