@@ -13,7 +13,7 @@ const RANGE_TO_KEY = '{TO}';
 const ERROR_UNIT = '{UNIT}';
 const FORMAT = '{FORMAT}';
 const FORMAT_ERROR_DETAILS_MESSAGE = `FORMAT: ${FORMAT}${ERROR_UNIT}`;
-const ENTRY_OUT_OF_RANGE_DETAILS_MESSAGE = `RNG: ${RANGE_FROM_KEY} TO ${RANGE_TO_KEY} ${ERROR_UNIT}`;
+const ENTRY_OUT_OF_RANGE_DETAILS_MESSAGE = `RNG: ${RANGE_FROM_KEY} TO ${RANGE_TO_KEY}${ERROR_UNIT}`;
 
 function getFormattedEntryOutOfRangeError(minValue: string, maxValue: string, unit?: string): A380FmsError {
   return new A380FmsError(
@@ -456,7 +456,11 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(1), this.maxValue.toFixed(1), this.unit);
+      throw getFormattedEntryOutOfRangeError(
+        (this.minValue / 1000).toFixed(1),
+        (this.maxValue / 1000).toFixed(1),
+        this.unit,
+      );
     } else {
       throw getFormattedFormatError(this.requiredFormat, this.unit);
     }
@@ -476,7 +480,7 @@ export class PercentageFormat extends SubscriptionCollector implements DataEntry
 
   public readonly unit = '%';
 
-  private readonly requiredFormat = 'NN.N';
+  private readonly requiredFormat = 'XX.X';
 
   private minValue = 0;
 
@@ -1497,7 +1501,7 @@ export class FrequencyILSFormat implements DataEntryFormat<number> {
 
   public maxDigits = 6;
 
-  private readonly requiredFormat = 'XXXXXX';
+  private readonly requiredFormat = 'XXX.XX';
 
   private minValue = 108.0;
 
@@ -1520,7 +1524,7 @@ export class FrequencyILSFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(2), this.maxValue.toFixed(2));
     } else {
       throw getFormattedFormatError(this.requiredFormat);
     }
@@ -1532,7 +1536,7 @@ export class FrequencyVORDMEFormat implements DataEntryFormat<number> {
 
   public maxDigits = 6;
 
-  private readonly requiredFormat = 'XXXXXX';
+  private readonly requiredFormat = 'XXX.XX';
 
   private minValue = 108.0;
 
@@ -1555,7 +1559,7 @@ export class FrequencyVORDMEFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(2), this.maxValue.toFixed(2));
     } else {
       throw getFormattedFormatError(this.requiredFormat);
     }
@@ -1567,7 +1571,7 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
 
   public maxDigits = 6;
 
-  private readonly requiredFormat = 'XXXXXX';
+  private readonly requiredFormat = 'XXXX.X';
 
   private minValue = 190.0;
 
@@ -1590,7 +1594,7 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(1), this.maxValue.toFixed(1));
     } else {
       throw getFormattedFormatError(this.requiredFormat);
     }
