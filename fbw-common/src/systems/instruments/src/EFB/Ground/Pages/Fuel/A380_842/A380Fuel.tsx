@@ -130,12 +130,12 @@ export const A380Fuel: React.FC<FuelProps> = ({
   const [eng4Running] = useSimVar('ENG COMBUSTION:4', 'Bool', 1_000);
   const [refuelRate, setRefuelRate] = usePersistentProperty('REFUEL_RATE_SETTING');
 
-  const [INNER_FEED_MAX_KG] = useState(7753.2 * FUEL_GALLONS_TO_KG); // 23562.51 kg - 47053.02
-  const [OUTER_FEED_MAX_KG] = useState(7299.6 * FUEL_GALLONS_TO_KG); // 22189.04 kg - 44378.08
-  const [INNER_TANK_MAX_KG] = useState(12189.4 * FUEL_GALLONS_TO_KG); // 37044.51 kg
-  const [MID_TANK_MAX_KG] = useState(9632 * FUEL_GALLONS_TO_KG); // 29299.51 kg
-  const [OUTER_TANK_MAX_KG] = useState(2731.5 * FUEL_GALLONS_TO_KG); // 8299.51 kg
-  const [TRIM_TANK_MAX_KG] = useState(6260.3 * FUEL_GALLONS_TO_KG); // 18999.51 kg
+  const [INNER_FEED_MAX_KG] = useState(7753.2 * FUEL_GALLONS_TO_KG); // 23562.56 kg
+  const [OUTER_FEED_MAX_KG] = useState(7299.6 * FUEL_GALLONS_TO_KG); // 22184.04 kg
+  const [INNER_TANK_MAX_KG] = useState(12189.4 * FUEL_GALLONS_TO_KG); // 37044.78 kg
+  const [MID_TANK_MAX_KG] = useState(9632 * FUEL_GALLONS_TO_KG); // 29272.38 kg
+  const [OUTER_TANK_MAX_KG] = useState(2731.5 * FUEL_GALLONS_TO_KG); // 8301.24 kg
+  const [TRIM_TANK_MAX_KG] = useState(6260.3 * FUEL_GALLONS_TO_KG); // 19025.53 kg
 
   const [leftOuterGal] = useSimVar('FUELSYSTEM TANK QUANTITY:1', 'Gallons', 2_000);
   const [feedOneGal] = useSimVar('FUELSYSTEM TANK QUANTITY:2', 'Gallons', 2_000);

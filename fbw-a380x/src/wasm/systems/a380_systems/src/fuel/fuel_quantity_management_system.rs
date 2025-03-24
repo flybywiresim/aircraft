@@ -232,6 +232,7 @@ const TRIM_TANK_TOML: &str = include_str!("./trim_tank_targets.toml");
 pub struct RefuelApplication {
     refuel_driver: RefuelDriver,
     trim_tank_map: TrimTankMapping,
+    // TODO: Refactor to replace calculate_auto_refuel with LUT similar to trim tank .toml
 }
 impl RefuelApplication {
     pub fn new(_context: &mut InitContext, _powered_by: ElectricalBusType) -> Self {
@@ -352,6 +353,7 @@ impl RefuelApplication {
         Mass::default()
     }
 
+    // TODO: Refactor to replace calculate_auto_refuel with LUT similar to trim tank .toml
     pub fn calculate_auto_refuel(
         &mut self,
         total_desired_fuel: Mass,
@@ -370,6 +372,7 @@ impl RefuelApplication {
         let f = Mass::new::<kilogram>(158042.);
         let g = Mass::new::<kilogram>(215702.);
         let h = Mass::new::<kilogram>(223028.);
+        // + 36727 KG to max
 
         let trim_fuel = self.calculate_trim_fuel(
             total_desired_fuel,
@@ -391,8 +394,8 @@ impl RefuelApplication {
             x if x <= c => feed_a + (wing_fuel - b) / 4.,
             x if x <= d => feed_c,
             x if x <= e => feed_c + (wing_fuel - d) * (outer_feed_e / total_feed_e),
-            x if x <= h => outer_feed_e,
-            _ => outer_feed_e + (wing_fuel - h) / 10.,
+            x if x <= h => outer_feed_e,                   // 20588 KG
+            _ => outer_feed_e + (wing_fuel - h) * 0.09182, // 20588 KG -> 22184.04 KG - delta = 1596.04 KG
         };
 
         let inner_feed = match wing_fuel {
@@ -402,7 +405,7 @@ impl RefuelApplication {
             x if x <= d => feed_c,
             x if x <= e => feed_c + (wing_fuel - d) * (inner_feed_e / total_feed_e),
             x if x <= h => inner_feed_e,
-            _ => inner_feed_e + (wing_fuel - h) / 10.,
+            _ => inner_feed_e + (wing_fuel - h) * 0.09755, // 21836 KG -> 23562.56 KG - delta = 1726.56 KG
         };
 
         let outer_tank_b = Mass::new::<kilogram>(4000.);
@@ -413,7 +416,7 @@ impl RefuelApplication {
             x if x <= b => (wing_fuel - a) / 2.,
             x if x <= g => outer_tank_b,
             x if x <= h => outer_tank_b + (wing_fuel - g) / 2.,
-            _ => outer_tank_h + (wing_fuel - h) / 10.,
+            _ => outer_tank_h + (wing_fuel - h) * 0.03435, // 7693 KG -> 8301.24 KG - delta = 608.24 KG
         };
 
         let inner_tank_d = Mass::new::<kilogram>(5500.);
@@ -424,8 +427,8 @@ impl RefuelApplication {
             x if x <= d => (wing_fuel - c) / 2.,
             x if x <= f => inner_tank_d,
             x if x <= g => inner_tank_d + (wing_fuel - f) / 2.,
-            x if x <= h => inner_tank_g,
-            _ => inner_tank_g + (wing_fuel - h) / 10.,
+            x if x <= h => inner_tank_g,                   // 34300 KG
+            _ => inner_tank_g + (wing_fuel - h) * 0.15495, // 34300 KG -> 37044.78 KG - delta = 2744.78 KG
         };
 
         let mid_tank_f = Mass::new::<kilogram>(27127.);
@@ -433,22 +436,23 @@ impl RefuelApplication {
         let mid_tank = match wing_fuel {
             x if x <= e => Mass::default(),
             x if x <= f => (wing_fuel - e) / 2.,
-            x if x <= h => mid_tank_f,
-            _ => mid_tank_f + (wing_fuel - h) / 10.,
+            x if x <= h => mid_tank_f,                   // 27127 KG
+            _ => mid_tank_f + (wing_fuel - h) * 0.12115, // 27127 KG -> 29272.38 KG - delta = 2145.38 KG
         };
 
         [
-            (A380FuelTankType::LeftOuter, outer_tank),
-            (A380FuelTankType::RightOuter, outer_tank),
-            (A380FuelTankType::LeftMid, mid_tank),
-            (A380FuelTankType::RightMid, mid_tank),
-            (A380FuelTankType::LeftInner, inner_tank),
-            (A380FuelTankType::RightInner, inner_tank),
-            (A380FuelTankType::FeedOne, outer_feed),
-            (A380FuelTankType::FeedFour, outer_feed),
-            (A380FuelTankType::FeedTwo, inner_feed),
-            (A380FuelTankType::FeedThree, inner_feed),
-            (A380FuelTankType::Trim, trim_fuel),
+            (A380FuelTankType::LeftOuter, outer_tank), // 2731.5 gallons   | 8301.24 KG
+            (A380FuelTankType::RightOuter, outer_tank), // 2731.5 gallons   | 8301.24 KG
+            (A380FuelTankType::LeftMid, mid_tank),     // 9632. gallons    | 29272.38 KG
+            (A380FuelTankType::RightMid, mid_tank),    // 9632. gallons    | 29272.38 KG
+            (A380FuelTankType::LeftInner, inner_tank), //  12189.4 gallons | 37044.78 KG
+            (A380FuelTankType::RightInner, inner_tank), //  12189.4 gallons | 37044.78 KG
+            (A380FuelTankType::FeedOne, outer_feed),   // 7299.6 gallons   | 22184.04 KG
+            (A380FuelTankType::FeedFour, outer_feed),  // 7299.6 gallons   | 22184.04 KG
+            (A380FuelTankType::FeedTwo, inner_feed),   // 7753.2 gallons   | 23562.56 KG
+            (A380FuelTankType::FeedThree, inner_feed), // 7753.2 gallons   | 23562.56 KG
+            // TOTAL = 79,211.4 gallons | 240755 KG
+            (A380FuelTankType::Trim, trim_fuel), // 6260.3 gallons
         ]
         .into()
     }
