@@ -7,7 +7,6 @@
 
 ## 0.13.0
 
-1. [EFB/PERF] Harmonize takeoff and landing performance calculators - @FoxtrotSierra6829 (FoxtrotSierra)
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
 1. [A32NX/FCU] Fixed auto-initialisation of baro unit - @tracernz (Mike)
 1. [A380X/FCU] Fix baro-preselect not recognising baro unit changes - @tracernz (Mike)
@@ -187,6 +186,7 @@
 1. [ELEC] Add power consumption for fuel pumps - @Gurgel100 (Pascal)
 1. [FMS] EFIS overlay symbols for the ND are now available in plan mode away from the aircraft position in MSFS2024 - @tracernz (Mike)
 1. [FMS] Reduced in-flight stutter due to facility loading - @tracernz (Mike)
+1. [EFB/PERF] Harmonize takeoff and landing performance calculators - @FoxtrotSierra6829 (FoxtrotSierra)
 
 ## 0.12.0
 
