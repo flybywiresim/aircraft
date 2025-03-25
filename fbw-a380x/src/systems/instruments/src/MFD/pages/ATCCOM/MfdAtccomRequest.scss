@@ -37,7 +37,6 @@
     flex-direction: column;
   }
   .request-block-input-label {
-    width: 200px;
     font-size: 22px;
     margin: auto 0;
     margin-right: 20px;
@@ -58,11 +57,15 @@
   .request-block-body {
     padding: 20px;
   }
+
+  .request-block-input-label {
+    width: 200px;
+  }
 }
 
 .request-block-stackable {
   border-bottom: 1px solid #fff;
-  margin: 0 0 0 10px;
+  margin: 0;
 
   .request-block-body {
     padding: 0 0 5px 20px;
