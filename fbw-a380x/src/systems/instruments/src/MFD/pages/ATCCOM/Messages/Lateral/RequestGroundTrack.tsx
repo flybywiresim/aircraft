@@ -1,10 +1,10 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { HeadingFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { MessageVisualizationProps } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
 
-export class RequestDirect extends DisplayComponent<MessageVisualizationProps> {
+export class RequestGroundTrack extends DisplayComponent<MessageVisualizationProps> {
   render(): VNode {
     return (
       <div class="request-block request-block-stackable">
@@ -13,21 +13,20 @@ export class RequestDirect extends DisplayComponent<MessageVisualizationProps> {
         <div class="request-block-body">
           <div class="request-block-line">
             <div class="mfd-label request-block-input-label" style="position:relative;">
-              REQUEST DIR TO
+              REQUEST GROUND TRACK
             </div>
-          </div>
-          <div class="request-block-line">
-            <InputField<string>
-              dataEntryFormat={new WaypointFormat()}
+            <InputField<number>
+              dataEntryFormat={new HeadingFormat()}
               mandatory={Subject.create(true)}
-              value={Subject.create('')}
-              containerStyle="width: 353px; position:relative; left:200px;"
+              value={Subject.create(null)}
+              containerStyle="width: 150px; position:relative;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
           </div>
+          <div class="request-block-line"></div>
           <div class="request-block-line"></div>
         </div>
       </div>
