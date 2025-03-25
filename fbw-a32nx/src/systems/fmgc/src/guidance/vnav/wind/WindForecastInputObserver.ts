@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -23,11 +23,12 @@ export class WindForecastInputObserver {
   }
 
   update() {
-    this.inputs.tripWind = new WindComponent(this.fmgc.getTripWind() ?? 0);
+    this.inputs.tripWind.value = this.fmgc.getTripWind();
     this.parseFmcWinds(this.fmgc.getWinds());
 
-    const { direction, speed } = this.fmgc.getApproachWind();
-    this.inputs.destinationWind = new WindVector(direction, speed);
+    const windVector = this.fmgc.getApproachWind();
+    this.inputs.destinationWind.direction = windVector?.direction ?? 0;
+    this.inputs.destinationWind.speed = windVector?.speed ?? 0;
   }
 
   get(): WindForecastInputs {
