@@ -7,13 +7,8 @@ import { MessageVisualizationProps } from 'instruments/src/MFD/pages/ATCCOM/Mess
 export class RequestDirect extends DisplayComponent<MessageVisualizationProps> {
   render(): VNode {
     return (
-      <div class="request-block">
-        <IconButton
-          icon="trashbin"
-          onClick={this.props.onDelete}
-          disabled={Subject.create(false)}
-          containerStyle="width: 40px; height: 40px; position: absolute; top: -15px; right: -15px;"
-        />
+      <div class="request-block request-block-stackable">
+        <IconButton icon="trashbin" onClick={this.props.onDelete} disabled={Subject.create(false)} />
 
         <div class="request-block-body">
           <div class="request-block-line">

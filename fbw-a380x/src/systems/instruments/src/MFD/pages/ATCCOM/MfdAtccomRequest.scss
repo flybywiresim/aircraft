@@ -13,7 +13,7 @@
 
 #atccom-request-menu {
   width: 180px;
-  margin: 10px;
+  margin: 10px 10px 10px 5px;
 }
 
 .mfd-atccom-request-footer {
@@ -26,7 +26,6 @@
 
 .request-block {
   font-size: 22px;
-  margin: 20px 10px;
   position: relative;
 
   .request-block-title {
@@ -36,7 +35,6 @@
   .request-block-body {
     display: flex;
     flex-direction: column;
-    padding: 20px;
   }
   .request-block-input-label {
     width: 200px;
@@ -48,12 +46,35 @@
   .request-block-line {
     display: flex;
     padding: 5px 0;
+    min-height: 47px;
   }
 }
 
 .request-block-single {
   border: 2px solid #fff;
   border-top: transparent;
+  margin: 20px 10px;
+
+  .request-block-body {
+    padding: 20px;
+  }
+}
+
+.request-block-stackable {
+  border-bottom: 1px solid #fff;
+  margin: 0 0 0 10px;
+
+  .request-block-body {
+    padding: 0 0 5px 20px;
+  }
+
+  .mfd-icon-button {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    right: 0px;
+    top: 5px;
+  }
 }
 
 .request-block-header {
