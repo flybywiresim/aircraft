@@ -895,12 +895,14 @@ export class FwsCore {
 
   public readonly engine4ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_4'), false);
 
-  public readonly allFuelPumpsOff = Subject.create(false);
-
   // Only check feed pumps for now, heavy enough
-  private readonly feedTankPumps = Array.from(Array(8), (_, idx) =>
+  public readonly feedTankPumps = Array.from(Array(8), (_, idx) =>
     ConsumerSubject.create(this.sub.on(`fuel_pump_active_${idx + 1}`), false),
   );
+
+  public readonly allFuelPumpsOff = Subject.create(false);
+
+  public readonly allFeedTankPumpsOff = MappedSubject.create(SubscribableMapFunctions.nor(), ...this.feedTankPumps);
 
   public readonly feedTank1Low = Subject.create(false);
 
@@ -932,14 +934,6 @@ export class FwsCore {
     this.crossFeed2ValveOpen,
     this.crossFeed3ValveOpen,
     this.crossFeed4ValveOpen,
-  );
-
-  public readonly allFeedTankPumpsOn = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.engine1ValueSwitch,
-    this.engine2ValueSwitch,
-    this.engine3ValueSwitch,
-    this.engine4ValueSwitch,
   );
 
   public readonly crossFeedOpenMemo = MappedSubject.create(
@@ -1746,6 +1740,7 @@ export class FwsCore {
       this.fuelingInitiated,
       this.fuelingTarget,
       this.refuelPanelOpen,
+      this.allFeedTankPumpsOff,
       this.allCrossFeedValvesOpen,
       this.crossFeedOpenMemo,
       this.refuelPanelOpen,
@@ -3359,7 +3354,7 @@ export class FwsCore {
         !this.engine3ValueSwitch.get() &&
         !this.engine4ValueSwitch.get(),
     );
-    this.allFuelPumpsOff.set(!this.feedTankPumps.some((v) => v.get()) && this.allEngineSwitchOff.get());
+    this.allFuelPumpsOff.set(this.allFeedTankPumpsOff.get() && this.allEngineSwitchOff.get());
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
