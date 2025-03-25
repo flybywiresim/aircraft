@@ -903,6 +903,7 @@ export class FwsCore {
   public readonly allFuelPumpsOff = Subject.create(false);
 
   public readonly allFeedTankPumpsOff = MappedSubject.create(SubscribableMapFunctions.nor(), ...this.feedTankPumps);
+  public readonly allFeedTankPumpsOn = MappedSubject.create(SubscribableMapFunctions.and(), ...this.feedTankPumps);
 
   public readonly feedTank1Low = Subject.create(false);
 
@@ -1741,6 +1742,7 @@ export class FwsCore {
       this.fuelingTarget,
       this.refuelPanelOpen,
       this.allFeedTankPumpsOff,
+      this.allFeedTankPumpsOn,
       this.allCrossFeedValvesOpen,
       this.crossFeedOpenMemo,
       this.refuelPanelOpen,

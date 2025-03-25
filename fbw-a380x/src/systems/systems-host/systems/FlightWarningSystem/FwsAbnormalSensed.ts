@@ -2529,7 +2529,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, true, false, false, false, false, false],
       whichItemsChecked: () => [
         this.fws.allCrossFeedValvesOpen.get(),
-        !this.fws.allFeedTankPumpsOff.get(),
+        this.fws.allFeedTankPumpsOn.get(),
         false,
         false,
         false,
