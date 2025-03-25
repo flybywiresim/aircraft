@@ -12,20 +12,23 @@ export class RequestDirect extends DisplayComponent<MessageVisualizationProps> {
 
         <div class="request-block-body">
           <div class="request-block-line">
-            <div class="mfd-label request-block-input-label" style="position:relative; left:-20px;">
+            <div class="mfd-label request-block-input-label" style="position:relative;">
               REQUEST DIR TO
             </div>
+          </div>
+          <div class="request-block-line">
             <InputField<string>
               dataEntryFormat={new WaypointFormat()}
               mandatory={Subject.create(true)}
               value={Subject.create('')}
-              containerStyle="width: 338px; position:relative; left:190px;"
+              containerStyle="width: 353px; position:relative; left:200px;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
           </div>
+          <div class="request-block-line"></div>
         </div>
       </div>
     );
