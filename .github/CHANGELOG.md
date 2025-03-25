@@ -109,6 +109,7 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
+1. [A380X/PRIM] Adapt protection speeds to new flight model - @flogross89 (floridude)
 1. [A380X/EFB] Improved Aircraft Presets configuration for the A380X - @frankkopp (cdr_maverick)
 1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
@@ -181,6 +182,13 @@
 1. [A32NX/FMS] Added differentiation between compatible and incompatible approach vias (H4) - @tracernz (Mike)
 1. [A32NX/FMS] Removed insert/erase prompts on approach via page - @tracernz (Mike)
 1. [ND] Fixed alignment of approach message - @tracernz (Mike)
+1. [A380X/OANS] Fix RWY AHEAD not disappearing when OANS Performance Mode is active - @flogross89 (floridude)
+1. [ELEC] Add power consumption for fuel pumps - @Gurgel100 (Pascal)
+1. [FMS] EFIS overlay symbols for the ND are now available in plan mode away from the aircraft position in MSFS2024 - @tracernz (Mike)
+1. [FMS] Reduced in-flight stutter due to facility loading - @tracernz (Mike)
+1. [A32NX/FMS] Improved approach procedure sorting - @tracernz (Mike)
+1. [A380X/FMS] The (RNP) flag is now shown for approaches with only the missed approach segment as RNP AR on MSFS2024 - @tracernz (Mike)
+1. [Clock] Fixed chrono not rolling over to 00:00 when reaching 99:59 - @tracernz (Mike)
 1. [A380X/FWS] Fix fuel pump sensing logic for PARKING normal procedure - @flogross89 (floridude)
 
 ## 0.12.0
