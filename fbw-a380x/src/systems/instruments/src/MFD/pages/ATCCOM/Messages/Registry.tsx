@@ -4,6 +4,8 @@ import { RequestClimb } from 'instruments/src/MFD/pages/ATCCOM/Messages/Vertical
 import { RequestDescend } from 'instruments/src/MFD/pages/ATCCOM/Messages/Vertical/RequestDescend';
 import { RequestDepartureClearance } from 'instruments/src/MFD/pages/ATCCOM/Messages/Clearance/RequestDepartureClearance';
 import { RequestDirect } from 'instruments/src/MFD/pages/ATCCOM/Messages/Lateral/RequestDirect';
+import { RequestGroundTrack } from './Lateral/RequestGroundTrack';
+import { RequestHeading } from './Lateral/RequestHeading';
 
 export const MaxRequestElements = 5;
 
@@ -70,6 +72,42 @@ export const MessageTable: {
     visualization: (props, mode, index, messageElements, onDelete): VNode => {
       return (
         <RequestDirect
+          bus={props.bus}
+          mfd={props.mfd}
+          fmcService={props.fmcService}
+          mode={mode}
+          index={index}
+          messageElements={messageElements}
+          onDelete={onDelete}
+        />
+      );
+    },
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  RequestHeading: {
+    visualization: (props, mode, index, messageElements, onDelete): VNode => {
+      return (
+        <RequestHeading
+          bus={props.bus}
+          mfd={props.mfd}
+          fmcService={props.fmcService}
+          mode={mode}
+          index={index}
+          messageElements={messageElements}
+          onDelete={onDelete}
+        />
+      );
+    },
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  RequestGroundTrack: {
+    visualization: (props, mode, index, messageElements, onDelete): VNode => {
+      return (
+        <RequestGroundTrack
           bus={props.bus}
           mfd={props.mfd}
           fmcService={props.fmcService}
