@@ -7,13 +7,8 @@ import { MessageVisualizationProps } from 'instruments/src/MFD/pages/ATCCOM/Mess
 export class RequestDescend extends DisplayComponent<MessageVisualizationProps> {
   render(): VNode {
     return (
-      <div class="request-block">
-        <IconButton
-          icon="trashbin"
-          onClick={this.props.onDelete}
-          disabled={Subject.create(false)}
-          containerStyle="width: 40px; height: 40px; position: absolute; top: -15px; right: -15px;"
-        />
+      <div class="request-block request-block-stackable">
+        <IconButton icon="trashbin" onClick={this.props.onDelete} disabled={Subject.create(false)} />
 
         <div class="request-block-body">
           <div class="request-block-line">
@@ -33,13 +28,14 @@ export class RequestDescend extends DisplayComponent<MessageVisualizationProps> 
             <InputField<string>
               dataEntryFormat={new ShortAlphanumericFormat()}
               value={Subject.create('')}
-              containerStyle="width: 120px; margin-right: 5px;"
+              containerStyle="width: 323px; margin-right: 5px;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
               hEventConsumer={this.props.mfd.hEventConsumer}
               interactionMode={this.props.mfd.interactionMode}
             />
           </div>
+          <div class="request-block-line"></div>
         </div>
       </div>
     );
