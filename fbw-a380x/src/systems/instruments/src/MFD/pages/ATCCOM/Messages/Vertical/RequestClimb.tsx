@@ -16,7 +16,7 @@ export class RequestClimb extends DisplayComponent<MessageVisualizationProps> {
             <InputField<string>
               dataEntryFormat={new AirportFormat()}
               value={Subject.create('')}
-              containerStyle="width: 120px; margin-right: 5px;"
+              containerStyle="width: 130px; margin-right: 5px;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
               hEventConsumer={this.props.mfd.hEventConsumer}
@@ -24,11 +24,13 @@ export class RequestClimb extends DisplayComponent<MessageVisualizationProps> {
             />
           </div>
           <div class="request-block-line">
-            <div class="mfd-label request-block-input-label">AT</div>
+            <div class="mfd-label request-block-input-label" style="margin-left: 168px;">
+              AT
+            </div>
             <InputField<string>
               dataEntryFormat={new ShortAlphanumericFormat()}
               value={Subject.create('')}
-              containerStyle="width: 323px; margin-right: 5px;"
+              containerStyle="width: 337px;"
               alignText="center"
               errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
               hEventConsumer={this.props.mfd.hEventConsumer}
