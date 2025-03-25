@@ -55,7 +55,8 @@ export class CDUVerticalRevisionPage {
       }
     }
 
-    const showSpeedLim = isOrigin || isDestination || constraintType !== WaypointConstraintType.Unknown;
+    const showSpeedLim =
+      mcdu._fuelPredDone || isOrigin || isDestination || constraintType !== WaypointConstraintType.Unknown;
     // the conditions other than isDestination are a workaround for no ToC
     const showDesSpeedLim =
       showSpeedLim &&

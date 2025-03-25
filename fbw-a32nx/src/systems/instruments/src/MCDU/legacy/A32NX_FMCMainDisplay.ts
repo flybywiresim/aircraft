@@ -107,6 +107,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public isDestEfobAmber = false;
   private isBelowMinDestFobForTwoMinutes?: NXLogicConfirmNode;
   private shouldShowBelowMinDestEfobMessage = false;
+  public _fuelPredDone = false;
   public activeFuelPlanningPhase = undefined;
   public activeUnconfirmedBlockFuel = undefined;
   public secFuelPlanningPhase = undefined;
@@ -419,6 +420,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.isDestEfobAmber = false;
     this.isBelowMinDestFobForTwoMinutes = new NXLogicConfirmNode(120_000, true);
     this.shouldShowBelowMinDestEfobMessage = false;
+    this._fuelPredDone = false;
     this.activeFuelPlanningPhase = FuelPlanningPhases.PLANNING;
     this.secFuelPlanningPhase = FuelPlanningPhases.PLANNING;
     this._initMessageSettable = false;
@@ -3576,6 +3578,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('blockFuel', null, forPlan);
 
+      this._fuelPredDone = false;
+
       if (forPlan === FlightPlanIndex.Active) {
         this.activeFuelPlanningPhase = FuelPlanningPhases.PLANNING;
       } else if (forPlan === FlightPlanIndex.FirstSecondary) {
@@ -4706,11 +4710,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', level, forPlan);
       // used by FlightPhaseManager - only set for active plan
       if (forPlan === FlightPlanIndex.Active) {
-        SimVar.SetSimVarValue(
-          'L:A32NX_AIRLINER_CRUISE_ALTITUDE',
-          'number',
-          Number.isFinite(level * 100) ? level * 100 : 0,
-        );
+        SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
       }
     }
   }
