@@ -394,9 +394,6 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
           case 5:
             this.text.set('BRK HI ');
             break;
-          case 6: // Add case for RTO
-            this.text.set('BRK RTO ');
-            break;
           default:
             this.text.set('');
             break;
@@ -407,9 +404,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
       .on('autoBrakeActive')
       .whenChanged()
       .handle((am) => {
-        // Hide armed indication when autobrake is active
         if (am) {
-          this.text.set(''); // Clear armed text when active
           this.autoBrkRef.instance.style.visibility = 'hidden';
         } else {
           this.autoBrkRef.instance.style.visibility = 'visible';
@@ -420,6 +415,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
       .on('AThrMode')
       .whenChanged()
       .handle((athrMode) => {
+        // ATHR mode overrides BRK LO and MED memo
         if (athrMode > 0 && athrMode <= 6) {
           this.autoBrkRef.instance.style.visibility = 'hidden';
         } else {
