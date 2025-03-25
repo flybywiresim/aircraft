@@ -104,10 +104,10 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
                 menuItems={Subject.create([
                   { label: 'CLIMB TO', action: () => this.onSelect('RequestClimb') },
                   { label: 'DESCEND TO', action: () => this.onSelect('RequestDescend') },
-                  { label: 'ALT/FL', action: () => {} },
-                  { label: 'BLOCK ALT/FL', action: () => {} },
-                  { label: 'CRUISE CLIMB', action: () => {} },
-                  { label: 'ITP', action: () => {} },
+                  { label: 'ALT/FL', action: () => this.onSelect('RequestLevel') },
+                  { label: 'BLOCK ALT/FL', action: () => this.onSelect('RequestLevelBlock') },
+                  { label: 'CRUISE CLIMB', action: () => this.onSelect('RequestCruiseClimb') },
+                  { label: 'ITP', action: () => this.onSelect('RequestITP') },
                 ])}
               />
               <RequestMenuButton
@@ -117,8 +117,8 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
                 buttonStyle="width:180px;"
                 menuItems={Subject.create([
                   { label: 'DIRECT TO', action: () => this.onSelect('RequestDirect') },
-                  { label: 'OFFSET', action: () => {} },
-                  { label: 'WX DEVIATION', action: () => {} },
+                  { label: 'OFFSET', action: () => this.onSelect('RequestOffset') },
+                  { label: 'WX DEVIATION', action: () => this.onSelect('RequestWeatherDeviation') },
                   { label: 'HEADING', action: () => this.onSelect('RequestHeading') },
                   { label: 'TRACK', action: () => this.onSelect('RequestGroundTrack') },
                   { label: 'SID/STAR', action: () => {} },
@@ -175,7 +175,7 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
                   { label: 'VMC DES', action: () => {} },
                 ])}
               />
-              <br />
+              <div style="min-height: 40px;"></div>
               <RequestMenuButton
                 label="ADD TEXT"
                 idPrefix="Request_AddText_Menu"
