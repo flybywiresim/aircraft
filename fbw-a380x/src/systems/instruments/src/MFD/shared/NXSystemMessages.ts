@@ -97,6 +97,7 @@ export const NXSystemMessages = {
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
+  sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
 };
 
 export const NXFictionalMessages = {
