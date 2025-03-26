@@ -76,16 +76,20 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private failuresConsumer: FailuresConsumer;
 
-  private readonly groundSpeed = ConsumerSubject.create(this.sub.on('groundSpeed').whenChanged(), 0);
+  private readonly groundSpeed = ConsumerSubject.create(this.sub.on('groundSpeed'), 0);
 
-  private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
+  private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed'), false);
 
   private readonly thrustTla = [
-    ConsumerSubject.create(this.sub.on('tla1').whenChanged(), 0),
-    ConsumerSubject.create(this.sub.on('tla2').whenChanged(), 0),
-    ConsumerSubject.create(this.sub.on('tla3').whenChanged(), 0),
-    ConsumerSubject.create(this.sub.on('tla4').whenChanged(), 0),
+    ConsumerSubject.create(this.sub.on('tla1'), 0),
+    ConsumerSubject.create(this.sub.on('tla2'), 0),
+    ConsumerSubject.create(this.sub.on('tla3'), 0),
+    ConsumerSubject.create(this.sub.on('tla4'), 0),
   ];
+  private readonly atLeastThreeThrustLeversOutOfIdle = MappedSubject.create(
+    ([t1, t2, t3, t4]) => [t1, t2, t3, t4].filter((t) => t > 5).length > 2,
+    ...this.thrustTla,
+  );
 
   private readonly leftMainGearCompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), false);
   private readonly rightMainGearCompressed = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), false);
@@ -108,9 +112,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     } else if (
       this.eitherMainLgCompressed.get() &&
       gs > 80 &&
-      (this.spoilersArmed.get() === false ||
-        flapsRetracted === true ||
-        this.thrustTla.filter((v) => v.get() > 5).length > 2)
+      (this.spoilersArmed.get() === false || flapsRetracted === true || this.atLeastThreeThrustLeversOutOfIdle.get())
     ) {
       // FIXME add "flight crew presses pitch trim switches"
       this.pitchTrimIndicatorVisible.set(true);
@@ -197,11 +199,13 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     this.subscriptions.push(
       this.groundSpeed.sub(() => this.updatePitchTrimVisible()),
       this.spoilersArmed.sub(() => this.updatePitchTrimVisible()),
+      this.atLeastThreeThrustLeversOutOfIdle.sub(() => this.updatePitchTrimVisible()),
       this.groundSpeed,
       this.spoilersArmed,
       this.leftMainGearCompressed,
       this.rightMainGearCompressed,
       this.eitherMainLgCompressed,
+      this.atLeastThreeThrustLeversOutOfIdle,
     );
 
     for (const s of this.thrustTla) {

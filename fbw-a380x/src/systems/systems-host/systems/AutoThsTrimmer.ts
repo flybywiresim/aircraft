@@ -61,7 +61,6 @@ export class AutoThsTrimmer implements Instrument {
 
   private readonly flapsSlatsMovedPulse = new NXLogicPulseNode();
   private readonly groundSpoilersDisarmedPulse = new NXLogicPulseNode(false);
-  private readonly oneThrustLeverMovedOutOfIdle = new NXLogicPulseNode();
 
   /** in percent */
   private readonly cgPercent = ConsumerSubject.create(this.sub.on('gw_cg_percent'), 0);
@@ -111,10 +110,7 @@ export class AutoThsTrimmer implements Instrument {
     this.flapsSlatsMovedPulse.write(this.previousFlapsLeverPos !== this.flapsLever.get(), this.instrument.deltaTime);
     this.previousFlapsLeverPos = this.flapsLever.get();
     this.groundSpoilersDisarmedPulse.write(groundSpoilersArmed, this.instrument.deltaTime);
-    this.oneThrustLeverMovedOutOfIdle.write(
-      this.thrustLever.some((tl) => tl.get() > 20),
-      this.instrument.deltaTime,
-    );
+    const atLeastThreeThrustLeversOutOfIdle = this.thrustLever.filter((tl) => tl.get() > 5).length > 2;
 
     const startupCondition =
       (this.onGround.get() && this.oneEngineStartedAndHydPressPulse.read()) || this.groundSpoilersArmedPulse.read();
@@ -123,7 +119,7 @@ export class AutoThsTrimmer implements Instrument {
       this.cas.get().valueOr(0) > 80 &&
       (this.flapsSlatsMovedPulse.read() ||
         this.groundSpoilersDisarmedPulse.read() ||
-        this.oneThrustLeverMovedOutOfIdle.read());
+        atLeastThreeThrustLeversOutOfIdle);
 
     if (startupCondition || touchAndGoCondition) {
       this.shouldAutoTrim = true;

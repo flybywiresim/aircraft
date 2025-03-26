@@ -432,6 +432,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
     ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
     ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],
+    ['tla3', { name: PFDVars.tla3, type: SimVarValueType.Number }],
+    ['tla4', { name: PFDVars.tla4, type: SimVarValueType.Number }],
     ['tcasState', { name: PFDVars.tcasState, type: SimVarValueType.Enum }],
     ['tcasCorrective', { name: PFDVars.tcasCorrective, type: SimVarValueType.Bool }],
     ['tcasRedZoneL', { name: PFDVars.tcasRedZoneL, type: SimVarValueType.Number }],

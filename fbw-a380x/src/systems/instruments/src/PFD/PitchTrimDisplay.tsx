@@ -93,17 +93,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
     this.anyEngRunning,
   );
 
-  private readonly optimalPitchTrim = MappedSubject.create(
-    ([cg, phase]) => {
-      if (phase > 9) {
-        return 0;
-      } else {
-        return PitchTrimUtils.cgToPitchTrim(cg);
-      }
-    },
-    this.cgPercent,
-    this.fwcFlightPhase,
-  );
+  private readonly optimalPitchTrim = this.cgPercent.map((cg) => PitchTrimUtils.cgToPitchTrim(cg));
 
   degreesToPixel(deg: number) {
     return (10 - deg) * 17.25 + 103.5;
