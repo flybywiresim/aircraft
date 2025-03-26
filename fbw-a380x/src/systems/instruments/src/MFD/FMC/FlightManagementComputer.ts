@@ -482,7 +482,7 @@ export class FlightManagementComputer implements FmcInterface {
       if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
         // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
         return (
-          (this.enginesWereStarted.get() ? this.fmgc.getFOB()! * 1_000 : this.fmgc.data.blockFuel.get() ?? 0) -
+          (this.enginesWereStarted.get() ? this.fmgc.getFOB()! * 1_000 : (this.fmgc.data.blockFuel.get() ?? 0)) -
           (this.fmgc.data.taxiFuel.get() ?? 0) -
           (this.getTripFuel() ?? 0) -
           (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
@@ -499,14 +499,20 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   /** @inheritdoc */
-  public getRecMaxFlightLevel(grossWeight?: number): number | null {
+  public getRecMaxAltitude(grossWeight?: number): number | null {
     const gw = grossWeight ?? this.fmgc.getGrossWeightKg();
     if (!gw) {
       return null;
     }
 
     const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
-    return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(gw, isaTempDeviation), maxCertifiedAlt) / 100;
+    return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(gw, isaTempDeviation), maxCertifiedAlt);
+  }
+
+  /** @inheritdoc */
+  public getRecMaxFlightLevel(grossWeight?: number): number | null {
+    const recMax = this.getRecMaxAltitude(grossWeight);
+    return recMax !== null ? recMax / 100 : null;
   }
 
   /** @inheritdoc */
@@ -646,6 +652,7 @@ export class FlightManagementComputer implements FmcInterface {
    * @param _message MessageObject
    * @param _isResolvedOverride Function that determines if the error is resolved at this moment (type II only).
    * @param _onClearOverride Function that executes when the error is actively cleared by the pilot (type II only).
+   * @param details text to be appended to the second line of the message if applicable
    */
   public addMessageToQueue(
     _message: TypeIMessage | TypeIIMessage,
@@ -660,7 +667,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     const msg: FmsErrorMessage = {
       message: _message,
-      messageText: details ? `${message.text}'\n'${details}` : message.text,
+      messageText: details ? message.text.concat('\n').concat(details) : message.text,
       backgroundColor: message.isAmber ? 'amber' : 'white',
       cleared: false,
       onClearOverride: isTypeIIMessage(message) ? message.onClear : () => {},
