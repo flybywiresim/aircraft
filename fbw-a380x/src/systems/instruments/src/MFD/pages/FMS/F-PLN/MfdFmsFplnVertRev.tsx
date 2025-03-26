@@ -395,8 +395,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         }
         this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
         this.stepAltsAboveMaxFl[line].set(
-          cruiseSteps[i].toAltitude >
-            (this.props.fmcService.master?.getRecMaxAltitude() ?? maxCertifiedAlt),
+          cruiseSteps[i].toAltitude > (this.props.fmcService.master?.getRecMaxAltitude() ?? maxCertifiedAlt),
         );
 
         if (this.stepAltsIgnored[line].get()) {
@@ -576,7 +575,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         .map((l) => (l.isDiscontinuity === false && l.cruiseStep ? l.cruiseStep : null))
         .filter((it) => it !== null);
       const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, altitude);
-      if (altitude > (this.props.fmcService.master?.getRecMaxAltitude()  ?? maxCertifiedAlt)) {
+      if (altitude > (this.props.fmcService.master?.getRecMaxAltitude() ?? maxCertifiedAlt)) {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
 
@@ -987,7 +986,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                   onModified={(newAltitude) =>
                                     this.handleCruiseStepFlightLevelModified(newAltitude, li)
                                   }
-                                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
+                                  errorHandler={(e) =>
+                                    this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)
+                                  }
                                   hEventConsumer={this.props.mfd.hEventConsumer}
                                   interactionMode={this.props.mfd.interactionMode}
                                 />
