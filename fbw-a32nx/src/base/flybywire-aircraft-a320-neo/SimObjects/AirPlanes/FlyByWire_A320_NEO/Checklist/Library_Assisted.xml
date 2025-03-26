@@ -2641,5 +2641,24 @@
             <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.TAKEOFF_BRIEFING" ExpectationTT="TT:GAME.CHECKLIST_PERFORM" />
             <Clue name="TT:A32NX.CLUE.TAKEOFF_BRIEFING:PERFORM" />
         </Checkpoint>
+
+        <Checkpoint Id="A32NX.FINAL_LOADSHEET:CHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.FINAL_LOADSHEET" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.ESNURE_LOADSHET_IS_ACCURATE" />
+        </Checkpoint>
+        
+        <Checkpoint Id="A32NX.ZFWCG_ZFW:CHECK_REVISE">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ZFWCG_ZFW" ExpectationTT="TT:A32NX.CHECKLIST.CHECK_REVISE" />
+            <Clue name="TT:A32NX.CLUE.COMPARE_ZFW_ZFWCG_WITH_PREVIOUS_DATA_REINSERT_IF_DIFFERENT" />
+        </Checkpoint>
+        <Checkpoint Id="A32NX.ZFWCG_ZFW:CROSSCHECK">
+            <CheckpointDesc SubjectTT="TT:A32NX.CHECKLIST.ZFWCG_ZFW" ExpectationTT="TT:A32NX.CHECKLIST.CROSSCHECK" />
+            <Clue name="TT:A32NX.CLUE.PILOT_VERIFY_BOTH_FMS_ZFW_ZWFCG" />
+        </Checkpoint>
+        
+        <Checkpoint Id="A32NX.FUEL_ON_BOARD:CHECK">
+            <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_FUEL_ON_BOARD" ExpectationTT="TT:GAME.CHECKLIST_CHECK" />
+            <Clue name="TT:A32NX.CLUE.VERIFY_FOB_ON_SD_ENSURE_CORRESPONDS_TO_FLIGHT_PLAN_AND_LOADSHEET" />
+        </Checkpoint>
     </Checklist.CheckpointLibrary>
 </SimBase.Document>

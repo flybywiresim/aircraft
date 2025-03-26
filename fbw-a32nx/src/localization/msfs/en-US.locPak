@@ -35,6 +35,32 @@
         "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Set \"no smoke\" prompt light to AUTO",
         "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available",
 
+        "A32NX.CHECKLIST.FINAL_LOADSHEET": "Final Loadsheet",
+        "A32NX.CHECKLIST.CHECK_REVISE": "Check/Revise",
+
+        "A32NX.CHECKLIST.ACCU_PRESSURE": "ACCU Pressure",
+        "A32NX.CHECKLIST.BEFORE_START_CHECKLIST_BELOW_THE_LINE": "Before Start Checklist Below the Line",
+        "A32NX.CHECKLIST.BEFORE_START_CHECKLIST_DOWN_TO_THE_LINE": "Before Start Checklist Down to the Line",
+        "A32NX.CHECKLIST.ENGINE_IDLE_PARAMETERS": "Engine Idle Parameters",
+        "A32NX.CHECKLIST.EXTERNAL_POWER_DISCONNECTION": "External Power Disconnection",
+        "A32NX.CHECKLIST.FINAL_TAKEOFF_PERF_DATA": "Final Takeoff Perf Data",
+        "A32NX.CHECKLIST.FMS_REVISED_TAKEOFF_PERF_DATA": "FMS Revised Takeoff Perf Data",
+        "A32NX.CHECKLIST.FMS_TAKEOFF_DATA": "FMS Takeoff Data",
+        "A32NX.CHECKLIST.IF_PUSHBACK_IS_NOT_REQUIRED": "If pushback is not required",
+        "A32NX.CHECKLIST.IF_PUSHBACK_IS_REQUIRED": "If pushback is required",
+        "A32NX.CHECKLIST.N_W_STRG_DISC_MEMO": "N/W STRG DISC Memo",
+        "A32NX.CHECKLIST.PARKING_BRAKE_AND_NOSEWHEEL_STEERING": "Parking Brake and Nosewheel Steering",
+        "A32NX.CHECKLIST.PILOT_FLYING_FMS_PERF_TO_PAGE": "Pilot Flying FMS Perf To Page",
+        "A32NX.CHECKLIST.PILOT_MONITORING_FMS_F_PLN_PAGE": "Pilot Monitoring FMS F-PLN Page",
+        "A32NX.CHECKLIST.PUSHBACK_START_CLEARANCE": "Pushback/Start Clearance",
+        "A32NX.CHECKLIST.REQUEST": "Request",
+        "A32NX.CHECKLIST.SEATING_POSITION": "Seating Position",
+        "A32NX.CHECKLIST.SLIDES": "Slides",
+        "A32NX.CHECKLIST.VERIFY_ARMED": "Verify Armed",
+        "A32NX.CHECKLIST.VERIFY_DISPLAYED": "Verify Displayed",
+        "A32NX.CHECKLIST.VERIFY_ON": "Verify on",
+        "A32NX.CHECKLIST.WINDOWS_AND_DOORS": "Windows and Doors",
+
         "A32NX.CHECKLIST.ACARS": "ACARS",
         "A32NX.CHECKLIST.ACCU_PRESS": "ACCU PRESS",
         "A32NX.CHECKLIST.ACP": "ACP",
@@ -346,7 +372,12 @@
         "A32NX.CLUE.SEAT_BELT_SIGN:ON_AUTO": "Leaving the SEAT BELT sign prevents the emergency batteries from charging.",
         "A32NX.CLUE.STS:PRESS": "Ensure that the INOP SYS displayed are compatible with the MEL.",
         "A32NX.CLUE.TAKE_OFF_SHIFT:SET_AS_REQUIRED": "It is recommended to insert a T.O Shift value if the flight crew plan to take off from an intersection.",
-        "A32NX.CLUE.TAKEOFF_BRIEFING:PERFORM": "Should contain info about adverse weather, runway condition, crew coordination for rejected takeoff, discussion of unusual conditions that can affect flight safety, the SID if aircraft has one engine out, and other operational risks."
+        "A32NX.CLUE.TAKEOFF_BRIEFING:PERFORM": "Should contain info about adverse weather, runway condition, crew coordination for rejected takeoff, discussion of unusual conditions that can affect flight safety, the SID if aircraft has one engine out, and other operational risks.",
+
+        "A32NX.CLUE.ESNURE_LOADSHET_IS_ACCURATE": "Ensure that the loadsheet is accurate.",
+        "A32NX.CLUE.COMPARE_ZFW_ZFWCG_WITH_PREVIOUS_DATA_REINSERT_IF_DIFFERENT": "The flight crew compare the ZFW and ZFWCG data with the previously entered data. If different, the flight crew must reinsert the data.",
+        "A32NX.CLUE.PILOT_VERIFY_BOTH_FMS_ZFW_ZWFCG": "The pilot verify on both flight management system the values of the ZGW/ZFWCG.",
+        "A32NX.CLUE.VERIFY_FOB_ON_SD_ENSURE_CORRESPONDS_TO_FLIGHT_PLAN_AND_LOADSHEET": "Verify the fuel on board (FOB) on the system display. Ensure that it corresponds to the flight plan and to the loadsheet."
     }
   }
 }
