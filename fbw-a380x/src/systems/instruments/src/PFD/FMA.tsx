@@ -670,7 +670,6 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((a) => {
         this.autoBrakeMode = a;
-        // Add setText() call to update display when mode changes
         this.setText();
       });
   }
