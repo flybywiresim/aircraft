@@ -1730,9 +1730,6 @@ export class SquawkFormat implements DataEntryFormat<number> {
   public placeholder = '----';
 
   public maxDigits = 4;
-
-  private readonly requiredFormat = 'XXXX';
-
   public format(value: number) {
     if (value === null || value === undefined) {
       return [this.placeholder, null, null] as FieldFormatTuple;
@@ -1749,11 +1746,8 @@ export class SquawkFormat implements DataEntryFormat<number> {
     if (!Number.isNaN(nbr) && /^[0-7]{4}$/.test(input)) {
       return nbr;
     }
-    if (!/^[0-7]{4}$/.test(input)) {
-      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
-    } else {
-      throw getFormattedFormatError(this.requiredFormat);
-    }
+
+    throw new A380FmsError(FmsErrorType.FormatError);
   }
 }
 
