@@ -47,7 +47,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
    * @returns whether validation was successful. If nothing is returned, success is assumed
    */
   dataHandlerDuringValidation?: (newValue: U | null, oldValue?: T | null) => Promise<boolean | void>;
-  errorHandler?: (error: A380FmsError) => void;
+  errorHandler: (error: A380FmsError) => void;
   handleFocusBlurExternally?: boolean;
   containerStyle?: string;
   alignText?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
