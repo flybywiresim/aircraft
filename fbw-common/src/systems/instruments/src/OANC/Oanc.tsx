@@ -627,6 +627,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.arpCoordinates.set(undefined);
     this.data = undefined;
     this.aircraftWithinAirport.set(false);
+
+    this.btvUtils.transmitRwyAheadAdvisory(false, '', true);
   }
 
   /**
@@ -1090,7 +1092,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     if (!this.data || this.dataLoading || this.resetPulled.get()) {
-      this.btvUtils.transmitRwyAheadAdvisory(false, '', true);
       return;
     }
 
