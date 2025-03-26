@@ -164,6 +164,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
    */
   getRecMaxFlightLevel(grossWeight?: number): number | null;
 
+  /** as altitude */
+  getRecMaxAltitude() : number | null;
+
   /** as flight level */
   getOptFlightLevel(): number | null;
 
