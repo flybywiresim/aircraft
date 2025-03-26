@@ -325,7 +325,6 @@ export class FlightManagementComputer implements FmcInterface {
     console.log(`${FmcIndex[this.instance]} initialized.`);
   }
 
-
   destroy() {
     for (const s of this.subs) {
       s.destroy();
@@ -471,8 +470,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getRecMaxFlightLevel(): number | null {
-     const recMax = this.getRecMaxAltitude();
-     return recMax !== null? recMax / 100 : null;
+    const recMax = this.getRecMaxAltitude();
+    return recMax !== null ? recMax / 100 : null;
   }
 
   public getOptFlightLevel(): number | null {
