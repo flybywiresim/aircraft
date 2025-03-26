@@ -114,6 +114,7 @@ export const NXSystemMessages = {
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
   navprimary: new TypeIIMessage('NAV PRIMARY'),
   navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
+  sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
 };
 
 export const NXFictionalMessages = {
