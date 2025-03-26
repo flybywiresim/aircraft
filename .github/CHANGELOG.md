@@ -186,6 +186,10 @@
 1. [ELEC] Add power consumption for fuel pumps - @Gurgel100 (Pascal)
 1. [FMS] EFIS overlay symbols for the ND are now available in plan mode away from the aircraft position in MSFS2024 - @tracernz (Mike)
 1. [FMS] Reduced in-flight stutter due to facility loading - @tracernz (Mike)
+1. [A32NX/FMS] Improved approach procedure sorting - @tracernz (Mike)
+1. [A380X/FMS] The (RNP) flag is now shown for approaches with only the missed approach segment as RNP AR on MSFS2024 - @tracernz (Mike)
+1. [Clock] Fixed chrono not rolling over to 00:00 when reaching 99:59 - @tracernz (Mike)
+1. [A380X/FWS] Fix fuel pump sensing logic for PARKING normal procedure - @flogross89 (floridude)
 
 ## 0.12.0
 
