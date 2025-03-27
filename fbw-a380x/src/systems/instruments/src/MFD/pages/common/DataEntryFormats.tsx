@@ -108,9 +108,7 @@ export class SpeedMachFormat extends SubscriptionCollector implements DataEntryF
 
   public maxDigits = 3;
 
-  public readonly unit = 'M';
-
-  private readonly requiredFormat = '.XX';
+  private readonly requiredFormat = 'XX';
 
   private minValue = 0;
 
@@ -147,7 +145,7 @@ export class SpeedMachFormat extends SubscriptionCollector implements DataEntryF
     if (nbr > this.maxValue || nbr < this.minValue) {
       throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw getFormattedFormatError(this.requiredFormat, this.unit);
+      throw getFormattedFormatError(this.requiredFormat);
     }
   }
 
@@ -163,6 +161,8 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
   public maxDigits = 5;
 
   private minValue = 0;
+
+  private readonly requiredFormat = 'FOR ALT XXXXX FOR FL XXX';
 
   private maxValue = maxCertifiedAlt;
 
@@ -212,7 +212,7 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
     if (nbr > this.maxValue || nbr < this.minValue) {
       throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw getFormattedFormatError('FOR ALT XXXXX FOR FL XXX');
+      throw getFormattedFormatError(this.requiredFormat);
     }
   }
 
@@ -281,7 +281,7 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
 
   public readonly unit = 'FL';
 
-  private readonly requiredFormat = `${this.unit}XXX`;
+  private readonly requiredFormat = `XXX`;
 
   private minValue = 0;
 
@@ -533,7 +533,7 @@ export class TemperatureFormat extends SubscriptionCollector implements DataEntr
 
   public readonly unit = '°C';
 
-  private readonly requiredFormat = '+/-XXX';
+  private readonly requiredFormat = '+/-XX';
 
   private minValue = 0;
 
@@ -594,7 +594,7 @@ export class CrzTempFormat implements DataEntryFormat<number> {
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, '°C'] as FieldFormatTuple;
+      return [this.placeholder, null, this.unit] as FieldFormatTuple;
     }
     if (value >= 0) {
       return [`+${value.toFixed(0).toString()}`, null, this.unit] as FieldFormatTuple;
@@ -617,9 +617,9 @@ export class CrzTempFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toString(), this.unit);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toString(), 'C');
     } else {
-      throw getFormattedFormatError(this.requiredFormat, this.unit);
+      throw getFormattedFormatError(this.requiredFormat, 'C');
     }
   }
 }
@@ -703,6 +703,8 @@ export class TripWindFormat implements DataEntryFormat<number> {
 
   public maxDigits = 5;
 
+  private readonly requiredFormat = '+/-XXX';
+
   public readonly unit = 'KT';
 
   private minValue = -250;
@@ -728,37 +730,32 @@ export class TripWindFormat implements DataEntryFormat<number> {
     let sign = +1;
     let number = 0;
 
-    if (input) {
-      if (input.substring(0, 2) === 'HD') {
-        sign = -1;
-        number = Number(input.substring(2));
-      } else if (input.substring(0, 1) === '-' || input.substring(0, 1) === 'H') {
-        sign = -1;
-        number = Number(input.substring(1));
-      } else if (input.substring(0, 2) === 'TL') {
-        sign = +1;
-        number = Number(input.substring(2));
-      } else if (input.substring(0, 1) === '+' || input.substring(0, 1) === 'T') {
-        sign = +1;
-        number = Number(input.substring(1));
-      } else if (!Number.isNaN(Number(input))) {
-        sign = +1;
-        number = Number(input);
-      } else {
-        return null;
-      }
+    if (input.substring(0, 2) === 'HD') {
+      sign = -1;
+      number = Number(input.substring(2));
+    } else if (input.substring(0, 1) === '-' || input.substring(0, 1) === 'H') {
+      sign = -1;
+      number = Number(input.substring(1));
+    } else if (input.substring(0, 2) === 'TL') {
+      sign = +1;
+      number = Number(input.substring(2));
+    } else if (input.substring(0, 1) === '+' || input.substring(0, 1) === 'T') {
+      sign = +1;
+      number = Number(input.substring(1));
     } else {
-      return null;
+      sign = +1;
+      number = Number(input);
+    }
+
+    if (Number.isNaN(number)) {
+      throw getFormattedFormatError(this.requiredFormat);
     }
 
     const nbr = Number(sign * number);
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
-    }
-    if (nbr > this.maxValue || nbr < this.minValue) {
-      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toString(), this.unit);
     } else {
-      throw new A380FmsError(FmsErrorType.FormatError);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toString(), this.unit);
     }
   }
 }
@@ -1317,7 +1314,7 @@ export class HeadingFormat extends SubscriptionCollector implements DataEntryFor
 
   public readonly unit = '°';
 
-  private readonly requiredFormat = 'XXX';
+  private readonly requiredFormat = 'XXX.X';
 
   private minValue = 0;
 
@@ -1349,7 +1346,11 @@ export class HeadingFormat extends SubscriptionCollector implements DataEntryFor
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toFixed(0), this.unit);
+      throw getFormattedEntryOutOfRangeError(
+        this.minValue.toFixed(1).padStart(4, '0'),
+        this.maxValue.toFixed(1),
+        this.unit,
+      );
     } else {
       throw getFormattedFormatError(this.requiredFormat, this.unit);
     }
