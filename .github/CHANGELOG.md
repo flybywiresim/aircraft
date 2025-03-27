@@ -190,6 +190,7 @@
 1. [A380X/FMS] The (RNP) flag is now shown for approaches with only the missed approach segment as RNP AR on MSFS2024 - @tracernz (Mike)
 1. [Clock] Fixed chrono not rolling over to 00:00 when reaching 99:59 - @tracernz (Mike)
 1. [A380X/FWS] Fix fuel pump sensing logic for PARKING normal procedure - @flogross89 (floridude)
+1. [A380X/PRIM] Automatic THS trim after engine start or touch and go - @flogross89 (floridude)
 
 ## 0.12.0
 
