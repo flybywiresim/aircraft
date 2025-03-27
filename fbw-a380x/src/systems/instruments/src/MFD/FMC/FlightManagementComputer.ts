@@ -865,19 +865,21 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Done:
-        this.flightPlanService
-          .reset()
-          .then(() => {
-            this.fmgc.data.reset();
-            this.initSimVars();
-            this.deleteAllStoredWaypoints();
-            this.clearLatestFmsErrorMessage();
-            SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
-              this.mfdReference?.uiService.navigateTo('fms/data/status');
-              this.isReset.set(true);
-            });
-          })
-          .catch(console.error);
+        if (this.instance === FmcIndex.FmcA || this.instance === FmcIndex.FmcB) {
+          this.flightPlanService
+            .reset()
+            .then(() => {
+              this.fmgc.data.reset();
+              this.initSimVars();
+              this.deleteAllStoredWaypoints();
+              this.clearLatestFmsErrorMessage();
+              SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
+                this.mfdReference?.uiService.navigateTo('fms/data/status');
+                this.isReset.set(true);
+              });
+            })
+            .catch(console.error);
+        }
         break;
 
       default:
