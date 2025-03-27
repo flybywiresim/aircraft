@@ -696,6 +696,7 @@ export class FlightManagementComputer implements FmcInterface {
    * @param nextPhase New FmgcFlightPhase
    */
   onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
+    console.log(`Flight phase changed for FMC ${this.instance}: ${prevPhase} -> ${nextPhase}`);
     this.acInterface.updateConstraints();
     this.acInterface.updateManagedSpeed();
 
@@ -866,9 +867,14 @@ export class FlightManagementComputer implements FmcInterface {
 
       case FmgcFlightPhase.Done:
         if (this.instance === FmcIndex.FmcA || this.instance === FmcIndex.FmcB) {
+          console.log(`Attempting navigation for FMC ${this.instance}`);
           // Navigate to status page immediately for both FMCs
-          this.mfdReference?.uiService.navigateTo('fms/data/status');
-
+          if (this.mfdReference?.uiService) {
+            console.log(`MFD reference exists for FMC ${this.instance}`);
+            this.mfdReference.uiService.navigateTo('fms/data/status');
+          } else {
+            console.log(`No MFD reference for FMC ${this.instance}`);
+          }
           this.flightPlanService
             .reset()
             .then(() => {
