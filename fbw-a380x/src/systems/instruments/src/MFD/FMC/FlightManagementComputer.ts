@@ -866,6 +866,9 @@ export class FlightManagementComputer implements FmcInterface {
 
       case FmgcFlightPhase.Done:
         if (this.instance === FmcIndex.FmcA || this.instance === FmcIndex.FmcB) {
+          // Navigate to status page immediately for both FMCs
+          this.mfdReference?.uiService.navigateTo('fms/data/status');
+
           this.flightPlanService
             .reset()
             .then(() => {
@@ -874,7 +877,6 @@ export class FlightManagementComputer implements FmcInterface {
               this.deleteAllStoredWaypoints();
               this.clearLatestFmsErrorMessage();
               SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
-                this.mfdReference?.uiService.navigateTo('fms/data/status');
                 this.isReset.set(true);
               });
             })
