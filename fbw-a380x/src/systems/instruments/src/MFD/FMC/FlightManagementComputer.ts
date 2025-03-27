@@ -1104,7 +1104,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   async reset(): Promise<void> {
-    if (this.instance === FmcIndex.FmcA || this.instance === FmcIndex.FmcB) {
+    if (this.instance === FmcIndex.FmcA) {
       // FIXME reset ATSU when it is added to A380X
       // this.atsu.resetAtisAutoUpdate();
       this.wasReset = true;
