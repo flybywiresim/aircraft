@@ -50,7 +50,7 @@ enum ServiceButton {
   Gpu,
   FrontCargoDoor,
   BaggageTruck,
-  Main4Right,
+  Main5Right,
   CateringTruck,
 }
 
@@ -111,7 +111,8 @@ export const A380Services: React.FC = () => {
   // Ground Services
   const [main1LeftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 200);
   const [main2LeftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:2', 'Percent over 100', 200);
-  const [main4RightDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 200);
+  const [main4RightDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:7', 'Percent over 100', 200);
+  const [main5RightDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 200);
   const [upper1LeftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:10', 'Percent over 100', 200);
   const [frontCargoDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:16', 'Percent over 100', 200);
   const [fuelingActive] = useSimVar('A:INTERACTIVE POINT OPEN:18', 'Percent over 100', 200);
@@ -136,7 +137,7 @@ export const A380Services: React.FC = () => {
   // Service events
   const toggleMain1LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
   const toggleMain2LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 3);
-  const toggleMain4RightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 10);
+  const toggleMain5RightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 10);
   const toggleUpper1LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 11);
   const toggleJetBridgeAndStairs = () => {
     SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
@@ -293,9 +294,9 @@ export const A380Services: React.FC = () => {
         handleDoors(boarding3DoorButtonState, setBoarding3DoorButtonState);
         toggleUpper1LeftDoor();
         break;
-      case ServiceButton.Main4Right:
+      case ServiceButton.Main5Right:
         handleDoors(serviceDoorButtonState, setServiceDoorButtonState);
-        toggleMain4RightDoor();
+        toggleMain5RightDoor();
         break;
       case ServiceButton.FrontCargoDoor:
         handleDoors(cargo1DoorButtonState, setCargo1DoorButtonState);
@@ -338,7 +339,7 @@ export const A380Services: React.FC = () => {
           setCateringButtonState,
           serviceDoorButtonState,
           setServiceDoorButtonState,
-          main4RightDoorOpen,
+          main5RightDoorOpen,
         );
         toggleCateringTruck();
         break;
@@ -424,8 +425,8 @@ export const A380Services: React.FC = () => {
     simpleServiceListenerHandling(boarding2DoorButtonState, setBoarding2DoorButtonState, main2LeftDoorOpen);
     simpleServiceListenerHandling(boarding3DoorButtonState, setBoarding3DoorButtonState, upper1LeftDoorOpen);
     simpleServiceListenerHandling(cargo1DoorButtonState, setCargo1DoorButtonState, frontCargoDoorOpen);
-    simpleServiceListenerHandling(serviceDoorButtonState, setServiceDoorButtonState, main4RightDoorOpen);
-  }, [main1LeftDoorOpen, main2LeftDoorOpen, main4RightDoorOpen, upper1LeftDoorOpen, frontCargoDoorOpen]);
+    simpleServiceListenerHandling(serviceDoorButtonState, setServiceDoorButtonState, main5RightDoorOpen);
+  }, [main1LeftDoorOpen, main2LeftDoorOpen, main5RightDoorOpen, upper1LeftDoorOpen, frontCargoDoorOpen]);
 
   // Fuel
   useEffect(() => {
@@ -466,9 +467,9 @@ export const A380Services: React.FC = () => {
       setCateringButtonState,
       serviceDoorButtonState,
       setServiceDoorButtonState,
-      main4RightDoorOpen,
+      main5RightDoorOpen,
     );
-  }, [main4RightDoorOpen]);
+  }, [main5RightDoorOpen]);
 
   // Pushback or movement start --> disable buttons and close doors
   // Enable buttons if all have been disabled before
@@ -493,8 +494,8 @@ export const A380Services: React.FC = () => {
       if (upper1LeftDoorOpen === 1) {
         toggleUpper1LeftDoor();
       }
-      if (main4RightDoorOpen === 1) {
-        toggleMain4RightDoor();
+      if (main5RightDoorOpen === 1) {
+        toggleMain5RightDoor();
       }
       if (frontCargoDoorOpen === 1) {
         toggleFrontCargoDoor();
@@ -536,6 +537,7 @@ export const A380Services: React.FC = () => {
         main1LeftStatus={main1LeftDoorOpen >= 1.0}
         main2LeftStatus={main2LeftDoorOpen >= 1.0}
         main4RightStatus={main4RightDoorOpen >= 1.0}
+        main5RightStatus={main5RightDoorOpen >= 1.0}
         upper1LeftStatus={upper1LeftDoorOpen >= 1.0}
         className="inset-x-0 mx-auto h-full w-full text-theme-text"
       />
@@ -619,15 +621,6 @@ export const A380Services: React.FC = () => {
       </ServiceButtonWrapper>
 
       <ServiceButtonWrapper xl={900} y={620} className="">
-        {/* AFT DOOR */}
-        <GroundServiceButton
-          name={t('Ground.Services.DoorAft')}
-          state={serviceDoorButtonState}
-          onClick={() => handleButtonClick(ServiceButton.Main4Right)}
-        >
-          <DoorClosedFill size={36} />
-        </GroundServiceButton>
-
         {/* CATERING TRUCK */}
         <GroundServiceButton
           name={t('Ground.Services.CateringTruck')}
@@ -635,6 +628,15 @@ export const A380Services: React.FC = () => {
           onClick={() => handleButtonClick(ServiceButton.CateringTruck)}
         >
           <ArchiveFill size={36} />
+        </GroundServiceButton>
+
+        {/* AFT DOOR */}
+        <GroundServiceButton
+          name={t('Ground.Services.DoorAft')}
+          state={serviceDoorButtonState}
+          onClick={() => handleButtonClick(ServiceButton.Main5Right)}
+        >
+          <DoorClosedFill size={36} />
         </GroundServiceButton>
       </ServiceButtonWrapper>
 
@@ -689,6 +691,11 @@ export const A380Services: React.FC = () => {
         </div>
       )}
       {main4RightDoorOpen >= 1.0 && (
+        <div className={doorOpenCss} style={{ position: 'absolute', left: 700, right: 0, top: 500 }}>
+          OPEN
+        </div>
+      )}
+      {main5RightDoorOpen >= 1.0 && (
         <div className={doorOpenCss} style={{ position: 'absolute', left: 700, right: 0, top: 593 }}>
           OPEN
         </div>

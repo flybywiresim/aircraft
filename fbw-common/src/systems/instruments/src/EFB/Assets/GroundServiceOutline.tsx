@@ -426,12 +426,14 @@ export const A380GroundServiceOutline = ({
   main1LeftStatus,
   main2LeftStatus,
   main4RightStatus,
+  main5RightStatus,
   upper1LeftStatus,
 }: {
   className: string;
   main1LeftStatus: boolean;
   main2LeftStatus: boolean;
   main4RightStatus: boolean;
+  main5RightStatus: boolean;
   upper1LeftStatus: boolean;
 }) => (
   <svg
@@ -1357,7 +1359,7 @@ export const A380GroundServiceOutline = ({
           style={{
             stroke: '#6bbe45',
             strokeWidth: 2,
-            fill: 'none',
+            fill: main4RightStatus ? '#6bbe45' : 'none',
             strokeMiterlimit: 10,
           }}
         />
@@ -1379,7 +1381,7 @@ export const A380GroundServiceOutline = ({
           style={{
             stroke: '#6bbe45',
             strokeWidth: 2,
-            fill: main4RightStatus ? '#6bbe45' : 'none',
+            fill: main5RightStatus ? '#6bbe45' : 'none',
             strokeMiterlimit: 10,
           }}
         />
