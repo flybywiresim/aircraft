@@ -41,7 +41,9 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   private readonly trimPosition = ConsumerSubject.create(this.sub.on('trimPosition').whenChanged(), 0).map(
     (it) => it * MathUtils.RADIANS_TO_DEGREES,
   );
-  private readonly thsForText = this.trimPosition.map((it) => PitchTrimUtils.pitchTrimToCg(it).toFixed(1));
+  private readonly thsForText = this.trimPosition.map((it) =>
+    (Math.round(PitchTrimUtils.pitchTrimToCg(it) * 10) / 10).toFixed(1),
+  );
 
   private readonly rightWheelY = this.trimPosition.map((it) => (it + 2) * 31 + 23 - 400);
 
@@ -64,8 +66,8 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
     this.engFourRunning,
   );
 
-  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(1), 0);
-  private readonly cgPercentText = this.cgPercent.map((it) => it.toFixed(1));
+  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(2), 0);
+  private readonly cgPercentText = this.cgPercent.map((it) => (Math.round(it * 10) / 10).toFixed(1));
 
   private readonly greenHydPressurized = ConsumerSubject.create(this.sub.on('hydGreenSysPressurized'), false);
   private readonly yellowHydPressurized = ConsumerSubject.create(this.sub.on('hydYellowSysPressurized'), false);
