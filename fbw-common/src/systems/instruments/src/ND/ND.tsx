@@ -360,13 +360,17 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
   render(): VNode | null {
     return (
       <>
-        {/* Always visible layer for Chrono */}
+        {/* Always visible layer for Chrono and BTV */}
         <svg
           class="nd-svg nd-top-layer"
           viewBox="0 0 768 768"
           style="transform: rotateX(0deg); position: absolute; z-index: 1000;"
         >
           <Chrono bus={this.props.bus} forceVisible={true} />
+          {/* Add BTV message here so it's always visible */}
+          <Layer x={384} y={56}>
+            <text class="Green FontSmallest MiddleAlign">{this.btvMessageValue}</text>
+          </Layer>
         </svg>
 
         {/* OANS Mode */}
@@ -375,9 +379,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
               <WindIndicator bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
-              <Layer x={384} y={56}>
-                <text class="Green FontSmallest MiddleAlign">{this.btvMessageValue}</text>
-              </Layer>
             </svg>
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
@@ -396,9 +397,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         {/* ND Mode */}
         <div style={{ display: this.showOans.map((it) => (it ? 'none' : 'block')) }}>
           <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-            <Layer x={384} y={56}>
-              <text class="Green FontSmallest MiddleAlign">{this.btvMessageValue}</text>
-            </Layer>
             <RoseLSPage
               bus={this.props.bus}
               ref={this.roseLSPage}
