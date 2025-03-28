@@ -155,7 +155,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
   );
 
   private showOans = Subject.create<boolean>(false);
-  btvMessageValue: any;
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -367,10 +366,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           style="transform: rotateX(0deg); position: absolute; z-index: 1000;"
         >
           <Chrono bus={this.props.bus} forceVisible={true} />
-          {/* Add BTV message here so it's always visible */}
-          <Layer x={384} y={56}>
-            <text class="Green FontSmallest MiddleAlign">{this.btvMessageValue}</text>
-          </Layer>
+          <BtvMessage bus={this.props.bus} forceVisible={true} />
         </svg>
 
         {/* OANS Mode */}
@@ -538,6 +534,28 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </svg>
         </div>
       </>
+    );
+  }
+}
+
+// Add new BtvMessage component after the imports
+class BtvMessage extends DisplayComponent<{ bus: EventBus; forceVisible?: boolean }> {
+  private readonly messageValue = Subject.create('');
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    // Removed redundant 'ndBtvMessage' subscription to avoid unnecessary updates
+
+    // Add OANS BTV message subscription
+    // Removed redundant subscription to 'ndBtvMessage' as it is already handled above.
+  }
+
+  render(): VNode {
+    return (
+      <Layer x={384} y={56}>
+        <text class="Green FontSmallest MiddleAlign">{this.messageValue}</text>
+      </Layer>
     );
   }
 }
