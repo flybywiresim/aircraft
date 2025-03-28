@@ -1,0 +1,39 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-data-waypoint-input-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.mfd-data-waypoint-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 150px;
+}
+
+.mfd-data-latlong-text {
+  display: flex;
+  flex-direction: row;
+}
+
+.mfd-data-waypoint-stored-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 45px;
+}
+
+.mfd-data-waypoint-stored-ident-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.mfd-data-waypoint-list-container {
+  display: flex;
+  direction: row;
+}
