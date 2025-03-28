@@ -166,7 +166,7 @@ impl<'a> InitContext<'a> {
     }
 }
 
-impl<'a> ElectricalElementIdentifierProvider for InitContext<'a> {
+impl ElectricalElementIdentifierProvider for InitContext<'_> {
     fn next_electrical_identifier(&mut self) -> ElectricalElementIdentifier {
         self.electrical_identifier_provider
             .next_electrical_identifier()
@@ -541,7 +541,7 @@ impl<'a> SimulationToSimulatorVisitor<'a> {
         SimulationToSimulatorVisitor { writer }
     }
 }
-impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
+impl SimulationElementVisitor for SimulationToSimulatorVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.write(self.writer);
     }
@@ -562,7 +562,7 @@ impl<'a> SimulatorReader<'a> {
         }
     }
 }
-impl<'a> Reader for SimulatorReader<'a> {
+impl Reader for SimulatorReader<'_> {
     fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64 {
         self.simulator_read_writer.read(identifier)
     }
@@ -583,7 +583,7 @@ impl<'a> SimulatorWriter<'a> {
         }
     }
 }
-impl<'a> Writer for SimulatorWriter<'a> {
+impl Writer for SimulatorWriter<'_> {
     fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
         self.simulator_read_writer.write(identifier, value);
     }
