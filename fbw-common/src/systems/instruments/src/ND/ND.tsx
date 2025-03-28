@@ -361,8 +361,12 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     return (
       <>
         {/* Always visible layer for Chrono */}
-        <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-          <Chrono bus={this.props.bus} />
+        <svg
+          class="nd-svg nd-top-layer"
+          viewBox="0 0 768 768"
+          style="transform: rotateX(0deg); position: absolute; z-index: 1000;"
+        >
+          <Chrono bus={this.props.bus} forceVisible={true} />
         </svg>
 
         {/* OANS Mode */}
