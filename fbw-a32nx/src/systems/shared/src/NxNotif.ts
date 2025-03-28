@@ -2,6 +2,8 @@
  * NXNotif utility class to create a notification event and element
  */
 
+import { NotificationButton, NotificationParams } from '@flybywiresim/fbw-sdk';
+
 export class NXNotifManager {
   private notifications = [];
   constructor() {

@@ -18,7 +18,7 @@ export type NotificationParams = {
   closePopup: boolean;
 };
 
-class NotificationButton {
+export class NotificationButton {
   __Type: string;
   toGlobalFlow: boolean;
   close: boolean;
