@@ -32,7 +32,7 @@ import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
-import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { ConsumerValue, EventBus, Wait } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { A32NX_Util } from '../../../shared/src/A32NX_Util';
 
@@ -569,5 +569,12 @@ export class GuidanceController {
 
   get lastCrosstrackError(): NauticalMiles {
     return this.lnavDriver.lastXTE;
+  }
+
+  async disengageNavMode() {
+    await SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', false);
+    // Wait for FG to disengage NAV
+    await Wait.awaitDelay(300);
+    await SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
   }
 }
