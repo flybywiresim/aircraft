@@ -17,6 +17,7 @@ interface ButtonSelectionState {
   boarding2DoorButtonState: ServiceButtonState;
   boarding3DoorButtonState: ServiceButtonState;
   serviceDoorButtonState: ServiceButtonState;
+  serviceDoor2ButtonState: ServiceButtonState;
   cargo1DoorButtonState: ServiceButtonState;
   jetWayButtonState: ServiceButtonState;
   fuelTruckButtonState: ServiceButtonState;
@@ -32,6 +33,7 @@ let initialState: ButtonSelectionState = {
   boarding2DoorButtonState: ServiceButtonState.DISABLED,
   boarding3DoorButtonState: ServiceButtonState.DISABLED,
   serviceDoorButtonState: ServiceButtonState.DISABLED,
+  serviceDoor2ButtonState: ServiceButtonState.DISABLED,
   cargo1DoorButtonState: ServiceButtonState.DISABLED,
   fuelTruckButtonState: ServiceButtonState.DISABLED,
   gpuButtonState: ServiceButtonState.DISABLED,
@@ -60,6 +62,10 @@ const setInitialState = () => {
         ? ServiceButtonState.ACTIVE
         : ServiceButtonState.INACTIVE,
     serviceDoorButtonState:
+      SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0
+        ? ServiceButtonState.ACTIVE
+        : ServiceButtonState.INACTIVE,
+    serviceDoor2ButtonState:
       SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0
         ? ServiceButtonState.ACTIVE
         : ServiceButtonState.INACTIVE,
@@ -104,6 +110,9 @@ export const buttonsSlice = createSlice({
     setServiceDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
       state.serviceDoorButtonState = action.payload;
     },
+    setServiceDoor2ButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+      state.serviceDoor2ButtonState = action.payload;
+    },
     setCargo1DoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
       state.cargo1DoorButtonState = action.payload;
     },
@@ -133,6 +142,7 @@ export const {
   setBoarding2DoorButtonState,
   setBoarding3DoorButtonState,
   setServiceDoorButtonState,
+  setServiceDoor2ButtonState,
   setCargo1DoorButtonState,
   setJetWayButtonState,
   setFuelTruckButtonState,

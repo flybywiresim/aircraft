@@ -15,6 +15,7 @@ import {
   setBoarding2DoorButtonState,
   setBoarding3DoorButtonState,
   setServiceDoorButtonState,
+  setServiceDoor2ButtonState,
   setBaggageButtonState,
   setCargo1DoorButtonState,
   setCateringButtonState,
@@ -50,6 +51,7 @@ enum ServiceButton {
   Gpu,
   FrontCargoDoor,
   BaggageTruck,
+  Main4Right,
   Main5Right,
   CateringTruck,
 }
@@ -137,6 +139,7 @@ export const A380Services: React.FC = () => {
   // Service events
   const toggleMain1LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
   const toggleMain2LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 3);
+  const toggleMain4RightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 8);
   const toggleMain5RightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 10);
   const toggleUpper1LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 11);
   const toggleJetBridgeAndStairs = () => {
@@ -155,6 +158,7 @@ export const A380Services: React.FC = () => {
     boarding2DoorButtonState,
     boarding3DoorButtonState,
     serviceDoorButtonState,
+    serviceDoor2ButtonState,
     cargo1DoorButtonState,
     jetWayButtonState,
     fuelTruckButtonState,
@@ -294,8 +298,12 @@ export const A380Services: React.FC = () => {
         handleDoors(boarding3DoorButtonState, setBoarding3DoorButtonState);
         toggleUpper1LeftDoor();
         break;
-      case ServiceButton.Main5Right:
+      case ServiceButton.Main4Right:
         handleDoors(serviceDoorButtonState, setServiceDoorButtonState);
+        toggleMain4RightDoor();
+        break;
+      case ServiceButton.Main5Right:
+        handleDoors(serviceDoor2ButtonState, setServiceDoor2ButtonState);
         toggleMain5RightDoor();
         break;
       case ServiceButton.FrontCargoDoor:
@@ -339,7 +347,7 @@ export const A380Services: React.FC = () => {
           setCateringButtonState,
           serviceDoorButtonState,
           setServiceDoorButtonState,
-          main5RightDoorOpen,
+          main4RightDoorOpen,
         );
         toggleCateringTruck();
         break;
@@ -425,8 +433,16 @@ export const A380Services: React.FC = () => {
     simpleServiceListenerHandling(boarding2DoorButtonState, setBoarding2DoorButtonState, main2LeftDoorOpen);
     simpleServiceListenerHandling(boarding3DoorButtonState, setBoarding3DoorButtonState, upper1LeftDoorOpen);
     simpleServiceListenerHandling(cargo1DoorButtonState, setCargo1DoorButtonState, frontCargoDoorOpen);
-    simpleServiceListenerHandling(serviceDoorButtonState, setServiceDoorButtonState, main5RightDoorOpen);
-  }, [main1LeftDoorOpen, main2LeftDoorOpen, main5RightDoorOpen, upper1LeftDoorOpen, frontCargoDoorOpen]);
+    simpleServiceListenerHandling(serviceDoorButtonState, setServiceDoorButtonState, main4RightDoorOpen);
+    simpleServiceListenerHandling(serviceDoor2ButtonState, setServiceDoor2ButtonState, main5RightDoorOpen);
+  }, [
+    main1LeftDoorOpen,
+    main2LeftDoorOpen,
+    upper1LeftDoorOpen,
+    frontCargoDoorOpen,
+    main4RightDoorOpen,
+    main5RightDoorOpen,
+  ]);
 
   // Fuel
   useEffect(() => {
@@ -467,9 +483,9 @@ export const A380Services: React.FC = () => {
       setCateringButtonState,
       serviceDoorButtonState,
       setServiceDoorButtonState,
-      main5RightDoorOpen,
+      main4RightDoorOpen,
     );
-  }, [main5RightDoorOpen]);
+  }, [main4RightDoorOpen]);
 
   // Pushback or movement start --> disable buttons and close doors
   // Enable buttons if all have been disabled before
@@ -479,6 +495,7 @@ export const A380Services: React.FC = () => {
       dispatch(setBoarding2DoorButtonState(ServiceButtonState.DISABLED));
       dispatch(setBoarding3DoorButtonState(ServiceButtonState.DISABLED));
       dispatch(setServiceDoorButtonState(ServiceButtonState.DISABLED));
+      dispatch(setServiceDoor2ButtonState(ServiceButtonState.DISABLED));
       dispatch(setCargo1DoorButtonState(ServiceButtonState.DISABLED));
       dispatch(setJetWayButtonState(ServiceButtonState.DISABLED));
       dispatch(setFuelTruckButtonState(ServiceButtonState.DISABLED));
@@ -494,6 +511,9 @@ export const A380Services: React.FC = () => {
       if (upper1LeftDoorOpen === 1) {
         toggleUpper1LeftDoor();
       }
+      if (main4RightDoorOpen === 1) {
+        toggleMain4RightDoor();
+      }
       if (main5RightDoorOpen === 1) {
         toggleMain5RightDoor();
       }
@@ -506,6 +526,7 @@ export const A380Services: React.FC = () => {
         boarding2DoorButtonState,
         boarding3DoorButtonState,
         serviceDoorButtonState,
+        serviceDoor2ButtonState,
         cargo1DoorButtonState,
         cateringButtonState,
         jetWayButtonState,
@@ -519,6 +540,7 @@ export const A380Services: React.FC = () => {
       dispatch(setBoarding2DoorButtonState(ServiceButtonState.INACTIVE));
       dispatch(setBoarding3DoorButtonState(ServiceButtonState.INACTIVE));
       dispatch(setServiceDoorButtonState(ServiceButtonState.INACTIVE));
+      dispatch(setServiceDoor2ButtonState(ServiceButtonState.INACTIVE));
       dispatch(setCargo1DoorButtonState(ServiceButtonState.INACTIVE));
       dispatch(setJetWayButtonState(ServiceButtonState.INACTIVE));
       dispatch(setFuelTruckButtonState(ServiceButtonState.INACTIVE));
@@ -630,10 +652,19 @@ export const A380Services: React.FC = () => {
           <ArchiveFill size={36} />
         </GroundServiceButton>
 
-        {/* AFT DOOR */}
+        {/* AFT DOOR M4R */}
         <GroundServiceButton
           name={t('Ground.Services.DoorAft')}
           state={serviceDoorButtonState}
+          onClick={() => handleButtonClick(ServiceButton.Main4Right)}
+        >
+          <DoorClosedFill size={36} />
+        </GroundServiceButton>
+
+        {/* AFT DOOR M5R */}
+        <GroundServiceButton
+          name={t('Ground.Services.DoorAft')}
+          state={serviceDoor2ButtonState}
           onClick={() => handleButtonClick(ServiceButton.Main5Right)}
         >
           <DoorClosedFill size={36} />
