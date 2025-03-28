@@ -12,7 +12,6 @@ export type NotificationParams = {
   contentTemplate: string;
   id: string;
   title: string;
-  // time: number;
   description: string;
   duration: number;
   closePopupTitle: string;
