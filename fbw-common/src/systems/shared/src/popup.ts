@@ -169,6 +169,7 @@ export class PopUpDialog {
     }
     if (message) {
       this.params.contentData = message;
+      this.params.description = message;
     }
     if (style) {
       this.params.style = style;
@@ -180,7 +181,7 @@ export class PopUpDialog {
         yes();
       });
     }
-    this.params.buttons = [new NotificationButton('TT:MENU.OK', `A32NX_POP_${this.params.id}_YES`)];
+    this.params.buttons = [new NotificationButton('TT:MENU.OK', `FBW_POP_${this.params.id}_YES`)];
 
     if (!this.popupListener) {
       this.popupListener = RegisterViewListener('JS_LISTENER_POPUP', this._showPopUp.bind(null, this.params));
