@@ -1,11 +1,11 @@
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, PopUpDialog, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FMCMainDisplay } from './A32NX_FMCMainDisplay';
 import { recallMessageById } from '@fmgc/components';
 import { Keypad } from './A320_Neo_CDU_Keypad';
-import { NXNotifManager, NXPopUp } from '@shared/NxNotif';
+import { NXNotifManager } from '@shared/NxNotif';
 import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage } from '../messages/NXSystemMessages';
 import { McduServerClient } from '@simbridge/index';
 import { ScratchpadDataLink, ScratchpadDisplay } from './A320_Neo_CDU_Scratchpad';
@@ -408,7 +408,7 @@ export class A320_Neo_CDU_MainDisplay
     const onlineFeaturesStatus = NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'UNKNOWN');
 
     if (onlineFeaturesStatus === 'UNKNOWN') {
-      new NXPopUp().showPopUp(
+      new PopUpDialog().showPopUp(
         'TELEX CONFIGURATION',
         'You have not yet configured the telex option. Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex. Would you like to enable telex?',
         'small',
