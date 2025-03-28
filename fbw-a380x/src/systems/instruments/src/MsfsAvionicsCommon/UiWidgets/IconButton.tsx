@@ -27,6 +27,7 @@ interface IconButtonProps extends ComponentProps {
     | 'ecl-single-up'
     | 'ecl-single-down'
     | 'ecl-check'
+    | 'trashbin'
     | ''
     | null;
   disabled?: Subscribable<boolean>;
@@ -201,6 +202,17 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
                     69 94 100 128 66 70 60 79 -13 21z"
               />
             </g>
+          </svg>
+        )}
+        {this.props.icon === 'trashbin' && (
+          <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 36 36" fill="none">
+            <polyline points="6,10 6,8, 9,5 27,5 30,8 30,10 6,10" strokeWidth="2" stroke="white" fill="none" />
+            <line x1="8" y1="10" x2="8" y2="30" strokeWidth="2" stroke="white" fill="none" />
+            <line x1="13" y1="10" x2="13" y2="30" strokeWidth="2" stroke="white" fill="none" />
+            <line x1="18" y1="10" x2="18" y2="30" strokeWidth="2" stroke="white" fill="none" />
+            <line x1="23" y1="10" x2="23" y2="30" strokeWidth="2" stroke="white" fill="none" />
+            <line x1="28" y1="10" x2="28" y2="30" strokeWidth="2" stroke="white" fill="none" />
+            <line x1="8" y1="30" x2="28" y2="30" strokeWidth="2" stroke="white" fill="none" />
           </svg>
         )}
       </span>
