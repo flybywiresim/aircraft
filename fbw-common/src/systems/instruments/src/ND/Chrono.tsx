@@ -21,6 +21,7 @@ enum ChronoState {
 
 export interface ChronoProps extends ComponentProps {
   bus: EventBus;
+  forceVisible?: boolean; // Add new prop to force visibility
 }
 
 export class Chrono extends DisplayComponent<ChronoProps> {
@@ -93,8 +94,16 @@ export class Chrono extends DisplayComponent<ChronoProps> {
     return (
       <g
         class="chrono"
-        visibility={this.state.map((state) => (state === ChronoState.Hidden ? 'hidden' : 'inherit'))}
-        style={{ 'margin-right': this.timeMargin.map((v) => (v ? '0.01px' : '0px')) }}
+        // Modify visibility logic to handle forced visibility
+        visibility={
+          this.props.forceVisible
+            ? 'inherit'
+            : this.state.map((state) => (state === ChronoState.Hidden ? 'hidden' : 'inherit'))
+        }
+        style={{
+          'margin-right': this.timeMargin.map((v) => (v ? '0.01px' : '0px')),
+          'z-index': '9999', // Ensure chrono stays on top
+        }}
       >
         <rect x={0} y={632} width={104} height={30} class="Grey Fill" />
         <text x={8} y={652} font-size={24} class="Green">
