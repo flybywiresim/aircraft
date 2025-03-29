@@ -62,6 +62,8 @@ export class EfisSymbols<T extends number> {
 
   private lastEfisOption = 0;
 
+  private lastPpos: Coordinates = { lat: 0, long: 0 };
+
   private lastMrp: Coordinates = { lat: 0, long: 0 };
 
   private lastTrueHeading: number = -1;
@@ -188,6 +190,10 @@ export class EfisSymbols<T extends number> {
     const mrpChanged = distanceTo(this.lastMrp, mapReferencePoint) > 2;
     if (mrpChanged) {
       this.lastMrp = mapReferencePoint;
+    }
+    const pposChanged = distanceTo(this.lastPpos, ppos) > 2;
+    if (pposChanged) {
+      this.lastPpos = ppos;
     }
     const trueHeadingChanged = MathUtils.diffAngle(trueHeading, this.lastTrueHeading) > 2;
     if (trueHeadingChanged) {
