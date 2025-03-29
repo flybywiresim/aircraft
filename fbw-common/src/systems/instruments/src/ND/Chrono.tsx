@@ -21,6 +21,7 @@ enum ChronoState {
 
 export interface ChronoProps extends ComponentProps {
   bus: EventBus;
+  forceVisible?: boolean; // Add new prop to force visibility
 }
 
 export class Chrono extends DisplayComponent<ChronoProps> {
@@ -93,8 +94,13 @@ export class Chrono extends DisplayComponent<ChronoProps> {
     return (
       <g
         class="chrono"
+        // Only show when running/stopped or in OANS mode
         visibility={this.state.map((state) => (state === ChronoState.Hidden ? 'hidden' : 'inherit'))}
-        style={{ 'margin-right': this.timeMargin.map((v) => (v ? '0.01px' : '0px')) }}
+        style={{
+          'margin-right': this.timeMargin.map((v) => (v ? '0.01px' : '0px')),
+          'z-index': '9999',
+          position: 'absolute', // Ensure proper layering
+        }}
       >
         <rect x={0} y={632} width={104} height={30} class="Grey Fill" />
         <text x={8} y={652} font-size={24} class="Green">
