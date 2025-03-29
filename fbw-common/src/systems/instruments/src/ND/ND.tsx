@@ -783,15 +783,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
             {this.approachMessageValue}
           </text>
         </Layer>
-        <Layer
-          x={384}
-          y={56}
-          visible={MappedSubject.create(
-            ([btv, trueRef]) => btv !== '' && !trueRef,
-            this.btvMessageValue,
-            this.trueRefVisible,
-          )}
-        >
+        <Layer x={384} y={56} visible={MappedSubject.create(([btv]) => btv !== '', this.btvMessageValue)}>
           {/* TODO verify */}
           <text class="Green FontSmallest MiddleAlign">{this.btvMessageValue}</text>
         </Layer>
