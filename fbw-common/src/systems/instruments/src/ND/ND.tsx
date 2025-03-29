@@ -364,8 +364,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
               <WindIndicator bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
-              <Chrono bus={this.props.bus} />
-              <BtvRunwayInfo bus={this.props.bus} />
             </svg>
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
