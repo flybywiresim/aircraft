@@ -20,6 +20,7 @@ import {
   NearbyFacilityType,
   isNearbyVhfFacility,
   isMsfs2024,
+  WaypointConstraintType,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -39,10 +40,11 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
+import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { getAlongTrackDistanceTo } from '@fmgc/guidance/lnav/CommonGeometry';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -414,7 +416,7 @@ export class EfisSymbols<T extends number> {
     // (currently sequences with guidance which is too early)
     // eslint-disable-next-line no-lone-blocks
 
-    // ALTN
+    // ACTIVE
     if (this.flightPlanService.hasActive && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)) {
       const symbols = this.getFlightPlanSymbols(
         false,
@@ -429,6 +431,7 @@ export class EfisSymbols<T extends number> {
         editArea,
         formatConstraintAlt,
         formatConstraintSpeed,
+        this.guidanceController.vnavDriver.mcduProfile,
       );
 
       for (const symbol of symbols) {
@@ -549,6 +552,7 @@ export class EfisSymbols<T extends number> {
         type: pwp.efisSymbolFlag,
         // When in HDG/TRK, this defines where on the track line the PWP lies
         distanceFromAirplane: pwp.distanceFromStart,
+        predictedAltitude: pwp.flightPlanInfo?.altitude ?? undefined,
       });
     }
 
@@ -602,6 +606,7 @@ export class EfisSymbols<T extends number> {
     editArea: EditArea,
     formatConstraintAlt: (alt: number, descent: boolean, prefix?: string) => string,
     formatConstraintSpeed: (speed: number, prefix?: string) => string,
+    predictions?: NavGeometryProfile,
   ): NdSymbol[] {
     const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
     const isLatAutoControlArmed = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
@@ -781,13 +786,30 @@ export class EfisSymbols<T extends number> {
         constraints.push(`${Math.round(leg.calculated.cumulativeDistanceToEndWithTransitions)}NM`);
       }
 
+      const distanceFromAirplane =
+        predictions && predictions.waypointPredictions.has(i)
+          ? predictions.waypointPredictions.get(i).distanceFromAircraft
+          : undefined;
+
+      const predictedAltitude =
+        predictions && predictions.waypointPredictions.has(i)
+          ? predictions.waypointPredictions.get(i).altitude
+          : undefined;
+
       ret.push({
         databaseId,
         ident: leg.ident,
         location,
         type,
         constraints: constraints.length > 0 ? constraints : undefined,
+        altConstraint: leg.altitudeConstraint,
+        isAltitudeConstraintMet:
+          predictions && predictions.waypointPredictions.has(i)
+            ? predictions.waypointPredictions.get(i).isAltitudeConstraintMet
+            : true,
         direction,
+        distanceFromAirplane: distanceFromAirplane,
+        predictedAltitude: predictedAltitude,
       });
     }
 
@@ -827,6 +849,11 @@ export class EfisSymbols<T extends number> {
 
       if (runway) {
         if (this.isWithinEditArea(runway.startLocation, mapReferencePoint, mapOrientation, editArea)) {
+          const runwayEndCoordinates = placeBearingDistance(
+            runway.startLocation,
+            runway.bearing,
+            runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
+          );
           ret.push({
             databaseId,
             ident: runway.ident,
@@ -834,6 +861,8 @@ export class EfisSymbols<T extends number> {
             direction: runway.bearing,
             length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
             type: NdSymbolTypeFlags.Runway,
+            distanceFromAirplane: -getAlongTrackDistanceTo(runway.startLocation, runwayEndCoordinates, this.lastPpos),
+            predictedAltitude: runway.thresholdLocation.alt,
           });
         }
       } else if (this.isWithinEditArea(airport.location, mapReferencePoint, mapOrientation, editArea)) {
@@ -842,6 +871,8 @@ export class EfisSymbols<T extends number> {
           ident: airport.ident,
           location: airport.location,
           type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
+          distanceFromAirplane: distanceTo(this.lastPpos, airport.location),
+          predictedAltitude: airport.location.alt,
         });
       }
     }

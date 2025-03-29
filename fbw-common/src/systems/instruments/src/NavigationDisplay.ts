@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from 'msfs-geo';
+import { AltitudeConstraint } from '../../fmgc/constraint';
 
 export type EfisSide = 'L' | 'R';
 
@@ -78,14 +79,24 @@ export enum NdSymbolTypeFlags {
   MagentaColor = 1 << 31,
 }
 
+export enum EfisRecomputingReason {
+  None,
+  RangeChange,
+  ModeChange,
+  ModeAndRangeChange,
+}
+
 export interface NdSymbol {
   databaseId: string;
   ident: string;
-  location: Coordinates;
+  location: Coordinates | null;
+  predictedAltitude?: number;
   direction?: number; // true
   length?: number; // nautical miles
   type: NdSymbolTypeFlags;
   constraints?: string[];
+  altConstraint?: AltitudeConstraint;
+  isAltitudeConstraintMet?: boolean;
   radials?: number[];
   radii?: number[];
   distanceFromAirplane?: number;
