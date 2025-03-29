@@ -33,6 +33,7 @@ import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotA
 
 import './pages/common/style.scss';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { NXSystemMessages } from './shared/NXSystemMessages';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -227,6 +228,15 @@ export class MfdComponent
 
             switch (key) {
               case 'DIR':
+                if (this.props.fmcService.master?.flightPlanService.hasTemporary) {
+                  this.props.fmcService.master?.addMessageToQueue(
+                    NXSystemMessages.insertOrEraseTmpPlan,
+                    undefined,
+                    undefined,
+                  );
+                  break;
+                }
+
                 this.uiService.navigateTo('fms/active/f-pln-direct-to');
                 break;
               case 'PERF':
