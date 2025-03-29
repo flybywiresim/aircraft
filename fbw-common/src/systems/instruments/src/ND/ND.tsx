@@ -18,7 +18,6 @@ import { GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
-import { RwyAheadAdvisory } from './shared/RwyAheadAdvisory';
 import { SelectedHeadingBug } from './pages/arc/SelectedHeadingBug';
 import { VnavStatus } from './shared/VnavStatus';
 import { LnavStatus } from './shared/LnavStatus';
@@ -377,7 +376,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
             <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
             <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
-            <RwyAheadAdvisory bus={this.props.bus} />
           </svg>
         </div>
         <div style={{ display: this.showOans.map((it) => (it ? 'none' : 'block')) }}>
