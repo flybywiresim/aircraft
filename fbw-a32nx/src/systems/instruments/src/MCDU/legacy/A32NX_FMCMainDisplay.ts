@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  A320EfisNdRangeValue,
   a320EfisRangeSettings,
   Arinc429OutputWord,
   Arinc429SignStatusMatrix,
@@ -203,7 +204,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public zeroFuelWeight?: number;
   public zeroFuelWeightMassCenter?: number;
   private activeWpIdx = undefined;
-  private efisSymbols = undefined;
+  private efisSymbolsLeft?: EfisSymbols<A320EfisNdRangeValue>;
+  private efisSymbolsRight?: EfisSymbols<A320EfisNdRangeValue>;
   public groundTempAuto?: number = undefined;
   public groundTempPilot?: number = undefined;
   /**
@@ -357,19 +359,30 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       A320AircraftConfig,
     );
     this.navigation = new Navigation(this.bus, this.currFlightPlanService);
-    this.efisSymbols = new EfisSymbols(
+    this.efisSymbolsLeft = new EfisSymbols(
       this.bus,
+      'L',
       this.guidanceController,
       this.currFlightPlanService,
       this.navigation.getNavaidTuner(),
-      this.efisInterfaces,
+      this.efisInterfaces.L,
+      a320EfisRangeSettings,
+    );
+    this.efisSymbolsRight = new EfisSymbols(
+      this.bus,
+      'R',
+      this.guidanceController,
+      this.currFlightPlanService,
+      this.navigation.getNavaidTuner(),
+      this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
 
     initComponents(this.navigation, this.guidanceController, this.flightPlanService);
 
     this.guidanceController.init();
-    this.efisSymbols.init();
+    this.efisSymbolsLeft.init();
+    this.efisSymbolsRight.init();
     this.navigation.init();
 
     this.tempCurve = new Avionics.Curve();
@@ -699,9 +712,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.guidanceController.update(_deltaTime);
     }
 
-    if (this.efisSymbols) {
-      this.efisSymbols.update(_deltaTime);
-    }
+    this.efisSymbolsLeft?.update();
+    this.efisSymbolsRight.update();
+
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
   }
 
