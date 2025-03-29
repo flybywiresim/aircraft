@@ -281,9 +281,9 @@ export class EfisTawsBridge implements Instrument {
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
   private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_path'), []);
 
-  private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_1'));
-  private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_2'));
-  private readonly track3Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_true_track_3'));
+  private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_1'));
+  private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_2'));
+  private readonly track3Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_3'));
   private readonly validTrack = MappedSubject.create(
     ([t1, t2, t3]) => {
       if (t1.isNormalOperation()) {
@@ -300,9 +300,9 @@ export class EfisTawsBridge implements Instrument {
     this.track3Word,
   );
 
-  private readonly ir1MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_maint_word_1'));
-  private readonly ir2MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_maint_word_2'));
-  private readonly ir3MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_ir_maint_word_3'));
+  private readonly ir1MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_maint_word_1'));
+  private readonly ir2MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_maint_word_2'));
+  private readonly ir3MaintWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_maint_word_3'));
   private readonly validIrMaintWord = MappedSubject.create(
     ([t1, t2, t3]) => {
       if (t1.isNormalOperation()) {
