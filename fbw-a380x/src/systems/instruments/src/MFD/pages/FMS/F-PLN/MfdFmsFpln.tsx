@@ -35,6 +35,7 @@ import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpl
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { NXSystemMessages } from '../../../shared/NXSystemMessages';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -835,6 +836,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     return this.lineData.length - this.renderedLineData.length;
   }
 
+  private navigateDirTo(): void {
+    if (this.props.fmcService.master?.flightPlanService.hasTemporary) {
+      this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.insertOrEraseTmpPlan, undefined, undefined);
+      return;
+    }
+
+    this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`);
+  }
+
   render(): VNode {
     return (
       <>
@@ -1056,15 +1066,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
               ] as ButtonMenuItem[])}
             />
-            <Button
-              label="DIR TO"
-              onClick={() =>
-                this.props.mfd.uiService.navigateTo(
-                  `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`,
-                )
-              }
-              buttonStyle="margin-right: 5px;"
-            />
+            <Button label="DIR TO" onClick={() => this.navigateDirTo()} buttonStyle="margin-right: 5px;" />
           </div>
           {/* end page content */}
         </div>
