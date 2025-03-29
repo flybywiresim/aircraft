@@ -371,7 +371,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
         {/* OANS Mode */}
         <div style={{ display: this.showOans.map((it) => (it ? 'block' : 'none')) }}>
-          <BtvRunwayInfo bus={this.props.bus} forceVisible={true} />
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'none' : 'block')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
               <WindIndicator bus={this.props.bus} />
@@ -393,7 +392,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
         {/* ND Mode */}
         <div style={{ display: this.showOans.map((it) => (it ? 'none' : 'block')) }}>
-          <BtvRunwayInfo bus={this.props.bus} />
           <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
             <RoseLSPage
               bus={this.props.bus}
