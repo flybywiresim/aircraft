@@ -79,11 +79,11 @@ struct WingTankLimits {
     inner_tank_d: f64,
     inner_tank_g: f64,
     mid_tank_f: f64,
-    outer_feed_final_ratio: f64,
-    inner_feed_final_ratio: f64,
-    outer_tank_final_ratio: f64,
-    mid_tank_final_ratio: f64,
-    inner_tank_final_ratio: f64,
+    outer_feed_tank_size: f64,
+    inner_feed_tank_size: f64,
+    outer_tank_tank_size: f64,
+    mid_tank_tank_size: f64,
+    inner_tank_tank_size: f64,
 }
 
 #[derive(Deserialize)]
@@ -428,6 +428,12 @@ impl RefuelApplication {
         let inner_feed_e = Mass::new::<kilogram>(self.wing_tank_values.limits.inner_feed_e);
         let total_feed_e = outer_feed_e * 2. + inner_feed_e * 2.;
 
+        let total_wing_tank_size = 2. * self.wing_tank_values.limits.outer_feed_tank_size
+            + 2. * self.wing_tank_values.limits.inner_feed_tank_size
+            + 2. * self.wing_tank_values.limits.outer_tank_tank_size
+            + 2. * self.wing_tank_values.limits.mid_tank_tank_size
+            + 2. * self.wing_tank_values.limits.inner_tank_tank_size;
+
         let outer_feed = match wing_fuel {
             x if x <= a => wing_fuel / 4.,
             x if x <= b => feed_a,
@@ -436,7 +442,9 @@ impl RefuelApplication {
             x if x <= e => feed_c + (wing_fuel - d) * (outer_feed_e / total_feed_e),
             x if x <= h => outer_feed_e,
             _ => {
-                outer_feed_e + (wing_fuel - h) * self.wing_tank_values.limits.outer_feed_final_ratio
+                outer_feed_e
+                    + (wing_fuel - h) * self.wing_tank_values.limits.outer_feed_tank_size
+                        / total_wing_tank_size
             }
         };
 
@@ -448,7 +456,9 @@ impl RefuelApplication {
             x if x <= e => feed_c + (wing_fuel - d) * (inner_feed_e / total_feed_e),
             x if x <= h => inner_feed_e,
             _ => {
-                inner_feed_e + (wing_fuel - h) * self.wing_tank_values.limits.inner_feed_final_ratio
+                inner_feed_e
+                    + (wing_fuel - h) * self.wing_tank_values.limits.inner_feed_tank_size
+                        / total_wing_tank_size
             }
         };
 
@@ -461,7 +471,9 @@ impl RefuelApplication {
             x if x <= g => outer_tank_b,
             x if x <= h => outer_tank_b + (wing_fuel - g) / 2.,
             _ => {
-                outer_tank_h + (wing_fuel - h) * self.wing_tank_values.limits.outer_tank_final_ratio
+                outer_tank_h
+                    + (wing_fuel - h) * self.wing_tank_values.limits.outer_tank_tank_size
+                        / total_wing_tank_size
             }
         };
 
@@ -475,7 +487,9 @@ impl RefuelApplication {
             x if x <= g => inner_tank_d + (wing_fuel - f) / 2.,
             x if x <= h => inner_tank_g,
             _ => {
-                inner_tank_g + (wing_fuel - h) * self.wing_tank_values.limits.inner_tank_final_ratio
+                inner_tank_g
+                    + (wing_fuel - h) * self.wing_tank_values.limits.inner_tank_tank_size
+                        / total_wing_tank_size
             }
         };
 
@@ -485,7 +499,11 @@ impl RefuelApplication {
             x if x <= e => Mass::default(),
             x if x <= f => (wing_fuel - e) / 2.,
             x if x <= h => mid_tank_f,
-            _ => mid_tank_f + (wing_fuel - h) * self.wing_tank_values.limits.mid_tank_final_ratio,
+            _ => {
+                mid_tank_f
+                    + (wing_fuel - h) * self.wing_tank_values.limits.mid_tank_tank_size
+                        / total_wing_tank_size
+            }
         };
 
         [
