@@ -32,7 +32,7 @@ export abstract class OitFooter extends DisplayComponent<OiFooterHeaderProps> {
   render(): VNode {
     return (
       <div class="oit-header-row">
-        <IconButton icon={'single-left'} containerStyle="width: 60px; height: 50px;" />
+        <IconButton icon={'single-left'} containerStyle="width: 60px; height: 50px; padding: 17.5px;" />
         <Button
           label={'FLT OPS STS'}
           onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
@@ -49,7 +49,7 @@ export abstract class OitFooter extends DisplayComponent<OiFooterHeaderProps> {
           buttonStyle="width: 225px; font-size: 28px; height: 50px;"
         />
         <div style="flex-grow: 1" />
-        <IconButton icon={'single-right'} containerStyle="width: 60px; height: 50px;" />
+        <IconButton icon={'single-right'} containerStyle="width: 60px; height: 50px; padding: 17.5px;" />
       </div>
     );
   }
