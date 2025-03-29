@@ -6,7 +6,7 @@ import { FSComponent, DisplayComponent, VNode, MappedSubject, ConsumerSubject } 
 import { Arinc429LocalVarConsumerSubject, ArincEventBus, BtvData, FmsOansData, FmsData } from '@flybywiresim/fbw-sdk';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 
-export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
+export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus; forceVisible?: boolean }> {
   private readonly sub = this.props.bus.getArincSubscriber<FmsOansData & FmsData & BtvData>();
 
   private readonly fmsRwyIdent = ConsumerSubject.create(this.sub.on('fmsLandingRunway'), null);
@@ -67,7 +67,7 @@ export class BtvRunwayInfo extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode | null {
     return (
       <>
-        <g visibility={this.runwayIdent.map((it) => (it ? 'visible' : 'hidden'))}>
+        <g visibility={this.props.forceVisible ? 'visible' : this.runwayIdent.map((it) => (it ? 'visible' : 'hidden'))}>
           <Layer x={2} y={54}>
             <text x={0} y={0} class="White FontSmallest">
               RWY
