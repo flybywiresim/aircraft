@@ -62,6 +62,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private tdReached = false;
 
+  private autoBrakeActive = false;
+
   private tcasRaInhibited = Subject.create(false);
 
   private trkFpaDeselected = Subject.create(false);
@@ -361,10 +363,19 @@ class Row2 extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribabl
 
 class A2Cell extends DisplayComponent<{ bus: EventBus }> {
   private text = Subject.create('');
+  private autoBrakeActive = false;
 
   private className = Subject.create('FontMediumSmaller MiddleAlign Cyan');
 
   private autoBrkRef = FSComponent.createRef<SVGTextElement>();
+
+  private handleAutobrakeMode() {
+    if (this.autoBrakeActive) {
+      this.className.set('FontMediumSmaller MiddleAlign Cyan');
+    } else {
+      this.className.set('FontMediumSmaller MiddleAlign Grey');
+    }
+  }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -403,12 +414,9 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
     sub
       .on('autoBrakeActive')
       .whenChanged()
-      .handle((am) => {
-        if (am) {
-          this.autoBrkRef.instance.style.visibility = 'hidden';
-        } else {
-          this.autoBrkRef.instance.style.visibility = 'visible';
-        }
+      .handle((a) => {
+        this.autoBrakeActive = a;
+        this.handleAutobrakeMode();
       });
 
     sub
@@ -577,7 +585,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         this.displayModeChangedPath();
         break;
       case 12:
-        text = '<text  class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+        text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
         this.displayModeChangedPath();
         break;
       case 13:
@@ -695,12 +703,22 @@ interface A3CellProps extends CellProps {
 
 class A3Cell extends DisplayComponent<A3CellProps> {
   private classSub = Subject.create('');
+  private autoBrakeActive = false;
 
   private textSub = Subject.create('');
 
   private autobrakeMode = 0;
 
   private AB3Message = false;
+
+  private handleAutobrakeMode() {
+    if (this.autobrakeMode === 6 && !this.AB3Message && !this.autoBrakeActive) {
+      this.textSub.set('BRK RTO');
+      this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
+    } else {
+      this.textSub.set('');
+    }
+  }
 
   private onUpdateAthrModeMessage(message: number) {
     let text: string = '';
@@ -732,15 +750,6 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
     this.textSub.set(text);
     this.classSub.set(`FontMedium MiddleAlign ${className}`);
-  }
-
-  private handleAutobrakeMode() {
-    if (this.autobrakeMode === 6 && !this.AB3Message) {
-      this.textSub.set('BRK RTO');
-      this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
-    } else {
-      this.textSub.set('');
-    }
   }
 
   onAfterRender(node: VNode): void {
