@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { FC, useContext, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import {
@@ -13,6 +13,7 @@ import {
   ConfigWeatherMap,
   LandingFlapsConfig,
   LandingRunwayConditions,
+  MathUtils,
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
@@ -25,6 +26,14 @@ import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
+import {
+  isValidIcao,
+  isWindMagnitudeAndDirection,
+  isWindMagnitudeOnly,
+  WIND_MAGNITUDE_AND_DIR_REGEX,
+  WIND_MAGNITUDE_ONLY_REGEX,
+} from '../Data/Utils';
+import { getAirportMagVar, getRunways } from '../Data/Runways';
 
 interface OutputDisplayProps {
   label: string;
@@ -69,21 +78,24 @@ export const LandingWidget = () => {
 
   const {
     icao,
+    availableRunways,
+    selectedRunwayIndex,
+    runwayHeading,
+    runwayLength,
+    elevation,
+    slope,
     windDirection,
     windMagnitude,
+    windEntry,
+    temperature,
+    pressure,
     weight,
-    runwayHeading,
+    overweightProcedure,
     approachSpeed,
     flaps,
     runwayCondition,
     reverseThrust,
     autoland,
-    altitude,
-    slope,
-    temperature,
-    overweightProcedure,
-    pressure,
-    runwayLength,
     maxAutobrakeLandingDist,
     mediumAutobrakeLandingDist,
     lowAutobrakeLandingDist,
@@ -92,6 +104,13 @@ export const LandingWidget = () => {
   } = useAppSelector((state) => state.performance.landing);
 
   const { arrivingAirport, arrivingMetar } = useAppSelector((state) => state.simbrief.data);
+
+  useEffect(() => {
+    // in case of head- or tailwind entry only, the runway heading is used to set the wind direction
+    if (windEntry?.length) {
+      handleWindChange(windEntry);
+    }
+  }, [runwayHeading]);
 
   const handleCalculateLanding = (): void => {
     if (!areInputsValid()) return;
@@ -104,7 +123,7 @@ export const LandingWidget = () => {
       windMagnitude ?? 0,
       runwayHeading ?? 0,
       reverseThrust,
-      altitude ?? 0,
+      elevation ?? 0,
       temperature ?? 0,
       slope ?? 0,
       overweightProcedure,
@@ -139,8 +158,21 @@ export const LandingWidget = () => {
     );
   };
 
+  const clearResult = () => {
+    dispatch(
+      setLandingValues({
+        maxAutobrakeLandingDist: 0,
+        mediumAutobrakeLandingDist: 0,
+        lowAutobrakeLandingDist: 0,
+        runwayVisualizationLabels: [],
+      }),
+    );
+  };
+
   const syncValuesWithApiMetar = async (icao: string): Promise<void> => {
-    if (!isValidIcao(icao)) return;
+    if (!isValidIcao(icao)) {
+      return;
+    }
 
     let parsedMetar: MetarParserType | undefined = undefined;
 
@@ -150,7 +182,7 @@ export const LandingWidget = () => {
       try {
         metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
         if (metar.icao !== icao.toUpperCase()) {
-          toast.error('No METAR available');
+          throw new Error('No METAR available');
         }
         parsedMetar = parseMetar(metar.metarString);
       } catch (err) {
@@ -160,7 +192,7 @@ export const LandingWidget = () => {
       try {
         const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
         if (!response.metar) {
-          toast.error('No METAR available');
+          throw new Error('No METAR available');
         }
         parsedMetar = parseMetar(response.metar);
       } catch (err) {
@@ -172,43 +204,124 @@ export const LandingWidget = () => {
       return;
     }
 
-    const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+    try {
+      const magvar = await getAirportMagVar(icao);
+      const windDirection = MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
+      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}`;
 
+      dispatch(
+        setLandingValues({
+          windDirection,
+          windMagnitude: parsedMetar.wind.speed_kts,
+          windEntry,
+          temperature: parsedMetar.temperature.celsius,
+          pressure: parsedMetar.barometer.mb,
+        }),
+      );
+    } catch (err) {
+      toast.error('Could not fetch airport');
+    }
+  };
+
+  const handleICAOChange = (icao: string) => {
+    dispatch(clearLandingValues());
+
+    dispatch(setLandingValues({ icao }));
+    if (isValidIcao(icao)) {
+      getRunways(icao)
+        .then((runways) => {
+          dispatch(setLandingValues({ availableRunways: runways }));
+          if (runways.length > 0) {
+            handleRunwayChange(0);
+          } else {
+            handleRunwayChange(-1);
+          }
+        })
+        .catch(() => {
+          clearAirportRunways();
+        });
+    } else {
+      clearAirportRunways();
+    }
+  };
+
+  const handleRunwayChange = (runwayIndex: number | undefined): void => {
+    clearResult();
+
+    const newRunway = runwayIndex !== undefined && runwayIndex >= 0 ? availableRunways[runwayIndex] : undefined;
+    if (newRunway !== undefined) {
+      const slope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
+      dispatch(
+        setLandingValues({
+          selectedRunwayIndex: runwayIndex,
+          runwayHeading: newRunway.magneticBearing,
+          runwayLength: newRunway.length,
+          slope,
+          elevation: newRunway.elevation,
+        }),
+      );
+    } else {
+      dispatch(
+        setLandingValues({
+          selectedRunwayIndex: -1,
+          runwayHeading: undefined,
+          runwayLength: undefined,
+          slope: undefined,
+          elevation: undefined,
+        }),
+      );
+    }
+  };
+
+  const clearAirportRunways = () => {
     dispatch(
       setLandingValues({
-        weight: weightKgs,
-        windDirection: parsedMetar.wind.degrees,
-        windMagnitude: parsedMetar.wind.speed_kts,
-        temperature: parsedMetar.temperature.celsius,
-        pressure: parsedMetar.barometer.mb,
+        availableRunways: [],
+        selectedRunwayIndex: -1,
+        runwayBearing: undefined,
+        runwayLength: undefined,
+        runwaySlope: undefined,
+        elevation: undefined,
       }),
     );
   };
 
-  const isValidIcao = (icao: string): boolean => icao.length === 4;
+  const handleWindChange = (input: string): void => {
+    clearResult();
 
-  const handleICAOChange = (icao: string): void => {
-    dispatch(setLandingValues({ icao }));
-  };
-
-  const handleWindDirectionChange = (value: string): void => {
-    let windDirection: number | undefined = parseInt(value);
-
-    if (Number.isNaN(windDirection)) {
-      windDirection = undefined;
+    if (input === '0') {
+      dispatch(setLandingValues({ windMagnitude: 0, windDirection: runwayHeading, windEntry: input }));
+      return;
     }
 
-    dispatch(setLandingValues({ windDirection }));
-  };
-
-  const handleWindMagnitudeChange = (value: string): void => {
-    let windMagnitude: number | undefined = parseInt(value);
-
-    if (Number.isNaN(windMagnitude)) {
-      windMagnitude = undefined;
+    if (isWindMagnitudeOnly(input)) {
+      const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_ONLY_REGEX);
+      const windMagnitude = parseFloat(magnitudeOnlyMatch[2]);
+      switch (magnitudeOnlyMatch[1]) {
+        case 'TL':
+        case 'T':
+        case '-':
+          dispatch(setLandingValues({ windMagnitude: -windMagnitude, windDirection: runwayHeading, windEntry: input }));
+          return;
+        case 'HD':
+        case 'H':
+        case '+':
+        default:
+          dispatch(setLandingValues({ windMagnitude, windDirection: runwayHeading, windEntry: input }));
+          return;
+      }
+    } else if (isWindMagnitudeAndDirection(input)) {
+      const directionMagnitudeMatch = input.match(WIND_MAGNITUDE_AND_DIR_REGEX);
+      dispatch(
+        setLandingValues({
+          windDirection: parseInt(directionMagnitudeMatch[1]),
+          windMagnitude: parseFloat(directionMagnitudeMatch[2]),
+          windEntry: input,
+        }),
+      );
+      return;
     }
-
-    dispatch(setLandingValues({ windMagnitude }));
+    dispatch(setLandingValues({ windMagnitude: undefined, windDirection: undefined, windEntry: input }));
   };
 
   const handleWeightChange = (value: string): void => {
@@ -224,6 +337,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwayHeadingChange = (value: string): void => {
+    clearResult();
     let runwayHeading: number | undefined = parseInt(value);
 
     if (Number.isNaN(runwayHeading)) {
@@ -234,6 +348,7 @@ export const LandingWidget = () => {
   };
 
   const handleApproachSpeedChange = (value: string): void => {
+    clearResult();
     let approachSpeed: number | undefined = parseInt(value);
 
     if (Number.isNaN(approachSpeed)) {
@@ -243,17 +358,19 @@ export const LandingWidget = () => {
     dispatch(setLandingValues({ approachSpeed }));
   };
 
-  const handleAltitudeChange = (value: string): void => {
-    let altitude: number | undefined = parseInt(value);
+  const handleElevationChange = (value: string): void => {
+    clearResult();
+    let elevation: number | undefined = parseInt(value);
 
-    if (Number.isNaN(altitude)) {
-      altitude = undefined;
+    if (Number.isNaN(elevation)) {
+      elevation = undefined;
     }
 
-    dispatch(setLandingValues({ altitude }));
+    dispatch(setLandingValues({ elevation }));
   };
 
   const handleTemperatureChange = (value: string): void => {
+    clearResult();
     let temperature: number | undefined = parseFloat(value);
 
     if (Number.isNaN(temperature)) {
@@ -266,6 +383,7 @@ export const LandingWidget = () => {
   };
 
   const handleFlapsChange = (newValue: number | string): void => {
+    clearResult();
     let flaps: LandingFlapsConfig = parseInt(newValue.toString());
 
     if (flaps !== LandingFlapsConfig.Full && flaps !== LandingFlapsConfig.Conf3) {
@@ -276,6 +394,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwayConditionChange = (newValue: number | string): void => {
+    clearResult();
     let runwayCondition: LandingRunwayConditions = parseInt(newValue.toString());
 
     if (!runwayCondition) {
@@ -286,18 +405,21 @@ export const LandingWidget = () => {
   };
 
   const handleReverseThrustChange = (newValue: boolean): void => {
+    clearResult();
     const reverseThrust: boolean = newValue;
 
     dispatch(setLandingValues({ reverseThrust }));
   };
 
   const handleAutolandChange = (newValue: boolean): void => {
+    clearResult();
     const autoland: boolean = newValue;
 
     dispatch(setLandingValues({ autoland }));
   };
 
   const handleRunwaySlopeChange = (value: string): void => {
+    clearResult();
     let slope: number | undefined = parseFloat(value);
 
     if (Number.isNaN(slope)) {
@@ -308,6 +430,7 @@ export const LandingWidget = () => {
   };
 
   const handleRunwayLengthChange = (value: string): void => {
+    clearResult();
     let runwayLength: number | undefined = parseInt(value);
 
     if (Number.isNaN(runwayLength)) {
@@ -320,12 +443,14 @@ export const LandingWidget = () => {
   };
 
   const handleOverweightProcedureChange = (newValue: boolean): void => {
+    clearResult();
     const overweightProcedure: boolean = newValue;
 
     dispatch(setLandingValues({ overweightProcedure }));
   };
 
   const handlePressureChange = (value: string): void => {
+    clearResult();
     let pressure: number | undefined = parseFloat(value);
 
     if (Number.isNaN(pressure)) {
@@ -347,13 +472,14 @@ export const LandingWidget = () => {
     weight !== undefined &&
     runwayHeading !== undefined &&
     approachSpeed !== undefined &&
-    altitude !== undefined &&
+    elevation !== undefined &&
     slope !== undefined &&
     temperature !== undefined &&
     pressure !== undefined &&
     runwayLength !== undefined;
 
   const handleAutoFill = () => {
+    clearResult();
     if (autoFillSource === 'METAR') {
       syncValuesWithApiMetar(icao);
     } else {
@@ -448,15 +574,16 @@ export const LandingWidget = () => {
         <div className="flex h-full w-full flex-col justify-between">
           <div className="mb-4">
             <div className="mb-8 mt-4">
-              <p>{t('Performance.Landing.AirportIcao')}</p>
               <div className="mt-4 flex flex-row justify-between">
-                <SimpleInput
-                  className="w-64 uppercase"
-                  value={icao}
-                  placeholder="ICAO"
-                  onChange={handleICAOChange}
-                  maxLength={4}
-                />
+                <Label text={t('Performance.Landing.Airport')}>
+                  <SimpleInput
+                    className="w-24 text-center uppercase"
+                    value={icao}
+                    placeholder="ICAO"
+                    onChange={handleICAOChange}
+                    maxLength={4}
+                  />
+                </Label>
                 <div className="flex flex-row">
                   <TooltipWrapper text={fillDataTooltip()}>
                     <button
@@ -486,30 +613,115 @@ export const LandingWidget = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-row justify-between">
-              <div className="flex flex-col space-y-4">
-                <Label text={t('Performance.Landing.WindDirection')}>
+            <div className="grid w-full grid-cols-2 justify-between">
+              <div className="flex w-full flex-col space-y-4 pb-10 pr-12">
+                <Label text={t('Performance.Landing.Runway')}>
+                  <SelectInput
+                    className="w-64"
+                    defaultValue={initialState.landing.selectedRunwayIndex}
+                    value={selectedRunwayIndex}
+                    onChange={handleRunwayChange}
+                    options={[
+                      { value: -1, displayValue: t('Performance.Landing.EnterManually') },
+                      ...availableRunways.map((r, i) => ({ value: i, displayValue: r.ident })),
+                    ]}
+                    disabled={availableRunways.length === 0}
+                  />
+                </Label>
+                <Label text={t('Performance.Landing.RunwayHeading')}>
                   <SimpleInput
                     className="w-64"
-                    value={windDirection}
-                    placeholder={t('Performance.Landing.WindDirectionUnit')}
+                    value={runwayHeading}
+                    placeholder={t('Performance.Landing.RunwayHeadingUnit')}
                     min={0}
                     max={360}
                     padding={3}
                     decimalPrecision={0}
-                    onChange={handleWindDirectionChange}
+                    onChange={handleRunwayHeadingChange}
                     number
                   />
                 </Label>
-                <Label text={t('Performance.Landing.WindMagnitude')}>
+                <Label text={t('Performance.Landing.RunwayLda')}>
+                  <div className="flex w-64 flex-row">
+                    <SimpleInput
+                      className="w-full rounded-r-none"
+                      value={getVariableUnitDisplayValue<'ft' | 'm'>(
+                        runwayLength,
+                        distanceUnit as 'ft' | 'm',
+                        'ft',
+                        Units.metreToFoot,
+                      )}
+                      placeholder={distanceUnit}
+                      min={0}
+                      max={distanceUnit === 'm' ? 6000 : 19685.04}
+                      decimalPrecision={0}
+                      onChange={handleRunwayLengthChange}
+                      number
+                    />
+                    <SelectInput
+                      value={distanceUnit}
+                      className="w-28 rounded-l-none"
+                      options={[
+                        { value: 'ft', displayValue: `${t('Performance.Landing.RunwayLdaUnitFt')}` },
+                        { value: 'm', displayValue: `${t('Performance.Landing.RunwayLdaUnitMeter')}` },
+                      ]}
+                      onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
+                    />
+                  </div>
+                </Label>
+              </div>
+              <div className="flex w-full flex-col space-y-4 pb-10 pl-12">
+                <Label text={t('Performance.Landing.RunwayElevation')}>
                   <SimpleInput
                     className="w-64"
-                    value={windMagnitude}
-                    placeholder={t('Performance.Landing.WindMagnitudeUnit')}
-                    min={0}
-                    decimalPrecision={1}
-                    onChange={handleWindMagnitudeChange}
+                    value={elevation}
+                    placeholder={t('Performance.Landing.RunwayElevationUnit')}
+                    min={-2000}
+                    max={20000}
+                    decimalPrecision={0}
+                    onChange={handleElevationChange}
                     number
+                  />
+                </Label>
+                <Label text={t('Performance.Landing.RunwaySlope')}>
+                  <SimpleInput
+                    className="w-64"
+                    value={slope}
+                    placeholder="%"
+                    min={-2}
+                    max={2}
+                    decimalPrecision={1}
+                    onChange={handleRunwaySlopeChange}
+                    number
+                    reverse
+                  />
+                </Label>
+              </div>
+              <div className="flex w-full flex-col space-y-4 pr-12">
+                <Label text={t('Performance.Landing.RunwayCondition')}>
+                  <SelectInput
+                    className="w-64"
+                    defaultValue={initialState.landing.runwayCondition}
+                    value={runwayCondition}
+                    onChange={handleRunwayConditionChange}
+                    options={[
+                      { value: 0, displayValue: t('Performance.Landing.RunwayConditions.Dry') },
+                      { value: 1, displayValue: t('Performance.Landing.RunwayConditions.Good') },
+                      { value: 2, displayValue: t('Performance.Landing.RunwayConditions.GoodMedium') },
+                      { value: 3, displayValue: t('Performance.Landing.RunwayConditions.Medium') },
+                      { value: 4, displayValue: t('Performance.Landing.RunwayConditions.MediumPoor') },
+                      { value: 5, displayValue: t('Performance.Landing.RunwayConditions.Poor') },
+                    ]}
+                  />
+                </Label>
+                <Label text={t('Performance.Landing.Wind')}>
+                  <SimpleInput
+                    className="w-64"
+                    value={windEntry}
+                    placeholder={t('Performance.Landing.WindMagnitudeUnit')}
+                    onChange={handleWindChange}
+                    uppercase
+                    wind
                   />
                 </Label>
                 <Label text={t('Performance.Landing.Temperature')}>
@@ -568,103 +780,9 @@ export const LandingWidget = () => {
                     />
                   </div>
                 </Label>
-                <Label text={t('Performance.Landing.RunwayAltitude')}>
-                  <SimpleInput
-                    className="w-64"
-                    value={altitude}
-                    placeholder={t('Performance.Landing.RunwayAltitudeUnit')}
-                    min={-2000}
-                    max={20000}
-                    decimalPrecision={0}
-                    onChange={handleAltitudeChange}
-                    number
-                  />
-                </Label>
-                <Label text={t('Performance.Landing.RunwayHeading')}>
-                  <SimpleInput
-                    className="w-64"
-                    value={runwayHeading}
-                    placeholder={t('Performance.Landing.RunwayHeadingUnit')}
-                    min={0}
-                    max={360}
-                    padding={3}
-                    decimalPrecision={0}
-                    onChange={handleRunwayHeadingChange}
-                    number
-                  />
-                </Label>
-                <Label text={t('Performance.Landing.RunwayCondition')}>
-                  <SelectInput
-                    className="w-64"
-                    defaultValue={initialState.landing.runwayCondition}
-                    value={runwayCondition}
-                    onChange={handleRunwayConditionChange}
-                    options={[
-                      { value: 0, displayValue: t('Performance.Landing.RunwayConditions.Dry') },
-                      { value: 1, displayValue: t('Performance.Landing.RunwayConditions.Good') },
-                      { value: 2, displayValue: t('Performance.Landing.RunwayConditions.GoodMedium') },
-                      { value: 3, displayValue: t('Performance.Landing.RunwayConditions.Medium') },
-                      { value: 4, displayValue: t('Performance.Landing.RunwayConditions.MediumPoor') },
-                      { value: 5, displayValue: t('Performance.Landing.RunwayConditions.Poor') },
-                    ]}
-                  />
-                </Label>
               </div>
-              <div className="flex flex-col space-y-4">
-                <Label text={t('Performance.Landing.RunwaySlope')}>
-                  <SimpleInput
-                    className="w-64"
-                    value={slope}
-                    placeholder="%"
-                    min={-2}
-                    max={2}
-                    decimalPrecision={1}
-                    onChange={handleRunwaySlopeChange}
-                    number
-                    reverse
-                  />
-                </Label>
-                <Label text={t('Performance.Landing.RunwayLda')}>
-                  <div className="flex w-64 flex-row">
-                    <SimpleInput
-                      className="w-full rounded-r-none"
-                      value={getVariableUnitDisplayValue<'ft' | 'm'>(
-                        runwayLength,
-                        distanceUnit as 'ft' | 'm',
-                        'ft',
-                        Units.metreToFoot,
-                      )}
-                      placeholder={distanceUnit}
-                      min={0}
-                      max={distanceUnit === 'm' ? 6000 : 19685.04}
-                      decimalPrecision={0}
-                      onChange={handleRunwayLengthChange}
-                      number
-                    />
-                    <SelectInput
-                      value={distanceUnit}
-                      className="w-28 rounded-l-none"
-                      options={[
-                        { value: 'ft', displayValue: `${t('Performance.Landing.RunwayLdaUnitFt')}` },
-                        { value: 'm', displayValue: `${t('Performance.Landing.RunwayLdaUnitMeter')}` },
-                      ]}
-                      onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
-                    />
-                  </div>
-                </Label>
-                <Label text={t('Performance.Landing.ApproachSpeed')}>
-                  <SimpleInput
-                    className="w-64"
-                    value={approachSpeed}
-                    placeholder={t('Performance.Landing.ApproachSpeedUnit')}
-                    min={90}
-                    max={350}
-                    decimalPrecision={0}
-                    onChange={handleApproachSpeedChange}
-                    number
-                  />
-                </Label>
-                <Label text={t('Performance.Landing.Weight')}>
+              <div className="flex w-full flex-col space-y-4 pl-12">
+                <Label text={t('Performance.Landing.LandingWeight')}>
                   <div className="flex w-64 flex-row">
                     <SimpleInput
                       className="w-full rounded-r-none"
@@ -692,6 +810,18 @@ export const LandingWidget = () => {
                     />
                   </div>
                 </Label>
+                <Label text={t('Performance.Landing.OverweightProcedure')}>
+                  <SelectInput
+                    className="w-64"
+                    defaultValue={initialState.landing.overweightProcedure}
+                    value={overweightProcedure}
+                    onChange={handleOverweightProcedureChange}
+                    options={[
+                      { value: false, displayValue: `${t('Performance.Landing.DropDownNo')}` },
+                      { value: true, displayValue: `${t('Performance.Landing.DropDownYes')}` },
+                    ]}
+                  />
+                </Label>
                 <Label text={t('Performance.Landing.FlapsConfiguration')}>
                   <SelectInput
                     className="w-64"
@@ -704,16 +834,16 @@ export const LandingWidget = () => {
                     ]}
                   />
                 </Label>
-                <Label text={t('Performance.Landing.OverweightProcedure')}>
-                  <SelectInput
+                <Label text={t('Performance.Landing.ApproachSpeed')}>
+                  <SimpleInput
                     className="w-64"
-                    defaultValue={initialState.landing.overweightProcedure}
-                    value={overweightProcedure}
-                    onChange={handleOverweightProcedureChange}
-                    options={[
-                      { value: false, displayValue: `${t('Performance.Landing.DropDownNo')}` },
-                      { value: true, displayValue: `${t('Performance.Landing.DropDownYes')}` },
-                    ]}
+                    value={approachSpeed}
+                    placeholder={t('Performance.Landing.ApproachSpeedUnit')}
+                    min={90}
+                    max={350}
+                    decimalPrecision={0}
+                    onChange={handleApproachSpeedChange}
+                    number
                   />
                 </Label>
                 <Label text={t('Performance.Landing.ReverseThrust')}>
