@@ -370,6 +370,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
+              <BtvRunwayInfo bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
             </svg>
           </div>
