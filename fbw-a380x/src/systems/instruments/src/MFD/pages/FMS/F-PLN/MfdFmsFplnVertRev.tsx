@@ -19,7 +19,6 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AltitudeOrFlightLevelFormat,
-  FlightLevelFormat,
   SpeedKnotsFormat,
   TimeHHMMSSFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -138,7 +137,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly stepAltsLineVisibility = Array.from(Array(5), () => Subject.create<'visible' | 'hidden'>('hidden'));
   private readonly stepAltsWptIndices = Array.from(Array(5), () => Subject.create<number | null>(null));
-  private readonly stepAltsFlightLevel = Array.from(Array(5), () => Subject.create<number | null>(null));
+  private readonly stepAltsAltitude = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsDistances = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsDistancesFormatted = Array.from(Array(5), (_, x) =>
     FmgcData.fmcFormatValue(this.stepAltsDistances[x]),
@@ -360,7 +359,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           if (this.forceRebuildList) {
             this.stepAltsWptIndices[line].set(null);
             this.stepAltsWptIndices[line].notify();
-            this.stepAltsFlightLevel[line].set(null);
+            this.stepAltsAltitude[line].set(null);
             this.forceRebuildList = false;
           }
 
@@ -385,7 +384,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
         this.stepAltsLineVisibility[line].set('visible');
         this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
-        this.stepAltsFlightLevel[line].set(cruiseSteps[i].toAltitude / 100);
+        this.stepAltsAltitude[line].set(cruiseSteps[i].toAltitude);
 
         if (pred) {
           this.stepAltsDistances[line].set(pred.distanceFromAircraft - cruiseSteps[i].distanceBeforeTermination);
@@ -396,8 +395,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         }
         this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
         this.stepAltsAboveMaxFl[line].set(
-          cruiseSteps[i].toAltitude / 100 >
-            (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100),
+          cruiseSteps[i].toAltitude > (this.props.fmcService.master?.getRecMaxAltitude() ?? maxCertifiedAlt),
         );
 
         if (this.stepAltsIgnored[line].get()) {
@@ -563,27 +561,26 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     return true;
   }
 
-  private tryAddCruiseStep(dropdownIndex: number | null, flightLevel: number | null) {
+  private tryAddCruiseStep(dropdownIndex: number | null, altitude: number | null) {
     const crzFl = this.crzFl.get();
     if (
       crzFl &&
       dropdownIndex !== null &&
       dropdownIndex in this.availableWaypointsToLegIndex &&
-      flightLevel !== null &&
+      altitude !== null &&
       this.loadedFlightPlan !== null
     ) {
       const legIndex = this.availableWaypointsToLegIndex[dropdownIndex];
       const cruiseSteps = this.loadedFlightPlan.allLegs
         .map((l) => (l.isDiscontinuity === false && l.cruiseStep ? l.cruiseStep : null))
         .filter((it) => it !== null);
-      const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, flightLevel * 100);
-
-      if (flightLevel > (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
+      const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, altitude);
+      if (altitude > (this.props.fmcService.master?.getRecMaxAltitude() ?? maxCertifiedAlt)) {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
 
       if (isValid) {
-        this.loadedFlightPlan?.addOrUpdateCruiseStep(legIndex, flightLevel * 100);
+        this.loadedFlightPlan?.addOrUpdateCruiseStep(legIndex, altitude);
       } else {
         if (this.selectedLegIndex !== null) {
           const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);
@@ -597,45 +594,45 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     const legIndex = this.availableWaypointsToLegIndex[previousDropdownIndex];
     this.loadedFlightPlan?.removeCruiseStep(legIndex);
     this.stepAltsWptIndices[lineIndex].set(null);
-    this.stepAltsFlightLevel[lineIndex].set(null);
+    this.stepAltsAltitude[lineIndex].set(null);
     this.forceRebuildList = true;
   }
 
   private handleCruiseStepWaypointModified(newWptIndex: number | null, lineIndex: number) {
     const oldWptIndex = this.stepAltsWptIndices[lineIndex].get();
-    const flightLevel = this.stepAltsFlightLevel[lineIndex].get();
+    const altitude = this.stepAltsAltitude[lineIndex].get();
 
     if (newWptIndex === null && oldWptIndex !== null) {
       // Remove step
       this.tryDeleteCruiseStep(lineIndex, oldWptIndex);
-    } else if (oldWptIndex === null && newWptIndex !== null && flightLevel !== null) {
+    } else if (oldWptIndex === null && newWptIndex !== null && altitude !== null) {
       // Add new step
-      this.tryAddCruiseStep(newWptIndex, flightLevel);
-    } else if (oldWptIndex !== null && newWptIndex !== null && flightLevel !== null) {
+      this.tryAddCruiseStep(newWptIndex, altitude);
+    } else if (oldWptIndex !== null && newWptIndex !== null && altitude !== null) {
       // Change step's waypoint
       this.tryDeleteCruiseStep(lineIndex, oldWptIndex);
-      this.tryAddCruiseStep(newWptIndex, flightLevel);
+      this.tryAddCruiseStep(newWptIndex, altitude);
     }
     this.stepAltsWptIndices[lineIndex].set(newWptIndex);
     this.updateCruiseSteps();
   }
 
-  private handleCruiseStepFlightLevelModified(newFlightLevel: number | null, lineIndex: number) {
+  private handleCruiseStepFlightLevelModified(newAltitude: number | null, lineIndex: number) {
     const wptIndex = this.stepAltsWptIndices[lineIndex].get();
-    const oldFlightLevel = this.stepAltsFlightLevel[lineIndex].get();
+    const oldAltitude = this.stepAltsAltitude[lineIndex].get();
 
-    if (newFlightLevel === null && wptIndex !== null) {
+    if (newAltitude === null && wptIndex !== null) {
       // Remove step
       this.tryDeleteCruiseStep(lineIndex, wptIndex);
-    } else if (oldFlightLevel === null && newFlightLevel !== null && wptIndex !== null) {
+    } else if (oldAltitude === null && newAltitude !== null && wptIndex !== null) {
       // Add new step
-      this.tryAddCruiseStep(wptIndex, newFlightLevel);
-    } else if (oldFlightLevel !== null && newFlightLevel !== null && wptIndex !== null) {
+      this.tryAddCruiseStep(wptIndex, newAltitude);
+    } else if (oldAltitude !== null && newAltitude !== null && wptIndex !== null) {
       // Change step's flight level
       this.tryDeleteCruiseStep(lineIndex, wptIndex);
-      this.tryAddCruiseStep(wptIndex, newFlightLevel);
+      this.tryAddCruiseStep(wptIndex, newAltitude);
     }
-    this.stepAltsFlightLevel[lineIndex].set(newFlightLevel);
+    this.stepAltsAltitude[lineIndex].set(newAltitude);
     this.updateCruiseSteps();
   }
 
@@ -738,7 +735,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         alignText="center"
                         containerStyle="width: 175px;"
                         tmpyActive={this.tmpyActive}
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -778,7 +775,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       value={this.speedConstraintInput}
                       alignText="flex-end"
                       tmpyActive={this.tmpyActive}
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -873,7 +870,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                           value={this.altitudeConstraintInput}
                           alignText="flex-end"
                           tmpyActive={this.tmpyActive}
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -981,13 +978,16 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             <div class="fc aic jcc" style="border-right: 1px solid #777777;">
                               <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
                                 <InputField<number>
-                                  dataEntryFormat={new FlightLevelFormat()}
-                                  value={this.stepAltsFlightLevel[li]}
+                                  dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
+                                  value={this.stepAltsAltitude[li]}
                                   containerStyle="width: 150px;"
                                   alignText="center"
                                   tmpyActive={this.tmpyActive}
-                                  onModified={(newFlightLevel) =>
-                                    this.handleCruiseStepFlightLevelModified(newFlightLevel, li)
+                                  onModified={(newAltitude) =>
+                                    this.handleCruiseStepFlightLevelModified(newAltitude, li)
+                                  }
+                                  errorHandler={(e) =>
+                                    this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)
                                   }
                                   hEventConsumer={this.props.mfd.hEventConsumer}
                                   interactionMode={this.props.mfd.interactionMode}
