@@ -42,6 +42,7 @@ import { EgpwcSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/Egpwc
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { bearingTo, placeBearingDistance } from 'msfs-geo';
 
 /**
  * Collects EFIS information for a given EFIS side. Has to be used together with private bus since switchable publishers are used, don't want that to spill to the parent components
@@ -320,6 +321,8 @@ export class EfisTawsBridge implements Instrument {
   );
 
   /** If track from one segment differs more than 3° from previous track, paint grey area */
+  // FIXME this only works on a line segment granularity, i.e. lines that are being sent to the VD
+  // FIXME increase distance resolution/granularity
   private readonly trackChangeDistance = MappedSubject.create(([path]) => {
     if (!path || path.length === 0) {
       return -1;
@@ -342,17 +345,31 @@ export class EfisTawsBridge implements Instrument {
 
   private readonly terrVdPathData = MappedSubject.create(
     ([fmsPath, trackChangeDistance]) => {
-      const waypoints = !fmsPath
-        ? []
-        : fmsPath
-            .filter((p) => p.type !== PathVectorType.DebugPoint)
-            .map((p) => {
-              const waypoint: WaypointDto = {
-                latitude: p.startPoint.lat,
-                longitude: p.startPoint.long,
-              };
-              return waypoint;
-            });
+      const filteredFmsPath = !fmsPath ? [] : fmsPath.filter((p) => p.type !== PathVectorType.DebugPoint);
+      const waypoints = filteredFmsPath.map((p) => {
+        const waypoint: WaypointDto = {
+          latitude: p.startPoint.lat,
+          longitude: p.startPoint.long,
+        };
+        return waypoint;
+      });
+
+      if (waypoints.length !== 0) {
+        // Append straight segment after last waypoint with 160nm distance, to continue terrain after FMS route
+        const lastWpt = waypoints[waypoints.length - 1];
+        const lastFmsPath = filteredFmsPath[filteredFmsPath.length - 1];
+        const straightSegmentPbd = placeBearingDistance(
+          { lat: lastWpt.latitude, long: lastWpt.longitude },
+          bearingTo(lastFmsPath.startPoint, lastFmsPath.endPoint),
+          160,
+        );
+        const straightSegmentWaypointDto: WaypointDto = {
+          latitude: straightSegmentPbd.lat,
+          longitude: straightSegmentPbd.long,
+        };
+
+        waypoints.push(straightSegmentWaypointDto);
+      }
 
       const data: ElevationSamplePathDto = {
         pathWidth: 1, // FIXME implement logic for width of vertical cut, DSC-31-CDS-20-40-10

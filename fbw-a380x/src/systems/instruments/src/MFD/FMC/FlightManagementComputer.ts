@@ -1106,8 +1106,8 @@ export class FlightManagementComputer implements FmcInterface {
     const pwp = this.guidanceController.pseudoWaypoints.pseudoWaypoints;
     const plan: ReadonlyFlightPlan = this.flightPlanService.active;
 
+    const verticalVectors: VerticalPathCheckpoint[] = [];
     if (predictions) {
-      const verticalVectors: VerticalPathCheckpoint[] = [];
       const activeLegIndex = plan.activeLegIndex;
       const previousLeg = plan.allLegs[activeLegIndex - 1];
       let lastLegLatLong: Coordinates =
@@ -1115,10 +1115,10 @@ export class FlightManagementComputer implements FmcInterface {
           ? previousLeg.definition.waypoint.location
           : this.guidanceController.lnavDriver.ppos;
       plan.allLegs.slice(activeLegIndex).forEach((leg, legIndex) => {
-        const legPrediction = predictions.get(legIndex);
+        const legPrediction = predictions.get(legIndex + activeLegIndex);
         if (leg.isDiscontinuity === false && legPrediction) {
           pwp.forEach((pw) => {
-            if (pw.alongLegIndex === legIndex && pw.displayedOnMcdu && pw.flightPlanInfo?.altitude) {
+            if (pw.alongLegIndex === legIndex + activeLegIndex && pw.displayedOnMcdu && pw.flightPlanInfo?.altitude) {
               verticalVectors.push({
                 distanceFromAircraft: legPrediction.distanceFromAircraft - pw.distanceFromLegTermination,
                 altitude: pw.flightPlanInfo?.altitude,
@@ -1143,8 +1143,8 @@ export class FlightManagementComputer implements FmcInterface {
           lastLegLatLong = leg.definition.waypoint?.location ?? lastLegLatLong;
         }
       });
-      this.acInterface.transmitVerticalPath(verticalVectors);
     }
+    this.acInterface.transmitVerticalPath(verticalVectors);
   }
 
   async swapNavDatabase(): Promise<void> {
