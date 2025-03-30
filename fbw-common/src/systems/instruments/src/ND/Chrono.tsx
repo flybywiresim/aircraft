@@ -94,12 +94,15 @@ export class Chrono extends DisplayComponent<ChronoProps> {
     return (
       <g
         class="chrono"
-        // Only show when running/stopped or in OANS mode
-        visibility={this.state.map((state) => (state === ChronoState.Hidden ? 'hidden' : 'inherit'))}
+        // Modify visibility logic to handle forced visibility
+        visibility={
+          this.props.forceVisible
+            ? 'inherit'
+            : this.state.map((state) => (state === ChronoState.Hidden ? 'hidden' : 'inherit'))
+        }
         style={{
           'margin-right': this.timeMargin.map((v) => (v ? '0.01px' : '0px')),
-          'z-index': '9999',
-          position: 'absolute', // Ensure proper layering
+          'z-index': '9999', // Ensure chrono stays on top
         }}
       >
         <rect x={0} y={632} width={104} height={30} class="Grey Fill" />
