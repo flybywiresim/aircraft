@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  A320EfisNdRangeValue,
   a320EfisRangeSettings,
   Arinc429OutputWord,
   Arinc429SignStatusMatrix,
@@ -169,7 +170,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   // private managedSpeedDescendMachIsPilotEntered = undefined;
   private cruiseFlightLevelTimeOut?: ReturnType<typeof setTimeout>;
   private activeWpIdx = undefined;
-  private efisSymbols = undefined;
+  private efisSymbolsLeft?: EfisSymbols<A320EfisNdRangeValue>;
+  private efisSymbolsRight?: EfisSymbols<A320EfisNdRangeValue>;
   /**
    * Landing elevation in feet MSL.
    * This is the destination runway threshold elevation, or airport elevation if runway is not selected.
@@ -321,19 +323,30 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       A320AircraftConfig,
     );
     this.navigation = new Navigation(this.bus, this.currFlightPlanService);
-    this.efisSymbols = new EfisSymbols(
+    this.efisSymbolsLeft = new EfisSymbols(
       this.bus,
+      'L',
       this.guidanceController,
       this.currFlightPlanService,
       this.navigation.getNavaidTuner(),
-      this.efisInterfaces,
+      this.efisInterfaces.L,
+      a320EfisRangeSettings,
+    );
+    this.efisSymbolsRight = new EfisSymbols(
+      this.bus,
+      'R',
+      this.guidanceController,
+      this.currFlightPlanService,
+      this.navigation.getNavaidTuner(),
+      this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
 
     initComponents(this.navigation, this.guidanceController, this.flightPlanService);
 
     this.guidanceController.init();
-    this.efisSymbols.init();
+    this.efisSymbolsLeft.init();
+    this.efisSymbolsRight.init();
     this.navigation.init();
 
     this.tempCurve = new Avionics.Curve();
@@ -624,9 +637,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.guidanceController.update(deltaTime);
     }
 
-    if (this.efisSymbols) {
-      this.efisSymbols.update(deltaTime);
-    }
+    this.efisSymbolsLeft?.update();
+    this.efisSymbolsRight.update();
+
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
   }
 
@@ -4710,7 +4723,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.currFlightPlanService.setPerformanceData('cruiseFlightLevel', level, forPlan);
       // used by FlightPhaseManager - only set for active plan
       if (forPlan === FlightPlanIndex.Active) {
-        SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number.isFinite(level * 100) ? level * 100 : 0);
+        SimVar.SetSimVarValue(
+          'L:A32NX_AIRLINER_CRUISE_ALTITUDE',
+          'number',
+          Number.isFinite(level * 100) ? level * 100 : 0,
+        );
       }
     }
   }
