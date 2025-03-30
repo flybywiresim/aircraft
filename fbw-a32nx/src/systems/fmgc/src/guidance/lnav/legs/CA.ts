@@ -143,7 +143,10 @@ export class CALeg extends Leg {
       minutesToAltitude = (originAltitude+1500 - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
       distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
 
-      
+      //Checking whether target alt is in acc segment
+      if (this.altitude > originAltitude+1500 && this.altitude < cleanclimbalt){}
+      //Checking whether acc alt in in clean climb segment
+      else if (this.altitude >= cleanclimbalt){}
       
     }
 
