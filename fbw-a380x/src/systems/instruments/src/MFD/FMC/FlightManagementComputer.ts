@@ -124,7 +124,7 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#guidanceController;
   }
 
-  #navigation = new Navigation(this.bus, this.flightPlanService);
+  #navigation: Navigation;
 
   get navigation() {
     if (this.instance !== FmcIndex.FmcA) {
@@ -140,7 +140,8 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#navigation.getNavaidTuner();
   }
 
-  private efisSymbols!: EfisSymbols<number>;
+  private efisSymbolsLeft!: EfisSymbols<number>;
+  private efisSymbolsRight!: EfisSymbols<number>;
 
   private readonly flightPhaseManager = new FlightPhaseManager(this.bus);
 
@@ -224,6 +225,8 @@ export class FlightManagementComputer implements FmcInterface {
     const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
+    this.#navigation = new Navigation(this.bus, this.flightPlanService);
+
     this.flightPlanService.createFlightPlans();
 
     // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
@@ -238,17 +241,28 @@ export class FlightManagementComputer implements FmcInterface {
         a380EfisRangeSettings,
         A380AircraftConfig,
       );
-      this.efisSymbols = new EfisSymbols(
+      this.efisSymbolsLeft = new EfisSymbols(
         this.bus,
+        'L',
         this.#guidanceController,
         this.flightPlanService,
         this.navaidTuner,
-        this.efisInterfaces,
+        this.efisInterfaces.L,
+        a380EfisRangeSettings,
+      );
+      this.efisSymbolsRight = new EfisSymbols(
+        this.bus,
+        'R',
+        this.#guidanceController,
+        this.flightPlanService,
+        this.navaidTuner,
+        this.efisInterfaces.R,
         a380EfisRangeSettings,
       );
 
       this.#navigation.init();
-      this.efisSymbols.init();
+      this.efisSymbolsLeft.init();
+      this.efisSymbolsRight.init();
       this.flightPhaseManager.init();
       this.#guidanceController.init();
       this.fmgc.guidanceController = this.#guidanceController;
@@ -641,7 +655,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.mfdReference?.openMessageList();
   }
 
-  createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): PilotWaypoint {
+  createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): PilotWaypoint | null {
     return this.dataManager?.createLatLonWaypoint(coordinates, stored, ident) ?? null;
   }
 
@@ -652,7 +666,7 @@ export class FlightManagementComputer implements FmcInterface {
     bearing2: DegreesTrue,
     stored?: boolean,
     ident?: string,
-  ): PilotWaypoint {
+  ): PilotWaypoint | null {
     return (
       this.dataManager?.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident) ??
       null
@@ -665,7 +679,7 @@ export class FlightManagementComputer implements FmcInterface {
     distance: NauticalMiles,
     stored?: boolean,
     ident?: string,
-  ): PilotWaypoint {
+  ): PilotWaypoint | null {
     return this.dataManager?.createPlaceBearingDistWaypoint(place, bearing, distance, stored, ident) ?? null;
   }
 
@@ -1046,7 +1060,8 @@ export class FlightManagementComputer implements FmcInterface {
 
     this.guidanceController.update(dt);
 
-    this.efisSymbols.update(dt);
+    this.efisSymbolsLeft.update();
+    this.efisSymbolsRight.update();
 
     this.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
   }
