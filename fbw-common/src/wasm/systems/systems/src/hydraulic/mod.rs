@@ -33,6 +33,7 @@ use uom::si::{
 };
 
 pub mod aerodynamic_model;
+pub mod brake;
 pub mod brake_circuit;
 pub mod bypass_pin;
 pub mod cargo_doors;
@@ -281,8 +282,7 @@ impl HeatingProperties {
         Ratio::new::<ratio>(
             ((self.heat_factor.output().get::<ratio>() - Self::OVERHEATING_THRESHOLD)
                 / (1. - Self::OVERHEATING_THRESHOLD))
-                .max(0.)
-                .min(1.),
+                .clamp(0., 1.),
         )
     }
 }
@@ -2015,8 +2015,7 @@ impl PriorityValve {
         let opening_ratio = Ratio::new::<ratio>(
             ((self.upstream_pressure - self.fully_closed_threshold).get::<psi>()
                 / (self.fully_opened_threshold - self.fully_closed_threshold).get::<psi>())
-            .max(0.)
-            .min(1.),
+            .clamp(0., 1.),
         );
 
         self.open_ratio.update(context.delta(), opening_ratio);
@@ -2997,11 +2996,7 @@ impl RamAirTurbine {
             self.position += delta_time.as_secs_f64() * Self::STOWING_SPEED;
 
             // Finally limiting pos in [0:1] range
-            if self.position < 0. {
-                self.position = 0.;
-            } else if self.position > 1. {
-                self.position = 1.;
-            }
+            self.position = self.position.clamp(0., 1.);
         }
     }
 

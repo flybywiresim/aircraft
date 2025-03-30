@@ -9,12 +9,16 @@ import {
   NdbNavaid,
   VhfNavaid,
   VhfNavaidType,
+  isNdbNavaid,
+  NearbyFacilityType,
+  NearbyFacility,
+  isNearbyVhfFacility,
 } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { bearingTo, diffAngle, distanceTo, EARTH_RADIUS } from 'msfs-geo';
+import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
 
 type VorFacilityWithDistance = VhfNavaid & { distance: number };
 
@@ -39,7 +43,9 @@ export class NavaidSelectionManager {
 
   private static readonly SPECIFIED_NDB_APPROACH_TYPES = [ApproachType.Ndb, ApproachType.NdbDme];
 
-  private readonly nearbyFacilities: NearbyFacilities = NearbyFacilities.getInstance();
+  private readonly nearbyFacilityMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
+    NearbyFacilityType.VhfNavaid,
+  );
 
   private readonly candidateUpdateThrottler = new UpdateThrottler(180);
 
@@ -85,15 +91,20 @@ export class NavaidSelectionManager {
   constructor(
     private readonly flightPlanService: FlightPlanService,
     private readonly navigationProvider: NavigationProvider,
-  ) {}
+  ) {
+    this.nearbyFacilityMonitor.setMaxResults(100);
+    this.nearbyFacilityMonitor.setRadius(381);
+  }
 
-  update(deltaTime: number, forceUpdate = false): void {
+  public async update(deltaTime: number, forceUpdate = false): Promise<void> {
     this.updatePpos();
     this.updateAltitude();
 
     if (this.pposValid) {
+      this.nearbyFacilityMonitor.setLocation(this.ppos.lat, this.ppos.long);
+
       if (this.candidateUpdateThrottler.canUpdate(deltaTime, forceUpdate) > -1) {
-        this.updateCandidateList();
+        await this.updateCandidateList();
       }
 
       try {
@@ -148,22 +159,29 @@ export class NavaidSelectionManager {
     }
   }
 
-  private updateCandidateList(): void {
+  private async updateCandidateList(): Promise<void> {
     this.candidateList.length = 0;
     this.vorCandidateList.length = 0;
 
     const frequencies = new Set<number>();
     const duplicateFrequencies = new Set<number>();
 
-    for (const facility of this.nearbyFacilities.getVhfNavaids()) {
-      if (!this.isSuitableType(facility)) {
+    for (const minimalFacility of this.nearbyFacilityMonitor.getCurrentFacilities()) {
+      if (!this.isSuitableType(minimalFacility)) {
+        continue;
+      }
+
+      let facility: VhfNavaid;
+      try {
+        facility = await NavigationDatabaseService.activeDatabase.getVhfNavaidFromId(minimalFacility.databaseId);
+      } catch {
         continue;
       }
 
       const distance = distanceTo(this.ppos, facility.dmeLocation ?? facility.location);
 
       if (this.isInLineOfSight(facility, distance)) {
-        // FIXME BCD frequency type in msfs-navdata... comparing floats is problematic
+        // FIXME BCD frequency type in nav db... comparing floats is problematic
         if (frequencies.has(facility.frequency)) {
           duplicateFrequencies.add(facility.frequency);
         }
@@ -285,8 +303,11 @@ export class NavaidSelectionManager {
   }
 
   /** Filters out unsuitable types of MSFS navaid */
-  private isSuitableType(facility: VhfNavaid): boolean {
-    switch (facility.type) {
+  private isSuitableType(facility: NearbyFacility): boolean {
+    if (!isNearbyVhfFacility(facility)) {
+      return false;
+    }
+    switch (facility.vhfType) {
       case VhfNavaidType.Dme:
       case VhfNavaidType.IlsDme:
       case VhfNavaidType.IlsTacan:
@@ -494,7 +515,7 @@ export class NavaidSelectionManager {
 
       // eslint-disable-next-line no-underscore-dangle
       const facility = segment.lastLeg?.definition.recommendedNavaid ?? null;
-      if (facility !== null && facility.subSectionCode === NavaidSubsectionCode.NdbNavaid) {
+      if (facility !== null && isNdbNavaid(facility)) {
         return facility;
       }
     }

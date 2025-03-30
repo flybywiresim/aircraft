@@ -554,7 +554,9 @@
     "TT": {
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PowerButton": "Power Off",
@@ -629,8 +631,10 @@
     "Realism": {
       "AdirsAlignTime": "ADIRS Align Time",
       "AutofillChecklists": "Autofill Checklists",
+      "AutoStepClimb": "Automatic Step Climb",
       "BoardingTime": "Boarding Time",
       "DmcSelfTestTime": "DMC Self Test Time",
+      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
       "FirstOfficerAvatar": "Show First Officer Avatar",
       "HomeCockpitMode": "Home Cockpit Mode",
       "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
@@ -639,13 +643,15 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
-      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "SyncEfis": "Sync EFIS and Audio Controls Between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
       "Active": "Active",
       "Auto": "Auto",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibrate",
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Default Barometer Unit",
@@ -658,6 +664,7 @@
       "Left": "Left",
       "LoadOnly": "Load Only",
       "None": "None",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Off",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -669,6 +676,7 @@
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
+      "FdrEnabled": "Enable Flight Data Recorder (FDR)",
       "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg",
       "SimbridgeMachine": "Simbridge Host Machine",
@@ -687,6 +695,7 @@
         "Unlink": "Unlink Account",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unlimited": "Navigraph Unlimited",
           "Unknown": "Unknown"
         },
@@ -726,6 +735,9 @@
       "ThrottleConfigurationReset": "Throttle Configuration Reset"
     },
     "Title": "Settings",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Unrealistic",
     "flyPad": {
       "AutoBrightness": "Auto Brightness",

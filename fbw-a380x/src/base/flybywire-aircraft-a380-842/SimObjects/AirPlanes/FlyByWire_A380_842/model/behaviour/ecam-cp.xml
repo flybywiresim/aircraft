@@ -27,6 +27,7 @@
             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
             <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_EMISSIVE_CODE>
 
             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
@@ -39,14 +40,18 @@
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <LEFT_SINGLE_CODE>
-                 (#STATE_SIMVAR#) #STATE_ID# != if{
+                (L:A32NX_FWS_ECP_FAILED, Bool) #STATE_ID# 14 != and if{
+                    quit
+                }
+
+                (#STATE_SIMVAR#) #STATE_ID# != if{
                     #STATE_ID# (&gt;#STATE_SIMVAR#)
                 } els{
                     -1 (&gt;#STATE_SIMVAR#)
                 }
                 (&gt;H:A32NX_SD_PAGE_CHANGED)
-                </LEFT_SINGLE_CODE>
-            <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# ==</SEQ2_EMISSIVE_CODE>
+            </LEFT_SINGLE_CODE>
+            <SEQ2_EMISSIVE_CODE>(#STATE_SIMVAR#) #STATE_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
             <CURSOR>Hand</CURSOR>
         </UseTemplate>
     </Template>
@@ -54,18 +59,26 @@
     <Template Name="FBW_ECAM_BUTTON_SubTemplate">
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
-            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
-            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
             <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
+
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_EMISSIVE_CODE>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+            <SEQ2_EMISSIVE_CODE>#SEQ2_POWERED#</SEQ2_EMISSIVE_CODE>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
-                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <Condition NotEmpty="SIMVAR">
                     <True>
                         <LEFT_SINGLE_CODE>
@@ -86,16 +99,6 @@
                 </Condition>
             </UseTemplate>
         </Component>
-
-        <Condition Check="POTENTIOMETER">
-            <True>
-                <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
-                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
-                        <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
-                    </UseTemplate>
-                </Component>
-            </True>
-        </Condition>
     </Template>
 
     <Template Name="FBW_ECAM_BUTTON_Template">
@@ -112,19 +115,24 @@
         <DefaultTemplateParameters>
             <BASE_NAME>UNKNOWN</BASE_NAME>
             <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
-            <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
-            <LED_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ2</LED_NODE_ID>
-            <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
             <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
+
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_EMISSIVE_CODE>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                     1 (&gt;L:#SIMVAR#)
@@ -132,29 +140,43 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:#SIMVAR#)
                 </LEFT_LEAVE_CODE>
+                <SEQ2_EMISSIVE_CODE>(L:A32NX_ECAM_FAILURE_ACTIVE) (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
             </UseTemplate>
         </Component>
+    </Template>
 
+    <Template Name="A32NX_ECAM_MORE_BUTTON_Template">
+        <DefaultTemplateParameters>
+            <BASE_NAME>UNKNOWN</BASE_NAME>
+            <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 
-        <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>
-                (L:A32NX_ECAM_SFAIL) -1 &gt;
-                (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) and or
-                #SEQ1_POWERED# and
-                </EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_EMISSIVE_CODE>
+
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+            <SEQ2_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    1 (&gt;L:#SIMVAR#)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:#SIMVAR#)
+                </LEFT_LEAVE_CODE>
+                <SEQ2_EMISSIVE_CODE>(L:A32NX_SD_MORE_SHOWN, Bool) (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
             </UseTemplate>
         </Component>
-
-        <Condition Check="POTENTIOMETER">
-            <True>
-                <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
-                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
-                        <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
-                    </UseTemplate>
-                </Component>
-            </True>
-        </Condition>
     </Template>
 
     <Template Name="FBW_A380X_Components_ECAM_CP">
@@ -279,76 +301,10 @@
             <TOOLTIPID>SELECT ENGINE PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
-        <!-- SD BLEED -->
-        <UseTemplate Name="FBW_Anim_Interactions">
-            <NODE_ID>PUSH_ECAM_BLEED</NODE_ID>
-            <STATE_ID>1</STATE_ID>
-
-            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
-
-            <TOOLTIPID>SELECT BLEED PAGE ON SYSTEM DISPLAY</TOOLTIPID>
-        </UseTemplate>
-
-        <!-- SD PRESS -->
-        <UseTemplate Name="FBW_Anim_Interactions">
-            <NODE_ID>PUSH_ECAM_PRESS</NODE_ID>
-            <STATE_ID>2</STATE_ID>
-
-            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
-
-            <TOOLTIPID>SELECT CAB PRESS PAGE ON SYSTEM DISPLAY</TOOLTIPID>
-        </UseTemplate>
-
-        <!-- SD EL/AC -->
-        <UseTemplate Name="FBW_Anim_Interactions">
-            <NODE_ID>PUSH_ECAM_ELAC</NODE_ID>
-            <STATE_ID>3</STATE_ID>
-
-            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
-
-            <TOOLTIPID>SELECT ELEC AC PAGE ON SYSTEM DISPLAY</TOOLTIPID>
-        </UseTemplate>
-
-        <!-- SD FUEL -->
-        <UseTemplate Name="FBW_Anim_Interactions">
-            <NODE_ID>PUSH_ECAM_FUEL</NODE_ID>
-            <STATE_ID>4</STATE_ID>
-
-            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
-
-            <TOOLTIPID>SELECT FUEL PAGE ON SYSTEM DISPLAY</TOOLTIPID>
-        </UseTemplate>
-
-        <!-- SD HYD -->
-        <UseTemplate Name="FBW_Anim_Interactions">
-            <NODE_ID>PUSH_ECAM_HYD</NODE_ID>
-            <STATE_ID>5</STATE_ID>
-
-            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
-
-            <TOOLTIPID>SELECT HYD PAGE ON SYSTEM DISPLAY</TOOLTIPID>
-        </UseTemplate>
-
-        <!-- SD CB -->
-        <UseTemplate Name="FBW_Anim_Interactions">
-            <NODE_ID>PUSH_ECAM_CB</NODE_ID>
-            <STATE_ID>14</STATE_ID>
-
-            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
-
-            <TOOLTIPID>SELECT CB PAGE ON SYSTEM DISPLAY</TOOLTIPID>
-        </UseTemplate>
-
         <!-- SD APU -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_APU</NODE_ID>
-            <STATE_ID>7</STATE_ID>
+            <STATE_ID>1</STATE_ID>
 
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
@@ -356,10 +312,21 @@
             <TOOLTIPID>SELECT APU PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
+        <!-- SD BLEED -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_BLEED</NODE_ID>
+            <STATE_ID>2</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT BLEED PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
         <!-- SD COND -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_COND</NODE_ID>
-            <STATE_ID>8</STATE_ID>
+            <STATE_ID>3</STATE_ID>
 
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
@@ -367,10 +334,21 @@
             <TOOLTIPID>SELECT COND PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
+        <!-- SD PRESS -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_PRESS</NODE_ID>
+            <STATE_ID>4</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT CAB PRESS PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
         <!-- SD DOOR -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_DOOR</NODE_ID>
-            <STATE_ID>9</STATE_ID>
+            <STATE_ID>5</STATE_ID>
 
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
@@ -378,10 +356,21 @@
             <TOOLTIPID>SELECT DOOR - OXYGEN PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
+        <!-- SD EL/AC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_ELAC</NODE_ID>
+            <STATE_ID>6</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT ELEC AC PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
         <!-- SD EL/DC -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_ELDC</NODE_ID>
-            <STATE_ID>10</STATE_ID>
+            <STATE_ID>7</STATE_ID>
 
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
@@ -389,10 +378,21 @@
             <TOOLTIPID>SELECT ELEC EC PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
+        <!-- SD FUEL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_FUEL</NODE_ID>
+            <STATE_ID>8</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT FUEL PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
         <!-- SD WHEEL -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_WHEEL</NODE_ID>
-            <STATE_ID>11</STATE_ID>
+            <STATE_ID>9</STATE_ID>
 
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
@@ -400,10 +400,21 @@
             <TOOLTIPID>SELECT WHEEL PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
+        <!-- SD HYD -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_HYD</NODE_ID>
+            <STATE_ID>10</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT HYD PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
         <!-- SD F/CTL -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_FCTL</NODE_ID>
-            <STATE_ID>12</STATE_ID>
+            <STATE_ID>11</STATE_ID>
 
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
@@ -411,21 +422,23 @@
             <TOOLTIPID>SELECT F/CTL PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
-        <!-- SD VIDEO -->
+        <!-- SD CB -->
         <UseTemplate Name="FBW_Anim_Interactions">
-            <NODE_ID>PUSH_ECAM_VIDEO</NODE_ID>
-            <STATE_ID>13</STATE_ID>
+            <NODE_ID>PUSH_ECAM_CB</NODE_ID>
+            <STATE_ID>12</STATE_ID>
 
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
 
-            <TOOLTIPID>SELECT VIDEO PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+            <TOOLTIPID>SELECT CB PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
+
+        <!-- SD CRUISE index 13 no button  -->
 
         <!-- SD STS -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <NODE_ID>PUSH_ECAM_STS</NODE_ID>
-            <STATE_ID>15</STATE_ID>
+            <STATE_ID>14</STATE_ID>
 
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
@@ -433,14 +446,35 @@
             <TOOLTIPID>SELECT STS PAGE ON SYSTEM DISPLAY</TOOLTIPID>
         </UseTemplate>
 
+        <!-- SD VIDEO -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_ECAM_VIDEO</NODE_ID>
+            <STATE_ID>15</STATE_ID>
+
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_A380X_ECAM_CP_Button_Template</ANIM_TEMPLATE>
+
+            <TOOLTIPID>SELECT VIDEO PAGE ON SYSTEM DISPLAY</TOOLTIPID>
+        </UseTemplate>
+
         <!-- ECAM MORE -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <ANIM_TEMPLATE>A32NX_ECAM_MORE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>MORE</BASE_NAME>
             <PART_ID>ECAM_MORE</PART_ID>
             <TOOLTIPID>ECAM MORE...</TOOLTIPID>
             <SIMVAR>A32NX_BTN_MORE</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM ALL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>ALL</BASE_NAME>
+            <PART_ID>ECAM_ALL</PART_ID>
+            <TOOLTIPID>Cycle through ECAM pages</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_ALL</SIMVAR>
         </UseTemplate>
 
         <!-- EWD POTENTIOMETER -->

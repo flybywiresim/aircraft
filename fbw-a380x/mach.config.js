@@ -28,6 +28,7 @@ module.exports = {
     typecheckingPlugin(),
   ],
   instruments: [
+    msfsAvionicsInstrument('AtcMailbox'),
     msfsAvionicsInstrument('Clock'),
     msfsAvionicsInstrument('EWD'),
     msfsAvionicsInstrument('FCU', 'FcuBaseInstrument.ts'),
@@ -35,11 +36,12 @@ module.exports = {
     msfsAvionicsInstrument('ND'),
     msfsAvionicsInstrument('PFD'),
     msfsAvionicsInstrument('RMP'),
+    msfsAvionicsInstrument('OIT'),
 
     reactInstrument('BAT'),
     reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),
     reactInstrument('ISISlegacy'),
-    reactInstrument('OIT'),
+    reactInstrument('OITlegacy'),
     reactInstrument('RTPI'),
     reactInstrument('SD'),
   ],
@@ -54,7 +56,7 @@ function msfsAvionicsInstrument(name, index = 'instrument.tsx') {
       templateId: `A380X_${name}`,
       mountElementId: `${name}_CONTENT`,
       fileName: name.toLowerCase(),
-      imports: ['/JS/dataStorage.js', '/JS/fbw-a380x/A32NX_Util.js'],
+      imports: ['/JS/dataStorage.js'],
     },
   };
 }

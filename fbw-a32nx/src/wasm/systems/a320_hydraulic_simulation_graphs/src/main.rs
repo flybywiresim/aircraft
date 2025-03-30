@@ -86,32 +86,6 @@ impl PumpController for TestPumpController {
     }
 }
 
-struct TestPowerTransferUnitController {
-    should_enable: bool,
-}
-impl TestPowerTransferUnitController {
-    fn _commanding_disabled() -> Self {
-        Self {
-            should_enable: false,
-        }
-    }
-
-    fn _commanding_enabled() -> Self {
-        Self {
-            should_enable: true,
-        }
-    }
-
-    fn _command_enable(&mut self) {
-        self.should_enable = true;
-    }
-}
-impl PowerTransferUnitController for TestPowerTransferUnitController {
-    fn should_enable(&self) -> bool {
-        self.should_enable
-    }
-}
-
 fn main() {
     println!("Launching hyd simulation...");
     let path = "./src/systems/a320_hydraulic_simulation_graphs/";

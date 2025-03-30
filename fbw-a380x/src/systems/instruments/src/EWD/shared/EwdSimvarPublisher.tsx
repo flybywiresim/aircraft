@@ -40,8 +40,15 @@ export interface BaseEwdSimvars {
   limitations_all: number;
   memo_left: number;
   memo_right: number;
-  abnormal_debug_line: number;
   nose_gear_compressed: boolean;
+  engine_fire_pb: boolean;
+  cas: number;
+  fws1_is_healthy: boolean;
+  fws2_is_healthy: boolean;
+  afdx_3_3_reachable: boolean;
+  afdx_13_13_reachable: boolean;
+  afdx_4_3_reachable: boolean;
+  afdx_14_13_reachable: boolean;
 }
 
 type IndexedTopics =
@@ -59,7 +66,9 @@ type IndexedTopics =
   | 'limitations_all'
   | 'memo_left'
   | 'memo_right'
-  | 'nose_gear_compressed';
+  | 'nose_gear_compressed'
+  | 'engine_fire_pb'
+  | 'cas';
 type EwdIndexedEvents = {
   [P in keyof Pick<BaseEwdSimvars, IndexedTopics> as IndexedEventType<P>]: BaseEwdSimvars[P];
 };
@@ -115,11 +124,18 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ],
       ['memo_left', { name: 'L:A32NX_EWD_LOWER_LEFT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       ['memo_right', { name: 'L:A32NX_EWD_LOWER_RIGHT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
-      ['abnormal_debug_line', { name: 'L:A32NX_EWD_DEBUG_ABNORMAL', type: SimVarValueType.Number }],
       [
         'nose_gear_compressed',
         { name: 'L:A32NX_LGCIU_#index#_NOSE_GEAR_COMPRESSED', type: SimVarValueType.Bool, indexed: true },
       ],
+      ['engine_fire_pb', { name: 'L:A32NX_FIRE_BUTTON_ENG#index#', type: SimVarValueType.Bool, indexed: true }],
+      ['cas', { name: 'L:A32NX_ADIRS_ADR_#index#_COMPUTED_AIRSPEED', type: SimVarValueType.Number, indexed: true }],
+      ['fws1_is_healthy', { name: 'L:A32NX_FWS1_IS_HEALTHY', type: SimVarValueType.Bool }],
+      ['fws2_is_healthy', { name: 'L:A32NX_FWS2_IS_HEALTHY', type: SimVarValueType.Bool }],
+      ['afdx_3_3_reachable', { name: 'L:A32NX_AFDX_3_3_REACHABLE', type: SimVarValueType.Bool }],
+      ['afdx_13_13_reachable', { name: 'L:A32NX_AFDX_13_13_REACHABLE', type: SimVarValueType.Bool }],
+      ['afdx_4_3_reachable', { name: 'L:A32NX_AFDX_4_3_REACHABLE', type: SimVarValueType.Bool }],
+      ['afdx_14_13_reachable', { name: 'L:A32NX_AFDX_14_13_REACHABLE', type: SimVarValueType.Bool }],
     ];
 
     super(new Map(simvars), bus, pacer);

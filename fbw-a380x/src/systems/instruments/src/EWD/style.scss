@@ -1,5 +1,6 @@
 @import "../MsfsAvionicsCommon/definitions";
 @import "../MsfsAvionicsCommon/gauges";
+@import "../MFD/pages/common/widget-style.scss"; // Re-use MFD widget style
 
 @mixin Blink10SecondsFill($color) {
     @keyframes pulsing {
@@ -290,6 +291,43 @@ text, tspan, span {
   height: 40px;
 }
 
+.FailurePendingBox {
+  display: inline;
+  position: relative;
+  left: 40px;
+  top: 4px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.StsBox {
+  display: inline;
+  position: relative;
+  left: 150px;
+  top: 4px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.AdvBox {
+  display: inline;
+  position: relative;
+  left: 360px;
+  top: 4px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.WdNotAvailArea {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
 .MemosContainer {
   display: flex;
   flex-direction: column;
@@ -357,7 +395,7 @@ text, tspan, span {
 .WarningsColumn {
   display: flex;
   flex-direction: column;
-  padding: 12px 0px 12px 0px;
+  padding: 12px 0px 15px 0px;
   height: 100%;
   flex: 1;
 }
@@ -389,8 +427,20 @@ text, tspan, span {
   color: $display-white;
 }
 
+.EclLine.ChecklistItemInactive {
+  color: $display-grey !important;
+}
+
 .EclLine.ChecklistCompleted {
   color: $display-grey !important;
+}
+
+.EclLine.DeferredProcedure {
+  color: $display-amber !important;
+}
+
+.EclLine.CompletedDeferredProcedure {
+  color: $display-white !important;
 }
 
 .EclLine.Green {
@@ -405,6 +455,10 @@ text, tspan, span {
   color: $display-amber !important;
 }
 
+.EclLine.White {
+  color: $display-white !important;
+}
+
 .EclLine.Selected {
   border: 3px solid $display-cyan;
   border-right: 3px solid transparent;
@@ -413,6 +467,24 @@ text, tspan, span {
 .EclLine.Headline {
   color: $display-white !important;
   text-decoration: underline;
+}
+
+.EclLine.ChecklistCondition {
+  color: $display-white !important;
+}
+
+.EclLine.OmissionDots {
+  color: $display-cyan !important;
+}
+
+.EclLine.LandAnsa {
+  color: $display-amber !important;
+  justify-content: flex-end;
+}
+
+.EclLine.LandAsap {
+  color: $display-red !important;
+  justify-content: flex-end;
 }
 
 .EclLineCheckboxArea {
@@ -435,6 +507,14 @@ text, tspan, span {
 
 .EclLineCheckboxArea.AbnormalItem.Checked {
   color: $display-white;
+}
+
+.EclLineCheckboxArea.ChecklistCondition {
+  color: $display-white !important;
+}
+
+.EclLineCheckboxArea.AbnormalItem.ChecklistItemInactive {
+  color: $display-grey;
 }
 
 .EclLineText {
@@ -478,4 +558,12 @@ text, tspan, span {
 
 .EclLineEndMarker.Last {
   border-bottom: 3px solid $display-white;
+}
+
+.EclSoftKeys {
+  position: absolute;
+  top: 965px;
+  right: 3px;
+  display: flex;
+  flex-direction: row;
 }

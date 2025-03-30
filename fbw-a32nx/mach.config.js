@@ -30,11 +30,13 @@ module.exports = {
     typecheckingPlugin(),
   ],
   instruments: [
-    msfsAvionicsInstrument('PFD'),
-    msfsAvionicsInstrument('ND'),
-    msfsAvionicsInstrument('EWD'),
     msfsAvionicsInstrument('Clock'),
+    msfsAvionicsInstrument('EWD'),
+    msfsAvionicsInstrument('FCU'),
+    msfsAvionicsInstrument('MCDU', 'McduBaseInstrument.ts'),
+    msfsAvionicsInstrument('ND'),
     msfsAvionicsInstrument('OANC'),
+    msfsAvionicsInstrument('PFD'),
 
     reactInstrument('SD'),
     reactInstrument('DCDU'),

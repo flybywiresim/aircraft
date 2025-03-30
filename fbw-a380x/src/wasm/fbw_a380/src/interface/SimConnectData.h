@@ -2,6 +2,7 @@
 
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
+#include "FuelSystemData.h"
 
 struct SimData {
   double nz_g;
@@ -31,7 +32,6 @@ struct SimData {
   double H_ind_ft;
   double H_radio_ft;
   double H_dot_fpm;
-  double CG_percent_MAC;
   double total_weight_kg;
   double gear_animation_pos_0;
   double gear_animation_pos_1;
@@ -64,8 +64,12 @@ struct SimData {
   double longitude_deg;
   double throttle_lever_1_pos;
   double throttle_lever_2_pos;
+  double throttle_lever_3_pos;
+  double throttle_lever_4_pos;
   double engine_1_thrust_lbf;
   double engine_2_thrust_lbf;
+  double engine_3_thrust_lbf;
+  double engine_4_thrust_lbf;
   unsigned long long nav_valid;
   double nav_loc_deg;
   double nav_gs_deg;
@@ -105,23 +109,6 @@ struct SimData {
   unsigned long long engineAntiIce_3;
   unsigned long long engineAntiIce_4;
   unsigned long long simOnGround;
-  double generalEngineElapsedTime_1;
-  double generalEngineElapsedTime_2;
-  double standardAtmTemperature;
-  double turbineEngineCorrectedFuelFlow_1;
-  double turbineEngineCorrectedFuelFlow_2;
-  double fuelTankCapacityAuxLeft;
-  double fuelTankCapacityAuxRight;
-  double fuelTankCapacityMainLeft;
-  double fuelTankCapacityMainRight;
-  double fuelTankCapacityCenter;
-  double fuelTankQuantityAuxLeft;
-  double fuelTankQuantityAuxRight;
-  double fuelTankQuantityMainLeft;
-  double fuelTankQuantityMainRight;
-  double fuelTankQuantityCenter;
-  double fuelTankQuantityTotal;
-  double fuelWeightPerGallon;
   double kohlsmanSetting_0;
   double kohlsmanSetting_1;
   unsigned long long kohlsmanSettingStd_3;
@@ -173,6 +160,7 @@ struct SimInputAutopilot {
   double HDG_pull;
   double ALT_push;
   double ALT_pull;
+  // FIXME remove VS_push
   double VS_push;
   double VS_pull;
   double LOC_push;

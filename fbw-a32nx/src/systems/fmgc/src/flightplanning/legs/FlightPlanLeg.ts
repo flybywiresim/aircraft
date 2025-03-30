@@ -22,7 +22,6 @@ import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
-import { MagVar } from '@microsoft/msfs-sdk';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
@@ -47,7 +46,8 @@ export interface SerializedFlightPlanLeg {
 
 export enum FlightPlanLegFlags {
   DirectToTurningPoint = 1 << 0,
-  Origin = 1 << 1,
+  PendingDirectToTurningPoint = 1 << 1,
+  Origin = 1 << 2,
 }
 
 export interface LegCalculations {
@@ -63,6 +63,8 @@ export interface LegCalculations {
   cumulativeDistanceWithTransitions: number;
   /** The cumulative distance in nautical miles from this point to the missed approach point, with leg transition turns taken into account. */
   cumulativeDistanceToEndWithTransitions: number;
+  /** Whether the leg terminates in a vertical discontinuity */
+  endsInTooSteepPath: boolean;
 }
 
 /**
@@ -303,15 +305,24 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return this;
   }
 
-  clearConstraints() {
-    this.definition.verticalAngle = undefined;
+  clearAltitudeConstraints() {
     this.definition.altitudeDescriptor = undefined;
     this.definition.altitude1 = undefined;
     this.definition.altitude2 = undefined;
+    this.pilotEnteredAltitudeConstraint = undefined;
+  }
+
+  clearSpeedConstraints() {
     this.definition.speedDescriptor = undefined;
     this.definition.speed = undefined;
-    this.pilotEnteredAltitudeConstraint = undefined;
     this.pilotEnteredSpeedConstraint = undefined;
+  }
+
+  clearConstraints() {
+    // FIXME should we really clear this? It's not a constraint
+    this.definition.verticalAngle = undefined;
+    this.clearAltitudeConstraints();
+    this.clearSpeedConstraints();
   }
 
   static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
@@ -325,25 +336,6 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         magneticCourse,
       },
       'T-P',
-      '',
-      undefined,
-    );
-  }
-
-  static directToTurnStart(segment: EnrouteSegment, location: Coordinates, bearing: DegreesTrue): FlightPlanLeg {
-    const magVar = MagVar.get(location.lat, location.long);
-
-    return new FlightPlanLeg(
-      segment,
-      {
-        procedureIdent: '',
-        type: LegType.FC,
-        overfly: false,
-        waypoint: WaypointFactory.fromPlaceBearingDistance('T-P', location, 0.1, bearing),
-        magneticCourse: A32NX_Util.trueToMagnetic(bearing, magVar),
-        length: 0.1,
-      },
-      '',
       '',
       undefined,
     );
@@ -512,3 +504,7 @@ export interface Discontinuity {
 }
 
 export type FlightPlanElement = FlightPlanLeg | Discontinuity;
+
+export function isDiscontinuity(o: any): o is Discontinuity {
+  return typeof o === 'object' && o.isDiscontinuity === true;
+}

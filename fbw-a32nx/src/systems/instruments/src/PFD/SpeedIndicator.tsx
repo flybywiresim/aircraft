@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -6,18 +6,26 @@ import {
   ClockEvents,
   DisplayComponent,
   FSComponent,
+  MappedSubject,
   NodeReference,
   Subject,
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429WordData,
+  Arinc429Register,
+  Arinc429LocalVarConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
+import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -152,6 +160,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
   private failedGroup: NodeReference<SVGGElement> = FSComponent.createRef();
 
+  private readonly spdFlagVisible = Subject.create(false);
+
   private showBarsRef = FSComponent.createRef<SVGGElement>();
 
   private vfeNext = FSComponent.createRef<SVGPathElement>();
@@ -182,9 +192,11 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     if (Number.isNaN(airspeedValue)) {
       this.speedTapeElements.instance.classList.add('HiddenElement');
       this.failedGroup.instance.classList.remove('HiddenElement');
+      this.spdFlagVisible.set(true);
     } else {
       this.speedTapeElements.instance.classList.remove('HiddenElement');
       this.failedGroup.instance.classList.add('HiddenElement');
+      this.spdFlagVisible.set(false);
     }
 
     const length =
@@ -251,9 +263,12 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
       <>
         <g id="FailedGroup" ref={this.failedGroup} class="HiddenElement">
           <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
-          <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">
-            SPD
-          </text>
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdFlagVisible}>
+            <text id="SpeedFailText" class="FontLargest EndAlign Red" x="17.756115" y="83.386398">
+              SPD
+            </text>
+          </FlashOneHertz>
+
           <path id="SpeedTapeOutlineRight" class="NormalStroke Red" d={this.pathSub} />
         </g>
 
@@ -380,7 +395,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
 
   private decelRef = FSComponent.createRef<SVGTextElement>();
 
-  private spdLimFlagRef = FSComponent.createRef<SVGTextElement>();
+  private readonly spdLimFlagVisible = Subject.create(false);
 
   private onGround = true;
 
@@ -464,9 +479,9 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       .whenChanged()
       .handle((a) => {
         if (a === 0) {
-          this.spdLimFlagRef.instance.style.visibility = 'visible';
+          this.spdLimFlagVisible.set(true);
         } else {
-          this.spdLimFlagRef.instance.style.visibility = 'hidden';
+          this.spdLimFlagVisible.set(false);
         }
       });
   }
@@ -490,14 +505,14 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
           />
           <path class="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
           <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke White" d="m1.9058 123.56h21.859" />
-          <g ref={this.spdLimFlagRef}>
-            <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMedium EndAlign Red Blink9Seconds">
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdLimFlagVisible}>
+            <text id="SpdLimFailTextUpper" x="32.077583" y="116.57941" class="FontMedium EndAlign Red">
               SPD
             </text>
-            <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMedium EndAlign Red Blink9Seconds">
+            <text id="SpdLimFailTextLower" x="32.107349" y="122.14585" class="FontMedium EndAlign Red">
               LIM
             </text>
-          </g>
+          </FlashOneHertz>
         </g>
       </>
     );
@@ -984,15 +999,15 @@ class V1Offtape extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 interface SpeedStateInfo {
-  targetSpeed: number;
-  managedTargetSpeed: number;
-  holdValue: number;
-  isSpeedManaged: boolean;
-  isMach: boolean;
+  pfdTargetSpeed: Arinc429WordData;
+  fcuSelectedSpeed: Arinc429WordData;
   speed: Arinc429WordData;
+  fmgcDiscreteWord5: Arinc429Word;
 }
 
 class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly spdSelFlagVisible = Subject.create(false);
+
   private upperBoundRef = FSComponent.createRef<SVGTextElement>();
 
   private lowerBoundRef = FSComponent.createRef<SVGTextElement>();
@@ -1009,36 +1024,38 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private speedState: SpeedStateInfo = {
     speed: new Arinc429Word(0),
-    targetSpeed: 100,
-    managedTargetSpeed: 100,
-    holdValue: 100,
-    isSpeedManaged: false,
-    isMach: false,
+    pfdTargetSpeed: new Arinc429Word(0),
+    fcuSelectedSpeed: new Arinc429Word(0),
+    fmgcDiscreteWord5: new Arinc429Word(0),
   };
-
-  private handleManagedSpeed() {
-    if (this.speedState.isSpeedManaged) {
-      this.currentVisible.instance.classList.replace('Cyan', 'Magenta');
-      const text = Math.round(this.speedState.managedTargetSpeed).toString().padStart(3, '0');
-      this.textSub.set(text);
-    } else {
-      this.currentVisible.instance.classList.replace('Magenta', 'Cyan');
-      const text = Math.round(this.speedState.managedTargetSpeed).toString().padStart(3, '0');
-      this.textSub.set(text);
-    }
-  }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.needsUpdate = true;
 
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<PFDSimvars & ClockEvents & Arinc429Values & FgBus & FcuBus>();
 
     sub
-      .on('isSelectedSpeed')
+      .on('pfdSelectedSpeed')
+      .withArinc429Precision(2)
+      .handle((s) => {
+        this.speedState.pfdTargetSpeed = s;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('fmgcDiscreteWord5')
       .whenChanged()
       .handle((s) => {
-        this.speedState.isSpeedManaged = !s;
+        this.speedState.fmgcDiscreteWord5 = s;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('fcuSelectedAirspeed')
+      .withArinc429Precision(2)
+      .handle((s) => {
+        this.speedState.fcuSelectedSpeed = s;
         this.needsUpdate = true;
       });
 
@@ -1048,30 +1065,6 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
       .handle((s) => {
         this.speedState.speed = s;
 
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('holdValue')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.holdValue = s;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('machActive')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.isMach = s;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('targetSpeedManaged')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.managedTargetSpeed = s;
         this.needsUpdate = true;
       });
 
@@ -1090,72 +1083,77 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
     if (this.needsUpdate === true) {
       this.needsUpdate = false;
 
-      this.determineTargetSpeed();
-      const inRange = this.handleLowerUpperBound();
-      this.handleManagedSpeed();
+      const fmgcPfdSelectedSpeedValid = !(
+        this.speedState.pfdTargetSpeed.isNoComputedData() || this.speedState.pfdTargetSpeed.isFailureWarning()
+      );
+      const isSpeedManaged =
+        this.speedState.fmgcDiscreteWord5.bitValueOr(19, false) &&
+        !(this.speedState.fmgcDiscreteWord5.bitValueOr(20, false) || !fmgcPfdSelectedSpeedValid);
+
+      const chosenTargetSpeed = fmgcPfdSelectedSpeedValid
+        ? this.speedState.pfdTargetSpeed
+        : this.speedState.fcuSelectedSpeed;
+
+      const chosenTargetSpeedFailed = chosenTargetSpeed.isFailureWarning();
+      const chosenTargetSpeedNcd = chosenTargetSpeed.isNoComputedData();
+
+      const inRange = this.handleVisibility(chosenTargetSpeed.value, chosenTargetSpeedFailed, chosenTargetSpeedNcd);
+
+      if (isSpeedManaged) {
+        this.currentVisible.instance.classList.replace('Cyan', 'Magenta');
+      } else {
+        this.currentVisible.instance.classList.replace('Magenta', 'Cyan');
+      }
 
       if (inRange) {
         const multiplier = 100;
         const currentValueAtPrecision = Math.round(this.speedState.speed.value * multiplier) / multiplier;
-        const offset =
-          ((currentValueAtPrecision -
-            (this.speedState.isSpeedManaged ? this.speedState.managedTargetSpeed : this.speedState.targetSpeed)) *
-            DistanceSpacing) /
-          ValueSpacing;
+        const offset = ((currentValueAtPrecision - chosenTargetSpeed.value) * DistanceSpacing) / ValueSpacing;
         this.speedTargetRef.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
       } else {
-        const text = Math.round(
-          this.speedState.isSpeedManaged ? this.speedState.managedTargetSpeed : this.speedState.targetSpeed,
-        )
-          .toString()
-          .padStart(3, '0');
+        const text = Math.round(chosenTargetSpeed.value).toString().padStart(3, '0');
         this.textSub.set(text);
       }
     }
   }
 
-  private determineTargetSpeed() {
-    const isSelected = !this.speedState.isSpeedManaged;
-    if (isSelected) {
-      if (this.speedState.isMach) {
-        const holdValue = this.speedState.holdValue;
-        this.speedState.targetSpeed = SimVar.GetGameVarValue(
-          'FROM MACH TO KIAS',
-          'number',
-          holdValue === null ? undefined : holdValue,
-        );
-      } else {
-        this.speedState.targetSpeed = this.speedState.holdValue;
-      }
-    }
-  }
-
-  private handleLowerUpperBound(): boolean {
+  private handleVisibility(currentTargetSpeed: number, spdSelFail: boolean, spdSelNcd: boolean): boolean {
     let inRange = false;
 
-    const currentTargetSpeed = this.speedState.isSpeedManaged
-      ? this.speedState.managedTargetSpeed
-      : this.speedState.targetSpeed;
-    if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
+    if (spdSelFail) {
+      this.lowerBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundRef.instance.style.visibility = 'hidden';
+      this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.spdSelFlagVisible.set(true);
+    } else if (spdSelNcd) {
+      this.lowerBoundRef.instance.style.visibility = 'hidden';
+      this.upperBoundRef.instance.style.visibility = 'hidden';
+      this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.spdSelFlagVisible.set(false);
+    } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange) {
       this.upperBoundRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.spdSelFlagVisible.set(false);
       this.currentVisible = this.upperBoundRef;
-    } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
+    } else if (this.speedState.speed.value - currentTargetSpeed > DisplayRange && !this.decelActive) {
       this.lowerBoundRef.instance.style.visibility = 'visible';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.spdSelFlagVisible.set(false);
       this.currentVisible = this.lowerBoundRef;
     } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'visible';
+      this.spdSelFlagVisible.set(false);
       this.currentVisible = this.speedTargetRef;
       inRange = true;
     } else {
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.spdSelFlagVisible.set(false);
     }
     return inRange;
   }
@@ -1164,7 +1162,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
     return (
       <>
         <text
-          ref={this.upperBoundRef}
+          ref={this.lowerBoundRef}
           id="SelectedSpeedLowerText"
           class="FontSmallest EndAlign Cyan"
           x="24.078989"
@@ -1173,14 +1171,20 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
           {this.textSub}
         </text>
         <text
-          ref={this.lowerBoundRef}
-          id="SelectedSpeedLowerText"
+          ref={this.upperBoundRef}
+          id="SelectedSpeedUpperText"
           class="FontSmallest EndAlign Cyan"
           x="24.113895"
           y="36.670692"
         >
           {this.textSub}
         </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.spdSelFlagVisible}>
+          <text id="SelectedSpeedFailText" class="FontSmall EndAlign Red" x="24.078989" y="36.670692">
+            SPD SEL
+          </text>
+        </FlashOneHertz>
+
         <path
           ref={this.speedTargetRef}
           class="NormalStroke CornerRound Cyan"
@@ -1194,34 +1198,53 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
-  private shouldShowMargins = false;
-
   private currentSpeed = Subject.create(Arinc429Word.empty());
 
-  private upperSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
+  private speedMarginHigh = Subject.create(Arinc429Word.empty());
 
-  private lowerSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
+  private speedMarginLow = Subject.create(Arinc429Word.empty());
 
-  private upperMarginTransform = Subject.create('translate(0 0)');
+  private upperSpeedMarginVisibility = MappedSubject.create(
+    ([currentSpeed, speedMargin]) => this.computeVisibility(currentSpeed, speedMargin),
+    this.currentSpeed,
+    this.speedMarginHigh,
+  );
 
-  private lowerMarginTransform = Subject.create('translate(0 0)');
+  private lowerSpeedMarginVisibility = MappedSubject.create(
+    ([currentSpeed, speedMargin]) => this.computeVisibility(currentSpeed, speedMargin),
+    this.currentSpeed,
+    this.speedMarginLow,
+  );
+
+  private upperMarginTransform = MappedSubject.create(
+    ([currentSpeed, speedMargin]) => `translate(0 ${this.computeOffset(currentSpeed, speedMargin).toFixed(2)})`,
+    this.currentSpeed,
+    this.speedMarginHigh,
+  );
+
+  private lowerMarginTransform = MappedSubject.create(
+    ([currentSpeed, speedMargin]) => `translate(0 ${this.computeOffset(currentSpeed, speedMargin).toFixed(2)})`,
+    this.currentSpeed,
+    this.speedMarginLow,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & FmsVars>();
-
-    sub
-      .on('showSpeedMargins')
-      .whenChanged()
-      .handle((active) => (this.shouldShowMargins = active));
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & FgBus>();
 
     sub
       .on('speedAr')
       .withArinc429Precision(2)
       .handle((s) => this.currentSpeed.set(s));
 
-    sub.on('upperSpeedMargin').handle(this.updateMargin(this.upperSpeedMarginVisibility, this.upperMarginTransform));
-    sub.on('lowerSpeedMargin').handle(this.updateMargin(this.lowerSpeedMarginVisibility, this.lowerMarginTransform));
+    sub
+      .on('fmgcSpeedMarginHigh')
+      .withArinc429Precision(2)
+      .handle((s) => this.speedMarginHigh.set(s));
+    sub
+      .on('fmgcSpeedMarginLow')
+      .withArinc429Precision(2)
+      .handle((s) => this.speedMarginLow.set(s));
   }
 
   render(): VNode {
@@ -1245,100 +1268,74 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
     );
   }
 
-  private updateMargin(visibility: Subject<'visible' | 'hidden'>, transform: Subject<string>) {
-    return (speed: number) => {
-      const shouldForceHideMargins = !this.shouldShowMargins || !this.currentSpeed.get().isNormalOperation();
-      const marginIsVisible = visibility.get() === 'visible';
+  private computeVisibility(currentSpeed: Arinc429Word, speedMargin: Arinc429Word) {
+    if (
+      Math.abs(currentSpeed.value - speedMargin.value) < DisplayRange &&
+      !(speedMargin.isFailureWarning() || speedMargin.isNoComputedData())
+    ) {
+      return 'visible';
+    } else {
+      return 'hidden';
+    }
+  }
 
-      if (shouldForceHideMargins) {
-        if (marginIsVisible) {
-          visibility.set('hidden');
-        }
-
-        return;
-      }
-
-      const isInRange = Math.abs(this.currentSpeed.get().value - speed) < DisplayRange;
-      if (isInRange) {
-        const offset = (
-          Math.round((100 * (this.currentSpeed.get().value - speed) * DistanceSpacing) / ValueSpacing) / 100
-        ).toFixed(2);
-        transform.set(`translate(0 ${offset})`);
-      }
-
-      if (isInRange !== marginIsVisible) {
-        visibility.set(isInRange ? 'visible' : 'hidden');
-      }
-    };
+  private computeOffset(currentSpeed: Arinc429Word, speedMargin: Arinc429Word) {
+    return Math.round((100 * (currentSpeed.value - speedMargin.value) * DistanceSpacing) / ValueSpacing) / 100;
   }
 }
 
 export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
-  private machTextSub = Subject.create('');
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars>();
 
-  private failedRef = FSComponent.createRef<SVGTextElement>();
+  private readonly machTextSub = Subject.create('');
 
-  private showMach = false;
+  private readonly machFlagVisible = Subject.create(false);
 
-  private onGround = false;
+  private machHysteresis = false;
 
-  private leftMainGearCompressed = true;
+  private readonly mach = Arinc429LocalVarConsumerSubject.create(this.sub.on('mach'), Arinc429Register.empty().rawWord);
 
-  private rightMainGearCompressed = true;
+  private readonly machPermille = this.mach.map((w) =>
+    w.isNormalOperation() || w.isFunctionalTest() ? Math.round(w.value * 1000) : 0,
+  );
+
+  private handleMachDisplay(mach: Arinc429WordData) {
+    if (mach.value > 0.5) {
+      this.machHysteresis = true;
+    } else if (mach.value < 0.45) {
+      this.machHysteresis = false;
+    }
+
+    const hideMachDisplay = !this.machHysteresis && !mach.isFailureWarning();
+
+    if (hideMachDisplay) {
+      this.machFlagVisible.set(false);
+      this.machTextSub.set('');
+    } else if (mach.isFailureWarning()) {
+      this.machFlagVisible.set(true);
+      this.machTextSub.set('');
+    } else {
+      this.machFlagVisible.set(false);
+      this.machTextSub.set(`.${this.machPermille.get()}`);
+    }
+  }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars>();
-
-    sub.on('machAr').handle((mach) => {
-      if (!mach.isNormalOperation() && !this.onGround) {
-        this.machTextSub.set('');
-        this.failedRef.instance.style.display = 'inline';
-        return;
-      }
-      this.failedRef.instance.style.display = 'none';
-      const machPermille = Math.round(mach.valueOr(0) * 1000);
-      if (this.showMach && machPermille < 450) {
-        this.showMach = false;
-        this.machTextSub.set('');
-      } else if (!this.showMach && machPermille > 500) {
-        this.showMach = true;
-      }
-      if (this.showMach) {
-        this.machTextSub.set(`.${machPermille}`);
-      }
-    });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.leftMainGearCompressed = g;
-        this.onGround = this.rightMainGearCompressed || g;
-      });
-
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.rightMainGearCompressed = g;
-        this.onGround = this.leftMainGearCompressed || g;
-      });
+    this.mach.sub((v) => {
+      this.handleMachDisplay(v);
+    }, true);
   }
 
   render(): VNode {
     return (
       <>
-        <text
-          ref={this.failedRef}
-          id="MachFailText"
-          class="Blink9Seconds FontLargest StartAlign Red"
-          x="5.4257932"
-          y="136.88908"
-        >
-          MACH
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.machFlagVisible}>
+          <text id="MachFailText" class="FontLargest StartAlign Red" x="5.4257932" y="136.88908">
+            MACH
+          </text>
+        </FlashOneHertz>
+
         <text id="CurrentMachText" class="FontLargest StartAlign Green" x="5.566751" y="137.03004">
           {this.machTextSub}
         </text>

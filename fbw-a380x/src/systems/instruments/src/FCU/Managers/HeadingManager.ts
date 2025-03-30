@@ -14,6 +14,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
   private _rotaryEncoderIncrement = 0.1;
   private _rotaryEncoderPreviousTimestamp = 0;
 
+  private textTRUE?: ReturnType<typeof this.getTextElement>;
   private textHDG?: ReturnType<typeof this.getTextElement>;
   private textTRK?: ReturnType<typeof this.getTextElement>;
   private signDegrees?: ReturnType<typeof this.getTextElement>;
@@ -39,6 +40,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
   }
 
   public init(): void {
+    this.textTRUE = this.getTextElement('TRUE');
     this.textHDG = this.getTextElement('HDG');
     this.textTRK = this.getTextElement('TRK');
     this.signDegrees = this.getTextElement('DEGREES');
@@ -227,7 +229,7 @@ export class HeadingManager extends TemporaryHax implements Instrument {
         this.setTextElementActive(this.textHDG, true);
         this.setTextElementActive(this.textTRK, true);
         this.setElementVisibility(this.signDegrees, true);
-        this.textValueContent = '.8.8.8';
+        this.textValueContent = '8.8.8';
         return;
       }
       if ((this.isManagedArmed || this.isManagedActive) && !this.showSelectedHeading) {

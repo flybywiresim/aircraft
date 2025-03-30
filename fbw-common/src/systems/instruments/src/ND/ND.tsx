@@ -14,6 +14,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
+import { GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
+
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
 import { RwyAheadAdvisory } from './shared/RwyAheadAdvisory';
@@ -23,7 +25,6 @@ import { LnavStatus } from './shared/LnavStatus';
 import { CrossTrackError } from './shared/CrossTrackError';
 import { RadioNeedle } from './shared/RadioNeedle';
 import { GenericFmsEvents } from './types/GenericFmsEvents';
-import { GenericAdirsEvents } from './types/GenericAdirsEvents';
 import { NDSimvars } from './NDSimvarPublisher';
 import { ArcModePage } from './pages/arc';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
@@ -69,6 +70,12 @@ export interface NDProps<T extends number> {
   side: EfisSide;
 
   rangeValues: T[];
+
+  terrainThresholdPaddingText: string;
+
+  rangeChangeMessage: string;
+
+  modeChangeMessage: string;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -149,8 +156,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
   private showOans = Subject.create<boolean>(false);
 
-  private showOansRunwayInfo = Subject.create<boolean>(false);
-
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -212,12 +217,15 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
         this.invalidateRange();
       });
 
+    this.rangeChangeInProgress.sub((rangechange) => {
+      this.props.bus.getPublisher<NDControlEvents>().pub('set_range_change', rangechange);
+    });
+
     sub
       .on('ndMode')
       .whenChanged()
       .handle((mode) => {
         this.handleNewMapPage(mode);
-        this.shouldShowOansRunwayInfo();
       });
 
     this.mapRecomputing.sub((recomputing) => {
@@ -225,9 +233,13 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     });
 
     sub
-      .on('ndShowOans')
+      .on('nd_show_oans')
       .whenChanged()
-      .handle((show) => this.showOans.set(show));
+      .handle((data) => {
+        if (data.side === this.props.side) {
+          this.showOans.set(data.show);
+        }
+      });
   }
 
   // eslint-disable-next-line arrow-body-style
@@ -344,21 +356,17 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     }
   }
 
-  private shouldShowOansRunwayInfo() {
-    this.showOansRunwayInfo.set(true); // Maybe only active when this.currentPageMode.get() === EfisNdMode.PLAN ?
-  }
-
   render(): VNode | null {
     return (
       <>
         <div style={{ display: this.showOans.map((it) => (it ? 'block' : 'none')) }}>
-          <div style={{ display: this.showOansRunwayInfo.map((it) => (it ? 'none' : 'block')) }}>
+          <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'none' : 'block')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
               <WindIndicator bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
             </svg>
           </div>
-          <div style={{ display: this.showOansRunwayInfo.map((it) => (it ? 'block' : 'none')) }}>
+          <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
               <BtvRunwayInfo bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
@@ -453,8 +461,8 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               HDG
             </Flag>
 
-            <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
-              RANGE CHANGE
+            <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate mode-range-change">
+              {this.props.rangeChangeMessage}
             </Flag>
             <Flag
               visible={MappedSubject.create(
@@ -464,12 +472,12 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               )}
               x={384}
               y={320}
-              class="Green FontIntermediate"
+              class="Green mode-range-change"
             >
-              MODE CHANGE
+              {this.props.modeChangeMessage}
             </Flag>
 
-            <TerrainMapThresholds bus={this.props.bus} />
+            <TerrainMapThresholds bus={this.props.bus} paddingText={this.props.terrainThresholdPaddingText} />
 
             <RadioNavInfo bus={this.props.bus} index={1} mode={this.currentPageMode} />
             <RadioNavInfo bus={this.props.bus} index={2} mode={this.currentPageMode} />
@@ -742,7 +750,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
         this.btvMessageValue.set(value);
       });
 
-    this.sub.on('simTime').whenChangedBy(100).handle(this.refreshToWptIdent.bind(this));
+    this.sub.on('simTime').whenChangedBy(100).handle(this.refreshApproachMessage.bind(this));
 
     this.sub.on('trueTrackRaw').handle((v) => this.trueTrackWord.setWord(v));
 
@@ -756,7 +764,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
       .handle((v) => this.trueRefActive.set(!!v));
   }
 
-  private refreshToWptIdent(): void {
+  private refreshApproachMessage(): void {
     if (this.needApprMessageUpdate) {
       const ident = SimVarString.unpack([this.apprMessage0, this.apprMessage1]);
 
@@ -769,8 +777,9 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
     return (
       <>
         <Layer x={384} y={28}>
-          {/* TODO verify */}
-          <text class="Green FontIntermediate MiddleAlign">{this.approachMessageValue}</text>
+          <text class="Green FontIntermediate MiddleAlign" style="white-space: pre">
+            {this.approachMessageValue}
+          </text>
         </Layer>
         <Layer
           x={384}
@@ -972,7 +981,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     return (
       <Layer x={690} y={25} visible={this.visibleSub}>
         {/* This is always visible */}
-        <text x={-13} y={0} class="White FontIntermediate EndAlign">
+        <text class="White FontIntermediate EndAlign WaypointIndicator" transform="translate(-13, 0)">
           {this.toWptIdentValue}
         </text>
 

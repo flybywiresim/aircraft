@@ -1,0 +1,116 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-data-airport-container {
+  margin: 0;
+  position: relative;
+}
+
+
+.mfd-data-airport-input {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.mfd-data-airport-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+
+.mfd-data-airport-border-container {
+  border: 1px solid $display-light-grey;
+  height: 450px;
+  flex-wrap: wrap;
+  overflow:hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mfd-data-airport-info-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-data-airport-info {
+   min-height: 100px;
+}
+
+.mfd-data-airport-coords {
+  margin-top: 5px;
+  margin-bottom: 20px;
+}
+
+.mfd-data-airport-runway-list-container {
+    height: 450px;
+    margin: 0;
+    position: relative;
+}
+
+.mfd-data-airport-runway-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  padding: 15px 0;
+  height: 400px;
+}
+
+.mfd-data-airport-runway {
+  position: relative;
+  background-color: $display-background;
+  color: $display-green;
+  padding: 20px 0 20px 130px;
+  box-sizing: border-box;
+}
+
+.mfd-data-airport-runway-scroll-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.mfd-data-airport-runway-field {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.mfd-data-airport-runway-field::before {
+  content: attr(data-label);
+  width: 120px;
+  text-align: right;
+  margin-right: 20px;
+}
+
+.mfd-data-airport-runway-field-course {
+  position: absolute;
+  right: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.mfd-data-airport-runway-field-course::before {
+  content: 'CRS';
+  margin-right: 10px;
+}
+
+
+.mfd-data-airport-custom-rwy-container {
+  height: 550px;
+}
+
+.mfd-data-airport-custom-rwy-label {
+  margin-top: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

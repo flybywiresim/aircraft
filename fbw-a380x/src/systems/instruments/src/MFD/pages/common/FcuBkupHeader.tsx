@@ -1,14 +1,14 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
+import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 
 /*
  * Complete header for the FCU BKUP system
  */
 export class FcuBkupHeader extends AbstractHeader {
-  private afsIsSelected = Subject.create(false);
+  private readonly afsIsSelected = Subject.create(false);
 
-  private efisIsSelected = Subject.create(false);
+  private readonly efisIsSelected = Subject.create(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

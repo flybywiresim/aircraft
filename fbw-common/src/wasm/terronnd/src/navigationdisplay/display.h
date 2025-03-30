@@ -6,12 +6,15 @@
 #pragma clang diagnostic ignored "-Wsign-conversion"
 #include <MSFS/Legacy/gauges.h>
 #include <MSFS/Render/nanovg.h>
+#include <MSFS/Render/stb_image.h>
 #pragma clang diagnostic pop
 #include <cstdint>
 #include <string_view>
 #include <vector>
-
 #include <iostream>
+
+#define FMT_HEADER_ONLY
+#include <fmt/format.h>
 
 #include "../simconnect/clientdataarea.hpp"
 #include "../simconnect/connection.hpp"
@@ -113,14 +116,38 @@ class Display : public DisplayBase {
     this->_frameData->defineArea(side == DisplaySide::Left ? FrameDataLeftName : FrameDataRightName);
     this->_frameData->requestArea(SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
     this->_frameData->setOnChangeCallback([=]() {
-      this->destroyImage();
-
       if (!this->_ignoreNextFrame && this->_configuration.terrainActive) {
-        this->_nanovgImage =
-            nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
         if (this->_nanovgImage == 0) {
-          std::cerr << "TERR ON ND: Unable to decode the image from the stream" << std::endl;
+          // If we don't have an image yet, create one
+          this->_nanovgImage = nvgCreateImageMem(this->_context, 0, this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize));
+          if (this->_nanovgImage == 0) {
+            std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}", stbi_failure_reason());
+          }
+
+          return;
         }
+
+        // Otherwise, decode the PNG manually and update the existing image
+        int decodedWidth, decodedHeight;
+        uint8_t* decodedImage = stbi_load_from_memory(this->_frameData->data().data(), static_cast<int>(this->_frameBufferSize), &decodedWidth, &decodedHeight, nullptr, 4);
+        if (decodedImage == nullptr) {
+          std::cerr << fmt::format("TERR ON ND: Unable to create the image from the stream. Reason: {}", stbi_failure_reason());
+          return;
+        }
+
+        int width, height;
+        nvgImageSize(this->_context, this->_nanovgImage, &width, &height);
+
+        if (decodedWidth != width || decodedHeight != height) {
+          // This should never happen, but bail just in case
+          std::cerr << fmt::format("TERR ON ND: The image size does not match the expected size. Expected: {}x{}, actual: {}x{}", width, height, decodedWidth, decodedHeight);
+          stbi_image_free(decodedImage);
+          return;
+        }
+
+        nvgUpdateImage(this->_context, this->_nanovgImage, decodedImage);
+
+        stbi_image_free(decodedImage);
       } else {
         this->resetNavigationDisplayData();
       }

@@ -60,22 +60,6 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
     this.refresh(false, false, 0, 0, true);
   }
 
-  private onPush(): void {
-    const mode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Number');
-    if (mode >= 32 && mode <= 34) {
-      return;
-    }
-    clearTimeout(this._resetSelectionTimeout);
-    this.forceUpdate = true;
-
-    this.currentState = A320_Neo_FCU_VSpeed_State.Zeroing;
-
-    this.selectedVs = 0;
-    this.selectedFpa = 0;
-
-    SimVar.SetSimVarValue('K:A32NX.FCU_TO_AP_VS_PUSH', 'number', 0);
-  }
-
   private onRotate(): void {
     if (
       this.currentState === A320_Neo_FCU_VSpeed_State.Idle ||
@@ -223,7 +207,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
       if (this.lightsTest) {
         this.setTextElementActive(this.textVS, true);
         this.setTextElementActive(this.textFPA, true);
-        this.textValueContent = '+8.888';
+        this.textValueContent = '+*.8.8.8';
         return;
       }
       this.setTextElementActive(this.textVS, !this.isFPAMode);
@@ -233,7 +217,7 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
       if (this.isActive && this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
         const sign = currentValue < 0 ? '-' : '+';
         if (this.isFPAMode) {
-          this.textValueContent = `${sign}${MathUtils.round(Math.abs(currentValue), 0.1).toFixed(1)}`;
+          this.textValueContent = `${sign.padStart(2, '\u00A0')}${MathUtils.round(Math.abs(currentValue), 0.1).toFixed(1)}`;
         } else if (this.currentState === A320_Neo_FCU_VSpeed_State.Zeroing) {
           this.textValueContent = '~00oo';
         } else {
@@ -275,8 +259,6 @@ export class VerticalSpeedManager extends TemporaryHax implements Instrument {
         this.ABS_MINMAX_FPA,
       );
       this.onRotate();
-    } else if (_event === 'VS_PUSH') {
-      this.onPush();
     } else if (_event === 'VS_PULL') {
       this.onPull();
     } else if (_event === 'VS_SET') {

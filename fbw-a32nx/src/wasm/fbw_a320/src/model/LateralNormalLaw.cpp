@@ -190,7 +190,7 @@ void LateralNormalLaw::reset(void)
   LateralNormalLaw_RateLimiter_Reset(&LateralNormalLaw_DWork.sf_RateLimiter_d);
   LateralNormalLaw_DWork.pY_not_empty = false;
   LateralNormalLaw_RateLimiter_Reset(&LateralNormalLaw_DWork.sf_RateLimiter_j);
-  LateralNormalLaw_DWork.pY_not_empty_n = false;
+  LateralNormalLaw_DWork.pY_not_empty_j = false;
 }
 
 void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_Theta_deg, const real_T *rtu_In_Phi_deg,
@@ -200,14 +200,6 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, const real_T *rtu_In_ap_phi_c_deg, const
   real_T *rtu_In_ap_beta_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_xi_deg, real_T *rty_Out_zeta_deg)
 {
-  static const real_T c_0[5]{ 1.0, 1.0, 1.2, 2.0, 2.0 };
-
-  static const int16_T b_0[5]{ -1, 0, 120, 320, 400 };
-
-  static const int16_T b[4]{ 0, 120, 150, 380 };
-
-  static const int8_T c[4]{ -15, -15, -15, -2 };
-
   real_T L_xi;
   real_T Vias;
   real_T dynamic_pressure_tmp;
@@ -218,8 +210,8 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   real_T rtb_Gain1_f;
   real_T rtb_Limiterxi;
   real_T rtb_Product_f;
-  real_T rtb_Y_ik;
-  real_T rtb_Y_p;
+  real_T rtb_Y_du;
+  real_T rtb_Y_i;
   real_T v_cas_ms_tmp;
   int32_T low_i;
   int32_T low_ip1;
@@ -227,7 +219,15 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   int32_T rtb_in_flight;
   int16_T r_tmp;
   boolean_T rtb_OR;
-  if (LateralNormalLaw_DWork.is_active_c5_LateralNormalLaw == 0U) {
+  static const int16_T b[4]{ 0, 120, 150, 380 };
+
+  static const int8_T c[4]{ -15, -15, -15, -2 };
+
+  static const int16_T b_0[5]{ -1, 0, 120, 320, 400 };
+
+  static const real_T c_0[5]{ 1.0, 1.0, 1.2, 2.0, 2.0 };
+
+  if (LateralNormalLaw_DWork.is_active_c5_LateralNormalLaw == 0) {
     LateralNormalLaw_DWork.is_active_c5_LateralNormalLaw = 1U;
     LateralNormalLaw_DWork.is_c5_LateralNormalLaw = LateralNormalLaw_IN_GroundMode;
     rtb_in_flight = 0;
@@ -255,7 +255,7 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
 
   LateralNormalLaw_RateLimiter(rtb_Limiterxi, LateralNormalLaw_rtP.RateLimiterVariableTs_up,
     LateralNormalLaw_rtP.RateLimiterVariableTs_lo, rtu_In_time_dt,
-    LateralNormalLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_p, &LateralNormalLaw_DWork.sf_RateLimiter);
+    LateralNormalLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_du, &LateralNormalLaw_DWork.sf_RateLimiter);
   rtb_Limiterxi = LateralNormalLaw_rtP.Gain_Gain * *rtu_In_delta_xi_pos;
   r = *rtu_In_V_ias_kn;
   rtb_Product_f = *rtu_In_delta_zeta_pos;
@@ -291,7 +291,7 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   Vias *= 0.5144;
   LateralNormalLaw_RateLimiter(0.814 / std::sqrt(1.3734E+6 / (149.45000000000002 * (Vias * Vias))) * (r * rtb_Product_f),
     LateralNormalLaw_rtP.RateLimiterVariableTs1_up, LateralNormalLaw_rtP.RateLimiterVariableTs1_lo, rtu_In_time_dt,
-    LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition, &rtb_Y_ik, &LateralNormalLaw_DWork.sf_RateLimiter_d);
+    LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition, &rtb_Y_i, &LateralNormalLaw_DWork.sf_RateLimiter_d);
   if (!LateralNormalLaw_DWork.pY_not_empty) {
     LateralNormalLaw_DWork.pY = LateralNormalLaw_rtP.APEngagedRateLimiter_InitialCondition;
     LateralNormalLaw_DWork.pY_not_empty = true;
@@ -300,7 +300,7 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   LateralNormalLaw_DWork.pY += std::fmax(std::fmin(static_cast<real_T>(*rtu_In_any_ap_engaged) -
     LateralNormalLaw_DWork.pY, std::abs(LateralNormalLaw_rtP.APEngagedRateLimiter_up) * *rtu_In_time_dt), -std::abs
     (LateralNormalLaw_rtP.APEngagedRateLimiter_lo) * *rtu_In_time_dt);
-  Vias = rtb_Y_p + LateralNormalLaw_DWork.pY;
+  Vias = rtb_Y_du + LateralNormalLaw_DWork.pY;
   if (Vias > LateralNormalLaw_rtP.Saturation1_UpperSat) {
     Vias = LateralNormalLaw_rtP.Saturation1_UpperSat;
   } else if (Vias < LateralNormalLaw_rtP.Saturation1_LowerSat) {
@@ -313,8 +313,9 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
     Vias = LateralNormalLaw_rtP.Saturation_LowerSat_o;
   }
 
-  rtb_Y_ik = (LateralNormalLaw_rtP.Constant_Value_l1 - Vias) * rtb_Limiterxi;
-  v_cas_ms_tmp = std::fmax(*rtu_In_V_ias_kn, 80.0) * 0.5144;
+  rtb_Y_i = (LateralNormalLaw_rtP.Constant_Value_l1 - Vias) * rtb_Limiterxi;
+  v_cas_ms_tmp = std::fmax(*rtu_In_V_ias_kn, 80.0);
+  v_cas_ms_tmp *= 0.5144;
   dynamic_pressure_tmp = v_cas_ms_tmp * v_cas_ms_tmp * 0.6125;
   rtb_Product_f = dynamic_pressure_tmp * 122.0 * 17.9;
   L_xi = rtb_Product_f * -0.090320788790706555 / 1.0E+6;
@@ -382,13 +383,13 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   }
 
   LateralNormalLaw_DWork.Delay_DSTATE_o = std::fmin(rtb_Limiterxi, std::fmax(rtb_Divide,
-    LateralNormalLaw_DWork.Delay_DSTATE_o * rtb_Y_p)) * LateralNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain *
+    LateralNormalLaw_DWork.Delay_DSTATE_o * rtb_Y_du)) * LateralNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain *
     *rtu_In_time_dt;
-  rtb_OR = ((rtb_Y_p == 0.0) || (*rtu_In_tracking_mode_on) || (*rtu_In_any_ap_engaged));
-  rtb_Y_p = *rtu_In_Phi_deg - LateralNormalLaw_DWork.Delay_DSTATE_o;
+  rtb_OR = ((rtb_Y_du == 0.0) || (*rtu_In_tracking_mode_on) || (*rtu_In_any_ap_engaged));
+  rtb_Y_du = *rtu_In_Phi_deg - LateralNormalLaw_DWork.Delay_DSTATE_o;
   LateralNormalLaw_DWork.icLoad = (rtb_OR || LateralNormalLaw_DWork.icLoad);
   if (LateralNormalLaw_DWork.icLoad) {
-    LateralNormalLaw_DWork.Delay_DSTATE_d = rtb_Y_p;
+    LateralNormalLaw_DWork.Delay_DSTATE_d = rtb_Y_du;
   }
 
   LateralNormalLaw_DWork.Delay_DSTATE_o += LateralNormalLaw_DWork.Delay_DSTATE_d;
@@ -414,8 +415,8 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   rtb_Gain1_f = LateralNormalLaw_rtP.Gain1_Gain_c * *rtu_In_pk_deg_s;
   rtb_Limiterxi = look1_binlxpw(*rtu_In_time_dt, LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1,
     LateralNormalLaw_rtP.ScheduledGain_Table, 4U);
-  rtb_Y_p = dynamic_pressure_tmp / v_cas_ms_tmp * 122.0 * 320.40999999999997;
-  LateralNormalLaw_DWork.Delay_DSTATE = ((-(rtb_Y_p * -0.487 / 1.0E+6 + 1.414 * omega_0) / L_xi * rtb_Gain1_f + k_phi *
+  rtb_Y_du = dynamic_pressure_tmp / v_cas_ms_tmp * 122.0 * 320.40999999999997;
+  LateralNormalLaw_DWork.Delay_DSTATE = ((-(rtb_Y_du * -0.487 / 1.0E+6 + 1.414 * omega_0) / L_xi * rtb_Gain1_f + k_phi *
     rtb_Divide) + LateralNormalLaw_rtP.Gain1_Gain_n * LateralNormalLaw_DWork.Delay_DSTATE_o * -k_phi) * rtb_Limiterxi *
     LateralNormalLaw_rtP.Gain_Gain_p;
   if (LateralNormalLaw_DWork.Delay_DSTATE > LateralNormalLaw_rtP.Limiterxi_UpperSat) {
@@ -426,7 +427,7 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
     rtb_Limiterxi = LateralNormalLaw_DWork.Delay_DSTATE;
   }
 
-  LateralNormalLaw_RateLimiter(rtb_Limiterxi * Vias + rtb_Y_ik, LateralNormalLaw_rtP.RateLimiterVariableTs_up_d,
+  LateralNormalLaw_RateLimiter(rtb_Limiterxi * Vias + rtb_Y_i, LateralNormalLaw_rtP.RateLimiterVariableTs_up_d,
     LateralNormalLaw_rtP.RateLimiterVariableTs_lo_b, rtu_In_time_dt,
     LateralNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_k, rty_Out_xi_deg,
     &LateralNormalLaw_DWork.sf_RateLimiter_j);
@@ -441,8 +442,8 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
 
   rtb_Limiterxi = *rtu_In_r_deg_s - LateralNormalLaw_rtP.Constant2_Value * rtb_Limiterxi * std::cos(Vias) /
     (LateralNormalLaw_rtP.Gain6_Gain * LateralNormalLaw_DWork.Delay_DSTATE_o) * LateralNormalLaw_rtP.Gain_Gain_g;
-  LateralNormalLaw_DWork.Delay_DSTATE_o = -(std::sqrt(rtb_Product_f * 0.0035255650890285459 / 4.47E+6) * 1.414 + rtb_Y_p
-    * -0.10100220381291185 / 4.47E+6) / (rtb_Product_f * -0.018936822384138473 / 4.47E+6) *
+  LateralNormalLaw_DWork.Delay_DSTATE_o = -(std::sqrt(rtb_Product_f * 0.0035255650890285459 / 4.47E+6) * 1.414 +
+    rtb_Y_du * -0.10100220381291185 / 4.47E+6) / (rtb_Product_f * -0.018936822384138473 / 4.47E+6) *
     (LateralNormalLaw_rtP.Gain1_Gain_k * rtb_Limiterxi) * LateralNormalLaw_rtP.Gain_Gain_b;
   if (LateralNormalLaw_DWork.Delay_DSTATE_o > LateralNormalLaw_rtP.Saturation1_UpperSat_c) {
     LateralNormalLaw_DWork.Delay_DSTATE_o = LateralNormalLaw_rtP.Saturation1_UpperSat_c;
@@ -451,20 +452,20 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   }
 
   rtb_OR = !*rtu_In_on_ground;
-  if (!LateralNormalLaw_DWork.pY_not_empty_n) {
-    LateralNormalLaw_DWork.pY_e = LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_m;
-    LateralNormalLaw_DWork.pY_not_empty_n = true;
+  if (!LateralNormalLaw_DWork.pY_not_empty_j) {
+    LateralNormalLaw_DWork.pY_b = LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_m;
+    LateralNormalLaw_DWork.pY_not_empty_j = true;
   }
 
-  LateralNormalLaw_DWork.pY_e += std::fmax(std::fmin(static_cast<real_T>(rtb_OR) - LateralNormalLaw_DWork.pY_e, std::abs
+  LateralNormalLaw_DWork.pY_b += std::fmax(std::fmin(static_cast<real_T>(rtb_OR) - LateralNormalLaw_DWork.pY_b, std::abs
     (LateralNormalLaw_rtP.RateLimiterVariableTs1_up_o) * *rtu_In_time_dt), -std::abs
     (LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_m) * *rtu_In_time_dt);
-  if (LateralNormalLaw_DWork.pY_e > LateralNormalLaw_rtP.Saturation_UpperSat_j) {
+  if (LateralNormalLaw_DWork.pY_b > LateralNormalLaw_rtP.Saturation_UpperSat_j) {
     Vias = LateralNormalLaw_rtP.Saturation_UpperSat_j;
-  } else if (LateralNormalLaw_DWork.pY_e < LateralNormalLaw_rtP.Saturation_LowerSat_n) {
+  } else if (LateralNormalLaw_DWork.pY_b < LateralNormalLaw_rtP.Saturation_LowerSat_n) {
     Vias = LateralNormalLaw_rtP.Saturation_LowerSat_n;
   } else {
-    Vias = LateralNormalLaw_DWork.pY_e;
+    Vias = LateralNormalLaw_DWork.pY_b;
   }
 
   rtb_Product_f = LateralNormalLaw_DWork.Delay_DSTATE_o * Vias;
@@ -477,14 +478,14 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
     LateralNormalLaw_DWork.Delay_DSTATE_o = LateralNormalLaw_rtP.Saturation2_LowerSat;
   }
 
-  rtb_Y_p = (LateralNormalLaw_rtP.Constant_Value_b - Vias) * LateralNormalLaw_DWork.Delay_DSTATE_o;
+  rtb_Y_du = (LateralNormalLaw_rtP.Constant_Value_b - Vias) * LateralNormalLaw_DWork.Delay_DSTATE_o;
   if (*rtu_In_any_ap_engaged) {
     LateralNormalLaw_DWork.Delay_DSTATE_o = *rtu_In_ap_beta_c_deg;
   } else {
     LateralNormalLaw_DWork.Delay_DSTATE_o = LateralNormalLaw_rtP.Constant_Value;
   }
 
-  *rty_Out_zeta_deg = (rtb_Product_f + rtb_Y_p) + LateralNormalLaw_DWork.Delay_DSTATE_o;
+  *rty_Out_zeta_deg = (rtb_Product_f + rtb_Y_du) + LateralNormalLaw_DWork.Delay_DSTATE_o;
   LateralNormalLaw_DWork.Delay_DSTATE_o = r;
   LateralNormalLaw_DWork.icLoad = false;
 }

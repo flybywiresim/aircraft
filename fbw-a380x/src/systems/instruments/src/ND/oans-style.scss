@@ -21,13 +21,14 @@
 .oanc-container {
   width: 768px;
   height: 768px;
+  overflow: hidden;
 
   background-color: $display-background;
 
   font-family: "Ecam", monospace !important;
 }
 
-.oanc-message-screen {
+.oanc-flag-container {
   position: absolute;
 
   width: 768px;
@@ -37,14 +38,10 @@
   justify-content: center;
   align-items: center;
 
-  font-size: 24px;
-
-  background-color: $display-background;
   color: $display-white;
-
-  z-index: 9999;
 }
-.oanc-message-screen.amber {
+
+.oanc-flag-container.amber {
   color: $display-amber;
 }
 
@@ -202,6 +199,39 @@
   outline: 0px;
 }
 
+.oanc-label-style-cross-symbol {
+  font-size: 0.1px;
+  color: transparent;
+  width: 35px;
+  height: 35px;
+  background-color: transparent;
+  background-image: url('/Images/fbw-a380x/oans/oans-cross.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.oanc-label-style-cross-symbol:hover {
+  outline: 3px solid $display-cyan;
+  pointer-events: auto;
+  outline-offset: 0px !important;
+}
+
+.oanc-label-style-flag-symbol {
+  font-size: 0.1px;
+  color: transparent;
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  background-image: url('/Images/fbw-a380x/oans/oans-flag.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.oanc-label-style-flag-symbol:hover {
+  outline: 3px solid $display-cyan;
+  pointer-events: auto;
+  outline-offset: 0px !important;
+}
 
 .oanc-button {
   padding: 10px 6px;
@@ -239,6 +269,12 @@
   border: solid 1.5px $display-yellow;
   color: $display-yellow;
   font-size: 24px;
+}
+
+.oanc-bottom-flag {
+  padding: 1px;
+  padding-left: 2px;
+  color: $display-amber;
 }
 
 .oanc-speed-info {

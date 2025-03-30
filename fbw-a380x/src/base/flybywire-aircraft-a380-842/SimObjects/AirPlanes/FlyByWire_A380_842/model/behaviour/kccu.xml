@@ -10,7 +10,6 @@
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
-            <!-- TODO change to A380X as soon as systems use new prefix -->
             <PLANE_NAME>A32NX</PLANE_NAME>
         </DefaultTemplateParameters>
 
@@ -20,6 +19,7 @@
             <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
             <ANIM_NAME>PUSH_KCCU#SIDE#_#KEY#_ANIM</ANIM_NAME>
             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_EMISSIVE_CODE>
             <NO_SEQ2/>
             <LEFT_SINGLE_CODE>(&gt;H:#PLANE_NAME#_KCCU_#SIDE#_#KEY#)</LEFT_SINGLE_CODE>
         </UseTemplate>
@@ -309,7 +309,7 @@
 
             <!-- PUSH_LEFT -->
             <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
-                <KEY>SIDE</KEY>
+                <KEY>LEFT</KEY>
                 <TOOLTIPID>LEFT KEY ON KCCU KEYBOARD</TOOLTIPID>
             </UseTemplate>
 

@@ -22,7 +22,6 @@ pub struct BatteryChargeRectifierUnit {
     output_potential: ElectricPotential,
     output_current: ElectricCurrent,
     number: usize,
-    dc_bus: ElectricalBusType,
     battery_hot_bus: ElectricalBusType,
     failure: Failure,
     battery_soc_20: bool,
@@ -40,7 +39,6 @@ impl BatteryChargeRectifierUnit {
     pub fn new(
         context: &mut InitContext,
         number: usize,
-        dc_bus: ElectricalBusType,
         battery_hot_bus: ElectricalBusType,
     ) -> Self {
         Self {
@@ -50,7 +48,6 @@ impl BatteryChargeRectifierUnit {
             output_potential: ElectricPotential::default(),
             output_current: ElectricCurrent::default(),
             number,
-            dc_bus,
             battery_hot_bus,
             failure: Failure::new(FailureType::TransformerRectifier(number)),
             battery_soc_20: false,
@@ -99,16 +96,9 @@ impl BatteryChargeRectifierUnit {
         self.battery_soc_20 = battery.potential().get::<volt>() < 24.5;
     }
 
-    pub fn update(
-        &mut self,
-        electricity: &Electricity,
-        battery_inhibited: bool,
-        emergency_config: bool,
-    ) {
+    pub fn update(&mut self, emergency_config: bool) {
         self.state = self.state.update(
-            battery_inhibited,
             self.battery_pb_is_auto,
-            electricity.bus_is_powered(self.dc_bus),
             emergency_config,
             self.loss_of_ac_duration,
         );
@@ -229,9 +219,7 @@ impl State {
 
     fn update(
         self,
-        battery_inhibited: bool,
         battery_is_auto: bool,
-        dc_bus_powered: bool,
         emergency_config: bool,
         loss_of_ac_duration: Duration,
     ) -> Self {
@@ -245,25 +233,22 @@ impl State {
             }
             Self::Open => {
                 if emergency_config {
-                    Self::Closed
+                    Self::Open
                 } else if !battery_is_auto {
                     Self::BatOff
-                } else if !battery_inhibited && dc_bus_powered {
+                } else if loss_of_ac_duration.is_zero() {
                     Self::Closed
                 } else {
                     Self::Open
                 }
             }
             Self::Closed => {
-                if emergency_config {
-                    Self::Closed
-                } else if !battery_is_auto {
-                    Self::BatOff
-                } else if battery_inhibited
-                    || !dc_bus_powered
-                        && loss_of_ac_duration >= Self::OPEN_BAT_LC_AFTER_AC_LOST_DURATION
+                if emergency_config
+                    || loss_of_ac_duration >= Self::OPEN_BAT_LC_AFTER_AC_LOST_DURATION
                 {
                     Self::Open
+                } else if !battery_is_auto {
+                    Self::BatOff
                 } else {
                     Self::Closed
                 }
@@ -359,7 +344,6 @@ mod battery_charger_rectifier_tests {
                 transformer_rectifier: BatteryChargeRectifierUnit::new(
                     context,
                     1,
-                    ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::DirectCurrentHot(1),
                 ),
                 bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),

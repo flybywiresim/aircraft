@@ -41,7 +41,9 @@ interface PinProgramOptions {
 interface RealismOptions {
   mcduKeyboard: boolean;
   pauseOnTod: boolean;
+  autoStepClimb: boolean;
   pilotAvatars: boolean;
+  eclSoftKeys: boolean;
 }
 
 interface SimOptions {
@@ -50,6 +52,8 @@ interface SimOptions {
   pilotSeat: boolean;
   registrationDecal: boolean;
   wheelChocks: boolean;
+  cabinLighting: boolean;
+  oansPerformanceMode: boolean;
 }
 
 interface ThrottleOptions {
@@ -90,7 +94,9 @@ export const AircraftContext = createContext<AircraftEfbContext>({
     realism: {
       mcduKeyboard: false,
       pauseOnTod: false,
+      autoStepClimb: false,
       pilotAvatars: false,
+      eclSoftKeys: false,
     },
     sim: {
       cones: false,
@@ -98,6 +104,8 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       pilotSeat: false,
       registrationDecal: false,
       wheelChocks: false,
+      cabinLighting: false,
+      oansPerformanceMode: false,
     },
     throttle: {
       numberOfAircraftThrottles: 0,

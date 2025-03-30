@@ -132,6 +132,9 @@ impl A320Electrical {
             spd_cond,
         );
 
+        self.alternating_current
+            .update_auxiliary(electricity, emergency_overhead);
+
         self.main_galley
             .update(context, electricity, &self.alternating_current, overhead);
         self.secondary_galley
@@ -2601,7 +2604,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn connected_external_power(mut self) -> Self {
-            self.write_by_name("EXTERNAL POWER AVAILABLE:1", true);
+            self.write_by_name("EXT_PWR_AVAIL:1", true);
 
             self.without_triggering_emergency_elec(|x| x.run())
         }

@@ -1,9 +1,8 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-// One can rightfully argue that this constant shouldn't be located in @flybywiresim/failures.
-// Once we create an A320 specific package, such as @flybywiresim/a320, we can move it there.
 import { FailureDefinition } from '@flybywiresim/fbw-sdk';
 
+// Keep in mind that the CPP code also keeps a list of failure codes: fbw-a380x\src\wasm\fbw_a380\src\failures\FailureList.h
 export const A380Failure = Object.freeze({
   RapidDecompression: 21000,
   CabinFan1: 21001,
@@ -56,9 +55,9 @@ export const A380Failure = Object.freeze({
   CpcsApp3: 21048,
   CpcsApp4: 21049,
 
-  FmcA: 22000,
-  FmcB: 22001,
-  FmcC: 22002,
+  FmcA: 22100,
+  FmcB: 22101,
+  FmcC: 22102,
 
   AudioManagementUnit1: 23000,
   AudioManagementUnit2: 23001,
@@ -118,6 +117,15 @@ export const A380Failure = Object.freeze({
   MLGLoopA: 26017,
   MLGLoopB: 26018,
 
+  Prim1: 27000,
+  Prim2: 27001,
+  Prim3: 27002,
+  Sec1: 27003,
+  Sec2: 27004,
+  Sec3: 27005,
+  Fcdc1: 27006,
+  Fcdc2: 27007,
+
   GreenReservoirLeak: 29000,
   YellowReservoirLeak: 29001,
   GreenReservoirAirLeak: 29002,
@@ -137,8 +145,11 @@ export const A380Failure = Object.freeze({
   EnginePump4AOHeat: 29016,
   EnginePump4BOHeat: 29017,
 
-  LeftPfdDisplay: 31000,
-  RightPfdDisplay: 31001,
+  Fws1: 31100,
+  Fws2: 31101,
+  Fws1AudioFunction: 31102,
+  Fws2AudioFunction: 31103,
+  FwsEcp: 31104,
 
   LgciuPowerSupply1: 32000,
   LgciuPowerSupply2: 32001,
@@ -153,8 +164,23 @@ export const A380Failure = Object.freeze({
   RadioAltimeter1: 34000,
   RadioAltimeter2: 34001,
   RadioAltimeter3: 34002,
+  RadioAntennaInterrupted1: 34010,
+  RadioAntennaInterrupted2: 34011,
+  RadioAntennaInterrupted3: 34012,
+  RadioAntennaDirectCoupling1: 34020,
+  RadioAntennaDirectCoupling2: 34021,
+  RadioAntennaDirectCoupling3: 34022,
+
   Transponder1: 34003,
   Transponder2: 34004,
+
+  NssAnsu1: 46001,
+  NssAnsu2: 46002,
+  FltOpsAnsu: 46003,
+  CaptainLaptop: 46004,
+  FirstOfficerLaptop: 46005,
+  CaptainOit: 46006,
+  FirstOfficerOit: 46007,
 });
 
 export const A380FailureDefinitions: FailureDefinition[] = [
@@ -271,6 +297,15 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [26, A380Failure.MLGLoopA, 'Main Landing Gear Bay Loop A'],
   [26, A380Failure.MLGLoopB, 'Main Landing Gear Bay Loop B'],
 
+  [27, A380Failure.Prim1, 'PRIM 1'],
+  [27, A380Failure.Prim2, 'PRIM 2'],
+  [27, A380Failure.Prim3, 'PRIM 3'],
+  [27, A380Failure.Sec1, 'SEC 1'],
+  [27, A380Failure.Sec2, 'SEC 2'],
+  [27, A380Failure.Sec3, 'SEC 3'],
+  [27, A380Failure.Fcdc1, 'FCDC 1'],
+  [27, A380Failure.Fcdc2, 'FCDC 2'],
+
   [29, A380Failure.GreenReservoirLeak, 'Green reservoir leak'],
   [29, A380Failure.YellowReservoirLeak, 'Yellow reservoir leak'],
   [29, A380Failure.GreenReservoirAirLeak, 'Green reservoir air leak'],
@@ -290,8 +325,11 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [29, A380Failure.EnginePump4AOHeat, 'Engine 4 pump A overheat'],
   [29, A380Failure.EnginePump4BOHeat, 'Engine 4 pump B overheat'],
 
-  [31, A380Failure.LeftPfdDisplay, 'Captain PFD display'],
-  [31, A380Failure.RightPfdDisplay, 'F/O PFD display'],
+  [31, A380Failure.Fws1, 'FWS 1'],
+  [31, A380Failure.Fws2, 'FWS 2'],
+  [31, A380Failure.Fws1AudioFunction, 'FWS 1 Audio Function'],
+  [31, A380Failure.Fws2AudioFunction, 'FWS 2 Audio Function'],
+  [31, A380Failure.FwsEcp, 'ECAM Control Panel'],
 
   [32, A380Failure.LgciuPowerSupply1, 'LGCIU 1 Power supply'],
   [32, A380Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],
@@ -303,6 +341,20 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [34, A380Failure.RadioAltimeter1, 'RA SYS A'],
   [34, A380Failure.RadioAltimeter2, 'RA SYS B'],
   [34, A380Failure.RadioAltimeter3, 'RA SYS C'],
+  [34, A380Failure.RadioAntennaInterrupted1, 'RA SYS A Interrupted'],
+  [34, A380Failure.RadioAntennaInterrupted2, 'RA SYS B Interrupted'],
+  [34, A380Failure.RadioAntennaInterrupted3, 'RA SYS C Interrupted'],
+  [34, A380Failure.RadioAntennaDirectCoupling1, 'RA SYS A Direct Coupling'],
+  [34, A380Failure.RadioAntennaDirectCoupling2, 'RA SYS B Direct Coupling'],
+  [34, A380Failure.RadioAntennaDirectCoupling3, 'RA SYS C Direct Coupling'],
   [34, A380Failure.Transponder1, 'XPDR 1'],
   [34, A380Failure.Transponder2, 'XPDR 2'],
+
+  [46, A380Failure.NssAnsu1, 'NSS AVNCS ANSU 1'],
+  [46, A380Failure.NssAnsu2, 'NSS AVNCS ANSU 2'],
+  [46, A380Failure.FltOpsAnsu, 'FLT OPS ANSU'],
+  [46, A380Failure.CaptainLaptop, 'Captain Laptop'],
+  [46, A380Failure.FirstOfficerLaptop, 'F/O Laptop'],
+  [46, A380Failure.CaptainOit, 'Captain OIT'],
+  [46, A380Failure.FirstOfficerOit, 'F/O OIT'],
 ];

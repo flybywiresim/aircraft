@@ -1,37 +1,20 @@
-// Copyright (c) 2021, 2022, 2024 FlyByWire Simulations
+// Copyright (c) 2021, 2022, 2024-2025 FlyByWire Simulations
 // Copyright (c) Microsoft Corporation
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-await-in-loop */
 
-import { Coordinates, NauticalMiles } from 'msfs-geo';
-// FIXME remove msfs-sdk dependency
-import {
-  FacilitySearchType,
-  NearestAirportSearchSession,
-  NearestIntersectionSearchSession,
-  NearestSearchResults,
-  NearestSearchSession,
-  NearestVorSearchSession,
-  UnitType,
-  Wait,
-} from '@microsoft/msfs-sdk';
+import { Coordinates } from 'msfs-geo';
 import {
   AirportCommunication,
   Airway,
-  AirwayLevel,
-  ControlledAirspace,
   DatabaseIdent,
   Fix,
   IlsNavaid,
   iso8601CalendarDate,
-  NdbClass,
   NdbNavaid,
   ProcedureLeg,
-  RestrictiveAirspace,
   VhfNavaid,
-  VhfNavaidType,
-  VorClass,
   Waypoint,
 } from '../../../shared';
 import { Airport } from '../../../shared/types/Airport';
@@ -42,28 +25,16 @@ import { Runway } from '../../../shared/types/Runway';
 import { DataInterface } from '../../../shared/DataInterface';
 import { Marker } from '../../../shared/types/Marker';
 import { IcaoSearchFilter, JS_FacilityAirport, VorType } from './FsTypes';
-import {
-  FacilityCache,
-  FacilitySearchTypeToDatabaseItem,
-  LoadType,
-  SupportedFacilitySearchType,
-} from './FacilityCache';
+import { FacilityCache, LoadType } from './FacilityCache';
 import { MsfsMapping } from './Mapping';
 import { Gate } from '../../../shared/types/Gate';
-
-// @microsoft/msfs-sdk does not export this, so we declare it
-declare class CoherentNearestSearchSession implements NearestSearchSession<string, string> {
-  public searchNearest(
-    lat: number,
-    lon: number,
-    radius: number,
-    maxItems: number,
-  ): Promise<NearestSearchResults<string, string>>;
-
-  public onSearchCompleted(results: NearestSearchResults<string, string>): void;
-}
+import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
+import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
+import { Msfs2020NearbyFacilityMonitor, MsfsNearbyFacilityMonitor } from './MsfsNearbyFacilityMonitor';
 
 export class MsfsBackend implements DataInterface {
+  private static readonly AIRPORT_LOAD_TIMEOUT = 15_000_000;
+
   /** Duration of an AIRAC cycle (28 days) in milliseconds. */
   public static readonly CYCLE_DURATION = 86400_000 * 28;
 
@@ -75,47 +46,11 @@ export class MsfsBackend implements DataInterface {
 
   private mapping: MsfsMapping;
 
-  private facilitySearchTypeToSearchSessionMap = new Map<SupportedFacilitySearchType, CoherentNearestSearchSession>([]);
-
-  private facilitySearchTypeToCachedSearchResultsMap: {
-    [k in SupportedFacilitySearchType]: FacilitySearchTypeToDatabaseItem[k][];
-  } = {
-    [FacilitySearchType.Airport]: [],
-    [FacilitySearchType.Intersection]: [],
-    [FacilitySearchType.Vor]: [],
-    [FacilitySearchType.Ndb]: [],
-  };
-
-  private airportSearchSession: NearestAirportSearchSession | undefined;
-
-  private waypointSearchSession: NearestIntersectionSearchSession | undefined;
-
-  private vorSearchSession: NearestVorSearchSession | undefined;
-
-  private ndbSearchSession: NearestSearchSession<string, string> | undefined;
-
   constructor() {
     this.cache = new FacilityCache();
     this.mapping = new MsfsMapping(this.cache);
 
-    RegisterViewListener('JS_LISTENER_FACILITY', () => {
-      this.cache.startNearestSearchSession(FacilitySearchType.Airport).then((session) => {
-        this.airportSearchSession = session;
-        this.facilitySearchTypeToSearchSessionMap.set(FacilitySearchType.Airport, session);
-      });
-      this.cache.startNearestSearchSession(FacilitySearchType.Intersection).then((session) => {
-        this.waypointSearchSession = session;
-        this.facilitySearchTypeToSearchSessionMap.set(FacilitySearchType.Intersection, session);
-      });
-      this.cache.startNearestSearchSession(FacilitySearchType.Vor).then((session) => {
-        this.vorSearchSession = session;
-        this.facilitySearchTypeToSearchSessionMap.set(FacilitySearchType.Vor, session);
-      });
-      this.cache.startNearestSearchSession(FacilitySearchType.Ndb).then((session) => {
-        this.ndbSearchSession = session;
-        this.facilitySearchTypeToSearchSessionMap.set(FacilitySearchType.Ndb, session);
-      });
-    });
+    RegisterViewListener('JS_LISTENER_FACILITY', EmptyCallback.Void, true);
   }
 
   /** @inheritdoc */
@@ -166,12 +101,16 @@ export class MsfsBackend implements DataInterface {
     return out;
   }
 
+  public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
+    return isMsfs2024() ? new MsfsNearbyFacilityMonitor(type) : new Msfs2020NearbyFacilityMonitor(type);
+  }
+
   /** @inheritdoc */
   public async getAirports(idents: string[]): Promise<Airport[]> {
     // firstly fetch all the facilities from the MSFS database
     const icaos = idents.map((ident) => `A      ${ident}`);
 
-    const airports = await this.cache.getFacilities(icaos, LoadType.Airport);
+    const airports = await this.cache.getFacilities(icaos, LoadType.Airport, MsfsBackend.AIRPORT_LOAD_TIMEOUT);
 
     return Array.from(airports.values()).map((airport) => this.mapping.mapAirport(airport));
   }
@@ -219,9 +158,14 @@ export class MsfsBackend implements DataInterface {
     return this.mapping.mapGates(airport);
   }
 
-  /** MSFS database does not contain enroute holds */
-  public async getHolds(_airportIdentifier: string): Promise<ProcedureLeg[]> {
-    return [];
+  public async getHolds(airportIdentifier: string): Promise<ProcedureLeg[]> {
+    const airport = await this.fetchMsfsAirport(airportIdentifier);
+
+    if (!airport) {
+      return [];
+    }
+
+    return this.mapping.mapHolds(airport);
   }
 
   /** @inheritdoc */
@@ -388,157 +332,13 @@ export class MsfsBackend implements DataInterface {
     return this.mapping.getAirways(ident, icaoCode, airwayIdent);
   }
 
-  private async searchForFacilities<T extends SupportedFacilitySearchType>(
-    type: T,
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-  ): Promise<readonly FacilitySearchTypeToDatabaseItem[T][]> {
-    const nearbyFacilities = await this.facilitySearchTypeToSearchSessionMap
-      .get(type)!
-      .searchNearest(
-        center.lat,
-        center.long,
-        UnitType.METER.convertFrom(range, UnitType.NMILE),
-        limit ?? Number.MAX_SAFE_INTEGER,
-      );
-
-    // Update our results
-    const addedFacilities = await this.cache.getFacilities(
-      nearbyFacilities.added,
-      FacilityCache.FACILITY_SEARCH_TYPE_TO_LOAD_TYPE[type],
-    );
-
-    for (const facility of addedFacilities.values()) {
-      let dbItem: FacilitySearchTypeToDatabaseItem[T];
-      // eslint-disable-next-line no-underscore-dangle
-      if (facility.__Type === 'JS_FacilityAirport') {
-        dbItem = this.mapping.mapAirport(facility) as FacilitySearchTypeToDatabaseItem[T];
-      } else {
-        dbItem = this.mapping.mapFacilityToWaypoint(facility) as any;
-      }
-
-      this.facilitySearchTypeToCachedSearchResultsMap[type].push(dbItem);
+  public async getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {
+    const fac = await this.cache.getFacility(databaseId, LoadType.Vor);
+    if (!fac) {
+      throw new Error(`Could not fetch facility "${databaseId}"!`);
     }
 
-    for (let i = 0; i < this.facilitySearchTypeToCachedSearchResultsMap[type].length; i++) {
-      const dbItem = this.facilitySearchTypeToCachedSearchResultsMap[type][i];
-
-      if (nearbyFacilities.removed.includes(dbItem.databaseId)) {
-        this.facilitySearchTypeToCachedSearchResultsMap[type].splice(i, 1);
-        i--;
-      }
-    }
-
-    return this.facilitySearchTypeToCachedSearchResultsMap[type];
-  }
-
-  /** @inheritdoc */
-  public async getNearbyAirports(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    longestRunwaySurfaces?: number,
-    longestRunwayLength?: number,
-  ): Promise<readonly Airport[]> {
-    await Wait.awaitCondition(() => this.airportSearchSession !== undefined);
-
-    const surface =
-      longestRunwaySurfaces !== undefined
-        ? this.mapping.mapRunwaySurfaceMsfsAirportClassBitmask(longestRunwaySurfaces)
-        : NearestAirportSearchSession.Defaults.SurfaceTypeMask;
-
-    this.airportSearchSession!.setAirportFilter(
-      NearestAirportSearchSession.Defaults.ShowClosed,
-      surface, // This filters by `AirportClass`
-    );
-    this.airportSearchSession!.setExtendedAirportFilters(
-      NearestAirportSearchSession.Defaults.SurfaceTypeMask, // I believe this filters by MSFS' `RunwaySurfaceType`
-      NearestAirportSearchSession.Defaults.ApproachTypeMask,
-      NearestAirportSearchSession.Defaults.ToweredMask,
-      longestRunwayLength ?? NearestAirportSearchSession.Defaults.MinimumRunwayLength,
-    );
-
-    return this.searchForFacilities(FacilitySearchType.Airport, center, range, limit);
-  }
-
-  /** @inheritdoc */
-  public async getNearbyAirways(
-    _center: Coordinates,
-    _range: NauticalMiles,
-    _limit?: number,
-    _levels?: AirwayLevel,
-  ): Promise<readonly Airway[]> {
-    return [];
-  }
-
-  /** @inheritdoc */
-  public async getNearbyVhfNavaids(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    _classes?: VorClass,
-    _types?: VhfNavaidType,
-  ): Promise<readonly VhfNavaid[]> {
-    await Wait.awaitCondition(() => this.vorSearchSession !== undefined);
-
-    // TODO take care of classes, types
-
-    return this.searchForFacilities(FacilitySearchType.Vor, center, range, limit);
-  }
-
-  /** @inheritdoc */
-  public async getNearbyNdbNavaids(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    _classes?: NdbClass,
-  ): Promise<readonly NdbNavaid[]> {
-    await Wait.awaitCondition(() => this.ndbSearchSession !== undefined);
-
-    // TODO take care of classes
-
-    return this.searchForFacilities(FacilitySearchType.Ndb, center, range, limit);
-  }
-
-  /** @inheritdoc */
-  public async getNearbyWaypoints(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-  ): Promise<readonly Waypoint[]> {
-    await Wait.awaitCondition(() => this.waypointSearchSession !== undefined);
-
-    return this.searchForFacilities(FacilitySearchType.Intersection, center, range, limit);
-  }
-
-  /** @inheritdoc */
-  public async getNearbyFixes(center: Coordinates, range: NauticalMiles, _limit?: number): Promise<readonly Fix[]> {
-    const [waypoints, vors, ndbs] = await Promise.all([
-      this.getNearbyWaypoints(center, range),
-      this.getNearbyVhfNavaids(center, range),
-      this.getNearbyNdbNavaids(center, range),
-    ]);
-
-    const res = [...waypoints, ...vors, ...ndbs];
-
-    return res;
-  }
-
-  /** @inheritdoc */
-  public async getControlledAirspaceInRange(
-    _center: Coordinates,
-    _range: NauticalMiles,
-  ): Promise<readonly ControlledAirspace[]> {
-    return [];
-  }
-
-  /** @inheritdoc */
-  public async getRestrictiveAirspaceInRange(
-    _center: Coordinates,
-    _range: NauticalMiles,
-  ): Promise<readonly RestrictiveAirspace[]> {
-    return [];
+    return this.mapping.mapFacilityToWaypoint(fac);
   }
 
   private async fetchMsfsAirport(ident: string): Promise<JS_FacilityAirport | undefined> {
@@ -548,6 +348,6 @@ export class MsfsBackend implements DataInterface {
 
     const icao = `A      ${ident}`;
 
-    return this.cache.getFacility(icao, LoadType.Airport);
+    return this.cache.getFacility(icao, LoadType.Airport, MsfsBackend.AIRPORT_LOAD_TIMEOUT);
   }
 }
