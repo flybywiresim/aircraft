@@ -131,7 +131,7 @@ export class CALeg extends Leg {
            ESTIMATED_KTS = 165;
            presentAltitude = originAltitude
        //}
-    else if (tas >= 100 && vs > 7) {
+         if (tas >= 100 && vs > 7) {
            ESTIMATED_KTS = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
            ESTIMATED_VS = SimVar.GetSimVarValue('VARIOMETER RATE', 'feet per second')*60;
            presentAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
