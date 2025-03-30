@@ -1108,17 +1108,17 @@ export class FlightManagementComputer implements FmcInterface {
 
     const verticalVectors: VerticalPathCheckpoint[] = [];
     if (predictions) {
-      const activeLegIndex = plan.activeLegIndex;
-      const previousLeg = plan.allLegs[activeLegIndex - 1];
+      const showFromLegIndex = Math.max(0, plan.activeLegIndex - 1);
+      const previousLeg = plan.allLegs[showFromLegIndex - 1];
       let lastLegLatLong: Coordinates =
-        activeLegIndex > 0 && previousLeg.isDiscontinuity === false && previousLeg.definition.waypoint
+        showFromLegIndex > 0 && previousLeg.isDiscontinuity === false && previousLeg.definition.waypoint
           ? previousLeg.definition.waypoint.location
           : this.guidanceController.lnavDriver.ppos;
-      plan.allLegs.slice(activeLegIndex).forEach((leg, legIndex) => {
-        const legPrediction = predictions.get(legIndex + activeLegIndex);
+      plan.allLegs.slice(showFromLegIndex).forEach((leg, legIndex) => {
+        const legPrediction = predictions.get(legIndex + showFromLegIndex);
         if (leg.isDiscontinuity === false && legPrediction) {
           pwp.forEach((pw) => {
-            if (pw.alongLegIndex === legIndex + activeLegIndex && pw.displayedOnMcdu && pw.flightPlanInfo?.altitude) {
+            if (pw.alongLegIndex === legIndex + showFromLegIndex && pw.displayedOnMcdu && pw.flightPlanInfo?.altitude) {
               verticalVectors.push({
                 distanceFromAircraft: legPrediction.distanceFromAircraft - pw.distanceFromLegTermination,
                 altitude: pw.flightPlanInfo?.altitude,
