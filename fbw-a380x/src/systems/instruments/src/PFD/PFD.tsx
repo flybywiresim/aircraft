@@ -11,7 +11,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { LowerArea } from 'instruments/src/PFD/LowerArea';
-import { Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 
 import { AttitudeIndicatorWarnings } from '@flybywiresim/pfd';
 import { AttitudeIndicatorWarningsA380 } from 'instruments/src/PFD/AttitudeIndicatorWarningsA380';
@@ -76,7 +76,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private failuresConsumer: FailuresConsumer;
 
-  private readonly groundSpeed = ConsumerSubject.create(this.sub.on('groundSpeed'), 0);
+  private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
 
   private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed'), false);
 
@@ -104,7 +104,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
   private readonly pitchTrimIndicatorVisible = Subject.create(false);
 
   private updatePitchTrimVisible(flapsRetracted = false) {
-    const gs = new Arinc429Word(this.groundSpeed.get()).valueOr(0);
+    const gs = this.groundSpeed.get().valueOr(0);
     if (this.filteredRadioAltitude.get() > 50) {
       this.pitchTrimIndicatorVisible.set(false);
     } else if (gs < 30) {
