@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  A320EfisNdRangeValue,
   a320EfisRangeSettings,
   Arinc429LocalVarOutputWord,
   Arinc429SignStatusMatrix,
@@ -48,7 +49,7 @@ import { FmsClient } from '@atsu/fmsclient';
 import { AtsuStatusCodes } from '@datalink/common';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { FmsErrorType } from '@fmgc/FmsError';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -203,7 +204,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public zeroFuelWeight?: number;
   public zeroFuelWeightMassCenter?: number;
   private activeWpIdx = undefined;
-  private efisSymbols = undefined;
+  private efisSymbolsLeft?: EfisSymbols<A320EfisNdRangeValue>;
+  private efisSymbolsRight?: EfisSymbols<A320EfisNdRangeValue>;
   public groundTempAuto?: number = undefined;
   public groundTempPilot?: number = undefined;
   /**
@@ -357,19 +359,30 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       A320AircraftConfig,
     );
     this.navigation = new Navigation(this.bus, this.currFlightPlanService);
-    this.efisSymbols = new EfisSymbols(
+    this.efisSymbolsLeft = new EfisSymbols(
       this.bus,
+      'L',
       this.guidanceController,
       this.currFlightPlanService,
       this.navigation.getNavaidTuner(),
-      this.efisInterfaces,
+      this.efisInterfaces.L,
+      a320EfisRangeSettings,
+    );
+    this.efisSymbolsRight = new EfisSymbols(
+      this.bus,
+      'R',
+      this.guidanceController,
+      this.currFlightPlanService,
+      this.navigation.getNavaidTuner(),
+      this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
 
     initComponents(this.navigation, this.guidanceController, this.flightPlanService);
 
     this.guidanceController.init();
-    this.efisSymbols.init();
+    this.efisSymbolsLeft.init();
+    this.efisSymbolsRight.init();
     this.navigation.init();
 
     this.tempCurve = new Avionics.Curve();
@@ -699,9 +712,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.guidanceController.update(_deltaTime);
     }
 
-    if (this.efisSymbols) {
-      this.efisSymbols.update(_deltaTime);
-    }
+    this.efisSymbolsLeft?.update();
+    this.efisSymbolsRight.update();
+
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
   }
 
@@ -2097,10 +2110,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
     }
     if (tempString) {
-      const temp = parseInt(tempString.replace('M', '-'));
-      console.log('tS: ' + tempString);
-      console.log('ti: ' + temp);
+      let temp = parseInt(tempString);
       if (isFinite(temp) && this.cruiseLevel) {
+        if (!tempString.startsWith('+') && !tempString.startsWith('-')) {
+          temp = -temp;
+        }
         if (temp > -270 && temp < 100) {
           this.cruiseTemperature = temp;
           return true;
@@ -2752,7 +2766,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           },
         )
         .catch((err) => {
-          if (err.type !== undefined) {
+          if (err instanceof FmsError && err.type !== undefined) {
             this.showFmsErrorMessage(err.type);
           } else if (err instanceof McduMessage) {
             this.setScratchpadMessage(err);

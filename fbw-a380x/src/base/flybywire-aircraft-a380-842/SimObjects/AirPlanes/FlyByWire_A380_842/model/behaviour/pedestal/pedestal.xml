@@ -1,0 +1,301 @@
+<!-- Copyright (c) 2025 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="A380X_SWITCH_PITCH_TRIM">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <PART_ID>#NODE_ID#</PART_ID>
+                <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                <WWISE_EVENT>clds</WWISE_EVENT>
+                <CODE_POS_0>(&gt;K:ELEV_TRIM_DN)</CODE_POS_0>
+                <CODE_POS_2>(&gt;K:ELEV_TRIM_UP)</CODE_POS_2>
+                <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+                <STATE0_TIMER>0.01</STATE0_TIMER>
+                <MOMENTARY_SWITCH>True</MOMENTARY_SWITCH>
+                <MOMENTARY_REPEAT_FREQUENCY>75</MOMENTARY_REPEAT_FREQUENCY>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_A380X_Components_Pedestal">
+        <Component ID="Pedestal_Fwd">
+            <!-- Throttle 1 -->
+            <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
+                <NODE_ID>LEVER_THROTTLE_1</NODE_ID>
+                <ANIM_NAME>throttle_lever_1</ANIM_NAME>
+                <ID>1</ID>
+                <DRAG_SPEED>-10</DRAG_SPEED>
+                <POSITION_TYPE>L</POSITION_TYPE>
+                <POSITION_VAR>XMLVAR_Throttle1Position</POSITION_VAR>
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.ENG1_THROTTLE_CONTROL</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- Throttle 2 -->
+            <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
+                <NODE_ID>LEVER_THROTTLE_2</NODE_ID>
+                <ANIM_NAME>throttle_lever_2</ANIM_NAME>
+                <ID>2</ID>
+                <DRAG_SPEED>-10</DRAG_SPEED>
+                <POSITION_TYPE>L</POSITION_TYPE>
+                <POSITION_VAR>XMLVAR_Throttle2Position</POSITION_VAR>
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.ENG2_THROTTLE_CONTROL</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- Throttle 3 -->
+            <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
+                <NODE_ID>LEVER_THROTTLE_3</NODE_ID>
+                <ANIM_NAME>throttle_lever_3</ANIM_NAME>
+                <ID>3</ID>
+                <DRAG_SPEED>-10</DRAG_SPEED>
+                <POSITION_TYPE>L</POSITION_TYPE>
+                <POSITION_VAR>XMLVAR_Throttle3Position</POSITION_VAR>
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.ENG3_THROTTLE_CONTROL</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- Throttle 4 -->
+            <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
+                <NODE_ID>LEVER_THROTTLE_4</NODE_ID>
+                <ANIM_NAME>throttle_lever_4</ANIM_NAME>
+                <ID>4</ID>
+                <DRAG_SPEED>-10</DRAG_SPEED>
+                <POSITION_TYPE>L</POSITION_TYPE>
+                <POSITION_VAR>XMLVAR_Throttle4Position</POSITION_VAR>
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.ENG4_THROTTLE_CONTROL</TOOLTIPID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
+                <NODE_ID>PUSH_THROTTLE_1</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
+                <NODE_ID>PUSH_THROTTLE_2</NODE_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>DECAL_THROTTLE_02</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <CameraTitle>PedestalFwd</CameraTitle>
+        </Component>
+        <Component ID="Pedestal_Aft">
+            <Component ID="Engines">
+
+                <!-- ENG MASTER 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_ENGINE_Switch_Master_Template</ANIM_TEMPLATE>
+                    <AIRBUS_TYPE />
+                    <ANIM_NAME>SWITCH_ENGINES_ENG1</ANIM_NAME>
+                    <ANIM_LAG>250</ANIM_LAG>
+                    <NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
+                    <PART_ID>SWITCH_ENGINES_ENG1</PART_ID>
+                    <ID>1</ID>
+                    <VALVE_ID>1</VALVE_ID>
+                    <!-- This makes it not light up -->
+                    <POTENTIOMETER>9999</POTENTIOMETER>
+                </UseTemplate>
+
+                <!-- ENG MASTER 2 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_ENGINE_Switch_Master_Template</ANIM_TEMPLATE>
+                    <AIRBUS_TYPE />
+                    <ANIM_NAME>SWITCH_ENGINES_ENG2</ANIM_NAME>
+                    <ANIM_LAG>250</ANIM_LAG>
+                    <NODE_ID>SWITCH_ENGINES_ENG2</NODE_ID>
+                    <ID>2</ID>
+                    <VALVE_ID>2</VALVE_ID>
+                    <!-- This makes it not light up -->
+                    <POTENTIOMETER>9999</POTENTIOMETER>
+                </UseTemplate>
+
+                <!-- ENG MASTER 3 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_ENGINE_Switch_Master_Template</ANIM_TEMPLATE>
+                    <AIRBUS_TYPE />
+                    <ANIM_NAME>SWITCH_ENGINES_ENG3</ANIM_NAME>
+                    <ANIM_LAG>250</ANIM_LAG>
+                    <NODE_ID>SWITCH_ENGINES_ENG3</NODE_ID>
+                    <ID>3</ID>
+                    <VALVE_ID>3</VALVE_ID>
+                    <!-- This makes it not light up -->
+                    <POTENTIOMETER>9999</POTENTIOMETER>
+                </UseTemplate>
+
+                <!-- ENG MASTER 4 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_ENGINE_Switch_Master_Template</ANIM_TEMPLATE>
+                    <AIRBUS_TYPE />
+                    <ANIM_NAME>SWITCH_ENGINES_ENG4</ANIM_NAME>
+                    <ANIM_LAG>250</ANIM_LAG>
+                    <NODE_ID>SWITCH_ENGINES_ENG4</NODE_ID>
+                    <ID>4</ID>
+                    <VALVE_ID>4</VALVE_ID>
+                    <!-- This makes it not light up -->
+                    <POTENTIOMETER>9999</POTENTIOMETER>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_AIRBUS_Update_PTU_Template">
+                </UseTemplate>
+
+                <!-- Mixture Lever does not exist in A320 but can be set to 0 by Auto Shutdown.
+                Ensure it is always >0.9 -->
+                <Update Frequency="1">
+                    (A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100) 0.9 &lt; if{
+                    (&gt;K:MIXTURE1_RICH) }
+                    (A:GENERAL ENG MIXTURE LEVER POSITION:2, Percent over 100) 0.9 &lt; if{
+                    (&gt;K:MIXTURE2_RICH) }
+                    (A:GENERAL ENG MIXTURE LEVER POSITION:3, Percent over 100) 0.9 &lt; if{
+                    (&gt;K:MIXTURE3_RICH) }
+                    (A:GENERAL ENG MIXTURE LEVER POSITION:4, Percent over 100) 0.9 &lt; if{
+                    (&gt;K:MIXTURE4_RICH) }
+                </Update>
+
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_ENGINE_MODE_SELECTOR_TEMPLATE</ANIM_TEMPLATE>
+                    <ANIM_NAME>KNOB_ENGINES_MODE</ANIM_NAME>
+                    <NODE_ID>KNOB_ENGINES_MODE</NODE_ID>
+
+                    <ENGINE_COUNT>4</ENGINE_COUNT>
+
+                    <ID>0</ID>
+                    <ANIMREF_ID>0</ANIMREF_ID>
+                    <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+                    <ANIMTIP_1_ON_PERCENT>.5</ANIMTIP_1_ON_PERCENT>
+                    <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ENGINE_MODE_SELECTOR_SET_CRANK</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ENGINE_MODE_SELECTOR_SET_NORM</ANIMTIP_1>
+                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ENGINE_MODE_SELECTOR_SET_IGN_START</ANIMTIP_2>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="HANDLING">
+                <UseTemplate Name="FBW_HANDLING_Knob_RudderTrim_Template">
+                    <AIRBUS_TYPE />
+                    <ANIM_NAME>KNOB_RUDDERTRIM</ANIM_NAME>
+                    <NODE_ID>KNOB_RUDDERTRIM</NODE_ID>
+                    <RESET_PUSH_ANIM_NAME>PUSH_TRIM_RESET</RESET_PUSH_ANIM_NAME>
+                    <RESET_PUSH_NODE_ID>PUSH_TRIM_RESET</RESET_PUSH_NODE_ID>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_HANDLING_Lever_With_Button_Flaps_Template">
+                    <NODE_ID>LEVER_FLAPS</NODE_ID>
+                    <ANIM_NAME_LEVER>flaps_lever</ANIM_NAME_LEVER>
+                    <ANIM_NAME_BUTTON>lock_flaps</ANIM_NAME_BUTTON>
+                    <USE_TRAJECTORY_DRAG_MODE>True</USE_TRAJECTORY_DRAG_MODE>
+                    <MAX_HANDLE_INDEX>4</MAX_HANDLE_INDEX>
+                    <MIN_DELTA>0.2</MIN_DELTA>
+                    <BUTTON_ANIM_LAG>500</BUTTON_ANIM_LAG>
+                    <USE_ANIM_TRIGGERS />
+                    <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+                    <ANIMTIP_1_ON_PERCENT>.25</ANIMTIP_1_ON_PERCENT>
+                    <ANIMTIP_2_ON_PERCENT>.5</ANIMTIP_2_ON_PERCENT>
+                    <ANIMTIP_3_ON_PERCENT>.75</ANIMTIP_3_ON_PERCENT>
+                    <ANIMTIP_4_ON_PERCENT>1</ANIMTIP_4_ON_PERCENT>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_UP</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_P1</ANIMTIP_1>
+                    <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_P2</ANIMTIP_2>
+                    <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_LDG</ANIMTIP_3>
+                    <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_FULL</ANIMTIP_4>
+
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_LANDING_GEAR_Switch_ParkingBrake_Template</ANIM_TEMPLATE>
+                    <ANIM_NAME>lever_parking_brake</ANIM_NAME>
+                    <NODE_ID>LEVER_PARKINGBRAKE</NODE_ID>
+                </UseTemplate>
+
+                <Component ID="Parking_Brake_Text" Node="LEVER_PARKINGBRAKE_SEQ1">
+                    <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <POTENTIOMETER>85</POTENTIOMETER>
+                        <EMISSIVE_CODE>0</EMISSIVE_CODE>
+                    </UseTemplate>
+                </Component>
+
+                <UseTemplate Name="FBW_HANDLING_Lever_Spoilers_Template">
+                    <ANIM_NAME>lever_speed_brake</ANIM_NAME>
+                    <NODE_ID>LEVER_SPEEDBRAKE</NODE_ID>
+                    <TYPE>AIRLINER</TYPE>
+                    <TOOLTIPID>TT:COCKPIT.TOOLTIPS.SPEEDBRAKE_LEVER</TOOLTIPID>
+                </UseTemplate>
+
+                <UseTemplate Name="A380X_SWITCH_PITCH_TRIM">
+                    <NODE_ID>SWITCH_TRIM_PITCH</NODE_ID>
+                    <ANIM_NAME>SWITCH_TRIM_PITCH</ANIM_NAME>
+                    <INVERT_ANIM>1</INVERT_ANIM>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="WeatherRadar">
+                <UseTemplate Name="FBW_AIRBUS_WeatherRadar_Template">
+                    <NODE_ID_MODE_KNOB>KNOB_RADAR_MODE</NODE_ID_MODE_KNOB>
+                    <PART_ID>KNOB_RADAR_MODE</PART_ID>
+                    <ANIM_NAME_MODE_KNOB>KNOB_RADAR_MODE</ANIM_NAME_MODE_KNOB>
+                    <NODE_ID_ONOFF_SWITCH>SWITCH_RADAR_SYS</NODE_ID_ONOFF_SWITCH>
+                    <ANIM_NAME_ONOFF_SWITCH>SWITCH_RADAR_SYS</ANIM_NAME_ONOFF_SWITCH>
+                </UseTemplate>
+
+                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                    <NODE_ID>SWITCH_RADAR_PWS</NODE_ID>
+                    <Part_ID>PWS_Switch</Part_ID>
+                    <ANIM_NAME>SWITCH_RADAR_PWS</ANIM_NAME>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A32NX_SWITCH_RADAR_PWS_Position</SWITCH_POSITION_VAR>
+                    <ANIMTIP_0>Set predictive windshear to AUTO (INOP)</ANIMTIP_0>
+                    <ANIMTIP_1>Turn OFF predictive windshear (Inop.)</ANIMTIP_1>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                </UseTemplate>
+                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                    <NODE_ID>SWITCH_RADAR_MULTISCAN</NODE_ID>
+                    <ANIM_NAME>SWITCH_RADAR_MULTISCAN</ANIM_NAME>
+                    <TOGGLE_SIMVAR>L:A32NX_RADAR_MULTISCAN_AUTO</TOGGLE_SIMVAR>
+                    <ANIMTIP_0>Set Multiscans to AUTO (Inop.)</ANIMTIP_0>
+                    <ANIMTIP_1>Set Multiscans to MAN (Inop.)</ANIMTIP_1>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                </UseTemplate>
+                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                    <NODE_ID>SWITCH_RADAR_GCS</NODE_ID>
+                    <TOGGLE_SIMVAR>L:A32NX_RADAR_GCS_AUTO</TOGGLE_SIMVAR>
+                    <ANIM_NAME>SWITCH_RADAR_GCS</ANIM_NAME>
+                    <ANIMTIP_0>Set GCS to AUTO (Inop.)</ANIMTIP_0>
+                    <ANIMTIP_1>Set GCS to OFF (Inop.)</ANIMTIP_1>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="RMP">
+                <UseTemplate Name="FBW_A380X_RMP_Template">
+                    <RMP_ID>1</RMP_ID>
+                </UseTemplate>
+                <UseTemplate Name="FBW_A380X_RMP_Template">
+                    <RMP_ID>2</RMP_ID>
+                </UseTemplate>
+            </Component>
+
+            <CameraTitle>PedestalAft</CameraTitle>
+        </Component>
+    </Template>
+</ModelBehaviors>

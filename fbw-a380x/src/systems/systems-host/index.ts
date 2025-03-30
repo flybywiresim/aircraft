@@ -24,6 +24,7 @@ import {
   ArincEventBus,
   BtvSimvarPublisher,
   FailuresConsumer,
+  MsfsFlightModelPublisher,
   PilotSeatPublisher,
   VhfComIndices,
 } from '@flybywiresim/fbw-sdk';
@@ -34,7 +35,7 @@ import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/pow
 import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
 import { AtsuSystem } from 'systems-host/systems/atsu';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
-import { FuelSystemPublisher } from 'systems-host/systems/FuelSystemPublisher';
+import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {
@@ -46,8 +47,11 @@ import {
   CpiomAvailableSimvars,
 } from 'instruments/src/MsfsAvionicsCommon/providers/CpiomAvailablePublisher';
 import { A380Failure } from '@failures';
+import { AutoThsTrimmer } from './systems/AutoThsTrimmer';
 
 CpiomAvailableSimvarPublisher;
+import { AircraftNetworkServerUnit } from 'systems-host/systems/InformationSystems/AircraftNetworkServerUnit';
+
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
@@ -115,6 +119,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
 
+  private readonly interactivePointsPublisher = new MsfsFlightModelPublisher(this.bus);
+
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
 
@@ -142,6 +148,20 @@ class SystemsHost extends BaseInstrument {
 
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
+
+  // For now, pass ATSU to the ANSUs. In our target architecture, there should be no ATSU
+  private readonly nssAnsu1 = new AircraftNetworkServerUnit(this.bus, 1, 'nss', this.failuresConsumer, this.atsu);
+  private readonly nssAnsu2 = new AircraftNetworkServerUnit(this.bus, 2, 'nss', this.failuresConsumer, this.atsu);
+  private readonly fltOpsAnsu1 = new AircraftNetworkServerUnit(
+    this.bus,
+    1,
+    'flt-ops',
+    this.failuresConsumer,
+    this.atsu,
+  );
+
+  // FIXME delete this when PRIM gets the THS auto trim
+  private readonly autoThsTrimmer = new AutoThsTrimmer(this.bus, this);
 
   /**
    * "mainmenu" = 0
@@ -174,7 +194,12 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
+    this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
+    this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
+    this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
+    this.backplane.addInstrument('fltOpsAnsu1', this.fltOpsAnsu1, true);
+    this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();
@@ -196,6 +221,7 @@ class SystemsHost extends BaseInstrument {
         this.soundManager.update(dt);
         this.gpws.update(dt);
         this.fwsCore?.update(dt);
+        this.autoThsTrimmer.autoTrim();
       });
 
     this.fwsAvailable.sub((a) => {

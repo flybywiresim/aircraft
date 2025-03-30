@@ -1,9 +1,10 @@
+import { describe, test, expect, vitest } from 'vitest';
 import { QueuedSimVarReader } from '.';
 import { SimVarReaderWriter } from '..';
 
 describe('QueuedSimVarReader', () => {
   test("doesn't read values not found in its collection", async () => {
-    const callback = jest.fn();
+    const callback = vitest.fn();
     await registerAndExecute(callback, async (r) => {
       await SimVar.SetSimVarValue(simVarName, 'number', notInCollectionIdentifier);
       r.update();
@@ -13,7 +14,7 @@ describe('QueuedSimVarReader', () => {
   });
 
   test('reads values found in its collection', async () => {
-    const callback = jest.fn();
+    const callback = vitest.fn();
     await registerAndExecute(callback, async (r) => {
       await SimVar.SetSimVarValue(simVarName, 'number', inCollectionIdentifier);
       r.update();
@@ -23,7 +24,7 @@ describe('QueuedSimVarReader', () => {
   });
 
   test("doesn't read the same value multiple times", async () => {
-    const callback = jest.fn();
+    const callback = vitest.fn();
     await registerAndExecute(callback, async (r) => {
       await SimVar.SetSimVarValue(simVarName, 'number', inCollectionIdentifier);
       r.update();
@@ -34,7 +35,7 @@ describe('QueuedSimVarReader', () => {
   });
 
   test('does read the same value multiple times when set again', async () => {
-    const callback = jest.fn();
+    const callback = vitest.fn();
     await registerAndExecute(callback, async (r) => {
       await SimVar.SetSimVarValue(simVarName, 'number', inCollectionIdentifier);
       r.update();

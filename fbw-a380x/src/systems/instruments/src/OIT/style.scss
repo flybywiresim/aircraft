@@ -1,0 +1,182 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../MsfsAvionicsCommon/definitions.scss";
+@import "./widget-style.scss";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FBW-Display-EIS-A380-SlashedZero";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "OIT";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/EFB/Inter-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.oit-main {
+  position: absolute;
+  width: 1333px;
+  height: 1000px; /* 1:1.33 W:H  */
+  background: $display-background;
+  font-family: "OIT";
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.oit-page-container {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+
+}
+
+.oit-page-container.framed {
+  border: 3px solid $display-light-grey;
+  padding: 10px;
+  margin: 10px;
+}
+
+.oit-heading {
+  font-size: 28px;
+  color: $display-cyan;
+  width: 245px;
+  padding: 13px;
+  align-items: center;
+  text-align: center;
+}
+
+.oit-msg-header {
+  font-size: 28px;
+  color: $display-white;
+  width: 125px;
+  padding: 13px;
+  align-items: center;
+  text-align: center;
+}
+
+.oit-msg-box {
+  font-size: 28px;
+  color: $display-white;
+  width: 430px;
+  padding: 13px;
+  align-items: center;
+  text-align: left;
+  border: 4px outset $display-light-grey;
+  background-color: $display-mfd-darker-grey;
+}
+
+.oit-label {
+  font-size: 24px;
+  color: $display-white;
+}
+
+.oit-label.green {
+  color: $display-green;
+}
+
+.oit-label.amber {
+  color: $display-amber;
+}
+
+.oit-label.cyan {
+  color: $display-cyan;
+}
+
+.oit-label.bigger {
+  font-size: 28px;
+}
+
+.oit-label.biggest {
+  font-size: 32px;
+}
+
+.oit-header-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.fr {
+  display: flex;
+  flex-direction: row;
+}
+
+.fc {
+  display: flex;
+  flex-direction: column;
+}
+
+.oit-flt-ops-menu-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.oit-flt-ops-menu-column-title {
+  font-size: 32px;
+  color: $display-white;
+  margin-top: 60px;
+  margin-bottom: 30px;
+}
+
+.oit-flt-ops-sts-upper {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-bottom: 3px solid $display-light-grey;
+}
+
+.oit-flt-ops-sts-line {
+  display: flex;
+  flex-direction: row;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.oit-flt-ops-sts-lower {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.oit-flt-ops-sts-line-left {
+  flex: 2;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.oit-flt-ops-sts-line-right {
+  flex: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+}
+
+$font-file-path: '/Fonts/fbw-a380x/EFB';
+
+@import "../../../../../../fbw-common/src/systems/instruments/src/EFB/Assets/Efb.scss";
+
+.nopointer {
+  pointer-events: none;
+}

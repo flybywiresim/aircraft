@@ -126,5 +126,5 @@ impl VariablesToObject for PitchTrimSimOutput {
 }
 
 fn pos_error_to_speed(error: f64) -> f64 {
-    (1000. * error).min(45.).max(-45.)
+    (1000. * error).clamp(-45., 45.)
 }

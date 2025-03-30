@@ -2008,6 +2008,7 @@ fn subtract_delta_from_duration(context: &UpdateContext, duration: Duration) -> 
 
 trait NormaliseAngleExt {
     fn normalised(self) -> Angle;
+    #[allow(dead_code)]
     fn normalised_180(self) -> Angle;
 }
 
