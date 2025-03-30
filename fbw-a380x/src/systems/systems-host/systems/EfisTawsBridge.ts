@@ -331,7 +331,7 @@ export class EfisTawsBridge implements Instrument {
     let currentTrack = null;
 
     for (const segment of path) {
-      if (segment.trackToTerminationWaypoint === null) {
+      if (segment.trackToTerminationWaypoint === null || segment.distanceFromAircraft < 0) {
         continue;
       }
 
