@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore, PopUpDialog, UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FMCMainDisplay } from './A32NX_FMCMainDisplay';
 import { recallMessageById } from '@fmgc/components';
 import { Keypad } from './A320_Neo_CDU_Keypad';
