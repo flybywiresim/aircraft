@@ -1,10 +1,11 @@
+import { describe, test, expect, vitest } from 'vitest';
 import { FailuresOrchestrator } from '.';
 import { flushPromises } from './test-functions';
 
 // mock enough of JS GenericDataListener to ensure the right calls are made for JS interop
-const genericDataListenerSend = jest.fn();
-jest.mock('../GenericDataListenerSync', () => ({
-  GenericDataListenerSync: jest.fn().mockImplementation(() => {
+const genericDataListenerSend = vitest.fn();
+vitest.mock('../GenericDataListenerSync', () => ({
+  GenericDataListenerSync: vitest.fn().mockImplementation(() => {
     return {
       sendEvent: genericDataListenerSend,
     };
@@ -21,8 +22,8 @@ global.RegisterViewListener = (name: string, callback?: any): ViewListener.ViewL
 };
 
 // mock enough of COMM BUS to ensure the right calls are made for WASM interop
-const failuresUpdateReceiver = jest.fn();
-(global as any).RegisterGenericDataListener = jest.fn();
+const failuresUpdateReceiver = vitest.fn();
+(global as any).RegisterGenericDataListener = vitest.fn();
 (global as any).Coherent = {
   call: (event, data0, data1) => {
     if (event === 'COMM_BUS_WASM_CALLBACK' && data0 === 'FBW_FAILURE_UPDATE') {
@@ -71,7 +72,7 @@ describe('FailuresOrchestrator', () => {
   });
 
   describe('sends failures over commbus', () => {
-    it('sends failures when requested', async () => {
+    test('sends failures when requested', async () => {
       const o = orchestrator();
 
       o.update();
@@ -85,7 +86,7 @@ describe('FailuresOrchestrator', () => {
       expect(failuresUpdateReceiver.mock.lastCall[0]).toBe('[]');
     });
 
-    it('sends failures when failures change', async () => {
+    test('sends failures when failures change', async () => {
       const o = orchestrator();
 
       o.update();
@@ -102,7 +103,7 @@ describe('FailuresOrchestrator', () => {
   });
 
   describe('sends failures over generic data listener sync', () => {
-    it('sends failures when requested', async () => {
+    test('sends failures when requested', async () => {
       const o = orchestrator();
 
       o.update();
@@ -117,7 +118,7 @@ describe('FailuresOrchestrator', () => {
       expect(genericDataListenerSend.mock.lastCall[1]).toEqual([]);
     });
 
-    it('sends failures when failures change', async () => {
+    test('sends failures when failures change', async () => {
       const o = orchestrator();
 
       o.update();

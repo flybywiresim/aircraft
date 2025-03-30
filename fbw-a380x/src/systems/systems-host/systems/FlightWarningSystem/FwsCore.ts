@@ -895,13 +895,17 @@ export class FwsCore {
 
   public readonly engine4ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_4'), false);
 
+  // Only check feed pumps for now, heavy enough
+  public readonly feedTankPumps = Array.from(Array(8), (_, idx) =>
+    ConsumerSubject.create(this.sub.on(`fuel_pump_active_${idx + 1}`), false),
+  );
+
   public readonly allFuelPumpsOff = Subject.create(false);
 
-  public readonly centerFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_1'), false);
+  public readonly allFeedTankPumpsOff = MappedSubject.create(SubscribableMapFunctions.nor(), ...this.feedTankPumps);
+  public readonly allFeedTankPumpsOn = MappedSubject.create(SubscribableMapFunctions.and(), ...this.feedTankPumps);
 
   public readonly feedTank1Low = Subject.create(false);
-
-  public readonly centerFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_4'), false);
 
   public readonly feedTank1LowConfirm = new NXLogicConfirmNode(30, true);
 
@@ -915,17 +919,9 @@ export class FwsCore {
 
   public readonly feedTank4Low = Subject.create(false);
 
-  public readonly leftFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_2'), false);
-
-  public readonly leftFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_5'), false);
-
   public readonly rightFuelLow = Subject.create(false);
 
   public readonly rightFuelLowConfirm = new NXLogicConfirmNode(30, true);
-
-  public readonly rightFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_3'), false);
-
-  public readonly rightFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_6'), false);
 
   public readonly feedTank4LowConfirm = new NXLogicConfirmNode(30, true);
 
@@ -939,14 +935,6 @@ export class FwsCore {
     this.crossFeed2ValveOpen,
     this.crossFeed3ValveOpen,
     this.crossFeed4ValveOpen,
-  );
-
-  public readonly allFeedTankPumpsOn = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.engine1ValueSwitch,
-    this.engine2ValueSwitch,
-    this.engine3ValueSwitch,
-    this.engine4ValueSwitch,
   );
 
   public readonly crossFeedOpenMemo = MappedSubject.create(
@@ -1326,8 +1314,7 @@ export class FwsCore {
   );
 
   public readonly machSelectedFromAdr = MappedSubject.create(
-    ([mach1, mach2, mach3, sideOn3]) =>
-      Math.round((sideOn3 ? mach3.value : this.fwsNumber === 2 ? mach2.value : mach1.value) / 2) * 2,
+    ([mach1, mach2, mach3, sideOn3]) => (sideOn3 ? mach3.value : this.fwsNumber === 2 ? mach2.value : mach1.value),
     this.adr1Mach,
     this.adr2Mach,
     this.adr3Mach,
@@ -1432,13 +1419,13 @@ export class FwsCore {
 
   public readonly oneEngineRunning = Subject.create(false);
 
-  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
+  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine_master_1'), 0);
 
-  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), 0);
+  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine_master_2'), 0);
 
-  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine3Master'), 0);
+  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine_master_3'), 0);
 
-  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine4Master'), 0);
+  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine_master_4'), 0);
 
   public readonly engine1State = Subject.create(0);
 
@@ -1742,20 +1729,20 @@ export class FwsCore {
       });
     });
 
+    for (const s of this.feedTankPumps) {
+      this.subs.push(s);
+    }
+
     this.subs.push(
       this.statusNormal,
       this.masterCautionOutput,
       this.masterWarningOutput,
-      this.centerFuelPump1Auto,
-      this.centerFuelPump2Auto,
-      this.leftFuelPump1Auto,
-      this.leftFuelPump2Auto,
-      this.rightFuelPump1Auto,
-      this.rightFuelPump2Auto,
       this.fuelOnBoard,
       this.fuelingInitiated,
       this.fuelingTarget,
       this.refuelPanelOpen,
+      this.allFeedTankPumpsOff,
+      this.allFeedTankPumpsOn,
       this.allCrossFeedValvesOpen,
       this.crossFeedOpenMemo,
       this.refuelPanelOpen,
@@ -1917,22 +1904,6 @@ export class FwsCore {
   healthInjector(): void {
     SimVar.SetSimVarValue('L:A32NX_NO_SMOKING_MEMO', SimVarValueType.Bool, true);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', SimVarValueType.Bool, true);
-
-    [1, 2].forEach((i) => {
-      const dw = Arinc429Register.empty();
-      dw.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-      dw.setBitValue(11, true);
-      dw.setBitValue(16, true);
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_1`, dw.value, dw.ssm);
-      dw.setValue(0);
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_2`, dw.value, dw.ssm);
-      [11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25].forEach((i) => dw.setBitValue(i, true));
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_3`, dw.value, dw.ssm);
-      dw.setValue(0);
-      dw.setBitValue(27, SimVar.GetSimVarValue('L:A32NX_SPOILERS_ARMED', SimVarValueType.Bool));
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_4`, dw.value, dw.ssm);
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_5`, dw.value, dw.ssm);
-    });
   }
 
   mapOrder(array, order): [] {
@@ -3380,26 +3351,12 @@ export class FwsCore {
     );
 
     this.allEngineSwitchOff.set(
-      !(
-        this.engine1ValueSwitch.get() ||
-        this.engine2ValueSwitch.get() ||
-        this.engine3ValueSwitch.get() ||
-        this.engine4ValueSwitch.get()
-      ),
-    );
-    this.allFuelPumpsOff.set(
       !this.engine1ValueSwitch.get() &&
         !this.engine2ValueSwitch.get() &&
         !this.engine3ValueSwitch.get() &&
-        !this.engine4ValueSwitch.get() &&
-        !this.centerFuelPump1Auto.get() &&
-        !this.centerFuelPump2Auto.get() &&
-        !this.leftFuelPump1Auto.get() &&
-        !this.leftFuelPump2Auto.get() &&
-        !this.rightFuelPump1Auto.get() &&
-        !this.rightFuelPump2Auto.get() &&
-        this.allEngineSwitchOff.get(),
+        !this.engine4ValueSwitch.get(),
     );
+    this.allFuelPumpsOff.set(this.allFeedTankPumpsOff.get() && this.allEngineSwitchOff.get());
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');

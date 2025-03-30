@@ -535,7 +535,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       (this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent,
     );
 
-    if (pd.costIndex) {
+    if (pd.costIndex !== null && pd.costIndex !== undefined) {
       this.costIndex.set(pd.costIndex);
     }
 

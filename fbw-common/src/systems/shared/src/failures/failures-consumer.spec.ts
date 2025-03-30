@@ -1,15 +1,14 @@
+import { describe, expect, test, vitest } from 'vitest';
 import { FailuresConsumer } from './failures-consumer';
 
 let sendGenericDataEvent = undefined;
 
-jest.mock('../GenericDataListenerSync', () => ({
-  GenericDataListenerSync: jest.fn().mockImplementation((recvEventCb?: (topic: string, data: any) => void) => {
+vitest.mock('../GenericDataListenerSync', () => ({
+  GenericDataListenerSync: vitest.fn().mockImplementation((recvEventCb?: (topic: string, data: any) => void) => {
     sendGenericDataEvent = recvEventCb;
     return {};
   }),
 }));
-
-jest.mock('../GenericDataListenerSync');
 
 describe('FailuresConsumer', () => {
   describe('registers an identifier', () => {
@@ -34,7 +33,7 @@ describe('FailuresConsumer', () => {
   describe('calls the callback', () => {
     test('when the failure is activated', async () => {
       const c = consumer();
-      const callback = jest.fn();
+      const callback = vitest.fn();
       c.register(1, callback);
 
       sendGenericDataEvent('FBW_FAILURE_UPDATE', [1]);
@@ -48,7 +47,7 @@ describe('FailuresConsumer', () => {
 
       sendGenericDataEvent('FBW_FAILURE_UPDATE', [1]);
 
-      const callback = jest.fn();
+      const callback = vitest.fn();
       c.register(1, callback);
 
       sendGenericDataEvent('FBW_FAILURE_UPDATE', []);
