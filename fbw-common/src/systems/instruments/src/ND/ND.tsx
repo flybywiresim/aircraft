@@ -786,10 +786,9 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
           x={384}
           y={56}
           visible={MappedSubject.create(
-            ([btv, trueRef, mode]) => btv !== '' && !trueRef && mode !== EfisNdMode.PLAN,
+            ([btv, trueRef]) => btv !== '' && !trueRef,
             this.btvMessageValue,
             this.trueRefVisible,
-            this.props.ndMode,
           )}
         >
           {/* TODO verify */}
