@@ -161,7 +161,7 @@ export class CALeg extends Leg {
     }
 */
     //this.estimatedTermination = placeBearingDistance(this.start, this.course, distanceToTermination);
-    this.estimatedTermination = placeBearingDistance(ppos, this.course, distanceToTermination);
+    this.estimatedTermination = placeBearingDistance(this.ppos, this.course, distanceToTermination);
   }
 
   get inboundCourse(): Degrees {
