@@ -778,7 +778,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
   render(): VNode | null {
     return (
       <>
-        <Layer x={384} y={28}>
+        <Layer x={384} y={28} visible={this.props.ndMode.map((mode) => mode !== EfisNdMode.PLAN)}>
           <text class="Green FontIntermediate MiddleAlign" style="white-space: pre">
             {this.approachMessageValue}
           </text>
