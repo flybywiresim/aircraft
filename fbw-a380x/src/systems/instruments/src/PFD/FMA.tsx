@@ -371,9 +371,12 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 
   private handleAutobrakeMode() {
     if (this.autoBrakeActive) {
-      this.className.set('FontMediumSmaller MiddleAlign Cyan');
+      // When active, show green color but don't show cyan armed text for RTO
+      this.text.set(this.text.get().includes('RTO') ? '' : this.text.get());
+      this.className.set('FontMediumSmaller MiddleAlign Green');
     } else {
-      this.className.set('FontMediumSmaller MiddleAlign Grey');
+      // Only show the armed text (in cyan) when not active
+      this.className.set('FontMediumSmaller MiddleAlign Cyan');
     }
   }
 
