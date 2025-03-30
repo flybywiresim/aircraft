@@ -404,19 +404,6 @@ export class A320_Neo_CDU_MainDisplay
 
     CDUMenuPage.ShowPage(this);
 
-    // If the consent is not set, show telex page
-    const onlineFeaturesStatus = NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'UNKNOWN');
-
-    if (onlineFeaturesStatus === 'UNKNOWN') {
-      new PopUpDialog().showPopUp(
-        'TELEX CONFIGURATION',
-        'You have not yet configured the telex option. Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex. Would you like to enable telex?',
-        'small',
-        () => NXDataStore.set('CONFIG_ONLINE_FEATURES_STATUS', 'ENABLED'),
-        () => NXDataStore.set('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED'),
-      );
-    }
-
     SimVar.SetSimVarValue('L:A32NX_GPS_PRIMARY_LOST_MSG', 'Bool', 0).then();
 
     NXDataStore.subscribe('*', () => {
