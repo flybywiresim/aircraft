@@ -48,11 +48,9 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
     it ? RadioButtonColor.Yellow : RadioButtonColor.Cyan,
   );
 
-  private activeDirToPlan: boolean = false;
-
   protected checkIfNewData() {
     super.checkIfNewData();
-    if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Temporary && this.activeDirToPlan) {
+    if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Temporary) {
       this.refreshTemporaryPlan();
     }
   }
@@ -93,8 +91,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         this.selectedWaypointIndex.set(null);
         this.dropdownMenuRef.instance.forceLabel(this.manualWptIdent);
       }
-    } else {
-      this.activeDirToPlan = false;
     }
   }
 
@@ -110,7 +106,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
       if (legIndex !== undefined) {
         this.selectedWaypointIndex.set(idx);
         this.manualWptIdent = null;
-        this.activeDirToPlan = true;
         const trueTrack = ADIRS.getTrueTrack();
         await this.props.fmcService.master?.flightPlanService.directToLeg(
           this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
@@ -124,7 +119,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
       const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
       if (wpt) {
         this.manualWptIdent = wpt.ident;
-        this.activeDirToPlan = true;
         await this.props.fmcService.master.flightPlanService.directToWaypoint(
           this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
           SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
