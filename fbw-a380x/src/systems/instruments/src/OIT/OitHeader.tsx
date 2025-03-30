@@ -120,7 +120,11 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
         />
         <div class="oit-msg-header">0 MSG</div>
         <div class="oit-msg-box"></div>
-        <IconButton icon={'single-down'} containerStyle="width: 60px; height: 60px;" disabled={Subject.create(true)} />
+        <IconButton
+          icon={'flat-single-down'}
+          containerStyle="width: 60px; height: 60px;"
+          disabled={Subject.create(true)}
+        />
         <Button
           label={'CLEAR'}
           onClick={() => {}}
