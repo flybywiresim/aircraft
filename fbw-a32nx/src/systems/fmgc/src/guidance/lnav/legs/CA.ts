@@ -113,20 +113,38 @@ export class CALeg extends Leg {
   }
 
   private recomputeEstimatedTermination() {
-    const ESTIMATED_VS = 2000; // feet per minute
-    const ESTIMATED_KTS = 175; // NM per hour
+    const ESTIMATED_VS; // feet per minute
+    const ESTIMATED_KTS; // NM per hour
+    const minutesToAltitude;
 
     // FIXME hax!
     const originAltitude = 0;
-    // if (this.inboundGuidable instanceof IFLeg && this.inboundGuidable.fix.icao.startsWith('A')) {
-    //     originAltitude = (this.inboundGuidable.fix.infos as AirportInfo).oneWayRunways[0].elevation * 3.28084;
-    // }
+       if (this.inboundGuidable instanceof IFLeg && this.inboundGuidable.fix.icao.startsWith('A')) {
+           originAltitude = (this.inboundGuidable.fix.infos as AirportInfo).oneWayRunways[0].elevation * 3.28084;
+       }
+    // Get VNAV profile data for initial climb before acc
 
-    const minutesToAltitude = (this.altitude - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
-    let distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
+           ESTIMATED_VS = 2000;
+           ESTIMATED_KTS = 175;
+    
+    // Calculate values if target alt below acc alt
 
-    if (!this.wasMovedByPpos && this.extraLength > 0) {
-      distanceToTermination += this.extraLength;
+    if (this.altitude <= originAltitude+1500){
+      minutesToAltitude = (this.altitude - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
+      distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
+    }
+
+    // Calculate values if target alt above acc alt in acc segment
+
+    else if (!this.wasMovedByPpos && this.extraLength > 0) {
+      //Calculating values for initial climb segment
+      ESTIMATED_VS = 2000;
+      ESTIMATED_KTS = 175;
+      minutesToAltitude = (originAltitude+1500 - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
+      distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
+
+      
+      
     }
 
     this.estimatedTermination = placeBearingDistance(this.start, this.course, distanceToTermination);
