@@ -360,7 +360,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
   render(): VNode | null {
     return (
       <>
-        {/* Always visible elements - outside of mode-specific containers */}
+        {/* Move Chrono and BTV indication outside the OANS visibility check */}
         <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
           <Chrono bus={this.props.bus} />
           <Layer x={384} y={56}>
@@ -368,7 +368,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </Layer>
         </svg>
 
-        {/* OANS Mode */}
         <div style={{ display: this.showOans.map((it) => (it ? 'block' : 'none')) }}>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'none' : 'block')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
@@ -389,7 +388,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </svg>
         </div>
 
-        {/* ND Mode */}
         <div style={{ display: this.showOans.map((it) => (it ? 'none' : 'block')) }}>
           {/* ND Vector graphics - bottom layer */}
           <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
