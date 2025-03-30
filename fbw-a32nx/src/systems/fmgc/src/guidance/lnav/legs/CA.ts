@@ -115,7 +115,10 @@ export class CALeg extends Leg {
   private recomputeEstimatedTermination() {
     const ESTIMATED_VS; // feet per minute
     const ESTIMATED_KTS; // NM per hour
+    const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
+    const vs = SimVar.GetSimVarValue('VARIOMETER RATE', 'feet per second');
     const minutesToAltitude;
+    const presentAltitude = 0;
 
     // FIXME hax!
     const originAltitude = 0;
@@ -123,17 +126,24 @@ export class CALeg extends Leg {
            originAltitude = (this.inboundGuidable.fix.infos as AirportInfo).oneWayRunways[0].elevation * 3.28084;
        }
     // Get VNAV profile data for initial climb before acc
-
-           ESTIMATED_VS = 2000;
-           ESTIMATED_KTS = 175;
+       //if (tas < 100) {
+           ESTIMATED_VS = 3000;
+           ESTIMATED_KTS = 165;
+           presentAltitude = originAltitude
+       //}
+    else if (tas >= 100 && vs > 7) {
+           ESTIMATED_KTS = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+           ESTIMATED_VS = SimVar.GetSimVarValue('VARIOMETER RATE', 'feet per second')*60;
+           presentAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+    }
     
     // Calculate values if target alt below acc alt
 
-    if (this.altitude <= originAltitude+1500){
-      minutesToAltitude = (this.altitude - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
+    //if (this.altitude <= originAltitude+1500){
+      minutesToAltitude = (this.altitude - presentAltitude) / ESTIMATED_VS; // minutes
       distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
     }
-
+/*
     // Calculate values if target alt above acc alt in acc segment
 
     else if (!this.wasMovedByPpos && this.extraLength > 0) {
@@ -149,8 +159,9 @@ export class CALeg extends Leg {
       else if (this.altitude >= cleanclimbalt){}
       
     }
-
-    this.estimatedTermination = placeBearingDistance(this.start, this.course, distanceToTermination);
+*/
+    //this.estimatedTermination = placeBearingDistance(this.start, this.course, distanceToTermination);
+    this.estimatedTermination = placeBearingDistance(ppos, this.course, distanceToTermination);
   }
 
   get inboundCourse(): Degrees {
