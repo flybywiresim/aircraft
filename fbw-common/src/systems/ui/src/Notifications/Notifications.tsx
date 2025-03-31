@@ -7,23 +7,43 @@ interface NotificationProps extends ComponentProps {
 export class NotificationsRoot extends DisplayComponent<NotificationProps> {
   private visibility = Subject.create('visible');
 
+  private isVisible = true;
+
+  private wasOnRay = false;
+
+  private onRay = false;
+
   private readonly gElementRef = FSComponent.createRef<SVGGElement>();
 
   private readonly svgElementRef = FSComponent.createRef<SVGSVGElement>();
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const minDelay = 3 * 1000;
-    const maxDelay = 10 * 1000;
+    const minDelay = 1 * 1000;
+    const maxDelay = 8 * 1000;
     const randomDelay = Math.random() * maxDelay + minDelay;
 
     setInterval(() => {
-      if (SimVar.GetSimVarValue('A:IS CAMERA RAY INTERSECT WITH NODE:1', 'bool')) {
+      if (this.wasOnRay && !this.isVisible) {
         this.visibility.set('visible');
+        this.isVisible = true;
+        this.wasOnRay = false;
       } else {
         this.visibility.set('hidden');
+        this.isVisible = false;
       }
     }, randomDelay);
+
+    setInterval(() => {
+      if (this.onRay) {
+        if (!SimVar.GetSimVarValue('A:IS CAMERA RAY INTERSECT WITH NODE:1', 'bool')) {
+          this.onRay = false;
+          this.wasOnRay = true;
+        }
+      } else {
+        this.onRay = SimVar.GetSimVarValue('A:IS CAMERA RAY INTERSECT WITH NODE:1', 'bool');
+      }
+    }, 1000);
   }
 
   render(): VNode {
