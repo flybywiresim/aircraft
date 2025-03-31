@@ -299,7 +299,6 @@ export const A380Fuel: React.FC<FuelProps> = ({
     return gsxFuelSyncEnabled === 1 ? `(${t('Ground.Fuel.GSXFuelSyncEnabled')})` : `(${t('Ground.Fuel.Unavailable')})`;
   };
 
-  console.log('total fuel', totalFuelWeightKg, 'desired fuel', fuelDesiredKg);
   const formatRefuelStatusClass = useCallback(() => {
     if (airplaneCanRefuel()) {
       if (round(fuelDesiredKg) === round(totalFuelWeightKg) || !refuelStartedByUser) {
