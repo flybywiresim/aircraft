@@ -53,6 +53,7 @@ render(
           autoStepClimb: false,
           pilotAvatars: true,
           eclSoftKeys: false,
+          aprilFools2025: false,
         },
         sim: {
           cones: true,

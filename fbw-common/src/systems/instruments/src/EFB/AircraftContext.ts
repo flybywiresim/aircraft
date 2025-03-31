@@ -44,6 +44,7 @@ interface RealismOptions {
   autoStepClimb: boolean;
   pilotAvatars: boolean;
   eclSoftKeys: boolean;
+  aprilFools2025: boolean;
 }
 
 interface SimOptions {
@@ -97,6 +98,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       autoStepClimb: false,
       pilotAvatars: false,
       eclSoftKeys: false,
+      aprilFools2025: false,
     },
     sim: {
       cones: false,

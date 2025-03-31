@@ -1,4 +1,5 @@
 import { ComponentProps, DisplayComponent, EventBus, Subject, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 interface NotificationProps extends ComponentProps {
   bus: EventBus;
@@ -6,6 +7,8 @@ interface NotificationProps extends ComponentProps {
 
 export class NotificationsRoot extends DisplayComponent<NotificationProps> {
   private visibility = Subject.create('visible');
+
+  private display = true;
 
   private isVisible = true;
 
@@ -20,13 +23,26 @@ export class NotificationsRoot extends DisplayComponent<NotificationProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     const minDelay = 1 * 1000;
-    const maxDelay = 25 * 1000;
+    const maxDelay = 60 * 1000;
     const randomDelay = Math.random() * maxDelay + minDelay;
+
+    NXDataStore.getAndSubscribe(
+      'CONFIG_APRIL_FOOLS_2025',
+      (_, v) => {
+        this.display = v === '0';
+
+        if (!this.display) {
+          this.isVisible = false;
+          this.visibility.set('hidden');
+        }
+      },
+      '0',
+    );
 
     setInterval(() => {
       if (this.wasOnRay && !this.isVisible) {
         this.visibility.set('visible');
-        this.isVisible = true;
+        this.isVisible = this.display;
         this.wasOnRay = false;
       } else {
         this.visibility.set('hidden');
