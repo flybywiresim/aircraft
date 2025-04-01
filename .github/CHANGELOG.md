@@ -7,7 +7,8 @@
 
 ## 0.14.0
 
-1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
+1.[A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
+1.[A380X/FCU] Fix selected speed initial target not being managed speed in non SRS - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 

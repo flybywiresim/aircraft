@@ -1,16 +1,45 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Instrument } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Instrument, MappedSubject } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
+import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { VerticalMode } from '@shared/autopilot';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 // FIXME port to MSFS avionics framework style
 export class SpeedManager extends TemporaryHax implements Instrument {
-  private readonly backToIdleTimeout = 10000;
+  private readonly backToIdleTimeout = 45000;
   private readonly MIN_SPEED = 100;
   private readonly MAX_SPEED = 399;
   private readonly MIN_MACH = 0.1;
   private readonly MAX_MACH = 0.99;
+
+  private readonly sub = this.bus.getSubscriber<FGVars>();
+
+  private readonly managedSpeed = ConsumerSubject.create(this.sub.on('fg.speeds.managed'), 0);
+
+  private readonly validManagedSpeed = this.managedSpeed.map((v) => v >= 90);
+
+  private readonly shortTermManagedSpeed = ConsumerSubject.create(this.sub.on('fg.speeds.shortTermManaged'), 0);
+
+  private readonly validShortTermManagedSpeed = this.shortTermManagedSpeed.map((v) => v > 90);
+
+  private readonly managedSpeedTarget = MappedSubject.create(
+    ([managedSpeed, validManagedSpeed, shortTermManagedSpeed, validShortTermManagedSpeed]) => {
+      if (validShortTermManagedSpeed) {
+        return shortTermManagedSpeed;
+      } else if (validManagedSpeed) {
+        return managedSpeed;
+      } else {
+        return null;
+      }
+    },
+    this.managedSpeed,
+    this.validManagedSpeed,
+    this.shortTermManagedSpeed,
+    this.validShortTermManagedSpeed,
+  );
 
   private isActive = false;
   private isManaged = false;
@@ -126,9 +155,8 @@ export class SpeedManager extends TemporaryHax implements Instrument {
   }
 
   private shouldEngageManagedSpeed(): boolean {
-    const managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
     const isValidV2 = SimVar.GetSimVarValue('L:AIRLINER_V2_SPEED', 'knots') >= 90;
-    const isVerticalModeSRS = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum') === 40;
+    const isVerticalModeSRS = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum') === VerticalMode.SRS;
 
     // V2 is entered into MCDU (was not set -> set)
     // SRS mode engages (SRS no engaged -> engaged)
@@ -138,7 +166,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
     }
 
     // store state
-    if (!isValidV2 || managedSpeedTarget >= 90) {
+    if (!isValidV2 || this.managedSpeed.get() >= 90) {
       // store V2 state only if managed speed target is valid (to debounce)
       this.isValidV2 = isValidV2;
     }
@@ -153,8 +181,8 @@ export class SpeedManager extends TemporaryHax implements Instrument {
       (Simplane.getAutoPilotFlightDirectorActive(1) ||
         Simplane.getAutoPilotFlightDirectorActive(2) ||
         SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'number') === 1 ||
-        SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'number') === 5) &&
-      SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots') >= 90
+        SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'number') === FmgcFlightPhase.Approach) &&
+      this.validManagedSpeed.get()
     );
   }
 
@@ -253,20 +281,12 @@ export class SpeedManager extends TemporaryHax implements Instrument {
     return this.clampSpeed(Math.round(Simplane.getIndicatedSpeed()));
   }
 
-  private getCurrentMach(): number {
-    return this.clampMach(Math.round(Simplane.getMachSpeed() * 100) / 100);
-  }
-
   private onRotate(): void {
     clearTimeout(this._resetSelectionTimeout);
     if (!this.inSelection && this.isManaged) {
       this.inSelection = true;
       if (!this.isSelectedValueActive) {
-        if (this.isMachActive) {
-          this.selectedValue = this.getCurrentMach();
-        } else {
-          this.selectedValue = this.getCurrentSpeed();
-        }
+        this.selectedValue = this.getInitialSelectedSpeedValue();
       }
     }
     this.isSelectedValueActive = true;
@@ -293,11 +313,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
   private onPull(): void {
     clearTimeout(this._resetSelectionTimeout);
     if (!this.isSelectedValueActive) {
-      if (this.isMachActive) {
-        this.selectedValue = this.getCurrentMach();
-      } else {
-        this.selectedValue = this.getCurrentSpeed();
-      }
+      this.selectedValue = this.getInitialSelectedSpeedValue();
     }
     SimVar.SetSimVarValue('K:SPEED_SLOT_INDEX_SET', 'number', 1);
     this.inSelection = false;
@@ -383,11 +399,15 @@ export class SpeedManager extends TemporaryHax implements Instrument {
       this.onPreSelSpeed(true);
     } else if (_event === 'SPEED_TCAS') {
       this.onPull();
-      if (this.isMachActive) {
-        this.selectedValue = this.getCurrentMach();
-      } else {
-        this.selectedValue = this.getCurrentSpeed();
-      }
+      this.selectedValue = this.getInitialSelectedSpeedValue();
     }
+  }
+
+  private getInitialSelectedSpeedValue() {
+    const managedSpeedTarget = this.isVerticalModeSRS ? null : this.managedSpeedTarget.get();
+    const selectedSpeed = managedSpeedTarget ?? this.getCurrentSpeed();
+    return this.isMachActive
+      ? this.clampMach(Math.round(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', selectedSpeed) * 100) / 100)
+      : this.clampSpeed(selectedSpeed);
   }
 }

@@ -23,6 +23,8 @@ export interface FGVars {
   'fg.fma.lateralArmedBitmask': FgLateralArmedFlags;
   'fg.fma.verticalMode': VerticalMode;
   'fg.fma.verticalArmedBitmask': FgVerticalArmedFlags;
+  'fg.speeds.managed': number;
+  'fg.speeds.shortTermManaged': number;
 }
 
 export class FGDataPublisher extends SimVarPublisher<FGVars> {
@@ -33,6 +35,8 @@ export class FGDataPublisher extends SimVarPublisher<FGVars> {
         ['fg.fma.lateralArmedBitmask', { name: 'L:A32NX_FMA_LATERAL_ARMED', type: SimVarValueType.Number }],
         ['fg.fma.verticalMode', { name: 'L:A32NX_FMA_VERTICAL_MODE', type: SimVarValueType.Number }],
         ['fg.fma.verticalArmedBitmask', { name: 'L:A32NX_FMA_VERTICAL_ARMED', type: SimVarValueType.Number }],
+        ['fg.speeds.managed', { name: 'L:A32NX_SPEEDS_MANAGED_PFD', type: SimVarValueType.Knots }],
+        ['fg.speeds.shortTermManaged', { name: 'L:A32NX_SPEEDS_MANAGED_ATHR', type: SimVarValueType.Knots }],
       ]),
       bus,
     );
