@@ -44,6 +44,8 @@ module.exports = {
     reactInstrument('OITlegacy'),
     reactInstrument('RTPI'),
     reactInstrument('SD'),
+
+    msfsOverlayUI('Notifications'),
   ],
 };
 
@@ -57,6 +59,20 @@ function msfsAvionicsInstrument(name, index = 'instrument.tsx') {
       mountElementId: `${name}_CONTENT`,
       fileName: name.toLowerCase(),
       imports: ['/JS/dataStorage.js'],
+    },
+  };
+}
+
+function msfsOverlayUI(name, index = 'instrument.tsx') {
+  return {
+    name,
+    index: `src/systems/ui/src/${name}/${index}`,
+    simulatorPackage: {
+      type: 'baseInstrument',
+      templateId: `A380X_${name}`,
+      mountElementId: `${name}_CONTENT`,
+      fileName: name.toLowerCase(),
+      imports: ['/JS/dataStorage.js', '/JS/fbw-a380x/A32NX_Util.js'],
     },
   };
 }

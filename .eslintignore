@@ -1,5 +1,7 @@
 build*.js
 buildSrc/*
+*directories.mjs
+*tasks.mjs
 igniter.config.mjs
 target/*
 CMakeFiles/*
@@ -28,3 +30,5 @@ fbw-a32nx/src/systems/fmgc/src/utils/LzUtf8.js
 fbw-a32nx/src/systems/fmgc/src/flightplanning/new/test/*
 
 fbw-a380x/src/base/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/LegacyA380X/*
+fbw-a32nx/src/systems/instruments/buildSrc/custom/efbBuild.mjs
+msfs-avionics-mirror/*
