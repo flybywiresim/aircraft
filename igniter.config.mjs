@@ -1,7 +1,6 @@
 import { ExecTask, TaskOfTasks } from '@flybywiresim/igniter';
 import { getInstrumentsIgniterTasks as getA320InstrumentsIgniterTasks } from './fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs';
 import { getInstrumentsIgniterTasks as getA380InstrumentsIgniterTasks } from './fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs';
-import { getUiIgniterTasks as getA380UiIgniterTasks } from './fbw-a380x/src/systems/ui/buildSrc/igniter/tasks.mjs';
 
 export default new TaskOfTasks('all', [
     // A32NX Task
@@ -172,7 +171,6 @@ export default new TaskOfTasks('all', [
                     'fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/A380X/SystemsHost',
                 ]),
                 new TaskOfTasks('instruments', getA380InstrumentsIgniterTasks(), true),
-                new TaskOfTasks('ui', getA380UiIgniterTasks(), true),
             ],
             true,
         ),
