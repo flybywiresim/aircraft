@@ -23,7 +23,7 @@ export class NotificationsRoot extends DisplayComponent<NotificationProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     const minDelay = 1 * 1000;
-    const maxDelay = 60 * 1000;
+    const maxDelay = 25 * 1000;
     const randomDelay = Math.random() * maxDelay + minDelay;
 
     NXDataStore.getAndSubscribe(
