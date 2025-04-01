@@ -42,7 +42,6 @@ export const RealismPage = () => {
     0,
   );
   const [eclSoftKeys, setEclSoftKeys] = usePersistentNumberProperty('CONFIG_A380X_SHOW_ECL_SOFTKEYS', 0);
-  const [aprilFools2025, setAprilFools2025] = usePersistentNumberProperty('CONFIG_APRIL_FOOLS_2025', 0);
 
   const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
     { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
@@ -191,12 +190,6 @@ export const RealismPage = () => {
       {aircraftContext.settingsPages.realism.eclSoftKeys && (
         <SettingItem name={t('Settings.Realism.EclSoftKeys')} unrealistic>
           <Toggle value={!!eclSoftKeys} onToggle={(value) => setEclSoftKeys(value ? 1 : 0)} />
-        </SettingItem>
-      )}
-
-      {aircraftContext.settingsPages.realism.aprilFools2025 && (
-        <SettingItem name={'Disable April Fools 2025'}>
-          <Toggle value={!!aprilFools2025} onToggle={(value) => setAprilFools2025(value ? 1 : 0)} />
         </SettingItem>
       )}
     </SettingsPage>
