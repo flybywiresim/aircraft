@@ -21,7 +21,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
 
   private readonly validManagedSpeed = this.managedSpeed.map((v) => v >= 90);
 
-  private readonly shortTermManagedSpeed = ConsumerSubject.create(this.sub.on('fg.speeds.shortTermManaged'), 0);
+  private readonly shortTermManagedSpeed = ConsumerSubject.create(this.sub.on('managedTarget'), 0);
 
   private readonly validShortTermManagedSpeed = this.shortTermManagedSpeed.map((v) => v > 90);
 
@@ -166,7 +166,7 @@ export class SpeedManager extends TemporaryHax implements Instrument {
     }
 
     // store state
-    if (!isValidV2 || this.managedSpeed.get() >= 90) {
+    if (!isValidV2 || this.validManagedSpeed.get()) {
       // store V2 state only if managed speed target is valid (to debounce)
       this.isValidV2 = isValidV2;
     }
