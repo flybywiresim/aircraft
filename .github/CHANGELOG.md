@@ -197,6 +197,8 @@
 1. [A380X/PRIM] Automatic THS trim after engine start or touch and go - @flogross89 (floridude)
 1. [A380X/PERF] Fixed issue where 0 was not an accepted cost index - @Jonny23787 (Jonathan)
 1. [A380X/MFD] Update MFD font to include question mark - @heclak (Heclak)
+1. [FMS] Use proper DME location for AF, CD, FD legs on MSFS2024 and add MSFS2020 fallback to improve AF legs - @tracernz (Mike)
+1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
 
 ## 0.12.0
 

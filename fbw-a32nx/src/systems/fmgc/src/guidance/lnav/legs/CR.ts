@@ -17,14 +17,20 @@ import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { distanceTo, placeBearingIntersection } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
+import { VhfNavaid } from '@flybywiresim/fbw-sdk';
+import { A32NX_Util } from '@shared/A32NX_Util';
 
 export class CRLeg extends Leg {
   private computedPath: PathVector[] = [];
 
+  private readonly thetaTrue = this.recommendedNavaid.trueReferenced
+    ? this.theta
+    : A32NX_Util.magneticToTrue(this.theta, this.recommendedNavaid.stationDeclination);
+
   constructor(
     public readonly course: DegreesTrue,
-    public readonly origin: { coordinates: Coordinates; ident: string; theta: DegreesMagnetic },
-    public readonly radial: DegreesTrue,
+    private readonly recommendedNavaid: VhfNavaid,
+    private readonly theta: number,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
@@ -59,8 +65,8 @@ export class CRLeg extends Leg {
     this.intercept = placeBearingIntersection(
       this.getPathStartPoint(),
       this.course,
-      this.origin.coordinates,
-      this.radial,
+      this.recommendedNavaid.location,
+      this.thetaTrue,
     )[0];
 
     const overshot = distanceTo(this.getPathStartPoint(), this.intercept) >= 5_000;
@@ -145,6 +151,6 @@ export class CRLeg extends Leg {
   }
 
   get repr(): string {
-    return `CR ${this.course}T to ${this.origin.ident}${this.origin.theta}`;
+    return `CR ${this.course}T to ${this.recommendedNavaid.ident}${this.theta}`;
   }
 }

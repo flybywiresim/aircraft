@@ -17,6 +17,7 @@ import { Geo } from '@fmgc/utils/Geo';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
+import { FCLeg } from '@fmgc/guidance/lnav/legs/FC';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { ControlLaw } from '@shared/autopilot';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
@@ -34,6 +35,7 @@ type PrevLeg =
   | CFLeg
   | CRLeg
   | DFLeg
+  | FCLeg
   | FDLeg
   | FALeg
   | FMLeg
