@@ -44,6 +44,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         }),
     );
 
+    // FIXME needed?
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 
     this.subs.push(
