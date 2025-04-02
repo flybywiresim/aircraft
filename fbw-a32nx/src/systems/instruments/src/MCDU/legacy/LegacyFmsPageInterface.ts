@@ -15,7 +15,6 @@ import {
   TerminalNdbNavaid,
   VhfNavaid,
 } from '@flybywiresim/fbw-sdk';
-import { FuelPlanningPhases } from './A32NX_Core/A32NX_FuelPred';
 import { ScratchpadDataLink } from './A320_Neo_CDU_Scratchpad';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { NXSpeedsApp } from './NXSpeeds';
@@ -239,8 +238,12 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   reselectNavaid(icao: string): void;
   getOrSelectWaypointByIdent(ident: string, callback: (fix: Fix) => void): void;
   getIsaTemp(alt: number): number;
+  isFuelPlanningInProgress(forPlan: FlightPlanIndex): boolean;
+  getUnconfirmedBlockFuel(forPlan: FlightPlanIndex): number | undefined;
+  setUnconfirmedBlockFuel(value: number, forPlan: FlightPlanIndex): void;
   runFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
   getFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
+  computeTakeoffWeight(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
   setV1Speed(speed: number, forPlan: FlightPlanIndex): void;
   setVrSpeed(speed: number, forPlan: FlightPlanIndex): void;
   setV2Speed(speed: number, forPlan: FlightPlanIndex): void;
@@ -259,7 +262,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   holdSpeedTarget?: number;
   fmgcMesssagesListener: ViewListener.ViewListener;
   efisInterfaces?: Record<EfisSide, EfisInterface>;
-  _fuelPredDone: boolean;
   _checkWeightSettable: boolean;
   /** @deprecated */
   zeroFuelWeight?: number;
@@ -277,10 +279,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;
   isTropoPilotEntered: boolean;
-  activeUnconfirmedBlockFuel?: number;
-  secUnconfirmedBlockFuel?: number;
-  activeFuelPlanningPhase: FuelPlanningPhases;
-  secFuelPlanningPhase: FuelPlanningPhases;
   _deltaTime: number;
   unconfirmedV1Speed?: number;
   unconfirmedVRSpeed?: number;

@@ -12,10 +12,10 @@ import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface, SimbriefOfpState } from '../legacy/LegacyFmsPageInterface';
-import { FuelPlanningPhases } from '../legacy/A32NX_Core/A32NX_FuelPred';
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { Wait } from '@microsoft/msfs-sdk';
 
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active) {
@@ -356,34 +356,12 @@ export class CDUInitPage {
   static fuelPredConditionsMet(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     const plan = mcdu.getFlightPlan(forPlan);
 
-    const unconfirmedBlockFuel =
-      forPlan === FlightPlanIndex.Active
-        ? mcdu.activeUnconfirmedBlockFuel
-        : forPlan === FlightPlanIndex.FirstSecondary
-          ? mcdu.secUnconfirmedBlockFuel
-          : undefined;
-
-    const fob = mcdu.getFOB(forPlan) ?? unconfirmedBlockFuel;
-
     return (
-      Number.isFinite(fob) &&
+      (Number.isFinite(mcdu.getFOB(forPlan)) || mcdu.isFuelPlanningInProgress(forPlan)) &&
       plan?.legCount > 0 &&
       plan.performanceData.zeroFuelWeight !== null &&
       plan.performanceData.zeroFuelWeightCenterOfGravity !== null
     );
-  }
-  static trySetFuelPred(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
-    if (CDUInitPage.fuelPredConditionsMet(mcdu, forPlan) && !mcdu._fuelPredDone) {
-      setTimeout(() => {
-        if (CDUInitPage.fuelPredConditionsMet(mcdu, forPlan) && !mcdu._fuelPredDone) {
-          //Double check as user can clear block fuel during timeout
-          mcdu._fuelPredDone = true;
-          if (mcdu.page.Current === mcdu.page.InitPageB) {
-            CDUInitPage.ShowPage2(mcdu, forPlan);
-          }
-        }
-      }, mcdu.getDelayFuelPred());
-    }
   }
   static ShowPage2(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
@@ -403,11 +381,9 @@ export class CDUInitPage {
     const plan = mcdu.getFlightPlan(forPlan);
     const isForPrimary = forPlan < FlightPlanIndex.FirstSecondary;
 
-    const predictions = mcdu.runFuelPredComputation(forPlan);
+    const predictions = mcdu.getFuelPredComputation(forPlan);
 
-    const alternate = mcdu.flightPlanService.active
-      ? mcdu.flightPlanService.active.alternateDestinationAirport
-      : undefined;
+    const alternate = plan.alternateDestinationAirport;
 
     const zfwCell = new Column(
       17,
@@ -416,7 +392,7 @@ export class CDUInitPage {
       Column.right,
     );
     const zfwCgCell = new Column(
-      22,
+      23,
       isForPrimary ? '__._' : '[\xa0.]',
       isForPrimary ? Column.amber : Column.cyan,
       Column.right,
@@ -441,7 +417,7 @@ export class CDUInitPage {
         if (a32nxBoarding || (gsxBoarding >= 4 && gsxBoarding < 6)) {
           zfw = NXUnits.kgToUser(SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW_DESIRED', 'number'));
           zfwCg = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED', 'number');
-        } else if (isFinite(getZfw()) && isFinite(getZfwcg())) {
+        } else if (Number.isFinite(getZfw()) && Number.isFinite(getZfwcg())) {
           zfw = getZfw();
           zfwCg = getZfwcg();
         }
@@ -454,8 +430,18 @@ export class CDUInitPage {
         }
       } else {
         if (mcdu.trySetZeroFuelWeightZFWCG(value, forPlan)) {
+          mcdu.computeTakeoffWeight(forPlan);
           CDUInitPage.ShowPage2(mcdu, forPlan);
-          CDUInitPage.trySetFuelPred(mcdu, forPlan);
+          mcdu.runFuelPredComputation(forPlan);
+
+          if (this.fuelPredConditionsMet(mcdu, forPlan)) {
+            // Simulate delay if calculating trip data
+            await Wait.awaitDelay(mcdu.getDelayFuelPred());
+          }
+
+          if (mcdu.page.Current === mcdu.page.InitPageB) {
+            CDUInitPage.ShowPage2(mcdu, forPlan);
+          }
         } else {
           scratchpadCallback();
         }
@@ -473,61 +459,46 @@ export class CDUInitPage {
       if (Number.isFinite(plan.performanceData.blockFuel)) {
         blockFuel.update(NXUnits.kgToUser(plan.performanceData.blockFuel).toFixed(1), Column.cyan);
       }
-    } else if (
-      isForPrimary &&
-      mcdu.activeFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS &&
-      Number.isFinite(mcdu.activeUnconfirmedBlockFuel)
-    ) {
-      blockFuel.update(NXUnits.kgToUser(mcdu.activeUnconfirmedBlockFuel).toFixed(1), Column.cyan);
-    } else if (
-      !isForPrimary &&
-      mcdu.secFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS &&
-      Number.isFinite(mcdu.secUnconfirmedBlockFuel)
-    ) {
-      blockFuel.update(NXUnits.kgToUser(mcdu.secUnconfirmedBlockFuel).toFixed(1), Column.cyan);
+    } else if (mcdu.isFuelPlanningInProgress(forPlan) && Number.isFinite(mcdu.getUnconfirmedBlockFuel(forPlan))) {
+      blockFuel.update(NXUnits.kgToUser(mcdu.getUnconfirmedBlockFuel(forPlan)).toFixed(1), Column.cyan);
     }
 
-    mcdu.onRightInput[1] = async (value, scratchpadCallback) => {
-      if (plan.performanceData.zeroFuelWeight !== null && value !== Keypad.clrValue) {
-        //Simulate delay if calculating trip data
-        if (mcdu.trySetBlockFuel(value, forPlan)) {
+    mcdu.onRightInput[1] = async (value: string, scratchpadCallback: () => void) => {
+      const prevFuelPredMet = this.fuelPredConditionsMet(mcdu, forPlan);
+
+      if (mcdu.trySetBlockFuel(value, forPlan)) {
+        mcdu.computeTakeoffWeight(forPlan);
+        CDUInitPage.ShowPage2(mcdu, forPlan);
+        mcdu.runFuelPredComputation(forPlan);
+
+        if (!prevFuelPredMet && this.fuelPredConditionsMet(mcdu, forPlan)) {
+          // Simulate delay if calculating trip data
+          await Wait.awaitDelay(mcdu.getDelayFuelPred());
+        }
+
+        if (mcdu.page.Current === mcdu.page.InitPageB) {
           CDUInitPage.ShowPage2(mcdu, forPlan);
-          CDUInitPage.trySetFuelPred(mcdu, forPlan);
-        } else {
-          scratchpadCallback();
         }
       } else {
-        if (mcdu.trySetBlockFuel(value, forPlan)) {
-          CDUInitPage.ShowPage2(mcdu, forPlan);
-        } else {
-          scratchpadCallback();
-        }
+        scratchpadCallback();
       }
     };
 
     const fuelPlanTopTitle = new Column(23, '', Column.amber, Column.right);
     const fuelPlanBottomTitle = new Column(23, '', Column.amber, Column.right);
+
     if (plan.performanceData.zeroFuelWeight !== null && plan.performanceData.blockFuel === null) {
-      fuelPlanTopTitle.text = 'FUEL ';
-      fuelPlanBottomTitle.text = 'PLANNING }';
+      if (mcdu.isFuelPlanningInProgress(forPlan)) {
+        fuelPlanTopTitle.update('BLOCK ', Column.green);
+        fuelPlanBottomTitle.update('CONFIRM', Column.green);
+      } else {
+        fuelPlanTopTitle.text = 'FUEL ';
+        fuelPlanBottomTitle.text = 'PLANNING }';
+      }
+
       mcdu.onRightInput[2] = async () => {
         if (mcdu.tryFuelPlanning(forPlan)) {
           CDUInitPage.ShowPage2(mcdu, forPlan);
-        }
-      };
-    }
-
-    const isFuelPlanningInProgress =
-      (isForPrimary && mcdu.activeFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS) ||
-      (!isForPrimary && mcdu.secFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS);
-
-    if (isFuelPlanningInProgress) {
-      fuelPlanTopTitle.update('BLOCK ', Column.green);
-      fuelPlanBottomTitle.update('CONFIRM', Column.green);
-      mcdu.onRightInput[2] = async () => {
-        if (mcdu.tryFuelPlanning(forPlan)) {
-          CDUInitPage.ShowPage2(mcdu, forPlan);
-          CDUInitPage.trySetFuelPred(mcdu, forPlan);
         }
       };
     }
@@ -535,30 +506,28 @@ export class CDUInitPage {
     const towCell = new Column(17, '---.-', Column.right);
     const lwCell = new Column(23, '---.-', Column.right);
     const towLwCellDivider = new Column(18, '/');
-    const taxiFuelCell = new Column(0, '0.4', Column.cyan, Column.small);
 
-    taxiFuelCell.update(
+    const taxiFuelCell = new Column(
+      0,
       NXUnits.kgToUser(plan.performanceData.taxiFuel).toFixed(1),
+      Column.cyan,
       plan.performanceData.taxiFuelIsPilotEntered ? Column.big : Column.small,
     );
 
-    mcdu.onLeftInput[0] = async (value, scratchpadCallback) => {
-      if (mcdu._fuelPredDone) {
-        setTimeout(async () => {
-          if (mcdu.trySetTaxiFuelWeight(value, forPlan)) {
-            if (mcdu.page.Current === mcdu.page.InitPageB) {
-              CDUInitPage.ShowPage2(mcdu, forPlan);
-            }
-          } else {
-            scratchpadCallback();
-          }
-        }, mcdu.getDelayHigh());
-      } else {
-        if (mcdu.trySetTaxiFuelWeight(value, forPlan)) {
-          CDUInitPage.ShowPage2(mcdu, forPlan);
-        } else {
-          scratchpadCallback();
+    mcdu.onLeftInput[0] = async (value: string, scratchpadCallback: () => void) => {
+      if (mcdu.trySetTaxiFuelWeight(value, forPlan)) {
+        mcdu.runFuelPredComputation(forPlan);
+
+        if (this.fuelPredConditionsMet(mcdu, forPlan)) {
+          // Simulate delay if calculating trip data
+          await Wait.awaitDelay(mcdu.getDelayHigh());
         }
+
+        if (mcdu.page.Current === mcdu.page.InitPageB) {
+          CDUInitPage.ShowPage2(mcdu, forPlan);
+        }
+      } else {
+        scratchpadCallback();
       }
     };
 
@@ -566,14 +535,16 @@ export class CDUInitPage {
     const tripTimeCell = new Column(9, '----', Column.right);
     const tripCellDivider = new Column(5, '/');
     const rteRsvWeightCell = new Column(4, '---.-', Column.right);
-    const rteRsvPercentCell = new Column(6, '5.0', Column.cyan);
+    const rteRsvPercentCell = new Column(6, plan.performanceData.routeReserveFuelPercentage.toFixed(1), Column.cyan);
     const rteRsvCellDivider = new Column(5, '/', Column.cyan);
 
     if (Number.isFinite(predictions.routeReserveFuelPercentage)) {
       rteRsvPercentCell.text = predictions.routeReserveFuelPercentage.toFixed(1);
     }
-    mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
-      if (mcdu.trySetRouteReservedPercent(value, FlightPlanIndex.Active)) {
+
+    mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
+      if (mcdu.trySetRouteReservedPercent(value, forPlan)) {
+        mcdu.runFuelPredComputation(forPlan);
         CDUInitPage.ShowPage2(mcdu, forPlan);
       } else {
         scratchpadCallback();
@@ -584,15 +555,17 @@ export class CDUInitPage {
     const altnTimeCell = new Column(9, '----', Column.right);
     const altnCellDivider = new Column(5, '/');
     const finalWeightCell = new Column(4, '---.-', Column.right);
-    const finalTimeCell = new Column(9, '----', Column.right);
-    const finalCellDivider = new Column(5, '/');
+    const finalTimeCell = new Column(
+      9,
+      FmsFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime),
+      Column.cyan,
+      Column.right,
+    );
+    const finalCellDivider = new Column(5, '/', Column.cyan);
 
-    if (predictions.finalHoldingTime > 0) {
-      finalTimeCell.update(FmsFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan);
-      finalCellDivider.updateAttributes(Column.cyan);
-    }
-    mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
+    mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
       if (mcdu.trySetRouteFinalTime(value, forPlan)) {
+        mcdu.runFuelPredComputation(forPlan);
         CDUInitPage.ShowPage2(mcdu, forPlan);
       } else {
         scratchpadCallback();
@@ -606,7 +579,7 @@ export class CDUInitPage {
     const tripWindDirCell = new Column(19, '--');
     const tripWindAvgCell = new Column(21, '---');
 
-    if (mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport) {
+    if (plan.originAirport && plan.destinationAirport) {
       const isTripWindPilotEntered = plan.performanceData.pilotTripWind !== null;
 
       tripWindDirCell.update(
@@ -622,6 +595,7 @@ export class CDUInitPage {
 
       mcdu.onRightInput[4] = (value, scratchpadCallback) => {
         if (mcdu.trySetAverageWind(value, forPlan)) {
+          mcdu.runFuelPredComputation(forPlan);
           CDUInitPage.ShowPage2(mcdu, forPlan);
         } else {
           scratchpadCallback();
@@ -634,157 +608,158 @@ export class CDUInitPage {
         towCell.update(NXUnits.kgToUser(predictions.takeoffWeight).toFixed(1), Column.green, Column.small);
       }
 
-      if (mcdu._fuelPredDone) {
-        if (Number.isFinite(predictions.finalHoldingFuel) && Number.isFinite(predictions.tripTime)) {
-          if (plan.performanceData.pilotFinalHoldingFuel !== null) {
-            finalWeightCell.update(NXUnits.kgToUser(predictions.finalHoldingFuel).toFixed(1), Column.cyan);
-          } else {
-            finalWeightCell.update(
-              NXUnits.kgToUser(predictions.finalHoldingFuel).toFixed(1),
-              Column.cyan,
-              Column.small,
-            );
-          }
-          const isRouteFinalEntered =
-            plan.performanceData.pilotFinalHoldingFuel !== null || plan.performanceData.isFinalHoldingTimePilotEntered;
-
-          if (plan.performanceData.pilotFinalHoldingTime !== null || !isRouteFinalEntered) {
-            finalTimeCell.update(FmsFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan);
-          } else {
-            finalTimeCell.update(FmsFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan, Column.small);
-            finalCellDivider.updateAttributes(Column.small);
-          }
-          finalCellDivider.updateAttributes(Column.cyan);
+      if (Number.isFinite(predictions.finalHoldingFuel) && Number.isFinite(predictions.finalHoldingTime)) {
+        if (plan.performanceData.pilotFinalHoldingFuel !== null) {
+          finalWeightCell.update(NXUnits.kgToUser(predictions.finalHoldingFuel).toFixed(1), Column.cyan);
+        } else {
+          finalWeightCell.update(NXUnits.kgToUser(predictions.finalHoldingFuel).toFixed(1), Column.cyan, Column.small);
         }
-        mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
-          setTimeout(async () => {
-            if (mcdu.trySetRouteFinalFuel(value, forPlan)) {
-              if (mcdu.page.Current === mcdu.page.InitPageB) {
-                CDUInitPage.ShowPage2(mcdu, forPlan);
-              }
-            } else {
-              scratchpadCallback();
-            }
-          }, mcdu.getDelayHigh());
-        };
+        const isRouteFinalEntered =
+          plan.performanceData.pilotFinalHoldingFuel !== null || plan.performanceData.isFinalHoldingTimePilotEntered;
 
-        if (alternate) {
-          const altFuelEntered = plan.performanceData.pilotAlternateFuel !== null;
-          if (Number.isFinite(predictions.alternateFuel)) {
-            altnWeightCell.update(
-              NXUnits.kgToUser(predictions.alternateFuel).toFixed(1),
-              Column.cyan,
-              altFuelEntered ? Column.big : Column.small,
-            );
-            const time = predictions.alternateTime;
-            if (time) {
-              altnTimeCell.update(FmsFormatters.minutesTohhmm(predictions.alternateTime), Column.green, Column.small);
-              altnCellDivider.updateAttributes(Column.green, Column.small);
-            } else {
-              altnTimeCell.update('----', Column.white);
-              altnCellDivider.updateAttributes(Column.white, altFuelEntered ? Column.big : Column.small);
-            }
+        if (plan.performanceData.pilotFinalHoldingTime !== null || !isRouteFinalEntered) {
+          finalTimeCell.update(FmsFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan);
+        } else {
+          finalTimeCell.update(FmsFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan, Column.small);
+          finalCellDivider.updateAttributes(Column.small);
+        }
+        finalCellDivider.updateAttributes(Column.cyan);
+      }
+
+      mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
+        await Wait.awaitDelay(mcdu.getDelayHigh());
+        if (mcdu.trySetRouteFinalFuel(value, forPlan)) {
+          mcdu.runFuelPredComputation(forPlan);
+
+          if (mcdu.page.Current === mcdu.page.InitPageB) {
+            CDUInitPage.ShowPage2(mcdu, forPlan);
           }
         } else {
-          altnWeightCell.update('0.0', Column.green, Column.small);
+          scratchpadCallback();
         }
+      };
 
-        mcdu.onLeftInput[3] = async (value, scratchpadCallback) => {
-          setTimeout(async () => {
-            if (await mcdu.trySetRouteAlternateFuel(value, FlightPlanIndex.Active)) {
-              if (mcdu.page.Current === mcdu.page.InitPageB) {
-                CDUInitPage.ShowPage2(mcdu, forPlan);
-              }
-            } else {
-              scratchpadCallback();
-            }
-          }, mcdu.getDelayHigh());
-        };
-
-        if (predictions.tripFuel !== null && predictions.tripTime !== null) {
-          tripWeightCell.update(NXUnits.kgToUser(predictions.tripFuel).toFixed(1), Column.green, Column.small);
-          tripTimeCell.update(FmsFormatters.minutesTohhmm(predictions.tripTime), Column.green, Column.small);
-          tripCellDivider.updateAttributes(Column.green, Column.small);
-        }
-
-        if (isFinite(predictions.routeReserveFuel)) {
-          if (plan.performanceData.pilotRouteReserveFuel !== null) {
-            rteRsvWeightCell.update(NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1), Column.cyan);
+      if (alternate) {
+        const altFuelEntered = plan.performanceData.pilotAlternateFuel !== null;
+        if (Number.isFinite(predictions.alternateFuel)) {
+          altnWeightCell.update(
+            NXUnits.kgToUser(predictions.alternateFuel).toFixed(1),
+            Column.cyan,
+            altFuelEntered ? Column.big : Column.small,
+          );
+          const time = predictions.alternateTime;
+          if (time) {
+            altnTimeCell.update(FmsFormatters.minutesTohhmm(predictions.alternateTime), Column.green, Column.small);
+            altnCellDivider.updateAttributes(Column.green, Column.small);
           } else {
-            rteRsvWeightCell.update(
-              NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1),
-              Column.cyan,
-              Column.small,
-            );
+            altnTimeCell.update('----', Column.white);
+            altnCellDivider.updateAttributes(Column.white, altFuelEntered ? Column.big : Column.small);
           }
         }
+      } else {
+        altnWeightCell.update('0.0', Column.green, Column.small);
+      }
 
+      mcdu.onLeftInput[3] = async (value, scratchpadCallback) => {
+        await Wait.awaitDelay(mcdu.getDelayHigh());
+        if (mcdu.trySetRouteAlternateFuel(value, forPlan)) {
+          mcdu.runFuelPredComputation(forPlan);
+
+          if (mcdu.page.Current === mcdu.page.InitPageB) {
+            CDUInitPage.ShowPage2(mcdu, forPlan);
+          }
+        } else {
+          scratchpadCallback();
+        }
+      };
+
+      if (predictions.tripFuel !== null && predictions.tripTime !== null) {
+        tripWeightCell.update(NXUnits.kgToUser(predictions.tripFuel).toFixed(1), Column.green, Column.small);
+        tripTimeCell.update(FmsFormatters.minutesTohhmm(predictions.tripTime), Column.green, Column.small);
+        tripCellDivider.updateAttributes(Column.green, Column.small);
+      }
+
+      if (Number.isFinite(predictions.routeReserveFuel)) {
+        if (plan.performanceData.pilotRouteReserveFuel !== null) {
+          rteRsvWeightCell.update(NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1), Column.cyan);
+        } else {
+          rteRsvWeightCell.update(NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1), Column.cyan, Column.small);
+        }
+      }
+
+      if (Number.isFinite(predictions.routeReserveFuelPercentage)) {
         // TODO should come from AMI
         const routeReserveOutOfRange =
           predictions.routeReserveFuelPercentage < 0 || predictions.routeReserveFuelPercentage > 15;
 
+        const isRouteReservedEntered =
+          plan.performanceData.isRouteReserveFuelPrecentagePilotEntered ||
+          plan.performanceData.pilotRouteReserveFuel !== null;
+
         if (routeReserveOutOfRange) {
           rteRsvPercentCell.update('--.-', Column.white);
           rteRsvCellDivider.updateAttributes(Column.white);
-        } else if (isFinite(predictions.routeReserveFuelPercentage)) {
-          const isRouteReservedEntered =
-            plan.performanceData.isRouteReserveFuelPrecentagePilotEntered ||
-            plan.performanceData.pilotRouteReserveFuel !== null;
-
-          if (plan.performanceData.isRouteReserveFuelPrecentagePilotEntered || !isRouteReservedEntered) {
-            rteRsvPercentCell.update(predictions.routeReserveFuelPercentage.toFixed(1), Column.cyan);
-          } else {
-            rteRsvPercentCell.update(predictions.routeReserveFuelPercentage.toFixed(1), Column.cyan, Column.small);
-            rteRsvCellDivider.updateAttributes(Column.small);
-          }
+        } else if (plan.performanceData.isRouteReserveFuelPrecentagePilotEntered || !isRouteReservedEntered) {
+          rteRsvPercentCell.update(predictions.routeReserveFuelPercentage.toFixed(1), Column.cyan);
+        } else {
+          rteRsvPercentCell.update(predictions.routeReserveFuelPercentage.toFixed(1), Column.cyan, Column.small);
+          rteRsvCellDivider.updateAttributes(Column.small);
         }
+      }
 
-        mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
-          setTimeout(async () => {
-            if (await mcdu.trySetRouteReservedFuel(value, forPlan)) {
-              if (mcdu.page.Current === mcdu.page.InitPageB) {
-                CDUInitPage.ShowPage2(mcdu, forPlan);
-              }
-            } else {
-              scratchpadCallback();
-            }
-          }, mcdu.getDelayMedium());
-        };
+      mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
+        await Wait.awaitDelay(mcdu.getDelayMedium());
+        if (mcdu.trySetRouteReservedFuel(value, forPlan)) {
+          mcdu.runFuelPredComputation(forPlan);
 
+          if (mcdu.page.Current === mcdu.page.InitPageB) {
+            CDUInitPage.ShowPage2(mcdu, forPlan);
+          }
+        } else {
+          scratchpadCallback();
+        }
+      };
+
+      if (Number.isFinite(predictions.landingWeight)) {
         lwCell.update(NXUnits.kgToUser(predictions.landingWeight).toFixed(1), Column.green, Column.small);
         towLwCellDivider.updateAttributes(Column.green, Column.small);
+      }
 
-        mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
-          setTimeout(() => {
-            if (mcdu.trySetAverageWind(value, forPlan)) {
-              if (mcdu.page.Current === mcdu.page.InitPageB) {
-                CDUInitPage.ShowPage2(mcdu, forPlan);
-              }
-            } else {
-              scratchpadCallback();
-            }
-          }, mcdu.getDelayWindLoad());
-        };
+      mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
+        await Wait.awaitDelay(mcdu.getDelayWindLoad());
+        if (mcdu.trySetAverageWind(value, forPlan)) {
+          mcdu.runFuelPredComputation(forPlan);
 
+          if (mcdu.page.Current === mcdu.page.InitPageB) {
+            CDUInitPage.ShowPage2(mcdu, forPlan);
+          }
+        } else {
+          scratchpadCallback();
+        }
+      };
+
+      if (Number.isFinite(predictions.minimumDestinationFuel)) {
         minDestFob.update(
           NXUnits.kgToUser(predictions.minimumDestinationFuel).toFixed(1),
           Column.cyan,
           plan.performanceData.pilotMinimumDestinationFuelOnBoard !== null ? Column.big : Column.small,
         );
+      }
 
-        mcdu.onLeftInput[5] = async (value, scratchpadCallback) => {
-          setTimeout(async () => {
-            if (await mcdu.trySetMinDestFob(value, forPlan)) {
-              if (mcdu.page.Current === mcdu.page.InitPageB) {
-                CDUInitPage.ShowPage2(mcdu, forPlan);
-              }
-            } else {
-              scratchpadCallback();
-            }
-          }, mcdu.getDelayHigh());
-        };
-        mcdu.updateAmberEfob();
+      mcdu.onLeftInput[5] = async (value, scratchpadCallback) => {
+        await Wait.awaitDelay(mcdu.getDelayHigh());
+        if (mcdu.trySetMinDestFob(value, forPlan)) {
+          mcdu.runFuelPredComputation(forPlan);
 
+          if (mcdu.page.Current === mcdu.page.InitPageB) {
+            CDUInitPage.ShowPage2(mcdu, forPlan);
+          }
+        } else {
+          scratchpadCallback();
+        }
+      };
+
+      if (Number.isFinite(predictions.extraFuel)) {
         extraWeightCell.update(NXUnits.kgToUser(predictions.extraFuel).toFixed(1), Column.green, Column.small);
         if (predictions.extraFuel >= 0) {
           extraTimeCell.update(FmsFormatters.minutesTohhmm(predictions.extraTime), Column.green, Column.small);

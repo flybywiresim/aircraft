@@ -69,6 +69,7 @@ import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkA
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { ISimbriefData } from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { FuelPredComputations, SimbriefOfpState } from './LegacyFmsPageInterface';
+import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -86,6 +87,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly flightPhaseUpdateThrottler = new UpdateThrottler(800);
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);
   private readonly _progBrgDistUpdateThrottler = new UpdateThrottler(2000);
+  private readonly fuelPredUpdateThrottler = new UpdateThrottler(5000);
   private readonly _apCooldown = 500;
   private lastFlightPlanVersion = 0;
   private readonly _messageQueue = new A32NX_MessageQueue(this.mcdu);
@@ -108,11 +110,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public isDestEfobAmber = false;
   private isBelowMinDestFobForTwoMinutes?: NXLogicConfirmNode;
   private shouldShowBelowMinDestEfobMessage = false;
-  public _fuelPredDone = false;
-  public activeFuelPlanningPhase = undefined;
-  public activeUnconfirmedBlockFuel = undefined;
-  public secFuelPlanningPhase = undefined;
-  public secUnconfirmedBlockFuel = undefined;
+  private activeFuelPlanningPhase = undefined;
+  private activeUnconfirmedBlockFuel = undefined;
+  private secFuelPlanningPhase = undefined;
+  private secUnconfirmedBlockFuel = undefined;
   private _initMessageSettable = undefined;
   public _checkWeightSettable = true;
   private _gwInitDisplayed = undefined;
@@ -433,7 +434,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.isDestEfobAmber = false;
     this.isBelowMinDestFobForTwoMinutes = new NXLogicConfirmNode(120_000, true);
     this.shouldShowBelowMinDestEfobMessage = false;
-    this._fuelPredDone = false;
     this.activeFuelPlanningPhase = FuelPlanningPhases.PLANNING;
     this.secFuelPlanningPhase = FuelPlanningPhases.PLANNING;
     this._initMessageSettable = false;
@@ -630,7 +630,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (this._progBrgDistUpdateThrottler.canUpdate(deltaTime) !== -1) {
       this.updateProgDistance();
+    }
+
+    if (this.fuelPredUpdateThrottler.canUpdate(deltaTime) !== -1) {
       this.runFuelPredComputation(FlightPlanIndex.Active);
+
+      if (this.flightPlanService.has(FlightPlanIndex.FirstSecondary)) {
+        this.runFuelPredComputation(FlightPlanIndex.FirstSecondary);
+      }
     }
 
     if (this.guidanceController) {
@@ -3238,23 +3245,22 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   /**
    * Attempts to predict required block fuel for trip
    */
-  //TODO: maybe make this part of an update routine?
   public tryFuelPlanning(forPlan: FlightPlanIndex): boolean {
-    if (forPlan === FlightPlanIndex.Active && this.activeFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS) {
-      this.flightPlanService.setPerformanceData('blockFuel', this.activeUnconfirmedBlockFuel, forPlan);
-      this.activeFuelPlanningPhase = FuelPlanningPhases.COMPLETED;
-      return true;
-    } else if (
-      forPlan === FlightPlanIndex.FirstSecondary &&
-      this.secFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS
-    ) {
-      this.flightPlanService.setPerformanceData('blockFuel', this.secUnconfirmedBlockFuel, forPlan);
-      this.secFuelPlanningPhase = FuelPlanningPhases.COMPLETED;
+    if (this.isFuelPlanningInProgress(forPlan)) {
+      this.flightPlanService.setPerformanceData('blockFuel', this.getUnconfirmedBlockFuel(forPlan), forPlan);
+      this.setUnconfirmedBlockFuel(null, forPlan);
+
       return true;
     }
 
+    if (forPlan === FlightPlanIndex.Active) {
+      this.activeFuelPlanningPhase = FuelPlanningPhases.IN_PROGRESS;
+    } else if (forPlan === FlightPlanIndex.FirstSecondary) {
+      this.secFuelPlanningPhase = FuelPlanningPhases.IN_PROGRESS;
+    }
+
     const plan = this.getFlightPlan(forPlan);
-    const predictions = this.getFuelPredComputation(forPlan);
+    const predictions = this.runFuelPredComputation(forPlan);
 
     const blockFuel =
       predictions.tripFuel +
@@ -3262,13 +3268,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       plan.performanceData.taxiFuel +
       predictions.routeReserveFuel;
 
-    if (forPlan === FlightPlanIndex.Active) {
-      this.activeUnconfirmedBlockFuel = blockFuel;
-      this.activeFuelPlanningPhase = FuelPlanningPhases.IN_PROGRESS;
-    } else if (forPlan === FlightPlanIndex.FirstSecondary) {
-      this.secUnconfirmedBlockFuel = blockFuel;
-      this.secFuelPlanningPhase = FuelPlanningPhases.IN_PROGRESS;
-    }
+    this.setUnconfirmedBlockFuel(blockFuel, forPlan);
+
     return true;
   }
 
@@ -3591,13 +3592,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('blockFuel', null, forPlan);
 
-      this._fuelPredDone = false;
-
-      if (forPlan === FlightPlanIndex.Active) {
-        this.activeFuelPlanningPhase = FuelPlanningPhases.PLANNING;
-      } else if (forPlan === FlightPlanIndex.FirstSecondary) {
-        this.secFuelPlanningPhase = FuelPlanningPhases.PLANNING;
-      }
+      this.setUnconfirmedBlockFuel(null, forPlan);
 
       return true;
     }
@@ -5137,8 +5132,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.flightPlanService.active.legCount;
   }
 
-  public getDistanceToDestination() {
-    return this.guidanceController.getAlongTrackDistanceToDestination();
+  /**
+   * Get the along-track distance to the destination airport for the specified waypoint in nautical miles or undefined
+   * if not computed
+   * @param forPlan
+   * @returns
+   */
+  public getDistanceToDestination(forPlan: FlightPlanIndex = FlightPlanIndex.Active): number | undefined {
+    return this.guidanceController.getAlongTrackDistanceToDestination(forPlan);
   }
 
   /**
@@ -5199,13 +5200,70 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.fuelComputationsCache.get(forPlan);
   }
 
+  public isFuelPlanningInProgress(forPlan: FlightPlanIndex) {
+    switch (forPlan) {
+      case FlightPlanIndex.Active:
+        return this.activeFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS;
+      case FlightPlanIndex.FirstSecondary:
+        return this.secFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS;
+      default:
+        return false;
+    }
+  }
+
+  public getUnconfirmedBlockFuel(forPlan: FlightPlanIndex) {
+    switch (forPlan) {
+      case FlightPlanIndex.Active:
+        return this.activeUnconfirmedBlockFuel;
+      case FlightPlanIndex.FirstSecondary:
+        return this.secUnconfirmedBlockFuel;
+      default:
+        return undefined;
+    }
+  }
+
+  public setUnconfirmedBlockFuel(value: number, forPlan: FlightPlanIndex) {
+    switch (forPlan) {
+      case FlightPlanIndex.Active:
+        if (Number.isFinite(value)) {
+          this.activeFuelPlanningPhase = FuelPlanningPhases.IN_PROGRESS;
+        } else {
+          this.activeFuelPlanningPhase =
+            this.activeFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS
+              ? FuelPlanningPhases.COMPLETED
+              : FuelPlanningPhases.PLANNING;
+        }
+
+        this.activeUnconfirmedBlockFuel = value;
+
+        break;
+      case FlightPlanIndex.FirstSecondary:
+        if (Number.isFinite(value)) {
+          this.activeFuelPlanningPhase = FuelPlanningPhases.IN_PROGRESS;
+        } else {
+          this.activeFuelPlanningPhase =
+            this.activeFuelPlanningPhase === FuelPlanningPhases.IN_PROGRESS
+              ? FuelPlanningPhases.COMPLETED
+              : FuelPlanningPhases.PLANNING;
+        }
+
+        this.secUnconfirmedBlockFuel = value;
+        break;
+      default:
+        console.error(
+          `[FMS] Can only set unconfirmed block fuel for flight plan index ${FlightPlanIndex.Active} or ${FlightPlanIndex.FirstSecondary}, got index ${forPlan}.`,
+        );
+        break;
+    }
+  }
+
   public runFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {
     const plan = this.getFlightPlan(forPlan);
     if (!this.fuelComputationsCache.has(forPlan)) this.fuelComputationsCache.set(forPlan, new FuelPredComputations());
 
     const computations = this.fuelComputationsCache.get(forPlan);
 
-    if (plan.performanceData.zeroFuelWeight === null) {
+    if (!CDUInitPage.fuelPredConditionsMet(this.mcdu, forPlan)) {
       return computations.reset();
     }
 
@@ -5267,8 +5325,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     // Route trip
-
-    const groundDistance = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
+    const groundDistance = this.getDistanceToDestination(forPlan) ?? -1;
     const airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, plan.performanceData.pilotTripWind ?? 0);
 
     // Use the cruise level for calculations otherwise after cruise use descent altitude down to 10,000 feet.
@@ -5294,7 +5351,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     // Route reserve
-
     if (this.isFlying()) {
       computations.routeReserveFuel = 0;
       computations.routeReserveFuelPercentage = 0;
@@ -5321,22 +5377,19 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     // EFOB
     computations.destinationFuelOnBoard =
-      fob !== undefined ? fob - computations.tripFuel - (this.isFlying() ? plan.performanceData.taxiFuel : 0) : null;
+      fob !== undefined ? fob - computations.tripFuel - (!this.isFlying() ? plan.performanceData.taxiFuel : 0) : null;
     computations.alternateDestinationFuelOnBoard =
       computations.destinationFuelOnBoard !== null && computations.alternateFuel !== null
         ? computations.destinationFuelOnBoard - computations.alternateFuel
         : null;
 
     // TOW / LW
-    computations.takeoffWeight =
-      fob !== undefined ? plan.performanceData.zeroFuelWeight + fob - plan.performanceData.taxiFuel : null;
+    this.computeTakeoffWeight(forPlan);
     computations.landingWeight =
-      computations.destinationFuelOnBoard !== null
-        ? plan.performanceData.zeroFuelWeight + computations.destinationFuelOnBoard
-        : null;
+      computations.destinationFuelOnBoard !== null ? zfw + computations.destinationFuelOnBoard : null;
 
     // Extra fuel
-    if (fob === undefined) {
+    if (fob === undefined && this.isFuelPlanningInProgress(forPlan)) {
       // For fuel planning to work
       computations.extraFuel = 0;
       computations.extraTime = 0;
@@ -5350,6 +5403,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       computations.extraTime =
         computations.extraFuel !== null ? (computations.extraFuel * 1000) / (finalHoldingFuelFlow / 60) : null;
     }
+
+    return computations;
+  }
+
+  public computeTakeoffWeight(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {
+    const plan = this.getFlightPlan(forPlan);
+    if (!this.fuelComputationsCache.has(forPlan)) this.fuelComputationsCache.set(forPlan, new FuelPredComputations());
+
+    const computations = this.fuelComputationsCache.get(forPlan);
+
+    if (!CDUInitPage.fuelPredConditionsMet(this.mcdu, forPlan)) {
+      return computations.reset();
+    }
+
+    const zfw = plan.performanceData.zeroFuelWeight;
+    const fob = this.getFOB(forPlan) ?? this.getUnconfirmedBlockFuel(forPlan);
+
+    computations.takeoffWeight = fob !== undefined ? zfw + fob - plan.performanceData.taxiFuel : null;
 
     return computations;
   }

@@ -12,6 +12,7 @@ import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -56,7 +57,10 @@ export class CDUVerticalRevisionPage {
     }
 
     const showSpeedLim =
-      mcdu._fuelPredDone || isOrigin || isDestination || constraintType !== WaypointConstraintType.Unknown;
+      CDUInitPage.fuelPredConditionsMet(mcdu, forPlan) ||
+      isOrigin ||
+      isDestination ||
+      constraintType !== WaypointConstraintType.Unknown;
     // the conditions other than isDestination are a workaround for no ToC
     const showDesSpeedLim =
       showSpeedLim &&

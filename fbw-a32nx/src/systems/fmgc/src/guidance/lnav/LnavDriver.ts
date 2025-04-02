@@ -89,9 +89,19 @@ export class LnavDriver implements GuidanceComponent {
 
     const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
-    const geometry = this.guidanceController.activeGeometry;
     const activeLegIdx = this.guidanceController.activeLegIndex;
 
+    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
+    if (secGeometry && secGeometry.legs.size > 0) {
+      this.guidanceController.setAlongTrackDistanceToDestination(
+        secGeometry.computeAlongTrackDistanceToDestination(activeLegIdx, this.ppos, trueTrack),
+        FlightPlanIndex.FirstSecondary,
+      );
+    } else {
+      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary);
+    }
+
+    const geometry = this.guidanceController.activeGeometry;
     if (geometry && geometry.legs.size > 0) {
       const dtg = geometry.getDistanceToGo(this.guidanceController.activeLegIndex, this.ppos);
 
@@ -388,16 +398,6 @@ export class LnavDriver implements GuidanceComponent {
       }
     } else {
       this.guidanceController.setAlongTrackDistanceToDestination(0);
-    }
-
-    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
-    if (secGeometry && secGeometry.legs.size > 0) {
-      this.guidanceController.setAlongTrackDistanceToDestination(
-        secGeometry.computeAlongTrackDistanceToDestination(activeLegIdx, this.ppos, trueTrack),
-        FlightPlanIndex.FirstSecondary,
-      );
-    } else {
-      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary);
     }
 
     /* Set FG parameters */
