@@ -1,0 +1,16 @@
+<!-- Copyright (c) 2025 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Include ModelBehaviorFile="ASOBO\Inputs\Helpers.xml"/>
+
+    <InputEvent ID="A32NX_PED_ECP">
+        <Presets>
+            <Extend Target="ASOBO_GIE_Anim_Handling">
+                <Parameters Type="Default">
+                    <INPUT_EVENT_ID_SOURCE>A32NX_PED_ECP</INPUT_EVENT_ID_SOURCE>
+                </Parameters>
+            </Extend>
+        </Presets>
+    </InputEvent>
+</ModelBehaviors>
