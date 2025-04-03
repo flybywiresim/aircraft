@@ -10,6 +10,8 @@ import { CaptureConsole as CaptureConsoleIntegration } from '@sentry/integration
 import { Integration } from '@sentry/types';
 import { NXDataStore } from './persistence';
 import { PopUpDialog } from './popup';
+import { GameStateProvider, Wait } from '@microsoft/msfs-sdk';
+import { isMsfs2024 } from './MsfsDetect';
 
 export const SENTRY_CONSENT_KEY = 'SENTRY_CONSENT';
 
@@ -99,6 +101,25 @@ export class FbwAircraftSentryClient {
   private async runRootClientFlow(config: FbwAircraftSentryClientConfiguration): Promise<boolean> {
     const consentValue = NXDataStore.get(SENTRY_CONSENT_KEY, SentryConsentState.Unknown) as SentryConsentState;
 
+    const requestConsentCallback = async () => {
+      return FbwAircraftSentryClient.requestConsent()
+        .then((didConsent) => {
+          if (didConsent) {
+            NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
+
+            console.log('[SentryClient] User requested consent state Given. Initializing sentry');
+
+            return FbwAircraftSentryClient.attemptInitializeSentry(config);
+          }
+
+          NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+
+          console.log('[SentryClient] User requested consent state Refused. Doing nothing');
+
+          return false;
+        })
+        .catch(() => false);
+    };
     switch (consentValue) {
       case SentryConsentState.Given:
         console.log('[SentryClient] Consent state is Given. Initializing sentry');
@@ -113,30 +134,21 @@ export class FbwAircraftSentryClient {
           const instrument = document.querySelector('vcockpit-panel > *');
 
           if (instrument) {
-            instrument.addEventListener('FlightStart', () => {
-              // ...and give ourselves some breathing room
-              setTimeout(() => {
-                resolve(
-                  FbwAircraftSentryClient.requestConsent()
-                    .then((didConsent) => {
-                      if (didConsent) {
-                        NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
-
-                        console.log('[SentryClient] User requested consent state Given. Initializing sentry');
-
-                        return FbwAircraftSentryClient.attemptInitializeSentry(config);
-                      }
-
-                      NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
-
-                      console.log('[SentryClient] User requested consent state Refused. Doing nothing');
-
-                      return false;
-                    })
-                    .catch(() => false),
-                );
-              }, 1_000);
-            });
+            // hack to work around MSFS 2024 trying to show the popup in walkaround mode
+            if (isMsfs2024()) {
+              Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.briefing, true).then(
+                () => {
+                  resolve(requestConsentCallback());
+                },
+              );
+            } else {
+              instrument.addEventListener('FlightStart', () => {
+                // ...and give ourselves some breathing room
+                setTimeout(() => {
+                  resolve(requestConsentCallback());
+                }, 1_000);
+              });
+            }
           } else {
             reject(new Error('[SentryClient] Could not find an instrument element to hook onto'));
           }
