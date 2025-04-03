@@ -67,30 +67,30 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         </Step>
 
         <Step Name="EXT PWR 2 On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)</Condition>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
             <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 3 On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) !</Condition>
             <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 1 On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) !</Condition>
             <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
         </Step>
         <Step Name="EXT PWR 4 On" Type="STEP" Delay="3000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) !</Condition>
             <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) ! if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
         </Step>
 
         <!-- ENG fire test (the A380X only has on test button and this is currently mapped to the ENG 1 test) -->
         <Step Name="ENG Fire Test On" Type="PROC" Delay="2000">
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Condition>
-            <Action>1 (&gt;L:A32NX_FIRE_TEST_ENG1)</Action>
+            <Action>1 (&gt;L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED)</Action>
         </Step>
         <Step Name="ENG Fire Test Off" Type="PROC" Delay="2000">
             <Condition>(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Condition>
-            <Action>0 (&gt;L:A32NX_FIRE_TEST_ENG1) 1 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
+            <Action>0 (&gt;L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED) 1 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
         </Step>
 
         <!-- Start APU (APU fire tests are done automatically in the A380 -->
@@ -136,8 +136,11 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>1 (&gt;K:2:LOGO_LIGHTS_SET) 1 (&gt;K:2:NAV_LIGHTS_SET)</Action>
         </Step>
         <Step Name="SEAT BELTS On" Type="STEP" Delay="1000">
-            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)</Condition>
-            <Action>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }</Action>
+            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 0 == &amp;&amp;</Condition>
+            <Action>
+                0 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)
+                (A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }
+            </Action>
         </Step>
         <Step Name="NO SMOKING Auto" Type="STEP" Delay="1000">
             <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==</Condition>
@@ -147,140 +150,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==</Condition>
             <Action>1 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)</Action>
         </Step>
-
-        <Step Name="Await APU Avail" Type="COND" Delay="2000">
-            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||</Condition>
-        </Step>
-        <Step Name="APU Bleed On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||</Condition>
-            <Action>1 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
-        </Step>
-    </Procedure>
-
-    <!--  =========================================================  -->
-    <!--  POWERUP_CONFIG_OFF  -->
-    <!--  =========================================================  -->
-    <Procedure Name="POWERUP_CONFIG_OFF">
-        <Step Name="APU Bleed Off" Type="STEP" Delay="1500">
-            <Condition>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
-        </Step>
-        <Step Name="EMER EXT Lt Off" Type="STEP" Delay="1500">
-            <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==</Condition>
-            <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)</Action>
-        </Step>
-        <Step Name="NO SMOKING Off" Type="STEP" Delay="1000">
-            <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==</Condition>
-            <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)</Action>
-        </Step>
-        <Step Name="SEAT BELTS Off" Type="STEP" Delay="2000">
-            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) !</Condition>
-            <Action>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }</Action>
-        </Step>
-        <Step Name="Nav &amp; Logo Lt Off" Type="STEP" Delay="500">
-            <Condition>(A:LIGHT LOGO, Bool) ! (A:LIGHT NAV, Bool) ! &amp;&amp;</Condition>
-            <Action>0 (&gt;K:2:LOGO_LIGHTS_SET) 0 (&gt;K:2:NAV_LIGHTS_SET)</Action>
-        </Step>
-        <Step Name="Strobe Off" Type="STEP" Delay="1000">
-            <Condition>(L:LIGHTING_STROBE_0) 2 ==</Condition>
-            <Action>2 (&gt;L:LIGHTING_STROBE_0)</Action>
-        </Step>
-        <Step Name="ADIRS 3 Off" Type="STEP" Delay="500">
-            <Condition>(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)</Action>
-        </Step>
-        <Step Name="ADIRS 2 Off" Type="STEP" Delay="500">
-            <Condition>(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)</Action>
-        </Step>
-        <Step Name="ADIRS 1 Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)</Action>
-        </Step>
-        <Step Name="GND CTL Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_RCDR_GROUND_CONTROL_ON) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_RCDR_GROUND_CONTROL_ON)</Action>
-        </Step>
-        <Step Name="Crew Oxy Off" Type="STEP" Delay="1000">
-            <Condition>(L:PUSH_OVHD_OXYGEN_CREW) 1 ==</Condition>
-            <Action>1 (&gt;L:PUSH_OVHD_OXYGEN_CREW)</Action>
-        </Step>
-        <Step Name="APU Master Off" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)</Action>
-        </Step>
-        <Step Name="EXT PWR 4 Off" Type="STEP" Delay="3000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) !</Condition>
-            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
-        </Step>
-        <Step Name="EXT PWR 1 Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) !</Condition>
-            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
-        </Step>
-        <Step Name="EXT PWR 3 Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) !</Condition>
-            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) }</Action>
-        </Step>
-        <Step Name="EXT PWR 2 Off" Type="STEP" Delay="3000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
-            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
-        </Step>
-        <Step Name="BAT APU Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)</Action>
-        </Step>
-        <Step Name="BAT2 Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)</Action>
-        </Step>
-        <Step Name="BAT ESS Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)</Action>
-        </Step>
-        <Step Name="BAT1 Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)</Action>
-        </Step>
-        <Step Name="AC BUS Off Check" Type="COND" Delay="2000">
-            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !</Condition>
-        </Step>
-        <Step Name="ENG 1 Fire Test Reset" Type="STEP" Delay="0">
-
-            <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
-        </Step>
-        <Step Name="FWC Init Reset" Type="STEP" Delay="0">
-
-            <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)</Action>
-        </Step>
-    </Procedure>
-
-    <!--  =========================================================  -->
-    <!--  PUSHBACK_CONFIG_ON  -->
-    <!--  =========================================================  -->
-    <Procedure Name="PUSHBACK_CONFIG_ON">
-        <!-- SOP: BEFORE PUSHBACK OR START-->
-        <Step Name="EXT PWR 4 Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) !</Condition>
-            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) if{ 4 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
-        </Step>
-        <Step Name="EXT PWR 1 Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) !</Condition>
-            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
-        </Step>
-        <Step Name="EXT PWR 3 Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) !</Condition>
-            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) if{ 3 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOLR) }</Action>
-        </Step>
-        <Step Name="EXT PWR 2 Off" Type="STEP" Delay="3000">
-            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
-            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) if{ 2 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
-        </Step>
-
-        <Step Name="Beacon On" Type="STEP" Delay="1000">
-            <Condition>(A:LIGHT BEACON, Bool)</Condition>
-            <Action>0 (&gt;K:BEACON_LIGHTS_ON)</Action>
-        </Step>
-
         <Step Name="Fuel Pump Feed TK1 Main On" Type="STEP" Delay="100">
             <Condition>(A:CIRCUIT CONNECTION ON:2, Bool)</Condition>
             <Action>2 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
@@ -357,35 +226,97 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(A:CIRCUIT CONNECTION ON:80, Bool)</Condition>
             <Action>80 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
         </Step>
-        <Step Name="Fuel Trim TK R On" Type="STEP" Delay="500">
+        <Step Name="Fuel Trim TK R On" Type="STEP" Delay="1000">
             <Condition>(A:CIRCUIT CONNECTION ON:81, Bool)</Condition>
             <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
         </Step>
 
-        <Step Name="Cockpit Door Locked" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
+        <!-- Get RMPs in a default state based on real-world SOP -->
+        <!--
+            RMP1 and 2 with
+            - VHF1 RX on, VHF1 TX on - high volume
+            - VHF2 RX on, low volume
+            - RMP3 would have usually just PA RX on low (about the 9 o clock position)
+        -->
+        <Step Name="RMP 1 VHF 1 RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_1_VHF_VOL_RX_SWITCH_1) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_1_VHF_VOL_RX_SWITCH_1)</Action>
         </Step>
+        <Step Name="RMP 1 VHF 1 RX Set Vol " Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_1_VHF_VOL_1) 80 ==</Condition>
+            <Action>80 (&gt;L:A380X_RMP_1_VHF_VOL_1)</Action>
+        </Step>
+        <Step Name="RMP 1 VHF 2 RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_1_VHF_VOL_RX_SWITCH_2) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_1_VHF_VOL_RX_SWITCH_2)</Action>
+        </Step>
+        <Step Name="RMP 1 VHF 2 RX Set Vol " Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_1_VHF_VOL_2) 20 ==</Condition>
+            <Action>20 (&gt;L:A380X_RMP_1_VHF_VOL_2)</Action>
+        </Step>
+        <Step Name="RMP 1 VHF 1 TX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_1_VHF_TX_1) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 1 RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 1 RX Set Vol " Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_VOL_1) 80 ==</Condition>
+            <Action>80 (&gt;L:A380X_RMP_2_VHF_VOL_1)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 2 RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 2 RX Set Vol " Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_VOL_2) 15 ==</Condition>
+            <Action>15 (&gt;L:A380X_RMP_2_VHF_VOL_2)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 1 TX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_2_VHF_TX_1) 1 ==</Condition>
+            <Action>1 (&gt;L:A380X_RMP_2_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="RMP 3 PA RX On" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_3_PA_VOL_RX_SWITCH) 15 ==</Condition>
+            <Action>15 (&gt;L:A380X_RMP_3_PA_VOL_RX_SWITCH)</Action>
+        </Step>
+        <!-- /RMP -->
 
-        <Step Name="Await ADIRS 1 Alignment" Type="COND" Delay="2000">
-            <Condition>(L:A32NX_ADIRS_ADIRU_1_STATE) 2 ==</Condition>
+        <Step Name="Await APU Avail" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||</Condition>
         </Step>
-        <Step Name="Await ADIRS 2 Alignment" Type="COND" Delay="2000">
-            <Condition>(L:A32NX_ADIRS_ADIRU_2_STATE) 2 ==</Condition>
-        </Step>
-        <Step Name="Await ADIRS 3 Alignment" Type="COND" Delay="2000">
-            <Condition>(L:A32NX_ADIRS_ADIRU_3_STATE) 2 ==</Condition>
+        <Step Name="APU Bleed On" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||</Condition>
+            <Action>1 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
         </Step>
     </Procedure>
 
     <!--  =========================================================  -->
-    <!--  PUSHBACK_CONFIG_OFF  -->
+    <!--  POWERUP_CONFIG_OFF  -->
     <!--  =========================================================  -->
-    <Procedure Name="PUSHBACK_CONFIG_OFF">
-        <Step Name="Cockpit Door Open" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
+    <Procedure Name="POWERUP_CONFIG_OFF">
+        <Step Name="APU Bleed Off" Type="STEP" Delay="1500">
+            <Condition>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)</Action>
         </Step>
+
+        <Step Name="RMP 3 VHF 1 TX Off" Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_3_VHF_TX_1) 0 ==</Condition>
+            <Action>0 (&gt;L:A380X_RMP_3_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="RMP 2 VHF 1 TX Off" Type="STEP" Delay="1000">
+            <Condition>(L:A380X_RMP_2_VHF_TX_1) 0 ==</Condition>
+            <Action>0 (&gt;L:A380X_RMP_2_VHF_TX_1)</Action>
+        </Step>
+        <Step Name="RMP 1 VHF 1 TX Off" Type="STEP" Delay="500">
+            <Condition>(L:A380X_RMP_1_VHF_TX_1) 0 ==</Condition>
+            <Action>0 (&gt;L:A380X_RMP_1_VHF_TX_1)</Action>
+        </Step>
+
+
+
         <Step Name="Fuel Trim TK R Off" Type="STEP" Delay="500">
             <Condition>(A:CIRCUIT CONNECTION ON:81, Bool) !</Condition>
             <Action>81 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
@@ -465,6 +396,147 @@ The StepType also defines if the step is executed in normal mode, expedited mode
         <Step Name="Fuel Pump Feed TK1 Main Off" Type="STEP" Delay="100">
             <Condition>(A:CIRCUIT CONNECTION ON:2, Bool) !</Condition>
             <Action>2 1 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)</Action>
+        </Step>
+        <Step Name="EMER EXT Lt Off" Type="STEP" Delay="1500">
+            <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 2 ==</Condition>
+            <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)</Action>
+        </Step>
+        <Step Name="NO SMOKING Off" Type="STEP" Delay="1000">
+            <Condition>(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 2 ==</Condition>
+            <Action>2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)</Action>
+        </Step>
+        <Step Name="SEAT BELTS Off" Type="STEP" Delay="2000">
+            <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 2 == &amp;&amp;</Condition>
+            <Action>
+                2 (&gt;L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)
+                (A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) if{ 1 (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }
+            </Action>
+        </Step>
+        <Step Name="Nav &amp; Logo Lt Off" Type="STEP" Delay="500">
+            <Condition>(A:LIGHT LOGO, Bool) ! (A:LIGHT NAV, Bool) ! &amp;&amp;</Condition>
+            <Action>0 (&gt;K:2:LOGO_LIGHTS_SET) 0 (&gt;K:2:NAV_LIGHTS_SET)</Action>
+        </Step>
+        <Step Name="Strobe Off" Type="STEP" Delay="1000">
+            <Condition>(L:LIGHTING_STROBE_0) 2 ==</Condition>
+            <Action>2 (&gt;L:LIGHTING_STROBE_0)</Action>
+        </Step>
+        <Step Name="ADIRS 3 Off" Type="STEP" Delay="500">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="ADIRS 2 Off" Type="STEP" Delay="500">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="ADIRS 1 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)</Action>
+        </Step>
+        <Step Name="GND CTL Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_RCDR_GROUND_CONTROL_ON) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_RCDR_GROUND_CONTROL_ON)</Action>
+        </Step>
+        <Step Name="Crew Oxy Off" Type="STEP" Delay="1000">
+            <Condition>(L:PUSH_OVHD_OXYGEN_CREW) 1 ==</Condition>
+            <Action>1 (&gt;L:PUSH_OVHD_OXYGEN_CREW)</Action>
+        </Step>
+        <Step Name="APU Master Off" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)</Action>
+        </Step>
+        <Step Name="EXT PWR 4 Off" Type="STEP" Delay="3000">
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) if{ 0 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
+        </Step>
+        <Step Name="EXT PWR 1 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) if{ 0 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
+        </Step>
+        <Step Name="EXT PWR 3 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) if{ 0 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) }</Action>
+        </Step>
+        <Step Name="EXT PWR 2 Off" Type="STEP" Delay="3000">
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) if{ 0 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
+        </Step>
+        <Step Name="BAT APU Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT2 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT ESS Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="BAT1 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)</Action>
+        </Step>
+        <Step Name="AC BUS Off Check" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !</Condition>
+        </Step>
+        <Step Name="ENG 1 Fire Test Reset" Type="STEP" Delay="0">
+            <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)</Action>
+        </Step>
+        <Step Name="FWC Init Reset" Type="STEP" Delay="0">
+            <Action>0 (&gt;L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)</Action>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  PUSHBACK_CONFIG_ON  -->
+    <!--  =========================================================  -->
+    <Procedure Name="PUSHBACK_CONFIG_ON">
+        <!-- SOP: BEFORE PUSHBACK OR START-->
+        <Step Name="EXT PWR 4 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) if{ 4 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_4_PB_IS_ON, BOOL) }</Action>
+        </Step>
+        <Step Name="EXT PWR 1 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) if{ 1 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_1_PB_IS_ON, BOOL) }</Action>
+        </Step>
+        <Step Name="EXT PWR 3 Off" Type="STEP" Delay="1000">
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOL) if{ 3 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_3_PB_IS_ON, BOOLR) }</Action>
+        </Step>
+        <Step Name="EXT PWR 2 Off" Type="STEP" Delay="3000">
+            <Condition>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) !</Condition>
+            <Action>(L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) if{ 2 (&gt;L:A32NX_OVHD_ELEC_EXT_PWR_2_PB_IS_ON, BOOL) }</Action>
+        </Step>
+
+        <Step Name="Beacon On" Type="STEP" Delay="1000">
+            <Condition>(A:LIGHT BEACON, Bool)</Condition>
+            <Action>0 (&gt;K:BEACON_LIGHTS_ON)</Action>
+        </Step>
+
+        <Step Name="Cockpit Door Locked" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==</Condition>
+            <Action>1 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
+        </Step>
+
+        <Step Name="Await ADIRS 1 Alignment" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ADIRS_ADIRU_1_STATE) 2 ==</Condition>
+        </Step>
+        <Step Name="Await ADIRS 2 Alignment" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ADIRS_ADIRU_2_STATE) 2 ==</Condition>
+        </Step>
+        <Step Name="Await ADIRS 3 Alignment" Type="COND" Delay="2000">
+            <Condition>(L:A32NX_ADIRS_ADIRU_3_STATE) 2 ==</Condition>
+        </Step>
+    </Procedure>
+
+    <!--  =========================================================  -->
+    <!--  PUSHBACK_CONFIG_OFF  -->
+    <!--  =========================================================  -->
+    <Procedure Name="PUSHBACK_CONFIG_OFF">
+        <Step Name="Cockpit Door Open" Type="STEP" Delay="2000">
+            <Condition>(L:A32NX_COCKPIT_DOOR_LOCKED) 0 ==</Condition>
+            <Action>0 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</Action>
         </Step>
         <Step Name="Beacon Off" Type="STEP" Delay="1000">
             <Condition>(A:LIGHT BEACON, Bool) !</Condition>
@@ -563,33 +635,21 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(A:LIGHT TAXI, Number) 1 ==</Condition>
             <Action>1 (&gt;K:TAXI_LIGHTS_ON)</Action>
         </Step>
+        <Step Name="RWY TURN OFF Lt On" Type="STEP" Delay="200">
+            <Condition>(A:LIGHT TAXI:2, Number) 1 ==</Condition>
+            <Action>2 (&gt;K:TAXI_LIGHTS_ON)</Action>
+        </Step>
         <Step Name="RWY TURN OFF Lt On" Type="STEP" Delay="1000">
-            <Condition>(A:LIGHT TAXI:2, Number) 1 == (A:LIGHT TAXI:3, Number) 1 == &amp;&amp;</Condition>
-            <Action>2 (&gt;K:TAXI_LIGHTS_ON) 3 (&gt;K:TAXI_LIGHTS_ON)</Action>
-        </Step>
-        <Step Name="PWS Auto" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_SWITCH_RADAR_PWS_POSITION)</Action>
-        </Step>
-        <Step Name="Transponder On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_TRANSPONDER_MODE) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_TRANSPONDER_MODE)</Action>
-        </Step>
-        <Step Name="ATC ALT RPTG On" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_ATC_ALT) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_SWITCH_ATC_ALT)</Action>
-        </Step>
-        <Step Name="TCAS TRAFFIC Abv" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==</Condition>
-            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)</Action>
+            <Condition>(A:LIGHT TAXI:3, Number) 1 == &amp;&amp;</Condition>
+            <Action>3 (&gt;K:TAXI_LIGHTS_ON)</Action>
         </Step>
         <Step Name="Autobrake RTO" Type="STEP" Delay="200">
-            <Condition>(L:A32NX_AUTOBRAKES_RTO_ARMED) 1 ==</Condition>
+            <Condition>(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==</Condition>
             <Action>1 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
         </Step>
         <Step Name="TERR ON ND Capt. On" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_EFIS_TERR_L_ACTIVE) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)</Action>
+            <Condition>(L:A380X_EFIS_L_ACTIVE_OVERLAY) 2 ==</Condition>
+            <Action>2 (&gt;L:A380X_EFIS_L_ACTIVE_OVERLAY)</Action>
         </Step>
 
         <Step Name="Await Flaps 1+F" Type="COND" Delay="1000">
@@ -607,8 +667,11 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             </Condition>
         </Step>
 
-        <Step Name="T.O. Config" Type="STEP" Delay="2000">
-            <Action>1 (&gt;L:A32NX_TO_CONFIG_NORMAL)</Action>
+        <Step Name="T.O. Config Push" Type="NOEX" Delay="200">
+            <Action>1 (&gt;L:A32NX_BTN_TOCONFIG)</Action>
+        </Step>
+        <Step Name="T.O. Config Release" Type="STEP" Delay="2000">
+            <Action>0 (&gt;L:A32NX_BTN_TOCONFIG)</Action>
         </Step>
     </Procedure>
 
@@ -617,36 +680,24 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!--  =========================================================  -->
     <Procedure Name="TAXI_CONFIG_OFF">
         <Step Name="TERR ON ND Capt. Off" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_EFIS_TERR_L_ACTIVE) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_EFIS_TERR_L_ACTIVE)</Action>
-        </Step>
-        <Step Name="Autobrake RTO Off" Type="STEP" Delay="200">
-            <Condition>(L:A32NX_AUTOBRAKES_RTO_ARMED) 0 ==</Condition>
-            <Action>1 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
+            <Condition>(L:A380X_EFIS_L_ACTIVE_OVERLAY) 0 ==</Condition>
+            <Action>0 (&gt;L:A380X_EFIS_L_ACTIVE_OVERLAY)</Action>
         </Step>
         <Step Name="Autobrake RTO Off" Type="STEP" Delay="2000">
             <Condition>(L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_OVHD_AUTOBRK_RTO_ARM_IS_PRESSED)</Action>
         </Step>
-        <Step Name="TCAS TRAFFIC Abv" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==</Condition>
-            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)</Action>
-        </Step>
-        <Step Name="ATC ALT RPTG Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_ATC_ALT) 1 ==</Condition>
-            <Action>1 (&gt;L:A32NX_SWITCH_ATC_ALT)</Action>
-        </Step>
         <Step Name="Transponder Off" Type="STEP" Delay="1000">
             <Condition>(L:A32NX_TRANSPONDER_MODE) 0 ==</Condition>
             <Action>0 (&gt;L:A32NX_TRANSPONDER_MODE)</Action>
         </Step>
-        <Step Name="PWS Off" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_RADAR_PWS_POSITION) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_SWITCH_RADAR_PWS_POSITION)</Action>
+        <Step Name="RWY TURN OFF Lt Off" Type="STEP" Delay="200">
+            <Condition>(A:LIGHT TAXI:2, Number) 0 ==</Condition>
+            <Action>2 (&gt;K:TAXI_LIGHTS_OFF)</Action>
         </Step>
         <Step Name="RWY TURN OFF Lt Off" Type="STEP" Delay="2000">
-            <Condition>(A:LIGHT TAXI:2, Number) 0 == (A:LIGHT TAXI:3, Number) 0 == &amp;&amp;</Condition>
-            <Action>2 (&gt;K:TAXI_LIGHTS_OFF) 3 (&gt;K:TAXI_LIGHTS_OFF)</Action>
+            <Condition>(A:LIGHT TAXI:3, Number) 0 ==</Condition>
+            <Action>3 (&gt;K:TAXI_LIGHTS_OFF)</Action>
         </Step>
         <Step Name="NOSE Lt Taxi" Type="STEP" Delay="1000">
             <Condition>(A:LIGHT TAXI, Number) 0 ==</Condition>
@@ -716,10 +767,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
     <!--  =========================================================  -->
     <Procedure Name="TAKEOFF_CONFIG_ON">
         <!-- SOP: TAXI -->
-        <Step Name="TCAS Switch TA/RA" Type="STEP" Delay="2000">
-            <Condition>(L:A32NX_SWITCH_TCAS_POSITION) 2 ==</Condition>
-            <Action>2 (&gt;L:A32NX_SWITCH_TCAS_POSITION)</Action>
-        </Step>
         <Step Name="Strobe On" Type="STEP" Delay="1000">
             <Condition>(L:LIGHTING_STROBE_0) 0 ==</Condition>
             <Action>0 (&gt;L:LIGHTING_STROBE_0)</Action>
@@ -758,9 +805,6 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Condition>(L:LIGHTING_STROBE_0) 1 ==</Condition>
             <Action>1 (&gt;L:LIGHTING_STROBE_0)</Action>
         </Step>
-        <Step Name="TCAS Switch TA/RA" Type="STEP" Delay="1000">
-            <Condition>(L:A32NX_SWITCH_TCAS_POSITION) 0 ==</Condition>
-            <Action>0 (&gt;L:A32NX_SWITCH_TCAS_POSITION)</Action>
-        </Step>
     </Procedure>
+
 </AircraftPresetProcedures>

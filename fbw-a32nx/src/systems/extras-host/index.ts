@@ -8,6 +8,7 @@
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import {
+  BaroUnitSelector,
   ExtrasSimVarPublisher,
   FlightDeckBounds,
   GPUManagement,
@@ -17,6 +18,7 @@ import {
   MsfsMiscPublisher,
   NotificationManager,
   PilotSeatManager,
+  TelexCheck,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
@@ -87,11 +89,18 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
+  private readonly telexCheck = new TelexCheck();
+
   public readonly xmlConfig: Document;
   /**interactionpoint 8 is GPU connection and 1 GPU in total */
   private readonly gpuManagement = new GPUManagement(this.bus, 8, 1);
 
   private readonly lightSync: LightSync = new LightSync(this.bus);
+
+  private readonly baroUnitSelector = new BaroUnitSelector((isHpa) => {
+    SimVar.SetSimVarValue('L:A32NX_FCU_EFIS_L_BARO_IS_INHG', 'bool', !isHpa);
+    SimVar.SetSimVarValue('L:A32NX_FCU_EFIS_R_BARO_IS_INHG', 'bool', !isHpa);
+  });
 
   /**
    * "mainmenu" = 0
@@ -156,6 +165,8 @@ class ExtrasHost extends BaseInstrument {
     this.aircraftSync.connectedCallback();
 
     this.backplane.init();
+
+    this.baroUnitSelector.performSelection();
   }
 
   public parseXMLConfig(): void {
@@ -174,6 +185,7 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor.startPublish();
         this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
+        this.telexCheck.showPopup();
       }
       this.gameState = gs;
     }

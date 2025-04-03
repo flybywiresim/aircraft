@@ -17,6 +17,18 @@ export const a320EfisOansRangeSettings: A320EfisOansNdRangeValue[] = [-1, 10, 20
 
 export const a380EfisRangeSettings: A380EfisNdRangeValue[] = [-1, 10, 20, 40, 80, 160, 320, 640];
 
+export const a320TerrainThresholdPadValue = '0';
+
+export const a380TerrainThresholdPadValue = '\\xa0';
+
+export const a320NdRangeChange = 'RANGE CHANGE';
+
+export const a380NdRangeChange = 'ND RANGE CHANGE';
+
+export const a320NdModeChange = 'MODE CHANGE';
+
+export const a380NdModeChange = 'ND MODE CHANGE';
+
 export enum EfisNdMode {
   ROSE_ILS,
   ROSE_VOR,
@@ -160,5 +172,4 @@ export const enum NavAidMode {
 
 export interface TcasWxrMessage {
   text: string;
-  color: 'White' | 'Amber';
 }

@@ -37,7 +37,6 @@ import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import {
@@ -214,7 +213,7 @@ export class VerticalProfileManager {
     const { estimatedDestinationFuel } = this.observer.get();
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid potentially crashing predictions entirely from erroneous pilot input.
     const fuelEstimation = Number.isFinite(estimatedDestinationFuel)
-      ? Math.min(Math.max(estimatedDestinationFuel, 0), VnavConfig.MAXIMUM_FUEL_ESTIMATE)
+      ? Math.min(Math.max(estimatedDestinationFuel, 0), this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE)
       : 4000;
     const finalCruiseAltitude = this.cruisePathBuilder.getFinalCruiseAltitude(descentProfile.cruiseSteps);
 
@@ -747,6 +746,21 @@ export class VerticalProfileManager {
         return managedClimbSpeedMach;
     }
   }
+
+  shouldShowTooSteepPathAhead(): boolean {
+    const isManagedLateralMode = this.fcuModes.isLatAutoControlActive();
+    const flightPhase = this.observer.get().flightPhase;
+    const isDesOrApprPhase = flightPhase === FmgcFlightPhase.Descent || flightPhase === FmgcFlightPhase.Approach;
+    const isCruisePhase = flightPhase === FmgcFlightPhase.Cruise;
+    const isCloseToDestination =
+      ((this.constraintReader.distanceToEnd ?? Infinity) > 150 && isCruisePhase) || isDesOrApprPhase;
+
+    if (!isManagedLateralMode || !isCloseToDestination) {
+      return false;
+    }
+
+    return this.flightPlanService.active?.hasTooSteepPathAhead();
+  }
 }
 
 class FcuModeObserver {
@@ -754,7 +768,9 @@ class FcuModeObserver {
     LateralMode.NAV,
     LateralMode.LOC_CPT,
     LateralMode.LOC_TRACK,
+    LateralMode.LAND,
     LateralMode.RWY,
+    LateralMode.GA_TRACK,
   ];
 
   private VERT_CLIMB_MODES: VerticalMode[] = [

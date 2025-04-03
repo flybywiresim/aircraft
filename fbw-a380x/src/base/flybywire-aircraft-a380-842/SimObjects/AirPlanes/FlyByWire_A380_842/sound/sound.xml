@@ -794,7 +794,7 @@
             <WwiseRTPC LocalVar="XMLVAR_Throttle1Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE1_LEVER_POSITION" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="lever_throttle_2" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVFar="XMLVAR_Throttle2Position">
+        <Sound WwiseData="true" WwiseEvent="lever_throttle_2" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
             <WwiseRTPC LocalVar="XMLVAR_Throttle2Position" Derived="true" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE2_LEVER_POSITION_DERIVED" />
             <WwiseRTPC LocalVar="XMLVAR_Throttle2Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE2_LEVER_POSITION" />
         </Sound>
@@ -804,7 +804,7 @@
             <WwiseRTPC LocalVar="XMLVAR_Throttle3Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE3_LEVER_POSITION" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="lever_throttle_4" ViewPoint="Inside" NodeName="LEVER_THROTTLE_4" LocalVFar="XMLVAR_Throttle4Position">
+        <Sound WwiseData="true" WwiseEvent="lever_throttle_4" ViewPoint="Inside" NodeName="LEVER_THROTTLE_4" LocalVar="XMLVAR_Throttle4Position">
             <WwiseRTPC LocalVar="XMLVAR_Throttle4Position" Derived="true" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE4_LEVER_POSITION_DERIVED" />
             <WwiseRTPC LocalVar="XMLVAR_Throttle4Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE4_LEVER_POSITION" />
         </Sound>

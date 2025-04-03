@@ -12,8 +12,43 @@ export type NotificationParams = {
   contentTemplate: string;
   id: string;
   title: string;
-  time: number;
+  description: string;
+  duration: number;
+  closePopupTitle: string;
+  closePopup: boolean;
 };
+
+export class NotificationButton {
+  __Type: string;
+  toGlobalFlow: boolean;
+  close: boolean;
+  selected: boolean;
+  id: string;
+  strParam: string;
+  title: string;
+  event: string;
+  theme: string;
+  enabled: boolean;
+
+  constructor(
+    title: string = '',
+    event: string = '',
+    close: boolean = true,
+    theme: string | null = null,
+    toGlobalFlow: boolean = false,
+  ) {
+    this.__Type = 'NotificationButton';
+    this.toGlobalFlow = toGlobalFlow;
+    this.close = close;
+    this.selected = false;
+    this.id = '';
+    this.strParam = '';
+    this.title = title;
+    this.event = event;
+    this.theme = theme || '';
+    this.enabled = true;
+  }
+}
 
 /**
  * PopUpDialog utility class to create a pop-up UI element
@@ -50,7 +85,10 @@ export class PopUpDialog {
       contentTemplate: '', // i.e. "popup-edit-preset";
       id: `${title}_${time}`,
       title,
-      time,
+      description: '',
+      duration: 0,
+      closePopupTitle: '',
+      closePopup: false,
     };
   }
 
@@ -85,21 +123,22 @@ export class PopUpDialog {
     }
     if (message) {
       this.params.contentData = message;
+      this.params.description = message;
     }
     if (style) {
       this.params.style = style;
     }
     if (callbackYes) {
       const yes = typeof callbackYes === 'function' ? callbackYes : () => callbackYes;
-      Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
-        Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
+      Coherent.on(`FBW_POP_${this.params.id}_YES`, () => {
+        Coherent.off(`FBW_POP_${this.params.id}_YES`, null, null);
         yes();
       });
     }
     if (callbackNo) {
       const no = typeof callbackNo === 'function' ? callbackNo : () => callbackNo;
-      Coherent.on(`A32NX_POP_${this.params.id}_NO`, () => {
-        Coherent.off(`A32NX_POP_${this.params.id}_NO`, null, null);
+      Coherent.on(`FBW_POP_${this.params.id}_NO`, () => {
+        Coherent.off(`FBW_POP_${this.params.id}_NO`, null, null);
         no();
       });
     }
@@ -129,18 +168,19 @@ export class PopUpDialog {
     }
     if (message) {
       this.params.contentData = message;
+      this.params.description = message;
     }
     if (style) {
       this.params.style = style;
     }
     if (callback) {
       const yes = typeof callback === 'function' ? callback : () => callback;
-      Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
-        Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
+      Coherent.on(`FBW_POP_${this.params.id}_YES`, () => {
+        Coherent.off(`FBW_POP_${this.params.id}_YES`, null, null);
         yes();
       });
     }
-    this.params.buttons = [new NotificationButton('TT:MENU.OK', `A32NX_POP_${this.params.id}_YES`)];
+    this.params.buttons = [new NotificationButton('TT:MENU.OK', `FBW_POP_${this.params.id}_YES`)];
 
     if (!this.popupListener) {
       this.popupListener = RegisterViewListener('JS_LISTENER_POPUP', this._showPopUp.bind(null, this.params));

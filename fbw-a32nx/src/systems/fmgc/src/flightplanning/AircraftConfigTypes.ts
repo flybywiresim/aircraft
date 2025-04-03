@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { FlapConf } from '@fmgc/guidance/vnav/common';
+
 export enum VnavDescentMode {
   NORMAL,
   CDA,
@@ -27,27 +29,6 @@ export interface VnavConfig {
    */
   VNAV_EMIT_CDA_FLAP_PWP: boolean;
 
-  /**
-   * Whether to pring debug information and errors during the VNAV computation.
-   */
-  DEBUG_PROFILE: boolean;
-
-  /**
-   * Whether to print guidance debug information on the ND
-   */
-  DEBUG_GUIDANCE: boolean;
-
-  /**
-   * Whether to use debug simvars (VNAV_DEBUG_*) to determine aircraft position and state.
-   * This is useful for testing VNAV without having to fly the aircraft. This lets you put the aircraft some distance before destination at a given altitude and speed.
-   * The following simvars can be used:
-   * - A32NX_FM_VNAV_DEBUG_POINT: Indicates the distance from start (NM) at which to draw a debug pseudowaypoint on the ND
-   * - A32NX_FM_VNAV_DEBUG_ALTITUDE: Indicates the indicated altitude (ft) VNAV uses for predictions
-   * - A32NX_FM_VNAV_DEBUG_SPEED: Indicates the indicated airspeed (kts) VNAV uses for predictions
-   * - A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END: Indicates the distance (NM) to end VNAV uses for predictions
-   */
-  ALLOW_DEBUG_PARAMETER_INJECTION: boolean;
-
   VNAV_USE_LATCHED_DESCENT_MODE: boolean;
 
   /**
@@ -61,6 +42,23 @@ export interface VnavConfig {
    * This value is in lbs.
    */
   MAXIMUM_FUEL_ESTIMATE: number;
+
+  /**
+   * Label used for pseudo-waypoints that mark where the aircraft crosses
+   * climb/descent speed limit altitudes.
+   * Configurable since different Airbus aircraft use different labels (e.g. A320 vs A380).
+   */
+  LIM_PSEUDO_WPT_LABEL: '(LIM)' | '(SPDLIM)';
+
+  /**
+   * The maximum operating speed in knots
+   */
+  VMO: number;
+
+  /**
+   * The maximum operating Mach number
+   */
+  MMO: number;
 }
 
 /** Only covers aircraft specific configs, no debug switches */
@@ -92,6 +90,55 @@ export interface EngineModelParameters {
 
   /** Fuel burn relative to A320 / base implementation */
   fuelBurnFactor: number;
+
+  /**
+   * Maximum corrected N1 in CLB thrust
+   * Each row represents a different altitude and the corresponding engine thrust
+   * limits. The columns in each row represent the following parameters:
+   * 1. Altitude (in feet)
+   * 2. Corner Point (CP) - the temperature below which the engine can operate at full thrust without any restrictions.
+   * 3. Limit Point (LP) - the temperature above which the engine thrust starts to be limited.
+   * 4. CN1 Flat - the engine's N1 fan speed limit at the CP temperature.
+   * 5. CN1 Last - the engine's N1 fan speed limit at the LP temperature.
+   * @returns Corrected N1 (CN1)
+   */
+  cn1ClimbLimit: readonly (readonly number[])[];
+
+  /**
+   * Table 1502 - CN2 vs CN1 @ Mach 0, 0.2, 0.9
+   * n2_to_n1_table
+   * @param i row index (n2)
+   * @param j 1 = Mach 0, 2 = Mach 0.2, 3 = Mach 0.9
+   * @returns Corrected N1 (CN1)
+   */
+  table1502: readonly (readonly number[])[];
+
+  /**
+   * Table 1503 - Turbine LoMach (0) CN2 vs. Throttle @ IAP Ratio 1.00000000, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313
+   * mach_0_corrected_commanded_ne_table
+   * @param i row index (thrust lever position)
+   * @param j IAP ratio
+   * @returns Corrected N2 (CN2)
+   */
+  table1503: readonly (readonly number[])[];
+
+  /**
+   * Table 1504 - Turbine HiMach (0.9) CN2 vs. Throttle @ IAP Ratio 1.00000000, 1.20172257, 1.453783983, 2.175007333, 3.364755652, 4.47246108, 5.415178313
+   * mach_hi_corrected_commanded_ne_table
+   * @param i row index (thrust lever position)
+   * @param j IAP ratio
+   * @returns Corrected N2 (CN2)
+   */
+  table1504: readonly (readonly number[])[];
+
+  /**
+   * Table 1506 - Corrected net Thrust vs CN1 @ Mach 0 to 0.9 in 0.1 steps
+   * n1_and_mach_on_thrust_table
+   * @param i row index (CN1)
+   * @param j mach
+   * @returns Corrected net thrust (pounds of force)
+   */
+  table1506: readonly (readonly number[])[];
 }
 
 export interface FlightModelParameters {
@@ -126,8 +173,11 @@ export interface FlightModelParameters {
   /** Drag coefficient increase due to extended speed brake */
   gearDrag: number;
 
-  /** Drag coefficient factor for tuning */
-  dragCoeffFactor: number;
+  /**
+   * Coefficents for the drag polar polynomial. The drag polar polynomial maps Cl to Cd.
+   * The coefficients are ordered in increasing powers of Cl.
+   */
+  dragPolarCoefficients: Record<FlapConf, number[]>;
 }
 
 export interface FMSymbolsConfig {

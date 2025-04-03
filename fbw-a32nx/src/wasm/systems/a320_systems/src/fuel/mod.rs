@@ -2,7 +2,8 @@
 
 use nalgebra::Vector3;
 use systems::{
-    fuel::{FuelCG, FuelInfo, FuelPayload, FuelSystem, FuelTank},
+    fuel::{FuelCG, FuelInfo, FuelPayload, FuelPump, FuelPumpProperties, FuelSystem},
+    shared::ElectricalBusType,
     simulation::{InitContext, SimulationElement, SimulationElementVisitor},
 };
 use uom::si::f64::*;
@@ -10,6 +11,7 @@ use uom::si::f64::*;
 #[cfg(test)]
 mod test;
 
+#[allow(dead_code)]
 pub trait FuelLevel {
     fn left_inner_tank_has_fuel(&self) -> bool;
     fn right_inner_tank_has_fuel(&self) -> bool;
@@ -45,7 +47,7 @@ impl From<usize> for A320FuelTankType {
 }
 
 pub struct A320Fuel {
-    fuel_system: FuelSystem<5>,
+    fuel_system: FuelSystem<5, 5>,
 }
 impl A320Fuel {
     pub const A320_FUEL: [FuelInfo<'static>; 5] = [
@@ -76,17 +78,56 @@ impl A320Fuel {
         },
     ];
 
+    // TODO: connect MSFS fuel pumps to power logic
+    const FUEL_PUMPS: [(usize, FuelPumpProperties); 5] = [
+        // Left main tank pump 1
+        (
+            2,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::Virtual("FUEL_PUMP_1_SUPPLY"),
+                consumption_current_ampere: 8.,
+            },
+        ),
+        // Left main tank pump 2
+        (
+            5,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::Virtual("FUEL_PUMP_2_SUPPLY"),
+                consumption_current_ampere: 8.,
+            },
+        ),
+        // Right main tank pump 1
+        (
+            3,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::Virtual("FUEL_PUMP_1_SUPPLY"),
+                consumption_current_ampere: 8.,
+            },
+        ),
+        // Right main tank pump 2
+        (
+            6,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::Virtual("FUEL_PUMP_2_SUPPLY"),
+                consumption_current_ampere: 8.,
+            },
+        ),
+        // APU fuel pump
+        (
+            7,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::Virtual("FUEL_PUMP_APU_SUPPLY"),
+                consumption_current_ampere: 1.,
+            },
+        ),
+    ];
+
     pub fn new(context: &mut InitContext) -> Self {
-        let fuel_tanks = Self::A320_FUEL.map(|f| {
-            FuelTank::new(
-                context,
-                f.fuel_tank_id,
-                Vector3::new(f.position.0, f.position.1, f.position.2),
-                false,
-            )
-        });
+        let fuel_tanks = Self::A320_FUEL.map(|f| f.into_fuel_tank(context, false));
+        let fuel_pumps =
+            Self::FUEL_PUMPS.map(|(id, properties)| FuelPump::new(context, id, properties));
         A320Fuel {
-            fuel_system: FuelSystem::new(context, fuel_tanks),
+            fuel_system: FuelSystem::new(context, fuel_tanks, fuel_pumps),
         }
     }
 

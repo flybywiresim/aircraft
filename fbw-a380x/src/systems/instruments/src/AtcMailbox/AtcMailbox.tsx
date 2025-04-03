@@ -2,8 +2,8 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 
 import './style.scss';
@@ -31,6 +31,7 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
 
   destroy(): void {
     this.topRef.getOrDefault()?.removeEventListener('mousemove', this.onMouseMoveHandler);
+    this.mouseCursorRef.getOrDefault()?.destroy();
 
     super.destroy();
   }
