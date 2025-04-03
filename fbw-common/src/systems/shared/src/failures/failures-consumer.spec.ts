@@ -1,5 +1,14 @@
+import { describe, expect, test, vitest } from 'vitest';
 import { FailuresConsumer } from './failures-consumer';
-import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
+
+let sendGenericDataEvent = undefined;
+
+vitest.mock('../GenericDataListenerSync', () => ({
+  GenericDataListenerSync: vitest.fn().mockImplementation((recvEventCb?: (topic: string, data: any) => void) => {
+    sendGenericDataEvent = recvEventCb;
+    return {};
+  }),
+}));
 
 describe('FailuresConsumer', () => {
   describe('registers an identifier', () => {
@@ -15,20 +24,19 @@ describe('FailuresConsumer', () => {
 
     test('unless registered multiple times', () => {
       const c = consumer();
-      c.register(1);
+      c.register(1, () => undefined);
 
-      expect(() => c.register(1)).toThrow();
+      expect(() => c.register(1, () => undefined)).toThrow();
     });
   });
 
   describe('calls the callback', () => {
     test('when the failure is activated', async () => {
       const c = consumer();
-      const callback = jest.fn();
+      const callback = vitest.fn();
       c.register(1, callback);
 
-      await SimVar.SetSimVarValue(activateSimVarName, 'number', 1);
-      c.update();
+      sendGenericDataEvent('FBW_FAILURE_UPDATE', [1]);
 
       expect(callback).toHaveBeenCalled();
       expect(callback.mock.calls[0][0]).toBe(true);
@@ -36,11 +44,13 @@ describe('FailuresConsumer', () => {
 
     test('when the failure is deactivated', async () => {
       const c = consumer();
-      const callback = jest.fn();
+
+      sendGenericDataEvent('FBW_FAILURE_UPDATE', [1]);
+
+      const callback = vitest.fn();
       c.register(1, callback);
 
-      await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 1);
-      c.update();
+      sendGenericDataEvent('FBW_FAILURE_UPDATE', []);
 
       expect(callback).toHaveBeenCalled();
       expect(callback.mock.calls[0][0]).toBe(false);
@@ -52,8 +62,6 @@ describe('FailuresConsumer', () => {
       const c = consumer();
       c.register(1, (_) => {});
 
-      c.update();
-
       expect(c.isActive(1)).toBe(false);
     });
 
@@ -61,8 +69,7 @@ describe('FailuresConsumer', () => {
       const c = consumer();
       c.register(1, (_) => {});
 
-      await SimVar.SetSimVarValue(activateSimVarName, 'number', 1);
-      c.update();
+      sendGenericDataEvent('FBW_FAILURE_UPDATE', [1]);
 
       expect(c.isActive(1)).toBe(true);
     });
@@ -71,21 +78,15 @@ describe('FailuresConsumer', () => {
       const c = consumer();
       c.register(1, (_) => {});
 
-      await SimVar.SetSimVarValue(activateSimVarName, 'number', 1);
-      c.update();
+      sendGenericDataEvent('FBW_FAILURE_UPDATE', [1]);
 
-      await SimVar.SetSimVarValue(deactivateSimVarName, 'number', 1);
-      c.update();
+      sendGenericDataEvent('FBW_FAILURE_UPDATE', [0]);
 
       expect(c.isActive(1)).toBe(false);
     });
   });
 });
 
-const prefix = 'PREFIX';
-const activateSimVarName = getActivateFailureSimVarName(prefix);
-const deactivateSimVarName = getDeactivateFailureSimVarName(prefix);
-
 function consumer() {
-  return new FailuresConsumer(prefix);
+  return new FailuresConsumer();
 }

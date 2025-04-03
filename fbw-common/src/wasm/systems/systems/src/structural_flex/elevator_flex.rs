@@ -91,8 +91,7 @@ impl AftConeFlexPhysics {
 
         let limited_pos = (self.position_output_gain * (cg_position[0] + cg_position[1])
             + aero_deflection)
-            .min(1.)
-            .max(-1.);
+            .clamp(-1., 1.);
 
         self.animation_position = (limited_pos + 1.) / 2.;
     }
@@ -201,9 +200,8 @@ impl ElevatorFlexPhysics {
                 * elevator_aero_torques.0.get::<newton_meter>()
                 + elevator_aero_torques.1.get::<newton_meter>());
 
-        let limited_pos = (self.position_output_gain * cg_position_y + aero_deflection)
-            .min(1.)
-            .max(-1.);
+        let limited_pos =
+            (self.position_output_gain * cg_position_y + aero_deflection).clamp(-1., 1.);
 
         self.animation_position = (limited_pos + 1.) / 2.;
     }

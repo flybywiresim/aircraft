@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.14.0
+
+1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
+
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
@@ -109,6 +113,7 @@
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
+1. [A380X/PRIM] Adapt protection speeds to new flight model - @flogross89 (floridude)
 1. [A380X/EFB] Improved Aircraft Presets configuration for the A380X - @frankkopp (cdr_maverick)
 1. [A32NX/AMU] Enable VHF3 audio, and allow switching off VHF1 - @tracernz (Mike)
 1. [A380X/PFD] Fix font colours on metric altitude display - @MrJigs7 (MrJigs.)
@@ -167,6 +172,31 @@
 1. [A380X/OIS] Initial implementation of OIS/OIT with charts and OFP - @flogross89 (floridude)
 1. [A380X/PFD] Add LS button reminder - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Latitude/Longitude waypoints now always have the extended ident format - @tracernz (Mike)
+1. [A380X/FWS] Fix rounding error in Mach-based OVERSPEED warning - @flogross89 (floridude)
+1. [A380X/MFD] Add ATCCOM MSG RECORD page layouts - @heclak (heclak)
+1. [A380X/ND] Fixed active leg label to be left aligned - @MrJigs7 (MrJigs)
+1. [A32NX/FMS] Sort runways by identifier in the runway selection page - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Change flightplan uplink & initialize weights message logic - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Fixed approach name format for suffixed approaches on the MCDU pages - @tracernz (Mike)
+1. [A32NX/FMS] Fixed an error preventing the create waypoint page being shown when a not in database is encountered - @tracernz (Mike)
+1. [A32NX/FMS] Fixed an error preventing the RETURN LSK from working on the create waypoint page in some cases - @tracernz (Mike)
+1. [A32NX/FMS] Disallow editing of waypoint ident on the create waypoint page - @tracernz (Mike)
+1. [A380X/MFD] Changed flightplan time header to show correct TIME or UTC - @MrJigs7 (MrJigs.)
+1. [A380X] Fix FO seat switches not being momentary - @heclak (Heclak)
+1. [A32NX/FMS] Added differentiation between compatible and incompatible approach vias (H4) - @tracernz (Mike)
+1. [A32NX/FMS] Removed insert/erase prompts on approach via page - @tracernz (Mike)
+1. [ND] Fixed alignment of approach message - @tracernz (Mike)
+1. [A380X/OANS] Fix RWY AHEAD not disappearing when OANS Performance Mode is active - @flogross89 (floridude)
+1. [ELEC] Add power consumption for fuel pumps - @Gurgel100 (Pascal)
+1. [FMS] EFIS overlay symbols for the ND are now available in plan mode away from the aircraft position in MSFS2024 - @tracernz (Mike)
+1. [FMS] Reduced in-flight stutter due to facility loading - @tracernz (Mike)
+1. [A32NX/FMS] Improved approach procedure sorting - @tracernz (Mike)
+1. [A380X/FMS] The (RNP) flag is now shown for approaches with only the missed approach segment as RNP AR on MSFS2024 - @tracernz (Mike)
+1. [Clock] Fixed chrono not rolling over to 00:00 when reaching 99:59 - @tracernz (Mike)
+1. [A380X/FWS] Fix fuel pump sensing logic for PARKING normal procedure - @flogross89 (floridude)
+1. [A380X/PRIM] Automatic THS trim after engine start or touch and go - @flogross89 (floridude)
+1. [A380X/PERF] Fixed issue where 0 was not an accepted cost index - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Update MFD font to include question mark - @heclak (Heclak)
 
 ## 0.12.0
 
@@ -1604,3 +1634,4 @@
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
 1. [ECAM] Added F units to CRZ and COND pages for Cabin temps. Currently tied to kg/lbs option in EFB -Patrick Macken  (@PatM on Discord)
+1. [A32NX/FCU] Fixed bug where the FCU selected altitude would immediately switch to 1000s on selecting the 1000ft inteval knob - @elliot747 (Elliot)
