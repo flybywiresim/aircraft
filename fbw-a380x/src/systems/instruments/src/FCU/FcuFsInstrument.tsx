@@ -39,7 +39,7 @@ export class FcuFsInstrument implements FsInstrument {
   private readonly clock = new Clock(this.bus);
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   //private readonly isFailedKey = A380Failure.Fcu;
   private readonly isFailed = Subject.create(false);

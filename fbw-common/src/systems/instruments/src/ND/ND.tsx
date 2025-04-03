@@ -758,7 +758,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
         this.btvMessageValue.set(value);
       });
 
-    this.sub.on('simTime').whenChangedBy(100).handle(this.refreshToWptIdent.bind(this));
+    this.sub.on('simTime').whenChangedBy(100).handle(this.refreshApproachMessage.bind(this));
 
     this.sub.on('trueTrackRaw').handle((v) => this.trueTrackWord.setWord(v));
 
@@ -772,7 +772,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
       .handle((v) => this.trueRefActive.set(!!v));
   }
 
-  private refreshToWptIdent(): void {
+  private refreshApproachMessage(): void {
     if (this.needApprMessageUpdate) {
       const ident = SimVarString.unpack([this.apprMessage0, this.apprMessage1]);
 
@@ -785,8 +785,9 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
     return (
       <>
         <Layer x={384} y={28}>
-          {/* TODO verify */}
-          <text class="Green FontIntermediate MiddleAlign">{this.approachMessageValue}</text>
+          <text class="Green FontIntermediate MiddleAlign" style="white-space: pre">
+            {this.approachMessageValue}
+          </text>
         </Layer>
         <Layer
           x={384}
