@@ -194,6 +194,8 @@
 1. [A380X/PERF] Fixed issue where 0 was not an accepted cost index - @Jonny23787 (Jonathan)
 1. [A380X/MFD] Update MFD font to include question mark - @heclak (Heclak)
 1. [A380X/FMC] Fixed FIX INFO temporary flightplan handling - @Benjozork (Benjamin Dupont)
+1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
+1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
 
 ## 0.12.0
 
