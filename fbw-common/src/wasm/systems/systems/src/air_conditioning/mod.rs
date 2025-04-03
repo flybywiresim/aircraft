@@ -181,7 +181,7 @@ pub trait VcmShared {
 
 /// Cabin Zones with double digit IDs are specific to the A380
 /// 1X is main deck, 2X is upper deck
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub enum ZoneType {
     Cockpit,
     Cabin(u8),
@@ -284,7 +284,7 @@ pub trait CabinPressure {
     fn cabin_pressure(&self) -> Pressure;
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FdacId {
     One,
     Two,
@@ -308,7 +308,7 @@ impl From<FdacId> for usize {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum VcmId {
     Fwd,
     Aft,
@@ -323,7 +323,7 @@ impl Display for VcmId {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum OcsmId {
     One,
     Two,
@@ -359,7 +359,7 @@ enum OperatingChannelFault {
     Fault,
 }
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum Channel {
     ChannelOne,
     ChannelTwo,
