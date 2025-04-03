@@ -16,8 +16,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
     </span>,
   );
 
-  private readonly line1Ref = FSComponent.createRef<SVGTextElement>();
-  private readonly line2Ref = FSComponent.createRef<SVGTextElement>();
+  private readonly messageRef = FSComponent.createRef<HTMLSpanElement>();
 
   private readonly messageToBeCleared = Subject.create<boolean>(false);
 
@@ -29,33 +28,17 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
         this.props.fmcService.master.fmsErrors.sub((_, __, ___, arr) => {
           const ind = arr.findIndex((el) => !el.cleared);
 
-          if (ind > -1 && this.line1Ref.getOrDefault() && this.line2Ref.getOrDefault()) {
+          if (ind > -1 && this.messageRef.getOrDefault()) {
             this.messageToBeCleared.set(true);
-
-            let carriageReturn = arr[ind].messageText.search('\n');
-
-            if(carriageReturn == -1) {
-              this.line1Ref.instance.textContent = arr[ind].messageText;
-
-              this.line2Ref.instance.textContent = '';
-              this.line2Ref.instance.style.display = 'none';
-            } else {
-              this.line1Ref.instance.textContent = arr[ind].messageText.slice(0, carriageReturn);
-              // To match references showing a thin gap in between lines
-              this.line1Ref.instance.style.marginBottom = '2px';
-              this.line2Ref.instance.textContent = arr[ind].messageText.slice(carriageReturn + 1, arr[ind].messageText.length);
-              this.line2Ref.instance.style.display = 'inherit';
-            }
+            this.messageRef.instance.textContent = arr[ind].messageText;
 
             if (arr[ind].backgroundColor === 'white') {
-              this.line1Ref.instance.style.backgroundColor = '#ffffff';
+              this.messageRef.instance.style.backgroundColor = '#ffffff';
             } else if (arr[ind].backgroundColor === 'cyan') {
-              this.line1Ref.instance.style.backgroundColor = '#00ffff';
+              this.messageRef.instance.style.backgroundColor = '#00ffff';
             } else if (arr[ind].backgroundColor === 'amber') {
-              this.line1Ref.instance.style.backgroundColor = '#e68000';
+              this.messageRef.instance.style.backgroundColor = '#e68000';
             }
-            this.line2Ref.instance.style.backgroundColor = this.line1Ref.instance.style.backgroundColor;
-
             this.buttonText.set(
               <span>
                 CLEAR
@@ -65,11 +48,8 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
             );
           } else {
             this.messageToBeCleared.set(false);
-            this.line1Ref.instance.textContent = '';
-            this.line1Ref.instance.style.backgroundColor = 'none';
-            this.line2Ref.instance.textContent = this.line1Ref.instance.textContent;
-            this.line2Ref.instance.style.backgroundColor = this.line1Ref.instance.style.backgroundColor;
-
+            this.messageRef.instance.textContent = '';
+            this.messageRef.instance.style.backgroundColor = 'none';
             this.buttonText.set(
               <span>
                 MSG
@@ -106,8 +86,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
           }}
         />
         <div class="mfd-footer-message-area">
-              <div class="mfd-footer-message-area-line" ref={this.line1Ref} />
-              <div class="mfd-footer-message-area-line" ref={this.line2Ref}  />
+          <span ref={this.messageRef} />
         </div>
       </div>
     );
