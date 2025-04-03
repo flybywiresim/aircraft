@@ -6,7 +6,6 @@ import React, { FC, MouseEventHandler } from 'react';
 export interface FailureButtonProps {
   name: string;
   isActive: boolean;
-  isChanging: boolean;
   onClick: MouseEventHandler<HTMLButtonElement>;
   className: string;
   highlightedTerm?: string;
@@ -15,21 +14,16 @@ export interface FailureButtonProps {
 export const FailureButton: FC<FailureButtonProps> = ({
   name,
   isActive,
-  isChanging,
   onClick,
   className,
   highlightedTerm,
 }: FailureButtonProps) => {
-  let color = 'border-0';
-  if (!isChanging) {
-    color = isActive ? 'border-utility-red' : 'border-utility-green';
-  }
+  const color = isActive ? 'border-utility-red' : 'border-utility-green';
 
   return (
     <button
       onClick={onClick}
       type="button"
-      disabled={isChanging}
       className={`flex rounded-md border-t-4 bg-theme-accent px-2 pb-2 pt-3 text-left ${color} ${className}`}
     >
       {highlightedTerm ? (
