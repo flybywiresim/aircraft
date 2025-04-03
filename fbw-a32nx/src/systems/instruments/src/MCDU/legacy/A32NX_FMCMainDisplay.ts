@@ -5355,6 +5355,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.navDbIdent;
   }
 
+  public disengageNavMode() {
+    this.guidanceController.disengageNavMode();
+  }
+
   // ---------------------------
   // CDUMainDisplay Types
   // ---------------------------
