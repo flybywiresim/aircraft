@@ -62,6 +62,10 @@ export class TypeIIMessage extends McduMessage {
 
 /**
  NXSystemMessages only holds real messages
+
+ * In cases in which you need a line, please insert a carriage return at the intersection of the two lines
+ * Without any space before and after
+ * Take as example comFplnRecievedPendingInsertion
  */
 export const NXSystemMessages = {
   awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
@@ -69,7 +73,7 @@ export const NXSystemMessages = {
   checkMinDestFob: new TypeIIMessage('CHECK MIN DEST FOB'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
   checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
-  comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED WAITING FOR INSERTION', false),
+  comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION', false),
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
   costIndexInUse: new TypeIMessage('COST INDEX-NNN IN USE', false, 'NNN'),
@@ -99,6 +103,11 @@ export const NXSystemMessages = {
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
 };
 
+/**
+* In cases in which you need a line please insert a carriage return at the intersection of the two lines
+* Without any space before and after
+* Take as example comFplnRecievedPendingInsertion
+*/
 export const NXFictionalMessages = {
   noNavigraphUser: new TypeIMessage('NO NAVIGRAPH USER'),
   internalError: new TypeIMessage('INTERNAL ERROR'),
