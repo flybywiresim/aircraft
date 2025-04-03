@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, Instrument, MappedSubject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
@@ -21,25 +21,9 @@ export class SpeedManager extends TemporaryHax implements Instrument {
 
   private readonly validManagedSpeed = this.managedSpeed.map((v) => v >= 90);
 
-  private readonly shortTermManagedSpeed = ConsumerSubject.create(this.sub.on('managedTarget'), 0);
+  private readonly managedSpeedTarget = ConsumerSubject.create(this.sub.on('fg.speeds.managedTarget'), 0);
 
-  private readonly validShortTermManagedSpeed = this.shortTermManagedSpeed.map((v) => v > 90);
-
-  private readonly managedSpeedTarget = MappedSubject.create(
-    ([managedSpeed, validManagedSpeed, shortTermManagedSpeed, validShortTermManagedSpeed]) => {
-      if (validShortTermManagedSpeed) {
-        return shortTermManagedSpeed;
-      } else if (validManagedSpeed) {
-        return managedSpeed;
-      } else {
-        return null;
-      }
-    },
-    this.managedSpeed,
-    this.validManagedSpeed,
-    this.shortTermManagedSpeed,
-    this.validShortTermManagedSpeed,
-  );
+  private readonly validManagedSpeedTarget = this.managedSpeedTarget.map((v) => v > 90);
 
   private isActive = false;
   private isManaged = false;
@@ -404,7 +388,11 @@ export class SpeedManager extends TemporaryHax implements Instrument {
   }
 
   private getInitialSelectedSpeedValue() {
-    const managedSpeedTarget = this.isVerticalModeSRS ? null : this.managedSpeedTarget.get();
+    const managedSpeedTarget = this.isVerticalModeSRS
+      ? null
+      : this.validManagedSpeedTarget.get()
+        ? this.managedSpeedTarget.get()
+        : null;
     const selectedSpeed = managedSpeedTarget ?? this.getCurrentSpeed();
     return this.isMachActive
       ? this.clampMach(Math.round(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', selectedSpeed) * 100) / 100)
