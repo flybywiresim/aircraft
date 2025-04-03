@@ -202,7 +202,6 @@
 1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
 1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
 
-
 ## 0.12.0
 
 1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
