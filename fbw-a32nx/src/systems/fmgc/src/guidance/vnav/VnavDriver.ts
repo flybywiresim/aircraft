@@ -33,6 +33,7 @@ import {
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { VnavConfig } from './VnavConfig';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
@@ -89,12 +90,14 @@ export class VnavDriver implements GuidanceComponent {
     this.aircraftToDescentProfileRelation = new AircraftToDescentProfileRelation(this.computationParametersObserver);
     this.descentGuidance = this.acConfig.vnavConfig.VNAV_USE_LATCHED_DESCENT_MODE
       ? new LatchedDescentGuidance(
+          this.acConfig,
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
           computationParametersObserver,
           this.atmosphericConditions,
         )
       : new DescentGuidance(
+          this.acConfig,
           this.guidanceController,
           this.aircraftToDescentProfileRelation,
           computationParametersObserver,
@@ -577,7 +580,7 @@ export class VnavDriver implements GuidanceComponent {
   }
 
   updateDebugInformation() {
-    if (!this.acConfig.vnavConfig.DEBUG_GUIDANCE) {
+    if (!VnavConfig.DEBUG_GUIDANCE) {
       return;
     }
 

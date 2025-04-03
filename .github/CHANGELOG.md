@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.14.0
+
+1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
+
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
@@ -193,7 +197,13 @@
 1. [A380X/PRIM] Automatic THS trim after engine start or touch and go - @flogross89 (floridude)
 1. [A380X/PERF] Fixed issue where 0 was not an accepted cost index - @Jonny23787 (Jonathan)
 1. [A380X/MFD] Update MFD font to include question mark - @heclak (Heclak)
+<<<<<<< HEAD
 1. [A380X/FCU] Update FCU font for QFE based on new references - @heclak (Heclak)
+=======
+1. [A380X/FMC] Fixed FIX INFO temporary flightplan handling - @Benjozork (Benjamin Dupont)
+1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
+1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
+>>>>>>> master
 
 ## 0.12.0
 
