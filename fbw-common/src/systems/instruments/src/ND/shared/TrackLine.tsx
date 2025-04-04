@@ -101,20 +101,25 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     const lateralMode = this.lateralModeSub.get();
     const lateralArmed = this.lateralArmedSub.get();
 
-    const shouldShowLine =
-      (lateralMode === LateralMode.NONE ||
-        lateralMode === LateralMode.HDG ||
-        lateralMode === LateralMode.TRACK ||
-        lateralMode === LateralMode.RWY ||
-        lateralMode === LateralMode.RWY_TRACK ||
-        lateralMode === LateralMode.GA_TRACK) &&
-      !isArmed(lateralArmed, ArmedLateralMode.NAV);
+    const shouldShowLine = TrackLine.shouldShowTrackLine(lateralMode, lateralArmed);
 
     if (wrongNDMode || headingInvalid || trackInvalid || !shouldShowLine) {
       this.visibility.set('hidden');
     } else {
       this.visibility.set('inherit');
     }
+  }
+
+  public static shouldShowTrackLine(lateralMode: LateralMode, lateralArmed: number) {
+    return (
+      (lateralMode === LateralMode.NONE ||
+        lateralMode === LateralMode.HDG ||
+        lateralMode === LateralMode.TRACK ||
+        lateralMode === LateralMode.RWY ||
+        lateralMode === LateralMode.RWY_TRACK ||
+        lateralMode === LateralMode.GA_TRACK) &&
+      !isArmed(lateralArmed, ArmedLateralMode.NAV)
+    );
   }
 
   render(): VNode | null {

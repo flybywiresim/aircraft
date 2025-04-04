@@ -4,3 +4,4 @@ export * from './FcuBusPublisher';
 export * from './GroundSupportPublisher';
 export * from './Msfs';
 export * from './OansBtv';
+export * from './SwitchingPanelPublisher';
