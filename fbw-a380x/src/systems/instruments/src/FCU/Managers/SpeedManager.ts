@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { TemporaryHax } from './TemporaryHax';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
@@ -20,10 +20,6 @@ export class SpeedManager extends TemporaryHax implements Instrument {
   private readonly managedSpeed = ConsumerSubject.create(this.sub.on('fg.speeds.managed'), 0);
 
   private readonly validManagedSpeed = this.managedSpeed.map((v) => v >= 90);
-
-  private readonly managedSpeedTarget = ConsumerSubject.create(this.sub.on('fg.speeds.managedTarget'), 0);
-
-  private readonly validManagedSpeedTarget = this.managedSpeedTarget.map((v) => v > 90);
 
   private isActive = false;
   private isManaged = false;
@@ -388,11 +384,13 @@ export class SpeedManager extends TemporaryHax implements Instrument {
   }
 
   private getInitialSelectedSpeedValue() {
-    const managedSpeedTarget = this.isVerticalModeSRS
-      ? null
-      : this.validManagedSpeedTarget.get()
-        ? this.managedSpeedTarget.get()
-        : null;
+    let managedSpeedTarget = null;
+    if (!this.isVerticalModeSRS) {
+      const managedSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', SimVarValueType.Knots);
+      if (managedSpeed >= 90) {
+        managedSpeedTarget = managedSpeed;
+      }
+    }
     const selectedSpeed = managedSpeedTarget ?? this.getCurrentSpeed();
     return this.isMachActive
       ? this.clampMach(Math.round(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', selectedSpeed) * 100) / 100)
