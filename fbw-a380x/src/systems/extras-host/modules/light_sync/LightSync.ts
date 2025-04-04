@@ -77,6 +77,7 @@ export class LightSync implements Instrument {
     this.setPotentiometer(94, autoBrightness / 2); // wxRadar
     this.setPotentiometer(98, autoBrightness); // MFD
     this.setPotentiometer(8, autoBrightness < 50 ? 20 : 0); // console light
+    this.setPotentiometer(78, autoBrightness); // OIT
 
     // Instruments F/O
     this.setPotentiometer(90, autoBrightness); // PFD
@@ -84,6 +85,7 @@ export class LightSync implements Instrument {
     this.setPotentiometer(95, autoBrightness / 2); // wxRadar
     this.setPotentiometer(99, autoBrightness); // MFD
     this.setPotentiometer(9, autoBrightness < 50 ? 20 : 0); // console light
+    this.setPotentiometer(79, autoBrightness); // OIT
 
     // Pedestal
     this.setPotentiometer(80, autoBrightness); // rmpCptLightLevel
