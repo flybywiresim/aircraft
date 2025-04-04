@@ -1,0 +1,25 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+
+.mfd-pos-top-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-left: 82px;
+}
+
+.mfd-pos-monitor-table {
+    border: 2px outset $display-light-grey;
+    width: 99%;
+    margin-left: 1px;
+    margin-top: 45px;
+    padding: 10px 0px 10px 0px;
+}
+
+.mfd-pos-monitor-table-line {
+    margin-top: 2px;
+    margin-left: 30px;
+    border: 1px outset $display-light-grey;
+    width: 699px;
+    height: 1px;
+  }
