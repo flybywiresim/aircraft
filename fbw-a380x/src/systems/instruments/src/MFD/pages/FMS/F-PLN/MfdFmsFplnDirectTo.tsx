@@ -48,6 +48,13 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
     it ? RadioButtonColor.Yellow : RadioButtonColor.Cyan,
   );
 
+  protected checkIfNewData() {
+    super.checkIfNewData();
+    if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Temporary) {
+      this.refreshTemporaryPlan();
+    }
+  }
+
   protected onNewData(): void {
     // Use active FPLN for building the list (page only works for active anyways)
     const activeFpln = this.props.fmcService.master?.flightPlanService.active;
@@ -83,12 +90,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
       if (this.manualWptIdent) {
         this.selectedWaypointIndex.set(null);
         this.dropdownMenuRef.instance.forceLabel(this.manualWptIdent);
-      }
-
-      // TODO Display ETA; target waypoint is now activeLeg termination in temporary fpln
-      if (this.loadedFlightPlan?.activeLeg instanceof FlightPlanLeg) {
-        // No predictions for temporary fpln atm, so only distance is displayed
-        this.distToWpt.set(this.loadedFlightPlan?.activeLeg?.calculated?.cumulativeDistance?.toFixed(0) ?? '---');
       }
     }
   }
@@ -126,6 +127,14 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
           FlightPlanIndex.Active,
         );
       }
+    }
+  }
+
+  private refreshTemporaryPlan(): void {
+    // TODO Display ETA; target waypoint is now activeLeg termination in temporary fpln
+    if (this.loadedFlightPlan?.activeLeg instanceof FlightPlanLeg) {
+      // No predictions for temporary fpln atm, so only distance is displayed
+      this.distToWpt.set(this.loadedFlightPlan?.activeLeg?.calculated?.cumulativeDistance?.toFixed(0) ?? '---');
     }
   }
 
