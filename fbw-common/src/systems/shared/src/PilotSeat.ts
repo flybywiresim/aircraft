@@ -55,9 +55,10 @@ export class PilotSeatManager implements Instrument {
   }
 
   public onUpdate(): void {
+    const cameraPos: XYZ = SimVar.GetGameVarValue('CAMERA_POS_IN_PLANE', 'xyz');
+    const cameraState: number = SimVar.GetSimVarValue('CAMERA STATE', SimVarValueType.Enum);
+    this.inFlightDeck.set(this.isInFlightDeckBounds(cameraPos, cameraState));
     if (this.configSeat === PilotSeatConfig.Auto) {
-      const cameraPos: XYZ = SimVar.GetGameVarValue('CAMERA_POS_IN_PLANE', 'xyz');
-      this.inFlightDeck.set(this.isInFlightDeckBounds(cameraPos));
       // if we are not inside the flight deck, do not update the side
       if (this.inFlightDeck.get()) {
         const inRightSide = cameraPos.x < 0;
@@ -68,14 +69,15 @@ export class PilotSeatManager implements Instrument {
     }
   }
 
-  private isInFlightDeckBounds(pos: XYZ): boolean {
+  private isInFlightDeckBounds(pos: XYZ, cameraState: number): boolean {
     return (
       pos.x >= this.flightDeckBounds.minX &&
       pos.x <= this.flightDeckBounds.maxX &&
       pos.y >= this.flightDeckBounds.minY &&
       pos.y <= this.flightDeckBounds.maxY &&
       pos.z >= this.flightDeckBounds.minZ &&
-      pos.z <= this.flightDeckBounds.maxZ
+      pos.z <= this.flightDeckBounds.maxZ &&
+      (cameraState === 2 || cameraState === 3)
     );
   }
 }
