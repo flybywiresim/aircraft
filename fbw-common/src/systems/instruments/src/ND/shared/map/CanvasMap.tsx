@@ -35,6 +35,7 @@ import { FixInfoLayer } from './FixInfoLayer';
 import { NDControlEvents } from '../../NDControlEvents';
 import { PseudoWaypointLayer } from './PseudoWaypointLayer';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
+import { MapOptions } from '../../types/MapOptions';
 import { GenericTawsEvents } from '../../types/GenericTawsEvents';
 
 // TODO move this somewhere better, need to move TCAS stuff into fbw-sdk
@@ -66,6 +67,7 @@ export interface CanvasMapProps {
   bus: EventBus;
   x: Subscribable<number>;
   y: Subscribable<number>;
+  options?: Partial<MapOptions>;
 }
 
 export class CanvasMap extends DisplayComponent<CanvasMapProps> {
@@ -115,7 +117,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
   private readonly constraintsLayer = new ConstraintsLayer();
 
-  private readonly waypointLayer = new WaypointLayer(this);
+  private readonly waypointLayer = new WaypointLayer(this, this.props.options);
 
   private readonly fixInfoLayer = new FixInfoLayer();
 

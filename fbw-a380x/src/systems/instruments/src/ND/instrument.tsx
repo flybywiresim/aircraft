@@ -256,6 +256,7 @@ class NDInstrument implements FsInstrument {
             terrainThresholdPaddingText={a380TerrainThresholdPadValue}
             rangeChangeMessage={a380NdRangeChange}
             modeChangeMessage={a380NdModeChange}
+            mapOptions={{ waypointBoxing: true }}
           />
           <ContextMenu
             ref={this.contextMenuRef}
