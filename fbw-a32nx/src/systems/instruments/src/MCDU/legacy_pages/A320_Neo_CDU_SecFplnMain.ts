@@ -23,15 +23,21 @@ export class CDUSecFplnMain {
     };
 
     const hasSecondary = mcdu.flightPlanService.hasSecondary(1);
+    let hasFromTo = false;
+    if (hasSecondary) {
+      const secPlan = mcdu.flightPlanService.secondary(1);
+      hasFromTo = !!secPlan.originAirport && !!secPlan.destinationAirport;
+    }
 
     const deleteSecColumn = new Column(0, '', Column.cyan);
 
     // <DELETE SEC
-    if (hasSecondary) {
+    if (hasFromTo) {
       deleteSecColumn.update('{DELETE SEC');
 
       mcdu.onLeftInput[2] = () => {
         mcdu.flightPlanService.secondaryReset(1);
+        CDUSecFplnMain.ShowPage(mcdu);
       };
     }
 
@@ -39,21 +45,21 @@ export class CDUSecFplnMain {
 
     const activePlan = mcdu.flightPlanService.active;
 
-    let canCopyOrSwapSec = false;
-    if (hasSecondary) {
+    let canActivateOrSwapSec = false;
+    if (hasFromTo) {
       const secPlan = mcdu.flightPlanService.secondary(1);
 
       const activeToLeg = activePlan.activeLeg;
       const secToLeg = secPlan.activeLeg;
 
-      canCopyOrSwapSec =
+      canActivateOrSwapSec =
         !mcdu.navModeEngaged() ||
         (FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
           activePlan.activeLegIndex === secPlan.activeLegIndex);
     }
 
     // *ACTIVATE SEC
-    if (canCopyOrSwapSec) {
+    if (canActivateOrSwapSec) {
       activateSecColumn.update('*ACTIVATE SEC');
 
       mcdu.onLeftInput[3] = () => {
@@ -72,7 +78,9 @@ export class CDUSecFplnMain {
 
     // INIT>
     mcdu.onRightInput[0] = () => {
-      mcdu.flightPlanService.secondaryInit(1); // FIXME ideally the page would be fine showing for a non-existent plan, but we work around this for now
+      if (!hasSecondary) {
+        mcdu.flightPlanService.secondaryInit(1);
+      }
       CDUInitPage.ShowPage1(mcdu, FlightPlanIndex.FirstSecondary);
     };
 
@@ -83,7 +91,7 @@ export class CDUSecFplnMain {
 
     // PERF>
     const secPerfColumn = new Column(23, '', Column.right);
-    if (hasSecondary) {
+    if (hasFromTo) {
       secPerfColumn.update('PERF>');
 
       mcdu.onRightInput[1] = () => {
@@ -92,7 +100,7 @@ export class CDUSecFplnMain {
     }
 
     const secSwapActiveColumn = new Column(0, '', Column.amber);
-    if (hasSecondary && canCopyOrSwapSec) {
+    if (canActivateOrSwapSec) {
       secSwapActiveColumn.update('*SWAP ACTIVE   ');
 
       mcdu.onLeftInput[5] = async () => {
