@@ -580,22 +580,22 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in tons */
-  getDestEFOB(useFob: boolean): number {
+  getDestEFOB(): number {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
-    if (useFob && efob !== undefined) {
+    if (efob !== undefined) {
       return Units.poundToKilogram(efob) / 1000.0;
     }
     return 0;
   }
 
   /** in tons */
-  getAltEFOB(useFOB = false): number {
+  getAltEFOB(): number {
     // TODO estimate alternate fuel
-    if (this.getDestEFOB(useFOB) === 0) {
+    if (this.getDestEFOB() === 0) {
       return 0;
     }
-    return this.getDestEFOB(useFOB) - 1.0 > 0 ? this.getDestEFOB(useFOB) - 1.0 : 0;
+    return this.getDestEFOB() - 1.0 > 0 ? this.getDestEFOB() - 1.0 : 0;
   }
 
   /** in feet. null if not set */

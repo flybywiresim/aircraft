@@ -5,6 +5,7 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class CDUProgressPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -14,10 +15,15 @@ export class CDUProgressPage {
       CDUProgressPage.ShowPage(mcdu);
     };
     mcdu.activeSystem = 'FMGC';
-    const flightNo = mcdu.flightNumber ?? '';
+
+    const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
+
+    const flightNo = plan.flightNumber ?? '';
     const flMax = mcdu.getMaxFlCorrected();
     const flOpt =
-      mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || mcdu.isOnGround())
+      plan.performanceData.zeroFuelWeightCenterOfGravity !== null &&
+      plan.performanceData.blockFuel !== null &&
+      (mcdu.isAllEngineOn() || mcdu.isOnGround())
         ? '{green}FL' + (Math.floor(flMax / 5) * 5).toString() + '{end}'
         : '-----';
     const adirsUsesGpsAsPrimary = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool');
@@ -97,7 +103,7 @@ export class CDUProgressPage {
     }
 
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-      if (mcdu.trySetCruiseFlCheckInput(value)) {
+      if (mcdu.trySetCruiseFlCheckInput(value, FlightPlanIndex.Active)) {
         CDUProgressPage.ShowPage(mcdu);
       } else {
         scratchpadCallback();

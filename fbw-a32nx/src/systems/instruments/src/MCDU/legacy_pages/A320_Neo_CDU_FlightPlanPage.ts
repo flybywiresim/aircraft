@@ -8,7 +8,6 @@ import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { AltitudeDescriptor, NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
@@ -59,6 +58,18 @@ export class CDUFlightPlanPage {
     };
     mcdu.activeSystem = 'FMGC';
 
+    if (forPlan >= FlightPlanIndex.FirstSecondary) {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.onUnload = () => {
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+      };
+    } else {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+    }
+
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.FlightPlanPage) {
@@ -90,7 +101,7 @@ export class CDUFlightPlanPage {
 
     let flightNumberText = '';
     if (forActiveOrTemporary) {
-      flightNumberText = mcdu.flightNumber ?? '';
+      flightNumberText = targetPlan.flightNumber ?? '';
     }
 
     const waypointsAndMarkers = [];
@@ -99,14 +110,12 @@ export class CDUFlightPlanPage {
     let alternateAirportOffset = 0;
 
     // VNAV
-    const fmsGeometryProfile = mcdu.guidanceController.vnavDriver.mcduProfile;
-    const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
+    const fmsGeometryProfile = forActiveOrTemporary ? mcdu.guidanceController.vnavDriver.mcduProfile : undefined;
+    const fmsPseudoWaypoints = forActiveOrTemporary ? mcdu.guidanceController.currentPseudoWaypoints : [];
 
-    /** @type {Map<number, VerticalWaypointPrediction>} */
-    let vnavPredictionsMapByWaypoint = null;
-    if (fmsGeometryProfile && fmsGeometryProfile.isReadyToDisplay) {
-      vnavPredictionsMapByWaypoint = fmsGeometryProfile.waypointPredictions;
-    }
+    const vnavPredictionsMapByWaypoint = fmsGeometryProfile?.isReadyToDisplay
+      ? fmsGeometryProfile.waypointPredictions
+      : null;
 
     let cumulativeDistance = 0;
     // Primary F-PLAN
@@ -377,9 +386,10 @@ export class CDUFlightPlanPage {
         let distance = '';
         // Active waypoint is live distance, others are distances in the flight plan
         if (isActive) {
-          if (Number.isFinite(mcdu.guidanceController.activeLegAlongTrackCompletePathDtg)) {
+          // TODO sec
+          if (Number.isFinite(mcdu.guidanceController.activeLegCompleteLegPathDtg)) {
             distance = Math.round(
-              Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegAlongTrackCompletePathDtg)),
+              Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegCompleteLegPathDtg)),
             ).toFixed(0);
           }
         } else {
@@ -400,10 +410,10 @@ export class CDUFlightPlanPage {
 
         if (targetPlan.index !== FlightPlanIndex.Temporary && wp.type !== 'HM') {
           if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-            speedConstraint = Number.isFinite(mcdu.v1Speed)
-              ? `{big}${Math.round(mcdu.v1Speed)}{end}`
+            speedConstraint = Number.isFinite(targetPlan.performanceData.v1)
+              ? `{big}${Math.round(targetPlan.performanceData.v1)}{end}`
               : Speed.NoPrediction;
-            spdColor = Number.isFinite(mcdu.v1Speed) ? color : 'white';
+            spdColor = Number.isFinite(targetPlan.performanceData.v1) ? color : 'white';
           } else if (isFromLeg) {
             speedConstraint = Speed.Empty;
           } else if (verticalWaypoint && verticalWaypoint.speed) {
@@ -687,7 +697,7 @@ export class CDUFlightPlanPage {
         let distance = undefined;
         if (!shouldHidePredictions) {
           distance = isActive
-            ? mcdu.guidanceController.activeLegAlongTrackCompletePathDtg - pwp.distanceFromLegTermination
+            ? mcdu.guidanceController.activeLegCompleteLegPathDtg - pwp.distanceFromLegTermination
             : distanceFromLastLine;
         }
 
@@ -709,12 +719,16 @@ export class CDUFlightPlanPage {
           isOverfly: false,
         };
 
-        addLskAt(rowI, 0, (value) => {
-          if (value === Keypad.clrValue) {
-            // TODO
-            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-          }
-        });
+        addLskAt(
+          rowI,
+          () => mcdu.getDelaySwitchPage(),
+          (value) => {
+            if (value === Keypad.clrValue) {
+              // TODO
+              mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            }
+          },
+        );
       } else if (marker) {
         // Marker
         scrollWindow[rowI] = waypointsAndMarkers[winI];
@@ -951,11 +965,7 @@ export class CDUFlightPlanPage {
       let destEFOBCell = '---.-';
 
       if (targetPlan.destinationAirport) {
-        if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
-          mcdu.tryUpdateRouteTrip(isFlying);
-        }
-
-        const destDist = mcdu.guidanceController.alongTrackDistanceToDestination;
+        const destDist = mcdu.guidanceController.getAlongTrackDistanceToDestination(forPlan);
 
         if (Number.isFinite(destDist)) {
           destDistCell = Math.round(destDist).toFixed(0);
