@@ -200,7 +200,7 @@ export class CDUInitPage {
     mcdu.onLeftInput[0] = async (value, scratchpadCallback) => {
       await mcdu.updateCoRoute(value, (result) => {
         if (result) {
-          CDUInitPage.ShowPage1(mcdu);
+          CDUInitPage.ShowPage1(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
@@ -215,7 +215,7 @@ export class CDUInitPage {
 
     mcdu.onRightInput[4] = (value, scratchpadCallback) => {
       if (mcdu.tryUpdateTropo(value, forPlan)) {
-        CDUInitPage.ShowPage1(mcdu);
+        CDUInitPage.ShowPage1(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }

@@ -2116,7 +2116,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (tropo === Keypad.clrValue) {
       if (plan.performanceData.tropopause) {
-        this.currFlightPlanService.setPerformanceData('tropopause', null, forPlan);
+        this.currFlightPlanService.setPerformanceData('pilotTropopause', null, forPlan);
         return true;
       }
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -2131,7 +2131,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const value = parseInt(tropo);
 
     if (isFinite(value) && value >= 0 && value <= 60000) {
-      this.currFlightPlanService.setPerformanceData('tropopause', Math.round(value / 10) * 10, forPlan);
+      this.currFlightPlanService.setPerformanceData('pilotTropopause', Math.round(value / 10) * 10, forPlan);
       return true;
     }
 
