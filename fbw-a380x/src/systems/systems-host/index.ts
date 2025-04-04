@@ -29,6 +29,7 @@ import {
   MsfsMiscPublisher,
   PilotSeatPublisher,
   VhfComIndices,
+  SwitchingPanelPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
@@ -134,6 +135,8 @@ class SystemsHost extends BaseInstrument {
   private readonly msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
   private readonly irBusPublisher = new IrBusPublisher(this.bus);
   private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
+  private readonly switchingPanelPublisher = new SwitchingPanelPublisher(this.bus);
+
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
 
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
@@ -218,6 +221,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
+    this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
     this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
     this.backplane.addInstrument('fltOpsAnsu1', this.fltOpsAnsu1, true);

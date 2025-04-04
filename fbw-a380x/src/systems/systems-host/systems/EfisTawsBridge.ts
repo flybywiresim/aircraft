@@ -22,6 +22,7 @@ import {
   TawsEfisDataDto,
   UpdateThrottler,
   WaypointDto,
+  SwitchingPanelSimVars,
 } from '@flybywiresim/fbw-sdk';
 import {
   ClockEvents,
@@ -95,7 +96,8 @@ export class EfisTawsBridge implements Instrument {
       MsfsMiscEvents &
       IrBusEvents &
       AesuBusEvents &
-      MfdSurvEvents
+      MfdSurvEvents &
+      SwitchingPanelSimVars
   >();
 
   private readonly updateThrottler = new UpdateThrottler(200);
@@ -173,16 +175,86 @@ export class EfisTawsBridge implements Instrument {
   private readonly aesu1ResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_aesu1'), false);
   private readonly aesu2ResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_aesu2'), false);
 
+  private readonly dcEssPowered = ConsumerSubject.create(this.sub.on('dcBusEss'), false);
+  private readonly dc1Powered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
+  private readonly dc2Powered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
+
   private readonly acEssPowered = ConsumerSubject.create(this.sub.on('acBusEss'), false);
   private readonly ac4Powered = ConsumerSubject.create(this.sub.on('acBus4'), false);
 
+  private readonly attHdgSwitching = ConsumerSubject.create(this.sub.on('attHdgSwitching'), 1);
+
+  private readonly headingWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_heading_1'));
+  private readonly headingWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_heading_2'));
+  private readonly headingWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_heading_3'));
+
+  private readonly trackWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_track_1'));
+  private readonly trackWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_track_2'));
+  private readonly trackWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_track_3'));
+
+  private readonly latitudeWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_latitude_1'));
+  private readonly latitudeWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_latitude_2'));
+  private readonly latitudeWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_latitude_3'));
+
+  private readonly captVdAvail = MappedSubject.create(
+    ([swtg, hdg1, hdg3, trk1, trk3, dcEss, dc1]) =>
+      (swtg === 1 ? hdg1 : hdg3).isNormalOperation() &&
+      (swtg === 1 ? trk1 : trk3).isNormalOperation() &&
+      (dcEss || dc1),
+    this.attHdgSwitching,
+    this.headingWord1,
+    this.headingWord3,
+    this.trackWord1,
+    this.trackWord3,
+    this.dcEssPowered,
+    this.dc1Powered,
+  );
+
+  private readonly captNdAvail = MappedSubject.create(
+    ([swtg, hdg1, hdg3, lat1, lat3, dcEss, dc1]) =>
+      (swtg === 1 ? hdg1 : hdg3).isNormalOperation() &&
+      (swtg === 1 ? lat1 : lat3).isNormalOperation() &&
+      (dcEss || dc1),
+    this.attHdgSwitching,
+    this.headingWord1,
+    this.headingWord3,
+    this.latitudeWord1,
+    this.latitudeWord3,
+    this.dcEssPowered,
+    this.dc1Powered,
+  );
+
+  private readonly foVdAvail = MappedSubject.create(
+    ([swtg, hdg2, hdg3, trk2, trk3, dc1, dc2]) =>
+      (swtg === 1 ? hdg2 : hdg3).isNormalOperation() && (swtg === 1 ? trk2 : trk3).isNormalOperation() && (dc1 || dc2),
+    this.attHdgSwitching,
+    this.headingWord2,
+    this.headingWord3,
+    this.trackWord2,
+    this.trackWord3,
+    this.dc1Powered,
+    this.dc2Powered,
+  );
+
+  private readonly foNdAvail = MappedSubject.create(
+    ([swtg, hdg2, hdg3, lat2, lat3, dc1, dc2]) =>
+      (swtg === 1 ? hdg2 : hdg3).isNormalOperation() && (swtg === 1 ? lat2 : lat3).isNormalOperation() && (dc1 || dc2),
+    this.attHdgSwitching,
+    this.headingWord2,
+    this.headingWord3,
+    this.latitudeWord2,
+    this.latitudeWord3,
+    this.dc1Powered,
+    this.dc2Powered,
+  );
+
   private readonly efisDataCapt = MappedSubject.create(
-    ([ndRange, ndMode, ndOverlay, vdRangeLower, vdRangeUpper, terrFailed]) => {
+    ([ndRange, ndMode, ndOverlay, vdRangeLower, vdRangeUpper, terrFailed, ndAvail, vdAvail]) => {
       return {
         ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrOnNd: ndMode !== EfisNdMode.PLAN && ndOverlay === 2 && !terrFailed,
-        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !terrFailed,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && ndOverlay === 2 && !terrFailed && ndAvail,
+        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !terrFailed && vdAvail,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
@@ -194,14 +266,16 @@ export class EfisTawsBridge implements Instrument {
     this.vdRangeLower[0],
     this.vdRangeUpper[0],
     this.terrFailed,
+    this.captNdAvail,
+    this.captVdAvail,
   );
   private readonly efisDataFO = MappedSubject.create(
-    ([ndRange, ndMode, ndOverlay, vdRangeLower, vdRangeUpper, terrFailed]) => {
+    ([ndRange, ndMode, ndOverlay, vdRangeLower, vdRangeUpper, terrFailed, ndAvail, vdAvail]) => {
       return {
         ndRange: Math.max(a380EfisRangeSettings[ndRange], 0),
         arcMode: ndMode === EfisNdMode.ARC,
-        terrOnNd: ndMode !== EfisNdMode.PLAN && ndOverlay === 2 && !terrFailed,
-        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !terrFailed,
+        terrOnNd: ndMode !== EfisNdMode.PLAN && ndOverlay === 2 && !terrFailed && ndAvail,
+        terrOnVd: (ndMode === EfisNdMode.ARC || ndMode === EfisNdMode.ROSE_NAV) && !terrFailed && vdAvail,
         efisMode: ndMode,
         vdRangeLower: vdRangeLower,
         vdRangeUpper: vdRangeUpper,
@@ -213,6 +287,8 @@ export class EfisTawsBridge implements Instrument {
     this.vdRangeLower[1],
     this.vdRangeUpper[1],
     this.terrFailed,
+    this.foNdAvail,
+    this.foVdAvail,
   );
 
   private readonly aircraftStatusData = MappedSubject.create(
@@ -444,6 +520,22 @@ export class EfisTawsBridge implements Instrument {
       this.shouldShowTrackLine,
       this.aesu1ResetPulled,
       this.aesu2ResetPulled,
+      this.dcEssPowered,
+      this.dc1Powered,
+      this.dc2Powered,
+      this.acEssPowered,
+      this.ac4Powered,
+      this.attHdgSwitching,
+      this.headingWord1,
+      this.headingWord2,
+      this.headingWord3,
+      this.latitudeWord1,
+      this.latitudeWord2,
+      this.latitudeWord3,
+      this.captNdAvail,
+      this.captVdAvail,
+      this.foNdAvail,
+      this.foVdAvail,
       this.efisDataCapt,
       this.efisDataFO,
       this.aircraftStatusData,

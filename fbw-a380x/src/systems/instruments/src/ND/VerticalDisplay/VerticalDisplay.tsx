@@ -1,5 +1,4 @@
 ﻿import {
-  Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
   ArincEventBus,
   EfisNdMode,
@@ -25,7 +24,6 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
-import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 import '../style.scss';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
@@ -60,7 +58,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     GenericFcuEvents &
       GenericTawsEvents &
       NDSimvars &
-      DmcLogicEvents &
       SimplaneValues &
       FmsSymbolsData &
       NDControlEvents &
@@ -120,10 +117,10 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   /** either magnetic or true heading depending on true ref mode */
-  private readonly headingWord = Arinc429ConsumerSubject.create(this.sub.on('heading').atFrequency(0.5));
+  private readonly headingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('magHeadingRaw').atFrequency(0.5));
 
   /** either magnetic or true track depending on true ref mode */
-  private readonly trackWord = Arinc429ConsumerSubject.create(this.sub.on('track').atFrequency(0.5));
+  private readonly trackWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('magTrackRaw').atFrequency(0.5));
 
   private readonly vdAvailable = MappedSubject.create(
     ([hdg, trk]) => hdg.isNormalOperation() && trk.isNormalOperation(),
