@@ -129,6 +129,7 @@ export class MsfsFlightPlanSync {
 
     for (const leg of route.enroute) {
       if (leg.isPpos) {
+        // TODO support
         continue;
       }
 
@@ -150,7 +151,18 @@ export class MsfsFlightPlanSync {
         continue;
       }
 
-      await this.rpcClient.nextWaypoint(insertHead++, matchingFix, FlightPlanIndex.Uplink, false);
+      if (leg.via !== '') {
+        await this.rpcClient.startAirwayEntry(insertHead, FlightPlanIndex.Uplink);
+
+        const airway = await NavigationDatabaseService.activeDatabase.searchAirway(leg.via, matchingFix);
+
+        await this.rpcClient.continueAirwayEntryViaAirway(airway[0], FlightPlanIndex.Uplink);
+        await this.rpcClient.continueAirwayEntryDirectToFix(matchingFix, FlightPlanIndex.Uplink);
+
+        await this.rpcClient.finaliseAirwayEntry(FlightPlanIndex.Uplink);
+      } else {
+        await this.rpcClient.nextWaypoint(insertHead++, matchingFix, FlightPlanIndex.Uplink, false);
+      }
     }
 
     let approach: Approach | null = null;
