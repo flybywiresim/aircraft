@@ -8,6 +8,7 @@
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
+1. [A380X/ECAM] Improved STROBE LT OFF memo behaviour - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
