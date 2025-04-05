@@ -2547,7 +2547,7 @@ export class PseudoFWC {
 
     /* SETTINGS */
 
-    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0') !== '0');
+    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
 
     /* CABIN READY */
 
