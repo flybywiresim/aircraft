@@ -2,7 +2,15 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, EventBus, GameStateProvider, Instrument, KeyEventManager, SimVarValueType, Wait } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  EventBus,
+  GameStateProvider,
+  Instrument,
+  KeyEventManager,
+  SimVarValueType,
+  Wait,
+} from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 enum TimeOfDayState {
