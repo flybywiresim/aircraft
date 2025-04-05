@@ -6,6 +6,7 @@ import BleedCrossbleed from './elements/BleedCrossbleed';
 import BleedApu from './elements/BleedApu';
 import BleedHotAir from './elements/BleedHotAir';
 import BleedMixerUnit from './elements/BleedMixerUnit';
+import BleedGnd from './elements/BleedGnd';
 
 import '../../../index.scss';
 
@@ -18,7 +19,7 @@ export const BleedPage = () => {
         BLEED
       </PageTitle>
 
-      <BleedMixerUnit x={384} y={30} sdacDatum={sdacDatum} />
+      <BleedMixerUnit x={384} y={30} _sdacDatum={sdacDatum} />
 
       <text x={344} y={70} className="White F23 MiddleAlign">
         RAM
@@ -28,8 +29,8 @@ export const BleedPage = () => {
       </text>
 
       {/* Hot Air */}
-      <BleedHotAir x={238} y={204} hotAir={1} sdacDatum={sdacDatum} />
-      <BleedHotAir x={514} y={204} hotAir={2} sdacDatum={sdacDatum} />
+      <BleedHotAir x={238} y={204} hotAir={1} _sdacDatum={sdacDatum} />
+      <BleedHotAir x={514} y={204} hotAir={2} _sdacDatum={sdacDatum} />
 
       <text x={344} y={190} className="White F23 MiddleAlign">
         HOT
@@ -49,6 +50,9 @@ export const BleedPage = () => {
 
       {/* Crossbleed */}
       <BleedCrossbleed />
+
+      {/* GND indication */}
+      <BleedGnd />
 
       {/* APU */}
       <BleedApu />
