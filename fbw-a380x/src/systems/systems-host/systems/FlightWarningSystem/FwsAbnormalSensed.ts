@@ -729,6 +729,61 @@ export class FwsAbnormalSensed {
       info: () => ['210200003'],
       inopSysAllPhases: () => ['210300023'],
     },
+    211800051: {
+      // APU BLEED FAULT due to outside envelope
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.apuBleedPbOnOver22500ft,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [false, false, false, false, true, this.fws.adrPressureAltitude.get() > 22_500],
+      whichItemsChecked: () => [false, false, false, false, this.fws.apuBleedPbOn.get(), false],
+      failure: 1,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300006'],
+    },
+    211800052: {
+      // ENG 1 BLEED OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.eng1BleedPbOff,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300002'],
+    },
+    211800053: {
+      // ENG 2 BLEED OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.eng2BleedPbOff,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300003'],
+    },
+    211800054: {
+      // ENG 3 BLEED OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.eng3BleedPbOff,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300004'],
+    },
+    211800055: {
+      // ENG 4 BLEED OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.eng4BleedPbOff,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300005'],
+    },
     211800042: {
       // TEMP CTL REDUNDANCY LOST
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
