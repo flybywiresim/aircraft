@@ -45,7 +45,6 @@ const BleedCrossbleed: FC = () => {
         className={`${allCrossBleedValveOpen ? 'Show' : 'Hide'} Line Green NoFill`}
         d={`M${435},${y} l 0,40 l 60,0 M${533},${y + 40} l 115,0 M${492},${y + 47.5} l 8,-15 M${530},${y + 47.5} l 8,-15`}
       />
-      <path className={`${allCrossBleedValveOpen ? 'Show' : 'Hide'} Line Green NoFill`} d={`M${352},${y} l 0,101`} />
     </g>
   );
 };

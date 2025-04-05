@@ -6,6 +6,7 @@ import BleedCrossbleed from './elements/BleedCrossbleed';
 import BleedApu from './elements/BleedApu';
 import BleedHotAir from './elements/BleedHotAir';
 import BleedMixerUnit from './elements/BleedMixerUnit';
+import BleedGnd from './elements/BleedGnd';
 
 import '../../../index.scss';
 
@@ -49,6 +50,9 @@ export const BleedPage = () => {
 
       {/* Crossbleed */}
       <BleedCrossbleed />
+
+      {/* GND indication */}
+      <BleedGnd />
 
       {/* APU */}
       <BleedApu />
