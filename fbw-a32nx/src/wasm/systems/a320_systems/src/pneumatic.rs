@@ -559,16 +559,13 @@ impl BleedMonitoringComputer {
     }
 
     fn check_for_failure(&mut self, other: &mut BleedMonitoringComputer) {
-        match other.signal() {
-            None => {
-                self.change_backup_channel_operation_mode(
-                    BleedMonitoringComputerChannelOperationMode::Master,
-                );
-                other.change_main_channel_operation_mode(
-                    BleedMonitoringComputerChannelOperationMode::Slave,
-                );
-            }
-            Some(_) => {}
+        if other.signal().is_none() {
+            self.change_backup_channel_operation_mode(
+                BleedMonitoringComputerChannelOperationMode::Master,
+            );
+            other.change_main_channel_operation_mode(
+                BleedMonitoringComputerChannelOperationMode::Slave,
+            );
         }
     }
 

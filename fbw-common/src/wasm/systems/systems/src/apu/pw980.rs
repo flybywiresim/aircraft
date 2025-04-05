@@ -159,8 +159,8 @@ impl Starting {
     }
 
     fn calculate_n(&self) -> Ratio {
-        /// N1 is driven by N2. We use N2 as base until N2 = 75%, at which point we use time as base
-        /// to capture the changes in N1 at the "top of the range" for little N2 change.
+        // N1 is driven by N2. We use N2 as base until N2 = 75%, at which point we use time as base
+        // to capture the changes in N1 at the "top of the range" for little N2 change.
 
         // N2 to N1 constants
         const APU_N_N2_CONST: f64 = -1.980342480028972;

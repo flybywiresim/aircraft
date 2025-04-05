@@ -361,16 +361,16 @@ impl Debug for ElectroHydrostaticBackup {
 /// the following functional modes:
 ///
 /// - [LinearActuatorMode.ClosedValves]: Turns actuator in a high constant spring/damper system simulating a closed actuator
-/// only constrained by its own fluid compressibility.
+///   only constrained by its own fluid compressibility.
 /// - [ActiveDamping.LinearActuatorMode]: Actuator use internal valves to provide a force resisting to its own movements, dampening
-/// the piece movements it's connected to.
+///   the piece movements it's connected to.
 /// - [LinearActuatorMode.PositionControl]: -> Actuator will try to use hydraulic pressure to move to a requested position, while
-/// maintaining flow limitations.
+///   maintaining flow limitations.
 ///     CAUTION: For actuators having only ON/OFF behaviour (gear, door ...), might be needed to require more than required
 ///         position to ensure it's reached at max force. So full retract position at 0 might need to require -0.5, full extension might
 ///         need to request 1.5
 /// - [LinearActuatorMode.ClosedCircuitDamping]: -> Actuator will connect retract and extend port in closed loop. This provide a dampened
-/// free moving mode, usable for gravity extension, or for aileron droop.
+///   free moving mode, usable for gravity extension, or for aileron droop.
 #[derive(PartialEq, Clone, Copy)]
 struct CoreHydraulicForce {
     dev_gains_tuning_enable_id: VariableIdentifier,
@@ -1199,7 +1199,7 @@ impl LinearActuator {
 
     fn eha_backup_is_active(&self) -> bool {
         self.electro_hydrostatic_backup
-            .map_or(false, |eha| eha.is_electrical_mode_active())
+            .is_some_and(|eha| eha.is_electrical_mode_active())
     }
 
     pub fn set_position_target(&mut self, target_position: Ratio) {
