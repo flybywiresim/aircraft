@@ -244,13 +244,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center; ">
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number>
-                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw))}
+                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw), false)}
                 value={this.props.fmcService.master.fmgc.data.zeroFuelWeight}
                 mandatory={Subject.create(true)}
                 canBeCleared={Subject.create(false)}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -262,7 +262,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 canBeCleared={Subject.create(false)}
                 alignText="center"
                 containerStyle="width: 125px;"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -270,12 +270,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
               <div class="mfd-label mfd-spacing-right fuelLoad">BLOCK</div>
               <InputField<number>
-                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel))}
+                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel), true)}
                 value={this.props.fmcService.master.fmgc.data.blockFuel}
                 mandatory={Subject.create(true)}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -301,7 +301,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">TAXI</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel))}
+                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel), true)}
                   dataHandlerDuringValidation={async (v) => {
                     this.props.fmcService.master?.fmgc.data.taxiFuelPilotEntry.set(v);
                   }}
@@ -310,7 +310,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   disabled={this.flightPhaseAtLeastTakeoff}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -330,7 +330,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   mandatory={Subject.create(true)}
                   alignText="center"
                   containerStyle="width: 75px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -355,7 +355,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   disabled={this.flightPhaseAtLeastDescent}
                   alignText="center"
                   containerStyle="width: 75px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -368,6 +368,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     new WeightFormat(
                       Subject.create(AirlineModifiableInformation.EK.rsvMin),
                       Subject.create(AirlineModifiableInformation.EK.rsvMax),
+                      false
                     )
                   }
                   dataHandlerDuringValidation={async (v) =>
@@ -377,7 +378,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   value={this.props.fmcService.master.fmgc.data.routeReserveFuelWeight}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -394,7 +395,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   value={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage}
                   alignText="center"
                   containerStyle="width: 120px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -402,11 +403,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">JTSN GW</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw))}
+                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw), false)}
                   value={this.props.fmcService.master.fmgc.data.jettisonGrossWeight}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -414,7 +415,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">ALTN</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel))}
+                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel), true)}
                   dataHandlerDuringValidation={async (v) =>
                     this.props.fmcService.master?.fmgc.data.alternateFuelPilotEntry.set(v)
                   }
@@ -422,7 +423,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   value={this.props.fmcService.master.fmgc.data.alternateFuel}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -438,7 +439,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">FINAL</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel))}
+                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel), true)}
                   dataHandlerDuringValidation={async (v) => {
                     this.props.fmcService.master?.fmgc.data.finalFuelWeightPilotEntry.set(v);
                     this.props.fmcService.master?.fmgc.data.finalFuelTimePilotEntry.set(v ? v / 200 : null); // assuming 200kg fuel burn per minute FIXME
@@ -447,7 +448,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   value={this.props.fmcService.master.fmgc.data.finalFuelWeight}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -463,7 +464,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   value={this.props.fmcService.master.fmgc.data.finalFuelTime}
                   alignText="center"
                   containerStyle="width: 120px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -519,7 +520,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     value={this.props.fmcService.master.fmgc.data.minimumFuelAtDestination}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
