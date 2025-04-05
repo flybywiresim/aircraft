@@ -286,6 +286,7 @@
   "Performance": {
     "Data": "Data",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Airport ICAO",
       "ApproachSpeed": "Approach Speed",
       "ApproachSpeedUnit": "kts",
@@ -294,8 +295,10 @@
       "Clear": "Clear",
       "DropDownNo": "No",
       "DropDownYes": "Yes",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Fill data from",
       "FlapsConfiguration": "Flaps Configuration",
+      "LandingWeight": "Landing Weight",
       "Low": "Low",
       "MaximumManual": "Maximum Manual",
       "Medium": "Medium",
@@ -304,8 +307,6 @@
       "OverweightProcedure": "Overweight Procedure",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Runway Elevation",
-      "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Dry": "Dry (6)",
@@ -315,6 +316,9 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
+      "Runway": "Runway",
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Runway Heading",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Runway LDA",
@@ -329,11 +333,8 @@
       "Title": "Landing",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Weight",
-      "WindDirection": "Wind Direction",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Wind Magnitude",
-      "WindMagnitudeUnit": "kts"
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts or °/kts"
     },
     "SYNC": "SYNC",
     "Takeoff": {
@@ -376,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Dry": "Dry",
@@ -394,7 +393,9 @@
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\""
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
