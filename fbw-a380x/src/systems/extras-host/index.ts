@@ -13,13 +13,13 @@ import {
   MsfsMiscPublisher,
   GroundSupportPublisher,
   BaroUnitSelector,
+  TelexCheck,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
-import { TelexCheck } from 'extras-host/modules/telex_check/TelexCheck';
 
 /**
  * This is the main class for the extras-host instrument.

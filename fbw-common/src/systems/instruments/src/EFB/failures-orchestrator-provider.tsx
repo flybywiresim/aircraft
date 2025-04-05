@@ -7,17 +7,15 @@ import { Failure, FailuresOrchestrator, useUpdate, FailureDefinition } from '@fl
 interface FailuresOrchestratorContext {
   allFailures: Readonly<Readonly<Failure>[]>;
   activeFailures: Set<number>;
-  changingFailures: Set<number>;
   activate(identifier: number): Promise<void>;
   deactivate(identifier: number): Promise<void>;
 }
 
-const createOrchestrator = (failures: FailureDefinition[]) => new FailuresOrchestrator('A32NX', failures);
+const createOrchestrator = (failures: FailureDefinition[]) => new FailuresOrchestrator(failures);
 
 const Context = React.createContext<FailuresOrchestratorContext>({
   allFailures: [],
   activeFailures: new Set<number>(),
-  changingFailures: new Set<number>(),
   activate: () => Promise.resolve(),
   deactivate: () => Promise.resolve(),
 });
@@ -34,7 +32,6 @@ export const FailuresOrchestratorProvider: React.FC<PropsWithChildren<FailuresOr
 
   const [allFailures] = useState(() => orchestrator.getAllFailures());
   const [activeFailures, setActiveFailures] = useState<Set<number>>(() => new Set<number>());
-  const [changingFailures, setChangingFailures] = useState<Set<number>>(() => new Set<number>());
 
   useUpdate(() => {
     orchestrator.update();
@@ -43,11 +40,6 @@ export const FailuresOrchestratorProvider: React.FC<PropsWithChildren<FailuresOr
     if (!areEqual(activeFailures, af)) {
       setActiveFailures(af);
     }
-
-    const cf = orchestrator.getChangingFailures();
-    if (!areEqual(changingFailures, cf)) {
-      setChangingFailures(cf);
-    }
   });
 
   return (
@@ -55,7 +47,6 @@ export const FailuresOrchestratorProvider: React.FC<PropsWithChildren<FailuresOr
       value={{
         allFailures,
         activeFailures,
-        changingFailures,
         activate: (identifier) => orchestrator.activate(identifier),
         deactivate: (identifier) => orchestrator.deactivate(identifier),
       }}
