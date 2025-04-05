@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NdSymbol, NdSymbolTypeFlags, MathUtils } from '@flybywiresim/fbw-sdk';
+import { VdSymbol, NdSymbolTypeFlags, MathUtils } from '@flybywiresim/fbw-sdk';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
 import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
 import { VerticalDisplayPaintUtils } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayPaintUtils';
 
-export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSymbol> {
-  public data: NdSymbol[] = [];
+export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<VdSymbol> {
+  public data: VdSymbol[] = [];
 
   paintShadowLayer(
     context: CanvasRenderingContext2D,
@@ -63,7 +63,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
     context: CanvasRenderingContext2D,
     x: number,
     y: number,
-    symbol: NdSymbol,
+    symbol: VdSymbol,
     vdRange: number,
   ) {
     // Runway shape
@@ -96,7 +96,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
     context: CanvasRenderingContext2D,
     x: number,
     y: number,
-    symbol: NdSymbol,
+    symbol: VdSymbol,
   ) {
     // Runway shape
     context.save();
@@ -121,7 +121,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<NdSym
     x: number,
     y: number,
     rotation: number,
-    symbol: NdSymbol,
+    symbol: VdSymbol,
   ) {
     const identIcao = symbol.ident.substring(0, 4);
     const identRwy = symbol.ident.substring(4);

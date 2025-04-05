@@ -631,6 +631,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
         <VerticalDisplayCanvasMap
           ref={this.canvasMapRef}
           bus={this.props.bus}
+          side={this.props.side}
           visible={this.visible}
           fmsVerticalPath={this.fmsVerticalPath}
           vdRange={this.vdRange}

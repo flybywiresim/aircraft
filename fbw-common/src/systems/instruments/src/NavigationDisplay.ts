@@ -86,7 +86,7 @@ export enum EfisRecomputingReason {
   ModeAndRangeChange,
 }
 
-export interface NdSymbol {
+export interface InternalFmsSymbol {
   databaseId: string;
   ident: string;
   location: Coordinates | null;
@@ -101,6 +101,9 @@ export interface NdSymbol {
   radii?: number[];
   distanceFromAirplane?: number;
 }
+
+export type NdSymbol = Omit<InternalFmsSymbol, 'predictedAltitude' | 'altConstraint' | 'isAltitudeConstraintMet'>;
+export type VdSymbol = Omit<InternalFmsSymbol, 'radials' | 'radii'>;
 
 /**
  * Possible flight plan vector groups to be transmitted to the ND.

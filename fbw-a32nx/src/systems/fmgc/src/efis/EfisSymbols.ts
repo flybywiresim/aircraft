@@ -11,7 +11,6 @@ import {
   WaypointDescriptor,
   EfisOption,
   EfisNdMode,
-  NdSymbol,
   NdSymbolTypeFlags,
   AltitudeDescriptor,
   EfisSide,
@@ -21,6 +20,10 @@ import {
   isNearbyVhfFacility,
   isMsfs2024,
   WaypointConstraintType,
+  InternalFmsSymbol,
+  NdSymbol,
+  VdSymbol,
+  FmsData,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -110,6 +113,7 @@ export class EfisSymbols<T extends number> {
     private readonly navaidTuner: NavaidTuner,
     private readonly efisInterface: EfisInterface,
     private readonly rangeValues: T[], // TODO factor this out of here. The EfisInterface should directly supply a edit area
+    private readonly transmitVd: boolean = false,
   ) {
     this.nearbyAirportMonitor.setMaxResults(100);
     this.nearbyNdbNavaidMonitor.setMaxResults(100);
@@ -190,9 +194,6 @@ export class EfisSymbols<T extends number> {
     const mrpChanged = distanceTo(this.lastMrp, mapReferencePoint) > 2;
     if (mrpChanged) {
       this.lastMrp = mapReferencePoint;
-    }
-    const pposChanged = distanceTo(this.lastPpos, ppos) > 2;
-    if (pposChanged) {
       this.lastPpos = ppos;
     }
     const trueHeadingChanged = MathUtils.diffAngle(trueHeading, this.lastTrueHeading) > 2;
@@ -309,12 +310,12 @@ export class EfisSymbols<T extends number> {
       return;
     }
 
-    const symbols: NdSymbol[] = [];
+    const symbols: InternalFmsSymbol[] = [];
 
     // symbols most recently inserted always end up at the end of the array
     // we reverse the array at the end to make sure symbols are drawn in the correct order
     // eslint-disable-next-line no-loop-func
-    const upsertSymbol = (symbol: NdSymbol): void => {
+    const upsertSymbol = (symbol: InternalFmsSymbol): void => {
       // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
       const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
       if (symbolIdx !== -1) {
@@ -590,7 +591,11 @@ export class EfisSymbols<T extends number> {
       this.guidanceController.efisStateForSide[this.side].dataLimitReached = false;
     }
 
-    this.syncer.sendEvent(this.syncEvent, symbols);
+    this.transmitNdSymbols(symbols);
+
+    if (this.transmitVd) {
+      this.transmitVdSymbols(symbols);
+    }
 
     // make sure we don't run too often
     this.blockUpdate = true;
@@ -613,7 +618,7 @@ export class EfisSymbols<T extends number> {
     formatConstraintAlt: (alt: number, descent: boolean, prefix?: string) => string,
     formatConstraintSpeed: (speed: number, prefix?: string) => string,
     predictions?: NavGeometryProfile,
-  ): NdSymbol[] {
+  ): InternalFmsSymbol[] {
     const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
     const isLatAutoControlArmed = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
     const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
@@ -626,7 +631,7 @@ export class EfisSymbols<T extends number> {
       ? this.efisInterface.shouldTransmitAlternateMissed(flightPlan.index, isPlanMode)
       : this.efisInterface.shouldTransmitMissed(flightPlan.index, isPlanMode);
 
-    const ret: NdSymbol[] = [];
+    const ret: InternalFmsSymbol[] = [];
 
     // FP legs
     for (let i = flightPlan.legCount - 1; i >= flightPlan.fromLegIndex && i >= 0; i--) {
@@ -1021,6 +1026,43 @@ export class EfisSymbols<T extends number> {
     }
 
     return matchingGeometryLeg.terminationWaypoint.location;
+  }
+
+  private transmitNdSymbols(symbols: InternalFmsSymbol[]) {
+    const ndSymbols: NdSymbol[] = symbols.map((s): NdSymbol => {
+      return {
+        databaseId: s.databaseId,
+        ident: s.ident,
+        location: s.location,
+        direction: s.direction,
+        length: s.length,
+        type: s.type,
+        constraints: s.constraints,
+        radials: s.radials,
+        radii: s.radii,
+        distanceFromAirplane: s.distanceFromAirplane,
+      };
+    });
+    this.syncer.sendEvent(this.syncEvent, ndSymbols);
+  }
+
+  private transmitVdSymbols(symbols: InternalFmsSymbol[]) {
+    const vdSymbols: VdSymbol[] = symbols.map((s): VdSymbol => {
+      return {
+        databaseId: s.databaseId,
+        ident: s.ident,
+        location: s.location,
+        predictedAltitude: s.predictedAltitude,
+        direction: s.direction,
+        length: s.length,
+        type: s.type,
+        constraints: s.constraints,
+        altConstraint: s.altConstraint,
+        isAltitudeConstraintMet: s.isAltitudeConstraintMet,
+        distanceFromAirplane: s.distanceFromAirplane,
+      };
+    });
+    this.bus.getPublisher<FmsData>().pub(`vdSymbols_${this.side}`, vdSymbols, true);
   }
 }
 

@@ -2,6 +2,8 @@
   Arinc429LocalVarConsumerSubject,
   Arinc429WordData,
   ArincEventBus,
+  EfisSide,
+  FmsData,
   MathUtils,
   NdSymbolTypeFlags,
   VerticalPathCheckpoint,
@@ -19,7 +21,6 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import {
@@ -40,6 +41,7 @@ import { A380XFcuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/
 
 export interface VerticalDisplayCanvasMapProps extends ComponentProps {
   bus: ArincEventBus;
+  side: EfisSide;
   visible: Subscribable<'block' | 'none'>;
   fmsVerticalPath: Subscribable<VerticalPathCheckpoint[]>;
   vdRange: Subscribable<number>;
@@ -58,14 +60,14 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       NDSimvars &
       DmcLogicEvents &
       SimplaneValues &
-      FmsSymbolsData &
       NDControlEvents &
       GenericFmsEvents &
       FGVars &
-      A380XFcuBusEvents
+      A380XFcuBusEvents &
+      FmsData
   >();
 
-  private readonly fmsSymbols = ConsumerSubject.create(this.sub.on('symbols'), []);
+  private readonly fmsSymbols = ConsumerSubject.create(this.sub.on(`vdSymbols_${this.props.side}`), []);
 
   private readonly pposLat = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'), 0);
   private readonly pposLon = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'), 0);

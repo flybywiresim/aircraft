@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NdSymbol, NdSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
+import { VdSymbol, NdSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
 
 import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
@@ -12,8 +12,8 @@ const DECEL_PATH = new Path2D(
   'm 14.5125 0 c 0 8.015 -6.4975 14.5125 -14.5125 14.5125 c -8.015 0 -14.5125 -6.4975 -14.5125 -14.5125 c 0 -8.015 6.4975 -14.5125 14.5125 -14.5125 c 8.015 0 14.5125 6.4975 14.5125 14.5125 z m -12.15 -9.7875 h -7.7625 v 18.225 h 7.7625 l 2.7 -3.375 v -11.475 l -2.7 -3.375 z',
 );
 
-export class VdPseudoWaypointLayer implements VerticalDisplayMapLayer<NdSymbol> {
-  data: NdSymbol[] = [];
+export class VdPseudoWaypointLayer implements VerticalDisplayMapLayer<VdSymbol> {
+  data: VdSymbol[] = [];
 
   constructor() {}
 
@@ -58,7 +58,7 @@ export class VdPseudoWaypointLayer implements VerticalDisplayMapLayer<NdSymbol> 
     context: CanvasRenderingContext2D,
     x: number,
     y: number,
-    symbol: NdSymbol,
+    symbol: VdSymbol,
   ) {
     const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
     context.strokeStyle = color;

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NdSymbol, NdSymbolTypeFlags, MathUtils, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import { VdSymbol, NdSymbolTypeFlags, MathUtils, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
 
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
@@ -13,8 +13,8 @@ import { VERTICAL_DISPLAY_MAX_ALTITUDE, VERTICAL_DISPLAY_MIN_ALTITUDE } from './
 const BELOW_CONSTRAINT_PATH = new Path2D('M 0 0 l 5 -10 h -10 l 5 10');
 const ABOVE_CONSTRAINT_PATH = new Path2D('M 0 0 l 5 10 h -10 l 5 -10');
 
-export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdSymbol> {
-  data: NdSymbol[] = [];
+export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdSymbol> {
+  data: VdSymbol[] = [];
 
   constructor() {}
 
@@ -73,7 +73,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
     context: CanvasRenderingContext2D,
     x: number,
     y: number,
-    symbol: NdSymbol,
+    symbol: VdSymbol,
   ) {
     const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#fff' : '#ff94ff';
 
@@ -89,7 +89,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
     context: CanvasRenderingContext2D,
     x: number,
     y: number,
-    symbol: NdSymbol,
+    symbol: VdSymbol,
   ) {
     this.paintWaypointShape(context, x, y, isColorLayer ? '#ff94ff' : '#000', isColorLayer ? 1.75 : 3.25);
     context.font = '21px Ecam';
@@ -101,7 +101,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<NdS
     context: CanvasRenderingContext2D,
     x: number,
     y: number,
-    symbol: NdSymbol,
+    symbol: VdSymbol,
     verticalRange: [number, number],
     isSelectedModeVertical: boolean,
   ) {

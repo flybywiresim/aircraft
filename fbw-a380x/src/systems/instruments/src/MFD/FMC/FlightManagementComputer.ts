@@ -251,6 +251,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.navaidTuner,
         this.efisInterfaces.L,
         a380EfisRangeSettings,
+        true,
       );
       this.efisSymbolsRight = new EfisSymbols(
         this.bus,
@@ -260,6 +261,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.navaidTuner,
         this.efisInterfaces.R,
         a380EfisRangeSettings,
+        true,
       );
 
       this.#navigation.init();
