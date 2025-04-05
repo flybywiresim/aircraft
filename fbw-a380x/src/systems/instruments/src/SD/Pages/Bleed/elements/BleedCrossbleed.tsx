@@ -6,6 +6,7 @@ const BleedCrossbleed: FC = () => {
   const [lhCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_L_OPEN', 'bool', 500);
   const [centreCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_C_OPEN', 'bool', 500);
   const [rhCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_R_OPEN', 'bool', 500);
+  const allCrossBleedValveOpen = lhCrossBleedValveOpen && centreCrossBleedValveOpen && rhCrossBleedValveOpen;
   const sdacDatum = true;
   const y = 325;
 
@@ -35,6 +36,16 @@ const BleedCrossbleed: FC = () => {
         position={rhCrossBleedValveOpen ? 'H' : 'V'}
         sdacDatum={sdacDatum}
       />
+      <path className={`${allCrossBleedValveOpen ? 'Show' : 'Hide'} Line Green NoFill`} d={`M${240},${y} l 272,0`} />
+      <path
+        className={`${allCrossBleedValveOpen ? 'Show' : 'Hide'} Line Green NoFill`}
+        d={`M${315},${y} l 0,40 l -60,0 M${105},${y + 40} l 115,0 M${217},${y + 47.5} l 8,-15 M${250},${y + 47.5} l 8,-15`}
+      />
+      <path
+        className={`${allCrossBleedValveOpen ? 'Show' : 'Hide'} Line Green NoFill`}
+        d={`M${435},${y} l 0,40 l 60,0 M${533},${y + 40} l 115,0 M${492},${y + 47.5} l 8,-15 M${530},${y + 47.5} l 8,-15`}
+      />
+      <path className={`${allCrossBleedValveOpen ? 'Show' : 'Hide'} Line Green NoFill`} d={`M${352},${y} l 0,101`} />
     </g>
   );
 };

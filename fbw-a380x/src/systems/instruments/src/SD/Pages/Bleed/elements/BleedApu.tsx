@@ -12,6 +12,7 @@ const BleedApu: FC = () => {
   return (
     <g id="ApuBleed">
       <Valve x={352} y={446} radius={19} css="Green SW2" position={apuIsolationValveOpen ? 'V' : 'H'} sdacDatum />
+      <path className={`${apuIsolationValveOpen ? 'Show' : 'Hide'} Line Green NoFill`} d={`M${352},${325} l 0,201`} />
       <g className={apuMasterSwitchPbIsOn ? 'Show' : 'Hide'}>
         <Valve x={352} y={546} radius={19} css="Green SW2" position={apuBleedAirValveOpen ? 'V' : 'H'} sdacDatum />
         <path className="Green SW2" d="M 352,565 l 0,30" />
