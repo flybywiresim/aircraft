@@ -28,6 +28,8 @@ pub struct BatteryChargeRectifierUnit {
     battery_pb_is_auto: bool,
     backup_is_powered: bool,
     contactor_closed: bool,
+    ground_service_contactor_closed: bool,
+    ground_servicing: bool,
     loss_of_ac_duration: Duration,
     overcurrent_duration: Duration,
     failed_time: Duration,
@@ -54,6 +56,8 @@ impl BatteryChargeRectifierUnit {
             battery_pb_is_auto: false,
             backup_is_powered: false,
             contactor_closed: false,
+            ground_service_contactor_closed: false,
+            ground_servicing: false,
             loss_of_ac_duration: Duration::default(),
             overcurrent_duration: Duration::default(),
             failed_time: Duration::default(),
@@ -72,7 +76,7 @@ impl BatteryChargeRectifierUnit {
         self.battery_pb_is_auto = battery_push_buttons.bat_is_auto(self.number);
         let ac_bus_powered = electricity.is_powered(self);
 
-        self.loss_of_ac_duration = if ac_bus_powered {
+        self.loss_of_ac_duration = if ac_bus_powered || self.ground_servicing && !ground_servicing {
             Duration::default()
         } else {
             self.loss_of_ac_duration + context.delta()
@@ -88,9 +92,11 @@ impl BatteryChargeRectifierUnit {
             Duration::default()
         };
 
+        self.ground_servicing = ground_servicing;
         self.contactor_closed = !ground_servicing
             && (ac_bus_powered
                 || self.contactor_closed && self.loss_of_ac_duration < Duration::from_secs(3));
+        self.ground_service_contactor_closed = ground_servicing && ac_bus_powered;
 
         // The battery contactor opens when the battery SOC < 20%
         self.battery_soc_20 = battery.potential().get::<volt>() < 24.5;
@@ -101,11 +107,16 @@ impl BatteryChargeRectifierUnit {
             self.battery_pb_is_auto,
             emergency_config,
             self.loss_of_ac_duration,
+            self.ground_servicing,
         );
     }
 
     pub fn should_close_line_contactor(&self) -> bool {
         self.contactor_closed
+    }
+
+    pub fn should_close_ground_service_line_contactor(&self) -> bool {
+        self.ground_service_contactor_closed
     }
 
     pub fn should_close_battery_connector(&self) -> bool {
@@ -222,6 +233,7 @@ impl State {
         battery_is_auto: bool,
         emergency_config: bool,
         loss_of_ac_duration: Duration,
+        ground_servicing: bool,
     ) -> Self {
         match self {
             Self::BatOff => {
@@ -232,7 +244,7 @@ impl State {
                 }
             }
             Self::Open => {
-                if emergency_config {
+                if emergency_config || ground_servicing {
                     Self::Open
                 } else if !battery_is_auto {
                     Self::BatOff
@@ -244,6 +256,7 @@ impl State {
             }
             Self::Closed => {
                 if emergency_config
+                    || ground_servicing
                     || loss_of_ac_duration >= Self::OPEN_BAT_LC_AFTER_AC_LOST_DURATION
                 {
                     Self::Open
