@@ -297,8 +297,8 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   managedSpeedDescendMach: number;
   perfApprQNH: number;
   perfApprTemp: number;
-  perfApprWindHeading: number;
-  perfApprWindSpeed: number;
+  perfApprWindHeading: number | null;
+  perfApprWindSpeed: number | null;
   approachSpeeds?: NXSpeedsApp;
   vApp: number;
   perfApprFlaps3: boolean;
