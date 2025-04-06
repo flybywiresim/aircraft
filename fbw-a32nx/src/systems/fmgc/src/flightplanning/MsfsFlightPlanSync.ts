@@ -1,7 +1,19 @@
-import { Approach, ApproachType, Arrival, Departure, isMsfs2024 } from '@flybywiresim/fbw-sdk';
+import {
+  AirportSubsectionCode,
+  Approach,
+  ApproachType,
+  Arrival,
+  Departure,
+  Fix,
+  isMsfs2024,
+  LegType,
+  NavaidSubsectionCode,
+  SectionCode,
+} from '@flybywiresim/fbw-sdk';
 import { EventBus, MappedSubject, Subject, Wait } from '@microsoft/msfs-sdk';
 import {
   JS_ApproachIdentifier,
+  JS_EnrouteLeg,
   JS_FlightPlanRoute,
   JS_ICAO,
   JS_RunwayIdentifier,
@@ -246,6 +258,50 @@ export class MsfsFlightPlanSync {
       MsfsFlightPlanSync.assignFbwRunwayIdentToMsfsRunwayIdent(destinationRunway, activePlan.destinationRunway.ident);
     }
 
+    const enroute: JS_EnrouteLeg[] = [];
+
+    for (const element of activePlan.enrouteSegment.allLegs) {
+      if (element.isDiscontinuity === true) {
+        continue;
+      }
+
+      if (element.definition.type !== LegType.TF && element.definition.type !== LegType.IF) {
+        continue;
+      }
+
+      const fixIcao: JS_ICAO = {
+        __Type: 'JS_ICAO',
+        type: '',
+        region: '',
+        airport: '',
+        ident: '',
+      };
+
+      MsfsFlightPlanSync.assignFbwFixToMsfsIcao(fixIcao, element.definition.waypoint);
+
+      enroute.push({
+        __Type: 'JS_EnrouteLeg',
+        isPpos: false,
+        fixIcao,
+        hasLatLon: false,
+        lat: 0,
+        lon: 0,
+        hasPointBearingDistance: false,
+        referenceIcao: {
+          __Type: 'JS_ICAO',
+          type: '',
+          region: '',
+          airport: '',
+          ident: '',
+        },
+        bearing: 0,
+        distance: 0,
+        altitude: null,
+        name: '',
+        via: '',
+      });
+    }
+
     const approach: JS_ApproachIdentifier = {
       __Type: 'JS_ApproachIdentifier',
       type: '',
@@ -262,7 +318,7 @@ export class MsfsFlightPlanSync {
       if (activePlan.approach.runwayIdent !== undefined) {
         MsfsFlightPlanSync.assignFbwRunwayIdentToMsfsRunwayIdent(approach.runway, activePlan.approach.runwayIdent);
       }
-      approach.suffix = activePlan.approach.suffix ?? '';
+      approach.suffix = activePlan.approach.multipleIndicator;
     }
 
     const route: JS_FlightPlanRoute = {
@@ -291,7 +347,7 @@ export class MsfsFlightPlanSync {
         distance: 0,
         isLeftTraffic: false,
       },
-      enroute: [],
+      enroute,
       isVfr: false,
       cruiseAltitude: {
         // FIXME fill out
@@ -303,6 +359,46 @@ export class MsfsFlightPlanSync {
 
     this.listener.call('REPLY_TO_AVIONICS_ROUTE_REQUEST', route, _requestID);
   };
+
+  private static assignFbwFixToMsfsIcao(msfsIcao: JS_ICAO, fbwFix: Fix): void {
+    msfsIcao.region = fbwFix.icaoCode;
+
+    switch (fbwFix.sectionCode) {
+      case SectionCode.Navaid: {
+        msfsIcao.type = fbwFix.subSectionCode === NavaidSubsectionCode.VhfNavaid ? 'V' : 'N';
+        msfsIcao.ident = fbwFix.ident;
+        break;
+      }
+      case SectionCode.Enroute: {
+        msfsIcao.type = 'W';
+        msfsIcao.ident = fbwFix.ident;
+        break;
+      }
+      case SectionCode.Airport: {
+        switch (fbwFix.subSectionCode) {
+          case AirportSubsectionCode.TerminalWaypoints:
+            msfsIcao.type = 'W';
+            msfsIcao.airport = fbwFix.airportIdent;
+            msfsIcao.ident = fbwFix.ident;
+            break;
+          case AirportSubsectionCode.Runways:
+            msfsIcao.type = 'R';
+            msfsIcao.airport = fbwFix.airportIdent;
+            msfsIcao.ident = `RW${fbwFix.ident.slice(4)}`;
+            break;
+          case AirportSubsectionCode.ReferencePoints:
+            msfsIcao.type = 'A';
+            msfsIcao.ident = fbwFix.ident;
+            break;
+          case AirportSubsectionCode.TerminalNdb:
+            msfsIcao.type = 'N';
+            msfsIcao.airport = fbwFix.airportIdent;
+            msfsIcao.ident = fbwFix.ident;
+            break;
+        }
+      }
+    }
+  }
 
   private static assignFbwRunwayIdentToMsfsRunwayIdent(
     msfsRunwayIdent: JS_RunwayIdentifier,
