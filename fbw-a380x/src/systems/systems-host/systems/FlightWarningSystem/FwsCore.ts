@@ -444,10 +444,10 @@ export class FwsCore {
 
   public readonly apuBleedPbOnOver22500ft = Subject.create(false);
 
-  public readonly eng1BleedOff = Subject.create(false);
-  public readonly eng2BleedOff = Subject.create(false);
-  public readonly eng3BleedOff = Subject.create(false);
-  public readonly eng4BleedOff = Subject.create(false);
+  public readonly eng1BleedAbnormalOff = Subject.create(false);
+  public readonly eng2BleedAbnormalOff = Subject.create(false);
+  public readonly eng3BleedAbnormalOff = Subject.create(false);
+  public readonly eng4BleedAbnormalOff = Subject.create(false);
 
   public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
 
@@ -2216,10 +2216,18 @@ export class FwsCore {
     const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEngFault.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
-    this.eng1BleedOff.set(!SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', SimVarValueType.Bool));
-    this.eng2BleedOff.set(!SimVar.GetSimVarValue('A:BLEED AIR ENGINE:2', SimVarValueType.Bool));
-    this.eng3BleedOff.set(!SimVar.GetSimVarValue('A:BLEED AIR ENGINE:3', SimVarValueType.Bool));
-    this.eng4BleedOff.set(!SimVar.GetSimVarValue('A:BLEED AIR ENGINE:4', SimVarValueType.Bool));
+    this.eng1BleedAbnormalOff.set(
+      this.engine1Running.get() && !SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', SimVarValueType.Bool),
+    );
+    this.eng2BleedAbnormalOff.set(
+      this.engine2Running.get() && !SimVar.GetSimVarValue('A:BLEED AIR ENGINE:2', SimVarValueType.Bool),
+    );
+    this.eng3BleedAbnormalOff.set(
+      this.engine3Running.get() && !SimVar.GetSimVarValue('A:BLEED AIR ENGINE:3', SimVarValueType.Bool),
+    );
+    this.eng4BleedAbnormalOff.set(
+      this.engine4Running.get() && !SimVar.GetSimVarValue('A:BLEED AIR ENGINE:4', SimVarValueType.Bool),
+    );
 
     this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 

@@ -743,7 +743,7 @@ export class FwsAbnormalSensed {
     211800052: {
       // ENG 1 BLEED OFF
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.eng1BleedOff,
+      simVarIsActive: this.fws.eng1BleedAbnormalOff,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -754,7 +754,7 @@ export class FwsAbnormalSensed {
     211800053: {
       // ENG 2 BLEED OFF
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.eng2BleedOff,
+      simVarIsActive: this.fws.eng2BleedAbnormalOff,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -765,7 +765,7 @@ export class FwsAbnormalSensed {
     211800054: {
       // ENG 3 BLEED OFF
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.eng3BleedOff,
+      simVarIsActive: this.fws.eng3BleedAbnormalOff,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -776,7 +776,7 @@ export class FwsAbnormalSensed {
     211800055: {
       // ENG 4 BLEED OFF
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.eng4BleedOff,
+      simVarIsActive: this.fws.eng4BleedAbnormalOff,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
