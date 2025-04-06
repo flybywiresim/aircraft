@@ -309,8 +309,8 @@ export class MsfsFlightPlanSync {
     fbwRunwayIdent: string,
   ): void {
     // Runway ident is prefixed with airport ident
-    msfsRunwayIdent.number = fbwRunwayIdent.substring(4, 7);
-    msfsRunwayIdent.designator = fbwRunwayIdent.substring(7);
+    msfsRunwayIdent.number = fbwRunwayIdent.substring(4, 6);
+    msfsRunwayIdent.designator = fbwRunwayIdent.substring(6);
   }
 
   private static fbwApproachMatchesMsfsSdkApproach(
@@ -333,8 +333,8 @@ export class MsfsFlightPlanSync {
     }
 
     return (
-      (fbwApproach.suffix === undefined && msfsSdkApproach.suffix === '') ||
-      fbwApproach.suffix === msfsSdkApproach.suffix
+      (fbwApproach.multipleIndicator === undefined && msfsSdkApproach.suffix === '') ||
+      fbwApproach.multipleIndicator === msfsSdkApproach.suffix
     );
   }
 
