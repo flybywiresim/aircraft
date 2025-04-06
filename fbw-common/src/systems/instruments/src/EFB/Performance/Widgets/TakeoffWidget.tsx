@@ -34,6 +34,13 @@ import {
   setTakeoffValues,
 } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
+import {
+  isValidIcao,
+  isWindMagnitudeAndDirection,
+  isWindMagnitudeOnly,
+  WIND_MAGNITUDE_AND_DIR_REGEX,
+  WIND_MAGNITUDE_ONLY_REGEX,
+} from '../Data/Utils';
 
 interface LabelProps {
   className?: string;
@@ -48,9 +55,6 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 );
 
 export const TakeoffWidget = () => {
-  const WIND_MAGNITUDE_ONLY_REGEX = /^(TL|HD|\+|-)?(\d{1,2}(?:\.\d)?)$/;
-  const WIND_MAGNITUDE_AND_DIR_REGEX = /^(\d{1,3})\/(\d{1,2}(?:\.\d)?)$/;
-
   const dispatch = useAppDispatch();
 
   const calculators = useContext(AircraftContext).performanceCalculators;
@@ -64,25 +68,26 @@ export const TakeoffWidget = () => {
 
   const {
     icao,
-    windDirection,
-    windMagnitude,
-    windEntry,
-    weight,
-    takeoffCg,
+    availableRunways,
+    selectedRunwayIndex,
     runwayBearing,
-    config,
+    runwayLength,
     elevation,
     runwaySlope,
     lineupAngle,
+    windDirection,
+    windMagnitude,
+    windEntry,
     oat,
     qnh,
-    runwayLength,
+    weight,
+    takeoffCg,
+    config,
     antiIce,
     packs,
     forceToga,
     result,
-    availableRunways,
-    selectedRunwayIndex,
+
     runwayCondition,
     cg,
   } = useAppSelector((state) => state.performance.takeoff);
@@ -265,7 +270,7 @@ export const TakeoffWidget = () => {
     try {
       const magvar = await getAirportMagVar(icao);
       const windDirection = MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
-      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
+      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}`;
 
       dispatch(
         setTakeoffValues({
@@ -280,8 +285,6 @@ export const TakeoffWidget = () => {
       toast.error('Could not fetch airport');
     }
   };
-
-  const isValidIcao = (icao: string): boolean => icao?.length === 4;
 
   const clearAirportRunways = () => {
     dispatch(
@@ -494,16 +497,6 @@ export const TakeoffWidget = () => {
     dispatch(clearTakeoffValues());
   };
 
-  const isWindMagnitudeOnly = (input: string): boolean => {
-    const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_ONLY_REGEX);
-    return magnitudeOnlyMatch !== null && (magnitudeOnlyMatch[1] !== '' || input === '0');
-  };
-
-  const isWindMagnitudeAndDirection = (input: string): boolean => {
-    const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_AND_DIR_REGEX);
-    return magnitudeOnlyMatch !== null;
-  };
-
   const handleWindChange = (input: string): void => {
     clearResult();
 
@@ -517,10 +510,12 @@ export const TakeoffWidget = () => {
       const windMagnitude = parseFloat(magnitudeOnlyMatch[2]);
       switch (magnitudeOnlyMatch[1]) {
         case 'TL':
+        case 'T':
         case '-':
           dispatch(setTakeoffValues({ windMagnitude: -windMagnitude, windDirection: undefined, windEntry: input }));
           return;
         case 'HD':
+        case 'H':
         case '+':
         default:
           dispatch(setTakeoffValues({ windMagnitude, windDirection: undefined, windEntry: input }));
@@ -670,7 +665,16 @@ export const TakeoffWidget = () => {
         <div className="flex h-full w-full flex-col justify-between">
           <div className="mb-4">
             <div className="mb-8 mt-4">
-              <div className="mt-4 flex flex-row justify-end">
+              <div className="mt-4 flex flex-row justify-between">
+                <Label text={t('Performance.Takeoff.Airport')}>
+                  <SimpleInput
+                    className="w-24 text-center uppercase"
+                    value={icao}
+                    placeholder="ICAO"
+                    onChange={handleICAOChange}
+                    maxLength={4}
+                  />
+                </Label>
                 <div className="flex flex-row">
                   <TooltipWrapper text={fillDataTooltip()}>
                     <button
@@ -694,329 +698,327 @@ export const TakeoffWidget = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-row justify-between">
-              <div className="flex flex-col space-y-4">
-                <Label text={t('Performance.Takeoff.Airport')}>
-                  <SimpleInput
-                    className="w-48 uppercase"
-                    value={icao}
-                    placeholder="ICAO"
-                    onChange={handleICAOChange}
-                    maxLength={4}
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.Runway')}>
-                  <SelectInput
-                    className="w-48"
-                    defaultValue={initialState.takeoff.selectedRunwayIndex}
-                    value={selectedRunwayIndex}
-                    onChange={handleRunwayChange}
-                    options={[
-                      { value: -1, displayValue: t('Performance.Takeoff.EnterManually') },
-                      ...availableRunways.map((r, i) => ({ value: i, displayValue: r.ident })),
-                    ]}
-                    disabled={availableRunways.length === 0}
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.RunwayBearing')}>
-                  <SimpleInput
-                    className="w-48"
-                    value={runwayBearing}
-                    placeholder={t('Performance.Takeoff.RunwayBearingUnit')}
-                    min={0}
-                    max={360}
-                    padding={3}
-                    decimalPrecision={0}
-                    onChange={handleRunwayBearingChange}
-                    number
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.Tora')}>
-                  <div className="flex w-48 flex-row">
+            <div className="flex w-full flex-row">
+              <div className="grid w-full grid-cols-2 justify-between">
+                <div className="flex w-full flex-col space-y-4 pb-10 pr-2">
+                  <Label text={t('Performance.Takeoff.Runway')}>
+                    <SelectInput
+                      className="w-60"
+                      defaultValue={initialState.takeoff.selectedRunwayIndex}
+                      value={selectedRunwayIndex}
+                      onChange={handleRunwayChange}
+                      options={[
+                        { value: -1, displayValue: t('Performance.Takeoff.EnterManually') },
+                        ...availableRunways.map((r, i) => ({ value: i, displayValue: r.ident })),
+                      ]}
+                      disabled={availableRunways.length === 0}
+                    />
+                  </Label>
+                  <Label text={t('Performance.Takeoff.RunwayHeading')}>
                     <SimpleInput
-                      className="w-full rounded-r-none"
-                      value={getVariableUnitDisplayValue<'ft' | 'm'>(
-                        runwayLength,
-                        distanceUnit as 'ft' | 'm',
-                        'ft',
-                        Units.metreToFoot,
-                      )}
-                      placeholder={distanceUnit}
+                      className="w-60"
+                      value={runwayBearing}
+                      placeholder={t('Performance.Takeoff.RunwayHeadingUnit')}
                       min={0}
-                      max={distanceUnit === 'm' ? 6000 : 19685.04}
+                      max={360}
+                      padding={3}
                       decimalPrecision={0}
-                      onChange={handleRunwayLengthChange}
+                      onChange={handleRunwayBearingChange}
                       number
                     />
-                    <SelectInput
-                      value={distanceUnit}
-                      className="w-20 rounded-l-none"
-                      options={[
-                        { value: 'ft', displayValue: `${t('Performance.Takeoff.RunwayLengthUnitFt')}` },
-                        { value: 'm', displayValue: `${t('Performance.Takeoff.RunwayLengthUnitMeter')}` },
-                      ]}
-                      onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
-                    />
-                  </div>
-                </Label>
-                <Label text={t('Performance.Takeoff.EntryAngle')}>
-                  <SelectInput
-                    className="w-48"
-                    defaultValue={initialState.takeoff.lineupAngle}
-                    value={lineupAngle}
-                    onChange={handleLineupAngle}
-                    options={[
-                      {
-                        value: 0,
-                        displayValue: t('Performance.Takeoff.EntryAngles.0'),
-                      },
-                      {
-                        value: 90,
-                        displayValue: t('Performance.Takeoff.EntryAngles.90'),
-                      },
-                      {
-                        value: 180,
-                        displayValue: t('Performance.Takeoff.EntryAngles.180'),
-                      },
-                    ]}
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.RunwayElevation')}>
-                  <SimpleInput
-                    className="w-48"
-                    value={elevation}
-                    placeholder={t('Performance.Takeoff.RunwayElevationUnit')}
-                    min={-2000}
-                    max={20000}
-                    decimalPrecision={0}
-                    onChange={handleElevationChange}
-                    number
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.RunwaySlope')}>
-                  <SimpleInput
-                    className="w-48"
-                    value={runwaySlope}
-                    placeholder="%"
-                    decimalPrecision={2}
-                    onChange={handleRunwaySlopeChange}
-                    number
-                    reverse
-                  />
-                </Label>
-              </div>
-              <div className="flex flex-col space-y-4">
-                <Label text={t('Performance.Takeoff.RunwayCondition')}>
-                  <SelectInput
-                    className="w-60"
-                    defaultValue={initialState.takeoff.runwayCondition}
-                    value={runwayCondition}
-                    onChange={handleRunwayConditionChange}
-                    options={[
-                      { value: RunwayCondition.Dry, displayValue: t('Performance.Takeoff.RunwayConditions.Dry') },
-                      { value: RunwayCondition.Wet, displayValue: t('Performance.Takeoff.RunwayConditions.Wet') },
-                      {
-                        value: RunwayCondition.Contaminated6mmWater,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated6mmWater'),
-                      },
-                      {
-                        value: RunwayCondition.Contaminated13mmWater,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated13mmWater'),
-                      },
-                      {
-                        value: RunwayCondition.Contaminated6mmSlush,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated6mmSlush'),
-                      },
-                      {
-                        value: RunwayCondition.Contaminated13mmSlush,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated13mmSlush'),
-                      },
-                      {
-                        value: RunwayCondition.ContaminatedCompactedSnow,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.ContaminatedCompactedSnow'),
-                      },
-                      {
-                        value: RunwayCondition.Contaminated5mmWetSnow,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated5mmWetSnow'),
-                      },
-                      {
-                        value: RunwayCondition.Contaminated15mmWetSnow,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated15mmWetSnow'),
-                      },
-                      {
-                        value: RunwayCondition.Contaminated30mmWetSnow,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated30mmWetSnow'),
-                      },
-                      {
-                        value: RunwayCondition.Contaminated10mmDrySnow,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated10mmDrySnow'),
-                      },
-                      {
-                        value: RunwayCondition.Contaminated100mmDrySnow,
-                        displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated100mmDrySnow'),
-                      },
-                    ]}
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.Wind')}>
-                  <SimpleInput
-                    className="w-60"
-                    value={windEntry}
-                    placeholder={t('Performance.Takeoff.WindMagnitudeUnit')}
-                    onChange={handleWindChange}
-                    uppercase
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.Temperature')}>
-                  <div className="flex w-60 flex-row">
+                  </Label>
+                  <Label text={t('Performance.Takeoff.Tora')}>
+                    <div className="flex w-60 flex-row">
+                      <SimpleInput
+                        className="w-full rounded-r-none"
+                        value={getVariableUnitDisplayValue<'ft' | 'm'>(
+                          runwayLength,
+                          distanceUnit as 'ft' | 'm',
+                          'ft',
+                          Units.metreToFoot,
+                        )}
+                        placeholder={distanceUnit}
+                        min={0}
+                        max={distanceUnit === 'm' ? 6000 : 19685.04}
+                        decimalPrecision={0}
+                        onChange={handleRunwayLengthChange}
+                        number
+                      />
+                      <SelectInput
+                        value={distanceUnit}
+                        className="w-20 rounded-l-none"
+                        options={[
+                          { value: 'ft', displayValue: `${t('Performance.Takeoff.RunwayLengthUnitFt')}` },
+                          { value: 'm', displayValue: `${t('Performance.Takeoff.RunwayLengthUnitMeter')}` },
+                        ]}
+                        onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
+                      />
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex w-full flex-col space-y-4 pb-10 pl-4 pr-6">
+                  <Label text={t('Performance.Takeoff.RunwayElevation')}>
                     <SimpleInput
-                      className="w-full rounded-r-none"
-                      value={getVariableUnitDisplayValue<'C' | 'F'>(
-                        oat,
-                        temperatureUnit as 'C' | 'F',
-                        'F',
-                        Units.celsiusToFahrenheit,
-                      )}
-                      placeholder={`°${temperatureUnit}`}
-                      decimalPrecision={1}
-                      onChange={handleTemperatureChange}
+                      className="w-48"
+                      value={elevation}
+                      placeholder={t('Performance.Takeoff.RunwayElevationUnit')}
+                      min={-2000}
+                      max={20000}
+                      decimalPrecision={0}
+                      onChange={handleElevationChange}
                       number
                     />
-                    <SelectInput
-                      value={temperatureUnit}
-                      className="w-20 rounded-l-none"
-                      options={[
-                        { value: 'C', displayValue: 'C' },
-                        { value: 'F', displayValue: 'F' },
-                      ]}
-                      onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}
-                    />
-                  </div>
-                </Label>
-                <Label text={t('Performance.Takeoff.Qnh')}>
-                  <div className="flex w-60 flex-row">
+                  </Label>
+                  <Label text={t('Performance.Takeoff.RunwaySlope')}>
                     <SimpleInput
-                      className="w-full rounded-r-none"
-                      value={getVariableUnitDisplayValue<'hPa' | 'inHg'>(
-                        qnh,
-                        pressureUnit as 'hPa' | 'inHg',
-                        'inHg',
-                        Units.hectopascalToInchOfMercury,
-                      )}
-                      placeholder={pressureUnit}
-                      min={pressureUnit === 'hPa' ? 800 : 23.624}
-                      max={pressureUnit === 'hPa' ? 1200 : 35.43598}
+                      className="w-48"
+                      value={runwaySlope}
+                      placeholder="%"
                       decimalPrecision={2}
-                      onChange={handlePressureChange}
+                      onChange={handleRunwaySlopeChange}
                       number
+                      reverse
                     />
+                  </Label>
+                  <Label text={t('Performance.Takeoff.EntryAngle')}>
                     <SelectInput
-                      value={pressureUnit}
-                      className="w-24 rounded-l-none"
+                      className="w-48"
+                      defaultValue={initialState.takeoff.lineupAngle}
+                      value={lineupAngle}
+                      onChange={handleLineupAngle}
                       options={[
-                        { value: 'inHg', displayValue: 'inHg' },
-                        { value: 'hPa', displayValue: 'hPa' },
+                        {
+                          value: 0,
+                          displayValue: t('Performance.Takeoff.EntryAngles.0'),
+                        },
+                        {
+                          value: 90,
+                          displayValue: t('Performance.Takeoff.EntryAngles.90'),
+                        },
+                        {
+                          value: 180,
+                          displayValue: t('Performance.Takeoff.EntryAngles.180'),
+                        },
                       ]}
-                      onChange={(newValue: 'hPa' | 'inHg') => setPressureUnit(newValue)}
                     />
-                  </div>
-                </Label>
-                <Label text={t('Performance.Takeoff.Weight')}>
-                  <div className="flex w-60 flex-row">
+                  </Label>
+                </div>
+                <div className="flex w-full flex-col space-y-4 pr-2">
+                  <Label text={t('Performance.Takeoff.RunwayCondition')}>
+                    <SelectInput
+                      className="w-60"
+                      defaultValue={initialState.takeoff.runwayCondition}
+                      value={runwayCondition}
+                      onChange={handleRunwayConditionChange}
+                      options={[
+                        { value: RunwayCondition.Dry, displayValue: t('Performance.Takeoff.RunwayConditions.Dry') },
+                        { value: RunwayCondition.Wet, displayValue: t('Performance.Takeoff.RunwayConditions.Wet') },
+                        {
+                          value: RunwayCondition.Contaminated6mmWater,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated6mmWater'),
+                        },
+                        {
+                          value: RunwayCondition.Contaminated13mmWater,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated13mmWater'),
+                        },
+                        {
+                          value: RunwayCondition.Contaminated6mmSlush,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated6mmSlush'),
+                        },
+                        {
+                          value: RunwayCondition.Contaminated13mmSlush,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated13mmSlush'),
+                        },
+                        {
+                          value: RunwayCondition.ContaminatedCompactedSnow,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.ContaminatedCompactedSnow'),
+                        },
+                        {
+                          value: RunwayCondition.Contaminated5mmWetSnow,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated5mmWetSnow'),
+                        },
+                        {
+                          value: RunwayCondition.Contaminated15mmWetSnow,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated15mmWetSnow'),
+                        },
+                        {
+                          value: RunwayCondition.Contaminated30mmWetSnow,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated30mmWetSnow'),
+                        },
+                        {
+                          value: RunwayCondition.Contaminated10mmDrySnow,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated10mmDrySnow'),
+                        },
+                        {
+                          value: RunwayCondition.Contaminated100mmDrySnow,
+                          displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated100mmDrySnow'),
+                        },
+                      ]}
+                    />
+                  </Label>
+                  <Label text={t('Performance.Takeoff.Wind')}>
                     <SimpleInput
-                      className="w-full rounded-r-none"
-                      value={getVariableUnitDisplayValue<'kg' | 'lb'>(
-                        weight,
-                        weightUnit as 'kg' | 'lb',
-                        'lb',
-                        Units.kilogramToPound,
-                      )}
-                      placeholder={weightUnit}
-                      decimalPrecision={0}
-                      onChange={handleWeightChange}
-                      number
+                      className="w-60"
+                      value={windEntry}
+                      placeholder={t('Performance.Takeoff.WindMagnitudeUnit')}
+                      onChange={handleWindChange}
+                      uppercase
+                      wind
                     />
+                  </Label>
+                  <Label text={t('Performance.Takeoff.Temperature')}>
+                    <div className="flex w-60 flex-row">
+                      <SimpleInput
+                        className="w-full rounded-r-none"
+                        value={getVariableUnitDisplayValue<'C' | 'F'>(
+                          oat,
+                          temperatureUnit as 'C' | 'F',
+                          'F',
+                          Units.celsiusToFahrenheit,
+                        )}
+                        placeholder={`°${temperatureUnit}`}
+                        decimalPrecision={1}
+                        onChange={handleTemperatureChange}
+                        number
+                      />
+                      <SelectInput
+                        value={temperatureUnit}
+                        className="w-20 rounded-l-none"
+                        options={[
+                          { value: 'C', displayValue: 'C' },
+                          { value: 'F', displayValue: 'F' },
+                        ]}
+                        onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}
+                      />
+                    </div>
+                  </Label>
+                  <Label text={t('Performance.Takeoff.Qnh')}>
+                    <div className="flex w-60 flex-row">
+                      <SimpleInput
+                        className="w-full rounded-r-none"
+                        value={getVariableUnitDisplayValue<'hPa' | 'inHg'>(
+                          qnh,
+                          pressureUnit as 'hPa' | 'inHg',
+                          'inHg',
+                          Units.hectopascalToInchOfMercury,
+                        )}
+                        placeholder={pressureUnit}
+                        min={pressureUnit === 'hPa' ? 800 : 23.624}
+                        max={pressureUnit === 'hPa' ? 1200 : 35.43598}
+                        decimalPrecision={2}
+                        onChange={handlePressureChange}
+                        number
+                      />
+                      <SelectInput
+                        value={pressureUnit}
+                        className="w-24 rounded-l-none"
+                        options={[
+                          { value: 'inHg', displayValue: 'inHg' },
+                          { value: 'hPa', displayValue: 'hPa' },
+                        ]}
+                        onChange={(newValue: 'hPa' | 'inHg') => setPressureUnit(newValue)}
+                      />
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex w-full flex-col space-y-4 pl-4 pr-6">
+                  <Label text={t('Performance.Takeoff.Weight')}>
+                    <div className="flex w-48 flex-row">
+                      <SimpleInput
+                        className="w-full rounded-r-none"
+                        value={getVariableUnitDisplayValue<'kg' | 'lb'>(
+                          weight,
+                          weightUnit as 'kg' | 'lb',
+                          'lb',
+                          Units.kilogramToPound,
+                        )}
+                        placeholder={weightUnit}
+                        decimalPrecision={0}
+                        onChange={handleWeightChange}
+                        number
+                      />
+                      <SelectInput
+                        value={weightUnit}
+                        className="w-20 rounded-l-none"
+                        options={[
+                          { value: 'kg', displayValue: 'kg' },
+                          { value: 'lb', displayValue: 'lb' },
+                        ]}
+                        onChange={(newValue: 'kg' | 'lb') => setWeightUnit(newValue)}
+                      />
+                    </div>
+                  </Label>
+                  <Label text={t('Performance.Takeoff.CoGPosition')}>
                     <SelectInput
-                      value={weightUnit}
-                      className="w-20 rounded-l-none"
+                      className="w-48"
+                      defaultValue={initialState.takeoff.takeoffCg}
+                      value={takeoffCg}
+                      onChange={handleCoG}
                       options={[
-                        { value: 'kg', displayValue: 'kg' },
-                        { value: 'lb', displayValue: 'lb' },
+                        {
+                          value: TakeoffCoGPositions.Standard,
+                          displayValue: t('Performance.Takeoff.CoGPositions.Standard'),
+                        },
+                        {
+                          value: TakeoffCoGPositions.Forward,
+                          displayValue: t('Performance.Takeoff.CoGPositions.Forward'),
+                        },
                       ]}
-                      onChange={(newValue: 'kg' | 'lb') => setWeightUnit(newValue)}
                     />
-                  </div>
-                </Label>
-                <Label text={t('Performance.Takeoff.CoGPosition')}>
-                  <SelectInput
-                    className="w-60"
-                    defaultValue={initialState.takeoff.takeoffCg}
-                    value={takeoffCg}
-                    onChange={handleCoG}
-                    options={[
-                      {
-                        value: TakeoffCoGPositions.Standard,
-                        displayValue: t('Performance.Takeoff.CoGPositions.Standard'),
-                      },
-                      {
-                        value: TakeoffCoGPositions.Forward,
-                        displayValue: t('Performance.Takeoff.CoGPositions.Forward'),
-                      },
-                    ]}
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.Configuration')}>
-                  <SelectInput
-                    className="w-60"
-                    defaultValue={initialState.takeoff.config}
-                    value={config}
-                    onChange={handleConfigChange}
-                    options={[
-                      { value: -1, displayValue: 'OPT' },
-                      { value: 1, displayValue: 'CONF 1+F' },
-                      { value: 2, displayValue: 'CONF 2' },
-                      { value: 3, displayValue: 'CONF 3' },
-                    ]}
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.Thrust')}>
-                  <SelectInput
-                    className="w-60"
-                    defaultValue={initialState.takeoff.forceToga}
-                    value={forceToga}
-                    onChange={handleThrustChange}
-                    options={[
-                      { value: false, displayValue: 'FLEX' },
-                      { value: true, displayValue: 'TOGA' },
-                    ]}
-                    disabled={isContaminated(runwayCondition)}
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.AntiIce')}>
-                  <SelectInput
-                    className="w-60"
-                    defaultValue={initialState.takeoff.antiIce}
-                    value={antiIce}
-                    onChange={handleAntiIce}
-                    options={[
-                      { value: TakeoffAntiIceSetting.Off, displayValue: 'Off' },
-                      { value: TakeoffAntiIceSetting.Engine, displayValue: 'Engine' },
-                      { value: TakeoffAntiIceSetting.EngineWing, displayValue: 'Engine & Wing' },
-                    ]}
-                  />
-                </Label>
-                <Label text={t('Performance.Takeoff.Packs')}>
-                  <SelectInput
-                    className="w-60"
-                    defaultValue={initialState.takeoff.antiIce}
-                    value={packs}
-                    onChange={handlePacks}
-                    options={[
-                      { value: false, displayValue: 'Off' },
-                      { value: true, displayValue: 'On' },
-                    ]}
-                  />
-                </Label>
+                  </Label>
+                  <Label text={t('Performance.Takeoff.Configuration')}>
+                    <SelectInput
+                      className="w-48"
+                      defaultValue={initialState.takeoff.config}
+                      value={config}
+                      onChange={handleConfigChange}
+                      options={[
+                        { value: -1, displayValue: 'OPT' },
+                        { value: 1, displayValue: 'CONF 1+F' },
+                        { value: 2, displayValue: 'CONF 2' },
+                        { value: 3, displayValue: 'CONF 3' },
+                      ]}
+                    />
+                  </Label>
+                  <Label text={t('Performance.Takeoff.Thrust')}>
+                    <SelectInput
+                      className="w-48"
+                      defaultValue={initialState.takeoff.forceToga}
+                      value={forceToga}
+                      onChange={handleThrustChange}
+                      options={[
+                        { value: false, displayValue: 'FLEX' },
+                        { value: true, displayValue: 'TOGA' },
+                      ]}
+                      disabled={isContaminated(runwayCondition)}
+                    />
+                  </Label>
+                  <Label text={t('Performance.Takeoff.AntiIce')}>
+                    <SelectInput
+                      className="w-48"
+                      defaultValue={initialState.takeoff.antiIce}
+                      value={antiIce}
+                      onChange={handleAntiIce}
+                      options={[
+                        { value: TakeoffAntiIceSetting.Off, displayValue: 'Off' },
+                        { value: TakeoffAntiIceSetting.Engine, displayValue: 'Engine' },
+                        { value: TakeoffAntiIceSetting.EngineWing, displayValue: 'Engine & Wing' },
+                      ]}
+                    />
+                  </Label>
+                  <Label text={t('Performance.Takeoff.Packs')}>
+                    <SelectInput
+                      className="w-48"
+                      defaultValue={initialState.takeoff.antiIce}
+                      value={packs}
+                      onChange={handlePacks}
+                      options={[
+                        { value: false, displayValue: 'Off' },
+                        { value: true, displayValue: 'On' },
+                      ]}
+                    />
+                  </Label>
+                </div>
               </div>
               <div className="flex flex-col space-y-4">
                 <div

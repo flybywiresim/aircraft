@@ -14,20 +14,26 @@ import {
 
 interface TPerformanceLanding {
   icao: string;
+  availableRunways: Runway[];
+  selectedRunwayIndex: number;
+  runwayHeading?: number;
+  runwayLength?: number;
+  elevation?: number;
+  slope?: number;
+
+  runwayCondition: LandingRunwayConditions;
   windDirection?: number;
   windMagnitude?: number;
+  windEntry?: string;
+  temperature?: number;
+  pressure?: number;
+
   weight?: number;
-  runwayHeading?: number;
+  overweightProcedure: boolean;
   approachSpeed?: number;
   flaps: LandingFlapsConfig;
-  runwayCondition: LandingRunwayConditions;
   reverseThrust: boolean;
-  altitude?: number;
-  slope?: number;
-  temperature?: number;
-  overweightProcedure: boolean;
-  pressure?: number;
-  runwayLength?: number;
+
   maxAutobrakeLandingDist: number;
   mediumAutobrakeLandingDist: number;
   lowAutobrakeLandingDist: number;
@@ -44,11 +50,13 @@ export enum TakeoffCoGPositions {
 
 interface TPerformanceTakeoff {
   icao?: string;
+  availableRunways: Runway[];
+  selectedRunwayIndex: number;
   runwayBearing?: number;
   runwayLength?: number;
+  elevation?: number;
   runwaySlope?: number;
   lineupAngle?: LineupAngle;
-  elevation?: number;
 
   runwayCondition: RunwayCondition;
   windDirection?: number;
@@ -66,9 +74,6 @@ interface TPerformanceTakeoff {
   cg?: number;
 
   result?: TakeoffPerformanceResult;
-
-  availableRunways: Runway[];
-  selectedRunwayIndex: number;
 }
 
 interface TPerformanceState {
@@ -79,30 +84,34 @@ interface TPerformanceState {
 export const initialState: TPerformanceState = {
   landing: {
     icao: '',
+    availableRunways: [],
+    selectedRunwayIndex: -1,
     windDirection: undefined,
     windMagnitude: undefined,
+    windEntry: undefined,
     weight: undefined,
     runwayHeading: undefined,
     approachSpeed: undefined,
     flaps: LandingFlapsConfig.Full,
     runwayCondition: LandingRunwayConditions.Dry,
     reverseThrust: false,
-    altitude: undefined,
+    elevation: undefined,
     slope: undefined,
     temperature: undefined,
-    overweightProcedure: false,
     pressure: undefined,
+    overweightProcedure: false,
     runwayLength: undefined,
+    autoland: false,
+    runwayNumber: 0,
+    displayedRunwayLength: 0,
     maxAutobrakeLandingDist: 0,
     mediumAutobrakeLandingDist: 0,
     lowAutobrakeLandingDist: 0,
     runwayVisualizationLabels: [],
-    runwayNumber: 0,
-    displayedRunwayLength: 0,
-    autoland: false,
   },
   takeoff: {
     availableRunways: [],
+    selectedRunwayIndex: -1,
     antiIce: TakeoffAntiIceSetting.Off,
     packs: true,
     takeoffCg: TakeoffCoGPositions.Standard,
@@ -110,7 +119,6 @@ export const initialState: TPerformanceState = {
     config: 1,
     lineupAngle: 90,
     runwayCondition: RunwayCondition.Dry,
-    selectedRunwayIndex: -1,
   },
 };
 
