@@ -21,7 +21,7 @@ import { DoorPage } from './Pages/Doors/DoorPage';
 import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
 import { WheelPage } from './Pages/Wheel/WheelPage';
 import { FctlPage } from './Pages/Fctl/FctlPage';
-// import { VideoPage } from './Pages/VideoPage';
+import { VideoPage } from './Pages/Video/VideoPage';
 import { CruisePage } from './Pages/Cruise/CruisePage';
 import { StatusPage } from './Pages/Status/StatusPage';
 
@@ -290,7 +290,7 @@ export const SystemDisplay = () => {
     12: <CbPage />,
     13: <CruisePage />,
     14: <StatusPage />,
-    15: <CruisePage />, // TODO video page
+    15: <VideoPage />,
   };
 
   return (
