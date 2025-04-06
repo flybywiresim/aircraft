@@ -490,6 +490,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
   private autoBrakeActive = false;
 
   private autoBrakeMode = 0;
+  classSub: any;
 
   constructor(props) {
     super(props, 9);
@@ -662,6 +663,9 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((a) => {
         this.autoBrakeActive = a;
+        if (!a) {
+          this.classSub.set('HiddenElement');
+        }
         this.setText();
       });
 
@@ -775,6 +779,9 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       .whenChanged()
       .handle((a) => {
         this.autoBrakeActive = a;
+        if (!a) {
+          this.classSub.set('HiddenElement');
+        }
         this.handleAutobrakeMode();
       });
   }
