@@ -32,7 +32,6 @@ import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
 import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls';
 import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
@@ -100,8 +99,6 @@ export function pageForUrl(
       return <MfdFmsPositionNavaids pageTitle="NAVAIDS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/status':
       return <MfdFmsDataStatus pageTitle="STATUS" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/data/debug':
-      return <MfdFmsDataDebug pageTitle="DEBUG" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/airport':
       return <MfdFmsDataAirport pageTitle="AIRPORT" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'surv/controls':
