@@ -71,6 +71,72 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
   990900011: {
     title: '\x1b<4m\x1b4mMISC\x1bm VOLCANIC ASH ENCOUNTER',
     sensed: false,
-    items: [], // TODO
+    items: [
+      {
+        name: '180° TURN',
+        sensed: false,
+        labelNotCompleted: 'INITIATE',
+      },
+      {
+        name: 'ATC',
+        sensed: false,
+        labelNotCompleted: 'NOTIFY',
+      },
+      {
+        name: 'A/THR',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'THRUST (IF CONDS PERMIT)',
+        sensed: false,
+        labelNotCompleted: 'REDUCE',
+      },
+      {
+        name: 'CREW OXY MASKS',
+        sensed: false,
+        labelNotCompleted: 'USE / 100% / EMER',
+      },
+      {
+        name: 'CABIN CREW',
+        sensed: false,
+        labelNotCompleted: 'NOTIFY',
+      },
+      {
+        name: 'PAX OXY MASK MAN ON',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'ENG A-ICE',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'WING A-ICE',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'AIR FLOW',
+        sensed: true,
+        labelNotCompleted: 'HI',
+      },
+      {
+        name: 'APU',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'ENG PARAMETERS',
+        sensed: false,
+        labelNotCompleted: 'MONITOR',
+      },
+      {
+        name: 'AIR SPEED',
+        sensed: false,
+        labelNotCompleted: 'MONITOR',
+      },
+    ],
   },
 };
