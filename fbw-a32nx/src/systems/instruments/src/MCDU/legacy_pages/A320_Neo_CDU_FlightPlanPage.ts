@@ -291,8 +291,6 @@ export class CDUFlightPlanPage {
         isActive,
       } = waypointsAndMarkers[winI];
 
-      const legAccentColor = inAlternate || inMissedApproach ? 'cyan' : planAccentColor;
-
       const wpPrev = inAlternate
         ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1)
         : targetPlan.maybeElementAt(fpIndex - 1);
@@ -330,6 +328,13 @@ export class CDUFlightPlanPage {
         useTransitionAltitude = winI <= tocIndex;
       } // else we stick with the last time we were sure...
 
+      let color = planAccentColor;
+      if (isActive) {
+        color = 'white';
+      } else if (forActiveOrTemporary && (inMissedApproach || inAlternate)) {
+        color = 'cyan';
+      }
+
       if (wp && wp.isDiscontinuity === false) {
         // Waypoint
         if (offset === 0) {
@@ -344,21 +349,6 @@ export class CDUFlightPlanPage {
         // TODO: Alternate predictions
         if (!inAlternate && vnavPredictionsMapByWaypoint) {
           verticalWaypoint = vnavPredictionsMapByWaypoint.get(fpIndex);
-        }
-
-        // Color
-        let color;
-        if (isActive) {
-          color = 'white';
-        } else {
-          const inMissedApproach =
-            targetPlan.index === FlightPlanIndex.Active && fpIndex >= targetPlan.firstMissedApproachLegIndex;
-
-          if (inMissedApproach || inAlternate) {
-            color = 'cyan';
-          } else {
-            color = planAccentColor;
-          }
         }
 
         // Time
@@ -774,11 +764,6 @@ export class CDUFlightPlanPage {
         });
       } else if (holdResumeExit && holdResumeExit.isDiscontinuity === false) {
         const isNext = fpIndex === targetPlan.activeLegIndex + 1;
-
-        let color = legAccentColor;
-        if (isActive) {
-          color = 'white';
-        }
 
         const decelReached = isActive || (isNext && mcdu.holdDecelReached);
         const holdSpeed =
