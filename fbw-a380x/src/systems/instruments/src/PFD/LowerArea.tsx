@@ -565,7 +565,7 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           return 'FontSmallest Red';
         }
       } else {
-        return 'FontSmallest White';
+        return 'HiddenElement';
       }
     },
     this.rudderTrimOrder,
