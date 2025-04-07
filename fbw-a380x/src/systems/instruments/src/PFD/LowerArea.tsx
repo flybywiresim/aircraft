@@ -664,7 +664,7 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
             {this.rudderTrimOrderText}
           </text>
-          <text x={57.5} y={194.5} class={'FontSmallest Cyan'}>
+          <text x={57.5} y={194.5} class={this.rudderTrimOrderTextClass}>
             °
           </text>
         </g>
