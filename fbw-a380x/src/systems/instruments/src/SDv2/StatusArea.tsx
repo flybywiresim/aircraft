@@ -9,7 +9,6 @@ import {
   FSComponent,
   MappedSubject,
   Subject,
-  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -98,11 +97,36 @@ export class StatusArea extends DisplayComponent<StatusAreaProps> {
     '1',
   );
 
-  private readonly fmGrossWeight = ConsumerSubject.create(this.sub.on('fmGrossWeight'), 0);
-  private readonly gwText = this.fmGrossWeight.map((gw) =>
+  private readonly fm1ZeroFuelWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fm1ZeroFuelWeight'));
+  private readonly fm2ZeroFuelWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fm2ZeroFuelWeight'));
+
+  private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
+  private readonly fuelWeightPerGallon = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
+  private readonly fuelWeight = MappedSubject.create(
+    ([qt, weightPerGallon]) => NXUnits.kgToUser(qt * weightPerGallon),
+    this.fuelQuantity,
+    this.fuelWeightPerGallon,
+    this.userWeight,
+  );
+  private readonly fuelWeightText = this.fuelWeight.map((fw) =>
+    (Math.round(NXUnits.kgToUser(fw) / 100) * 100).toFixed(0),
+  );
+
+  // FIXME replace with FQMS implementation
+  private readonly grossWeight = MappedSubject.create(
+    ([fm1Zfw, fm2Zfw, fuelWeight]) =>
+      !fm1Zfw.isNormalOperation() && !fm2Zfw.isNormalOperation()
+        ? null
+        : (fm1Zfw.isNormalOperation() ? fm1Zfw.value : fm2Zfw.value) + fuelWeight,
+    this.fm1ZeroFuelWeight,
+    this.fm2ZeroFuelWeight,
+    this.fuelWeight,
+  );
+
+  private readonly gwText = this.grossWeight.map((gw) =>
     gw === 0 ? '--\xA0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0),
   );
-  private readonly gwClass = this.fmGrossWeight.map((gw) =>
+  private readonly gwClass = this.grossWeight.map((gw) =>
     gw === 0 ? 'sd-perm-info-area-sub3cell F27 Cyan EndAlign' : 'sd-perm-info-area-sub3cell F27 Green EndAlign',
   );
 
@@ -110,20 +134,7 @@ export class StatusArea extends DisplayComponent<StatusAreaProps> {
   private readonly grossWeightCgText = MappedSubject.create(
     ([cg, gw]) => (gw === 0 ? '--\xA0' : (Math.round(cg * 10) / 10).toFixed(1)),
     this.grossWeightCg,
-    this.fmGrossWeight,
-  );
-
-  private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
-  private readonly fuelWeightPerGallonInLb = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
-  private readonly fuelWeight = MappedSubject.create(
-    ([qt, weightPerGallonInLb]) =>
-      NXUnits.kgToUser(UnitType.POUND.convertTo(qt * weightPerGallonInLb, UnitType.KILOGRAM)),
-    this.fuelQuantity,
-    this.fuelWeightPerGallonInLb,
-    this.userWeight,
-  );
-  private readonly fuelWeightText = this.fuelWeight.map((fw) =>
-    (Math.round(NXUnits.kgToUser(fw) / 100) * 100).toFixed(0),
+    this.grossWeight,
   );
 
   public onAfterRender(node: VNode): void {
