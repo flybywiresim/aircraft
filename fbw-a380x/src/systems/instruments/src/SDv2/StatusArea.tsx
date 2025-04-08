@@ -9,6 +9,7 @@ import {
   FSComponent,
   MappedSubject,
   Subject,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -31,7 +32,7 @@ const getCurrentHHMMSS = (seconds: number) => {
 };
 
 export class StatusArea extends DisplayComponent<StatusAreaProps> {
-  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly subscriptions: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<SDSimvars & SimplaneValues & ClockEvents>();
 
@@ -139,17 +140,52 @@ export class StatusArea extends DisplayComponent<StatusAreaProps> {
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.sat,
+      this.tat,
+      this.zp,
+      this.baroMode,
+      this.tatClass,
+      this.tatText,
+      this.satClass,
+      this.satText,
+      this.isa,
+      this.isaText,
+      this.isaVisibility,
+      this.normalAcc,
+      this.gLoadStyle,
+      this.gLoadText,
+      this.zuluTime,
+      this.timeHHMM,
+      this.timeSS,
+      this.fm1ZeroFuelWeight,
+      this.fm2ZeroFuelWeight,
+      this.fuelQuantity,
+      this.fuelWeightPerGallon,
+      this.fuelWeight,
+      this.fuelWeightText,
+      this.grossWeight,
+      this.gwText,
+      this.gwClass,
+      this.grossWeightCg,
+      this.grossWeightCgText,
+    );
   }
 
   destroy(): void {
     this.configMetricUnitsSub();
+
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
 
     super.destroy();
   }
 
   render(): VNode | null {
     return (
-      <div ref={this.topRef} class="sd-perm-info-area-layout">
+      <div class="sd-perm-info-area-layout">
         <div class="sd-perm-info-area-col BR">
           <div class="sd-perm-info-area-cell">
             <div class="sd-perm-info-area-sub3cell White">TAT</div>
