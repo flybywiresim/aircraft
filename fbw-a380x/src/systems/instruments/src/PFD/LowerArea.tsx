@@ -556,7 +556,7 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly rudderTrimOrderTextClass = MappedSubject.create(
     ([v, phase]) => {
       const absTrim = Math.abs(v);
-      if (absTrim < 0.3) {
+      if (absTrim < 0.3 || phase == 6 || phase == 7 || phase == 8 || phase == 9) {
         return 'HiddenElement';
       } else if ([1, 2, 3, 4, 5, 10, 11, 12].includes(phase)) {
         if (absTrim < 3.6) {
