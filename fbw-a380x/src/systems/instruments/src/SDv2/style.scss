@@ -29,8 +29,8 @@
 }
 
 .sd-perm-info-area-layout {
-  display: grid;
-  grid-template-columns: 1 1 1;
+  display: flex;
+  flex-direction: row;
   height: 103px;
   width: 768px;
   position: absolute;
@@ -39,12 +39,86 @@
   border-bottom: 4px solid $display-white;
 }
 
+.sd-perm-info-area-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sd-perm-info-area-weightcol {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 30% 55% 15%;
+  justify-content: center;
+  align-items: center;
+  padding-left: 15px;
+  padding-right: 10px;
+}
+
+.sd-perm-info-area-col.BR {
+  border-right: 4px solid $display-white;
+}
+
 .sd-perm-info-area-cell {
+  flex: 1;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
 }
+
+.sd-perm-info-area-sub3cell {
+  flex: 1;
+  text-align: center;
+  letter-spacing: 1px;
+  font-size: 25px;
+}
+
+.StartAlign {
+  text-align: left;
+}
+
+.EndAlign {
+  text-align: right;
+  padding-right: 5px;
+}
+
+.White {
+  color: $display-white;
+}
+
+.Cyan {
+  color: $display-cyan;
+}
+
+.Green {
+  color: $display-green;
+}
+
+.Amber {
+  color: $display-amber;
+}
+
+.F22 {
+  font-size: 22px;
+}
+
+.F25 {
+  font-size: 25px;
+}
+
+.F26 {
+  font-size: 26px;
+}
+
+.F27 {
+  font-size: 27px;
+}
+
+.F29 {
+  font-size: 29px;
+}
+
 
 .atc-mailbox-top-layout {
   display: grid;

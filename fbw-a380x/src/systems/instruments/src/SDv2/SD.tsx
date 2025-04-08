@@ -25,7 +25,7 @@ export class SD extends DisplayComponent<SDProps> {
   render(): VNode | null {
     return (
       <CdsDisplayUnit bus={this.props.bus} displayUnitId={DisplayUnitID.Sd}>
-        <div class="sd-content-area-layout">NOT AVAIL</div>
+        <div class="sd-content-area-layout"></div>
         <StatusArea bus={this.props.bus} />
         <AtcMailbox bus={this.props.bus} />
       </CdsDisplayUnit>
