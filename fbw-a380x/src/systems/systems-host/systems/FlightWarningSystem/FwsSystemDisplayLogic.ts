@@ -43,7 +43,7 @@ export class FwsSystemDisplayLogic {
   constructor(private fws: FwsCore) {}
 
   update(deltaTime: number) {
-    // FIXME convoluted, confusing logic, someone please re-write completely
+    // FIXME convoluted, confusing logic, someone please, please, please re-write it from scratch
     // FIXME backup for ALL button needed when both FWS are failed
     const failPage = SimVar.GetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Enum);
 
@@ -80,13 +80,12 @@ export class FwsSystemDisplayLogic {
       clearInterval(this.ecamCycleInterval);
       this.ecamCycleInterval = null;
     } else if (!ecamAllButtonPushed) {
-      if (this.currentPage.get() !== SdPages.Status) {
-        this.stsPrevPage.set(this.currentPage.get());
+      if (this.userSelectedPage.get() !== SdPages.Status) {
+        this.stsPrevPage.set(this.userSelectedPage.get());
       }
-      const newPage = this.userSelectedPage.get();
       if (this.ecamButtonLightDelayTimer.get() === Number.MIN_SAFE_INTEGER) {
-        if (newPage !== -1) {
-          this.currentPage.set(newPage);
+        if (this.userSelectedPage.get() !== -1) {
+          this.currentPage.set(this.userSelectedPage.get());
         } else {
           this.currentPage.set(this.pageWhenUnselected.get());
         }
@@ -175,9 +174,6 @@ export class FwsSystemDisplayLogic {
           break;
       }
 
-      if (newPage === SdPages.Status && this.currentPage.get() !== newPage) {
-        this.stsPressedTimer.set(STS_DISPLAY_TIMER_DURATION);
-      }
       this.checkStsPage(deltaTime);
 
       if (failPage !== SdPages.None) {
@@ -186,16 +182,15 @@ export class FwsSystemDisplayLogic {
         // Disable user selected page when new failure detected
         if (this.prevFailPage.get() !== failPage) {
           SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.None);
+          this.userSelectedPage.set(SdPages.None);
+          this.currentPage.set(failPage);
         }
-      }
-
-      // switch page when new Failure detected
-      if (this.prevFailPage.get() !== failPage) {
-        this.currentPage.set(this.pageWhenUnselected.get());
       }
 
       this.prevFailPage.set(failPage);
     }
+
+    SimVar.SetSimVarValue('L:A32NX_ECAM_SD_PAGE_TO_SHOW', SimVarValueType.Enum, this.currentPage.get());
 
     this.prevEcamAllButtonState.set(ecamAllButtonPushed);
   }
@@ -243,6 +238,7 @@ export class FwsSystemDisplayLogic {
     const isStatusPageEmpty = this.fws.statusNormal.get();
 
     if (this.currentPage.get() !== SdPages.Status) {
+      this.stsPressedTimer.set(STS_DISPLAY_TIMER_DURATION);
       return;
     }
 
