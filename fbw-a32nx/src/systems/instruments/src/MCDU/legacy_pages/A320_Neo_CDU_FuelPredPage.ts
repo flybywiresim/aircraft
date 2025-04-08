@@ -178,6 +178,13 @@ export class CDUFuelPredPage {
             altTimeColor = '{white}';
           }
         }
+
+        altIdentCell = alternate.ident;
+
+        if (Number.isFinite(predictions.alternateDestinationFuelOnBoard)) {
+          altEFOBCell = NXUnits.kgToUser(predictions.alternateDestinationFuelOnBoard).toFixed(1);
+          altEFOBCellColor = '[color]green';
+        }
       } else {
         altFuelCell = '{sp}{sp}{small}0.0{end}';
         altFuelTimeCell = '----';
@@ -193,12 +200,6 @@ export class CDUFuelPredPage {
           scratchpadCallback();
         }
       };
-
-      if (alternate) {
-        altIdentCell = alternate.ident;
-        altEFOBCell = NXUnits.kgToUser(predictions.alternateDestinationFuelOnBoard).toFixed(1);
-        altEFOBCellColor = '[color]green';
-      }
 
       if (destination) {
         destIdentCell = destination.ident;

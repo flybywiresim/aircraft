@@ -2217,6 +2217,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const plan = this.getFlightPlan(forPlan);
 
     if (altFuel === Keypad.clrValue) {
+      this.flightPlanService.setPerformanceData('pilotAlternateFuel', null, forPlan);
       return true;
     }
 
