@@ -615,7 +615,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.updateMinimums();
       this.updateIlsCourse();
       this.updatePerfPageAltPredictions();
-      this.updateAmberEfob();
       // this.checkEfobBelowMin(deltaTime);
     }
 
@@ -2230,7 +2229,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (Number.isFinite(value)) {
       if (this.isAltFuelInRange(value)) {
         this.flightPlanService.setPerformanceData('pilotAlternateFuel', value, forPlan);
-
         return true;
       } else {
         this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -4157,7 +4155,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return true;
   }
 
-  public updateAmberEfob() {
+  private updateAmberEfob() {
     const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
     const minDestFob = predictions.minimumDestinationFuel;
     const destEfob = predictions.destinationFuelOnBoard;
@@ -5404,6 +5402,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       computations.extraTime =
         computations.extraFuel !== null ? (computations.extraFuel * 1000) / (finalHoldingFuelFlow / 60) : null;
     }
+
+    this.updateAmberEfob();
 
     return computations;
   }

@@ -283,7 +283,6 @@ export class CDUFuelPredPage {
           scratchpadCallback();
         }
       };
-      mcdu.updateAmberEfob();
 
       if (predictions.extraFuel !== null) {
         extraFuelCell = '{small}' + NXUnits.kgToUser(predictions.extraFuel).toFixed(1);

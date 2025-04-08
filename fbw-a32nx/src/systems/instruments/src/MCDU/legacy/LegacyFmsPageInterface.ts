@@ -160,7 +160,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getDestEFOB(): number | null;
   trySetRouteReservedFuel(s: string, forPlan: FlightPlanIndex): boolean;
   trySetMinDestFob(fuel: string, forPlan: FlightPlanIndex): Promise<boolean>;
-  updateAmberEfob(): void;
   getNavDatabaseIdent(): DatabaseIdent | null;
   switchNavDatabase(): Promise<void>;
   /** This one is a mess.. */
