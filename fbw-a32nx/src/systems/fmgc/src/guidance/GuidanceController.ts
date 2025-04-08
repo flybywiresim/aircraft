@@ -67,7 +67,7 @@ export interface Fmgc {
   getCleanSpeed(): Knots;
   getTripWind(): number;
   getWinds(): FmcWinds;
-  getApproachWind(): FmcWindVector;
+  getApproachWind(): FmcWindVector | null;
   getApproachQnh(): number;
   getApproachTemperature(): number;
   getDestEFOB(useFob: boolean): number; // Metric tons
