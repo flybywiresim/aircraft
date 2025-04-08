@@ -572,6 +572,21 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     this.fwcFlightPhase,
   );
 
+  private readonly rudderTrimDegreeSymbolClass = MappedSubject.create(
+    ([v, phase]) => {
+      const absTrim = Math.abs(v);
+      if (absTrim < 0.3 || phase == 6 || phase == 7 || phase == 8 || phase == 9) {
+        return 'HiddenElement';
+      } else if ([1, 2, 3, 4, 5, 10, 11, 12].includes(phase)) {
+        return 'FontSmallest Cyan';
+      } else {
+        return 'HiddenElement';
+      }
+    },
+    this.rudderTrimOrder,
+    this.fwcFlightPhase,
+  );
+
   private readonly rudderTrimOrderTextVisibility = this.rudderTrimOrder.map((t) =>
     Math.abs(t) < 0.3 ? 'hidden' : 'inherit',
   );
@@ -664,7 +679,7 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
             {this.rudderTrimOrderText}
           </text>
-          <text x={57.5} y={194.5} class={'FontSmallest Cyan'}>
+          <text x={57.5} y={194.5} class={this.rudderTrimDegreeSymbolClass}>
             °
           </text>
         </g>
