@@ -20,6 +20,32 @@
   font-style: normal;
 }
 
+.sd-content-area-layout {
+  display: flex;
+  height: 665px;
+  width: 768px;
+  position: absolute;
+  top: 0px;
+}
+
+.sd-perm-info-area-layout {
+  display: grid;
+  grid-template-columns: 1 1 1;
+  height: 103px;
+  width: 768px;
+  position: absolute;
+  top: 665px;
+  border-top: 4px solid $display-white;
+  border-bottom: 4px solid $display-white;
+}
+
+.sd-perm-info-area-cell {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
 .atc-mailbox-top-layout {
   display: grid;
   grid-template-columns: 13% auto 18%;
