@@ -18,7 +18,7 @@ import { Arinc429LocalVarConsumerSubject, NXDataStore, NXUnits } from '@flybywir
 import { SDSimvars } from './SDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
-export interface StatusAreaProps {
+export interface PermanentDataProps {
   readonly bus: EventBus;
 }
 
@@ -31,7 +31,7 @@ const getCurrentHHMMSS = (seconds: number) => {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondsLeft.toString().padStart(2, '0')}`;
 };
 
-export class StatusArea extends DisplayComponent<StatusAreaProps> {
+export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<SDSimvars & SimplaneValues & ClockEvents>();
@@ -125,10 +125,12 @@ export class StatusArea extends DisplayComponent<StatusAreaProps> {
   );
 
   private readonly gwText = this.grossWeight.map((gw) =>
-    gw === 0 ? '--\xA0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0),
+    gw === 0 || gw === null ? '--\xA0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0),
   );
   private readonly gwClass = this.grossWeight.map((gw) =>
-    gw === 0 ? 'sd-perm-info-area-sub3cell F27 Cyan EndAlign' : 'sd-perm-info-area-sub3cell F27 Green EndAlign',
+    gw === 0 || gw === null
+      ? 'sd-perm-info-area-sub3cell F27 Cyan EndAlign'
+      : 'sd-perm-info-area-sub3cell F27 Green EndAlign',
   );
 
   private readonly grossWeightCg = ConsumerSubject.create(this.sub.on('grossWeightCg'), 0);
