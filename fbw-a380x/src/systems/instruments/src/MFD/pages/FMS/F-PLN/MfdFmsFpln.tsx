@@ -123,6 +123,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
   );
 
+  private readonly destEfobAmber = Subject.create(false);
+
   protected onNewData(): void {
     if (!this.loadedFlightPlan) {
       return;
@@ -171,25 +173,28 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.destButtonLabel.set('------');
     }
 
-    const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
-    if (destPred && this.props.fmcService.master) {
-      const date = new Date(this.predictionTimestamp(destPred.secondsFromPresent));
-      this.destTimeLabel.set(
-        `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`,
-      );
-
-      const destEfob =
-        this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard;
+    if (this.props.fmcService.master) {
+      this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMin.get());
+      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
 
       if (destEfob) {
-        this.destEfob.set(Math.max(0, Units.poundToKilogram(destEfob) / 1_000).toFixed(1));
+        this.destEfob.set((destEfob / 1000).toFixed(1));
       } else {
         this.destEfob.set('---.-');
       }
-
-      this.destDistanceLabel.set(
-        Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '----',
-      );
+      const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
+      if (destPred) {
+        const date = new Date(this.predictionTimestamp(destPred.secondsFromPresent));
+        this.destTimeLabel.set(
+          `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`,
+        );
+        this.destDistanceLabel.set(
+          Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '----',
+        );
+      } else {
+        this.destTimeLabel.set('--:--');
+        this.destDistanceLabel.set('----');
+      }
     }
     this.checkScrollButtons();
   }
@@ -943,6 +948,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 class={{
                   'mfd-label': true,
                   'mfd-fms-yellow-text': this.lineColorIsTemporary,
+                  amber: this.destEfobAmber,
                 }}
               >
                 {this.destEfob}
