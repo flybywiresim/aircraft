@@ -186,8 +186,8 @@ export class FwsAbnormalNonSensed {
         false,
       ],
       failure: 1,
-      sysPage: SdPages.None,
       auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
       redundLoss: () => [],
     },
   };
