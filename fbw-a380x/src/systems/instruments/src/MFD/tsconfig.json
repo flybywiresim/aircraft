@@ -30,6 +30,7 @@
       "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"],
       "@flybywiresim/navigation-display": ["../../../fbw-common/src/systems/instruments/src/ND/index.ts"],
       "@flybywiresim/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
+      "@flybywiresim/msfs-avionics-common": ["../../../fbw-common/src/systems/instruments/src/MsfsAvionicsCommon/index.ts"]
     }
   }
 }

@@ -136,6 +136,8 @@ export class FmgcData {
     (v) => v !== null,
   );
 
+  public readonly destEfobBelowMin = Subject.create(false);
+
   public readonly paxNumber = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
@@ -606,22 +608,25 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in tons */
-  getDestEFOB(useFob: boolean): number {
+  getDestEFOB(useFob: boolean): number | null {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
     if (useFob && efob !== undefined) {
       return Units.poundToKilogram(efob) / 1000.0;
     }
-    return 0;
+    return null;
   }
 
   /** in tons */
-  getAltEFOB(useFOB = false): number {
+  getAltEFOB(): number | null {
     // TODO estimate alternate fuel
-    if (this.getDestEFOB(useFOB) === 0) {
-      return 0;
+
+    const destEfob = this.getDestEFOB(true);
+
+    if (destEfob == null) {
+      return null;
     }
-    return this.getDestEFOB(useFOB) - 1.0 > 0 ? this.getDestEFOB(useFOB) - 1.0 : 0;
+    return destEfob - 1.0 > 0 ? destEfob - 1.0 : 0;
   }
 
   /** in feet. null if not set */
