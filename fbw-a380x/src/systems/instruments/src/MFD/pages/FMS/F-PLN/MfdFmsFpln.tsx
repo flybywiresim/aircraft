@@ -179,6 +179,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private emptyFlightPlanRendered = false;
 
+  private readonly destEfobAmber = Subject.create(false);
+
   protected onNewData(): void {
     if (!this.loadedFlightPlan) {
       return;
@@ -239,6 +241,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     if (destPred && this.props.fmcService.master) {
+      this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMin.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
       this.destEfob.set(
         this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard ??
@@ -247,6 +250,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     } else {
       this.destEfob.set(null);
       this.destTime.set(null);
+      this.destEfobAmber.set(false);
     }
     this.checkScrollButtons();
   }
@@ -1038,6 +1042,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                   'mfd-label': true,
                   'mfd-fms-yellow-text': this.lineColorIsTemporary,
                   'mfd-fms-green-text': this.destEfobNotAvailable,
+                  amber: this.destEfobAmber,
                 }}
               >
                 {this.destEfobLabel}

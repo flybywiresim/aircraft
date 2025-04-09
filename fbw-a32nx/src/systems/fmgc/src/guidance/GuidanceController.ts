@@ -70,7 +70,7 @@ export interface Fmgc {
   getApproachWind(): FmcWindVector | null;
   getApproachQnh(): number;
   getApproachTemperature(): number;
-  getDestEFOB(useFob: boolean): number; // Metric tons
+  getDestEFOB(useFob: boolean): number | null; // Metric tons
   getDepartureElevation(): Feet | null;
   getDestinationElevation(): Feet;
 }
