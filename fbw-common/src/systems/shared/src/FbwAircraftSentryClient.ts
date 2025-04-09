@@ -119,25 +119,27 @@ export class FbwAircraftSentryClient {
               60,
               60000,
             ).then(() => {
-              resolve(
-                FbwAircraftSentryClient.requestConsent()
-                  .then((didConsent) => {
-                    if (didConsent) {
-                      NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
+              setTimeout(() => {
+                resolve(
+                  FbwAircraftSentryClient.requestConsent()
+                    .then((didConsent) => {
+                      if (didConsent) {
+                        NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
 
-                      console.log('[SentryClient] User requested consent state Given. Initializing sentry');
+                        console.log('[SentryClient] User requested consent state Given. Initializing sentry');
 
-                      return FbwAircraftSentryClient.attemptInitializeSentry(config);
-                    }
+                        return FbwAircraftSentryClient.attemptInitializeSentry(config);
+                      }
 
-                    NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+                      NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
-                    console.log('[SentryClient] User requested consent state Refused. Doing nothing');
+                      console.log('[SentryClient] User requested consent state Refused. Doing nothing');
 
-                    return false;
-                  })
-                  .catch(() => false),
-              );
+                      return false;
+                    })
+                    .catch(() => false),
+                );
+              }, 1000);
             });
           } else {
             reject(new Error('[SentryClient] Could not find an instrument element to hook onto'));
