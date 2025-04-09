@@ -187,7 +187,7 @@ export class FwsAbnormalNonSensed {
       whichItemsChecked: () => [
         false,
         false,
-        !!this.fws.autoThrustOffVoluntary.get(),
+        !!this.fws.autoThrustStatus.get(),
         false,
         false,
         false,
@@ -197,7 +197,7 @@ export class FwsAbnormalNonSensed {
           !!this.fws.eng3AntiIce.get() &&
           !!this.fws.eng4AntiIce.get(),
         !!this.fws.wingAntiIce.get(),
-        !!this.fws.flowSelectorKnob.get(),
+        !!(this.fws.flowSelectorKnob.get() === 3),
         false,
         false,
         false,
