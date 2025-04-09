@@ -19,7 +19,7 @@ import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
-import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { RadioAltimeterPublisher } from '@flybywiresim/msfs-avionics-common';
 
 class MfdInstrument implements FsInstrument {
@@ -31,7 +31,7 @@ class MfdInstrument implements FsInstrument {
 
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
 
-  private readonly fmsDataPublisher = new FmsDataPublisher(this.bus, Subject.create<'L' | 'R'>('L'));
+  private readonly fmsMessagePublisher = new FmsMessagePublisher(this.bus);
 
   private readonly clockPublisher = new ClockPublisher(this.bus);
 
@@ -58,7 +58,7 @@ class MfdInstrument implements FsInstrument {
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
     this.backplane.addPublisher('fg', this.fgDataPublisher);
-    this.backplane.addPublisher('fms', this.fmsDataPublisher);
+    this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('radioAltimeter', this.radioAltimeterPublisher);
 

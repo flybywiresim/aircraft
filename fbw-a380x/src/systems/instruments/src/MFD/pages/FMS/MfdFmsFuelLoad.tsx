@@ -94,14 +94,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
     }
 
-    if (!this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered.get()) {
-      // Calculate final res fuel for 00:30 time
-      this.props.fmcService.master.fmgc.data.finalFuelWeightCalculated.set(4_650); // FIXME
-    }
-
-    // FIXME calculate altn fuel
-    this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(6_500); // FIXME
-
     this.updateDestAndAltnPredictions();
   }
 

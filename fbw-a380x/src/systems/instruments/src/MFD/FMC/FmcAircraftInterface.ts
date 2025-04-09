@@ -34,7 +34,7 @@ import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { RadioAltimeterEvents } from '@flybywiresim/msfs-avionics-common';
@@ -119,7 +119,7 @@ export class FmcAircraftInterface {
   private readonly speedShortTermManaged = Subject.create(0);
 
   private readonly tdReached = this.bus
-    .getSubscriber<FmsVars>()
+    .getSubscriber<FmsMessageVars>()
     .on('tdReached')
     .whenChanged()
     .handle((v) => {
@@ -150,7 +150,7 @@ export class FmcAircraftInterface {
   private readonly fmsAlternate = Subject.create<string | null>('');
   private readonly destEfobBelowMin = this.fmgc.data.destEfobBelowMin.sub((v) => {
     SimVar.SetSimVarValue('L:A32NX_FMS_DEST_EFOB_BELOW_MIN', SimVarValueType.Bool, v);
-  });
+  }, true);
 
   private readonly destEfobScratchPadMessage = Subject.create(false);
 
@@ -269,6 +269,13 @@ export class FmcAircraftInterface {
         }
       }),
       this.tdReached,
+      this.fmgc.data.manualMinimumFuelAtDestIsBelowMin.sub((v) => {
+        if (v) {
+          this.fmc.addMessageToQueue(NXSystemMessages.checkMinDestFob, undefined, undefined);
+        } else {
+          this.fmc.removeMessageFromQueue(NXSystemMessages.checkMinDestFob.text);
+        }
+      }),
     );
   }
 
@@ -1980,9 +1987,10 @@ export class FmcAircraftInterface {
   checkDestEfobBelowMin() {
     const destEfob = this.fmc.fmgc.getDestEFOB(true);
     if (destEfob !== null) {
-      const minFuelAtDestination = this.fmc.fmgc.data.minimumFuelAtDestination.get();
+      const minFuelAtDestination = this.fmc.fmgc.data.minFuelAtDestTon.get();
       if (minFuelAtDestination !== null && destEfob < minFuelAtDestination) {
         this.fmgc.data.destEfobBelowMin.set(true);
+        return;
       }
     }
     this.fmgc.data.destEfobBelowMin.set(false);
@@ -1990,18 +1998,18 @@ export class FmcAircraftInterface {
 
   checkDestEfobBelowMinScratchPadMessage(deltaTime: number) {
     const flightPhase = this.flightPhase.get();
-    const climbActiveFor10mins = this.altActiveInClimbForMoreThan10Min.write(
+    this.altActiveInClimbForMoreThan10Min.write(
       flightPhase === FmgcFlightPhase.Climb && this.fmaVerticalMode.get() == VerticalMode.ALT,
       deltaTime,
     );
 
     this.destEfobScratchPadMessage.set(
       this.fmgc.data.destEfobBelowMin.get() &&
-        ((flightPhase == FmgcFlightPhase.Cruise ||
+        (flightPhase == FmgcFlightPhase.Cruise ||
           flightPhase === FmgcFlightPhase.Descent ||
-          climbActiveFor10mins ||
-          this.radioAlt.get()) ??
-          (0 > 800 && (flightPhase == FmgcFlightPhase.Approach || flightPhase == FmgcFlightPhase.GoAround))),
+          this.altActiveInClimbForMoreThan10Min.read() ||
+          (this.radioAlt.get() ??
+            (0 > 800 && (flightPhase == FmgcFlightPhase.Approach || flightPhase == FmgcFlightPhase.GoAround)))),
     );
   }
 }

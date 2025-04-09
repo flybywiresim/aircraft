@@ -63,7 +63,7 @@ import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarn
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -94,7 +94,7 @@ export class FwsCore {
       FuelSystemEvents &
       KeyEvents &
       MsfsFlightModelEvents &
-      FmsVars
+      FmsMessageVars
   >();
 
   private subs: Subscription[] = [];
@@ -584,7 +584,7 @@ export class FwsCore {
 
   public readonly fmsSwitchingKnob = Subject.create(0);
 
-  public readonly fmsSwitchingNotNorm = this.fmsSwitchingKnob.map((v) => !!v);
+  public readonly fmsSwitchingNotNorm = this.fmsSwitchingKnob.map((v) => v !== 1);
 
   public readonly fmsDestEfob = ConsumerSubject.create(this.sub.on('destEfobBelowMin'), false);
 

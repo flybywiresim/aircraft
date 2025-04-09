@@ -147,7 +147,7 @@ export class FmgcData {
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly alternateFuelCalculated = Subject.create<number | null>(null);
+  public readonly alternateFuelCalculated = Subject.create<number | null>(6_500); // FIX ME
 
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -161,7 +161,7 @@ export class FmgcData {
   public readonly finalFuelWeightPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly finalFuelWeightCalculated = Subject.create<number | null>(null);
+  public readonly finalFuelWeightCalculated = Subject.create<number | null>(4_650); // FIX ME
 
   public readonly finalFuelWeight = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -192,8 +192,18 @@ export class FmgcData {
     this.alternateFuel,
   );
 
+  public readonly minFuelAtDestTon = this.minimumFuelAtDestination.map((v) => (v ? v / 1000 : null));
+
   public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map(
     (it) => it !== null,
+  );
+
+  public readonly manualMinimumFuelAtDestIsBelowMin = MappedSubject.create(
+    ([minFuel, altnFuel, finalFuel]) =>
+      minFuel != null && altnFuel != null && finalFuel != null && minFuel < altnFuel + finalFuel,
+    this.minimumFuelAtDestinationPilotEntry,
+    this.alternateFuel,
+    this.finalFuelWeight,
   );
 
   /** in feet. null if not set. */
