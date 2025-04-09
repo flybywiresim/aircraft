@@ -22,8 +22,6 @@ export interface FmsVars {
   mrpLat: number;
   mrpLong: number;
   fmsFailed: boolean;
-  tdReached: boolean;
-  destEfobBelowMin: boolean;
 }
 
 export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R'> {
@@ -62,8 +60,6 @@ export class FmsDataPublisher extends SwitchableSimVarProvider<FmsVars, 'L' | 'R
         ['mrpLat', { name: (side) => `L:A32NX_EFIS_${side}_MRP_LAT`, type: SimVarValueType.Degree }],
         ['mrpLong', { name: (side) => `L:A32NX_EFIS_${side}_MRP_LONG`, type: SimVarValueType.Degree }],
         ['fmsFailed', { name: (side) => `L:A32NX_FMS_${side}_FAILED`, type: SimVarValueType.Bool }],
-        ['tdReached', { name: (_side) => 'L:A32NX_PFD_MSG_TD_REACHED', type: SimVarValueType.Bool }],
-        ['destEfobBelowMin', { name: (_side) => 'L:A32NX_FMS_DEST_EFOB_BELOW_MIN', type: SimVarValueType.Bool }],
       ]),
       stateSubject,
       bus,
