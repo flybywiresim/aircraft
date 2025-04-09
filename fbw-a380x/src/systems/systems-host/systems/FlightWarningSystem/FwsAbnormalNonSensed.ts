@@ -187,7 +187,7 @@ export class FwsAbnormalNonSensed {
       whichItemsChecked: () => [
         false,
         false,
-        !!this.fws.autoThrustStatus.get(),
+        !!this.fws.autoThrustOffVoluntary.get(),
         false,
         false,
         false,
