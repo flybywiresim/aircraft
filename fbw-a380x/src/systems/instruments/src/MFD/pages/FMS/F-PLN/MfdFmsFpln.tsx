@@ -178,7 +178,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
 
       if (destEfob) {
-        this.destEfob.set((destEfob / 1000).toFixed(1));
+        this.destEfob.set(destEfob.toFixed(1));
       } else {
         this.destEfob.set('---.-');
       }
