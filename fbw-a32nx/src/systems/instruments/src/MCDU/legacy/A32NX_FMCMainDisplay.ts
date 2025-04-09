@@ -753,9 +753,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
 
         SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
-        Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO)
-          .catch(console.error)
-          .catch(console.error);
 
         /** Activate pre selected speed/mach */
         if (prevPhase === FmgcFlightPhase.Climb) {
@@ -763,9 +760,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.activatePreSelSpeedMach(plan.performanceData.preselectedCruiseSpeed ?? undefined);
         }
 
-        /** Arm preselected speed/mach for next flight phase */
-        // FIXME implement pre-selected descent speed!
-        //this.updatePreSelSpeedMach(this.preSelectedDesSpeed);
+        /** Disarm preselected speed/mach for next flight phase */
+        this.updatePreSelSpeedMach(undefined);
 
         break;
       }
@@ -779,10 +775,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
         this.checkDestData();
         this._EfobBelowMinClr = false;
-
-        Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO)
-          .catch(console.error)
-          .catch(console.error);
 
         this.triggerCheckSpeedModeMessage(undefined);
 
@@ -798,10 +790,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
 
-        // I think this is not necessary to port, as it only calls fs9gps stuff (fms-v2)
-        // this.flightPlanManager.activateApproach().catch(console.error);
-
-        Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO).catch(console.error);
         SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
 
         this.checkDestData();
@@ -1262,7 +1250,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  private updatePreSelSpeedMach(preSel) {
+  private updatePreSelSpeedMach(preSel: number | undefined) {
     // The timeout is required to create a delay for the current value to be read and the new one to be set
     setTimeout(() => {
       if (preSel) {
