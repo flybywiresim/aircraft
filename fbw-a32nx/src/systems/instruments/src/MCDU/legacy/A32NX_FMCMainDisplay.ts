@@ -152,12 +152,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     on: 0,
     in: 0,
   };
-  public winds = {
-    climb: [],
-    cruise: [],
-    des: [],
-    alternate: null,
-  };
   public computedVgd?: number;
   public computedVfs?: number;
   public computedVss?: number;
@@ -499,10 +493,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.aocTimes.out = 0;
     this.aocTimes.on = 0;
     this.aocTimes.in = 0;
-    this.winds.climb.length = 0;
-    this.winds.cruise.length = 0;
-    this.winds.des.length = 0;
-    this.winds.alternate = null;
     this.computedVls = undefined;
     this.approachSpeeds = undefined; // based on selected config, not current config
     this.constraintAlt = 0;
@@ -4900,9 +4890,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return -(this.flightPlanService.active?.performanceData.pilotTripWind.get() ?? 0);
   }
 
-  /** @deprecated This API is not suitable and needs replaced with a proper wind manager. */
   public getWinds() {
-    return this.winds;
+    // FIXME
+    return {
+      climb: [],
+      cruise: [],
+      des: [],
+      alternate: null,
+    };
   }
 
   public getApproachWind(): FmcWindVector | null {

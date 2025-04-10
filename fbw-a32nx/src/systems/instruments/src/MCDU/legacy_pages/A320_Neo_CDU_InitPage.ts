@@ -360,7 +360,8 @@ export class CDUInitPage {
         CDUWindPage.Return = () => {
           CDUInitPage.ShowPage1(mcdu, forPlan);
         };
-        CDUWindPage.ShowPage(mcdu);
+
+        CDUWindPage.ShowPage(mcdu, forPlan);
       };
     }
 

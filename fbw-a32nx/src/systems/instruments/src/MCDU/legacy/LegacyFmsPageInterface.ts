@@ -275,13 +275,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   progBearing: number;
   progDistance: number;
   progWaypointIdent: string | undefined;
-  /** Mess.. replace with wind manager. */
-  winds: {
-    climb: any[];
-    cruise: any[];
-    des: any[];
-    alternate: any | null;
-  };
   isTrueRefMode: boolean;
 }
 

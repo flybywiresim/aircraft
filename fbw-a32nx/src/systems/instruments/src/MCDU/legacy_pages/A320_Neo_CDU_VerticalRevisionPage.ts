@@ -480,7 +480,7 @@ export class CDUVerticalRevisionPage {
             inAlternate,
           );
         };
-        CDUWindPage.ShowPage(mcdu);
+        CDUWindPage.ShowPage(mcdu, forPlan);
       }; // WIND
     }
     mcdu.onRightInput[4] = () => {

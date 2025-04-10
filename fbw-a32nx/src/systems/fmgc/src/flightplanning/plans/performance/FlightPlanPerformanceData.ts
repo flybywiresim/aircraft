@@ -5,7 +5,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { MappedSubject, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  MappedSubject,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  Subscription,
+} from '@microsoft/msfs-sdk';
+import { WindEntry, WindVector } from '../../data/wind';
 
 export interface FlightPlanPerformanceData {
   /**
@@ -479,6 +487,21 @@ export interface FlightPlanPerformanceData {
    * Whether the flaps three setting is selected by the pilot for the approach
    */
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
+
+  /**
+   * The wind entries for the climb segment entered by the pilot
+   */
+  readonly climbWindEntries: ArraySubject<WindEntry>;
+
+  /**
+   * The wind entries for the descent segment entered by the pilot
+   */
+  readonly descentWindEntries: ArraySubject<WindEntry>;
+
+  /**
+   * The average wind vector for the alternate flight plan, or null if not set.
+   */
+  readonly alternateWind: Subject<WindVector | null>;
 
   clone(): this;
 
@@ -1231,6 +1254,21 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   readonly approachFlapsThreeSelected = Subject.create(false);
 
+  /**
+   * The wind entries for the climb segment entered by the pilot
+   */
+  readonly climbWindEntries: ArraySubject<WindEntry> = ArraySubject.create([]);
+
+  /**
+   * The wind entries for the descent segment entered by the pilot
+   */
+  readonly descentWindEntries: ArraySubject<WindEntry> = ArraySubject.create([]);
+
+  /**
+   * The average wind vector for the alternate flight plan, or null if not set.
+   */
+  readonly alternateWind: Subject<WindVector | null> = Subject.create(null);
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel.get(),
@@ -1301,6 +1339,10 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachBaroMinimum: this.approachBaroMinimum.get(),
       approachRadioMinimum: this.approachRadioMinimum.get(),
       approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
+
+      climbWindEntries: this.climbWindEntries.getArray(),
+      descentWindEntries: this.descentWindEntries.getArray(),
+      alternateWind: this.alternateWind.get(),
     };
   }
 }
@@ -1391,6 +1433,10 @@ export interface SerializedFlightPlanPerformanceData {
   approachBaroMinimum: number | null;
   approachRadioMinimum: 'NO DH' | number | null;
   approachFlapsThreeSelected: boolean;
+
+  climbWindEntries: WindEntry[];
+  descentWindEntries: WindEntry[];
+  alternateWind: WindVector | null;
 }
 
 // FIXME move to AMI database
