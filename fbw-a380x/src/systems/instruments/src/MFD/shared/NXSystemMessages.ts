@@ -66,7 +66,7 @@ export class TypeIIMessage extends McduMessage {
 export const NXSystemMessages = {
   awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
   cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
-  checkMinDestFob: new TypeIIMessage('CHECK MIN DEST FOB'),
+  checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
   checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
   comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED WAITING FOR INSERTION', false),
