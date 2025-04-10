@@ -198,7 +198,7 @@ export class FmgcData {
     (it) => it !== null,
   );
 
-  public readonly manualMinimumFuelAtDestIsBelowMin = MappedSubject.create(
+  public readonly pilotEntryminFuelBelowAltnPlusFinal = MappedSubject.create(
     ([minFuel, altnFuel, finalFuel]) =>
       minFuel != null && altnFuel != null && finalFuel != null && minFuel < altnFuel + finalFuel,
     this.minimumFuelAtDestinationPilotEntry,

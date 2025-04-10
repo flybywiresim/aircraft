@@ -273,11 +273,11 @@ export class FmcAircraftInterface {
         }
       }),
       this.tdReached,
-      this.fmgc.data.manualMinimumFuelAtDestIsBelowMin.sub((v) => {
+      this.fmgc.data.pilotEntryminFuelBelowAltnPlusFinal.sub((v) => {
         if (v) {
-          this.fmc.addMessageToQueue(NXSystemMessages.checkMinDestFob, undefined, undefined);
+          this.fmc.addMessageToQueue(NXSystemMessages.checkMinFuelAtDest, undefined, undefined);
         } else {
-          this.fmc.removeMessageFromQueue(NXSystemMessages.checkMinDestFob.text);
+          this.fmc.removeMessageFromQueue(NXSystemMessages.checkMinFuelAtDest.text);
         }
       }),
       this.flightPhase.sub((v) => {
