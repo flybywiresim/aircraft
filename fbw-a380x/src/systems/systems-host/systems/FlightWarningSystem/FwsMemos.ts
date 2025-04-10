@@ -175,7 +175,7 @@ export class FwsMemos {
       codesToReturn: ['220000002'],
       memoInhibit: () => false,
     },
-    // FMS Switching
+    // FMS SWTG
     221000001: {
       flightPhaseInhib: [],
       simVarIsActive: this.fws.fmsSwitchingNotNorm,
@@ -183,6 +183,7 @@ export class FwsMemos {
       codesToReturn: ['221000001'],
       memoInhibit: () => false,
     },
+    // DEST EFOB
     221000002: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11, 12],
       simVarIsActive: this.fws.fmsDestEfob,
