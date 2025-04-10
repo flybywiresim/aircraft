@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  ConsumerValue,
+  ConsumerSubject,
   EventBus,
   GameStateProvider,
   MappedSubject,
@@ -13,6 +13,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import {
   Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
   Arinc429SignStatusMatrix,
   Arinc429Word,
   FmsData,
@@ -132,12 +133,12 @@ export class FmcAircraftInterface {
       }
     });
 
-  private readonly flightPhase = ConsumerValue.create(
-    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase').whenChanged(),
+  private readonly flightPhase = ConsumerSubject.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
     FmgcFlightPhase.Preflight,
   );
-  private readonly fmaVerticalMode = ConsumerValue.create(
-    this.bus.getSubscriber<FGVars>().on('fg.fma.verticalMode').whenChanged(),
+  private readonly fmaVerticalMode = ConsumerSubject.create(
+    this.bus.getSubscriber<FGVars>().on('fg.fma.verticalMode'),
     0,
   );
 
@@ -152,18 +153,21 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_FMS_DEST_EFOB_BELOW_MIN', SimVarValueType.Bool, v);
   }, true);
 
-  private readonly destEfobScratchPadMessage = Subject.create(false);
+  private readonly destEfobBelowMinScratchPadMessage = Subject.create(false);
 
   private readonly radioAltitudeA = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_1'),
+    Arinc429Register.empty().rawWord,
   );
 
   private readonly radioAltitudeB = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_2'),
+    Arinc429Register.empty().rawWord,
   );
 
   private readonly radioAltitudeC = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_3'),
+    Arinc429Register.empty().rawWord,
   );
 
   private readonly radioAlt = MappedSubject.create(
@@ -261,7 +265,7 @@ export class FmcAircraftInterface {
       this.fmsAlternate.sub((v) => pub.pub('fmsAlternate', v, true), true),
       this.fmgc.data.atcCallsign.sub((v) => pub.pub('fmsFlightNumber', v, true), true),
       this.destEfobBelowMin,
-      this.destEfobScratchPadMessage.sub((v) => {
+      this.destEfobBelowMinScratchPadMessage.sub((v) => {
         if (v) {
           this.fmc.addMessageToQueue(NXSystemMessages.destEfobBelowMin, undefined, undefined);
         } else {
@@ -276,6 +280,18 @@ export class FmcAircraftInterface {
           this.fmc.removeMessageFromQueue(NXSystemMessages.checkMinDestFob.text);
         }
       }),
+      this.flightPhase.sub((v) => {
+        if (v === FmgcFlightPhase.Approach || v === FmgcFlightPhase.GoAround) {
+          this.radioAltitudeA.resume();
+          this.radioAltitudeB.resume();
+          this.radioAltitudeC.resume();
+        } else {
+          this.radioAltitudeA.pause();
+          this.radioAltitudeB.pause();
+          this.radioAltitudeC.pause();
+        }
+      }, true),
+      this.radioAlt,
     );
   }
 
@@ -1988,8 +2004,13 @@ export class FmcAircraftInterface {
     const destEfob = this.fmc.fmgc.getDestEFOB(true);
     if (destEfob !== null) {
       const minFuelAtDestination = this.fmc.fmgc.data.minFuelAtDestTon.get();
-      if (minFuelAtDestination !== null && destEfob < minFuelAtDestination) {
-        this.fmgc.data.destEfobBelowMin.set(true);
+      if (minFuelAtDestination !== null) {
+        const isBelowMin = this.fmgc.data.destEfobBelowMin.get();
+        if (isBelowMin) {
+          this.fmgc.data.destEfobBelowMin.set(destEfob - minFuelAtDestination >= 0.3);
+        } else {
+          this.fmgc.data.destEfobBelowMin.set(destEfob < minFuelAtDestination);
+        }
         return;
       }
     }
@@ -1998,18 +2019,18 @@ export class FmcAircraftInterface {
 
   checkDestEfobBelowMinScratchPadMessage(deltaTime: number) {
     const flightPhase = this.flightPhase.get();
-    this.altActiveInClimbForMoreThan10Min.write(
+    const altActiveInClimbForMoreThan10Min: boolean = this.altActiveInClimbForMoreThan10Min.write(
       flightPhase === FmgcFlightPhase.Climb && this.fmaVerticalMode.get() == VerticalMode.ALT,
       deltaTime,
     );
 
-    this.destEfobScratchPadMessage.set(
+    this.destEfobBelowMinScratchPadMessage.set(
       this.fmgc.data.destEfobBelowMin.get() &&
-        (flightPhase == FmgcFlightPhase.Cruise ||
+        (flightPhase === FmgcFlightPhase.Cruise ||
           flightPhase === FmgcFlightPhase.Descent ||
-          this.altActiveInClimbForMoreThan10Min.read() ||
-          (this.radioAlt.get() ??
-            (0 > 800 && (flightPhase == FmgcFlightPhase.Approach || flightPhase == FmgcFlightPhase.GoAround)))),
+          altActiveInClimbForMoreThan10Min ||
+          ((flightPhase === FmgcFlightPhase.Approach || flightPhase === FmgcFlightPhase.GoAround) &&
+            (this.radioAlt.get() ?? 0) > 800)),
     );
   }
 }
