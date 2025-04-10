@@ -2009,7 +2009,7 @@ export class FmcAircraftInterface {
       if (minFuelAtDestination !== null) {
         const isBelowMin = this.fmgc.data.destEfobBelowMin.get();
         if (isBelowMin) {
-          this.fmgc.data.destEfobBelowMin.set(destEfob - minFuelAtDestination >= 0.3);
+          this.fmgc.data.destEfobBelowMin.set(destEfob - minFuelAtDestination <= 0.3);
         } else {
           this.fmgc.data.destEfobBelowMin.set(destEfob < minFuelAtDestination);
         }
