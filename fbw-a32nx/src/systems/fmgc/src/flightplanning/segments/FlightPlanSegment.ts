@@ -12,7 +12,6 @@ import {
 } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 
 export abstract class FlightPlanSegment {
   abstract class: SegmentClass;
