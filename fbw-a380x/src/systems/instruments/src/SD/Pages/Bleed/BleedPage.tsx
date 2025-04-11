@@ -64,7 +64,7 @@ export const BleedPage = () => {
       <BleedPack x={525} y={90} pack={2} isPackOperative={isPack2Operative} />
 
       {/* Crossbleed */}
-      <BleedCrossbleed isPack1Operative={isPack1Operative} isPack2Operative={isPack2Operative} />
+      <BleedCrossbleed />
 
       {/* GND indication */}
       <BleedGnd />
