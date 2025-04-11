@@ -133,7 +133,7 @@ export class GuidanceController {
    * Along track distance to destination in nautical miles per flight plan.
    * May be undefined if it could not be computed for some reason.
    */
-  private alongTrackDistancesToDestionation: Map<FlightPlanIndex, number> = new Map();
+  private alongTrackDistancesToDestination: Map<FlightPlanIndex, number> = new Map();
 
   focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -566,10 +566,10 @@ export class GuidanceController {
   }
 
   setAlongTrackDistanceToDestination(distance: number, forPlan = FlightPlanIndex.Active) {
-    this.alongTrackDistancesToDestionation.set(forPlan, distance);
+    this.alongTrackDistancesToDestination.set(forPlan, distance);
   }
 
   getAlongTrackDistanceToDestination(forPlan = FlightPlanIndex.Active) {
-    return this.alongTrackDistancesToDestionation.get(forPlan);
+    return this.alongTrackDistancesToDestination.get(forPlan);
   }
 }
