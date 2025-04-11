@@ -53,18 +53,7 @@ export class CDUDirectToPage {
         mcdu.insertTemporaryFlightPlan(async () => {
           CDUFlightPlanPage.ShowPage(mcdu);
 
-          // TODO implement
-          const isRadialInOut = false;
-
-          if (isRadialInOut) {
-            const oldValidity = SimVar.GetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool');
-            if (oldValidity) {
-              mcdu.disengageNavMode();
-            }
-          } else {
-            await Wait.awaitDelay(300);
-          }
-
+          await Wait.awaitDelay(300);
           await SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
         });
       };

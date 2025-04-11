@@ -47,7 +47,7 @@ export enum LnavTurnState {
 }
 
 export class LnavDriver implements GuidanceComponent {
-  private static readonly NavActiveCaptureZone = 1.0;
+  private static readonly NavActiveCaptureZone = 30.0;
 
   private guidanceController: GuidanceController;
 
@@ -498,12 +498,6 @@ export class LnavDriver implements GuidanceComponent {
   sequenceDiscontinuity(_leg?: Leg, followingLeg?: Leg): void {
     console.log('[FMGC/Guidance] LNAV - sequencing discontinuity');
 
-    if (this.isNavModeEngaged()) {
-      // TODO does this var do anything?
-      SimVar.SetSimVarValue('L:A32NX_FM_HEADING_SYNC', 'boolean', true);
-      this.guidanceController.disengageNavMode();
-    }
-
     this.sequenceLeg(_leg, null);
 
     // The leg after the disco should become the active leg, so we sequence again
@@ -531,6 +525,10 @@ export class LnavDriver implements GuidanceComponent {
     return leg.isVx() || (leg.isCx() && leg.type !== LegType.CF);
   }
 
+  private canNeverCaptureLeg(leg: FlightPlanLeg) {
+    return leg.type === LegType.IF;
+  }
+
   private isNavModeEngaged(): boolean {
     // TODO use correct FM
     return this.register
@@ -543,7 +541,7 @@ export class LnavDriver implements GuidanceComponent {
     const geometry = this.guidanceController.activeGeometry;
     const activeLeg = plan.activeLeg;
 
-    if (!activeLeg || isDiscontinuity(activeLeg)) {
+    if (!activeLeg || isDiscontinuity(activeLeg) || this.canNeverCaptureLeg(activeLeg)) {
       return false;
     } else if (this.canAlwaysCaptureLeg(activeLeg)) {
       return true;
