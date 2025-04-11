@@ -14,7 +14,8 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import './style.scss';
-import { Arinc429LocalVarConsumerSubject, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
+import '../index.scss';
+import { Arinc429LocalVarConsumerSubject, FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
@@ -34,7 +35,7 @@ const getCurrentHHMMSS = (seconds: number) => {
 export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly sub = this.props.bus.getSubscriber<SDSimvars & SimplaneValues & ClockEvents>();
+  private readonly sub = this.props.bus.getSubscriber<SDSimvars & SimplaneValues & ClockEvents & FmsData>();
 
   private readonly sat = Arinc429LocalVarConsumerSubject.create(this.sub.on('sat'));
 

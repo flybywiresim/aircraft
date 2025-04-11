@@ -34,20 +34,20 @@ export class CruiseCond extends DestroyableComponent<CruiseCondProps> {
   render() {
     return (
       <>
-        <text className="F22 Cyan" x="19" y="506">
+        <text class="F22 Cyan" x="19" y="506">
           °C
         </text>
-        <text id="CockpitTemp" className="F29 Green EndAlign" x="109" y="528">
+        <text id="CockpitTemp" class="F29 Green EndAlign" x="109" y="528">
           {this.cockpitCabinTempFormatted}
         </text>
 
         <CabinTemperatures bus={this.props.bus} />
 
         {/* Cargo Temps */}
-        <text id="fwdCargoTemp" className="F29 Green EndAlign" x="178" y="595">
+        <text id="fwdCargoTemp" class="F29 Green EndAlign" x="178" y="595">
           {this.fwdCargoTempFormatted}
         </text>
-        <text id="AftCargoTemp" className="F29 Green EndAlign" x="378" y="595">
+        <text id="AftCargoTemp" class="F29 Green EndAlign" x="378" y="595">
           {this.aftCargoTempFormatted}
         </text>
       </>
@@ -100,23 +100,23 @@ export class CabinTemperatures extends DestroyableComponent<CruiseCondProps> {
   render() {
     return (
       <>
-        <text id="ForwardUpperTemp" className="F29 Green EndAlign" x="210" y="506">
+        <text id="ForwardUpperTemp" class="F29 Green EndAlign" x="210" y="506">
           {this.minUpperDeckTemp}
         </text>
-        <text className="F24 White LS2" x="239" y="506">
+        <text class="F24 White LS2" x="239" y="506">
           TO
         </text>
-        <text id="AftUpperTemp" className="F29 Green EndAlign" x="340" y="506">
+        <text id="AftUpperTemp" class="F29 Green EndAlign" x="340" y="506">
           {this.maxUpperDeckTemp}
         </text>
 
-        <text id="ForwardLowerTemp" className="F29 Green EndAlign" x="210" y="552">
+        <text id="ForwardLowerTemp" class="F29 Green EndAlign" x="210" y="552">
           {this.minMainDeckTemp}
         </text>
-        <text className="F24 White LS2" x="239" y="552">
+        <text class="F24 White LS2" x="239" y="552">
           TO
         </text>
-        <text id="AftLowerTemp" className="F29 Green EndAlign" x="340" y="552">
+        <text id="AftLowerTemp" class="F29 Green EndAlign" x="340" y="552">
           {this.maxMainDeckTemp}
         </text>
       </>

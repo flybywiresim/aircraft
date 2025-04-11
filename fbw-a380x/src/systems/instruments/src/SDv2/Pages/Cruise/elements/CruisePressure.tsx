@@ -14,14 +14,16 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
   private readonly landingElev1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmLandingElevation_1'));
   private readonly landingElev2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmLandingElevation_2'));
 
-  private readonly pressLandingElevAuto = ConsumerSubject.create(this.sub.on('pressLandingElevAuto'), true);
-  private readonly pressLandingElevMan = this.pressLandingElevAuto.map((v) => !v);
-
-  private readonly cabVsAutoTextClass = this.pressLandingElevAuto.map(
-    (autoMode) => `${autoMode ? '' : 'Hide'} F24 Green LS1`,
+  private readonly cabinAltitudeIsAuto = ConsumerSubject.create(this.sub.on('cabinAltitudeIsAuto'), true);
+  private readonly cabinVerticalSpeedIsAuto = ConsumerSubject.create(this.sub.on('cabinVerticalSpeedIsAuto'), true);
+  private readonly manualControlActive = MappedSubject.create(
+    ([alt, vs]) => !alt || !vs,
+    this.cabinAltitudeIsAuto,
+    this.cabinVerticalSpeedIsAuto,
   );
-  private readonly cabAltAutoTextClass = this.pressLandingElevAuto.map(
-    (autoMode) => `${autoMode ? '' : 'Hide'} F24 Green LS1`,
+
+  private readonly cabAutoTextClass = this.manualControlActive.map(
+    (manualMode) => `${manualMode ? 'Hide' : ''} F24 Green LS1`,
   );
 
   private readonly manCabinAltitude = ConsumerSubject.create(this.sub.on('manCabinAltitude'), 0);
@@ -53,11 +55,16 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
     this.sub.on('pressCabinVerticalSpeed_1'),
   );
 
-  private readonly vsx = 440;
-  private readonly y = 385;
-  private readonly radius = 50;
+  private readonly vsGaugeX = 555;
+  private readonly vsGaugeY = 465;
+  private readonly vsGaugeRadius = 50;
 
-  private readonly landingElevClass = this.pressLandingElevAuto.map((v) => (v ? 'Show' : 'Hide'));
+  private readonly landingElevClass = MappedSubject.create(
+    ([manual, fms1, fms2]) => (!manual && (fms1.isNormalOperation() || fms2.isNormalOperation()) ? 'Show' : 'Hide'),
+    this.manualControlActive,
+    this.landingElev1,
+    this.landingElev2,
+  );
   private readonly landingElevValue = MappedSubject.create(
     ([le1, le2]) => {
       const le = le1.isNormalOperation() ? le1.value : le2.isNormalOperation() ? le2.value : null;
@@ -94,14 +101,34 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
   );
 
   private readonly cabinVsGaugeValue = this.cabinVerticalSpeedValue.map((cabinVs) =>
-    Math.abs(cabinVs / (50 * 50) / 1000) <= 2.25 ? cabinVs / (50 * 50) / 1000 : 2.25,
+    Math.abs(cabinVs / 1000) <= 2.25 ? cabinVs / 1000 : 2.25,
   );
 
   private readonly cabinVsText = MappedSubject.create(
-    ([cabinVs, autoMode]) =>
-      (!autoMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)).toFixed(0),
+    ([cabinVs, manualMode]) =>
+      (manualMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)).toFixed(0),
     this.cabinVerticalSpeedValue,
-    this.pressLandingElevAuto,
+    this.manualControlActive,
+  );
+
+  private readonly cabinVsArrowClass = MappedSubject.create(
+    ([cabinVs, manualMode]) => ((cabinVs * 60 <= -25 || cabinVs * 60 >= 25) && !manualMode ? '' : 'Hide'),
+    this.cabinVerticalSpeedValue,
+    this.manualControlActive,
+  );
+  private readonly cabinVsArrowTransform = MappedSubject.create(
+    ([cabinVs]) => (cabinVs * 60 <= -25 ? 'translate(130, 870) scale(1, -1)' : 'translate(130, 77) scale(1, 1)'),
+    this.cabinVerticalSpeedValue,
+  );
+
+  private readonly cabAltTextClass = MappedSubject.create(
+    ([elev1, elev2, cabAlt]) => {
+      const ldgElev = elev1.isNormalOperation() ? elev1.value : elev2.isNormalOperation() ? elev2.value : 0;
+      return cabAlt > 9550 && ldgElev < 9550 ? 'F29 Red EndAlign' : 'F29 Green EndAlign';
+    },
+    this.landingElev1,
+    this.landingElev2,
+    this.cabinAltitudeValue,
   );
 
   public onAfterRender(node: VNode): void {
@@ -118,10 +145,10 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
     this.subscriptions.push(
       this.landingElev1,
       this.landingElev2,
-      this.pressLandingElevAuto,
-      this.pressLandingElevMan,
-      this.cabVsAutoTextClass,
-      this.cabAltAutoTextClass,
+      this.cabinAltitudeIsAuto,
+      this.cabinAltitudeIsAuto,
+      this.manualControlActive,
+      this.cabAutoTextClass,
       this.manCabinAltitude,
       this.manCabinDeltaPressure,
       this.manCabinVerticalSpeed,
@@ -139,6 +166,9 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
       this.cabinVerticalSpeedValue,
       this.cabinVsGaugeValue,
       this.cabinVsText,
+      this.cabinVsArrowClass,
+      this.cabinVsArrowTransform,
+      this.cabAltTextClass,
     );
   }
 
@@ -159,85 +189,88 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
         </g>
 
         {/* Vertical speed gauge */}
-        {/* TODO */}
+        {/* FIXME add grey arc + VS target donut */}
         <g id="VsIndicator">
           <GaugeComponent
-            x={this.vsx}
-            y={this.y}
-            radius={this.radius}
-            startAngle={170}
-            endAngle={10}
-            visible={this.pressLandingElevMan}
+            x={this.vsGaugeX}
+            y={this.vsGaugeY}
+            radius={this.vsGaugeRadius}
+            startAngle={160}
+            endAngle={20}
+            visible={this.manualControlActive}
             class="Gauge"
           >
             <GaugeMarkerComponent
               value={SubscribableUtils.toSubscribable(2, true)}
-              x={this.vsx}
-              y={this.y}
+              x={this.vsGaugeX}
+              y={this.vsGaugeY}
               min={-2}
               max={2}
-              radius={this.radius}
+              radius={this.vsGaugeRadius}
               startAngle={180}
               endAngle={0}
               class="GaugeText"
               showValue
-              textNudgeY={10}
+              textNudgeX={-5}
+              textNudgeY={25}
             />
             <GaugeMarkerComponent
               value={SubscribableUtils.toSubscribable(1, true)}
-              x={this.vsx}
-              y={this.y}
+              x={this.vsGaugeX}
+              y={this.vsGaugeY}
               min={-2}
               max={2}
-              radius={this.radius}
+              radius={this.vsGaugeRadius}
               startAngle={180}
               endAngle={0}
               class="GaugeText"
             />
             <GaugeMarkerComponent
               value={SubscribableUtils.toSubscribable(0, true)}
-              x={this.vsx}
-              y={this.y}
+              x={this.vsGaugeX}
+              y={this.vsGaugeY}
               min={-2}
               max={2}
-              radius={this.radius}
+              radius={this.vsGaugeRadius}
               startAngle={180}
               endAngle={0}
               class="GaugeText"
               showValue
               textNudgeX={10}
+              textNudgeY={10}
             />
             <GaugeMarkerComponent
               value={SubscribableUtils.toSubscribable(-1, true)}
-              x={this.vsx}
-              y={this.y}
+              x={this.vsGaugeX}
+              y={this.vsGaugeY}
               min={-2}
               max={2}
-              radius={this.radius}
+              radius={this.vsGaugeRadius}
               startAngle={180}
               endAngle={0}
               class="GaugeText"
             />
             <GaugeMarkerComponent
               value={SubscribableUtils.toSubscribable(-2, true)}
-              x={this.vsx}
-              y={this.y}
+              x={this.vsGaugeX}
+              y={this.vsGaugeY}
               min={-2}
               max={2}
-              radius={this.radius}
+              radius={this.vsGaugeRadius}
               startAngle={180}
               endAngle={0}
               class="GaugeText"
               showValue
+              textNudgeX={-5}
               textNudgeY={-10}
             />
             <GaugeMarkerComponent
               value={this.cabinVsGaugeValue}
-              x={this.vsx}
-              y={this.y}
+              x={this.vsGaugeX}
+              y={this.vsGaugeY}
               min={-2}
               max={2}
-              radius={this.radius}
+              radius={this.vsGaugeRadius}
               startAngle={180}
               endAngle={0}
               class="GaugeIndicator"
@@ -262,7 +295,7 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
           PSI
         </text>
 
-        <text class={this.cabVsAutoTextClass} x="522" y="450">
+        <text class={this.cabAutoTextClass} x="522" y="450">
           AUTO
         </text>
         <text class="F24 White LS2" x="606" y="450">
@@ -275,30 +308,23 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
           FT/MIN
         </text>
 
-        <text class={this.cabAltAutoTextClass} x="520" y="585">
+        <text class={this.cabAutoTextClass} x="520" y="585">
           AUTO
         </text>
         <text class="F24 White LS2" x="605" y="585">
           CAB ALT
         </text>
-        <text id="CabinAltitude" class="F29 Green EndAlign" x="652" y="616">
+        <text id="CabinAltitude" class={this.cabAltTextClass} x="652" y="616">
           {this.cabAltText}
         </text>
         <text class="F22 Cyan" x="661" y="616">
           FT
         </text>
 
-        {/* FIXME add VS arrow */}
-        {/*
-            <g
-                id="vsArrow"
-                class={(cabinVs * 60 <= -25 || cabinVs * 60 >= 25) && autoMode ? '' : 'Hide'}
-                transform={cabinVs * 60 <= -25 ? 'translate(0, 795) scale(1, -1)' : 'scale(1, 1)'}
-            >
-                <path d="M433,405 h7 L446,395" class="Green SW2 NoFill" strokeLinejoin="miter" />
-                <polygon points="452,388 447,396 457,396" transform="rotate(38,452,388)" class="Green SW2 NoFill" />
-            </g>
-            */}
+        <g id="vsArrow" class={this.cabinVsArrowClass} transform={this.cabinVsArrowTransform}>
+          <path d="M433,405 h7 L446,395" class="Green SW2 NoFill" strokeLinejoin="miter" />
+          <polygon points="452,388 447,396 457,396" transform="rotate(38,452,388)" class="Green SW2 NoFill" />
+        </g>
       </>
     );
   }

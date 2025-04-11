@@ -25,7 +25,8 @@ export type BaseSDSimvars = AdirsSimVars &
     aftCargoTemp: number;
     condMainDeckTemp: number;
     condUpperDeckTemp: number;
-    pressLandingElevAuto: boolean;
+    cabinAltitudeIsAuto: boolean;
+    cabinVerticalSpeedIsAuto: boolean;
     pressDeltaPressure: boolean;
     manCabinAltitude: number;
     manCabinDeltaPressure: number;
@@ -71,7 +72,8 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
       'condUpperDeckTemp',
       { name: 'L:A32NX_COND_UPPER_DECK_#index#_TEMP', type: SimVarValueType.Number, indexed: true },
     ],
-    ['pressLandingElevAuto', { name: 'L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', type: SimVarValueType.Bool }],
+    ['cabinAltitudeIsAuto', { name: 'L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', type: SimVarValueType.Bool }],
+    ['cabinVerticalSpeedIsAuto', { name: 'L:A32NX_OVHD_PRESS_MAN_VS_CTL_PB_IS_AUTO', type: SimVarValueType.Bool }],
     ['manCabinAltitude', { name: 'L:A32NX_PRESS_MAN_CABIN_ALTITUDE', type: SimVarValueType.Number }],
     ['manCabinDeltaPressure', { name: 'L:A32NX_PRESS_MAN_CABIN_DELTA_PRESSURE', type: SimVarValueType.Number }],
     ['manCabinVerticalSpeed', { name: 'L:A32NX_PRESS_MAN_CABIN_VS', type: SimVarValueType.Number }],

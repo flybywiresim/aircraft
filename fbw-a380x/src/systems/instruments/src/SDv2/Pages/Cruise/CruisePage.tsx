@@ -1,4 +1,4 @@
-import { FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyablePage';
 
 import { fuelForDisplay } from '../../../Common/FuelFunctions';
@@ -6,7 +6,7 @@ import { PageTitle } from '../Generic/PageTitle';
 import A380XCruise from './elements/A380Cruise';
 import CruisePressure from './elements/CruisePressure';
 import CruiseCond from './elements/CruiseCond';
-import { Arinc429LocalVarConsumerSubject, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from '../../SDSimvarPublisher';
 
 import '../../../index.scss';
@@ -28,17 +28,17 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
   );
 
   private readonly enginesFuelUsed = [
-    Arinc429LocalVarConsumerSubject.create(this.sub.on('engineFuelUsed_1')),
-    Arinc429LocalVarConsumerSubject.create(this.sub.on('engineFuelUsed_2')),
-    Arinc429LocalVarConsumerSubject.create(this.sub.on('engineFuelUsed_3')),
-    Arinc429LocalVarConsumerSubject.create(this.sub.on('engineFuelUsed_4')),
+    ConsumerSubject.create(this.sub.on('engineFuelUsed_1'), 0),
+    ConsumerSubject.create(this.sub.on('engineFuelUsed_2'), 0),
+    ConsumerSubject.create(this.sub.on('engineFuelUsed_3'), 0),
+    ConsumerSubject.create(this.sub.on('engineFuelUsed_4'), 0),
   ];
 
   private readonly enginesFuelFlow = [
-    Arinc429LocalVarConsumerSubject.create(this.sub.on('engineFuelFlow_1')),
-    Arinc429LocalVarConsumerSubject.create(this.sub.on('engineFuelFlow_2')),
-    Arinc429LocalVarConsumerSubject.create(this.sub.on('engineFuelFlow_3')),
-    Arinc429LocalVarConsumerSubject.create(this.sub.on('engineFuelFlow_4')),
+    ConsumerSubject.create(this.sub.on('engineFuelFlow_1'), 0),
+    ConsumerSubject.create(this.sub.on('engineFuelFlow_2'), 0),
+    ConsumerSubject.create(this.sub.on('engineFuelFlow_3'), 0),
+    ConsumerSubject.create(this.sub.on('engineFuelFlow_4'), 0),
   ];
 
   private readonly enginesFuelUsedDisplay = this.enginesFuelUsed.map((fu) =>
@@ -89,7 +89,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
         <A380XCruise />
 
         {/* Fuel Flow */}
-        <text class="F29 Underline White" x={15} y={80}>
+        <text class="F29 Underline White" x={15} y={80} style="text-decoration: underline;">
           FUEL
         </text>
         <path class="White SW3" d="M130,117 l 27,0" />
@@ -149,7 +149,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
           KG
         </text>
 
-        <text class="F29 Underline White" x={18} y={330}>
+        <text class="F29 Underline White" x={18} y={330} style="text-decoration: underline;">
           AIR
         </text>
 

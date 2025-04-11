@@ -22,6 +22,7 @@ import { CruisePage } from './Pages/Cruise/CruisePage';
 import { StatusPage } from './Pages/Status/StatusPage';
 
 import '../index.scss';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 
 export const SystemDisplay = () => {
   // make sure this is in line with the enum in EcamSystemPages.ts
@@ -39,12 +40,12 @@ export const SystemDisplay = () => {
     10: <HydPage />,
     11: <FctlPage />,
     12: <CbPage />,
-    13: <CruisePage />,
+    13: <></>,
     14: <StatusPage />,
     15: <CruisePage />, // TODO video page
   };
 
-  const pageToShow = SimVar.GetSimVarValue('L:A32NX_ECAM_SD_PAGE_TO_SHOW', 'number');
+  const [pageToShow, _setPageToShow] = useSimVar('L:A32NX_ECAM_SD_PAGE_TO_SHOW', 'number');
 
   return (
     <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd} hideBootTestScreens={true}>

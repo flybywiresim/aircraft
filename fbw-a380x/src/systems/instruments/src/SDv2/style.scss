@@ -20,12 +20,14 @@
   font-style: normal;
 }
 
-.sd-content-area-layout {
+.sd-content-area-blocker {
   display: flex;
   height: 665px;
   width: 768px;
   position: absolute;
   top: 0px;
+  background-color: $display-background;
+  z-index: -1;
 }
 
 .sd-perm-info-area-layout {
@@ -74,51 +76,36 @@
   font-size: 25px;
 }
 
-.StartAlign {
+div.StartAlign,
+span.StartAlign {
   text-align: left;
 }
 
-.EndAlign {
+div.EndAlign,
+span.EndAlign {
   text-align: right;
   padding-right: 5px;
 }
 
-.White {
+div.White,
+span.White {
   color: $display-white;
 }
 
-.Cyan {
+div.Cyan,
+span.Cyan {
   color: $display-cyan;
 }
 
-.Green {
+div.Green,
+span.Green {
   color: $display-green;
 }
 
-.Amber {
+div.Amber,
+span.Amber {
   color: $display-amber;
 }
-
-.F22 {
-  font-size: 22px;
-}
-
-.F25 {
-  font-size: 25px;
-}
-
-.F26 {
-  font-size: 26px;
-}
-
-.F27 {
-  font-size: 27px;
-}
-
-.F29 {
-  font-size: 29px;
-}
-
 
 .atc-mailbox-top-layout {
   display: grid;

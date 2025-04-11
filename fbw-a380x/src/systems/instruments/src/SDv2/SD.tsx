@@ -4,9 +4,9 @@
 import {
   ComponentProps,
   ConsumerSubject,
-  DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   Subject,
   Subscribable,
   VNode,
@@ -31,7 +31,7 @@ export interface SdPageProps extends ComponentProps {
   readonly visible: Subscribable<boolean>;
 }
 
-export class SD extends DisplayComponent<SDProps> {
+export class SD extends DestroyableComponent<SDProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
 
   private readonly pageToShow = ConsumerSubject.create(this.sub.on('sdPageToShow'), 0);
@@ -40,28 +40,33 @@ export class SD extends DisplayComponent<SDProps> {
     .fill(1)
     .map(() => Subject.create(false));
 
+  private readonly anyPageVisibleStyle = MappedSubject.create(
+    (vis) => `visibility: ${vis.some((v) => v === true) ? 'visible' : 'hidden'}`,
+    ...this.pageVisible,
+  );
+
   private readonly pageRef = Array(16)
     .fill(1)
     .map(() => FSComponent.createRef<DestroyableComponent<SdPageProps>>());
 
   // holds all page objects, make sure this is in line with the enum in EcamSystemPages.ts
   private readonly sdPages: DestroyableComponent<SdPageProps>[] = [
-    <></>, // ENG
-    <></>, // APU
-    <></>, // BLEED
-    <></>, // COND
-    <></>, // PRESS
-    <></>, // DOOR
-    <></>, // ELEC AC
-    <></>, // ELEC DC
-    <></>, // FUEL
-    <></>, // WHEEL
-    <></>, // HYD
-    <></>, // FCTL
-    <></>, // CB
-    <CruisePage ref={this.pageRef[13]} bus={this.props.bus} visible={this.pageVisible[13]} />,
-    <></>, // STATUS
-    <CruisePage ref={this.pageRef[13]} bus={this.props.bus} visible={this.pageVisible[15]} />, // TODO video page
+    null, // ENG
+    null, // APU
+    null, // BLEED
+    null, // COND
+    null, // PRESS
+    null, // DOOR
+    null, // ELEC AC
+    null, // ELEC DC
+    null, // FUEL
+    null, // WHEEL
+    null, // HYD
+    null, // FCTL
+    null, // CB
+    <CruisePage ref={this.pageRef[SdPages.Crz]} bus={this.props.bus} visible={this.pageVisible[SdPages.Crz]} />,
+    null, // STATUS
+    null, // TODO video page
   ];
 
   // Once a page is ported, add its enum value here
@@ -70,34 +75,35 @@ export class SD extends DisplayComponent<SDProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.pageToShow.sub((v) => {
-      for (const page of this.pageRef) {
-        page.instance.pauseSubscriptions();
-      }
-
-      for (const page of this.pageVisible) {
-        page.set(false);
-      }
-
-      // Check if valid page index
-      if (v >= 0 && v < this.sdPages.length) {
-        // Check whether page is already ported
-        if (this.indicesToShowInV2.includes(v)) {
-          this.pageRef[v].instance.resumeSubscriptions();
-          this.pageVisible[v].set(true);
+    this.subscriptions.push(
+      this.pageToShow.sub((v) => {
+        for (const pageVisible of this.pageVisible) {
+          pageVisible.set(false);
         }
-      }
-    }, true);
-  }
 
-  destroy(): void {
-    super.destroy();
+        for (const page of this.pageRef) {
+          page.getOrDefault()?.pauseSubscriptions();
+        }
+
+        // Check if valid page index
+        if (v >= 0 && v < this.sdPages.length && this.sdPages[v] !== null) {
+          // Check whether page is already ported
+          if (this.indicesToShowInV2.includes(v)) {
+            this.pageRef[v].getOrDefault()?.resumeSubscriptions();
+            this.pageVisible[v].set(true);
+          }
+        }
+      }, true),
+    );
+
+    this.subscriptions.push(this.pageToShow, this.anyPageVisibleStyle);
   }
 
   render(): VNode | null {
     return (
       <CdsDisplayUnit bus={this.props.bus} displayUnitId={DisplayUnitID.Sd}>
         {this.sdPages}
+        <div class="sd-content-area-blocker" style={this.anyPageVisibleStyle} />
         <PermanentData bus={this.props.bus} />
         <AtcMailbox bus={this.props.bus} />
       </CdsDisplayUnit>
