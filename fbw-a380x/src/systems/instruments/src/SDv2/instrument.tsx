@@ -6,7 +6,7 @@ import {
   FsBaseInstrument,
   ClockPublisher,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, FailuresConsumer, FmsDataPublisher } from '@flybywiresim/fbw-sdk';
 import { SD } from './SD';
 import { SDSimvarPublisher } from './SDSimvarPublisher';
 import { AdirsValueProvider } from 'instruments/src/MsfsAvionicsCommon/AdirsValueProvider';
@@ -27,6 +27,8 @@ class SdInstrument implements FsInstrument {
 
   private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
 
+  private readonly fmsDataPublisher = new FmsDataPublisher(this.bus);
+
   private readonly failuresConsumer = new FailuresConsumer();
 
   constructor(public readonly instrument: BaseInstrument) {
@@ -35,6 +37,7 @@ class SdInstrument implements FsInstrument {
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
     this.backplane.addPublisher('sdSimVars', this.simVarPublisher);
+    this.backplane.addPublisher('fmsData', this.fmsDataPublisher);
     this.backplane.addInstrument('simplane', this.simplaneValueProvider);
 
     this.doInit();
