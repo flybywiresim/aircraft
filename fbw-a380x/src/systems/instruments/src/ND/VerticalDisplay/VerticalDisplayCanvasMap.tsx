@@ -186,6 +186,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
         context.setLineDash([10, 10]);
       }
 
+      context.strokeStyle = '#ff0000';
       context.moveTo(
         VerticalDisplayCanvasMap.distanceToX(
           this.fmsDescentVdProfile.get()[0].distanceFromAircraft,
@@ -206,6 +207,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
 
     if (targetIsDashed) {
       context.beginPath();
+      context.strokeStyle = '#00ffff';
       context.setLineDash([]);
       context.moveTo(
         VerticalDisplayCanvasMap.distanceToX(
