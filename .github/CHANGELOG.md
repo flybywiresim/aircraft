@@ -5,6 +5,11 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.14.0
+
+1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Visual update to reflect later avionics batches (overlapping tab selectors) - @flogross89 (floridude)
+
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
@@ -186,6 +191,17 @@
 1. [ELEC] Add power consumption for fuel pumps - @Gurgel100 (Pascal)
 1. [FMS] EFIS overlay symbols for the ND are now available in plan mode away from the aircraft position in MSFS2024 - @tracernz (Mike)
 1. [FMS] Reduced in-flight stutter due to facility loading - @tracernz (Mike)
+1. [A32NX/FMS] Improved approach procedure sorting - @tracernz (Mike)
+1. [A380X/FMS] The (RNP) flag is now shown for approaches with only the missed approach segment as RNP AR on MSFS2024 - @tracernz (Mike)
+1. [Clock] Fixed chrono not rolling over to 00:00 when reaching 99:59 - @tracernz (Mike)
+1. [A380X/FWS] Fix fuel pump sensing logic for PARKING normal procedure - @flogross89 (floridude)
+1. [A380X/PRIM] Automatic THS trim after engine start or touch and go - @flogross89 (floridude)
+1. [A380X/PERF] Fixed issue where 0 was not an accepted cost index - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Update MFD font to include question mark - @heclak (Heclak)
+1. [A380X/FMC] Fixed FIX INFO temporary flightplan handling - @Benjozork (Benjamin Dupont)
+1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
+1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
+1. [EFB/PERF] Harmonize takeoff and landing performance calculators - @FoxtrotSierra6829 (FoxtrotSierra)
 
 ## 0.12.0
 
