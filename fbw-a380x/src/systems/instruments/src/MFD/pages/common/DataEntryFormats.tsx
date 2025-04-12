@@ -144,7 +144,7 @@ export class SpeedMachFormat extends SubscriptionCollector implements DataEntryF
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toString());
     } else {
       throw getFormattedFormatError(this.requiredFormat);
     }
@@ -282,7 +282,7 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
 
   public readonly unit = 'FL';
 
-  private readonly requiredFormat = `XXX`;
+  private readonly requiredFormat = `FL XXX`;
 
   private minValue = 0;
 
@@ -849,19 +849,16 @@ export class QnhFormat implements DataEntryFormat<number> {
     }
 
     const hpa = input.indexOf('.') === -1 && input.length >= 3;
+    const minValue = hpa ? this.minHpaValue : this.minInHgValue;
+    const maxValue = hpa ? this.maxHpaValue : this.maxInHgValue;
 
-    if (hpa) {
-      if (nbr >= this.minHpaValue && nbr <= this.maxHpaValue) {
-        return nbr;
-      } else {
-        throw getFormattedEntryOutOfRangeError(this.minHpaValue.toString(), this.maxHpaValue.toString());
-      }
+    if (nbr >= minValue && nbr <= maxValue) {
+      return nbr;
     } else {
-      if (nbr > this.minInHgValue && nbr <= this.maxInHgValue) {
-        return nbr;
-      } else {
-        throw getFormattedEntryOutOfRangeError(this.minInHgValue.toFixed(2), this.maxInHgValue.toFixed(2));
-      }
+      throw getFormattedEntryOutOfRangeError(
+        hpa ? minValue.toString() : minValue.toFixed(2),
+        hpa ? maxValue.toString() : maxValue.toFixed(2),
+      );
     }
   }
 }
