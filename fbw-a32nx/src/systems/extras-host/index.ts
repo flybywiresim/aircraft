@@ -6,6 +6,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 // Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -34,6 +38,8 @@ import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -139,6 +145,8 @@ class ExtrasHost extends BaseInstrument {
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
     if (isMsfs2024()) {
+      NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+
       this.msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus);
     } else {
       this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
@@ -176,7 +184,7 @@ class ExtrasHost extends BaseInstrument {
     this.pushbuttonCheck.connectedCallback();
     this.versionCheck.connectedCallback();
     this.keyInterceptor.connectedCallback();
-    this.flightPlanAsoboSync.connectedCallback();
+    this.flightPlanAsoboSync?.connectedCallback();
     this.aircraftSync.connectedCallback();
 
     this.backplane.init();
@@ -198,7 +206,7 @@ class ExtrasHost extends BaseInstrument {
         this.hEventPublisher.startPublish();
         this.versionCheck.startPublish();
         this.keyInterceptor.startPublish();
-        this.flightPlanAsoboSync.init();
+        this.flightPlanAsoboSync?.init();
         this.aircraftSync.startPublish();
         this.telexCheck.showPopup();
       }
