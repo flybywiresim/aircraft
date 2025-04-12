@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 // Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -87,13 +91,13 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly keyInterceptor: KeyInterceptor;
 
-  private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
-
   private readonly aircraftSync: AircraftSync;
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
   private readonly telexCheck = new TelexCheck();
+
+  private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
 
   private readonly msfsFlightPlanSync: MsfsFlightPlanSync;
 
@@ -130,13 +134,14 @@ class ExtrasHost extends BaseInstrument {
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
     this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
-    this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
 
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
     if (isMsfs2024()) {
       this.msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus);
+    } else {
+      this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
     }
 
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
