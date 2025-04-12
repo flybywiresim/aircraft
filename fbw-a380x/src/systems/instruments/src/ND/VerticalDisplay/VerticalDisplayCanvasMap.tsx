@@ -31,7 +31,6 @@ import {
 import { VerticalDisplayWaypointLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayWaypointLayer';
 import { VdPseudoWaypointLayer } from './VdPseudoWaypointLayer';
 import { VerticalDisplayRunwayLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayRunwayLayer';
-import { VerticalMode } from '@shared/autopilot';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { GenericFmsEvents } from '../../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFmsEvents';
 import { GenericFcuEvents } from '@flybywiresim/navigation-display';
@@ -137,7 +136,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     context.strokeStyle = '#0f0';
     context.lineWidth = 2;
 
-    if (
+    /* if (
       this.props.shouldShowTrackLine.get() &&
       (this.activeVerticalMode.get() === VerticalMode.ALT || this.activeVerticalMode.get() === VerticalMode.ALT_CPT)
     ) {
@@ -153,7 +152,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       );
       context.stroke();
       context.setLineDash([10, 10]);
-    }
+    } */
 
     const targetIsDashed = this.fmsActualVdProfile.get().length > 1;
 
@@ -169,7 +168,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
           vdRange,
           this.offsetDistance.get(),
         ),
-        VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
+        VerticalDisplayCanvasMap.altToY(this.props.fmsTargetVdProfile.get()[0].altitude, verticalRange),
       );
 
       for (const pe of this.props.fmsTargetVdProfile.get()) {
@@ -193,7 +192,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
           vdRange,
           this.offsetDistance.get(),
         ),
-        VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
+        VerticalDisplayCanvasMap.altToY(this.fmsDescentVdProfile.get()[0].altitude, verticalRange),
       );
 
       for (const pe of this.fmsDescentVdProfile.get()) {
@@ -214,7 +213,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
           vdRange,
           this.offsetDistance.get(),
         ),
-        VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
+        VerticalDisplayCanvasMap.altToY(this.fmsActualVdProfile.get()[0].altitude, verticalRange),
       );
 
       for (const pe of this.fmsActualVdProfile.get()) {
