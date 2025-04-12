@@ -930,21 +930,6 @@ declare global {
 
     function RegisterGameFeaturesListener(callback?: () => void): GameFeaturesListener;
 
-    class NotificationButton {
-        constructor(title?: string, event?: string, close?: boolean, theme?: string, toGlobalFlow?: boolean);
-
-        toGlobalFlow: boolean;
-
-        close: boolean;
-
-        enabled: boolean;
-
-        title: string;
-
-        event: string;
-
-        theme: any;
-    }
 
     function isWindowEnabled(): boolean;
     function setWindowEnabled(value: boolean): void;

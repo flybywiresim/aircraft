@@ -12,12 +12,13 @@ const getDisplayString = (seconds: number | null, running: boolean, ltsTest: boo
   }
 
   if (seconds !== null) {
+    const elapsedTime = seconds % Chrono.MAX_DISPLAYABLE_TIME_SECONDS;
     return (
-      Math.floor(Math.min(seconds, Chrono.MAX_DISPLAYABLE_TIME_SECONDS) / Chrono.SECONDS_PER_MINUTE)
+      Math.floor(elapsedTime / Chrono.SECONDS_PER_MINUTE)
         .toString()
         .padStart(2, '0') +
       (running ? ':' : ' ') +
-      Math.floor(Math.min(seconds, Chrono.MAX_DISPLAYABLE_TIME_SECONDS) % Chrono.SECONDS_PER_MINUTE)
+      Math.floor(elapsedTime % Chrono.SECONDS_PER_MINUTE)
         .toString()
         .padStart(2, '0')
     );
@@ -28,7 +29,8 @@ const getDisplayString = (seconds: number | null, running: boolean, ltsTest: boo
 export class Chrono extends DisplayComponent<ChronoProps> {
   static readonly SECONDS_PER_MINUTE = 60;
 
-  static readonly MAX_DISPLAYABLE_TIME_SECONDS = 99 * 60 + 59; // "99:59" in seconds
+  /** Max time in seconds that can be displayed. The chrono displays rolls over from "99:59" to "00:00" on reaching this time. */
+  static readonly MAX_DISPLAYABLE_TIME_SECONDS = 99 * 60 + 59 + 1;
 
   private readonly chronoText = Subject.create('');
 

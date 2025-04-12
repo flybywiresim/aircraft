@@ -13,7 +13,6 @@ import {
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
 import { Predictions, StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 
 export interface DescentStrategy {
@@ -215,7 +214,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(midwayAltitude, speed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, midwayAltitude, computedMach, tropoPause) +
-      VnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.altitudeStep(
       this.acConfig,
@@ -251,7 +250,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
-      VnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.distanceStep(
       this.acConfig,
@@ -287,7 +286,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
-      VnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     const initialMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const finalMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, finalSpeed), mach);

@@ -2086,6 +2086,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Indicates to the FG that a localiser back beam is tuned.
 
+- A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL
+    - Boolean
+    - Indicates to the FG if the FM lateral flight plan is valid, for lateral managed modes (NAV).
+    - Internal to FM/FG communication.
+
 - A32NX_FG_PHI_LIMIT
     - Number in Degrees
     - Indicates the current bank limit requested by the FM
@@ -2105,6 +2110,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number in degrees
     - Used for laternal guidance in mode NAV
     - Bank angle command
+
+- A32NX_FM_VERTICAL_PROFILE_AVAIL
+    - Boolean
+    - Indicates to the FG if the FM vertical flight profile is valid, for vertical managed modes.
+    - Internal to FM/FG communication
 
 - A32NX_FG_REQUESTED_VERTICAL_MODE
     - Enum
@@ -2148,6 +2158,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - This Simvar is true
         - NAV mode is engaged
         - FINAL mode is armed
+
+- A32NX_SpeedPreselVal
+    - Number
+    - Indicates the preselected speed value, -1 if no value is preselected
+    - Internal to FM/FG communication, other avionics should use the FG bus var
+
+- A32NX_MachPreselVal
+    - Number
+    - Indicates the preselect mach value, -1 if no value is preselected
+    - Internal to FM/FG communication, other avionics should use the FG bus var
 
 ## Autothrust System
 

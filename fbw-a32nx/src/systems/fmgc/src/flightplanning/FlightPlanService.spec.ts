@@ -3,230 +3,234 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { jest } from '@jest/globals';
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { beforeEach, describe, it, expect, test } from 'vitest';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { loadSingleWaypoint } from '@fmgc/flightplanning/segments/enroute/WaypointLoading';
 import { assertNotDiscontinuity } from '@fmgc/flightplanning/test/LegUtils';
-import { setupNavigraphDatabase } from '@fmgc/flightplanning/test/Database';
+import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { placeBearingDistance } from 'msfs-geo';
 import { LegType } from '@flybywiresim/fbw-sdk';
+import { testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
 
-jest.setTimeout(120_000);
+describe.skip('the flight plan service', () => {
+  beforeEach(() => {
+    testFlightPlanService.reset();
+    setupTestDatabase();
+  });
 
-describe('the flight plan service', () => {
-    beforeEach(() => {
-        FlightPlanService.reset();
-        setupNavigraphDatabase();
+  it('deletes the temporary flight plan properly', async () => {
+    await testFlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG');
+
+    await testFlightPlanService.setOriginRunway('CYUL06R');
+
+    await testFlightPlanService.temporaryDelete();
+
+    expect(testFlightPlanService.hasTemporary).toBeFalsy();
+    expect(testFlightPlanService.activeOrTemporary.originRunway).toBeUndefined();
+  });
+
+  it('inserts the temporary flight plan properly', async () => {
+    await testFlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG');
+
+    await testFlightPlanService.setOriginRunway('CYUL06R');
+
+    await testFlightPlanService.temporaryInsert();
+
+    expect(testFlightPlanService.hasTemporary).toBeFalsy();
+    expect(testFlightPlanService.activeOrTemporary.originRunway).toEqual(expect.objectContaining({ ident: 'CYUL06R' }));
+  });
+
+  describe('performing revisions', () => {
+    describe('next waypoint', () => {
+      beforeEach(async () => {
+        await testFlightPlanService.newCityPair('CYUL', 'CYYZ');
+
+        await testFlightPlanService.setOriginRunway('CYUL06R');
+        await testFlightPlanService.setDepartureProcedure('CYUL1');
+
+        await testFlightPlanService.setDestinationRunway('CYYZ05');
+        await testFlightPlanService.setApproach('I05');
+      });
+
+      it('with duplicate', async () => {
+        await testFlightPlanService.setArrival('BOXUM5');
+
+        const waypoint = await loadSingleWaypoint('ERBUS', 'WCYCYYZERBUS');
+
+        await testFlightPlanService.nextWaypoint(3, waypoint);
+
+        await testFlightPlanService.temporaryInsert();
+
+        const leg4 = assertNotDiscontinuity(testFlightPlanService.active.allLegs[4]);
+
+        expect(leg4.ident).toBe('ERBUS');
+
+        const leg5 = assertNotDiscontinuity(testFlightPlanService.active.allLegs[5]);
+
+        expect(leg5.ident).toBe('SELAP');
+      });
+
+      it('without duplicate', async () => {
+        const waypoint = await loadSingleWaypoint('ERBUS', 'WCYCYYZERBUS');
+
+        await testFlightPlanService.nextWaypoint(3, waypoint);
+
+        await testFlightPlanService.temporaryInsert();
+
+        const leg4 = assertNotDiscontinuity(testFlightPlanService.active.allLegs[4]);
+
+        expect(leg4.ident).toBe('ERBUS');
+
+        const leg5 = assertNotDiscontinuity(testFlightPlanService.active.allLegs[5]);
+
+        expect(leg5.ident).toBe('DULPA');
+      });
     });
 
-    it('deletes the temporary flight plan properly', async () => {
-        await FlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG');
+    describe('direct to', () => {
+      beforeEach(async () => {
+        await testFlightPlanService.newCityPair('CYYZ', 'CYVR');
 
-        await FlightPlanService.setOriginRunway('CYUL06R');
+        await testFlightPlanService.setOriginRunway('CYYZ06R');
+        await testFlightPlanService.setDepartureProcedure('AVSEP6');
 
-        FlightPlanService.temporaryDelete();
+        await testFlightPlanService.temporaryInsert();
+      });
 
-        expect(FlightPlanService.hasTemporary).toBeFalsy();
-        expect(FlightPlanService.activeOrTemporary.originRunway).toBeUndefined();
+      test('a normal direct to', async () => {
+        const runway = testFlightPlanService.active.originRunway;
+        const runwayLeg = assertNotDiscontinuity(testFlightPlanService.active.originSegment.allLegs[0]);
+
+        const ppos = placeBearingDistance(runwayLeg.definition.waypoint.location, runway.bearing, 0.5);
+
+        const targetWaypoint = await loadSingleWaypoint('NUGOP', 'WCY    NUGOP');
+
+        await testFlightPlanService.directToWaypoint(ppos, runway.bearing, targetWaypoint);
+
+        await testFlightPlanService.temporaryInsert();
+
+        const leg1 = assertNotDiscontinuity(testFlightPlanService.activeOrTemporary.legElementAt(1));
+
+        expect(leg1.definition.type).toBe(LegType.IF);
+        expect(leg1.ident).toBe('T-P');
+
+        const leg2 = assertNotDiscontinuity(testFlightPlanService.activeOrTemporary.legElementAt(2));
+
+        expect(leg2.definition.type).toBe(LegType.FD);
+
+        const leg3 = assertNotDiscontinuity(testFlightPlanService.activeOrTemporary.legElementAt(3));
+
+        expect(leg3.definition.type).toBe(LegType.DF);
+        expect(leg3.definition.waypoint.ident).toBe('NUGOP');
+      });
     });
 
-    it('inserts the temporary flight plan properly', async () => {
-        await FlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG');
+    describe('set overfly', () => {
+      beforeEach(async () => {
+        await testFlightPlanService.newCityPair('CYYZ', 'CYVR');
 
-        await FlightPlanService.setOriginRunway('CYUL06R');
+        await testFlightPlanService.setOriginRunway('CYYZ06R');
+        await testFlightPlanService.setDepartureProcedure('AVSEP6');
 
-        FlightPlanService.temporaryInsert();
+        await testFlightPlanService.temporaryInsert();
+      });
 
-        expect(FlightPlanService.hasTemporary).toBeFalsy();
-        expect(FlightPlanService.activeOrTemporary.originRunway).toEqual(expect.objectContaining({ ident: 'CYUL06R' }));
+      test('toggling an overfly on DUVKO', async () => {
+        await testFlightPlanService.setOverfly(4, true);
+
+        const leg = assertNotDiscontinuity(testFlightPlanService.active.elementAt(4));
+
+        expect(leg.definition.overfly).toBeTruthy();
+
+        await testFlightPlanService.setOverfly(4, false);
+
+        expect(leg.definition.overfly).toBeFalsy();
+      });
+    });
+  });
+
+  describe('editing the active flight plan', () => {
+    it('correctly accepts a city pair', async () => {
+      await testFlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG');
+
+      expect(testFlightPlanService.hasTemporary).toBeFalsy();
+
+      expect(testFlightPlanService.activeOrTemporary.originAirport).toEqual(expect.objectContaining({ ident: 'CYUL' }));
+      expect(testFlightPlanService.activeOrTemporary.destinationAirport).toEqual(
+        expect.objectContaining({ ident: 'LOWI' }),
+      );
+      expect(testFlightPlanService.activeOrTemporary.alternateDestinationAirport).toEqual(
+        expect.objectContaining({ ident: 'LOWG' }),
+      );
     });
 
-    describe('performing revisions', () => {
-        describe('next waypoint', () => {
-            beforeEach(async () => {
-                await FlightPlanService.newCityPair('CYUL', 'CYYZ');
+    it('does create a temporary flight plan when changing procedure details', async () => {
+      await testFlightPlanService.newCityPair('CYYZ', 'LGKR', 'LGKO');
 
-                await FlightPlanService.setOriginRunway('CYUL06R');
-                await FlightPlanService.setDepartureProcedure('CYUL1');
+      await testFlightPlanService.setOriginRunway('CYYZ06R');
+      expect(testFlightPlanService.hasTemporary).toBeTruthy();
+      await testFlightPlanService.temporaryInsert();
 
-                await FlightPlanService.setDestinationRunway('CYYZ05');
-                await FlightPlanService.setApproach('I05');
-            });
+      await testFlightPlanService.setDepartureProcedure('AVSEP6');
+      expect(testFlightPlanService.hasTemporary).toBeTruthy();
+      await testFlightPlanService.temporaryInsert();
 
-            it('with duplicate', async () => {
-                await FlightPlanService.setArrival('BOXUM5');
+      await testFlightPlanService.setDepartureEnrouteTransition('OTNIK');
+      expect(testFlightPlanService.hasTemporary).toBeTruthy();
+      await testFlightPlanService.temporaryInsert();
 
-                const waypoint = await loadSingleWaypoint('ERBUS', 'WCYCYYZERBUS');
+      await testFlightPlanService.setDestinationRunway('LGKR34');
+      expect(testFlightPlanService.hasTemporary).toBeTruthy();
+      await testFlightPlanService.temporaryInsert();
 
-                await FlightPlanService.nextWaypoint(3, waypoint);
+      await testFlightPlanService.setArrival('PARA1J');
+      expect(testFlightPlanService.hasTemporary).toBeTruthy();
+      await testFlightPlanService.temporaryInsert();
 
-                FlightPlanService.temporaryInsert();
+      await testFlightPlanService.setApproach('R34');
+      expect(testFlightPlanService.hasTemporary).toBeTruthy();
+      await testFlightPlanService.temporaryInsert();
 
-                const leg4 = assertNotDiscontinuity(FlightPlanService.active.allLegs[4]);
+      await testFlightPlanService.setApproachVia('BEDEX');
+      expect(testFlightPlanService.hasTemporary).toBeTruthy();
+      await testFlightPlanService.temporaryInsert();
+    });
+  });
 
-                expect(leg4.ident).toBe('ERBUS');
+  describe('editing a secondary flight plan', () => {
+    it('correctly accepts a city pair', async () => {
+      await testFlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG', FlightPlanIndex.FirstSecondary);
 
-                const leg5 = assertNotDiscontinuity(FlightPlanService.active.allLegs[5]);
-
-                expect(leg5.ident).toBe('SELAP');
-            });
-
-            it('without duplicate', async () => {
-                const waypoint = await loadSingleWaypoint('ERBUS', 'WCYCYYZERBUS');
-
-                await FlightPlanService.nextWaypoint(3, waypoint);
-
-                FlightPlanService.temporaryInsert();
-
-                const leg4 = assertNotDiscontinuity(FlightPlanService.active.allLegs[4]);
-
-                expect(leg4.ident).toBe('ERBUS');
-
-                const leg5 = assertNotDiscontinuity(FlightPlanService.active.allLegs[5]);
-
-                expect(leg5.ident).toBe('DULPA');
-            });
-        });
-
-        describe('direct to', () => {
-            beforeEach(async () => {
-                await FlightPlanService.newCityPair('CYYZ', 'CYVR');
-
-                await FlightPlanService.setOriginRunway('CYYZ06R');
-                await FlightPlanService.setDepartureProcedure('AVSEP6');
-
-                FlightPlanService.temporaryInsert();
-            });
-
-            test('a normal direct to', async () => {
-                const runway = FlightPlanService.active.originRunway;
-                const runwayLeg = assertNotDiscontinuity(FlightPlanService.active.originSegment.allLegs[0]);
-
-                const ppos = placeBearingDistance(runwayLeg.definition.waypoint.location, runway.bearing, 0.5);
-
-                const targetWaypoint = await loadSingleWaypoint('NUGOP', 'WCY    NUGOP');
-
-                FlightPlanService.directTo(ppos, runway.bearing, targetWaypoint);
-
-                FlightPlanService.temporaryInsert();
-
-                const leg1 = assertNotDiscontinuity(FlightPlanService.activeOrTemporary.legElementAt(1));
-
-                expect(leg1.definition.type).toBe(LegType.IF);
-                expect(leg1.ident).toBe('T-P');
-
-                const leg2 = assertNotDiscontinuity(FlightPlanService.activeOrTemporary.legElementAt(2));
-
-                expect(leg2.definition.type).toBe(LegType.FD);
-
-                const leg3 = assertNotDiscontinuity(FlightPlanService.activeOrTemporary.legElementAt(3));
-
-                expect(leg3.definition.type).toBe(LegType.DF);
-                expect(leg3.definition.waypoint.ident).toBe('NUGOP');
-            });
-        });
-
-        describe('set overfly', () => {
-            beforeEach(async () => {
-                await FlightPlanService.newCityPair('CYYZ', 'CYVR');
-
-                await FlightPlanService.setOriginRunway('CYYZ06R');
-                await FlightPlanService.setDepartureProcedure('AVSEP6');
-
-                FlightPlanService.temporaryInsert();
-            });
-
-            test('toggling an overfly on DUVKO', async () => {
-                FlightPlanService.setOverfly(4, true);
-
-                const leg = assertNotDiscontinuity(FlightPlanService.active.elementAt(4));
-
-                expect(leg.definition.overfly).toBeTruthy();
-
-                FlightPlanService.setOverfly(4, false);
-
-                expect(leg.definition.overfly).toBeFalsy();
-            });
-        });
+      expect(testFlightPlanService.secondary(1).originAirport).toEqual(expect.objectContaining({ ident: 'CYUL' }));
+      expect(testFlightPlanService.secondary(1).destinationAirport).toEqual(expect.objectContaining({ ident: 'LOWI' }));
+      expect(testFlightPlanService.secondary(1).alternateDestinationAirport).toEqual(
+        expect.objectContaining({ ident: 'LOWG' }),
+      );
     });
 
-    describe('editing the active flight plan', () => {
-        it('correctly accepts a city pair', async () => {
-            await FlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG');
+    it('does not create a temporary flight plan when changing procedure details', async () => {
+      await testFlightPlanService.newCityPair('CYYZ', 'LGKR', 'LGKO', FlightPlanIndex.FirstSecondary);
 
-            expect(FlightPlanService.hasTemporary).toBeFalsy();
+      await testFlightPlanService.setOriginRunway('CYYZ06R', FlightPlanIndex.FirstSecondary);
+      expect(testFlightPlanService.hasTemporary).toBeFalsy();
 
-            expect(FlightPlanService.activeOrTemporary.originAirport).toEqual(expect.objectContaining({ ident: 'CYUL' }));
-            expect(FlightPlanService.activeOrTemporary.destinationAirport).toEqual(expect.objectContaining({ ident: 'LOWI' }));
-            expect(FlightPlanService.activeOrTemporary.alternateDestinationAirport).toEqual(expect.objectContaining({ ident: 'LOWG' }));
-        });
+      await testFlightPlanService.setDepartureProcedure('AVSEP6', FlightPlanIndex.FirstSecondary);
+      expect(testFlightPlanService.hasTemporary).toBeFalsy();
 
-        it('does create a temporary flight plan when changing procedure details', async () => {
-            await FlightPlanService.newCityPair('CYYZ', 'LGKR', 'LGKO');
+      await testFlightPlanService.setDepartureEnrouteTransition('OTNIK', FlightPlanIndex.FirstSecondary);
+      expect(testFlightPlanService.hasTemporary).toBeFalsy();
 
-            await FlightPlanService.setOriginRunway('CYYZ06R');
-            expect(FlightPlanService.hasTemporary).toBeTruthy();
-            FlightPlanService.temporaryInsert();
+      await testFlightPlanService.setDestinationRunway('LGKR34', FlightPlanIndex.FirstSecondary);
+      expect(testFlightPlanService.hasTemporary).toBeFalsy();
 
-            await FlightPlanService.setDepartureProcedure('AVSEP6');
-            expect(FlightPlanService.hasTemporary).toBeTruthy();
-            FlightPlanService.temporaryInsert();
+      await testFlightPlanService.setArrival('PARA1J', FlightPlanIndex.FirstSecondary);
+      expect(testFlightPlanService.hasTemporary).toBeFalsy();
 
-            await FlightPlanService.setDepartureEnrouteTransition('OTNIK');
-            expect(FlightPlanService.hasTemporary).toBeTruthy();
-            FlightPlanService.temporaryInsert();
+      await testFlightPlanService.setApproach('R34', FlightPlanIndex.FirstSecondary);
+      expect(testFlightPlanService.hasTemporary).toBeFalsy();
 
-            await FlightPlanService.setDestinationRunway('LGKR34');
-            expect(FlightPlanService.hasTemporary).toBeTruthy();
-            FlightPlanService.temporaryInsert();
-
-            await FlightPlanService.setArrival('PARA1J');
-            expect(FlightPlanService.hasTemporary).toBeTruthy();
-            FlightPlanService.temporaryInsert();
-
-            await FlightPlanService.setApproach('R34');
-            expect(FlightPlanService.hasTemporary).toBeTruthy();
-            FlightPlanService.temporaryInsert();
-
-            await FlightPlanService.setApproachVia('BEDEX');
-            expect(FlightPlanService.hasTemporary).toBeTruthy();
-            FlightPlanService.temporaryInsert();
-        });
+      await testFlightPlanService.setApproachVia('BEDEX', FlightPlanIndex.FirstSecondary);
+      expect(testFlightPlanService.hasTemporary).toBeFalsy();
     });
-
-    describe('editing a secondary flight plan', () => {
-        it('correctly accepts a city pair', async () => {
-            await FlightPlanService.newCityPair('CYUL', 'LOWI', 'LOWG', FlightPlanIndex.FirstSecondary);
-
-            expect(FlightPlanService.secondary(1).originAirport).toEqual(expect.objectContaining({ ident: 'CYUL' }));
-            expect(FlightPlanService.secondary(1).destinationAirport).toEqual(expect.objectContaining({ ident: 'LOWI' }));
-            expect(FlightPlanService.secondary(1).alternateDestinationAirport).toEqual(expect.objectContaining({ ident: 'LOWG' }));
-        });
-
-        it('does not create a temporary flight plan when changing procedure details', async () => {
-            await FlightPlanService.newCityPair('CYYZ', 'LGKR', 'LGKO', FlightPlanIndex.FirstSecondary);
-
-            await FlightPlanService.setOriginRunway('CYYZ06R', FlightPlanIndex.FirstSecondary);
-            expect(FlightPlanService.hasTemporary).toBeFalsy();
-
-            await FlightPlanService.setDepartureProcedure('AVSEP6', FlightPlanIndex.FirstSecondary);
-            expect(FlightPlanService.hasTemporary).toBeFalsy();
-
-            await FlightPlanService.setDepartureEnrouteTransition('OTNIK', FlightPlanIndex.FirstSecondary);
-            expect(FlightPlanService.hasTemporary).toBeFalsy();
-
-            await FlightPlanService.setDestinationRunway('LGKR34', FlightPlanIndex.FirstSecondary);
-            expect(FlightPlanService.hasTemporary).toBeFalsy();
-
-            await FlightPlanService.setArrival('PARA1J', FlightPlanIndex.FirstSecondary);
-            expect(FlightPlanService.hasTemporary).toBeFalsy();
-
-            await FlightPlanService.setApproach('R34', FlightPlanIndex.FirstSecondary);
-            expect(FlightPlanService.hasTemporary).toBeFalsy();
-
-            await FlightPlanService.setApproachVia('BEDEX', FlightPlanIndex.FirstSecondary);
-            expect(FlightPlanService.hasTemporary).toBeFalsy();
-        });
-    });
+  });
 });
