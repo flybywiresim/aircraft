@@ -2216,8 +2216,6 @@ export class FwsCore {
     const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEngFault.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
-    // FIXME should be OVHD_PNEU_ENG_index_BLEED_PB_IS_AUTO to fetch the push button status separately from the bleed status
-    // Right now we can't differentiate between manual OFF and a bleed fault
     this.eng1BleedAbnormalOff.set(
       this.engine1Running.get() &&
         !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
