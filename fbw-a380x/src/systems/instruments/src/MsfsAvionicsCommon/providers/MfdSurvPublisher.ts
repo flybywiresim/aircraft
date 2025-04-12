@@ -2,11 +2,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { VerticalPathCheckpoint } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, VerticalPathCheckpoint } from '@flybywiresim/fbw-sdk';
 
 /**
  * Transmitted from MFD to SURV components
  */
+
+export interface VdAltitudeConstraint {
+  altitudeConstraint?: AltitudeConstraint;
+  /** Whether altitude constraint will be met */
+  isAltitudeConstraintMet?: boolean;
+}
 export interface MfdSurvEvents {
   /** (MFD SURV -> RMP) Is AUTO (true) or STBY (false). */
   mfd_xpdr_set_auto: boolean;
@@ -22,6 +28,8 @@ export interface MfdSurvEvents {
   a32nx_fms_vertical_descent_profile: VerticalPathCheckpoint[];
   /** (FMS -> TERR SYS) FMS active flight plan descent profile for vertical display */
   a32nx_fms_vertical_actual_profile: VerticalPathCheckpoint[];
+  /** (FMS -> TERR SYS) FMS active flight plan descent profile for vertical display */
+  a32nx_fms_vertical_constraints: VdAltitudeConstraint[];
   /** (FMS -> TERR SYS) At which distance track changes by more than three degrees (for VD grey area) */
   a32nx_fms_vd_track_change_distance: number | null;
 }

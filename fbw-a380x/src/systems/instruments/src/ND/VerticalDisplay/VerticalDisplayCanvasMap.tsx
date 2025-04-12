@@ -37,14 +37,13 @@ import { GenericFmsEvents } from '../../../../../../../fbw-common/src/systems/in
 import { GenericFcuEvents } from '@flybywiresim/navigation-display';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { A380XFcuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/A380XFcuBusPublisher';
+import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export interface VerticalDisplayCanvasMapProps extends ComponentProps {
   bus: ArincEventBus;
   side: EfisSide;
   visible: Subscribable<'block' | 'none'>;
   fmsTargetVdProfile: Subscribable<VerticalPathCheckpoint[]>;
-  fmsActualVdProfile: Subscribable<VerticalPathCheckpoint[]>;
-  fmsDescentVdProfile: Subscribable<VerticalPathCheckpoint[]>;
   vdRange: Subscribable<number>;
   verticalRange: Subscribable<[number, number]>;
   isSelectedVerticalMode: Subscribable<boolean>;
@@ -65,8 +64,13 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       GenericFmsEvents &
       FGVars &
       A380XFcuBusEvents &
-      FmsData
+      FmsData &
+      MfdSurvEvents
   >();
+
+  private readonly fmsActualVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_actual_profile'), []);
+  private readonly fmsDescentVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_descent_profile'), []);
+  private readonly fmsConstraints = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_constraints'), []);
 
   private readonly fmsSymbols = ConsumerSubject.create(this.sub.on(`vdSymbols_${this.props.side}`), []);
 
@@ -88,9 +92,9 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
   private readonly offsetDistance = this.props.fmsTargetVdProfile.map((_path) => 0);
 
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
-  private readonly selectedVs = ConsumerSubject.create(this.sub.on('a380x_fcu_selected_vertical_speed'), 0);
+  /* private readonly selectedVs = ConsumerSubject.create(this.sub.on('a380x_fcu_selected_vertical_speed'), 0);
   private readonly selectedFpa = ConsumerSubject.create(this.sub.on('a380x_fcu_selected_fpa'), 0);
-  private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0); // FIXME ADIRS selection for ND not implemented yet
+  private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0); // FIXME ADIRS selection for ND not implemented yet */
 
   private readonly mapRecomputing = ConsumerSubject.create(this.sub.on('set_map_recomputing'), false);
 
@@ -151,7 +155,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       context.setLineDash([10, 10]);
     }
 
-    const targetIsDashed = this.props.fmsActualVdProfile.get().length > 0;
+    const targetIsDashed = this.fmsActualVdProfile.get().length > 1;
 
     if (this.props.fmsTargetVdProfile.get().length > 0) {
       context.beginPath();
@@ -177,27 +181,50 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       context.stroke();
     }
 
-    if (this.props.fmsActualVdProfile.get().length > 0) {
+    if (this.fmsDescentVdProfile.get().length > 0) {
       context.beginPath();
-      context.setLineDash([]);
-      // console.log(this.props.fmsActualVdProfile.get());
+      if (targetIsDashed) {
+        context.setLineDash([10, 10]);
+      }
+
       context.moveTo(
         VerticalDisplayCanvasMap.distanceToX(
-          this.props.fmsActualVdProfile.get()[0].distanceFromAircraft,
+          this.fmsDescentVdProfile.get()[0].distanceFromAircraft,
           vdRange,
           this.offsetDistance.get(),
         ),
         VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
       );
 
-      for (const pe of this.props.fmsActualVdProfile.get()) {
+      for (const pe of this.fmsDescentVdProfile.get()) {
+        context.lineTo(
+          VerticalDisplayCanvasMap.distanceToX(pe.distanceFromAircraft, vdRange, this.offsetDistance.get()),
+          VerticalDisplayCanvasMap.altToY(pe.altitude, verticalRange),
+        );
+      }
+      context.stroke();
+    }
+
+    if (targetIsDashed) {
+      context.beginPath();
+      context.setLineDash([]);
+      context.moveTo(
+        VerticalDisplayCanvasMap.distanceToX(
+          this.fmsActualVdProfile.get()[0].distanceFromAircraft,
+          vdRange,
+          this.offsetDistance.get(),
+        ),
+        VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
+      );
+
+      for (const pe of this.fmsActualVdProfile.get()) {
         context.lineTo(
           VerticalDisplayCanvasMap.distanceToX(pe.distanceFromAircraft, vdRange, this.offsetDistance.get()),
           VerticalDisplayCanvasMap.altToY(pe.altitude, verticalRange),
         );
       }
 
-      const lastElement = this.props.fmsActualVdProfile.get()[this.props.fmsActualVdProfile.get().length - 1];
+      const lastElement = this.fmsActualVdProfile.get()[this.fmsActualVdProfile.get().length - 1];
       context.lineTo(
         VerticalDisplayCanvasMap.distanceToX(540, vdRange, this.offsetDistance.get()),
         VerticalDisplayCanvasMap.altToY(lastElement.altitude, verticalRange),
@@ -291,8 +318,8 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
 
     this.subscriptions.push(
       this.props.fmsTargetVdProfile.sub(() => this.handlePathFrame()),
-      this.props.fmsDescentVdProfile.sub(() => this.handlePathFrame()),
-      this.props.fmsActualVdProfile.sub(() => this.handlePathFrame()),
+      this.fmsDescentVdProfile.sub(() => this.handlePathFrame()),
+      this.fmsActualVdProfile.sub(() => this.handlePathFrame()),
       this.fmsSymbols.sub(() => {
         this.handleNewSymbols();
         this.handlePathFrame();
@@ -300,6 +327,9 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     );
 
     this.subscriptions.push(
+      this.fmsActualVdProfile,
+      this.fmsDescentVdProfile,
+      this.fmsConstraints,
       this.fmsSymbols,
       this.pposLat,
       this.pposLon,

@@ -1,5 +1,4 @@
 import { Coordinates } from 'msfs-geo';
-import { AltitudeConstraint } from '../../fmgc';
 
 export enum PathVectorType {
   Line,
@@ -42,8 +41,4 @@ export interface VerticalPathCheckpoint {
   distanceFromAircraft: number;
   /** Predicted altitude */
   altitude: number;
-  /** Whether altitude constraint is present */
-  altitudeConstraint?: AltitudeConstraint;
-  /** Whether altitude constraint will be met */
-  isAltitudeConstraintMet?: boolean;
 }

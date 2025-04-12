@@ -57,6 +57,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -1101,7 +1102,7 @@ export class FlightManagementComputer implements FmcInterface {
     const plan: ReadonlyFlightPlan = this.flightPlanService.active;
 
     if (!predictions || !this.flightPlanService.hasActive) {
-      this.acInterface.transmitVerticalPath([], [], [], null);
+      this.acInterface.transmitVerticalPath([], [], [], [], null);
       return;
     }
 
@@ -1110,42 +1111,34 @@ export class FlightManagementComputer implements FmcInterface {
     const actualProfile = this.guidanceController.vnavDriver.ndProfile;
 
     const targetProfileVd: VerticalPathCheckpoint[] = [];
-    let lastDistance = 0;
+    // let lastDistance = 0;
     const showFromLegIndex = Math.max(0, plan.activeLegIndex - 1);
 
     if (targetProfile) {
       targetProfile.checkpoints.forEach((c) => {
         const currentDistance = targetProfile.distanceToPresentPosition;
 
-        // If there's a waypoint between lastDistance and next/current distance, insert its prediction to also get constraints
-        plan.allLegs.slice(showFromLegIndex).forEach((leg, legIndex) => {
-          const legPrediction = predictions.get(legIndex + showFromLegIndex);
-
-          if (
-            leg.isDiscontinuity === false &&
-            legPrediction &&
-            legPrediction?.distanceFromAircraft >= lastDistance &&
-            legPrediction?.distanceFromAircraft < c.distanceFromStart - currentDistance
-          ) {
-            targetProfileVd.push({
-              distanceFromAircraft: legPrediction.distanceFromAircraft,
-              altitude: legPrediction.altitude,
-              altitudeConstraint: legPrediction.altitudeConstraint,
-              isAltitudeConstraintMet: legPrediction.isAltitudeConstraintMet,
-            });
-          }
-        });
-
         targetProfileVd.push({
           distanceFromAircraft: c.distanceFromStart - currentDistance,
           altitude: c.altitude,
-          altitudeConstraint: undefined,
-          isAltitudeConstraintMet: undefined,
         });
 
-        lastDistance = c.distanceFromStart - currentDistance;
+        // lastDistance = c.distanceFromStart - currentDistance;
       });
     }
+
+    // If there's a waypoint between lastDistance and next/current distance, insert its prediction to also get constraints
+    const vdAltitudeConstraints: VdAltitudeConstraint[] = plan.allLegs
+      .slice(showFromLegIndex)
+      .filter((leg, legIndex) => leg.isDiscontinuity === false && predictions.get(legIndex + showFromLegIndex))
+      .map((_, legIndex) => {
+        const legPrediction = predictions.get(legIndex + showFromLegIndex);
+
+        return {
+          altitudeConstraint: legPrediction?.altitudeConstraint,
+          isAltitudeConstraintMet: legPrediction?.isAltitudeConstraintMet,
+        };
+      });
 
     const descentProfileVd: VerticalPathCheckpoint[] = descentProfile
       ? descentProfile.checkpoints.map((c) => {
@@ -1195,6 +1188,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     this.acInterface.transmitVerticalPath(
       targetProfileVd,
+      vdAltitudeConstraints,
       actualProfileVd,
       descentProfileVd,
       trackChangesSignificantlyAtDistance,

@@ -87,8 +87,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
   private readonly fmsTargetVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_target_profile'), []);
-  private readonly fmsActualVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_actual_profile'), []);
-  private readonly fmsDescentVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_descent_profile'), []);
   private readonly displayedFmsPath = MappedSubject.create(
     ([path, ndRange]) => {
       const fmsPathToDisplay: VerticalPathCheckpoint[] = [];
@@ -413,8 +411,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.vdRange,
       this.fmsLateralPath,
       this.fmsTargetVdProfile,
-      this.fmsActualVdProfile,
-      this.fmsDescentVdProfile,
       this.displayedFmsPath,
       this.mapRecomputing,
       this.mapRecomputingReason,
@@ -638,8 +634,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           side={this.props.side}
           visible={this.visible}
           fmsTargetVdProfile={this.fmsTargetVdProfile}
-          fmsActualVdProfile={this.fmsActualVdProfile}
-          fmsDescentVdProfile={this.fmsDescentVdProfile}
           vdRange={this.vdRange}
           verticalRange={this.verticalRange}
           isSelectedVerticalMode={this.isSelectedVerticalMode}

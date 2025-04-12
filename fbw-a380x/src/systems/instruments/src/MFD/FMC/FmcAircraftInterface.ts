@@ -33,7 +33,7 @@ import { VerticalMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -1877,11 +1877,13 @@ export class FmcAircraftInterface {
 
   public transmitVerticalPath(
     targetProfile: VerticalPathCheckpoint[],
+    vdAltitudeConstraints: VdAltitudeConstraint[],
     actualProfile: VerticalPathCheckpoint[],
     descentProfile: VerticalPathCheckpoint[],
     trackChangeDistance: number | null,
   ) {
     this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vertical_target_profile', targetProfile, true);
+    this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vertical_constraints', vdAltitudeConstraints, true);
     this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vertical_actual_profile', actualProfile, true);
     this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vertical_descent_profile', descentProfile, true);
     this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vd_track_change_distance', trackChangeDistance, true);
