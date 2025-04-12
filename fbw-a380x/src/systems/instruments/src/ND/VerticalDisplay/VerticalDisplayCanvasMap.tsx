@@ -4,7 +4,6 @@
   ArincEventBus,
   EfisSide,
   FmsData,
-  MathUtils,
   NdSymbolTypeFlags,
   VerticalPathCheckpoint,
 } from '@flybywiresim/fbw-sdk';
@@ -43,7 +42,9 @@ export interface VerticalDisplayCanvasMapProps extends ComponentProps {
   bus: ArincEventBus;
   side: EfisSide;
   visible: Subscribable<'block' | 'none'>;
-  fmsVerticalPath: Subscribable<VerticalPathCheckpoint[]>;
+  fmsTargetVdProfile: Subscribable<VerticalPathCheckpoint[]>;
+  fmsActualVdProfile: Subscribable<VerticalPathCheckpoint[]>;
+  fmsDescentVdProfile: Subscribable<VerticalPathCheckpoint[]>;
   vdRange: Subscribable<number>;
   verticalRange: Subscribable<[number, number]>;
   isSelectedVerticalMode: Subscribable<boolean>;
@@ -84,7 +85,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     this.baroCorrectedAltitude,
   );
 
-  private readonly offsetDistance = this.props.fmsVerticalPath.map((_path) => 0);
+  private readonly offsetDistance = this.props.fmsTargetVdProfile.map((_path) => 0);
 
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
   private readonly selectedVs = ConsumerSubject.create(this.sub.on('a380x_fcu_selected_vertical_speed'), 0);
@@ -129,71 +130,15 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     const vdRange = this.props.vdRange.get();
     const verticalRange = this.props.verticalRange.get();
 
-    context.beginPath();
     context.strokeStyle = '#0f0';
     context.lineWidth = 2;
-    context.setLineDash([]);
 
-    if (this.props.isSelectedVerticalMode.get() && !this.props.fpa.get().isFailureWarning()) {
-      // Draw selected path, FPA until selected alt
-      context.moveTo(
-        VerticalDisplayCanvasMap.distanceToX(0, vdRange, this.offsetDistance.get()),
-        VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
-      );
-
-      let selectedVerticalAngle = this.props.fpa.get().valueOr(0) * VD_FPA_TO_DISPLAY_ANGLE;
-      switch (this.activeVerticalMode.get()) {
-        case VerticalMode.VS:
-          selectedVerticalAngle =
-            !this.groundSpeed.get().isFailureWarning() && this.groundSpeed.get().value > 10
-              ? Math.sign(this.selectedVs.get()) *
-                Math.atan2(this.groundSpeed.get().value, this.selectedVs.get()) *
-                VD_FPA_TO_DISPLAY_ANGLE
-              : 0;
-          break;
-        case VerticalMode.FPA:
-          selectedVerticalAngle = this.selectedFpa.get() * VD_FPA_TO_DISPLAY_ANGLE;
-          break;
-        default:
-          selectedVerticalAngle = this.props.fpa.get().valueOr(0) * VD_FPA_TO_DISPLAY_ANGLE;
-          break;
-      }
-      const selectedM = Math.tan(selectedVerticalAngle * MathUtils.DEGREES_TO_RADIANS);
-      const fpaY = (x: number) =>
-        selectedM * x + VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange);
-
-      const isConstrained =
-        (selectedVerticalAngle > 0 && this.props.selectedAltitude.get() > this.baroCorrectedAltitude.get().value) ||
-        (selectedVerticalAngle < 0 && this.props.selectedAltitude.get() < this.baroCorrectedAltitude.get().value);
-
-      const vsMatchesTarget = Math.sign(selectedVerticalAngle) === Math.sign(this.props.fpa.get().value);
-
-      if (isConstrained && vsMatchesTarget) {
-        // Draw current FPA until constraint, then the constraint alt
-        const altInterceptDistance =
-          (this.props.selectedAltitude.get() - this.baroCorrectedAltitude.get().value) /
-          MathUtils.FEET_TO_NAUTICAL_MILES /
-          Math.sin(this.props.fpa.get().value * MathUtils.DEGREES_TO_RADIANS);
-
-        context.lineTo(
-          VerticalDisplayCanvasMap.distanceToX(altInterceptDistance, this.props.vdRange.get()),
-          VerticalDisplayCanvasMap.altToY(this.props.selectedAltitude.get(), verticalRange),
-        );
-        context.lineTo(
-          VERTICAL_DISPLAY_CANVAS_WIDTH,
-          VerticalDisplayCanvasMap.altToY(this.props.selectedAltitude.get(), verticalRange),
-        );
-      } else {
-        // Draw current FPA
-        context.lineTo(VERTICAL_DISPLAY_CANVAS_WIDTH, fpaY(VERTICAL_DISPLAY_CANVAS_WIDTH));
-      }
-
-      context.stroke();
-      context.setLineDash([10, 10]);
-    } else if (
+    if (
       this.props.shouldShowTrackLine.get() &&
       (this.activeVerticalMode.get() === VerticalMode.ALT || this.activeVerticalMode.get() === VerticalMode.ALT_CPT)
     ) {
+      context.beginPath();
+      context.setLineDash([]);
       context.moveTo(
         VerticalDisplayCanvasMap.distanceToX(0, vdRange, this.offsetDistance.get()),
         VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
@@ -206,17 +151,24 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       context.setLineDash([10, 10]);
     }
 
-    if (this.props.fmsVerticalPath.get().length > 0) {
+    const targetIsDashed = this.props.fmsActualVdProfile.get().length > 0;
+
+    if (this.props.fmsTargetVdProfile.get().length > 0) {
+      context.beginPath();
+      if (targetIsDashed) {
+        context.setLineDash([10, 10]);
+      }
+
       context.moveTo(
         VerticalDisplayCanvasMap.distanceToX(
-          this.props.fmsVerticalPath.get()[0].distanceFromAircraft,
+          this.props.fmsTargetVdProfile.get()[0].distanceFromAircraft,
           vdRange,
           this.offsetDistance.get(),
         ),
         VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
       );
 
-      for (const pe of this.props.fmsVerticalPath.get()) {
+      for (const pe of this.props.fmsTargetVdProfile.get()) {
         context.lineTo(
           VerticalDisplayCanvasMap.distanceToX(pe.distanceFromAircraft, vdRange, this.offsetDistance.get()),
           VerticalDisplayCanvasMap.altToY(pe.altitude, verticalRange),
@@ -224,7 +176,34 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       }
       context.stroke();
     }
-    context.setLineDash([]);
+
+    if (this.props.fmsActualVdProfile.get().length > 0) {
+      context.beginPath();
+      context.setLineDash([]);
+      // console.log(this.props.fmsActualVdProfile.get());
+      context.moveTo(
+        VerticalDisplayCanvasMap.distanceToX(
+          this.props.fmsActualVdProfile.get()[0].distanceFromAircraft,
+          vdRange,
+          this.offsetDistance.get(),
+        ),
+        VerticalDisplayCanvasMap.altToY(this.baroCorrectedAltitude.get().value, verticalRange),
+      );
+
+      for (const pe of this.props.fmsActualVdProfile.get()) {
+        context.lineTo(
+          VerticalDisplayCanvasMap.distanceToX(pe.distanceFromAircraft, vdRange, this.offsetDistance.get()),
+          VerticalDisplayCanvasMap.altToY(pe.altitude, verticalRange),
+        );
+      }
+
+      const lastElement = this.props.fmsActualVdProfile.get()[this.props.fmsActualVdProfile.get().length - 1];
+      context.lineTo(
+        VerticalDisplayCanvasMap.distanceToX(540, vdRange, this.offsetDistance.get()),
+        VerticalDisplayCanvasMap.altToY(lastElement.altitude, verticalRange),
+      );
+      context.stroke();
+    }
 
     this.waypointLayer.paintShadowLayer(
       context,
@@ -311,7 +290,9 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     super.onAfterRender(node);
 
     this.subscriptions.push(
-      this.props.fmsVerticalPath.sub(() => this.handlePathFrame()),
+      this.props.fmsTargetVdProfile.sub(() => this.handlePathFrame()),
+      this.props.fmsDescentVdProfile.sub(() => this.handlePathFrame()),
+      this.props.fmsActualVdProfile.sub(() => this.handlePathFrame()),
       this.fmsSymbols.sub(() => {
         this.handleNewSymbols();
         this.handlePathFrame();

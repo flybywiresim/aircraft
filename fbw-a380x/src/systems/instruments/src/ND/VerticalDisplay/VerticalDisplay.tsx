@@ -86,7 +86,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
-  private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_path'), []);
+  private readonly fmsTargetVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_target_profile'), []);
+  private readonly fmsActualVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_actual_profile'), []);
+  private readonly fmsDescentVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_descent_profile'), []);
   private readonly displayedFmsPath = MappedSubject.create(
     ([path, ndRange]) => {
       const fmsPathToDisplay: VerticalPathCheckpoint[] = [];
@@ -99,7 +101,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       }
       return fmsPathToDisplay;
     },
-    this.fmsVerticalPath,
+    this.fmsTargetVdProfile,
     this.vdRange,
   );
 
@@ -410,7 +412,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.ndRangeSetting,
       this.vdRange,
       this.fmsLateralPath,
-      this.fmsVerticalPath,
+      this.fmsTargetVdProfile,
+      this.fmsActualVdProfile,
+      this.fmsDescentVdProfile,
       this.displayedFmsPath,
       this.mapRecomputing,
       this.mapRecomputingReason,
@@ -575,7 +579,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.ndMode.get() === EfisNdMode.ROSE_NAV ? this.ndRangeSetting.get() / 2 : this.ndRangeSetting.get();
     const vdAndNdRangeDisagreeing = this.vdRange.get() !== ndRange;
     if (isInVdMapMode && !this.shouldShowTrackLine.get() && this.fmsLateralPath.get()) {
-      let totalDistanceFromAircraft = this.fmsVerticalPath?.get()[0]?.distanceFromAircraft ?? 0;
+      let totalDistanceFromAircraft = this.fmsTargetVdProfile?.get()[0]?.distanceFromAircraft ?? 0;
       for (const path of this.fmsLateralPath.get()) {
         const pathDistance = pathVectorLength(path);
 
@@ -633,7 +637,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           bus={this.props.bus}
           side={this.props.side}
           visible={this.visible}
-          fmsVerticalPath={this.fmsVerticalPath}
+          fmsTargetVdProfile={this.fmsTargetVdProfile}
+          fmsActualVdProfile={this.fmsActualVdProfile}
+          fmsDescentVdProfile={this.fmsDescentVdProfile}
           vdRange={this.vdRange}
           verticalRange={this.verticalRange}
           isSelectedVerticalMode={this.isSelectedVerticalMode}

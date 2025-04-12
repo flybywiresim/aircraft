@@ -1031,10 +1031,10 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateMinimums(destPred.distanceFromAircraft);
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-        this.updateVerticalPath();
       }
       this.checkZfwParams();
       this.updateMessageQueue();
+      this.updateVerticalPath();
 
       this.acInterface.checkSpeedLimit();
       this.acInterface.thrustReductionAccelerationChecks();
@@ -1105,10 +1105,110 @@ export class FlightManagementComputer implements FmcInterface {
   private updateVerticalPath() {
     // Transmit active vertical geometry
     const predictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
-    const pwp = this.guidanceController.pseudoWaypoints.pseudoWaypoints;
+    // const pwp = this.guidanceController.pseudoWaypoints.pseudoWaypoints;
     const plan: ReadonlyFlightPlan = this.flightPlanService.active;
 
-    const verticalVectors: VerticalPathCheckpoint[] = [];
+    if (!predictions || !this.flightPlanService.hasActive) {
+      this.acInterface.transmitVerticalPath([], [], [], null);
+      return;
+    }
+
+    const targetProfile = this.guidanceController.vnavDriver.mcduProfile;
+    const descentProfile = this.guidanceController.vnavDriver.descentProfile;
+    const actualProfile = this.guidanceController.vnavDriver.ndProfile;
+
+    const targetProfileVd: VerticalPathCheckpoint[] = [];
+    let lastDistance = 0;
+    const showFromLegIndex = Math.max(0, plan.activeLegIndex - 1);
+
+    if (targetProfile) {
+      targetProfile.checkpoints.forEach((c) => {
+        const currentDistance = targetProfile.distanceToPresentPosition;
+
+        // If there's a waypoint between lastDistance and next/current distance, insert its prediction to also get constraints
+        plan.allLegs.slice(showFromLegIndex).forEach((leg, legIndex) => {
+          const legPrediction = predictions.get(legIndex + showFromLegIndex);
+
+          if (
+            leg.isDiscontinuity === false &&
+            legPrediction &&
+            legPrediction?.distanceFromAircraft >= lastDistance &&
+            legPrediction?.distanceFromAircraft < c.distanceFromStart - currentDistance
+          ) {
+            targetProfileVd.push({
+              distanceFromAircraft: legPrediction.distanceFromAircraft,
+              altitude: legPrediction.altitude,
+              altitudeConstraint: legPrediction.altitudeConstraint,
+              isAltitudeConstraintMet: legPrediction.isAltitudeConstraintMet,
+            });
+          }
+        });
+
+        targetProfileVd.push({
+          distanceFromAircraft: c.distanceFromStart - currentDistance,
+          altitude: c.altitude,
+          altitudeConstraint: undefined,
+          isAltitudeConstraintMet: undefined,
+        });
+
+        lastDistance = c.distanceFromStart - currentDistance;
+      });
+    }
+
+    const descentProfileVd: VerticalPathCheckpoint[] = descentProfile
+      ? descentProfile.checkpoints.map((c) => {
+          return {
+            distanceFromAircraft: c.distanceFromStart - descentProfile.distanceToPresentPosition,
+            altitude: c.altitude,
+            altitudeConstraint: undefined,
+            isAltitudeConstraintMet: undefined,
+          };
+        })
+      : [];
+
+    const actualProfileVd: VerticalPathCheckpoint[] = actualProfile
+      ? actualProfile.checkpoints.map((c) => {
+          return {
+            distanceFromAircraft: c.distanceFromStart - actualProfile.distanceToPresentPosition,
+            altitude: c.altitude,
+            altitudeConstraint: undefined,
+            isAltitudeConstraintMet: undefined,
+          };
+        })
+      : [];
+
+    // Start of grey area
+    let lastBearing: number | null = null;
+    let trackChangesSignificantlyAtDistance: number | null = null;
+    const previousLeg = plan.allLegs[showFromLegIndex - 1];
+    let lastLegLatLong: Coordinates =
+      showFromLegIndex > 0 && previousLeg.isDiscontinuity === false && previousLeg.definition.waypoint
+        ? previousLeg.definition.waypoint.location
+        : this.guidanceController.lnavDriver.ppos;
+
+    plan.allLegs.slice(showFromLegIndex).forEach((leg, legIndex) => {
+      const legPrediction = predictions.get(legIndex + showFromLegIndex);
+      if (leg.isDiscontinuity === false && legPrediction) {
+        if (leg.definition.waypoint && trackChangesSignificantlyAtDistance === null) {
+          const bearing = bearingTo(lastLegLatLong, leg.definition.waypoint.location);
+          if (lastBearing !== null && Math.abs(lastBearing - bearing) > 3) {
+            trackChangesSignificantlyAtDistance = legPrediction.distanceFromAircraft;
+          }
+          lastBearing = bearing;
+        }
+
+        lastLegLatLong = leg.definition.waypoint?.location ?? lastLegLatLong;
+      }
+    });
+
+    this.acInterface.transmitVerticalPath(
+      targetProfileVd,
+      actualProfileVd,
+      descentProfileVd,
+      trackChangesSignificantlyAtDistance,
+    );
+
+    /*const verticalVectors: VerticalDisplayCheckpoint[] = [];
     if (predictions) {
       const showFromLegIndex = Math.max(0, plan.activeLegIndex - 1);
       const previousLeg = plan.allLegs[showFromLegIndex - 1];
@@ -1126,27 +1226,27 @@ export class FlightManagementComputer implements FmcInterface {
                 altitude: pw.flightPlanInfo?.altitude,
                 altitudeConstraint: undefined,
                 isAltitudeConstraintMet: undefined,
-                trackToTerminationWaypoint: leg.definition.waypoint
-                  ? bearingTo(lastLegLatLong, leg.definition.waypoint.location)
-                  : null,
               });
             }
           });
+
+          if (leg.definition.waypoint && trackChangesSignificantlyAtDistance === 0) {
+            const bearing = bearingTo(lastLegLatLong, leg.definition.waypoint.location);
+            if (lastBearing !== null && Math.abs(lastBearing - bearing) > 3) {
+              trackChangesSignificantlyAtDistance = legPrediction.distanceFromAircraft;
+            }
+          }
 
           verticalVectors.push({
             distanceFromAircraft: legPrediction.distanceFromAircraft,
             altitude: legPrediction.altitude,
             altitudeConstraint: legPrediction.altitudeConstraint,
             isAltitudeConstraintMet: legPrediction.isAltitudeConstraintMet,
-            trackToTerminationWaypoint: leg.definition.waypoint
-              ? bearingTo(lastLegLatLong, leg.definition.waypoint.location)
-              : null,
           });
           lastLegLatLong = leg.definition.waypoint?.location ?? lastLegLatLong;
         }
       });
-    }
-    this.acInterface.transmitVerticalPath(verticalVectors);
+    }*/
   }
 
   async swapNavDatabase(): Promise<void> {

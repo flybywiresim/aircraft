@@ -258,6 +258,10 @@ export class VnavDriver implements GuidanceComponent {
     return this.profileManager.expediteProfile;
   }
 
+  get descentProfile(): BaseGeometryProfile | undefined {
+    return this.profileManager.descentProfile;
+  }
+
   private updateDescentSpeedGuidance() {
     if (!this.ndProfile?.isReadyToDisplay) {
       return;

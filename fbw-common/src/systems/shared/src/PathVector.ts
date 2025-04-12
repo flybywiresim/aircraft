@@ -46,6 +46,4 @@ export interface VerticalPathCheckpoint {
   altitudeConstraint?: AltitudeConstraint;
   /** Whether altitude constraint will be met */
   isAltitudeConstraintMet?: boolean;
-  /** Track from last waypoint, in degrees. Null if can't be determined, e.g. missing termination */
-  trackToTerminationWaypoint: number | null;
 }

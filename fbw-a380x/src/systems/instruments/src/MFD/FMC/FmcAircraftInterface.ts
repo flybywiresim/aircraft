@@ -1875,8 +1875,16 @@ export class FmcAircraftInterface {
     }
   }
 
-  public transmitVerticalPath(verticalPath: VerticalPathCheckpoint[]) {
-    this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vertical_path', verticalPath, true);
+  public transmitVerticalPath(
+    targetProfile: VerticalPathCheckpoint[],
+    actualProfile: VerticalPathCheckpoint[],
+    descentProfile: VerticalPathCheckpoint[],
+    trackChangeDistance: number | null,
+  ) {
+    this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vertical_target_profile', targetProfile, true);
+    this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vertical_actual_profile', actualProfile, true);
+    this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vertical_descent_profile', descentProfile, true);
+    this.bus.getPublisher<MfdSurvEvents>().pub('a32nx_fms_vd_track_change_distance', trackChangeDistance, true);
   }
 
   //-----------------------------------------------------------------------------------

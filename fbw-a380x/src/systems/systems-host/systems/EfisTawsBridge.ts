@@ -356,7 +356,6 @@ export class EfisTawsBridge implements Instrument {
 
   // FIXME receive path over complete distance
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
-  private readonly fmsVerticalPath = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_path'), []);
 
   private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_1'));
   private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_2'));
@@ -397,27 +396,10 @@ export class EfisTawsBridge implements Instrument {
   );
 
   /** If track from one segment differs more than 3° from previous track, paint grey area */
-  // FIXME this only works on a line segment granularity, i.e. lines that are being sent to the VD
-  // FIXME increase distance resolution/granularity
-  private readonly trackChangeDistance = MappedSubject.create(([path]) => {
-    if (!path || path.length === 0) {
-      return -1;
-    }
-
-    let currentTrack = null;
-
-    for (const segment of path) {
-      if (segment.trackToTerminationWaypoint === null || segment.distanceFromAircraft < 0) {
-        continue;
-      }
-
-      if (currentTrack !== null && Math.abs(segment.trackToTerminationWaypoint - currentTrack) > 3) {
-        return segment.distanceFromAircraft;
-      }
-      currentTrack = segment.trackToTerminationWaypoint;
-    }
-    return -1;
-  }, this.fmsVerticalPath);
+  private readonly trackChangeDistance = ConsumerSubject.create(
+    this.sub.on('a32nx_fms_vd_track_change_distance'),
+    null,
+  );
 
   private readonly terrVdPathData = MappedSubject.create(
     ([fmsPath, trackChangeDistance]) => {
@@ -540,7 +522,6 @@ export class EfisTawsBridge implements Instrument {
       this.efisDataFO,
       this.aircraftStatusData,
       this.fmsLateralPath,
-      this.fmsVerticalPath,
       this.track1Word,
       this.track2Word,
       this.track3Word,
