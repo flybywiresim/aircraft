@@ -147,7 +147,7 @@ void Collection::updateDisplay(FsContext context) {
         static_cast<std::uint16_t>(this->_configurationLeft.range.convert(types::nauticmile));
     this->_simconnectAircraftStatus->data().ndArcModeCapt = this->_configurationLeft.mode == NavigationDisplayArcModeId;
     this->_simconnectAircraftStatus->data().ndTerrainOnNdActiveCapt =
-        static_cast<std::uint8_t>((this->_configurationLeft.terrOnNd || this->_configurationLeft.terrOnVd) && terrainMapMode);
+        static_cast<std::uint8_t>(this->_configurationLeft.terrOnNd && terrainMapMode);
     this->_simconnectAircraftStatus->data().efisModeCapt = this->_configurationLeft.mode;
 
     arcMode        = this->_configurationRight.mode == NavigationDisplayArcModeId;
