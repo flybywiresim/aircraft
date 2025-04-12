@@ -150,35 +150,53 @@ export class MsfsFlightPlanSync {
         continue;
       }
 
+      let fix: Fix;
+
       if (leg.hasLatLon) {
-        // TODO support
-        continue;
-      }
+        fix = this.dataManager.createLatLonWaypoint(
+          { lat: leg.lat, long: leg.lon },
+          true,
+          leg.name.substring(0, 7),
+        ).waypoint;
+      } else if (leg.hasPointBearingDistance) {
+        const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(leg.referenceIcao.ident);
+        const originFix = fixes.find((it) => it.icaoCode === leg.referenceIcao.region);
 
-      if (leg.hasPointBearingDistance) {
-        // TODO support
-        continue;
-      }
+        if (!originFix) {
+          console.error(
+            `[MsfsFlightPlanSync](loadSimRoute) Cannot find matching origin fix for '${leg.referenceIcao.ident}'`,
+          );
+          continue;
+        }
 
-      const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(leg.fixIcao.ident);
-      const matchingFix = fixes.find((it) => it.icaoCode === leg.fixIcao.region);
+        fix = this.dataManager.createPlaceBearingDistWaypoint(
+          originFix,
+          leg.bearing,
+          leg.distance,
+          true,
+          leg.name.substring(0, 7),
+        ).waypoint;
+      } else {
+        const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(leg.fixIcao.ident);
+        fix = fixes.find((it) => it.icaoCode === leg.fixIcao.region);
 
-      if (!matchingFix) {
-        console.error(`[MsfsFlightPlanSync](loadSimRoute) Cannot find matching fix for '${leg.fixIcao.ident}'`);
-        continue;
+        if (!fix) {
+          console.error(`[MsfsFlightPlanSync](loadSimRoute) Cannot find matching fix for '${leg.fixIcao.ident}'`);
+          continue;
+        }
       }
 
       if (leg.via !== '') {
         await this.rpcClient.startAirwayEntry(insertHead, FlightPlanIndex.Uplink);
 
-        const airway = await NavigationDatabaseService.activeDatabase.searchAirway(leg.via, matchingFix);
+        const airway = await NavigationDatabaseService.activeDatabase.searchAirway(leg.via, fix);
 
         await this.rpcClient.continueAirwayEntryViaAirway(airway[0], FlightPlanIndex.Uplink);
-        await this.rpcClient.continueAirwayEntryDirectToFix(matchingFix, FlightPlanIndex.Uplink);
+        await this.rpcClient.continueAirwayEntryDirectToFix(fix, FlightPlanIndex.Uplink);
 
         await this.rpcClient.finaliseAirwayEntry(FlightPlanIndex.Uplink);
       } else {
-        await this.rpcClient.nextWaypoint(insertHead++, matchingFix, FlightPlanIndex.Uplink, false);
+        await this.rpcClient.nextWaypoint(insertHead++, fix, FlightPlanIndex.Uplink, false);
       }
     }
 
@@ -322,7 +340,7 @@ export class MsfsFlightPlanSync {
             enrouteLeg.lon = matchingPilotWaypoint.waypoint.location.long;
             break;
         }
-        // TODO preserve ident
+        enrouteLeg.name = matchingPilotWaypoint.waypoint.ident;
       } else {
         MsfsFlightPlanSync.assignFbwFixToMsfsIcao(enrouteLeg.fixIcao, element.definition.waypoint);
       }
@@ -378,10 +396,13 @@ export class MsfsFlightPlanSync {
       enroute,
       isVfr: false,
       cruiseAltitude: {
-        // FIXME fill out
         __Type: 'JS_FlightAltitude',
-        altitude: 0,
-        isFlightLevel: false,
+        // Altitude in the route is always in feet, even if indicated as a FL. It is divided by 100 by the sim.
+        altitude:
+          activePlan.performanceData.cruiseFlightLevel !== null
+            ? activePlan.performanceData.cruiseFlightLevel * 100
+            : 0,
+        isFlightLevel: true,
       },
     };
 
