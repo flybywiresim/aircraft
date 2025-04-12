@@ -22,6 +22,7 @@ import { FlightPlanRpcClient } from '@fmgc/flightplanning/rpc/FlightPlanRpcClien
 import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { DataManager, PilotWaypointType } from '@fmgc/flightplanning/DataManager';
 
 export class MsfsFlightPlanSync {
   private static readonly FBW_APPROACH_TO_MSFS_APPROACH: Record<ApproachType, string> = {
@@ -51,6 +52,8 @@ export class MsfsFlightPlanSync {
 
   private readonly rpcClient: FlightPlanRpcClient<A320FlightPlanPerformanceData>;
 
+  private readonly dataManager: DataManager;
+
   private readonly listenerReady = Subject.create(false);
 
   private readonly fmsRpcClientReady = Subject.create(false);
@@ -72,6 +75,8 @@ export class MsfsFlightPlanSync {
 
     this.rpcClient = new FlightPlanRpcClient(bus, new A320FlightPlanPerformanceData());
     this.rpcClient.onAvailable.on(() => this.fmsRpcClientReady.set(true));
+
+    this.dataManager = new DataManager(this.bus, this.rpcClient);
 
     Wait.awaitSubscribable(this.isReady).then(() => {
       console.log('[MsfsFlightPlanSync] Ready, loading route...');
@@ -269,20 +274,16 @@ export class MsfsFlightPlanSync {
         continue;
       }
 
-      const fixIcao: JS_ICAO = {
-        __Type: 'JS_ICAO',
-        type: '',
-        region: '',
-        airport: '',
-        ident: '',
-      };
-
-      MsfsFlightPlanSync.assignFbwFixToMsfsIcao(fixIcao, element.definition.waypoint);
-
-      enroute.push({
+      const enrouteLeg: JS_EnrouteLeg = {
         __Type: 'JS_EnrouteLeg',
         isPpos: false,
-        fixIcao,
+        fixIcao: {
+          __Type: 'JS_ICAO',
+          type: '',
+          region: '',
+          airport: '',
+          ident: '',
+        },
         hasLatLon: false,
         lat: 0,
         lon: 0,
@@ -299,7 +300,34 @@ export class MsfsFlightPlanSync {
         altitude: null,
         name: '',
         via: '',
-      });
+      };
+
+      // Encode a pilot waypoint correctly
+      const matchingPilotWaypoint = this.dataManager
+        .getStoredWaypointsByIdent(element.definition.waypoint.ident)
+        .find((it) => it.waypoint.databaseId === element.definition.waypoint.databaseId);
+
+      if (matchingPilotWaypoint) {
+        switch (matchingPilotWaypoint.type) {
+          case PilotWaypointType.Pbd:
+            enrouteLeg.hasPointBearingDistance = true;
+            MsfsFlightPlanSync.assignFbwFixToMsfsIcao(enrouteLeg.referenceIcao, matchingPilotWaypoint.pbdPlace);
+            enrouteLeg.bearing = matchingPilotWaypoint.pbdBearing;
+            enrouteLeg.distance = matchingPilotWaypoint.pbdDistance;
+            break;
+          case PilotWaypointType.LatLon:
+          default:
+            enrouteLeg.hasLatLon = true;
+            enrouteLeg.lat = matchingPilotWaypoint.waypoint.location.lat;
+            enrouteLeg.lon = matchingPilotWaypoint.waypoint.location.long;
+            break;
+        }
+        // TODO preserve ident
+      } else {
+        MsfsFlightPlanSync.assignFbwFixToMsfsIcao(enrouteLeg.fixIcao, element.definition.waypoint);
+      }
+
+      enroute.push(enrouteLeg);
     }
 
     const approach: JS_ApproachIdentifier = {
