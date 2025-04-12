@@ -160,5 +160,52 @@ export class FwsAbnormalNonSensed {
       sysPage: SdPages.None,
       redundLoss: () => [],
     },
+
+    990900011: {
+      // MISC - VOLCANIC ASH ENCOUNTER
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900011)),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsChecked: () => [
+        false,
+        false,
+        !!(this.fws.autoThrustStatus.get() === 0),
+        false,
+        false,
+        false,
+        false,
+        !!this.fws.eng1AntiIce.get() &&
+          !!this.fws.eng2AntiIce.get() &&
+          !!this.fws.eng3AntiIce.get() &&
+          !!this.fws.eng4AntiIce.get(),
+        !!this.fws.wingAntiIce.get(),
+        !!(this.fws.flowSelectorKnob.get() === 3),
+        false,
+        false,
+        false,
+      ],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+      redundLoss: () => [],
+    },
   };
 }
