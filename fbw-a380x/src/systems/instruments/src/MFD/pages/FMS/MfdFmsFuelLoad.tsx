@@ -244,7 +244,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center; ">
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number>
-                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw), false)}
+                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw))}
                 value={this.props.fmcService.master.fmgc.data.zeroFuelWeight}
                 mandatory={Subject.create(true)}
                 canBeCleared={Subject.create(false)}
@@ -270,7 +270,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
               <div class="mfd-label mfd-spacing-right fuelLoad">BLOCK</div>
               <InputField<number>
-                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel), true)}
+                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel))}
                 value={this.props.fmcService.master.fmgc.data.blockFuel}
                 mandatory={Subject.create(true)}
                 alignText="flex-end"
@@ -368,7 +368,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     new WeightFormat(
                       Subject.create(AirlineModifiableInformation.EK.rsvMin),
                       Subject.create(AirlineModifiableInformation.EK.rsvMax),
-                      false,
                     )
                   }
                   dataHandlerDuringValidation={async (v) =>
@@ -403,7 +402,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right middleGrid">JTSN GW</div>
               <div style="margin-bottom: 20px;">
                 <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw), false)}
+                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw))}
                   value={this.props.fmcService.master.fmgc.data.jettisonGrossWeight}
                   alignText="flex-end"
                   containerStyle="width: 150px;"
