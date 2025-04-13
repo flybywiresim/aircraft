@@ -13,7 +13,7 @@ const RANGE_FROM_KEY = '{FROM}';
 const RANGE_TO_KEY = '{TO}';
 const ERROR_UNIT = '{UNIT}';
 const FORMAT = '{FORMAT}';
-const FORMAT_ERROR_DETAILS_MESSAGE = `FORMAT: ${FORMAT} ${ERROR_UNIT}`;
+const FORMAT_ERROR_DETAILS_MESSAGE = `FORMAT: ${FORMAT}${ERROR_UNIT}`;
 const ENTRY_OUT_OF_RANGE_DETAILS_MESSAGE = `RNG: ${RANGE_FROM_KEY} TO ${RANGE_TO_KEY}${ERROR_UNIT}`;
 
 function getFormattedEntryOutOfRangeError(minValue: string, maxValue: string, unit?: string): A380FmsError {
@@ -21,14 +21,14 @@ function getFormattedEntryOutOfRangeError(minValue: string, maxValue: string, un
     FmsErrorType.EntryOutOfRange,
     ENTRY_OUT_OF_RANGE_DETAILS_MESSAGE.replace(RANGE_FROM_KEY, minValue)
       .replace(RANGE_TO_KEY, maxValue)
-      .replace(ERROR_UNIT, unit ?? ''),
+      .replace(ERROR_UNIT, unit ? ` ${unit}` : ''),
   );
 }
 
 function getFormattedFormatError(format: string, unit?: string): A380FmsError {
   return new A380FmsError(
     FmsErrorType.FormatError,
-    FORMAT_ERROR_DETAILS_MESSAGE.replace(FORMAT, format).replace(ERROR_UNIT, unit ?? ''),
+    FORMAT_ERROR_DETAILS_MESSAGE.replace(FORMAT, format).replace(ERROR_UNIT, unit ? ` ${unit}` : ''),
   );
 }
 export interface DataEntryFormat<T, U = T> {
