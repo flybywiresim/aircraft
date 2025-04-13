@@ -2485,7 +2485,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 3,
-      sysPage: SdPages.Fctl,
+      sysPage: -1,
       inopSysAllPhases: () => [],
     },
     272800028: {
