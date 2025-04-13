@@ -154,7 +154,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly notInDescent = this.activeFlightPhase.map((it) => it !== FmgcFlightPhase.Descent);
 
   // TO page subjects, refs and methods
-  private originRunwayIdent = Subject.create<string>('');
+  private originRunwayIdent = Subject.create<string>('---');
 
   private toShift = Subject.create<number | null>(null);
 
