@@ -311,6 +311,7 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
       return null;
     }
 
+    //FIX ME Should handle FLXXX
     const nbr = Number(input);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
@@ -1671,11 +1672,15 @@ export class LsCourseFormat extends SubscriptionCollector implements DataEntryFo
 
   public maxDigits = 4;
 
-  public unit = '°';
+  public readonly unit = '°';
 
   private minValue = -360;
 
   private maxValue = 360.0;
+
+  private readonly displayMinValue = 0;
+
+  private readonly requiredFormat = 'FXXX';
 
   public format(value: number) {
     if (value === null || value === undefined) {
@@ -1704,17 +1709,19 @@ export class LsCourseFormat extends SubscriptionCollector implements DataEntryFo
       }
     }
 
-    // FIXME Delete next line as soon as back course is implemented
-    if (input[0] === 'B') throw new A380FmsError(FmsErrorType.FormatError);
+    // FIXME Delete next line and change required format as soon as back course is implemented
+    if (input[0] === 'B') throw getFormattedFormatError(this.requiredFormat);
 
     const nbr = Number(numberPart);
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
-      return sign * nbr;
+
+    if (Number.isNaN(nbr)) {
+      throw getFormattedFormatError(this.requiredFormat);
     }
-    if (nbr > this.maxValue || nbr < this.minValue) {
-      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toFixed(0), this.unit);
+
+    if (nbr <= this.maxValue && nbr >= this.minValue) {
+      return sign * nbr;
     } else {
-      throw new A380FmsError(FmsErrorType.FormatError);
+      throw getFormattedEntryOutOfRangeError(this.displayMinValue.toString(), this.maxValue.toFixed(0), this.unit);
     }
   }
 }
