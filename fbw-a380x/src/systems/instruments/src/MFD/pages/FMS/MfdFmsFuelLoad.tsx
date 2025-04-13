@@ -245,7 +245,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center; ">
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number>
-                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw), false)}
+                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw))}
                 value={this.props.fmcService.master.fmgc.data.zeroFuelWeight}
                 mandatory={Subject.create(true)}
                 canBeCleared={Subject.create(false)}
@@ -271,7 +271,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
               <div class="mfd-label mfd-spacing-right fuelLoad">BLOCK</div>
               <InputField<number>
-                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel), true)}
+                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel))}
                 value={this.props.fmcService.master.fmgc.data.blockFuel}
                 mandatory={Subject.create(true)}
                 alignText="flex-end"

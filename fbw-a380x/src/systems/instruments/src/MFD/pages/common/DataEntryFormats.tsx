@@ -3,7 +3,7 @@ import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 import { Fix } from '@flybywiresim/fbw-sdk';
 
-import { FmsErrorType } from '@fmgc/FmsError';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { A380FmsError } from 'instruments/src/MFD/shared/A380FmsError';
@@ -13,7 +13,7 @@ const RANGE_FROM_KEY = '{FROM}';
 const RANGE_TO_KEY = '{TO}';
 const ERROR_UNIT = '{UNIT}';
 const FORMAT = '{FORMAT}';
-const FORMAT_ERROR_DETAILS_MESSAGE = `FORMAT: ${FORMAT}${ERROR_UNIT}`;
+const FORMAT_ERROR_DETAILS_MESSAGE = `FORMAT: ${FORMAT} ${ERROR_UNIT}`;
 const ENTRY_OUT_OF_RANGE_DETAILS_MESSAGE = `RNG: ${RANGE_FROM_KEY} TO ${RANGE_TO_KEY}${ERROR_UNIT}`;
 
 function getFormattedEntryOutOfRangeError(minValue: string, maxValue: string, unit?: string): A380FmsError {
@@ -89,13 +89,14 @@ export class SpeedKnotsFormat extends SubscriptionCollector implements DataEntry
     }
 
     const nbr = Number(input);
-    if (Number.isFinite(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
-      return nbr;
-    }
-    if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
-    } else {
+    if (Number.isNaN(nbr)) {
       throw getFormattedFormatError(this.requiredFormat, this.unit);
+    }
+
+    if (nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    } else {
+      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toString(), this.unit);
     }
   }
 
@@ -410,7 +411,7 @@ export class TropoFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw getFormattedEntryOutOfRangeError(this.minValue.toString(), this.maxValue.toString(), this.unit);
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
     } else {
       throw getFormattedFormatError(this.requiredFormat);
     }
@@ -480,17 +481,13 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
 
   private maxValue = Number.POSITIVE_INFINITY;
 
-  private outOfRangeErrorDetail = true;
-
   constructor(
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
-    outOfRangeErrorDetail: boolean = true,
   ) {
     super();
     this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
     this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
-    this.outOfRangeErrorDetail = outOfRangeErrorDetail;
   }
 
   public format(value: number) {
@@ -506,21 +503,19 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
     }
 
     const nbr = Number(input) * 1000;
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
-      return nbr;
-    }
-    if (nbr > this.maxValue || nbr < this.minValue) {
-      if (this.outOfRangeErrorDetail) {
-        throw getFormattedEntryOutOfRangeError(
-          (this.minValue / 1000).toFixed(1),
-          (this.maxValue / 1000).toFixed(1),
-          this.unit,
-        );
-      } else {
-        throw new A380FmsError(FmsErrorType.EntryOutOfRange);
-      }
-    } else {
+
+    if (Number.isNaN(nbr)) {
       throw getFormattedFormatError(this.requiredFormat, this.unit);
+    }
+
+    if (nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    } else {
+      throw getFormattedEntryOutOfRangeError(
+        (this.minValue / 1000).toFixed(1),
+        (this.maxValue / 1000).toFixed(1),
+        this.unit,
+      );
     }
   }
 
