@@ -558,8 +558,7 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       const absTrim = Math.abs(v);
       if (absTrim < 0.3 || phase == 6 || phase == 7 || phase == 8 || phase == 9) {
         return 'HiddenElement';
-      } else {
-        if (absTrim < 3.6) {
+      } else if (absTrim < 3.6) {
           return 'FontSmallest Amber';
         } else {
           return 'FontSmallest Red';
