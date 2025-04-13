@@ -11,6 +11,12 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AltitudeConstraint, AltitudeDescriptor, SpeedConstraint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
+export enum ProfilePhase {
+  Climb,
+  Cruise,
+  Descent,
+}
+
 // TODO: Merge this with VerticalCheckpoint
 export interface VerticalWaypointPrediction {
   waypointIndex: number;
@@ -26,6 +32,7 @@ export interface VerticalWaypointPrediction {
   distanceToTopOfDescent: NauticalMiles | null;
   estimatedFuelOnBoard: Pounds;
   distanceFromAircraft: NauticalMiles;
+  profilePhase: ProfilePhase;
 }
 
 export enum VerticalCheckpointReason {
@@ -212,6 +219,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       return predictions;
     }
 
+    const topOfClimb = this.findVerticalCheckpoint(VerticalCheckpointReason.TopOfClimb);
     const topOfDescent = this.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
     const distanceToPresentPosition = this.distanceToPresentPosition;
 
@@ -245,10 +253,25 @@ export class NavGeometryProfile extends BaseGeometryProfile {
         distanceToTopOfDescent: topOfDescent ? topOfDescent.distanceFromStart - distanceFromStart : null,
         estimatedFuelOnBoard: remainingFuelOnBoard,
         distanceFromAircraft: distanceFromStart - distanceToPresentPosition,
+        profilePhase: this.interpolateProfilePhase(distanceFromStart, topOfClimb, topOfDescent),
       });
     }
 
     return predictions;
+  }
+
+  private interpolateProfilePhase(
+    distanceFromStart: NauticalMiles,
+    topOfClimb: VerticalCheckpoint | null,
+    topOfDescent: VerticalCheckpoint | null,
+  ): ProfilePhase {
+    if (topOfClimb && distanceFromStart < topOfClimb.distanceFromStart) {
+      return ProfilePhase.Climb;
+    } else if (topOfDescent && distanceFromStart < topOfDescent.distanceFromStart) {
+      return ProfilePhase.Cruise;
+    }
+
+    return ProfilePhase.Descent;
   }
 
   private isSpeedConstraintMet(speed: Knots, constraint?: SpeedConstraint): boolean {
