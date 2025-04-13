@@ -853,8 +853,6 @@ export class FwsCore {
 
   public readonly flapsLeverNotZeroWarning = Subject.create(false);
 
-  public readonly flapsLeverNotZeroAural = Subject.create(false);
-
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
   public readonly speedBrakeCommand50sConfirm = new NXLogicConfirmNode(50, true);
@@ -3643,7 +3641,6 @@ export class FwsCore {
         this.flightPhase.get() === 8 &&
         !this.slatFlapSelectionS0F0,
     );
-    this.flapsLeverNotZeroAural.set(this.flapsLeverNotZeroWarning.get());
 
     // spd brk still out
     this.speedBrakeCommand5sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
