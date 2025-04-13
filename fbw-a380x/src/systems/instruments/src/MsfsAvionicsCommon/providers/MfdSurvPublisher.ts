@@ -22,13 +22,13 @@ export interface MfdSurvEvents {
   mfd_tcas_alert_level: number;
   /** (MFD SURV -> TCAS) TCAS Alt Select 0 - NORM | 1 - ABV | 2 - BLW */
   mfd_tcas_alt_select: number;
-  /** (FMS -> TERR SYS) FMS active flight plan managed profile for vertical display */
+  /** (FMS -> TERR SYS) FMS active flight plan managed target profile for vertical display (VNAV mcduProfile) */
   a32nx_fms_vertical_target_profile: VerticalPathCheckpoint[];
-  /** (FMS -> TERR SYS) FMS active flight plan descent profile for vertical display */
+  /** (FMS -> TERR SYS) FMS active flight plan ideal descent profile for vertical display (VNAV descentProfile, used for yoyo) */
   a32nx_fms_vertical_descent_profile: VerticalPathCheckpoint[];
-  /** (FMS -> TERR SYS) FMS active flight plan descent profile for vertical display */
+  /** (FMS -> TERR SYS) FMS active flight plan actual flown profile for vertical display (VNAV ndProfile) */
   a32nx_fms_vertical_actual_profile: VerticalPathCheckpoint[];
-  /** (FMS -> TERR SYS) FMS active flight plan descent profile for vertical display */
+  /** (FMS -> TERR SYS) FMS active flight plan altitude constraints only */
   a32nx_fms_vertical_constraints: VdAltitudeConstraint[];
   /** (FMS -> TERR SYS) At which distance track changes by more than three degrees (for VD grey area) */
   a32nx_fms_vd_track_change_distance: number | null;
