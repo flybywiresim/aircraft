@@ -8,6 +8,7 @@ import {
   isMsfs2024,
   LegType,
   NavaidSubsectionCode,
+  NXDataStore,
   SectionCode,
 } from '@flybywiresim/fbw-sdk';
 import { EventBus, MappedSubject, Subject, Wait } from '@microsoft/msfs-sdk';
@@ -79,9 +80,17 @@ export class MsfsFlightPlanSync {
     this.dataManager = new DataManager(this.bus, this.rpcClient);
 
     Wait.awaitSubscribable(this.isReady).then(() => {
-      console.log('[MsfsFlightPlanSync] Ready, loading route...');
+      console.log('[MsfsFlightPlanSync] Ready');
 
-      this.handleSimRouteSent();
+      const autoLoadRoute = NXDataStore.get('CONFIG_AUTO_SIM_ROUTE_LOAD', 'DISABLED') === 'ENABLED';
+
+      if (autoLoadRoute) {
+        console.log('[MsfsFlightPlanSync] Configured to automatically load MSFS route - loading...');
+
+        this.handleSimRouteSent();
+      } else {
+        console.log('[MsfsFlightPlanSync] Configured to not automatically load MSFS route');
+      }
 
       this.listener.on('AvionicsRouteSync', this.handleSimRouteSent);
       this.listener.on('AvionicsRouteRequested', this.handleAvionicsRouteRequested);
