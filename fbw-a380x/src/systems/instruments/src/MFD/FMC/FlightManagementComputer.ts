@@ -1098,7 +1098,6 @@ export class FlightManagementComputer implements FmcInterface {
   private updateVerticalPath() {
     // Transmit active vertical geometry
     const predictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
-    // const pwp = this.guidanceController.pseudoWaypoints.pseudoWaypoints;
     const plan: ReadonlyFlightPlan = this.flightPlanService.active;
 
     if (!predictions || !this.flightPlanService.hasActive) {
@@ -1111,7 +1110,6 @@ export class FlightManagementComputer implements FmcInterface {
     const actualProfile = this.guidanceController.vnavDriver.ndProfile;
 
     const targetProfileVd: VerticalPathCheckpoint[] = [];
-    // let lastDistance = 0;
     const showFromLegIndex = Math.max(0, plan.activeLegIndex - 1);
 
     if (targetProfile) {
@@ -1122,12 +1120,10 @@ export class FlightManagementComputer implements FmcInterface {
           distanceFromAircraft: c.distanceFromStart - currentDistance,
           altitude: c.altitude,
         });
-
-        // lastDistance = c.distanceFromStart - currentDistance;
       });
     }
 
-    // If there's a waypoint between lastDistance and next/current distance, insert its prediction to also get constraints
+    // Separately extract all altitude constraints
     const vdAltitudeConstraints: VdAltitudeConstraint[] = plan.allLegs
       .slice(showFromLegIndex)
       .filter((leg, legIndex) => leg.isDiscontinuity === false && predictions.get(legIndex + showFromLegIndex))
