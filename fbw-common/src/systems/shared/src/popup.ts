@@ -100,8 +100,6 @@ export class PopUpDialog {
   /* eslint-disable no-underscore-dangle */
   async _showPopUp(params: any = {}): Promise<void> {
     await Wait.awaitCondition(() => SimVar.GetSimVarValue('L:FBW_IN_FLIGHT_DECK', SimVarValueType.Bool) === 1, 60);
-    // give some breathing room after spawning into the cockpit
-    await Wait.awaitDelay(2000);
     Coherent.trigger('UNFOCUS_INPUT_FIELD', uuidv4()); // Needed to mitigate an issue when ALT-TAB or using toggle free look
     SimVar.SetSimVarValue('A:COCKPIT CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off if it is on and forces on the mouse cursor
     Coherent.trigger('SHOW_POP_UP', params);
