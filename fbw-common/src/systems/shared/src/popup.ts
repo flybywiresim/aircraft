@@ -1,3 +1,4 @@
+import { SimVarValueType, Wait } from '@microsoft/msfs-sdk';
 import { v4 as uuidv4 } from 'uuid';
 /**
  * NotificationParams container for popups to package popup metadata
@@ -97,7 +98,10 @@ export class PopUpDialog {
    * @param params
    */
   /* eslint-disable no-underscore-dangle */
-  _showPopUp(params: any = {}): void {
+  async _showPopUp(params: any = {}): Promise<void> {
+    await Wait.awaitCondition(() => SimVar.GetSimVarValue('L:FBW_IN_FLIGHT_DECK', SimVarValueType.Bool) === 1, 60);
+    // give some breathing room after spawning into the cockpit
+    await Wait.awaitDelay(2000);
     Coherent.trigger('UNFOCUS_INPUT_FIELD', uuidv4()); // Needed to mitigate an issue when ALT-TAB or using toggle free look
     SimVar.SetSimVarValue('A:COCKPIT CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off if it is on and forces on the mouse cursor
     Coherent.trigger('SHOW_POP_UP', params);
