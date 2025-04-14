@@ -9,6 +9,7 @@
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Visual update to reflect later avionics batches (overlapping tab selectors) - @flogross89 (floridude)
+1. [A380X/PFD] Fix FMA to update current AUTO BRK selection during RTO and rollout - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
