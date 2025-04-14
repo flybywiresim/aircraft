@@ -36,7 +36,6 @@ import { bearingTo } from 'msfs-geo';
 import { GenericFcuEvents, GenericTawsEvents, TrackLine } from '@flybywiresim/navigation-display';
 import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { A380XFcuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/A380XFcuBusPublisher';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export interface VerticalDisplayProps extends ComponentProps {
@@ -64,7 +63,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       ClockEvents &
       AesuBusEvents &
       FGVars &
-      A380XFcuBusEvents &
       FcuSimVars &
       MfdSurvEvents
   >();

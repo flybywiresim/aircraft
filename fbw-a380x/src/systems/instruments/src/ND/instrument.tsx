@@ -53,7 +53,6 @@ import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublish
 import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
-import { A380XFcuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/A380XFcuBusPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -72,7 +71,6 @@ class NDInstrument implements FsInstrument {
   private readonly simVarPublisher: NDSimvarPublisher;
 
   private readonly fcuBusPublisher: FcuBusPublisher;
-  private readonly a380xFcuBusPublisher: A380XFcuBusPublisher;
 
   private readonly fmsDataPublisher: FmsDataPublisher;
 
@@ -159,7 +157,6 @@ class NDInstrument implements FsInstrument {
 
     this.simVarPublisher = new NDSimvarPublisher(this.bus);
     this.fcuBusPublisher = new FcuBusPublisher(this.bus, side);
-    this.a380xFcuBusPublisher = new A380XFcuBusPublisher(this.bus);
     this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
     this.fmsOansSimvarPublisher = new FmsOansSimvarPublisher(this.bus);
     this.ropRowOansPublisher = new RopRowOansPublisher(this.bus);
@@ -182,7 +179,6 @@ class NDInstrument implements FsInstrument {
 
     this.backplane.addPublisher('ndSimVars', this.simVarPublisher);
     this.backplane.addPublisher('fcu', this.fcuBusPublisher);
-    this.backplane.addPublisher('a380Fcu', this.a380xFcuBusPublisher);
     this.backplane.addPublisher('fms', this.fmsDataPublisher);
     this.backplane.addPublisher('fms-oans', this.fmsOansSimvarPublisher);
     this.backplane.addPublisher('rop-row-oans', this.ropRowOansPublisher);
