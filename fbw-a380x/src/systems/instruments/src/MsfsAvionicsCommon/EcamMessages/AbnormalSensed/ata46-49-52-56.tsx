@@ -27,7 +27,18 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
   490800002: {
     title: '\x1b<4m\x1b4mAPU\x1bm MACH LIMIT EXCEEDED',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'IF APU NOT ABSOLUTELY REQUIRED :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'APU MASTER SW OFF',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
   },
   490800003: {
     title: '\x1b<4m\x1b4mAPU\x1bm OIL FILTER CLOGGED',
