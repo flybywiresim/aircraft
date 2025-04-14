@@ -102,6 +102,7 @@ export class PopUpDialog {
     await Wait.awaitCondition(() => SimVar.GetSimVarValue('L:FBW_IN_FLIGHT_DECK', SimVarValueType.Bool) === 1, 60);
     Coherent.trigger('UNFOCUS_INPUT_FIELD', uuidv4()); // Needed to mitigate an issue when ALT-TAB or using toggle free look
     SimVar.SetSimVarValue('A:COCKPIT CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off if it is on and forces on the mouse cursor
+    SimVar.SetSimVarValue('A:CHASE CAMERA HEADLOOK', 'Enum', 2); // Toggles freelook off for chase plane if it is on and forces on the mouse cursor
     Coherent.trigger('SHOW_POP_UP', params);
   }
 
