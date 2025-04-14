@@ -17,4 +17,21 @@ import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessag
 //    9 for ABN non-sensed procedures
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
-export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } = {};
+export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } = {
+  // ATA 49 APU
+  490800001: {
+    title: '\x1b<4m\x1b4mAPU\x1bm FAULT',
+    sensed: true,
+    items: [],
+  },
+  490800002: {
+    title: '\x1b<4m\x1b4mAPU\x1bm MACH LIMIT EXCEEDED',
+    sensed: true,
+    items: [],
+  },
+  490800003: {
+    title: '\x1b<4m\x1b4mAPU\x1bm OIL FILTER CLOGGED',
+    sensed: true,
+    items: [],
+  },
+};
