@@ -62,6 +62,8 @@ export class LnavDriver implements GuidanceComponent {
 
   private lastNavCaptureCondition: boolean;
 
+  private isNavCaptureInhibited: boolean = false;
+
   public turnState = LnavTurnState.Normal;
 
   public ppos: LatLongAlt = new LatLongAlt();
@@ -498,6 +500,7 @@ export class LnavDriver implements GuidanceComponent {
     console.log('[FMGC/Guidance] LNAV - sequencing discontinuity');
 
     this.sequenceLeg(_leg, null);
+    this.disengageNavMode();
 
     // The leg after the disco should become the active leg, so we sequence again
     if (followingLeg) {
@@ -507,6 +510,13 @@ export class LnavDriver implements GuidanceComponent {
 
   sequenceManual(_leg?: Leg): void {
     console.log('[FMGC/Guidance] LNAV - sequencing MANUAL');
+  }
+
+  private disengageNavMode() {
+    this.isNavCaptureInhibited = true;
+    setTimeout(() => {
+      this.isNavCaptureInhibited = false;
+    }, 300);
   }
 
   private updateNavCaptureCondition(tas: number, gs: number) {
@@ -524,10 +534,6 @@ export class LnavDriver implements GuidanceComponent {
     return leg.isVx() || (leg.isCx() && leg.type !== LegType.CF);
   }
 
-  private canNeverCaptureLeg(leg: FlightPlanLeg) {
-    return leg.type === LegType.IF;
-  }
-
   private isNavModeEngaged(): boolean {
     // TODO use correct FM
     return this.register
@@ -540,7 +546,7 @@ export class LnavDriver implements GuidanceComponent {
     const geometry = this.guidanceController.activeGeometry;
     const activeLeg = plan.activeLeg;
 
-    if (!activeLeg || isDiscontinuity(activeLeg) || this.canNeverCaptureLeg(activeLeg)) {
+    if (!activeLeg || isDiscontinuity(activeLeg) || this.isNavCaptureInhibited) {
       return false;
     } else if (this.canAlwaysCaptureLeg(activeLeg)) {
       return true;
