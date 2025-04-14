@@ -553,16 +553,20 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly rudderTrimIndicatorVisibilityStatus = Subject.create(false);
 
-  private readonly rudderTrimOrderTextClass = this.rudderTrimOrder.map((v) => {
-    const absTrim = Math.abs(v);
-    if (absTrim < 0.3) {
-      return 'HiddenElement';
-    } else if (absTrim < 3.6) {
-      return 'FontSmallest Amber';
-    } else {
-      return 'FontSmallest Red';
-    }
-  });
+  private readonly rudderTrimOrderTextClass = MappedSubject.create(
+    ([v, phase]) => {
+      const absTrim = Math.abs(v);
+      if (absTrim < 0.3 || phase == 6 || phase == 7 || phase == 8 || phase == 9) {
+        return 'HiddenElement';
+      } else if (absTrim < 3.6) {
+        return 'FontSmallest Amber';
+      } else {
+        return 'FontSmallest Red';
+      }
+    },
+    this.rudderTrimOrder,
+    this.fwcFlightPhase,
+  );
 
   private readonly rudderTrimOrderTextVisibility = this.rudderTrimOrder.map((t) =>
     Math.abs(t) < 0.3 ? 'hidden' : 'inherit',
@@ -656,7 +660,11 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
             {this.rudderTrimOrderText}
           </text>
-          <text x={57.5} y={194.5} class={'FontSmallest Cyan'}>
+          <text
+            x={57.5}
+            y={194.5}
+            class={this.rudderTrimOrderTextClass.map((v) => (v !== 'HiddenElement' ? 'FontSmallest Cyan' : v))}
+          >
             °
           </text>
         </g>
