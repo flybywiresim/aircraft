@@ -10,7 +10,6 @@ import { CaptureConsole as CaptureConsoleIntegration } from '@sentry/integration
 import { Integration } from '@sentry/types';
 import { NXDataStore } from './persistence';
 import { PopUpDialog } from './popup';
-import { SimVarValueType, Wait } from '@microsoft/msfs-sdk';
 
 export const SENTRY_CONSENT_KEY = 'SENTRY_CONSENT';
 
