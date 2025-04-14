@@ -15,13 +15,14 @@ const BleedCrossbleed: FC = () => {
   const [pack2FlowValve2Open] = useSimVar('L:A32NX_COND_PACK_2_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
 
   const sdacDatum = true;
+  const x = 0;
   const y = 325;
 
   return (
-    <g id="CrossBleed">
+    <g id="CrossBleed" style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}>
       <Valve
         x={283}
-        y={y}
+        y={0}
         radius={19}
         css="Green SW2"
         position={lhCrossBleedValveOpen ? 'H' : 'V'}
@@ -29,7 +30,7 @@ const BleedCrossbleed: FC = () => {
       />
       <Valve
         x={385}
-        y={y}
+        y={0}
         radius={19}
         css="Green SW2"
         position={centreCrossBleedValveOpen ? 'H' : 'V'}
@@ -37,7 +38,7 @@ const BleedCrossbleed: FC = () => {
       />
       <Valve
         x={470}
-        y={y}
+        y={0}
         radius={19}
         css="Green SW2"
         position={rhCrossBleedValveOpen ? 'H' : 'V'}
@@ -45,19 +46,19 @@ const BleedCrossbleed: FC = () => {
       />
       <path
         className={`${allCrossBleedValveOpen && pack1FlowValve1Open && pack1FlowValve2Open ? 'Show' : 'Hide'} Line Green NoFill`}
-        d={`M${240},${y} l 112,0`}
+        d={`M${240},${0} l 112,0`}
       />
       <path
         className={`${allCrossBleedValveOpen && pack2FlowValve1Open && pack2FlowValve2Open ? 'Show' : 'Hide'} Line Green NoFill`}
-        d={`M${352},${y} l 162,0`}
+        d={`M${352},${0} l 162,0`}
       />
       <path
         className={`${allCrossBleedValveOpen && pack1FlowValve1Open && pack1FlowValve2Open ? 'Show' : 'Hide'} Line Green NoFill`}
-        d={`M${315},${y} l 0,40 l -60,0 M${105},${y + 40} l 115,0 M${217},${y + 47.5} l 8,-15 M${250},${y + 47.5} l 8,-15`}
+        d={`M${315},${0} l 0,40 l -60,0 M${105},${40} l 115,0 M${217},${47.5} l 8,-15 M${250},${47.5} l 8,-15`}
       />
       <path
         className={`${allCrossBleedValveOpen && pack2FlowValve1Open && pack2FlowValve2Open ? 'Show' : 'Hide'} Line Green NoFill`}
-        d={`M${435},${y} l 0,40 l 60,0 M${533},${y + 40} l 115,0 M${492},${y + 47.5} l 8,-15 M${530},${y + 47.5} l 8,-15`}
+        d={`M${435},${0} l 0,40 l 60,0 M${533},${40} l 115,0 M${492},${47.5} l 8,-15 M${530},${47.5} l 8,-15`}
       />
     </g>
   );
