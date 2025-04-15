@@ -2479,7 +2479,6 @@ export class FwsAbnormalSensed {
     272800003: {
       // FLAPS LEVER NOT ZERO
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      auralWarning: this.fws.flapsLeverNotZeroAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       simVarIsActive: this.fws.flapsLeverNotZeroWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
