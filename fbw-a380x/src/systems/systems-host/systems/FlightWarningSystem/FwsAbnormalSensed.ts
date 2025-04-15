@@ -3721,6 +3721,16 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
+    490800002: {
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.apuMachLimitExceeded,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
+      failure: 2,
+      sysPage: SdPages.Apu,
+      inopSysAllPhases: () => ['490300001'],
+    },
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL
