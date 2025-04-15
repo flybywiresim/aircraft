@@ -48,7 +48,6 @@ import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { pathVectorLength, pathVectorPoint } from '../guidance/lnav/PathVector';
 import { FlightPlanSegment } from '../flightplanning/segments/FlightPlanSegment';
 
 /**
@@ -566,40 +565,13 @@ export class EfisSymbols<T extends number> {
       }
 
       // End of VD marker needs direction
-      let direction = undefined;
+      let direction: number | undefined = undefined;
 
       if (pwp.efisSymbolFlag2 & NdSymbolTypeFlags2.PwpEndOfVdMarker) {
-        const geometry = [];
         const leg = this.guidanceController.activeGeometry.legs.get(pwp.alongLegIndex);
-
-        if (leg.inboundGuidable.predictedPath && leg.inboundGuidable.predictedPath.length > 0) {
-          geometry.push(...leg.inboundGuidable.predictedPath);
-        }
-
-        if (leg.predictedPath && leg.predictedPath.length > 0) {
-          geometry.push(...leg.predictedPath);
-        }
-
-        if (leg.outboundGuidable.predictedPath && leg.outboundGuidable.predictedPath.length > 0) {
-          geometry.push(...leg.outboundGuidable.predictedPath);
-        }
-
-        if (geometry.length !== 0) {
-          // Find right part of geometry. Start backwards
-          let distanceLeft = pwp.distanceFromLegTermination;
-          for (let i = geometry.length - 1; i >= 0; i--) {
-            const length = pathVectorLength(geometry[i]);
-
-            if (distanceLeft > length) {
-              distanceLeft -= length;
-              continue;
-            }
-
-            const symbolLocation = pathVectorPoint(geometry[i], distanceLeft);
-            const justBeforeSymbolLocation = pathVectorPoint(geometry[i], distanceLeft - 0.02);
-            direction = bearingTo(symbolLocation, justBeforeSymbolLocation);
-            break;
-          }
+        const orientation = Geometry.getLegOrientationAtDistanceFromEnd(leg, pwp.distanceFromLegTermination);
+        if (orientation !== null) {
+          direction = orientation;
         }
       }
 
@@ -607,7 +579,7 @@ export class EfisSymbols<T extends number> {
         databaseId: `W      ${pwp.ident}`,
         ident: pwp.ident,
         location: pwp.efisSymbolLla,
-        direction: direction,
+        direction,
         type: pwp.efisSymbolFlag,
         type2: pwp.efisSymbolFlag2,
         // When in HDG/TRK, this defines where on the track line the PWP lies
