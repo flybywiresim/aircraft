@@ -1546,6 +1546,9 @@ export class FwsCore {
   public readonly cpiomC1Available = Subject.create(false);
   public readonly cpiomC2Available = Subject.create(false);
 
+  /** 49 APU */
+  public readonly apuMachLimitExceeded = Subject.create(false);
+
   /* ICE */
 
   public readonly iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
@@ -3933,6 +3936,9 @@ export class FwsCore {
     /* 42 AVIONICS NETWORK */
     this.cpiomC1Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C1_AVAIL', 'bool'));
     this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C2_AVAIL', 'bool'));
+
+    /* 49 - APU */
+    this.apuMachLimitExceeded.set(this.machSelectedFromAdr.get() > 0.5);
 
     /* ANTI ICE */
 
