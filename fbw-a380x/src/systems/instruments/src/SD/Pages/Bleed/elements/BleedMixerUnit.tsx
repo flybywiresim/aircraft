@@ -11,11 +11,16 @@ interface BleedMixerUnitProps {
 
 const BleedMixerUnit: FC<BleedMixerUnitProps> = ({ x, y, _sdacDatum }) => {
   // TODO Add Air supplied to cabin and cockpit simvar
-  const [hpValve1] = useSimVar('L:A32NX_PNEU_ENG_1_HP_VALVE_OPEN', 'bool', 500);
-  const [hpValve2] = useSimVar('L:A32NX_PNEU_ENG_2_HP_VALVE_OPEN', 'bool', 500);
-  const airSuppliedToCabinAndCockpit = hpValve1 || hpValve2;
+  const [pack1FlowValve1Open] = useSimVar('L:A32NX_COND_PACK_1_FLOW_VALVE_1_IS_OPEN', 'bool', 500);
+  const [pack1FlowValve2Open] = useSimVar('L:A32NX_COND_PACK_1_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
+  const [pack2FlowValve1Open] = useSimVar('L:A32NX_COND_PACK_2_FLOW_VALVE_1_IS_OPEN', 'bool', 500);
+  const [pack2FlowValve2Open] = useSimVar('L:A32NX_COND_PACK_2_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
+
   // TODO: Replace with signal from systems once implemented
   const [ramInletOpen] = useSimVar('L:A32NX_OVHD_COND_RAM_AIR_PB_IS_ON', 'bool', 100);
+
+  const airSuppliedToCabinAndCockpit =
+    pack1FlowValve1Open || pack1FlowValve2Open || pack2FlowValve1Open || pack2FlowValve2Open || ramInletOpen;
 
   return (
     <g id="MixerUnit" style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}>
