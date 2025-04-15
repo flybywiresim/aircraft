@@ -6,60 +6,69 @@ const BleedCrossbleed: FC = () => {
   const [lhCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_L_OPEN', 'bool', 500);
   const [centreCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_C_OPEN', 'bool', 500);
   const [rhCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_R_OPEN', 'bool', 500);
-  const allCrossBleedValveOpen = lhCrossBleedValveOpen && centreCrossBleedValveOpen && rhCrossBleedValveOpen;
-
-  // FIXME cover more combinations of crossbleed and pack flow valve status (assuming all flow valves from one pack are operative atm)
-  const [pack1FlowValve1Open] = useSimVar('L:A32NX_COND_PACK_1_FLOW_VALVE_1_IS_OPEN', 'bool', 500);
-  const [pack1FlowValve2Open] = useSimVar('L:A32NX_COND_PACK_1_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
-  const [pack2FlowValve1Open] = useSimVar('L:A32NX_COND_PACK_2_FLOW_VALVE_1_IS_OPEN', 'bool', 500);
-  const [pack2FlowValve2Open] = useSimVar('L:A32NX_COND_PACK_2_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
+  const [apuBleedValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
+  const allApuValvesOpen = apuBleedValveOpen;
 
   const sdacDatum = true;
   const x = 0;
-  const y = 325;
+  const y = 330;
 
   return (
     <g id="CrossBleed" style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}>
       <Valve
-        x={283}
+        x={292}
         y={0}
-        radius={19}
-        css="Green SW2"
+        radius={19.5}
+        css="Green SW2 NoFill"
         position={lhCrossBleedValveOpen ? 'H' : 'V'}
         sdacDatum={sdacDatum}
       />
       <Valve
-        x={385}
+        x={395}
         y={0}
-        radius={19}
-        css="Green SW2"
+        radius={19.5}
+        css="Green SW2 NoFill"
         position={centreCrossBleedValveOpen ? 'H' : 'V'}
         sdacDatum={sdacDatum}
       />
       <Valve
-        x={470}
+        x={478}
         y={0}
-        radius={19}
-        css="Green SW2"
+        radius={19.5}
+        css="Green SW2 NoFill"
         position={rhCrossBleedValveOpen ? 'H' : 'V'}
         sdacDatum={sdacDatum}
       />
+      {/* Left Crossbleed valve to engine 2 */}
+      <path className={`${!lhCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`} d="M248,0 l 24,0" />
+      {/* Left Crossbleed valve to engine 1 junction */}
+      <path className={`${!lhCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`} d="M312,0 l 14,0" />
+      {/* Engine 1 Junction to APU Junction */}
       <path
-        className={`${allCrossBleedValveOpen && pack1FlowValve1Open && pack1FlowValve2Open ? 'Show' : 'Hide'} Line Green NoFill`}
-        d={`M${240},${0} l 112,0`}
+        className={`${!allApuValvesOpen && !lhCrossBleedValveOpen && !centreCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`}
+        d="M326,0 l 34,0"
       />
+      {/* Engine 1 Junction to Engine 1 */}
       <path
-        className={`${allCrossBleedValveOpen && pack2FlowValve1Open && pack2FlowValve2Open ? 'Show' : 'Hide'} Line Green NoFill`}
-        d={`M${352},${0} l 162,0`}
+        className={`${!allApuValvesOpen && !lhCrossBleedValveOpen && !centreCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`}
+        d="M326,0 v 40 h -60,0 m-10,10 l 20,-20 m-10,10 m -35,0 m-10,10 l20,-20 m-10,10 h -119"
       />
+      {/* APU Junction to Center Crossbleed valve */}
       <path
-        className={`${allCrossBleedValveOpen && pack1FlowValve1Open && pack1FlowValve2Open ? 'Show' : 'Hide'} Line Green NoFill`}
-        d={`M${315},${0} l 0,40 l -60,0 M${105},${40} l 115,0 M${217},${47.5} l 8,-15 M${250},${47.5} l 8,-15`}
+        className={`${!allApuValvesOpen && !lhCrossBleedValveOpen && !centreCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`}
+        d="M360,0 l 15,0"
       />
+      {/* Center Crossbleed valve to engine 4 junction */}
+      <path className={`${!centreCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`} d={`M415,0 l 24,0`} />
+      {/* Engine 4 junction to Right Crossbleed valve */}
+      <path className={`${!rhCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`} d={`M439,0 l 19,0`} />
+      {/* Engine 4 junction to Engine 4 */}
       <path
-        className={`${allCrossBleedValveOpen && pack2FlowValve1Open && pack2FlowValve2Open ? 'Show' : 'Hide'} Line Green NoFill`}
-        d={`M${435},${0} l 0,40 l 60,0 M${533},${40} l 115,0 M${492},${47.5} l 8,-15 M${530},${47.5} l 8,-15`}
+        className={`${!rhCrossBleedValveOpen && !centreCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`}
+        d="M439,0 v 40 h 67,0 m-10,10 l 20,-20 m-10,10 m 35,0 m-10,10 l20,-20 m-10,10 h 118"
       />
+      {/* Right Crossbleed valve to engine 3 */}
+      <path className={`${!rhCrossBleedValveOpen ? 'Hide' : 'Show'} Line Green NoFill`} d="M498,0 l 24,0" />
     </g>
   );
 };

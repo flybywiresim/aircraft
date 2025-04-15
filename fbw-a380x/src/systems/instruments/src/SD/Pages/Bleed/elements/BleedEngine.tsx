@@ -35,6 +35,23 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
     'number',
     100,
   );
+  const [lhCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_L_OPEN', 'bool', 500);
+  const [centreCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_C_OPEN', 'bool', 500);
+  const [rhCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_R_OPEN', 'bool', 500);
+  const [apuBleedValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
+  const allApuValvesOpen = apuBleedValveOpen;
+
+  let bleedDuctHidden = false;
+  if (engine == 1) {
+    bleedDuctHidden =
+      !engineBleedValveOpen && !allApuValvesOpen && !(lhCrossBleedValveOpen || centreCrossBleedValveOpen);
+  } else if (engine == 2) {
+    bleedDuctHidden = !engineBleedValveOpen && !lhCrossBleedValveOpen;
+  } else if (engine == 3) {
+    bleedDuctHidden = !engineBleedValveOpen && !centreCrossBleedValveOpen;
+  } else {
+    bleedDuctHidden = !engineBleedValveOpen && !(centreCrossBleedValveOpen && rhCrossBleedValveOpen);
+  }
 
   // TODO: Connect these up properly, so the valves can be shown in amber once we have failure conditions.
   // For now, we pretend the valves are always in the commanded state.
@@ -130,7 +147,7 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
       </g>
 
       {/* Why does this use the pack flow valve status? */}
-      <path className={`${packFlowValveOpen ? 'SW2 Green' : 'Hide'}`} d="M 33,-237 v 95" />
+      <path className={`${bleedDuctHidden ? 'Hide' : 'SW2 Green'}`} d="M 33,-237 v 95" />
 
       {/* Pack valve */}
       <BleedGauge
