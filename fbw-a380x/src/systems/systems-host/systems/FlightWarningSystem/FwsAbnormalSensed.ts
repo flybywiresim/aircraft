@@ -3744,7 +3744,7 @@ export class FwsAbnormalSensed {
     },
     490800003: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.apuMachLimitExceeded,
+      simVarIsActive: this.fws.apuAutoShutdown,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
