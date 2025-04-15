@@ -505,7 +505,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.allCabinFansFault,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true],
+      whichItemsToShow: () => [],
       whichItemsChecked: () => [!!(this.fws.flowSelectorKnob.get() === 3)],
       failure: 2,
       sysPage: SdPages.Cond,
