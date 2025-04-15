@@ -2479,12 +2479,12 @@ export class FwsAbnormalSensed {
     272800003: {
       // FLAPS LEVER NOT ZERO
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: this.fws.flapsLeverNotZeroWarning,
+      simVarIsActive: this.fws.flapsLeverNotZero,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 3,
-      sysPage: -1,
+      sysPage: SdPages.None,
       inopSysAllPhases: () => [],
     },
     272800028: {

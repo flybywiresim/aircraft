@@ -851,7 +851,7 @@ export class FwsCore {
 
   public readonly rudderTrimPosition = Subject.create(0);
 
-  public readonly flapsLeverNotZeroWarning = Subject.create(false);
+  public readonly flapsLeverNotZero = Subject.create(false);
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
@@ -3634,7 +3634,7 @@ export class FwsCore {
     this.rudderTrimNotToWarning.set(rudderTrimConfigTestInPhase129 || this.rudderTrimConfigInPhase3or4or5Sr.read());
 
     // flaps lvr not zero
-    this.flapsLeverNotZeroWarning.set(
+    this.flapsLeverNotZero.set(
       (adr1PressureAltitude.valueOr(0) >= 22000 ||
         adr2PressureAltitude.valueOr(0) >= 22000 ||
         adr3PressureAltitude.valueOr(0) >= 22000) &&
