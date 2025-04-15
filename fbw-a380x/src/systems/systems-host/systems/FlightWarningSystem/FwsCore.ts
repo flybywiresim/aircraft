@@ -1549,6 +1549,8 @@ export class FwsCore {
   /** 49 APU */
   public readonly apuMachLimitExceeded = Subject.create(false);
 
+  public readonly apuMachLimitExceededMemory = new NXLogicMemoryNode(true);
+
   /* ICE */
 
   public readonly iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
@@ -3938,7 +3940,12 @@ export class FwsCore {
     this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C2_AVAIL', 'bool'));
 
     /* 49 - APU */
-    this.apuMachLimitExceeded.set(this.machSelectedFromAdr.get() > 0.5 && !this.apuAvail.get());
+    this.apuMachLimitExceeded.set(
+      this.apuMachLimitExceededMemory.write(
+        this.machSelectedFromAdr.get() > 0.5,
+        this.machSelectedFromAdr.get() < 0.45,
+      ) && !this.apuAvail.get(),
+    );
 
     /* ANTI ICE */
 
