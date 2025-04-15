@@ -24,6 +24,7 @@ import {
   NdSymbol,
   VdSymbol,
   FmsData,
+  NdSymbolTypeFlags2,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -48,6 +49,7 @@ import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { getAlongTrackDistanceTo } from '@fmgc/guidance/lnav/CommonGeometry';
+import { pathVectorLength, pathVectorPoint } from '../guidance/lnav/PathVector';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -325,6 +327,9 @@ export class EfisSymbols<T extends number> {
         symbol.length = symbol.length ?? oldSymbol.length;
         symbol.location = symbol.location ?? oldSymbol.location;
         symbol.type |= oldSymbol.type;
+        if (oldSymbol.type2) {
+          symbol.type2 |= oldSymbol.type2;
+        }
         if (oldSymbol.radials) {
           if (symbol.radials) {
             symbol.radials.push(...oldSymbol.radials);
@@ -552,11 +557,59 @@ export class EfisSymbols<T extends number> {
     // Pseudo waypoints
 
     for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
+      // Some PWP are only relevant for a specific display side
+      if (
+        (this.side === 'L' && pwp.efisSymbolFlag2 & NdSymbolTypeFlags2.RightSideOnly) ||
+        (this.side === 'R' && pwp.efisSymbolFlag2 & NdSymbolTypeFlags2.LeftSideOnly)
+      ) {
+        continue;
+      }
+
+      // End of VD marker needs direction
+      let direction = undefined;
+
+      if (pwp.efisSymbolFlag2 & NdSymbolTypeFlags2.PwpEndOfVdMarker) {
+        const geometry = [];
+        const leg = this.guidanceController.activeGeometry.legs.get(pwp.alongLegIndex);
+
+        if (leg.inboundGuidable.predictedPath && leg.inboundGuidable.predictedPath.length > 0) {
+          geometry.push(...leg.inboundGuidable.predictedPath);
+        }
+
+        if (leg.predictedPath && leg.predictedPath.length > 0) {
+          geometry.push(...leg.predictedPath);
+        }
+
+        if (leg.outboundGuidable.predictedPath && leg.outboundGuidable.predictedPath.length > 0) {
+          geometry.push(...leg.outboundGuidable.predictedPath);
+        }
+
+        if (geometry.length !== 0) {
+          // Find right part of geometry. Start backwards
+          let distanceLeft = pwp.distanceFromLegTermination;
+          for (let i = geometry.length - 1; i >= 0; i--) {
+            const length = pathVectorLength(geometry[i]);
+
+            if (distanceLeft > length) {
+              distanceLeft -= length;
+              continue;
+            }
+
+            const symbolLocation = pathVectorPoint(geometry[i], distanceLeft);
+            const justBeforeSymbolLocation = pathVectorPoint(geometry[i], distanceLeft - 0.02);
+            direction = bearingTo(symbolLocation, justBeforeSymbolLocation);
+            break;
+          }
+        }
+      }
+
       upsertSymbol({
         databaseId: `W      ${pwp.ident}`,
         ident: pwp.ident,
         location: pwp.efisSymbolLla,
+        direction: direction,
         type: pwp.efisSymbolFlag,
+        type2: pwp.efisSymbolFlag2,
         // When in HDG/TRK, this defines where on the track line the PWP lies
         distanceFromAirplane: pwp.distanceFromStart,
         predictedAltitude: pwp.flightPlanInfo?.altitude ?? undefined,
@@ -1037,6 +1090,7 @@ export class EfisSymbols<T extends number> {
         direction: s.direction,
         length: s.length,
         type: s.type,
+        type2: s.type2,
         constraints: s.constraints,
         radials: s.radials,
         radii: s.radii,
@@ -1056,6 +1110,7 @@ export class EfisSymbols<T extends number> {
         direction: s.direction,
         length: s.length,
         type: s.type,
+        type2: s.type2,
         constraints: s.constraints,
         altConstraint: s.altConstraint,
         isAltitudeConstraintMet: s.isAltitudeConstraintMet,

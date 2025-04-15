@@ -78,7 +78,7 @@ export interface ElevationSamplePathDto {
   /** Width of path to be sampled along track. Depending on several factors. */
   pathWidth: number;
 
-  /** At which distance from the aircraft the track changes by more than 3° (grey area drawn beyond that) */
+  /** At which distance from the aircraft the track changes by more than 3° (grey area drawn beyond that). -1 if no grey area exists. */
   trackChangesSignificantlyAtDistance: number;
 
   /** List of waypoints from the FMS describing the lateral path. Used for terrain sampling, together with pathWidth */

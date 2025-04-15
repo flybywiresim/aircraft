@@ -431,7 +431,7 @@ export class EfisTawsBridge implements Instrument {
 
       const data: ElevationSamplePathDto = {
         pathWidth: 1, // FIXME implement logic for width of vertical cut, DSC-31-CDS-20-40-10
-        trackChangesSignificantlyAtDistance: trackChangeDistance,
+        trackChangesSignificantlyAtDistance: trackChangeDistance !== null ? trackChangeDistance : -1,
         waypoints: waypoints,
       };
       return data;

@@ -9,6 +9,7 @@ import {
   Arinc429ConsumerSubject,
   Arinc429Register,
   MathUtils,
+  NdSymbolTypeFlags2,
 } from '@flybywiresim/fbw-sdk';
 
 import { NDSimvars } from '../../NDSimvarPublisher';
@@ -142,7 +143,11 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
       context.fillStyle = color;
       context.strokeStyle = 'none';
       this.paintSpeedChange(context, x, y);
-    } else if (symbol.ident === 'END_OF_VD' && NdSymbolTypeFlags.CyanColor) {
+    } else if (
+      symbol.type2 &&
+      symbol.type2 & NdSymbolTypeFlags2.PwpEndOfVdMarker &&
+      symbol.type & NdSymbolTypeFlags.CyanColor
+    ) {
       context.fillStyle = color;
       this.paintPath(context, x, y, END_OF_VD_PATH, rotate);
     }

@@ -1159,6 +1159,7 @@ export class FlightManagementComputer implements FmcInterface {
       : [];
 
     // Start of grey area
+    // FIXME improve, currently only works on a per-leg-basis
     let lastBearing: number | null = null;
     let trackChangesSignificantlyAtDistance: number | null = null;
     const previousLeg = plan.allLegs[showFromLegIndex - 1];
@@ -1189,46 +1190,6 @@ export class FlightManagementComputer implements FmcInterface {
       descentProfileVd,
       trackChangesSignificantlyAtDistance,
     );
-
-    /*const verticalVectors: VerticalDisplayCheckpoint[] = [];
-    if (predictions) {
-      const showFromLegIndex = Math.max(0, plan.activeLegIndex - 1);
-      const previousLeg = plan.allLegs[showFromLegIndex - 1];
-      let lastLegLatLong: Coordinates =
-        showFromLegIndex > 0 && previousLeg.isDiscontinuity === false && previousLeg.definition.waypoint
-          ? previousLeg.definition.waypoint.location
-          : this.guidanceController.lnavDriver.ppos;
-      plan.allLegs.slice(showFromLegIndex).forEach((leg, legIndex) => {
-        const legPrediction = predictions.get(legIndex + showFromLegIndex);
-        if (leg.isDiscontinuity === false && legPrediction) {
-          pwp.forEach((pw) => {
-            if (pw.alongLegIndex === legIndex + showFromLegIndex && pw.displayedOnMcdu && pw.flightPlanInfo?.altitude) {
-              verticalVectors.push({
-                distanceFromAircraft: legPrediction.distanceFromAircraft - pw.distanceFromLegTermination,
-                altitude: pw.flightPlanInfo?.altitude,
-                altitudeConstraint: undefined,
-                isAltitudeConstraintMet: undefined,
-              });
-            }
-          });
-
-          if (leg.definition.waypoint && trackChangesSignificantlyAtDistance === 0) {
-            const bearing = bearingTo(lastLegLatLong, leg.definition.waypoint.location);
-            if (lastBearing !== null && Math.abs(lastBearing - bearing) > 3) {
-              trackChangesSignificantlyAtDistance = legPrediction.distanceFromAircraft;
-            }
-          }
-
-          verticalVectors.push({
-            distanceFromAircraft: legPrediction.distanceFromAircraft,
-            altitude: legPrediction.altitude,
-            altitudeConstraint: legPrediction.altitudeConstraint,
-            isAltitudeConstraintMet: legPrediction.isAltitudeConstraintMet,
-          });
-          lastLegLatLong = leg.definition.waypoint?.location ?? lastLegLatLong;
-        }
-      });
-    }*/
   }
 
   async swapNavDatabase(): Promise<void> {

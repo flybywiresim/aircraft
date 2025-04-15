@@ -6,8 +6,6 @@
   EfisSide,
   FcuSimVars,
   MathUtils,
-  NdSymbol,
-  NdSymbolTypeFlags,
   VerticalPathCheckpoint,
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
@@ -31,8 +29,6 @@ import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
 import { VerticalMode } from '@shared/autopilot';
-import { pathVectorLength, pathVectorPoint } from '@fmgc/guidance/lnav/PathVector';
-import { bearingTo } from 'msfs-geo';
 import { GenericFcuEvents, GenericTawsEvents, TrackLine } from '@flybywiresim/navigation-display';
 import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
@@ -479,17 +475,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.subscriptions.push(rm);
     }
 
-    this.subscriptions.push(
-      this.vdRange.sub(() => this.calculateAndTransmitEndOfVdMarker()),
-      this.fmsLateralPath.sub(() => this.calculateAndTransmitEndOfVdMarker()),
-      this.canvasMapRef.instance.canvasInvalid.pipe(this.trajNotAvailFlagCondition),
-      this.sub
-        .on('realTime')
-        .atFrequency(5)
-        .handle(() => this.calculateAndTransmitEndOfVdMarker()),
-    );
-
-    this.calculateAndTransmitEndOfVdMarker();
+    this.subscriptions.push(this.canvasMapRef.instance.canvasInvalid.pipe(this.trajNotAvailFlagCondition));
   }
 
   /**
@@ -565,54 +551,6 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
         break;
     }
     return Math.max(0, Math.ceil(verticalRange[0] / altitudePerDash) * altitudePerDash) + altitudePerDash * index;
-  }
-
-  calculateAndTransmitEndOfVdMarker() {
-    const isInVdMapMode = this.ndMode.get() === EfisNdMode.ARC || this.ndMode.get() === EfisNdMode.ROSE_NAV;
-    const ndRange =
-      this.ndMode.get() === EfisNdMode.ROSE_NAV ? this.ndRangeSetting.get() / 2 : this.ndRangeSetting.get();
-    const vdAndNdRangeDisagreeing = this.vdRange.get() !== ndRange;
-    if (isInVdMapMode && !this.shouldShowTrackLine.get() && this.fmsLateralPath.get()) {
-      let totalDistanceFromAircraft = this.fmsTargetVdProfile?.get()[0]?.distanceFromAircraft ?? 0;
-      for (const path of this.fmsLateralPath.get()) {
-        const pathDistance = pathVectorLength(path);
-
-        if (totalDistanceFromAircraft + pathDistance > this.vdRange.get()) {
-          const dist = pathDistance - (this.vdRange.get() - totalDistanceFromAircraft);
-          const symbolLocation = pathVectorPoint(path, dist);
-          const justBeforeSymbolLocation = pathVectorPoint(path, dist - 0.05);
-
-          if (symbolLocation && justBeforeSymbolLocation) {
-            const bearing = bearingTo(symbolLocation, justBeforeSymbolLocation);
-            const symbol: NdSymbol = {
-              location: symbolLocation,
-              direction: bearing,
-              databaseId: 'END_OF_VD',
-              ident: 'END_OF_VD',
-              type: NdSymbolTypeFlags.CyanColor,
-              distanceFromAirplane: this.vdRange.get(),
-            };
-            this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', symbol);
-          }
-          return;
-        } else {
-          totalDistanceFromAircraft += pathDistance;
-        }
-      }
-      this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', null);
-    } else if (isInVdMapMode && vdAndNdRangeDisagreeing) {
-      // Track line
-      const symbol: NdSymbol = {
-        location: null,
-        databaseId: 'END_OF_VD',
-        ident: 'END_OF_VD',
-        type: NdSymbolTypeFlags.CyanColor,
-        distanceFromAirplane: this.vdRange.get(),
-      };
-      this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', symbol);
-    } else {
-      this.props.bus.getPublisher<GenericTawsEvents>().pub('endOfVdMarker', null);
-    }
   }
 
   destroy(): void {

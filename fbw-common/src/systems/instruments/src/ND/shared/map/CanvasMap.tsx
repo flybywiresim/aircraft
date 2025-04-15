@@ -21,6 +21,7 @@ import {
   NdTraffic,
   MathUtils,
   PathVector,
+  NdSymbolTypeFlags2,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates, distanceTo } from 'msfs-geo';
@@ -127,8 +128,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
   private readonly trafficLayer = new TrafficLayer(this);
 
-  private endOfVdMarkerData: NdSymbol | null = null;
-
   private lastFrameTimestamp: number = 0;
 
   onAfterRender(node: VNode) {
@@ -144,8 +143,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     sub.on('set_map_up_course').handle((v) => this.mapRotation.set(v));
     sub.on('set_map_pixel_radius').handle((v) => this.mapPixelRadius.set(v));
     sub.on('set_map_range_radius').handle((v) => this.mapRangeRadius.set(v));
-    sub.on('endOfVdMarker').handle((symbol) => (this.endOfVdMarkerData = symbol));
-    // sub.on('set_map_efis_mode').handle((v) => this.mapMode.set(v));
 
     sub
       .on('ndMode')
@@ -310,24 +307,22 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     const pseudoWaypoints = this.symbols.filter(
       (it) =>
         it.type &
-        (NdSymbolTypeFlags.PwpStartOfClimb |
-          NdSymbolTypeFlags.PwpClimbLevelOff |
-          NdSymbolTypeFlags.PwpTopOfDescent |
-          NdSymbolTypeFlags.PwpDescentLevelOff |
-          NdSymbolTypeFlags.PwpInterceptProfile |
-          NdSymbolTypeFlags.PwpCdaFlap1 |
-          NdSymbolTypeFlags.PwpCdaFlap2 |
-          NdSymbolTypeFlags.PwpDecel |
-          NdSymbolTypeFlags.PwpTimeMarker |
-          NdSymbolTypeFlags.PwpSpeedChange |
-          NdSymbolTypeFlags.CourseReversalLeft |
-          NdSymbolTypeFlags.CourseReversalRight),
+          (NdSymbolTypeFlags.PwpStartOfClimb |
+            NdSymbolTypeFlags.PwpClimbLevelOff |
+            NdSymbolTypeFlags.PwpTopOfDescent |
+            NdSymbolTypeFlags.PwpDescentLevelOff |
+            NdSymbolTypeFlags.PwpInterceptProfile |
+            NdSymbolTypeFlags.PwpCdaFlap1 |
+            NdSymbolTypeFlags.PwpCdaFlap2 |
+            NdSymbolTypeFlags.PwpDecel |
+            NdSymbolTypeFlags.PwpTimeMarker |
+            NdSymbolTypeFlags.PwpSpeedChange |
+            NdSymbolTypeFlags.CourseReversalLeft |
+            NdSymbolTypeFlags.CourseReversalRight) ||
+        (it.type2 !== undefined && it.type2 & NdSymbolTypeFlags2.PwpEndOfVdMarker),
     );
 
     this.pwpLayer.data = pseudoWaypoints;
-    if (this.endOfVdMarkerData) {
-      this.pwpLayer.data.push(this.endOfVdMarkerData);
-    }
   }
 
   private handleNewTraffic(newTraffic: NdTraffic[]) {

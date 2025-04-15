@@ -79,6 +79,13 @@ export enum NdSymbolTypeFlags {
   MagentaColor = 1 << 31,
 }
 
+export enum NdSymbolTypeFlags2 {
+  None = 0,
+  LeftSideOnly = 1 << 0,
+  RightSideOnly = 1 << 1,
+  PwpEndOfVdMarker = 1 << 2,
+}
+
 export enum EfisRecomputingReason {
   None,
   RangeChange,
@@ -94,6 +101,7 @@ export interface InternalFmsSymbol {
   direction?: number; // true
   length?: number; // nautical miles
   type: NdSymbolTypeFlags;
+  type2?: NdSymbolTypeFlags2; // only for PWP
   constraints?: string[];
   altConstraint?: AltitudeConstraint;
   isAltitudeConstraintMet?: boolean;

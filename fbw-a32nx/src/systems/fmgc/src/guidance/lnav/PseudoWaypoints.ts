@@ -8,7 +8,7 @@ import {
   PseudoWaypointSequencingAction,
 } from '@fmgc/guidance/PseudoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
-import { NdSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, EfisSide, NdSymbolTypeFlags, NdSymbolTypeFlags2 } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
@@ -99,6 +99,13 @@ export class PseudoWaypoints implements GuidanceComponent {
     this.recompute();
   }
 
+  acceptEfisParameters() {
+    if (VnavConfig.DEBUG_PROFILE) {
+      console.log('[FMS/PWP] Computed new pseudo waypoints because of updated EFIS range.');
+    }
+    this.recompute();
+  }
+
   private recompute() {
     const geometry = this.guidanceController.activeGeometry;
     const wptCount = this.flightPlanService.active.firstMissedApproachLegIndex;
@@ -170,6 +177,37 @@ export class PseudoWaypoints implements GuidanceComponent {
         displayedOnMcdu: false,
         displayedOnNd: true,
       });
+    }
+
+    if (this.acConfig.lnavConfig.EMIT_END_OF_VD_MARKER) {
+      // END OF VD MARKER
+      if (
+        this.guidanceController.efisStateForSide.L.mode === EfisNdMode.ARC ||
+        this.guidanceController.efisStateForSide.L.mode === EfisNdMode.ROSE_NAV
+      ) {
+        const vdRangeLeft =
+          this.guidanceController.efisStateForSide.L.mode === EfisNdMode.ARC
+            ? Math.max(10, Math.min(this.guidanceController.efisStateForSide.L.range, 160))
+            : Math.max(5, Math.min(this.guidanceController.efisStateForSide.L.range / 2, 160));
+        const endOfVdLeft = this.createEndOfVdMarker(geometry, 'L', vdRangeLeft);
+        if (endOfVdLeft) {
+          newPseudoWaypoints.push(endOfVdLeft);
+        }
+      }
+
+      if (
+        this.guidanceController.efisStateForSide.R.mode === EfisNdMode.ARC ||
+        this.guidanceController.efisStateForSide.R.mode === EfisNdMode.ROSE_NAV
+      ) {
+        const vdRangeRight =
+          this.guidanceController.efisStateForSide.R.mode === EfisNdMode.ARC
+            ? Math.max(10, Math.min(this.guidanceController.efisStateForSide.R.range, 160))
+            : Math.max(5, Math.min(this.guidanceController.efisStateForSide.R.range / 2, 160));
+        const endOfVdRight = this.createEndOfVdMarker(geometry, 'R', vdRangeRight);
+        if (endOfVdRight) {
+          newPseudoWaypoints.push(endOfVdRight);
+        }
+      }
     }
 
     if (VnavConfig.DEBUG_PROFILE || VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION) {
@@ -616,6 +654,39 @@ export class PseudoWaypoints implements GuidanceComponent {
       default:
         return undefined;
     }
+  }
+
+  private createEndOfVdMarker(geometry: Geometry, efisSide: EfisSide, vdRange: number): PseudoWaypoint | null {
+    if (!geometry.legs.get(this.guidanceController.activeLegIndex)?.calculated) {
+      return null;
+    }
+
+    const distanceFromStart =
+      geometry.legs.get(this.guidanceController.activeLegIndex).calculated.cumulativeDistanceWithTransitions + vdRange;
+    const distanceFromEnd =
+      geometry.legs.get(this.guidanceController.activeLegIndex).calculated.cumulativeDistanceToEndWithTransitions -
+      vdRange;
+
+    const position = this.pointFromEndOfPath(geometry, geometry.legs.size, distanceFromEnd);
+    if (!position) {
+      return null;
+    }
+
+    const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = position;
+
+    const sideFlag = efisSide === 'L' ? NdSymbolTypeFlags2.LeftSideOnly : NdSymbolTypeFlags2.RightSideOnly;
+
+    return {
+      ident: `END_OF_VD_${efisSide}`,
+      alongLegIndex,
+      distanceFromLegTermination,
+      efisSymbolFlag: NdSymbolTypeFlags.CyanColor,
+      efisSymbolFlag2: NdSymbolTypeFlags2.PwpEndOfVdMarker | sideFlag,
+      efisSymbolLla,
+      distanceFromStart: distanceFromStart,
+      displayedOnMcdu: false,
+      displayedOnNd: true,
+    };
   }
 
   private createDebugPwp(geometry: Geometry, wptCount: number, totalDistance: number): PseudoWaypoint | null {
