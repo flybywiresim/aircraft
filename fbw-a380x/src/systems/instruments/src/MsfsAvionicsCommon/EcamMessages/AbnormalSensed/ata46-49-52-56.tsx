@@ -29,7 +29,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     sensed: true,
     items: [
       {
-        name: 'IF APU NOT ABSOLUTELY REQUIRED :',
+        name: 'IF APU NOT ABSOLUTELY RQRD :',
         sensed: false,
         condition: true,
       },
