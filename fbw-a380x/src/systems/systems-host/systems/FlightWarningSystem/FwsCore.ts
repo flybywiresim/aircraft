@@ -3938,7 +3938,7 @@ export class FwsCore {
     this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C2_AVAIL', 'bool'));
 
     /* 49 - APU */
-    this.apuMachLimitExceeded.set(this.machSelectedFromAdr.get() > 0.5);
+    this.apuMachLimitExceeded.set(this.machSelectedFromAdr.get() > 0.5 && !this.apuAvail.get());
 
     /* ANTI ICE */
 
