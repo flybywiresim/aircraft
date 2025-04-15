@@ -31,7 +31,6 @@ import {
 import { VerticalDisplayWaypointLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayWaypointLayer';
 import { VdPseudoWaypointLayer } from './VdPseudoWaypointLayer';
 import { VerticalDisplayRunwayLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayRunwayLayer';
-import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { GenericFmsEvents } from '../../../../../../../fbw-common/src/systems/instruments/src/ND/types/GenericFmsEvents';
 import { GenericFcuEvents } from '@flybywiresim/navigation-display';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
@@ -263,16 +262,8 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       );
 
     this.waypointLayer.data = waypoints;
-    const ppos: Coordinates = { lat: this.pposLat.get().value, long: this.pposLon.get().value };
 
-    const runways = this.fmsSymbols
-      .get()
-      .filter(
-        (it) =>
-          it.type & NdSymbolTypeFlags.Runway &&
-          it.location &&
-          (bearingTo(ppos, it.location) < 30 || distanceTo(ppos, it.location) < 10),
-      ); // FIXME: Need to somehow include runways in the vertical path, or filter out runways before the active leg
+    const runways = this.fmsSymbols.get().filter((it) => it.type & NdSymbolTypeFlags.Runway && it.location); // FIXME: Need to somehow include runways in the vertical path, or filter out runways before the active leg
 
     this.runwayLayer.data = runways;
 

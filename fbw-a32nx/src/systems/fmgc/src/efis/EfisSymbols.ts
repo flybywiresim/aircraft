@@ -48,8 +48,8 @@ import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { getAlongTrackDistanceTo } from '@fmgc/guidance/lnav/CommonGeometry';
 import { pathVectorLength, pathVectorPoint } from '../guidance/lnav/PathVector';
+import { FlightPlanSegment } from '../flightplanning/segments/FlightPlanSegment';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -894,13 +894,13 @@ export class EfisSymbols<T extends number> {
 
     // FP airports/runways
 
-    const airports: [Airport | undefined, Runway | undefined][] = [
+    const airports: [Airport | undefined, Runway | undefined, FlightPlanSegment | undefined][] = [
       // The alternate origin airport symbol is not shown as it is the same as the primary destination
-      [flightPlan.originAirport, flightPlan.originRunway],
-      [flightPlan.destinationAirport, flightPlan.destinationRunway],
+      [flightPlan.originAirport, flightPlan.originRunway, flightPlan.originSegment],
+      [flightPlan.destinationAirport, flightPlan.destinationRunway, flightPlan.destinationSegment],
     ];
 
-    for (const [airport, runway] of airports) {
+    for (const [airport, runway, segment] of airports) {
       if (!airport) {
         continue;
       }
@@ -911,13 +911,13 @@ export class EfisSymbols<T extends number> {
 
       const databaseId = `A${airport.ident}${planAltnStr}${planIndexStr}${runwayIdentStr}`;
 
+      const distanceFromAirplane =
+        (segment.lastLeg?.calculated?.cumulativeDistanceWithTransitions ??
+          distanceTo(this.lastPpos, airport.location)) -
+        (this.guidanceController.vnavDriver.mcduProfile?.distanceToPresentPosition ?? 0);
+
       if (runway) {
         if (this.isWithinEditArea(runway.startLocation, mapReferencePoint, mapOrientation, editArea)) {
-          const runwayEndCoordinates = placeBearingDistance(
-            runway.startLocation,
-            runway.bearing,
-            runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
-          );
           ret.push({
             databaseId,
             ident: runway.ident,
@@ -925,7 +925,7 @@ export class EfisSymbols<T extends number> {
             direction: runway.bearing,
             length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
             type: NdSymbolTypeFlags.Runway,
-            distanceFromAirplane: -getAlongTrackDistanceTo(runway.startLocation, runwayEndCoordinates, this.lastPpos),
+            distanceFromAirplane: distanceFromAirplane,
             predictedAltitude: runway.thresholdLocation.alt,
           });
         }
@@ -935,7 +935,7 @@ export class EfisSymbols<T extends number> {
           ident: airport.ident,
           location: airport.location,
           type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
-          distanceFromAirplane: distanceTo(this.lastPpos, airport.location),
+          distanceFromAirplane: distanceFromAirplane,
           predictedAltitude: airport.location.alt,
         });
       }
