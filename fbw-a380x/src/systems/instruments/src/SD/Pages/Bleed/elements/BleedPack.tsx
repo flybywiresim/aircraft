@@ -15,6 +15,9 @@ const BleedPack: FC<BleedPackProps> = ({ x, y, pack, isPackOperative }) => {
   return (
     <g id={`BleedPack${pack}`} style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}>
       <path className={`${isPackOperative ? 'Green' : 'Amber'} Line`} d="M79,-21 l 0,-23" />
+      {/* Should this really be isPackOperative? Pack flow control valve status might make more sense */}
+      <path className={`${isPackOperative ? 'Green' : 'Amber'} Line`} d="M78,115 l 0,-21" />
+
       <path className="Grey SW2 NoFill" d="M 21,0 h -21 v 93 h 158 v -93 h -21" />
       <text x={42} y={0} className={`F22 ${isPackOperative ? 'White' : 'Amber'}`}>
         PACK
