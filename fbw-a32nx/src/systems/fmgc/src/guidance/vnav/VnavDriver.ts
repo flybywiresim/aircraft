@@ -52,7 +52,7 @@ export class VnavDriver implements GuidanceComponent {
 
   private headingProfile: NavHeadingProfile;
 
-  private profileManager: VerticalProfileManager;
+  public profileManager: VerticalProfileManager;
 
   // We cache this here, so we don't have to recompute it every guidance step
   private decelPoint: VerticalCheckpoint = null;

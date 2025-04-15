@@ -1139,7 +1139,10 @@ export class FlightManagementComputer implements FmcInterface {
     const descentProfileVd: VerticalPathCheckpoint[] = descentProfile
       ? descentProfile.checkpoints.map((c) => {
           return {
-            distanceFromAircraft: c.distanceFromStart - descentProfile.distanceToPresentPosition,
+            distanceFromAircraft:
+              c.distanceFromStart +
+              this.guidanceController.vnavDriver.profileManager.computeTacticalToGuidanceProfileOffset() -
+              descentProfile.distanceToPresentPosition,
             altitude: c.altitude,
             altitudeConstraint: undefined,
             isAltitudeConstraintMet: undefined,
