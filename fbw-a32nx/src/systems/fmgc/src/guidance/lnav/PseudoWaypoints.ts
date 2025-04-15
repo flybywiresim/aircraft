@@ -181,32 +181,14 @@ export class PseudoWaypoints implements GuidanceComponent {
 
     if (this.acConfig.lnavConfig.EMIT_END_OF_VD_MARKER) {
       // END OF VD MARKER
-      if (
-        this.guidanceController.efisStateForSide.L.mode === EfisNdMode.ARC ||
-        this.guidanceController.efisStateForSide.L.mode === EfisNdMode.ROSE_NAV
-      ) {
-        const vdRangeLeft =
-          this.guidanceController.efisStateForSide.L.mode === EfisNdMode.ARC
-            ? Math.max(10, Math.min(this.guidanceController.efisStateForSide.L.range, 160))
-            : Math.max(5, Math.min(this.guidanceController.efisStateForSide.L.range / 2, 160));
-        const endOfVdLeft = this.createEndOfVdMarker(geometry, 'L', vdRangeLeft);
-        if (endOfVdLeft) {
-          newPseudoWaypoints.push(endOfVdLeft);
-        }
+      const endOfVdLeft = this.createEndOfVdMarker(geometry, 'L');
+      if (endOfVdLeft) {
+        newPseudoWaypoints.push(endOfVdLeft);
       }
 
-      if (
-        this.guidanceController.efisStateForSide.R.mode === EfisNdMode.ARC ||
-        this.guidanceController.efisStateForSide.R.mode === EfisNdMode.ROSE_NAV
-      ) {
-        const vdRangeRight =
-          this.guidanceController.efisStateForSide.R.mode === EfisNdMode.ARC
-            ? Math.max(10, Math.min(this.guidanceController.efisStateForSide.R.range, 160))
-            : Math.max(5, Math.min(this.guidanceController.efisStateForSide.R.range / 2, 160));
-        const endOfVdRight = this.createEndOfVdMarker(geometry, 'R', vdRangeRight);
-        if (endOfVdRight) {
-          newPseudoWaypoints.push(endOfVdRight);
-        }
+      const endOfVdRight = this.createEndOfVdMarker(geometry, 'R');
+      if (endOfVdRight) {
+        newPseudoWaypoints.push(endOfVdLeft);
       }
     }
 
@@ -656,10 +638,19 @@ export class PseudoWaypoints implements GuidanceComponent {
     }
   }
 
-  private createEndOfVdMarker(geometry: Geometry, efisSide: EfisSide, vdRange: number): PseudoWaypoint | null {
-    if (!geometry.legs.get(this.guidanceController.activeLegIndex)?.calculated) {
+  private createEndOfVdMarker(geometry: Geometry, efisSide: EfisSide): PseudoWaypoint | null {
+    if (
+      (this.guidanceController.efisStateForSide[efisSide].mode !== EfisNdMode.ARC &&
+        this.guidanceController.efisStateForSide[efisSide].mode !== EfisNdMode.ROSE_NAV) ||
+      !geometry.legs.get(this.guidanceController.activeLegIndex)?.calculated
+    ) {
       return null;
     }
+
+    const vdRange =
+      this.guidanceController.efisStateForSide[efisSide].mode === EfisNdMode.ARC
+        ? Math.max(10, Math.min(this.guidanceController.efisStateForSide[efisSide].range, 160))
+        : Math.max(5, Math.min(this.guidanceController.efisStateForSide[efisSide].range / 2, 160));
 
     const distanceFromStart =
       geometry.legs.get(this.guidanceController.activeLegIndex).calculated.cumulativeDistanceWithTransitions + vdRange;

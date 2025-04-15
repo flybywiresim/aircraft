@@ -844,8 +844,8 @@ export class EfisSymbols<T extends number> {
             ? predictions.waypointPredictions.get(i).isAltitudeConstraintMet
             : true,
         direction,
-        distanceFromAirplane: distanceFromAirplane,
-        predictedAltitude: predictedAltitude,
+        distanceFromAirplane,
+        predictedAltitude,
       });
     }
 
