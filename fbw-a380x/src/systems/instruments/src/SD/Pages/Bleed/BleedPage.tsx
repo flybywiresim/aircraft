@@ -70,7 +70,7 @@ export const BleedPage = () => {
       <BleedGnd />
 
       {/* APU */}
-      <BleedApu isPack1Operative={isPack1Operative} isPack2Operative={isPack2Operative} />
+      <BleedApu />
     </>
   );
 };

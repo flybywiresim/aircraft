@@ -2,12 +2,7 @@ import React, { FC } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import Valve from './Valve';
 
-interface BleedApuProps {
-  isPack1Operative: boolean;
-  isPack2Operative: boolean;
-}
-
-const BleedApu: FC<BleedApuProps> = ({ isPack1Operative, isPack2Operative }) => {
+const BleedApu: FC = () => {
   const [apuBleedAirValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
   const [apuMasterSwitchPbIsOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool', 500);
 
@@ -30,11 +25,11 @@ const BleedApu: FC<BleedApuProps> = ({ isPack1Operative, isPack2Operative }) => 
         sdacDatum
       />
 
-      {/* Why would this depend on the packs? */}
-      <path
-        className={`${apuIsolationValveOpen && (isPack1Operative || isPack2Operative) ? 'Show' : 'Hide'} Line Green NoFill`}
-        d="M0,-69 l 0,-61"
-      />
+      {/* APU Bleed valve to APU isolation valve */}
+      <path className={`${apuIsolationValveOpen ? 'Show' : 'Hide'} Line Green NoFill`} d="M0,-69 l 0,-61" />
+
+      {/* APU isolation valve to crossbleed line */}
+      <path className={`${apuIsolationValveOpen ? 'Show' : 'Hide'} Line Green NoFill`} d="M0,-170 l 0,-101" />
 
       <g className={apuMasterSwitchPbIsOn ? 'Show' : 'Hide'}>
         <Valve
