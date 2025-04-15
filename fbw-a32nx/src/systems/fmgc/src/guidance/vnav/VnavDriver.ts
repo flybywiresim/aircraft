@@ -52,7 +52,7 @@ export class VnavDriver implements GuidanceComponent {
 
   private headingProfile: NavHeadingProfile;
 
-  public profileManager: VerticalProfileManager;
+  private profileManager: VerticalProfileManager;
 
   // We cache this here, so we don't have to recompute it every guidance step
   private decelPoint: VerticalCheckpoint = null;
@@ -654,6 +654,10 @@ export class VnavDriver implements GuidanceComponent {
 
   shouldShowTooSteepPathAhead(): boolean {
     return this.profileManager.shouldShowTooSteepPathAhead();
+  }
+
+  public computeTacticalToGuidanceProfileOffset(): NauticalMiles {
+    return this.profileManager.computeTacticalToGuidanceProfileOffset();
   }
 }
 

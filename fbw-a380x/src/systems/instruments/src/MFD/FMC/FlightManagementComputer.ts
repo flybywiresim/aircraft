@@ -1141,7 +1141,7 @@ export class FlightManagementComputer implements FmcInterface {
           return {
             distanceFromAircraft:
               c.distanceFromStart +
-              this.guidanceController.vnavDriver.profileManager.computeTacticalToGuidanceProfileOffset() -
+              this.guidanceController.vnavDriver.computeTacticalToGuidanceProfileOffset() -
               descentProfile.distanceToPresentPosition,
             altitude: c.altitude,
             altitudeConstraint: undefined,
