@@ -3721,6 +3721,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
+    // APU
     490800001: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.apuMachLimitExceeded,
@@ -3733,7 +3734,7 @@ export class FwsAbnormalSensed {
     },
     490800002: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.apuMachLimitExceeded,
+      simVarIsActive: this.fws.fireButtonAPU,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
