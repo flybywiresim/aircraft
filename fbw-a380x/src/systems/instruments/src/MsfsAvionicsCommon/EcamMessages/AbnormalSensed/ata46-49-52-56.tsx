@@ -34,7 +34,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
         condition: true,
       },
       {
-        name: 'APU MASTER SW OFF',
+        name: 'APU MASTER SW',
         sensed: true,
         labelNotCompleted: 'OFF',
       },
