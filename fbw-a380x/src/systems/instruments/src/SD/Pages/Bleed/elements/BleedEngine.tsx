@@ -97,6 +97,7 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
         className={`SW2 ${shouldHpValveBeOpen === engineHpValveOpen && (engineHpValveOpen || isEngineRunning) ? 'Green' : 'Amber'}`}
         d="M 64,65 l 0,20"
       />
+      <path className={engineHpValveOpen ? 'SW2 Green NoFill' : 'Hide'} d="M 64,25 v -12 h -31" />
 
       {/* Engine Bleed units */}
       <g className={engine % 2 === 0 ? 'Hide' : 'Show'}>
