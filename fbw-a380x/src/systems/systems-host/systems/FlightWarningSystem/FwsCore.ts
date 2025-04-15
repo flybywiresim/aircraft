@@ -3944,7 +3944,7 @@ export class FwsCore {
       this.apuMachLimitExceededMemory.write(
         this.machSelectedFromAdr.get() > 0.5,
         this.machSelectedFromAdr.get() < 0.45,
-      ) && !this.apuAvail.get(),
+      ) && this.apuAvail.get() === 1,
     );
 
     /* ANTI ICE */
