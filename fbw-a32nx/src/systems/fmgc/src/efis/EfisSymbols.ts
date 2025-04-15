@@ -24,7 +24,7 @@ import {
   NdSymbol,
   VdSymbol,
   FmsData,
-  NdSymbolTypeFlags2,
+  NdPwpSymbolTypeFlags,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -326,8 +326,8 @@ export class EfisSymbols<T extends number> {
         symbol.length = symbol.length ?? oldSymbol.length;
         symbol.location = symbol.location ?? oldSymbol.location;
         symbol.type |= oldSymbol.type;
-        if (oldSymbol.type2) {
-          symbol.type2 |= oldSymbol.type2;
+        if (oldSymbol.typePwp) {
+          symbol.typePwp |= oldSymbol.typePwp;
         }
         if (oldSymbol.radials) {
           if (symbol.radials) {
@@ -558,8 +558,8 @@ export class EfisSymbols<T extends number> {
     for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
       // Some PWP are only relevant for a specific display side
       if (
-        (this.side === 'L' && pwp.efisSymbolFlag2 & NdSymbolTypeFlags2.RightSideOnly) ||
-        (this.side === 'R' && pwp.efisSymbolFlag2 & NdSymbolTypeFlags2.LeftSideOnly)
+        (this.side === 'L' && pwp.efisSymbolFlag & NdSymbolTypeFlags.RightSideOnly) ||
+        (this.side === 'R' && pwp.efisSymbolFlag & NdSymbolTypeFlags.LeftSideOnly)
       ) {
         continue;
       }
@@ -567,7 +567,7 @@ export class EfisSymbols<T extends number> {
       // End of VD marker needs direction
       let direction: number | undefined = undefined;
 
-      if (pwp.efisSymbolFlag2 & NdSymbolTypeFlags2.PwpEndOfVdMarker) {
+      if (pwp.efisPwpSymbolFlag & NdPwpSymbolTypeFlags.PwpEndOfVdMarker) {
         const leg = this.guidanceController.activeGeometry.legs.get(pwp.alongLegIndex);
         const orientation = Geometry.getLegOrientationAtDistanceFromEnd(leg, pwp.distanceFromLegTermination);
         if (orientation !== null) {
@@ -581,7 +581,7 @@ export class EfisSymbols<T extends number> {
         location: pwp.efisSymbolLla,
         direction,
         type: pwp.efisSymbolFlag,
-        type2: pwp.efisSymbolFlag2,
+        typePwp: pwp.efisPwpSymbolFlag,
         // When in HDG/TRK, this defines where on the track line the PWP lies
         distanceFromAirplane: pwp.distanceFromStart,
         predictedAltitude: pwp.flightPlanInfo?.altitude ?? undefined,
@@ -1062,7 +1062,7 @@ export class EfisSymbols<T extends number> {
         direction: s.direction,
         length: s.length,
         type: s.type,
-        type2: s.type2,
+        typePwp: s.typePwp,
         constraints: s.constraints,
         radials: s.radials,
         radii: s.radii,
@@ -1082,7 +1082,7 @@ export class EfisSymbols<T extends number> {
         direction: s.direction,
         length: s.length,
         type: s.type,
-        type2: s.type2,
+        typePwp: s.typePwp,
         constraints: s.constraints,
         altConstraint: s.altConstraint,
         isAltitudeConstraintMet: s.isAltitudeConstraintMet,

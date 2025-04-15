@@ -21,7 +21,7 @@ import {
   NdTraffic,
   MathUtils,
   PathVector,
-  NdSymbolTypeFlags2,
+  NdPwpSymbolTypeFlags,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates, distanceTo } from 'msfs-geo';
@@ -306,20 +306,20 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     const pseudoWaypoints = this.symbols.filter(
       (it) =>
-        it.type &
-          (NdSymbolTypeFlags.PwpStartOfClimb |
-            NdSymbolTypeFlags.PwpClimbLevelOff |
-            NdSymbolTypeFlags.PwpTopOfDescent |
-            NdSymbolTypeFlags.PwpDescentLevelOff |
-            NdSymbolTypeFlags.PwpInterceptProfile |
-            NdSymbolTypeFlags.PwpCdaFlap1 |
-            NdSymbolTypeFlags.PwpCdaFlap2 |
-            NdSymbolTypeFlags.PwpDecel |
-            NdSymbolTypeFlags.PwpTimeMarker |
-            NdSymbolTypeFlags.PwpSpeedChange |
-            NdSymbolTypeFlags.CourseReversalLeft |
-            NdSymbolTypeFlags.CourseReversalRight) ||
-        (it.type2 !== undefined && it.type2 & NdSymbolTypeFlags2.PwpEndOfVdMarker),
+        it.type & (NdSymbolTypeFlags.CourseReversalLeft | NdSymbolTypeFlags.CourseReversalRight) ||
+        (it.typePwp !== undefined &&
+          it.typePwp &
+            (NdPwpSymbolTypeFlags.PwpEndOfVdMarker |
+              NdPwpSymbolTypeFlags.PwpStartOfClimb |
+              NdPwpSymbolTypeFlags.PwpClimbLevelOff |
+              NdPwpSymbolTypeFlags.PwpTopOfDescent |
+              NdPwpSymbolTypeFlags.PwpDescentLevelOff |
+              NdPwpSymbolTypeFlags.PwpInterceptProfile |
+              NdPwpSymbolTypeFlags.PwpCdaFlap1 |
+              NdPwpSymbolTypeFlags.PwpCdaFlap2 |
+              NdPwpSymbolTypeFlags.PwpDecel |
+              NdPwpSymbolTypeFlags.PwpTimeMarker |
+              NdPwpSymbolTypeFlags.PwpSpeedChange)),
     );
 
     this.pwpLayer.data = pseudoWaypoints;

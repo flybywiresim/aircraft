@@ -9,7 +9,7 @@ import {
   Arinc429ConsumerSubject,
   Arinc429Register,
   MathUtils,
-  NdSymbolTypeFlags2,
+  NdPwpSymbolTypeFlags,
 } from '@flybywiresim/fbw-sdk';
 
 import { NDSimvars } from '../../NDSimvarPublisher';
@@ -94,7 +94,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
             (this.groundSpeed.value * (Date.now() - this.lastUpdateTime)) / 1000 / 60 / 60) *
           mapParameters.nmToPx;
         const rotate = MathUtils.diffAngle(this.headingWord.get().value, this.trackWord.get().value);
-        context.translate(384, 378 + mapParameters.centerYBias); // bug for ROSE NAV modes, didn't consider centerYBias
+        context.translate(384, 378 + mapParameters.centerYBias);
         context.rotate((rotate * Math.PI) / 180);
 
         this.paintPseudoWaypoint(true, context, 0, -dy, symbol);
@@ -121,31 +121,31 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
     const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
     context.strokeStyle = color;
 
-    if (symbol.type & NdSymbolTypeFlags.PwpStartOfClimb) {
+    if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpStartOfClimb) {
       this.paintPath(context, x, y, START_OF_CLIMB_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpClimbLevelOff) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpClimbLevelOff) {
       this.paintPath(context, x, y, LEVEL_OFF_CLIMB_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpTopOfDescent) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpTopOfDescent) {
       this.paintPath(context, x, y, START_OF_DESCENT_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpDescentLevelOff) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpDescentLevelOff) {
       this.paintPath(context, x, y, LEVEL_OFF_DESCENT_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpInterceptProfile) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpInterceptProfile) {
       this.paintPath(context, x, y, INTERCEPT_PROFILE_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpCdaFlap1) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpCdaFlap1) {
       this.paintCdaPoint(context, x, y, '1', color);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpCdaFlap2) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpCdaFlap2) {
       this.paintCdaPoint(context, x, y, '2', color);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpDecel) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpDecel) {
       this.paintPath(context, x, y, DECEL_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpTimeMarker) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpTimeMarker) {
       this.paintCdaPoint(context, x, y, '', '#0f0');
-    } else if (symbol.type & NdSymbolTypeFlags.PwpSpeedChange) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpSpeedChange) {
       context.fillStyle = color;
       context.strokeStyle = 'none';
       this.paintSpeedChange(context, x, y);
     } else if (
-      symbol.type2 &&
-      symbol.type2 & NdSymbolTypeFlags2.PwpEndOfVdMarker &&
+      symbol.typePwp &&
+      symbol.typePwp & NdPwpSymbolTypeFlags.PwpEndOfVdMarker &&
       symbol.type & NdSymbolTypeFlags.CyanColor
     ) {
       context.fillStyle = color;

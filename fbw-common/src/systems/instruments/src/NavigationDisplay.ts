@@ -62,28 +62,29 @@ export enum NdSymbolTypeFlags {
   Constraint = 1 << 10,
   FixInfo = 1 << 11,
   FlightPlan = 1 << 12,
-  CourseReversalLeft = 1 << 17,
-  CourseReversalRight = 1 << 18,
-  PwpDecel = 1 << 19,
-  PwpTopOfDescent = 1 << 20,
-  PwpSpeedChange = 1 << 21,
-  PwpClimbLevelOff = 1 << 22,
-  PwpDescentLevelOff = 1 << 23,
-  PwpStartOfClimb = 1 << 24,
-  PwpInterceptProfile = 1 << 25,
-  PwpTimeMarker = 1 << 26,
-  PwpCdaFlap1 = 1 << 27,
-  PwpCdaFlap2 = 1 << 28,
-  CyanColor = 1 << 29,
-  AmberColor = 1 << 30,
-  MagentaColor = 1 << 31,
+  CourseReversalLeft = 1 << 13,
+  CourseReversalRight = 1 << 14,
+  CyanColor = 1 << 15,
+  AmberColor = 1 << 16,
+  MagentaColor = 1 << 17,
+  LeftSideOnly = 1 << 18,
+  RightSideOnly = 1 << 19,
 }
 
-export enum NdSymbolTypeFlags2 {
+/** NdSymbolTypeFlags was filling up, so we had to separate the PWP flags into this enum */
+export enum NdPwpSymbolTypeFlags {
   None = 0,
-  LeftSideOnly = 1 << 0,
-  RightSideOnly = 1 << 1,
-  PwpEndOfVdMarker = 1 << 2,
+  PwpEndOfVdMarker = 1 << 0,
+  PwpDecel = 1 << 1,
+  PwpTopOfDescent = 1 << 2,
+  PwpSpeedChange = 1 << 3,
+  PwpClimbLevelOff = 1 << 4,
+  PwpDescentLevelOff = 1 << 5,
+  PwpStartOfClimb = 1 << 6,
+  PwpInterceptProfile = 1 << 7,
+  PwpTimeMarker = 1 << 8,
+  PwpCdaFlap1 = 1 << 9,
+  PwpCdaFlap2 = 1 << 10,
 }
 
 export enum EfisRecomputingReason {
@@ -101,7 +102,7 @@ export interface InternalFmsSymbol {
   direction?: number; // true
   length?: number; // nautical miles
   type: NdSymbolTypeFlags;
-  type2?: NdSymbolTypeFlags2; // only for PWP
+  typePwp?: NdPwpSymbolTypeFlags; // only for PWP
   constraints?: string[];
   altConstraint?: AltitudeConstraint;
   isAltitudeConstraintMet?: boolean;

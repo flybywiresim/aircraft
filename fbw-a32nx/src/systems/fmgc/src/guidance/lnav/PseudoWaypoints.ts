@@ -8,7 +8,7 @@ import {
   PseudoWaypointSequencingAction,
 } from '@fmgc/guidance/PseudoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
-import { EfisNdMode, EfisSide, NdSymbolTypeFlags, NdSymbolTypeFlags2 } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, EfisSide, NdSymbolTypeFlags, NdPwpSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
@@ -171,7 +171,8 @@ export class PseudoWaypoints implements GuidanceComponent {
         ident: 'Speed change',
         alongLegIndex,
         distanceFromLegTermination,
-        efisSymbolFlag: NdSymbolTypeFlags.PwpSpeedChange | NdSymbolTypeFlags.MagentaColor,
+        efisSymbolFlag: NdSymbolTypeFlags.MagentaColor,
+        efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpSpeedChange,
         efisSymbolLla,
         distanceFromStart: firstSpeedChange,
         displayedOnMcdu: false,
@@ -417,7 +418,8 @@ export class PseudoWaypoints implements GuidanceComponent {
       case VerticalCheckpointReason.LevelOffForClimbConstraint:
         return {
           ident: 'Level 1',
-          efisSymbolFlag: NdSymbolTypeFlags.PwpClimbLevelOff | NdSymbolTypeFlags.MagentaColor,
+          efisSymbolFlag: NdSymbolTypeFlags.MagentaColor,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpClimbLevelOff,
           alongLegIndex,
           distanceFromLegTermination,
           efisSymbolLla,
@@ -430,7 +432,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: 'Start of climb 1',
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpStartOfClimb | NdSymbolTypeFlags.CyanColor,
+          efisSymbolFlag: NdSymbolTypeFlags.CyanColor,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpStartOfClimb,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -467,7 +470,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: 'Level 2',
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpClimbLevelOff | NdSymbolTypeFlags.CyanColor,
+          efisSymbolFlag: NdSymbolTypeFlags.CyanColor,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpClimbLevelOff,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -490,7 +494,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: PWP_IDENT_STEP_CLIMB,
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpStartOfClimb,
+          efisSymbolFlag: NdSymbolTypeFlags.None,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpStartOfClimb,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -502,7 +507,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: PWP_IDENT_TOD,
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+          efisSymbolFlag: NdSymbolTypeFlags.None,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpTopOfDescent,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -515,7 +521,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: PWP_IDENT_TOD,
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+          efisSymbolFlag: NdSymbolTypeFlags.None,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpTopOfDescent,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -526,7 +533,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: PWP_IDENT_TOD,
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent | NdSymbolTypeFlags.CyanColor,
+          efisSymbolFlag: NdSymbolTypeFlags.CyanColor,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpTopOfDescent,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -538,7 +546,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           sequencingType: PseudoWaypointSequencingAction.TOD_REACHED,
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+          efisSymbolFlag: NdSymbolTypeFlags.None,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpTopOfDescent,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -552,7 +561,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: 'Level 2',
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpDescentLevelOff | NdSymbolTypeFlags.CyanColor,
+          efisSymbolFlag: NdSymbolTypeFlags.CyanColor,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpDescentLevelOff,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -563,7 +573,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: 'Level 1',
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpDescentLevelOff | NdSymbolTypeFlags.MagentaColor,
+          efisSymbolFlag: NdSymbolTypeFlags.MagentaColor,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpDescentLevelOff,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -574,7 +585,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: 'Intercept point 1',
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpInterceptProfile,
+          efisSymbolFlag: NdSymbolTypeFlags.None,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpInterceptProfile,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -585,7 +597,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: 'Intercept point 2',
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpInterceptProfile | NdSymbolTypeFlags.CyanColor,
+          efisSymbolFlag: NdSymbolTypeFlags.CyanColor,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpInterceptProfile,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: false,
@@ -599,10 +612,10 @@ export class PseudoWaypoints implements GuidanceComponent {
           distanceFromLegTermination,
           // Decel point is shown in magenta if speed is managed and NAV is armed or active
           efisSymbolFlag:
-            NdSymbolTypeFlags.PwpDecel |
-            (Simplane.getAutoPilotAirspeedManaged() && isLatAutoControlArmedOrActive
+            Simplane.getAutoPilotAirspeedManaged() && isLatAutoControlArmedOrActive
               ? NdSymbolTypeFlags.MagentaColor
-              : 0),
+              : 0,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpDecel,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -614,7 +627,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: PWP_IDENT_FLAP1,
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap1,
+          efisSymbolFlag: NdSymbolTypeFlags.None,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpCdaFlap1,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -626,7 +640,8 @@ export class PseudoWaypoints implements GuidanceComponent {
           ident: PWP_IDENT_FLAP2,
           alongLegIndex,
           distanceFromLegTermination,
-          efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap2,
+          efisSymbolFlag: NdSymbolTypeFlags.None,
+          efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpCdaFlap2,
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
@@ -665,14 +680,14 @@ export class PseudoWaypoints implements GuidanceComponent {
 
     const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = position;
 
-    const sideFlag = efisSide === 'L' ? NdSymbolTypeFlags2.LeftSideOnly : NdSymbolTypeFlags2.RightSideOnly;
+    const sideFlag = efisSide === 'L' ? NdSymbolTypeFlags.LeftSideOnly : NdSymbolTypeFlags.RightSideOnly;
 
     return {
       ident: `END_OF_VD_${efisSide}`,
       alongLegIndex,
       distanceFromLegTermination,
-      efisSymbolFlag: NdSymbolTypeFlags.CyanColor,
-      efisSymbolFlag2: NdSymbolTypeFlags2.PwpEndOfVdMarker | sideFlag,
+      efisSymbolFlag: NdSymbolTypeFlags.CyanColor | sideFlag,
+      efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpEndOfVdMarker,
       efisSymbolLla,
       distanceFromStart: distanceFromStart,
       displayedOnMcdu: false,
@@ -698,7 +713,8 @@ export class PseudoWaypoints implements GuidanceComponent {
       ident: 'DEBUG_POINT',
       alongLegIndex,
       distanceFromLegTermination,
-      efisSymbolFlag: NdSymbolTypeFlags.PwpSpeedChange | NdSymbolTypeFlags.CyanColor,
+      efisSymbolFlag: NdSymbolTypeFlags.CyanColor,
+      efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpSpeedChange,
       efisSymbolLla,
       distanceFromStart: totalDistance - debugDistanceToEnd,
       displayedOnMcdu: false,
