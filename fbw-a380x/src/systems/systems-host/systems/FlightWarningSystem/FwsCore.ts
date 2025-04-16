@@ -1553,6 +1553,8 @@ export class FwsCore {
 
   public readonly apuAutoShutdown = Subject.create(false);
 
+  public readonly apuEmerShutdown = Subject.create(false);
+
   /* ICE */
 
   public readonly iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
@@ -2202,6 +2204,7 @@ export class FwsCore {
 
     this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
     this.apuAutoShutdown.set(SimVar.GetSimVarValue('L:A32NX_APU_IS_AUTO_SHUTDOWN', 'bool'));
+    this.apuEmerShutdown.set(SimVar.GetSimVarValue('L:A32NX_APU_IS_EMERGENCY_SHUTDOWN', 'bool'));
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool'));
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
