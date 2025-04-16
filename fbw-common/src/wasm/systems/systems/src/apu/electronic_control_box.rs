@@ -147,7 +147,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         self.start_is_on = overhead.start_is_on();
         self.bleed_is_on = apu_bleed_is_on;
         self.fire_button_is_released = fire_overhead.fire_button_is_released();
-        if fire_overhead.fire_button_is_released() {
+        if fire_overhead.fire_button_is_released() && self.is_on() {
             self.fault = Some(ApuFault::ApuFire);
         }
     }
