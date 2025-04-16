@@ -10,7 +10,6 @@ interface BleedMixerUnitProps {
 }
 
 const BleedMixerUnit: FC<BleedMixerUnitProps> = ({ x, y, _sdacDatum }) => {
-  // TODO Add Air supplied to cabin and cockpit simvar
   const [pack1FlowValve1Open] = useSimVar('L:A32NX_COND_PACK_1_FLOW_VALVE_1_IS_OPEN', 'bool', 500);
   const [pack1FlowValve2Open] = useSimVar('L:A32NX_COND_PACK_1_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
   const [pack2FlowValve1Open] = useSimVar('L:A32NX_COND_PACK_2_FLOW_VALVE_1_IS_OPEN', 'bool', 500);
