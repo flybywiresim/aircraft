@@ -3724,7 +3724,7 @@ export class FwsAbnormalSensed {
     // APU
     490800001: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.apuMachLimitExceeded,
+      simVarIsActive: this.fws.apuMachLimitExceeded, //APU FAULT
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
@@ -3734,7 +3734,7 @@ export class FwsAbnormalSensed {
     },
     490800002: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.apuEmerShutdown,
+      simVarIsActive: this.fws.apuEmerShutdown, //EMER SHUTDOWN
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
@@ -3744,7 +3744,7 @@ export class FwsAbnormalSensed {
     },
     490800003: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.apuAutoShutdown,
+      simVarIsActive: this.fws.apuAutoShutdown, //AUTO SHUTDOWN
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
@@ -3754,7 +3754,7 @@ export class FwsAbnormalSensed {
     },
     490800004: {
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: this.fws.apuMachLimitExceeded,
+      simVarIsActive: this.fws.apuMachLimitExceeded, //MACH LIMIT EXCEEDED
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
@@ -3764,7 +3764,7 @@ export class FwsAbnormalSensed {
     },
     490800005: {
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.apuMachLimitExceeded,
+      simVarIsActive: this.fws.apuMachLimitExceeded, //OIL FILTER CLOGGED
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
