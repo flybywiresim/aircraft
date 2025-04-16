@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -36,14 +36,9 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     ],
   },
   490800002: {
-    title: '\x1b<4m\x1b4mAPU\x1bm FAULT',
+    title: '\x1b<4m\x1b4mAPU\x1bm FAULT EMER SHUTDOWN',
     sensed: true,
     items: [
-      {
-        name: 'EMER SHUTDOWN',
-        sensed: false,
-        style: ChecklistLineStyle.Amber,
-      },
       {
         name: 'APU MASTER SW',
         sensed: true,
@@ -52,14 +47,9 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     ],
   },
   490800003: {
-    title: '\x1b<4m\x1b4mAPU\x1bm FAULT',
+    title: '\x1b<4m\x1b4mAPU\x1bm FAULT AUTO SHUTDOWN',
     sensed: true,
     items: [
-      {
-        name: 'AUTO SHUTDOWN',
-        sensed: false,
-        style: ChecklistLineStyle.Amber,
-      },
       {
         name: 'APU MASTER SW',
         sensed: true,
