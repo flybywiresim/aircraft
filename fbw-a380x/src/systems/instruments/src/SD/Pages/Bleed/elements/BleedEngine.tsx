@@ -146,7 +146,6 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
         </text>
       </g>
 
-      {/* Why does this use the pack flow valve status? */}
       <path className={`${bleedDuctHidden ? 'Hide' : 'SW2 Green'}`} d="M 33,-237 v 95" />
 
       {/* Pack valve */}
