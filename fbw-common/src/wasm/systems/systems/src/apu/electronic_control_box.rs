@@ -72,6 +72,7 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     constants: PhantomData<C>,
     n_failure: bool,
     n_failure_id: VariableIdentifier,
+    running_time: Duration,
 }
 impl<C: ApuConstants> ElectronicControlBox<C> {
     const START_MOTOR_POWERED_UNTIL_N: f64 = 55.;
@@ -127,6 +128,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             constants: PhantomData,
             n_failure: false,
             n_failure_id: context.get_identifier("APU_N_FAILURE".to_owned()),
+            running_time: Duration::from_secs(0),
         }
     }
 
@@ -214,6 +216,22 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
 
         // Handle N failure when APU is running
         if self.n_failure && self.turbine_state == TurbineState::Running {
+            // Increase N by 1% per second
+            self.n = Ratio::new::<percent>(
+                self.n.get::<percent>() + (1.0 * context.delta_as_secs_f64())
+            );
+        }
+
+        // Track running time when APU is in running state
+        if self.turbine_state == TurbineState::Running {
+            self.running_time += context.delta();
+        } else {
+            self.running_time = Duration::from_secs(0);
+        }
+
+        // Trigger N failure after 10 seconds of running
+        if self.turbine_state == TurbineState::Running &&
+           self.running_time >= Duration::from_secs(10) {
             // Increase N by 1% per second
             self.n = Ratio::new::<percent>(
                 self.n.get::<percent>() + (1.0 * context.delta_as_secs_f64())
