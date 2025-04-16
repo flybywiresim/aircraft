@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { VdSymbol, NdSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
+import { VdSymbol, NdSymbolTypeFlags, NdPwpSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
 
 import { VerticalDisplayMapLayer } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayMapLayer';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
@@ -63,9 +63,9 @@ export class VdPseudoWaypointLayer implements VerticalDisplayMapLayer<VdSymbol> 
     const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
     context.strokeStyle = color;
 
-    if (symbol.type & NdSymbolTypeFlags.PwpDecel) {
+    if (symbol.typePwp && symbol.typePwp & NdPwpSymbolTypeFlags.PwpDecel) {
       this.paintPath(context, x, y, DECEL_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpSpeedChange) {
+    } else if (symbol.typePwp && symbol.typePwp & NdPwpSymbolTypeFlags.PwpSpeedChange) {
       context.fillStyle = color;
       context.strokeStyle = 'none';
       this.paintSpeedChange(context, x, y);

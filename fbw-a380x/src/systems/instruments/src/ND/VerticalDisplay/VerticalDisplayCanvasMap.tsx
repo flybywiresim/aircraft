@@ -4,6 +4,7 @@
   ArincEventBus,
   EfisSide,
   FmsData,
+  NdPwpSymbolTypeFlags,
   NdSymbolTypeFlags,
   VerticalPathCheckpoint,
 } from '@flybywiresim/fbw-sdk';
@@ -269,7 +270,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
 
     const pseudoWaypoints = this.fmsSymbols
       .get()
-      .filter((it) => it.type & (NdSymbolTypeFlags.PwpDecel | NdSymbolTypeFlags.PwpSpeedChange));
+      .filter((it) => it.typePwp && it.typePwp & (NdPwpSymbolTypeFlags.PwpDecel | NdPwpSymbolTypeFlags.PwpSpeedChange));
 
     this.pwpLayer.data = pseudoWaypoints;
   }
