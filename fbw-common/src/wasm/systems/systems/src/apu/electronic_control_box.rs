@@ -70,8 +70,6 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     aircraft_preset_quick_mode: bool,
 
     constants: PhantomData<C>,
-    n_failure: bool,
-    n_failure_id: VariableIdentifier,
 }
 impl<C: ApuConstants> ElectronicControlBox<C> {
     const START_MOTOR_POWERED_UNTIL_N: f64 = 55.;
@@ -125,8 +123,6 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             aircraft_preset_quick_mode: false,
 
             constants: PhantomData,
-            n_failure: false,
-            n_failure_id: context.get_identifier("APU_N_FAILURE".to_owned()),
         }
     }
 
@@ -212,15 +208,6 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             self.master_off_for = Duration::ZERO
         }
 
-        // Handle N failure when APU is running
-        if self.n_failure && self.turbine_state == TurbineState::Running {
-            // Increase N by 1% per second
-            self.n = Ratio::new::<percent>(
-                self.n.get::<percent>() + (1.0 * context.delta_as_secs_f64())
-            );
-        }
-
-        // The existing limit check will handle the auto shutdown when N > 105%
         if self.is_available() {
             if self.n.get::<percent>() > 105.
                 || self.n.get::<percent>() < 88.
@@ -414,11 +401,6 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         };
         cool_down_required
     }
-
-    // Add a method to set the N failure state
-    pub fn set_n_failure(&mut self, failure: bool) {
-        self.n_failure = failure;
-    }
 }
 /// APU start Motor contactors controller
 impl<C: ApuConstants> ControllerSignal<ContactorSignal> for ElectronicControlBox<C> {
@@ -554,8 +536,6 @@ impl<C: ApuConstants> SimulationElement for ElectronicControlBox<C> {
             &self.apu_is_emergency_shutdown_id,
             self.is_emergency_shutdown(),
         );
-
-        writer.write(&self.n_failure_id, self.n_failure);
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
