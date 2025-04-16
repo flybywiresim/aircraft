@@ -473,6 +473,7 @@ struct Running {
     apu_gen_usage: ApuGenUsageEgtDelta,
     n2: Ratio,
     bleed_air_n2_delta: ApuBleedUsageN2Delta,
+    n: Ratio,  // Add N field initialized at 100%
 }
 impl Running {
     fn new(egt: ThermodynamicTemperature) -> Running {
@@ -480,7 +481,6 @@ impl Running {
         Running {
             egt,
             base_egt: ThermodynamicTemperature::new::<degree_celsius>(base_egt),
-            // This contains the deviation from the base EGT at the moment of entering the running state.
             base_egt_deviation: TemperatureInterval::new::<temperature_interval::degree_celsius>(
                 egt.get::<degree_celsius>() - base_egt,
             ),
@@ -488,7 +488,13 @@ impl Running {
             apu_gen_usage: ApuGenUsageEgtDelta::new(),
             n2: Ratio::default(),
             bleed_air_n2_delta: ApuBleedUsageN2Delta::new(),
+            n: Ratio::new::<percent>(100.),  // Add N field initialized at 100%
         }
+    }
+
+    // Add method to get current N value
+    fn n(&self) -> Ratio {
+        self.n
     }
 
     fn calculate_egt(
@@ -540,14 +546,14 @@ impl Turbine for Running {
             Some(TurbineSignal::StartOrContinue) => self,
             Some(TurbineSignal::Stop) | None => Box::new(Stopping::new(
                 self.egt,
-                Ratio::new::<percent>(100.),
+                self.n(),  // Use actual N value instead of hardcoded 100
                 self.n2(),
             )),
         }
     }
 
     fn n(&self) -> Ratio {
-        Ratio::new::<percent>(100.)
+        self.n  // Return actual N value instead of hardcoded 100%
     }
 
     fn n2(&self) -> Ratio {
@@ -1141,7 +1147,7 @@ mod apu_generator_tests {
         assert!(test_bed.frequency_within_normal_range());
     }
 
-    #[test]
+#[test]
     fn when_shutdown_potential_not_normal() {
         let mut test_bed = test_bed_with().run(Duration::from_secs(1_000));
 
