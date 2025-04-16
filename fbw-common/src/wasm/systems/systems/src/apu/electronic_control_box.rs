@@ -207,6 +207,15 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         } else {
             self.master_off_for = Duration::ZERO
         }
+
+        if self.is_available() {
+            if self.n.get::<percent>() > 105.
+                || self.n.get::<percent>() < 88.
+                || self.n2.get::<percent>() > 102.
+                || self.egt.get::<degree_celsius>() > 700. {
+                self.fault = Some(ApuFault::ApuLimitsExceeded);
+            }
+        }
     }
 
     pub fn update_bleed_air_valve_state(
@@ -548,4 +557,5 @@ enum ApuFault {
     ApuFire,
     FuelLowPressure,
     DcPowerLoss,
+    ApuLimitsExceeded,
 }
