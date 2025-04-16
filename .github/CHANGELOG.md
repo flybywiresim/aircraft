@@ -12,6 +12,7 @@
 1. [A380X/APU] Fix too low APU BLEED pressure during engine starts (fix by BBK) - @flogross89 (floridude)
 1. [A380X/SD] Fix BLEED indications for APU BLEED and cross bleeds; Add HP GND air supply triangle - @flogross89 (floridude)
 1. [A380X/ELEC] Fix electrical distribution for ground servicing mode - @Gurgel100 (Pascal)
+1. [A380X/ECAM] Improved STROBE LT OFF memo behaviour - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
