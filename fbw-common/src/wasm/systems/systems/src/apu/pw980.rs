@@ -473,6 +473,8 @@ struct Running {
     apu_gen_usage: ApuGenUsageEgtDelta,
     n2: Ratio,
     bleed_air_n2_delta: ApuBleedUsageN2Delta,
+    egt_failure: bool,
+    running_time: Duration,  // Add this to track time
 }
 impl Running {
     fn new(egt: ThermodynamicTemperature) -> Running {
@@ -488,6 +490,8 @@ impl Running {
             apu_gen_usage: ApuGenUsageEgtDelta::new(),
             n2: Ratio::default(),
             bleed_air_n2_delta: ApuBleedUsageN2Delta::new(),
+            egt_failure: false,
+            running_time: Duration::from_secs(0),
         }
     }
 
@@ -497,6 +501,13 @@ impl Running {
         apu_gen_is_used: bool,
         apu_bleed_is_used: bool,
     ) -> ThermodynamicTemperature {
+        // Add failure mode that increases EGT by 5°C per second
+        if self.egt_failure {
+            return ThermodynamicTemperature::new::<degree_celsius>(
+                self.egt.get::<degree_celsius>() + (5.0 * context.delta_as_secs_f64())
+            );
+        }
+
         // Reduce the deviation by 1 per second to slowly creep back to normal temperatures
         self.base_egt_deviation -= TemperatureInterval::new::<temperature_interval::degree_celsius>(
             (context.delta_as_secs_f64() * 1.).min(
@@ -533,6 +544,12 @@ impl Turbine for Running {
         apu_gen_is_used: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
+        // Track time and trigger failure after 10 seconds
+        self.running_time += context.delta();
+        if self.running_time >= Duration::from_secs(10) {
+            self.egt_failure = true;
+        }
+
         self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
         self.n2 = self.calculate_n2(context, apu_bleed_is_used);
 
