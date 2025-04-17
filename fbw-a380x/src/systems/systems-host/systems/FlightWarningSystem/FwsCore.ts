@@ -3637,7 +3637,8 @@ export class FwsCore {
     this.flapsLeverNotZero.set(
       (adr1PressureAltitude.valueOr(0) >= 22000 ||
         adr2PressureAltitude.valueOr(0) >= 22000 ||
-        adr3PressureAltitude.valueOr(0) >= 22000) &&
+        adr3PressureAltitude.valueOr(0) >= 22000 ||
+        this.computedAirSpeedToNearest2.get() > VfeF1 + 2.5) &&
         this.flightPhase.get() === 8 &&
         !this.slatFlapSelectionS0F0,
     );
