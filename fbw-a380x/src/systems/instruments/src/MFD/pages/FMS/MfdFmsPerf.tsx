@@ -2879,7 +2879,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 />
               </div>
               <div>
-                <Button label="POS MONITOR" onClick={() => console.log('POS MONITOR')} />
+                <Button
+                  label="POS MONITOR"
+                  onClick={() => this.props.mfd.uiService.navigateTo('fms/position/monitor')}
+                />
               </div>
               <div style="flex: 1" />
             </div>
