@@ -223,7 +223,6 @@ export class A320_Neo_CDU_MainDisplay
     integralBrightness: 0,
   };
 
-  private _titleLeftElement?: HTMLElement;
   private _titleElement?: HTMLElement;
   private _pageCurrentElement?: HTMLElement;
   private _pageCountElement?: HTMLElement;
@@ -383,7 +382,6 @@ export class A320_Neo_CDU_MainDisplay
     }
 
     this.initKeyboardScratchpad();
-    this._titleLeftElement = this.getChildById('title-left');
     this._titleElement = this.getChildById('title');
     this._pageCurrentElement = this.getChildById('page-current');
     this._pageCountElement = this.getChildById('page-count');
@@ -670,21 +668,6 @@ export class A320_Neo_CDU_MainDisplay
     this._titleElement.textContent = this._title;
   }
 
-  private setTitleLeft(content: string) {
-    if (!content) {
-      this._titleLeft = '';
-      this._titleLeftElement.textContent = '';
-      return;
-    }
-    let color = content.split('[color]')[1];
-    if (!color) {
-      color = 'white';
-    }
-    this._titleLeft = content.split('[color]')[0];
-    this._titleLeft = `{${color}}${this._titleLeft}{end}`;
-    this._titleLeftElement.textContent = this._titleLeft;
-  }
-
   private setPageCurrent(value: string | number) {
     if (typeof value === 'number') {
       this._pageCurrent = value;
@@ -805,7 +788,6 @@ export class A320_Neo_CDU_MainDisplay
       this.setTitle(template[0][0]);
       this.setPageCurrent(template[0][1]);
       this.setPageCount(template[0][2]);
-      this.setTitleLeft(template[0][3]);
     }
     for (let i = 0; i < 6; i++) {
       let tIndex = 2 * i + 1;
@@ -849,9 +831,6 @@ export class A320_Neo_CDU_MainDisplay
     // Apply formatting helper to title page, lines and labels
     if (this._titleElement !== null) {
       this._titleElement.innerHTML = this._formatCell(this._titleElement.innerHTML);
-    }
-    if (this._titleLeftElement !== null) {
-      this._titleLeftElement.innerHTML = this._formatCell(this._titleLeftElement.innerHTML);
     }
     this._lineElements.forEach((row) => {
       row.forEach((column) => {
@@ -901,7 +880,6 @@ export class A320_Neo_CDU_MainDisplay
     this.onUnload();
     this.onUnload = () => {};
     this.setTitle('');
-    this.setTitleLeft('');
     this.setPageCurrent(0);
     this.setPageCount(0);
     for (let i = 0; i < 6; i++) {
@@ -1035,11 +1013,6 @@ export class A320_Neo_CDU_MainDisplay
     }
     const header = document.createElement('div');
     header.id = 'header';
-
-    const titleLeft = document.createElement('div');
-    titleLeft.classList.add('s-text');
-    titleLeft.id = 'title-left';
-    parent.appendChild(titleLeft);
 
     const title = document.createElement('span');
     title.id = 'title';
@@ -1605,7 +1578,7 @@ export class A320_Neo_CDU_MainDisplay
         ],
         scratchpad: `{${this.scratchpadDisplay.getColor()}}${this.scratchpadDisplay.getText()}{end}`,
         title: this._title,
-        titleLeft: `{small}${this._titleLeft}{end}`,
+        titleLeft: '', // deprecated and unused
         page: this._pageCount > 0 ? `{small}${this._pageCurrent}/${this._pageCount}{end}` : '',
         arrows: this._arrows,
         integralBrightness: integralLightsPowered
