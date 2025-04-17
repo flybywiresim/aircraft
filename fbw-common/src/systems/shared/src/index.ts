@@ -14,6 +14,7 @@ export * from './FmMessages';
 export * from './GenericDataListenerSync';
 export * from './MathUtils';
 export * from './MsfsDetect';
+export * from './ObjectUtils';
 export * from './PathVector';
 export * from './PilotSeat';
 export * from './publishers';
