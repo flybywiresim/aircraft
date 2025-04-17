@@ -125,6 +125,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.trackWord,
   );
 
+  private readonly vdDataVisibility = this.vdAvailable.map((v) => (v ? 'visible' : 'hidden'));
+
   private readonly lineColor = this.vdAvailable.map((a) => (a ? 'white' : 'red'));
 
   private readonly baroMode = ConsumerSubject.create(this.sub.on('baroMode'), 'STD');
@@ -234,12 +236,15 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
 
   private readonly targetAltitudeTextVisibility = MappedSubject.create(
-    ([alt, range]) => (alt < range[0] || alt > range[1] ? 'inherit' : 'hidden'),
+    ([alt, range, avail]) => ((alt < range[0] || alt > range[1]) && avail ? 'inherit' : 'hidden'),
     this.targetAltitude,
     this.verticalRange,
+    this.vdAvailable,
   );
-  private readonly targetAltitudeSymbolVisibility = this.targetAltitudeTextVisibility.map((v) =>
-    v === 'hidden' ? 'inherit' : 'hidden',
+  private readonly targetAltitudeSymbolVisibility = MappedSubject.create(
+    ([vis, avail]) => (vis === 'hidden' && avail ? 'inherit' : 'hidden'),
+    this.targetAltitudeTextVisibility,
+    this.vdAvailable,
   );
 
   private readonly altitudeTargetTransform = MappedSubject.create(
@@ -292,7 +297,11 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.baroMode,
     ),
   );
-  private readonly altitudeFlTextVisible = this.baroMode.map((m) => (m === 'STD' ? 'visible' : 'hidden'));
+  private readonly altitudeFlTextVisible = MappedSubject.create(
+    ([baroMode, vdAvailable]) => (baroMode === 'STD' && vdAvailable ? 'visible' : 'hidden'),
+    this.baroMode,
+    this.vdAvailable,
+  );
 
   private readonly wxrTawsSysSelected = ConsumerSubject.create(this.sub.on('a32nx_aesu_wxr_taws_sys_selected'), 1);
   private readonly terrSysOff = ConsumerSubject.create(this.sub.on('a32nx_aesu_terr_sys_off'), false);
@@ -415,6 +424,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.headingWord,
       this.trackWord,
       this.vdAvailable,
+      this.vdDataVisibility,
       this.lineColor,
       this.baroMode,
       this.baroCorrectedAltitude,
@@ -572,6 +582,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           bus={this.props.bus}
           side={this.props.side}
           visible={this.visible}
+          vdAvailable={this.vdAvailable}
           fmsTargetVdProfile={this.fmsTargetVdProfile}
           vdRange={this.vdRange}
           verticalRange={this.verticalRange}

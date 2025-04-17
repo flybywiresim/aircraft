@@ -41,6 +41,7 @@ export interface VerticalDisplayCanvasMapProps extends ComponentProps {
   bus: ArincEventBus;
   side: EfisSide;
   visible: Subscribable<'block' | 'none'>;
+  vdAvailable: Subscribable<boolean>;
   fmsTargetVdProfile: Subscribable<VerticalPathCheckpoint[]>;
   vdRange: Subscribable<number>;
   verticalRange: Subscribable<[number, number]>;
@@ -93,8 +94,10 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
   private readonly mapRecomputing = ConsumerSubject.create(this.sub.on('set_map_recomputing'), false);
 
   private readonly pathVisibility = MappedSubject.create(
-    ([mapVisible, recomputing]) => (mapVisible === 'block' && !recomputing ? 'visible' : 'hidden'),
+    ([mapVisible, vdAvailable, recomputing]) =>
+      mapVisible === 'block' && vdAvailable && !recomputing ? 'visible' : 'hidden',
     this.props.visible,
+    this.props.vdAvailable,
     this.mapRecomputing,
   );
 
