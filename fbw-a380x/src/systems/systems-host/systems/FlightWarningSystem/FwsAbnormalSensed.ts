@@ -3722,16 +3722,6 @@ export class FwsAbnormalSensed {
       sysPage: -1,
     },
     // APU
-    490800001: {
-      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.apuMachLimitExceeded, //APU FAULT
-      notActiveWhenFaults: [],
-      whichItemsToShow: () => [true, true],
-      whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
-      failure: 2,
-      sysPage: SdPages.Apu,
-      inopSysAllPhases: () => ['490300001'],
-    },
     490800002: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.apuEmerShutdown, //EMER SHUTDOWN
@@ -3761,15 +3751,6 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Apu,
       inopSysAllPhases: () => ['490300001'],
-    },
-    490800005: {
-      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.apuMachLimitExceeded, //OIL FILTER CLOGGED
-      notActiveWhenFaults: [],
-      whichItemsToShow: () => [],
-      whichItemsChecked: () => [],
-      failure: 2,
-      sysPage: -1,
     },
     // SECONDARY FAILURES
     999800001: {
