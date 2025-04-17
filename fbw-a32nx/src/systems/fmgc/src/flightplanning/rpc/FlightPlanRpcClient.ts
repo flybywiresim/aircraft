@@ -145,12 +145,28 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.has(FlightPlanIndex.Uplink);
   }
 
+  secondaryInit(index: number): Promise<void> {
+    return this.callFunctionViaRpc('secondaryInit', index);
+  }
+
+  secondaryCopyFromActive(index: number): Promise<void> {
+    return this.callFunctionViaRpc('secondaryCopyFromActive', index);
+  }
+
   secondaryDelete(index: number): Promise<void> {
     return this.callFunctionViaRpc('secondaryDelete', index);
   }
 
   secondaryReset(index: number): Promise<void> {
     return this.callFunctionViaRpc('secondaryReset', index);
+  }
+
+  secondaryActivate(index: number): Promise<void> {
+    return this.callFunctionViaRpc('secondaryActivate', index);
+  }
+
+  activeAndSecondarySwap(secIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('activeAndSecondarySwap', secIndex);
   }
 
   temporaryInsert(): Promise<void> {
@@ -161,8 +177,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('temporaryDelete');
   }
 
-  uplinkInsert(): Promise<void> {
-    return this.callFunctionViaRpc('uplinkInsert');
+  uplinkInsert(intoPlan: number): Promise<void> {
+    return this.callFunctionViaRpc('uplinkInsert', intoPlan);
   }
 
   uplinkDelete(): Promise<void> {
