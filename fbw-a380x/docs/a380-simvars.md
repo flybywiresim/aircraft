@@ -470,6 +470,7 @@
 ### Placeholder Types
 
 - `{rmp_index}` 1, 2, or 3
+- `{vhf_index}` 1, 2, or 3
 
 ### Local Vars
 
@@ -482,6 +483,36 @@
         | OffStandby | 1      |
         | On         | 2      |
         | OnFailed   | 3      |
+
+- `L:FBW_RMP_FREQUENCY_ACTIVE_{vhf_index}`
+  - Frequency BCD32 (can be read with MHz or any other frequency unit)
+  - Read only!
+  - Contains the active frequency value synced amongst the RMPs for this VHF radio. 0 when invalid. This will contain the actual frequency even in other modes.
+
+- `L:FBW_RMP_FREQUENCY_STANDBY_{vhf_index}`
+  - Frequency BCD32 (can be read with MHz or any other frequency unit)
+  - Read only!
+  - Contains the standby frequency value synced amongst the RMPs for this VHF radio. 0 when invalid. This will contain the actual frequency even in other modes.
+
+- `L:FBW_RMP_MODE_ACTIVE_{vhf_index}`
+    - Enum
+    - Read only!
+    - Indicates the active frequency mode synced amongst the RMPs for this VHF radio.
+    -   | State      | Number |
+        |------------|--------|
+        | Frequency  | 0      |
+        | Data       | 1      |
+        | Emergency  | 2      |
+
+- `L:FBW_RMP_MODE_STANDBY_{vhf_index}`
+    - Enum
+    - Read only!
+    - Indicates the standby frequency mode synced amongst the RMPs for this VHF radio.
+    -   | State      | Number |
+        |------------|--------|
+        | Frequency  | 0      |
+        | Data       | 1      |
+        | Emergency  | 2      |
 
 ## Electrical ATA 24
 
