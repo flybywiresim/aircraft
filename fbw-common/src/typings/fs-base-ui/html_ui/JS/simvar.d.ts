@@ -60,4 +60,6 @@ declare namespace SimVar {
     function GetGameVarValueFast(name: string, unit: SimVarUnit, param1?: Number, param2?: Number): any;
     function GetGameVarValueFastReg(regId: number, param1?: Number, param2?: Number): any;
     function SetGameVarValue(name: string, unit: SimVarUnit, value: any): Promise<any>;
+    // FBW extension
+    function SetSimVarValueRegNumber(registeredId: number, value: number): Promise<unknown>;
 }
