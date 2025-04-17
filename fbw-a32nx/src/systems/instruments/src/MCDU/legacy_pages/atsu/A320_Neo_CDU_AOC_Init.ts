@@ -178,7 +178,7 @@ export class CDUAocInit {
         [' FUEL REM', 'LDG PILOT '],
         ['   ' + fob, '-------'],
         ['', ''],
-        ['*AUTOLAND <{small}n{end}>[color]cyan'],
+        ['*AUTOLAND <{small}N{end}>[color]cyan'],
         ['', 'ADVISORY '],
         ['<AOC MENU'],
       ];
