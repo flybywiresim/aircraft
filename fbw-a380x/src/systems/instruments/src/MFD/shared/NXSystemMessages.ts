@@ -97,6 +97,7 @@ export const NXSystemMessages = {
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
+  insertOrEraseTmpPlan: new TypeIIMessage('INSERT OR ERASE TMPY F-PLN FIRST'),
 };
 
 export const NXFictionalMessages = {
