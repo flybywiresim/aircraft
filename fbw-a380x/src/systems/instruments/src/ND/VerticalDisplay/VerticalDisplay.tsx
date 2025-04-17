@@ -81,9 +81,11 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
   private readonly fmsTargetVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_target_profile'), []);
-  private readonly displayedFmsPath = MappedSubject.create(
-    ([path, ndRange]) => {
+  private readonly fmsActualVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_actual_profile'), []);
+  private readonly displayedFmsPathForVerticalRangeEstimation = MappedSubject.create(
+    ([targetPath, actualPath, ndRange]) => {
       const fmsPathToDisplay: VerticalPathCheckpoint[] = [];
+      const path = actualPath.length > 1 ? actualPath : targetPath;
 
       for (const p of path) {
         fmsPathToDisplay.push(p);
@@ -94,6 +96,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       return fmsPathToDisplay;
     },
     this.fmsTargetVdProfile,
+    this.fmsActualVdProfile,
     this.vdRange,
   );
 
@@ -150,7 +153,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     },
     this.vdRange,
     this.baroCorrectedAltitude,
-    this.displayedFmsPath,
+    this.displayedFmsPathForVerticalRangeEstimation,
   );
 
   private readonly planeSymbolY = MappedSubject.create(
@@ -405,7 +408,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.vdRange,
       this.fmsLateralPath,
       this.fmsTargetVdProfile,
-      this.displayedFmsPath,
+      this.displayedFmsPathForVerticalRangeEstimation,
       this.mapRecomputing,
       this.mapRecomputingReason,
       this.visible,
