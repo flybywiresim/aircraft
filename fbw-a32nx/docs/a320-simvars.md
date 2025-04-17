@@ -2159,6 +2159,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - NAV mode is engaged
         - FINAL mode is armed
 
+- A32NX_SpeedPreselVal
+    - Number
+    - Indicates the preselected speed value, -1 if no value is preselected
+    - Internal to FM/FG communication, other avionics should use the FG bus var
+
+- A32NX_MachPreselVal
+    - Number
+    - Indicates the preselect mach value, -1 if no value is preselected
+    - Internal to FM/FG communication, other avionics should use the FG bus var
+
 ## Autothrust System
 
 - A32NX_3D_THROTTLE_LEVER_POSITION_{index}
@@ -2762,7 +2772,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_IS_AUTO:
     - Indicates whether the engine bleed air is on
-    - Is aliased from aircraft variable A:BLEED AIR ENGINE
     - Bool
     - {number}
         - 1
