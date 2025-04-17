@@ -8,6 +8,9 @@
   - [Air Conditioning Pressurisation Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
   - [Flight Management System ATA 22](#flight-management-system-ata-22)
+  - [Communications ATA 23](#communications-ata-23)
+    - [Placeholder Types](#placeholder-types)
+    - [Local Vars](#local-vars)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
@@ -461,6 +464,24 @@
     - FMS used
     - Position (0-2)
     - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
+
+## Communications ATA 23
+
+### Placeholder Types
+
+- `{rmp_index}` 1, 2, or 3
+
+### Local Vars
+
+- `L:A380X_RMP_{rmp_index}_STATE`
+    - Enum
+    - Indicates the state of the RMP.
+    -   | State      | Number |
+        |------------|--------|
+        | OffFailed  | 0      |
+        | OffStandby | 1      |
+        | On         | 2      |
+        | OnFailed   | 3      |
 
 ## Electrical ATA 24
 
