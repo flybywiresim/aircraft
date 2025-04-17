@@ -94,3 +94,4 @@ SimVar.SetSimVarValue = (name, unit, value, dataSource = defaultSource) => {
     }
     return Promise.resolve();
 };
+SimVar.SetSimVarValueRegNumber = (regID, value) => Coherent.call("setValueReg_Number", regID, value);

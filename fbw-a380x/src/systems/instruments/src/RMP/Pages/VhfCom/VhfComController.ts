@@ -32,7 +32,7 @@ export enum ReceptionMode {
 
 export const StandbyModeTitles: Record<FrequencyMode, string> = {
   [FrequencyMode.Frequency]: 'STBY',
-  [FrequencyMode.Data]: '',
+  [FrequencyMode.Data]: 'STBY',
   [FrequencyMode.Emergency]: 'EMER',
 };
 
@@ -143,10 +143,10 @@ export class VhfComController {
     this.vhfIndex === 3
       ? [FrequencyMode.Data, FrequencyMode.Emergency, FrequencyMode.Frequency]
       : [FrequencyMode.Frequency];
-  private readonly standbyMode = ConsumerSubject.create(
+  public readonly standbyMode = ConsumerSubject.create(
     this.vhfSub.on(`vhf_com_standby_mode_${this.vhfIndex}`),
     this.vhfIndex === 3 ? FrequencyMode.Data : FrequencyMode.Frequency,
-  );
+  ) as Subscribable<FrequencyMode>;
   public readonly standbyModeTitle = this.standbyMode.map((v) =>
     v === null ? '' : StandbyModeTitles[v],
   ) as Subscribable<string>;
@@ -271,6 +271,10 @@ export class VhfComController {
     */
 
   public onDigitEntered(digit: number): void {
+    if (this.standbyMode.get() !== FrequencyMode.Frequency) {
+      return;
+    }
+
     const standbyEntry = this.standbyEntry.get();
     // 1 = 1__.___
     if (standbyEntry.entered.length === 0 && digit === 1) {
@@ -391,6 +395,7 @@ export class VhfComController {
       return;
     }
 
+    this.standbyEntry.set(VhfComController.EMPTY_STANDBY_ENTRY);
     this.vhfPub.pub(this.standbyModeControlTopic, oldMode + 1, false, false);
   }
 
@@ -400,6 +405,7 @@ export class VhfComController {
       return;
     }
 
+    this.standbyEntry.set(VhfComController.EMPTY_STANDBY_ENTRY);
     this.vhfPub.pub(this.standbyModeControlTopic, oldMode - 1, false, false);
   }
 }

@@ -11,6 +11,7 @@ export class A380xRmpStateController implements Instrument {
   private readonly pub = this.bus.getPublisher<RmpStateControllerEvents>();
 
   private readonly state = Subject.create(RmpState.OffStandby);
+  private readonly stateVar = `L:A380X_RMP_${this.rmpIndex}_STATE`;
 
   private readonly dcPowerVar: string;
 
@@ -85,6 +86,7 @@ export class A380xRmpStateController implements Instrument {
         v === RmpState.OffFailed || v === RmpState.OnFailed,
       );
       SimVar.SetSimVarValue(this.standbyLedVar, SimVarValueType.Bool, v === RmpState.OffStandby);
+      SimVar.SetSimVarValue(this.stateVar, SimVarValueType.Enum, v);
     }, true);
 
     this.failuresConsumer.register(this.failureKey);
