@@ -157,34 +157,10 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
       context.stroke();
     }
 
-    if (this.fmsDescentVdProfile.get().length > 0) {
-      context.beginPath();
-      if (targetIsDashed) {
-        context.setLineDash([10, 10]);
-      }
-
-      context.strokeStyle = '#ff0000';
-      context.moveTo(
-        VerticalDisplayCanvasMap.distanceToX(
-          this.fmsDescentVdProfile.get()[0].distanceFromAircraft,
-          vdRange,
-          this.offsetDistance.get(),
-        ),
-        VerticalDisplayCanvasMap.altToY(this.fmsDescentVdProfile.get()[0].altitude, verticalRange),
-      );
-
-      for (const pe of this.fmsDescentVdProfile.get()) {
-        context.lineTo(
-          VerticalDisplayCanvasMap.distanceToX(pe.distanceFromAircraft, vdRange, this.offsetDistance.get()),
-          VerticalDisplayCanvasMap.altToY(pe.altitude, verticalRange),
-        );
-      }
-      context.stroke();
-    }
+    // FIXME add descent profile when its display conditions are better understood
 
     if (targetIsDashed) {
       context.beginPath();
-      context.strokeStyle = '#00ffff';
       context.setLineDash([]);
       context.moveTo(
         VerticalDisplayCanvasMap.distanceToX(
