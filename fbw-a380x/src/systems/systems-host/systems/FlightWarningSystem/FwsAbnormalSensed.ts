@@ -318,7 +318,7 @@ export class FwsAbnormalSensed {
     211800001: {
       // PACK 1 CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.fdac1Channel1Failure,
+      simVarIsActive: this.fws.pack1Ctl1Fault,
       notActiveWhenFaults: ['211800009', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -329,7 +329,7 @@ export class FwsAbnormalSensed {
     211800002: {
       // PACK 1 CTL 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.fdac1Channel2Failure,
+      simVarIsActive: this.fws.pack1Ctl2Fault,
       notActiveWhenFaults: ['211800009', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -340,7 +340,7 @@ export class FwsAbnormalSensed {
     211800003: {
       // PACK 2 CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.fdac2Channel1Failure,
+      simVarIsActive: this.fws.pack2Ctl1Fault,
       notActiveWhenFaults: ['211800010', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -351,7 +351,7 @@ export class FwsAbnormalSensed {
     211800004: {
       // PACK 2 CTL 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.fdac2Channel2Failure,
+      simVarIsActive: this.fws.pack2Ctl2Fault,
       notActiveWhenFaults: ['211800010', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],

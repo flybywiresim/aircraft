@@ -387,6 +387,14 @@ export class FwsCore {
   private readonly outflowValve3OpenAmount = Arinc429Register.empty();
   private readonly outflowValve4OpenAmount = Arinc429Register.empty();
 
+  public readonly pack1Ctl1Fault = Subject.create(false);
+
+  public readonly pack1Ctl2Fault = Subject.create(false);
+
+  public readonly pack2Ctl1Fault = Subject.create(false);
+
+  public readonly pack2Ctl2Fault = Subject.create(false);
+
   public readonly fdac1Channel1Failure = Subject.create(false);
 
   public readonly fdac1Channel2Failure = Subject.create(false);
@@ -3099,9 +3107,20 @@ export class FwsCore {
     this.phase8ConfirmationNode180.write(this.flightPhase.get() === 8, deltaTime);
 
     this.fdac1Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_1_FAILURE', 'bool'));
+
+    this.pack1Ctl1Fault.set(this.fdac1Channel1Failure.get() && this.acESSBusPowered.get());
+
     this.fdac1Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_2_FAILURE', 'bool'));
+
+    this.pack1Ctl2Fault.set(this.ac2BusPowered.get() && this.fdac1Channel2Failure.get());
+
     this.fdac2Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_1_FAILURE', 'bool'));
+
+    this.pack2Ctl1Fault.set(this.acESSBusPowered.get() && this.fdac2Channel2Failure.get());
+
     this.fdac2Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_2_FAILURE', 'bool'));
+
+    this.pack2Ctl2Fault.set(this.ac4BusPowered.get() && this.fdac2Channel2Failure.get());
 
     this.cpiomBAgsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
     this.cpiomBAgsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
@@ -3123,7 +3142,7 @@ export class FwsCore {
     this.cpiomBCpcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_CPCS_DISCRETE_WORD');
     this.cpiomBCpcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_CPCS_DISCRETE_WORD');
 
-    let vcsDiscreteWordToUse;
+    let vcsDiscreteWordToUse: Arinc429Register;
 
     if (this.cpiomBVcsAppDiscreteWord1.isNormalOperation()) {
       vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord1;
@@ -3135,7 +3154,7 @@ export class FwsCore {
       vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord4;
     }
 
-    let tcsDiscreteWordToUse;
+    let tcsDiscreteWordToUse: Arinc429Register;
 
     if (this.cpiomBTcsAppDiscreteWord1.isNormalOperation()) {
       tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord1;
@@ -3240,8 +3259,12 @@ export class FwsCore {
     this.hotAir1PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_1_PB_IS_ON', 'bool'));
     this.hotAir2PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_2_PB_IS_ON', 'bool'));
 
-    this.taddChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_1_FAILURE', 'bool'));
-    this.taddChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_2_FAILURE', 'bool'));
+    this.taddChannel1Failure.set(
+      this.ac2BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_1_FAILURE', 'bool'),
+    );
+    this.taddChannel2Failure.set(
+      this.ac4BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_2_FAILURE', 'bool'),
+    );
 
     this.tempCtlFault.set(
       (this.taddChannel1Failure.get() && this.taddChannel2Failure.get()) ||
