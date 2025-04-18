@@ -353,6 +353,40 @@ export class FwsCore {
 
   public readonly phase8ConfirmationNode180 = new NXLogicConfirmNode(180);
 
+  public readonly cpiomBAgsAppDiscreteWord1 = Arinc429Register.empty();
+  private readonly cpiomBAgsAppDiscreteWord2 = Arinc429Register.empty();
+  private readonly cpiomBAgsAppDiscreteWord3 = Arinc429Register.empty();
+  private readonly cpiomBAgsAppDiscreteWord4 = Arinc429Register.empty();
+
+  private readonly cpiomBVcsAppDiscreteWord1 = Arinc429Register.empty();
+
+  private readonly cpiomBVcsAppDiscreteWord2 = Arinc429Register.empty();
+
+  private readonly cpiomBVcsAppDiscreteWord3 = Arinc429Register.empty();
+
+  private readonly cpiomBVcsAppDiscreteWord4 = Arinc429Register.empty();
+
+  private readonly cpiomBTcsAppDiscreteWord1 = Arinc429Register.empty();
+
+  private readonly cpiomBTcsAppDiscreteWord2 = Arinc429Register.empty();
+
+  private readonly cpiomBTcsAppDiscreteWord3 = Arinc429Register.empty();
+
+  private readonly cpiomBTcsAppDiscreteWord4 = Arinc429Register.empty();
+
+  private readonly cpiomBCpcsAppDiscreteWord1 = Arinc429Register.empty();
+
+  private readonly cpiomBCpcsAppDiscreteWord2 = Arinc429Register.empty();
+
+  private readonly cpiomBCpcsAppDiscreteWord3 = Arinc429Register.empty();
+
+  private readonly cpiomBCpcsAppDiscreteWord4 = Arinc429Register.empty();
+
+  private readonly outflowValve1OpenAmount = Arinc429Register.empty();
+  private readonly outflowValve2OpenAmount = Arinc429Register.empty();
+  private readonly outflowValve3OpenAmount = Arinc429Register.empty();
+  private readonly outflowValve4OpenAmount = Arinc429Register.empty();
+
   public readonly fdac1Channel1Failure = Subject.create(false);
 
   public readonly fdac1Channel2Failure = Subject.create(false);
@@ -3069,113 +3103,93 @@ export class FwsCore {
     this.fdac2Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_1_FAILURE', 'bool'));
     this.fdac2Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_2_FAILURE', 'bool'));
 
-    const cpiomBAgsAppDiscreteWord1 = Arinc429Register.empty();
-    const cpiomBAgsAppDiscreteWord2 = Arinc429Register.empty();
-    const cpiomBAgsAppDiscreteWord3 = Arinc429Register.empty();
-    const cpiomBAgsAppDiscreteWord4 = Arinc429Register.empty();
+    this.cpiomBAgsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
+    this.cpiomBAgsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
+    this.cpiomBAgsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD');
+    this.cpiomBAgsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD');
 
-    cpiomBAgsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
-    cpiomBAgsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
-    cpiomBAgsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD');
-    cpiomBAgsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD');
+    this.cpiomBVcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
+    this.cpiomBVcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
+    this.cpiomBVcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
+    this.cpiomBVcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
 
-    const cpiomBVcsAppDiscreteWord1 = Arinc429Register.empty();
-    const cpiomBVcsAppDiscreteWord2 = Arinc429Register.empty();
-    const cpiomBVcsAppDiscreteWord3 = Arinc429Register.empty();
-    const cpiomBVcsAppDiscreteWord4 = Arinc429Register.empty();
+    this.cpiomBTcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');
+    this.cpiomBTcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_TCS_DISCRETE_WORD');
+    this.cpiomBTcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
+    this.cpiomBTcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
 
-    cpiomBVcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
-    cpiomBVcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
-    cpiomBVcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
-    cpiomBVcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
-
-    const cpiomBTcsAppDiscreteWord1 = Arinc429Register.empty();
-    const cpiomBTcsAppDiscreteWord2 = Arinc429Register.empty();
-    const cpiomBTcsAppDiscreteWord3 = Arinc429Register.empty();
-    const cpiomBTcsAppDiscreteWord4 = Arinc429Register.empty();
-
-    cpiomBTcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');
-    cpiomBTcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_TCS_DISCRETE_WORD');
-    cpiomBTcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
-    cpiomBTcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
-
-    const cpiomBCpcsAppDiscreteWord1 = Arinc429Register.empty();
-    const cpiomBCpcsAppDiscreteWord2 = Arinc429Register.empty();
-    const cpiomBCpcsAppDiscreteWord3 = Arinc429Register.empty();
-    const cpiomBCpcsAppDiscreteWord4 = Arinc429Register.empty();
-
-    cpiomBCpcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_CPCS_DISCRETE_WORD');
-    cpiomBCpcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_CPCS_DISCRETE_WORD');
-    cpiomBCpcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_CPCS_DISCRETE_WORD');
-    cpiomBCpcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_CPCS_DISCRETE_WORD');
+    this.cpiomBCpcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_CPCS_DISCRETE_WORD');
+    this.cpiomBCpcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_CPCS_DISCRETE_WORD');
+    this.cpiomBCpcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_CPCS_DISCRETE_WORD');
+    this.cpiomBCpcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_CPCS_DISCRETE_WORD');
 
     let vcsDiscreteWordToUse;
 
-    if (cpiomBVcsAppDiscreteWord1.isNormalOperation()) {
-      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord1;
-    } else if (cpiomBVcsAppDiscreteWord2.isNormalOperation()) {
-      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord2;
-    } else if (cpiomBVcsAppDiscreteWord3.isNormalOperation()) {
-      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord3;
+    if (this.cpiomBVcsAppDiscreteWord1.isNormalOperation()) {
+      vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord1;
+    } else if (this.cpiomBVcsAppDiscreteWord2.isNormalOperation()) {
+      vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord2;
+    } else if (this.cpiomBVcsAppDiscreteWord3.isNormalOperation()) {
+      vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord3;
     } else {
-      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord4;
+      vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord4;
     }
 
     let tcsDiscreteWordToUse;
 
-    if (cpiomBTcsAppDiscreteWord1.isNormalOperation()) {
-      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord1;
-    } else if (cpiomBTcsAppDiscreteWord2.isNormalOperation()) {
-      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord2;
-    } else if (cpiomBTcsAppDiscreteWord3.isNormalOperation()) {
-      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord3;
+    if (this.cpiomBTcsAppDiscreteWord1.isNormalOperation()) {
+      tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord1;
+    } else if (this.cpiomBTcsAppDiscreteWord2.isNormalOperation()) {
+      tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord2;
+    } else if (this.cpiomBTcsAppDiscreteWord3.isNormalOperation()) {
+      tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord3;
     } else {
-      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4;
+      tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord4;
     }
 
     let cpcsDiscreteWordToUse: Arinc429Register;
     let cpcsToUseId: number;
 
-    if (cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
-      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord1;
+    if (this.cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
+      cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord1;
       cpcsToUseId = 1;
-    } else if (cpiomBCpcsAppDiscreteWord2.isNormalOperation()) {
-      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord2;
+    } else if (this.cpiomBCpcsAppDiscreteWord2.isNormalOperation()) {
+      cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord2;
       cpcsToUseId = 2;
-    } else if (cpiomBCpcsAppDiscreteWord3.isNormalOperation()) {
-      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord3;
+    } else if (this.cpiomBCpcsAppDiscreteWord3.isNormalOperation()) {
+      cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord3;
       cpcsToUseId = 3;
     } else {
-      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord4;
+      cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord4;
       cpcsToUseId = 4;
     }
 
     this.oneTcsAppFailed.set(
-      cpiomBTcsAppDiscreteWord1.isFailureWarning() ||
-        cpiomBTcsAppDiscreteWord2.isFailureWarning() ||
-        cpiomBTcsAppDiscreteWord3.isFailureWarning() ||
-        cpiomBTcsAppDiscreteWord4.isFailureWarning(),
+      this.cpiomBTcsAppDiscreteWord1.isFailureWarning() ||
+        this.cpiomBTcsAppDiscreteWord2.isFailureWarning() ||
+        this.cpiomBTcsAppDiscreteWord3.isFailureWarning() ||
+        this.cpiomBTcsAppDiscreteWord4.isFailureWarning(),
     );
 
     this.tempCtrDegraded.set(
-      cpiomBTcsAppDiscreteWord1.isFailureWarning() &&
-        cpiomBTcsAppDiscreteWord2.isFailureWarning() &&
-        cpiomBTcsAppDiscreteWord3.isFailureWarning() &&
-        cpiomBTcsAppDiscreteWord4.isFailureWarning(),
+      this.cpiomBTcsAppDiscreteWord1.isFailureWarning() &&
+        this.cpiomBTcsAppDiscreteWord2.isFailureWarning() &&
+        this.cpiomBTcsAppDiscreteWord3.isFailureWarning() &&
+        this.cpiomBTcsAppDiscreteWord4.isFailureWarning(),
     );
 
     this.pack1Degraded.set(
-      cpiomBAgsAppDiscreteWord1.isFailureWarning() && cpiomBAgsAppDiscreteWord3.isFailureWarning(),
+      this.cpiomBAgsAppDiscreteWord1.isFailureWarning() && this.cpiomBAgsAppDiscreteWord3.isFailureWarning(),
     );
     this.pack2Degraded.set(
-      cpiomBAgsAppDiscreteWord2.isFailureWarning() && cpiomBAgsAppDiscreteWord4.isFailureWarning(),
+      this.cpiomBAgsAppDiscreteWord2.isFailureWarning() && this.cpiomBAgsAppDiscreteWord4.isFailureWarning(),
     );
 
     this.pack1RedundLost.set(
-      cpiomBAgsAppDiscreteWord1.isFailureWarning() || cpiomBAgsAppDiscreteWord3.isFailureWarning(),
+      this.cpiomBAgsAppDiscreteWord1.isFailureWarning() || this.cpiomBAgsAppDiscreteWord3.isFailureWarning(),
     );
     this.pack2RedundLost.set(
-      cpiomBAgsAppDiscreteWord2.isFailureWarning() || cpiomBAgsAppDiscreteWord4.isFailureWarning(),
+      this.cpiomBAgsAppDiscreteWord2.isFailureWarning() || this.cpiomBAgsAppDiscreteWord4.isFailureWarning(),
     );
 
     this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
@@ -3243,17 +3257,17 @@ export class FwsCore {
     this.vcmAftChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_2_FAILURE', 'bool'));
 
     this.fwdVentCtrDegraded.set(
-      !cpiomBVcsAppDiscreteWord1.isNormalOperation() && !cpiomBVcsAppDiscreteWord3.isNormalOperation(),
+      !this.cpiomBVcsAppDiscreteWord1.isNormalOperation() && !this.cpiomBVcsAppDiscreteWord3.isNormalOperation(),
     );
     this.fwdVentRedundLost.set(
-      !cpiomBVcsAppDiscreteWord1.isNormalOperation() || !cpiomBVcsAppDiscreteWord3.isNormalOperation(),
+      !this.cpiomBVcsAppDiscreteWord1.isNormalOperation() || !this.cpiomBVcsAppDiscreteWord3.isNormalOperation(),
     );
 
     this.aftVentCtrDegraded.set(
-      !cpiomBVcsAppDiscreteWord2.isNormalOperation() && !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
+      !this.cpiomBVcsAppDiscreteWord2.isNormalOperation() && !this.cpiomBVcsAppDiscreteWord4.isNormalOperation(),
     );
     this.aftVentRedundLost.set(
-      !cpiomBVcsAppDiscreteWord2.isNormalOperation() || !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
+      !this.cpiomBVcsAppDiscreteWord2.isNormalOperation() || !this.cpiomBVcsAppDiscreteWord4.isNormalOperation(),
     );
 
     const engNotRunning =
@@ -3270,21 +3284,16 @@ export class FwsCore {
 
     this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
 
-    const outflowValve1OpenAmount = Arinc429Register.empty();
-    const outflowValve2OpenAmount = Arinc429Register.empty();
-    const outflowValve3OpenAmount = Arinc429Register.empty();
-    const outflowValve4OpenAmount = Arinc429Register.empty();
-
-    outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    this.outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    this.outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    this.outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+    this.outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
 
     this.allOutflowValvesOpen.set(
-      outflowValve1OpenAmount.value > 99 &&
-        outflowValve2OpenAmount.value > 99 &&
-        outflowValve3OpenAmount.value > 99 &&
-        outflowValve4OpenAmount.value > 99,
+      this.outflowValve1OpenAmount.value > 99 &&
+        this.outflowValve2OpenAmount.value > 99 &&
+        this.outflowValve3OpenAmount.value > 99 &&
+        this.outflowValve4OpenAmount.value > 99,
     );
 
     this.ocsm1AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_AUTO_PARTITION_FAILURE', 'bool'));
@@ -3293,10 +3302,10 @@ export class FwsCore {
     this.ocsm4AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_AUTO_PARTITION_FAILURE', 'bool'));
 
     this.ocsmAutoCtlFault.set(
-      (cpiomBCpcsAppDiscreteWord1.isFailureWarning() &&
-        cpiomBCpcsAppDiscreteWord2.isFailureWarning() &&
-        cpiomBCpcsAppDiscreteWord3.isFailureWarning() &&
-        cpiomBCpcsAppDiscreteWord4.isFailureWarning()) ||
+      (this.cpiomBCpcsAppDiscreteWord1.isFailureWarning() &&
+        this.cpiomBCpcsAppDiscreteWord2.isFailureWarning() &&
+        this.cpiomBCpcsAppDiscreteWord3.isFailureWarning() &&
+        this.cpiomBCpcsAppDiscreteWord4.isFailureWarning()) ||
         (this.ocsm1AutoFailure.get() &&
           this.ocsm2AutoFailure.get() &&
           this.ocsm3AutoFailure.get() &&
@@ -3318,10 +3327,10 @@ export class FwsCore {
     this.ocsm4Failure.set(ocsm4Channel1Failure && ocsm4Channel2Failure);
 
     const numberOfCpcsFaults = [
-      cpiomBCpcsAppDiscreteWord1.isFailureWarning(),
-      cpiomBCpcsAppDiscreteWord2.isFailureWarning(),
-      cpiomBCpcsAppDiscreteWord3.isFailureWarning(),
-      cpiomBCpcsAppDiscreteWord4.isFailureWarning(),
+      this.cpiomBCpcsAppDiscreteWord1.isFailureWarning(),
+      this.cpiomBCpcsAppDiscreteWord2.isFailureWarning(),
+      this.cpiomBCpcsAppDiscreteWord3.isFailureWarning(),
+      this.cpiomBCpcsAppDiscreteWord4.isFailureWarning(),
     ].filter((cpcs) => cpcs === true).length;
 
     this.pressRedundLost.set(numberOfCpcsFaults > 1);
