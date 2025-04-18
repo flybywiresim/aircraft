@@ -395,7 +395,7 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
 
   static const int16_T b_0[5]{ -1, 0, 120, 320, 400 };
 
-  static const real_T c_0[5]{ 0.3, 0.3, 0.4, 0.8, 0.8 };
+  static const real_T c_0[5]{ 1.0, 1.0, 1.2, 2.0, 2.0 };
 
   rtb_NOT_h_tmp = !*rtu_In_on_ground;
   if (static_cast<real_T>(rtb_NOT_h_tmp) > A380LateralNormalLaw_rtP.Saturation_UpperSat) {
@@ -448,11 +448,11 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
   rtb_Limiterxi = A380LateralNormalLaw_rtP.Gain1_Gain_o * *rtu_In_delta_xi_pos;
   Vias = std::fmax(*rtu_In_V_ias_kn, 80.0) * 0.5144;
   dynamic_pressure = Vias * Vias * 0.6125;
-  L_xi = dynamic_pressure * 845.0 * 39.9 * -0.0964294411726867 / 8.5E+7;
+  L_xi = dynamic_pressure * 845.0 * 39.9 * -0.0964294411726867 / 7.2617427E+7;
   if (*rtu_In_V_ias_kn > 400.0) {
-    omega_0 = 0.8;
+    omega_0 = 2.0;
   } else if (*rtu_In_V_ias_kn < -1.0) {
-    omega_0 = 0.3;
+    omega_0 = 1.0;
   } else {
     high_i = 5;
     low_i = 0;
@@ -707,11 +707,11 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_DWork.Delay_DSTATE = A380LateralNormalLaw_rtP.Saturation_LowerSat_a;
   }
 
-  A380LateralNormalLaw_DWork.Delay1_DSTATE = ((-(dynamic_pressure / Vias * 845.0 * 1592.01 * -0.5 / 8.5E+7 + 1.414 *
-    omega_0) / L_xi * (A380LateralNormalLaw_rtP.Gain1_Gain_d * *rtu_In_pk_deg_s) + A380LateralNormalLaw_rtP.Gain1_Gain_h
-    * *rtu_In_Phi_deg * k_phi) + A380LateralNormalLaw_rtP.Gain1_Gain_j * rtb_Sum * -k_phi) * look1_binlxpw
-    (*rtu_In_time_dt, A380LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_b,
-     A380LateralNormalLaw_rtP.ScheduledGain_Table_h, 4U) * A380LateralNormalLaw_rtP.Gain_Gain_cw;
+  A380LateralNormalLaw_DWork.Delay1_DSTATE = ((-(dynamic_pressure / Vias * 845.0 * 1592.01 * -0.5 / 7.2617427E+7 + 1.414
+    * omega_0) / L_xi * (A380LateralNormalLaw_rtP.Gain1_Gain_d * *rtu_In_pk_deg_s) +
+    A380LateralNormalLaw_rtP.Gain1_Gain_h * *rtu_In_Phi_deg * k_phi) + A380LateralNormalLaw_rtP.Gain1_Gain_j * rtb_Sum *
+    -k_phi) * look1_binlxpw(*rtu_In_time_dt, A380LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_b,
+    A380LateralNormalLaw_rtP.ScheduledGain_Table_h, 4U) * A380LateralNormalLaw_rtP.Gain_Gain_cw;
   if (A380LateralNormalLaw_DWork.Delay1_DSTATE > A380LateralNormalLaw_rtP.Limiterxi_UpperSat) {
     omega_0 = A380LateralNormalLaw_rtP.Limiterxi_UpperSat;
   } else if (A380LateralNormalLaw_DWork.Delay1_DSTATE < A380LateralNormalLaw_rtP.Limiterxi_LowerSat) {
