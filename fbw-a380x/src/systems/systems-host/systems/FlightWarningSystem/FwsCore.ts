@@ -3049,8 +3049,12 @@ export class FwsCore {
     this.fmcAFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', 'bool'));
     this.fmcBFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', 'bool'));
     this.fmcCFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
-    this.fms1Fault.set(this.fmcAFault.get() && this.fmcCFault.get());
-    this.fms2Fault.set(this.fmcBFault.get() && this.fmcCFault.get());
+    this.fms1Fault.set(
+      this.fmcAFault.get() && this.dcESSBusPowered.get() && this.fmcCFault.get() && this.dc1BusPowered.get(),
+    );
+    this.fms2Fault.set(
+      this.fmcBFault.get() && this.dc2BusPowered.get() && this.fmcCFault.get() && this.dc1BusPowered.get(),
+    );
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
