@@ -15,7 +15,6 @@
 1. [A380X/ECAM] Improved STROBE LT OFF memo behaviour - @Jonny23787 (Jonathan)
 1. [A380X/FCU] Update FCU font for QFE based on new references - @heclak (Heclak)
 
-
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
