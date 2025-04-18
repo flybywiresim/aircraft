@@ -425,7 +425,11 @@ export class FwsCore {
 
   public readonly cabinAirExtractOn = Subject.create(false);
 
-  public readonly numberOfCabinFanFaults = Subject.create(0);
+  public readonly onePrimaryCabinFanFault = Subject.create(false);
+
+  public readonly twoPrimaryCabinFanFault = Subject.create(false);
+
+  public readonly threePrimaryCabinFanFault = Subject.create(false);
 
   public readonly allCabinFansFault = Subject.create(false);
 
@@ -455,9 +459,9 @@ export class FwsCore {
 
   public readonly hotAir2PbOn = Subject.create(false);
 
-  public readonly taddChannel1Failure = Subject.create(false);
+  public readonly tempCtl1Fault = Subject.create(false);
 
-  public readonly taddChannel2Failure = Subject.create(false);
+  public readonly tempCtl2Fault = Subject.create(false);
 
   public readonly tempCtlFault = Subject.create(false);
 
@@ -3237,9 +3241,37 @@ export class FwsCore {
     const fan3Fault = vcsDiscreteWordToUse.bitValueOr(20, false);
     const fan4Fault = vcsDiscreteWordToUse.bitValueOr(21, false);
 
-    this.numberOfCabinFanFaults.set([fan1Fault, fan2Fault, fan3Fault, fan4Fault].filter((fan) => fan === true).length);
+    // In case of individual cabin fan fault, the ecam is not trigerred if fan not powered as it is handled by the associated AC power loss ecam warning.
+    const fan1FaultyAndpowered = fan1Fault && this.ac1BusPowered.get();
+    const fan2FaultyAndPowered = fan2Fault && this.ac2BusPowered.get();
+    const fan3FaultyAndPowered = fan3Fault && this.ac3BusPowered.get();
+    const fan4FaultyAndPowered = fan4Fault && this.ac4BusPowered.get();
 
-    this.allCabinFansFault.set(fan1Fault && fan2Fault && fan3Fault && fan4Fault);
+    this.onePrimaryCabinFanFault.set(
+      fan1FaultyAndpowered || fan2FaultyAndPowered || fan3FaultyAndPowered || fan4FaultyAndPowered,
+    );
+
+    let numberOfFaultyFans = 0;
+    if (fan1Fault) {
+      numberOfFaultyFans++;
+    }
+    if (fan2Fault) {
+      numberOfFaultyFans++;
+    }
+    if (fan3Fault) {
+      numberOfFaultyFans++;
+    }
+    if (fan4Fault) {
+      numberOfFaultyFans++;
+    }
+
+    this.twoPrimaryCabinFanFault.set(numberOfFaultyFans === 2);
+    this.threePrimaryCabinFanFault.set(numberOfFaultyFans === 3);
+
+    // Inhibited in total AC power loss (handled by ELEC EMER CONFIG)
+    this.allCabinFansFault.set(
+      fan1FaultyAndpowered && fan2FaultyAndPowered && fan3FaultyAndPowered && fan4FaultyAndPowered,
+    );
 
     this.bulkCargoHeaterFault.set(vcsDiscreteWordToUse.bitValueOr(22, false));
     this.fwdIsolValveOpen.set(vcsDiscreteWordToUse.bitValueOr(14, false));
@@ -3259,15 +3291,14 @@ export class FwsCore {
     this.hotAir1PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_1_PB_IS_ON', 'bool'));
     this.hotAir2PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_2_PB_IS_ON', 'bool'));
 
-    this.taddChannel1Failure.set(
-      this.ac2BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_1_FAILURE', 'bool'),
-    );
-    this.taddChannel2Failure.set(
-      this.ac4BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_2_FAILURE', 'bool'),
-    );
+    const taddChannel1Failure: boolean = SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_1_FAILURE', 'bool');
+    const taddChannel2Failure: boolean = SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_2_FAILURE', 'bool');
+
+    this.tempCtl1Fault.set(this.ac2BusPowered.get() && taddChannel1Failure);
+    this.tempCtl2Fault.set(this.ac4BusPowered.get() && taddChannel2Failure);
 
     this.tempCtlFault.set(
-      (this.taddChannel1Failure.get() && this.taddChannel2Failure.get()) ||
+      (taddChannel1Failure && taddChannel2Failure) ||
         (this.fdac1Channel1Failure.get() &&
           this.fdac1Channel2Failure.get() &&
           this.fdac2Channel1Failure.get() &&

@@ -673,10 +673,7 @@ export class FwsAbnormalSensed {
     211800035: {
       // ONE PRIMARY CABIN FAN FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 9, 10, 11],
-      simVarIsActive: MappedSubject.create(
-        ([numberOfFanFailures]) => numberOfFanFailures === 1,
-        this.fws.numberOfCabinFanFaults,
-      ),
+      simVarIsActive: this.fws.onePrimaryCabinFanFault,
       notActiveWhenFaults: ['211800023', '211800043', '211800044'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -687,7 +684,7 @@ export class FwsAbnormalSensed {
     211800039: {
       // TEMP CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.taddChannel1Failure,
+      simVarIsActive: this.fws.tempCtl1Fault,
       notActiveWhenFaults: ['211800041'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -698,7 +695,7 @@ export class FwsAbnormalSensed {
     211800040: {
       // TEMP CTL 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.taddChannel2Failure,
+      simVarIsActive: this.fws.tempCtl2Fault,
       notActiveWhenFaults: ['211800041'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -798,10 +795,7 @@ export class FwsAbnormalSensed {
     211800043: {
       // THREE PRIMARY CABIN FANS FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
-      simVarIsActive: MappedSubject.create(
-        ([numberOfFanFailures]) => numberOfFanFailures === 3,
-        this.fws.numberOfCabinFanFaults,
-      ),
+      simVarIsActive: this.fws.threePrimaryCabinFanFault,
       notActiveWhenFaults: ['211800023'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -813,10 +807,7 @@ export class FwsAbnormalSensed {
     211800044: {
       // TWO PRIMARY CABIN FANS FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
-      simVarIsActive: MappedSubject.create(
-        ([numberOfFanFailures]) => numberOfFanFailures === 2,
-        this.fws.numberOfCabinFanFaults,
-      ),
+      simVarIsActive: this.fws.twoPrimaryCabinFanFault,
       notActiveWhenFaults: ['211800023', '211800043'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
