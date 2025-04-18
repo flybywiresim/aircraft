@@ -564,7 +564,7 @@ impl Turbine for Running {
 
     fn bleed_air_pressure(&self) -> Pressure {
         // Value from refs, we add standard pressure at sea level as state of unpressurized system
-        Pressure::new::<psi>(22.)
+        Pressure::new::<psi>(40.)
             + InternationalStandardAtmosphere::pressure_at_altitude(Length::ZERO)
     }
 }
