@@ -26,27 +26,50 @@ const fakeRunway = (
   designator: RunwayDesignator,
   bearing: number,
   location: Coordinates,
-): Runway => ({
-  sectionCode: SectionCode.Airport,
-  subSectionCode: AirportSubsectionCode.Runways,
-  databaseId: `RUNWAY-${icaoCode}-${airportIdent}-${number.padStart(2, '0')}${designator}`,
-  icaoCode,
-  ident: `${airportIdent}${number.padStart(2, '0')}${designator}`,
-  number: parseInt(number),
-  designator,
-  airportIdent: 'CYYZ',
-  bearing,
-  magneticBearing: bearing,
-  gradient: 0,
-  location,
-  thresholdLocation: { ...location, alt: 0 },
-  startLocation: location,
-  thresholdCrossingHeight: 50,
-  length: 0,
-  width: 0,
-  lsIdent: '',
-  area: WaypointArea.Terminal,
-});
+): Runway => {
+  let designatorChar = '';
+  switch (designator) {
+    case RunwayDesignator.None:
+      designatorChar = '';
+      break;
+    case RunwayDesignator.Centre:
+      designatorChar = 'C';
+      break;
+    case RunwayDesignator.Left:
+      designatorChar = 'L';
+      break;
+    case RunwayDesignator.Right:
+      designatorChar = 'R';
+      break;
+    case RunwayDesignator.True:
+      designatorChar = 'T';
+      break;
+    default:
+      designator satisfies never;
+  }
+
+  return {
+    sectionCode: SectionCode.Airport,
+    subSectionCode: AirportSubsectionCode.Runways,
+    databaseId: `RUNWAY-${icaoCode}-${airportIdent}-${number.padStart(2, '0')}${designatorChar}`,
+    icaoCode,
+    ident: `${airportIdent}${number.padStart(2, '0')}${designatorChar}`,
+    number: parseInt(number),
+    designator,
+    airportIdent: 'CYYZ',
+    bearing,
+    magneticBearing: bearing,
+    gradient: 0,
+    location,
+    thresholdLocation: { ...location, alt: 0 },
+    startLocation: location,
+    thresholdCrossingHeight: 50,
+    length: 0,
+    width: 0,
+    lsIdent: '',
+    area: WaypointArea.Terminal,
+  };
+};
 
 const fakeAirway = (ident: string, fixes: Waypoint[]): Airway => ({
   databaseId: `AIRWAY-${ident}`,
