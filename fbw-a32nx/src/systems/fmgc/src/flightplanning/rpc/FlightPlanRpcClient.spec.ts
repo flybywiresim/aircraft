@@ -1,4 +1,4 @@
-import { afterAll, assert, describe, expect, it, vi } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { FlightPlanRemoteClientRpcEvents, FlightPlanRpcClient } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
 import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';
 import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';

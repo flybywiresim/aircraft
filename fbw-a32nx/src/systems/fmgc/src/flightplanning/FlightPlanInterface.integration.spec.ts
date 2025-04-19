@@ -1,4 +1,5 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
 import { testFlightPlanService } from './test/TestFlightPlanService';
 import { NavigationDatabaseService } from './NavigationDatabaseService';
 import { FlightPlanIndex } from './FlightPlanManager';

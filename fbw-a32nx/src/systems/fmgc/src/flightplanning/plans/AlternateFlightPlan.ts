@@ -9,7 +9,6 @@ import { DestinationSegment } from '@fmgc/flightplanning/segments/DestinationSeg
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 /**
  * An alternate flight plan shares its origin with the destination of a regular flight plan

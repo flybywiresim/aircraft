@@ -18,7 +18,6 @@ import {
 } from '../../../shared';
 import { Gate } from '../../../shared/types/Gate';
 import { DataInterface } from '../../../shared/DataInterface';
-import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory'; // FIXME remove import from FMGC
 import { FAKE_AIRWAYS, FAKE_WAYPOINTS, TEST_AIRPORTS } from './TestData';
 import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
 
