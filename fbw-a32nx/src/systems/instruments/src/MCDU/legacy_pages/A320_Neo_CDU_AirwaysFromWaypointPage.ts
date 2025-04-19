@@ -8,6 +8,7 @@ import { Airway, Fix } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 
 export class A320_Neo_CDU_AirwaysFromWaypointPage {
   static ShowPage(
@@ -49,7 +50,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
       rowBottomLine = ['<RETURN', 'INSERT*[color]cyan'];
 
       mcdu.onRightInput[5] = async () => {
-        await targetPlan.pendingAirways.finalize(); // TODO replace with fps call (fms-v2)
+        await mcdu.flightPlanService.finaliseAirwayEntry(forPlan, inAlternate);
 
         mcdu.updateConstraints();
 
@@ -100,14 +101,13 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
 
               const airway = await this._getAirway(
                 mcdu,
-                prevFpIndex,
                 tailElement ? tailElement.airway : undefined,
                 lastFix,
                 value,
               ).catch(console.error);
 
               if (airway) {
-                const result = await targetPlan.pendingAirways.thenAirway(airway);
+                const result = await mcdu.flightPlanService.continueAirwayEntryViaAirway(airway, forPlan, inAlternate);
 
                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                   mcdu,
@@ -128,13 +128,11 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
           rows[i] = [`${pendingAirway.ident}[color]cyan`, '[\xa0\xa0\xa0][color]cyan'];
 
           mcdu.onRightInput[i] = async (value, scratchpadCallback) => {
-            const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
-
             if (value.length > 0) {
               const wp = await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false);
 
               if (wp) {
-                const result = await targetPlan.pendingAirways.thenTo(wp);
+                const result = await mcdu.flightPlanService.continueAirwayEntryDirectToFix(wp, forPlan, inAlternate);
 
                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                   mcdu,
@@ -155,14 +153,16 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
             subRows[i + 1] = ['\xa0VIA', ''];
 
             mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
-              const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
-
               if (value.length > 0) {
                 const airway = await this._getFirstIntersection(mcdu, pendingAirway, prevIcao, value).catch(
                   console.error,
                 );
                 if (airway) {
-                  const result = await targetPlan.pendingAirways.thenAirway(airway);
+                  const result = await mcdu.flightPlanService.continueAirwayEntryViaAirway(
+                    airway,
+                    forPlan,
+                    inAlternate,
+                  );
 
                   A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                     mcdu,
@@ -203,7 +203,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
   /**
    * @param plan {FlightPlan}
    */
-  static _GetAllRows(plan) {
+  static _GetAllRows(plan: BaseFlightPlan) {
     const allRows = [];
     const elements = plan.pendingAirways.elements;
 
@@ -225,7 +225,6 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
 
   static async _getAirway(
     mcdu: LegacyFmsPageInterface,
-    fromFpIndex: number,
     lastAirway: Airway,
     lastFix: Fix,
     value: string,
