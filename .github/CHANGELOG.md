@@ -15,6 +15,7 @@
 1. [A380X/ECAM] Improved STROBE LT OFF memo behaviour - @Jonny23787 (Jonathan)
 1. [A380X/FCU] Update FCU font for QFE based on new references - @heclak (Heclak)
 1. [A32NX/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
+1. [A32NX/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 
 ## 0.13.0
 
