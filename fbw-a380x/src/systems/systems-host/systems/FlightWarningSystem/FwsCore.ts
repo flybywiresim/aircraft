@@ -566,6 +566,12 @@ export class FwsCore {
 
   public readonly fmcCFault = Subject.create(false);
 
+  public readonly fmcAHealthy = Subject.create(false);
+
+  public readonly fmcBHealthy = Subject.create(false);
+
+  public readonly fmcCHealthy = Subject.create(false);
+
   public readonly fms1Fault = Subject.create(false);
 
   public readonly fms2Fault = Subject.create(false);
@@ -3100,15 +3106,15 @@ export class FwsCore {
     /** MCDU TO CONF 3 selected */
     const mcduToFlapPos3 = fm1DiscreteWord2.bitValueOr(16, false) || fm2DiscreteWord2.bitValueOr(16, false);
 
-    this.fmcAFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', 'bool'));
-    this.fmcBFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', 'bool'));
-    this.fmcCFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
-    this.fms1Fault.set(
-      this.fmcAFault.get() && this.dcESSBusPowered.get() && this.fmcCFault.get() && this.dc1BusPowered.get(),
-    );
-    this.fms2Fault.set(
-      this.fmcBFault.get() && this.dc2BusPowered.get() && this.fmcCFault.get() && this.dc1BusPowered.get(),
-    );
+    this.fmcAHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', 'bool'));
+    this.fmcBHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', 'bool'));
+    this.fmcCHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
+    this.fmcAFault.set(!this.fmcAHealthy.get() && this.dcESSBusPowered.get());
+    this.fmcBFault.set(!this.fmcBHealthy.get() && this.dc2BusPowered.get());
+    this.fmcCFault.set(!this.fmcCHealthy.get() && this.dc1BusPowered.get());
+
+    this.fms1Fault.set(this.fmcAFault.get() && this.fmcCFault.get());
+    this.fms2Fault.set(this.fmcBFault.get() && this.fmcCFault.get());
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -3281,7 +3287,7 @@ export class FwsCore {
       fan1FaultyAndpowered && fan2FaultyAndPowered && fan3FaultyAndPowered && fan4FaultyAndPowered,
     );
 
-    this.bulkCargoHeaterFault.set(vcsDiscreteWordToUse.bitValueOr(22, false));
+    this.bulkCargoHeaterFault.set(this.ac4BusPowered.get() && vcsDiscreteWordToUse.bitValueOr(22, false));
     this.fwdIsolValveOpen.set(vcsDiscreteWordToUse.bitValueOr(14, false));
     this.fwdIsolValveFault.set(vcsDiscreteWordToUse.bitValueOr(23, false));
     this.bulkIsolValveOpen.set(vcsDiscreteWordToUse.bitValueOr(16, false));
