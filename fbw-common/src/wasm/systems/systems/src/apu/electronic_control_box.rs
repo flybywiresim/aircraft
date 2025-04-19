@@ -147,7 +147,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         self.start_is_on = overhead.start_is_on();
         self.bleed_is_on = apu_bleed_is_on;
         self.fire_button_is_released = fire_overhead.fire_button_is_released();
-        if fire_overhead.fire_button_is_released() {
+        if fire_overhead.fire_button_is_released() && self.is_on() {
             self.fault = Some(ApuFault::ApuFire);
         }
     }
@@ -206,6 +206,15 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             self.master_off_for += context.delta()
         } else {
             self.master_off_for = Duration::ZERO
+        }
+
+        if self.is_available() {
+            if self.n.get::<percent>() > 105.
+                || self.n.get::<percent>() < 88.
+                || self.n2.get::<percent>() > 102.
+                || self.egt.get::<degree_celsius>() > 700. {
+                self.fault = Some(ApuFault::ApuLimitsExceeded);
+            }
         }
     }
 
@@ -383,6 +392,8 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         if self.aircraft_preset_quick_mode {
             cool_down_required = false;
             println!("apu/electronic_control_box.rs: Aircraft Preset Quick Mode is active. APU cooldown is skipped.");
+        } else if self.is_auto_shutdown() || self.is_emergency_shutdown() {
+            cool_down_required = false;
         } else {
             cool_down_required = self
                 .bleed_air_valve_was_open_in_last(C::BLEED_AIR_COOLDOWN_DURATION)
@@ -548,4 +559,5 @@ enum ApuFault {
     ApuFire,
     FuelLowPressure,
     DcPowerLoss,
+    ApuLimitsExceeded,
 }

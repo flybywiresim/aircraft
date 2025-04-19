@@ -555,6 +555,7 @@ export const EcamInopSys: { [n: string]: string } = {
   341300001: '\x1b<4mPRED W/S 1',
   341300002: '\x1b<4mPRED W/S 2',
   341300003: '\x1b<4mPRED W/S 1+2',
+  490300001: '\x1b<4mAPU',
 };
 
 export enum ChecklistLineStyle {

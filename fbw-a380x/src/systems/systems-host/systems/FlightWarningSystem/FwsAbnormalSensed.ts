@@ -3776,6 +3776,37 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
+    // APU
+    490800002: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.apuEmerShutdown, //EMER SHUTDOWN
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.apuMasterSwitch.get()],
+      failure: 2,
+      sysPage: SdPages.Apu,
+      inopSysAllPhases: () => ['490300001'],
+    },
+    490800003: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.apuAutoShutdown, //AUTO SHUTDOWN
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.apuMasterSwitch.get()],
+      failure: 2,
+      sysPage: SdPages.Apu,
+      inopSysAllPhases: () => ['490300001'],
+    },
+    490800004: {
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.apuMachLimitExceeded, //MACH LIMIT EXCEEDED
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
+      failure: 2,
+      sysPage: SdPages.Apu,
+      inopSysAllPhases: () => ['490300001'],
+    },
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL

@@ -17,4 +17,65 @@ import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessag
 //    9 for ABN non-sensed procedures
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
-export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } = {};
+export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } = {
+  // ATA 49 APU
+  490800001: {
+    title: '\x1b<4m\x1b4mAPU\x1bm FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'IF APU NOT ABSOLUTELY RQRD :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'APU MASTER SW',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  490800002: {
+    title: '\x1b<4m\x1b4mAPU\x1bm FAULT EMER SHUTDOWN',
+    sensed: true,
+    items: [
+      {
+        name: 'APU MASTER SW',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  490800003: {
+    title: '\x1b<4m\x1b4mAPU\x1bm FAULT AUTO SHUTDOWN',
+    sensed: true,
+    items: [
+      {
+        name: 'APU MASTER SW',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  490800004: {
+    title: '\x1b<4m\x1b4mAPU\x1bm MACH LIMIT EXCEEDED',
+    sensed: true,
+    items: [
+      {
+        name: 'IF APU NOT ABSOLUTELY RQRD :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'APU MASTER SW',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  490800005: {
+    title: '\x1b<4m\x1b4mAPU\x1bm OIL FILTER CLOGGED',
+    sensed: true,
+    items: [],
+  },
+};
