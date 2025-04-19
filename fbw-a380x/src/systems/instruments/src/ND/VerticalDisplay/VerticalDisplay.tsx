@@ -290,7 +290,12 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     MappedSubject.create(
       ([vdRange, verticalRange, baroMode]) => {
         const dashAlt = VerticalDisplay.altitudeTapeAlt(index, vdRange, verticalRange);
-        return baroMode === 'STD' ? Math.floor(dashAlt / 100).toFixed(0) : dashAlt.toFixed(0);
+        const altitudePerDash = VerticalDisplay.altitudeTapeAlt(1, vdRange, [0, 0]);
+        if (dashAlt % (altitudePerDash * 2) == 0) {
+          return baroMode === 'STD' ? Math.floor(dashAlt / 100).toFixed(0) : dashAlt.toFixed(0);
+        } else {
+          return '';
+        }
       },
       this.vdRange,
       this.verticalRange,
@@ -547,6 +552,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   public static altitudeTapeAlt(index: number, vdRange: number, verticalRange: [number, number]) {
     let altitudePerDash = 500;
     switch (vdRange) {
+      case 5:
+        altitudePerDash = 250;
+        break;
       case 10:
         altitudePerDash = 500;
         break;
@@ -606,29 +614,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           <g clip-path="url(#AltitudeTapeMask)">
             <line x1="105" x2="105" y1="800" y2="1000" stroke={this.lineColor} stroke-width="2" />
             {[0, 1, 2, 3, 4, 5, 6, 7].map((_, index) => {
-              if (index % 2 === 0) {
-                return (
-                  <>
-                    <line
-                      x1="105"
-                      x2="120"
-                      y1={this.altitudeTapeLineY[index]}
-                      y2={this.altitudeTapeLineY[index]}
-                      stroke={this.lineColor}
-                      stroke-width="2"
-                    />
-                    <text
-                      x="95"
-                      y={this.altitudeTapeTextY[index]}
-                      class="White FontSmallest EndAlign"
-                      visibility={this.rangeMarkerVisibility}
-                    >
-                      {this.altitudeTapeText[index]}
-                    </text>
-                  </>
-                );
-              } else {
-                return (
+              return (
+                <>
                   <line
                     x1="105"
                     x2="120"
@@ -637,8 +624,16 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
                     stroke={this.lineColor}
                     stroke-width="2"
                   />
-                );
-              }
+                  <text
+                    x="95"
+                    y={this.altitudeTapeTextY[index]}
+                    class="White FontSmallest EndAlign"
+                    visibility={this.rangeMarkerVisibility}
+                  >
+                    {this.altitudeTapeText[index]}
+                  </text>
+                </>
+              );
             })}
             <text x="5" y="900" class="White FontSmallest" visibility={this.altitudeFlTextVisible}>
               FL
