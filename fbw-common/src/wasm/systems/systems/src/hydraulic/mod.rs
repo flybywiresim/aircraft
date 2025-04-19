@@ -1163,7 +1163,7 @@ impl HydraulicCircuit {
             }
         }
 
-        let ptu_overheats_fluid = ptu.map_or(false, |p| p.is_overheating() && p.is_rotating());
+        let ptu_overheats_fluid = ptu.is_some_and(|p| p.is_overheating() && p.is_rotating());
 
         self.fluid
             .update(context, ptu_overheats_fluid || any_pump_is_overheating);
@@ -1905,10 +1905,9 @@ impl SimulationElement for FireValve {
 /// Handles the flow that goes between two sections
 /// Flow is handled in two ways:
 /// - An optional flow that can only pass through if downstream needs flow
-/// and if upstream has enough capacity to provide flow while maintaining its target pressure
+///   and if upstream has enough capacity to provide flow while maintaining its target pressure
 /// - A physical flow, that is mandatory to pass through the valve, caused by pressure difference between
-/// upstream and downstream.
-
+///   upstream and downstream.
 pub struct CheckValve {
     current_volume: Volume,
     max_virtual_volume: Volume,

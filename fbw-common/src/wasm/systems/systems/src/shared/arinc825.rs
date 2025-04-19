@@ -45,7 +45,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn service_message_type(&self) -> bool {
-        (self.status >> 18 & 0x1) != 0
+        ((self.status >> 18) & 0x1) != 0
     }
 
     pub fn set_service_message_type(&mut self, service_type: bool) {
@@ -56,7 +56,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn local_bus_only(&self) -> bool {
-        (self.status >> 17 & 0x1) != 0
+        ((self.status >> 17) & 0x1) != 0
     }
 
     pub fn set_local_bus_only(&mut self, local: bool) {
@@ -67,7 +67,7 @@ impl<T: Copy> Arinc825Word<T> {
     }
 
     pub fn private_data(&self) -> bool {
-        (self.status >> 16 & 0x1) != 0
+        ((self.status >> 16) & 0x1) != 0
     }
 
     pub fn set_private_data(&mut self, private: bool) {
@@ -129,7 +129,7 @@ impl From<f64> for Arinc825Word<u32> {
 }
 impl From<Arinc825Word<u32>> for f64 {
     fn from(value: Arinc825Word<u32>) -> f64 {
-        let bits = ((value.value as f32).to_bits() as u64) << 32 | (value.status as u64);
+        let bits = (((value.value as f32).to_bits() as u64) << 32) | (value.status as u64);
         f64::from_bits(bits)
     }
 }
@@ -145,7 +145,7 @@ impl From<f64> for Arinc825Word<f64> {
 }
 impl From<Arinc825Word<f64>> for f64 {
     fn from(value: Arinc825Word<f64>) -> f64 {
-        let bits = ((value.value as f32).to_bits() as u64) << 32 | (value.status as u64);
+        let bits = (((value.value as f32).to_bits() as u64) << 32) | (value.status as u64);
         f64::from_bits(bits)
     }
 }
@@ -197,7 +197,7 @@ pub(crate) fn from_arinc825(value: f64) -> (f64, u32) {
 }
 
 pub(crate) fn to_arinc825(value: f64, status: u32) -> f64 {
-    let bits = ((value as f32).to_bits() as u64) << 32 | (status as u64);
+    let bits = (((value as f32).to_bits() as u64) << 32) | (status as u64);
     f64::from_bits(bits)
 }
 
