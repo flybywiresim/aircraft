@@ -5,11 +5,13 @@
 
 /* eslint-disable no-await-in-loop */
 
+import { Fix, Airway } from '@flybywiresim/fbw-sdk';
+
+import { Coordinates, distanceTo } from 'msfs-geo';
+
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { Fix, Airway } from '@flybywiresim/fbw-sdk';
-import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import type { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
 import { FmsDataInterface } from '../interface/FmsDataInterface';
@@ -148,7 +150,7 @@ export class CoRouteUplinkAdapter {
 
     const ensureAirwaysFinalized = async () => {
       if (flightPlanService.uplink.pendingAirways) {
-        await flightPlanService.uplink.pendingAirways.finalize();
+        await flightPlanService.uplink.finaliseAirwayEntry();
         flightPlanService.uplink.pendingAirways = undefined;
 
         setInsertHeadToEndOfEnroute();
@@ -280,7 +282,10 @@ export class CoRouteUplinkAdapter {
             const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
             if (airways.length > 0) {
-              await plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+              await flightPlanService.continueAirwayEntryViaAirway(
+                pickAirway(airways, chunk.locationHint),
+                FlightPlanIndex.Uplink,
+              );
             } else {
               console.warn(
                 `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no airways at fix "${airwaySearchFix.ident}" for airway: "${chunk.ident}"`,
@@ -328,7 +333,7 @@ export class CoRouteUplinkAdapter {
 
             const airwayFix = pickAirwayFix(tailAirway, fixes);
             if (airwayFix) {
-              await plan.pendingAirways.thenTo(airwayFix);
+              await flightPlanService.continueAirwayEntryDirectToFix(airwayFix, FlightPlanIndex.Uplink);
 
               await ensureAirwaysFinalized();
             } else {
