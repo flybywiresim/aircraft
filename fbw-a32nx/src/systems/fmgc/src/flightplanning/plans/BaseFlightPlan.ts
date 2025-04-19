@@ -34,7 +34,7 @@ import { MissedApproachSegment } from '@fmgc/flightplanning/segments/MissedAppro
 import { ArrivalRunwayTransitionSegment } from '@fmgc/flightplanning/segments/ArrivalRunwayTransitionSegment';
 import { ApproachViaSegment } from '@fmgc/flightplanning/segments/ApproachViaSegment';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
+import { HoldData, OffsetData, offsetFlags, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 import {
   FlightPlanEvents,
@@ -1512,6 +1512,22 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
 
     this.syncLegDefinitionChange(index);
+  }
+
+  setOffsetParams(startIndex, endIndex, offsetData: OffsetData) {
+    const startElement = this.legElementAt(startIndex);
+    const endElement = this.legElementAt(endIndex);
+
+    startElement.lateralOffset = offsetData;
+    endElement.lateralOffset = offsetData;
+
+    startElement.lateralOffset.offsetFlags = offsetFlags.Start;
+    endElement.lateralOffset.offsetFlags = offsetFlags.End;
+
+    this.syncLegDefinitionChange(startIndex);
+    this.syncLegDefinitionChange(endIndex);
+
+    this.incrementVersion();
   }
 
   setPilotEnteredAltitudeConstraintAt(index: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint) {
