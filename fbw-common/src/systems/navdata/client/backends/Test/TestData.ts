@@ -1,7 +1,7 @@
 import { Airport } from '../../../shared/types/Airport';
 import { ElevatedCoordinates } from '../../../shared/types/Common';
 import { AirportSubsectionCode, EnrouteSubsectionCode, SectionCode } from '../../../shared/types/SectionCode';
-import { Runway, RunwaySurfaceType } from '../../../shared/types/Runway';
+import { Runway, RunwayDesignator, RunwaySurfaceType } from '../../../shared/types/Runway';
 import { Waypoint, WaypointArea } from '../../../shared/types/Waypoint';
 import { Coordinates } from 'msfs-geo';
 import { Airway, AirwayDirection, AirwayLevel } from '../../../shared/types/Airway';
@@ -23,7 +23,7 @@ const fakeRunway = (
   icaoCode: string,
   airportIdent: string,
   number: string,
-  designator: string,
+  designator: RunwayDesignator,
   bearing: number,
   location: Coordinates,
 ): Runway => ({
@@ -32,6 +32,8 @@ const fakeRunway = (
   databaseId: `RUNWAY-${icaoCode}-${airportIdent}-${number.padStart(2, '0')}${designator}`,
   icaoCode,
   ident: `${airportIdent}${number.padStart(2, '0')}${designator}`,
+  number: parseInt(number),
+  designator,
   airportIdent: 'CYYZ',
   bearing,
   magneticBearing: bearing,
@@ -73,14 +75,24 @@ export const TEST_AIRPORTS: Map<string, { airport: Airport; runways: Runway[] }>
         long: -79.63047499999999,
         alt: 569,
       }),
-      runways: [fakeRunway('CY', 'CYYZ', '06', 'R', 46, { long: -79.60958194444444, lat: 43.66679444444444 })],
+      runways: [
+        fakeRunway('CY', 'CYYZ', '06', RunwayDesignator.Right, 46, {
+          long: -79.60958194444444,
+          lat: 43.66679444444444,
+        }),
+      ],
     },
   ],
   [
     'CYVR',
     {
       airport: fakeAirport('CY', 'CYVR', { lat: 0, long: 0, alt: 0 }),
-      runways: [fakeRunway('CY', 'CYVR', '08', 'R', 46, { long: -79.60958194444444, lat: 43.66679444444444 })],
+      runways: [
+        fakeRunway('CY', 'CYVR', '08', RunwayDesignator.Right, 46, {
+          long: -79.60958194444444,
+          lat: 43.66679444444444,
+        }),
+      ],
     },
   ],
 ]);
