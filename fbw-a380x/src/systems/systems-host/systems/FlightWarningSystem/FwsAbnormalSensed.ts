@@ -819,7 +819,7 @@ export class FwsAbnormalSensed {
     212800001: {
       // AFT VENT CTL 1 FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.vcmAftChannel1Failure,
+      simVarIsActive: this.fws.aftVentCtl1Fault,
       notActiveWhenFaults: ['212800004'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -830,7 +830,7 @@ export class FwsAbnormalSensed {
     212800002: {
       // AFT VENT CTL 2 FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.vcmAftChannel2Failure,
+      simVarIsActive: this.fws.aftVentCtl2Fault,
       notActiveWhenFaults: ['212800004'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -879,7 +879,7 @@ export class FwsAbnormalSensed {
     212800007: {
       // FWD VENT CTL 1 FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.vcmFwdChannel1Failure,
+      simVarIsActive: this.fws.fwdVentCtl1Fault,
       notActiveWhenFaults: ['212800010'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -890,7 +890,7 @@ export class FwsAbnormalSensed {
     212800008: {
       // FWD VENT CTL 2 FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.vcmFwdChannel2Failure,
+      simVarIsActive: this.fws.fwdVentCtl2Fault,
       notActiveWhenFaults: ['212800010'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
