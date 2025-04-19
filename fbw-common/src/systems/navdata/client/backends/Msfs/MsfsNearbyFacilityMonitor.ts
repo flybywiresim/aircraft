@@ -224,13 +224,17 @@ export class MsfsNearbyFacilityMonitor implements NearbyFacilityMonitor {
   }
 
   public setLocation(lat: number, lon: number): void {
-    this.needSearch ||=
+    const needUpdate =
       this.lat === undefined ||
       this.lon === undefined ||
       Math.abs(MathUtils.normalise180(lat - this.lat)) > 0.01 ||
       Math.abs(MathUtils.normalise180(lon - this.lon)) > 0.01; // 0.01 deg is a little under 1 NM at the equator
-    this.lat = lat;
-    this.lon = lon;
+
+    if (needUpdate) {
+      this.needSearch = true;
+      this.lat = lat;
+      this.lon = lon;
+    }
   }
 
   public setRadius(radiusNm: number): void {
