@@ -4,11 +4,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Airport } from '@flybywiresim/fbw-sdk';
-import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan, FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { DestinationSegment } from '@fmgc/flightplanning/segments/DestinationSegment';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 /**
  * An alternate flight plan shares its origin with the destination of a regular flight plan
@@ -17,10 +18,11 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
   override originSegment: AlternateOriginSegment = undefined;
 
   constructor(
+    context: FlightPlanContext,
     index: number,
     private mainFlightPlan: BaseFlightPlan<P>,
   ) {
-    super(index, mainFlightPlan.bus);
+    super(context, index, mainFlightPlan.bus);
 
     this.originSegment = new AlternateOriginSegment(this, this.mainFlightPlan.destinationSegment);
   }
@@ -29,8 +31,8 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
     return this.mainFlightPlan.destinationAirport;
   }
 
-  clone(fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {
-    const newPlan = new AlternateFlightPlan(fromMainFlightPlan.index, fromMainFlightPlan);
+  clone(context: FlightPlanContext, fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {
+    const newPlan = new AlternateFlightPlan(context, fromMainFlightPlan.index, fromMainFlightPlan);
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan);
@@ -64,9 +66,14 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
   syncSegmentLegsChange(segment: FlightPlanSegment) {
     const segmentIndex = this.orderedSegments.indexOf(segment);
 
-    const legs = segment.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it));
-
-    this.sendEvent('flightPlan.setSegmentLegs', { planIndex: this.index, forAlternate: true, segmentIndex, legs });
+    this.sendEvent('flightPlan.setSegment', {
+      syncClientID: this.context.syncClientID,
+      planIndex: this.index,
+      batchStack: this.context.batchStack,
+      forAlternate: true,
+      segmentIndex,
+      serialized: segment.serialize(),
+    });
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -6,8 +6,7 @@
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
-import { NavigationDatabase } from '@fmgc/NavigationDatabase';
+import { Airway, Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -17,24 +16,29 @@ import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
 {
   private readonly flightPlanManager: FlightPlanManager<P>;
 
-  navigationDatabase: NavigationDatabase;
+  public syncClientID = Math.round(Math.random() * 10_000_000);
+
+  public batchStack: FlightPlanBatch[] = [];
 
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
     private config = FpmConfigs.A320_HONEYWELL_H3,
+    master = false,
   ) {
     this.flightPlanManager = new FlightPlanManager<P>(
+      this,
       this.bus,
       this.performanceDataInit,
-      Math.round(Math.random() * 10_000),
-      true,
+      this.syncClientID,
+      master,
     );
   }
 
@@ -104,7 +108,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async secondaryReset(index: number) {
     if (this.hasSecondary(index)) {
-      this.secondaryDelete(index);
+      await this.secondaryDelete(index);
     }
 
     this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
@@ -114,11 +118,11 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const temporaryPlan = this.flightPlanManager.get(FlightPlanIndex.Temporary);
 
     if (temporaryPlan.pendingAirways) {
-      temporaryPlan.pendingAirways.finalize();
+      await temporaryPlan.finaliseAirwayEntry();
     }
 
     if (temporaryPlan.alternateFlightPlan.pendingAirways) {
-      temporaryPlan.alternateFlightPlan.pendingAirways.finalize();
+      await temporaryPlan.finaliseAirwayEntry();
     }
 
     const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
@@ -186,10 +190,18 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.delete(FlightPlanIndex.Uplink);
   }
 
-  async reset(): Promise<void> {
+  async reset(destroySubs = false): Promise<void> {
     this.flightPlanManager.deleteAll();
 
+    if (destroySubs) {
+      this.flightPlanManager.destroy();
+    }
+
     this.createFlightPlans();
+  }
+
+  async deleteAll(): Promise<void> {
+    this.flightPlanManager.deleteAll();
   }
 
   private prepareDestructiveModification(planIndex: FlightPlanIndex) {
@@ -396,6 +408,30 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       : this.flightPlanManager.get(finalIndex);
 
     plan.startAirwayEntry(at);
+  }
+
+  public async continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<boolean> {
+    const plan = alternate
+      ? this.flightPlanManager.get(planIndex).alternateFlightPlan
+      : this.flightPlanManager.get(planIndex);
+
+    return await plan.continueAirwayEntryViaAirway(airway);
+  }
+
+  public async continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<boolean> {
+    const plan = alternate
+      ? this.flightPlanManager.get(planIndex).alternateFlightPlan
+      : this.flightPlanManager.get(planIndex);
+
+    return await plan.continueAirwayEntryDirectToFix(fix);
+  }
+
+  public async finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void> {
+    const plan = alternate
+      ? this.flightPlanManager.get(planIndex).alternateFlightPlan
+      : this.flightPlanManager.get(planIndex);
+
+    await plan.finaliseAirwayEntry();
   }
 
   async directToWaypoint(
@@ -637,5 +673,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const plan = this.flightPlanManager.get(planIndex);
 
     return plan.stringMissedApproach(onConstraintsDeleted);
+  }
+
+  public openBatch(name: string): Promise<FlightPlanBatch> {
+    return this.flightPlanManager.openBatch(name);
+  }
+
+  public closeBatch(uuid: string): Promise<FlightPlanBatch> {
+    return this.flightPlanManager.closeBatch(uuid);
   }
 }

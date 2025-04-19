@@ -180,9 +180,9 @@ export class SimBriefUplinkAdapter {
 
     setInsertHeadToEndOfEnroute();
 
-    const ensureAirwaysFinalized = () => {
+    const ensureAirwaysFinalized = async () => {
       if (flightPlanService.uplink.pendingAirways) {
-        flightPlanService.uplink.pendingAirways.finalize();
+        await flightPlanService.uplink.pendingAirways.finalize();
         flightPlanService.uplink.pendingAirways = undefined;
 
         setInsertHeadToEndOfEnroute();
@@ -373,7 +373,7 @@ export class SimBriefUplinkAdapter {
             const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
             if (airways.length > 0) {
-              plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+              await plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
             } else {
               console.warn(
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no airways at fix "${airwaySearchFix.ident}" for airway: "${chunk.ident}"`,
@@ -423,9 +423,9 @@ export class SimBriefUplinkAdapter {
 
             const airwayFix = pickAirwayFix(tailAirway, fixes);
             if (airwayFix) {
-              plan.pendingAirways.thenTo(airwayFix);
+              await plan.pendingAirways.thenTo(airwayFix);
 
-              ensureAirwaysFinalized();
+              await ensureAirwaysFinalized();
             } else {
               // Fixes with the name of the airway termination are found but they're not on that airway
               console.warn(
