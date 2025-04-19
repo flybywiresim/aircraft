@@ -5,7 +5,7 @@
 /**
  * Events for internal ND communication between components
  */
-import { EfisNdMode } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, EfisRecomputingReason } from '@flybywiresim/fbw-sdk';
 
 export interface NDControlEvents {
   /**
@@ -37,6 +37,11 @@ export interface NDControlEvents {
    * Set if the map is recomputing (RANGE CHANGE, MODE CHANGE)
    */
   set_map_recomputing: boolean;
+
+  /**
+   * Set the reason for recomputing (RANGE CHANGE or MODE CHANGE)
+   */
+  set_map_recomputing_reason: EfisRecomputingReason;
 
   /**
    * Set the center latitude of the map
@@ -77,9 +82,4 @@ export interface NDControlEvents {
    * Event for the CHRONO button being pushed
    */
   chrono_pushed: void;
-
-  /**
-   * Set if a range change is in progress for VD (true, false)
-   */
-  set_range_change: boolean;
 }

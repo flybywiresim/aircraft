@@ -1,6 +1,8 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { VdSymbol } from '../../../index-no-react';
+
 /**
  * Transmitted from FMS
  */
@@ -17,4 +19,7 @@ export interface FmsData {
   fmsLandingRunway: string | null;
   /** Flight number entered on INIT page */
   fmsFlightNumber: string | null;
+  /** Symbols displayed on VD */
+  vdSymbols_L: VdSymbol[];
+  vdSymbols_R: VdSymbol[];
 }

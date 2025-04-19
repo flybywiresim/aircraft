@@ -183,6 +183,11 @@ export class GuidanceController {
     state.mode = ndMode;
     state.range = ndRange;
 
+    // Re-calc PWP only for A380X for end of VD marker
+    if (this.acConfig.lnavConfig.EMIT_END_OF_VD_MARKER && (state?.mode !== ndMode || state?.range !== ndRange)) {
+      this.pseudoWaypoints.acceptEfisParameters();
+    }
+
     this.updateEfisApproachMessage();
   }
 
@@ -332,7 +337,7 @@ export class GuidanceController {
     this.updateEfisState('R', this.rightEfisState);
 
     this.efisStateForSide.L = this.leftEfisState;
-    this.efisStateForSide.R = this.leftEfisState;
+    this.efisStateForSide.R = this.rightEfisState;
 
     this.lnavDriver.init();
     this.vnavDriver.init();
