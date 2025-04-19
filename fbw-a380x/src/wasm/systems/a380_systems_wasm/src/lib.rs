@@ -579,11 +579,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
 
         for i in 1..=4 {
             builder.copy(
-                Variable::aircraft("BLEED AIR ENGINE", "Bool", i),
-                Variable::aspect(&format!("OVHD_PNEU_ENG_{i}_BLEED_PB_IS_AUTO")),
-            );
-
-            builder.copy(
                 Variable::named(&format!("EXT_PWR_AVAIL:{i}")),
                 Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_AVAILABLE")),
             );
