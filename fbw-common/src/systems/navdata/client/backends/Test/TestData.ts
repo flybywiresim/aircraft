@@ -1,4 +1,4 @@
-import { Airport } from 'navdata/shared/types/Airport';
+import { Airport } from '../../../shared/types/Airport';
 import { ElevatedCoordinates } from '../../../shared/types/Common';
 import { AirportSubsectionCode, EnrouteSubsectionCode, SectionCode } from '../../../shared/types/SectionCode';
 import { Runway, RunwaySurfaceType } from '../../../shared/types/Runway';
