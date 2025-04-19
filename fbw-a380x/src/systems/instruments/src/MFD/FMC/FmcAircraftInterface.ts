@@ -1283,9 +1283,7 @@ export class FmcAircraftInterface {
       this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.set(initZfwCg);
     }
 
-    if (gw) {
-      SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
-    }
+    SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw ?? 0);
 
     if (this.fmc.enginesWereStarted.get() && this.flightPhase.get() !== FmgcFlightPhase.Done) {
       this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
