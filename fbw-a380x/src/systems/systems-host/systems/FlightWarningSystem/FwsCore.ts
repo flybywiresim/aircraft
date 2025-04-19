@@ -3134,7 +3134,7 @@ export class FwsCore {
 
     this.fdac2Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_1_FAILURE', 'bool'));
 
-    this.pack2Ctl1Fault.set(this.acESSBusPowered.get() && this.fdac2Channel2Failure.get());
+    this.pack2Ctl1Fault.set(this.acESSBusPowered.get() && this.fdac2Channel1Failure.get());
 
     this.fdac2Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_2_FAILURE', 'bool'));
 
@@ -3202,14 +3202,16 @@ export class FwsCore {
     }
 
     this.oneTcsAppFailed.set(
-      this.cpiomBTcsAppDiscreteWord1.isFailureWarning() ||
-        this.cpiomBTcsAppDiscreteWord2.isFailureWarning() ||
-        this.cpiomBTcsAppDiscreteWord3.isFailureWarning() ||
-        this.cpiomBTcsAppDiscreteWord4.isFailureWarning(),
+      !this.tempCtlFault.get() &&
+        (this.cpiomBTcsAppDiscreteWord1.isFailureWarning() ||
+          this.cpiomBTcsAppDiscreteWord2.isFailureWarning() ||
+          this.cpiomBTcsAppDiscreteWord3.isFailureWarning() ||
+          this.cpiomBTcsAppDiscreteWord4.isFailureWarning()),
     );
 
     this.tempCtrDegraded.set(
-      this.cpiomBTcsAppDiscreteWord1.isFailureWarning() &&
+      !this.tempCtlFault.get() &&
+        this.cpiomBTcsAppDiscreteWord1.isFailureWarning() &&
         this.cpiomBTcsAppDiscreteWord2.isFailureWarning() &&
         this.cpiomBTcsAppDiscreteWord3.isFailureWarning() &&
         this.cpiomBTcsAppDiscreteWord4.isFailureWarning(),
@@ -3328,8 +3330,8 @@ export class FwsCore {
     this.vcmAftChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_1_FAILURE', 'bool'));
     this.vcmAftChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_2_FAILURE', 'bool'));
 
-    this.aftVentCtl1Fault.set(this.vcmFwdChannel1Failure.get() && this.dc2BusPowered.get());
-    this.aftVentCtl2Fault.set(this.vcmFwdChannel2Failure.get() && this.dcESSBusPowered.get());
+    this.aftVentCtl1Fault.set(this.vcmAftChannel1Failure.get() && this.dc2BusPowered.get());
+    this.aftVentCtl2Fault.set(this.vcmAftChannel2Failure.get() && this.dcESSBusPowered.get());
 
     this.fwdVentCtrDegraded.set(
       !this.cpiomBVcsAppDiscreteWord1.isNormalOperation() && !this.cpiomBVcsAppDiscreteWord3.isNormalOperation(),
