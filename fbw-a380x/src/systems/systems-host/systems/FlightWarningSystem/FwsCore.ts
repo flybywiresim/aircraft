@@ -473,13 +473,21 @@ export class FwsCore {
 
   public readonly vcmFwdChannel2Failure = Subject.create(false);
 
-  public readonly vcmAftChannel1Failure = Subject.create(false);
+  public readonly fwdVentCtl1Fault = Subject.create(false);
 
-  public readonly vcmAftChannel2Failure = Subject.create(false);
+  public readonly fwdVentCtl2Fault = Subject.create(false);
 
   public readonly fwdVentCtrDegraded = Subject.create(false);
 
   public readonly fwdVentRedundLost = Subject.create(false);
+
+  public readonly vcmAftChannel1Failure = Subject.create(false);
+
+  public readonly vcmAftChannel2Failure = Subject.create(false);
+
+  public readonly aftVentCtl1Fault = Subject.create(false);
+
+  public readonly aftVentCtl2Fault = Subject.create(false);
 
   public readonly aftVentCtrDegraded = Subject.create(false);
 
@@ -3307,8 +3315,15 @@ export class FwsCore {
 
     this.vcmFwdChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_1_FAILURE', 'bool'));
     this.vcmFwdChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_2_FAILURE', 'bool'));
+
+    this.fwdVentCtl1Fault.set(this.vcmFwdChannel1Failure.get() && this.dc1BusPowered.get());
+    this.fwdVentCtl2Fault.set(this.vcmFwdChannel2Failure.get() && this.dcESSBusPowered.get());
+
     this.vcmAftChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_1_FAILURE', 'bool'));
     this.vcmAftChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_2_FAILURE', 'bool'));
+
+    this.aftVentCtl1Fault.set(this.vcmFwdChannel1Failure.get() && this.dc2BusPowered.get());
+    this.aftVentCtl2Fault.set(this.vcmFwdChannel2Failure.get() && this.dcESSBusPowered.get());
 
     this.fwdVentCtrDegraded.set(
       !this.cpiomBVcsAppDiscreteWord1.isNormalOperation() && !this.cpiomBVcsAppDiscreteWord3.isNormalOperation(),
