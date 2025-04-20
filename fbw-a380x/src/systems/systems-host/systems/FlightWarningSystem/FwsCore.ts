@@ -670,6 +670,8 @@ export class FwsCore {
 
   public readonly dc2BusPowered = Subject.create(false);
 
+  private readonly dc108PhBusPowered = Subject.create(false);
+
   public readonly extPwrConnected = Subject.create(false);
 
   public readonly engine1Running = Subject.create(false);
@@ -2244,6 +2246,7 @@ export class FwsCore {
     this.ac3BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_3_BUS_IS_POWERED', 'bool') > 0);
     this.ac4BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_4_BUS_IS_POWERED', 'bool') > 0);
     this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool') > 0);
+    this.dc108PhBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_108PH_BUS_IS_POWERED', 'Bool') > 0);
 
     /* ENGINE AND THROTTLE acquisition */
 
@@ -3201,35 +3204,44 @@ export class FwsCore {
       cpcsToUseId = 4;
     }
 
+    const cpiomB1TcsFailedAndPowered = this.cpiomBTcsAppDiscreteWord1.isFailureWarning() && this.dc1BusPowered.get();
+    const cpiomB2TcsFailedAndPowered =
+      this.cpiomBTcsAppDiscreteWord2.isFailureWarning() && this.dc108PhBusPowered.get();
+    const cpiomB3TcsFailedAndPowered =
+      this.cpiomBTcsAppDiscreteWord3.isFailureWarning() && this.dc108PhBusPowered.get();
+    const cpiomB4TcsFailedAndPowered = this.cpiomBTcsAppDiscreteWord4.isFailureWarning() && this.dc2BusPowered.get();
+
     this.oneTcsAppFailed.set(
       !this.tempCtlFault.get() &&
-        (this.cpiomBTcsAppDiscreteWord1.isFailureWarning() ||
-          this.cpiomBTcsAppDiscreteWord2.isFailureWarning() ||
-          this.cpiomBTcsAppDiscreteWord3.isFailureWarning() ||
-          this.cpiomBTcsAppDiscreteWord4.isFailureWarning()),
+        (cpiomB1TcsFailedAndPowered ||
+          cpiomB2TcsFailedAndPowered ||
+          cpiomB3TcsFailedAndPowered ||
+          cpiomB4TcsFailedAndPowered),
     );
 
     this.tempCtrDegraded.set(
       !this.tempCtlFault.get() &&
-        this.cpiomBTcsAppDiscreteWord1.isFailureWarning() &&
-        this.cpiomBTcsAppDiscreteWord2.isFailureWarning() &&
-        this.cpiomBTcsAppDiscreteWord3.isFailureWarning() &&
-        this.cpiomBTcsAppDiscreteWord4.isFailureWarning(),
+        cpiomB1TcsFailedAndPowered &&
+        cpiomB2TcsFailedAndPowered &&
+        cpiomB3TcsFailedAndPowered &&
+        cpiomB4TcsFailedAndPowered,
     );
 
-    this.pack1Degraded.set(
-      this.cpiomBAgsAppDiscreteWord1.isFailureWarning() && this.cpiomBAgsAppDiscreteWord3.isFailureWarning(),
-    );
-    this.pack2Degraded.set(
-      this.cpiomBAgsAppDiscreteWord2.isFailureWarning() && this.cpiomBAgsAppDiscreteWord4.isFailureWarning(),
-    );
+    const cpiomB1AgsFailedAndPowered = this.cpiomBAgsAppDiscreteWord1.isFailureWarning() && this.dc1BusPowered.get();
+    const cpiomB3AgsFailedAndPowered =
+      this.cpiomBAgsAppDiscreteWord3.isFailureWarning() && this.dc108PhBusPowered.get();
 
-    this.pack1RedundLost.set(
-      this.cpiomBAgsAppDiscreteWord1.isFailureWarning() || this.cpiomBAgsAppDiscreteWord3.isFailureWarning(),
-    );
-    this.pack2RedundLost.set(
-      this.cpiomBAgsAppDiscreteWord2.isFailureWarning() || this.cpiomBAgsAppDiscreteWord4.isFailureWarning(),
-    );
+    this.pack1Degraded.set(cpiomB1AgsFailedAndPowered && cpiomB3AgsFailedAndPowered);
+
+    this.pack1RedundLost.set(cpiomB1AgsFailedAndPowered || cpiomB3AgsFailedAndPowered);
+
+    const cpiomB2AgsFailedAndPowered =
+      this.cpiomBAgsAppDiscreteWord2.isFailureWarning() && this.dc108PhBusPowered.get();
+    const cpiomB4AgsFailedAndPowered = this.cpiomBAgsAppDiscreteWord4.isFailureWarning() && this.dc2BusPowered.get();
+
+    this.pack2RedundLost.set(cpiomB2AgsFailedAndPowered || cpiomB4AgsFailedAndPowered);
+
+    this.pack2Degraded.set(cpiomB2AgsFailedAndPowered && cpiomB4AgsFailedAndPowered);
 
     this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
     this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
@@ -3333,19 +3345,20 @@ export class FwsCore {
     this.aftVentCtl1Fault.set(this.vcmAftChannel1Failure.get() && this.dc2BusPowered.get());
     this.aftVentCtl2Fault.set(this.vcmAftChannel2Failure.get() && this.dcESSBusPowered.get());
 
-    this.fwdVentCtrDegraded.set(
-      !this.cpiomBVcsAppDiscreteWord1.isNormalOperation() && !this.cpiomBVcsAppDiscreteWord3.isNormalOperation(),
-    );
-    this.fwdVentRedundLost.set(
-      !this.cpiomBVcsAppDiscreteWord1.isNormalOperation() || !this.cpiomBVcsAppDiscreteWord3.isNormalOperation(),
-    );
+    const cpiomB1VcsFailedAndPowered = this.cpiomBVcsAppDiscreteWord1.isFailureWarning() && this.dc1BusPowered.get();
+    const cpiomB3VcsFailedAndPowered =
+      this.cpiomBVcsAppDiscreteWord3.isFailureWarning() && this.dc108PhBusPowered.get();
 
-    this.aftVentCtrDegraded.set(
-      !this.cpiomBVcsAppDiscreteWord2.isNormalOperation() && !this.cpiomBVcsAppDiscreteWord4.isNormalOperation(),
-    );
-    this.aftVentRedundLost.set(
-      !this.cpiomBVcsAppDiscreteWord2.isNormalOperation() || !this.cpiomBVcsAppDiscreteWord4.isNormalOperation(),
-    );
+    this.fwdVentCtrDegraded.set(cpiomB1VcsFailedAndPowered && cpiomB3VcsFailedAndPowered);
+
+    this.fwdVentRedundLost.set(cpiomB1VcsFailedAndPowered || cpiomB3VcsFailedAndPowered);
+
+    const cpiomB2VcsFailedAndPowered =
+      this.cpiomBVcsAppDiscreteWord2.isFailureWarning() && this.dc108PhBusPowered.get();
+    const cpiomB4VcsFailedAndPowered = this.cpiomBVcsAppDiscreteWord4.isFailureWarning() && this.dc2BusPowered.get();
+
+    this.aftVentCtrDegraded.set(cpiomB2VcsFailedAndPowered && cpiomB4VcsFailedAndPowered);
+    this.aftVentRedundLost.set(cpiomB2VcsFailedAndPowered || cpiomB4VcsFailedAndPowered);
 
     const engNotRunning =
       !this.engine1Running.get() &&
