@@ -88,8 +88,9 @@ class FmgcOuterLoops final
     real_T prevTarget_n;
     real_T Tau;
     real_T H_bias;
-    real_T pY_l;
+    real_T pY_g;
     real_T pU;
+    real_T tElapsed;
     real_T dH_offset;
     real_T k;
     real_T maxH_dot;
@@ -113,7 +114,7 @@ class FmgcOuterLoops final
     boolean_T islevelOffActive_h;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
-    boolean_T pY_not_empty_a;
+    boolean_T pY_not_empty_f;
     boolean_T pU_not_empty;
     boolean_T wasActive_m;
     boolean_T wasActive_not_empty_l;
@@ -213,8 +214,8 @@ class FmgcOuterLoops final
     real_T LagFilter_C1_d;
     real_T WashoutFilter_C1_e;
     real_T LagFilterH_C1;
+    real_T LeadLagFilterSpecifiedSampleTime_C1;
     real_T LeadLagFilter_C1;
-    real_T LeadLagFilter_C1_c;
     real_T WashoutFilter_C1_a;
     real_T HighPassFilter_C1_et;
     real_T LowPassFilter_C1_j;
@@ -250,8 +251,8 @@ class FmgcOuterLoops final
     real_T LowPassFilter_C2;
     real_T HighPassFilter_C2_b;
     real_T LowPassFilter_C2_k;
+    real_T LeadLagFilterSpecifiedSampleTime_C2;
     real_T LeadLagFilter_C2;
-    real_T LeadLagFilter_C2_o;
     real_T HighPassFilter_C2_m;
     real_T LowPassFilter_C2_l;
     real_T HighPassFilter_C2_h;
@@ -268,8 +269,8 @@ class FmgcOuterLoops final
     real_T LowPassFilter_C3;
     real_T HighPassFilter_C3_o;
     real_T LowPassFilter_C3_f;
+    real_T LeadLagFilterSpecifiedSampleTime_C3;
     real_T LeadLagFilter_C3;
-    real_T LeadLagFilter_C3_l;
     real_T HighPassFilter_C3_e;
     real_T LowPassFilter_C3_a;
     real_T HighPassFilter_C3_a;
@@ -286,8 +287,8 @@ class FmgcOuterLoops final
     real_T LowPassFilter_C4;
     real_T HighPassFilter_C4_p;
     real_T LowPassFilter_C4_d;
+    real_T LeadLagFilterSpecifiedSampleTime_C4;
     real_T LeadLagFilter_C4;
-    real_T LeadLagFilter_C4_a;
     real_T HighPassFilter_C4_g;
     real_T LowPassFilter_C4_e;
     real_T HighPassFilter_C4_j;
@@ -370,6 +371,7 @@ class FmgcOuterLoops final
     real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs1_lo;
     real_T RateLimiterVariableTs_lo_h;
+    real_T LeadLagFilterSpecifiedSampleTime_tSample;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs_up_m;
     real_T RateLimiterVariableTs_up_k;
