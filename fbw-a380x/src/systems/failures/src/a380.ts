@@ -181,6 +181,8 @@ export const A380Failure = Object.freeze({
   FirstOfficerLaptop: 46005,
   CaptainOit: 46006,
   FirstOfficerOit: 46007,
+
+  EGTExceedence: 490001,
 });
 
 export const A380FailureDefinitions: FailureDefinition[] = [
@@ -357,4 +359,6 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [46, A380Failure.FirstOfficerLaptop, 'F/O Laptop'],
   [46, A380Failure.CaptainOit, 'Captain OIT'],
   [46, A380Failure.FirstOfficerOit, 'F/O OIT'],
+
+  [49, A380Failure.EGTExceedence, 'EGT Exceedence'],
 ];
