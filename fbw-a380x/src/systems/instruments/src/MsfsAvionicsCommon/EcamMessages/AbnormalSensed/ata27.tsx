@@ -224,17 +224,66 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   271800036: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 1 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'PRIM 1', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'PRIM 1', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'SPD BRK: DO NOT USE', sensed: false },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800037: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'PRIM 2', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'PRIM 2', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'PRIM 2', sensed: true, labelNotCompleted: 'KEEP ON' },
+      { name: 'SPD BRK: DO NOT USE', sensed: false },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800038: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 3 FAULTT',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 3 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'PRIM 3', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'PRIM 3', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'SPD BRK: DO NOT USE', sensed: false },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800039: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 1 RUDDER ACTUATOR FAULT',
