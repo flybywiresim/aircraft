@@ -2404,6 +2404,98 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Fctl,
       inopSysAllPhases: () => [],
     },
+    // PRIM 1 FAULT
+    271800036: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.prim1FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase1112MoreThanOneMin.get(),
+        true,
+        true,
+        true,
+        this.fws.twoPrimsFailed.get(),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        true,
+      ],
+      whichItemsChecked: () => [
+        false,
+        this.fws.prim1OffThenOnMemoryNode.read(),
+        this.fws.prim1OffThenOnMemoryNode.read(),
+        this.fws.prim1PbOff.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    // PRIM 2 FAULT
+    271800037: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.prim2FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase1112MoreThanOneMin.get(),
+        true,
+        true,
+        this.fws.dcEhaPowered.get(),
+        !this.fws.dcEhaPowered.get(),
+        this.fws.twoPrimsFailed.get(),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        true,
+      ],
+      whichItemsChecked: () => [
+        false,
+        this.fws.prim2OffThenOnMemoryNode.read(),
+        this.fws.prim2OffThenOnMemoryNode.read(),
+        this.fws.prim2PbOff.get(),
+        !this.fws.prim2PbOff.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    // PRIM 3 FAULT
+    271800038: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.prim3FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase1112MoreThanOneMin.get(),
+        true,
+        true,
+        true,
+        this.fws.twoPrimsFailed.get(),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        true,
+      ],
+      whichItemsChecked: () => [
+        false,
+        this.fws.prim3OffThenOnMemoryNode.read(),
+        this.fws.prim3OffThenOnMemoryNode.read(),
+        this.fws.prim3PbOff.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
     271800058: {
       // SEC 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
@@ -2414,7 +2506,7 @@ export class FwsAbnormalSensed {
         true,
         this.fws.sec1OffThenOnMemoryNode.read(),
         this.fws.sec1OffThenOnMemoryNode.read(),
-        !SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        this.fws.sec1PbOff.get(),
         true,
       ],
       failure: 2,
@@ -2440,13 +2532,20 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.sec2FaultCondition,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [this.fws.flightPhase1112MoreThanOneMin.get(), true, true, true, false, true],
+      whichItemsToShow: () => [
+        this.fws.flightPhase1112MoreThanOneMin.get(),
+        true,
+        true,
+        this.fws.dcEhaPowered.get(),
+        !this.fws.dcEhaPowered.get(),
+        true,
+      ],
       whichItemsChecked: () => [
         true,
         this.fws.sec2OffThenOnMemoryNode.read(),
         this.fws.sec2OffThenOnMemoryNode.read(),
-        !SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
-        true,
+        this.fws.sec2PbOff.get(),
+        !this.fws.sec2PbOff.get(),
         true,
       ],
       failure: 2,
@@ -2477,7 +2576,7 @@ export class FwsAbnormalSensed {
         true,
         this.fws.sec3OffThenOnMemoryNode.read(),
         this.fws.sec3OffThenOnMemoryNode.read(),
-        !SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        this.fws.sec3PbOff.get(),
         true,
       ],
       failure: 2,
@@ -2498,6 +2597,7 @@ export class FwsAbnormalSensed {
       ],
       redundLoss: () => ['270300006'],
     },
+
     272800001: {
       // SLAT NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
