@@ -853,6 +853,8 @@ export class FwsCore {
 
   public readonly flapsLeverNotZero = Subject.create(false);
 
+  public readonly flapsBaulkActiveWord = Arinc429Register.empty();
+
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
   public readonly speedBrakeCommand50sConfirm = new NXLogicConfirmNode(50, true);
@@ -2185,6 +2187,7 @@ export class FwsCore {
     this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
+    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_ACTIVE_WORD');
 
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
@@ -3638,7 +3641,7 @@ export class FwsCore {
       (adr1PressureAltitude.valueOr(0) >= 22000 ||
         adr2PressureAltitude.valueOr(0) >= 22000 ||
         adr3PressureAltitude.valueOr(0) >= 22000 ||
-        this.computedAirSpeedToNearest2.get() > VfeF1 + 2.5) &&
+        this.flapsBaulkActiveWord.bitValueOr(25, false)) &&
         this.flightPhase.get() === 8 &&
         !this.slatFlapSelectionS0F0,
     );
