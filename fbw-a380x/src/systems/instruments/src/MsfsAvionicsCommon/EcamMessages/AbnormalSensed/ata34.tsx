@@ -708,7 +708,23 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800062: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS A+B+C FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'APPR MODE NOT AVAIL',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'LOC MODE AVAIL ONLY',
+        sensed: true,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'WHEN L/G DOWN AND AP OFF : USE MAN PITCH TRIM',
+        sensed: true,
+        style: ChecklistLineStyle.Green,
+      },
+    ],
   },
   340800063: {
     title: '\x1b<4m\x1b4mNAV\x1bm RESIDUAL AIR SPEED',
