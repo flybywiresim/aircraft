@@ -8,6 +8,7 @@ import { OitFltOpsMenuPage } from './Pages/flt-ops/OitFltOpsMenuPage';
 import { OitFltOpsPerformance } from './Pages/flt-ops/OitFltOpsPerformance';
 import { OitFltOpsStatus } from './Pages/flt-ops/OitFltOpsStatus';
 import { OitNotFound } from './Pages/OitNotFound';
+import { OitFltOpsLogin } from './Pages/flt-ops/OitFltOpsLogin';
 
 // Page imports
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -25,7 +26,8 @@ export function pageForUrl(url: string, bus: EventBus, oit: OIT): VNode {
       return <OitFltOpsEfbOverlay bus={bus} oit={oit} />;
     case 'flt-ops/flt-folder':
       return <OitFltOpsEfbOverlay bus={bus} oit={oit} />;
-
+    case 'flt-ops/login':
+      return <OitFltOpsLogin bus={bus} oit={oit} />;
     default:
       return <OitNotFound bus={bus} oit={oit} />;
   }
