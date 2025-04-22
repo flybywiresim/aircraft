@@ -173,6 +173,32 @@
   flex-direction: row;
 }
 
+.oit-flt-ops-login-upper {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.oit-flt-ops-login-lower {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  margin-top: 60px;
+}
+
+.oit-flt-ops-login-line {
+  font-size: 24px;
+  text-align: center;
+}
+
+.oit-flt-ops-login-line-footer {
+  margin-top: 40px;
+}
+
 $font-file-path: '/Fonts/fbw-a380x/EFB';
 
 @import "../../../../../../fbw-common/src/systems/instruments/src/EFB/Assets/Efb.scss";
