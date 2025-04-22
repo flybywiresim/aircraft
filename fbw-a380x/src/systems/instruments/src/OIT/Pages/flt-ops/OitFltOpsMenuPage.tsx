@@ -104,8 +104,7 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
           <Button
             label={'EXIT SESSION'}
             containerStyle="width: 300px; margin-bottom: 20px; align-self: flex-end;"
-            onClick={() => {}}
-            disabled={Subject.create(true)}
+            onClick={() => this.props.oit.uiService.navigateTo('flt-ops/login')}
           />
         </div>
         {/* end page content */}

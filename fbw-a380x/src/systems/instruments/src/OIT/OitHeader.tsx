@@ -76,8 +76,7 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             },
             {
               label: 'EXIT SESSION',
-              action: () => this.props.uiService.navigateTo('flt-ops/exit-session'),
-              disabled: true,
+              action: () => this.props.uiService.navigateTo('flt-ops/login'),
             },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_menu`}
