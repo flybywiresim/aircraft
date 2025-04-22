@@ -1,7 +1,7 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { AbstractOitPageProps } from '../../OIT';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 
@@ -47,13 +47,14 @@ export class OitFltOpsLogin extends DisplayComponent<OitFltOpsLoginPageProps> {
               disabled={Subject.create(true)}
             />
           </div>
-            <div class="oit-flt-ops-login-line-footer">
+          <div class="oit-flt-ops-login-line-footer">
             <Button
               label={'SWITCH OFF LAPTOP'}
               containerStyle="width: 150px; margin-bottom: 10px"
               onClick={() => this.props.oit.uiService.navigateTo('flt-ops')}
               disabled={Subject.create(true)}
             />
+          </div>
         </div>
         {/* end page content */}
       </>
