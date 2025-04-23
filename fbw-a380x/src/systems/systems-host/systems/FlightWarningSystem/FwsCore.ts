@@ -3125,6 +3125,27 @@ export class FwsCore {
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
+    // TODO split by different FWS routing once multiple FWS are supported
+    const cpiomB1NotReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_7_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_17_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_7_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_17_REACHABLE', SimVarValueType.Bool);
+
+    const cpiomB2NotReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_5_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_15_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_5_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_15_REACHABLE', SimVarValueType.Bool);
+
+    const cpiomB3NotReachable = cpiomB2NotReachable;
+
+    const cpiomB4NotReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_6_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_16_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_6_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_16_REACHABLE', SimVarValueType.Bool);
+
     this.flightLevel.set(Math.round(this.adrPressureAltitude.get() / 100));
 
     this.phase8ConfirmationNode60.write(this.flightPhase.get() === 8, deltaTime);
@@ -3147,25 +3168,38 @@ export class FwsCore {
 
     this.pack2Ctl2Fault.set(this.ac4BusPowered.get() && this.fdac2Channel2Failure.get());
 
-    this.cpiomBAgsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
-    this.cpiomBAgsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
-    this.cpiomBAgsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD');
-    this.cpiomBAgsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD');
-
-    this.cpiomBVcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
-    this.cpiomBVcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
-    this.cpiomBVcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
-    this.cpiomBVcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
-
-    this.cpiomBTcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');
-    this.cpiomBTcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_TCS_DISCRETE_WORD');
-    this.cpiomBTcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
-    this.cpiomBTcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
-
-    this.cpiomBCpcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_CPCS_DISCRETE_WORD');
-    this.cpiomBCpcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_CPCS_DISCRETE_WORD');
-    this.cpiomBCpcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_CPCS_DISCRETE_WORD');
-    this.cpiomBCpcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_CPCS_DISCRETE_WORD');
+    this.populateCpiomBWords(
+      this.cpiomBAgsAppDiscreteWord1,
+      this.cpiomBVcsAppDiscreteWord1,
+      this.cpiomBTcsAppDiscreteWord1,
+      this.cpiomBCpcsAppDiscreteWord1,
+      cpiomB1NotReachable,
+      1,
+    );
+    this.populateCpiomBWords(
+      this.cpiomBAgsAppDiscreteWord2,
+      this.cpiomBVcsAppDiscreteWord2,
+      this.cpiomBTcsAppDiscreteWord2,
+      this.cpiomBCpcsAppDiscreteWord2,
+      cpiomB2NotReachable,
+      2,
+    );
+    this.populateCpiomBWords(
+      this.cpiomBAgsAppDiscreteWord3,
+      this.cpiomBVcsAppDiscreteWord3,
+      this.cpiomBTcsAppDiscreteWord3,
+      this.cpiomBCpcsAppDiscreteWord3,
+      cpiomB3NotReachable,
+      3,
+    );
+    this.populateCpiomBWords(
+      this.cpiomBAgsAppDiscreteWord4,
+      this.cpiomBVcsAppDiscreteWord4,
+      this.cpiomBTcsAppDiscreteWord4,
+      this.cpiomBCpcsAppDiscreteWord4,
+      cpiomB4NotReachable,
+      4,
+    );
 
     let vcsDiscreteWordToUse: Arinc429Register;
 
@@ -3192,7 +3226,7 @@ export class FwsCore {
     }
 
     let cpcsDiscreteWordToUse: Arinc429Register;
-    let cpcsToUseId: number;
+    let cpcsToUseId: number | null = null;
 
     if (this.cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
       cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord1;
@@ -3205,7 +3239,9 @@ export class FwsCore {
       cpcsToUseId = 3;
     } else {
       cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord4;
-      cpcsToUseId = 4;
+      if (this.cpiomBCpcsAppDiscreteWord4.isNormalOperation()) {
+        cpcsToUseId = 4;
+      }
     }
 
     const cpiomB1TcsFailedAndPowered = this.cpiomBTcsAppDiscreteWord1.isFailureWarning() && this.dc1BusPowered.get();
@@ -3376,18 +3412,32 @@ export class FwsCore {
 
     this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
 
-    this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
-
-    this.outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    this.outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    this.outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    this.outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-
+    if (cpcsToUseId !== null) {
+      this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
+      this.outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+      this.outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+      this.outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+      this.outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+      if (this.flightPhase12Or1112.get()) {
+        this.cabinAltitude.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUseId}`);
+      }
+      if (flightPhase8) {
+        this.cabinAltitudeTarget.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_B${cpcsToUseId}`);
+      }
+    } else {
+      this.diffPressure.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.outflowValve1OpenAmount.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.outflowValve2OpenAmount.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.outflowValve3OpenAmount.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.outflowValve4OpenAmount.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.cabinAltitude.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.cabinAltitudeTarget.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+    }
     this.allOutflowValvesOpen.set(
-      this.outflowValve1OpenAmount.value > 99 &&
-        this.outflowValve2OpenAmount.value > 99 &&
-        this.outflowValve3OpenAmount.value > 99 &&
-        this.outflowValve4OpenAmount.value > 99,
+      this.outflowValve1OpenAmount.valueOr(0) > 99 &&
+        this.outflowValve2OpenAmount.valueOr(0) > 99 &&
+        this.outflowValve3OpenAmount.valueOr(0) > 99 &&
+        this.outflowValve4OpenAmount.valueOr(0) > 99,
     );
 
     this.ocsm1AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_AUTO_PARTITION_FAILURE', 'bool'));
@@ -3435,13 +3485,8 @@ export class FwsCore {
 
     this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
 
-    if (this.flightPhase12Or1112.get()) {
-      this.cabinAltitude.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUseId}`);
-    }
-
     if (flightPhase8) {
       this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');
-      this.cabinAltitudeTarget.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_B${cpcsToUseId}`);
     }
 
     // Cabin altitude in phase 1,2 11 or 12
@@ -4923,6 +4968,27 @@ export class FwsCore {
 
     bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', false, true);
     bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', false, true);
+  }
+
+  private populateCpiomBWords(
+    agsDiscreteWord: Arinc429Register,
+    vcsDiscreteWord: Arinc429Register,
+    tcsDiscreteWord: Arinc429Register,
+    cpcsDiscreteWord: Arinc429Register,
+    notReachable: boolean,
+    index: 1 | 2 | 3 | 4,
+  ) {
+    if (notReachable) {
+      agsDiscreteWord.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      vcsDiscreteWord.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      tcsDiscreteWord.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      cpcsDiscreteWord.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+    } else {
+      agsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_AGS_DISCRETE_WORD`);
+      vcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_VCS_DISCRETE_WORD`);
+      tcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_TCS_DISCRETE_WORD`);
+      cpcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_CPCS_DISCRETE_WORD`);
+    }
   }
 
   destroy() {
