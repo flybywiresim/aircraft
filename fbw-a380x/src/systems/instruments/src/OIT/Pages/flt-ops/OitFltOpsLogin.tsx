@@ -30,30 +30,33 @@ export class OitFltOpsLogin extends DisplayComponent<OitFltOpsLoginPageProps> {
         {/* begin page content */}
         <div class="oit-page-container">
           <div class="oit-flt-ops-login-upper">
-            <div className="oit-login-line oit-label biggest">FLT OPS Domain</div>
-            <div className="oit-login-line oit-label">Login Page</div>
-            <div className="oit-login-line oit-label">CAPTAIN</div>
+            <div class="oit-login-line oit-label biggest">FLT OPS Domain</div>
+            <div class="oit-login-line oit-label">Login Page</div>
+            <div class="oit-login-line oit-label">CAPTAIN</div>
           </div>
-          <div class="oit-flt-ops-login-line">
-            <Button
-              label={'PILOT'}
-              containerStyle="width: 150px; margin-bottom: 10px"
-              onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
-            />
-            <Button
-              label={'MAINTAINER'}
-              containerStyle="width: 150px; margin-bottom: 10px"
-              onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
-              disabled={Subject.create(true)}
-            />
-          </div>
-          <div class="oit-flt-ops-login-line-footer">
-            <Button
-              label={'SWITCH OFF LAPTOP'}
-              containerStyle="width: 150px; margin-bottom: 10px"
-              onClick={() => this.props.oit.uiService.navigateTo('flt-ops')}
-              disabled={Subject.create(true)}
-            />
+
+          <div class="oit-flt-ops-login-lower">
+            <div class="oit-flt-ops-login-line">
+              <Button
+                label={'PILOT'}
+                containerStyle="width: 150px; margin-bottom: 10px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
+              />
+              <Button
+                label={'MAINTAINER'}
+                containerStyle="width: 150px; margin-bottom: 10px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
+                disabled={Subject.create(true)}
+              />
+            </div>
+            <div class="oit-flt-ops-login-line-footer">
+              <Button
+                label={'SWITCH OFF LAPTOP'}
+                containerStyle="width: 150px; margin-bottom: 10px"
+                onClick={() => this.props.oit.uiService.navigateTo('flt-ops')}
+                disabled={Subject.create(true)}
+              />
+            </div>
           </div>
         </div>
         {/* end page content */}
