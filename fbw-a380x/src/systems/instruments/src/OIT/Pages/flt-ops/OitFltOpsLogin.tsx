@@ -51,7 +51,7 @@ export class OitFltOpsLogin extends DisplayComponent<OitFltOpsLoginPageProps> {
             </div>
             <div class="oit-flt-ops-login-line-footer">
               <Button
-                label={'SWITCH OFF LAPTOP'}
+                label={'SWITCH OFF<br />LAPTOP'}
                 containerStyle="width: 150px; margin-bottom: 10px"
                 onClick={() => this.props.oit.uiService.navigateTo('flt-ops')}
                 disabled={Subject.create(true)}
