@@ -559,7 +559,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     if (this.checkLegModificationAllowed()) {
       this.props.fmcService.master!.flightPlanService.setPilotEnteredAltitudeConstraintAt(
         this.selectedLegIndex!,
-        false,
+        this.altConstraintTypeRadioSelected.get() === 1,
         undefined,
         this.loadedFlightPlanIndex.get(),
         false,
