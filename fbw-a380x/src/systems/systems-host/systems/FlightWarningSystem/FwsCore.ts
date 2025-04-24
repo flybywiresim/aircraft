@@ -440,6 +440,15 @@ export class FwsCore {
 
   public readonly apuBleedValveOpen = Subject.create(false);
 
+  public readonly apuBleedPbOn = Subject.create(false);
+
+  public readonly apuBleedPbOnOver22500ft = Subject.create(false);
+
+  public readonly eng1BleedAbnormalOff = Subject.create(false);
+  public readonly eng2BleedAbnormalOff = Subject.create(false);
+  public readonly eng3BleedAbnormalOff = Subject.create(false);
+  public readonly eng4BleedAbnormalOff = Subject.create(false);
+
   public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
 
   public readonly excessCabinAltitude = Subject.create(false);
@@ -1422,32 +1431,24 @@ export class FwsCore {
   public readonly oneEngineRunning = Subject.create(false);
 
   public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine_master_1'), 0);
-
   public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine_master_2'), 0);
-
   public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine_master_3'), 0);
-
   public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine_master_4'), 0);
 
   public readonly engine1State = Subject.create(0);
-
   public readonly engine2State = Subject.create(0);
-
   public readonly engine3State = Subject.create(0);
-
   public readonly engine4State = Subject.create(0);
 
   public readonly N1Eng1 = Subject.create(0);
-
   public readonly N1Eng2 = Subject.create(0);
-
   public readonly N1Eng3 = Subject.create(0);
-
   public readonly N1Eng4 = Subject.create(0);
 
-  public readonly N2Eng1 = Subject.create(0);
-
-  public readonly N2Eng2 = Subject.create(0);
+  public readonly HPNEng1 = Subject.create(0);
+  public readonly HPNEng2 = Subject.create(0);
+  public readonly HPNEng3 = Subject.create(0);
+  public readonly HPNEng4 = Subject.create(0);
 
   public readonly N1IdleEng = Subject.create(0);
 
@@ -1468,15 +1469,25 @@ export class FwsCore {
   // this is absolute min at low temperatures
   public readonly engine1CoreAtOrAboveMinIdle = MappedSubject.create(
     ([n2]) => n2 >= (100 * 10630) / 16645,
-    this.N2Eng1,
+    this.HPNEng1,
   );
 
   public readonly engine2CoreAtOrAboveMinIdle = MappedSubject.create(
     ([n2]) => n2 >= (100 * 10630) / 16645,
-    this.N2Eng2,
+    this.HPNEng2,
   );
 
-  public readonly engDualFault = Subject.create(false);
+  public readonly engine3CoreAtOrAboveMinIdle = MappedSubject.create(
+    ([n2]) => n2 >= (100 * 10630) / 16645,
+    this.HPNEng3,
+  );
+
+  public readonly engine4CoreAtOrAboveMinIdle = MappedSubject.create(
+    ([n2]) => n2 >= (100 * 10630) / 16645,
+    this.HPNEng4,
+  );
+
+  public readonly allEngFault = Subject.create(false);
 
   public readonly engine1Generator = Subject.create(false);
 
@@ -2179,8 +2190,10 @@ export class FwsCore {
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
     this.N1Eng3.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:3', 'number'));
     this.N1Eng4.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:4', 'number'));
-    this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
-    this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
+    this.HPNEng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:1', 'number'));
+    this.HPNEng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:2', 'number'));
+    this.HPNEng3.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:3', 'number'));
+    this.HPNEng4.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:4', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
 
     // Flaps
@@ -2200,6 +2213,28 @@ export class FwsCore {
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool'));
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
+
+    this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
+    const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
+    const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEngFault.get());
+    this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
+
+    this.eng1BleedAbnormalOff.set(
+      this.engine1Running.get() &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
+    this.eng2BleedAbnormalOff.set(
+      this.engine2Running.get() &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
+    this.eng3BleedAbnormalOff.set(
+      this.engine3Running.get() &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
+    this.eng4BleedAbnormalOff.set(
+      this.engine4Running.get() &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
 
     this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
@@ -2884,12 +2919,24 @@ export class FwsCore {
       engThreeOrFourTakeoffPower || (this.eng3Or4TakeoffPowerConfirm.read() && !raAbove1500),
     );
 
-    this.engDualFault.set(
+    this.allEngFault.set(
       !this.aircraftOnGround.get() &&
-        ((this.fireButtonEng1.get() && this.fireButtonEng2.get()) ||
-          (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
-          (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
-          (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
+        ((this.fireButtonEng1.get() &&
+          this.fireButtonEng2.get() &&
+          this.fireButtonEng3.get() &&
+          this.fireButtonEng4.get()) ||
+          (!this.engine1ValueSwitch.get() &&
+            !this.engine2ValueSwitch.get() &&
+            !this.engine3ValueSwitch.get() &&
+            !this.engine4ValueSwitch.get()) ||
+          (this.engine1State.get() === 0 &&
+            this.engine2State.get() === 0 &&
+            this.engine3State.get() === 0 &&
+            this.engine4State.get() === 0) ||
+          (!this.engine1CoreAtOrAboveMinIdle.get() &&
+            !this.engine2CoreAtOrAboveMinIdle.get() &&
+            !this.engine3CoreAtOrAboveMinIdle.get() &&
+            !this.engine4CoreAtOrAboveMinIdle.get())),
     );
 
     /* 22 - AUTOFLIGHT */
