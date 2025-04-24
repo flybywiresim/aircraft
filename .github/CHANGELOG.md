@@ -17,6 +17,7 @@
 1. [A32NX/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
 1. [A32NX/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 1. [A380X/MFD] Add speed limit modification on VERT REV SPD page - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWC] Fix PRED W/S OFF memo colour logic - @tracernz (Mike)
 
 ## 0.13.0
 
