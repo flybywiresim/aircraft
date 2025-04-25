@@ -25,7 +25,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly fmsEpe = Subject.create<number>(Infinity);
 
-  private readonly fmsEpeDisplay = this.fmsEpe.map((v) => (v === Infinity ? '--.-' : v.toFixed(2)));
+  private readonly fmsEpeDisplay = this.fmsEpe.map((v) => (v === Infinity ? '--.-' : v.toFixed(2).padEnd(5, '\xa0')));
 
   private readonly fmsAccuracy = this.fmsAccuracyHigh.map((v) => (v ? 'HIGH' : 'LO'));
 
@@ -67,9 +67,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly positionFrozenLabel = this.positionFrozen.map((v) => (v ? 'UNFREEZE' : 'FREEZE'));
 
-  private readonly positionFrozenText = Subject.create('');
+  private readonly positionFrozenText = this.positionFrozen.map((v) => (v ? 'POSITION FROZEN' : ''));
 
-  private readonly positionFrozenTimeText = Subject.create('');
+  private readonly positionFrozenTimeText = this.positionFrozen.map((v) =>
+    v ? '  AT ' + getEtaFromUtcOrPresent(0, false) : '',
+  );
 
   private readonly gpsCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -120,6 +122,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       this.distanceToWaypointDisplay,
       this.bearingUnit,
       this.distanceToWaypointUnit,
+      this.positionFrozenText,
+      this.positionFrozenTimeText,
     );
   }
 
@@ -198,9 +202,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     latitude.setFromSimVar(`L:A32NX_ADIRS_IR_${irIndex}_LATITUDE`);
     longitude.setFromSimVar(`L:A32NX_ADIRS_IR_${irIndex}_LONGITUDE`);
     if (
-      !latitude.isNormalOperation() ||
+      latitude.isFailureWarning() ||
       latitude.isNoComputedData() ||
-      !longitude.isNormalOperation() ||
+      longitude.isFailureWarning() ||
       longitude.isNoComputedData()
     ) {
       irPosition.set('--°--.--/---°--.--');
@@ -216,18 +220,6 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     }
   }
 
-  private togglePositonFrozen() {
-    const frozen = !this.positionFrozen.get();
-    this.positionFrozen.set(frozen);
-    if (frozen) {
-      this.positionFrozenText.set('POSITION FROZEN');
-      this.positionFrozenTimeText.set('  AT ' + getEtaFromUtcOrPresent(0, false));
-    } else {
-      this.positionFrozenText.set('');
-      this.positionFrozenTimeText.set('');
-    }
-  }
-
   render(): VNode {
     return (
       <>
@@ -240,19 +232,19 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
               <span class="mfd-value bigger">{this.fmsAccuracy}</span>
             </div>
-            <div class="mfd-label-value-container" style={'margin-right:113px;'}>
+            <div class="mfd-label-value-container" style={'margin-right:89px;'}>
               <span class="mfd-label bigger mfd-spacing-right" style="width: 54px;">
                 EPU
               </span>
               <span class="mfd-value bigger">{this.fmsEpeDisplay}</span>
-              <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+              <span class="mfd-label-unit bigger mfd-unit-trailing">NM</span>
             </div>
           </div>
           <div class="mfd-pos-top-row">
             <div class="mfd-label-value-container">
               <span class="mfd-value bigger mfd-spacing-right">GPS PRIMARY</span>
             </div>
-            <div class="mfd-label-value-container" style={'margin-right:95px'}>
+            <div class="mfd-label-value-container" style={'margin-right:87px'}>
               <span class="mfd-label bigger mfd-spacing-right-small">RNP</span>
               <InputField<number>
                 dataEntryFormat={new RnpFormat()}
@@ -260,11 +252,12 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 onModified={(v) => this.props.fmcService.master?.navigation.setPilotRnp(v)}
                 enteredByPilot={this.rnpEnteredByPilot}
                 canBeCleared={Subject.create(true)}
-                containerStyle="width: 140px;"
+                containerStyle="width: 147px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
+                bigUnit={true}
               />
             </div>
           </div>
@@ -310,7 +303,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
                     </div>,
                   )}
-                  onClick={() => this.togglePositonFrozen()}
+                  onClick={() => this.positionFrozen.set(!this.positionFrozen.get())}
                   selected={this.positionFrozen}
                   buttonStyle="width: 172px; margin-right:44px"
                 />
