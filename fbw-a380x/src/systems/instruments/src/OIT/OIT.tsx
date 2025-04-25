@@ -135,8 +135,7 @@ export class OIT extends DisplayComponent<OitProps> {
   }
 
   render(): VNode | null {
-    const activeUri = this.uiService.activeUri.get().uri;
-    const isLoginPage = activeUri.includes('flt-ops/login');
+    const isLoginPage = this.uiService.activeUri.get().uri === 'flt-ops/login';
 
     return (
       <OitDisplayUnit
