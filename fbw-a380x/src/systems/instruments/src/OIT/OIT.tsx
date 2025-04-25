@@ -78,11 +78,12 @@ export class OIT extends DisplayComponent<OitProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    // Subscribe to URI changes immediately with initial value
     this.subscriptions.push(
       this.uiService.activeUri.sub((uri) => {
-        this.isLoginPage.set(uri.uri.includes('flt-ops/login'));
+        this.isLoginPage.set(uri.uri === 'flt-ops/login');
         this.activeUriChanged(uri);
-      }),
+      }, true), // Added true for immediate execution
       MappedSubject.create(
         ([uri, displayFailed, displayPowered, operationMode]) => {
           // Activate EFB overlay if on charts or flt-folder page
@@ -137,6 +138,8 @@ export class OIT extends DisplayComponent<OitProps> {
   }
 
   render(): VNode | null {
+    const isLoginPage = this.isLoginPage.get();
+
     return (
       <OitDisplayUnit
         ref={this.displayUnitRef}
@@ -146,9 +149,9 @@ export class OIT extends DisplayComponent<OitProps> {
         nssOrFltOps={this.operationMode}
       >
         <div ref={this.topRef} class="oit-main">
-          {!this.isLoginPage.get() && <OitHeader uiService={this.uiService} oit={this} />}
+          {!isLoginPage && <OitHeader uiService={this.uiService} oit={this} />}
           <div ref={this.activePageRef} class="mfd-navigator-container" />
-          {!this.isLoginPage.get() && <OitFooter uiService={this.uiService} oit={this} />}
+          {!isLoginPage && <OitFooter uiService={this.uiService} oit={this} />}
         </div>
       </OitDisplayUnit>
     );
