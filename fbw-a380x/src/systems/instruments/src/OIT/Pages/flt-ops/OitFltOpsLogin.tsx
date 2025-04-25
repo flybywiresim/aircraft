@@ -13,29 +13,9 @@ export class OitFltOpsLogin extends DisplayComponent<OitFltOpsLoginPageProps> {
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    // Hide the header and footer when this page is rendered
-    const header = document.querySelector('.oit-header');
-    const footer = document.querySelector('.oit-footer');
-    if (header) {
-      header.classList.add('hidden');
-    }
-    if (footer) {
-      footer.classList.add('hidden');
-    }
   }
 
   public destroy(): void {
-    // Restore the header and footer when this page is destroyed
-    const header = document.querySelector('.oit-header');
-    const footer = document.querySelector('.oit-footer');
-    if (header) {
-      header.classList.remove('hidden');
-    }
-    if (footer) {
-      footer.classList.remove('hidden');
-    }
-
     // Destroy all subscriptions to remove all references to this instance.
     for (const s of this.subs) {
       s.destroy();
@@ -72,7 +52,7 @@ export class OitFltOpsLogin extends DisplayComponent<OitFltOpsLoginPageProps> {
             <div class="oit-flt-ops-login-line-footer">
               <Button
                 label={'SWITCH OFF<br />LAPTOP'}
-                containerStyle="width: 175px; margin-bottom: 10px"
+                containerStyle="width: 150px; margin-bottom: 10px"
                 onClick={() => this.props.oit.uiService.navigateTo('flt-ops')}
                 disabled={Subject.create(true)}
               />
