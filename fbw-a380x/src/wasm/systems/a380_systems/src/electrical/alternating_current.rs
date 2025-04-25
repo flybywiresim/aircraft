@@ -237,8 +237,9 @@ impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical
         &self.tr_apu
     }
 
-    fn tr_2_powered_by_ac_bus(&self) -> bool {
-        self.ac_bus_3_to_tr_2_contactor.is_closed()
+    fn ground_servicing_active(&self) -> bool {
+        self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
+            .is_closed()
     }
 
     fn power_tr_1(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {

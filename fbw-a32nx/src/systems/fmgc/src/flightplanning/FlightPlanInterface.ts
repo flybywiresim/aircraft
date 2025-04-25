@@ -300,6 +300,56 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     planIndex: number,
   ): Promise<void>;
 
+  /**
+   * Sets a pilot entry speed value on the climb speed limit of the performance data.
+   * If no altitude is previously defined, a default value is applied to it.
+   * @param value which speed in knots to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry altitude value on the climb speed limit of the performance data.
+   * If no speed is previously defined, a default value is applied to it
+   * @param value which altitude in feet to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Deletes the climb speed limit from the performance data
+   * @param planIndex which flightplan index to delete the climb speed limit from
+   * @param alternate whether to delete the speed limit from the alternate performance data
+   */
+  deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry speed value on the descent speed limit of the performance data.
+   * If no altitude is previously defined, a default value is applied to it.
+   * @param value which speed in knots to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry altitude value on the descent speed limit performance data.
+   * If no speed is previously defined, a default value is applied to it
+   * @param value which altitude in feet to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Deletes the descent speed limit from the performance data
+   * @param planIndex which flightplan index to delete the climb speed limit from
+   * @param alternate whether to delete the speed limit from the alternate performance data
+   */
+  deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
   // TODO do not pass in waypoint object (rpc)
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
 
