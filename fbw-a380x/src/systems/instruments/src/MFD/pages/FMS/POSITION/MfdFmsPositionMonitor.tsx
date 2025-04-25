@@ -264,7 +264,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           <div class="fc mfd-pos-monitor-table">
             <div class="fr space-between">
               <div class="mfd-label-value-container">
-                <span class="mfd-label bigger mfd-spacing-right"> {this.onSideFms}</span>
+                <span class="mfd-label bigger mfd-spacing-right">&nbsp;&nbsp;{this.onSideFms}</span>
                 <span class="mfd-value bigger">{this.fmPosition}</span>
               </div>
             </div>
@@ -273,7 +273,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
             <div class="fr space-between">
               <div class="mfd-label-value-container">
-                <span class="mfd-label bigger mfd-spacing-right"> RADIO</span>
+                <span class="mfd-label bigger mfd-spacing-right">&nbsp;RADIO</span>
                 <span class="mfd-value bigger">{this.noPositionImplemented}</span>
               </div>
             </div>
@@ -284,7 +284,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   <span class="mfd-value bigger">{this.noPositionImplemented}</span>
                 </div>
                 <div class="mfd-label-value-container">
-                  <span class="mfd-label bigger mfd-spacing-right"> GPIRS</span>
+                  <span class="mfd-label bigger mfd-spacing-right">&nbsp;GPIRS</span>
                   <span class="mfd-value bigger">{this.noPositionImplemented}</span>
                 </div>
               </div>
@@ -312,7 +312,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
             <div class="mfd-pos-monitor-table-line"></div>
             <div class="mfd-label-value-container">
-              <span class="mfd-label bigger mfd-spacing-right"> {this.offSideFms}</span>
+              <span class="mfd-label bigger mfd-spacing-right">&nbsp;&nbsp;{this.offSideFms}</span>
               <span class="mfd-value bigger">{this.fmPosition}</span>
             </div>
             <div class="mfd-pos-monitor-table-line"></div>
@@ -321,41 +321,41 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
             <div class="fr space-between">
               <div class="mfd-label-value-container">
-                <span class="mfd-label bigger mfd-spacing-right"> IRS1</span>
+                <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS1</span>
                 <span class="mfd-value bigger">{this.ir1Position}</span>
               </div>
               <div class="mfd-label-value-container" style={'margin-right: 100px;'}>
-                <span class="mfd-value bigger">{this.ir1PositionDeviation} </span>
-                <span class="mfd-label-unit mfd-unit-trailing"> NM</span>
+                <span class="mfd-value bigger">{this.ir1PositionDeviation}</span>
+                <span class="mfd-label-unit bigger mfd-unit-trailing">&nbsp;NM</span>
               </div>
             </div>
             <div class="fr space-between">
               <div class="mfd-label-value-container">
-                <span class="mfd-label bigger mfd-spacing-right"> IRS2</span>
+                <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS2</span>
                 <span class="mfd-value bigger">{this.ir2Position}</span>
               </div>
               <div class="mfd-label-value-container" style={'margin-right: 100px;'}>
-                <span class="mfd-value bigger">{this.ir2PositionDeviation} </span>
-                <span class="mfd-label-unit mfd-unit-trailing"> NM</span>
+                <span class="mfd-value bigger">{this.ir2PositionDeviation}</span>
+                <span class="mfd-label-unit bigger mfd-unit-trailing">&nbsp;NM</span>
               </div>
             </div>
             <div class="fr space-between">
               <div class="mfd-label-value-container">
-                <span class="mfd-label bigger mfd-spacing-right"> IRS3</span>
+                <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS3</span>
                 <span class="mfd-value bigger">{this.ir3Position}</span>
               </div>
               <div class="mfd-label-value-container" style={'margin-right: 100px;'}>
-                <span class="mfd-value bigger">{this.ir3PositionDeviation} </span>
-                <span class="mfd-label-unit mfd-unit-trailing"> NM</span>
+                <span class="mfd-value bigger">{this.ir3PositionDeviation}</span>
+                <span class="mfd-label-unit bigger mfd-unit-trailing">&nbsp;NM</span>
               </div>
             </div>
             <div class="mfd-pos-monitor-table-line"></div>
             <div class="mfd-label-value-container">
-              <span class="mfd-label bigger mfd-spacing-right"> GPS1</span>
+              <span class="mfd-label bigger mfd-spacing-right">&nbsp;GPS1</span>
               <span class="mfd-value bigger">{this.gpsPositionText}</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-label bigger mfd-spacing-right"> GPS2</span>
+              <span class="mfd-label bigger mfd-spacing-right">&nbsp;GPS2</span>
               <span class="mfd-value bigger">{this.gpsPositionText}</span>
             </div>
           </div>
