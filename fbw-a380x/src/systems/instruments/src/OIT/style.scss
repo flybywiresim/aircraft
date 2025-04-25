@@ -209,3 +209,7 @@ $font-file-path: '/Fonts/fbw-a380x/EFB';
 .nopointer {
   pointer-events: none;
 }
+
+.hidden {
+  display: none !important;
+}
