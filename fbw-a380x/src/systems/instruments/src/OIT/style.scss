@@ -174,32 +174,36 @@
 }
 
 .oit-flt-ops-login-upper {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.oit-flt-ops-login-lower {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
-  margin-top: 60px;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 40px;
+}
+
+.oit-flt-ops-login-lower {
+  flex: 2;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 150px;
+  position: relative;
 }
 
 .oit-flt-ops-login-line {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-size: 24px;
-  text-align: center;
+  flex-direction: column;
+  gap: 15px;
+  align-items: flex-start;
 }
 
 .oit-flt-ops-login-line-footer {
-  margin-top: 40px;
+  position: absolute;
+  bottom: 30px;
+  left: 0;
 }
 
 $font-file-path: '/Fonts/fbw-a380x/EFB';
