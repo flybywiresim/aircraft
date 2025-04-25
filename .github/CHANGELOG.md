@@ -27,6 +27,7 @@
 1. [A380X/VD] Add vertical display (first implementation) - @flogross89 (floridude)
 1. [FMS] Fix pseudo waypoint transmission for F/O side when EFIS range different from CAPT side - @flogross89 (floridude)
 1. [A380X/SURV] Enable SURV system switching via MFD SURV page; Add ECAM faults for TERR/GPWS - @flogross89 (floridude)
+1. [A380X/MFD] Fixed ENTER DEST DATA message not clearing automatically - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
