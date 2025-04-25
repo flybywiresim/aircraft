@@ -42,7 +42,6 @@ export interface OitProps {
 
 export class OIT extends DisplayComponent<OitProps> {
   private readonly subscriptions: Subscription[] = [];
-  private isLoginPage = Subject.create(false);
 
   #uiService = new OitUiService(this.props.captOrFo, this.props.bus);
 
@@ -80,7 +79,6 @@ export class OIT extends DisplayComponent<OitProps> {
 
     this.subscriptions.push(
       this.uiService.activeUri.sub((uri) => {
-        this.isLoginPage.set(uri.uri.includes('flt-ops/login'));
         this.activeUriChanged(uri);
       }),
       MappedSubject.create(
@@ -137,6 +135,9 @@ export class OIT extends DisplayComponent<OitProps> {
   }
 
   render(): VNode | null {
+    const activeUri = this.uiService.activeUri.get().uri;
+    const isLoginPage = activeUri.includes('flt-ops/login');
+
     return (
       <OitDisplayUnit
         ref={this.displayUnitRef}
@@ -146,9 +147,9 @@ export class OIT extends DisplayComponent<OitProps> {
         nssOrFltOps={this.operationMode}
       >
         <div ref={this.topRef} class="oit-main">
-          {!this.isLoginPage.get() && <OitHeader uiService={this.uiService} oit={this} />}
+          {!isLoginPage && <OitHeader uiService={this.uiService} oit={this} />}
           <div ref={this.activePageRef} class="mfd-navigator-container" />
-          {!this.isLoginPage.get() && <OitFooter uiService={this.uiService} oit={this} />}
+          {!isLoginPage && <OitFooter uiService={this.uiService} oit={this} />}
         </div>
       </OitDisplayUnit>
     );
