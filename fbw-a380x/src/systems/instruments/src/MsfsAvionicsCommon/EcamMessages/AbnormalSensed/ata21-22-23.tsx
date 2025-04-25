@@ -484,6 +484,156 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
+  211800051: {
+    title: '\x1b<4m\x1b4mAIR\x1bm APU BLEED FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'APU ISOL VLV NOT CLOSED',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'APU BLEED VLV NOT CLOSED',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'APU ISOL VLV NOT OPEN',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'APU BLEED VLV NOT OPEN',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'APU BLEED',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'APU BLEED AVAIL BELOW FL225',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+    ],
+  },
+  211800052: {
+    title: '\x1b<4m\x1b4mAIR\x1bm ENG 1 BLEED OFF',
+    sensed: true,
+    items: [],
+  },
+  211800053: {
+    title: '\x1b<4m\x1b4mAIR\x1bm ENG 2 BLEED OFF',
+    sensed: true,
+    items: [],
+  },
+  211800054: {
+    title: '\x1b<4m\x1b4mAIR\x1bm ENG 3 BLEED OFF',
+    sensed: true,
+    items: [],
+  },
+  211800055: {
+    title: '\x1b<4m\x1b4mAIR\x1bm ENG 4 BLEED OFF',
+    sensed: true,
+    items: [],
+  },
+  211800056: {
+    title: '\x1b<4m\x1b4mAIR\x1bm ABNORM BLEED CONFIG',
+    sensed: true,
+    items: [
+      // After ENG x BLEED FAULT, ENG BLEED TEMP LO, ENG x SHUT DOWN, if xbleed valves did not open automatically
+      {
+        name: 'XBLEED',
+        sensed: true,
+        labelNotCompleted: 'OPEN',
+      },
+      {
+        name: 'IF XBLEED OPEN',
+        sensed: true,
+        condition: true,
+      },
+      {
+        name: 'IF MAX THR RQRD',
+        sensed: true,
+        condition: true,
+        level: 1,
+      },
+      {
+        name: 'AIR FLOW',
+        sensed: true,
+        labelNotCompleted: 'LO',
+        level: 2,
+      },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 2,
+      },
+      // If ENG 1/2
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      // If ENG 3/4
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'IF XBLEED STILL CLOSED',
+        sensed: true,
+        condition: true,
+      },
+      {
+        name: 'WING A-ICE',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'AVOID ICING CONDs',
+        sensed: false,
+        style: ChecklistLineStyle.Cyan,
+        level: 1,
+      },
+      // After ENG x FIRE, if xbleed valves did not close automatically
+      {
+        name: 'XBLEED',
+        sensed: true,
+        labelNotCompleted: 'CLOSE',
+      },
+      {
+        name: 'WING A-ICE',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'AVOID ICING CONDs',
+        sensed: false,
+        style: ChecklistLineStyle.Cyan,
+      },
+      // If ENG 1/2
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      // If ENG 3/4
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
   // ATA 21: VENT
   212800001: {
     title: '\x1b<4m\x1b4mCOND\x1bm AFT VENT CTL 1 FAULT',

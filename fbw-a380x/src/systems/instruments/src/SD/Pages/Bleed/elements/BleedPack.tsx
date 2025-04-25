@@ -1,28 +1,14 @@
 import React, { FC } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 
 interface BleedPackProps {
   x: number;
   y: number;
   pack: number;
+  isPackOperative: boolean;
 }
 
-const BleedPack: FC<BleedPackProps> = ({ x, y, pack }) => {
-  const agsB1DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
-  const agsB2DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
-  const agsB3DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD');
-  const agsB4DiscreteWord = useArinc429Var('L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD');
-
-  const bitNumber = 12 + pack;
-  const isPackOperative = agsB1DiscreteWord.bitValueOr(
-    bitNumber,
-    agsB2DiscreteWord.bitValueOr(
-      bitNumber,
-      agsB3DiscreteWord.bitValueOr(bitNumber, agsB4DiscreteWord.bitValueOr(bitNumber, false)),
-    ),
-  );
-
+const BleedPack: FC<BleedPackProps> = ({ x, y, pack, isPackOperative }) => {
   const [packOutletTemperature] = useSimVar(`L:A32NX_COND_PACK_${pack}_OUTLET_TEMPERATURE`, 'celsius', 500);
   const packCtlOffset = pack == 1 ? -65 : 180;
 
@@ -45,7 +31,7 @@ const BleedPack: FC<BleedPackProps> = ({ x, y, pack }) => {
       <text x={x + 62} y={y + 57} className={`Cyan F23 ${isPackOperative ? 'Show' : 'Hide'}`}>
         °C
       </text>
-      <PackController x={x + packCtlOffset} y={y + 25} pack={pack} />
+      <PackController x={x + packCtlOffset} y={y + 25} pack={pack} isPackOperative={isPackOperative} />
     </g>
   );
 };

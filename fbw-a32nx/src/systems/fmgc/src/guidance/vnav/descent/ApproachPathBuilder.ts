@@ -504,12 +504,15 @@ export class ApproachPathBuilder {
 
           // If we decelerated, but aren't at the constraint yet, fly level, at constant speed to the constraint
           const constantStep = this.fpaStrategy.predictToDistance(
-            altitude,
+            decelerationSequence.lastCheckpoint.altitude,
             -remainingDistanceToConstraint,
             speedConstraint.maxSpeed,
             parameters.managedDescentSpeedMach,
-            remainingFuelOnBoard - decelerationStep.fuelBurned,
-            windProfile.getHeadwindComponent(distanceFromStart, altitude),
+            decelerationSequence.lastCheckpoint.remainingFuelOnBoard,
+            windProfile.getHeadwindComponent(
+              decelerationSequence.lastCheckpoint.distanceFromStart,
+              decelerationSequence.lastCheckpoint.altitude,
+            ),
             this.configuration.setFromSpeed(speedConstraint.maxSpeed, parameters, useSpeedbrakes),
           );
 
