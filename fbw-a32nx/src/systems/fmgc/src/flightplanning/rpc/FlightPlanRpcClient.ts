@@ -356,6 +356,25 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('editFixInfoEntry', index, callback, planIndex);
   }
 
+  setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setPilotEntryClimbSpeedLimitSpeed', value, planIndex, alternate);
+  }
+  setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setPilotEntryClimbSpeedLimitAltitude', value, planIndex, alternate);
+  }
+  deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('deleteClimbSpeedLimit', planIndex, alternate);
+  }
+  setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setPilotEntryDescentSpeedLimitSpeed', value, planIndex, alternate);
+  }
+  setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setPilotEntryDescentSpeedLimitAltitude', value, planIndex, alternate);
+  }
+  deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('deleteDescentSpeedLimit', planIndex, alternate);
+  }
+
   isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
     return this.callFunctionViaRpc('isWaypointInUse', waypoint);
   }
