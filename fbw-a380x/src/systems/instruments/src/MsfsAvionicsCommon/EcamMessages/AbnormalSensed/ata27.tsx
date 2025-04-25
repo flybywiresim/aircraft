@@ -431,7 +431,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   272800003: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS LEVER NOT ZERO',
+    title: '\x1b<2m\x1b4mF/CTL\x1bm FLAPS LEVER NOT ZERO',
     sensed: true,
     items: [],
   },
