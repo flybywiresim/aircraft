@@ -16,12 +16,14 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
 
   const cabAltTarget50 = Math.round(cabinAltTarget / 50) * 50;
 
+  const maxValue = 12.5;
+  const clampedTarget = Math.min(Math.max(cabAltTarget50 / 1000, -0.6), maxValue);
+
   const [cabAltAutoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool', 500);
 
   const radius = 87;
   const startAngle = 212;
   const endAngle = 89;
-  const maxValue = 12.5;
 
   return (
     <g id="DeltaPressure">
@@ -141,7 +143,7 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           multiplierOuter={1.01}
         />
         <ThrottlePositionDonutComponent
-          value={cabAltTarget50 / 1000}
+          value={clampedTarget}
           x={x}
           y={y}
           min={-0.6}
