@@ -135,6 +135,8 @@ export class OIT extends DisplayComponent<OitProps> {
   }
 
   render(): VNode | null {
+    const isLoginPage = this.uiService.activeUri.get().uri === 'flt-ops/login';
+
     return (
       <OitDisplayUnit
         ref={this.displayUnitRef}
@@ -144,9 +146,9 @@ export class OIT extends DisplayComponent<OitProps> {
         nssOrFltOps={this.operationMode}
       >
         <div ref={this.topRef} class="oit-main">
-          <OitHeader uiService={this.uiService} oit={this} />
+          {!isLoginPage && <OitHeader uiService={this.uiService} oit={this} />}
           <div ref={this.activePageRef} class="mfd-navigator-container" />
-          <OitFooter uiService={this.uiService} oit={this} />
+          {!isLoginPage && <OitFooter uiService={this.uiService} oit={this} />}
         </div>
       </OitDisplayUnit>
     );
