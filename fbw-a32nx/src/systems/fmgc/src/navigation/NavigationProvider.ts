@@ -1,4 +1,4 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { SelectedNavaid } from '@fmgc/navigation/Navigation';
@@ -72,7 +72,7 @@ export interface NavigationProvider {
    * Updates the required navigation performance of the FMS
    * @param rnp number The RNP value to set or null to clear a previous pilot input
    */
-  setPilotRnp(rnp: number | null);
+  setPilotRnp(rnp: number | null): void;
 
   /**
    * Gets if a pilot RNP entry was performed
