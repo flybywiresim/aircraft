@@ -69,9 +69,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly positionFrozenText = this.positionFrozen.map((v) => (v ? 'POSITION FROZEN' : ''));
 
-  private readonly positionFrozenTimeText = this.positionFrozen.map((v) =>
-    v ? '  AT ' + getEtaFromUtcOrPresent(0, false) : '',
-  );
+  private readonly positionFrozenAt = this.positionFrozen.map((v) => (v ? 'AT' : ''));
+
+  private readonly positionFrozenTime = this.positionFrozen.map((v) => (v ? '' : getEtaFromUtcOrPresent(0, false)));
 
   private readonly gpsCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -123,7 +123,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       this.bearingUnit,
       this.distanceToWaypointUnit,
       this.positionFrozenText,
-      this.positionFrozenTimeText,
+      this.positionFrozenAt,
+      this.positionFrozenTime,
     );
   }
 
@@ -268,7 +269,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <span class="mfd-value bigger">{this.fmPosition}</span>
               </div>
             </div>
-            <div class="fr" style={'justify-content: flex-end; height:9px;'}>
+            <div class="fr" style={'justify-content: flex-end; height:9px; margin-right: 15px;'}>
               <span class="mfd-label bigger">{this.positionFrozenText}</span>
             </div>
             <div class="fr space-between">
@@ -289,8 +290,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 </div>
               </div>
               <div class="fc">
-                <div span class="mfd-label bigger" style={'width:195px; height:22px;'}>
-                  {this.positionFrozenTimeText}
+                <div class="mfd-pos-monitor-frozen-pos-time-container">
+                  <span class="mfd-label bigger">{this.positionFrozenAt}</span>
+                  <span class="mfd-label bigger">{this.positionFrozenTime}</span>
                 </div>
                 <Button
                   label={Subject.create(

@@ -24,6 +24,15 @@
     height: 1px;
   }
 
+  .mfd-pos-monitor-frozen-pos-time-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 125px;
+    margin-left: 20px;
+    height: 23px;
+  }
+
   .mfd-pos-monitor-irs-deviation-line {
     margin-right: 100px;
   }
