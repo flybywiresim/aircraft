@@ -23,11 +23,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly fmsAccuracyHigh = Subject.create(false);
 
-  private readonly fmsEpe = Subject.create<number>(Infinity);
+  private readonly fmsEpe = Subject.create(Infinity);
 
   private readonly fmsEpeDisplay = this.fmsEpe.map((v) => (v === Infinity ? '--.-' : v.toFixed(2).padEnd(5, '\xa0')));
 
-  private readonly fmsAccuracy = this.fmsAccuracyHigh.map((v) => (v ? 'HIGH' : 'LO'));
+  private readonly fmsAccuracy = this.fmsAccuracyHigh.map((v) => (v ? 'HIGH' : 'LOW'));
 
   private readonly ir1LatitudeRegister = Arinc429Register.empty();
 
@@ -98,9 +98,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     v ? v.toFixed(v > 9999 ? 0 : 1).padStart(6) : '----.-',
   );
 
-  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? ' ° ' : '   '));
+  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? ' ° ' : '\xa0\xa0\xa0'));
 
-  private readonly distanceToWaypointUnit = this.bearingToWaypoint.map((v) => (v ? 'NM' : '  '));
+  private readonly distanceToWaypointUnit = this.bearingToWaypoint.map((v) => (v ? 'NM' : '\xa0\xa0'));
 
   private readonly waypointEntered = this.monitorWaypoint.map((v) => v !== null);
 
@@ -324,7 +324,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS1</span>
                 <span class="mfd-value bigger">{this.ir1Position}</span>
               </div>
-              <div class="mfd-label-value-container" style={'margin-right: 100px;'}>
+              <div class="mfd-label-value-container mfd-pos-monitor-irs-deviation-line">
                 <span class="mfd-value bigger">{this.ir1PositionDeviation}</span>
                 <span class="mfd-label-unit bigger mfd-unit-trailing">&nbsp;NM</span>
               </div>
@@ -334,7 +334,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS2</span>
                 <span class="mfd-value bigger">{this.ir2Position}</span>
               </div>
-              <div class="mfd-label-value-container" style={'margin-right: 100px;'}>
+              <div class="mfd-label-value-container mfd-pos-monitor-irs-deviation-line">
                 <span class="mfd-value bigger">{this.ir2PositionDeviation}</span>
                 <span class="mfd-label-unit bigger mfd-unit-trailing">&nbsp;NM</span>
               </div>
@@ -344,7 +344,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS3</span>
                 <span class="mfd-value bigger">{this.ir3Position}</span>
               </div>
-              <div class="mfd-label-value-container" style={'margin-right: 100px;'}>
+              <div class="mfd-label-value-container mfd-pos-monitor-irs-deviation-line">
                 <span class="mfd-value bigger">{this.ir3PositionDeviation}</span>
                 <span class="mfd-label-unit bigger mfd-unit-trailing">&nbsp;NM</span>
               </div>
@@ -359,7 +359,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-value bigger">{this.gpsPositionText}</span>
             </div>
           </div>
-          <div class="fr space-between" style={'margin:10px 15px 15px 5px;'}>
+          <div class="mfd-pos-monitor-pos-update-waypoint-container">
             <Button
               label="POSITION <br /> UPDATE"
               disabled={Subject.create(true)}
