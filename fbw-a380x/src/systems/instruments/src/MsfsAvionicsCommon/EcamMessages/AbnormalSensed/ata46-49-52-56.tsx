@@ -65,4 +65,529 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
     ],
   },
+  520800018: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 1R NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800019: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 2L NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800020: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 2R NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800021: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 3L NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800022: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 3R NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800023: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 4L NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800024: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 4R NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800025: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 5L NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800026: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm MAIN 5R NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800027: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm UPPER 1L NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800028: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm UPPER 1R NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800029: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm UPPER 2L NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800030: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm UPPER 2R NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800031: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm UPPER 3L NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
+  520800032: {
+    title: '\x1b<4m\x1b4mDOOR\x1bm UPPER 3R NOT CLOSED',
+    sensed: true,
+    items: [
+      {
+        name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF ABNORM CAB V/S :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
+      },
+      {
+        name: 'CABIN CREW',
+        labelNotCompleted: 'ADVISE',
+        sensed: false,
+      },
+      {
+        name: 'ATC',
+        labelNotCompleted: 'NOTIFY',
+        sensed: false,
+      },
+      {
+        name: 'DECEND TO FL 100/MEA-MORA',
+        labelNotCompleted: 'INITIATE',
+        sensed: false,
+      },
+    ],
+  },
 };
