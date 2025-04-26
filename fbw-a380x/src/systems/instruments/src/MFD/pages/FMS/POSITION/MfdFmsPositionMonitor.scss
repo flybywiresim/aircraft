@@ -23,3 +23,14 @@
     width: 699px;
     height: 1px;
   }
+
+  .mfd-pos-monitor-irs-deviation-line {
+    margin-right: 100px;
+  }
+
+  .mfd-pos-monitor-pos-update-waypoint-container {
+    display: flex;
+    flex-direction: row;
+    margin: 10px 15px 15px 5px;
+    justify-content: space-between;
+  }
