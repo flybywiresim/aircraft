@@ -1575,6 +1575,10 @@ export class FwsCore {
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
 
+  /* DOOR */
+
+  public readonly cockpitWindowOpen = Subject.create(false);
+
   private static pushKeyUnique(val: () => string[] | undefined, pushTo: string[]) {
     if (val) {
       // Push only unique keys
@@ -4014,6 +4018,12 @@ export class FwsCore {
 
     /* OXYGEN */
     this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool'));
+
+    /* DOOR */
+    this.cockpitWindowOpen.set(
+      SimVar.GetSimVarValue('L:CPT_SLIDING_WINDOW', 'number') === 1 ||
+        SimVar.GetSimVarValue('L:FO_SLIDING_WINDOW', 'number') === 1,
+    );
 
     /* CABIN READY */
 

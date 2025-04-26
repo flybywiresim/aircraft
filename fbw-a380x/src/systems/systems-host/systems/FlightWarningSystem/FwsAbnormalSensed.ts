@@ -3776,6 +3776,16 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
+    // ATA 52 DOOR
+    520800008: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.cockpitWindowOpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.cockpitWindowOpen.get()],
+      failure: 2,
+      sysPage: SdPages.Door,
+    },
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL
