@@ -1026,6 +1026,17 @@ export class FwsAbnormalSensed {
       limitationsAllPhases: () => ['210400002', '210400001'],
       limitationsPfd: () => ['210400002', '210400001'],
     },
+    213800004: {
+      // EXCESS RESIDUAL DIFF PRESS
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: this.fws.excessResidualDiffPressure,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true],
+      whichItemsChecked: () => [!this.fws.pack1On.get(), !this.fws.pack2On.get(), false, false, false],
+      failure: 1,
+      sysPage: SdPages.Press,
+      redundLoss: () => [],
+    },
     213800005: {
       // PRESS AUTO CTL FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
