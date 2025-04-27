@@ -69,10 +69,10 @@ export class AircraftGithubVersionChecker {
     await this.initialize(aircraft);
 
     // assert all version info is available
-    /*    if (!(this.buildInfo && this.releaseInfo && this.newestCommit && this.newestExpCommit)) {
+    if (!(this.buildInfo && this.releaseInfo && this.newestCommit && this.newestExpCommit)) {
       console.error('Not all version information available. Skipping version check.');
       return false;
-    } */
+    }
 
     try {
       const versionInfo = this.getVersionInfo(aircraft, this.buildInfo.version);
@@ -168,14 +168,11 @@ export class AircraftGithubVersionChecker {
     const branchName = KnowBranchNames[versionInfo.branch] || versionInfo.branch;
 
     // Check if main version is outdated
-    // if (Compare(versionInfo.version, this.releaseInfo[0].name) < 0) {
-    console.log(`New version available: ${versionInfo.version} ==> ${this.releaseInfo[0].name}`);
-
-    setInterval(() => {
-      this.showVersionPopup('', 'hi QA', 'Just make sure you can always close this');
-    }, 20000);
-    return true;
-    // }
+    if (Compare(versionInfo.version, this.releaseInfo[0].name) < 0) {
+      console.log(`New version available: ${versionInfo.version} ==> ${this.releaseInfo[0].name}`);
+      this.showVersionPopup('', versionInfo.version, this.releaseInfo[0].name);
+      return true;
+    }
 
     // If the user's version is equal or newer than the latest release then check if
     // the edition is Development or Experimental and if the commit is older than
