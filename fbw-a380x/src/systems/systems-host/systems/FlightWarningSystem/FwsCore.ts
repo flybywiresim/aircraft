@@ -461,6 +461,10 @@ export class FwsCore {
 
   public readonly phase10For90sConfirm = new NXLogicConfirmNode(90, false);
 
+  public readonly inhibitedByDoors = Subject.create(false);
+
+  public readonly cabinDoorOpen = Subject.create(false);
+
   public readonly allOutflowValvesOpen = Subject.create(false);
 
   public readonly ocsm1AutoFailure = Subject.create(false);
@@ -3256,6 +3260,10 @@ export class FwsCore {
     );
 
     this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
+
+    this.cabinDoorOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN', 'percent') > 0);
+
+    this.inhibitedByDoors;
 
     const outflowValve1OpenAmount = Arinc429Register.empty();
     const outflowValve2OpenAmount = Arinc429Register.empty();

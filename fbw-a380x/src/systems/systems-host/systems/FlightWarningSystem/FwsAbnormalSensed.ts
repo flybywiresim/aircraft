@@ -1089,6 +1089,17 @@ export class FwsAbnormalSensed {
       sysPage: -1,
       redundLoss: () => [],
     },
+    213800009: {
+      // INHIBITED BY DOORS
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.inhibitedByDoors,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [true],
+      failure: 1,
+      sysPage: SdPages.Press,
+      limitationsAllPhases: () => ['210400001'],
+    },
     213800011: {
       // PRESS OUTFLW VLV CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
