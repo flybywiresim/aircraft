@@ -23,7 +23,6 @@
 1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
 1. [A380X/SD] Add clamp to CABIN ALT donut - @Jonny23787 (Jonathan)
 
-
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
