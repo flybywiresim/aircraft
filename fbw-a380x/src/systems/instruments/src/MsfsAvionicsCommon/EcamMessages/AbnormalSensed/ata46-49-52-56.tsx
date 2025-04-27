@@ -76,7 +76,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'IF ABNORM CAB V/S :',
-        sensed: false,
+        sensed: true,
         condition: true,
       },
       {
