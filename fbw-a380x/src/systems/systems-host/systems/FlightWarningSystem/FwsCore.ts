@@ -3263,7 +3263,7 @@ export class FwsCore {
 
     this.cabinDoorOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN', 'percent') > 0);
 
-    this.inhibitedByDoors;
+    this.inhibitedByDoors.set(this.cabinDoorOpen.get());
 
     const outflowValve1OpenAmount = Arinc429Register.empty();
     const outflowValve2OpenAmount = Arinc429Register.empty();
