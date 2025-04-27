@@ -3261,9 +3261,13 @@ export class FwsCore {
 
     this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
 
-    this.cabinDoorOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN', 'percent') > 0);
+    this.cabinDoorOpen.set(
+      Array.from({ length: 10 }, (_, i) => SimVar.GetSimVarValue(`INTERACTIVE POINT OPEN:${i}`, 'percent') > 0).some(
+        (isOpen) => isOpen,
+      ),
+    );
 
-    this.inhibitedByDoors.set(this.cabinDoorOpen.get());
+    this.inhibitedByDoors.set(this.cabinDoorOpen.get() && this.flightPhase.get() === 3);
 
     const outflowValve1OpenAmount = Arinc429Register.empty();
     const outflowValve2OpenAmount = Arinc429Register.empty();
