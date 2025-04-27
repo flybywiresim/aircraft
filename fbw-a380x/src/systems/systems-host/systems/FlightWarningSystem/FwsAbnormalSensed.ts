@@ -1029,6 +1029,7 @@ export class FwsAbnormalSensed {
     213800004: {
       // EXCESS RESIDUAL DIFF PRESS
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+      auralWarning: this.fws.flapConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       simVarIsActive: this.fws.excessResidualDiffPressure,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true, true, true, true],
