@@ -124,10 +124,11 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     funcName: T,
     ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
   ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
-    const batchState = { batch: null, state: false };
+    const batchState = { batch: null, remoteBatchClosed: false };
 
+    let batchSubscription: Subscription | null = null;
     if (this.useBatches) {
-      this.bus
+      batchSubscription = this.bus
         .getSubscriber<FlightPlanEvents>()
         .on('flightPlanService.batchChange')
         .handle((event) => {
@@ -137,7 +138,7 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
             event.type === 'close' &&
             event.batch.id === batchState.batch.id
           ) {
-            batchState.state = true;
+            batchState.remoteBatchClosed = true;
           }
         });
       batchState.batch = await this.doCallFunctionViaRpc('openBatch', `rpcFunctionExec_${funcName}`);
@@ -147,8 +148,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
     if (this.useBatches) {
       await this.doCallFunctionViaRpc('closeBatch', batchState.batch.id);
-      await Wait.awaitCondition(() => batchState.state === true);
+      await Wait.awaitCondition(() => batchState.remoteBatchClosed === true);
     }
+
+    batchSubscription?.destroy();
 
     return result;
   }
