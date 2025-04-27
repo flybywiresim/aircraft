@@ -453,6 +453,8 @@ export class FwsCore {
 
   public readonly excessCabinAltitude = Subject.create(false);
 
+  public readonly abnormalCabVirticalSpeed = Subject.create(false);
+
   public readonly excessDiffPressure = Subject.create(false);
 
   public readonly diffPressure = Arinc429Register.empty();
@@ -3337,6 +3339,12 @@ export class FwsCore {
           : this.landingElevation.valueOr(0)
         : this.cabinAltitude.valueOr(0)) >= 8550,
     );
+
+    const [mancabinVs] = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute');
+    const cabinVsArinc = Arinc429Register.empty();
+    cabinVsArinc.setFromSimVar(`L:A32NX_PRESS_CABIN_VS_B`);
+    const cabinVs = cabinVsArinc.isNormalOperation() ? cabinVsArinc.value : mancabinVs;
+    this.abnormalCabVirticalSpeed.set(cabinVs.valueOr(0) > 1800 || cabinVs.valueOr(0) < -6350);
 
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
