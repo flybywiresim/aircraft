@@ -457,6 +457,10 @@ export class FwsCore {
 
   public readonly diffPressure = Arinc429Register.empty();
 
+  public readonly excessResidualDiffPressure = Subject.create(false);
+
+  public readonly phase10For90sConfirm = new NXLogicConfirmNode(90, false);
+
   public readonly allOutflowValvesOpen = Subject.create(false);
 
   public readonly ocsm1AutoFailure = Subject.create(false);
@@ -3243,6 +3247,13 @@ export class FwsCore {
     this.excessCabinAltitude.set(cpcsDiscreteWordToUse.bitValueOr(13, false) || manExcessAltitude);
 
     this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
+
+    const diffPressureAbovePoint072 = this.diffPressure.valueOr(0) > 0.072;
+    this.phase10For90sConfirm.write(this.flightPhase.get() === 10, deltaTime);
+
+    this.excessResidualDiffPressure.set(
+      diffPressureAbovePoint072 && ((this.aircraftOnGround.get() && engNotRunning) || this.phase10For90sConfirm.read()),
+    );
 
     this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
 
