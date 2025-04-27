@@ -12,7 +12,8 @@ export interface ISimbriefData {
   cruiseAltitude: number;
   costIndex: string;
   route: string;
-  navlog: INavlogFix[];
+  /** `navlog` is undefined when the route is DCT */
+  navlog?: INavlogFix[];
   distance: string;
   flightETAInSeconds: string;
   averageTropopause: string;
