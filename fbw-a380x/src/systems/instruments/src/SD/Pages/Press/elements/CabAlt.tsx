@@ -17,7 +17,8 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
   const cabAltTarget50 = Math.round(cabinAltTarget / 50) * 50;
 
   const maxValue = 12.5;
-  const clampedTarget = Math.min(Math.max(cabAltTarget50 / 1000, -0.6), maxValue);
+  const minValue = -0.6;
+  const clampedTarget = Math.min(Math.max(cabAltTarget50 / 1000), minValue, maxValue);
 
   const [cabAltAutoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool', 500);
 
