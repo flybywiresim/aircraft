@@ -113,14 +113,14 @@ export class MsfsFlightPlanSync {
       FlightPlanIndex.Uplink,
     );
 
-    if (route.departureRunway.number != '') {
+    if (route.departureRunway.number !== '') {
       await this.rpcClient.setOriginRunway(
         `${route.departureAirport.ident}${route.departureRunway.number}${route.departureRunway.designator}`,
         FlightPlanIndex.Uplink,
       );
     }
 
-    if (route.destinationRunway.number != '') {
+    if (route.destinationRunway.number !== '') {
       await this.rpcClient.setDestinationRunway(
         `${route.destinationAirport.ident}${route.destinationRunway.number}${route.destinationRunway.designator}`,
         FlightPlanIndex.Uplink,
@@ -128,7 +128,7 @@ export class MsfsFlightPlanSync {
     }
 
     let departure: Departure | null;
-    if (route.departure != '') {
+    if (route.departure !== '') {
       const departures = await db.backendDatabase.getDepartures(route.departureAirport.ident);
       departure = departures.find((it) => it.ident == route.departure);
 
@@ -137,7 +137,7 @@ export class MsfsFlightPlanSync {
       }
     }
 
-    if (route.departureTransition != '' && departure) {
+    if (route.departureTransition !== '' && departure) {
       const transition = departure.enrouteTransitions.find((it) => it.ident === route.departureTransition);
 
       if (transition) {
@@ -230,14 +230,14 @@ export class MsfsFlightPlanSync {
     }
 
     let arrival: Arrival | null = null;
-    if (route.arrival != '') {
+    if (route.arrival !== '') {
       const arrivals = await db.backendDatabase.getArrivals(route.destinationAirport.ident);
       arrival = arrivals.find((it) => it.ident == route.arrival);
 
       await this.rpcClient.setArrival(arrival.databaseId, FlightPlanIndex.Uplink);
     }
 
-    if (route.arrivalTransition != '' && arrival) {
+    if (route.arrivalTransition !== '' && arrival) {
       const transition = arrival.enrouteTransitions.find((it) => it.ident === route.arrivalTransition);
 
       if (transition) {

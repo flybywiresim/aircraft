@@ -28,10 +28,13 @@ export enum FlightPlanIndex {
 export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   private plans: FlightPlan<P>[] = [];
 
-  private _initialized = Subject.create(false);
-
   private subs: Subscription[] = [];
 
+  private _initialized = Subject.create(false);
+
+  /**
+   * Public version of {@link _initialized}
+   */
   public initialized = new SubEvent();
 
   private ignoreSync = false;

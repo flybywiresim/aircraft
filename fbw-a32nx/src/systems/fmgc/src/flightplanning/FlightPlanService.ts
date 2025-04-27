@@ -415,7 +415,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       ? this.flightPlanManager.get(planIndex).alternateFlightPlan
       : this.flightPlanManager.get(planIndex);
 
-    return await plan.continueAirwayEntryViaAirway(airway);
+    return plan.continueAirwayEntryViaAirway(airway);
   }
 
   public async continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<boolean> {
@@ -423,7 +423,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       ? this.flightPlanManager.get(planIndex).alternateFlightPlan
       : this.flightPlanManager.get(planIndex);
 
-    return await plan.continueAirwayEntryDirectToFix(fix);
+    return plan.continueAirwayEntryDirectToFix(fix);
   }
 
   public async finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void> {
