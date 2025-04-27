@@ -130,7 +130,7 @@ export class MsfsFlightPlanSync {
     let departure: Departure | null;
     if (route.departure !== '') {
       const departures = await db.backendDatabase.getDepartures(route.departureAirport.ident);
-      departure = departures.find((it) => it.ident == route.departure);
+      departure = departures.find((it) => it.ident === route.departure);
 
       if (departure) {
         await this.rpcClient.setDepartureProcedure(departure.databaseId, FlightPlanIndex.Uplink);
@@ -232,7 +232,7 @@ export class MsfsFlightPlanSync {
     let arrival: Arrival | null = null;
     if (route.arrival !== '') {
       const arrivals = await db.backendDatabase.getArrivals(route.destinationAirport.ident);
-      arrival = arrivals.find((it) => it.ident == route.arrival);
+      arrival = arrivals.find((it) => it.ident === route.arrival);
 
       await this.rpcClient.setArrival(arrival.databaseId, FlightPlanIndex.Uplink);
     }
@@ -472,7 +472,7 @@ export class MsfsFlightPlanSync {
     fbwApproach: Approach,
     msfsSdkApproach: JS_ApproachIdentifier,
   ): boolean {
-    const typeMatches = MsfsFlightPlanSync.FBW_APPROACH_TO_MSFS_APPROACH[fbwApproach.type] == msfsSdkApproach.type;
+    const typeMatches = MsfsFlightPlanSync.FBW_APPROACH_TO_MSFS_APPROACH[fbwApproach.type] === msfsSdkApproach.type;
 
     if (!typeMatches) {
       return false;
