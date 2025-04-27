@@ -497,7 +497,6 @@ impl Running {
         apu_gen_is_used: bool,
         apu_bleed_is_used: bool,
     ) -> ThermodynamicTemperature {
-
         // Reduce the deviation by 1 per second to slowly creep back to normal temperatures
         self.base_egt_deviation -= TemperatureInterval::new::<temperature_interval::degree_celsius>(
             (context.delta_as_secs_f64() * 1.).min(
@@ -526,7 +525,6 @@ impl Running {
         target
     }
 }
-
 impl Turbine for Running {
     fn update(
         mut self: Box<Self>,
@@ -535,7 +533,6 @@ impl Turbine for Running {
         apu_gen_is_used: bool,
         controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
-
         self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
         self.n2 = self.calculate_n2(context, apu_bleed_is_used);
 
