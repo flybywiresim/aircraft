@@ -4056,6 +4056,7 @@
                         <DefaultTemplateParameters>
                             <TYPE>APU</TYPE>
                             <BUTTON_ID>APU</BUTTON_ID>
+                            <ID></ID>
                         </DefaultTemplateParameters>
 
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
