@@ -36,7 +36,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Amber,
       },
       {
