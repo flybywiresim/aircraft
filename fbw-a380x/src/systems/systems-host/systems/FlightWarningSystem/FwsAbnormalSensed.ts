@@ -3798,10 +3798,10 @@ export class FwsAbnormalSensed {
         true,
         true,
       ],
-      whichItemsChecked: () => [false, false, false, false, false, false],
+      whichItemsChecked: () => [false, this.fws.abnormalCabVirticalSpeed.get(), false, false, false, false],
       failure: 2,
       sysPage: SdPages.Door,
-      limitationsAllPhases: () => [this.ewdAbnormalSensed[520800017].whichItemsChecked()[1] ? '210400001' : null],
+      limitationsAllPhases: () => [],
       inopSysAllPhases: () =>
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
     },
