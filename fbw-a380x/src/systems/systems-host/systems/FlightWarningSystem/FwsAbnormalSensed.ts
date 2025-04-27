@@ -3786,6 +3786,25 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
     },
+    520800017: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main1LOpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        true,
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => ['210400001'],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL
