@@ -1559,6 +1559,10 @@ export class FwsCore {
 
   public readonly eng1Or2TakeoffPower = Subject.create(false);
 
+  public readonly eng2TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
+
+  public readonly eng2TakeoffPower = Subject.create(false);
+
   public readonly eng3Or4TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
 
   public readonly eng3Or4TakeoffPower = Subject.create(false);
@@ -2912,6 +2916,9 @@ export class FwsCore {
       this.throttle2Position.get() >= 45 ||
       (this.throttle2Position.get() >= 35 && flexThrustLimit);
 
+    const engTwoTakeoffPower =
+      this.throttle2Position.get() >= 45 || (this.throttle2Position.get() >= 35 && flexThrustLimit);
+
     const engThreeOrFourTakeoffPower =
       this.throttle3Position.get() >= 45 ||
       (this.throttle3Position.get() >= 35 && flexThrustLimit) ||
@@ -2919,10 +2926,12 @@ export class FwsCore {
       (this.throttle4Position.get() >= 35 && flexThrustLimit);
 
     this.eng1Or2TakeoffPowerConfirm.write(engOneOrTwoTakeoffPower, deltaTime);
+    this.eng2TakeoffPowerConfirm.write(engTwoTakeoffPower, deltaTime);
     this.eng3Or4TakeoffPowerConfirm.write(engThreeOrFourTakeoffPower, deltaTime);
     const raAbove1500 =
       this.radioHeight1.valueOr(0) > 1500 || this.radioHeight2.valueOr(0) > 1500 || this.radioHeight3.valueOr(0) > 1500;
     this.eng1Or2TakeoffPower.set(engOneOrTwoTakeoffPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
+    this.eng2TakeoffPower.set(engTwoTakeoffPower || (this.eng2TakeoffPowerConfirm.read() && !raAbove1500));
     this.eng3Or4TakeoffPower.set(
       engThreeOrFourTakeoffPower || (this.eng3Or4TakeoffPowerConfirm.read() && !raAbove1500),
     );
@@ -3267,7 +3276,7 @@ export class FwsCore {
       ),
     );
 
-    this.inhibitedByDoors.set(this.cabinDoorOpen.get() && this.flightPhase.get() === 3);
+    this.inhibitedByDoors.set(this.cabinDoorOpen.get() && this.eng2TakeoffPower.get());
 
     const outflowValve1OpenAmount = Arinc429Register.empty();
     const outflowValve2OpenAmount = Arinc429Register.empty();
