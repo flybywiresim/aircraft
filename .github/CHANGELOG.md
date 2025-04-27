@@ -16,7 +16,13 @@
 1. [A380X/FCU] Update FCU font for QFE based on new references - @heclak (Heclak)
 1. [A32NX/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
 1. [A32NX/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
+1. [A380X/MFD] Add speed limit modification on VERT REV SPD page - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWC] Fix PRED W/S OFF memo colour logic - @tracernz (Mike)
+1. [A380X/SD] Add video page with 'NOT AVAIL' text - @dzoeteman (Deniz)
+1. [A380X/PFD] Inhibit rudder trim indication in the air - @Jonny23787 (Jonathan)
+1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
 1. [A380X/SD] Add clamp to CABIN ALT donut - @Jonny23787 (Jonathan)
+
 
 ## 0.13.0
 
