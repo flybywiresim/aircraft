@@ -28,7 +28,7 @@ const getValuePrefix = (value: number) => (value >= 0 ? '+' : '');
 const getCurrentHHMMSS = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const secondsLeft = (seconds - hours * 3600 - minutes * 60).toFixed(0);
+  const secondsLeft = Math.floor(seconds - hours * 3600 - minutes * 60).toFixed(0);
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondsLeft.toString().padStart(2, '0')}`;
 };
 
@@ -45,16 +45,12 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly baroMode = ConsumerSubject.create(this.sub.on('baroMode'), 'STD');
 
-  private readonly tatClass = this.tat.map(
-    (tat) => `sd-perm-info-area-sub3cell ${tat.isNormalOperation() ? 'Green' : 'Amber'}`,
-  );
+  private readonly tatClass = this.tat.map((tat) => `F25 EndAlign ${tat.isNormalOperation() ? 'Green' : 'Amber'}`);
   private readonly tatText = this.tat.map((tat) =>
     tat.isNormalOperation() ? getValuePrefix(tat.value) + tat.value.toFixed(0) : 'XX',
   );
 
-  private readonly satClass = this.sat.map(
-    (sat) => `sd-perm-info-area-sub3cell ${sat.isNormalOperation() ? 'Green' : 'Amber'}`,
-  );
+  private readonly satClass = this.sat.map((sat) => `F25 EndAlign ${sat.isNormalOperation() ? 'Green' : 'Amber'}`);
   private readonly satText = this.sat.map((sat) =>
     sat.isNormalOperation() ? getValuePrefix(sat.value) + sat.value.toFixed(0) : 'XX',
   );
@@ -69,7 +65,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly isaVisibility = MappedSubject.create(
     ([baroMode, zp, sat]) =>
-      `visibility: ${baroMode === 'STD' && zp.isNormalOperation() && sat.isNormalOperation() ? 'inherit' : 'hidden'}`,
+      baroMode === 'STD' && zp.isNormalOperation() && sat.isNormalOperation() ? 'inherit' : 'hidden',
     this.baroMode,
     this.zp,
     this.sat,
@@ -78,8 +74,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly normalAcc = Arinc429LocalVarConsumerSubject.create(this.sub.on('normalAccRaw'));
 
   private readonly gLoadStyle = this.normalAcc.map(
-    (gLoad) =>
-      `visibility: ${gLoad.isNormalOperation() && (gLoad.value < 0.7 || gLoad.value > 1.4) ? 'inherit' : 'hidden'}`, // FIXME
+    (gLoad) => (gLoad.isNormalOperation() && (gLoad.value < 0.7 || gLoad.value > 1.4) ? 'inherit' : 'hidden'), // FIXME
   );
 
   private readonly gLoadText = this.normalAcc.map((gLoad) => getValuePrefix(gLoad.value) + gLoad.value.toFixed(1));
@@ -126,17 +121,15 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   );
 
   private readonly gwText = this.grossWeight.map((gw) =>
-    gw === 0 || gw === null ? '--\xA0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0),
+    gw === 0 || gw === null ? '--\xa0\xa0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0),
   );
   private readonly gwClass = this.grossWeight.map((gw) =>
-    gw === 0 || gw === null
-      ? 'sd-perm-info-area-sub3cell F27 Cyan EndAlign'
-      : 'sd-perm-info-area-sub3cell F27 Green EndAlign',
+    gw === 0 || gw === null ? 'F27 Cyan EndAlign' : 'F27 Green EndAlign',
   );
 
   private readonly grossWeightCg = ConsumerSubject.create(this.sub.on('grossWeightCg'), 0);
   private readonly grossWeightCgText = MappedSubject.create(
-    ([cg, gw]) => (gw === 0 ? '--\xA0' : (Math.round(cg * 10) / 10).toFixed(1)),
+    ([cg, gw]) => (gw === 0 || gw === null ? '--\xa0\xa0' : (Math.round(cg * 10) / 10).toFixed(1)),
     this.grossWeightCg,
     this.grossWeight,
   );
@@ -188,64 +181,123 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   render(): VNode | null {
     return (
-      <div class="sd-perm-info-area-layout">
-        <div class="sd-perm-info-area-col BR">
-          <div class="sd-perm-info-area-cell">
-            <div class="sd-perm-info-area-sub3cell White">TAT</div>
-            <div class={this.tatClass}>{this.tatText}</div>
-            <div class="sd-perm-info-area-sub3cell F26 Cyan">&#176;C</div>
-          </div>
+      <>
+        <svg
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlnsXlink="http://www.w3.org/1999/xlink"
+          viewBox="0 0 768 1024"
+          style="position: absolute; top: 0px; left: 0px;"
+        >
+          <path class="SW4 White StrokeRound" d="M 7,667 l 754,0" />
+          <path class="SW4 White" d="M 0,765 l 768,0" />
+          <path class="SW4 White StrokeRound" d="M 257,667 l 0,92" />
+          <path class="SW4 White StrokeRound" d="M 512,667 l 0,92" />
 
-          <div class="sd-perm-info-area-cell">
-            <div class="sd-perm-info-area-sub3cell White">SAT</div>
-            <div class={this.satClass}>{this.satText}</div>
-            <div class="sd-perm-info-area-sub3cell F26 Cyan">&#176;C</div>
-          </div>
+          {/* <path class='ecam-thicc-line LineRound' d='m 518 690 v 90' /> */}
 
-          <div class="sd-perm-info-area-cell" style={this.isaVisibility}>
-            <div class="sd-perm-info-area-sub3cell White">ISA</div>
-            <div class="sd-perm-info-area-sub3cell F25 Green">{this.isaText}</div>
-            <div class="sd-perm-info-area-sub3cell F26 Cyan">&#176;C</div>
-          </div>
-        </div>
+          {/* Temps */}
+          <text x={34} y={696} class="F26 White LS1">
+            TAT
+          </text>
+          <text x={158} y={696} class={this.tatClass}>
+            {this.tatText}
+          </text>
+          <text x={185} y={696} class="F26 Cyan">
+            &#176;C
+          </text>
 
-        <div class="sd-perm-info-area-col BR">
-          <div class="sd-perm-info-area-cell" style={this.gLoadStyle}>
-            <span class="sd-perm-info-area-sub3cell F27 Amber" style="padding-right: 20px; flex: none;">
+          <text x={34} y={725} class="F26 White LS1">
+            SAT
+          </text>
+          <text x={158} y={725} class={this.satClass}>
+            {this.satText}
+          </text>
+          <text x={185} y={725} class="F26 Cyan">
+            &#176;C
+          </text>
+
+          <g visibility={this.isaVisibility}>
+            <text x={34} y={754} class="F26 White LS1">
+              ISA
+            </text>
+            <text x={158} y={754} class={'F25 Green EndAlign'}>
+              {this.isaText}
+            </text>
+            <text x={185} y={754} class="F26 Cyan">
+              &#176;C
+            </text>
+          </g>
+        </svg>
+
+        <svg
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlnsXlink="http://www.w3.org/1999/xlink"
+          viewBox="0 0 768 1024"
+          style="position: absolute; top: 0px; left: 0px;"
+        >
+          {/* G Load Indication */}
+          <g visibility={this.gLoadStyle}>
+            <text x={296} y={702} class="F27 Amber">
               G LOAD
-            </span>
-            <span class="sd-perm-info-area-sub3cell F27 Amber" style="flex: none;">
+            </text>
+            <text x={410} y={702} class="F27 Amber">
               {this.gLoadText}
-            </span>
-          </div>
+            </text>
+          </g>
 
-          <div class="sd-perm-info-area-cell">
-            <span class="F29 Green">{this.timeHHMM}</span>
-            <span class="F26 Green" style="padding-right: 10px;">
-              {this.timeSS}
-            </span>
-            <span class="F22 Green">GPS</span>
-          </div>
+          {/* Clock */}
+          <text x={296} y={730} class="F29 Green LS-1">
+            {this.timeHHMM}
+          </text>
+          <text x={394} y={730} class="F26 Green">
+            {this.timeSS}
+          </text>
+          <text x={434} y={729} class="F22 Green">
+            GPS
+          </text>
+        </svg>
 
-          <div class="sd-perm-info-area-cell">{'\xA0'}</div>
-        </div>
+        <svg
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlnsXlink="http://www.w3.org/1999/xlink"
+          viewBox="0 0 768 1024"
+          style="position: absolute; top: 0px; left: 0px;"
+        >
+          {/* Weights / Fuel */}
+          <text x={529} y={696} class="F25 White">
+            GW
+          </text>
+          <text x={529} y={724} class="F25 White">
+            GWCG
+          </text>
+          <text x={529} y={752} class="F25 White">
+            FOB
+          </text>
 
-        <div class="sd-perm-info-area-col">
-          <div class="sd-perm-info-area-weightcol">
-            <div class="sd-perm-info-area-sub3cell White StartAlign">GW</div>
-            <div class={this.gwClass}>{this.gwText}</div>
-            <div class="sd-perm-info-area-sub3cell F22 Cyan">{this.userWeight}</div>
+          <text x={705} y={696} class={this.gwClass}>
+            {this.gwText}
+          </text>
+          <text x={705} y={724} class={this.gwClass}>
+            {this.grossWeightCgText}
+          </text>
+          <text x={705} y={752} class="F27 Green EndAlign">
+            {this.fuelWeightText}
+          </text>
 
-            <div class="sd-perm-info-area-sub3cell White StartAlign">GWCG</div>
-            <div class={this.gwClass}>{this.grossWeightCgText}</div>
-            <div class="sd-perm-info-area-sub3cell F22 Cyan">%</div>
-
-            <div class="sd-perm-info-area-sub3cell White StartAlign">FOB</div>
-            <div class="sd-perm-info-area-sub3cell F27 Green EndAlign">{this.fuelWeightText}</div>
-            <div class="sd-perm-info-area-sub3cell F22 Cyan">{this.userWeight}</div>
-          </div>
-        </div>
-      </div>
+          <text x={711} y={696} class="F22 Cyan">
+            {this.userWeight}
+          </text>
+          <text x={711} y={724} class="F22 Cyan">
+            %
+          </text>
+          <text x={711} y={752} class="F22 Cyan">
+            {this.userWeight}
+          </text>
+        </svg>
+      </>
     );
   }
 }
