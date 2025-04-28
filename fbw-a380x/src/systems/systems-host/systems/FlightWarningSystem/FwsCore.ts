@@ -3342,8 +3342,8 @@ export class FwsCore {
 
     const [mancabinVs] = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute');
     const cabinVsArinc = Arinc429Register.empty();
-    cabinVsArinc.setFromSimVar(`L:A32NX_PRESS_CABIN_VS_B`);
-    const cabinVs = cabinVsArinc.isNormalOperation() ? cabinVsArinc.value : mancabinVs;
+    cabinVsArinc.setFromSimVar(`L:A32NX_PRESS_CABIN_VS_B${cpcsToUseId}`);
+    const cabinVs = cabinVsArinc.isNormalOperation() ? cabinVsArinc.valueOr(0) : mancabinVs;
     this.abnormalCabVirticalSpeed.set(cabinVs > 1800 || cabinVs < -6350);
 
     // 0: Man, 1: Low, 2: Norm, 3: High
