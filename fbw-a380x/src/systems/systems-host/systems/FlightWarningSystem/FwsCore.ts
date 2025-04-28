@@ -3340,7 +3340,7 @@ export class FwsCore {
         : this.cabinAltitude.valueOr(0)) >= 8550,
     );
 
-    const [mancabinVs] = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute');
+    const mancabinVs = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute');
     const cabinVsArinc = Arinc429Register.empty();
     cabinVsArinc.setFromSimVar(`L:A32NX_PRESS_CABIN_VS_B${cpcsToUseId}`);
     const cabinVs = cabinVsArinc.isNormalOperation() ? cabinVsArinc.valueOr(0) : mancabinVs;
