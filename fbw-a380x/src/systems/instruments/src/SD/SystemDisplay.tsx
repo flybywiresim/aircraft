@@ -18,7 +18,6 @@ import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
 import { WheelPage } from './Pages/Wheel/WheelPage';
 import { FctlPage } from './Pages/Fctl/FctlPage';
 import { VideoPage } from './Pages/Video/VideoPage';
-import { CruisePage } from './Pages/Cruise/CruisePage';
 import { StatusPage } from './Pages/Status/StatusPage';
 
 import '../index.scss';
