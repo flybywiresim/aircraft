@@ -567,7 +567,10 @@ export class EfisSymbols<T extends number> {
       // End of VD marker needs direction
       let direction: number | undefined = undefined;
 
-      if (pwp.efisPwpSymbolFlag & NdPwpSymbolTypeFlags.PwpEndOfVdMarker) {
+      if (
+        pwp.efisPwpSymbolFlag & NdPwpSymbolTypeFlags.PwpEndOfVdMarker &&
+        this.guidanceController.activeGeometry.legs.has(pwp.alongLegIndex)
+      ) {
         const leg = this.guidanceController.activeGeometry.legs.get(pwp.alongLegIndex);
         const orientation = Geometry.getLegOrientationAtDistanceFromEnd(leg, pwp.distanceFromLegTermination);
         if (orientation !== null) {

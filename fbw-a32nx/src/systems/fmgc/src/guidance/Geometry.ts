@@ -743,6 +743,10 @@ export class Geometry {
   }
 
   static getLegOrientationAtDistanceFromEnd(leg: Leg, distanceFromLegTermination: number): number | null {
+    if (!leg) {
+      return null;
+    }
+
     const geometry = [];
 
     if (leg.inboundGuidable.predictedPath && leg.inboundGuidable.predictedPath.length > 0) {
