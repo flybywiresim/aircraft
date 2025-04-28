@@ -17,6 +17,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { pathVectorLength } from './PathVector';
 
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
@@ -672,6 +673,14 @@ export class PseudoWaypoints implements GuidanceComponent {
     const distanceFromEnd =
       geometry.legs.get(this.guidanceController.activeLegIndex).calculated.cumulativeDistanceToEndWithTransitions -
       vdRange;
+
+    const totalGeoLength = geometry
+      .getAllPathVectors()
+      .map((v) => pathVectorLength(v))
+      .reduce((sum, current) => sum + current, 0);
+    if (distanceFromEnd > totalGeoLength) {
+      return null;
+    }
 
     const position = this.pointFromEndOfPath(geometry, geometry.legs.size, distanceFromEnd);
     if (!position) {
