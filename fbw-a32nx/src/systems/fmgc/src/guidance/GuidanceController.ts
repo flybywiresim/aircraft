@@ -54,8 +54,8 @@ export interface Fmgc {
   getFlightPhase(): FmgcFlightPhase;
   getManagedCruiseSpeed(): Knots;
   getManagedCruiseSpeedMach(): Mach;
-  getClimbSpeedLimit(): SpeedLimit;
-  getDescentSpeedLimit(): SpeedLimit;
+  getClimbSpeedLimit(): SpeedLimit | null;
+  getDescentSpeedLimit(): SpeedLimit | null;
   getPreSelectedClbSpeed(): Knots;
   getPreSelectedCruiseSpeed(): Knots;
   getTakeoffFlapsSetting(): FlapConf | undefined;
@@ -230,7 +230,7 @@ export class GuidanceController {
         if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
           const appr = this.flightPlanService.active.approach;
           // Nothing is shown on the ND for runway-by-itself approaches
-          apprMsg = appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr) : '';
+          apprMsg = appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr).padEnd(9) : '';
         }
       }
     }

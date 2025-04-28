@@ -440,6 +440,15 @@ export class FwsCore {
 
   public readonly apuBleedValveOpen = Subject.create(false);
 
+  public readonly apuBleedPbOn = Subject.create(false);
+
+  public readonly apuBleedPbOnOver22500ft = Subject.create(false);
+
+  public readonly eng1BleedAbnormalOff = Subject.create(false);
+  public readonly eng2BleedAbnormalOff = Subject.create(false);
+  public readonly eng3BleedAbnormalOff = Subject.create(false);
+  public readonly eng4BleedAbnormalOff = Subject.create(false);
+
   public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
 
   public readonly excessCabinAltitude = Subject.create(false);
@@ -851,7 +860,9 @@ export class FwsCore {
 
   public readonly rudderTrimPosition = Subject.create(0);
 
-  public readonly flapsLeverNotZeroWarning = Subject.create(false);
+  public readonly flapsLeverNotZero = Subject.create(false);
+
+  public readonly flapsBaulkActiveWord = Arinc429Register.empty();
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
@@ -895,13 +906,17 @@ export class FwsCore {
 
   public readonly engine4ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_4'), false);
 
+  // Only check feed pumps for now, heavy enough
+  public readonly feedTankPumps = Array.from(Array(8), (_, idx) =>
+    ConsumerSubject.create(this.sub.on(`fuel_pump_active_${idx + 1}`), false),
+  );
+
   public readonly allFuelPumpsOff = Subject.create(false);
 
-  public readonly centerFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_1'), false);
+  public readonly allFeedTankPumpsOff = MappedSubject.create(SubscribableMapFunctions.nor(), ...this.feedTankPumps);
+  public readonly allFeedTankPumpsOn = MappedSubject.create(SubscribableMapFunctions.and(), ...this.feedTankPumps);
 
   public readonly feedTank1Low = Subject.create(false);
-
-  public readonly centerFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_4'), false);
 
   public readonly feedTank1LowConfirm = new NXLogicConfirmNode(30, true);
 
@@ -915,17 +930,9 @@ export class FwsCore {
 
   public readonly feedTank4Low = Subject.create(false);
 
-  public readonly leftFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_2'), false);
-
-  public readonly leftFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_5'), false);
-
   public readonly rightFuelLow = Subject.create(false);
 
   public readonly rightFuelLowConfirm = new NXLogicConfirmNode(30, true);
-
-  public readonly rightFuelPump1Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_3'), false);
-
-  public readonly rightFuelPump2Auto = ConsumerSubject.create(this.sub.on('fuel_pump_switch_6'), false);
 
   public readonly feedTank4LowConfirm = new NXLogicConfirmNode(30, true);
 
@@ -939,14 +946,6 @@ export class FwsCore {
     this.crossFeed2ValveOpen,
     this.crossFeed3ValveOpen,
     this.crossFeed4ValveOpen,
-  );
-
-  public readonly allFeedTankPumpsOn = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.engine1ValueSwitch,
-    this.engine2ValueSwitch,
-    this.engine3ValueSwitch,
-    this.engine4ValueSwitch,
   );
 
   public readonly crossFeedOpenMemo = MappedSubject.create(
@@ -1431,33 +1430,25 @@ export class FwsCore {
 
   public readonly oneEngineRunning = Subject.create(false);
 
-  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
-
-  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), 0);
-
-  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine3Master'), 0);
-
-  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine4Master'), 0);
+  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine_master_1'), 0);
+  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine_master_2'), 0);
+  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine_master_3'), 0);
+  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine_master_4'), 0);
 
   public readonly engine1State = Subject.create(0);
-
   public readonly engine2State = Subject.create(0);
-
   public readonly engine3State = Subject.create(0);
-
   public readonly engine4State = Subject.create(0);
 
   public readonly N1Eng1 = Subject.create(0);
-
   public readonly N1Eng2 = Subject.create(0);
-
   public readonly N1Eng3 = Subject.create(0);
-
   public readonly N1Eng4 = Subject.create(0);
 
-  public readonly N2Eng1 = Subject.create(0);
-
-  public readonly N2Eng2 = Subject.create(0);
+  public readonly HPNEng1 = Subject.create(0);
+  public readonly HPNEng2 = Subject.create(0);
+  public readonly HPNEng3 = Subject.create(0);
+  public readonly HPNEng4 = Subject.create(0);
 
   public readonly N1IdleEng = Subject.create(0);
 
@@ -1478,15 +1469,25 @@ export class FwsCore {
   // this is absolute min at low temperatures
   public readonly engine1CoreAtOrAboveMinIdle = MappedSubject.create(
     ([n2]) => n2 >= (100 * 10630) / 16645,
-    this.N2Eng1,
+    this.HPNEng1,
   );
 
   public readonly engine2CoreAtOrAboveMinIdle = MappedSubject.create(
     ([n2]) => n2 >= (100 * 10630) / 16645,
-    this.N2Eng2,
+    this.HPNEng2,
   );
 
-  public readonly engDualFault = Subject.create(false);
+  public readonly engine3CoreAtOrAboveMinIdle = MappedSubject.create(
+    ([n2]) => n2 >= (100 * 10630) / 16645,
+    this.HPNEng3,
+  );
+
+  public readonly engine4CoreAtOrAboveMinIdle = MappedSubject.create(
+    ([n2]) => n2 >= (100 * 10630) / 16645,
+    this.HPNEng4,
+  );
+
+  public readonly allEngFault = Subject.create(false);
 
   public readonly engine1Generator = Subject.create(false);
 
@@ -1741,20 +1742,20 @@ export class FwsCore {
       });
     });
 
+    for (const s of this.feedTankPumps) {
+      this.subs.push(s);
+    }
+
     this.subs.push(
       this.statusNormal,
       this.masterCautionOutput,
       this.masterWarningOutput,
-      this.centerFuelPump1Auto,
-      this.centerFuelPump2Auto,
-      this.leftFuelPump1Auto,
-      this.leftFuelPump2Auto,
-      this.rightFuelPump1Auto,
-      this.rightFuelPump2Auto,
       this.fuelOnBoard,
       this.fuelingInitiated,
       this.fuelingTarget,
       this.refuelPanelOpen,
+      this.allFeedTankPumpsOff,
+      this.allFeedTankPumpsOn,
       this.allCrossFeedValvesOpen,
       this.crossFeedOpenMemo,
       this.refuelPanelOpen,
@@ -1916,22 +1917,6 @@ export class FwsCore {
   healthInjector(): void {
     SimVar.SetSimVarValue('L:A32NX_NO_SMOKING_MEMO', SimVarValueType.Bool, true);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', SimVarValueType.Bool, true);
-
-    [1, 2].forEach((i) => {
-      const dw = Arinc429Register.empty();
-      dw.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-      dw.setBitValue(11, true);
-      dw.setBitValue(16, true);
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_1`, dw.value, dw.ssm);
-      dw.setValue(0);
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_2`, dw.value, dw.ssm);
-      [11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25].forEach((i) => dw.setBitValue(i, true));
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_3`, dw.value, dw.ssm);
-      dw.setValue(0);
-      dw.setBitValue(27, SimVar.GetSimVarValue('L:A32NX_SPOILERS_ARMED', SimVarValueType.Bool));
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_4`, dw.value, dw.ssm);
-      Arinc429Word.toSimVarValue(`L:A32NX_FCDC_${i}_DISCRETE_WORD_5`, dw.value, dw.ssm);
-    });
   }
 
   mapOrder(array, order): [] {
@@ -2205,14 +2190,17 @@ export class FwsCore {
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
     this.N1Eng3.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:3', 'number'));
     this.N1Eng4.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:4', 'number'));
-    this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
-    this.N2Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number'));
+    this.HPNEng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:1', 'number'));
+    this.HPNEng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:2', 'number'));
+    this.HPNEng3.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:3', 'number'));
+    this.HPNEng4.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:4', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
 
     // Flaps
     this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
+    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD');
 
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
@@ -2225,6 +2213,28 @@ export class FwsCore {
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool'));
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
+
+    this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
+    const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
+    const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEngFault.get());
+    this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
+
+    this.eng1BleedAbnormalOff.set(
+      this.engine1Running.get() &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
+    this.eng2BleedAbnormalOff.set(
+      this.engine2Running.get() &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
+    this.eng3BleedAbnormalOff.set(
+      this.engine3Running.get() &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
+    this.eng4BleedAbnormalOff.set(
+      this.engine4Running.get() &&
+        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
+    );
 
     this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
@@ -2909,12 +2919,24 @@ export class FwsCore {
       engThreeOrFourTakeoffPower || (this.eng3Or4TakeoffPowerConfirm.read() && !raAbove1500),
     );
 
-    this.engDualFault.set(
+    this.allEngFault.set(
       !this.aircraftOnGround.get() &&
-        ((this.fireButtonEng1.get() && this.fireButtonEng2.get()) ||
-          (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
-          (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
-          (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
+        ((this.fireButtonEng1.get() &&
+          this.fireButtonEng2.get() &&
+          this.fireButtonEng3.get() &&
+          this.fireButtonEng4.get()) ||
+          (!this.engine1ValueSwitch.get() &&
+            !this.engine2ValueSwitch.get() &&
+            !this.engine3ValueSwitch.get() &&
+            !this.engine4ValueSwitch.get()) ||
+          (this.engine1State.get() === 0 &&
+            this.engine2State.get() === 0 &&
+            this.engine3State.get() === 0 &&
+            this.engine4State.get() === 0) ||
+          (!this.engine1CoreAtOrAboveMinIdle.get() &&
+            !this.engine2CoreAtOrAboveMinIdle.get() &&
+            !this.engine3CoreAtOrAboveMinIdle.get() &&
+            !this.engine4CoreAtOrAboveMinIdle.get())),
     );
 
     /* 22 - AUTOFLIGHT */
@@ -3379,26 +3401,12 @@ export class FwsCore {
     );
 
     this.allEngineSwitchOff.set(
-      !(
-        this.engine1ValueSwitch.get() ||
-        this.engine2ValueSwitch.get() ||
-        this.engine3ValueSwitch.get() ||
-        this.engine4ValueSwitch.get()
-      ),
-    );
-    this.allFuelPumpsOff.set(
       !this.engine1ValueSwitch.get() &&
         !this.engine2ValueSwitch.get() &&
         !this.engine3ValueSwitch.get() &&
-        !this.engine4ValueSwitch.get() &&
-        !this.centerFuelPump1Auto.get() &&
-        !this.centerFuelPump2Auto.get() &&
-        !this.leftFuelPump1Auto.get() &&
-        !this.leftFuelPump2Auto.get() &&
-        !this.rightFuelPump1Auto.get() &&
-        !this.rightFuelPump2Auto.get() &&
-        this.allEngineSwitchOff.get(),
+        !this.engine4ValueSwitch.get(),
     );
+    this.allFuelPumpsOff.set(this.allFeedTankPumpsOff.get() && this.allEngineSwitchOff.get());
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
@@ -3676,10 +3684,11 @@ export class FwsCore {
     this.rudderTrimNotToWarning.set(rudderTrimConfigTestInPhase129 || this.rudderTrimConfigInPhase3or4or5Sr.read());
 
     // flaps lvr not zero
-    this.flapsLeverNotZeroWarning.set(
+    this.flapsLeverNotZero.set(
       (adr1PressureAltitude.valueOr(0) >= 22000 ||
         adr2PressureAltitude.valueOr(0) >= 22000 ||
-        adr3PressureAltitude.valueOr(0) >= 22000) &&
+        adr3PressureAltitude.valueOr(0) >= 22000 ||
+        this.flapsBaulkActiveWord.bitValueOr(25, false)) &&
         this.flightPhase.get() === 8 &&
         !this.slatFlapSelectionS0F0,
     );
