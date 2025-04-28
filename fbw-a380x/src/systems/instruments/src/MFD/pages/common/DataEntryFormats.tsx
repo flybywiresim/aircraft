@@ -1619,3 +1619,71 @@ export class RadiusFormat implements DataEntryFormat<number> {
     }
   }
 }
+
+// OFFSET intercept behaves differently to the other types of angles in the jets. Grumble Grumble
+export class OffsetAngleFormat implements DataEntryFormat<number> {
+  public placeholder = '--';
+
+  public maxDigits = 2;
+
+  private minValue = 10;
+
+  private maxValue = 50;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, '°'] as FieldFormatTuple;
+    }
+    return [value.toFixed(0), null, '°'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (Number.isFinite(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
+
+// This can also contain a letter indicating L or R offset. Airbus stop making my job harder
+export class OffsetDistFormat implements DataEntryFormat<number> {
+  public placeholder = '--';
+
+  public maxDigits = 3;
+
+  private minValue = 0;
+
+  private maxValue = 50;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, 'NM'] as FieldFormatTuple;
+    }
+    return [value.toFixed(0), null, 'NM'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (Number.isFinite(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}

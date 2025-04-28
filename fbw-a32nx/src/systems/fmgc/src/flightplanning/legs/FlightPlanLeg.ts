@@ -19,7 +19,7 @@ import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/legs/Flight
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
-import { HoldData } from '@fmgc/flightplanning/data/flightplan';
+import { HoldData, OffsetData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
@@ -42,6 +42,7 @@ export interface SerializedFlightPlanLeg {
   cruiseStep: CruiseStepEntry | undefined;
   pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
   pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
+  lateralOffset: OffsetData | undefined;
 }
 
 export enum FlightPlanLegFlags {
@@ -107,6 +108,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
 
   calculated: LegCalculations | undefined;
 
+  lateralOffset: OffsetData | undefined = undefined;
+
   serialize(): SerializedFlightPlanLeg {
     return {
       ident: this.ident,
@@ -125,6 +128,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       pilotEnteredSpeedConstraint: this.pilotEnteredSpeedConstraint
         ? JSON.parse(JSON.stringify(this.pilotEnteredSpeedConstraint))
         : undefined,
+      lateralOffset: this.lateralOffset ? JSON.parse(JSON.stringify(this.lateralOffset)) : undefined,
     };
   }
 
@@ -145,6 +149,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     leg.cruiseStep = serialized.cruiseStep;
     leg.pilotEnteredAltitudeConstraint = serialized.pilotEnteredAltitudeConstraint;
     leg.pilotEnteredSpeedConstraint = serialized.pilotEnteredSpeedConstraint;
+    leg.lateralOffset = serialized.lateralOffset;
 
     return leg;
   }
@@ -290,6 +295,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.pilotEnteredSpeedConstraint = from.pilotEnteredSpeedConstraint;
     this.constraintType = from.constraintType;
     this.cruiseStep = from.cruiseStep;
+    this.lateralOffset = from.lateralOffset;
     /**
      * Don't copy holds. When we string the arrival to the upstream plan, the upstream plan may have a hold
      * and the downstream leg doesn't, but the upstream leg is the one that's kept. In this case, we don't want to remove the hold
