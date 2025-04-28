@@ -1525,9 +1525,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     element.pilotEnteredAltitudeConstraint = constraint;
     if (!constraint) {
-      element.definition.altitudeDescriptor = AltitudeDescriptor.None;
-      element.definition.altitude1 = undefined;
-      element.definition.altitude2 = undefined;
+      element.clearAltitudeConstraints();
     }
 
     this.syncLegDefinitionChange(index);
@@ -1549,9 +1547,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     if (!speed) {
-      element.pilotEnteredSpeedConstraint = undefined;
-      element.definition.speedDescriptor = undefined;
-      element.definition.speed = undefined;
+      element.clearSpeedConstraints();
     } else {
       element.pilotEnteredSpeedConstraint = { speedDescriptor: SpeedDescriptor.Maximum, speed };
     }

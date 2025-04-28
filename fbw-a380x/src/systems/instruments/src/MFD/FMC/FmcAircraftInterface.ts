@@ -643,12 +643,12 @@ export class FmcAircraftInterface {
     // apply speed limit/alt
     if (this.flightPhase.get() <= FmgcFlightPhase.Cruise) {
       const climbSpeedLimit = this.fmgc.getClimbSpeedLimit();
-      if (climbSpeedLimit.speed !== null && alt <= climbSpeedLimit.underAltitude) {
+      if (climbSpeedLimit !== null && alt <= climbSpeedLimit.underAltitude) {
         kcas = Math.min(climbSpeedLimit.speed, kcas);
       }
     } else if (this.flightPhase.get() < FmgcFlightPhase.GoAround) {
       const descentSpeedLimit = this.fmgc.getDescentSpeedLimit();
-      if (descentSpeedLimit.speed !== null && alt <= descentSpeedLimit.underAltitude) {
+      if (descentSpeedLimit !== null && alt <= descentSpeedLimit.underAltitude) {
         kcas = Math.min(descentSpeedLimit.speed, kcas);
       }
     }
@@ -821,12 +821,10 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Climb: {
           let speed = this.fmgc.getManagedClimbSpeed();
+          const speedLimit = this.fmgc.getClimbSpeedLimit();
 
-          if (
-            this.fmgc.getClimbSpeedLimit() !== undefined &&
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < this.fmgc.getClimbSpeedLimit().underAltitude
-          ) {
-            speed = Math.min(speed, this.fmgc.getClimbSpeedLimit().speed);
+          if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
+            speed = Math.min(speed, speedLimit.speed);
           }
 
           speed = Math.min(speed, this.getSpeedConstraint());
@@ -837,12 +835,9 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Cruise: {
           let speed = this.fmgc.getManagedCruiseSpeed();
-
-          if (
-            this.fmgc.getClimbSpeedLimit() !== undefined &&
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < this.fmgc.getClimbSpeedLimit().underAltitude
-          ) {
-            speed = Math.min(speed, this.fmgc.getClimbSpeedLimit().speed);
+          const speedLimit = this.fmgc.getClimbSpeedLimit();
+          if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
+            speed = Math.min(speed, speedLimit.speed);
           }
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedCruiseSpeedMach());
@@ -999,17 +994,17 @@ export class FmcAircraftInterface {
   private speedLimitExceeded = false;
 
   checkSpeedLimit() {
-    let speedLimit: number;
-    let speedLimitAlt: number;
+    let speedLimit: number | undefined;
+    let speedLimitAlt: number | undefined;
     switch (this.flightPhase.get()) {
       case FmgcFlightPhase.Climb:
       case FmgcFlightPhase.Cruise:
-        speedLimit = this.fmgc.getClimbSpeedLimit().speed;
-        speedLimitAlt = this.fmgc.getClimbSpeedLimit().underAltitude;
+        speedLimit = this.fmgc.getClimbSpeedLimit()?.speed;
+        speedLimitAlt = this.fmgc.getClimbSpeedLimit()?.underAltitude;
         break;
       case FmgcFlightPhase.Descent:
-        speedLimit = this.fmgc.getDescentSpeedLimit().speed;
-        speedLimitAlt = this.fmgc.getDescentSpeedLimit().underAltitude;
+        speedLimit = this.fmgc.getDescentSpeedLimit()?.speed;
+        speedLimitAlt = this.fmgc.getDescentSpeedLimit()?.underAltitude;
         break;
       default:
         // no speed limit in other phases
@@ -1017,7 +1012,7 @@ export class FmcAircraftInterface {
         return;
     }
 
-    if (speedLimit === undefined) {
+    if (speedLimit === undefined || speedLimitAlt === undefined) {
       this.speedLimitExceeded = false;
       return;
     }

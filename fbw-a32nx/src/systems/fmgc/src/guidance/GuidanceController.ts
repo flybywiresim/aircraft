@@ -54,8 +54,8 @@ export interface Fmgc {
   getFlightPhase(): FmgcFlightPhase;
   getManagedCruiseSpeed(): Knots;
   getManagedCruiseSpeedMach(): Mach;
-  getClimbSpeedLimit(): SpeedLimit;
-  getDescentSpeedLimit(): SpeedLimit;
+  getClimbSpeedLimit(): SpeedLimit | null;
+  getDescentSpeedLimit(): SpeedLimit | null;
   getPreSelectedClbSpeed(): Knots;
   getPreSelectedCruiseSpeed(): Knots;
   getTakeoffFlapsSetting(): FlapConf | undefined;
