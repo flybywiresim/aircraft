@@ -183,13 +183,13 @@ export class PseudoWaypoints implements GuidanceComponent {
     if (this.acConfig.lnavConfig.EMIT_END_OF_VD_MARKER) {
       // END OF VD MARKER
       const endOfVdLeft = this.createEndOfVdMarker(geometry, 'L');
-      if (endOfVdLeft) {
+      if (endOfVdLeft !== null) {
         newPseudoWaypoints.push(endOfVdLeft);
       }
 
       const endOfVdRight = this.createEndOfVdMarker(geometry, 'R');
-      if (endOfVdRight) {
-        newPseudoWaypoints.push(endOfVdLeft);
+      if (endOfVdRight !== null) {
+        newPseudoWaypoints.push(endOfVdRight);
       }
     }
 
