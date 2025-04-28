@@ -3344,7 +3344,7 @@ export class FwsCore {
     const cabinVsArinc = Arinc429Register.empty();
     cabinVsArinc.setFromSimVar(`L:A32NX_PRESS_CABIN_VS_B`);
     const cabinVs = cabinVsArinc.isNormalOperation() ? cabinVsArinc.value : mancabinVs;
-    this.abnormalCabVirticalSpeed.set(cabinVs.valueOr(0) > 1800 || cabinVs.valueOr(0) < -6350);
+    this.abnormalCabVirticalSpeed.set(cabinVs > 1800 || cabinVs < -6350);
 
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
