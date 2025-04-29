@@ -111,19 +111,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.destEfob,
   );
 
-  private readonly efobUnitVisiblity = this.destEfobNotAvailable.map((v) => (v ? 'hidden' : 'visible'));
+  private readonly destEfobUnitVisiblity = this.destEfobNotAvailable.map((v) => (v ? 'hidden' : 'visible'));
 
-  private readonly distanceToDistination = Subject.create<number | null>(null);
+  private readonly distanceToDest = Subject.create<number | null>(null);
 
-  private readonly destDistanceLabel = this.distanceToDistination.map((v) => (v !== null ? v.toFixed(0) : '----'));
+  private readonly distanceToDestLabel = this.distanceToDest.map((v) => (v !== null ? v.toFixed(0) : '----'));
 
-  private readonly destDistanceNotAvailable = MappedSubject.create(
+  private readonly distanceToDestNotAvail = MappedSubject.create(
     ([tmpy, distance]) => !tmpy && distance == null,
     this.tmpyActive,
-    this.distanceToDistination,
+    this.distanceToDest,
   );
 
-  private readonly destDistanceUnitVisiblity = this.destDistanceNotAvailable.map((v) => (v ? 'hidden' : 'visible'));
+  private readonly distanceToDestUnitVisibility = this.distanceToDestNotAvail.map((v) => (v ? 'hidden' : 'visible'));
 
   private readonly displayFplnFromLineIndex = Subject.create<number>(0);
 
@@ -225,9 +225,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.props.fmcService.master?.fmgc?.guidanceController?.alongTrackDistanceToDestination;
 
     if (distanceToDestination) {
-      this.distanceToDistination.set(distanceToDestination);
+      this.distanceToDest.set(distanceToDestination);
     } else {
-      this.distanceToDistination.set(null);
+      this.distanceToDest.set(null);
     }
 
     if (destPred && this.props.fmcService.master) {
@@ -751,8 +751,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.preflightPhase,
       this.destTimeNotAvail,
       this.destEfobNotAvailable,
-      this.destDistanceNotAvailable,
-      this.destDistanceUnitVisiblity,
+      this.distanceToDestNotAvail,
+      this.distanceToDestUnitVisibility,
     );
   }
 
@@ -1032,7 +1032,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               >
                 {this.destEfobLabel}
               </span>
-              <span class="mfd-label-unit mfd-unit-trailing" style={{ visibility: this.efobUnitVisiblity }}>
+              <span class="mfd-label-unit mfd-unit-trailing" style={{ visibility: this.destEfobUnitVisiblity }}>
                 T
               </span>
             </div>
@@ -1041,12 +1041,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 class={{
                   'mfd-label': true,
                   'mfd-fms-yellow-text': this.lineColorIsTemporary,
-                  'mfd-fms-green-text': this.destDistanceNotAvailable,
+                  'mfd-fms-green-text': this.distanceToDestNotAvail,
                 }}
               >
-                {this.destDistanceLabel}
+                {this.distanceToDestLabel}
               </span>
-              <span class="mfd-label-unit mfd-unit-trailing" style={{ visibility: this.destDistanceUnitVisiblity }}>
+              <span class="mfd-label-unit mfd-unit-trailing" style={{ visibility: this.distanceToDestUnitVisibility }}>
                 NM
               </span>
             </div>
