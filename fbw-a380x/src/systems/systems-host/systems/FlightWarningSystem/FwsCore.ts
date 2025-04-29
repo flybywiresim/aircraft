@@ -1568,6 +1568,8 @@ export class FwsCore {
 
   public readonly apuEmerShutdown = Subject.create(false);
 
+  public readonly apuFault = Subject.create(false);
+
   /* ICE */
 
   public readonly iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
@@ -4003,6 +4005,8 @@ export class FwsCore {
         this.machSelectedFromAdr.get() < 0.45,
       ) && this.apuAvail.get() === 1,
     );
+
+    this.apuFault.set((this.apuEmerShutdown || this.apuAutoShutdown) && !this.apuFireDetected.get());
 
     /* ANTI ICE */
 
