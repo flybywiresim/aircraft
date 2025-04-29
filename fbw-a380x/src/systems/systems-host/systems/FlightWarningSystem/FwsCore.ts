@@ -4004,8 +4004,6 @@ export class FwsCore {
       ) && this.apuAvail.get() === 1,
     );
 
-    this.apuEmerShutdown.set(!this.apuFireDetected.get());
-
     /* ANTI ICE */
 
     const icePercentage = SimVar.GetSimVarValue('STRUCTURAL ICE PCT', 'percent over 100');
