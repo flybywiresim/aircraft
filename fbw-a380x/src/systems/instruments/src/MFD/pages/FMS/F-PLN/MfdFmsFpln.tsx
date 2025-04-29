@@ -252,8 +252,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
         this.lineData.push({
           type: FplnLineType.Waypoint,
-          label: 'PPOS',
+          ident: 'PPOS',
           originalLegIndex: null,
+          isPseudoWaypoint: false,
+          isAltnWaypoint: false,
+          isMissedAppchWaypoint: false,
+          distFromLastWpt: null,
         });
 
         this.lineData.push(this.endOfFlightPlan);
@@ -261,7 +265,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.lineData.push(this.endOfAlternateFlightPlan);
         shouldOnlyUpdatePredictions = false;
         this.emptyFlightPlanRendered = true;
-        console.log('RENDERING EMPTY FPLN LINE');
       } else {
         return;
       }
@@ -497,7 +500,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     const untilLegIndex = Math.min(this.lineData.length, startAtIndexChecked + (this.tmpyActive.get() ? 8 : 9));
-    console.log(untilLegIndex);
     for (let drawIndex = startAtIndexChecked; drawIndex < untilLegIndex; drawIndex++) {
       if (drawIndex > this.lineData.length - 1) {
         // Insert empty line
@@ -1236,7 +1238,7 @@ interface FplnLineHoldDisplayData extends FplnLineTypeDiscriminator {
   isAltnWaypoint: boolean;
   isMissedAppchWaypoint: boolean;
   ident: string;
-  holdSpeed: number;
+  holdSpeed?: number;
   distFromLastWpt: number | null;
 }
 
@@ -1441,7 +1443,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             const date = new Date(data.etaOrSecondsFromPresent);
             this.timeRef.instance.innerText = `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`;
           } else {
-            if (data.originalLegIndex) this.timeRef.instance.innerText = '--:--';
+            this.timeRef.instance.innerText = '--:--';
           }
         } else {
           this.timeRef.instance.innerText = '--:--';
