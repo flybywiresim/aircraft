@@ -68,7 +68,7 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     /// of the aircraft.
     /// In the context of the ecb this means that the APU cooldown is skipped.
     aircraft_preset_quick_mode: bool,
-    auto_emergency_shutdown: bool,
+
     constants: PhantomData<C>,
 }
 impl<C: ApuConstants> ElectronicControlBox<C> {
@@ -121,7 +121,6 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             on_ground: false,
             inlet_pressure: Pressure::new::<bar>(0.94),
             aircraft_preset_quick_mode: false,
-            auto_emergency_shutdown: false,
 
             constants: PhantomData,
         }
@@ -148,21 +147,15 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         self.start_is_on = overhead.start_is_on();
         self.bleed_is_on = apu_bleed_is_on;
         self.fire_button_is_released = fire_overhead.fire_button_is_released();
-        // Only set emergency shutdown when fire button is pressed
         if fire_overhead.fire_button_is_released() {
             self.fault = Some(ApuFault::ApuFire);
         }
     }
 
-    // Remove the fire detection from this method since it should only handle automatic shutdowns
-    pub fn update_apu_fire(&mut self, _should_emergency_shut_down: bool) {
-        // Fire detection no longer triggers emergency shutdown directly
-        // It will be handled by a separate auto shutdown mechanism
-    }
-
-    pub fn is_emergency_shutdown(&self) -> bool {
-        // Emergency shutdown only when fire button is pressed
-        self.fire_button_is_released && self.fault == Some(ApuFault::ApuFire)
+    pub fn update_apu_fire(&mut self, should_emergency_shut_down: bool) {
+        if should_emergency_shut_down {
+            self.fault = Some(ApuFault::ApuFire)
+        }
     }
 
     pub fn update_air_intake_flap_state(&mut self, air_intake_flap: &AirIntakeFlap) {
@@ -318,8 +311,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     }
 
     pub fn is_emergency_shutdown(&self) -> bool {
-        // Emergency shutdown only when fire button is pressed
-        self.fire_button_is_released && self.fault == Some(ApuFault::ApuFire)
+        self.fault == Some(ApuFault::ApuFire)
     }
 
     pub fn is_inoperable(&self) -> bool {
@@ -400,7 +392,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         if self.aircraft_preset_quick_mode {
             cool_down_required = false;
             println!("apu/electronic_control_box.rs: Aircraft Preset Quick Mode is active. APU cooldown is skipped.");
-        } else if self.is_auto_shutdown() || self.is_emergency_shutdown() || self.is_auto_emergency_shutdown() {
+        } else if self.is_auto_shutdown() || self.is_emergency_shutdown() {
             cool_down_required = false;
         } else {
             cool_down_required = self
