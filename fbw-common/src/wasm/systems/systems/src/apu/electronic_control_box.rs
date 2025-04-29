@@ -311,8 +311,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     }
 
     pub fn is_emergency_shutdown(&self) -> bool {
-        // Only show emergency shutdown message when fire button is pressed
-        self.fire_button_is_released
+        self.fault == Some(ApuFault::ApuFire)
     }
 
     pub fn is_inoperable(&self) -> bool {
