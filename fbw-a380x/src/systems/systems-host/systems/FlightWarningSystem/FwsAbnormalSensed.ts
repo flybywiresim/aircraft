@@ -3792,8 +3792,13 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.apuFault, // FAULT
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [this.fws.apuEmerShutdown.get(), this.fws.apuAutoShutdown.get(), true],
-      whichItemsChecked: () => [false, false, !this.fws.apuMasterSwitch.get()],
+      whichItemsToShow: () => [this.fws.apuEmerShutdown.get(), this.fws.apuAutoShutdown.get(), true, true],
+      whichItemsChecked: () => [
+        false,
+        false,
+        !this.fws.apuMasterSwitch.get(),
+        this.fws.apuEmerShutdown.get() || this.fws.apuAutoShutdown.get(),
+      ],
       failure: 2,
       sysPage: SdPages.Apu,
       inopSysAllPhases: () => ['490300001'],

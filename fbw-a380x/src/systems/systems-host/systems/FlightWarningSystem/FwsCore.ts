@@ -4006,7 +4006,7 @@ export class FwsCore {
       ) && this.apuAvail.get() === 1,
     );
 
-    this.apuFault.set((this.apuEmerShutdown || this.apuAutoShutdown) && !this.apuFireDetected.get());
+    this.apuFault.set((this.apuEmerShutdown.get() || this.apuAutoShutdown.get()) && !this.apuFireDetected.get());
 
     /* ANTI ICE */
 
