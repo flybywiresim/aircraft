@@ -154,16 +154,10 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         }
     }
 
-    pub fn is_auto_emergency_shutdown(&self) -> bool {
-        // Returns true when there's a fire detected but the fire button hasn't been pressed
-        self.auto_emergency_shutdown
-    }
-
-    // We also need to add logic to set auto_emergency_shutdown in the update_apu_fire method
-    pub fn update_apu_fire(&mut self, should_emergency_shut_down: bool) {
-        if should_emergency_shut_down {
-            self.auto_emergency_shutdown = true;
-        }
+    // Remove the fire detection from this method since it should only handle automatic shutdowns
+    pub fn update_apu_fire(&mut self, _should_emergency_shut_down: bool) {
+        // Fire detection no longer triggers emergency shutdown directly
+        // It will be handled by a separate auto shutdown mechanism
     }
 
     pub fn is_emergency_shutdown(&self) -> bool {
