@@ -3811,7 +3811,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, !this.fws.apuMasterSwitch.get()],
       failure: 2,
       sysPage: SdPages.Apu,
-      inopSysAllPhases: () => [!this.fws.apuMasterSwitch.get() ? '490300001' : null],
+      inopSysAllPhases: () => ['490300001'],
     },
     // SECONDARY FAILURES
     999800001: {
