@@ -352,6 +352,13 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
           </TopTabNavigator>
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
+          <div style="width: 150px;">
+            <Button
+              label="RETURN"
+              onClick={() => this.props.mfd.uiService.navigateTo('back')}
+              buttonStyle="margin-right: 5px;"
+            />
+          </div>
         </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>
