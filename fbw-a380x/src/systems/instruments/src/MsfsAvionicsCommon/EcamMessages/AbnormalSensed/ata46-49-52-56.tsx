@@ -34,7 +34,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'IF APU NOT ABSOLUTELY RQRD :',
+        name: 'IF APU NOT ABSOLUTELY RQRD:',
         sensed: false,
         condition: true,
       },
