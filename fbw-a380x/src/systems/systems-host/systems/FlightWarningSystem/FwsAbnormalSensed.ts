@@ -3795,7 +3795,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [
         this.fws.apuEmerShutdown.get(),
         this.fws.apuAutoShutdown.get(),
-        !this.fws.apuEmerShutdown.get() || !this.fws.apuAutoShutdown.get(),
+        !this.fws.apuEmerShutdown.get() && !this.fws.apuAutoShutdown.get(),
         true,
       ],
       whichItemsChecked: () => [false, false, false, !this.fws.apuMasterSwitch.get()],
