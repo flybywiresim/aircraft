@@ -71,7 +71,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly positionFrozenAt = this.positionFrozen.map((v) => (v ? 'AT' : ''));
 
-  private readonly positionFrozenTime = this.positionFrozen.map((v) => (v ? '' : getEtaFromUtcOrPresent(0, false)));
+  private readonly positionFrozenTime = this.positionFrozen.map((v) => (v ? getEtaFromUtcOrPresent(0, false) : ''));
 
   private readonly gpsCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -227,7 +227,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
         {super.render()}
         {/* begin page content */}
         <div class="mfd-page-container">
-          <div style={'height:10px'}></div>
+          <div style={'height:7px'}></div>
           <div class="mfd-pos-top-row">
             <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
