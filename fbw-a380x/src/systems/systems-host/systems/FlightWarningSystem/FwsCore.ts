@@ -457,6 +457,8 @@ export class FwsCore {
 
   public readonly cabVerticalSpeedLimitationActive = Subject.create(false);
 
+  public readonly cabVsLimitationMemoryNode = new NXLogicMemoryNode(false);
+
   public readonly excessDiffPressure = Subject.create(false);
 
   public readonly diffPressure = Arinc429Register.empty();
@@ -3350,8 +3352,10 @@ export class FwsCore {
     this.abnormalCabVirticalSpeed.set(isAbnormalVs(cabinVs));
 
     if (this.abnormalCabVirticalSpeed.get()) {
+      this.cabVsLimitationMemoryNode.write(true, false);
       this.cabVerticalSpeedLimitationActive.set(true);
     } else if (this.shutDownFor50MinutesCheckListReset.get()) {
+      this.cabVsLimitationMemoryNode.write(false, true);
       this.cabVerticalSpeedLimitationActive.set(false);
     }
     // 0: Man, 1: Low, 2: Norm, 3: High
