@@ -455,7 +455,7 @@ export class FwsCore {
 
   public readonly abnormalCabVirticalSpeed = Subject.create(false);
 
-  public readonly cabVerticalSpeedLimitaionActive = Subject.create(false);
+  public readonly cabVerticalSpeedLimitationActive = Subject.create(false);
 
   public readonly excessDiffPressure = Subject.create(false);
 
@@ -3349,10 +3349,11 @@ export class FwsCore {
     const isAbnormalVs = (vs: number): boolean => vs > 1800 || vs < -6350;
     this.abnormalCabVirticalSpeed.set(isAbnormalVs(cabinVs));
 
-    this.cabVerticalSpeedLimitaionActive.set(
-      this.abnormalCabVirticalSpeed.get() ||
-        (this.cabVerticalSpeedLimitaionActive.get() && !this.shutDownFor50MinutesCheckListReset.get()),
-    );
+    if (this.abnormalCabVirticalSpeed.get()) {
+      this.cabVerticalSpeedLimitationActive.set(true);
+    } else if (this.shutDownFor50MinutesCheckListReset.get()) {
+      this.cabVerticalSpeedLimitationActive.set(false);
+    }
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
 
