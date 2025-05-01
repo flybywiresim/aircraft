@@ -3807,7 +3807,7 @@ export class FwsAbnormalSensed {
     },
     520800018: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main1ROpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
@@ -3826,7 +3826,7 @@ export class FwsAbnormalSensed {
     },
     520800019: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main2LOpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
@@ -3845,7 +3845,7 @@ export class FwsAbnormalSensed {
     },
     520800020: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main2ROpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
@@ -3864,7 +3864,7 @@ export class FwsAbnormalSensed {
     },
     520800021: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main3LOpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
@@ -3883,7 +3883,7 @@ export class FwsAbnormalSensed {
     },
     520800022: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main3ROpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
@@ -3902,7 +3902,7 @@ export class FwsAbnormalSensed {
     },
     520800023: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main4LOpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
@@ -3921,7 +3921,7 @@ export class FwsAbnormalSensed {
     },
     520800024: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main4ROpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
@@ -3940,7 +3940,7 @@ export class FwsAbnormalSensed {
     },
     520800025: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main5LOpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
@@ -3959,7 +3959,7 @@ export class FwsAbnormalSensed {
     },
     520800026: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
-      simVarIsActive: this.fws.main1LOpen,
+      simVarIsActive: this.fws.main4ROpen,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
