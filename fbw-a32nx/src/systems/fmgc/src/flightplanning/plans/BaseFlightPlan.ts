@@ -10,6 +10,7 @@ import {
   Approach,
   ApproachType,
   ApproachWaypointDescriptor,
+  areDatabaseItemsEqual,
   Arrival,
   ConstraintUtils,
   Departure,
@@ -2111,31 +2112,40 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const xiToXf = lastLegInFirst.isXI() && element.isXF();
 
         if (xiToXf) {
-          if (LnavConfig.VERBOSE_FPM_LOG) {
-            console.log(`[fpm] stringSegmentsForwards - cutBefore (xiToXf)) = ${i}`);
-          }
-
-          // Convert TF to CF
-          if (element.type === LegType.TF) {
-            const prevElement = second.allLegs[i - 1];
-            if (!prevElement || prevElement.isDiscontinuity === true) {
-              throw new Error('[FMS/FPM] TF leg without a preceding leg');
-            } else if (!prevElement.terminationWaypoint()) {
-              throw new Error('[FMS/FPM] TF leg without a preceding leg with a termination waypoint');
+          // If the last leg in the first segment is a PI leg, we need to check if the waypoint is the same as the one in the second segment
+          if (
+            lastLegInFirst.type !== LegType.PI ||
+            areDatabaseItemsEqual(lastLegInFirst.definition.waypoint, element.definition.waypoint)
+          ) {
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+              console.log(`[fpm] stringSegmentsForwards - cutBefore (xiToXf)) = ${i}`);
             }
 
-            const track = bearingTo(prevElement.terminationWaypoint().location, element.terminationWaypoint().location);
-            element.type = LegType.CF;
-            element.definition.magneticCourse = track;
-            // Get correct ident/annotation for CF leg
-            [element.ident, element.annotation] = procedureLegIdentAndAnnotation(
-              element.definition,
-              element.annotation,
-            );
-          }
+            // Convert TF to CF
+            if (element.type === LegType.TF) {
+              const prevElement = second.allLegs[i - 1];
+              if (!prevElement || prevElement.isDiscontinuity === true) {
+                throw new Error('[FMS/FPM] TF leg without a preceding leg');
+              } else if (!prevElement.terminationWaypoint()) {
+                throw new Error('[FMS/FPM] TF leg without a preceding leg with a termination waypoint');
+              }
 
-          cutBefore = i;
-          break;
+              const track = bearingTo(
+                prevElement.terminationWaypoint().location,
+                element.terminationWaypoint().location,
+              );
+              element.type = LegType.CF;
+              element.definition.magneticCourse = track;
+              // Get correct ident/annotation for CF leg
+              [element.ident, element.annotation] = procedureLegIdentAndAnnotation(
+                element.definition,
+                element.annotation,
+              );
+            }
+
+            cutBefore = i;
+            break;
+          }
         }
       }
     }
