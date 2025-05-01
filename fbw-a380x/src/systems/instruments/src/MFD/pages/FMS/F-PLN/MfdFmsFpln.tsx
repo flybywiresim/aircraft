@@ -163,11 +163,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     label: 'END OF F-PLN',
   };
 
-  private readonly endOfAlternateFlightPlan: FplnLineDisplayData = {
+  private readonly noAlternateFlightPlan: FplnLineDisplayData = {
     type: FplnLineType.Special,
     originalLegIndex: null,
-    label: 'END OF ALTN F-PLN',
+    label: 'NO ALTN F-PLN',
   };
+
+  private readonly discontinuityLabel = 'DISCONTINUITY';
 
   private emptyFlightPlanRendered = false;
 
@@ -260,9 +262,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           distFromLastWpt: null,
         });
 
+        this.lineData.push({
+          type: FplnLineType.Special,
+          label: this.discontinuityLabel,
+          originalLegIndex: null,
+        });
+
         this.lineData.push(this.endOfFlightPlan);
 
-        this.lineData.push(this.endOfAlternateFlightPlan);
+        this.lineData.push(this.noAlternateFlightPlan);
         shouldOnlyUpdatePredictions = false;
         this.emptyFlightPlanRendered = true;
       } else {
@@ -462,7 +470,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           const data: FplnLineSpecialDisplayData = {
             type: FplnLineType.Special,
             originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
-            label: 'DISCONTINUITY',
+            label: this.discontinuityLabel,
           };
           this.lineData.push(data);
         }
@@ -472,17 +480,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           this.lineData.push(this.endOfFlightPlan);
 
           if (this.loadedFlightPlan.alternateFlightPlan.allLegs.length === 0) {
-            this.lineData.push({
-              type: FplnLineType.Special,
-              originalLegIndex: null,
-              label: 'NO ALTN F-PLN',
-            });
+            this.lineData.push(this.noAlternateFlightPlan);
           }
         }
 
         // Identify end of ALTN F-PLN
         if (this.loadedFlightPlan.alternateFlightPlan.allLegs.length > 0 && i === jointFlightPlan.length - 1) {
-          this.lineData.push(this.endOfAlternateFlightPlan);
+          this.lineData.push({ type: FplnLineType.Special, originalLegIndex: null, label: 'END OF ALTN F-PLN' });
         }
       }
     }
