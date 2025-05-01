@@ -1272,6 +1272,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   double thsPosition;
   double rudder1Position;
   double rudder2Position;
+  base_ra_bus ra1Bus;
+  base_ra_bus ra2Bus;
   if (primIndex == 0) {
     leftAileron1Position = idLeftAileronInwardPosition->get();
     rightAileron1Position = idRightAileronInwardPosition->get();
@@ -1289,6 +1291,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
     rudder1Position = idUpperRudderPosition->get();
     rudder2Position = idLowerRudderPosition->get();
+
+    ra1Bus = raBusOutputs[0];
+    ra2Bus = raBusOutputs[2];
   } else if (primIndex == 1) {
     leftAileron1Position = idLeftAileronOutwardPosition->get();
     rightAileron1Position = idRightAileronOutwardPosition->get();
@@ -1306,6 +1311,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
     rudder1Position = idUpperRudderPosition->get();
     rudder2Position = 0;
+
+    ra1Bus = raBusOutputs[1];
+    ra2Bus = raBusOutputs[2];
   } else {
     leftAileron1Position = idLeftAileronMiddlePosition->get();
     rightAileron1Position = idRightAileronMiddlePosition->get();
@@ -1323,6 +1331,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = 0;
+
+    ra1Bus = raBusOutputs[0];
+    ra2Bus = raBusOutputs[1];
   }
 
   prims[primIndex].modelInputs.in.time.dt = sampleTime;
@@ -1405,9 +1416,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_roll_2_bus = {};
   prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_yaw_1_bus = {};
   prims[primIndex].modelInputs.in.bus_inputs.rate_gyro_yaw_2_bus = {};
-  prims[primIndex].modelInputs.in.bus_inputs.ra_1_bus = raBusOutputs[0];
-  prims[primIndex].modelInputs.in.bus_inputs.ra_2_bus = raBusOutputs[1];
-  prims[primIndex].modelInputs.in.bus_inputs.ra_3_bus = raBusOutputs[2];
+  prims[primIndex].modelInputs.in.bus_inputs.ra_1_bus = ra1Bus;
+  prims[primIndex].modelInputs.in.bus_inputs.ra_2_bus = ra2Bus;
   prims[primIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
   prims[primIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
   prims[primIndex].modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];
@@ -2518,10 +2528,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   base_arinc_429 raToUse;
   if (raBusOutputs[0].radio_height_ft.SSM != Arinc429SignStatus::FailureWarning) {
     raToUse = raBusOutputs[0].radio_height_ft;
-  } else if (raBusOutputs[1].radio_height_ft.SSM != Arinc429SignStatus::FailureWarning) {
-    raToUse = raBusOutputs[1].radio_height_ft;
   } else {
-    raToUse = raBusOutputs[2].radio_height_ft;
+    raToUse = raBusOutputs[1].radio_height_ft;
   }
 
   fmgcBBusOutputs.fg_radio_height_ft = raToUse;
