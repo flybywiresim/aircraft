@@ -3256,7 +3256,7 @@ export class FwsCore {
     this.phase10For90sConfirm.write(this.flightPhase.get() === 10, deltaTime);
 
     this.excessResidualDiffPressure.set(
-      diffPressureAbovePoint072 && (this.aircraftOnGround.get() ? engNotRunning : this.phase10For90sConfirm.read()),
+      diffPressureAbovePoint072 && ((this.aircraftOnGround.get() && engNotRunning) || this.phase10For90sConfirm.read()),
     );
 
     this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
