@@ -26,6 +26,10 @@ class A380PitchAlternateLaw final
     boolean_T pU_not_empty;
   };
 
+  struct BlockIO_A380PitchAlternateLaw_T {
+    real_T in_flight;
+  };
+
   struct D_Work_A380PitchAlternateLaw_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_k;
@@ -38,12 +42,18 @@ class A380PitchAlternateLaw final
     real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_o;
     real_T pY;
+    real_T on_ground_time;
+    real_T in_flight_time;
     uint8_T is_active_c1_A380PitchAlternateLaw;
     uint8_T is_c1_A380PitchAlternateLaw;
     uint8_T is_active_c8_A380PitchAlternateLaw;
     uint8_T is_c8_A380PitchAlternateLaw;
+    uint8_T is_active_c3_A380PitchAlternateLaw;
+    uint8_T is_c3_A380PitchAlternateLaw;
     uint8_T is_active_c9_A380PitchAlternateLaw;
     uint8_T is_c9_A380PitchAlternateLaw;
+    uint8_T is_active_c2_A380PitchAlternateLaw;
+    uint8_T is_c2_A380PitchAlternateLaw;
     boolean_T icLoad;
     boolean_T pY_not_empty;
     rtDW_RateLimiter_A380PitchAlternateLaw_T sf_RateLimiter_b;
@@ -54,6 +64,7 @@ class A380PitchAlternateLaw final
     rtDW_WashoutFilter_A380PitchAlternateLaw_T sf_WashoutFilter;
     rtDW_LagFilter_A380PitchAlternateLaw_T sf_LagFilter;
     rtDW_RateLimiter_A380PitchAlternateLaw_T sf_RateLimiter_n;
+    rtDW_RateLimiter_A380PitchAlternateLaw_T sf_RateLimiter_c;
     rtDW_RateLimiter_A380PitchAlternateLaw_T sf_RateLimiter;
   };
 
@@ -89,6 +100,7 @@ class A380PitchAlternateLaw final
     real_T DiscreteDerivativeVariableTs_InitialCondition_g;
     real_T DiscreteDerivativeVariableTs2_InitialCondition_c;
     real_T RateLimitereta_InitialCondition;
+    real_T RateLimiterVariableTs_InitialCondition_k;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
     real_T ScheduledGain_Table[6];
     real_T ScheduledGain_Table_h[5];
@@ -97,10 +109,12 @@ class A380PitchAlternateLaw final
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs3_lo;
     real_T RateLimitereta_lo;
+    real_T RateLimiterVariableTs_lo_i;
     real_T RateLimiterVariableTs2_up;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs3_up;
     real_T RateLimitereta_up;
+    real_T RateLimiterVariableTs_up_d;
     boolean_T CompareToConstant_const;
     real_T Constant_Value;
     real_T Constant5_Value;
@@ -191,6 +205,9 @@ class A380PitchAlternateLaw final
     real_T Saturation_LowerSat_d;
     real_T Switch_Threshold;
     real_T Gain_Gain_c;
+    real_T Constant1_Value;
+    real_T Saturation_UpperSat_g;
+    real_T Saturation_LowerSat_k;
     real_T Constant2_Value;
     real_T Constant3_Value_j;
     boolean_T Constant_Value_m;
@@ -201,17 +218,19 @@ class A380PitchAlternateLaw final
   A380PitchAlternateLaw& operator= (A380PitchAlternateLaw const&) & = delete;
   A380PitchAlternateLaw(A380PitchAlternateLaw &&) = delete;
   A380PitchAlternateLaw& operator= (A380PitchAlternateLaw &&) = delete;
-  void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_g, const real_T *rtu_In_Theta_deg, const real_T
-            *rtu_In_Phi_deg, const real_T *rtu_In_qk_deg_s, const real_T *rtu_In_eta_deg, const real_T
-            *rtu_In_eta_trim_deg, const real_T *rtu_In_V_ias_kn, const real_T *rtu_In_mach, const real_T
-            *rtu_In_V_tas_kn, const real_T *rtu_In_flaps_handle_index, const real_T *rtu_In_spoilers_left_pos, const
-            real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_delta_eta_pos, const boolean_T
-            *rtu_In_tracking_mode_on, const boolean_T *rtu_In_stabilities_available, real_T *rty_Out_eta_deg, real_T
-            *rty_Out_eta_trim_dot_deg_s, real_T *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up);
+  void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_time_simulation_time, const real_T *rtu_In_nz_g, const
+            real_T *rtu_In_Theta_deg, const real_T *rtu_In_Phi_deg, const real_T *rtu_In_qk_deg_s, const real_T
+            *rtu_In_eta_deg, const real_T *rtu_In_eta_trim_deg, const real_T *rtu_In_V_ias_kn, const real_T *rtu_In_mach,
+            const real_T *rtu_In_V_tas_kn, const real_T *rtu_In_H_radio_ft, const real_T *rtu_In_flaps_handle_index,
+            const real_T *rtu_In_spoilers_left_pos, const real_T *rtu_In_spoilers_right_pos, const real_T
+            *rtu_In_delta_eta_pos, const boolean_T *rtu_In_on_ground, const boolean_T *rtu_In_tracking_mode_on, const
+            boolean_T *rtu_In_stabilities_available, real_T *rty_Out_eta_deg, real_T *rty_Out_eta_trim_dot_deg_s, real_T
+            *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up);
   void reset();
   A380PitchAlternateLaw();
   ~A380PitchAlternateLaw();
  private:
+  BlockIO_A380PitchAlternateLaw_T A380PitchAlternateLaw_B;
   D_Work_A380PitchAlternateLaw_T A380PitchAlternateLaw_DWork;
   static Parameters_A380PitchAlternateLaw_T A380PitchAlternateLaw_rtP;
   static void A380PitchAlternateLaw_RateLimiter_Reset(rtDW_RateLimiter_A380PitchAlternateLaw_T *localDW);
