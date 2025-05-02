@@ -710,8 +710,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   1.0,
 
-  1.0,
-
   0.5,
 
   0.5,
@@ -810,8 +808,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   a380_pitch_efcs_law::AlternateLaw2,
 
-  50.0F,
-
   false,
 
   false,
@@ -819,8 +815,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   false,
 
   false,
-
-  true,
 
   true,
 
@@ -1559,13 +1553,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
           {
             0U,
             0.0F
-          }
-        },
-
-        {
-          {
-            0U,
-            0.0F
           },
 
           {
@@ -1919,6 +1906,20 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
           },
 
           {
+            {
+              0U,
+              0.0F
+            }
+          },
+
+          {
+            {
+              0U,
+              0.0F
+            }
+          },
+
+          {
             0U,
             0.0F
           },
@@ -2188,6 +2189,20 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
           {
             0U,
             0.0F
+          },
+
+          {
+            {
+              0U,
+              0.0F
+            }
+          },
+
+          {
+            {
+              0U,
+              0.0F
+            }
           },
 
           {
@@ -3106,6 +3121,20 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
       },
 
       {
+        {
+          0U,
+          0.0F
+        }
+      },
+
+      {
+        {
+          0U,
+          0.0F
+        }
+      },
+
+      {
         0U,
         0.0F
       },
@@ -3377,6 +3406,20 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
     {
       0U,
       0.0F
+    },
+
+    {
+      {
+        0U,
+        0.0F
+      }
+    },
+
+    {
+      {
+        0U,
+        0.0F
+      }
     },
 
     {

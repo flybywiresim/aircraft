@@ -60,7 +60,6 @@ class A380PrimComputer final
   struct D_Work_A380PrimComputer_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_c;
-    real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
     real_T eventTime_p;
@@ -79,7 +78,6 @@ class A380PrimComputer final
     boolean_T icLoad;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
-    boolean_T configFullEventTime_not_empty;
     boolean_T ra1CoherenceRejected;
     boolean_T ra2CoherenceRejected;
     boolean_T ra3CoherenceRejected;
@@ -100,7 +98,6 @@ class A380PrimComputer final
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_mm;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_lf;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_jl;
-    rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_jz;
     rtDW_RateLimiter_A380PrimComputer_i_T sf_RateLimiter_mr;
     rtDW_RateLimiter_A380PrimComputer_i_T sf_RateLimiter_ne;
     rtDW_MATLABFunction_A380PrimComputer_hg_T sf_MATLABFunction_nb;
@@ -394,11 +391,10 @@ class A380PrimComputer final
     real_T RateLimiterGenericVariableTs3_lo_k;
     real_T HysteresisNode2_lowTrigger;
     real_T HysteresisNode3_lowTrigger;
-    real_T ConfirmNode_timeDelay;
     real_T ConfirmNode2_timeDelay;
     real_T ConfirmNode1_timeDelay;
     real_T ConfirmNode3_timeDelay;
-    real_T ConfirmNode_timeDelay_i;
+    real_T ConfirmNode_timeDelay;
     real_T ConfirmNode2_timeDelay_h;
     real_T ConfirmNode_timeDelay_d;
     real_T ConfirmNode1_timeDelay_a;
@@ -447,16 +443,14 @@ class A380PrimComputer final
     SignStatusMatrix EnumeratedConstant_Value;
     a380_pitch_efcs_law EnumeratedConstant_Value_l;
     a380_pitch_efcs_law EnumeratedConstant_Value_b;
-    real32_T CompareToConstant_const_l;
     boolean_T SRFlipFlop_initial_condition;
     boolean_T SRFlipFlop1_initial_condition;
     boolean_T SRFlipFlop1_initial_condition_i;
     boolean_T SRFlipFlop_initial_condition_i;
-    boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge;
     boolean_T ConfirmNode3_isRisingEdge;
-    boolean_T ConfirmNode_isRisingEdge_l;
+    boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge_i;
     boolean_T ConfirmNode_isRisingEdge_o;
     boolean_T PulseNode_isRisingEdge;
