@@ -3787,6 +3787,206 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
+    // ATA 52 DOOR
+    520800008: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.cockpitWindowOpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.cockpitWindowOpen.get()],
+      failure: 2,
+      sysPage: SdPages.Door,
+    },
+    520800017: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main1LOpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800018: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main1ROpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800019: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main2LOpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800020: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main2ROpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800021: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main3LOpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800022: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main3ROpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800023: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main4LOpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800024: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main4ROpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800025: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main5LOpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
+    520800026: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main5ROpen,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+        this.fws.abnormalCabVirticalSpeed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
+      inopSysAllPhases: () =>
+        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+    },
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL
