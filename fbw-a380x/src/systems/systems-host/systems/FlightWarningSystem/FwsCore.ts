@@ -3255,7 +3255,7 @@ export class FwsCore {
     this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
 
     const diffPressureAbovePoint072 = this.diffPressure.valueOr(0) > 0.072;
-    this.phase10TriggeredMemory.write(this.flightPhase.get() === 10, false);
+    this.phase10TriggeredMemory.write(this.flightPhase.get() === 10, this.flightPhase.get() < 10);
     this.phase10For90sConfirm.write(this.phase10TriggeredMemory.read(), deltaTime);
 
     this.excessResidualDiffPressure.set(
