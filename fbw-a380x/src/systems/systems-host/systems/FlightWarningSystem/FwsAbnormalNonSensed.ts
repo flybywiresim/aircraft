@@ -205,7 +205,7 @@ export class FwsAbnormalNonSensed {
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900006)),
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true, true, true],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
         this.fws.parkBrakeSet.get(),
         false,
@@ -218,6 +218,7 @@ export class FwsAbnormalNonSensed {
         false,
         this.fws.evacCommand.get(),
         this.fws.allBatteriesOff.get(),
+        false,
         false,
         false,
       ],

@@ -608,6 +608,10 @@ export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistActio
   return (c as ChecklistAction)?.labelNotCompleted !== undefined;
 }
 
+export function isChecklistHeadline(c: AbstractChecklistItem) {
+  return [ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline].includes(c.style);
+}
+
 export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
   return (c as ChecklistCondition)?.condition !== undefined;
 }
@@ -633,16 +637,9 @@ export interface NormalProcedure {
   /** Title of the checklist, e.g. "BEFORE START".  */
   title: string;
   /** An array of possible checklist items.. */
-  items: ChecklistAction[];
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
   /** Checklist is only activated by request, deactivated per default */
   onlyActivatedByRequest?: boolean;
-}
-
-export interface AbnormalNonSensedProcedure {
-  /** Title of the checklist, e.g. "BEFORE START".  */
-  title: string;
-  /** An array of possible checklist items.. */
-  items: ChecklistAction[];
 }
 
 export enum DeferredProcedureType {

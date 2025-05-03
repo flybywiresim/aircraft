@@ -447,6 +447,10 @@ text, tspan, span {
   text-decoration: underline;
 }
 
+.EclLine.Centered {
+  justify-content: center;
+}
+
 .EclLine.Green {
   color: $display-green !important;
 }

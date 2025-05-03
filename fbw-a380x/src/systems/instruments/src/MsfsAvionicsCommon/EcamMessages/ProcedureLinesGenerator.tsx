@@ -429,11 +429,7 @@ export class ProcedureLinesGenerator {
         let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
         let text = item.level ? '\xa0'.repeat(item.level) : '';
         if (isChecklistAction(item)) {
-          text += ![ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline].includes(clStyle)
-            ? '-'
-            : '';
-          text +=
-            clStyle === ChecklistLineStyle.CenteredSubHeadline ? '.\xa0'.repeat((39 - item.name.length + 1) / 2) : '';
+          text += '-';
           text += item.name;
           if (
             (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
@@ -454,6 +450,9 @@ export class ProcedureLinesGenerator {
 
             text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
           }
+        } else if (isChecklistHeadline(item)) {
+          text += clStyle === ChecklistLineStyle.CenteredSubHeadline ? '.' : '';
+          text += item.name;
         } else if (isChecklistCondition(item)) {
           clStyle = ChecklistLineStyle.ChecklistCondition;
           if (item.name.substring(0, 4) === 'WHEN') {

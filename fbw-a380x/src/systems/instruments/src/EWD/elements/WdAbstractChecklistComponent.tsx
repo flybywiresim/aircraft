@@ -152,6 +152,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               ].includes(d.style),
             ),
             Underline: this.props.data.map((d) => d.style === ChecklistLineStyle.CenteredSubHeadline),
+            Centered: this.props.data.map((d) => d.style === ChecklistLineStyle.CenteredSubHeadline),
             Checked: this.props.data.map((d) => d.checked),
             ChecklistCompleted: this.props.data.map((d) => d.style === ChecklistLineStyle.CompletedChecklist),
             DeferredProcedure: this.props.data.map((d) => d.style === ChecklistLineStyle.DeferredProcedure),
