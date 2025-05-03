@@ -678,7 +678,11 @@ export class PseudoWaypoints implements GuidanceComponent {
       .getAllPathVectors()
       .map((v) => pathVectorLength(v))
       .reduce((sum, current) => sum + current, 0);
-    if (distanceFromEnd > totalGeoLength) {
+
+    const lastLegDistanceToEnd =
+      geometry.legs.get(geometry.legs.size - 1)?.calculated?.cumulativeDistanceToEndWithTransitions ?? Infinity;
+
+    if (distanceFromEnd > totalGeoLength || lastLegDistanceToEnd > distanceFromEnd) {
       return null;
     }
 
