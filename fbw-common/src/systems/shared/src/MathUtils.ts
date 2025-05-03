@@ -650,4 +650,11 @@ export class MathUtils {
   public static isCloseToLessThan(a: number, b: number, epsilon = 1e-4): boolean {
     return this.isCloseToNegative(a - b, epsilon);
   }
+
+  /**
+   * Returns a random valid JS 32-bit signed integer
+   */
+  public static randomInt32(): number {
+    return Math.floor(Math.random() * 4294967296) - 2147483648;
+  }
 }

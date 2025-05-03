@@ -6,7 +6,7 @@
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { Airway, Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
@@ -23,7 +23,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 {
   private readonly flightPlanManager: FlightPlanManager<P>;
 
-  public syncClientID = Math.round(Math.random() * 10_000_000);
+  public syncClientID = MathUtils.randomInt32();
 
   public batchStack: FlightPlanBatch[] = [];
 

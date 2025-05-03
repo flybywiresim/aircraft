@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { Airway, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix, MathUtils, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   EventBus,
@@ -59,7 +59,7 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   private readonly sub: EventSubscriber<FlightPlanServerRpcEvents>;
 
-  public syncClientID = Math.round(Math.random() * 10_000_000);
+  public syncClientID = MathUtils.randomInt32();
 
   constructor(
     private readonly bus: EventBus,
