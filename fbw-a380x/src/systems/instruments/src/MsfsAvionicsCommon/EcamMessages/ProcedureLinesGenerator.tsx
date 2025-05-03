@@ -13,6 +13,7 @@ import {
   EcamDeferredProcedures,
   isChecklistAction,
   isChecklistCondition,
+  isChecklistHeadline,
   NormalProcedure,
   WdLineData,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
@@ -323,9 +324,23 @@ export class ProcedureLinesGenerator {
   }
 
   private getActualShownItems() {
+    const isAbnormal = this.type === ProcedureType.Abnormal;
+    const isAbnormalNotSensed =
+      this.type === ProcedureType.Abnormal && EcamAbnormalProcedures[this.procedureId]?.sensed === false;
+    const isDeferred = this.type === ProcedureType.Deferred;
+
     const lines = [...this.checklistState.itemsToShow]
       .map((value, index) => (value ? index : null))
       .filter((v) => v !== null);
+
+    if (this.recommendation) {
+      lines.splice(0, 0, NaN);
+    }
+
+    if ((isDeferred && !this.checklistState.procedureCompleted) || isAbnormalNotSensed) {
+      lines.splice(0, 0, SPECIAL_INDEX_ACTIVATE);
+    }
+
     this.procedure.items.forEach((v, i) => {
       if (isChecklistCondition(v) && !v.sensed) {
         // CONFIRM line
@@ -333,8 +348,19 @@ export class ProcedureLinesGenerator {
         lines[i] = NaN;
       }
     });
-    if (this.recommendation) {
-      lines.splice(0, 0, NaN);
+
+    if (isAbnormal) {
+      lines.push(SPECIAL_INDEX_CLEAR);
+    } else if (this.type === ProcedureType.Normal) {
+      lines.push(SPECIAL_INDEX_NORMAL_CL_COMPLETE);
+
+      lines.push(SPECIAL_INDEX_NORMAL_RESET);
+    } else if (isDeferred) {
+      if (this.checklistState.procedureCompleted) {
+        lines.push(SPECIAL_INDEX_DEFERRED_PROC_RECALL);
+      } else {
+        lines.push(SPECIAL_INDEX_DEFERRED_PROC_COMPLETE);
+      }
     }
 
     return lines;
