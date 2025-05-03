@@ -21,6 +21,7 @@
 1. [A380X/SD] Add video page with 'NOT AVAIL' text - @dzoeteman (Deniz)
 1. [A380X/PFD] Inhibit rudder trim indication in the air - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
+1. [A380X/ECAM] Improve ALL PRIMARY CABIN FANS FAULT - @Jonny23787 (Jonathan)
 1. [A380X/MFD] Fix VERT DEV not updating in APPR page during descend phase - @heclak (Heclak)
 
 ## 0.13.0
