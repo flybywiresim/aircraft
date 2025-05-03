@@ -145,8 +145,13 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
             ),
             Headline: this.props.data.map((d) =>
-              [ChecklistLineStyle.Headline, ChecklistLineStyle.SubHeadline].includes(d.style),
+              [
+                ChecklistLineStyle.Headline,
+                ChecklistLineStyle.SubHeadline,
+                ChecklistLineStyle.CenteredSubHeadline,
+              ].includes(d.style),
             ),
+            Underline: this.props.data.map((d) => d.style === ChecklistLineStyle.CenteredSubHeadline),
             Checked: this.props.data.map((d) => d.checked),
             ChecklistCompleted: this.props.data.map((d) => d.style === ChecklistLineStyle.CompletedChecklist),
             DeferredProcedure: this.props.data.map((d) => d.style === ChecklistLineStyle.DeferredProcedure),

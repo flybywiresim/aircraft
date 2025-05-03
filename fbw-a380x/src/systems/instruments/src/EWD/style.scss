@@ -443,6 +443,10 @@ text, tspan, span {
   color: $display-white !important;
 }
 
+.EclLine.Underline {
+  text-decoration: underline;
+}
+
 .EclLine.Green {
   color: $display-green !important;
 }

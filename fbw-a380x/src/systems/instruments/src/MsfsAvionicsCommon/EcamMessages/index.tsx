@@ -565,6 +565,7 @@ export enum ChecklistLineStyle {
   White = 'White',
   Headline = 'Headline',
   SubHeadline = 'SubHeadline',
+  CenteredSubHeadline = 'CenteredSubHeadline',
   SeparationLine = 'SeparationLine',
   ChecklistItem = 'ChecklistItem',
   ChecklistItemInactive = 'ChecklistItemInactive',

@@ -76,6 +76,7 @@ export class ProcedureLinesGenerator {
     ChecklistLineStyle.OmissionDots,
     ChecklistLineStyle.SeparationLine,
     ChecklistLineStyle.SubHeadline,
+    ChecklistLineStyle.CenteredSubHeadline,
   ];
 
   static conditionalActiveItems(
@@ -428,7 +429,11 @@ export class ProcedureLinesGenerator {
         let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
         let text = item.level ? '\xa0'.repeat(item.level) : '';
         if (isChecklistAction(item)) {
-          text += clStyle !== ChecklistLineStyle.SubHeadline ? '-' : '';
+          text += ![ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline].includes(clStyle)
+            ? '-'
+            : '';
+          text +=
+            clStyle === ChecklistLineStyle.CenteredSubHeadline ? '.\xa0'.repeat((39 - item.name.length + 1) / 2) : '';
           text += item.name;
           if (
             (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
