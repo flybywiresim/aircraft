@@ -451,7 +451,7 @@ export class ProcedureLinesGenerator {
               : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
           }
         } else {
-          text += item.name;
+          text += `\xa0${item.name}`;
         }
 
         lineData.push({
