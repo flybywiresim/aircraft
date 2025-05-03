@@ -4557,10 +4557,9 @@ export class FwsCore {
     this.ewdLimitationsAllPhasesLines.forEach((l, i) => l.set(sortedEwdLimitationsAllPhasesKeys[i]));
     this.ewdLimitationsApprLdgLines.forEach((l, i) => l.set(sortedEwdLimitationsApprLdgKeys[i]));
 
-    // For now, also push EWD limitations to PFD, until we find out which is displayed where
-    const pfdLimitationsCombined = [
-      ...new Set(pfdLimitationsKeys.concat(sortedEwdLimitationsAllPhasesKeys).concat(sortedEwdLimitationsApprLdgKeys)),
-    ].sort((a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]));
+    const pfdLimitationsCombined = [...new Set(pfdLimitationsKeys)].sort(
+      (a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]),
+    );
     if (pfdLimitationsCombined.includes('1') && pfdLimitationsCombined.includes('2')) {
       pfdLimitationsCombined.splice(pfdLimitationsCombined.indexOf('2'), 1);
     }
