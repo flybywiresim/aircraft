@@ -1065,7 +1065,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'WHEN N3 BELOW 30% :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
