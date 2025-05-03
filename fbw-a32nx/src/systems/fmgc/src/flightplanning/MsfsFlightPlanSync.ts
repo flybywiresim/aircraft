@@ -9,6 +9,7 @@ import {
   LegType,
   NavaidSubsectionCode,
   NXDataStore,
+  RunwayUtils,
   SectionCode,
 } from '@flybywiresim/fbw-sdk';
 import { EventBus, MappedSubject, Subject, Wait } from '@microsoft/msfs-sdk';
@@ -115,14 +116,22 @@ export class MsfsFlightPlanSync {
 
     if (route.departureRunway.number !== '') {
       await this.rpcClient.setOriginRunway(
-        `${route.departureAirport.ident}${route.departureRunway.number}${route.departureRunway.designator}`,
+        RunwayUtils.runwayIdent(
+          route.departureAirport.ident,
+          route.departureRunway.number,
+          route.departureRunway.designator,
+        ),
         FlightPlanIndex.Uplink,
       );
     }
 
     if (route.destinationRunway.number !== '') {
       await this.rpcClient.setDestinationRunway(
-        `${route.destinationAirport.ident}${route.destinationRunway.number}${route.destinationRunway.designator}`,
+        RunwayUtils.runwayIdent(
+          route.destinationAirport.ident,
+          route.destinationRunway.number,
+          route.destinationRunway.designator,
+        ),
         FlightPlanIndex.Uplink,
       );
     }
