@@ -19,22 +19,22 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
   990900001: {
-    title: '\x1b<4m\x1b4mMISC\x1bm BOMB ON BOARD',
+    title: '\x1b<4m\x1b4mMISC\x1bm BOMB ON BOARD (WIP)',
     sensed: false,
     items: [], // TODO
   },
   990900002: {
-    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW CRACKED',
+    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW CRACKED (WIP)',
     sensed: false,
     items: [], // TODO
   },
   990900003: {
-    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW ELEC ARCING',
+    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW ELEC ARCING (WIP)',
     sensed: false,
     items: [], // TODO
   },
   990900004: {
-    title: '\x1b<2m\x1b4mMISC\x1bm DITCHING',
+    title: '\x1b<2m\x1b4mMISC\x1bm DITCHING (WIP)',
     sensed: false,
     items: [], // TODO
   },
@@ -89,12 +89,12 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     ],
   },
   990900007: {
-    title: '\x1b<2m\x1b4mMISC\x1bm FORCED LANDING',
+    title: '\x1b<2m\x1b4mMISC\x1bm FORCED LANDING (WIP)',
     sensed: false,
     items: [], // TODO
   },
   990900008: {
-    title: '\x1b<4m\x1b4mMISC\x1bm OIS FAULT',
+    title: '\x1b<4m\x1b4mMISC\x1bm OIS FAULT (WIP)',
     sensed: false,
     items: [], // TODO
   },
@@ -122,12 +122,12 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     ],
   },
   990900010: {
-    title: '\x1b<4m\x1b4mMISC\x1bm SEVERE TURBULENCE',
+    title: '\x1b<4m\x1b4mMISC\x1bm SEVERE TURBULENCE (WIP)',
     sensed: false,
     items: [], // TODO
   },
   990900011: {
-    title: '\x1b<4m\x1b4mMISC\x1bm VOLCANIC ASH ENCOUNTER',
+    title: '\x1b<4m\x1b4mMISC\x1bm VOLCANIC ASH ENCOUNTER (WIP)',
     sensed: false,
     items: [], // TODO
   },

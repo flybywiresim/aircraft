@@ -269,11 +269,6 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
-  271800051: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED',
-    sensed: true,
-    items: [],
-  },
   271800052: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL SENSOR FAULT',
     sensed: true,
@@ -296,11 +291,6 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   },
   271800056: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM FAULT',
-    sensed: true,
-    items: [],
-  },
-  271800057: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNWAY',
     sensed: true,
     items: [],
   },
@@ -500,16 +490,6 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
-  272800017: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
-    sensed: true,
-    items: [],
-  },
-  272800018: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
-    sensed: true,
-    items: [],
-  },
   272800019: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT CTL 1 FAULT',
     sensed: true,
@@ -561,27 +541,27 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   270900001: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED (WIP)',
     sensed: false,
     items: [], // TODO
   },
   270900002: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNAWAY',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNAWAY (WIP)',
     sensed: false,
     items: [], // TODO
   },
   270900003: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES LEVER JAMMED',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES LEVER JAMMED (WIP)',
     sensed: false,
     items: [], // TODO
   },
   270900004: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED (WIP)',
     sensed: false,
     items: [], // TODO
   },
   270900005: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS (WIP)',
     sensed: false,
     items: [], // TODO
   },

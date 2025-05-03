@@ -794,17 +794,17 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   340900001: {
-    title: '\x1b<4m\x1b4mNAV\x1bm IR ALIGNMENT IN ATT MODE',
+    title: '\x1b<4m\x1b4mNAV\x1bm IR ALIGNMENT IN ATT MODE (WIP)',
     sensed: false,
     items: [], // TODO
   },
   340900002: {
-    title: '\x1b<4m\x1b4mNAV\x1bm FLUCTUATING VERTICAL SPEED',
+    title: '\x1b<4m\x1b4mNAV\x1bm FLUCTUATING VERTICAL SPEED (WIP)',
     sensed: false,
     items: [], // TODO
   },
   340900003: {
-    title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION',
+    title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION (WIP)',
     sensed: false,
     items: [], // TODO
   },
