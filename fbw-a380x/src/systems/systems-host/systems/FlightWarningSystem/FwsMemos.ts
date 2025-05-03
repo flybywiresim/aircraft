@@ -368,7 +368,7 @@ export class FwsMemos {
     '320000002': {
       // PARK BRK ON
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: this.fws.parkBrake,
+      simVarIsActive: this.fws.parkBrakeSet,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000002'],
       memoInhibit: () => false,

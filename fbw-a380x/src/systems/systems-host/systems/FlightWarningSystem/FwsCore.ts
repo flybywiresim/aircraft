@@ -558,6 +558,8 @@ export class FwsCore {
 
   public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
 
+  public readonly autoThrustEngaged = Subject.create(false);
+
   public readonly autoThrustDisengagedInstantPulse = new NXLogicPulseNode(false);
 
   public readonly autoThrustInstinctiveDiscPressed = new NXLogicTriggeredMonostableNode(1.5, true); // Save event for 1.5 sec
@@ -863,6 +865,12 @@ export class FwsCore {
   public readonly flapsLeverNotZero = Subject.create(false);
 
   public readonly flapsBaulkActiveWord = Arinc429Register.empty();
+
+  // FIXME implement
+  public readonly flapSys1Fault = Subject.create(false);
+  public readonly flapSys2Fault = Subject.create(false);
+  public readonly slatSys1Fault = Subject.create(false);
+  public readonly slatSys2Fault = Subject.create(false);
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
@@ -1229,7 +1237,7 @@ export class FwsCore {
 
   public readonly nwSteeringDisc = Subject.create(false);
 
-  public readonly parkBrake = Subject.create(false);
+  public readonly parkBrakeSet = Subject.create(false);
 
   private readonly parkBrake2sConfNode = new NXLogicConfirmNode(2);
 
@@ -2622,7 +2630,7 @@ export class FwsCore {
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
     const parkBrakeSet = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
-    this.parkBrake.set(parkBrakeSet);
+    this.parkBrakeSet.set(parkBrakeSet);
     this.lgParkBrkOn.set(this.parkBrake2sConfNode.write(parkBrakeSet, deltaTime));
     this.configParkBrakeOn.set(
       this.confingParkBrakeOnMemoryNode.write(phase3 && parkBrakeSet, !parkBrakeSet || phase6),
@@ -2802,6 +2810,7 @@ export class FwsCore {
 
     // A/THR OFF
     const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
+    this.autoThrustEngaged.set(aThrEngaged);
     this.autoThrustDisengagedInstantPulse.write(aThrEngaged, deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(false, deltaTime);
 

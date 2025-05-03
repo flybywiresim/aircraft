@@ -1955,8 +1955,8 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng1.get(),
-        this.fws.parkBrake.get(),
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         !this.fws.engine1ValueSwitch.get(),
@@ -2006,8 +2006,8 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng2.get(),
-        this.fws.parkBrake.get(),
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         !this.fws.engine2ValueSwitch.get(),
@@ -2057,8 +2057,8 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng3.get(),
-        this.fws.parkBrake.get(),
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         !this.fws.engine3ValueSwitch.get(),
@@ -2108,8 +2108,8 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng4.get(),
-        this.fws.parkBrake.get(),
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         !this.fws.engine4ValueSwitch.get(),
@@ -2310,7 +2310,7 @@ export class FwsAbnormalSensed {
         false,
         this.fws.allThrottleIdle.get(),
         false,
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         this.fws.allEngineSwitchOff.get(),
@@ -3189,7 +3189,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
       simVarIsActive: this.fws.lgParkBrkOn,
       whichItemsToShow: () => [true],
-      whichItemsChecked: () => [!this.fws.parkBrake.get()],
+      whichItemsChecked: () => [!this.fws.parkBrakeSet.get()],
       notActiveWhenFaults: [],
       failure: 2,
       sysPage: -1,
