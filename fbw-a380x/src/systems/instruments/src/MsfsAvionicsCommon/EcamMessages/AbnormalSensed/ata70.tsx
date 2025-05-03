@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -827,11 +827,277 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
   700900001: {
     title: '\x1b<4m\x1b4mENG\x1bm RELIGHT IN FLIGHT',
     sensed: false,
-    items: [], // TODO
+    items: [
+      {
+        name: 'FOR RELIGHT (SINGLE ENGINE) :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'MAX GUARANTEED ALTITUDE : 28000 FT',
+        sensed: false,
+      },
+      {
+        name: 'MAX SPEED FOR WINDML RELIGHT : 250 KT',
+        sensed: false,
+      },
+      {
+        name: 'THR LEVER (AFFECTED)',
+        sensed: false,
+        labelNotCompleted: 'IDLE',
+      },
+      {
+        name: 'ENG (AFFECTED) MASTER',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'XBLEED',
+        sensed: true,
+        labelNotCompleted: 'OPEN',
+      },
+      {
+        name: 'WING A-ICE',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'FEED TK (AFFECTED ENG) MAIN PUMP',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ENG START SEL',
+        sensed: true,
+        labelNotCompleted: 'IGN START',
+      },
+      {
+        name: 'ENG (AFFECTED) MASTER',
+        sensed: false,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'MAX EGT : 850 °C',
+        sensed: false,
+      },
+      {
+        name: 'ENG RELIGHT',
+        sensed: false,
+        labelNotCompleted: 'MONITOR (N3, FF, EGT)',
+      },
+      {
+        name: 'WHEN IDLE REACHED (ENG AVAIL) :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'ENG START SEL',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA/RA',
+      },
+      {
+        name: 'XBLEED',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        name: 'A-ICE',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'FOR RELIGHT (MULTIPLE ENGINES) :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'THR LEVER (AFFECTED)',
+        sensed: false,
+        labelNotCompleted: 'IDLE',
+      },
+      {
+        name: 'ENG START SEL',
+        sensed: true,
+        labelNotCompleted: 'IGN START',
+      },
+      {
+        name: 'MAX GUARANTEED ALTITUDE : 28000 FT',
+        sensed: false,
+      },
+      {
+        name: 'MAX SPEED FOR WINDML RELIGHT : 250 KT',
+        sensed: false,
+      },
+      {
+        name: 'XBLEED',
+        sensed: true,
+        labelNotCompleted: 'OPEN',
+      },
+      {
+        name: 'WING A-ICE',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ENG (AFFECTED) MASTERS',
+        sensed: false,
+        labelNotCompleted: 'OFF 30S THEN ON',
+      },
+      {
+        name: 'ENGs RELIGHT',
+        sensed: false,
+        labelNotCompleted: 'TRY REGULARLY',
+      },
+      {
+        name: 'WHEN BELOW FL 200 : APU',
+        sensed: false,
+        labelNotCompleted: 'CONSIDER',
+      },
+      {
+        name: 'WHEN BELOW FL 200 :',
+        sensed: true,
+        condition: true,
+      },
+      {
+        name: 'APU',
+        sensed: true,
+        labelNotCompleted: 'START',
+      },
+      {
+        name: 'WHEN APU AVAIL :',
+        sensed: true,
+        condition: true,
+      },
+      {
+        name: 'ENG (AFFECTED) MASTERS',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'RECOM SPEED FOR START ASSIST : GDOT',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'APU BLEED',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'ENG (AFFCTD) MASTERS (2 AT A TIME)',
+        sensed: false,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'ENG RELIGHT',
+        sensed: false,
+        labelNotCompleted: 'MONITOR (N3, FF, EGT)',
+      },
+      {
+        name: 'ENGs RELIGHT TRY REGULARLY : ENGs (AFFCTD) OFF 30s THEN ON',
+        sensed: false,
+      },
+      {
+        name: 'IF NO FURTHER ENG RELIGHT ATTEMPT :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'ENG (INOP) MASTER',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ENG START SEL',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        name: 'XBLEED',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        name: 'A-ICE',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'IF NO ENG OUT :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA/RA',
+      },
+    ],
   },
   700900002: {
     title: '\x1b<4m\x1b4mENG\x1bm TAIL PIPE FIRE',
     sensed: false,
-    items: [], // TODO
+    items: [
+      {
+        name: 'ENG (AFFECTED) MASTER',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'XBLEED',
+        sensed: true,
+        labelNotCompleted: 'OPEN',
+      },
+      {
+        name: 'APU',
+        sensed: true,
+        labelNotCompleted: 'START',
+      },
+      {
+        name: 'APU BLEED',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'WHEN N3 BELOW 30% :',
+        sensed: true,
+        condition: true,
+      },
+      {
+        name: 'ENG START SEL',
+        sensed: true,
+        labelNotCompleted: 'CRANK',
+      },
+      {
+        name: 'ENG (AFFECTED) MAN START',
+        sensed: false,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'WHEN FIRE STOPPED :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'ENG (AFFECTED) MAN START',
+        sensed: false,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'ENG START SEL',
+        sensed: true,
+        labelNotCompleted: 'NORM',
+      },
+      {
+        name: 'XBLEED',
+        sensed: true,
+        labelNotCompleted: 'AUTO',
+      },
+    ],
   },
 };
