@@ -4055,14 +4055,15 @@
                     <Component ID="APU">
                         <DefaultTemplateParameters>
                             <TYPE>APU</TYPE>
-                            <ID>1</ID>
                             <BUTTON_ID>APU</BUTTON_ID>
+                            <ID></ID>
                         </DefaultTemplateParameters>
 
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
                             <PART_ID>PUSH_OVHD_FIRE_AGENT</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
+                            <ID>1</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
