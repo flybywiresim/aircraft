@@ -199,6 +199,7 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
+      limitationsAllPhases: () => ['210400001'],
     },
     990900006: {
       // EMER EVAC
