@@ -22,8 +22,9 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
     this.cabinVerticalSpeedIsAuto,
   );
 
-  private readonly cabAutoTextClass = this.manualControlActive.map(
-    (manualMode) => `${manualMode ? 'Hide' : ''} F24 Green LS1`,
+  private readonly cabAltAutoTextClass = this.cabinAltitudeIsAuto.map((auto) => `${auto ? '' : 'Hide'} F24 Green LS1`);
+  private readonly cabVsAutoTextClass = this.cabinVerticalSpeedIsAuto.map(
+    (auto) => `${auto ? '' : 'Hide'} F24 Green LS1`,
   );
 
   private readonly manCabinAltitude = ConsumerSubject.create(this.sub.on('manCabinAltitude'), 0);
@@ -148,7 +149,8 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
       this.cabinAltitudeIsAuto,
       this.cabinAltitudeIsAuto,
       this.manualControlActive,
-      this.cabAutoTextClass,
+      this.cabAltAutoTextClass,
+      this.cabVsAutoTextClass,
       this.manCabinAltitude,
       this.manCabinDeltaPressure,
       this.manCabinVerticalSpeed,
@@ -295,7 +297,7 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
           PSI
         </text>
 
-        <text class={this.cabAutoTextClass} x="522" y="450">
+        <text class={this.cabVsAutoTextClass} x="522" y="450">
           AUTO
         </text>
         <text class="F24 White LS2" x="606" y="450">
@@ -308,7 +310,7 @@ export class CruisePressure extends DestroyableComponent<CruisePressureProps> {
           FT/MIN
         </text>
 
-        <text class={this.cabAutoTextClass} x="520" y="585">
+        <text class={this.cabAltAutoTextClass} x="520" y="585">
           AUTO
         </text>
         <text class="F24 White LS2" x="605" y="585">
