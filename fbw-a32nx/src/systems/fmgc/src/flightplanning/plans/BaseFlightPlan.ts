@@ -5,11 +5,13 @@
 
 import {
   Airport,
+  AltitudeConstraint,
   AltitudeDescriptor,
   Approach,
   ApproachType,
   ApproachWaypointDescriptor,
   Arrival,
+  ConstraintUtils,
   Departure,
   Fix,
   LegType,
@@ -17,6 +19,7 @@ import {
   Runway,
   SpeedDescriptor,
   TurnDirection,
+  WaypointConstraintType,
   WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
@@ -45,7 +48,6 @@ import { BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
-import { WaypointConstraintType, ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
 import {
