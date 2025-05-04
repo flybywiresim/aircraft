@@ -104,6 +104,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private readonly slatsFlapsStatusRaw = ConsumerSubject.create(this.sub.on('slatsFlapsStatusRaw'), 0);
 
+  private readonly flapHandleIndex = ConsumerSubject.create(this.sub.on('flapHandleIndex'), 0);
+
   private readonly tla1 = ConsumerSubject.create(this.sub.on('tla1'), 0);
 
   private readonly tla2 = ConsumerSubject.create(this.sub.on('tla2'), 0);
@@ -157,12 +159,15 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   );
 
   private readonly forGaSetToga = MappedSubject.create(
-    ([ap1, ap2, fd1, fd2, ra, altitude, slatsFlapsStatusRaw, tla1, tla2, tla3, tla4]) => {
+    ([ap1, ap2, fd1, fd2, ra, altitude, slatsFlapsStatusRaw, flapHandleIndex, tla1, tla2, tla3, tla4]) => {
       return (
         (ap1 || ap2 || fd1 || fd2) &&
         (ra.isNormalOperation() ? ra.value < 1000 : altitude.valueOr(Infinity)) &&
-        slatsFlapsStatusRaw > 0 &&
-        (tla1 && tla2 && tla3 && tla4) >= 35
+        (slatsFlapsStatusRaw > 0 || flapHandleIndex > 0) &&
+        tla1 === 35 &&
+        tla2 === 35 &&
+        tla3 === 35 &&
+        tla4 === 35
       );
     },
     this.ap1Active,
@@ -172,6 +177,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
     this.radioHeight,
     this.altitude,
     this.slatsFlapsStatusRaw,
+    this.flapHandleIndex,
     this.tla1,
     this.tla2,
     this.tla3,
