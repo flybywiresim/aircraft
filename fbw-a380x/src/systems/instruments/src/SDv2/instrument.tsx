@@ -1,23 +1,33 @@
 import {
   FSComponent,
-  EventBus,
   HEventPublisher,
   InstrumentBackplane,
   FsInstrument,
   FsBaseInstrument,
   ClockPublisher,
 } from '@microsoft/msfs-sdk';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
-import { AtcMailbox } from 'instruments/src/AtcMailbox/AtcMailbox';
+import { ArincEventBus, FailuresConsumer, FmsDataPublisher } from '@flybywiresim/fbw-sdk';
+import { SD } from './SD';
+import { SDSimvarPublisher } from './SDSimvarPublisher';
+import { AdirsValueProvider } from 'instruments/src/MsfsAvionicsCommon/AdirsValueProvider';
+import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
-class AtcMailboxInstrument implements FsInstrument {
-  private readonly bus = new EventBus();
+class SdInstrument implements FsInstrument {
+  private readonly bus = new ArincEventBus();
 
   private readonly backplane = new InstrumentBackplane();
 
   private readonly clockPublisher = new ClockPublisher(this.bus);
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
+
+  private readonly simVarPublisher = new SDSimvarPublisher(this.bus);
+
+  private readonly adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, 'L');
+
+  private readonly simplaneValueProvider = new SimplaneValueProvider(this.bus);
+
+  private readonly fmsDataPublisher = new FmsDataPublisher(this.bus);
 
   private readonly failuresConsumer = new FailuresConsumer();
 
@@ -26,6 +36,9 @@ class AtcMailboxInstrument implements FsInstrument {
 
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
+    this.backplane.addPublisher('sdSimVars', this.simVarPublisher);
+    this.backplane.addPublisher('fmsData', this.fmsDataPublisher);
+    this.backplane.addInstrument('simplane', this.simplaneValueProvider);
 
     this.doInit();
   }
@@ -33,12 +46,14 @@ class AtcMailboxInstrument implements FsInstrument {
   public doInit(): void {
     this.backplane.init();
 
-    const atcMailbox = document.getElementById('AtcMailbox_CONTENT');
+    this.adirsValueProvider.start();
 
-    FSComponent.render(<AtcMailbox bus={this.bus} />, document.getElementById('AtcMailbox_CONTENT'));
+    const sdv2 = document.getElementById('SDv2_CONTENT');
+
+    FSComponent.render(<SD bus={this.bus} />, document.getElementById('SDv2_CONTENT'));
 
     // Remove "instrument didn't load" text
-    atcMailbox?.querySelector(':scope > h1')?.remove();
+    sdv2?.querySelector(':scope > h1')?.remove();
   }
 
   /**
@@ -74,9 +89,9 @@ class AtcMailboxInstrument implements FsInstrument {
   }
 }
 
-class A380X_AtcMailbox extends FsBaseInstrument<AtcMailboxInstrument> {
-  public constructInstrument(): AtcMailboxInstrument {
-    return new AtcMailboxInstrument(this);
+class A380X_SDv2 extends FsBaseInstrument<SdInstrument> {
+  public constructInstrument(): SdInstrument {
+    return new SdInstrument(this);
   }
 
   public get isInteractive(): boolean {
@@ -84,7 +99,7 @@ class A380X_AtcMailbox extends FsBaseInstrument<AtcMailboxInstrument> {
   }
 
   public get templateID(): string {
-    return 'A380X_AtcMailbox';
+    return 'A380X_SDv2';
   }
 
   /** @inheritdoc */
@@ -102,4 +117,4 @@ class A380X_AtcMailbox extends FsBaseInstrument<AtcMailboxInstrument> {
   }
 }
 
-registerInstrument('a380x-atc-mailbox', A380X_AtcMailbox);
+registerInstrument('a380x-sdv2', A380X_SDv2);
