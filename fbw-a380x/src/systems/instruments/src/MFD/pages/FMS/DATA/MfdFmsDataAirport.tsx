@@ -53,6 +53,8 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
 
   private readonly currentIndex = Subject.create(0);
 
+  private readonly returnButtonVisible = Subject.create(true);
+
   private currentIndexRef = FSComponent.createRef<HTMLSpanElement>();
   private totalRunwaysRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -177,12 +179,18 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
       }
     });
 
+    this.selectedPageIndex.sub((index) => {
+      this.returnButtonVisible.set(index === 0);
+    });
+
     this.subs.push(
       this.props.mfd.uiService.activeUri.sub((val) => {
         if (val.extra === 'database') {
           this.selectedPageIndex.set(0);
+          this.returnButtonVisible.set(true);
         } else if (val.extra === 'pilot-stored') {
           this.selectedPageIndex.set(1);
+          this.returnButtonVisible.set(false);
         }
       }, true),
     );
@@ -357,6 +365,7 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
               label="RETURN"
               onClick={() => this.props.mfd.uiService.navigateTo('back')}
               buttonStyle="margin-right: 5px;"
+              visible={this.returnButtonVisible}
             />
           </div>
         </div>
