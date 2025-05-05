@@ -300,11 +300,6 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'HI',
       },
       {
-        name: 'APU',
-        sensed: false,
-        labelNotCompleted: 'AS RQRD',
-      },
-      {
         name: 'ENG PARAMETERS',
         sensed: false,
         labelNotCompleted: 'MONITOR',
