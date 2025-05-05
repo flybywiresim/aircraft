@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -554,14 +559,27 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     ],
   },
   270900002: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNAWAY (WIP)',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNAWAY',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'USE RUDDER WITH CARE', sensed: false },
+      { name: 'USE RUDDER PEDALS TO CENTER RUDDER', sensed: false },
+      { name: 'RUDDER TRIM', labelNotCompleted: 'RESET', sensed: false },
+      { name: 'RESET NOT SUCCESSFUL :', condition: true, sensed: false },
+      { name: 'FOR CONTINUED FLT : CONSIDER AP USE', sensed: false },
+      { name: 'RESET SUCCESSFUL :', condition: true, sensed: false },
+      { name: 'CONFIRM RESET SUCCESSFUL', sensed: false, style: ChecklistLineStyle.White },
+    ],
   },
   270900003: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES LEVER JAMMED (WIP)',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES LEVER JAMMED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'FOR AUTO-RETRACTION:THR LVRS TOGA', sensed: false },
+      { name: 'EXPECT AP/FD GA MODE ENGAGEMENT', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'GND SPLRs WILL EXTEND AT REV SELECTION', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'FOR LDG:KEEP GND SPLRs ARMED', sensed: false, style: ChecklistLineStyle.Green },
+    ],
   },
   270900004: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
@@ -586,19 +604,53 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     sensed: false,
     items: [
       { name: 'FLAPS LEVER JAMMED :', condition: true, sensed: false },
-      { name: 'LDG WITH FLAP LVR JAMMED PROC', labelNotCompleted: 'APPLY', sensed: false },
+      { name: 'LDG WITH FLAP LVR JAMMED PROC', labelNotCompleted: 'APPLY', sensed: false, level: 1 },
       { name: 'FLAPS LEVER NOT JAMMED :', condition: true, sensed: false },
-      { name: '[MFD SURV] TAWS FLAP MODE', labelNotCompleted: 'OFF', sensed: true },
-      { name: 'USE SELECTED SPEED', sensed: false },
-      { name: 'NO AUTOLAND', sensed: false },
-      { name: 'FOR GA : KEEP S/F CONF', sensed: false },
+      { name: '[MFD SURV] TAWS FLAP MODE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'USE SELECTED SPEED', sensed: false, level: 1 },
+      { name: 'NO AUTOLAND', sensed: false, level: 1 },
+      { name: 'FOR GA : KEEP S/F CONF', sensed: false, level: 1 },
       { name: 'LDG PERF AFFECTED', sensed: false },
-      { name: 'FOR APPROACH', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline },
-      { name: 'FLAP LVR', labelNotCompleted: 'CONF 1', sensed: true },
-      { name: 'TRGT SPEED', labelNotCompleted: 'VLS', sensed: false },
-      { name: 'AT 500 FT AGL', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline },
-      { name: 'A/THR', labelNotCompleted: 'OFF', sensed: true },
-      { name: 'SPEED', labelNotCompleted: 'REDUCE TO VAPP', sensed: false },
+      { name: 'FOR APPROACH', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline, level: 1 },
+      { name: 'FLAP LVR', labelNotCompleted: 'CONF 1', sensed: true, level: 1 },
+      { name: 'TRGT SPEED', labelNotCompleted: 'VLS', sensed: false, level: 1 },
+      { name: 'AT 500 FT AGL', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline, level: 1 },
+      { name: 'A/THR', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'SPEED', labelNotCompleted: 'REDUCE TO VAPP', sensed: false, level: 1 },
+    ],
+  },
+};
+
+export const EcamDeferredProcAta27: { [n: number]: DeferredProcedure } = {
+  270700001: {
+    fromAbnormalProcs: ['270900002'],
+    title: 'RUDDER TRIM RUNAWAY',
+    type: DeferredProcedureType.FOR_APPROACH,
+    items: [
+      {
+        name: 'AUTOLAND : RECOMMENDED',
+        sensed: false,
+      },
+      {
+        name: 'MANUAL LANDING ANTICIPATED :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'HOLD RUDDER PEDALS BEFORE AP OFF',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'KEEP RUDDER PEDALS CENTERED',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'USE PEDALS AS RQRD FOR DECRAB & LDG',
+        sensed: false,
+        level: 1,
+      },
     ],
   },
 };

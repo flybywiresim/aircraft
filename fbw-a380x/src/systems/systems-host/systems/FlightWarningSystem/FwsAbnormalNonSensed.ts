@@ -173,6 +173,36 @@ export class FwsAbnormalNonSensed {
       inopSysApprLdg: () => ['320300007'],
       info: () => ['220200011', '220200012', '320200004'],
     },
+    270900002: {
+      // F/CTL RUDDER TRIM RUNAWAY
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900002)),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true],
+      whichItemsChecked: () => [false, false, false, false, false, false, false, false, false, false],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.Fctl,
+      limitationsAllPhases: () => ['270400003'],
+      limitationsPfd: () => ['270400003'],
+    },
+    270900003: {
+      // F/CTL SPEED BRAKES LEVER JAMMED
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900003)),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.speedBrakeCommand.get(),
+        this.fws.speedBrakeCommand.get(),
+        !this.fws.speedBrakeCommand.get() && !this.fws.spoilersArmed.get(),
+        this.fws.spoilersArmed.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.Fctl,
+      info: () => [!this.fws.speedBrakeCommand.get() && !this.fws.spoilersArmed.get() ? '270200002' : ''],
+    },
     270900004: {
       // F/CTL LDG WITH FLAPS LEVER JAMMED
       flightPhaseInhib: [],

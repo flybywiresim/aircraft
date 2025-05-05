@@ -9,7 +9,10 @@ import {
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
 import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
 import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
-import { EcamAbnormalSensedAta27 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
+import {
+  EcamAbnormalSensedAta27,
+  EcamDeferredProcAta27,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
 import { EcamAbnormalSensedAta28 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata28';
 import { EcamAbnormalSensedAta2930 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata29-30';
 import {
@@ -194,6 +197,7 @@ export const EcamInfos: { [n: string]: string } = {
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
   270200001: '\x1bON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
+  270200002: '\x1bGND SPLRs WILL EXTEND AT REV SELECTION',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
   320200002: '\x1b<3mBRK PRESS AUTO LIMITED ON ALL L/Gs',
   320200003: '\x1b<3mDELAY BRAKING UNTIL NLG TOUCHDOWN',
@@ -229,6 +233,7 @@ export const EcamLimitations: { [n: string]: string } = {
   260400002: '\x1b<5mMAX SPEED : 250/.55',
   270400001: '\x1b<5mFOR LDG : FLAP LVR 3',
   270400002: '\x1b<5mFOR LDG : FLAP LVR 1',
+  270400003: '\x1b<5mUSE RUDDER WITH CARE',
   290400001: '\x1b<5mSLATS SLOW',
   290400002: '\x1b<5mFLAPS SLOW',
   300400001: '\x1b<5mAVOID ICING CONDs',
@@ -699,6 +704,7 @@ export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
   ...EcamDeferredProcAta212223,
+  ...EcamDeferredProcAta27,
   ...EcamDeferredProcAta313233,
 };
 
