@@ -1229,9 +1229,12 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     items: [], // TODO
   },
   320900006: {
-    title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE DAMAGE SUSPECTED (WIP)',
+    title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE DAMAGE SUSPECTED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'TAXI WITH CARE', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
 };
 

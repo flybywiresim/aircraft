@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -541,9 +541,17 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   270900001: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED (WIP)',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'AP : KEEP ON', sensed: false },
+      { name: 'MINIMIZE XWIND FOR LANDING', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'AUTOLAND : RECOMMENDED', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'AUTO BRK : DO NOT USE', sensed: false },
+      { name: 'FOR LDG:USE DIFF BRAKING AS RQRD', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'REVERSER:SYMMETRIC USE ONLY', sensed: false },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   270900002: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNAWAY (WIP)',

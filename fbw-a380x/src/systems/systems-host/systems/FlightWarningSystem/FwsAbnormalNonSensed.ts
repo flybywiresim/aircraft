@@ -159,6 +159,34 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
     },
+    270900001: {
+      // F/CTL RUDDER PEDAL JAMMED
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900001)),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.Fctl,
+      limitationsApprLdg: () => ['320400004', '700400001', '800400002'],
+      inopSysApprLdg: () => ['320300007'],
+      info: () => ['220200011', '220200012', '320200004'],
+    },
+    320900006: {
+      // WHEEL TIRE DAMAGE SUSPECTED
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(320900006)),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, false],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.Wheel,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysApprLdg: () => ['320300007'],
+      info: () => ['800200003'],
+    },
     990900005: {
       // EMER DESCENT
       flightPhaseInhib: [],
