@@ -94,6 +94,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
+  private readonly fmgcFlighPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
+
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
 
   private readonly btvExitMissed = ConsumerSubject.create(this.sub.on('btvExitMissed'), false);
@@ -159,7 +161,21 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   );
 
   private readonly forGaSetToga = MappedSubject.create(
-    ([ap1, ap2, fd1, fd2, ra, altitude, slatsFlapsStatusRaw, flapHandleIndex, tla1, tla2, tla3, tla4]) => {
+    ([
+      ap1,
+      ap2,
+      fd1,
+      fd2,
+      ra,
+      altitude,
+      slatsFlapsStatusRaw,
+      flapHandleIndex,
+      tla1,
+      tla2,
+      tla3,
+      tla4,
+      fmgcFlightPhase,
+    ]) => {
       return (
         (ap1 || ap2 || fd1 || fd2) &&
         (ra.isNormalOperation() ? ra.value < 1000 : altitude.valueOr(Infinity)) &&
@@ -167,7 +183,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         tla1 === 35 &&
         tla2 === 35 &&
         tla3 === 35 &&
-        tla4 === 35
+        tla4 === 35 &&
+        fmgcFlightPhase === 5
       );
     },
     this.ap1Active,
@@ -182,6 +199,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
     this.tla2,
     this.tla3,
     this.tla4,
+    this.fmgcFlighPhase,
   );
 
   private handleFMABorders() {
