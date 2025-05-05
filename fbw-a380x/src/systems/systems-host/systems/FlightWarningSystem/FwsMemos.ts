@@ -185,7 +185,7 @@ export class FwsMemos {
     },
     // DEST EFOB
     221000002: {
-      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11, 12],
+      flightPhaseInhib: [],
       simVarIsActive: this.fws.fmsDestEfob,
       whichCodeToReturn: () => [0],
       codesToReturn: ['221000002'],
