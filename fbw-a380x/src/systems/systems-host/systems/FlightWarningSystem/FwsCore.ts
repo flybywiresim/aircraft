@@ -1585,10 +1585,10 @@ export class FwsCore {
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
 
-  private static pushKeyUnique(val: () => string[] | undefined, pushTo: string[]) {
+  private static pushKeyUnique(val: (state?: boolean[]) => string[] | undefined, pushTo: string[], state?: boolean[]) {
     if (val) {
       // Push only unique keys
-      for (const key of val()) {
+      for (const key of val(state)) {
         if (key && !pushTo.includes(key)) {
           pushTo.push(key);
         }
@@ -4303,12 +4303,15 @@ export class FwsCore {
         allFailureKeys.push(key);
 
         // Add keys for STS page
-        FwsCore.pushKeyUnique(value.info, stsInfoKeys);
-        FwsCore.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys);
-        FwsCore.pushKeyUnique(value.inopSysApprLdg, stsInopApprLdgKeys);
-        FwsCore.pushKeyUnique(value.limitationsAllPhases, ewdLimitationsAllPhasesKeys);
-        FwsCore.pushKeyUnique(value.limitationsApprLdg, ewdLimitationsApprLdgKeys);
-        FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys);
+        const checkedState = this.presentedAbnormalProceduresList.has(key)
+          ? this.presentedAbnormalProceduresList.getValue(key).itemsChecked
+          : undefined;
+        FwsCore.pushKeyUnique(value.info, stsInfoKeys, checkedState);
+        FwsCore.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys, checkedState);
+        FwsCore.pushKeyUnique(value.inopSysApprLdg, stsInopApprLdgKeys, checkedState);
+        FwsCore.pushKeyUnique(value.limitationsAllPhases, ewdLimitationsAllPhasesKeys, checkedState);
+        FwsCore.pushKeyUnique(value.limitationsApprLdg, ewdLimitationsApprLdgKeys, checkedState);
+        FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys, checkedState);
 
         // Push LAND ASAP or LAND ANSA to limitations
         FwsCore.pushKeyUnique(() => {

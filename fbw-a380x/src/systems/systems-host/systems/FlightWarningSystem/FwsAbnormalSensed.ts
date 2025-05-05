@@ -41,21 +41,22 @@ export interface EwdAbnormalItem {
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
   /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for ALL PHASES.
-   * Ideally they're not triggered from faults but rather taken from the system's health status */
-  inopSysAllPhases?: () => string[];
+   * Ideally they're not triggered from faults but rather taken from the system's health status.
+   * checked allows access to the status of all items */
+  inopSysAllPhases?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for APPR&LDG.
    * Ideally they're not triggered from faults but rather taken from the system's health status */
-  inopSysApprLdg?: () => string[];
+  inopSysApprLdg?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of INFO to be displayed on STS page */
-  info?: () => string[];
+  info?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of REDUND LOSS systems to be displayed on STS page */
-  redundLoss?: () => string[];
+  redundLoss?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of LIMITATIONS to be displayed on the EWD for ALL PHASES */
-  limitationsAllPhases?: () => string[];
+  limitationsAllPhases?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of LIMITATIONS to be displayed on the EWD for APPR&LDG */
-  limitationsApprLdg?: () => string[];
+  limitationsApprLdg?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of LIMITATIONS to be displayed on the PFD lower area */
-  limitationsPfd?: () => string[];
+  limitationsPfd?: (checked?: boolean[]) => string[];
 }
 
 export interface EwdAbnormalDict {
