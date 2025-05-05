@@ -1391,13 +1391,13 @@ export class FwsCore {
 
   /* SURVEILLANCE */
 
-  public readonly gpwsFlapModeOff = Subject.create(false);
+  public readonly tawsFlapModeOff = Subject.create(false);
 
-  public readonly gpwsSysOff = Subject.create(false);
+  public readonly tawsGpwsOff = Subject.create(false);
 
-  public readonly gpwsGsOff = Subject.create(false);
+  public readonly tawsGsOff = Subject.create(false);
 
-  public readonly gpwsTerrOff = Subject.create(false);
+  public readonly tawsTerrOff = Subject.create(false);
 
   public readonly gpws1Failed = Subject.create(false);
   public readonly gpws2Failed = Subject.create(false);
@@ -3861,10 +3861,10 @@ export class FwsCore {
     this.lgLeverRedArrow.set(redArrow);
 
     // 34 - Surveillance Logic
-    this.gpwsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
-    this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
-    this.gpwsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
-    this.gpwsSysOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
+    this.tawsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
+    this.tawsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
+    this.tawsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
+    this.tawsGpwsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
     this.gpws1Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_1_FAILED', 'Bool'));
     this.gpws2Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_2_FAILED', 'Bool'));
 

@@ -564,13 +564,41 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [], // TODO
   },
   270900004: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED (WIP)',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'FLAPS LEVER', labelNotCompleted: 'FORCE ONE STEP DOWN', sensed: false },
+      { name: 'FOR LDG : FLAP LVR 3', sensed: false },
+      { name: '[MFD SURV] TAWS FLAP MODE', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'NO AUTOLAND', sensed: false },
+      { name: 'FOR GA : KEEP S/F CONF', sensed: false },
+      { name: 'FUEL CONSUMPT INCRSD', sensed: false },
+      {
+        name: 'FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      { name: 'LDG PERF AFFECTED', sensed: false },
+    ],
   },
   270900005: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS (WIP)',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'FLAPS LEVER JAMMED :', condition: true, sensed: false },
+      { name: 'LDG WITH FLAP LVR JAMMED PROC', labelNotCompleted: 'APPLY', sensed: false },
+      { name: 'FLAPS LEVER NOT JAMMED :', condition: true, sensed: false },
+      { name: '[MFD SURV] TAWS FLAP MODE', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'USE SELECTED SPEED', sensed: false },
+      { name: 'NO AUTOLAND', sensed: false },
+      { name: 'FOR GA : KEEP S/F CONF', sensed: false },
+      { name: 'LDG PERF AFFECTED', sensed: false },
+      { name: 'FOR APPROACH', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline },
+      { name: 'FLAP LVR', labelNotCompleted: 'CONF 1', sensed: true },
+      { name: 'TRGT SPEED', labelNotCompleted: 'VLS', sensed: false },
+      { name: 'AT 500 FT AGL', sensed: false, style: ChecklistLineStyle.CenteredSubHeadline },
+      { name: 'A/THR', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'SPEED', labelNotCompleted: 'REDUCE TO VAPP', sensed: false },
+    ],
   },
 };
