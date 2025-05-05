@@ -467,8 +467,9 @@ export class ProcedureLinesGenerator {
         });
 
         if (isChecklistCondition(item) && !item.sensed) {
-          // Insert CONFIRM <condition>
-          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
+          // Insert CONFIRM <condition>, remove trailing colon
+          const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
+          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${itemName.substring(0, 2) === 'IF' ? itemName.substring(2) : itemName}`;
           lineData.push({
             abnormalProcedure: isAbnormalOrDeferred,
             activeProcedure: this.procedureIsActive.get(),
