@@ -582,7 +582,6 @@ export enum ChecklistLineStyle {
   CenteredSubHeadline = 'CenteredSubHeadline',
   SeparationLine = 'SeparationLine',
   ChecklistItem = 'ChecklistItem',
-  ChecklistItemInactive = 'ChecklistItemInactive',
   CompletedChecklist = 'CompletedChecklist',
   CompletedDeferredProcedure = 'CompletedDeferredProcedure',
   DeferredProcedure = 'DeferredProcedure',
@@ -720,6 +719,7 @@ export interface WdLineData {
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
   originalItemIndex?: number;
+  inactive?: boolean;
 }
 
 export enum WdSpecialLine {

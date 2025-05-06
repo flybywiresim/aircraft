@@ -238,10 +238,10 @@ export class FwsCore {
   /** Keys/IDs of the active abnormal non-sensed procedures */
   public readonly activeAbnormalNonSensedKeys: SetSubject<number> = SetSubject.create([]);
 
-  /** Map to hold all failures which are currently active */
+  /** Map to hold all failures which are currently active and not cleared, i.e. presented on the EWD. */
   public readonly presentedAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
 
-  /** Map to hold all failures which are currently active */
+  /** Map to hold all failures which are currently active, but already cleared. */
   public readonly clearedAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
 
   /** Map to hold all deferred procs which are currently active */
@@ -4249,9 +4249,7 @@ export class FwsCore {
               EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key) &&
               this.abnormalSensed.ewdDeferredProcs[deferredKey]
             ) {
-              const deferredItemsActive = deferredValue.whichItemsActive
-                ? deferredValue.whichItemsActive()
-                : Array(deferredValue.whichItemsChecked().length).fill(false);
+              const deferredItemsActive = Array(deferredValue.whichItemsChecked().length).fill(false); // not activated, hence all false
               const deferredItemsChecked = deferredValue.whichItemsChecked
                 ? deferredValue.whichItemsChecked()
                 : Array(deferredValue.whichItemsChecked().length).fill(true);
@@ -4326,7 +4324,9 @@ export class FwsCore {
         // Add keys for STS page
         const checkedState = this.presentedAbnormalProceduresList.has(key)
           ? this.presentedAbnormalProceduresList.getValue(key).itemsChecked
-          : undefined;
+          : this.clearedAbnormalProceduresList.has(key)
+            ? this.clearedAbnormalProceduresList.getValue(key).itemsChecked
+            : undefined;
         FwsCore.pushKeyUnique(value.info, stsInfoKeys, checkedState);
         FwsCore.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys, checkedState);
         FwsCore.pushKeyUnique(value.inopSysApprLdg, stsInopApprLdgKeys, checkedState);
@@ -4349,47 +4349,6 @@ export class FwsCore {
         }
       }
 
-      // Update deferred procedures
-      this.activeDeferredProceduresList.get().forEach((value, key) => {
-        const proc = EcamDeferredProcedures[key];
-        const itemsChecked = this.abnormalSensed.ewdDeferredProcs[key]
-          .whichItemsChecked()
-          .map((v, i) => (proc.items[i].sensed === false ? false : !!v));
-        const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow
-          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow()
-          : Array(itemsChecked.length).fill(true);
-        const itemsActive = this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive
-          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive()
-          : Array(itemsChecked.length).fill(true);
-
-        const fusedChecked = [...value.itemsChecked].map((val, index) =>
-          proc.items[index].sensed ? itemsChecked[index] : !!val,
-        );
-
-        ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
-        this.deferredUpdatedItems.set(key, []);
-        proc.items.forEach((item, idx) => {
-          if (
-            value.itemsToShow[idx] !== itemsToShow[idx] ||
-            value.itemsActive[idx] !== itemsActive[idx] ||
-            (value.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
-          ) {
-            this.deferredUpdatedItems.get(key).push(idx);
-          }
-        });
-
-        if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
-          this.activeDeferredProceduresList.setValue(key, {
-            id: key,
-            procedureActivated: value.procedureActivated,
-            procedureCompleted: value.procedureCompleted,
-            itemsChecked: fusedChecked,
-            itemsActive: [...value.itemsActive].map((_, index) => itemsActive[index]),
-            itemsToShow: [...value.itemsToShow].map((_, index) => itemsToShow[index]),
-          });
-        }
-      });
-
       if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
         if (!this.auralCrcKeys.includes(key)) {
           this.auralCrcActive.set(true);
@@ -4408,6 +4367,49 @@ export class FwsCore {
         this.soundManager.enqueueSound('cavalryChargeCont');
       }
     }
+
+    // Update deferred procedures
+    this.activeDeferredProceduresList.get().forEach((value, key) => {
+      const proc = EcamDeferredProcedures[key];
+      const itemsChecked = this.abnormalSensed.ewdDeferredProcs[key]
+        .whichItemsChecked()
+        .map((v, i) => (proc.items[i].sensed === false ? false : !!v));
+      const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow
+        ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow()
+        : Array(itemsChecked.length).fill(true);
+      const itemsActive = this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive
+        ? value.procedureActivated
+          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive()
+          : Array(itemsChecked.length).fill(false)
+        : Array(itemsChecked.length).fill(value.procedureActivated);
+
+      const fusedChecked = [...value.itemsChecked].map((val, index) =>
+        proc.items[index].sensed ? itemsChecked[index] : !!val,
+      );
+
+      ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
+      this.deferredUpdatedItems.set(key, []);
+      proc.items.forEach((item, idx) => {
+        if (
+          value.itemsToShow[idx] !== itemsToShow[idx] ||
+          value.itemsActive[idx] !== itemsActive[idx] ||
+          (value.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
+        ) {
+          this.deferredUpdatedItems.get(key).push(idx);
+        }
+      });
+
+      if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
+        this.activeDeferredProceduresList.setValue(key, {
+          id: key,
+          procedureActivated: value.procedureActivated,
+          procedureCompleted: value.procedureCompleted,
+          itemsChecked: fusedChecked,
+          itemsActive: [...value.itemsActive].map((_, index) => itemsActive[index]),
+          itemsToShow: [...value.itemsToShow].map((_, index) => itemsToShow[index]),
+        });
+      }
+    });
 
     // Retrieve all active deferred procedure keys, delete inactive
     const deferredProcedureKeys: string[] = [];

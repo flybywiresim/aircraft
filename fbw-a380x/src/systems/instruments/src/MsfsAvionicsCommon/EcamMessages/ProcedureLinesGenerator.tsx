@@ -96,6 +96,10 @@ export class ProcedureLinesGenerator {
               (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])
                 ? active && itemsChecked[recI]
                 : active;
+
+            if ((proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])) {
+              break;
+            }
           }
           itemsActive[i] = active;
         }
@@ -231,7 +235,7 @@ export class ProcedureLinesGenerator {
       } else if (sii > HIGHEST_SPECIAL_INDEX) {
         this.selectedItemIndex.set(
           Math.min(
-            selectable.find((v) => v > this.selectedItemIndex.get()) ?? selectable[selectable.length - 1],
+            selectable.find((v) => v > sii) ?? selectable[selectable.length - 1],
             selectable[selectable.length - 1],
           ),
         );
@@ -415,16 +419,15 @@ export class ProcedureLinesGenerator {
         }
 
         let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
-        let text = item.level ? '\xa0'.repeat(item.level) : '';
+        let inactive = false;
+        let text = item.level && item.style !== ChecklistLineStyle.CenteredSubHeadline ? '\xa0'.repeat(item.level) : '';
+        if (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) {
+          inactive = true;
+        }
+
         if (isChecklistAction(item)) {
           text += '-';
           text += item.name;
-          if (
-            (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
-            clStyle === ChecklistLineStyle.ChecklistItem
-          ) {
-            clStyle = ChecklistLineStyle.ChecklistItemInactive;
-          }
           if (this.checklistState.itemsChecked[itemIndex] && item.labelCompleted) {
             text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
           } else if (this.checklistState.itemsChecked[itemIndex] && item.labelNotCompleted) {
@@ -464,6 +467,7 @@ export class ProcedureLinesGenerator {
           firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           originalItemIndex: isChecklistCondition(item) ? undefined : itemIndex,
+          inactive: inactive,
         });
 
         if (isChecklistCondition(item) && !item.sensed) {
@@ -480,6 +484,7 @@ export class ProcedureLinesGenerator {
             firstLine: !this.procedureIsActive.get() && isAbnormal,
             lastLine: !this.procedureIsActive.get() && isAbnormal,
             originalItemIndex: itemIndex,
+            inactive: inactive,
           });
         }
       });
@@ -529,6 +534,7 @@ export class ProcedureLinesGenerator {
             firstLine: false,
             lastLine: false,
             originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_RECALL,
+            inactive: !this.checklistState.procedureActivated,
           });
         } else {
           lineData.push({
@@ -536,12 +542,11 @@ export class ProcedureLinesGenerator {
             sensed: false,
             checked: this.checklistState.procedureCompleted ?? false,
             text: `${'\xa0'.repeat(17)}DEFERRED PROC COMPLETE`,
-            style: this.checklistState.procedureActivated
-              ? ChecklistLineStyle.ChecklistItem
-              : ChecklistLineStyle.ChecklistItemInactive,
+            style: ChecklistLineStyle.ChecklistItem,
             firstLine: false,
             lastLine: false,
             originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_COMPLETE,
+            inactive: !this.checklistState.procedureActivated,
           });
         }
       }
