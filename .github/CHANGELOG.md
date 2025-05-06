@@ -22,6 +22,11 @@
 1. [A380X/PFD] Inhibit rudder trim indication in the air - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Improve ALL PRIMARY CABIN FANS FAULT - @Jonny23787 (Jonathan)
+1. [A380X/FCU] Reduce FCU texture size from 5120 to 2560 - @heclak (Heclak)
+1. [A380X/MFD] Fix VERT DEV not updating in APPR page during descend phase - @heclak (Heclak)
+1. [A380X/VD] Add vertical display (first implementation) - @flogross89 (floridude)
+1. [FMS] Fix pseudo waypoint transmission for F/O side when EFIS range different from CAPT side - @flogross89 (floridude)
+1. [A380X/SURV] Enable SURV system switching via MFD SURV page; Add ECAM faults for TERR/GPWS - @flogross89 (floridude)
 1. [A380X/MFD] MFD F-PLN page data display improvements when no predictions or flightplan available - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0

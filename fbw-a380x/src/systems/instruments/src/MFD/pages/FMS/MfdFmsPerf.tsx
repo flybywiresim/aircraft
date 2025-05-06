@@ -1090,6 +1090,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }),
     );
 
+    // Update VERT DEV on APPR page. Possible optimization to only sub during descent phase
+    this.subs.push(
+      sub
+        .on('realTime')
+        .atFrequency(0.5)
+        .handle((_t) => {
+          if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent) {
+            const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation();
+            if (vDev != null) {
+              this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `${vDev.toFixed(0)}FT`);
+            }
+          }
+        }),
+    );
+
     this.subs.push(
       this.speedConstraintReason,
       this.climbPreSelSpeedGreen,
