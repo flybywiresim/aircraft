@@ -30,6 +30,7 @@ import {
   FailuresConsumer,
   FrequencyMode,
   MsfsFlightModelEvents,
+  NXDataStore,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicPulseNode,
@@ -110,7 +111,7 @@ export class FwsCore {
   private readonly flightPhases = new FwsFlightPhases(this);
 
   /** Time to inhibit master warnings and cautions during startup in ms */
-  private static readonly FWC_STARTUP_TIME = 4000;
+  private static readonly FWC_STARTUP_TIME = 60000;
 
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
@@ -1921,10 +1922,13 @@ export class FwsCore {
 
   private handlePowerChange(powered: boolean) {
     if (powered) {
+      // Real time is 60 seconds, i.e. 60_000 ms; Real setting for DMC self test in EFB is 12 seconds.
+      const startupTime = parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000;
+
       this.startupTimer.schedule(() => {
         this.startupCompleted.set(true);
         console.log('PseudoFWC startup completed.');
-      }, FwsCore.FWC_STARTUP_TIME);
+      }, startupTime);
     } else {
       this.startupTimer.clear();
       this.startupCompleted.set(false);
