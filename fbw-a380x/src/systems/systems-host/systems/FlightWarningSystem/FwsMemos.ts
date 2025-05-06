@@ -375,11 +375,11 @@ export class FwsMemos {
     },
     '333000001': {
       // STROBE LIGHT OFF
-      flightPhaseInhib: [],
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
       simVarIsActive: MappedSubject.create(
-        ([aircraftOnGround, strobeLightsOn]) => !!(!aircraftOnGround && strobeLightsOn === 2),
-        this.fws.aircraftOnGround,
+        ([strobeLightsOn, flightPhase]) => strobeLightsOn === 2 && flightPhase === 8,
         this.fws.strobeLightsOn,
+        this.fws.flightPhase,
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['333000001'],

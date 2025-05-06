@@ -15,6 +15,8 @@ export type ResetPanelSimvars = {
   a380x_reset_panel_fmc_c: boolean;
   a380x_reset_panel_fws1: boolean;
   a380x_reset_panel_fws2: boolean;
+  a380x_reset_panel_aesu1: boolean;
+  a380x_reset_panel_aesu2: boolean;
 };
 
 export class ResetPanelSimvarPublisher extends SimVarPublisher<ResetPanelSimvars> {
@@ -25,6 +27,8 @@ export class ResetPanelSimvarPublisher extends SimVarPublisher<ResetPanelSimvars
     ['a380x_reset_panel_fmc_c', { name: 'L:A32NX_RESET_PANEL_FMC_C', type: SimVarValueType.Bool }],
     ['a380x_reset_panel_fws1', { name: 'L:A32NX_RESET_PANEL_FWS1', type: SimVarValueType.Bool }],
     ['a380x_reset_panel_fws2', { name: 'L:A32NX_RESET_PANEL_FWS2', type: SimVarValueType.Bool }],
+    ['a380x_reset_panel_aesu1', { name: 'L:A32NX_RESET_PANEL_AESU1', type: SimVarValueType.Bool }],
+    ['a380x_reset_panel_aesu2', { name: 'L:A32NX_RESET_PANEL_AESU2', type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

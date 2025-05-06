@@ -30,7 +30,7 @@ impl Failures {
 }
 
 struct FailureIdVisitor<'a>(&'a FxHashMap<u64, FailureType>);
-impl<'a, 'de> Visitor<'de> for FailureIdVisitor<'a> {
+impl<'de> Visitor<'de> for FailureIdVisitor<'_> {
     type Value = FxHashSet<FailureType>;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
