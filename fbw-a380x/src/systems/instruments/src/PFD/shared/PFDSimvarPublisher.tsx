@@ -176,6 +176,7 @@ export interface PFDSimvars {
   fcuLocModeActive: boolean;
   hydGreenSysPressurized: boolean;
   hydYellowSysPressurized: boolean;
+  forGaSetToga: boolean;
 }
 
 export enum PFDVars {
@@ -352,6 +353,7 @@ export enum PFDVars {
   fcuLocModeActive = 'L:A32NX_FCU_LOC_MODE_ACTIVE',
   hydGreenSysPressurized = 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH',
   hydYellowSysPressurized = 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH',
+  forGaSetToga = 'L:A380X_PFD_MSG_FOR_GA_SET_TOGA',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -529,6 +531,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fcuLocModeActive', { name: PFDVars.fcuLocModeActive, type: SimVarValueType.Bool }],
     ['hydGreenSysPressurized', { name: PFDVars.hydGreenSysPressurized, type: SimVarValueType.Bool }],
     ['hydYellowSysPressurized', { name: PFDVars.hydYellowSysPressurized, type: SimVarValueType.Bool }],
+    ['forGaSetToga', { name: PFDVars.forGaSetToga, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
