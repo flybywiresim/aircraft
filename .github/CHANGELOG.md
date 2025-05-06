@@ -7,7 +7,6 @@
 
 ## 0.14.0
 
-1.[A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Visual update to reflect later avionics batches (overlapping tab selectors) - @flogross89 (floridude)
 1. [A380X/APU] Fix too low APU BLEED pressure during engine starts (fix by BBK) - @flogross89 (floridude)
@@ -28,7 +27,7 @@
 1. [A380X/VD] Add vertical display (first implementation) - @flogross89 (floridude)
 1. [FMS] Fix pseudo waypoint transmission for F/O side when EFIS range different from CAPT side - @flogross89 (floridude)
 1. [A380X/SURV] Enable SURV system switching via MFD SURV page; Add ECAM faults for TERR/GPWS - @flogross89 (floridude)
-1.[A380X/FCU] Fix selected speed initial target not being managed speed in non SRS - @BravoMike99 (bruno_pt99)
+1. [A380X/FCU] Fix selected speed initial target not being managed speed in non SRS - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
