@@ -150,8 +150,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fwsEcpFailed = Subject.create(false);
 
-  private readonly fwsAvailable = MappedSubject.create(
-    ([failed1, failed2]) => !(failed1 && failed2),
+  private readonly allFwsFailed = MappedSubject.create(
+    ([failed1, failed2]) => failed1 && failed2,
     this.fws1Failed,
     this.fws2Failed,
   );
@@ -231,7 +231,6 @@ class SystemsHost extends BaseInstrument {
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
-    this.fwsCore?.init();
 
     this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
@@ -250,18 +249,26 @@ class SystemsHost extends BaseInstrument {
         this.autoThsTrimmer.autoTrim();
       });
 
-    this.fwsAvailable.sub((a) => {
-      if (!a && this.fwsCore !== undefined) {
+    this.allFwsFailed.sub((a) => {
+      if (a && this.fwsCore !== undefined) {
         this.fwsCore.destroy();
         this.fwsCore = undefined;
         FwsCore.sendFailureWarning(this.bus);
-      } else if (a && this.fwsCore === undefined) {
+      } else if (!a && this.fwsCore === undefined) {
         this.fwsCore = new FwsCore(1, this.bus, this.failuresConsumer, this.fws1Failed, this.fws2Failed);
-        this.fwsCore.init();
       }
     }, true);
-    this.fws1Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, !f), true);
-    this.fws2Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, !f), true);
+
+    MappedSubject.create(
+      ([failed, startup]) => !failed && startup,
+      this.fws1Failed,
+      this.fwsCore?.startupCompleted,
+    ).sub((avail) => SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, avail), true);
+    MappedSubject.create(
+      ([failed, startup]) => !failed && startup,
+      this.fws2Failed,
+      this.fwsCore?.startupCompleted,
+    ).sub((avail) => SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, avail), true);
 
     this.fwsEcpFailed.sub((v) => SimVar.SetSimVarValue('L:A32NX_FWS_ECP_FAILED', SimVarValueType.Bool, v), true);
   }

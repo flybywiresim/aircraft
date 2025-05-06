@@ -110,7 +110,7 @@ export class FwsCore {
   private readonly flightPhases = new FwsFlightPhases(this);
 
   /** Time to inhibit master warnings and cautions during startup in ms */
-  private static readonly FWC_STARTUP_TIME = 5000;
+  private static readonly FWC_STARTUP_TIME = 4000;
 
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
@@ -1626,9 +1626,16 @@ export class FwsCore {
       this.abnormalNonSensed.ewdAbnormalNonSensed,
     );
 
+    if (this.fwsNumber === 1) {
+      this.subs.push(this.dcESSBusPowered.sub((v) => this.handlePowerChange(v), true));
+    } else {
+      this.subs.push(this.dc2BusPowered.sub((v) => this.handlePowerChange(v), true));
+    }
+
     this.subs.push(
       this.startupCompleted.sub((v) => {
         if (v) {
+          this.init();
           this.normalChecklists.reset(null);
           this.abnormalNonSensed.reset();
           this.activeDeferredProceduresList.clear();
@@ -1638,8 +1645,10 @@ export class FwsCore {
           this.allCurrentFailures.length = 0;
           this.presentedFailures.length = 0;
           this.recallFailures.length = 0;
+        } else {
+          FwsCore.sendFailureWarning(this.bus);
         }
-      }),
+      }, true),
     );
 
     // Not a lot of references on which parts of the FWS to reset when
@@ -1659,6 +1668,156 @@ export class FwsCore {
           this.recallFailures.length = 0;
         }
       }),
+    );
+
+    const ecamMemoKeys = Object.keys(EcamMemos);
+    Object.keys(this.memos.ewdToLdgMemos).forEach((key) => {
+      this.memos.ewdToLdgMemos[key].codesToReturn.forEach((code) => {
+        const found = ecamMemoKeys.find((it) => it === code);
+        if (!found) {
+          console.log(
+            `ECAM message from PseudoFWC not found in EcamMemos: ${key}.\nIf MEMO, delete from PseudoFWC. If ECAM alert / ABN proc, move to ABN procs in the future.`,
+          );
+        }
+      });
+    });
+
+    for (const s of this.feedTankPumps) {
+      this.subs.push(s);
+    }
+
+    this.subs.push(
+      this.statusNormal,
+      this.masterCautionOutput,
+      this.masterWarningOutput,
+      this.fuelOnBoard,
+      this.fuelingInitiated,
+      this.fuelingTarget,
+      this.refuelPanelOpen,
+      this.allFeedTankPumpsOff,
+      this.allFeedTankPumpsOn,
+      this.allCrossFeedValvesOpen,
+      this.crossFeedOpenMemo,
+      this.refuelPanelOpen,
+      this.isRefuelFuelTarget,
+      this.defuelInProgress,
+      this.refuelInProgress,
+      this.airDataCaptOn3,
+      this.airDataFoOn3,
+      this.rmp3ActiveMode,
+      this.xpdrAltReportingRequest,
+      this.flightPhase1Or2,
+      this.flightPhase128,
+      this.flightPhase23,
+      this.flightPhase345,
+      this.flightPhase34567,
+      this.flightPhase1211,
+      this.flightPhase89,
+      this.flightPhase910,
+      this.flightPhase112,
+      this.flightPhase6789,
+      this.flightPhase189,
+      this.flightPhase1112,
+      this.flightPhase12Or1112,
+      this.stallWarningRaw,
+      this.computedAirSpeedToNearest2,
+      this.machSelectedFromAdr,
+      this.engine1ValueSwitch,
+      this.engine2ValueSwitch,
+      this.engine3ValueSwitch,
+      this.engine4ValueSwitch,
+      this.engine1Master,
+      this.engine2Master,
+      this.engine3Master,
+      this.engine4Master,
+      this.engine1AboveIdle,
+      this.engine2AboveIdle,
+      this.engine1CoreAtOrAboveMinIdle,
+      this.engine2CoreAtOrAboveMinIdle,
+    );
+  }
+
+  /**
+   * Called after startup
+   */
+  init(): void {
+    Promise.all([
+      KeyEventManager.getManager(this.bus),
+      Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
+    ]).then(([keyEventManager]) => {
+      this.keyEventManager = keyEventManager;
+      this.registerKeyEvents();
+    });
+
+    this.sub
+      .on('key_intercept')
+      .atFrequency(50)
+      .handle((keyData) => {
+        switch (keyData.key) {
+          case 'A32NX.AUTO_THROTTLE_DISCONNECT':
+            this.autoThrottleInstinctiveDisconnect();
+            break;
+          case 'A32NX.FCU_AP_DISCONNECT_PUSH':
+          case 'A32NX.AUTOPILOT_DISENGAGE':
+          case 'AUTOPILOT_OFF':
+            this.autoPilotInstinctiveDisconnect();
+            break;
+        }
+      });
+
+    this.subs.push(
+      this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal)),
+    );
+    this.subs.push(
+      this.flightPhase.sub((fp) => {
+        SimVar.SetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', fp || 0);
+        if (fp !== null) {
+          this.flightPhaseEndedPulseNode.write(true, 0);
+        }
+      }),
+    );
+
+    this.subs.push(
+      this.auralCrcActive.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true),
+    );
+
+    this.subs.push(
+      this.masterCautionOutput.sub((caution) => {
+        // Inhibit master warning/cautions until FWC startup has been completed
+        SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', caution);
+      }, true),
+    );
+
+    this.subs.push(
+      this.masterWarningOutput.sub((warning) => {
+        // Inhibit master warning/cautions until FWC startup has been completed
+        SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', warning);
+      }, true),
+    );
+
+    // L/G lever red arrow sinking outputs
+    this.subs.push(
+      this.lgLeverRedArrow.sub((on) => {
+        // TODO FWCs need to be powered...
+        SimVar.SetSimVarValue('L:A32NX_FWC_1_LG_RED_ARROW', SimVarValueType.Bool, on);
+        SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, on);
+      }, true),
+    );
+
+    this.subs.push(
+      this.stallWarning.sub((v) => {
+        this.fwcOut126.setBitValue(17, v);
+        // set the sound on/off
+        this.soundManager.handleSoundCondition('stall', v);
+      }, true),
+    );
+    this.subs.push(this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v)));
+
+    this.subs.push(
+      this.fwcOut126.sub((v) => {
+        Arinc429Word.toSimVarValue('L:A32NX_FWC_1_DISCRETE_WORD_126', v.value, v.ssm);
+        Arinc429Word.toSimVarValue('L:A32NX_FWC_2_DISCRETE_WORD_126', v.value, v.ssm);
+      }, true),
     );
 
     this.ewdMessageLinesLeft.forEach((ls, i) =>
@@ -1749,167 +1908,15 @@ export class FwsCore {
       ),
     );
 
-    const ecamMemoKeys = Object.keys(EcamMemos);
-    Object.keys(this.memos.ewdToLdgMemos).forEach((key) => {
-      this.memos.ewdToLdgMemos[key].codesToReturn.forEach((code) => {
-        const found = ecamMemoKeys.find((it) => it === code);
-        if (!found) {
-          console.log(
-            `ECAM message from PseudoFWC not found in EcamMemos: ${key}.\nIf MEMO, delete from PseudoFWC. If ECAM alert / ABN proc, move to ABN procs in the future.`,
-          );
-        }
-      });
-    });
-
-    for (const s of this.feedTankPumps) {
-      this.subs.push(s);
-    }
-
-    this.subs.push(
-      this.statusNormal,
-      this.masterCautionOutput,
-      this.masterWarningOutput,
-      this.fuelOnBoard,
-      this.fuelingInitiated,
-      this.fuelingTarget,
-      this.refuelPanelOpen,
-      this.allFeedTankPumpsOff,
-      this.allFeedTankPumpsOn,
-      this.allCrossFeedValvesOpen,
-      this.crossFeedOpenMemo,
-      this.refuelPanelOpen,
-      this.isRefuelFuelTarget,
-      this.defuelInProgress,
-      this.refuelInProgress,
-      this.airDataCaptOn3,
-      this.airDataFoOn3,
-      this.rmp3ActiveMode,
-      this.xpdrAltReportingRequest,
-      this.flightPhase1Or2,
-      this.flightPhase128,
-      this.flightPhase23,
-      this.flightPhase345,
-      this.flightPhase34567,
-      this.flightPhase1211,
-      this.flightPhase89,
-      this.flightPhase910,
-      this.flightPhase112,
-      this.flightPhase6789,
-      this.flightPhase189,
-      this.flightPhase1112,
-      this.flightPhase12Or1112,
-      this.stallWarningRaw,
-      this.computedAirSpeedToNearest2,
-      this.machSelectedFromAdr,
-      this.engine1ValueSwitch,
-      this.engine2ValueSwitch,
-      this.engine3ValueSwitch,
-      this.engine4ValueSwitch,
-      this.engine1Master,
-      this.engine2Master,
-      this.engine3Master,
-      this.engine4Master,
-      this.engine1AboveIdle,
-      this.engine2AboveIdle,
-      this.engine1CoreAtOrAboveMinIdle,
-      this.engine2CoreAtOrAboveMinIdle,
+    this.fwcOut126.setSsm(
+      this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FunctionalTest,
     );
-  }
-
-  init(): void {
-    Promise.all([
-      KeyEventManager.getManager(this.bus),
-      Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
-    ]).then(([keyEventManager]) => {
-      this.keyEventManager = keyEventManager;
-      this.registerKeyEvents();
-    });
-
-    this.sub
-      .on('key_intercept')
-      .atFrequency(50)
-      .handle((keyData) => {
-        switch (keyData.key) {
-          case 'A32NX.AUTO_THROTTLE_DISCONNECT':
-            this.autoThrottleInstinctiveDisconnect();
-            break;
-          case 'A32NX.FCU_AP_DISCONNECT_PUSH':
-          case 'A32NX.AUTOPILOT_DISENGAGE':
-          case 'AUTOPILOT_OFF':
-            this.autoPilotInstinctiveDisconnect();
-            break;
-        }
-      });
-
-    this.subs.push(
-      this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal)),
-    );
-    this.subs.push(
-      this.flightPhase.sub((fp) => {
-        SimVar.SetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', fp || 0);
-        if (fp !== null) {
-          this.flightPhaseEndedPulseNode.write(true, 0);
-        }
-      }),
-    );
-
-    this.subs.push(
-      this.auralCrcActive.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true),
-    );
-
-    this.subs.push(
-      this.masterCautionOutput.sub((caution) => {
-        // Inhibit master warning/cautions until FWC startup has been completed
-        SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', caution);
-      }, true),
-    );
-
-    this.subs.push(
-      this.masterWarningOutput.sub((warning) => {
-        // Inhibit master warning/cautions until FWC startup has been completed
-        SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', warning);
-      }, true),
-    );
-
-    // L/G lever red arrow sinking outputs
-    this.subs.push(
-      this.lgLeverRedArrow.sub((on) => {
-        // TODO FWCs need to be powered...
-        SimVar.SetSimVarValue('L:A32NX_FWC_1_LG_RED_ARROW', SimVarValueType.Bool, on);
-        SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, on);
-      }, true),
-    );
-
-    this.subs.push(
-      this.stallWarning.sub((v) => {
-        this.fwcOut126.setBitValue(17, v);
-        // set the sound on/off
-        this.soundManager.handleSoundCondition('stall', v);
-      }, true),
-    );
-    this.subs.push(this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v)));
-
-    this.subs.push(
-      this.fwcOut126.sub((v) => {
-        Arinc429Word.toSimVarValue('L:A32NX_FWC_1_DISCRETE_WORD_126', v.value, v.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_FWC_2_DISCRETE_WORD_126', v.value, v.ssm);
-      }, true),
-    );
-
-    // FIXME depend on FWC state
-    this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
 
     // Inhibit single chimes for the first two seconds after power-on
     this.auralSingleChimeInhibitTimer.schedule(
       () => (this.auralSingleChimePending = false),
       FwsCore.AURAL_SC_INHIBIT_TIME,
     );
-
-    if (this.fwsNumber === 1) {
-      this.subs.push(this.dcESSBusPowered.sub((v) => this.handlePowerChange(v), true));
-    } else {
-      this.subs.push(this.dc2BusPowered.sub((v) => this.handlePowerChange(v), true));
-    }
   }
 
   private handlePowerChange(powered: boolean) {
@@ -4752,7 +4759,7 @@ export class FwsCore {
   }
 
   static sendFailureWarning(bus: EventBus) {
-    // In case of FWS1+2, populate output with FW messages
+    // In case of FWS1+2 failure, populate output with FW messages
     SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', SimVarValueType.Bool, true);
     SimVar.SetSimVarValue('L:A32NX_ECAM_FAILURE_ACTIVE', SimVarValueType.Bool, false);
     SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Number, -1);
