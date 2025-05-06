@@ -69,8 +69,12 @@ export class FwsAbnormalNonSensed {
   }
 
   navigateToParent() {
-    this.checklistId.set(0);
-    this.selectedItem.set(0);
+    if (this.checklistId.get() === 0) {
+      this.showAbnProcRequested.set(false);
+    } else {
+      this.checklistId.set(0);
+      this.selectedItem.set(0);
+    }
   }
 
   update() {
