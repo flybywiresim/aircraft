@@ -3977,6 +3977,15 @@ export class FwsAbnormalSensed {
       failure: 0,
       sysPage: SdPages.None,
     },
+    270700001: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true],
+      whichItemsChecked: () => [false, false, false, false, false],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
     320700001: {
       flightPhaseInhib: [],
       simVarIsActive: Subject.create(true),
