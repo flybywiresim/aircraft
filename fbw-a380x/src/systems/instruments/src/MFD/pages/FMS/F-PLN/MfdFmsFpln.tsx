@@ -233,20 +233,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     const distanceToDestination =
       this.props.fmcService.master?.fmgc?.guidanceController?.alongTrackDistanceToDestination;
-
-    if (distanceToDestination) {
-      this.distanceToDest.set(distanceToDestination);
-    } else {
-      this.distanceToDest.set(null);
-    }
+    this.distanceToDest.set(distanceToDestination ?? null);
 
     if (destPred && this.props.fmcService.master) {
       this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMin.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
-      this.destEfob.set(
-        this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard ??
-          null,
-      );
+      this.destEfob.set(destPred.estimatedFuelOnBoard ?? null);
     } else {
       this.destEfob.set(null);
       this.destTime.set(null);
