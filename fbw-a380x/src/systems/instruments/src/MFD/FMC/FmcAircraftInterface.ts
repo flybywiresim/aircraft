@@ -736,6 +736,8 @@ export class FmcAircraftInterface {
 
   private setHoldSpeedMessageActive = false;
 
+  private forGaSetTogaMessageActive = false;
+
   /** in knots */
   private takeoffEngineOutSpeed: number | null = null;
 
