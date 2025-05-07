@@ -776,7 +776,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       .handle((a) => {
         this.autoBrakeActive = a;
         if (!a) {
-          this.textSub.set('HiddenElement');
+          this.textSub.set('');
         }
         this.handleAutobrakeMode();
       });
