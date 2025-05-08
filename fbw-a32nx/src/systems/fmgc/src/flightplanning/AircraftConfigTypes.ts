@@ -187,4 +187,7 @@ export interface FlightModelParameters {
 
 export interface FMSymbolsConfig {
   publishDepartureIdent: boolean;
+
+  /** whether to show RNP label on ND for RNP AR approaches */
+  showRnpArLabel: boolean;
 }
