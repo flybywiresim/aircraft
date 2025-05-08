@@ -13,6 +13,9 @@ import {
   Runway,
   WaypointDescriptor,
   PathVector,
+  WaypointConstraintType,
+  AltitudeConstraint,
+  SpeedConstraint,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -22,7 +25,6 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';

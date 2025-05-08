@@ -99,7 +99,8 @@ type CoRoute = {
   route: string;
   /* eslint-disable camelcase */
   alternateIcao?: string;
-  navlog: CoRouteFix[];
+  /** `navlog` is undefined when the route is DCT */
+  navlog?: CoRouteFix[];
 };
 
 export class CoRouteUplinkAdapter {
@@ -392,7 +393,7 @@ export class CoRouteUplinkAdapter {
     const instructions: OfpRouteChunk[] = [];
 
     // `navlog` is undefined when the route is DCT
-    for (let i = 0; i < (ofp.navlog?.length ?? 0); i++) {
+    for (let i = 0; ofp.navlog && i < ofp.navlog.length; i++) {
       const lastFix = ofp.navlog[i - 1];
       const fix = ofp.navlog[i];
 

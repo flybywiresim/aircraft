@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -312,6 +311,56 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     callback: (fixInfo: FixInfoEntry) => FixInfoEntry,
     planIndex: number,
   ): Promise<void>;
+
+  /**
+   * Sets a pilot entry speed value on the climb speed limit of the performance data.
+   * If no altitude is previously defined, a default value is applied to it.
+   * @param value which speed in knots to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry altitude value on the climb speed limit of the performance data.
+   * If no speed is previously defined, a default value is applied to it
+   * @param value which altitude in feet to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Deletes the climb speed limit from the performance data
+   * @param planIndex which flightplan index to delete the climb speed limit from
+   * @param alternate whether to delete the speed limit from the alternate performance data
+   */
+  deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry speed value on the descent speed limit of the performance data.
+   * If no altitude is previously defined, a default value is applied to it.
+   * @param value which speed in knots to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry altitude value on the descent speed limit performance data.
+   * If no speed is previously defined, a default value is applied to it
+   * @param value which altitude in feet to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Deletes the descent speed limit from the performance data
+   * @param planIndex which flightplan index to delete the climb speed limit from
+   * @param alternate whether to delete the speed limit from the alternate performance data
+   */
+  deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
 
   // TODO do not pass in waypoint object (rpc)
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;

@@ -8,7 +8,7 @@ use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
 use msfs::sys::{
     KEY_APU_BLEED_AIR_SOURCE_SET, KEY_APU_OFF_SWITCH, KEY_APU_STARTER,
     KEY_ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE, KEY_FUELSYSTEM_PUMP_OFF, KEY_FUELSYSTEM_PUMP_ON,
-    KEY_FUELSYSTEM_VALVE_CLOSE, KEY_FUELSYSTEM_VALVE_OPEN, KEY_WING_FOLD_SET,
+    KEY_FUELSYSTEM_VALVE_CLOSE, KEY_FUELSYSTEM_VALVE_OPEN,
 };
 use std::error::Error;
 use systems::shared::{to_bool, ElectricalBusType};
@@ -17,8 +17,6 @@ pub(super) fn electrical_buses<const N: usize>(
     buses: [(ElectricalBusType, u32); N],
 ) -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     move |builder: &mut MsfsAspectBuilder| {
-        // dummy event to work around bug in MSFS, first event sent does seem to be ignored
-        trigger_key_event_ex1(KEY_WING_FOLD_SET, 0, 0, 0, 0, 0);
         for bus in buses {
             const INFINITELY_POWERED_BUS_IDENTIFIER: u32 = 1;
             let variable = Variable::named(&format!("ELEC_{}_BUS_IS_POWERED", bus.0));

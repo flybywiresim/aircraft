@@ -8,9 +8,8 @@ import {
   MaxAltitudeConstraint,
   MaxSpeedConstraint,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { MathUtils, ApproachType, ApproachWaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { MathUtils, ApproachType, ApproachWaypointDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 

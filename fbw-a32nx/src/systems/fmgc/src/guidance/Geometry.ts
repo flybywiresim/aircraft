@@ -15,7 +15,7 @@ import {
   DirectToFixTransitionGuidanceState,
   DirectToFixTransition,
 } from '@fmgc/guidance/lnav/transitions/DirectToFixTransition';
-import { PathVector } from '@fmgc/guidance/lnav/PathVector';
+import { PathVector, pathVectorLength, pathVectorPoint } from '@fmgc/guidance/lnav/PathVector';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { isCourseReversalLeg, isHold } from '@fmgc/guidance/lnav/legs';
 import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -24,7 +24,7 @@ import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
-import { distanceTo } from 'msfs-geo';
+import { bearingTo, distanceTo } from 'msfs-geo';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { FlightPlanElement, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -91,9 +91,11 @@ export class Geometry {
 
     const transmitHoldEntry = !this.temp;
 
-    const ret = [];
+    const ret: PathVector[] = [];
 
-    for (const [index, leg] of this.legs.entries()) {
+    // Sort map by leg number, we now do care about the sequence. Allocates, but not too often.
+    const orderedLegs = [...this.legs.entries()].sort((a, b) => a[0] - b[0]);
+    for (const [index, leg] of orderedLegs) {
       if (
         (!missedApproach && leg.metadata.isInMissedApproach) ||
         (missedApproach && !leg.metadata.isInMissedApproach)
@@ -805,5 +807,43 @@ export class Geometry {
     }
 
     return activeLegIndex;
+  }
+
+  static getLegOrientationAtDistanceFromEnd(leg: Leg, distanceFromLegTermination: number): number | null {
+    if (!leg) {
+      return null;
+    }
+
+    const geometry = [];
+
+    if (leg.inboundGuidable.predictedPath && leg.inboundGuidable.predictedPath.length > 0) {
+      geometry.push(...leg.inboundGuidable.predictedPath);
+    }
+
+    if (leg.predictedPath && leg.predictedPath.length > 0) {
+      geometry.push(...leg.predictedPath);
+    }
+
+    if (leg.outboundGuidable.predictedPath && leg.outboundGuidable.predictedPath.length > 0) {
+      geometry.push(...leg.outboundGuidable.predictedPath);
+    }
+
+    if (geometry.length > 0) {
+      // Find right part of geometry. Start backwards
+      let distanceLeft = distanceFromLegTermination;
+      for (let i = geometry.length - 1; i >= 0; i--) {
+        const length = pathVectorLength(geometry[i]);
+
+        if (distanceLeft > length) {
+          distanceLeft -= length;
+          continue;
+        }
+
+        const symbolLocation = pathVectorPoint(geometry[i], distanceLeft);
+        const justBeforeSymbolLocation = pathVectorPoint(geometry[i], distanceLeft - 0.02);
+        return bearingTo(symbolLocation, justBeforeSymbolLocation);
+      }
+    }
+    return null;
   }
 }
