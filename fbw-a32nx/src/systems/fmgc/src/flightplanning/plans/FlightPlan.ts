@@ -5,7 +5,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { EventBus, MagVar } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -67,20 +67,20 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone());
 
     newPlan.version = this.version;
-    newPlan.originSegment = this.originSegment.clone(newPlan);
-    newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan);
-    newPlan.departureSegment = this.departureSegment.clone(newPlan);
-    newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan);
-    newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan);
-    newPlan.arrivalEnrouteTransitionSegment = this.arrivalEnrouteTransitionSegment.clone(newPlan);
-    newPlan.arrivalSegment = this.arrivalSegment.clone(newPlan);
-    newPlan.arrivalRunwayTransitionSegment = this.arrivalRunwayTransitionSegment.clone(newPlan);
-    newPlan.approachViaSegment = this.approachViaSegment.clone(newPlan);
-    newPlan.approachSegment = this.approachSegment.clone(newPlan);
-    newPlan.destinationSegment = this.destinationSegment.clone(newPlan);
-    newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan);
+    newPlan.originSegment = this.originSegment.clone(newPlan, options);
+    newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan, options);
+    newPlan.departureSegment = this.departureSegment.clone(newPlan, options);
+    newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan, options);
+    newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan, options);
+    newPlan.arrivalEnrouteTransitionSegment = this.arrivalEnrouteTransitionSegment.clone(newPlan, options);
+    newPlan.arrivalSegment = this.arrivalSegment.clone(newPlan, options);
+    newPlan.arrivalRunwayTransitionSegment = this.arrivalRunwayTransitionSegment.clone(newPlan, options);
+    newPlan.approachViaSegment = this.approachViaSegment.clone(newPlan, options);
+    newPlan.approachSegment = this.approachSegment.clone(newPlan, options);
+    newPlan.destinationSegment = this.destinationSegment.clone(newPlan, options);
+    newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan, options);
 
-    newPlan.alternateFlightPlan = this.alternateFlightPlan.clone(newPlan);
+    newPlan.alternateFlightPlan = this.alternateFlightPlan.clone(newPlan, options);
 
     newPlan.availableOriginRunways = [...this.availableOriginRunways];
     newPlan.availableDepartures = [...this.availableDepartures];
@@ -93,7 +93,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     newPlan.flightNumber = this.flightNumber;
 
-    if (options & CopyOptions.IncludeFixInfos) {
+    if (BitFlags.isAll(options, CopyOptions.IncludeFixInfos)) {
       newPlan.fixInfos = this.fixInfos.map((it) => it?.clone());
     }
 
@@ -540,6 +540,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     performanceDataInit: P,
   ): FlightPlan<P> {
     const newPlan = FlightPlan.empty<P>(index, bus, performanceDataInit);
+
+    // TODO init performance data
 
     newPlan.activeLegIndex = serialized.activeLegIndex;
     newPlan.fixInfos = serialized.fixInfo;
