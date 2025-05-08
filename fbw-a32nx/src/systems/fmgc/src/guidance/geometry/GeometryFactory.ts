@@ -69,11 +69,7 @@ export namespace GeometryFactory {
       }
 
       let nextGeometryLeg: Leg;
-      if (
-        nextElement?.isDiscontinuity === false &&
-        nextElement.type !== LegType.CI &&
-        nextElement.type !== LegType.VI
-      ) {
+      if (nextElement?.isDiscontinuity === false && !nextElement.isXI()) {
         nextGeometryLeg = isXiIfXf(element, nextElement, nextNextElement)
           ? geometryLegFromFlightPlanLeg(runningMagvar, nextElement, nextNextElement)
           : geometryLegFromFlightPlanLeg(runningMagvar, element, nextElement);
