@@ -49,7 +49,7 @@ export enum LnavTurnState {
 export class LnavDriver implements GuidanceComponent {
   private static readonly NavActiveCaptureZone = 30.0;
 
-  private static readonly MinimumTrackAngleError = 10.0; // degrees
+  private static readonly MinimumTrackAngleError = 1.0; // degrees
 
   private guidanceController: GuidanceController;
 
@@ -591,10 +591,9 @@ export class LnavDriver implements GuidanceComponent {
         const legGs = activeGeometryLeg.predictedGs ?? groundSpeed;
         const nominalRollAngle = activeGeometryLeg.getNominalRollAngle(groundSpeed) ?? 0;
         const unsaturatedCaptureZone =
-          (MathUtils.DEGREES_TO_RADIANS / HpathLaw.K1) *
-          (nominalRollAngle / HpathLaw.K2 - unsaturatedTrackAngleError * legGs);
+          (nominalRollAngle / HpathLaw.K2 - unsaturatedTrackAngleError * legGs) / HpathLaw.K1;
         const optimalCaptureZone = Math.abs(saturatedCaptureZone - unsaturatedCaptureZone);
-        const minCaptureZone = (LnavDriver.MinimumTrackAngleError * MathUtils.DEGREES_TO_RADIANS * legGs) / HpathLaw.K1;
+        const minCaptureZone = (LnavDriver.MinimumTrackAngleError * legGs) / HpathLaw.K1;
 
         if (Math.abs(this.lastXTE) >= Math.max(minCaptureZone, optimalCaptureZone)) {
           console.log(
