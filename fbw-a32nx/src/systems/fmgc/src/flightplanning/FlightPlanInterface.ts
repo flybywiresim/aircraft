@@ -219,8 +219,10 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param atIndex the index of the leg to start the pending airway entry at
    * @param planIndex which flight plan to make the change on
    * @param alternate whether to edit the plan's alternate flight plan
+   *
+   * @returns the index of the flight plan where the airway entry was started
    */
-  startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
+  startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<number>;
 
   /**
    * Continues an existing AIRWAYS revision, starting a VIA entry.

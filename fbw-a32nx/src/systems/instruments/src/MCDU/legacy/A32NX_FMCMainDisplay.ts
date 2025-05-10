@@ -2810,19 +2810,21 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
       const oldCruiseLevel = this.cruiseLevel;
-      this.flightPlanService.temporaryInsert();
-      this.checkCostIndex(oldCostIndex);
-      // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
-      if (oldDestination !== undefined) {
-        this.checkDestination(oldDestination);
-      }
-      this.checkCruiseLevel(oldCruiseLevel);
 
-      SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
-      SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
+      this.flightPlanService.temporaryInsert().then(() => {
+        this.checkCostIndex(oldCostIndex);
+        // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+        if (oldDestination !== undefined) {
+          this.checkDestination(oldDestination);
+        }
+        this.checkCruiseLevel(oldCruiseLevel);
 
-      this.guidanceController.vnavDriver.invalidateFlightPlanProfile();
-      callback();
+        SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
+        SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
+
+        this.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+        callback();
+      });
     }
   }
 

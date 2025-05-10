@@ -1409,6 +1409,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       type: 'delete',
       elements: this.pendingAirways.elements,
     });
+
+    this.pendingAirways = undefined;
   }
 
   async addOrEditManualHold(

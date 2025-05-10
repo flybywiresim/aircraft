@@ -411,6 +411,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       : this.flightPlanManager.get(finalIndex);
 
     plan.startAirwayEntry(at);
+
+    return finalIndex;
   }
 
   public async continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<boolean> {
