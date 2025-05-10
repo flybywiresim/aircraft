@@ -152,6 +152,7 @@
         <Component ID="PUSH_RADIO#SIDE#_SEL_SEQ1" Node="PUSH_RADIO#SIDE#_SEL_SEQ1">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                  <POTENTIOMETER>7</POTENTIOMETER>
+                <PART_ID>PUSH_RADIO#SIDE#_SEL_SEQ1</PART_ID>
                 <EMISSIVE_CODE type="rnp" return="number">
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
                     let id = #ID, number#;
@@ -282,6 +283,7 @@
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#</NODE_ID>
+            <PART_ID>PUSH_RADIO#SIDE#_#BASE_NAME#</PART_ID>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
             <ANIM_NAME_BUTTON>PUSH_RADIO#SIDE#_#BASE_NAME#</ANIM_NAME_BUTTON>
@@ -311,6 +313,7 @@
 
         <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <PART_ID>#LED_NODE_ID#</PART_ID>
                 <EMISSIVE_CODE type="rnp" return="number">
                     let inop = #INOP, boolean#;
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
