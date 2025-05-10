@@ -166,14 +166,6 @@ fmc-main-display::before {
   right: 5%;
 }
 
-#title-left {
-  display: block;
-  text-align: right;
-  position: absolute;
-  top: 7.5%;
-  left: 5%;
-}
-
 .s-text,
 text .s-text,
 div .s-text,
@@ -268,14 +260,4 @@ span .s-text {
   right: 1%;
   width: 100%;
   text-align: right;
-}
-
-.left {
-  margin-left: 4%;
-  float: left;
-}
-
-.right {
-  margin-right: 6%;
-  float: right;
 }
