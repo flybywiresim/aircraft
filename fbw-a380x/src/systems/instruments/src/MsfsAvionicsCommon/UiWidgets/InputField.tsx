@@ -14,7 +14,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { A380FmsError } from '../../MFD/shared/A380FmsError';
+import { FmsError } from '@fmgc/FmsError';
 
 export enum InteractionMode {
   Touchscreen,
@@ -44,7 +45,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
    * @returns whether validation was successful. If nothing is returned, success is assumed
    */
   dataHandlerDuringValidation?: (newValue: U | null, oldValue?: T | null) => Promise<boolean | void>;
-  errorHandler?: (errorType: FmsErrorType) => void;
+  errorHandler: (error: A380FmsError) => void;
   handleFocusBlurExternally?: boolean;
   containerStyle?: string;
   alignText?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
@@ -348,8 +349,8 @@ export class InputField<
       newValue = await this.props.dataEntryFormat.parse(input);
     } catch (msg: unknown) {
       if (msg instanceof FmsError && this.props.errorHandler) {
-        this.props.errorHandler(msg.type);
-        newValue = null;
+        this.props.errorHandler(msg);
+        newValue = this.readValue.get();
       }
     }
 
@@ -377,7 +378,7 @@ export class InputField<
           await this.props.onModified(newValue);
         } catch (msg: unknown) {
           if (msg instanceof FmsError && this.props.errorHandler) {
-            this.props.errorHandler(msg.type);
+            this.props.errorHandler(msg);
           }
         }
       } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
