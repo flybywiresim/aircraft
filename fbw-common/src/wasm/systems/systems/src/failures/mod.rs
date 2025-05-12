@@ -8,8 +8,9 @@ use crate::shared::{
     FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use crate::simulation::SimulationElement;
+use fxhash::FxHashSet;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FailureType {
     // ATA21
     Acsc(AcscId),
@@ -86,10 +87,8 @@ impl Failure {
     }
 }
 impl SimulationElement for Failure {
-    fn receive_failure(&mut self, failure_type: FailureType, is_active: bool) {
-        if failure_type == self.failure_type {
-            self.is_active = is_active;
-        }
+    fn receive_failure(&mut self, active_failures: &FxHashSet<FailureType>) {
+        self.is_active = active_failures.contains(&self.failure_type);
     }
 }
 

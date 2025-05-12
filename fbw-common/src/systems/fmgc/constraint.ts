@@ -30,7 +30,10 @@ export interface SpeedConstraint {
 }
 
 export class ConstraintUtils {
-  static minimumAltitude(constraint: AltitudeConstraint): Feet {
+  /**
+   * @returns minimum altitude in feet
+   */
+  static minimumAltitude(constraint: AltitudeConstraint): number | undefined {
     switch (constraint?.altitudeDescriptor) {
       case AltitudeDescriptor.AtAlt1:
       case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
@@ -46,7 +49,10 @@ export class ConstraintUtils {
     }
   }
 
-  static maximumAltitude(constraint: AltitudeConstraint): Feet {
+  /**
+   * @returns maximum altitude in feet
+   */
+  static maximumAltitude(constraint: AltitudeConstraint): number | undefined {
     switch (constraint?.altitudeDescriptor) {
       case AltitudeDescriptor.AtAlt1:
       case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
