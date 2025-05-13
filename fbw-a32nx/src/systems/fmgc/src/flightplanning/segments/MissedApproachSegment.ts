@@ -20,11 +20,13 @@ export class MissedApproachSegment extends FlightPlanSegment {
     this.flightPlan.syncSegmentLegsChange(this);
   }
 
-  clone(forPlan: BaseFlightPlan): MissedApproachSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): MissedApproachSegment {
     const newSegment = new MissedApproachSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
 
     return newSegment;
   }

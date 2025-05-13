@@ -189,11 +189,13 @@ export class OriginSegment extends FlightPlanSegment {
     this.flightPlan.syncSegmentLegsChange(this);
   }
 
-  clone(forPlan: BaseFlightPlan): OriginSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): OriginSegment {
     const newSegment = new OriginSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.airport = this.airport;
     newSegment.runway = this.runway;
 
