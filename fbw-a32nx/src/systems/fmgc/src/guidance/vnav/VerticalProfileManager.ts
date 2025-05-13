@@ -724,7 +724,7 @@ export class VerticalProfileManager {
    * This is naturally the case because the descent profile and the "starting point" is not updated during descent.
    * @returns Offset between the aircraft's distance from start and the descent profile's distance from start
    */
-  private computeTacticalToGuidanceProfileOffset(): NauticalMiles {
+  public computeTacticalToGuidanceProfileOffset(): NauticalMiles {
     if (!this.descentProfile || !this.aircraftToDescentProfileRelation?.isValid) {
       return 0;
     }
