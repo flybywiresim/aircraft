@@ -835,6 +835,10 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
   private readonly additionalText = Subject.create('');
 
+  private readonly additionalTextClass = Subject.create('');
+
+  private readonly additionalTextDx = Subject.create(0);
+
   private readonly inSpeedProtection = Subject.create(false);
 
   private readonly inModeReversion = Subject.create(false);
@@ -924,10 +928,12 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
     } else if (trackMode && altMode && !dashMode && altConstraintValid) {
       text = 'ALT CST';
     } else if (dashMode && (!altMode || !altConstraintValid)) {
-      text = 'ALT CRZ';
+      text = 'ALT';
+      additionalText = 'CRZ';
+      this.additionalTextDx.set(1.4);
+      this.additionalTextClass.set('green');
     } else if (fpaMode) {
       text = 'FPA';
-
       if (!(this.selectedFPA.isNoComputedData() || this.selectedFPA.isFailureWarning())) {
         const fpaValue = this.selectedFPA.value;
         additionalText = `${fpaValue > 0 ? '+' : ''}${(Math.round(fpaValue * 10) / 10).toFixed(1)}°`;
@@ -938,6 +944,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       } else {
         additionalText = '-----';
       }
+      this.additionalTextClass.set('Cyan');
+      this.additionalTextDx.set(0);
     } else if (vsMode) {
       if (!(this.selectedVS.isNoComputedData() || this.selectedVS.isFailureWarning())) {
         const vsValue = this.selectedVS.value;
@@ -945,8 +953,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       } else {
         additionalText = '-----';
       }
-
       text = 'V/S';
+      this.additionalTextDx.set(0);
+      this.additionalTextClass.set('Cyan');
     } else {
       text = '';
       this.isShown = false;
@@ -1094,7 +1103,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             className1={'Cyan'}
             className2={'DimmedCyan Fill'}
           >
-            <tspan xml:space="preserve">{this.additionalText}</tspan>
+            <tspan xml:space="preserve" class={this.additionalTextClass} dx={this.additionalTextDx}>
+              {this.additionalText}
+            </tspan>
           </FlashOneHertz>
         </text>
       </g>
