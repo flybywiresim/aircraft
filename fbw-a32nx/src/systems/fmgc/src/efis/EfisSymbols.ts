@@ -323,11 +323,6 @@ export class EfisSymbols<T extends number> {
       }
     }
 
-    for (const side of EfisSymbols.sides) {
-      const range = this.rangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
-      const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
-      const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
-
     const rangeChange = this.lastRange !== range;
     this.lastRange = range;
     const modeChange = this.lastMode !== mode;
