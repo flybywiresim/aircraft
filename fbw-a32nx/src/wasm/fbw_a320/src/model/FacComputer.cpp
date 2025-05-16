@@ -304,7 +304,7 @@ void FacComputer::step()
   boolean_T rtb_rudderTravelLimEngaged;
   boolean_T rtb_rudderTrimEngaged;
   boolean_T rtb_y_b4;
-  boolean_T rtb_y_fh;
+  boolean_T rtb_y_l;
   boolean_T rtb_y_ool;
   boolean_T rtb_yawDamperEngaged;
   boolean_T rudderTravelLimCanEngage;
@@ -504,14 +504,14 @@ void FacComputer::step()
       rtb_mach = FacComputer_U.in.bus_inputs.adr_own_bus.mach.Data;
       rtb_alpha = FacComputer_U.in.bus_inputs.adr_own_bus.aoa_corrected_deg.Data;
       rtb_p_s_c = FacComputer_U.in.bus_inputs.adr_own_bus.corrected_average_static_pressure.Data;
-      rtb_alt = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_corrected_ft.Data;
+      rtb_alt = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_standard_ft.Data;
     } else if (!rtb_DataTypeConversion_l5) {
       rtb_V_ias = FacComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.Data;
       rtb_V_tas = FacComputer_U.in.bus_inputs.adr_3_bus.airspeed_true_kn.Data;
       rtb_mach = FacComputer_U.in.bus_inputs.adr_3_bus.mach.Data;
       rtb_alpha = FacComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.Data;
       rtb_p_s_c = FacComputer_U.in.bus_inputs.adr_3_bus.corrected_average_static_pressure.Data;
-      rtb_alt = FacComputer_U.in.bus_inputs.adr_own_bus.altitude_corrected_ft.Data;
+      rtb_alt = FacComputer_U.in.bus_inputs.adr_3_bus.altitude_standard_ft.Data;
     } else {
       rtb_V_ias = 0.0F;
       rtb_V_tas = 0.0F;
@@ -641,7 +641,7 @@ void FacComputer::step()
       rtb_Switch = FacComputer_P.Constant_Value;
     }
 
-    if (FacComputer_DWork.is_active_c15_FacComputer == 0U) {
+    if (FacComputer_DWork.is_active_c15_FacComputer == 0) {
       FacComputer_DWork.is_active_c15_FacComputer = 1U;
       FacComputer_DWork.is_c15_FacComputer = FacComputer_IN_Landed;
       rtb_alpha_floor_inhib = 1;
@@ -897,16 +897,16 @@ void FacComputer::step()
     }
 
     if (FacComputer_P.PulseNode_isRisingEdge) {
-      rtb_y_fh = (rtb_AND && (!FacComputer_DWork.previousInput));
+      rtb_y_l = (rtb_AND && (!FacComputer_DWork.previousInput));
     } else {
-      rtb_y_fh = ((!rtb_AND) && FacComputer_DWork.previousInput);
+      rtb_y_l = ((!rtb_AND) && FacComputer_DWork.previousInput);
     }
 
     FacComputer_DWork.previousInput = rtb_AND;
     FacComputer_DWork.Memory_PreviousInput = FacComputer_P.Logic_table
       [(((FacComputer_U.in.discrete_inputs.rudder_trim_switch_left ||
-          FacComputer_U.in.discrete_inputs.rudder_trim_switch_right || rtb_y_ool) + (static_cast<uint32_T>(rtb_y_fh) <<
-          1)) << 1) + FacComputer_DWork.Memory_PreviousInput];
+          FacComputer_U.in.discrete_inputs.rudder_trim_switch_right || rtb_y_ool) + (static_cast<uint32_T>(rtb_y_l) << 1))
+        << 1) + FacComputer_DWork.Memory_PreviousInput];
     rtb_AND = !rtb_rudderTrimEngaged;
     FacComputer_MATLABFunction_g(&FacComputer_U.in.bus_inputs.elac_1_bus.discrete_status_word_1,
       FacComputer_P.BitfromLabel_bit_j, &rtb_y_ph);
@@ -980,10 +980,10 @@ void FacComputer::step()
       FacComputer_DWork.pY_not_empty = true;
     }
 
-    rtb_Y_g4 = FacComputer_U.in.time.dt * FacComputer_P.WashoutFilter_C1;
-    rtb_Y_br = 2.0 / (rtb_Y_g4 + 2.0);
-    FacComputer_DWork.pY = (2.0 - rtb_Y_g4) / (rtb_Y_g4 + 2.0) * FacComputer_DWork.pY + (rtb_r * rtb_Y_br -
-      FacComputer_DWork.pU * rtb_Y_br);
+    u0 = FacComputer_U.in.time.dt * FacComputer_P.WashoutFilter_C1;
+    rtb_Y_br = 2.0 / (u0 + 2.0);
+    FacComputer_DWork.pY = (2.0 - u0) / (u0 + 2.0) * FacComputer_DWork.pY + (rtb_r * rtb_Y_br - FacComputer_DWork.pU *
+      rtb_Y_br);
     FacComputer_DWork.pU = rtb_r;
     if (rtb_AND || (rtb_y_ool && FacComputer_U.in.discrete_inputs.elac_2_healthy && (rtb_y_ep != 0U))) {
       if (rtb_AND) {

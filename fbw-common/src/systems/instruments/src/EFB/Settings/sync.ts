@@ -37,7 +37,14 @@ export const globalSyncedSettings: SyncedSettingDefinition[] = [
     configKey: 'EFB_USING_AUTOBRIGHTNESS',
     localVarName: 'L:A32NX_EFB_USING_AUTOBRIGHTNESS',
     localVarUnit: 'bool',
-    defaultValue: '0',
+    defaultValue: '1',
+  },
+  { configKey: 'CABIN_MANUAL_BRIGHTNESS', localVarName: 'L:A32NX_CABIN_MANUAL_BRIGHTNESS', defaultValue: '0' },
+  {
+    configKey: 'CABIN_USING_AUTOBRIGHTNESS',
+    localVarName: 'L:A32NX_CABIN_USING_AUTOBRIGHTNESS',
+    localVarUnit: 'bool',
+    defaultValue: '1',
   },
   {
     configKey: 'ISIS_BARO_UNIT_INHG',

@@ -67,10 +67,7 @@ impl CockpitVibration {
         nose_ground_weight: Mass,
     ) {
         // Speed factor so vibration kicks in from an empirical ground speed function
-        let speed_factor = f64::min(
-            1.0,
-            f64::max(0.0, 0.00001 * current_speed.get::<knot>().powi(3)),
-        );
+        let speed_factor = (0.00001 * current_speed.get::<knot>().powi(3)).clamp(0.0, 1.0);
 
         let ground_noise = self.ground_noise_amplitude(current_speed);
         let runway_lights_impact_amplitude =
@@ -402,8 +399,8 @@ pub struct WingFlexA380 {
 }
 impl WingFlexA380 {
     const FLEX_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] =
-        [20000000., 8000000., 5000000., 500000.];
-    const DAMPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [800000., 400000., 150000., 6000.];
+        [16000000., 6000000., 3500000., 200000.];
+    const DAMPING_COEFFICIENTS: [f64; WING_FLEX_LINK_NUMBER] = [800000., 500000., 150000., 5000.];
 
     const EMPTY_MASS_KG: [f64; WING_FLEX_NODE_NUMBER] = [0., 25000., 20000., 5000., 400.];
 
@@ -1438,9 +1435,10 @@ mod tests {
         );
     }
 
-    // Check that provided following XML formula, final animation value matches expected values
+    // Utility to run to check that provided following XML formula, final animation value matches expected values
     // Need to set XML code according to those formulas
     #[test]
+    #[ignore]
     fn util_to_compute_xml_offsets_from_desired_angles_in_flight() {
         let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
 

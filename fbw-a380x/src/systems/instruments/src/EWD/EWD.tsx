@@ -3,6 +3,7 @@ import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayU
 import {
   ConsumerSubject,
   DisplayComponent,
+  EventBus,
   FSComponent,
   MappedSubject,
   Subject,
@@ -20,23 +21,28 @@ import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
 import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
 import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
+import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
+
+  private readonly availChecker = new FwsEwdAvailabilityChecker(this.props.bus);
+
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
-    ConsumerSubject.create(null, 0),
-    ConsumerSubject.create(null, 0),
-    ConsumerSubject.create(null, 0),
-    ConsumerSubject.create(null, 0),
+    ConsumerSubject.create(this.sub.on('engine_state_1'), 0),
+    ConsumerSubject.create(this.sub.on('engine_state_2'), 0),
+    ConsumerSubject.create(this.sub.on('engine_state_3'), 0),
+    ConsumerSubject.create(this.sub.on('engine_state_4'), 0),
   ];
 
   private readonly reverserSubs: ConsumerSubject<boolean>[] = [
-    ConsumerSubject.create(null, false),
-    ConsumerSubject.create(null, false),
+    ConsumerSubject.create(this.sub.on('thrust_reverse_2'), false),
+    ConsumerSubject.create(this.sub.on('thrust_reverse_3'), false),
   ];
 
   private readonly reverserSelected = MappedSubject.create(SubscribableMapFunctions.or(), ...this.reverserSubs);
 
-  private readonly engSelectorPosition = ConsumerSubject.create(null, 0);
+  private readonly engSelectorPosition = ConsumerSubject.create(this.sub.on('eng_selector_position'), 0);
 
   private readonly engineRunningOrIgnitionOn = MappedSubject.create(
     ([eng1, eng2, eng3, eng4, engSelectorPosition]) => {
@@ -55,37 +61,39 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
     Subject.create(false),
   ];
 
-  private readonly normalChecklistsVisible = ConsumerSubject.create(null, false);
+  private readonly normalChecklistsVisible = ConsumerSubject.create(this.sub.on('fws_show_normal_checklists'), false);
 
-  private readonly abnormalSensedVisible = ConsumerSubject.create(null, false);
+  private readonly abnormalSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_sensed'), false);
+
+  private readonly abnormalNonSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_non_sensed'), false);
+
+  // Todo: This logic should be handled by the FADEC
+  private readonly engFirePb: ConsumerSubject<boolean>[] = [
+    ConsumerSubject.create(this.sub.on('engine_fire_pb_1'), false),
+    ConsumerSubject.create(this.sub.on('engine_fire_pb_2'), false),
+    ConsumerSubject.create(this.sub.on('engine_fire_pb_3'), false),
+    ConsumerSubject.create(this.sub.on('engine_fire_pb_4'), false),
+  ];
 
   private readonly memosLimitationVisible = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.normalChecklistsVisible,
     this.abnormalSensedVisible,
+    this.abnormalNonSensedVisible,
+    this.availChecker.fwsFailed,
   );
 
-  private readonly abnormalDebugLine = ConsumerSubject.create(null, 0);
+  private readonly failurePendingIndicationRequested = ConsumerSubject.create(
+    this.sub.on('fws_show_failure_pending'),
+    false,
+  );
+
+  private readonly stsIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_sts_indication'), false);
+
+  private readonly advIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_adv_indication'), false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
-
-    this.engineStateSubs[0].setConsumer(sub.on('engine_state_1').whenChanged());
-    this.engineStateSubs[1].setConsumer(sub.on('engine_state_2').whenChanged());
-    this.engineStateSubs[2].setConsumer(sub.on('engine_state_3').whenChanged());
-    this.engineStateSubs[3].setConsumer(sub.on('engine_state_4').whenChanged());
-
-    this.reverserSubs[0].setConsumer(sub.on('thrust_reverse_2').whenChanged());
-    this.reverserSubs[1].setConsumer(sub.on('thrust_reverse_3').whenChanged());
-
-    this.engSelectorPosition.setConsumer(sub.on('eng_selector_position').whenChanged());
-
-    this.normalChecklistsVisible.setConsumer(sub.on('fws_show_normal_checklists').whenChanged());
-    this.abnormalSensedVisible.setConsumer(sub.on('fws_show_abn_sensed').whenChanged());
-
-    this.abnormalDebugLine.setConsumer(sub.on('abnormal_debug_line').whenChanged());
   }
 
   render(): VNode {
@@ -116,7 +124,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 x={93}
                 y={126}
                 engine={1}
-                active={this.engineRunningOrIgnitionOn}
+                active={MappedSubject.create(
+                  ([engineRunningOrIgnitionOn, engFirePb]) => engineRunningOrIgnitionOn && !engFirePb,
+                  this.engineRunningOrIgnitionOn,
+                  this.engFirePb[0],
+                )}
                 n1Degraded={this.n1Degraded[0]}
               />
               <EngineGauge
@@ -124,7 +136,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 x={262}
                 y={126}
                 engine={2}
-                active={this.engineRunningOrIgnitionOn}
+                active={MappedSubject.create(
+                  ([engineRunningOrIgnitionOn, engFirePb]) => engineRunningOrIgnitionOn && !engFirePb,
+                  this.engineRunningOrIgnitionOn,
+                  this.engFirePb[1],
+                )}
                 n1Degraded={this.n1Degraded[1]}
               />
               <EngineGauge
@@ -132,7 +148,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 x={497}
                 y={126}
                 engine={3}
-                active={this.engineRunningOrIgnitionOn}
+                active={MappedSubject.create(
+                  ([engineRunningOrIgnitionOn, engFirePb]) => engineRunningOrIgnitionOn && !engFirePb,
+                  this.engineRunningOrIgnitionOn,
+                  this.engFirePb[2],
+                )}
                 n1Degraded={this.n1Degraded[2]}
               />
               <EngineGauge
@@ -140,7 +160,11 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                 x={668}
                 y={126}
                 engine={4}
-                active={this.engineRunningOrIgnitionOn}
+                active={MappedSubject.create(
+                  ([engineRunningOrIgnitionOn, engFirePb]) => engineRunningOrIgnitionOn && !engFirePb,
+                  this.engineRunningOrIgnitionOn,
+                  this.engFirePb[3],
+                )}
                 n1Degraded={this.n1Degraded[3]}
               />
 
@@ -217,13 +241,102 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
           <div class="WarningDisplayArea">
             <WdLimitations bus={this.props.bus} visible={this.memosLimitationVisible} />
             <WdMemos bus={this.props.bus} visible={this.memosLimitationVisible} />
-            <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisible} abnormal={false} />
-            <WdAbnormalSensedProcedures bus={this.props.bus} visible={this.abnormalSensedVisible} abnormal={true} />
-            <div class="StsArea" />
-            {/* Reserved for STS */}
+            <WdNormalChecklists
+              bus={this.props.bus}
+              visible={MappedSubject.create(
+                ([visible, avail]) => visible && avail,
+                this.normalChecklistsVisible,
+                this.availChecker.fwsAvail,
+              )}
+              abnormal={false}
+            />
+            <WdAbnormalSensedProcedures
+              bus={this.props.bus}
+              visible={MappedSubject.create(
+                ([visible, fail]) => visible || fail,
+                this.abnormalSensedVisible,
+                this.availChecker.fwsFailed,
+              )}
+              abnormal={true}
+              fwsAvail={this.availChecker.fwsAvail}
+            />
+            <WdAbnormalNonSensedProcedures
+              bus={this.props.bus}
+              visible={MappedSubject.create(
+                ([visible, avail]) => visible && avail,
+                this.abnormalNonSensedVisible,
+                this.availChecker.fwsAvail,
+              )}
+              abnormal={true}
+            />
+            <div class="StsArea">
+              <div
+                class="FailurePendingBox"
+                style={{
+                  visibility: MappedSubject.create(
+                    SubscribableMapFunctions.and(),
+                    this.failurePendingIndicationRequested,
+                    this.availChecker.fwsAvail,
+                  ).map((s) => (s ? 'visible' : 'hidden')),
+                }}
+              >
+                FAILURE PENDING
+              </div>
+              <div
+                class="StsBox"
+                style={{
+                  visibility: MappedSubject.create(
+                    SubscribableMapFunctions.and(),
+                    this.stsIndicationRequested,
+                    this.availChecker.fwsAvail,
+                  ).map((s) => (s ? 'visible' : 'hidden')),
+                }}
+              >
+                STS
+              </div>
+              <div
+                class="AdvBox"
+                style={{
+                  visibility: MappedSubject.create(
+                    SubscribableMapFunctions.and(),
+                    this.advIndicationRequested,
+                    this.availChecker.fwsAvail,
+                  ).map((s) => (s ? 'visible' : 'hidden')),
+                }}
+              >
+                ADV
+              </div>
+            </div>
           </div>
         </div>
       </CdsDisplayUnit>
     );
   }
+}
+
+class FwsEwdAvailabilityChecker {
+  constructor(private bus: EventBus) {}
+
+  private readonly sub = this.bus.getSubscriber<EwdSimvars>();
+
+  private readonly fws1IsHealthy = ConsumerSubject.create(this.sub.on('fws1_is_healthy'), true);
+  private readonly fws2IsHealthy = ConsumerSubject.create(this.sub.on('fws2_is_healthy'), true);
+
+  private readonly afdx_3_3_reachable = ConsumerSubject.create(this.sub.on('afdx_3_3_reachable'), true);
+  private readonly afdx_13_13_reachable = ConsumerSubject.create(this.sub.on('afdx_13_13_reachable'), true);
+  private readonly afdx_4_3_reachable = ConsumerSubject.create(this.sub.on('afdx_4_3_reachable'), true);
+  private readonly afdx_14_13_reachable = ConsumerSubject.create(this.sub.on('afdx_14_13_reachable'), true);
+
+  public readonly fwsAvail = MappedSubject.create(
+    ([healthy1, healthy2, r_3_3, r_13_13, r_4_3, r_14_13]) =>
+      (healthy1 && (r_3_3 || r_13_13)) || (healthy2 && (r_4_3 || r_14_13)),
+    this.fws1IsHealthy,
+    this.fws2IsHealthy,
+    this.afdx_3_3_reachable,
+    this.afdx_13_13_reachable,
+    this.afdx_4_3_reachable,
+    this.afdx_14_13_reachable,
+  );
+
+  public readonly fwsFailed = this.fwsAvail.map((it) => !it);
 }

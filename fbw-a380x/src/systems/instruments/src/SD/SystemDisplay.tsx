@@ -21,12 +21,11 @@ import { DoorPage } from './Pages/Doors/DoorPage';
 import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
 import { WheelPage } from './Pages/Wheel/WheelPage';
 import { FctlPage } from './Pages/Fctl/FctlPage';
-// import { VideoPage } from './Pages/VideoPage';
+import { VideoPage } from './Pages/Video/VideoPage';
 import { CruisePage } from './Pages/Cruise/CruisePage';
 import { StatusPage } from './Pages/Status/StatusPage';
 
 import { StatusArea } from './StatusArea';
-import { Mailbox } from './Mailbox';
 
 import '../index.scss';
 import { useArinc429Var, useUpdate } from '@flybywiresim/fbw-sdk';
@@ -114,7 +113,6 @@ export const SystemDisplay = () => {
         SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', stsPrevPage);
       }
     } else {
-      setPageWhenUnselected(SdPages.Status);
       setStsPressedTimer(STS_DISPLAY_TIMER_DURATION);
     }
   };
@@ -292,15 +290,14 @@ export const SystemDisplay = () => {
     12: <CbPage />,
     13: <CruisePage />,
     14: <StatusPage />,
-    15: <CruisePage />, // TODO video page
+    15: <VideoPage />,
   };
 
   return (
-    <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
+    <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd} hideBootTestScreens={true}>
       <g>
         {PAGES[currentPage]}
         <StatusArea />
-        <Mailbox />
       </g>
     </LegacyCdsDisplayUnit>
   );

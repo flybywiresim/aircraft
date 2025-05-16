@@ -281,7 +281,7 @@
         <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                    (L:A32NX_ECAM_SFAIL) -1 &gt;
+                    (L:A32NX_ECAM_FAILURE_ACTIVE)
                     (L:A32NX_OVHD_INTLT_ANN) 0 == or
                     #SEQ1_POWERED# and
                 </EMISSIVE_CODE>
@@ -1079,6 +1079,17 @@
                     <EMISSIVE_CODE>#EMISSIVE_CODE# #SEQ1_POWERED# and #EMISSIVE_DIM# *</EMISSIVE_CODE>
                 </True>
             </Condition>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_GT_Interaction_NoInteraction">
+        <DefaultTemplateParameters>
+            <DISABLE_MOUSERECT>True</DISABLE_MOUSERECT>
+            <CURSOR>Hand</CURSOR>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_MouseRect">
+            <CALLBACKCODE>0</CALLBACKCODE>
         </UseTemplate>
     </Template>
 </ModelBehaviors>

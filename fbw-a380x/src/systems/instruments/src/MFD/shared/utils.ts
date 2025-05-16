@@ -3,6 +3,19 @@
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 
+export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromPresent: boolean) {
+  if (seconds === null || seconds === undefined) {
+    return '--:--';
+  } else if (Number.isNaN(seconds)) {
+    console.error('[MFD] NaN input received for eta format');
+    return '--:--';
+  }
+
+  const secondsEta = fromPresent ? seconds : seconds + SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+  const eta = new Date(secondsEta * 1000);
+  return `${eta.getUTCHours().toString().padStart(2, '0')}:${eta.getUTCMinutes().toString().padStart(2, '0')}`;
+}
+
 export function secondsToHHmmString(seconds: number) {
   const minutesTotal = seconds / 60;
   const hours = Math.abs(Math.floor(minutesTotal / 60))
@@ -41,8 +54,9 @@ const approachTypeNames: Record<ApproachType, string> = {
 
 export function getApproachName(approach: Approach, withRnpSuffix = true): string {
   // we don't need to worry about circling approaches as they aren't available, so we can always expect a runway ident
-  // FIXME add (RNP) suffix for RNP-AR missed approaches (even on non-RNAV approaches)
-  const approachSuffix = approach.suffix ? `-${approach.suffix}` : '';
-  const arSuffix = withRnpSuffix && approach.authorisationRequired ? ' (RNP)' : '';
-  return `${approachTypeNames[approach.type]}${approach.runwayIdent?.substring(4)}${approachSuffix}${arSuffix}`;
+  // The (RNP) suffix is added RNP-AR approaches, and for RNP-AR missed approaches (even on non-RNAV approaches).
+  const approachSuffix = approach.multipleIndicator ? `-${approach.multipleIndicator}` : '';
+  const arSuffix =
+    withRnpSuffix && (approach.authorisationRequired || approach.missedApproachAuthorisationRequired) ? ' (RNP)' : '';
+  return `${approachTypeNames[approach.type]}${approach.runwayIdent.substring(4)}${approachSuffix}${arSuffix}`;
 }

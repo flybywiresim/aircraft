@@ -1,3 +1,6 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import {
   FSComponent,
   EventBus,
@@ -6,6 +9,7 @@ import {
   FsInstrument,
   FsBaseInstrument,
   ClockPublisher,
+  Subject,
 } from '@microsoft/msfs-sdk';
 import { FmcService } from 'instruments/src/MFD/FMC/FmcService';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -14,39 +18,53 @@ import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FmsMfdPublisher } from '../MsfsAvionicsCommon/providers/FmsMfdPublisher';
+import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
 
   private readonly backplane = new InstrumentBackplane();
 
-  private readonly simVarPublisher: MfdSimvarPublisher;
+  private readonly simVarPublisher = new MfdSimvarPublisher(this.bus);
 
-  private readonly fgDataPublisher: FGDataPublisher;
+  private readonly fgDataPublisher = new FGDataPublisher(this.bus);
+
+  private readonly fmsDataPublisher = new FmsMfdPublisher(this.bus);
 
   private readonly clockPublisher = new ClockPublisher(this.bus);
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private mfdCaptRef = FSComponent.createRef<MfdComponent>();
+  private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
-  private mfdFoRef = FSComponent.createRef<MfdComponent>();
+  private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
+
+  private readonly mfdFoRef = FSComponent.createRef<MfdComponent>();
 
   private readonly fmcService: FmcServiceInterface;
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly fmcAFailed = Subject.create(false);
+  private readonly fmcBFailed = Subject.create(false);
+  private readonly fmcCFailed = Subject.create(false);
+
+  private readonly failuresConsumer = new FailuresConsumer();
 
   constructor(public readonly instrument: BaseInstrument) {
-    this.simVarPublisher = new MfdSimvarPublisher(this.bus);
-    this.hEventPublisher = new HEventPublisher(this.bus);
-    this.fgDataPublisher = new FGDataPublisher(this.bus);
-
     this.backplane.addPublisher('mfd', this.simVarPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
     this.backplane.addPublisher('fg', this.fgDataPublisher);
+    this.backplane.addPublisher('fms', this.fmsDataPublisher);
+    this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
 
-    this.fmcService = new FmcService(this.bus, this.mfdCaptRef.getOrDefault(), this.failuresConsumer);
+    this.fmcService = new FmcService(
+      this.bus,
+      this.mfdCaptRef.getOrDefault(),
+      this.fmcAFailed,
+      this.fmcBFailed,
+      this.fmcCFailed,
+    );
 
     this.doInit();
   }
@@ -101,6 +119,9 @@ class MfdInstrument implements FsInstrument {
   public Update(): void {
     this.backplane.onUpdate();
     this.failuresConsumer.update();
+    this.fmcAFailed.set(this.failuresConsumer.isActive(A380Failure.FmcA));
+    this.fmcBFailed.set(this.failuresConsumer.isActive(A380Failure.FmcB));
+    this.fmcCFailed.set(this.failuresConsumer.isActive(A380Failure.FmcC));
   }
 
   public onInteractionEvent(args: string[]): void {

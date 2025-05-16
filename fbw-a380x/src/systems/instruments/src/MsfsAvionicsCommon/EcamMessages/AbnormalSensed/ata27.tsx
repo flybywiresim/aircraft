@@ -11,7 +11,8 @@ import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessag
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -306,17 +307,36 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   271800058: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SEC 1 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'SEC 1', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'SEC 1', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800059: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SEC 2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'SEC 2', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'SEC 2', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'SEC 2', sensed: true, labelNotCompleted: 'KEEP ON' },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800060: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SEC 3 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'SEC 3', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'SEC 3', sensed: true, labelNotCompleted: 'OFF' },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800061: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SINGLE ELEVATOR FAULT',
@@ -411,7 +431,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   272800003: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS LEVER NOT ZERO',
+    title: '\x1b<2m\x1b4mF/CTL\x1bm FLAPS LEVER NOT ZERO',
     sensed: true,
     items: [],
   },
@@ -539,5 +559,30 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mF/CTL\x1bm T.O FLAPS / FMS DISAGREE',
     sensed: true,
     items: [],
+  },
+  270900001: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED',
+    sensed: false,
+    items: [], // TODO
+  },
+  270900002: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNAWAY',
+    sensed: false,
+    items: [], // TODO
+  },
+  270900003: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES LEVER JAMMED',
+    sensed: false,
+    items: [], // TODO
+  },
+  270900004: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
+    sensed: false,
+    items: [], // TODO
+  },
+  270900005: {
+    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
+    sensed: false,
+    items: [], // TODO
   },
 };

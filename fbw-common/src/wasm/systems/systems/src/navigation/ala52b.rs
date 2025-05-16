@@ -24,6 +24,9 @@ const SPEED_OF_LIGHT_METER_PER_SECOND: f64 = 299_792_458.;
 /// Both of these systems include their radio wave generator/receiver respectively, their
 /// respective antenna installation, and the cables between the generator/receiver and the antenna.
 pub struct Ala52BTransceiverPair {
+    direct_coupling_failure: Failure,
+    interrupted_failure: Failure,
+
     alt_above_ground_id: VariableIdentifier,
     pitch_id: VariableIdentifier,
     bank_id: VariableIdentifier,
@@ -43,10 +46,13 @@ impl Ala52BTransceiverPair {
 
     pub fn new(
         context: &mut InitContext,
+        number: usize,
         transmitter: AntennaInstallation,
         receiver: AntennaInstallation,
     ) -> Self {
         Self {
+            direct_coupling_failure: Failure::new(FailureType::RadioAntennaDirectCoupling(number)),
+            interrupted_failure: Failure::new(FailureType::RadioAntennaInterrupted(number)),
             alt_above_ground_id: context.get_identifier(Self::ALT_ABOVE_GROUND.to_owned()),
             pitch_id: context.get_identifier(Self::PITCH.to_owned()),
             bank_id: context.get_identifier(Self::BANK.to_owned()),
@@ -89,38 +95,54 @@ impl TransceiverPair for Ala52BTransceiverPair {
     /// measured runtime is already based on the filtered difference between the sent and received
     /// frequency in an FMCW-based radar.
     fn response(&self) -> Option<TransceiverPairResponse> {
-        if self.pitch.abs() > Angle::new::<degree>(45.)
-            || self.bank.abs() > Angle::new::<degree>(44.)
-        {
+        if self.interrupted_failure.is_active() {
+            // If one of the antennas has an interrupted electrical connection to its transceiver,
+            // there may erroneously be no signal between the two transceivers at all. This can
+            // result in a bogus NCD reading later.
             return None;
         }
 
-        // First, we need to determine the shortest path of the radio waves between the two
-        // transceivers. This will usually be based on a reflection on the ground, but one future
-        // failure case might be direct coupling where e.g. contamination leads to the shortest path
-        // being radio waves traveling directly along the fuselage, leading to extremely low
-        // readings.
+        let path_between_antennas: Length = if self.direct_coupling_failure.is_active() {
+            // In some cases, the transmitter and receiver may erroneously experience a phenomenon
+            // known as direct coupling. In that case, there's a substantial signal between the two
+            // transceivers without reflecting off the ground. This results in an abnormally low
+            // reading.
+            Length::new::<foot>(0.)
+        } else {
+            // First, we need to determine the shortest path of the radio waves between the two
+            // transceivers. This will usually be based on a reflection on the ground, but one future
+            // failure case might be direct coupling where e.g. contamination leads to the shortest path
+            // being radio waves traveling directly along the fuselage, leading to extremely low
+            // readings.
 
-        // As preparation, calculate the perpendicular distance from both transceivers to the
-        // ground.
-        let a: Length = self.transmitter_height_over_ground();
-        let b: Length = self.receiver_height_over_ground();
+            if self.pitch.abs() > Angle::new::<degree>(45.)
+                || self.bank.abs() > Angle::new::<degree>(44.)
+            {
+                return None;
+            }
 
-        // Perform some 2D geometry to determine the shortest path between the two transceivers and
-        // the ground. The basic idea is that, given two transceivers A, B and a line g representing
-        // the ground. We now would like to determine the length of the shortest path from A to B
-        // via a point on the line. To do this, you can can reflect one of the transceivers B
-        // along the ground g to construct B'. The intersection of the line A-B' with g will result
-        // in the reflection point C in g, and this line A-C-B' now is equal to the shortest path
-        // A-C-B. By then calculating some right angles between A, B', and g, we eventually have a
-        // simple pythagorean triangle where the hypotenuse corresponds to A-C-B', which we can
-        // calculate trivially.
-        let transceiver_along_ground_distance = self.antenna_along_ground_distance();
-        let path_in_air: Length = ((a + b) * (a + b)
-            + transceiver_along_ground_distance * transceiver_along_ground_distance)
-            .sqrt();
-        let shortest_path_length: Length =
-            path_in_air + self.transmitter.electric_length() + self.receiver.electric_length();
+            // As preparation, calculate the perpendicular distance from both transceivers to the
+            // ground.
+            let a: Length = self.transmitter_height_over_ground();
+            let b: Length = self.receiver_height_over_ground();
+
+            // Perform some 2D geometry to determine the shortest path between the two transceivers and
+            // the ground. The basic idea is that, given two transceivers A, B and a line g representing
+            // the ground. We now would like to determine the length of the shortest path from A to B
+            // via a point on the line. To do this, you can can reflect one of the transceivers B
+            // along the ground g to construct B'. The intersection of the line A-B' with g will result
+            // in the reflection point C in g, and this line A-C-B' now is equal to the shortest path
+            // A-C-B. By then calculating some right angles between A, B', and g, we eventually have a
+            // simple pythagorean triangle where the hypotenuse corresponds to A-C-B', which we can
+            // calculate trivially.
+            let transceiver_along_ground_distance = self.antenna_along_ground_distance();
+            ((a + b) * (a + b)
+                + transceiver_along_ground_distance * transceiver_along_ground_distance)
+                .sqrt()
+        };
+        let shortest_path_length: Length = self.transmitter.electric_length()
+            + path_between_antennas
+            + self.receiver.electric_length();
 
         // At this point we've determined the length of the shortest path between the two
         // transceivers. We now convert it into a travel time.
@@ -150,6 +172,13 @@ impl TransceiverPair for Ala52BTransceiverPair {
 }
 
 impl SimulationElement for Ala52BTransceiverPair {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.direct_coupling_failure.accept(visitor);
+        self.interrupted_failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.alt_above_ground = reader.read(&self.alt_above_ground_id);
         self.pitch = reader.read(&self.pitch_id);
@@ -479,6 +508,7 @@ mod tests {
                 // roughly model the A320 RA 1 transceivers
                 system_1_transceivers: Ala52BTransceiverPair::new(
                     context,
+                    1,
                     AntennaInstallation::new(
                         Length::new::<foot>(8.617) - Length::new::<meter>(1.8),
                         Length::new::<foot>(9.89),
@@ -607,6 +637,14 @@ mod tests {
             self
         }
 
+        fn on_ground(mut self) -> Self {
+            self.write_by_name(
+                Ala52BTransceiverPair::ALT_ABOVE_GROUND,
+                Length::new::<foot>(8.617),
+            );
+            self
+        }
+
         fn height_over_ground(mut self, height: Length) -> Self {
             self.write_by_name(Ala52BTransceiverPair::ALT_ABOVE_GROUND, height);
             self
@@ -625,11 +663,21 @@ mod tests {
             assert!(self.query(|a| a.radio_altimeter(number).has_failed()));
         }
 
+        fn interrupted_antenna(mut self, number: usize) -> Self {
+            self.fail(FailureType::RadioAntennaInterrupted(number));
+            self
+        }
+
+        fn direct_coupling(mut self, number: usize) -> Self {
+            self.fail(FailureType::RadioAntennaDirectCoupling(number));
+            self
+        }
+
         fn assert_radio_altitude(&mut self, number: usize, radio_altitude: Length) {
             assert_about_eq!(
                 self.measured_height(number).value().get::<foot>(),
                 radio_altitude.get::<foot>(),
-                0.1,
+                0.5,
             );
         }
 
@@ -683,7 +731,7 @@ mod tests {
 
     #[test]
     fn measures_zero_on_ground() {
-        let mut test_bed = test_bed_with().height_over_ground(Length::new::<foot>(8.617));
+        let mut test_bed = test_bed_with().on_ground();
         test_bed.run_with_delta(Duration::from_millis(1));
 
         test_bed.assert_radio_altitude(1, Length::new::<foot>(0.0));
@@ -702,9 +750,7 @@ mod tests {
 
     #[test]
     fn measures_a_negative_reading_during_rotation() {
-        let mut test_bed = test_bed_with()
-            .height_over_ground(Length::new::<foot>(8.617))
-            .pitch(Angle::new::<degree>(-7.));
+        let mut test_bed = test_bed_with().on_ground().pitch(Angle::new::<degree>(-7.));
 
         test_bed.run_with_delta(Duration::from_millis(
             Ala52BRadioAltimeter::MAXIMUM_STARTUP_TIME_MILLIS,
@@ -847,5 +893,38 @@ mod tests {
 
         test_bed.assert_radio_altitude_no_computed_data(1);
         test_bed.assert_radio_altitude(1, Length::new::<foot>(8192.));
+    }
+
+    #[test]
+    fn returns_ncd_with_max_value_when_interrupted() {
+        let mut test_bed = test_bed_with()
+            .interrupted_antenna(1)
+            .and()
+            .height_over_ground(Length::new::<foot>(100.));
+        test_bed.run_with_delta(Duration::from_millis(
+            Ala52BRadioAltimeter::MAXIMUM_STARTUP_TIME_MILLIS,
+        ));
+
+        test_bed.assert_radio_altitude_no_computed_data(1);
+        test_bed.assert_radio_altitude(1, Length::new::<foot>(8192.));
+    }
+
+    #[test]
+    fn measures_minus_six_when_directly_coupled() {
+        let mut test_bed = test_bed_with().direct_coupling(1).and().on_ground();
+        test_bed.run_with_delta(Duration::from_millis(1));
+
+        test_bed.assert_radio_altitude(1, Length::new::<foot>(-6.0));
+    }
+
+    #[test]
+    fn measures_minus_six_when_directly_coupled_at_extreme_bank() {
+        let mut test_bed = test_bed_with()
+            .direct_coupling(1)
+            .height_over_ground(Length::new::<foot>(500.))
+            .bank(Angle::new::<degree>(50.));
+        test_bed.run_with_delta(Duration::from_millis(1));
+
+        test_bed.assert_radio_altitude(1, Length::new::<foot>(-6.0));
     }
 }

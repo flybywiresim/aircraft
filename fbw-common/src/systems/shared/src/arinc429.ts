@@ -146,7 +146,7 @@ export class Arinc429Register implements Arinc429WordData {
 
   writeToSimVar(name: string): void {
     this.f32View[0] = this.value;
-    SimVar.SetSimVarValue(name, 'number', this.u32View[0] + Math.trunc(this.ssm) * 2 ** 32);
+    SimVar.SetSimVarValue(name, 'string', (this.u32View[0] + Math.trunc(this.ssm) * 2 ** 32).toString());
   }
 
   isFailureWarning() {
@@ -183,33 +183,22 @@ export class Arinc429Register implements Arinc429WordData {
 
 /**
  * A utility class specifically for writing Arinc429 words to a simvar.
+ * BNR values are quantised according to the specified bitwidth and range.
  * Optimized to only write when the value changes more than some quantization.
  */
-export class Arinc429OutputWord implements Arinc429WordData {
-  private word: Arinc429Word;
+export class Arinc429OutputWord {
+  protected word: Arinc429Word;
 
-  private isDirty: boolean = true;
+  protected isDirty: boolean = true;
 
-  constructor(
-    private name: string,
-    value = 0,
+  public constructor(
+    protected name: string,
+    rawValue = 0,
   ) {
-    this.word = new Arinc429Word(value);
+    this.word = new Arinc429Word(rawValue);
   }
 
-  static empty(name: string) {
-    return new Arinc429OutputWord(name);
-  }
-
-  get rawWord() {
-    return this.word.rawWord;
-  }
-
-  get value() {
-    return this.word.value;
-  }
-
-  set value(value) {
+  public setRawValue(value: number) {
     if (this.word.value !== value) {
       this.isDirty = true;
     }
@@ -217,11 +206,7 @@ export class Arinc429OutputWord implements Arinc429WordData {
     this.word.value = value;
   }
 
-  get ssm() {
-    return this.word.ssm;
-  }
-
-  set ssm(ssm) {
+  public setSsm(ssm: number) {
     if (this.word.ssm !== ssm) {
       this.isDirty = true;
     }
@@ -229,48 +214,46 @@ export class Arinc429OutputWord implements Arinc429WordData {
     this.word.ssm = ssm;
   }
 
-  isFailureWarning() {
-    return this.word.isFailureWarning();
-  }
-
-  isNoComputedData() {
-    return this.word.isNoComputedData();
-  }
-
-  isFunctionalTest() {
-    return this.word.isFunctionalTest();
-  }
-
-  isNormalOperation() {
-    return this.word.isNormalOperation();
-  }
-
-  valueOr(defaultValue: number | undefined | null): number {
+  public valueOr(defaultValue: number | undefined | null): number {
     return this.word.valueOr(defaultValue);
   }
 
-  bitValue(bit: number): boolean {
+  public bitValue(bit: number): boolean {
     return this.word.bitValue(bit);
   }
 
-  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
+  public bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.word.bitValueOr(bit, defaultValue);
   }
 
-  async writeToSimVarIfDirty() {
+  public async writeToSimVarIfDirty() {
     if (this.isDirty) {
       this.isDirty = false;
-      return Arinc429Word.toSimVarValue(this.name, this.value, this.ssm);
+      return Arinc429Word.toSimVarValue(this.name, this.word.value, this.word.ssm);
     }
 
     return Promise.resolve();
   }
 
-  setBnrValue(value: number, ssm: Arinc429SignStatusMatrix, bits: number, rangeMax: number, rangeMin: number = 0) {
+  public setBnrValue(
+    value: number,
+    ssm: Arinc429SignStatusMatrix,
+    bits: number,
+    rangeMax: number,
+    rangeMin: number = 0,
+  ) {
     const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
     const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
 
-    this.value = data;
-    this.ssm = ssm;
+    this.setRawValue(data);
+    this.setSsm(ssm);
+  }
+
+  public setBitValue(bit: number, value: boolean): void {
+    if (value) {
+      this.setRawValue(this.word.value | (1 << (bit - 1)));
+    } else {
+      this.setRawValue(this.word.value & ~(1 << (bit - 1)));
+    }
   }
 }

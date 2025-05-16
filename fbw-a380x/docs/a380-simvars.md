@@ -105,7 +105,7 @@
     - Number
     - The position of the battery display knob from left to right
     - ESS=0, APU=1, OFF=2, BAT1=3, BAT2=4
-    - Mapped to battery voltage indexes: {bat_index} = ESS=4 | APU=3 | OFF=0 | BAT1=1 | BAT2=2
+    - Mapped to battery voltage indexes: {bat_index} = ESS=3 | APU=4 | OFF=0 | BAT1=1 | BAT2=2
         - A32NX_ELEC_BAT_{bat_index}_POTENTIAL is used to get the voltage
 
 - A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE
@@ -115,6 +115,15 @@
 - A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE
     - Degrees
     - Angular position of right nose wheel (in wheel axis not steering)
+
+- A32NX_BRAKE_TEMPERATURE_{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+    - celsius
+    - represents the brake temperature of the main wheels
+
+- A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+    - celsius
+    - represents the reported brake temperature of the main wheels by the sensor.
+    - Since no CPIOM G is implemented yet these are the values directly reported by the sensor.
 
 
 - A32NX_LIGHTING_PRESET_LOAD
@@ -312,7 +321,7 @@
         - B4
 
 - A32NX_PRESS_CABIN_ALTITUDE_TARGET_{cpiom_id}
-    - Feet
+    - Arinc429Word<Feet>
     - Target cabin altitude as calculated by the pressurization system or manually selected on the overhead panel
     - (cpiom_id)
         - B1
@@ -1076,3 +1085,9 @@
     |-------|-------------|
     | 0     | Left Seat   |
     | 1     | Right Seat  |
+
+- `L:A32NX_EXT_PWR_AVAIL:{number}`
+  - Bool
+  - If ground power is avail or not
+  - {number}
+        - 1 - 4

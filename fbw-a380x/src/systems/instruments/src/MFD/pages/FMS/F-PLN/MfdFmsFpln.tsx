@@ -5,6 +5,7 @@
   DisplayComponent,
   FSComponent,
   MappedSubject,
+  MathUtils,
   NodeReference,
   Subject,
   Subscribable,
@@ -16,9 +17,9 @@ import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
-import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { ContextMenu, ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { FplnRevisionsMenuType, getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisionsMenu';
 import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
 import { InsertNextWptFromWindow, NextWptInfo } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
@@ -29,10 +30,17 @@ import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { Units, LegType, TurnDirection, AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import {
+  Units,
+  LegType,
+  TurnDirection,
+  AltitudeDescriptor,
+  AltitudeConstraint,
+  SpeedConstraint,
+} from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
-import { ConditionalComponent } from '../../common/ConditionalComponent';
+import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
+import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -43,21 +51,21 @@ export interface DerivedFplnLegData {
 }
 
 export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
-  private lineColor = Subject.create<FplnLineColor>(FplnLineColor.Active);
+  private readonly lineColor = Subject.create<FplnLineColor>(FplnLineColor.Active);
 
-  private spdAltEfobWindRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly spdAltEfobWindRef = FSComponent.createRef<HTMLDivElement>();
 
-  private displayEfobAndWind = Subject.create<boolean>(false);
+  private readonly displayEfobAndWind = Subject.create<boolean>(false);
 
-  private trueTrackEnabled = Subject.create<boolean>(false);
+  private readonly trueTrackEnabled = Subject.create<boolean>(false);
 
-  private efobAndWindButtonDynamicContent = Subject.create<VNode>(<span />);
+  private readonly efobAndWindButtonDynamicContent = Subject.create<VNode>(<span />);
 
-  private efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([{ label: '', action: () => {} }]);
+  private readonly efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([{ label: '', action: () => {} }]);
 
-  private lineData: FplnLineDisplayData[] = [];
+  private readonly lineData: FplnLineDisplayData[] = [];
 
-  private renderedLineData = [
+  private readonly renderedLineData = [
     Subject.create<FplnLineDisplayData | null>(null),
     Subject.create<FplnLineDisplayData | null>(null),
     Subject.create<FplnLineDisplayData | null>(null),
@@ -73,50 +81,108 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private lastRenderedFpVersion: number | null = null;
 
-  private derivedFplnLegData: DerivedFplnLegData[] = [];
+  private readonly derivedFplnLegData: DerivedFplnLegData[] = [];
 
-  private linesDivRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly linesDivRef = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyLineRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyLineRef = FSComponent.createRef<HTMLDivElement>();
 
-  private destButtonLabel = Subject.create<string>('');
+  private readonly destButtonLabel = Subject.create<string>('');
 
-  private destButtonDisabled = Subject.create<boolean>(true);
+  private readonly destNotLoaded = Subject.create<boolean>(true);
 
-  private destTimeLabel = Subject.create<string>('--:--');
+  private readonly destTime = Subject.create<Date | null>(null);
 
-  private destEfob = Subject.create<string>('--.-');
+  private readonly destTimeLabel = this.destTime.map((v) =>
+    v !== null
+      ? `${v.getUTCHours().toString().padStart(2, '0')}:${v.getUTCMinutes().toString().padStart(2, '0')}`
+      : '--:--',
+  );
 
-  private destDistanceLabel = Subject.create<string>('---');
+  private readonly destTimeNotAvail = MappedSubject.create(
+    ([tmpy, time]) => !tmpy && time == null,
+    this.tmpyActive,
+    this.destTime,
+  );
 
-  private displayFplnFromLineIndex = Subject.create<number>(0);
+  private readonly destEfob = Subject.create<number | null>(null);
+
+  private readonly destEfobLabel = this.destEfob.map((v) =>
+    v !== null ? Math.max(0, Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
+  );
+
+  private readonly destEfobNotAvailable = MappedSubject.create(
+    ([tmpy, efob]) => !tmpy && efob == null,
+    this.tmpyActive,
+    this.destEfob,
+  );
+
+  private readonly destEfobUnitVisiblity = this.destEfobNotAvailable.map((v) => (v ? 'hidden' : 'visible'));
+
+  private readonly distanceToDest = Subject.create<number | null>(null);
+
+  private readonly distanceToDestLabel = this.distanceToDest.map((v) => (v !== null ? v.toFixed(0) : '----'));
+
+  private readonly distanceToDestNotAvail = MappedSubject.create(
+    ([tmpy, distance]) => !tmpy && distance == null,
+    this.tmpyActive,
+    this.distanceToDest,
+  );
+
+  private readonly distanceToDestUnitVisibility = this.distanceToDestNotAvail.map((v) => (v ? 'hidden' : 'visible'));
+
+  private readonly displayFplnFromLineIndex = Subject.create<number>(0);
 
   private lastRenderedDisplayLineIndex: number = -1;
 
-  private disabledScrollDown = Subject.create(true);
+  private readonly disabledScrollDown = Subject.create(true);
 
-  private disabledScrollUp = Subject.create(false);
+  private readonly disabledScrollUp = Subject.create(false);
 
-  private revisionsMenuRef = FSComponent.createRef<ContextMenu>();
+  private readonly revisionsMenuRef = FSComponent.createRef<ContextMenu>();
 
-  private revisionsMenuValues = Subject.create<ContextMenuElement[]>([]);
+  private readonly revisionsMenuValues = Subject.create<ContextMenuElement[]>([]);
 
-  private revisionsMenuOpened = Subject.create<boolean>(false);
+  private readonly revisionsMenuOpened = Subject.create<boolean>(false);
 
-  private newDestWindowOpened = Subject.create<boolean>(false);
+  private readonly newDestWindowOpened = Subject.create<boolean>(false);
 
-  private insertNextWptWindowOpened = Subject.create<boolean>(false);
+  private readonly insertNextWptWindowOpened = Subject.create<boolean>(false);
 
-  private nextWptAvailableWaypoints = ArraySubject.create<NextWptInfo>([]);
+  private readonly nextWptAvailableWaypoints = ArraySubject.create<NextWptInfo>([]);
 
-  private renderedFplnLines: NodeReference<FplnLegLine>[] = [];
+  private readonly renderedFplnLines: NodeReference<FplnLegLine>[] = [];
+
+  private readonly destButtonLabelNode = this.destButtonLabel.map((it) => <span>{it}</span>);
+
+  private readonly lineColorIsTemporary = this.lineColor.map((it) => it === FplnLineColor.Temporary);
+
+  private readonly preflightPhase = this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight);
+
+  private readonly flightplanTimeHeader = this.activeFlightPhase.map((v) =>
+    v === FmgcFlightPhase.Preflight || v === FmgcFlightPhase.Done ? 'TIME' : 'UTC',
+  );
+
+  private readonly endOfFlightPlan: FplnLineDisplayData = {
+    type: FplnLineType.Special,
+    originalLegIndex: null,
+    label: 'END OF F-PLN',
+  };
+
+  private readonly noAlternateFlightPlan: FplnLineDisplayData = {
+    type: FplnLineType.Special,
+    originalLegIndex: null,
+    label: 'NO ALTN F-PLN',
+  };
+
+  private readonly discontinuityLabel = 'DISCONTINUITY';
+
+  private emptyFlightPlanRendered = false;
 
   protected onNewData(): void {
     if (!this.loadedFlightPlan) {
       return;
     }
-
-    console.time('F-PLN:onNewData');
 
     // update(...) is the most costly function. First performance improvement: Don't render everything completely new every time, just update with refs
     // Delete and re-render FPLN lines only if:
@@ -134,6 +200,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return;
     }
 
+    // If we ended beyond flightplan end due to TMPY deletion, scroll back to last element of the flightplan
+    const lastAllowableIndex = this.lineData.length;
+    if (this.displayFplnFromLineIndex.get() > lastAllowableIndex) {
+      this.displayFplnFromLineIndex.set(lastAllowableIndex);
+      return;
+    }
+
     this.update(this.displayFplnFromLineIndex.get(), onlyUpdatePredictions);
 
     this.lastRenderedActiveLegIndex = this.loadedFlightPlan.activeLegIndex ?? null;
@@ -141,7 +214,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
 
     if (this.loadedFlightPlan.destinationAirport) {
-      this.destButtonDisabled.set(false);
+      this.destNotLoaded.set(false);
       if (this.loadedFlightPlan.destinationRunway) {
         this.destButtonLabel.set(
           `${this.loadedFlightPlan.destinationRunway.airportIdent}${this.loadedFlightPlan.destinationRunway.ident.substring(4)}`,
@@ -150,251 +223,277 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.destButtonLabel.set(this.loadedFlightPlan.destinationAirport.ident);
       }
     } else {
-      this.destButtonDisabled.set(true);
+      this.destNotLoaded.set(true);
       this.destButtonLabel.set('------');
     }
 
     const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
+
+    const distanceToDestination =
+      this.props.fmcService.master?.fmgc?.guidanceController?.alongTrackDistanceToDestination;
+
+    if (distanceToDestination) {
+      this.distanceToDest.set(distanceToDestination);
+    } else {
+      this.distanceToDest.set(null);
+    }
+
     if (destPred && this.props.fmcService.master) {
-      const date = new Date(this.predictionTimestamp(destPred.secondsFromPresent));
-      this.destTimeLabel.set(
-        `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`,
+      this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
+      this.destEfob.set(
+        this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard ??
+          null,
       );
-
-      const destEfob =
-        this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard;
-
-      if (destEfob) {
-        this.destEfob.set(Math.max(0, Units.poundToKilogram(destEfob) / 1_000).toFixed(1));
-      } else {
-        this.destEfob.set('--.-');
-      }
-
-      this.destDistanceLabel.set(
-        Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---',
-      );
+    } else {
+      this.destEfob.set(null);
+      this.destTime.set(null);
     }
     this.checkScrollButtons();
-    console.timeEnd('F-PLN:onNewData');
   }
 
   private update(startAtIndex: number, onlyUpdatePredictions = true): void {
-    if (!this.loadedFlightPlan) {
-      return;
-    }
+    let startAtIndexChecked = 0;
+    let shouldOnlyUpdatePredictions: boolean;
+    if (!this.loadedFlightPlan || this.loadedFlightPlan.legCount === 0) {
+      if (!this.emptyFlightPlanRendered) {
+        this.lineData.length = 0;
 
-    const shouldOnlyUpdatePredictions = this.lineData !== undefined && onlyUpdatePredictions;
+        this.lineData.push({
+          type: FplnLineType.Waypoint,
+          ident: 'PPOS',
+          originalLegIndex: null,
+          isPseudoWaypoint: false,
+          isAltnWaypoint: false,
+          isMissedAppchWaypoint: false,
+          distFromLastWpt: null,
+        });
 
-    // Make sure that you can't scroll higher than the FROM wpt
-    const startAtIndexChecked =
-      startAtIndex < (this.loadedFlightPlan.activeLegIndex ?? 1) - 1
-        ? (this.loadedFlightPlan.activeLegIndex ?? 1) - 1
-        : startAtIndex;
+        this.lineData.push({
+          type: FplnLineType.Special,
+          label: this.discontinuityLabel,
+          originalLegIndex: null,
+        });
 
-    // Compute rest of required attributes
-    this.derivedFplnLegData = [];
-    let lastDistanceFromStart: number = 0;
-    let lastLegLatLong: Coordinates = { lat: 0, long: 0 };
-    // Construct leg data for all legs
-    const jointFlightPlan = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
+        this.lineData.push(this.endOfFlightPlan);
 
-    if (!jointFlightPlan.length) {
-      return;
-    }
+        this.lineData.push(this.noAlternateFlightPlan);
+        shouldOnlyUpdatePredictions = false;
+        this.emptyFlightPlanRendered = true;
+      } else {
+        return;
+      }
+    } else {
+      shouldOnlyUpdatePredictions = this.lineData !== undefined && onlyUpdatePredictions;
 
-    jointFlightPlan.forEach((el, index) => {
-      const newEl: DerivedFplnLegData = { distanceFromLastWpt: null, trackFromLastWpt: null, windPrediction: null };
+      // Make sure that you can't scroll higher than the FROM wpt
+      startAtIndexChecked =
+        startAtIndex < (this.loadedFlightPlan.activeLegIndex ?? 1) - 1
+          ? (this.loadedFlightPlan.activeLegIndex ?? 1) - 1
+          : startAtIndex;
 
-      if (
-        index === this.loadedFlightPlan?.allLegs.length ||
-        index === this.loadedFlightPlan?.firstMissedApproachLegIndex
-      ) {
-        // Reset distance accumulation for ALTN flight plan and for missed apch
-        lastDistanceFromStart = 0;
+      // Compute rest of required attributes
+      this.derivedFplnLegData.length = 0;
+      let lastDistanceFromStart: number = 0;
+      let lastLegLatLong: Coordinates = { lat: 0, long: 0 };
+      // Construct leg data for all legs
+      const jointFlightPlan = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
+
+      if (!jointFlightPlan.length) {
+        return;
       }
 
-      if (
-        el instanceof FlightPlanLeg &&
-        index < (this.loadedFlightPlan?.legCount ?? 0) + (this.loadedFlightPlan?.alternateFlightPlan.legCount ?? 0)
-      ) {
-        if (index === 0 || el.calculated === undefined) {
+      this.emptyFlightPlanRendered = false;
+
+      jointFlightPlan.forEach((el, index) => {
+        const newEl: DerivedFplnLegData = { distanceFromLastWpt: null, trackFromLastWpt: null, windPrediction: null };
+
+        if (
+          index === this.loadedFlightPlan?.allLegs.length ||
+          index === this.loadedFlightPlan?.firstMissedApproachLegIndex
+        ) {
+          // Reset distance accumulation for ALTN flight plan and for missed apch
+          lastDistanceFromStart = 0;
+        }
+
+        if (
+          el instanceof FlightPlanLeg &&
+          index < (this.loadedFlightPlan?.legCount ?? 0) + (this.loadedFlightPlan?.alternateFlightPlan.legCount ?? 0)
+        ) {
+          if (index === 0 || el.calculated === undefined) {
+            newEl.distanceFromLastWpt = null;
+            newEl.trackFromLastWpt = null;
+            newEl.windPrediction = WindVector.default();
+          } else {
+            newEl.distanceFromLastWpt = el.calculated.cumulativeDistanceWithTransitions - lastDistanceFromStart;
+            newEl.trackFromLastWpt = el.definition.waypoint
+              ? bearingTo(lastLegLatLong, el.definition.waypoint.location)
+              : null;
+            newEl.windPrediction = WindVector.default();
+          }
+
+          if (el.calculated !== undefined) {
+            lastDistanceFromStart = el?.calculated?.cumulativeDistanceWithTransitions ?? lastDistanceFromStart;
+            lastLegLatLong = el.definition.waypoint?.location ?? lastLegLatLong;
+          }
+        } else {
           newEl.distanceFromLastWpt = null;
           newEl.trackFromLastWpt = null;
           newEl.windPrediction = WindVector.default();
-        } else {
-          newEl.distanceFromLastWpt = el.calculated.cumulativeDistanceWithTransitions - lastDistanceFromStart;
-          newEl.trackFromLastWpt = el.definition.waypoint
-            ? bearingTo(lastLegLatLong, el.definition.waypoint.location)
-            : null;
-          newEl.windPrediction = WindVector.default();
         }
 
-        if (el.calculated !== undefined) {
-          lastDistanceFromStart = el?.calculated?.cumulativeDistanceWithTransitions ?? lastDistanceFromStart;
-          lastLegLatLong = el.definition.waypoint?.location ?? lastLegLatLong;
+        this.derivedFplnLegData.push(newEl);
+      });
+
+      this.lineData.length = 0;
+
+      // Prepare sequencing of pseudo waypoints
+      const pseudoWptMap = new Map<number, PseudoWaypoint>();
+      // Insert pseudo waypoints from guidance controller
+      this.props.fmcService?.master?.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.forEach((wpt) =>
+        pseudoWptMap.set(wpt.alongLegIndex, wpt),
+      );
+
+      lastDistanceFromStart = 0;
+
+      for (let i = 0; i < jointFlightPlan.length; i++) {
+        const leg = jointFlightPlan[i];
+        const isAltn = i >= (this.loadedFlightPlan.allLegs.length ?? 0);
+        let reduceDistanceBy = 0;
+
+        const pwp = pseudoWptMap.get(i);
+        if (pwp && pwp.displayedOnMcdu) {
+          reduceDistanceBy = (pwp.flightPlanInfo?.distanceFromStart ?? 0) - lastDistanceFromStart;
+          const data: FplnLineWaypointDisplayData = {
+            type: FplnLineType.Waypoint,
+            originalLegIndex: null,
+            isPseudoWaypoint: true,
+            isAltnWaypoint: isAltn,
+            isMissedAppchWaypoint: isAltn
+              ? i >= (this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex ?? Infinity)
+              : i >= (this.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity),
+            ident: pwp.mcduIdent ?? pwp.ident,
+            overfly: false,
+            annotation: pwp.mcduHeader ?? '',
+            etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
+            transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude,
+            altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
+            hasAltitudeConstraint: false, // TODO
+            altitudeConstraint: null, // TODO
+            altitudeConstraintIsRespected: true,
+            speedPrediction: pwp.flightPlanInfo?.speed ?? null,
+            hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
+            speedConstraint: null, // TODO
+            speedConstraintIsRespected: true,
+            efobPrediction: Units.poundToKilogram(
+              this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
+                ?.estimatedFuelOnBoard ?? 0,
+            ),
+            windPrediction: this.derivedFplnLegData[i].windPrediction,
+            trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
+            distFromLastWpt: reduceDistanceBy,
+            fpa: null,
+          };
+          lastDistanceFromStart = pwp.flightPlanInfo?.distanceFromStart ?? 0;
+          this.lineData.push(data);
         }
-      } else {
-        newEl.distanceFromLastWpt = null;
-        newEl.trackFromLastWpt = null;
-        newEl.windPrediction = WindVector.default();
-      }
 
-      this.derivedFplnLegData.push(newEl);
-    });
+        if (leg instanceof FlightPlanLeg) {
+          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude;
+          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel;
+          const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
+          const useTransLevel =
+            i >=
+            this.loadedFlightPlan.originSegment.legCount +
+              this.loadedFlightPlan.enrouteSegment.legCount +
+              this.loadedFlightPlan.departureSegment.legCount +
+              this.loadedFlightPlan.departureRunwayTransitionSegment.legCount +
+              this.loadedFlightPlan.departureEnrouteTransitionSegment.legCount;
 
-    this.lineData = [];
+          if (leg.type === LegType.HM) {
+            // Insert special HM line, TODO
+            const holdData: FplnLineHoldDisplayData = {
+              type: FplnLineType.Hold,
+              originalLegIndex: i,
+              isPseudoWaypoint: false,
+              isAltnWaypoint: isAltn,
+              isMissedAppchWaypoint: isAltn
+                ? i >= this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex
+                : i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
+              ident: leg.definition.turnDirection === TurnDirection.Left ? 'HOLD L' : 'HOLD R',
+              distFromLastWpt: leg.definition.length ?? null,
+              holdSpeed: 123,
+            };
+            this.lineData.push(holdData);
+          }
 
-    // Prepare sequencing of pseudo waypoints
-    const pseudoWptMap = new Map<number, PseudoWaypoint>();
-    // Insert pseudo waypoints from guidance controller
-    this.props.fmcService?.master?.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.forEach((wpt) =>
-      pseudoWptMap.set(wpt.alongLegIndex, wpt),
-    );
+          const annotation = leg.type === LegType.HF || leg.type === LegType.HA ? 'HOLD L' : leg.annotation;
 
-    lastDistanceFromStart = 0;
+          const pred =
+            this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i);
 
-    for (let i = 0; i < jointFlightPlan.length; i++) {
-      const leg = jointFlightPlan[i];
-      const isAltn = i >= (this.loadedFlightPlan.allLegs.length ?? 0);
-      let reduceDistanceBy = 0;
-
-      const pwp = pseudoWptMap.get(i);
-      if (pwp && pwp.displayedOnMcdu) {
-        reduceDistanceBy = (pwp.flightPlanInfo?.distanceFromStart ?? 0) - lastDistanceFromStart;
-        const data: FplnLineWaypointDisplayData = {
-          type: FplnLineType.Waypoint,
-          originalLegIndex: null,
-          isPseudoWaypoint: true,
-          isAltnWaypoint: isAltn,
-          isMissedAppchWaypoint: isAltn
-            ? i >= (this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex ?? Infinity)
-            : i >= (this.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity),
-          ident: pwp.mcduIdent ?? pwp.ident,
-          overfly: false,
-          annotation: pwp.mcduHeader ?? '',
-          etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
-          transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude,
-          altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
-          hasAltitudeConstraint: false, // TODO
-          altitudeConstraint: null, // TODO
-          altitudeConstraintIsRespected: true,
-          speedPrediction: pwp.flightPlanInfo?.speed ?? null,
-          hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
-          speedConstraint: null, // TODO
-          speedConstraintIsRespected: true,
-          efobPrediction: Units.poundToKilogram(
-            this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
-              ?.estimatedFuelOnBoard ?? 0,
-          ),
-          windPrediction: this.derivedFplnLegData[i].windPrediction,
-          trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
-          distFromLastWpt: reduceDistanceBy,
-          fpa: null,
-        };
-        lastDistanceFromStart = pwp.flightPlanInfo?.distanceFromStart ?? 0;
-        this.lineData.push(data);
-      }
-
-      if (leg instanceof FlightPlanLeg) {
-        const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude;
-        const transLevel = this.loadedFlightPlan.performanceData.transitionLevel;
-        const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
-        const useTransLevel =
-          i >=
-          this.loadedFlightPlan.originSegment.legCount +
-            this.loadedFlightPlan.enrouteSegment.legCount +
-            this.loadedFlightPlan.departureSegment.legCount +
-            this.loadedFlightPlan.departureRunwayTransitionSegment.legCount +
-            this.loadedFlightPlan.departureEnrouteTransitionSegment.legCount;
-
-        if (leg.type === LegType.HM) {
-          // Insert special HM line, TODO
-          const holdData: FplnLineHoldDisplayData = {
-            type: FplnLineType.Hold,
-            originalLegIndex: i,
+          const data: FplnLineWaypointDisplayData = {
+            type: FplnLineType.Waypoint,
+            originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
             isPseudoWaypoint: false,
             isAltnWaypoint: isAltn,
             isMissedAppchWaypoint: isAltn
               ? i >= this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex
               : i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
-            ident: leg.definition.turnDirection === TurnDirection.Left ? 'HOLD L' : 'HOLD R',
-            distFromLastWpt: leg.definition.length ?? null,
-            holdSpeed: 123,
+            ident: leg.ident,
+            overfly: leg.definition.overfly,
+            annotation,
+            etaOrSecondsFromPresent: this.predictionTimestamp(pred?.secondsFromPresent ?? 0),
+            transitionAltitude: useTransLevel ? transLevelAsAlt : transAlt,
+            altitudePrediction: pred?.altitude ?? null,
+            hasAltitudeConstraint: leg.altitudeConstraint !== undefined,
+            altitudeConstraint: leg.altitudeConstraint ?? null,
+            altitudeConstraintIsRespected: pred?.isAltitudeConstraintMet ?? true,
+            speedPrediction: pred?.speed ?? null,
+            hasSpeedConstraint: leg.speedConstraint !== undefined,
+            speedConstraint: leg.speedConstraint ?? null,
+            speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
+            efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) : 0,
+            windPrediction: this.derivedFplnLegData[i].windPrediction,
+            trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
+            distFromLastWpt: (this.derivedFplnLegData[i].distanceFromLastWpt ?? -reduceDistanceBy) - reduceDistanceBy,
+            fpa: leg.definition.verticalAngle ?? null,
           };
-          this.lineData.push(holdData);
-        }
+          lastDistanceFromStart =
+            lastDistanceFromStart + (this.derivedFplnLegData[i].distanceFromLastWpt ?? 0) - reduceDistanceBy;
+          lastDistanceFromStart =
+            leg?.calculated?.cumulativeDistanceWithTransitions ??
+            lastDistanceFromStart + (this.derivedFplnLegData[i].distanceFromLastWpt ?? 0) - reduceDistanceBy;
+          this.lineData.push(data);
 
-        const annotation = leg.type === LegType.HF || leg.type === LegType.HA ? 'HOLD L' : leg.annotation;
-
-        const pred =
-          this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i);
-
-        const data: FplnLineWaypointDisplayData = {
-          type: FplnLineType.Waypoint,
-          originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
-          isPseudoWaypoint: false,
-          isAltnWaypoint: isAltn,
-          isMissedAppchWaypoint: isAltn
-            ? i >= this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex
-            : i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
-          ident: leg.ident,
-          overfly: leg.definition.overfly,
-          annotation,
-          etaOrSecondsFromPresent: this.predictionTimestamp(pred?.secondsFromPresent ?? 0),
-          transitionAltitude: useTransLevel ? transLevelAsAlt : transAlt,
-          altitudePrediction: pred?.altitude ?? null,
-          hasAltitudeConstraint: leg.altitudeConstraint !== undefined,
-          altitudeConstraint: leg.altitudeConstraint ?? null,
-          altitudeConstraintIsRespected: pred?.isAltitudeConstraintMet ?? true,
-          speedPrediction: pred?.speed ?? null,
-          hasSpeedConstraint: leg.speedConstraint !== undefined,
-          speedConstraint: leg.speedConstraint ?? null,
-          speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
-          efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) : 0,
-          windPrediction: this.derivedFplnLegData[i].windPrediction,
-          trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
-          distFromLastWpt: (this.derivedFplnLegData[i].distanceFromLastWpt ?? -reduceDistanceBy) - reduceDistanceBy,
-          fpa: leg.definition.verticalAngle ?? null,
-        };
-        lastDistanceFromStart =
-          lastDistanceFromStart + (this.derivedFplnLegData[i].distanceFromLastWpt ?? 0) - reduceDistanceBy;
-        lastDistanceFromStart =
-          leg?.calculated?.cumulativeDistanceWithTransitions ??
-          lastDistanceFromStart + (this.derivedFplnLegData[i].distanceFromLastWpt ?? 0) - reduceDistanceBy;
-        this.lineData.push(data);
-      } else {
-        const data: FplnLineSpecialDisplayData = {
-          type: FplnLineType.Special,
-          originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
-          label: 'DISCONTINUITY',
-        };
-        this.lineData.push(data);
-      }
-
-      // Identify end of F-PLN
-      if (i === this.loadedFlightPlan.allLegs.length - 1) {
-        this.lineData.push({
-          type: FplnLineType.Special,
-          originalLegIndex: null,
-          label: 'END OF F-PLN',
-        });
-
-        if (this.loadedFlightPlan.alternateFlightPlan.allLegs.length === 0) {
-          this.lineData.push({
+          if (leg.calculated?.endsInTooSteepPath) {
+            this.lineData.push({
+              type: FplnLineType.Special,
+              originalLegIndex: null,
+              label: 'TOO STEEP PATH',
+            });
+          }
+        } else {
+          const data: FplnLineSpecialDisplayData = {
             type: FplnLineType.Special,
-            originalLegIndex: null,
-            label: 'NO ALTN F-PLN',
-          });
+            originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
+            label: this.discontinuityLabel,
+          };
+          this.lineData.push(data);
         }
-      }
 
-      // Identify end of ALTN F-PLN
-      if (this.loadedFlightPlan.alternateFlightPlan.allLegs.length > 0 && i === jointFlightPlan.length - 1) {
-        this.lineData.push({
-          type: FplnLineType.Special,
-          originalLegIndex: null,
-          label: 'END OF ALTN F-PLN',
-        });
+        // Identify end of F-PLN
+        if (i === this.loadedFlightPlan.allLegs.length - 1) {
+          this.lineData.push(this.endOfFlightPlan);
+
+          if (this.loadedFlightPlan.alternateFlightPlan.allLegs.length === 0) {
+            this.lineData.push(this.noAlternateFlightPlan);
+          }
+        }
+
+        // Identify end of ALTN F-PLN
+        if (this.loadedFlightPlan.alternateFlightPlan.allLegs.length > 0 && i === jointFlightPlan.length - 1) {
+          this.lineData.push({ type: FplnLineType.Special, originalLegIndex: null, label: 'END OF ALTN F-PLN' });
+        }
       }
     }
 
@@ -407,7 +506,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         line.instance.destroy();
       });
 
-      this.renderedFplnLines = [];
+      this.renderedFplnLines.length = 0;
     }
 
     const untilLegIndex = Math.min(this.lineData.length, startAtIndexChecked + (this.tmpyActive.get() ? 8 : 9));
@@ -438,10 +537,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         if (nextIsSpecial) {
           flags |= FplnLineFlags.BeforeSpecial;
         }
-        if (drawIndex === this.loadedFlightPlan.activeLegIndex) {
+        if (this.loadedFlightPlan && drawIndex === this.loadedFlightPlan.activeLegIndex) {
           flags |= FplnLineFlags.IsActiveLeg;
         }
-        if (drawIndex === this.loadedFlightPlan.activeLegIndex - 1) {
+        if (this.loadedFlightPlan && drawIndex === this.loadedFlightPlan.activeLegIndex - 1) {
           flags |= FplnLineFlags.BeforeActiveLeg;
         }
 
@@ -498,7 +597,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     // Update EFIS/ND
-    if (this.lineData.length > 0) {
+    if (this.lineData.length > 0 && this.loadedFlightPlan) {
       // If pseudo-waypoint, find last actual waypoint
       let planCentreLineDataIndex = startAtIndexChecked;
       const isNoPseudoWpt = (data: FplnLineDisplayData) => {
@@ -568,12 +667,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   }
 
   public openInsertNextWptFromWindow() {
-    const flightPlan = this.props.fmcService.master?.revisedWaypointIsAltn.get()
+    const flightPlan = this.props.fmcService.master?.revisedLegIsAltn.get()
       ? this.loadedFlightPlan?.alternateFlightPlan
       : this.loadedFlightPlan;
     const wpt: NextWptInfo[] = flightPlan?.allLegs
       .map((el, idx) => {
-        const revWptIdx = this.props.fmcService.master?.revisedWaypointIndex.get();
+        const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
         if (el instanceof FlightPlanLeg && el.isXF() && revWptIdx && idx >= revWptIdx + 1) {
           return { ident: el.ident, originalLegIndex: idx };
         }
@@ -636,14 +735,34 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.scrollToDest();
     }
 
-    const sub = this.props.bus.getSubscriber<ClockEvents>();
+    const sub = this.props.bus.getSubscriber<ClockEvents & InternalKccuKeyEvent>();
     this.subs.push(
       sub
         .on('realTime')
         .atFrequency(0.5)
-        .handle((_t) => {
+        .handle(() => {
           this.onNewData();
         }),
+    );
+
+    this.subs.push(
+      sub.on('kccuKeyEvent').handle((k) => {
+        if (k === 'UP') {
+          this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
+        } else if (k === 'DOWN') {
+          this.displayFplnFromLineIndex.set(Math.min(this.displayFplnFromLineIndex.get() + 1, this.lineData.length));
+        }
+      }),
+    );
+
+    this.subs.push(
+      this.destButtonLabelNode,
+      this.lineColorIsTemporary,
+      this.preflightPhase,
+      this.destTimeNotAvail,
+      this.destEfobNotAvailable,
+      this.distanceToDestNotAvail,
+      this.distanceToDestUnitVisibility,
     );
   }
 
@@ -652,7 +771,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.disabledScrollUp.set(
       !this.lineData || this.displayFplnFromLineIndex.get() <= (this.loadedFlightPlan?.activeLegIndex ?? 1) - 1,
     );
-    this.disabledScrollDown.set(!this.lineData || this.displayFplnFromLineIndex.get() >= this.lineData.length - 1);
+    this.disabledScrollDown.set(
+      !this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastPageAllowableIndex(),
+    );
   }
 
   private spdAltButton(): VNode {
@@ -773,6 +894,30 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
   }
 
+  private scrollPage(up: boolean) {
+    if (!this.loadedFlightPlan) {
+      return;
+    }
+
+    if (this.lineData) {
+      let targetIndex;
+      if (up) {
+        targetIndex = this.displayFplnFromLineIndex.get() + 1 - this.renderedLineData.length;
+      } else {
+        targetIndex = this.displayFplnFromLineIndex.get() + this.renderedLineData.length - 1;
+        const maxBottomIndex = this.getLastPageAllowableIndex();
+        if (targetIndex > maxBottomIndex) {
+          targetIndex = maxBottomIndex;
+        }
+      }
+      this.displayFplnFromLineIndex.set(Math.max(targetIndex, 0));
+    }
+  }
+
+  private getLastPageAllowableIndex() {
+    return this.lineData.length - this.renderedLineData.length;
+  }
+
   render(): VNode {
     return (
       <>
@@ -802,7 +947,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               <span class="mfd-label">FROM</span>
             </div>
             <div class="mfd-fms-fpln-header-time">
-              <span class="mfd-label">TIME</span>
+              <span class="mfd-label">{this.flightplanTimeHeader}</span>
             </div>
             <div ref={this.spdAltEfobWindRef} class="mfd-fms-fpln-header-speed-alt">
               <Button
@@ -858,22 +1003,31 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
           <div class="mfd-fms-fpln-line-destination">
-            <Button
-              label={this.destButtonLabel.map((it) => (
-                <span>{it}</span>
-              ))}
-              onClick={() => {
-                this.props.fmcService.master?.resetRevisedWaypoint();
-                this.props.mfd.uiService.navigateTo(
-                  `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-arrival`,
-                );
-              }}
-              buttonStyle="font-size: 30px; width: 150px; margin-right: 5px;"
-            />
+            <ConditionalComponent
+              componentIfFalse={
+                <Button
+                  label={this.destButtonLabelNode}
+                  onClick={() => {
+                    this.props.fmcService.master?.resetRevisedWaypoint();
+                    this.props.mfd.uiService.navigateTo(
+                      `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-arrival`,
+                    );
+                  }}
+                  buttonStyle="font-size: 30px; width: 150px; margin-right: 5px;"
+                />
+              }
+              componentIfTrue={
+                <span class="mfd-label mfd-fms-green-text" style={'width:150px; margin-right:5 px'}>
+                  --------
+                </span>
+              }
+              condition={this.destNotLoaded}
+            ></ConditionalComponent>
             <span
               class={{
                 'mfd-label': true,
-                'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                'mfd-fms-yellow-text': this.lineColorIsTemporary,
+                'mfd-fms-green-text': this.destTimeNotAvail,
               }}
             >
               {this.destTimeLabel}
@@ -882,40 +1036,46 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               <span
                 class={{
                   'mfd-label': true,
-                  'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                  'mfd-fms-yellow-text': this.lineColorIsTemporary,
+                  'mfd-fms-green-text': this.destEfobNotAvailable,
                 }}
               >
-                {this.destEfob}
+                {this.destEfobLabel}
               </span>
-              <span class="mfd-label-unit mfd-unit-trailing">T</span>
+              <span class="mfd-label-unit mfd-unit-trailing" style={{ visibility: this.destEfobUnitVisiblity }}>
+                T
+              </span>
             </div>
             <div class="mfd-label-value-container">
               <span
                 class={{
                   'mfd-label': true,
-                  'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                  'mfd-fms-yellow-text': this.lineColorIsTemporary,
+                  'mfd-fms-green-text': this.distanceToDestNotAvail,
                 }}
               >
-                {this.destDistanceLabel}
+                {this.distanceToDestLabel}
               </span>
-              <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+              <span class="mfd-label-unit mfd-unit-trailing" style={{ visibility: this.distanceToDestUnitVisibility }}>
+                NM
+              </span>
             </div>
             <div style="display: flex; flex-direction: row; margin-top: 5px; margin-bottom: 5px;">
               <IconButton
                 icon="double-down"
-                onClick={() => this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() + 1)}
+                onClick={() => this.scrollPage(false)}
                 disabled={this.disabledScrollDown}
                 containerStyle="width: 60px; height: 60px;"
               />
               <IconButton
                 icon="double-up"
-                onClick={() => this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1)}
+                onClick={() => this.scrollPage(true)}
                 disabled={this.disabledScrollUp}
                 containerStyle="width: 60px; height: 60px;"
               />
               <Button
                 label="DEST"
-                disabled={this.destButtonDisabled}
+                disabled={this.destNotLoaded}
                 onClick={() => this.scrollToDest()}
                 buttonStyle="height: 60px; margin-right: 5px; padding: auto 15px auto 15px;"
               />
@@ -923,7 +1083,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           </div>
           <div class="mfd-fms-fpln-footer">
             <ConditionalComponent
-              condition={this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight)}
+              condition={this.preflightPhase}
               width={125}
               componentIfTrue={
                 <Button
@@ -937,13 +1097,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               componentIfFalse={<></>}
             />
             <Button
-              disabled={Subject.create(true)}
+              disabled={false}
               label="F-PLN INFO"
               onClick={() => {}}
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-infoBtn`}
               menuItems={Subject.create([
                 {
                   label: 'ALTERNATE',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-alternate`,
@@ -951,6 +1112,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'CLOSEST AIRPORTS',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-closest-airports`,
@@ -958,6 +1120,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'EQUI-TIME POINT',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-equi-time-point`,
@@ -972,6 +1135,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'LL CROSSING',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-ll-xing-time-mkr`,
@@ -979,6 +1143,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'TIME MARKER',
+                  disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-ll-xing-time-mkr`,
@@ -986,9 +1151,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'CPNY F-PLN REPORT',
+                  disabled: true,
                   action: () => {},
                 },
-              ])}
+              ] as ButtonMenuItem[])}
             />
             <Button
               label="DIR TO"
@@ -1082,7 +1248,7 @@ interface FplnLineHoldDisplayData extends FplnLineTypeDiscriminator {
   isAltnWaypoint: boolean;
   isMissedAppchWaypoint: boolean;
   ident: string;
-  holdSpeed: number;
+  holdSpeed?: number;
   distFromLastWpt: number | null;
 }
 
@@ -1120,11 +1286,11 @@ export interface FplnLegLineProps extends FplnLineCommonProps {
 
 class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   // Make sure to collect all subscriptions here, so we can properly destroy them.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private selectedForRevision = Subject.create(false);
+  private readonly selectedForRevision = Subject.create(false);
 
-  private lineColor = MappedSubject.create(
+  private readonly lineColor = MappedSubject.create(
     ([color, data]) => {
       if (data && (isWaypoint(data) || isHold(data)) && (data.isAltnWaypoint || data.isMissedAppchWaypoint)) {
         return FplnLineColor.Alternate;
@@ -1135,33 +1301,33 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     this.props.data,
   );
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private lineRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly lineRef = FSComponent.createRef<HTMLDivElement>();
 
   private currentlyRenderedType: FplnLineType = FplnLineType.None;
 
   private currentlyRenderedLine: VNode | null = null;
 
-  private annotationRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly annotationRef = FSComponent.createRef<HTMLDivElement>();
 
-  private identRef = FSComponent.createRef<HTMLDivElement | HTMLSpanElement>();
+  private readonly identRef = FSComponent.createRef<HTMLDivElement | HTMLSpanElement>();
 
-  private timeRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly timeRef = FSComponent.createRef<HTMLDivElement>();
 
-  private speedRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly speedRef = FSComponent.createRef<HTMLDivElement>();
 
-  private altRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly altRef = FSComponent.createRef<HTMLDivElement>();
 
-  private connectorRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly connectorRef = FSComponent.createRef<HTMLDivElement>();
 
-  private trackRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly trackRef = FSComponent.createRef<HTMLDivElement>();
 
-  private distRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly distRef = FSComponent.createRef<HTMLDivElement>();
 
-  private fpaRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly fpaRef = FSComponent.createRef<HTMLDivElement>();
 
-  private allRefs: NodeReference<HTMLElement>[] = [
+  private readonly allRefs: NodeReference<HTMLElement>[] = [
     this.annotationRef,
     this.identRef,
     this.timeRef,
@@ -1172,6 +1338,10 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     this.distRef,
     this.fpaRef,
   ];
+
+  private readonly lineColorIsTemporary = this.lineColor.map((it) => it === FplnLineColor.Temporary);
+  private readonly lineColorIsSecondary = this.lineColor.map((it) => it === FplnLineColor.Secondary);
+  private readonly lineColorIsAlternate = this.lineColor.map((it) => it === FplnLineColor.Alternate);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -1216,19 +1386,35 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }),
     );
 
-    this.identRef.getOrDefault()?.addEventListener('click', () => {
-      if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
-        this.props.openRevisionsMenuCallback();
-        this.selectedForRevision.set(true);
-      }
-    });
+    this.subs.push(this.lineColor, this.lineColorIsTemporary, this.lineColorIsSecondary, this.lineColorIsAlternate);
 
-    this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', () => this.props.callbacks.rta());
+    this.identRef.getOrDefault()?.addEventListener('click', this.onIdentClickedHandler);
+    this.timeRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.rta);
   }
+
+  private onIdentClicked() {
+    if (this.props.data.get()?.originalLegIndex !== null && this.props.data.get()?.originalLegIndex !== undefined) {
+      this.props.openRevisionsMenuCallback();
+      this.selectedForRevision.set(true);
+    }
+  }
+
+  private onIdentClickedHandler = this.onIdentClicked.bind(this);
 
   public destroy(): void {
     this.subs.forEach((sub) => sub.destroy());
     this.lineColor.destroy();
+
+    this.identRef.getOrDefault()?.removeEventListener('click', this.onIdentClickedHandler);
+    this.timeRef.getOrDefault()?.parentElement?.removeEventListener('click', this.props.callbacks.rta);
+
+    if (this.props.displayEfobAndWind.get()) {
+      this.altRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.wind);
+    } else {
+      this.altRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.altitude);
+      this.speedRef.getOrDefault()?.parentElement?.addEventListener('click', this.props.callbacks.speed);
+    }
+
     super.destroy();
   }
 
@@ -1266,6 +1452,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           if (data.etaOrSecondsFromPresent) {
             const date = new Date(data.etaOrSecondsFromPresent);
             this.timeRef.instance.innerText = `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`;
+          } else {
+            this.timeRef.instance.innerText = '--:--';
           }
         } else {
           this.timeRef.instance.innerText = '--:--';
@@ -1288,7 +1476,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           this.fpaRef.instance.innerText = '';
         } else {
           this.trackRef.instance.innerText = data.trackFromLastWpt
-            ? `${data.trackFromLastWpt.toFixed(0)}°${this.props.trueTrack.get() ? 'T' : ''}`
+            ? `${data.trackFromLastWpt.toFixed(0).padStart(3, '0')}°${this.props.trueTrack.get() ? 'T' : ''}`
             : '';
           this.distRef.instance.innerText = data.distFromLastWpt?.toFixed(0) ?? '';
           this.fpaRef.instance.innerText = data.fpa ? data.fpa.toFixed(1) : '';
@@ -1346,12 +1534,12 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     while (this.speedRef.instance.firstChild) {
-      this.speedRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.speed());
+      this.speedRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.speed);
       this.speedRef.instance.removeChild(this.speedRef.instance.firstChild);
     }
     while (this.altRef.instance.firstChild) {
-      this.altRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.altitude());
-      this.altRef.instance.parentElement?.removeEventListener('click', () => this.props.callbacks.wind());
+      this.altRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.altitude);
+      this.altRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.wind);
       this.altRef.instance.removeChild(this.altRef.instance.firstChild);
     }
     FSComponent.render(this.efobOrSpeed(data), this.speedRef.instance);
@@ -1360,7 +1548,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     if (this.props.displayEfobAndWind.get()) {
       this.altRef.instance.style.alignSelf = 'flex-end';
       this.altRef.instance.style.paddingRight = '20px';
-      this.altRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.wind());
+      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.wind);
       this.speedRef.instance.style.paddingLeft = '10px';
       if (this.speedRef.instance.parentElement) {
         this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small';
@@ -1368,9 +1556,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     } else {
       this.altRef.instance.style.alignSelf = '';
       this.altRef.instance.style.paddingRight = '';
-      this.altRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.altitude());
+      this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.altitude);
       this.speedRef.instance.style.paddingLeft = '';
-      this.speedRef.instance.parentElement?.addEventListener('click', () => this.props.callbacks.speed());
+      this.speedRef.instance.parentElement?.addEventListener('click', this.props.callbacks.speed);
       if (this.speedRef.instance.parentElement) {
         this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small-clickable';
       }
@@ -1411,7 +1599,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   }
 
   private formatAltitude(data: FplnLineWaypointDisplayData): VNode {
-    let altStr: VNode = <span>-----</span>;
+    let altStr: VNode = <span>---</span>;
     const previousRow = this.props.previousRow.get();
     if (data.altitudePrediction) {
       const isBelowTransAlt =
@@ -1429,9 +1617,14 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       ) {
         altStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
       } else if (!isBelowTransAlt) {
-        altStr = <span>{`FL${Math.round(data.altitudePrediction / 100).toString()}`}</span>;
+        altStr = (
+          <span>{`FL${Math.round(data.altitudePrediction / 100)
+            .toString()
+            .padStart(3, '0')}`}</span>
+        );
       } else {
-        altStr = <span>{data.altitudePrediction.toFixed(0)}</span>;
+        const roundedAltitude = MathUtils.round(data.altitudePrediction, 10).toFixed(0);
+        altStr = <span>{roundedAltitude}</span>;
       }
     }
     if (data.hasAltitudeConstraint && data.altitudePrediction) {
@@ -1555,7 +1748,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     if (this.props.displayEfobAndWind.get()) {
       return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatWind(data) : <span>---°/---</span>;
     }
-    return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatAltitude(data) : <span>-----</span>;
+    return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatAltitude(data) : <span>---</span>;
   }
 
   private lineConnector(data: FplnLineWaypointDisplayData): VNode {
@@ -1599,9 +1792,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         ref={this.lineRef}
         class={{
           'mfd-fms-fpln-line': true,
-          'mfd-fms-fpln-line-temporary': this.lineColor.map((it) => it === FplnLineColor.Temporary),
-          'mfd-fms-fpln-line-secondary': this.lineColor.map((it) => it === FplnLineColor.Secondary),
-          'mfd-fms-fpln-line-altn': this.lineColor.map((it) => it === FplnLineColor.Alternate),
+          'mfd-fms-fpln-line-temporary': this.lineColorIsTemporary,
+          'mfd-fms-fpln-line-secondary': this.lineColorIsSecondary,
+          'mfd-fms-fpln-line-altn': this.lineColorIsAlternate,
         }}
         style={`${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
       >

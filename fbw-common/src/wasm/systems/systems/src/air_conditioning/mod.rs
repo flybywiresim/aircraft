@@ -7,7 +7,7 @@ use crate::{
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe, PneumaticValveSignal,
     },
     shared::{
-        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, AverageExt, CabinSimulation,
+        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, AverageExt, CabinSimulation, Clamp,
         ConsumePower, ControllerSignal, ElectricalBusType, ElectricalBuses,
     },
     simulation::{
@@ -181,7 +181,7 @@ pub trait VcmShared {
 
 /// Cabin Zones with double digit IDs are specific to the A380
 /// 1X is main deck, 2X is upper deck
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub enum ZoneType {
     Cockpit,
     Cabin(u8),
@@ -284,7 +284,7 @@ pub trait CabinPressure {
     fn cabin_pressure(&self) -> Pressure;
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FdacId {
     One,
     Two,
@@ -308,7 +308,7 @@ impl From<FdacId> for usize {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum VcmId {
     Fwd,
     Aft,
@@ -323,7 +323,7 @@ impl Display for VcmId {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum OcsmId {
     One,
     Two,
@@ -359,7 +359,7 @@ enum OperatingChannelFault {
     Fault,
 }
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum Channel {
     ChannelOne,
     ChannelTwo,
@@ -411,7 +411,7 @@ impl OperatingChannel {
         let failure_is_active = self
             .failure
             .as_ref()
-            .map_or(false, |failure| failure.is_active());
+            .is_some_and(|failure| failure.is_active());
 
         self.fault = if !self.is_powered || failure_is_active {
             OperatingChannelFault::Fault
@@ -452,6 +452,7 @@ pub trait PressurizationConstants {
     const OUTFLOW_VALVE_SIZE: f64;
     const SAFETY_VALVE_SIZE: f64;
     const DOOR_OPENING_AREA: f64;
+    const HULL_BREACH_AREA: f64;
 
     const MAX_CLIMB_RATE: f64;
     const MAX_CLIMB_RATE_IN_DESCENT: f64;
@@ -533,10 +534,15 @@ impl CabinFan {
         let mass_flow: f64 = (self.outlet_air.pressure().get::<pascal>()
             * self.design_flow_rate.get::<cubic_meter_per_second>())
             / (Air::R * self.outlet_air.temperature().get::<kelvin>());
+        let max_mass_flow = mass_flow * Self::FAN_EFFICIENCY;
         // If we have flow demand calculated, we assign this directly to the fan flow
         // This is a simplification, we could model the fans, send the signal and read the output
         recirculation_flow_demand
-            .unwrap_or(MassRate::new::<kilogram_per_second>(mass_flow) * Self::FAN_EFFICIENCY)
+            .unwrap_or(MassRate::new::<kilogram_per_second>(max_mass_flow))
+            .clamp(
+                MassRate::default(),
+                MassRate::new::<kilogram_per_second>(max_mass_flow),
+            )
     }
 
     pub fn has_fault(&self) -> bool {

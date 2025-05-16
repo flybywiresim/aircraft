@@ -4,7 +4,7 @@
 
 import { FSComponent, ConsumerSubject, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Arinc429RegisterSubject, EfisNdMode, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject, EfisNdMode, MathUtils, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from '../arc/LsCourseBug';
 import { Flag } from '../../shared/Flag';
@@ -12,7 +12,7 @@ import { RoseMode } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { NDControlEvents } from '../../NDControlEvents';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
-import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
+import { GenericFmsEvents } from '../../types/GenericFmsEvents';
 
 export class RoseNavPage<T extends number> extends RoseMode<T> {
   private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
@@ -24,13 +24,21 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
     -1,
   );
 
+  private readonly fmsFailed = ConsumerSubject.create(
+    this.props.bus.getSubscriber<GenericFmsEvents>().on('fmsFailed').whenChanged(),
+    false,
+  );
+
   private readonly mapFlagShown = MappedSubject.create(
-    ([headingWord, latWord, longWord]) => {
-      return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
+    ([headingWord, latWord, longWord, fmsFailed]) => {
+      return (
+        !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation() || fmsFailed
+      );
     },
     this.props.headingWord,
     this.pposLatWord,
     this.pposLonWord,
+    this.fmsFailed,
   );
 
   private readonly planeRotation = MappedSubject.create(

@@ -54,6 +54,8 @@ export interface Arinc429Values {
   fmDhRaw: number;
   fmTransAltRaw: number;
   fmTransLvlRaw: number;
+  ecu1MaintenanceWord6: Arinc429Word;
+  ecu2MaintenanceWord6: Arinc429Word;
 }
 export class ArincValueProvider implements Instrument {
   private roll = new Arinc429Word(0);
@@ -517,6 +519,14 @@ export class ArincValueProvider implements Instrument {
     this.fm2Healthy.setConsumer(subscriber.on('fm2HealthyDiscrete'));
     this.fm1Healthy.sub(this.determineFmToUse.bind(this));
     this.fm2Healthy.sub(this.determineFmToUse.bind(this), true);
+
+    subscriber.on('ecu1MaintenanceWord6Raw').handle((word) => {
+      publisher.pub('ecu1MaintenanceWord6', new Arinc429Word(word));
+    });
+
+    subscriber.on('ecu2MaintenanceWord6Raw').handle((word) => {
+      publisher.pub('ecu2MaintenanceWord6', new Arinc429Word(word));
+    });
   }
 
   /** @inheritdoc */

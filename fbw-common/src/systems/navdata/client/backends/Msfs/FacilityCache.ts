@@ -1,17 +1,9 @@
-// Copyright (c) 2021, 2022 FlyByWire Simulations
+// Copyright (c) 2021, 2022, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable camelcase */
 /* eslint-disable no-underscore-dangle */
 
-import {
-  FacilitySearchType,
-  NearestAirportSearchSession,
-  NearestIntersectionSearchSession,
-  NearestSearchResults,
-  NearestSearchSession,
-  NearestVorSearchSession,
-} from '@microsoft/msfs-sdk';
 import {
   IcaoSearchFilter,
   JS_Facility,
@@ -19,20 +11,11 @@ import {
   JS_FacilityIntersection,
   JS_FacilityNDB,
   JS_FacilityVOR,
+  JS_Leg,
+  JSAirportRequestFlags,
 } from './FsTypes';
-import { Airport, NdbNavaid, VhfNavaid, Waypoint } from '../../../shared';
-
-// @microsoft/msfs-sdk does not export this, so we declare it
-declare class CoherentNearestSearchSession implements NearestSearchSession<string, string> {
-  public searchNearest(
-    lat: number,
-    lon: number,
-    radius: number,
-    maxItems: number,
-  ): Promise<NearestSearchResults<string, string>>;
-
-  public onSearchCompleted(results: NearestSearchResults<string, string>): void;
-}
+import { Waypoint } from '../../../shared';
+import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
 
 export enum LoadType {
   Airport = 'A',
@@ -66,50 +49,10 @@ export type SearchedFacilityTypeMap = {
   [IcaoSearchFilter.Vors]: JS_FacilityVOR[];
   [IcaoSearchFilter.None]: (JS_FacilityAirport | JS_FacilityIntersection | JS_FacilityNDB | JS_FacilityVOR)[];
 };
-
-export type SupportedFacilitySearchType =
-  | FacilitySearchType.Airport
-  | FacilitySearchType.Intersection
-  | FacilitySearchType.Vor
-  | FacilitySearchType.Ndb;
-
-type FacilitySearchTypeToSessionClass = {
-  [FacilitySearchType.Airport]: NearestAirportSearchSession;
-  [FacilitySearchType.Intersection]: NearestIntersectionSearchSession;
-  [FacilitySearchType.Vor]: NearestVorSearchSession;
-  [FacilitySearchType.Ndb]: CoherentNearestSearchSession;
-};
-
-export type FacilitySearchTypeToDatabaseItem = {
-  [FacilitySearchType.Airport]: Airport;
-  [FacilitySearchType.Intersection]: Waypoint;
-  [FacilitySearchType.Vor]: VhfNavaid;
-  [FacilitySearchType.Ndb]: NdbNavaid;
-};
-
 export class FacilityCache {
-  public static readonly FACILITY_SEARCH_TYPE_TO_SESSION_CLASS: Record<
-    SupportedFacilitySearchType,
-    new (sessionID: number) => CoherentNearestSearchSession
-  > = {
-    [FacilitySearchType.Airport]: NearestAirportSearchSession,
-    [FacilitySearchType.Intersection]: NearestIntersectionSearchSession,
-    [FacilitySearchType.Vor]: NearestVorSearchSession,
-    [FacilitySearchType.Ndb]: NearestIntersectionSearchSession,
-  };
-
-  public static readonly FACILITY_SEARCH_TYPE_TO_LOAD_TYPE: Record<SupportedFacilitySearchType, LoadType> = {
-    [FacilitySearchType.Airport]: LoadType.Airport,
-    [FacilitySearchType.Intersection]: LoadType.Intersection,
-    [FacilitySearchType.Vor]: LoadType.Vor,
-    [FacilitySearchType.Ndb]: LoadType.Ndb,
-  };
-
   private static cacheSize = 1000;
 
   private listener; // TODO type
-
-  private searchSessions = new Map<number, NearestSearchSession<any, any>>([]);
 
   private facilityCache = new Map<string, JS_Facility>();
 
@@ -118,27 +61,12 @@ export class FacilityCache {
   private airwayFixCache = new Map<string, Waypoint[]>();
 
   constructor() {
-    this.listener = RegisterViewListener('JS_LISTENER_FACILITY');
+    this.listener = RegisterViewListener('JS_LISTENER_FACILITY', EmptyCallback.Void, true);
 
     Coherent.on('SendAirport', this.receiveFacility.bind(this));
     Coherent.on('SendIntersection', this.receiveFacility.bind(this));
     Coherent.on('SendNdb', this.receiveFacility.bind(this));
     Coherent.on('SendVor', this.receiveFacility.bind(this));
-    Coherent.on('NearestSearchCompleted', this.receiveNearestSearchResults.bind(this));
-  }
-
-  public async startNearestSearchSession<T extends SupportedFacilitySearchType>(
-    type: T,
-  ): Promise<FacilitySearchTypeToSessionClass[T]> {
-    return new Promise((resolve) => {
-      Coherent.call('START_NEAREST_SEARCH_SESSION', type).then((sessionId: number) => {
-        const _sessionClass = FacilityCache.FACILITY_SEARCH_TYPE_TO_SESSION_CLASS[type];
-        const session = new _sessionClass(sessionId) as any;
-
-        this.searchSessions.set(sessionId, session);
-        resolve(session);
-      });
-    });
   }
 
   public async getFacilities<T extends LoadType>(
@@ -232,7 +160,7 @@ export class FacilityCache {
 
   private insert(key: string, facility: JS_Facility): void {
     if (this.facilityCache.size > FacilityCache.cacheSize - 1) {
-      const oldestKey: string = this.facilityCache.keys().next().value;
+      const oldestKey: string = this.facilityCache.keys().next().value!;
       this.facilityCache.delete(oldestKey);
     }
     this.facilityCache.set(key, facility);
@@ -244,6 +172,56 @@ export class FacilityCache {
 
   static ident(icao: string): string {
     return icao.substring(7).trim();
+  }
+
+  private static readonly AIRPORT_REGION_REGEX = /^A[A-Z0-9]{2}/;
+  private static readonly AIRPORT_REGION_REPLACE = 'A  ';
+
+  /** Removes the region code from any airport ICAOs in an array of procedure legs. */
+  private static fixupLegAirportRegions(legs: JS_Leg[]): void {
+    for (const leg of legs) {
+      leg.fixIcao = leg.fixIcao.replace(FacilityCache.AIRPORT_REGION_REGEX, FacilityCache.AIRPORT_REGION_REPLACE);
+      leg.originIcao = leg.originIcao.replace(FacilityCache.AIRPORT_REGION_REGEX, FacilityCache.AIRPORT_REGION_REPLACE);
+      leg.arcCenterFixIcao = leg.arcCenterFixIcao.replace(
+        FacilityCache.AIRPORT_REGION_REGEX,
+        FacilityCache.AIRPORT_REGION_REPLACE,
+      );
+    }
+  }
+
+  /**
+   * Fix up airport ICAOs to a format that MSFS2020 can understand and load.
+   * Note: this is **not** required for MSFS2024.
+   * @param airport The airport facility to fix up.
+   */
+  private static fixupAirportRegions(airport: JS_FacilityAirport): void {
+    for (const appr of airport.approaches) {
+      for (const trans of appr.transitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+      FacilityCache.fixupLegAirportRegions(appr.finalLegs);
+      FacilityCache.fixupLegAirportRegions(appr.missedLegs);
+    }
+
+    for (const sid of airport.departures) {
+      for (const trans of sid.runwayTransitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+      FacilityCache.fixupLegAirportRegions(sid.commonLegs);
+      for (const trans of sid.enRouteTransitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+    }
+
+    for (const star of airport.arrivals) {
+      for (const trans of star.enRouteTransitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+      FacilityCache.fixupLegAirportRegions(star.commonLegs);
+      for (const trans of star.runwayTransitions) {
+        FacilityCache.fixupLegAirportRegions(trans.legs);
+      }
+    }
   }
 
   private receiveFacility(facility: JS_Facility): void {
@@ -270,18 +248,20 @@ export class FacilityCache {
       this.addToAirwayCache(facility as any as JS_FacilityIntersection);
     }
 
-    const key = FacilityCache.key(facility.icao, loadType);
-    this.insert(key, facility);
-  }
+    if (loadType === LoadType.Airport) {
+      const dataFlags = (facility as JS_FacilityAirport).loadedDataFlags;
+      if (dataFlags !== undefined && (dataFlags & JSAirportRequestFlags.All) !== JSAirportRequestFlags.All) {
+        // ignore minimal airports
+        return;
+      }
 
-  private receiveNearestSearchResults(results: NearestSearchResults<any, any>): void {
-    const session = this.searchSessions.get(results.sessionId);
-
-    if (!session) {
-      return;
+      if (!isMsfs2024() && loadType === LoadType.Airport) {
+        FacilityCache.fixupAirportRegions(facility as JS_FacilityAirport);
+      }
     }
 
-    (session as CoherentNearestSearchSession).onSearchCompleted(results);
+    const key = FacilityCache.key(facility.icao, loadType);
+    this.insert(key, facility);
   }
 
   static validFacilityIcao(icao: string, type?: 'A' | 'N' | 'V' | 'W'): boolean {

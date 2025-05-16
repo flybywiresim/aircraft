@@ -32,7 +32,6 @@ struct SimData {
   double H_ind_ft;
   double H_radio_ft;
   double H_dot_fpm;
-  double CG_percent_MAC;
   double total_weight_kg;
   double gear_animation_pos_0;
   double gear_animation_pos_1;
@@ -161,6 +160,7 @@ struct SimInputAutopilot {
   double HDG_pull;
   double ALT_push;
   double ALT_pull;
+  // FIXME remove VS_push
   double VS_push;
   double VS_pull;
   double LOC_push;

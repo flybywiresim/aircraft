@@ -33,6 +33,7 @@ use uom::si::{
 };
 
 pub mod aerodynamic_model;
+pub mod brake;
 pub mod brake_circuit;
 pub mod bypass_pin;
 pub mod cargo_doors;
@@ -281,8 +282,7 @@ impl HeatingProperties {
         Ratio::new::<ratio>(
             ((self.heat_factor.output().get::<ratio>() - Self::OVERHEATING_THRESHOLD)
                 / (1. - Self::OVERHEATING_THRESHOLD))
-                .max(0.)
-                .min(1.),
+                .clamp(0., 1.),
         )
     }
 }
@@ -1163,7 +1163,7 @@ impl HydraulicCircuit {
             }
         }
 
-        let ptu_overheats_fluid = ptu.map_or(false, |p| p.is_overheating() && p.is_rotating());
+        let ptu_overheats_fluid = ptu.is_some_and(|p| p.is_overheating() && p.is_rotating());
 
         self.fluid
             .update(context, ptu_overheats_fluid || any_pump_is_overheating);
@@ -1905,10 +1905,9 @@ impl SimulationElement for FireValve {
 /// Handles the flow that goes between two sections
 /// Flow is handled in two ways:
 /// - An optional flow that can only pass through if downstream needs flow
-/// and if upstream has enough capacity to provide flow while maintaining its target pressure
+///   and if upstream has enough capacity to provide flow while maintaining its target pressure
 /// - A physical flow, that is mandatory to pass through the valve, caused by pressure difference between
-/// upstream and downstream.
-
+///   upstream and downstream.
 pub struct CheckValve {
     current_volume: Volume,
     max_virtual_volume: Volume,
@@ -2015,8 +2014,7 @@ impl PriorityValve {
         let opening_ratio = Ratio::new::<ratio>(
             ((self.upstream_pressure - self.fully_closed_threshold).get::<psi>()
                 / (self.fully_opened_threshold - self.fully_closed_threshold).get::<psi>())
-            .max(0.)
-            .min(1.),
+            .clamp(0., 1.),
         );
 
         self.open_ratio.update(context.delta(), opening_ratio);
@@ -2997,11 +2995,7 @@ impl RamAirTurbine {
             self.position += delta_time.as_secs_f64() * Self::STOWING_SPEED;
 
             // Finally limiting pos in [0:1] range
-            if self.position < 0. {
-                self.position = 0.;
-            } else if self.position > 1. {
-                self.position = 1.;
-            }
+            self.position = self.position.clamp(0., 1.);
         }
     }
 

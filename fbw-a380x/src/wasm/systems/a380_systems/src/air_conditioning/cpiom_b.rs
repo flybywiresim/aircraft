@@ -1287,7 +1287,11 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 && (altimeter_setting.unwrap_or_default().get::<hectopascal>() - Air::P_0).abs()
                     > f64::EPSILON)
         {
-            altimeter_setting.unwrap()
+            if altimeter_setting.unwrap() == Pressure::default() {
+                Pressure::new::<hectopascal>(Air::P_0)
+            } else {
+                altimeter_setting.unwrap()
+            }
         } else {
             Pressure::new::<hectopascal>(Air::P_0)
         }
@@ -1366,7 +1370,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             && self
                 .pressure_schedule_manager
                 .as_ref()
-                .map_or(false, |manager| manager.should_open_outflow_valve())
+                .is_some_and(|manager| manager.should_open_outflow_valve())
     }
 
     fn should_close_aft_ofv(&self) -> bool {

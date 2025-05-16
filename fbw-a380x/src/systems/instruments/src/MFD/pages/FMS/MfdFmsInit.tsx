@@ -1,9 +1,8 @@
-import { FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import './MfdFmsInit.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AirportFormat,
   CostIndexFormat,
@@ -13,11 +12,11 @@ import {
   TripWindFormat,
   TropoFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { ISimbriefData } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief/simbriefInterface';
+import { logTroubleshootingError, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ISimbriefData } from '@flybywiresim/flypad';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
@@ -25,12 +24,14 @@ import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { AtsuStatusCodes } from '@datalink/common';
 import { FmsRouterMessages } from '@datalink/router';
 
+import './MfdFmsInit.scss';
+
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private simBriefOfp: ISimbriefData | null = null;
 
-  private cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmcService.master
+  private readonly cpnyFplnButtonLabel = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
         if (!it) {
           return (
@@ -49,9 +50,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
           </span>
         );
       })
-    : Subject.create(<></>);
+    : MappedSubject.create(() => <></>);
 
-  private cpnyFplnButtonMenuItems: Subscribable<ButtonMenuItem[]> = this.props.fmcService.master
+  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) =>
         it
           ? [
@@ -66,79 +67,108 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             ]
           : [],
       )
-    : Subject.create([]);
+    : MappedSubject.create(() => []);
 
-  private fromIcao = Subject.create<string | null>(null);
+  private readonly fromIcao = Subject.create<string | null>(null);
 
-  private toIcao = Subject.create<string | null>(null);
+  private readonly toIcao = Subject.create<string | null>(null);
 
-  private cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy]) => fp > FmgcFlightPhase.Preflight || tmpy,
+  private readonly cityPairDisabled = MappedSubject.create(
+    ([fp, tmpy, fromIcao, toIcao]) => (fp > FmgcFlightPhase.Preflight && (!fromIcao || !toIcao)) || tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
+    this.fromIcao,
+    this.toIcao,
   );
 
-  private altnIcao = Subject.create<string | null>(null);
+  private readonly altnIcao = Subject.create<string | null>(null);
 
-  private altnDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
+  private readonly altnDisabled = MappedSubject.create(
+    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    this.fromIcao,
+    this.toIcao,
+  );
 
-  private cpnyRte = Subject.create<string | null>(null); // FIXME not found
+  private readonly cpnyRte = Subject.create<string | null>(null); // FIXME not found
 
-  private altnRte = Subject.create<string | null>(null); // FIXME not found
+  private readonly altnRte = Subject.create<string | null>(null); // FIXME not found
 
-  private crzFl = Subject.create<number | null>(null);
+  private readonly crzFl = Subject.create<number | null>(null);
 
-  private costIndex = Subject.create<number | null>(null);
+  private readonly crzFlIsMandatory = Subject.create(true);
 
-  private costIndexDisabled = MappedSubject.create(
+  private readonly costIndex = Subject.create<number | null>(null);
+
+  private readonly costIndexDisabled = MappedSubject.create(
     ([toIcao, fromIcao, flightPhase]) => !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent,
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
   );
 
-  private tripWindDisabled = MappedSubject.create(
+  private readonly tripWindDisabled = MappedSubject.create(
     ([toIcao, fromIcao]) => !toIcao || !fromIcao,
     this.fromIcao,
     this.toIcao,
   );
 
-  private cpnyRteMandatory = MappedSubject.create(
+  private readonly cpnyRteMandatory = MappedSubject.create(
     ([toIcao, fromIcao]) => !toIcao || !fromIcao,
     this.fromIcao,
     this.toIcao,
   );
 
-  private departureButtonDisabled = MappedSubject.create(
+  private readonly departureButtonDisabled = MappedSubject.create(
     ([toIcao, fromIcao, phase]) => !toIcao || !fromIcao || phase !== FmgcFlightPhase.Preflight,
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
   );
 
+  private readonly crzTempDisabled = this.crzFl.map((it) => it === null);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.bus
-      .getSubscriber<FmsRouterMessages>()
-      .on('routerManagementResponse')
-      .handle((data) => {
-        this.routerResponseCallbacks.every((callback, index) => {
-          if (callback(data.status, data.requestId)) {
-            this.routerResponseCallbacks.splice(index, 1);
-            return false;
-          }
-          return true;
-        });
-      });
+    this.subs.push(
+      this.props.bus
+        .getSubscriber<FmsRouterMessages>()
+        .on('routerManagementResponse')
+        .handle((data) => {
+          this.routerResponseCallbacks.every((callback, index) => {
+            if (callback(data.status, data.requestId)) {
+              this.routerResponseCallbacks.splice(index, 1);
+              return false;
+            }
+            return true;
+          });
+        }),
+    );
 
-    this.props.fmcService.master?.fmgc.data.atcCallsign.sub((c) => {
-      if (c) {
-        this.connectToNetworks(c);
-      } else {
-        this.disconnectFromNetworks();
-      }
-    });
+    if (this.props.fmcService.master) {
+      this.subs.push(
+        this.props.fmcService.master.fmgc.data.atcCallsign.sub((c) => {
+          if (c) {
+            this.connectToNetworks(c);
+            this.loadedFlightPlan?.setFlightNumber(c);
+          } else {
+            this.disconnectFromNetworks();
+          }
+          this.props.fmcService.master?.acInterface.updateFmsData();
+        }),
+      );
+    }
+
+    this.subs.push(
+      this.cpnyFplnButtonLabel,
+      this.cpnyFplnButtonMenuItems,
+      this.cityPairDisabled,
+      this.altnDisabled,
+      this.costIndexDisabled,
+      this.tripWindDisabled,
+      this.cpnyRteMandatory,
+      this.departureButtonDisabled,
+    );
   }
 
   protected onNewData() {
@@ -166,16 +196,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.altnIcao.set(this.loadedFlightPlan.originAirport && this.loadedFlightPlan.destinationAirport ? 'NONE' : '');
     }
 
+    this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel);
+    this.crzFlIsMandatory.set(this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent);
     if (this.loadedFlightPlan.performanceData.cruiseFlightLevel) {
-      this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel);
       this.props.fmcService.master.fmgc.data.cruiseTemperatureIsaTemp.set(
         A380AltitudeUtils.getIsaTemp(this.loadedFlightPlan.performanceData.cruiseFlightLevel * 100),
       );
     }
 
-    if (this.loadedFlightPlan.performanceData.costIndex) {
-      this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
-    }
+    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
 
     // Set some empty fields with pre-defined values
     if (this.fromIcao.get() && this.toIcao.get()) {
@@ -204,12 +233,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID);
 
-    SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
-      this.props.fmcService.master,
-      this.props.fmcService.master.flightPlanService,
-      this.simBriefOfp,
-      { doUplinkProcedures: false },
-    );
+    try {
+      SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
+        this.props.fmcService.master,
+        this.props.fmcService.master.flightPlanService,
+        this.simBriefOfp,
+        { doUplinkProcedures: false },
+      );
+    } catch (e) {
+      console.error(e);
+      logTroubleshootingError(this.props.bus, e);
+    }
   }
 
   private async cityPairModified() {
@@ -224,7 +258,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         toIcao,
         this.altnIcao.get() ?? undefined,
       );
-      this.props.fmcService.master?.acInterface.updateOansAirports();
+      this.props.fmcService.master?.acInterface.updateFmsData();
     }
   }
 
@@ -233,8 +267,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       return;
     }
 
-    this.props.fmcService.master.flightPlanService.uplinkInsert();
-    this.props.fmcService.master?.acInterface.updateOansAirports();
+    try {
+      this.props.fmcService.master.flightPlanService.uplinkInsert();
+    } catch (e) {
+      console.error(e);
+      logTroubleshootingError(this.props.bus, e);
+    }
+    this.props.fmcService.master?.acInterface.updateFmsData();
     this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
 
     // Don't insert weights for now, something seems broken here
@@ -371,7 +410,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   this.altnIcao.set(v);
                   if (v) {
                     await this.props.fmcService.master?.flightPlanService.setAlternate(v);
-                    this.props.fmcService.master?.acInterface.updateOansAirports();
+                    this.props.fmcService.master?.acInterface.updateFmsData();
                   }
                 }}
                 mandatory={Subject.create(true)}
@@ -432,7 +471,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataHandlerDuringValidation={async (v) =>
                   v ? this.props.fmcService.master?.acInterface.setCruiseFl(v) : false
                 }
-                mandatory={Subject.create(true)}
+                mandatory={this.crzFlIsMandatory}
                 disabled={this.altnDisabled}
                 canBeCleared={Subject.create(false)}
                 value={this.crzFl}
@@ -444,15 +483,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field" style="width: auto;">
                 CRZ TEMP
               </div>
-              <InputField<number>
+              <InputField<number, number, false>
                 dataEntryFormat={new CrzTempFormat()}
                 dataHandlerDuringValidation={async (v) => {
                   this.props.fmcService.master?.fmgc.data.cruiseTemperaturePilotEntry.set(v);
                 }}
                 mandatory={Subject.create(false)}
                 enteredByPilot={this.props.fmcService.master.fmgc.data.cruiseTemperatureIsPilotEntered}
-                disabled={this.crzFl.map((it) => it === null)}
-                value={this.props.fmcService.master.fmgc.data.cruiseTemperature}
+                disabled={this.crzTempDisabled}
+                readonlyValue={this.props.fmcService.master.fmgc.data.cruiseTemperature}
                 containerStyle="width: 110px; justify-content: flex-end;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -480,14 +519,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field" style="width: auto;">
                 TROPO
               </div>
-              <InputField<number>
+              <InputField<number, number, false>
                 dataEntryFormat={new TropoFormat()}
                 dataHandlerDuringValidation={async (v) =>
                   this.props.fmcService.master?.fmgc.data.tropopausePilotEntry.set(v)
                 }
                 mandatory={Subject.create(false)}
                 enteredByPilot={this.props.fmcService.master.fmgc.data.tropopauseIsPilotEntered}
-                value={this.props.fmcService.master.fmgc.data.tropopause}
+                readonlyValue={this.props.fmcService.master.fmgc.data.tropopause}
                 onModified={() => {}}
                 alignText="flex-end"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -499,11 +538,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field" style="margin-top: 90px;">
                 TRIP WIND
               </div>
-              <InputField<number>
+              <InputField<number, number, false>
                 dataEntryFormat={new TripWindFormat()}
+                dataHandlerDuringValidation={async (v) => this.props.fmcService.master?.fmgc.data.tripWind.set(v)}
                 mandatory={Subject.create(false)}
                 disabled={this.tripWindDisabled} // TODO
-                value={this.props.fmcService.master.fmgc.data.tripWind}
+                readonlyValue={this.props.fmcService.master.fmgc.data.tripWind}
                 containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}

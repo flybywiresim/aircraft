@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './AircraftContext';
+export * from './Apis/Navigraph/Components/Authentication';
+export * from './Apis/Simbrief';
 export * from './Efb';
 export * from './Enum/Airframe';
 export * from './Assets/Error';
@@ -10,7 +12,9 @@ export * from './Assets/NoseOutline';
 export * from './Assets/FuelOutline';
 export * from './Assets/OverWingOutline';
 export * from './Assets/A380SeatOutlineBg';
+export * from './Dispatch/Dispatch';
 export * from './Localization/translation';
+export * from './Navigation/Navigation';
 export * from './Settings/Migration';
 export * from './Settings/Settings';
 export * from './Settings/sync';
@@ -20,6 +24,7 @@ export * from './Store/features/simBrief';
 export * from './Store/features/payload';
 export * from './Store/features/config';
 export * from './Store/store';
+export * from './TroubleshootingContext';
 export * from './UtilComponents/BingMap';
 export * from './UtilComponents/Card/Card';
 export * from './UtilComponents/Form/Select';
