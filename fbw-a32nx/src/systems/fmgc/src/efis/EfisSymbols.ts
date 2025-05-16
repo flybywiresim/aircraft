@@ -219,9 +219,6 @@ export class EfisSymbols<T extends number> {
     // FIXME dirty hack on type check
     const runway = activeFp.destinationRunway;
     if (activeFp.destinationRunway !== undefined) {
-
-
-
       const endCoordinates = DestFromPointCoordsBearingDistance(
         runway.bearing,
         runway.length,
