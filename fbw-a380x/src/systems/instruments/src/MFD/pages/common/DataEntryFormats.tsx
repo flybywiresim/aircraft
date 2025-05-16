@@ -1239,22 +1239,10 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw getFormattedEntryOutOfRangeError(
-        this.getHoursMinutesRangeText(this.minValue),
-        this.getHoursMinutesRangeText(this.maxValue),
-      );
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
       throw getFormattedFormatError(this.requiredFormat);
     }
-  }
-
-  private getHoursMinutesRangeText(value: number) {
-    const hours = Math.abs(Math.floor(value / 60)).toFixed(0);
-    const minutes = Math.abs(value % 60)
-      .toFixed(0)
-      .padStart(2, '0');
-
-    return `${hours}H${minutes}MIN`;
   }
 }
 
@@ -1266,7 +1254,7 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
 
   public maxDigits = 6;
 
-  private readonly requiredFormat = 'HHMMSS OR HHMM';
+  private readonly requiredFormat = 'HHMMSS';
 
   private minValue = 0;
 
@@ -1315,7 +1303,7 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw getFormattedEntryOutOfRangeError('0000Z', '2359Z');
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
       throw getFormattedFormatError(this.requiredFormat);
     }
