@@ -54,7 +54,10 @@ export class CDUSecFplnMain {
 
       canActivateOrSwapSec =
         !mcdu.navModeEngaged() ||
-        (FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
+        (activeToLeg === undefined && secToLeg === undefined) ||
+        (activeToLeg !== undefined &&
+          secToLeg !== undefined &&
+          FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
           activePlan.activeLegIndex === secPlan.activeLegIndex);
     }
 
