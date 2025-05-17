@@ -567,8 +567,8 @@
     },
     "Title": "クイックコントロール"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
+  "QuickControls.TT.CabinAutoBrightness": "自動客室照明 オン/オフ",
+  "QuickControls.TT.CabinLighting": "客室照明の設定",
   "Settings": {
     "About": {
       "Title": "flyPadについて"
@@ -631,7 +631,7 @@
     "Real": "現実的",
     "Realism": {
       "AdirsAlignTime": "ADIRSの調整時間",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "自動ステップクライム",
       "AutofillChecklists": "チェックリストの自動入力",
       "BoardingTime": "乗客の搭乗時間",
       "DmcSelfTestTime": "DMCの自己診断時間",
@@ -667,7 +667,7 @@
       "Left": "左側",
       "LoadOnly": "読み込みのみ",
       "None": "なし",
-      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
+      "OansPerformanceMode": "OANSパフォーマンスモード(使用しない場合、1分後に空港マップをVRAMから削除)",
       "Off": "オフ",
       "PilotSeat": "どちら側の操縦席で操縦するか",
       "Right": "右側",
@@ -744,7 +744,7 @@
       "Blue": "ブルー",
       "Brightness": "明るさ",
       "Dark": "ダーク",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
+      "DisablePushbackConflictWarning": "プッシュバックシステムのアドオン競合警告を無効にする",
       "Language": "言語",
       "Light": "ライト",
       "Local": "ローカル",
@@ -761,8 +761,8 @@
       "UtcAndLocal": "UTCとローカル"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
+  "Settings.SimOptions.CabinAutoBrightness": "自動客室照明",
+  "Settings.SimOptions.CabinManualBrightness": "客室照明の明るさ",
   "StatusBar": {
     "Apr": "4月",
     "Aug": "8月",
