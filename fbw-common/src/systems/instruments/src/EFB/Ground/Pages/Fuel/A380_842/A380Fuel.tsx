@@ -123,7 +123,6 @@ export const A380Fuel: React.FC<FuelProps> = ({
   const TOTAL_FUEL_GALLONS = 85471.7; // 323545.6 litres
   const FUEL_GALLONS_TO_KG = 3.039075693483925; // Check: MSFS fuel density is currently always fixed, if this changes this will need to read from the var.
   const TOTAL_MAX_FUEL_KG = TOTAL_FUEL_GALLONS * FUEL_GALLONS_TO_KG;
-  const TOTAL_UI_MAX_FUEL_KG = 220000.0; // Temporarily while we are using WV003, so the slider will not set a value that is far above current MTOW. OFP and manual entry not affected.
 
   const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
   const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
@@ -131,12 +130,12 @@ export const A380Fuel: React.FC<FuelProps> = ({
   const [eng4Running] = useSimVar('ENG COMBUSTION:4', 'Bool', 1_000);
   const [refuelRate, setRefuelRate] = usePersistentProperty('REFUEL_RATE_SETTING');
 
-  const [INNER_FEED_MAX_KG] = useState(7753.2 * FUEL_GALLONS_TO_KG); // 23562.51 kg - 47053.02
-  const [OUTER_FEED_MAX_KG] = useState(7299.6 * FUEL_GALLONS_TO_KG); // 22189.04 kg - 44378.08
-  const [INNER_TANK_MAX_KG] = useState(12189.4 * FUEL_GALLONS_TO_KG); // 37044.51 kg
-  const [MID_TANK_MAX_KG] = useState(9632 * FUEL_GALLONS_TO_KG); // 29299.51 kg
-  const [OUTER_TANK_MAX_KG] = useState(2731.5 * FUEL_GALLONS_TO_KG); // 8299.51 kg
-  const [TRIM_TANK_MAX_KG] = useState(6260.3 * FUEL_GALLONS_TO_KG); // 18999.51 kg
+  const [INNER_FEED_MAX_KG] = useState(7753.2 * FUEL_GALLONS_TO_KG); // 23562.56 kg
+  const [OUTER_FEED_MAX_KG] = useState(7299.6 * FUEL_GALLONS_TO_KG); // 22184.04 kg
+  const [INNER_TANK_MAX_KG] = useState(12189.4 * FUEL_GALLONS_TO_KG); // 37044.78 kg
+  const [MID_TANK_MAX_KG] = useState(9632 * FUEL_GALLONS_TO_KG); // 29272.38 kg
+  const [OUTER_TANK_MAX_KG] = useState(2731.5 * FUEL_GALLONS_TO_KG); // 8301.24 kg
+  const [TRIM_TANK_MAX_KG] = useState(6260.3 * FUEL_GALLONS_TO_KG); // 19025.53 kg
 
   const [leftOuterGal] = useSimVar('FUELSYSTEM TANK QUANTITY:1', 'Gallons', 2_000);
   const [feedOneGal] = useSimVar('FUELSYSTEM TANK QUANTITY:2', 'Gallons', 2_000);
@@ -236,7 +235,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
     if (percent < 0.5) {
       percent = 0;
     }
-    const fuel = Math.round(TOTAL_UI_MAX_FUEL_KG * (percent / 100));
+    const fuel = Math.round(TOTAL_MAX_FUEL_KG * (percent / 100));
     updateDesiredFuel(fuel);
   };
 
@@ -284,7 +283,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
 
   const formatRefuelStatusLabel = () => {
     if (airplaneCanRefuel()) {
-      if (round(fuelDesiredKg) === totalFuelWeightKg) {
+      if (round(fuelDesiredKg) === round(totalFuelWeightKg)) {
         return `(${t('Ground.Fuel.Completed')})`;
       }
       if (refuelStartedByUser) {
@@ -302,7 +301,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
 
   const formatRefuelStatusClass = useCallback(() => {
     if (airplaneCanRefuel()) {
-      if (round(fuelDesiredKg) === totalFuelWeightKg || !refuelStartedByUser) {
+      if (round(fuelDesiredKg) === round(totalFuelWeightKg) || !refuelStartedByUser) {
         if (refuelStartedByUser) {
           setRefuelStartedByUser(false);
         }
@@ -312,6 +311,8 @@ export const A380Fuel: React.FC<FuelProps> = ({
     }
     return 'text-theme-accent';
   }, [fuelDesiredKg, totalFuelWeightKg, refuelStartedByUser]);
+
+  const roundNearest10 = (fuel: number) => Math.round(fuel / 10) * 10;
 
   return (
     <div className="relative flex flex-col justify-center">
@@ -332,13 +333,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((feedTwoGal * FUEL_GALLONS_TO_KG) / INNER_FEED_MAX_KG) * 100}
+                    completed={(roundNearest10(feedTwoGal * FUEL_GALLONS_TO_KG) / INNER_FEED_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(feedTwoGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(feedTwoGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -353,13 +354,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((leftInnerGal * FUEL_GALLONS_TO_KG) / INNER_TANK_MAX_KG) * 100}
+                    completed={(roundNearest10(leftInnerGal * FUEL_GALLONS_TO_KG) / INNER_TANK_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(leftInnerGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(leftInnerGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -374,13 +375,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((leftMidGal * FUEL_GALLONS_TO_KG) / MID_TANK_MAX_KG) * 100}
+                    completed={(roundNearest10(leftMidGal * FUEL_GALLONS_TO_KG) / MID_TANK_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(leftMidGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(leftMidGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -395,13 +396,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((feedOneGal * FUEL_GALLONS_TO_KG) / OUTER_FEED_MAX_KG) * 100}
+                    completed={(roundNearest10(feedOneGal * FUEL_GALLONS_TO_KG) / OUTER_FEED_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(feedOneGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(feedOneGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -416,13 +417,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((leftOuterGal * FUEL_GALLONS_TO_KG) / OUTER_TANK_MAX_KG) * 100}
+                    completed={(roundNearest10(leftOuterGal * FUEL_GALLONS_TO_KG) / OUTER_TANK_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(leftOuterGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(leftOuterGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -446,13 +447,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((feedThreeGal * FUEL_GALLONS_TO_KG) / INNER_FEED_MAX_KG) * 100}
+                    completed={(roundNearest10(feedThreeGal * FUEL_GALLONS_TO_KG) / INNER_FEED_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(feedThreeGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(feedThreeGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -467,13 +468,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((rightInnerGal * FUEL_GALLONS_TO_KG) / INNER_TANK_MAX_KG) * 100}
+                    completed={(roundNearest10(rightInnerGal * FUEL_GALLONS_TO_KG) / INNER_TANK_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(rightInnerGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(rightInnerGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -488,13 +489,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((rightMidGal * FUEL_GALLONS_TO_KG) / MID_TANK_MAX_KG) * 100}
+                    completed={(roundNearest10(rightMidGal * FUEL_GALLONS_TO_KG) / MID_TANK_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(rightMidGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(rightMidGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -509,13 +510,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((feedFourGal * FUEL_GALLONS_TO_KG) / OUTER_FEED_MAX_KG) * 100}
+                    completed={(roundNearest10(feedFourGal * FUEL_GALLONS_TO_KG) / OUTER_FEED_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(feedFourGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(feedFourGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
@@ -530,20 +531,20 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={((rightOuterGal * FUEL_GALLONS_TO_KG) / OUTER_TANK_MAX_KG) * 100}
+                    completed={(roundNearest10(rightOuterGal * FUEL_GALLONS_TO_KG) / OUTER_TANK_MAX_KG) * 100}
                   />
                 </td>
                 <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                   <ValueUnitDisplay
-                    value={Units.kilogramToUser(rightOuterGal * FUEL_GALLONS_TO_KG)}
-                    padTo={6}
+                    value={roundNearest10(Units.kilogramToUser(rightOuterGal * FUEL_GALLONS_TO_KG))}
+                    padTo={5}
                     unit={massUnitForDisplay}
                   />
                 </td>
               </tr>
             </tbody>
           </table>
-        </Card>{' '}
+        </Card>
         <A380FuelOutline
           className="absolute inset-x-0 right-4 top-20 mx-auto flex h-full w-full text-theme-text"
           feed1Percent={(Math.max(feedThreeGal * FUEL_GALLONS_TO_KG, 0) / OUTER_FEED_MAX_KG) * 100}
@@ -577,13 +578,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
                   completedBarBegin={100}
                   isLabelVisible={false}
                   bgcolor="var(--color-highlight)"
-                  completed={((trimGal * FUEL_GALLONS_TO_KG) / TRIM_TANK_MAX_KG) * 100}
+                  completed={(roundNearest10(trimGal * FUEL_GALLONS_TO_KG) / TRIM_TANK_MAX_KG) * 100}
                 />
               </td>
               <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-light">
                 <ValueUnitDisplay
-                  value={Units.kilogramToUser(trimGal * FUEL_GALLONS_TO_KG)}
-                  padTo={6}
+                  value={roundNearest10(Units.kilogramToUser(trimGal * FUEL_GALLONS_TO_KG))}
+                  padTo={5}
                   unit={massUnitForDisplay}
                 />
               </td>
@@ -607,7 +608,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
             <div className="flex flex-row items-center space-x-32">
               <Slider
                 style={{ width: '28rem' }}
-                value={(fuelDesiredKg / TOTAL_UI_MAX_FUEL_KG) * 100}
+                value={(fuelDesiredKg / TOTAL_MAX_FUEL_KG) * 100}
                 onChange={updateDesiredFuelPercent}
               />
               <div className="flex flex-row">
