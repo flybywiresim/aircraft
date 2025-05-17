@@ -321,7 +321,7 @@
         - B4
 
 - A32NX_PRESS_CABIN_ALTITUDE_TARGET_{cpiom_id}
-    - Feet
+    - Arinc429Word<Feet>
     - Target cabin altitude as calculated by the pressurization system or manually selected on the overhead panel
     - (cpiom_id)
         - B1

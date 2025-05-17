@@ -53,15 +53,15 @@ export enum ClimbDerated {
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */
 export class FmgcData {
-  static fmcFormatSpeed(sub: Subscribable<number | null>) {
-    return sub.map((it) => (it !== null ? it.toFixed(0) : '---'));
+  static fmcFormatValue(sub: Subscribable<number | null>, numberDashes = 3) {
+    return sub.map((it) => (it !== null ? it.toFixed(0) : '-'.repeat(numberDashes)));
   }
 
   public readonly cpnyFplnAvailable = Subject.create(false);
 
   public readonly cpnyFplnUplinkInProgress = Subject.create(false);
 
-  public readonly atcCallsign = Subject.create<string>('----------');
+  public readonly atcCallsign = Subject.create<string | null>(null);
 
   /** in degrees celsius. null if not set. */
   public readonly cruiseTemperaturePilotEntry = Subject.create<number | null>(null);
@@ -288,15 +288,11 @@ export class FmgcData {
 
   public readonly climbPreSelSpeed = Subject.create<Knots | null>(null);
 
-  public readonly climbSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
-
   public readonly cruisePreSelMach = Subject.create<number | null>(null);
 
   public readonly cruisePreSelSpeed = Subject.create<Knots | null>(null);
 
   public readonly descentPreSelSpeed = Subject.create<Knots | null>(null);
-
-  public readonly descentSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
   /** in feet/min. null if not set. */
   public readonly descentCabinRate = Subject.create<number>(-350);
@@ -478,12 +474,34 @@ export class FmgcDataService implements Fmgc {
     return this.data.cruisePreSelMach.get() ?? 0.85;
   }
 
-  getClimbSpeedLimit(): SpeedLimit {
-    return { speed: 250, underAltitude: 10_000 };
+  getClimbSpeedLimit(): SpeedLimit | null {
+    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+      return null;
+    }
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.climbSpeedLimitSpeed;
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.climbSpeedLimitAltitude;
+    if (speedLimitSpeed && speedLimitAltitude) {
+      return {
+        speed: speedLimitSpeed,
+        underAltitude: speedLimitAltitude,
+      };
+    }
+    return null;
   }
 
-  getDescentSpeedLimit(): SpeedLimit {
-    return { speed: 250, underAltitude: 10_000 };
+  getDescentSpeedLimit(): SpeedLimit | null {
+    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+      return null;
+    }
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.descentSpeedLimitSpeed;
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.descentSpeedLimitAltitude;
+    if (speedLimitSpeed && speedLimitAltitude) {
+      return {
+        speed: speedLimitSpeed,
+        underAltitude: speedLimitAltitude,
+      };
+    }
+    return null;
   }
 
   /** in knots */

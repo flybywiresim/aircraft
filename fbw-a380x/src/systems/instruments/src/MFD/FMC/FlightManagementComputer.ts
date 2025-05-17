@@ -3,18 +3,6 @@
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import {
-  A320FlightPlanPerformanceData,
-  DataManager,
-  EfisInterface,
-  EfisSymbols,
-  FlightPhaseManager,
-  FlightPlanIndex,
-  Navigation,
-  NavigationDatabase,
-  NavigationDatabaseBackend,
-  NavigationDatabaseService,
-} from '@fmgc/index';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 import {
   ArraySubject,
@@ -39,6 +27,7 @@ import {
   NXDataStore,
   Units,
   UpdateThrottler,
+  VerticalPathCheckpoint,
   Waypoint,
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
@@ -49,17 +38,26 @@ import {
   TypeIIMessage,
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { PilotWaypoint } from '@fmgc/flightplanning/DataManager';
-import { distanceTo, Coordinates } from 'msfs-geo';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
+import { distanceTo, Coordinates, bearingTo } from 'msfs-geo';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { A380Failure } from '@failures';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
-import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
+import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
 import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/MfdUiService';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { Navigation } from '@fmgc/navigation/Navigation';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -74,19 +72,19 @@ export interface FmsErrorMessage {
  * Handles navigation (and potentially other aspects) for MFD pages
  */
 export class FlightManagementComputer implements FmcInterface {
-  protected subs = [] as Subscription[];
+  protected readonly subs = [] as Subscription[];
 
-  #mfdReference: (DisplayInterface & MfdDisplayInterface) | null;
+  #mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null;
 
   get mfdReference() {
     return this.#mfdReference;
   }
 
-  set mfdReference(value: (DisplayInterface & MfdDisplayInterface) | null) {
+  set mfdReference(value: (FmsDisplayInterface & MfdDisplayInterface) | null) {
     this.#mfdReference = value;
 
     if (value) {
-      this.dataManager = new DataManager(value);
+      this.dataManager = new DataManager(value, { latLonFormat: LatLonFormatType.ExtendedFormat });
     }
   }
 
@@ -101,6 +99,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.#operatingMode = value;
   }
 
+  // FIXME A320 data
   #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData(), FpmConfigs.A380);
 
   get flightPlanService() {
@@ -128,7 +127,7 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#guidanceController;
   }
 
-  #navigation = new Navigation(this.bus, this.flightPlanService);
+  #navigation: Navigation;
 
   get navigation() {
     if (this.instance !== FmcIndex.FmcA) {
@@ -144,7 +143,8 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#navigation.getNavaidTuner();
   }
 
-  private efisSymbols!: EfisSymbols<number>;
+  private efisSymbolsLeft!: EfisSymbols<number>;
+  private efisSymbolsRight!: EfisSymbols<number>;
 
   private readonly flightPhaseManager = new FlightPhaseManager(this.bus);
 
@@ -190,11 +190,11 @@ export class FlightManagementComputer implements FmcInterface {
   // TODO make private, and access methods through FmcInterface
   public acInterface!: FmcAircraftInterface;
 
-  public revisedWaypointIndex = Subject.create<number | null>(null);
+  public revisedLegIndex = Subject.create<number | null>(null);
 
-  public revisedWaypointPlanIndex = Subject.create<FlightPlanIndex | null>(null);
+  public revisedLegPlanIndex = Subject.create<FlightPlanIndex | null>(null);
 
-  public revisedWaypointIsAltn = Subject.create<boolean | null>(null);
+  public revisedLegIsAltn = Subject.create<boolean | null>(null);
 
   public enginesWereStarted = Subject.create<boolean>(false);
 
@@ -209,18 +209,26 @@ export class FlightManagementComputer implements FmcInterface {
 
   private wasReset = false;
 
+  private readonly ZfwOrZfwCgUndefined = MappedSubject.create(
+    ([zfw, zfwCg]) => zfw == null || zfwCg == null,
+    this.fmgc.data.zeroFuelWeight,
+    this.fmgc.data.zeroFuelWeightCenterOfGravity,
+  );
+
   constructor(
     private instance: FmcIndex,
     operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
     private readonly fmcInop: Subscribable<boolean>,
-    mfdReference: (DisplayInterface & MfdDisplayInterface) | null,
+    mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null,
   ) {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
 
     const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
+
+    this.#navigation = new Navigation(this.bus, this.flightPlanService);
 
     this.flightPlanService.createFlightPlans();
 
@@ -236,17 +244,30 @@ export class FlightManagementComputer implements FmcInterface {
         a380EfisRangeSettings,
         A380AircraftConfig,
       );
-      this.efisSymbols = new EfisSymbols(
+      this.efisSymbolsLeft = new EfisSymbols(
         this.bus,
+        'L',
         this.#guidanceController,
         this.flightPlanService,
         this.navaidTuner,
-        this.efisInterfaces,
+        this.efisInterfaces.L,
         a380EfisRangeSettings,
+        true,
+      );
+      this.efisSymbolsRight = new EfisSymbols(
+        this.bus,
+        'R',
+        this.#guidanceController,
+        this.flightPlanService,
+        this.navaidTuner,
+        this.efisInterfaces.R,
+        a380EfisRangeSettings,
+        true,
       );
 
       this.#navigation.init();
-      this.efisSymbols.init();
+      this.efisSymbolsLeft.init();
+      this.efisSymbolsRight.init();
       this.flightPhaseManager.init();
       this.#guidanceController.init();
       this.fmgc.guidanceController = this.#guidanceController;
@@ -255,13 +276,12 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
 
-      this.shouldBePreflightPhase.sub((shouldBePreflight) => {
-        if (shouldBePreflight) {
-          this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
-        }
-      }, true);
-
       this.subs.push(
+        this.shouldBePreflightPhase.sub((shouldBePreflight) => {
+          if (shouldBePreflight) {
+            this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
+          }
+        }, true),
         this.enginesWereStarted.sub((val) => {
           if (
             val &&
@@ -269,7 +289,7 @@ export class FlightManagementComputer implements FmcInterface {
             !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
           ) {
             this.flightPlanService.active.setPerformanceData('costIndex', 0);
-            this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('0'));
+            this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('000'));
           }
         }),
         this.legacyFmsIsHealthy.sub((v) => {
@@ -277,7 +297,24 @@ export class FlightManagementComputer implements FmcInterface {
           SimVar.SetSimVarValue('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean', v);
           SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', v);
         }, true),
+
+        this.ZfwOrZfwCgUndefined,
+        this.ZfwOrZfwCgUndefined.sub((v) => {
+          if (!v) {
+            this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg.text);
+          }
+        }),
+
+        this.fmgc.data.cpnyFplnAvailable.sub((v) => {
+          if (v) {
+            this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
+          } else {
+            this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+          }
+        }),
       );
+
+      this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
     }
 
     let lastUpdateTime = Date.now();
@@ -293,11 +330,17 @@ export class FlightManagementComputer implements FmcInterface {
     console.log(`${FmcIndex[this.instance]} initialized.`);
   }
 
+  destroy() {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+  }
+
   public revisedWaypoint(): Fix | undefined {
-    const revWptIdx = this.revisedWaypointIndex.get();
-    const revPlanIdx = this.revisedWaypointPlanIndex.get();
+    const revWptIdx = this.revisedLegIndex.get();
+    const revPlanIdx = this.revisedLegPlanIndex.get();
     if (revWptIdx !== null && revPlanIdx !== null && this.flightPlanService.has(revPlanIdx)) {
-      const flightPlan = this.revisedWaypointIsAltn.get()
+      const flightPlan = this.revisedLegIsAltn.get()
         ? this.flightPlanService.get(revPlanIdx).alternateFlightPlan
         : this.flightPlanService.get(revPlanIdx);
       if (flightPlan.hasElement(revWptIdx) && flightPlan.elementAt(revWptIdx)?.isDiscontinuity === false) {
@@ -308,15 +351,15 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public setRevisedWaypoint(index: number, planIndex: number, isAltn: boolean) {
-    this.revisedWaypointPlanIndex.set(planIndex);
-    this.revisedWaypointIsAltn.set(isAltn);
-    this.revisedWaypointIndex.set(index);
+    this.revisedLegPlanIndex.set(planIndex);
+    this.revisedLegIsAltn.set(isAltn);
+    this.revisedLegIndex.set(index);
   }
 
   public resetRevisedWaypoint(): void {
-    this.revisedWaypointIndex.set(null);
-    this.revisedWaypointIsAltn.set(null);
-    this.revisedWaypointPlanIndex.set(null);
+    this.revisedLegIndex.set(null);
+    this.revisedLegIsAltn.set(null);
+    this.revisedLegPlanIndex.set(null);
   }
 
   public latLongStoredWaypoints: Waypoint[] = [];
@@ -509,11 +552,6 @@ export class FlightManagementComputer implements FmcInterface {
    */
   onUplinkInProgress() {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(true);
-    this.addMessageToQueue(
-      NXSystemMessages.uplinkInsertInProg,
-      () => !this.fmgc.data.cpnyFplnUplinkInProgress.get(),
-      undefined,
-    );
   }
 
   /**
@@ -522,7 +560,6 @@ export class FlightManagementComputer implements FmcInterface {
   onUplinkDone() {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(false);
     this.fmgc.data.cpnyFplnAvailable.set(true);
-    this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg.text);
   }
 
   /**
@@ -623,7 +660,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.mfdReference?.openMessageList();
   }
 
-  createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): PilotWaypoint {
+  createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): PilotWaypoint | null {
     return this.dataManager?.createLatLonWaypoint(coordinates, stored, ident) ?? null;
   }
 
@@ -634,7 +671,7 @@ export class FlightManagementComputer implements FmcInterface {
     bearing2: DegreesTrue,
     stored?: boolean,
     ident?: string,
-  ): PilotWaypoint {
+  ): PilotWaypoint | null {
     return (
       this.dataManager?.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident) ??
       null
@@ -647,7 +684,7 @@ export class FlightManagementComputer implements FmcInterface {
     distance: NauticalMiles,
     stored?: boolean,
     ident?: string,
-  ): PilotWaypoint {
+  ): PilotWaypoint | null {
     return this.dataManager?.createPlaceBearingDistWaypoint(place, bearing, distance, stored, ident) ?? null;
   }
 
@@ -660,8 +697,8 @@ export class FlightManagementComputer implements FmcInterface {
   /**
    * This method is called by the FlightPhaseManager after a flight phase change
    * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
-   * @param prevPhase {FmgcFlightPhases} Previous FmgcFlightPhase
-   * @param nextPhase {FmgcFlightPhases} New FmgcFlightPhase
+   * @param prevPhase Previous FmgcFlightPhase
+   * @param nextPhase New FmgcFlightPhase
    */
   onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
     this.acInterface.updateConstraints();
@@ -746,9 +783,6 @@ export class FlightManagementComputer implements FmcInterface {
 
       case FmgcFlightPhase.Cruise: {
         SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
-        Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO)
-          .catch(console.error)
-          .catch(console.error);
 
         const cruisePreSel = this.fmgc.data.cruisePreSelSpeed.get();
         const cruisePreSelMach = this.fmgc.data.cruisePreSelMach.get();
@@ -772,10 +806,6 @@ export class FlightManagementComputer implements FmcInterface {
       case FmgcFlightPhase.Descent: {
         this.checkDestData();
 
-        Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO)
-          .catch(console.error)
-          .catch(console.error);
-
         /** Activate pre selected speed/mach */
         const desPreSel = this.fmgc.data.descentPreSelSpeed.get();
         if (prevPhase === FmgcFlightPhase.Cruise && desPreSel) {
@@ -792,7 +822,6 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Approach: {
-        Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO).catch(console.error);
         SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
 
         this.checkDestData();
@@ -905,27 +934,23 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  private gwInitDisplayed = 0;
+  private zfwInitDisplayed = 0;
 
   private initMessageSettable = false;
 
-  private checkGWParams(): void {
-    const fmGW = SimVar.GetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number');
+  private checkZfwParams(): void {
     const eng2state = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Number');
     const eng3state = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:3', 'Number');
 
     if (eng2state === 2 || eng3state === 2) {
-      if (this.gwInitDisplayed < 1 && this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
+      if (this.zfwInitDisplayed < 1 && this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
         this.initMessageSettable = true;
       }
     }
-    // INITIALIZE WEIGHT/CG
-    if (this.fmgc.isAnEngineOn() && fmGW === 0 && this.initMessageSettable) {
-      this.addMessageToQueue(
-        NXSystemMessages.initializeWeightOrCg,
-        () => SimVar.GetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number') !== 0,
-      );
-      this.gwInitDisplayed++;
+    // INITIALIZE ZFW/ZFW CG
+    if (this.fmgc.isAnEngineOn() && this.ZfwOrZfwCgUndefined.get() && this.initMessageSettable) {
+      this.addMessageToQueue(NXSystemMessages.initializeZfwOrZfwCg);
+      this.zfwInitDisplayed++;
       this.initMessageSettable = false;
     }
   }
@@ -981,6 +1006,8 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.updatePerfSpeeds();
         this.acInterface.updateWeights();
         this.acInterface.toSpeedsChecks();
+        this.acInterface.checkForStepClimb();
+        this.acInterface.checkTooSteepPath();
 
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
         if (toFlaps) {
@@ -998,8 +1025,9 @@ export class FlightManagementComputer implements FmcInterface {
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
       }
-      this.checkGWParams();
+      this.checkZfwParams();
       this.updateMessageQueue();
+      this.updateVerticalPath();
 
       this.acInterface.checkSpeedLimit();
       this.acInterface.thrustReductionAccelerationChecks();
@@ -1030,7 +1058,8 @@ export class FlightManagementComputer implements FmcInterface {
 
     this.guidanceController.update(dt);
 
-    this.efisSymbols.update(dt);
+    this.efisSymbolsLeft.update();
+    this.efisSymbolsRight.update();
 
     this.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
   }
@@ -1064,6 +1093,106 @@ export class FlightManagementComputer implements FmcInterface {
 
   tryGoInApproachPhase(): void {
     this.flightPhaseManager.tryGoInApproachPhase();
+  }
+
+  private updateVerticalPath() {
+    // Transmit active vertical geometry
+    const predictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+    const plan: ReadonlyFlightPlan = this.flightPlanService.active;
+
+    if (!predictions || !this.flightPlanService.hasActive) {
+      this.acInterface.transmitVerticalPath([], [], [], [], null);
+      return;
+    }
+
+    const targetProfile = this.guidanceController.vnavDriver.mcduProfile;
+    const descentProfile = this.guidanceController.vnavDriver.descentProfile;
+    const actualProfile = this.guidanceController.vnavDriver.ndProfile;
+
+    const targetProfileVd: VerticalPathCheckpoint[] = [];
+    const showFromLegIndex = Math.max(0, plan.activeLegIndex - 1);
+
+    if (targetProfile) {
+      targetProfile.checkpoints.forEach((c) => {
+        const currentDistance = targetProfile.distanceToPresentPosition;
+
+        targetProfileVd.push({
+          distanceFromAircraft: c.distanceFromStart - currentDistance,
+          altitude: c.altitude,
+        });
+      });
+    }
+
+    // Separately extract all altitude constraints
+    const vdAltitudeConstraints: VdAltitudeConstraint[] = plan.allLegs
+      .slice(showFromLegIndex)
+      .filter((leg, legIndex) => leg.isDiscontinuity === false && predictions.get(legIndex + showFromLegIndex))
+      .map((_, legIndex) => {
+        const legPrediction = predictions.get(legIndex + showFromLegIndex);
+
+        return {
+          altitudeConstraint: legPrediction?.altitudeConstraint,
+          isAltitudeConstraintMet: legPrediction?.isAltitudeConstraintMet,
+        };
+      });
+
+    const descentProfileVd: VerticalPathCheckpoint[] = descentProfile
+      ? descentProfile.checkpoints.map((c) => {
+          return {
+            distanceFromAircraft:
+              c.distanceFromStart +
+              this.guidanceController.vnavDriver.computeTacticalToGuidanceProfileOffset() -
+              descentProfile.distanceToPresentPosition,
+            altitude: c.altitude,
+            altitudeConstraint: undefined,
+            isAltitudeConstraintMet: undefined,
+          };
+        })
+      : [];
+
+    const actualProfileVd: VerticalPathCheckpoint[] = actualProfile
+      ? actualProfile.checkpoints.map((c) => {
+          return {
+            distanceFromAircraft: c.distanceFromStart - actualProfile.distanceToPresentPosition,
+            altitude: c.altitude,
+            altitudeConstraint: undefined,
+            isAltitudeConstraintMet: undefined,
+          };
+        })
+      : [];
+
+    // Start of grey area
+    // FIXME improve, currently only works on a per-leg-basis
+    let lastBearing: number | null = null;
+    let trackChangesSignificantlyAtDistance: number | null = null;
+    const previousLeg = plan.allLegs[showFromLegIndex - 1];
+    let lastLegLatLong: Coordinates =
+      showFromLegIndex > 0 && previousLeg.isDiscontinuity === false && previousLeg.definition.waypoint
+        ? previousLeg.definition.waypoint.location
+        : this.guidanceController.lnavDriver.ppos;
+
+    plan.allLegs.slice(showFromLegIndex).forEach((leg, legIndex) => {
+      const legPrediction = predictions.get(legIndex + showFromLegIndex);
+      if (leg.isDiscontinuity === false && legPrediction) {
+        if (leg.definition.waypoint && trackChangesSignificantlyAtDistance === null) {
+          const bearing = bearingTo(lastLegLatLong, leg.definition.waypoint.location);
+          if (lastBearing !== null && Math.abs(lastBearing - bearing) > 3) {
+            trackChangesSignificantlyAtDistance = legPrediction.distanceFromAircraft;
+          }
+          lastBearing = bearing;
+        }
+
+        lastLegLatLong = leg.definition.waypoint?.location ?? lastLegLatLong;
+      }
+    });
+
+    this.acInterface.transmitVerticalPath(
+      targetProfileVd,
+      vdAltitudeConstraints,
+      actualProfileVd,
+      descentProfileVd,
+      trackChangesSignificantlyAtDistance,
+    );
   }
 
   async swapNavDatabase(): Promise<void> {

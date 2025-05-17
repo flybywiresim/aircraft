@@ -17,18 +17,18 @@ const lnavConfig: LnavConfig = {
   DEFAULT_MIN_PREDICTED_TAS: 160,
   TURN_RADIUS_FACTOR: 1.0,
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: -1,
+  EMIT_END_OF_VD_MARKER: true,
 };
 
 const vnavConfig: VnavConfig = {
   VNAV_DESCENT_MODE: VnavDescentMode.NORMAL,
   VNAV_EMIT_CDA_FLAP_PWP: false,
-  DEBUG_PROFILE: false,
-  DEBUG_GUIDANCE: false,
-  ALLOW_DEBUG_PARAMETER_INJECTION: false,
   VNAV_USE_LATCHED_DESCENT_MODE: false,
   IDLE_N1_MARGIN: 3,
   MAXIMUM_FUEL_ESTIMATE: 250_000,
   LIM_PSEUDO_WPT_LABEL: '(SPDLIM)',
+  VMO: 340,
+  MMO: 0.89,
 };
 
 const flightModelParams: FlightModelParameters = {

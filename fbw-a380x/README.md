@@ -39,6 +39,7 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 - Fuel planning on FMS/FUEL&LOAD page
 - ATC / datalink / CPDLC
 - FCU BKUP
+- STEP ALTs: Optimum step calculation
 
 ### ATA 23 Communication
 
@@ -86,13 +87,10 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 - Vertical Display: Only fixed vertical range (until FL240) w/o FMS trajectory
 - Independent QNH
 - KCCU soft keyboard
-- ECAM abnormal sensed: No navigation up/down, only CLEAR selectable for manual completion
-- ECAM: Abnormal non-sensed procedures
-- ECAM Deferred procedures
-- ECAM ABN secondary failures
 - ECAM: Completely accurate STS page implementation
 - ECAM: AUTO RCL
 - ECAM: Correct behavior of RCL / RCL LAST
+- ECAM: Time limited failures
 - Video: ETACS due to sim limitation
 - Latest FMA indications for landing modes (e.g. LAND3 instead of CAT3)
 - SD VIDEO page

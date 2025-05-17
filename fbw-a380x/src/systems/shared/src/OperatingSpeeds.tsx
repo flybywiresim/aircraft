@@ -7,11 +7,11 @@
 // TODO: Weight interpolation is different for the two CG extremes, one formula might be too inaccurate.
 
 import { Feet, Knots } from 'msfs-geo';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LerpLookupTable } from '@microsoft/msfs-sdk';
 import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export enum ApproachConf {
   CONF_1 = 1,
@@ -349,11 +349,12 @@ const vmcg = [
  * Vfe for Flaps/Slats
  */
 const vfeFS = [
+  Vmo,
+  VfeF1, // Config 1
   VfeF1F, // Config 1 + F
   VfeF2, // Config 2
   VfeF3, // Config 3
   VfeFF, // Config Full
-  VfeF1, // Config 1
 ];
 
 /**
@@ -385,22 +386,6 @@ function addWindComponent(vw: Knots): Knots {
  */
 function getdiffAngle(a: number, b: number): number {
   return 180 - Math.abs(Math.abs(a - b) - 180);
-}
-
-/**
- * Get next flaps index for vfeFS table
- * @returns vfeFS table index
- * @private
- */
-function getVfeNIdx(fi: number): number {
-  switch (fi) {
-    case 0:
-      return 4;
-    case 5:
-      return 1;
-    default:
-      return fi;
-  }
 }
 
 /**
@@ -454,21 +439,25 @@ export class A380OperatingSpeeds {
     altitude: Feet,
     wind: Knots = 0,
   ) {
-    const cg = SimVar.GetSimVarValue('CG PERCENT', 'percent');
+    const cg = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
 
     if (fPos === 0) {
       this.vls = SpeedsLookupTables.VLS_CONF_0.get(altitude, m);
+      this.vmax = getVmo();
+      this.vfeN = vfeFS[1];
     } else if (fPos === 1 && calibratedAirSpeed > 212) {
       this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_1, cg, m);
+      this.vmax = vfeFS[1];
+      this.vfeN = vfeFS[2];
     } else {
       this.vls = SpeedsLookupTables.getApproachVls(fPos + 1, cg, m);
+      this.vmax = vfeFS[fPos + 1];
+      this.vfeN = fPos === 4 ? 0 : vfeFS[fPos + 2];
     }
-    this.vapp = this.vls + addWindComponent(wind);
+    this.vapp = this.vls + addWindComponent(Math.round(wind / 3));
     this.vref = this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_FULL, cg, m);
 
     this.gd = SpeedsLookupTables.GREEN_DOT.get(altitude, m);
-    this.vmax = fPos === 0 ? getVmo() : vfeFS[fPos - 1];
-    this.vfeN = fPos === 4 ? 0 : vfeFS[getVfeNIdx(fPos)];
 
     this.vs1g = this.vls / 1.23;
     this.vls = Math.max(1.23 * this.vs1g, Vmcl);
@@ -606,16 +595,30 @@ export class A380SpeedsUtils {
   static getVs1g(mass: number, conf: number, takeoff: boolean): Knots {
     // FIXME rough, dirty hack
     if (takeoff === true) {
-      return SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.15;
+      return (
+        SpeedsLookupTables.getApproachVls(
+          conf,
+          SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
+          mass,
+        ) / 1.15
+      );
     }
     if (conf === 5) {
       return Math.max(
-        SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.18,
+        SpeedsLookupTables.getApproachVls(
+          conf,
+          SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
+          mass,
+        ) / 1.18,
         Vmcl,
       );
     }
     return Math.max(
-      SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.23,
+      SpeedsLookupTables.getApproachVls(
+        conf,
+        SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
+        mass,
+      ) / 1.23,
       Vmcl,
     );
   }

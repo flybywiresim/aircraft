@@ -1,8 +1,18 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ComponentProps,
+  DisplayComponent,
+  FSComponent,
+  MutableSubscribable,
+  Subscribable,
+  SubscribableUtils,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 interface TopTabElementProps extends ComponentProps {
   title: string;
   isSelected: boolean;
+  isLast: boolean;
   selectedTextColor: string;
   isHighlighted: boolean;
   height: number; // height of tab bar element
@@ -11,11 +21,11 @@ interface TopTabElementProps extends ComponentProps {
 }
 
 class TopTabElement extends DisplayComponent<TopTabElementProps> {
-  private triangleWidth = this.props.height * Math.tan((this.props.slantedEdgeAngle * Math.PI) / 180);
+  private readonly triangleWidth = this.props.height * Math.tan((this.props.slantedEdgeAngle * Math.PI) / 180);
 
-  private divRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly divRef = FSComponent.createRef<HTMLDivElement>();
 
-  private textRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly textRef = FSComponent.createRef<HTMLSpanElement>();
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -39,7 +49,11 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
 
   render(): VNode {
     return (
-      <div ref={this.divRef} class={`mfd-top-tab-navigator-bar-element-outer${this.props.isSelected ? ' active' : ''}`}>
+      <div
+        ref={this.divRef}
+        class={`mfd-top-tab-navigator-bar-element-outer${this.props.isSelected ? ' active' : ''}`}
+        style={`margin-right: ${this.props.isLast ? 0 : -15}px`}
+      >
         <svg height={this.props.height} width={this.triangleWidth}>
           <polygon
             points={`0,${this.props.height} ${this.triangleWidth},0 ${this.triangleWidth},${this.props.height}`}
@@ -103,7 +117,7 @@ interface TopTabNavigatorPageProps {
 }
 
 export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPageProps> {
-  private topDivRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topDivRef = FSComponent.createRef<HTMLDivElement>();
 
   private isVisible = false;
 
@@ -129,8 +143,8 @@ export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPagePro
 }
 
 interface TopTabNavigatorProps {
-  pageTitles: Subscribable<string[]>;
-  selectedPageIndex: Subject<number>;
+  pageTitles: string[] | Subscribable<string[]>;
+  selectedPageIndex: MutableSubscribable<number>;
   selectedTabTextColor?: string;
   /** in pixels */
   tabBarHeight?: number;
@@ -147,12 +161,16 @@ interface TopTabNavigatorProps {
  * Container for multiple tabs, with tab navigation at the top. Pages are instantiated as children of the component, as TopTabElement
  */
 export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
-  private navigatorBarRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly subs = [] as Subscription[];
+
+  private readonly navigatorBarRef = FSComponent.createRef<HTMLDivElement>();
+
+  private readonly pageTitles = SubscribableUtils.toSubscribable(this.props.pageTitles, true);
 
   constructor(props: TopTabNavigatorProps) {
     super(props);
 
-    if (this.props.pageTitles.get().length !== this.props.children?.length) {
+    if (this.pageTitles.get().length !== this.props.children?.length) {
       console.error('Number of TopTabNavigator children is not equal to number of elements in pageTitles array.');
     }
 
@@ -190,13 +208,14 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
     });
 
     // Re-populate top navigation bar
-    this.props.pageTitles.get().forEach((pageTitle, index) => {
+    this.pageTitles.get().forEach((pageTitle, index) => {
       FSComponent.render(
         <TopTabElement
           title={pageTitle}
           isSelected={selectedTab === index}
+          isLast={index === this.pageTitles.get().length - 1}
           height={this.props.tabBarHeight || 36}
-          slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
+          slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 30}
           selectedTextColor={this.props.selectedTabTextColor || 'white'}
           onClick={() => this.onPageChange(index)}
           isHighlighted={this.props.highlightedTab ? this.props.highlightedTab?.get() === index : false}
@@ -217,12 +236,16 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.selectedPageIndex.sub((value) => {
-      this.populateElements(node, value);
-    }, true);
+    this.subs.push(
+      this.props.selectedPageIndex.sub((value) => {
+        this.populateElements(node, value);
+      }, true),
+    );
 
     if (this.props.highlightedTab) {
-      this.props.highlightedTab.sub(() => this.populateElements(node, this.props.selectedPageIndex.get()));
+      this.subs.push(
+        this.props.highlightedTab.sub(() => this.populateElements(node, this.props.selectedPageIndex.get())),
+      );
     }
   }
 
@@ -234,12 +257,13 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
           ref={this.navigatorBarRef}
           style={`height: ${this.props.tabBarHeight || 36}px`}
         >
-          {this.props.pageTitles.get().map((pageTitle, index) => (
+          {this.pageTitles.get().map((pageTitle, index) => (
             <TopTabElement
               title={pageTitle}
               isSelected={this.props.selectedPageIndex.get() === index}
+              isLast={index === this.pageTitles.get().length - 1}
               height={this.props.tabBarHeight || 36}
-              slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
+              slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 30}
               selectedTextColor={this.props.selectedTabTextColor || 'white'}
               onClick={() => this.onPageChange(index)}
               isHighlighted={false}
@@ -252,5 +276,11 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
         {this.props.children}
       </div>
     );
+  }
+
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
   }
 }

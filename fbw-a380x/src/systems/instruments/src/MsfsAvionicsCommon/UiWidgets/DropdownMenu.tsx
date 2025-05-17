@@ -14,9 +14,8 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { InteractionMode } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
@@ -42,27 +41,27 @@ interface DropdownMenuProps extends ComponentProps {
  */
 export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownInnerRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownInnerRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownArrowRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownArrowRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
-  private dropdownIsOpened = Subject.create(false);
+  private readonly dropdownIsOpened = Subject.create(false);
 
-  private inputFieldRef = FSComponent.createRef<InputField<string>>();
+  private readonly inputFieldRef = FSComponent.createRef<InputField<string>>();
 
-  private inputFieldValue = Subject.create<string>('');
+  private readonly inputFieldValue = Subject.create<string | null>('');
 
   private freeTextEntered = false;
 
-  private renderedDropdownOptions = ArraySubject.create<string>();
+  private readonly renderedDropdownOptions = ArraySubject.create<string>();
 
   private renderedDropdownOptionsIndices: number[] = [];
 
@@ -104,7 +103,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private filterList(text: string) {
     const arr = this.props.values.getArray();
-    this.renderedDropdownOptionsIndices = arr.map((val, idx) => idx).filter((_, idx) => arr[idx].startsWith(text));
+    this.renderedDropdownOptionsIndices = arr.map((_, idx) => idx).filter((_, idx) => arr[idx].startsWith(text));
     this.renderedDropdownOptions.set(arr.filter((val) => val.startsWith(text)));
   }
 
@@ -130,9 +129,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     }
 
     this.subs.push(
-      this.renderedDropdownOptions.sub((index, type, item, array) => {
+      this.renderedDropdownOptions.sub((_, __, ___, array) => {
         // Remove click handlers
-        array.forEach((val, i) => {
+        array.forEach((_, i) => {
           if (document.getElementById(`${this.props.idPrefix}_${i}`)) {
             document
               .getElementById(`${this.props.idPrefix}_${i}`)
@@ -156,33 +155,30 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           );
           FSComponent.render(n, this.dropdownMenuRef.instance);
         }, this);
-        //
 
         // Add click handlers
-        array.forEach((val, i) => {
+        array.forEach((_, i) => {
           document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', this.onClick.bind(this, i));
         });
       }),
     );
 
     this.subs.push(
-      this.props.values.sub((index, type, item, array) => {
+      this.props.values.sub((_, __, ___, array) => {
         const selIdx = this.props.selectedIndex.get();
         if (selIdx !== undefined && selIdx !== null) {
           this.inputFieldValue.set(array[selIdx]);
         } else {
           this.inputFieldValue.set('');
         }
-        this.renderedDropdownOptionsIndices = array.map((val, idx) => idx);
+        this.renderedDropdownOptionsIndices = array.map((_, idx) => idx);
         this.renderedDropdownOptions.set(array);
       }, true),
     );
 
     this.subs.push(
       this.props.selectedIndex.sub((value) => {
-        if (value !== null && this.props.values.get(value)) {
-          this.inputFieldValue.set(this.props.values.get(value));
-        }
+        this.inputFieldValue.set(value !== null && this.props.values.get(value) ? this.props.values.get(value) : null);
       }),
     );
 
@@ -192,14 +188,14 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onClickedOutsideHandler);
 
     this.subs.push(
-      this.dropdownIsOpened.sub((val) => {
-        this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
+      this.dropdownIsOpened.sub((opened) => {
+        this.dropdownMenuRef.instance.style.display = opened ? 'block' : 'none';
 
         this.onDropdownOpenedCallback?.();
         this.onDropdownOpenedCallback = undefined;
 
         if (!this.freeTextEntered) {
-          if (val) {
+          if (opened) {
             this.inputFieldRef.instance.textInputRef.instance.focus();
             this.inputFieldRef.instance.onFocus();
           } else {
@@ -235,6 +231,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private onClickedOutside(e: MouseEvent) {
     if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
+      if (this.inputFieldValue.get() === '') {
+        this.inputFieldValue.set(null);
+      }
+      this.inputFieldRef.instance.onBlur();
       this.dropdownIsOpened.set(false);
     }
   }
@@ -262,6 +262,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     this.dropdownSelectorRef.getOrDefault()?.removeEventListener('click', this.onOpenCloseClickHandler);
     document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
+
+    this.renderedDropdownOptions.clear();
 
     super.destroy();
   }

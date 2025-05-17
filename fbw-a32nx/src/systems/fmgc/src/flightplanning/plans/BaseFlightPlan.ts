@@ -5,17 +5,21 @@
 
 import {
   Airport,
+  AltitudeConstraint,
   AltitudeDescriptor,
   Approach,
   ApproachType,
   ApproachWaypointDescriptor,
   Arrival,
+  ConstraintUtils,
   Departure,
   Fix,
   LegType,
   ProcedureTransition,
   Runway,
   SpeedDescriptor,
+  TurnDirection,
+  WaypointConstraintType,
   WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
@@ -44,7 +48,6 @@ import { BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
-import { WaypointConstraintType, ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
 import {
@@ -930,10 +933,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       const previousElement = this.elementAt(index - 1);
       const element = this.elementAt(index);
       const [prevSegment, prevIndexInSegment] = this.segmentPositionForIndex(index - 1);
-      const nextElement = this.elementAt(index + 1);
+      const nextElement = this.maybeElementAt(index + 1);
 
       // Also clear hold if we clear leg before hold
-      const numElementsToDelete = nextElement.isDiscontinuity === false && nextElement.isHX() ? 2 : 1;
+      const numElementsToDelete = nextElement?.isDiscontinuity === false && nextElement.isHX() ? 2 : 1;
 
       if (previousElement.isDiscontinuity === false) {
         if (element.isDiscontinuity === false) {
@@ -948,16 +951,40 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           if (previousElement.isXI()) {
             prevSegment.allLegs.splice(prevIndexInSegment, 1);
           }
-        } else if (nextElement.isDiscontinuity === false) {
+        } else if (nextElement?.isDiscontinuity === false) {
           if (previousElement.terminatesWithWaypoint(nextElement.terminationWaypoint())) {
             // Disco with same point before and after it
             this.mergeConstraints(previousElement, nextElement);
 
+            // Only keep one waypoint - see FBW-22-09
             this.removeRange(index, index + 2);
           } else {
             // Regular disco
+            if (nextElement.isXF()) {
+              const [nextSegment, nextIndexInSegment] = this.segmentPositionForIndex(index + 1);
+
+              // Convert next element to TF
+              // We do this because we get the wrong turn direction sometimes if we keep it a CF leg for example
+              const newNextElement = FlightPlanLeg.fromEnrouteFix(
+                nextSegment,
+                nextElement.terminationWaypoint(),
+                nextElement.annotation,
+              )
+                .withDefinitionFrom(nextElement)
+                .withPilotEnteredDataFrom(nextElement);
+
+              nextSegment.allLegs.splice(nextIndexInSegment, 1, newNextElement);
+
+              if (nextSegment !== segment) {
+                this.syncSegmentLegsChange(nextSegment);
+              }
+            }
+
+            // Remove disco
             segment.allLegs.splice(indexInSegment, 1);
           }
+
+          this.removeForcedTurnAt(index + 2);
         }
       } else {
         this.removeRange(index, index + numElementsToDelete);
@@ -1099,22 +1126,28 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param waypoint the waypoint to insert
    */
   async insertWaypointBefore(index: number, waypoint: Fix) {
+    // If the waypoint already exists, remove everything between the two waypoints
     const duplicate = this.findDuplicate(waypoint, index);
     if (duplicate) {
-      const [duplicateSegment, duplicateIndex, duplicatePlanIndex] = duplicate;
+      const [duplicateSegment, _, duplicatePlanIndex] = duplicate;
+
       if (duplicatePlanIndex < this.firstMissedApproachLegIndex) {
-        // If the waypoint already exists, remove everything between the two waypoints
-        const duplicateLeg = duplicateSegment.allLegs[duplicateIndex];
-        if (duplicateLeg.isDiscontinuity === true) {
-          throw new Error('[FMS/FPM] Duplicate waypoint was a discontinuity');
-        }
+        const duplicateLeg = this.legElementAt(duplicatePlanIndex);
 
         // Make new leg a TF leg. If this is not allowed, it will be converted when we restring
         const leg = FlightPlanLeg.fromEnrouteFix(duplicateSegment, waypoint)
           .withDefinitionFrom(duplicateLeg)
           .withPilotEnteredDataFrom(duplicateLeg);
 
+        // Remove forced turn on following leg
+        this.removeForcedTurnAt(duplicatePlanIndex + 1);
         this.removeRange(index, duplicatePlanIndex + 1);
+
+        // Remove overfly on previous leg because it no longer makes sense
+        const previousElement = this.maybeElementAt(index - 1);
+        if (previousElement?.isDiscontinuity === false) {
+          this.setOverflyAt(index - 1, false);
+        }
 
         await this.insertElementBefore(index, leg);
 
@@ -1123,9 +1156,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const previousElement = this.maybeElementAt(index - 1);
-    if (previousElement?.isDiscontinuity === false && previousElement.isXI()) {
-      this.removeElementAt(index - 1);
-      index -= 1;
+    if (previousElement?.isDiscontinuity === false) {
+      this.setOverflyAt(index - 1, false);
+
+      if (previousElement.isXI()) {
+        this.removeElementAt(index - 1);
+        index -= 1;
+      }
     }
 
     const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
@@ -1140,27 +1177,55 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param waypoint the waypoint to insert
    */
   async nextWaypoint(index: number, waypoint: Fix) {
+    // If the waypoint already exists, remove everything between the two waypoints
     const duplicate = this.findDuplicate(waypoint, index);
     if (duplicate) {
-      // If the waypoint already exists, remove everything between the two waypoints
-      const duplicatePlanIndex = duplicate[2];
+      const [duplicateSegment, _, duplicatePlanIndex] = duplicate;
 
-      this.removeRange(index + 1, duplicatePlanIndex);
+      if (duplicatePlanIndex < this.firstMissedApproachLegIndex) {
+        const duplicateLeg = this.legElementAt(duplicatePlanIndex);
 
-      this.enqueueOperation(FlightPlanQueuedOperation.Restring);
-      await this.flushOperationQueue();
-    } else {
-      const afterElement = this.elementAt(index);
+        // Make new leg a TF leg. If this is not allowed, it will be converted when we restring
+        const leg = FlightPlanLeg.fromEnrouteFix(duplicateSegment, waypoint)
+          .withDefinitionFrom(duplicateLeg)
+          .withPilotEnteredDataFrom(duplicateLeg);
 
-      const [insertSegment] = this.segmentPositionForIndex(index);
-      const leg = FlightPlanLeg.fromEnrouteFix(
-        insertSegment,
-        waypoint,
-        undefined,
-        afterElement.isDiscontinuity === true ? LegType.IF : LegType.TF,
-      );
+        // A forced turn implies an overfly on the previous leg, so also remove it
+        // because it no longer makes sense
+        this.setOverflyAt(index, false);
+        // Remove forced turn on following leg, since it no longer makes sense
+        this.removeForcedTurnAt(duplicatePlanIndex + 1);
+        this.removeRange(index + 1, duplicatePlanIndex + 1);
 
-      await this.insertElementAfter(index, leg, true);
+        await this.insertElementAfter(index, leg);
+
+        return;
+      }
+    }
+
+    const afterElement = this.elementAt(index);
+
+    const [insertSegment] = this.segmentPositionForIndex(index);
+    const leg = FlightPlanLeg.fromEnrouteFix(
+      insertSegment,
+      waypoint,
+      undefined,
+      afterElement.isDiscontinuity === true ? LegType.IF : LegType.TF,
+    );
+
+    await this.insertElementAfter(index, leg, true);
+  }
+
+  protected removeForcedTurnAt(index: number) {
+    const leg = this.maybeElementAt(index);
+    if (leg?.isDiscontinuity === false) {
+      if (LnavConfig.VERBOSE_FPM_LOG) {
+        console.log(`[fpm] removeForcedTurnAt - ${leg.ident}`);
+      }
+
+      leg.definition.turnDirection = TurnDirection.Either;
+
+      this.syncLegDefinitionChange(index);
     }
   }
 
@@ -1460,9 +1525,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     element.pilotEnteredAltitudeConstraint = constraint;
     if (!constraint) {
-      element.definition.altitudeDescriptor = AltitudeDescriptor.None;
-      element.definition.altitude1 = undefined;
-      element.definition.altitude2 = undefined;
+      element.clearAltitudeConstraints();
     }
 
     this.syncLegDefinitionChange(index);
@@ -1484,9 +1547,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     if (!speed) {
-      element.pilotEnteredSpeedConstraint = undefined;
-      element.definition.speedDescriptor = undefined;
-      element.definition.speed = undefined;
+      element.clearSpeedConstraints();
     } else {
       element.pilotEnteredSpeedConstraint = { speedDescriptor: SpeedDescriptor.Maximum, speed };
     }
