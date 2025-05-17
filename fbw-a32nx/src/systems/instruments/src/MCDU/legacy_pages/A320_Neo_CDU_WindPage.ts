@@ -4,9 +4,13 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { WindEntry, WindVector } from '@fmgc/flightplanning/data/wind';
+import { PropagatedWindEntry, PropagationType, WindEntry, WindVector } from '@fmgc/flightplanning/data/wind';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 export class CDUWindPage {
+  static readonly WindCache: PropagatedWindEntry[] = [];
+
   static Return() {}
 
   static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
@@ -47,7 +51,7 @@ export class CDUWindPage {
     );
 
     mcdu.onRightInput[4] = () => {
-      CDUWindPage.ShowCRZPage(mcdu, forPlan);
+      CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(plan, 0));
     };
 
     mcdu.onLeftInput[5] = () => {
@@ -61,7 +65,19 @@ export class CDUWindPage {
     };
   }
 
-  static ShowCRZPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, offset = 0) {
+  static findNextCruiseLegIndex(plan: BaseFlightPlan, fromIndex: number): number {
+    // Find the first cruise leg index starting from the given index
+    for (let i = fromIndex; i < plan.firstMissedApproachLegIndex; i++) {
+      const leg = plan.maybeElementAt(i);
+
+      if (leg?.isDiscontinuity === false && leg.isXF()) {
+        return i;
+      }
+    }
+    return -1; // Return -1 if no cruise leg is found
+  }
+
+  static async ShowCRZPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, fpIndex: number, offset = 0) {
     // FIXME winds - allow wind to be set for each waypoint
 
     mcdu.clearDisplay();
@@ -74,9 +90,14 @@ export class CDUWindPage {
       requestButton = 'REQUEST [color]amber';
     }
 
+    const plan = mcdu.getFlightPlan(forPlan);
+    // TODO handle non-leg gracefully
+    const leg = plan.legElementAt(fpIndex);
+
+    const numWinds = await mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
+
     const template = [
-      //["CRZ WIND {small}AT{end} {green}WAYPOINT{end}"],
-      ['CRZ WIND'],
+      [`CRZ WIND {small}AT{end} {green}${leg.ident ?? ''}{end}`],
       ['TRU WIND/ALT', ''],
       ['', ''],
       ['', ''],
@@ -92,7 +113,16 @@ export class CDUWindPage {
     ];
 
     // FIXME winds - pass in cruise winds here
-    mcdu.setTemplate(CDUWindPage.ShowWinds(template, mcdu, CDUWindPage.ShowCRZPage, [], offset, 4));
+    mcdu.setTemplate(
+      CDUWindPage.ShowWinds(
+        template,
+        mcdu,
+        CDUWindPage.ShowCRZPage,
+        this.WindCache,
+        offset,
+        Math.min(numWinds + 1, FpmConfigs.A320_HONEYWELL_H3.NUM_CRUISE_WIND_LEVELS),
+      ),
+    );
 
     mcdu.onRightInput[3] = () => {
       CDUWindPage.ShowCLBPage(mcdu, forPlan);
@@ -110,6 +140,22 @@ export class CDUWindPage {
         CDUWindPage.WindRequest(mcdu, forPlan, 'CRZ', CDUWindPage.ShowCRZPage);
       }
     };
+
+    const previousCruiseLegIndex = this.findNextCruiseLegIndex(plan, 0);
+    const nextCruiseLegIndex = this.findNextCruiseLegIndex(plan, fpIndex + 1);
+
+    const allowScrollingDown = previousCruiseLegIndex >= 0 && previousCruiseLegIndex < fpIndex;
+    const allowScrollingUp = nextCruiseLegIndex >= 0 && nextCruiseLegIndex > fpIndex;
+
+    if (allowScrollingUp) {
+      mcdu.onUp = () => this.ShowCRZPage(mcdu, forPlan, nextCruiseLegIndex);
+    }
+
+    if (allowScrollingDown) {
+      mcdu.onDown = () => this.ShowCRZPage(mcdu, forPlan, previousCruiseLegIndex);
+    }
+
+    mcdu.setArrows(allowScrollingUp, allowScrollingDown, false, false);
   }
 
   static ShowDESPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, offset = 0) {
@@ -185,7 +231,7 @@ export class CDUWindPage {
     }
 
     mcdu.onRightInput[3] = () => {
-      CDUWindPage.ShowCRZPage(mcdu, forPlan);
+      CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(plan, 0));
     };
 
     mcdu.onLeftInput[5] = () => {
@@ -209,13 +255,38 @@ export class CDUWindPage {
     return output;
   }
 
-  static ShowWinds(rows, mcdu: LegacyFmsPageInterface, _showPage, winds: WindEntry[], _offset, _max = 3) {
+  static ShowWinds(
+    rows: string[][],
+    mcdu: LegacyFmsPageInterface,
+    _showPage: typeof CDUWindPage.ShowCLBPage,
+    winds: WindEntry[],
+    _offset: number,
+    _max = 3,
+  ) {
     let entries = 0;
     for (let i = 0; i < winds.length - _offset; i++) {
       if (i < _max) {
         const wind = winds[i + _offset];
-        rows[i * 2 + 2][0] =
-          `${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+
+        if ('type' in wind) {
+          switch (wind.type as PropagationType) {
+            case PropagationType.Forward:
+              rows[i * 2 + 2][0] =
+                `{small}${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}{end}/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+              break;
+            case PropagationType.Entry:
+              rows[i * 2 + 2][0] =
+                `${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+              break;
+            case PropagationType.Backward:
+              rows[i * 2 + 2][0] = `[\xa0]°/[\xa0]/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+              break;
+          }
+        } else {
+          rows[i * 2 + 2][0] =
+            `${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+        }
+
         entries = i + 1;
         mcdu.onLeftInput[i] = (value) => {
           if (value == Keypad.clrValue) {

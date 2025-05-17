@@ -39,6 +39,9 @@ export interface FpmConfig {
    * that does not have a taxi fuel value entered, is performed
    */
   PERSIST_TAXI_FUEL_ON_SEC_SWAP: boolean;
+
+  /** The number of different flight levels for which wind entries may be made */
+  NUM_CRUISE_WIND_LEVELS: number;
 }
 
 export class FpmConfigs {
@@ -53,6 +56,7 @@ export class FpmConfigs {
     CHECK_VIA_COMPATIBILITY: true,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: true,
     PERSIST_TAXI_FUEL_ON_SEC_SWAP: true,
+    NUM_CRUISE_WIND_LEVELS: 4,
   };
 
   static A320_HONEYWELL_H3: FpmConfig = {
@@ -66,5 +70,6 @@ export class FpmConfigs {
     CHECK_VIA_COMPATIBILITY: false,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: false,
     PERSIST_TAXI_FUEL_ON_SEC_SWAP: false,
+    NUM_CRUISE_WIND_LEVELS: 4,
   };
 }

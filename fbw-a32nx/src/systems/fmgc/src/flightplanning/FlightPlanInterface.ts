@@ -14,6 +14,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { PropagatedWindEntry } from './data/wind';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -406,4 +407,11 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   openBatch(name: string): Promise<FlightPlanBatch>;
 
   closeBatch(uuid: string): Promise<FlightPlanBatch>;
+  /**
+   * Propagates the cruise wind entries forwards and backwards to the specified leg.
+   * @param atIndex the index of the leg ot propagate winds to
+   * @param result the array to write the propagated winds to
+   * @param planIndex which flight plan index to do the propagation on
+   */
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): Promise<number>;
 }

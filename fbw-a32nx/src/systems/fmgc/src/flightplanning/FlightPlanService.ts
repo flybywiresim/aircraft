@@ -21,6 +21,7 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { PropagatedWindEntry } from './data/wind';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -891,5 +892,11 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   public closeBatch(uuid: string): Promise<FlightPlanBatch> {
     return this.flightPlanManager.closeBatch(uuid);
+  }
+
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex = FlightPlanIndex.Active) {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.propagateWindsAt(atIndex, result, this.config.NUM_CRUISE_WIND_LEVELS);
   }
 }

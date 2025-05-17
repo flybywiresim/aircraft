@@ -27,6 +27,7 @@ import { FlightPlan } from '../plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { PropagatedWindEntry } from '../data/wind';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
   [k in keyof T as T[k] extends (...args: any) => Promise<any> ? k : never]: T[k] extends (
@@ -518,5 +519,9 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   closeBatch(uuid: string): Promise<FlightPlanBatch> {
     return this.callFunctionViaRpc('closeBatch', uuid);
+  }
+
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): Promise<number> {
+    return this.callFunctionViaRpc('propagateWindsAt', atIndex, result, planIndex);
   }
 }
