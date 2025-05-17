@@ -207,8 +207,9 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     this.assertFlightPlanExists(a);
     this.assertFlightPlanExists(b);
 
-    const planA = this.get(a);
-    const planB = this.get(b);
+    // Clone the plans, so we can give them a new index
+    const planA = this.get(a).clone(b);
+    const planB = this.get(b).clone(a);
 
     this.delete(a, false);
     this.delete(b, false);
