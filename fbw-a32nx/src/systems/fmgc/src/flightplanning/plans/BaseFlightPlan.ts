@@ -2921,7 +2921,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.syncCruiseWindChange(atIndex);
   }
 
-  async deleteCruiseWindEntry(atIndex: number, altitude: number, maxNumEntries: number): Promise<void> {
+  async deleteCruiseWindEntry(atIndex: number, altitude: number): Promise<void> {
     const leg = this.maybeElementAt(atIndex);
 
     if (leg?.isDiscontinuity === true) {
@@ -2934,22 +2934,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       return;
     }
 
-    await this.propagateWindsAt(atIndex, BaseFlightPlan.WindCache, maxNumEntries);
-
-    const entryToDelete = BaseFlightPlan.WindCache.find(
-      (e) => Math.round(e.altitude / 100) === Math.round(altitude / 100),
-    );
-    if (!entryToDelete) {
+    if (!leg.cruiseWindEntries.some((e) => Math.round(e.altitude / 100) === Math.round(altitude / 100))) {
       console.error('[FMS/FPM] Tried to delete a cruise wind entry that does not exist');
       return;
     }
 
-    const sourceLeg = this.legElementAt(entryToDelete.sourceLegIndex);
-    sourceLeg.cruiseWindEntries = sourceLeg.cruiseWindEntries.filter(
-      (e) => Math.round(e.altitude / 100) !== Math.round(entryToDelete.altitude / 100),
+    // You cannot delete a propagated wind entry (FCOM)
+    leg.cruiseWindEntries = leg.cruiseWindEntries.filter(
+      (e) => Math.round(e.altitude / 100) !== Math.round(altitude / 100),
     );
 
-    this.syncCruiseWindChange(entryToDelete.sourceLegIndex);
+    this.syncCruiseWindChange(atIndex);
   }
 
   async editCruiseWindEntry(
@@ -2978,7 +2973,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       return;
     }
 
-    this.deleteCruiseWindEntry(oldEntry.sourceLegIndex, oldEntry.altitude, maxNumEntries);
+    this.deleteCruiseWindEntry(oldEntry.sourceLegIndex, oldEntry.altitude);
     this.addCruiseWindEntry(atIndex, newEntry, maxNumEntries);
   }
 }

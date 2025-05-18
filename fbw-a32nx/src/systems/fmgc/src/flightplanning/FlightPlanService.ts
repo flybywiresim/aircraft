@@ -909,7 +909,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
 
-    return plan.deleteCruiseWindEntry(atIndex, altitude, this.config.NUM_CRUISE_WIND_LEVELS);
+    return plan.deleteCruiseWindEntry(atIndex, altitude);
   }
 
   editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void> {
