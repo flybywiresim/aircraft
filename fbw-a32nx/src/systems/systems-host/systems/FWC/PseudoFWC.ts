@@ -775,7 +775,7 @@ export class PseudoFWC {
 
   private onGroundImmediate = false;
 
-  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
+  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(3, false); // When ABRK deactivated, emit this for 3 sec
 
   public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
 
@@ -2549,7 +2549,7 @@ export class PseudoFWC {
 
     /* SETTINGS */
 
-    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
+    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0') !== '0');
 
     /* CABIN READY */
 
