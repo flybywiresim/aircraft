@@ -5,9 +5,10 @@
 import { LegType, ProcedureTransition, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
 import { RestringOptions } from '../plans/RestringOptions';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class DepartureEnrouteTransitionSegment extends ProcedureSegment<ProcedureTransition> {
   class = SegmentClass.Departure;

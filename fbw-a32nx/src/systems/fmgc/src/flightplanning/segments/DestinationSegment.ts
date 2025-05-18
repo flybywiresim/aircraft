@@ -5,12 +5,13 @@
 
 import { Airport, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { loadAllApproaches, loadAllArrivals, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { RestringOptions } from '@fmgc/flightplanning/plans/RestringOptions';
 import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class DestinationSegment extends FlightPlanSegment {
   class = SegmentClass.Arrival;

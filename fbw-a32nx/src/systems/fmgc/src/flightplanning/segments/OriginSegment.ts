@@ -7,12 +7,13 @@ import { Airport, Runway, areDatabaseItemsEqual, LegType, MathUtils as FbwMathUt
 import { FlightPlanSegment, SerializedFlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
 import { MathUtils as MsMathUtils } from '@microsoft/msfs-sdk';
 import { RestringOptions } from '../plans/RestringOptions';
 import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class OriginSegment extends FlightPlanSegment {
   class = SegmentClass.Departure;

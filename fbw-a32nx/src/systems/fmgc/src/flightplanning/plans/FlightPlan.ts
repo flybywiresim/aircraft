@@ -19,9 +19,10 @@ import {
   FlightPlanPerformanceData,
   FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
+import { BaseFlightPlan, SerializedFlightPlan } from './BaseFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(

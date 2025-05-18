@@ -58,12 +58,7 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
-
-export enum FlightPlanQueuedOperation {
-  Restring,
-  RebuildArrivalAndApproach,
-  SyncSegmentLegs,
-}
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements ReadonlyFlightPlan
