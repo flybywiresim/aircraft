@@ -1,7 +1,7 @@
 // @ts-strict-ignore
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
-import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { PropagatedWindEntry, PropagationType, WindEntry, WindVector } from '@fmgc/flightplanning/data/wind';
@@ -34,10 +34,10 @@ export class CDUWindPage {
       ['CLIMB WIND'],
       ['TRU WIND/ALT', 'HISTORY[color]inop'],
       ['', 'WIND>[color]inop'],
-      ['', ''],
-      ['', ''],
-      ['', 'WIND{sp}[color]amber'],
+      ['', 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
+      ['', ''],
+      ['', ''],
       ['', ''],
       ['', ''],
       ['', 'NEXT{sp}'],
@@ -58,7 +58,7 @@ export class CDUWindPage {
       CDUWindPage.Return();
     };
 
-    mcdu.onRightInput[2] = () => {
+    mcdu.onRightInput[1] = () => {
       if (requestEnable) {
         CDUWindPage.WindRequest(mcdu, forPlan, 'CLB', CDUWindPage.ShowCLBPage);
       }
@@ -78,8 +78,6 @@ export class CDUWindPage {
   }
 
   static async ShowCRZPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, fpIndex: number, offset = 0) {
-    // FIXME winds - allow wind to be set for each waypoint
-
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.CruiseWind;
 
@@ -97,17 +95,17 @@ export class CDUWindPage {
     const numWinds = await mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
 
     const template = [
-      [`CRZ WIND {small}AT{end} {green}${leg.ident ?? ''}{end}`],
-      ['TRU WIND/ALT', ''],
+      ['CRZ WIND'],
+      ['', '', `AT {green}{big}${(leg.ident ?? '').padEnd(7, '\xa0')}{end}{end}`],
       ['', ''],
-      ['', ''],
-      ['', ''],
-      ['', 'WIND{sp}[color]amber'],
+      ['TRU WIND/ALT', 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
+      ['', ''],
+      ['', ''],
       ['', 'PREV{sp}'],
       ['', 'PHASE>'],
-      ['{small}SAT / ALT{end}[color]inop', 'NEXT{sp}'],
-      ['[ ]°/[{sp}{sp}{sp}][color]inop', 'PHASE>'],
+      ['', 'NEXT{sp}'],
+      ['', 'PHASE>'],
       ['', ''],
       ['<RETURN', ''],
     ];
@@ -118,9 +116,10 @@ export class CDUWindPage {
         template,
         mcdu,
         CDUWindPage.ShowCRZPage,
-        this.WindCache,
+        this.WindCache.slice(0, numWinds),
         offset,
-        Math.min(numWinds + 1, FpmConfigs.A320_HONEYWELL_H3.NUM_CRUISE_WIND_LEVELS),
+        FpmConfigs.A320_HONEYWELL_H3.NUM_CRUISE_WIND_LEVELS,
+        4,
       ),
     );
 
@@ -135,7 +134,7 @@ export class CDUWindPage {
       CDUWindPage.Return();
     };
 
-    mcdu.onRightInput[2] = () => {
+    mcdu.onRightInput[1] = () => {
       if (requestEnable) {
         CDUWindPage.WindRequest(mcdu, forPlan, 'CRZ', CDUWindPage.ShowCRZPage);
       }
@@ -155,7 +154,11 @@ export class CDUWindPage {
       mcdu.onDown = () => this.ShowCRZPage(mcdu, forPlan, previousCruiseLegIndex);
     }
 
-    mcdu.setArrows(allowScrollingUp, allowScrollingDown, false, false);
+    // TODO temperature entries
+    mcdu.onNextPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+    mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+
+    mcdu.setArrows(allowScrollingUp, allowScrollingDown, true, true);
   }
 
   static ShowDESPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, offset = 0) {
@@ -173,26 +176,14 @@ export class CDUWindPage {
       requestButton = 'REQUEST [color]amber';
     }
 
-    let alternateHeader = '';
-    let alternateCell = '';
-    let altFLightlevel = '';
-
-    if (alternateAirport) {
-      alternateHeader = 'ALTN WIND';
-      alternateCell = '[ ]°/[ ][color]cyan';
-      altFLightlevel = '{green}{small}FL100{end}{end}';
-      if (plan.performanceData.alternateWind != null) {
-        alternateCell = `${CDUWindPage.FormatNumber(plan.performanceData.alternateWind.trueDegrees)}°/${CDUWindPage.FormatNumber(plan.performanceData.alternateWind.magnitude)}[color]cyan`;
-      }
-    }
     const template = [
       ['DESCENT WIND'],
-      ['TRU WIND/ALT', alternateHeader],
-      ['', alternateCell],
-      ['', altFLightlevel],
+      ['TRU WIND/ALT', ''],
       ['', ''],
-      ['', 'WIND{sp}[color]amber'],
+      ['', 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
+      ['', ''],
+      ['', ''],
       ['', 'PREV{sp}'],
       ['', 'PHASE>'],
       ['', ''],
@@ -201,19 +192,16 @@ export class CDUWindPage {
       ['<RETURN', ''],
     ];
 
-    mcdu.setTemplate(
-      CDUWindPage.ShowWinds(
-        template,
-        mcdu,
-        CDUWindPage.ShowDESPage,
-        plan.performanceData.descentWindEntries,
-        offset,
-        5,
-      ),
-    );
-
     if (alternateAirport) {
-      mcdu.onRightInput[0] = (value, scratchpadCallback) => {
+      const rowIndex = Math.min(plan.performanceData.descentWindEntries.length * 2 + 3, 11);
+
+      template[rowIndex][0] = ' ALTERNATE';
+      template[rowIndex + 1][0] =
+        plan.performanceData.alternateWind !== null
+          ? `${CDUWindPage.FormatNumber(plan.performanceData.alternateWind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(plan.performanceData.alternateWind.magnitude, 2)}{small}{green}/FL100{end}{end}[color]cyan`
+          : '[\xa0]°/[\xa0]{small}{green}/FL100{end}{end}[color]cyan';
+
+      mcdu.onLeftInput[rowIndex + 1] = (value, scratchpadCallback) => {
         if (value == Keypad.clrValue) {
           plan.performanceData.alternateWind = null;
           CDUWindPage.ShowDESPage(mcdu, offset);
@@ -230,6 +218,17 @@ export class CDUWindPage {
       };
     }
 
+    mcdu.setTemplate(
+      CDUWindPage.ShowWinds(
+        template,
+        mcdu,
+        CDUWindPage.ShowDESPage,
+        plan.performanceData.descentWindEntries,
+        offset,
+        5,
+      ),
+    );
+
     mcdu.onRightInput[3] = () => {
       CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(plan, 0));
     };
@@ -238,11 +237,15 @@ export class CDUWindPage {
       CDUWindPage.Return();
     };
 
-    mcdu.onRightInput[2] = () => {
+    mcdu.onRightInput[1] = () => {
       if (requestEnable) {
         CDUWindPage.WindRequest(mcdu, forPlan, 'DSC', CDUWindPage.ShowDESPage);
       }
     };
+
+    // TODO temperature entries
+    mcdu.onNextPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+    mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
   }
 
   static FormatNumber(n: number, leadingZeroes = 0) {
@@ -262,8 +265,9 @@ export class CDUWindPage {
     winds: WindEntry[],
     _offset: number,
     _max = 3,
+    firstLineIndex = 2,
   ) {
-    let entries = 0;
+    let numEntries = 0;
     for (let i = 0; i < winds.length - _offset; i++) {
       if (i < _max) {
         const wind = winds[i + _offset];
@@ -271,23 +275,24 @@ export class CDUWindPage {
         if ('type' in wind) {
           switch (wind.type as PropagationType) {
             case PropagationType.Forward:
-              rows[i * 2 + 2][0] =
-                `{small}${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}{end}/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+              rows[i * 2 + firstLineIndex][0] =
+                `{small}${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}{end}/FL${CDUWindPage.FormatNumber(wind.altitude / 100, 2)}[color]cyan`;
               break;
             case PropagationType.Entry:
-              rows[i * 2 + 2][0] =
-                `${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+              rows[i * 2 + firstLineIndex][0] =
+                `${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}/FL${CDUWindPage.FormatNumber(wind.altitude / 100, 2)}[color]cyan`;
               break;
             case PropagationType.Backward:
-              rows[i * 2 + 2][0] = `[\xa0]°/[\xa0]/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+              rows[i * 2 + firstLineIndex][0] =
+                `[\xa0]°/[\xa0]/FL${CDUWindPage.FormatNumber(wind.altitude / 100, 2)}[color]cyan`;
               break;
           }
         } else {
-          rows[i * 2 + 2][0] =
-            `${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
+          rows[i * 2 + firstLineIndex][0] =
+            `${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}/FL${CDUWindPage.FormatNumber(wind.altitude / 100, 2)}[color]cyan`;
         }
 
-        entries = i + 1;
+        numEntries = i + 1;
         mcdu.onLeftInput[i] = (value) => {
           if (value == Keypad.clrValue) {
             winds.splice(i + _offset, 1);
@@ -296,9 +301,9 @@ export class CDUWindPage {
         };
       }
     }
-    if (entries < _max) {
-      rows[entries * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
-      mcdu.onLeftInput[entries] = (value, scratchpadCallback) => {
+    if (numEntries < _max) {
+      rows[numEntries * 2 + firstLineIndex][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
+      mcdu.onLeftInput[numEntries] = (value, scratchpadCallback) => {
         CDUWindPage.TryAddWind(mcdu, winds, value, () => _showPage(mcdu, _offset), scratchpadCallback);
       };
     }
@@ -458,6 +463,7 @@ export class CDUWindPage {
                 }
               });
             });
+
             plan.performanceData.climbWindEntries = windData;
             break;
           }
