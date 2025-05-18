@@ -333,7 +333,7 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('newDest', atIndex, airportIdent, planIndex, alternate);
   }
 
-  startAirwayEntry(at: number, planIndex: number, alternate?: boolean): Promise<void> {
+  startAirwayEntry(at: number, planIndex: number, alternate?: boolean): Promise<number> {
     return this.callFunctionViaRpc('startAirwayEntry', at, planIndex, alternate);
   }
 
