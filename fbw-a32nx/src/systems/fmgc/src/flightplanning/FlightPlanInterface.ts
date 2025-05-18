@@ -14,7 +14,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { PropagatedWindEntry } from './data/wind';
+import { WindEntry, PropagatedWindEntry } from './data/wind';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -408,10 +408,40 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   closeBatch(uuid: string): Promise<FlightPlanBatch>;
   /**
-   * Propagates the cruise wind entries forwards and backwards to the specified leg.
+   * Propagates the cruise wind entries forwards and backwards to the specified leg. The resulting array is sorted by
+   * altitude in descending order.
    * @param atIndex the index of the leg ot propagate winds to
    * @param result the array to write the propagated winds to
    * @param planIndex which flight plan index to do the propagation on
    */
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): Promise<number>;
+
+  /**
+   * Adds a cruise wind entry at the specified leg.
+   * @param atIndex the index of the leg to add the entry at
+   * @param entry the entry to add
+   * @param planIndex which flight plan index to add the entry to
+   */
+  addCruiseWindEntry(atIndex: number, entry: WindEntry, planIndex: number): Promise<void>;
+
+  /**
+   * Deletes a cruise wind entry at the specified leg. The entry to delete is determined by the altitude rounded to the
+   * nearest 100 feet.
+   * Writes an error the console and does nothing if no entry with the specified altitude exists.
+   * @param atIndex the index of the leg to delete the entry at
+   * @param altitude the altitude of the entry to delete
+   * @param planIndex which flight plan index to delete the entry from
+   */
+  deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void>;
+
+  /**
+   * Edits an existing cruise wind entry at the specified leg. The entry to edit is determined by the altitude rounded to
+   * the nearest 100 feet.
+   * Writes an error the console and does nothing if no entry with the specified altitude exists.
+   * @param atIndex the index of the leg to edit the entry at
+   * @param altitude the altitude of the entry to edit
+   * @param newEntry the new entry to set
+   * @param planIndex which flight plan index to edit the entry in
+   */
+  editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void>;
 }

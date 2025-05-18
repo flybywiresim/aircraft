@@ -15,4 +15,5 @@ export enum PropagationType {
 
 export type PropagatedWindEntry = WindEntry & {
   type: PropagationType;
+  sourceLegIndex: number;
 };

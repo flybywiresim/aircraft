@@ -27,7 +27,7 @@ import { FlightPlan } from '../plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { PropagatedWindEntry } from '../data/wind';
+import { PropagatedWindEntry, WindEntry } from '../data/wind';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
   [k in keyof T as T[k] extends (...args: any) => Promise<any> ? k : never]: T[k] extends (
@@ -480,18 +480,23 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
   setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
     return this.callFunctionViaRpc('setPilotEntryClimbSpeedLimitSpeed', value, planIndex, alternate);
   }
+
   setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
     return this.callFunctionViaRpc('setPilotEntryClimbSpeedLimitAltitude', value, planIndex, alternate);
   }
+
   deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
     return this.callFunctionViaRpc('deleteClimbSpeedLimit', planIndex, alternate);
   }
+
   setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
     return this.callFunctionViaRpc('setPilotEntryDescentSpeedLimitSpeed', value, planIndex, alternate);
   }
+
   setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
     return this.callFunctionViaRpc('setPilotEntryDescentSpeedLimitAltitude', value, planIndex, alternate);
   }
+
   deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
     return this.callFunctionViaRpc('deleteDescentSpeedLimit', planIndex, alternate);
   }
@@ -523,5 +528,17 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): Promise<number> {
     return this.callFunctionViaRpc('propagateWindsAt', atIndex, result, planIndex);
+  }
+
+  addCruiseWindEntry(atIndex: number, entry: WindEntry, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('addCruiseWindEntry', atIndex, entry, planIndex);
+  }
+
+  deleteCruiseWindEntry(atIndex: number, altitude: number, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('deleteCruiseWindEntry', atIndex, altitude, planIndex);
+  }
+
+  editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('editCruiseWindEntry', atIndex, altitude, newEntry, planIndex);
   }
 }
