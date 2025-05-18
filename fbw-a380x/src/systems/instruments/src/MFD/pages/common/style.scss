@@ -102,13 +102,17 @@
 }
 
 .mfd-footer-message-area {
-  display: flex;
+  display: inline-block;
   justify-content: center;
   align-items: center;
   margin-left: 15px;
   font-size: 26px;
   color: $display-background;
   font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
+}
+
+.mfd-footer-message-area-line {
+  display: inline;
 }
 
 .fr {
