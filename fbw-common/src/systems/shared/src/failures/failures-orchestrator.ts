@@ -41,10 +41,10 @@ export class FailuresOrchestrator {
       });
     });
 
-    RegisterViewListener(
+    const commBusListener = RegisterViewListener(
       'JS_LISTENER_COMM_BUS',
-      (listener) => {
-        listener.on('FBW_FAILURE_REQUEST', () => (this.needSendFailures = true));
+      () => {
+        commBusListener.on('FBW_FAILURE_REQUEST', () => (this.needSendFailures = true));
         // better send in case we missed a request from a wasm consumer
         this.needSendFailures = true;
       },
