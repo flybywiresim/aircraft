@@ -25,6 +25,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { FlightPlanFlags } from './FlightPlanFlags';
+import { WindEntry } from '../data/wind';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -711,5 +712,54 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.index === FlightPlanIndex.Temporary ||
       (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
     );
+  }
+
+  async setClimbWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
+    this.setClbDesWindEntry('climbWindEntries', altitude, entry, maxNumberEntries);
+  }
+
+  async setDescentWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
+    this.setClbDesWindEntry('descentWindEntries', altitude, entry, maxNumberEntries);
+  }
+
+  private setClbDesWindEntry(
+    windEntryKey: 'climbWindEntries' | 'descentWindEntries',
+    altitude: number,
+    entry: WindEntry | null,
+    maxNumberEntries: number,
+  ) {
+    const windEntries = this.performanceData[windEntryKey];
+
+    const existingEntryIndex = windEntries.findIndex((it) => it.altitude === altitude);
+
+    if (entry === null) {
+      // Delete
+      if (existingEntryIndex < 0) {
+        console.error('[FPM] Attempting to delete a wind entry that does not exist');
+        return;
+      } else {
+        windEntries.splice(existingEntryIndex, 1);
+      }
+    } else {
+      if (existingEntryIndex !== -1) {
+        // Edit
+        windEntries[existingEntryIndex] = entry;
+      } else {
+        // Add
+        if (windEntries.length >= maxNumberEntries) {
+          console.error('[FPM] Attempting to add a wind entry when the maximum number of entries is reached');
+          return;
+        }
+
+        windEntries.push(entry);
+      }
+    }
+
+    // Do this so the RPC event is sent
+    this.setPerformanceData(windEntryKey, windEntries);
+  }
+
+  async setAlternateWind(entry: WindVector | null): Promise<void> {
+    this.setPerformanceData('alternateWind', entry);
   }
 }

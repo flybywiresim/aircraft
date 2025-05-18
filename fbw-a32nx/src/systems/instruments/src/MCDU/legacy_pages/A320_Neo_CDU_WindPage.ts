@@ -32,7 +32,7 @@ export class CDUWindPage {
 
     const template = [
       ['CLIMB WIND'],
-      ['TRU WIND/ALT', 'HISTORY[color]inop'],
+      ['TRU WIND/ALT', 'HISTORY\xa0[color]inop'],
       ['', 'WIND>[color]inop'],
       ['', 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
@@ -262,7 +262,7 @@ export class CDUWindPage {
     rows: string[][],
     mcdu: LegacyFmsPageInterface,
     _showPage: typeof CDUWindPage.ShowCLBPage,
-    winds: WindEntry[],
+    winds: (WindEntry | PropagatedWindEntry)[],
     _offset: number,
     _max = 3,
     firstLineIndex = 2,
@@ -273,7 +273,7 @@ export class CDUWindPage {
         const wind = winds[i + _offset];
 
         if ('type' in wind) {
-          switch (wind.type as PropagationType) {
+          switch (wind.type) {
             case PropagationType.Forward:
               rows[i * 2 + firstLineIndex][0] =
                 `{small}${CDUWindPage.FormatNumber(wind.trueDegrees, 2)}°/${CDUWindPage.FormatNumber(wind.magnitude, 2)}{end}/FL${CDUWindPage.FormatNumber(wind.altitude / 100, 2)}[color]cyan`;

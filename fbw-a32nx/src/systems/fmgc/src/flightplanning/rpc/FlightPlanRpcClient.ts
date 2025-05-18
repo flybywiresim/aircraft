@@ -27,7 +27,7 @@ import { FlightPlan } from '../plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
-import { PropagatedWindEntry, WindEntry } from '../data/wind';
+import { PropagatedWindEntry, WindEntry, WindVector } from '../data/wind';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
   [k in keyof T as T[k] extends (...args: any) => Promise<any> ? k : never]: T[k] extends (
@@ -540,5 +540,17 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   editCruiseWindEntry(atIndex: number, altitude: number, newEntry: WindEntry, planIndex: number): Promise<void> {
     return this.callFunctionViaRpc('editCruiseWindEntry', atIndex, altitude, newEntry, planIndex);
+  }
+
+  setClimbWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('setClimbWindEntry', altitude, entry, planIndex);
+  }
+
+  setDescentWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('setDescentWindEntry', altitude, entry, planIndex);
+  }
+
+  setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('setAlternateWind', entry, planIndex);
   }
 }

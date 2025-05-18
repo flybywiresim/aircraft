@@ -21,7 +21,7 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
-import { WindEntry, PropagatedWindEntry } from './data/wind';
+import { WindEntry, PropagatedWindEntry, WindVector } from './data/wind';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -916,5 +916,23 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const plan = this.flightPlanManager.get(planIndex);
 
     return plan.editCruiseWindEntry(atIndex, altitude, newEntry, this.config.NUM_CRUISE_WIND_LEVELS);
+  }
+
+  setClimbWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.setClimbWindEntry(altitude, entry, this.config.NUM_CLIMB_WIND_LEVELS);
+  }
+
+  setDescentWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS);
+  }
+
+  setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.setAlternateWind(entry);
   }
 }
