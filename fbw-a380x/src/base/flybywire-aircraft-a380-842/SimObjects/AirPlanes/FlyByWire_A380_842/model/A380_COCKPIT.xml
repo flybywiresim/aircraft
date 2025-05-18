@@ -532,14 +532,14 @@
             <!-- TODO holland move to glareshield.xml -->
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>KNOB_GLARESHIELD_CS_SPEAKER</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
+                <POTENTIOMETER>84</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <!-- TODO holland move to glareshield.xml -->
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>KNOB_GLARESHIELD_FO_SPEAKER</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
+                <POTENTIOMETER>84</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
