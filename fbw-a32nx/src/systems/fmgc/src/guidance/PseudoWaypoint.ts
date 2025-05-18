@@ -46,6 +46,12 @@ export interface PseudoWaypoint {
   efisSymbolFlag: number;
 
   /**
+   * Second, optional bitfield for the EFIS symbol associated with this PWP. Introduced because we ran out of bits for the first one
+   * Only available for PWP at the moment.
+   */
+  efisPwpSymbolFlag?: number;
+
+  /**
    * lla for the position of the EFIS symbol
    */
   efisSymbolLla: Coordinates;

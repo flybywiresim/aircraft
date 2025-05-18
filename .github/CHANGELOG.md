@@ -23,6 +23,14 @@
 1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Improve ALL PRIMARY CABIN FANS FAULT - @Jonny23787 (Jonathan)
 1. [A380X/FCU] Reduce FCU texture size from 5120 to 2560 - @heclak (Heclak)
+1. [A380X/MFD] Fix VERT DEV not updating in APPR page during descend phase - @heclak (Heclak)
+1. [A380X/VD] Add vertical display (first implementation) - @flogross89 (floridude)
+1. [FMS] Fix pseudo waypoint transmission for F/O side when EFIS range different from CAPT side - @flogross89 (floridude)
+1. [A380X/SURV] Enable SURV system switching via MFD SURV page; Add ECAM faults for TERR/GPWS - @flogross89 (floridude)
+1. [A380X/MFD] MFD F-PLN page data display improvements when no predictions or flightplan available - @BravoMike99 (bruno_pt99)
+1. [FMS] Use proper DME location for AF, CD, FD legs on MSFS2024 and add MSFS2020 fallback to improve AF legs - @tracernz (Mike)
+1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
+1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
 
 ## 0.13.0
 

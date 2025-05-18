@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { Airway, Fix, MathUtils, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, AltitudeConstraint, Fix, MathUtils, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   EventBus,
@@ -18,7 +18,6 @@ import {
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanServerRpcEvents } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
