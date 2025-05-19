@@ -2850,20 +2850,20 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           (e, index) => Math.round(e.altitude / 100) === Math.round(windEntry.altitude / 100) && index < numWindEntries,
         );
 
-        let windEntryType: PropagationType;
+        let windPropagationType: PropagationType;
         if (i < atIndex) {
-          windEntryType = PropagationType.Forward;
+          windPropagationType = PropagationType.Forward;
         } else if (i === atIndex) {
-          windEntryType = PropagationType.Entry;
+          windPropagationType = PropagationType.Entry;
         } else {
-          windEntryType = PropagationType.Backward;
+          windPropagationType = PropagationType.Backward;
         }
 
-        if (existingEntryIndex >= 0) {
+        if (existingEntryIndex >= 0 && windPropagationType !== PropagationType.Backward) {
           result[existingEntryIndex].altitude = windEntry.altitude;
           result[existingEntryIndex].magnitude = windEntry.magnitude;
           result[existingEntryIndex].trueDegrees = windEntry.trueDegrees;
-          result[existingEntryIndex].type = windEntryType;
+          result[existingEntryIndex].type = windPropagationType;
           result[existingEntryIndex].sourceLegIndex = i;
         } else {
           if (numWindEntries >= result.length) {
@@ -2871,14 +2871,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
               altitude: windEntry.altitude,
               magnitude: windEntry.magnitude,
               trueDegrees: windEntry.trueDegrees,
-              type: windEntryType,
+              type: windPropagationType,
               sourceLegIndex: i,
             });
           } else {
             result[numWindEntries].altitude = windEntry.altitude;
             result[numWindEntries].magnitude = windEntry.magnitude;
             result[numWindEntries].trueDegrees = windEntry.trueDegrees;
-            result[numWindEntries].type = windEntryType;
+            result[numWindEntries].type = windPropagationType;
             result[numWindEntries].sourceLegIndex = i;
           }
 

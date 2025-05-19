@@ -6,7 +6,6 @@ import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { PropagatedWindEntry, PropagationType, WindEntry, WindVector } from '@fmgc/flightplanning/data/wind';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 export class CDUWindPage {
   static readonly WindCache: PropagatedWindEntry[] = [];
@@ -54,13 +53,13 @@ export class CDUWindPage {
         `${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
 
       numEntries = i + 1;
-      mcdu.onLeftInput[i] = (value, scratchpadCallback) => {
+      mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
         if (value === Keypad.clrValue) {
-          mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
+          await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
 
           CDUWindPage.ShowCLBPage(mcdu, forPlan);
         } else {
-          const entry = this.ParseTrueWindAlt(value);
+          const entry = this.parseTrueWindEntry(value);
 
           if (entry === null) {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -68,7 +67,7 @@ export class CDUWindPage {
             return;
           }
 
-          mcdu.flightPlanService.setClimbWindEntry(wind.altitude, entry, forPlan);
+          await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, entry, forPlan);
 
           CDUWindPage.ShowCLBPage(mcdu, forPlan);
         }
@@ -78,8 +77,8 @@ export class CDUWindPage {
     if (plan.performanceData.climbWindEntries.length < 5) {
       template[numEntries * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
-      mcdu.onLeftInput[numEntries] = (value, scratchpadCallback) => {
-        const entry = this.ParseTrueWindAlt(value);
+      mcdu.onLeftInput[numEntries] = async (value, scratchpadCallback) => {
+        const entry = this.parseTrueWindEntry(value);
 
         if (entry === null) {
           mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -87,7 +86,7 @@ export class CDUWindPage {
           return;
         }
 
-        mcdu.flightPlanService.setClimbWindEntry(entry.altitude, entry, forPlan);
+        await mcdu.flightPlanService.setClimbWindEntry(entry.altitude, entry, forPlan);
 
         CDUWindPage.ShowCLBPage(mcdu, forPlan);
       };
@@ -106,12 +105,12 @@ export class CDUWindPage {
 
     mcdu.onRightInput[1] = () => {
       if (requestEnable) {
-        CDUWindPage.WindRequest(mcdu, forPlan, 'CLB', CDUWindPage.ShowCLBPage);
+        CDUWindPage.uplinkWinds(mcdu, forPlan, 'CLB', CDUWindPage.ShowCLBPage);
       }
     };
   }
 
-  static findNextCruiseLegIndex(plan: BaseFlightPlan, fromIndex: number): number {
+  private static findNextCruiseLegIndex(plan: BaseFlightPlan, fromIndex: number): number {
     // Find the first cruise leg index starting from the given index
     for (let i = fromIndex; i < plan.firstMissedApproachLegIndex; i++) {
       const leg = plan.maybeElementAt(i);
@@ -123,7 +122,7 @@ export class CDUWindPage {
     return -1; // Return -1 if no cruise leg is found
   }
 
-  static async ShowCRZPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, fpIndex: number, offset = 0) {
+  static async ShowCRZPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, fpIndex: number) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.CruiseWind;
 
@@ -139,6 +138,8 @@ export class CDUWindPage {
     const leg = plan.legElementAt(fpIndex);
 
     const numWinds = await mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
+    const winds = this.WindCache.slice(0, numWinds);
+    const maxCruiseWindEntries = 4;
 
     const template = [
       ['CRZ WIND'],
@@ -156,18 +157,66 @@ export class CDUWindPage {
       ['<RETURN', ''],
     ];
 
-    // FIXME winds - pass in cruise winds here
-    mcdu.setTemplate(
-      CDUWindPage.ShowWinds(
-        template,
-        mcdu,
-        CDUWindPage.ShowCRZPage,
-        this.WindCache.slice(0, numWinds),
-        offset,
-        FpmConfigs.A320_HONEYWELL_H3.NUM_CRUISE_WIND_LEVELS,
-        4,
-      ),
-    );
+    let numEntries = 0;
+    for (let i = 0; i < winds.length; i++) {
+      const wind = winds[i];
+
+      switch (wind.type) {
+        case PropagationType.Forward:
+          template[i * 2 + 4][0] =
+            `{small}${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}{end}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
+          break;
+        case PropagationType.Entry:
+          template[i * 2 + 4][0] =
+            `${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
+          break;
+        case PropagationType.Backward:
+          template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
+          break;
+      }
+
+      numEntries = i + 1;
+      mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
+        if (value === Keypad.clrValue) {
+          // TODO handle errors?
+          await mcdu.flightPlanService.deleteCruiseWindEntry(fpIndex, wind.altitude, forPlan);
+
+          CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
+        } else {
+          const entry = this.parseTrueWindEntry(value);
+
+          if (entry === null) {
+            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+            scratchpadCallback();
+            return;
+          }
+
+          await mcdu.flightPlanService.editCruiseWindEntry(fpIndex, wind.altitude, entry, forPlan);
+
+          CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
+        }
+      };
+    }
+
+    if (numEntries < maxCruiseWindEntries) {
+      template[numEntries * 2 + 4][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
+
+      mcdu.onLeftInput[numEntries + 1] = async (value, scratchpadCallback) => {
+        const entry = this.parseTrueWindEntry(value);
+
+        if (entry === null) {
+          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+          scratchpadCallback();
+          return;
+        }
+
+        await mcdu.flightPlanService.addCruiseWindEntry(fpIndex, entry, forPlan);
+
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
+      };
+    }
+
+    mcdu.setTemplate(template);
 
     mcdu.onRightInput[3] = () => {
       CDUWindPage.ShowCLBPage(mcdu, forPlan);
@@ -182,7 +231,7 @@ export class CDUWindPage {
 
     mcdu.onRightInput[1] = () => {
       if (requestEnable) {
-        CDUWindPage.WindRequest(mcdu, forPlan, 'CRZ', CDUWindPage.ShowCRZPage);
+        CDUWindPage.uplinkWinds(mcdu, forPlan, 'CRZ', CDUWindPage.ShowCRZPage);
       }
     };
 
@@ -248,19 +297,22 @@ export class CDUWindPage {
           ? `${plan.performanceData.alternateWind.trueDegrees.toFixed(0).padStart(3, '0')}°/${plan.performanceData.alternateWind.magnitude.toFixed(0).padStart(3, '0')}{small}{green}/FL100{end}{end}[color]cyan`
           : '[\xa0]°/[\xa0]{small}{green}/FL100{end}{end}[color]cyan';
 
-      mcdu.onLeftInput[lskIndex] = (value, scratchpadCallback) => {
+      mcdu.onLeftInput[lskIndex] = async (value, scratchpadCallback) => {
         if (value === Keypad.clrValue) {
-          mcdu.flightPlanService.setAlternateWind(null, forPlan);
+          await mcdu.flightPlanService.setAlternateWind(null, forPlan);
 
           CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
-          return;
-        }
-        const wind = CDUWindPage.ParseWind(value);
-        if (wind === null) {
-          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-          scratchpadCallback();
         } else {
-          mcdu.flightPlanService.setAlternateWind(wind, forPlan);
+          const wind = CDUWindPage.parseWindVector(value);
+
+          if (wind === null) {
+            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+            scratchpadCallback();
+            return;
+          }
+
+          await mcdu.flightPlanService.setAlternateWind(wind, forPlan);
+
           CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
         }
       };
@@ -280,13 +332,13 @@ export class CDUWindPage {
         `${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
 
       numEntries = i + 1;
-      mcdu.onLeftInput[i] = (value, scratchpadCallback) => {
+      mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
         if (value === Keypad.clrValue) {
-          mcdu.flightPlanService.setDescentWindEntry(wind.altitude, null, forPlan);
+          await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, null, forPlan);
 
           CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
         } else {
-          const entry = this.ParseTrueWindAlt(value);
+          const entry = this.parseTrueWindEntry(value);
 
           if (entry === null) {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -294,7 +346,7 @@ export class CDUWindPage {
             return;
           }
 
-          mcdu.flightPlanService.setDescentWindEntry(wind.altitude, entry, forPlan);
+          await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, entry, forPlan);
 
           CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
         }
@@ -305,7 +357,7 @@ export class CDUWindPage {
       template[numEntries * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
       mcdu.onLeftInput[numEntries] = (value, scratchpadCallback) => {
-        const entry = this.ParseTrueWindAlt(value);
+        const entry = this.parseTrueWindEntry(value);
 
         if (entry === null) {
           mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -350,7 +402,7 @@ export class CDUWindPage {
 
     mcdu.onRightInput[1] = () => {
       if (requestEnable) {
-        CDUWindPage.WindRequest(mcdu, forPlan, 'DSC', CDUWindPage.ShowDESPage);
+        CDUWindPage.uplinkWinds(mcdu, forPlan, 'DSC', CDUWindPage.ShowDESPage);
       }
     };
 
@@ -359,79 +411,7 @@ export class CDUWindPage {
     mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
   }
 
-  static ShowWinds(
-    rows: string[][],
-    mcdu: LegacyFmsPageInterface,
-    _showPage,
-    winds: (WindEntry | PropagatedWindEntry)[],
-    _offset: number,
-    _max = 3,
-    firstLineIndex = 2,
-  ) {
-    let numEntries = 0;
-    for (let i = 0; i < winds.length - _offset; i++) {
-      if (i < _max) {
-        const wind = winds[i + _offset];
-
-        if ('type' in wind) {
-          switch (wind.type) {
-            case PropagationType.Forward:
-              rows[i * 2 + firstLineIndex][0] =
-                `{small}${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}{end}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
-              break;
-            case PropagationType.Entry:
-              rows[i * 2 + firstLineIndex][0] =
-                `${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
-              break;
-            case PropagationType.Backward:
-              rows[i * 2 + firstLineIndex][0] =
-                `[\xa0]°/[\xa0]/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
-              break;
-          }
-        } else {
-          rows[i * 2 + firstLineIndex][0] =
-            `${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
-        }
-
-        numEntries = i + 1;
-        mcdu.onLeftInput[i] = (value) => {
-          if (value === Keypad.clrValue) {
-            winds.splice(i + _offset, 1);
-            _showPage(mcdu, _offset);
-          }
-        };
-      }
-    }
-    if (numEntries < _max) {
-      rows[numEntries * 2 + firstLineIndex][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
-      mcdu.onLeftInput[numEntries] = (value, scratchpadCallback) => {
-        CDUWindPage.TryAddWind(mcdu, winds, value, () => _showPage(mcdu, _offset), scratchpadCallback);
-      };
-    }
-
-    let up = false;
-    let down = false;
-
-    if (winds.length > _max - 1 && _offset > 0) {
-      mcdu.onDown = () => {
-        _showPage(mcdu, _offset - 1);
-      };
-      down = true;
-    }
-
-    if (_offset < winds.length - (_max - 1)) {
-      mcdu.onUp = () => {
-        _showPage(mcdu, _offset + 1);
-      };
-      up = true;
-    }
-
-    mcdu.setArrows(up, down, false, false);
-
-    return rows;
-  }
-
-  static ParseTrueWindAlt(input: string): WindEntry | null {
+  private static parseTrueWindEntry(input: string): WindEntry | null {
     const elements = input.split('/');
     if (elements.length != 3) {
       return null;
@@ -466,18 +446,7 @@ export class CDUWindPage {
     };
   }
 
-  static TryAddWind(mcdu: LegacyFmsPageInterface, _windArray, _input, _showPage, scratchpadCallback) {
-    const data = CDUWindPage.ParseTrueWindAlt(_input);
-    if (data === null) {
-      mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-      scratchpadCallback(_input);
-    } else {
-      _windArray.push(data);
-      _showPage();
-    }
-  }
-
-  static ParseWind(input: string): WindVector | null {
+  private static parseWindVector(input: string): WindVector | null {
     const elements = input.split('/');
     if (elements.length != 2) {
       return null;
@@ -502,7 +471,7 @@ export class CDUWindPage {
     };
   }
 
-  static WindRequest(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, stage, _showPage) {
+  private static uplinkWinds(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, stage, _showPage) {
     const plan = mcdu.getFlightPlan(forPlan);
 
     getSimBriefOfp(
