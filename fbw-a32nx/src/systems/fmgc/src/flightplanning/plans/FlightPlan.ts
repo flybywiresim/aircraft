@@ -755,6 +755,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       }
     }
 
+    windEntries.sort((a, b) => b.altitude - a.altitude);
+
     // Do this so the RPC event is sent
     this.setPerformanceData(windEntryKey, windEntries);
   }
