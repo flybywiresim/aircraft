@@ -4202,8 +4202,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     ) {
       if (activePlan.destinationRunway) {
         this._towerHeadwind = NXSpeedsUtils.getHeadwind(
-          activePlan.performanceData.approachWindDirection,
           activePlan.performanceData.approachWindMagnitude,
+          activePlan.performanceData.approachWindDirection,
           activePlan.destinationRunway.magneticBearing,
         );
       }
