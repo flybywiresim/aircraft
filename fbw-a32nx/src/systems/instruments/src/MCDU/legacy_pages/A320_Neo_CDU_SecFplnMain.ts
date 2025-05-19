@@ -89,6 +89,9 @@ export class CDUSecFplnMain {
 
     // <SEC F-PLN
     mcdu.onLeftInput[1] = () => {
+      if (!hasSecondary) {
+        mcdu.flightPlanService.secondaryInit(1);
+      }
       CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
     };
 
