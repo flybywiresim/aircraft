@@ -137,8 +137,7 @@ export class CDUWindPage {
     // TODO handle non-leg gracefully
     const leg = plan.legElementAt(fpIndex);
 
-    const numWinds = await mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
-    const winds = this.WindCache.slice(0, numWinds);
+    const winds = await mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
     const maxCruiseWindEntries = 4;
 
     const template = [
@@ -178,7 +177,12 @@ export class CDUWindPage {
       numEntries = i + 1;
       mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
         if (value === Keypad.clrValue) {
-          // TODO handle errors?
+          if (wind.type !== PropagationType.Entry) {
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
+            return;
+          }
+
           await mcdu.flightPlanService.deleteCruiseWindEntry(fpIndex, wind.altitude, forPlan);
 
           CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
