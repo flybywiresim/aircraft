@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, Instrument, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
@@ -54,8 +54,10 @@ export interface Arinc429Values {
   fmDhRaw: number;
   fmTransAltRaw: number;
   fmTransLvlRaw: number;
+  ecu1MaintenanceWord6: Arinc429Word;
+  ecu2MaintenanceWord6: Arinc429Word;
 }
-export class ArincValueProvider {
+export class ArincValueProvider implements Instrument {
   private roll = new Arinc429Word(0);
 
   private pitch = Arinc429Register.empty();
@@ -120,6 +122,7 @@ export class ArincValueProvider {
 
   constructor(private readonly bus: ArincEventBus) {}
 
+  /** @inheritdoc */
   public init() {
     const publisher = this.bus.getPublisher<Arinc429Values>();
     const subscriber = this.bus.getSubscriber<HUDSimvars>();
@@ -516,6 +519,19 @@ export class ArincValueProvider {
     this.fm2Healthy.setConsumer(subscriber.on('fm2HealthyDiscrete'));
     this.fm1Healthy.sub(this.determineFmToUse.bind(this));
     this.fm2Healthy.sub(this.determineFmToUse.bind(this), true);
+
+    subscriber.on('ecu1MaintenanceWord6Raw').handle((word) => {
+      publisher.pub('ecu1MaintenanceWord6', new Arinc429Word(word));
+    });
+
+    subscriber.on('ecu2MaintenanceWord6Raw').handle((word) => {
+      publisher.pub('ecu2MaintenanceWord6', new Arinc429Word(word));
+    });
+  }
+
+  /** @inheritdoc */
+  public onUpdate(): void {
+    // noop
   }
 
   private determineAndPublishChosenRadioAltitude(publisher: Publisher<Arinc429Values>) {

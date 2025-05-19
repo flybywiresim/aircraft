@@ -5,28 +5,16 @@
 import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
+import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
+import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
 
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
-
-function handleNavRadialError(radialError: number, lagFilter: LagFilter, deltaTime: number): Subject<string> {
-  const deviation = lagFilter.step(radialError, deltaTime / 1000);
-  const dots = deviation / 0.8;
-  const str = Subject.create('');
-  if (dots > 2) {
-      str.set('none');
-      return str;
-  } else if (dots < -2) {
-    str.set('none');
-    return str;
-  } else {
-    str.set('block');
-    return str;
-  }
-}
+import { FlightPathDirector } from './FlightPathDirector';
 
 interface AttitudeIndicatorFixedUpperProps {
   bus: ArincEventBus;
@@ -53,28 +41,37 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
-    
-    sub.on('declutterMode').whenChanged().handle((value) => {
-      this.declutterMode = value;
-      if(this.onGround){
-        this.sVisibility.set("none");
-      }else{
-        (this.declutterMode == 2) ? this.sVisibility.set("none") : this.sVisibility.set("block");
-      }
-    }); 
 
-    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-      this.onGround = value;
-      if(this.onGround){
-        this.sVisibility.set("none");
-      }else{
-        (this.declutterMode == 2) ? this.sVisibility.set("none") : this.sVisibility.set("block");
-      }
-    })
+    sub
+      .on('declutterMode')
+      .whenChanged()
+      .handle((value) => {
+        this.declutterMode = value;
+        if (this.onGround) {
+          this.sVisibility.set('none');
+        } else {
+          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+        }
+      });
 
-    sub.on('radioAltitude1').whenChanged().handle((ra) => {
-      this.radioAlt = ra;
-    });
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((value) => {
+        this.onGround = value;
+        if (this.onGround) {
+          this.sVisibility.set('none');
+        } else {
+          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+        }
+      });
+
+    sub
+      .on('radioAltitude1')
+      .whenChanged()
+      .handle((ra) => {
+        this.radioAlt = ra;
+      });
 
     sub.on('rollAr').handle((roll) => {
       this.roll = roll;
@@ -106,7 +103,12 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   render(): VNode {
     return (
       // visibility={this.visibilitySub}
-      <g id="AttitudeUpperInfoGroup" ref={this.attInfoGroup} display={this.sVisibility} transform="scale(5 5) translate(59 -8)">
+      <g
+        id="AttitudeUpperInfoGroup"
+        ref={this.attInfoGroup}
+        display={this.sVisibility}
+        transform="scale(5 5) translate(59 -8)"
+      >
         <g id="RollProtGroup" ref={this.rollProtSymbol} style="display: none" class="ScaledStrokeThin Green">
           <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
           <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
@@ -120,7 +122,7 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
           <path d="m39.45 51.5 -5 -5" />
           <path d="m76.15 40 l .725 -4" />
           <path d="m83.2 41.9 l 1.3 -3.75" />
-          <path d="m89.75 45 l 2 -3.5" />   
+          <path d="m89.75 45 l 2 -3.5" />
           <path d="m61.65 40 l -.725 -4" />
           <path d="m54.65 41.9 l -1.3 -3.75" />
           <path d="m48.15 45 l -2 -3.5" />
@@ -131,51 +133,48 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   }
 }
 
-interface GridProps{
+interface GridProps {
   bus: ArincEventBus;
   gapX: number;
   gapY: number;
 }
 
-export class Grid extends DisplayComponent<GridProps>{
+export class Grid extends DisplayComponent<GridProps> {
   //1280 1024
-  gapX=100;
-  gapY=100;
+  gapX = 100;
+  gapY = 100;
 
-  nx = Math.floor(1280 / this.gapX) ;
-  ny = Math.floor(1024 / this.gapY) ;
+  nx = Math.floor(1280 / this.gapX);
+  ny = Math.floor(1024 / this.gapY);
 
   private buildGrid() {
-    const result = { ticks: [] as SVGPathElement[]};
+    const result = { ticks: [] as SVGPathElement[] };
 
-    
     for (let i = 0; i < this.nx; i++) {
-        const posX = (1 + i) * this.nx;
-            result.ticks.push(<path class="NormalStroke White" d="m 0 0 v1024" transform={`translate(${posX} 0)`} />);
+      const posX = (1 + i) * this.nx;
+      result.ticks.push(<path class="NormalStroke White" d="m 0 0 v1024" transform={`translate(${posX} 0)`} />);
     }
     for (let i = 0; i < this.ny; i++) {
-        const posY = (1 + i) * this.ny;
-            result.ticks.push(<path class="NormalStroke White" d="m 0 0 h1280" transform={`translate(0 ${posY} )`} />);
+      const posY = (1 + i) * this.ny;
+      result.ticks.push(<path class="NormalStroke White" d="m 0 0 h1280" transform={`translate(0 ${posY} )`} />);
     }
 
     return result;
   }
 
-
   render(): VNode {
     return (
-        <g id="Grid" style="block">
-              {this.buildGrid() }
-        </g>  
+      <g id="Grid" style="block">
+        {this.buildGrid()}
+      </g>
     );
   }
-
 }
 
 interface AttitudeIndicatorFixedCenterProps {
   bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
-  filteredRadioAlt: Subscribable<number> 
+  filteredRadioAlt: Subscribable<number>;
   instrument: BaseInstrument;
 }
 
@@ -189,6 +188,8 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
   private failureVis = Subject.create('hidden');
 
+  private readonly attFlagVisible = Subject.create(false);
+
   private fdVisibilitySub = Subject.create('hidden');
 
   onAfterRender(node: VNode): void {
@@ -201,10 +202,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
       if (!this.roll.isNormalOperation()) {
         this.visibilitySub.set('display:none');
         this.failureVis.set('display:block');
+        this.attFlagVisible.set(true);
         this.fdVisibilitySub.set('display:none');
       } else {
         this.visibilitySub.set('display:inline');
         this.failureVis.set('display:none');
+        this.attFlagVisible.set(true);
         if (!this.props.isAttExcessive.get()) {
           this.fdVisibilitySub.set('display:inline');
         }
@@ -217,10 +220,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
       if (!this.pitch.isNormalOperation()) {
         this.visibilitySub.set('display:none');
         this.failureVis.set('display:block');
+        this.attFlagVisible.set(true);
         this.fdVisibilitySub.set('display:none');
       } else {
         this.visibilitySub.set('display:inline');
         this.failureVis.set('display:none');
+        this.attFlagVisible.set(true);
         if (!this.props.isAttExcessive.get()) {
           this.fdVisibilitySub.set('display:inline');
         }
@@ -248,21 +253,92 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         >
           ATT
         </text>
-        <g id="AttitudeSymbolsGroup" transform="translate(0 0)" style={this.visibilitySub}>
-          <FDYawBar bus={this.props.bus}  instrument={this.props.instrument}/>
-          <AircraftReference bus={this.props.bus} instrument={this.props.instrument}/>
-          <FlightPathVector 
-          bus={this.props.bus} 
-          isAttExcessive={this.props.isAttExcessive}
-          filteredRadioAlt={this.props.filteredRadioAlt}
+        <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
+          <g style={this.fdVisibilitySub}>
+            <FDYawBar bus={this.props.bus} />
+          </g>
+
+          <AircraftReference bus={this.props.bus} instrument={this.props.instrument} />
+          <FlightPathVector
+            bus={this.props.bus}
+            isAttExcessive={this.props.isAttExcessive}
+            filteredRadioAlt={this.props.filteredRadioAlt}
           />
+          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         </g>
       </>
     );
   }
 }
 
-class AircraftReference extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
+class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
+  private fdEngaged = false;
+
+  private fcuEisDiscreteWord2 = new Arinc429Word(0);
+
+  private fdYawCommand = new Arinc429Word(0);
+
+  private yawRef = FSComponent.createRef<SVGPathElement>();
+
+  private handleFdState() {
+    const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
+    const showFd = this.fdEngaged && !fdOff;
+
+    const showYaw = showFd && !(this.fdYawCommand.isFailureWarning() || this.fdYawCommand.isNoComputedData());
+
+    if (showYaw) {
+      const offset = -Math.max(Math.min(this.fdYawCommand.value, 45), -45) * 0.44;
+
+      this.yawRef.instance.style.visibility = 'visible';
+      this.yawRef.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+    } else {
+      this.yawRef.instance.style.visibility = 'hidden';
+    }
+  }
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus>();
+
+    sub.on('yawFdCommand').handle((fy) => {
+      this.fdYawCommand = fy;
+
+      this.handleFdState();
+    });
+
+    sub
+      .on('fdEngaged')
+      .whenChanged()
+      .handle((fd) => {
+        this.fdEngaged = fd;
+
+        this.handleFdState();
+      });
+
+    sub
+      .on('fcuEisDiscreteWord2')
+      .whenChanged()
+      .handle((tr) => {
+        this.fcuEisDiscreteWord2 = tr;
+
+        this.handleFdState();
+      });
+  }
+
+  render(): VNode {
+    return (
+      <path
+        ref={this.yawRef}
+        id="GroundYawSymbol"
+        class="NormalStroke Green"
+        d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z"
+      />
+    );
+  }
+}
+
+class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
   private onRwy = false;
   private declutterMode = 0;
   private flightPhase = 0;
@@ -278,7 +354,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus, instrumen
   private pitch = 0;
 
   private isActive(): boolean {
-    if (!this.fdActive || !( this.lateralMode === LateralMode.ROLL_OUT || this.lateralMode === LateralMode.RWY)) {
+    if (!this.fdActive || !(this.lateralMode === LateralMode.ROLL_OUT || this.lateralMode === LateralMode.RWY)) {
       return false;
     }
     return true;
@@ -289,57 +365,69 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus, instrumen
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
 
-    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-      this.onGround = value;
-    });
-    sub.on('hasLoc').whenChanged().handle((hasLoc) => {
-      this.hasLoc = hasLoc;
-    });
-    sub.on('navRadialError').whenChanged().handle((value)=>{
-      if(this.onGround){
-        if(this.hasLoc){
-          if(this.isActive()){
-            (Math.abs(value) < 2) ? this.visibilityGroundSub.set("block") : this.visibilityGroundSub.set("none"); 
-          }
-        }
-      }
-    });
-    
     sub
-      .on('activeLateralMode')
+      .on('leftMainGearCompressed')
       .whenChanged()
-      .handle((lm) => {
-        this.lateralMode = lm;
-        if(this.onGround){
-          if (this.isActive()) {
-            this.visibilityGroundSub.set("block"); 
-            this.visibilityAirSub.set("none"); 
-          }else{
-            this.visibilityGroundSub.set("none"); 
-            this.visibilityAirSub.set("none"); 
+      .handle((value) => {
+        this.onGround = value;
+      });
+    sub
+      .on('hasLoc')
+      .whenChanged()
+      .handle((hasLoc) => {
+        this.hasLoc = hasLoc;
+      });
+    sub
+      .on('navRadialError')
+      .whenChanged()
+      .handle((value) => {
+        if (this.onGround) {
+          if (this.hasLoc) {
+            if (this.isActive()) {
+              Math.abs(value) < 2 ? this.visibilityGroundSub.set('block') : this.visibilityGroundSub.set('none');
+            }
           }
-        }else{
-          this.visibilityGroundSub.set("none"); 
-          (this.declutterMode == 2 ) ? this.visibilityAirSub.set("none") : this.visibilityAirSub.set("block"); 
         }
       });
 
-    sub.on('declutterMode').whenChanged().handle((value) => {
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.declutterMode = value;    
-      if(this.onGround){
-        if (this.isActive()) {
-          this.visibilityGroundSub.set("block"); 
-          this.visibilityAirSub.set("none"); 
-        }else{
-          this.visibilityGroundSub.set("none"); 
-          this.visibilityAirSub.set("none"); 
+    sub
+      .on('fmgc1RollFdCommandRaw')
+      .whenChanged()
+      .handle((lm) => {
+        this.lateralMode = lm;
+        if (this.onGround) {
+          if (this.isActive()) {
+            this.visibilityGroundSub.set('block');
+            this.visibilityAirSub.set('none');
+          } else {
+            this.visibilityGroundSub.set('none');
+            this.visibilityAirSub.set('none');
+          }
+        } else {
+          this.visibilityGroundSub.set('none');
+          this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
         }
-      }else{
-        this.visibilityGroundSub.set("none"); 
-        (this.declutterMode == 2 ) ? this.visibilityAirSub.set("none") : this.visibilityAirSub.set("block"); 
-      }
-  }); 
+      });
+
+    sub
+      .on('declutterMode')
+      .whenChanged()
+      .handle((value) => {
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
+        this.declutterMode = value;
+        if (this.onGround) {
+          if (this.isActive()) {
+            this.visibilityGroundSub.set('block');
+            this.visibilityAirSub.set('none');
+          } else {
+            this.visibilityGroundSub.set('none');
+            this.visibilityAirSub.set('none');
+          }
+        } else {
+          this.visibilityGroundSub.set('none');
+          this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
+        }
+      });
 
     sub
       .on('pitchAr')
@@ -361,206 +449,75 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus, instrumen
     //   }
     // });
 
-    sub
-      .on('fd1Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.fdActive = fd;
-          if (this.isActive()) {
-            this.visibilityGroundSub.set('block');
-            this.visibilityAirSub.set('none');
-          } else {
-            this.visibilityGroundSub.set('none');
-            this.visibilityAirSub.set('none');
-          }
+    // sub
+    //   .on('fd1Active')
+    //   .whenChanged()
+    //   .handle((fd) => {
+    //     if (getDisplayIndex() === 1) {
+    //       this.fdActive = fd;
+    //       if (this.isActive()) {
+    //         this.visibilityGroundSub.set('block');
+    //         this.visibilityAirSub.set('none');
+    //       } else {
+    //         this.visibilityGroundSub.set('none');
+    //         this.visibilityAirSub.set('none');
+    //       }
+    //     }
+    //   });
 
-
-        }
-      });
-
-    sub
-      .on('fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.fdActive = fd;
-        if (this.isActive()) {
-          this.visibilityGroundSub.set('block');
-          this.visibilityAirSub.set('none');
-        } else {
-          this.visibilityGroundSub.set('none');
-          this.visibilityAirSub.set('none');
-        }
-        }
-      });
-
-
+    // sub
+    //   .on('fd2Active')
+    //   .whenChanged()
+    //   .handle((fd) => {
+    //     if (getDisplayIndex() === 2) {
+    //       this.fdActive = fd;
+    //       if (this.isActive()) {
+    //         this.visibilityGroundSub.set('block');
+    //         this.visibilityAirSub.set('none');
+    //       } else {
+    //         this.visibilityGroundSub.set('none');
+    //         this.visibilityAirSub.set('none');
+    //       }
+    //     }
+    //   });
   }
 
   render(): VNode {
     return (
-        <g id="AircraftReferences">
-          <g id="AircraftReferenceInAir" 
-            class="SmallStroke Green"
-            display={this.visibilityAirSub}>
-            <path d="m 600,336.52  v -7.38 h -41.63" />
-            <path d="m 636.25,332.89 h 7.5 v -7.5 h -7.5 z" />
-            <path d="m 680,336.52 v -7.38 h 41.63" />
-          </g>
-          <g id="AircraftReferenceOnGround" 
-            class="SmallStroke Green" 
-            display={this.visibilityGroundSub}>
-            <path d="m 630,391.28 h 20 L 640,410 Z" />
-          </g>
+      <g id="AircraftReferences">
+        <g id="AircraftReferenceInAir" class="SmallStroke Green" display={this.visibilityAirSub}>
+          <path d="m 600,336.52  v -7.38 h -41.63" />
+          <path d="m 636.25,332.89 h 7.5 v -7.5 h -7.5 z" />
+          <path d="m 680,336.52 v -7.38 h 41.63" />
         </g>
-    );
-  }
-}
-
-class FDYawBar extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
-  private onGround = false;
-  private sVisibility = Subject.create('none');
-  private hasLoc = false;
-  private lagFilter = new LagFilter(1.5);
-  private deltaTime =  this.props.instrument.deltaTime;
-  private lateralMode = 0;
-
-  private fdYawCommand = 0;
-
-  private fdActive = false;
-
-  private yawRef = FSComponent.createRef<SVGPathElement>();
-
-  private isActive(): boolean {
-    if (!this.fdActive || !(this.lateralMode === LateralMode.ROLL_OUT || this.lateralMode === LateralMode.RWY)) {
-      return false;
-    }
-    return true;
-  }
-
-  private setOffset() {
-    const offset = -Math.max(Math.min(this.fdYawCommand, 45), -45) * 0.44;
-    if (this.isActive()) {
-      //this.yawRef.instance.style.visibility = 'visible';
-      this.yawRef.instance.style.transform = `translate3d(${offset}px, 113px, 0px)`;
-    }else{
-      this.yawRef.instance.style.transform = `translate3d(0px, 113px, 0px)`;
-    }
-
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
-
-    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-      this.onGround = value;
-    });
-
-    sub.on('hasLoc').whenChanged().handle((hasLoc) => {
-      this.hasLoc = hasLoc;
-    });
-    sub.on('navRadialError').whenChanged().handle((value)=>{
-      if(this.onGround){
-        if(this.hasLoc){
-          this.setOffset();
-          (Math.abs(value) < 2) ? this.sVisibility.set("inline") : this.sVisibility.set("none"); 
-        }
-      }
-    });
-    
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.lateralMode = lm;
-
-        if (this.isActive()) {
-          this.setOffset();
-          this.sVisibility.set("block"); 
-
-        } else {
-          this.sVisibility.set("none"); 
-        }
-      });
-
-      sub.on('fdYawCommand').handle((fy) => {
-        this.fdYawCommand = fy;
-
-        if (this.isActive()) {
-          this.setOffset();
-          this.sVisibility.set("block"); 
-        } else {
-          this.sVisibility.set("none"); 
-        }
-      });
-
-
-    // FIXME, differentiate properly (without duplication)
-    sub
-      .on('fd1Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.fdActive = fd;
-
-          if (this.isActive()) {
-            this.setOffset();
-            this.sVisibility.set("block"); 
-          } else {
-            this.sVisibility.set("none"); 
-          }
-        }
-      });
-
-    sub
-      .on('fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.fdActive = fd;
-
-          if (this.isActive()) {
-            this.setOffset();
-            this.sVisibility.set("block"); 
-          } else {
-            this.sVisibility.set("none"); 
-          }
-        }
-      });
-  }
-
-  render(): VNode {
-    return (
-      <g id="onGroundCenterlineDevIndicator"  display={this.sVisibility}>
-
-        <path
-          ref={this.yawRef}
-          id="GroundYawSymbol"
-          class="SmallStroke Green"
-          d="m 640,299.5 -3,8.5 v 25 h 6 v -25 z"
-        />
+        <g id="AircraftReferenceOnGround" class="SmallStroke Green" display={this.visibilityGroundSub}>
+          <path d="m 630,391.28 h 20 L 640,410 Z" />
+        </g>
       </g>
     );
   }
 }
 
 class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
-  private lateralMode = 0;
+  private fdEngaged = false;
 
-  private verticalMode = 0;
+  private fcuEisDiscreteWord2 = new Arinc429Word(0);
 
-  private fdActive = false;
+  private fcuDiscreteWord1 = new Arinc429Word(0);
 
-  private trkFpaActive = false;
+  private fmgcDiscreteWord2 = new Arinc429Word(0);
 
-  private fdBank = 0;
+  private fmgcDiscreteWord5 = new Arinc429Word(0);
 
-  private fdPitch = 0;
+  private fdRollCommand = new Arinc429Word(0);
 
-  private fdRef = FSComponent.createRef<SVGGElement>();
+  private fdPitchCommand = new Arinc429Word(0);
+
+  private fdYawCommand = new Arinc429Word(0);
+
+  private leftMainGearCompressed = false;
+
+  private rightMainGearCompressed = false;
 
   private lateralRef1 = FSComponent.createRef<SVGPathElement>();
 
@@ -570,308 +527,209 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private verticalRef2 = FSComponent.createRef<SVGPathElement>();
 
+  private readonly fdFlagVisibleSub = Subject.create(false);
+
+  private readonly lateralShouldFlash = Subject.create(false);
+
+  private readonly longitudinalShouldFlash = Subject.create(false);
+
+  private readonly lateralVisible = Subject.create(false);
+
+  private readonly longitudinalVisible = Subject.create(false);
+
   private handleFdState() {
-    const [toggled, showLateral, showVertical] = this.isActive();
+    const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
+    const showFd = this.fdEngaged && !fdOff;
 
-    let FDRollOffset = 0;
-    let FDPitchOffset = 0;
+    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
 
-    if (toggled && showLateral) {
-      const FDRollOrder = this.fdBank;
-      FDRollOffset = Math.min(Math.max(FDRollOrder, -45), 45) * 0.44;
+    const showRoll = showFd && !(this.fdRollCommand.isFailureWarning() || this.fdRollCommand.isNoComputedData());
 
-      this.lateralRef1.instance.setAttribute('visibility', 'visible');
+    if (showRoll) {
+      const FDRollOffset = Math.min(Math.max(this.fdRollCommand.value, -45), 45) * 15 + 640;
+
+      this.lateralVisible.set(true);
       this.lateralRef1.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
 
-      this.lateralRef2.instance.setAttribute('visibility', 'visible');
       this.lateralRef2.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
     } else {
-      this.lateralRef1.instance.setAttribute('visibility', 'hidden');
-      this.lateralRef2.instance.setAttribute('visibility', 'hidden');
+      this.lateralVisible.set(false);
     }
 
-    if (toggled && showVertical) {
-      const FDPitchOrder = this.fdPitch;
-      FDPitchOffset = Math.min(Math.max(FDPitchOrder, -22.5), 22.5) * 0.89;
+    const showPitch = showFd && !(this.fdPitchCommand.isFailureWarning() || this.fdPitchCommand.isNoComputedData());
 
-      this.verticalRef1.instance.setAttribute('visibility', 'visible');
+    if (showPitch) {
+      const FDPitchOffset = Math.min(Math.max(this.fdPitchCommand.value, -22.5), 22.5) * 15 + 512;
+
+      this.longitudinalVisible.set(true);
       this.verticalRef1.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
 
-      this.verticalRef2.instance.setAttribute('visibility', 'visible');
       this.verticalRef2.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
     } else {
-      this.verticalRef1.instance.setAttribute('visibility', 'hidden');
-      this.verticalRef2.instance.setAttribute('visibility', 'hidden');
+      this.longitudinalVisible.set(false);
+    }
+
+    const onGround = this.leftMainGearCompressed || this.rightMainGearCompressed;
+    if (
+      !fdOff &&
+      (!this.fdEngaged ||
+        this.fdRollCommand.isFailureWarning() ||
+        this.fdPitchCommand.isFailureWarning() ||
+        (this.fdYawCommand.isFailureWarning() && onGround))
+    ) {
+      this.fdFlagVisibleSub.set(true);
+    } else {
+      this.fdFlagVisibleSub.set(false);
     }
   }
 
-  private isActive(): [boolean, boolean, boolean] {
-    const toggled = this.fdActive && !this.trkFpaActive;
+  private handleFdBarsFlashing() {
+    const fdRollBarFlashing = this.fmgcDiscreteWord2.bitValueOr(28, false);
+    const fdPitchBarFlashing = this.fmgcDiscreteWord5.bitValueOr(24, false);
 
-    const showLateralFD = this.lateralMode !== 0 && this.lateralMode !== 34 && this.lateralMode !== 40;
-    const showVerticalFD = this.verticalMode !== 0 && this.verticalMode !== 34;
-
-    return [toggled, showLateralFD, showVerticalFD];
+    this.lateralShouldFlash.set(fdRollBarFlashing);
+    this.longitudinalShouldFlash.set(fdPitchBarFlashing);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & FgBus & FcuBus>();
 
     sub
-      .on('fd1Active')
+      .on('fdEngaged')
       .whenChanged()
       .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.fdActive = fd;
+        this.fdEngaged = fd;
 
-          if (this.isActive()[0]) {
-            this.fdRef.instance.style.display = 'inline';
-          } else {
-            this.fdRef.instance.style.display = 'none';
-          }
-        }
+        this.handleFdState();
       });
 
     sub
-      .on('fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.fdActive = fd;
-
-          if (this.isActive()[0]) {
-            this.fdRef.instance.style.display = 'inline';
-          } else {
-            this.fdRef.instance.style.display = 'none';
-          }
-        }
-      });
-
-    sub
-      .on('trkFpaActive')
+      .on('fcuEisDiscreteWord2')
       .whenChanged()
       .handle((tr) => {
-        this.trkFpaActive = tr;
-
-        if (this.isActive()[0]) {
-          this.fdRef.instance.style.display = 'inline';
-        } else {
-          this.fdRef.instance.style.display = 'none';
-        }
-      });
-
-    sub
-      .on('fdBank')
-      .withPrecision(2)
-      .handle((fd) => {
-        this.fdBank = fd;
-
-        this.handleFdState();
-      });
-    sub
-      .on('fdPitch')
-      .withPrecision(2)
-      .handle((fd) => {
-        this.fdPitch = fd;
+        this.fcuEisDiscreteWord2 = tr;
 
         this.handleFdState();
       });
 
     sub
-      .on('activeLateralMode')
+      .on('fcuDiscreteWord1')
       .whenChanged()
-      .handle((vm) => {
-        this.lateralMode = vm;
+      .handle((tr) => {
+        this.fcuDiscreteWord1 = tr;
 
         this.handleFdState();
       });
 
     sub
-      .on('activeVerticalMode')
+      .on('fmgcDiscreteWord2')
       .whenChanged()
-      .handle((lm) => {
-        this.verticalMode = lm;
+      .handle((tr) => {
+        this.fmgcDiscreteWord2 = tr;
 
+        this.handleFdBarsFlashing();
+      });
+
+    sub
+      .on('fmgcDiscreteWord5')
+      .whenChanged()
+      .handle((tr) => {
+        this.fmgcDiscreteWord5 = tr;
+
+        this.handleFdBarsFlashing();
+      });
+
+    sub
+      .on('rollFdCommand')
+      .withArinc429Precision(2)
+      .handle((fd) => {
+        this.fdRollCommand = fd;
+
+        this.handleFdState();
+      });
+
+    sub
+      .on('pitchFdCommand')
+      .withArinc429Precision(2)
+      .handle((fd) => {
+        this.fdPitchCommand = fd;
+
+        this.handleFdState();
+      });
+
+    sub
+      .on('yawFdCommand')
+      .withArinc429Precision(2)
+      .handle((fd) => {
+        this.fdYawCommand = fd;
+
+        this.handleFdState();
+      });
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((g) => {
+        this.leftMainGearCompressed = g;
+        this.handleFdState();
+      });
+
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((g) => {
+        this.rightMainGearCompressed = g;
         this.handleFdState();
       });
   }
 
   render(): VNode | null {
     return (
-      <g ref={this.fdRef} style="display: none">
-        <g class="ThickOutline">
-          <path ref={this.lateralRef1} d="m68.903 61.672v38.302" />
+      <g>
+        {/* These are split up in this order to prevent the shadow of one FD bar to go above the other green FD bar */}
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.lateralVisible}
+          flashing={this.lateralShouldFlash}
+        >
+          <path ref={this.lateralRef1} class="ThickOutline" d="m68.903 61.672v38.302" />
+        </FlashOneHertz>
 
-          <path ref={this.verticalRef1} d="m49.263 80.823h39.287" />
-        </g>
-        <g class="ThickStroke Green">
-          <path ref={this.lateralRef2} id="FlightDirectorRoll" d="m68.903 61.672v38.302" />
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.longitudinalVisible}
+          flashing={this.longitudinalShouldFlash}
+        >
+          <path ref={this.verticalRef1} class="ThickOutline" d="m49.263 80.823h39.287" />
+        </FlashOneHertz>
 
-          <path ref={this.verticalRef2} id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
-        </g>
-      </g>
-    );
-  }
-}
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.lateralVisible}
+          flashing={this.lateralShouldFlash}
+        >
+          <path ref={this.lateralRef2} class="ThickStroke Green" id="FlightDirectorRoll" d="m68.903 61.672v38.302" />
+        </FlashOneHertz>
 
-class SidestickIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private captPitchCommand = new Arinc429Word(0);
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          visible={this.longitudinalVisible}
+          flashing={this.longitudinalShouldFlash}
+        >
+          <path ref={this.verticalRef2} class="ThickStroke Green" id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
+        </FlashOneHertz>
 
-  private foPitchCommand = new Arinc429Word(0);
-
-  private captRollCommand = new Arinc429Word(0);
-
-  private foRollCommand = new Arinc429Word(0);
-
-  private fcdc1DiscreteWord2 = new Arinc429Word(0);
-
-  private fcdc2DiscreteWord2 = new Arinc429Word(0);
-
-  private onGround = true;
-
-  private crossHairRef = FSComponent.createRef<SVGPathElement>();
-
-  private onGroundForVisibility = Subject.create('visible');
-
-  private engOneRunning = false;
-
-  private engTwoRunning = false;
-
-  private handleSideStickIndication() {
-    const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
-
-    const showIndicator =
-      this.onGround &&
-      oneEngineRunning &&
-      !this.captPitchCommand.isFailureWarning() &&
-      !this.captRollCommand.isFailureWarning() &&
-      !this.foPitchCommand.isFailureWarning() &&
-      !this.foRollCommand.isFailureWarning();
-
-    const foStickDisabledFcdc1 = this.fcdc1DiscreteWord2.bitValueOr(29, false);
-    const foStickDisabledFcdc2 = this.fcdc2DiscreteWord2.bitValueOr(29, false);
-    const captStickDisabledFcdc1 = this.fcdc1DiscreteWord2.bitValueOr(28, false);
-    const captStickDisabledFcdc2 = this.fcdc2DiscreteWord2.bitValueOr(28, false);
-    const foStickDisabled = foStickDisabledFcdc1 || foStickDisabledFcdc2;
-    const captStickDisabled = captStickDisabledFcdc1 || captStickDisabledFcdc2;
-
-    const totalPitchCommand =
-      Math.max(
-        Math.min(
-          (foStickDisabled ? 0 : this.foPitchCommand.value) + (captStickDisabled ? 0 : this.captPitchCommand.value),
-          16,
-        ),
-        -16,
-      ) * -1.43875;
-    const totalRollCommand =
-      Math.max(
-        Math.min(
-          (foStickDisabled ? 0 : this.foRollCommand.value) + (captStickDisabled ? 0 : this.captRollCommand.value),
-          20,
-        ),
-        -20,
-      ) * 1.478;
-
-    if (!showIndicator) {
-      this.onGroundForVisibility.set('hidden');
-    } else {
-      this.onGroundForVisibility.set('visible');
-      this.crossHairRef.instance.style.transform = `translate3d(${totalRollCommand}px, ${totalPitchCommand}px, 0px)`;
-    }
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
-
-    sub
-      .on('noseGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.onGround = g;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('engOneRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engOneRunning = e;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('engTwoRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engTwoRunning = e;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('fcdc1DiscreteWord2')
-      .whenChanged()
-      .handle((discreteWord2) => {
-        this.fcdc1DiscreteWord2 = discreteWord2;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('fcdc2DiscreteWord2')
-      .whenChanged()
-      .handle((discreteWord2) => {
-        this.fcdc2DiscreteWord2 = discreteWord2;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('fcdcCaptPitchCommand')
-      .whenChanged()
-      .handle((x) => {
-        this.captPitchCommand = x;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('fcdcFoPitchCommand')
-      .whenChanged()
-      .handle((x) => {
-        this.foPitchCommand = x;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('fcdcCaptRollCommand')
-      .whenChanged()
-      .handle((y) => {
-        this.captRollCommand = y;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('fcdcFoRollCommand')
-      .whenChanged()
-      .handle((y) => {
-        this.foRollCommand = y;
-        this.handleSideStickIndication();
-      });
-  }
-
-  render(): VNode {
-    return (
-      <g id="GroundCursorGroup" class="NormalStroke White" visibility={this.onGroundForVisibility}>
-        <path
-          id="GroundCursorBorders"
-          d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441"
-        />
-        <path
-          ref={this.crossHairRef}
-          id="GroundCursorCrosshair"
-          d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341"
-        />
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fdFlagVisibleSub}>
+          <text id="FDFlag" x="52.702862" y="56.065434" class="FontLargest EndAlign Red">
+            FD
+          </text>
+        </FlashOneHertz>
       </g>
     );
   }

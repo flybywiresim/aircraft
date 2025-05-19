@@ -27,7 +27,9 @@
       "@shared/*": ["./shared/src/*"],
       "@tcas/*": ["./tcas/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
-      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"]
+      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"],
+      "@flybywiresim/msfs-avionics-common": ["../../../fbw-common/src/systems/instruments/src/MsfsAvionicsCommon/index.ts"]
+
     }
   }
 }

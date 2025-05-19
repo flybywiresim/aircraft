@@ -28,11 +28,13 @@ import './style.scss';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
 import { AttitudeIndicatorFixedCenter, AttitudeIndicatorFixedUpper } from './AttitudeIndicatorFixed';
 import { FMA } from './FMA';
+import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { LandingSystem } from './LandingSystemIndicator';
 import { LinearDeviationIndicator } from './LinearDeviationIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
+import './style.scss';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { AutoThrustMode, VerticalMode } from '@shared/autopilot';
@@ -52,27 +54,37 @@ interface HUDProps extends ComponentProps {
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
   private elems: HudElemsVis = {
-    xWindAltTape         : Subject.create<String>(''),
-    altTape              : Subject.create<String>(''),
-    xWindSpdTape         : Subject.create<String>(''),
+    xWindAltTape: Subject.create<String>(''),
+    altTape: Subject.create<String>(''),
+    xWindSpdTape: Subject.create<String>(''),
     spdTapeOrForcedOnLand: Subject.create<String>(''),
-    altTapeMaskFill      : Subject.create<String>(''),
-    windIndicator        : Subject.create<String>(''),
-    FMA                  : Subject.create<String>(''),
-    VS                   : Subject.create<String>(''),
-    QFE                  : Subject.create<String>(''), 
+    altTapeMaskFill: Subject.create<String>(''),
+    windIndicator: Subject.create<String>(''),
+    FMA: Subject.create<String>(''),
+    VS: Subject.create<String>(''),
+    QFE: Subject.create<String>(''),
   };
 
   private setElems() {
-    this.elems.altTape                .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape);
-    this.elems.altTapeMaskFill        .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill);
-    this.elems.spdTapeOrForcedOnLand  .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand);
-    this.elems.windIndicator          .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator);
-    this.elems.xWindAltTape           .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape);
-    this.elems.xWindSpdTape           .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape);
-    this.elems.FMA                    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA);
-    this.elems.VS                     .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS);
-    this.elems.QFE                    .set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE); 
+    this.elems.altTape.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape);
+    this.elems.altTapeMaskFill.set(
+      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill,
+    );
+    this.elems.spdTapeOrForcedOnLand.set(
+      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand,
+    );
+    this.elems.windIndicator.set(
+      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator,
+    );
+    this.elems.xWindAltTape.set(
+      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape,
+    );
+    this.elems.xWindSpdTape.set(
+      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape,
+    );
+    this.elems.FMA.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA);
+    this.elems.VS.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS);
+    this.elems.QFE.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE);
   }
   private onLanding = false;
   private groundSpeed = 0;
@@ -111,7 +123,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
   constructor(props: HUDProps) {
     super(props);
-    this.failuresConsumer = new FailuresConsumer('A32NX');
+    this.failuresConsumer = new FailuresConsumer();
   }
 
   public onAfterRender(node: VNode): void {
@@ -295,24 +307,23 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               <path id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
             </g>
             <g id="CrosswindSpdTapeMask" display={this.elems.xWindSpdTape}>
-              <path id="cwSpdTapeBg" class="NormalStroke  BackgroundFill" d="m71 128  h 94 v 172 h -94z"/>
+              <path id="cwSpdTapeBg" class="NormalStroke  BackgroundFill" d="m71 128  h 94 v 172 h -94z" />
             </g>
-
-
           </g>
 
           <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.elems.windIndicator}>
             <WindIndicator bus={this.props.bus} />
           </g>
-
+          {/*
           <AttitudeIndicatorFixedCenter
             bus={this.props.bus}
             isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
             instrument={this.props.instrument}
-          />
+          /> */}
 
           <AltitudeIndicator bus={this.props.bus} />
+
           <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} />
 
           {/* mask2 speedtape draw limits | mask3 altTape draw limits */}
@@ -321,6 +332,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               id="Mask2Cw"
               class="BackgroundFill"
               display={this.elems.xWindSpdTape}
+              //d="M 60 0 H 208 V 1024 H 60 Z  M 61 130 v 172h 146 v -172 z"
               d="M 60 0 H 208 V 1024 H 60 Z  M 61 130 v 172h 146 v -172 z"
             />
 
@@ -340,15 +352,23 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             />
           </g>
 
-          <ExtendedHorizon 
-            bus={this.props.bus} 
-            instrument={this.props.instrument} 
+          <AttitudeIndicatorFixedCenter
+            bus={this.props.bus}
+            isAttExcessive={this.isAttExcessive}
+            filteredRadioAlt={this.filteredRadioAltitude}
+            instrument={this.props.instrument}
+          />
+
+          <ExtendedHorizon
+            bus={this.props.bus}
+            instrument={this.props.instrument}
             filteredRadioAlt={this.filteredRadioAltitude}
           />
 
           <AirspeedIndicatorOfftape bus={this.props.bus} />
           <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
           <AttitudeIndicatorFixedUpper bus={this.props.bus} />
+
           <VerticalSpeedIndicator
             bus={this.props.bus}
             instrument={this.props.instrument}
@@ -369,10 +389,10 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 interface ExtendedHorizonProps {
   bus: ArincEventBus;
   instrument: BaseInstrument;
-  filteredRadioAlt: Subscribable<number> ;
+  filteredRadioAlt: Subscribable<number>;
 }
 
-class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps > {
+class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
   private rollGroupRef = FSComponent.createRef<SVGGElement>();
   private path = FSComponent.createRef<SVGPathElement>();
@@ -422,10 +442,10 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps > {
       let yPos = D / Math.cos(radRoll);
 
       // xposition from frame2 to eval if extention should be drawn
-      if(this.crosswindMode == false){
-        this.lowerBound = -6.143; 
+      if (this.crosswindMode == false) {
+        this.lowerBound = -6.143;
         this.upperBound = 355;
-      }else{
+      } else {
         this.upperBound = -27.143;
         this.lowerBound = -199.143;
       }
@@ -501,11 +521,12 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps > {
         this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
         //end debug
 
-
-
         const F1HorizonPitchOffset = D * Math.cos(radRoll);
 
-        if (F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound && F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound) {
+        if (
+          F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
+          F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
+        ) {
           this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
           this.extendedAlt.instance.setAttribute('d', ``);
         } else {
@@ -513,7 +534,10 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps > {
           this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
         }
 
-        if (F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound && F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound) {
+        if (
+          F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
+          F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
+        ) {
           this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
           this.extendedSpd.instance.setAttribute('d', ``);
         } else {
@@ -552,7 +576,7 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps > {
     // FIXME: What is the tailstrike pitch limit with compressed main landing gear for A320? Assume 11.7 degrees now.
     // FIXME: further fine tune.
     return (
-      <g id='ExtendedHorizon'>
+      <g id="ExtendedHorizon">
         <path d="m 0 323 h 1280" class="red DEBUG" />
         <path d="m 0 688 h 1280" class="red DEBUG" />
         <path d="m 0 302 h 1280" class="blue DEBUG" />
@@ -561,7 +585,7 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps > {
 
         <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
           <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">
-          <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt}/>
+            <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} />
 
             <path ref={this.extendedAlt} id="extendedAlt" d="" class="SmallStroke Green" />
             <path ref={this.extendedSpd} id="extendedSpd" d="" class="SmallStroke Green" />

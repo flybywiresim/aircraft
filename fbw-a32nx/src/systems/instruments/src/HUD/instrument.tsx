@@ -2,39 +2,52 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Clock, FSComponent, HEventPublisher, Subject } from '@microsoft/msfs-sdk';
+import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 
-import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
+import { FcuBusProvider } from 'instruments/src/HUD/shared/FcuBusProvider';
+import { FgBusProvider } from 'instruments/src/HUD/shared/FgBusProvider';
 import { getDisplayIndex, HUDComponent } from './HUD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
-import { HUDSimvarPublisher, HUDSimvars, HUDSymbolsPublisher } from './shared/HUDSimvarPublisher';
-import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
+import { HUDSimvarPublisher, HUDSimvars } from './shared/HUDSimvarPublisher';
 
 import './style.scss';
 
 class A32NX_HUD extends BaseInstrument {
-  private bus: ArincEventBus;
+  private readonly bus = new ArincEventBus();
 
-  private simVarPublisher: HUDSimvarPublisher;
+  private readonly backplane = new InstrumentBackplane();
 
-  private symbolPublisher: HUDSymbolsPublisher;
+  private readonly simVarPublisher = new HUDSimvarPublisher(this.bus);
 
-  private readonly hEventPublisher;
+  private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private readonly arincProvider: ArincValueProvider;
+  private readonly arincProvider = new ArincValueProvider(this.bus);
 
-  private readonly simplaneValueProvider: SimplaneValueProvider;
+  private readonly fgBusProvider = new FgBusProvider(this.bus);
 
-  private readonly clock: Clock;
+  private readonly fcuBusProvider = new FcuBusProvider(this.bus);
 
+  private readonly clock = new Clock(this.bus);
+
+  // FIXME fit this into the normal backplane pattern
   private adirsValueProvider: AdirsValueProvider<HUDSimvars>;
 
-  private readonly dmcPublisher: DmcPublisher;
+  private readonly dmcPublisher = new DmcPublisher(this.bus);
 
+  // FIXME fit this into the normal backplane pattern
   private fmsDataPublisher: FmsDataPublisher;
+
+  private readonly ropRowOansPublisher = new RopRowOansPublisher(this.bus);
+
+  private readonly fwcPublisher = new FwcPublisher(this.bus);
+
+  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
 
   /**
    * "mainmenu" = 0
@@ -46,14 +59,17 @@ class A32NX_HUD extends BaseInstrument {
 
   constructor() {
     super();
-    this.bus = new ArincEventBus();
-    this.simVarPublisher = new HUDSimvarPublisher(this.bus);
-    this.symbolPublisher = new HUDSymbolsPublisher(this.bus);
-    this.hEventPublisher = new HEventPublisher(this.bus);
-    this.arincProvider = new ArincValueProvider(this.bus);
-    this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
-    this.clock = new Clock(this.bus);
-    this.dmcPublisher = new DmcPublisher(this.bus);
+
+    this.backplane.addPublisher('HudSimvars', this.simVarPublisher);
+    this.backplane.addPublisher('hEvent', this.hEventPublisher);
+    this.backplane.addInstrument('arincProvider', this.arincProvider);
+    this.backplane.addInstrument('fgBusProvider', this.fgBusProvider);
+    this.backplane.addInstrument('fcuBusProvider', this.fcuBusProvider);
+    this.backplane.addInstrument('Clock', this.clock);
+    this.backplane.addPublisher('Dmc', this.dmcPublisher);
+    this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
+    this.backplane.addPublisher('Fwc', this.fwcPublisher);
+    this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
   }
 
   get templateID(): string {
@@ -80,9 +96,7 @@ class A32NX_HUD extends BaseInstrument {
     const stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
     this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
 
-    this.arincProvider.init();
-    this.clock.init();
-    //this.dmcPublisher.init();
+    this.backplane.init();
 
     FSComponent.render(<HUDComponent bus={this.bus} instrument={this} />, document.getElementById('HUD_CONTENT'));
 
@@ -96,23 +110,16 @@ class A32NX_HUD extends BaseInstrument {
   public Update(): void {
     super.Update();
 
+    this.backplane.onUpdate();
+
     if (this.gameState !== 3) {
       const gamestate = this.getGameState();
       if (gamestate === 3) {
-        this.simVarPublisher.startPublish();
-        this.symbolPublisher.startPublish();
-        this.hEventPublisher.startPublish();
         this.adirsValueProvider.start();
-        this.dmcPublisher.startPublish();
         this.fmsDataPublisher.startPublish();
       }
       this.gameState = gamestate;
     } else {
-      this.simVarPublisher.onUpdate();
-      this.symbolPublisher.onUpdate();
-      this.simplaneValueProvider.onUpdate();
-      this.clock.onUpdate();
-      this.dmcPublisher.onUpdate();
       this.fmsDataPublisher.onUpdate();
     }
   }

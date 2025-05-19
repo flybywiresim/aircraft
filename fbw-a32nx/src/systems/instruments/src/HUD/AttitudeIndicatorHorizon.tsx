@@ -15,20 +15,11 @@ import {
   NodeReference,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import {
-  ArincEventBus,
-  Arinc429Word,
-  Arinc429WordData,
-  Arinc429ConsumerSubject,
-} from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import {
-  calculateHorizonOffsetFromPitch,
-  LagFilter,
-  getSmallestAngle,
-} from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, LagFilter, getSmallestAngle } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
@@ -58,7 +49,6 @@ class HeadingBug extends DisplayComponent<{
   private sVisibility = Subject.create<String>('');
   private sGndHeadingBugVisibility = Subject.create('block');
   private sAirHeadingBugVisibility = Subject.create('none');
-
 
   private isActive = false;
 
@@ -108,22 +98,28 @@ class HeadingBug extends DisplayComponent<{
 
     this.heading.setConsumer(sub.on('heading').withArinc429Precision(2));
 
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = fp;
-      //onGround
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          this.sVisibility.set("block"); 
-      }
-      //inFlight
-      if(this.flightPhase > 2 && this.flightPhase <= 8){
-          (this.declutterMode == 2 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
-      }
-  });
-  
-  sub.on('declutterMode').whenChanged().handle((value) => { 
-      (value > 0 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
-  }); 
+    sub
+      .on('fwcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE', 'Number');
+        this.flightPhase = fp;
+        //onGround
+        if (this.flightPhase <= 2 || this.flightPhase >= 9) {
+          this.sVisibility.set('block');
+        }
+        //inFlight
+        if (this.flightPhase > 2 && this.flightPhase <= 8) {
+          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+        }
+      });
+
+    sub
+      .on('declutterMode')
+      .whenChanged()
+      .handle((value) => {
+        value > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+      });
     sub
       .on('selectedHeading')
       .whenChanged()
@@ -134,31 +130,37 @@ class HeadingBug extends DisplayComponent<{
     this.attitude.setConsumer(sub.on('pitchAr'));
     this.fdActive.setConsumer(sub.on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active').whenChanged());
 
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.flightPhase = fp;
-      if(fp < 5 || fp >= 9){
-        this.sGndHeadingBugVisibility.set('block');
-        this.sAirHeadingBugVisibility.set('none');
-      }
-      if(fp > 4 && fp < 9){
-        this.sAirHeadingBugVisibility.set('block');
-        this.sGndHeadingBugVisibility.set('none');
-      }
-    });
-      
+    sub
+      .on('fwcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.flightPhase = fp;
+        if (fp < 5 || fp >= 9) {
+          this.sGndHeadingBugVisibility.set('block');
+          this.sAirHeadingBugVisibility.set('none');
+        }
+        if (fp > 4 && fp < 9) {
+          this.sAirHeadingBugVisibility.set('block');
+          this.sGndHeadingBugVisibility.set('none');
+        }
+      });
   }
 
   render(): VNode {
     return (
-      <g
-        ref={this.horizonHeadingBug}
-        id="HorizonHeadingBug"
-        style={this.headingBugSubject}
-        display={this.sVisibility}
-      >
-        
-        <path id="gndHorizonHeadingBug" class="ThickStroke" d="m 630,490 h 20 l -10,21z" display={this.sGndHeadingBugVisibility}/>
-        <path id="airHorizonHeadingBug" class="ThickStroke Green" d="m 640,500  l 0 24" display={this.sAirHeadingBugVisibility} />
+      <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" style={this.headingBugSubject} display={this.sVisibility}>
+        <path
+          id="gndHorizonHeadingBug"
+          class="ThickStroke"
+          d="m 630,490 h 20 l -10,21z"
+          display={this.sGndHeadingBugVisibility}
+        />
+        <path
+          id="airHorizonHeadingBug"
+          class="ThickStroke Green"
+          d="m 640,500  l 0 24"
+          display={this.sAirHeadingBugVisibility}
+        />
       </g>
     );
   }
@@ -169,15 +171,13 @@ interface HorizonProps {
   instrument: BaseInstrument;
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
-
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
-
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
   private rollGroupRef = FSComponent.createRef<SVGGElement>();
-  
+
   private pitchProtActiveVisibility = Subject.create('visible');
 
   private pitchProtLostVisibility = Subject.create('hidden');
@@ -186,20 +186,16 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   private headingFailed = Subject.create(true);
 
-
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const apfd = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent>();
-
-  
-
+    const apfd = this.props.bus.getArincSubscriber<
+      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
+    >();
 
     apfd.on('heading').handle((h) => {
       this.headingFailed.set(!h.isNormalOperation());
-  });
-
+    });
 
     apfd
       .on('pitchAr')
@@ -214,7 +210,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         }
         const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
         this.yOffset.set(yOffset);
-
       });
 
     apfd
@@ -230,10 +225,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         }
       });
 
-
-
-
-
     apfd.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
       const isNormalLawActive = fcdcWord1.bitValue(11) && !fcdcWord1.isFailureWarning();
 
@@ -242,26 +233,21 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     });
   }
 
-
-
   render(): VNode {
     return (
-      
       <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
-
-
         <g id="PitchGroup" ref={this.pitchGroupRef} class="ScaledStroke Green">
-
           <TailstrikeIndicator bus={this.props.bus} />
 
-
           <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
-          <PitchScale bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} isAttExcessive={this.props.isAttExcessive}   />
+          <PitchScale
+            bus={this.props.bus}
+            filteredRadioAlt={this.props.filteredRadioAlt}
+            isAttExcessive={this.props.isAttExcessive}
+          />
 
           {/* horizon */}
           <path id="HorizonLine" d="m -100 512 h 1480" class="SmallStroke Green" />
-
-   
 
           <HorizontalTape
             type="headingTape"
@@ -271,10 +257,8 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             distanceSpacing={DistanceSpacing}
             yOffset={Subject.create(0)}
           />
-              <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
-
+          <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
         </g>
-
 
         <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
 
@@ -287,9 +271,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     );
   }
 }
-
-
-
 
 class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private tailStrike = FSComponent.createRef<SVGPathElement>();
@@ -375,13 +356,12 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
 // FIXME move to FPV
 
-
 interface SideslipIndicatorProps {
   bus: ArincEventBus;
   instrument: BaseInstrument;
 }
 
-class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {  
+class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
@@ -421,24 +401,29 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
 
-   
-    sub.on('declutterMode').whenChanged().handle((value) => {
+    sub
+      .on('declutterMode')
+      .whenChanged()
+      .handle((value) => {
         this.declutterMode = value;
-        if(this.onGround){
-          this.sVisibility.set("none");
-        }else{
-          (this.declutterMode == 2) ? this.sVisibility.set("none") : this.sVisibility.set("block");
+        if (this.onGround) {
+          this.sVisibility.set('none');
+        } else {
+          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
         }
-    }); 
-  
-    sub.on('leftMainGearCompressed').whenChanged().handle((value) => {
-      this.onGround = value;
-      if(this.onGround){
-        this.sVisibility.set("none");
-      }else{
-        (this.declutterMode == 2) ? this.sVisibility.set("none") : this.sVisibility.set("block");
-      }
-    })
+      });
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((value) => {
+        this.onGround = value;
+        if (this.onGround) {
+          this.sVisibility.set('none');
+        } else {
+          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+        }
+      });
 
     sub
       .on('leftMainGearCompressed')
@@ -538,7 +523,12 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
   render(): VNode {
     return (
-      <g id="RollTriangleGroup" ref={this.rollTriangle} display={this.sVisibility} class="SmallStroke Green CornerRound">
+      <g
+        id="RollTriangleGroup"
+        ref={this.rollTriangle}
+        display={this.sVisibility}
+        class="SmallStroke Green CornerRound"
+      >
         <path d="M 640.18,154.11 l -10,21.89 h 20z" />
         <path
           id="SideSlipIndicator"
@@ -560,11 +550,11 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
   }
 }
 
-class PitchScale extends DisplayComponent<{ 
+class PitchScale extends DisplayComponent<{
   bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
-} >   {
+}> {
   private fmgcFlightPhase = -1;
   private forcedFma = false;
   private flightPhase = -1;
@@ -573,7 +563,6 @@ class PitchScale extends DisplayComponent<{
   private sVisibility = Subject.create<String>('');
   private sVisibilityDeclutterMode2 = Subject.create<String>('');
   private sVisibilitySwitch = Subject.create<String>('');
-
 
   private readonly lsVisible = ConsumerSubject.create(null, false);
   private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
@@ -585,151 +574,153 @@ class PitchScale extends DisplayComponent<{
     pitch: new Arinc429Word(0),
     fpa: new Arinc429Word(0),
     da: new Arinc429Word(0),
-  }
+  };
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent>();
+    const sub = this.props.bus.getArincSubscriber<
+      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
+    >();
 
-    sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.fmgcFlightPhase = fp;
-      //force fma during climb and descent
-      if(fp == 1 || fp == 2 || fp == 4){
-        this.forcedFma = true;
-        if(this.declutterMode == 2 ){
-          this.sVisibility.set("block");
-          this.sVisibilityDeclutterMode2.set("block");
-        }else{
-          this.sVisibility.set("block");
-          this.sVisibilityDeclutterMode2.set("block");
-        } 
-      }else{
-        this.forcedFma = false;
-      }
-
-    })
-
-    sub.on('fwcFlightPhase').whenChanged().handle((fp) => {
-      this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE','Number');
-      this.flightPhase = fp;
-      //onGround
-      if(this.flightPhase <= 2 || this.flightPhase >= 9){
-          if(this.declutterMode == 2 ){
-            this.sVisibility.set("none");
-            this.sVisibilityDeclutterMode2.set("none");
+    sub
+      .on('fmgcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE', 'Number');
+        this.fmgcFlightPhase = fp;
+        //force fma during climb and descent
+        if (fp == 1 || fp == 2 || fp == 4) {
+          this.forcedFma = true;
+          if (this.declutterMode == 2) {
+            this.sVisibility.set('block');
+            this.sVisibilityDeclutterMode2.set('block');
+          } else {
+            this.sVisibility.set('block');
+            this.sVisibilityDeclutterMode2.set('block');
           }
-          if(this.declutterMode < 2 ){
-          this.sVisibility.set("block");
-          this.sVisibilityDeclutterMode2.set("block");
-          }
-      }
-      //inFlight
-      if(this.flightPhase > 2 && this.flightPhase <= 9 ){
-        if(this.forcedFma){
-          if(this.declutterMode == 2 ){
-            this.sVisibility.set("block");
-            this.sVisibilityDeclutterMode2.set("block");
-          }else{
-            this.sVisibility.set("block");
-            this.sVisibilityDeclutterMode2.set("block");
-          }   
-        }else{
-          if(this.declutterMode == 2 ){
-            this.sVisibility.set("none");
-            this.sVisibilityDeclutterMode2.set("block");
-          }else{
-            this.sVisibility.set("block");
-            this.sVisibilityDeclutterMode2.set("block");
-          }   
+        } else {
+          this.forcedFma = false;
         }
-      }
+      });
 
-    })
-    
-    sub.on('declutterMode').whenChanged().handle((value) => {
-      this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE','Number');
-      this.declutterMode = value;
-      if(this.forcedFma){
-          this.sVisibility.set("block");
-          this.sVisibilityDeclutterMode2.set("block");
-      } else{
-        if(this.declutterMode == 2 ){
-          this.sVisibility.set("none");
-          this.sVisibilityDeclutterMode2.set("block");
-        }else{
-          this.sVisibility.set("block");
-          this.sVisibilityDeclutterMode2.set("block");
-        }    
-      }  
-    }); 
+    sub
+      .on('fwcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE', 'Number');
+        this.flightPhase = fp;
+        //onGround
+        if (this.flightPhase <= 2 || this.flightPhase >= 9) {
+          if (this.declutterMode == 2) {
+            this.sVisibility.set('none');
+            this.sVisibilityDeclutterMode2.set('none');
+          }
+          if (this.declutterMode < 2) {
+            this.sVisibility.set('block');
+            this.sVisibilityDeclutterMode2.set('block');
+          }
+        }
+        //inFlight
+        if (this.flightPhase > 2 && this.flightPhase <= 9) {
+          if (this.forcedFma) {
+            if (this.declutterMode == 2) {
+              this.sVisibility.set('block');
+              this.sVisibilityDeclutterMode2.set('block');
+            } else {
+              this.sVisibility.set('block');
+              this.sVisibilityDeclutterMode2.set('block');
+            }
+          } else {
+            if (this.declutterMode == 2) {
+              this.sVisibility.set('none');
+              this.sVisibilityDeclutterMode2.set('block');
+            } else {
+              this.sVisibility.set('block');
+              this.sVisibilityDeclutterMode2.set('block');
+            }
+          }
+        }
+      });
 
+    sub
+      .on('declutterMode')
+      .whenChanged()
+      .handle((value) => {
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
+        this.declutterMode = value;
+        if (this.forcedFma) {
+          this.sVisibility.set('block');
+          this.sVisibilityDeclutterMode2.set('block');
+        } else {
+          if (this.declutterMode == 2) {
+            this.sVisibility.set('none');
+            this.sVisibilityDeclutterMode2.set('block');
+          } else {
+            this.sVisibility.set('block');
+            this.sVisibilityDeclutterMode2.set('block');
+          }
+        }
+      });
 
     sub.on('hEvent').handle((eventName) => {
       if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-          SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
+        SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
       }
     });
     this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-
 
     sub.on('fpa').handle((fpa) => {
       this.data.fpa = fpa;
       this.needsUpdate = true;
     });
     sub.on('da').handle((da) => {
-        this.data.da = da;
-        this.needsUpdate = true;
+      this.data.da = da;
+      this.needsUpdate = true;
     });
     sub.on('rollAr').handle((r) => {
-        this.data.roll = r;
-        this.needsUpdate = true;
+      this.data.roll = r;
+      this.needsUpdate = true;
     });
     sub.on('pitchAr').handle((p) => {
-        this.data.pitch = p;
-        this.needsUpdate = true;
+      this.data.pitch = p;
+      this.needsUpdate = true;
     });
     sub.on('realTime').handle((_t) => {
       if (this.needsUpdate) {
-          this.needsUpdate = false;
-          const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation(); 
-          if (daAndFpaValid) {
-              // this.threeDegRef.instance.classList.remove('HiddenElement');
-              this.MoveThreeDegreeMark();
-          } else {
-              // this.threeDegRef.instance.classList.add('HiddenElement');
-          }
+        this.needsUpdate = false;
+        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+        if (daAndFpaValid) {
+          // this.threeDegRef.instance.classList.remove('HiddenElement');
+          this.MoveThreeDegreeMark();
+        } else {
+          // this.threeDegRef.instance.classList.add('HiddenElement');
+        }
       }
     });
   }
 
-
-
-
   private MoveThreeDegreeMark() {
-    const daLimConv = this.data.da.value * DistanceSpacing / ValueSpacing;
-    const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
-    const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
-    const rollSin = Math.sin(-this.data.roll.value * Math.PI / 180);
+    const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
+    const pitchSubFpaConv =
+      calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
+    const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
+    const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
     this.threeDegLine.instance.style.transform = `translate3d(${xOffset}px, 0px, 0px)`;
-}
+  }
   render(): VNode {
     const result = [] as SVGTextElement[];
 
-  
-
-
     for (let i = 1; i < 7; i++) {
-      result.push(<path d={`M 518.26,${512 - i * 182.857} h -71.1 v 11`} display={this.sVisibility}/>);
+      result.push(<path d={`M 518.26,${512 - i * 182.857} h -71.1 v 11`} display={this.sVisibility} />);
       result.push(<path d={`M 761.74,${512 - i * 182.857} h 71.1 v 11`} display={this.sVisibility} />);
     }
 
     for (let i = 1; i < 5; i++) {
       // negative pitch, right dotted lines
-      (i == 1) ? this.sVisibilitySwitch = this.sVisibilityDeclutterMode2 : this.sVisibilitySwitch = this.sVisibility; 
+      i == 1 ? (this.sVisibilitySwitch = this.sVisibilityDeclutterMode2) : (this.sVisibilitySwitch = this.sVisibility);
       result.push(
         <path class="ScaledStroke" d={`m 761.74,${512 + i * 182.857} h 12`} display={this.sVisibilitySwitch} />,
         <path class="ScaledStroke" d={`m 781.44,${512 + i * 182.857} h 12`} display={this.sVisibilitySwitch} />,
@@ -745,41 +736,52 @@ class PitchScale extends DisplayComponent<{
       );
     }
 
-      // //3° line
-      // class={{ HiddenElement: this.props.lsVisible }}
-        result.push(
-          // threeDegRef={this.props.threeDegRef} 
+    // //3° line
+    // class={{ HiddenElement: this.props.lsVisible }}
+    result.push(
+      // threeDegRef={this.props.threeDegRef}
 
-          <g id="ThreeDegreeLine" ref={this.threeDegLine} class={{ HiddenElement: this.lsHidden }} display={this.sVisibilityDeclutterMode2} >
-            <path d={`M 565,${512 + (3/5) * 182.857} h -80 `} />
-            <path d={`M 713,${512 + (3/5) * 182.857} h 80 `} />
-          </g>
-        )
-        
+      <g
+        id="ThreeDegreeLine"
+        ref={this.threeDegLine}
+        class={{ HiddenElement: this.lsHidden }}
+        display={this.sVisibilityDeclutterMode2}
+      >
+        <path d={`M 565,${512 + (3 / 5) * 182.857} h -80 `} />
+        <path d={`M 713,${512 + (3 / 5) * 182.857} h 80 `} />
+      </g>,
+    );
 
     for (let i = -4; i < 7; i++) {
       if (i === 0) {
         continue;
       }
-      (i == -1) ? this.sVisibilitySwitch = this.sVisibilityDeclutterMode2 : this.sVisibilitySwitch = this.sVisibility; 
+      i == -1 ? (this.sVisibilitySwitch = this.sVisibilityDeclutterMode2) : (this.sVisibilitySwitch = this.sVisibility);
 
       const value: number = i * 5;
       const str: string = value.toString();
       result.push(
-        <text class="FontSmall Green Fill EndAlign" x="445" y={512 - i * 182.857 + 8.35} display={this.sVisibilitySwitch}>
+        <text
+          class="FontSmall Green Fill EndAlign"
+          x="445"
+          y={512 - i * 182.857 + 8.35}
+          display={this.sVisibilitySwitch}
+        >
           {str}
         </text>,
       );
       result.push(
-        <text class="FontSmall Green Fill StartAlign" x="835" y={512 - i * 182.857 + 8.35} display={this.sVisibilitySwitch}>
+        <text
+          class="FontSmall Green Fill StartAlign"
+          x="835"
+          y={512 - i * 182.857 + 8.35}
+          display={this.sVisibilitySwitch}
+        >
           {str}
         </text>,
       );
     }
 
-    return <g class="ScaledStroke" >
-      {result}
-
-      </g>;
+    return <g class="ScaledStroke">{result}</g>;
   }
 }

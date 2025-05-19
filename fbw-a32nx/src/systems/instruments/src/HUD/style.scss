@@ -9,6 +9,13 @@
   font-style: normal;
 }
 
+
+.debug{
+  fill:none;
+  stroke:red;
+}
+
+
 .hud-svg {
   position: absolute;
   width: 1280x;
@@ -132,6 +139,10 @@
 
 .FontMediumSmaller {
   font-size: 5.4px;
+}
+
+.FontMediumSmallest {
+  font-size: 4.5px;
 }
 
 .FontSmall {
