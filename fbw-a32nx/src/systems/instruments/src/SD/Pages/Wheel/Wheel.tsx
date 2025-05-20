@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSimVar, useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
@@ -232,18 +232,53 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
   const available = eng1 === 1 && eng2 === 1;
 
   const [autoBrakeLevel] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'Number', maxStaleness);
+  const [autoBrakeActive] = useSimVar('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean', maxStaleness);
+  const autoBrakeDisengaged = !autoBrakeActive;
 
-  return autoBrakeLevel !== 0 ? (
-    <SvgGroup x={x} y={y}>
-      <text className={`Large ${available ? 'Green' : 'Amber'}`}>AUTO BRK</text>
+  const [isVisible, setIsVisible] = useState(true);
+  const [shouldFlash, setShouldFlash] = useState(false);
 
-      <SvgGroup x={40} y={32}>
-        {autoBrakeLevel === 1 ? <AutoBrakeLevel text="LO" available={available} /> : null}
-        {autoBrakeLevel === 2 ? <AutoBrakeLevel text="MED" available={available} /> : null}
-        {autoBrakeLevel === 3 ? <AutoBrakeLevel text="MAX" available={available} /> : null}
+  useEffect(() => {
+    if (autoBrakeDisengaged) {
+      setShouldFlash(true);
+      const flashInterval = setInterval(() => {
+        setIsVisible((prev) => !prev);
+      }, 500);
+
+      const timeoutId = setTimeout(() => {
+        setShouldFlash(false);
+        setIsVisible(true);
+        clearInterval(flashInterval);
+      }, 10000);
+
+      return () => {
+        clearInterval(flashInterval);
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [autoBrakeDisengaged]);
+
+  if (autoBrakeLevel !== 0) {
+    return (
+      <SvgGroup x={x} y={y}>
+        <text className={`Large ${available ? 'Green' : 'Amber'}`}>AUTO BRK</text>
+
+        <SvgGroup x={40} y={32}>
+          {autoBrakeLevel === 1 ? <AutoBrakeLevel text="LO" available={available} /> : null}
+          {autoBrakeLevel === 2 ? <AutoBrakeLevel text="MED" available={available} /> : null}
+          {autoBrakeLevel === 3 ? <AutoBrakeLevel text="MAX" available={available} /> : null}
+        </SvgGroup>
       </SvgGroup>
-    </SvgGroup>
-  ) : null;
+    );
+  } else if (autoBrakeDisengaged && shouldFlash) {
+    return (
+      <SvgGroup x={x} y={y}>
+        {isVisible && <text className="Large Green">AUTO BRK</text>}
+      </SvgGroup>
+    );
+  }
+
+  return null;
 };
 
 interface AutoBrakeLevelProps {
