@@ -1,6 +1,5 @@
 import { FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import './MfdFmsInit.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
@@ -24,6 +23,8 @@ import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { AtsuStatusCodes } from '@datalink/common';
 import { FmsRouterMessages } from '@datalink/router';
+
+import './MfdFmsInit.scss';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -539,6 +540,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               </div>
               <InputField<number, number, false>
                 dataEntryFormat={new TripWindFormat()}
+                dataHandlerDuringValidation={async (v) => this.props.fmcService.master?.fmgc.data.tripWind.set(v)}
                 mandatory={Subject.create(false)}
                 disabled={this.tripWindDisabled} // TODO
                 readonlyValue={this.props.fmcService.master.fmgc.data.tripWind}
