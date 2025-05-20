@@ -14,7 +14,7 @@ import { FgBusProvider } from 'instruments/src/HUD/shared/FgBusProvider';
 import { getDisplayIndex, HUDComponent } from './HUD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
-import { HUDSimvarPublisher, HUDSimvars } from './shared/HUDSimvarPublisher';
+import { HUDSimvarPublisher, HUDSimvars, HUDSymbolsPublisher } from './shared/HUDSimvarPublisher';
 
 import './style.scss';
 
@@ -49,6 +49,7 @@ class A32NX_HUD extends BaseInstrument {
 
   private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
 
+  private readonly symbolPublisher = new HUDSymbolsPublisher(this.bus);
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -61,6 +62,7 @@ class A32NX_HUD extends BaseInstrument {
     super();
 
     this.backplane.addPublisher('HudSimvars', this.simVarPublisher);
+    this.backplane.addPublisher('HUDSymbolsPublisher', this.symbolPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addInstrument('arincProvider', this.arincProvider);
     this.backplane.addInstrument('fgBusProvider', this.fgBusProvider);

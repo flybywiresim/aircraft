@@ -15,13 +15,14 @@ import {
   ClockEvents,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 
-import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
+import { SimplaneBaroMode } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-
+import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 const UnitDigits = (value: number) => {
   let text: string;
   if (value < 0) {
@@ -90,7 +91,7 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
 
   private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-  private readonly baroMode = ConsumerSubject.create<SimplaneBaroMode>(null, 'QNH');
+  private baroMode = new Arinc429Word(0);
 
   private isNegativeSub = Subject.create('hidden');
 
@@ -123,7 +124,7 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & SimplaneValues>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & FgBus & FcuBus>();
 
     // FIXME clean this up.. should be handled by an IE in the XML
 

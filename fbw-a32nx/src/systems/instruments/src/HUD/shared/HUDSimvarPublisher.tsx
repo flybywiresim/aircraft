@@ -55,7 +55,6 @@ export type HUDSimvars = AdirsSimVars &
     potentiometerFo: number;
     pitch: number;
     roll: number;
-    // FIXME these two need ADR switching and per-side switching for baro with SwitchableSimVarProvider
     baroCorrectedAltitude: number;
     pressureAltitude: number;
     speed: number;
@@ -151,6 +150,8 @@ export type HUDSimvars = AdirsSimVars &
     fac1BetaTargetRaw: number;
     fac2BetaTargetRaw: number;
     irMaintWordRaw: number;
+    trueHeadingRaw: number;
+    trueTrackRaw: number;
     slatPosLeft: number;
     fm1NavDiscrete: number;
     fm1EisDiscrete2Raw: number;
@@ -572,6 +573,8 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['fac1BetaTargetRaw', { name: HUDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],
     ['fac2BetaTargetRaw', { name: HUDVars.fac2BetaTargetRaw, type: SimVarValueType.Number }],
     ['irMaintWordRaw', { name: HUDVars.irMaintWordRaw, type: SimVarValueType.Number }],
+    ['trueHeadingRaw', { name: HUDVars.trueHeadingRaw, type: SimVarValueType.Number }],
+    ['trueTrackRaw', { name: HUDVars.trueTrackRaw, type: SimVarValueType.Number }],
     ['slatPosLeft', { name: HUDVars.slatPosLeft, type: SimVarValueType.Number }],
     ['fm1NavDiscrete', { name: HUDVars.fm1NavDiscrete, type: SimVarValueType.Number }],
     ['fm1EisDiscrete2Raw', { name: HUDVars.fm1EisDiscrete2, type: SimVarValueType.Number }],

@@ -2,9 +2,34 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {Subject, ClockEvents, DisplayComponent, FSComponent, Subscribable, VNode, NodeReference } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429WordData, GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
+import {
+  Subject,
+  ClockEvents,
+  DisplayComponent,
+  FSComponent,
+  Subscribable,
+  VNode,
+  NodeReference,
+} from '@microsoft/msfs-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429RegisterSubject,
+  Arinc429WordData,
+  GenericDataListenerSync,
+  LegType,
+  RunwaySurface,
+  TurnDirection,
+  VorType,
+  EfisOption,
+  EfisNdMode,
+  NdSymbol,
+  NdSymbolTypeFlags,
+  HUDSyntheticRunway,
+} from '@flybywiresim/fbw-sdk';
 
+import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
+import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
 import { getDisplayIndex } from './HUD';
 import { calculateHorizonOffsetFromPitch, getSmallestAngle } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -13,381 +38,345 @@ import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublish
 import { DmcEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 
-class initAndFinalBearings{
-    initialBearing: number;
-    finalBearing: number;
+class initAndFinalBearings {
+  initialBearing: number;
+  finalBearing: number;
 }
 
 export class SyntheticRunway extends DisplayComponent<{
-    bus: ArincEventBus; 
-    filteredRadioAlt: Subscribable<number>;
+  bus: ArincEventBus;
+  filteredRadioAlt: Subscribable<number>;
 }> {
-    
-    private filteredRadioAltitude = 0;
-    private flightPhase = -1;
-    private declutterMode = 0;
-    private crosswindMode = false;
-    private sVisibility = Subject.create<String>('');
-    private data : HUDSyntheticRunway;
-    private validData = false;
-    private alt : number;
-    private logOnce = 0;
-    private belowMda = true;
-    private altitude = 0;
-    private lat : number;
-    
-    private long: number;
-    
-    private heading : number;
-    private readonly mda = Arinc429RegisterSubject.createEmpty();
-    private readonly dh = Arinc429RegisterSubject.createEmpty();
-    private nMda = 0;
-    private aMda = 0;
-    private landingElevation = 0;
-    private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
-    // private centerlineGroupRef = FSComponent.createRef<SVGGElement>();
-    
-    private pathRefs: NodeReference<SVGTextElement>[] = [];
-    private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
-    
-    private toRadians(deg: number){
-        return deg/180*Math.PI;
+  private filteredRadioAltitude = 0;
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode = false;
+  private sVisibility = Subject.create<String>('');
+  private data: HUDSyntheticRunway;
+  private validData = false;
+  private alt: number;
+  private logOnce = 0;
+  private belowMda = true;
+  private altitude = 0;
+  private lat: number;
+  private long: number;
+  private heading: number;
+
+  private readonly mda = Arinc429RegisterSubject.createEmpty();
+  private readonly dh = Arinc429RegisterSubject.createEmpty();
+  private nMda = 0;
+  private aMda = 0;
+  private landingElevation = 0;
+  private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
+  // private centerlineGroupRef = FSComponent.createRef<SVGGElement>();
+
+  private pathRefs: NodeReference<SVGTextElement>[] = [];
+  private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
+
+  private toRadians(deg: number) {
+    return (deg / 180) * Math.PI;
+  }
+  private toDdegrees(rad: number) {
+    return (rad / Math.PI) * 180;
+  }
+
+  private updateIndication(): void {
+    const altDelta = this.mda.get().value - this.altitude;
+    const altDeltaDh = this.dh.get().value - this.altitude;
+    let MdaOrDh = 0;
+    altDelta > altDeltaDh ? (MdaOrDh = altDelta) : (MdaOrDh = altDeltaDh);
+    MdaOrDh > 0 ? (this.belowMda = true) : (this.belowMda = false);
+    if (this.belowMda || this.filteredRadioAltitude < 10) {
+      this.sVisibility.set('none');
+    } else {
+      this.declutterMode > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
     }
-    private toDdegrees(rad: number){
-        return rad/Math.PI*180;
-    }
-    
-    private updateIndication(): void {
-        const altDelta = this.mda.get().value - this.altitude;
-        const altDeltaDh = this.dh.get().value - this.altitude;
-        let MdaOrDh = 0;
-        (altDelta > altDeltaDh) ? MdaOrDh =  altDelta : MdaOrDh = altDeltaDh;
-        (MdaOrDh > 0) ? this.belowMda = true : this.belowMda = false;
-        if(this.belowMda || this.filteredRadioAltitude < 10){
-            this.sVisibility.set("none")
-        }else{
-            (this.declutterMode > 0 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
-        }      
-        // console.log(
-        //     "mdaOrDh: "+ MdaOrDh +
-        //     "this.belowMda: "+ this.belowMda +
-        //     "this.filteredRadioAltitude: "+ this.filteredRadioAltitude
-        // );
+    // console.log(
+    //     "mdaOrDh: "+ MdaOrDh +
+    //     "this.belowMda: "+ this.belowMda +
+    //     "this.filteredRadioAltitude: "+ this.filteredRadioAltitude
+    // );
+  }
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData>();
+
+    sub
+      .on('fm1DhRaw')
+      .whenChanged()
+      .handle((dh) => {
+        this.updateIndication();
+      });
+
+    sub
+      .on('fm1MdaRaw')
+      .whenChanged()
+      .handle((ra) => {
+        this.updateIndication();
+      });
+
+    sub
+      .on('baroMode')
+      .whenChanged()
+      .handle(() => {
+        this.updateIndication();
+      });
+
+    this.mda.sub(this.updateIndication.bind(this));
+    sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+    sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
+
+    this.props.filteredRadioAlt.sub((fra) => {
+      this.filteredRadioAltitude = fra;
+    }, true);
+
+    sub
+      .on('declutterMode')
+      .whenChanged()
+      .handle((value) => {
+        if (this.belowMda) {
+          this.sVisibility.set('none');
+        } else {
+          value > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+        }
+      });
+
+    sub.on('symbol').handle((data) => {
+      this.data = data;
+      if (this.data === undefined) {
+        console.log('symbol data not loaded');
       }
-    onAfterRender(node: VNode): void {
-        super.onAfterRender(node);
+    });
 
-        const arincSub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
+    sub
+      .on('realTime')
+      .atFrequency(8)
+      .handle((_t) => {
+        this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+        this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+        this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-        const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & SimplaneValues >();
-           
-        arincSub
-        .on('fm1DhRaw')
-        .whenChanged()
-        .handle((dh) => {
-            this.updateIndication();
-        });
+        if (this.data !== undefined) {
+          //console.log("defined data");
+          this.updateSyntheticRunway();
+        } else {
+          console.log('undefined data...');
+        }
+      });
 
-        arincSub
-        .on('fm1MdaRaw')
-        .whenChanged()
-        .handle((ra) => {
-            this.updateIndication();
-        });
+    sub.on('trueHeading').handle((h) => {
+      if (h.isNormalOperation()) {
+        this.heading = h.value;
+      }
+    });
+  }
 
-        arincSub
-        .on('baroMode')
-        .whenChanged()
-        .handle((m) => {
-          this.altMode = m;
-          this.updateIndication();
-        });
-  
-        sub
-        .on('altitudeAr').whenChanged()
-        .handle((a) => {
-          // TODO filtered alt
-          this.altitude = a.value;
-          this.updateIndication();
-        });
+  // 	Phiφ is latitude, Lambdaλ is longitude, θ is the bearing (clockwise from north), δ is the angular distance d/R; d being the distance travelled, R the earth’s radius
+  //  (all angles in radians)
 
-        this.mda.sub(this.updateIndication.bind(this));
-        arincSub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-        arincSub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
+  DestFromPointCoordsBearingDistance(brng: number, d: number, Lat1: number, Lon1: number): LatLongAlt {
+    const rBrng = (brng / 180) * Math.PI;
+    const rLat1 = (Lat1 / 180) * Math.PI;
+    const rLon1 = (Lon1 / 180) * Math.PI;
+    const R = 6371;
+    const L = d / 1000;
 
-        this.props.filteredRadioAlt.sub((fra) => {
-            this.filteredRadioAltitude = fra;
-          }, true);
+    const rLat2 = Math.asin(Math.sin(rLat1) * Math.cos(L / R) + Math.cos(rLat1) * Math.sin(L / R) * Math.cos(rBrng));
+    const rLon2 =
+      rLon1 +
+      Math.atan2(
+        Math.sin(rBrng) * Math.sin(L / R) * Math.cos(rLat1),
+        Math.cos(L / R) - Math.sin(rLat1) * Math.sin(rLat2),
+      );
 
-        sub.on('declutterMode').whenChanged().handle((value) => { 
-            if(this.belowMda){
-                this.sVisibility.set("none")
-            }else{
-                (value > 0 ) ? this.sVisibility.set("none") : this.sVisibility.set("block"); 
-            }
-        }); 
+    const dLat2 = (rLat2 / Math.PI) * 180;
+    const dLon2 = (rLon2 / Math.PI) * 180;
 
+    return new LatLongAlt(dLat2, dLon2);
+  }
 
-        sub.on('realTime').atFrequency(8).handle((_t) => {
-            this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
-            this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-            this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-       
-            if(this.data !== undefined){
-                //console.log("defined data");
-                this.updateSyntheticRunway();
-            }else{
-                //console.log("undefined data");
-            }
-        });
-        
-        
-        sub.on('symbol').handle((data) => {
-                    this.data = data;  
-        });
+  updateSyntheticRunway() {
+    const JKCoords: LatLongAlt[] = [];
+    const centerLineCoords: LatLongAlt[] = [];
 
-        sub.on('trueHeading').handle((heading) => {
-            if (heading.isNormalOperation) {
-                this.heading = heading.value;
-            }
-        });
+    const np1 = this.DestFromPointCoordsBearingDistance(
+      this.data.direction,
+      this.data.length,
+      this.data.cornerCoordinates[3].lat,
+      this.data.cornerCoordinates[3].long,
+    );
+    const np2 = this.DestFromPointCoordsBearingDistance(
+      this.data.direction,
+      this.data.length,
+      this.data.cornerCoordinates[2].lat,
+      this.data.cornerCoordinates[2].long,
+    );
+    JKCoords[0] = np1;
+    JKCoords[1] = np2;
+    JKCoords[2] = this.data.cornerCoordinates[2];
+    JKCoords[3] = this.data.cornerCoordinates[3];
+
+    JKCoords[0].alt = this.data.cornerCoordinates[0].alt - 50;
+    JKCoords[1].alt = this.data.cornerCoordinates[1].alt - 50;
+    JKCoords[2].alt = this.data.cornerCoordinates[2].alt - 50;
+    JKCoords[3].alt = this.data.cornerCoordinates[3].alt - 50;
+
+    //extended centerline   //1852: nautical miles to meters
+    const p5 = new LatLongAlt();
+    p5.lat = this.data.thresholdLocation.lat;
+    p5.long = this.data.thresholdLocation.long;
+    p5.alt = this.data.thresholdCrossingHeight - 50; //in feet
+    centerLineCoords.push(p5);
+
+    const p6 = this.DestFromPointCoordsBearingDistance((this.data.direction + 180) % 360, 7500, p5.lat, p5.long);
+    p6.alt = this.data.thresholdCrossingHeight - 50; //in feet
+    centerLineCoords.push(p6);
+    const p7 = this.DestFromPointCoordsBearingDistance((this.data.direction + 180) % 360, 7500, p6.lat, p6.long);
+    p7.alt = this.data.thresholdCrossingHeight - 50; //in feet
+    centerLineCoords.push(p7);
+    const p8 = this.DestFromPointCoordsBearingDistance((this.data.direction + 180) % 360, 7500, p7.lat, p7.long);
+    p8.alt = this.data.thresholdCrossingHeight - 50; //in feet
+    centerLineCoords.push(p8);
+    const p9 = this.DestFromPointCoordsBearingDistance((this.data.direction + 180) % 360, 7500, p8.lat, p8.long);
+    p9.alt = this.data.thresholdCrossingHeight - 50; //in feet
+    centerLineCoords.push(p9);
+
+    if (this.logOnce == 0) {
+      this.logOnce += 1;
+
+      console.log(
+        '\nlocation lat: ' + this.data.location.lat,
+        'location lon: ' + this.data.location.long,
+
+        'thresholdLocation lat: ' + this.data.thresholdLocation.lat,
+        'thresholdLocation lon: ' + this.data.thresholdLocation.long,
+
+        'startLocation lat: ' + this.data.startLocation.lat,
+        'startLocation lon: ' + this.data.startLocation.long,
+
+        'runway bearing: ' + this.data.direction,
+        'runway magnetic bearing: ' + this.data.direction,
+
+        'runway length: ' + this.data.length,
+
+        'threshold elev: ' + this.data.elevation,
+
+        'runway gradient: ' + this.data.gradient,
+
+        'threshold crossing height: ' + this.data.thresholdCrossingHeight,
+
+        '\np1 lat: ' + JKCoords[0].lat,
+        'p1 long: ' + JKCoords[0].long,
+        'p1 alt: ' + JKCoords[0].alt,
+
+        'p2 lat: ' + JKCoords[1].lat,
+        'p2 lon: ' + JKCoords[1].long,
+        'p2 alt: ' + JKCoords[1].alt,
+
+        'p3 lat: ' + this.data.cornerCoordinates[2].lat,
+        'p3 lon: ' + this.data.cornerCoordinates[2].long,
+        'p3 alt: ' + this.data.cornerCoordinates[2].alt,
+
+        'p4 lat: ' + this.data.cornerCoordinates[3].lat,
+        'p4 lon: ' + this.data.cornerCoordinates[3].long,
+        'p4 alt: ' + this.data.cornerCoordinates[3].alt,
+
+        'p5 lat: ' + centerLineCoords[0].lat,
+        'p5 lon: ' + centerLineCoords[0].long,
+        'p5 alt: ' + centerLineCoords[0].alt,
+
+        'p6 lat: ' + centerLineCoords[1].lat,
+        'p6 lon: ' + centerLineCoords[1].long,
+        'p6 alt: ' + centerLineCoords[1].alt,
+      );
     }
 
-    // 	Phiφ is latitude, Lambdaλ is longitude, θ is the bearing (clockwise from north), δ is the angular distance d/R; d being the distance travelled, R the earth’s radius
-    //  (all angles in radians)
-
-    DestFromPointCoordsBearingDistance(brng: number, d: number, Lat1: number, Lon1: number): LatLongAlt {
-        const rBrng = (brng / 180) * Math.PI;
-        const rLat1 = (Lat1 / 180) * Math.PI;
-        const rLon1 = (Lon1 / 180) * Math.PI;
-        const R = 6371;
-        const L = d/1000;
-
-        const rLat2 = Math.asin(Math.sin(rLat1) * Math.cos(L / R) + Math.cos(rLat1) * Math.sin(L / R) * Math.cos(rBrng));
-        const rLon2 =
-          rLon1 +
-          Math.atan2(
-            Math.sin(rBrng) * Math.sin(L / R) * Math.cos(rLat1),
-            Math.cos(L / R) - Math.sin(rLat1) * Math.sin(rLat2),
-          );
-  
-        const dLat2 = (rLat2 / Math.PI) * 180;
-        const dLon2 = (rLon2 / Math.PI) * 180;
-  
-        return new LatLongAlt(dLat2, dLon2);
-    }
-
-    updateSyntheticRunway() {
-        const JKCoords: LatLongAlt[] = [];
-        const centerLineCoords: LatLongAlt[] = [];     
-            
-        const np1 = this.DestFromPointCoordsBearingDistance(
-        this.data.direction,
-        this.data.length,
-        this.data.cornerCoordinates[3].lat,
-        this.data.cornerCoordinates[3].long,
+    if (this.data && JKCoords.length === 4) {
+      for (let i = 0; i < 4; i++) {
+        this.pathRefs[i].instance.setAttribute('d', this.drawPath(JKCoords[i], JKCoords[(i + 1) % 4]));
+      }
+      for (let i = 0; i < 4; i++) {
+        this.centerlinePathRefs[i].instance.setAttribute(
+          'd',
+          this.drawPath(centerLineCoords[i], centerLineCoords[i + 1]),
         );
-        const np2 = this.DestFromPointCoordsBearingDistance(
-        this.data.direction,
-        this.data.length,
-        this.data.cornerCoordinates[2].lat,
-        this.data.cornerCoordinates[2].long,
-        );
-        JKCoords[0] = np1;
-        JKCoords[1] = np2;
-        JKCoords[2] = this.data.cornerCoordinates[2];
-        JKCoords[3] = this.data.cornerCoordinates[3];
-        
-        JKCoords[0].alt = this.data.cornerCoordinates[0].alt - 50;
-        JKCoords[1].alt = this.data.cornerCoordinates[1].alt - 50;
-        JKCoords[2].alt = this.data.cornerCoordinates[2].alt - 50;
-        JKCoords[3].alt = this.data.cornerCoordinates[3].alt - 50;
-        
-        //extended centerline   //1852: nautical miles to meters
-        const p5 = new LatLongAlt;
-        p5.lat = this.data.thresholdLocation.lat;
-        p5.long = this.data.thresholdLocation.long;
-        p5.alt = this.data.thresholdCrossingHeight - 50; //in feet
-        centerLineCoords.push(p5);
+      }
+    }
+  }
 
-        const p6 = this.DestFromPointCoordsBearingDistance((this.data.direction+180) % 360, 7500, p5.lat, p5.long);
-        p6.alt = this.data.thresholdCrossingHeight - 50; //in feet
-        centerLineCoords.push(p6);
-        const p7 = this.DestFromPointCoordsBearingDistance((this.data.direction+180) % 360, 7500, p6.lat, p6.long);
-        p7.alt = this.data.thresholdCrossingHeight - 50; //in feet
-        centerLineCoords.push(p7);
-        const p8 = this.DestFromPointCoordsBearingDistance((this.data.direction+180) % 360, 7500, p7.lat, p7.long);
-        p8.alt = this.data.thresholdCrossingHeight - 50; //in feet
-        centerLineCoords.push(p8);
-        const p9 = this.DestFromPointCoordsBearingDistance((this.data.direction+180) % 360, 7500, p8.lat, p8.long);
-        p9.alt = this.data.thresholdCrossingHeight - 50; //in feet
-        centerLineCoords.push(p9);
+  drawPath(p1: LatLongAlt, p2: LatLongAlt) {
+    const deltaDeg1 = this.calcDeltaDegrees(p1);
+    const deltaDeg2 = this.calcDeltaDegrees(p2);
+    const vis1 = this.inView(deltaDeg1);
+    const vis2 = this.inView(deltaDeg2);
+    if (vis1 && vis2) {
+      return `M${(deltaDeg1[0] * 1280) / 35 + 640},${(-deltaDeg1[1] * 1024) / 28 + 512}
+            L${(deltaDeg2[0] * 1280) / 35 + 640},${(-deltaDeg2[1] * 1024) / 28 + 512}`;
+    }
+    if (vis1 && !vis2) {
+      const deltaDegNew = this.calcDeltaDegrees(this.getInViewPoint(p1, p2));
+      return `M${(deltaDeg1[0] * 1280) / 35 + 640},${(-deltaDeg1[1] * 1024) / 28 + 512}
+            L${(deltaDegNew[0] * 1280) / 35 + 640},${(-deltaDegNew[1] * 1024) / 28 + 512}`;
+    }
+    if (!vis1 && vis2) {
+      const deltaDegNew = this.calcDeltaDegrees(this.getInViewPoint(p2, p1));
+      return `M${(deltaDeg2[0] * 1280) / 35 + 640},${(-deltaDeg2[1] * 1024) / 28 + 512}
+            L${(deltaDegNew[0] * 1280) / 35 + 640},${(-deltaDegNew[1] * 1024) / 28 + 512}`;
+    }
+    return '';
+  }
 
+  getInViewPoint(p1: LatLongAlt, p2: LatLongAlt) {
+    let alpha = 0.5;
+    let bestP = p1;
+    for (let i = 0; i < 5; i++) {
+      const newP = new LatLongAlt(
+        alpha * p1.lat + (1 - alpha) * p2.lat,
+        alpha * p1.long + (1 - alpha) * p2.long,
+        alpha * p1.alt + (1 - alpha) * p2.alt,
+      );
 
-        if(this.logOnce == 0){
-            this.logOnce += 1;
+      if (this.inView(this.calcDeltaDegrees(newP))) {
+        alpha -= 1 / 2 ** (i + 2);
+        bestP = newP;
+      } else {
+        alpha += 1 / 2 ** (i + 2);
+      }
+    }
+    return bestP;
+  }
 
-            console.log(
-                "\nlocation lat: " +
-                this.data.location.lat,
-                "location lon: "+
-                this.data.location.long,
-                
-                "thresholdLocation lat: " +
-                this.data.thresholdLocation.lat,
-                "thresholdLocation lon: "+
-                this.data.thresholdLocation.long,
-                
-                "startLocation lat: " +
-                this.data.startLocation.lat,
-                "startLocation lon: "+
-                this.data.startLocation.long,
-                
-                "runway bearing: " +
-                this.data.direction,
-                "runway magnetic bearing: " +
-                this.data.direction,
-                
-                "runway length: " +
-                this.data.length,
-                
-                "threshold elev: " +
-                this.data.elevation,
-                
-                "runway gradient: " +
-                this.data.gradient,
-                
-                "threshold crossing height: " +
-                this.data.thresholdCrossingHeight,
-                
-                
-                "\np1 lat: " +
-                JKCoords[0].lat,
-                "p1 long: " +
-                JKCoords[0].long,
-                "p1 alt: " +
-                JKCoords[0].alt,
-                
-                
-                
-                "p2 lat: " +
-                JKCoords[1].lat,
-                "p2 lon: "+
-                JKCoords[1].long,
-                "p2 alt: "+
-                JKCoords[1].alt,
-                
-                "p3 lat: " +
-                this.data.cornerCoordinates[2].lat,
-                "p3 lon: "+
-                this.data.cornerCoordinates[2].long,
-                "p3 alt: "+
-                this.data.cornerCoordinates[2].alt,
-                
-                "p4 lat: " +
-                this.data.cornerCoordinates[3].lat,
-                "p4 lon: "+
-                this.data.cornerCoordinates[3].long,
-                "p4 alt: "+
-                this.data.cornerCoordinates[3].alt,
-                
-                "p5 lat: " +
-                centerLineCoords[0].lat,
-                "p5 lon: "+
-                centerLineCoords[0].long,
-                "p5 alt: "+
-                centerLineCoords[0].alt,
-                
-                "p6 lat: " +
-                centerLineCoords[1].lat,
-                "p6 lon: "+
-                centerLineCoords[1].long,
-                "p6 alt: "+
-                centerLineCoords[1].alt
-            );
-        }
-        
-    
-        if (this.data && JKCoords.length === 4) {
-            for (let i = 0; i < 4; i++) {
-                this.pathRefs[i].instance.setAttribute('d', this.drawPath(JKCoords[i], JKCoords[(i + 1) % 4]));
-            }
-            for (let i = 0; i < 4; i++) {
-                this.centerlinePathRefs[i].instance.setAttribute('d', this.drawPath(centerLineCoords[i], centerLineCoords[(i + 1) ]));
-            }
-        }   
+  calcDeltaDegrees(p: LatLongAlt) {
+    const dist = Avionics.Utils.computeGreatCircleDistance({ lat: this.lat, long: this.long }, p); // in nautical miles
+    const heading = Avionics.Utils.computeGreatCircleHeading({ lat: this.lat, long: this.long }, p); // in degrees
+    const deltaHeading = getSmallestAngle(heading, this.heading);
+    const deltaPitch = (Math.atan(((p.alt - this.alt) * 0.3048) / (dist * 1852)) / Math.PI) * 180;
+    return [deltaHeading, deltaPitch]; // in degrees
+  }
+
+  inView(delta: number[]) {
+    //return Math.abs(delta[0]) <= 25 && Math.abs(delta[1]) <= 28;  //ori
+    return Math.abs(delta[0]) <= 35 && Math.abs(delta[1]) <= 28;
+  }
+
+  render(): VNode {
+    const res: SVGPathElement[] = [];
+    for (let i = 0; i < 4; i++) {
+      const pathRef = FSComponent.createRef<SVGTextElement>();
+      res.push(<path class="SmallStroke Green" ref={pathRef} d="" />);
+      this.pathRefs.push(pathRef);
     }
-    
-    drawPath(p1: LatLongAlt, p2:LatLongAlt) {
-        const deltaDeg1 = this.calcDeltaDegrees(p1);
-        const deltaDeg2 = this.calcDeltaDegrees(p2);
-        const vis1 = this.inView(deltaDeg1);
-        const vis2 = this.inView(deltaDeg2);
-        if (vis1 && vis2) {
-            return `M${deltaDeg1[0] * 1280 / 35 + 640},${-deltaDeg1[1] * 1024 / 28 + 512}
-            L${deltaDeg2[0] * 1280 / 35 + 640},${-deltaDeg2[1] * 1024 / 28 + 512}`;
-        } if (vis1 && !vis2) {
-            const deltaDegNew = this.calcDeltaDegrees(this.getInViewPoint(p1, p2));
-            return `M${deltaDeg1[0] * 1280 / 35 + 640},${-deltaDeg1[1] * 1024 / 28 + 512}
-            L${deltaDegNew[0] * 1280 / 35 + 640},${-deltaDegNew[1] * 1024 / 28 + 512}`;
-        } if (!vis1 && vis2) {
-            const deltaDegNew = this.calcDeltaDegrees(this.getInViewPoint(p2, p1));
-            return `M${deltaDeg2[0] * 1280 / 35 + 640},${-deltaDeg2[1] * 1024 / 28 + 512}
-            L${deltaDegNew[0] * 1280 / 35 + 640},${-deltaDegNew[1] * 1024 / 28 + 512}`;
-        }
-        return '';
+    for (let i = 0; i < 4; i++) {
+      const centerlineRef = FSComponent.createRef<SVGTextElement>();
+      res.push(<path class="SmallStroke Green" ref={centerlineRef} d="" />);
+      this.centerlinePathRefs.push(centerlineRef);
     }
-    
-    getInViewPoint(p1: LatLongAlt, p2:LatLongAlt) {
-        let alpha = 0.5;
-        let bestP = p1;
-        for (let i = 0; i < 5; i++) {
-            const newP = new LatLongAlt(
-                alpha * p1.lat + (1 - alpha) * p2.lat, 
-                alpha * p1.long + (1 - alpha) * p2.long, 
-                alpha * p1.alt + (1 - alpha) * p2.alt);
-                
-            if (this.inView(this.calcDeltaDegrees(newP))) {
-                alpha -= 1 / 2 ** (i + 2);
-                bestP = newP;
-            } else {
-                alpha += 1 / 2 ** (i + 2);
-            }
-        }
-        return bestP;
-    }
-    
-    calcDeltaDegrees(p:LatLongAlt) {
-        const dist = Avionics.Utils.computeGreatCircleDistance({ lat: this.lat, long: this.long }, p); // in nautical miles
-        const heading = Avionics.Utils.computeGreatCircleHeading({ lat: this.lat, long: this.long }, p); // in degrees
-        const deltaHeading = getSmallestAngle(heading, this.heading);
-        const deltaPitch = Math.atan((p.alt - this.alt) * 0.3048 / (dist * 1852)) / Math.PI * 180;
-        return [deltaHeading, deltaPitch]; // in degrees
-    }
-    
-    inView(delta: number[]) {
-        //return Math.abs(delta[0]) <= 25 && Math.abs(delta[1]) <= 28;  //ori
-        return Math.abs(delta[0]) <= 35 && Math.abs(delta[1]) <= 28;
-        
-    }
-    
-    render(): VNode {
-        const res : SVGPathElement[] = [];
-        for (let i = 0; i < 4; i++) {
-            const pathRef = FSComponent.createRef<SVGTextElement>();
-            res.push(<path class="SmallStroke Green" ref={pathRef} d="" />);
-            this.pathRefs.push(pathRef);
-        }
-        for (let i = 0; i < 4; i++) {
-            const centerlineRef = FSComponent.createRef<SVGTextElement>();
-            res.push(<path class="SmallStroke Green" ref={centerlineRef} d="" />);
-            this.centerlinePathRefs.push(centerlineRef);
-        }
-        
-        return (
-            <g id="SyntheticRunway" display={this.sVisibility}>
-                {res}
-            </g>
-        );
-    }
+
+    return (
+      <g id="SyntheticRunway" display={this.sVisibility}>
+        {res}
+      </g>
+    );
+  }
 }

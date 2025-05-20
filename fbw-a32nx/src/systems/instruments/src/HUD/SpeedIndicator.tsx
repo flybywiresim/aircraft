@@ -1639,7 +1639,6 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       this.upperBoundRef.instance.setAttribute('y', '-8');
       this.lowerBoundRef.instance.setAttribute('y', '38.5');
     }
-    console.log('xwind mode changed');
   }
 
   render(): VNode {

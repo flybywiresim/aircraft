@@ -26,7 +26,6 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { AutoThrustMode } from '@shared/autopilot';
 import { HudElemsVis, LagFilter, getBitMask } from './HUDUtils';
@@ -153,7 +152,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
   private inLandingPhases = false;
 
-  private fcuEisDiscreteWord2 = new Arinc429Word(0);
+  private baroMode = new Arinc429Word(0);
 
   private readonly mda = Arinc429RegisterSubject.createEmpty();
 
@@ -164,9 +163,9 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
       !this.landingElevation.isFailureWarning() &&
       !this.landingElevation.isNoComputedData() &&
       this.inLandingPhases &&
-      this.fcuEisDiscreteWord2.bitValueOr(29, false);
+      this.baroMode.bitValueOr(29, false);
 
-    this.qfeLandingAltValid = this.inLandingPhases && !this.fcuEisDiscreteWord2.bitValueOr(29, true);
+    this.qfeLandingAltValid = this.inLandingPhases && !this.baroMode.bitValueOr(29, true);
 
     const altDelta = this.mda.get().value - this.altitude;
 
@@ -211,7 +210,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
       .on('fcuEisDiscreteWord2') //baromode
       .whenChanged()
       .handle((m) => {
-        this.fcuEisDiscreteWord2 = m;
+        this.baroMode = m;
         this.updateIndication();
       });
 

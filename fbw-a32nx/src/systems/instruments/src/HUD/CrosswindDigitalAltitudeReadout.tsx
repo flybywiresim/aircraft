@@ -15,12 +15,13 @@ import {
   ClockEvents,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 
-import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
+import { FgBus } from './shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 
 const TensDigits = (value: number) => {
   let text: string;
@@ -76,7 +77,7 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
 
   private readonly altitude = Arinc429RegisterSubject.createEmpty();
 
-  private readonly baroMode = ConsumerSubject.create<SimplaneBaroMode>(null, 'QNH');
+  private baroMode = new Arinc429Word(0);
 
   private isNegativeSub = Subject.create('hidden');
 
@@ -106,7 +107,7 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & SimplaneValues>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & FcuBus>();
 
     // FIXME clean this up.. should be handled by an IE in the XML
 
@@ -155,7 +156,12 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
     // FIXME once the ADR has the proper baro alt implementation this will need filtered altitude with source selection
     sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
 
-    this.baroMode.setConsumer(sub.on('baroMode'));
+    sub
+      .on('fcuEisDiscreteWord2') //baromode
+      .whenChanged()
+      .handle((m) => {
+        this.baroMode = m;
+      });
   }
 
   render(): VNode {

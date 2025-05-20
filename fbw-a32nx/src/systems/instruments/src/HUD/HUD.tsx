@@ -314,13 +314,13 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.elems.windIndicator}>
             <WindIndicator bus={this.props.bus} />
           </g>
-          {/*
+
           <AttitudeIndicatorFixedCenter
             bus={this.props.bus}
             isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
             instrument={this.props.instrument}
-          /> */}
+          />
 
           <AltitudeIndicator bus={this.props.bus} />
 
@@ -351,13 +351,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z"
             />
           </g>
-
-          <AttitudeIndicatorFixedCenter
-            bus={this.props.bus}
-            isAttExcessive={this.isAttExcessive}
-            filteredRadioAlt={this.filteredRadioAltitude}
-            instrument={this.props.instrument}
-          />
 
           <ExtendedHorizon
             bus={this.props.bus}
