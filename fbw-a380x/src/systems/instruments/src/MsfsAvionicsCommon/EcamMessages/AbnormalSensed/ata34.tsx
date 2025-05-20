@@ -716,12 +716,18 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'LOC MODE AVAIL ONLY',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
+      /*
+      // FIX ME Should be split across two lines end aligned with _ within this item:
+      WHEN L/G DOWN & AP OFF:
+      ____________________________ALTN LAW
+      ____________________________USE MAN PITCH TRIM
+      */
       {
-        name: 'WHEN L/G DOWN AND AP OFF : USE MAN PITCH TRIM',
-        sensed: true,
+        name: 'WHEN L/G DOWN AND & OFF : USE MAN PITCH TRIM',
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
