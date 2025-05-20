@@ -21,6 +21,7 @@ import {
   setFuelTruckButtonState,
   setGpuButtonState,
   setJetWayButtonState,
+  setStairsButtonState,
   useEventBus,
 } from '@flybywiresim/flypad';
 
@@ -46,6 +47,7 @@ enum ServiceButton {
   Main2Left,
   Upper1Left,
   JetBridge,
+  Stairs,
   FuelTruck,
   Gpu,
   FrontCargoDoor,
@@ -138,10 +140,8 @@ export const A380Services: React.FC = () => {
   const toggleMain2LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 3);
   const toggleMain4RightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 10);
   const toggleUpper1LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 11);
-  const toggleJetBridgeAndStairs = () => {
-    SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
-    SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
-  };
+  const toggleJetBridge = () => SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
+  const toggleStairs = () => SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
   const toggleFrontCargoDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 17);
   const toggleBaggageTruck = () => SimVar.SetSimVarValue('K:REQUEST_LUGGAGE', 'bool', true);
   const toggleCateringTruck = () => SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
@@ -156,6 +156,7 @@ export const A380Services: React.FC = () => {
     serviceDoorButtonState,
     cargo1DoorButtonState,
     jetWayButtonState,
+    stairsButtonState,
     fuelTruckButtonState,
     gpuButtonState,
     baggageButtonState,
@@ -165,6 +166,8 @@ export const A380Services: React.FC = () => {
   // Required so these can be used inside the useTimeout callback
   const jetWayButtonStateRef = useRef(jetWayButtonState);
   jetWayButtonStateRef.current = jetWayButtonState;
+  const stairsButtonStateRef = useRef(stairsButtonState);
+  stairsButtonStateRef.current = stairsButtonState;
   const baggageButtonStateRef = useRef(baggageButtonState);
   baggageButtonStateRef.current = baggageButtonState;
   const cateringButtonStateRef = useRef(cateringButtonState);
@@ -318,7 +321,18 @@ export const A380Services: React.FC = () => {
           setBoarding1DoorButtonState,
           main1LeftDoorOpen,
         );
-        toggleJetBridgeAndStairs();
+        toggleJetBridge();
+        break;
+      case ServiceButton.Stairs:
+        handleComplexService(
+          ServiceButton.Stairs,
+          stairsButtonStateRef,
+          setStairsButtonState,
+          boarding1DoorButtonState,
+          setBoarding1DoorButtonState,
+          main1LeftDoorOpen,
+        );
+        toggleStairs();
         break;
       case ServiceButton.BaggageTruck:
         handleComplexService(
@@ -448,6 +462,17 @@ export const A380Services: React.FC = () => {
     );
   }, [main1LeftDoorOpen]);
 
+  // Cabin Door listener for Stairs Button
+  useEffect(() => {
+    complexServiceListenerHandling(
+      stairsButtonStateRef,
+      setStairsButtonState,
+      boarding1DoorButtonState,
+      setBoarding1DoorButtonState,
+      main1LeftDoorOpen,
+    );
+  }, [main1LeftDoorOpen]);
+
   // Cargo Door listener for Baggage Button
   useEffect(() => {
     complexServiceListenerHandling(
@@ -480,6 +505,7 @@ export const A380Services: React.FC = () => {
       dispatch(setServiceDoorButtonState(ServiceButtonState.DISABLED));
       dispatch(setCargo1DoorButtonState(ServiceButtonState.DISABLED));
       dispatch(setJetWayButtonState(ServiceButtonState.DISABLED));
+      dispatch(setStairsButtonState(ServiceButtonState.DISABLED));
       dispatch(setFuelTruckButtonState(ServiceButtonState.DISABLED));
       dispatch(setGpuButtonState(ServiceButtonState.DISABLED));
       dispatch(setBaggageButtonState(ServiceButtonState.DISABLED));
@@ -508,6 +534,7 @@ export const A380Services: React.FC = () => {
         cargo1DoorButtonState,
         cateringButtonState,
         jetWayButtonState,
+        stairsButtonState,
         fuelTruckButtonState,
         gpuButtonState,
         baggageButtonState,
@@ -520,6 +547,7 @@ export const A380Services: React.FC = () => {
       dispatch(setServiceDoorButtonState(ServiceButtonState.INACTIVE));
       dispatch(setCargo1DoorButtonState(ServiceButtonState.INACTIVE));
       dispatch(setJetWayButtonState(ServiceButtonState.INACTIVE));
+      dispatch(setStairsButtonState(ServiceButtonState.INACTIVE));
       dispatch(setFuelTruckButtonState(ServiceButtonState.INACTIVE));
       dispatch(setGpuButtonState(ServiceButtonState.INACTIVE));
       dispatch(setBaggageButtonState(ServiceButtonState.INACTIVE));
@@ -555,6 +583,15 @@ export const A380Services: React.FC = () => {
           name={t('Ground.Services.JetBridge')}
           state={jetWayButtonState}
           onClick={() => handleButtonClick(ServiceButton.JetBridge)}
+        >
+          <PersonPlusFill size={36} />
+        </GroundServiceButton>
+
+        {/* PASSENGER STAIRS */}
+        <GroundServiceButton
+          name={t('Ground.Services.Stairs')}
+          state={stairsButtonState}
+          onClick={() => handleButtonClick(ServiceButton.Stairs)}
         >
           <PersonPlusFill size={36} />
         </GroundServiceButton>
