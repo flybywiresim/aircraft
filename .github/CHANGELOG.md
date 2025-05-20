@@ -31,6 +31,7 @@
 1. [FMS] Use proper DME location for AF, CD, FD legs on MSFS2024 and add MSFS2020 fallback to improve AF legs - @tracernz (Mike)
 1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
 1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
+1. [A32NX/FMS] Add approach via auto-selection. - @tracernz (Mike)
 
 ## 0.13.0
 
