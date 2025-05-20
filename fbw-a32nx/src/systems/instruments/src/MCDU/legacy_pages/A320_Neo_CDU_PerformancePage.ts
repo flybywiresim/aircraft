@@ -458,7 +458,7 @@ export class CDUPerformancePage {
         managedSpeedCell = `\xa0${mcdu.managedSpeedClimb.toFixed(0)}/${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}`;
       } else if (mcdu.managedSpeedTargetIsMach) {
         managedSpeedCell = `\xa0${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}`;
-      } else {
+      } else if (mcdu.managedSpeedTarget !== null) {
         managedSpeedCell = `\xa0${mcdu.managedSpeedTarget.toFixed(0)}`;
       }
     } else {
@@ -977,9 +977,9 @@ export class CDUPerformancePage {
       sltRetrCell = `{green}${mcdu.approachSpeeds.s.toFixed(0)}{end}`;
       cleanCell = `{green}${mcdu.approachSpeeds.gd.toFixed(0)}{end}`;
     }
-    if (isFinite(mcdu.vApp)) {
+    if (mcdu.pilotVapp !== null) {
       // pilot override
-      vappCell = `{cyan}${mcdu.vApp.toFixed(0).padStart(3, '\xa0')}{end}`;
+      vappCell = `{cyan}${mcdu.pilotVapp.toFixed(0).padStart(3, '\xa0')}{end}`;
     }
     mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
       if (mcdu.setPerfApprVApp(value)) {
