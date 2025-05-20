@@ -1,10 +1,8 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-await-in-loop */
-// Copyright (c) 2022 FlyByWire Simulations
-// SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import {
@@ -13,6 +11,7 @@ import {
   FlightDeckBounds,
   GPUManagement,
   GroundSupportPublisher,
+  isMsfs2024,
   MsfsElectricsPublisher,
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
@@ -26,6 +25,9 @@ import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
+import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -83,13 +85,15 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly keyInterceptor: KeyInterceptor;
 
-  private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
-
   private readonly aircraftSync: AircraftSync;
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
   private readonly telexCheck = new TelexCheck();
+
+  private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
+
+  private readonly msfsFlightPlanSync: MsfsFlightPlanSync;
 
   public readonly xmlConfig: Document;
   /**interactionpoint 8 is GPU connection and 1 GPU in total */
@@ -124,10 +128,17 @@ class ExtrasHost extends BaseInstrument {
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
     this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
-    this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
 
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+
+    if (isMsfs2024()) {
+      NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+
+      this.msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus);
+    } else {
+      this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
+    }
 
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
     this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);
@@ -161,7 +172,7 @@ class ExtrasHost extends BaseInstrument {
     this.pushbuttonCheck.connectedCallback();
     this.versionCheck.connectedCallback();
     this.keyInterceptor.connectedCallback();
-    this.flightPlanAsoboSync.connectedCallback();
+    this.flightPlanAsoboSync?.connectedCallback();
     this.aircraftSync.connectedCallback();
 
     this.backplane.init();
@@ -183,7 +194,7 @@ class ExtrasHost extends BaseInstrument {
         this.hEventPublisher.startPublish();
         this.versionCheck.startPublish();
         this.keyInterceptor.startPublish();
-        this.flightPlanAsoboSync.init();
+        this.flightPlanAsoboSync?.init();
         this.aircraftSync.startPublish();
         this.telexCheck.showPopup();
       }
