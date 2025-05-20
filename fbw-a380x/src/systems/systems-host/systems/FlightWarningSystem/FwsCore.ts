@@ -3203,11 +3203,17 @@ export class FwsCore {
 
     let vcsDiscreteWordToUse: Arinc429Register;
 
-    if (this.cpiomBVcsAppDiscreteWord1.isNormalOperation()) {
+    if (this.cpiomBVcsAppDiscreteWord1.isNormalOperation() || this.cpiomBVcsAppDiscreteWord1.isFunctionalTest()) {
       vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord1;
-    } else if (this.cpiomBVcsAppDiscreteWord2.isNormalOperation()) {
+    } else if (
+      this.cpiomBVcsAppDiscreteWord2.isNormalOperation() ||
+      this.cpiomBVcsAppDiscreteWord2.isFunctionalTest()
+    ) {
       vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord2;
-    } else if (this.cpiomBVcsAppDiscreteWord3.isNormalOperation()) {
+    } else if (
+      this.cpiomBVcsAppDiscreteWord3.isNormalOperation() ||
+      this.cpiomBVcsAppDiscreteWord3.isFunctionalTest()
+    ) {
       vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord3;
     } else {
       vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord4;
@@ -3215,11 +3221,17 @@ export class FwsCore {
 
     let tcsDiscreteWordToUse: Arinc429Register;
 
-    if (this.cpiomBTcsAppDiscreteWord1.isNormalOperation()) {
+    if (this.cpiomBTcsAppDiscreteWord1.isNormalOperation() || this.cpiomBTcsAppDiscreteWord1.isFunctionalTest()) {
       tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord1;
-    } else if (this.cpiomBTcsAppDiscreteWord2.isNormalOperation()) {
+    } else if (
+      this.cpiomBTcsAppDiscreteWord2.isNormalOperation() ||
+      this.cpiomBTcsAppDiscreteWord2.isFunctionalTest()
+    ) {
       tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord2;
-    } else if (this.cpiomBTcsAppDiscreteWord3.isNormalOperation()) {
+    } else if (
+      this.cpiomBTcsAppDiscreteWord3.isNormalOperation() ||
+      this.cpiomBTcsAppDiscreteWord3.isFunctionalTest()
+    ) {
       tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord3;
     } else {
       tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord4;
@@ -3228,18 +3240,24 @@ export class FwsCore {
     let cpcsDiscreteWordToUse: Arinc429Register;
     let cpcsToUseId: number | null = null;
 
-    if (this.cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
+    if (this.cpiomBCpcsAppDiscreteWord1.isNormalOperation() || this.cpiomBCpcsAppDiscreteWord1.isFunctionalTest()) {
       cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord1;
       cpcsToUseId = 1;
-    } else if (this.cpiomBCpcsAppDiscreteWord2.isNormalOperation()) {
+    } else if (
+      this.cpiomBCpcsAppDiscreteWord2.isNormalOperation() ||
+      this.cpiomBCpcsAppDiscreteWord2.isFunctionalTest()
+    ) {
       cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord2;
       cpcsToUseId = 2;
-    } else if (this.cpiomBCpcsAppDiscreteWord3.isNormalOperation()) {
+    } else if (
+      this.cpiomBCpcsAppDiscreteWord3.isNormalOperation() ||
+      this.cpiomBCpcsAppDiscreteWord3.isFunctionalTest()
+    ) {
       cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord3;
       cpcsToUseId = 3;
     } else {
       cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord4;
-      if (this.cpiomBCpcsAppDiscreteWord4.isNormalOperation()) {
+      if (this.cpiomBCpcsAppDiscreteWord4.isNormalOperation() || this.cpiomBCpcsAppDiscreteWord4.isFunctionalTest()) {
         cpcsToUseId = 4;
       }
     }
@@ -3445,6 +3463,8 @@ export class FwsCore {
     this.ocsm3AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_AUTO_PARTITION_FAILURE', 'bool'));
     this.ocsm4AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_AUTO_PARTITION_FAILURE', 'bool'));
 
+    // FIX ME Faults should be inhibited in case of all CPC words FW to handle unpowered states.
+    // Currently these are set as FW if cpiom/cpc is unpowered or normally failed so it's not possible to distinugish between the two cases.
     this.ocsmAutoCtlFault.set(
       (this.cpiomBCpcsAppDiscreteWord1.isFailureWarning() &&
         this.cpiomBCpcsAppDiscreteWord2.isFailureWarning() &&
@@ -3470,12 +3490,22 @@ export class FwsCore {
     this.ocsm3Failure.set(ocsm3Channel1Failure && ocsm3Channel2Failure);
     this.ocsm4Failure.set(ocsm4Channel1Failure && ocsm4Channel2Failure);
 
-    const numberOfCpcsFaults = [
-      this.cpiomBCpcsAppDiscreteWord1.isFailureWarning(),
-      this.cpiomBCpcsAppDiscreteWord2.isFailureWarning(),
-      this.cpiomBCpcsAppDiscreteWord3.isFailureWarning(),
-      this.cpiomBCpcsAppDiscreteWord4.isFailureWarning(),
-    ].filter((cpcs) => cpcs === true).length;
+    let numberOfCpcsFaults = 0;
+    if (this.cpiomBCpcsAppDiscreteWord1.isFailureWarning()) {
+      numberOfCpcsFaults++;
+    }
+
+    if (this.cpiomBCpcsAppDiscreteWord2.isFailureWarning()) {
+      numberOfCpcsFaults++;
+    }
+
+    if (this.cpiomBCpcsAppDiscreteWord3.isFailureWarning()) {
+      numberOfCpcsFaults++;
+    }
+
+    if (this.cpiomBCpcsAppDiscreteWord4.isFailureWarning()) {
+      numberOfCpcsFaults++;
+    }
 
     this.pressRedundLost.set(numberOfCpcsFaults > 1);
 
