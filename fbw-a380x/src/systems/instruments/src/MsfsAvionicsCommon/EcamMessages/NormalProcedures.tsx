@@ -101,7 +101,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'T.O',
         style: ChecklistLineStyle.SubHeadline,
-        labelNotCompleted: '',
         sensed: true,
       },
       {
@@ -241,7 +240,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
   1000012: {
     title: 'LANDING',
     items: [
-      { name: 'LDG', style: ChecklistLineStyle.SubHeadline, sensed: true, labelNotCompleted: '' },
+      { name: 'LDG', style: ChecklistLineStyle.SubHeadline, sensed: true },
       {
         name: 'SEAT BELTS',
         labelNotCompleted: 'ON',
