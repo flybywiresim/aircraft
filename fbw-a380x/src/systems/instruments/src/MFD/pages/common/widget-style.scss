@@ -291,6 +291,12 @@
   display: flex;
   flex: 1;
   border-bottom: 2px solid $display-light-grey;
+  z-index: 0;
+}
+
+.mfd-top-tab-navigator-bar-element-outer.active {
+  border-bottom-style: none;
+  z-index: 1;
 }
 
 .mfd-top-tab-navigator-bar-element-label {
@@ -311,10 +317,7 @@
   border: 2px outset $display-cyan;
 }
 
-.mfd-top-tab-navigator-bar-element-outer.active {
-  background-color: $display-background;
-  border-bottom-style: none;
-}
+
 
 .mfd-top-tab-navigator-tab-content {
   flex: 1;

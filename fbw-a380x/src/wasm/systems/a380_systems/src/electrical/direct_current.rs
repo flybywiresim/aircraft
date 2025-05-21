@@ -157,7 +157,7 @@ impl A380DirectCurrentElectrical {
                 &self.battery_2,
                 &mut self.tr_2_contactor,
                 &self.dc_bus_2,
-                !ac_state.tr_2_powered_by_ac_bus(),
+                ac_state.ground_servicing_active(),
             ),
             (
                 &mut self.tr_ess,
@@ -291,11 +291,13 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.dc_bus_2_to_dc_eha_contactor, &self.dc_eha_bus);
         electricity.flow(&self.inter_bus_line_ess_contactor, &self.dc_eha_bus);
 
-        self.tr_2_to_dc_gnd_flt_service_bus_contactor.close_when(
-            electricity.is_powered(&self.tr_2) && !electricity.is_powered(&self.dc_bus_2),
-        );
+        self.tr_2_to_dc_gnd_flt_service_bus_contactor
+            .close_when(self.tr_2.should_close_ground_service_line_contactor());
         self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
-            .close_when(electricity.is_powered(&self.dc_bus_2));
+            .close_when(
+                electricity.is_powered(&self.dc_bus_2)
+                    && self.tr_2_to_dc_gnd_flt_service_bus_contactor.is_open(),
+            );
         electricity.flow(&self.tr_2, &self.tr_2_to_dc_gnd_flt_service_bus_contactor);
         electricity.flow(
             &self.dc_bus_2,

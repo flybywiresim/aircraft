@@ -53,7 +53,7 @@ type PbdWaypoint = {
   pbdDistance: NauticalMiles;
 };
 
-export type PilotWaypoint = LatLonWaypoint | PbxWaypoint | PbdWaypoint | null;
+export type PilotWaypoint = LatLonWaypoint | PbxWaypoint | PbdWaypoint;
 
 export enum LatLonFormatType {
   UserSetting = 'user-setting',
