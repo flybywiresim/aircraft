@@ -21,7 +21,7 @@ export interface RadioAltimeterEvents extends BaseRadioAltimeterEvents, RadioAlt
 
 export class RadioAltimeterPublisher extends SimVarPublisher<RadioAltimeterEvents> {
   /**
-   * Creates an AdcPublisher.
+   * Creates a RadioAltimeterPublisher.
    * @param bus The event bus to which to publish.
    * @param pacer An optional pacer to use to control the rate of publishing.
    */
