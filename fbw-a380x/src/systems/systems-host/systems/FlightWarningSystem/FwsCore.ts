@@ -1910,7 +1910,7 @@ export class FwsCore {
     );
 
     this.fwcOut126.setSsm(
-      this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FunctionalTest,
+      this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
     );
 
     // Inhibit single chimes for the first two seconds after power-on
