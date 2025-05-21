@@ -50,6 +50,12 @@ export class FlightPathVector extends DisplayComponent<{
   filteredRadioAlt: Subscribable<number>;
 }> {
   private bird = FSComponent.createRef<SVGGElement>();
+  private birdPathCircle = FSComponent.createRef<SVGPathElement>();
+  private birdPath1 = FSComponent.createRef<SVGPathElement>();
+  private birdPath2 = FSComponent.createRef<SVGPathElement>();
+  private birdPath3 = FSComponent.createRef<SVGPathElement>();
+  private birdOffRange;
+  private crosswindMode;
   private readonly fpvFlagVisible = Subject.create(false);
 
   private fcuDiscreteWord1 = new Arinc429Word(0);
@@ -67,6 +73,9 @@ export class FlightPathVector extends DisplayComponent<{
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus>();
 
+    sub.on('crosswindMode').handle((d) => {
+      this.crosswindMode = d;
+    });
     sub
       .on('fcuDiscreteWord1')
       .whenChanged()
@@ -112,6 +121,7 @@ export class FlightPathVector extends DisplayComponent<{
   }
 
   private moveBird() {
+    let xOffsetLim;
     const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
       calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
@@ -121,7 +131,38 @@ export class FlightPathVector extends DisplayComponent<{
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
 
-    this.bird.instance.style.transform = `translate3d(${xOffset}px, ${yOffset - 182.86}px, 0px)`;
+    //set lateral limit for fdCue
+    if (this.crosswindMode == 0) {
+      if (xOffset < -428 || xOffset > 360) {
+        this.birdOffRange = true;
+      } else {
+        this.birdOffRange = false;
+      }
+
+      xOffsetLim = Math.max(Math.min(xOffset, 360), -428);
+    } else {
+      if (xOffset < -540 || xOffset > 540) {
+        this.birdOffRange = true;
+      } else {
+        this.birdOffRange = false;
+      }
+      xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
+    }
+
+    this.bird.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - 182.86}px, 0px)`;
+
+    if (this.birdOffRange) {
+      this.birdPathCircle.instance.setAttribute('stroke-dasharray', '3 6');
+      this.birdPath1.instance.setAttribute('stroke-dasharray', '3 6');
+      this.birdPath2.instance.setAttribute('stroke-dasharray', '3 6');
+      this.birdPath3.instance.setAttribute('stroke-dasharray', '3 6');
+    } else {
+      this.birdPathCircle.instance.setAttribute('stroke-dasharray', '');
+      this.birdPath1.instance.setAttribute('stroke-dasharray', '');
+      this.birdPath2.instance.setAttribute('stroke-dasharray', '');
+      this.birdPath3.instance.setAttribute('stroke-dasharray', '');
+    }
+    //console.log(xOffset);
   }
 
   render(): VNode {
@@ -129,10 +170,19 @@ export class FlightPathVector extends DisplayComponent<{
       <>
         <g ref={this.bird} id="bird">
           <g id="FlightPathVector">
-            <circle class="SmallStroke Green" cx="640" cy="512" r="16" />
-            <path class="SmallStroke Green" d="m 590,512 h 34" />
-            <path class="SmallStroke Green" d="m 656,512 h 34" />
-            <path class="SmallStroke Green" d="M 640,496 v -16" />
+            <path
+              ref={this.birdPathCircle}
+              d="M 624 512 C 624 520.8,  631.2 528,      640 528
+              S 656 520.8,      656 512
+              S 648.8 496,      640 496
+              S 624 503.2,      624 512 Z"
+              class="SmallStroke Green"
+              stroke-dasharray="3 6"
+            />
+
+            <path ref={this.birdPath1} class="SmallStroke Green" d="m 590,512 h 34" stroke-dasharray="3 6" />
+            <path ref={this.birdPath2} class="SmallStroke Green" d="m 656,512 h 34" stroke-dasharray="3 6" />
+            <path ref={this.birdPath3} class="SmallStroke Green" d="M 640,496 v -16" stroke-dasharray="3 6" />
           </g>
           <TotalFlightPathAngle bus={this.props.bus} />
 

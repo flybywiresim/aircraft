@@ -33,7 +33,8 @@ export class FlightPathDirector extends DisplayComponent<{
 }> {
   private flightPhase = -1;
   private declutterMode = 0;
-  private crosswindMode = false;
+  private crosswindMode;
+  private fdCueOffRange;
   private sVisibility = Subject.create<String>('');
 
   private data: FlightPathVectorData = {
@@ -59,7 +60,7 @@ export class FlightPathDirector extends DisplayComponent<{
 
   private birdPath = FSComponent.createRef<SVGGElement>();
 
-  private birdPathWings = FSComponent.createRef<SVGGElement>();
+  private birdPathCircle = FSComponent.createRef<SVGPathElement>();
 
   private readonly shouldFlash = Subject.create(false);
 
@@ -68,6 +69,9 @@ export class FlightPathDirector extends DisplayComponent<{
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus>();
 
+    sub.on('crosswindMode').handle((d) => {
+      this.crosswindMode = d;
+    });
     sub
       .on('fwcFlightPhase')
       .whenChanged()
@@ -196,6 +200,8 @@ export class FlightPathDirector extends DisplayComponent<{
   }
 
   private moveBird() {
+    let xOffsetLim;
+
     if (this.isVisible.get()) {
       const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
       const pitchSubFpaConv =
@@ -215,20 +221,43 @@ export class FlightPathDirector extends DisplayComponent<{
       const xOffset = xOffsetFpv + FDRollOrderLim * 9;
       const yOffset = yOffsetFpv + FDPitchOrderLim * (182.86 / 5);
 
+      //set lateral limit for fdCue
+      if (this.crosswindMode == 0) {
+        if (xOffset < -428 || xOffset > 360) {
+          this.fdCueOffRange = true;
+        } else {
+          this.fdCueOffRange = false;
+        }
+
+        xOffsetLim = Math.max(Math.min(xOffset, 360), -428);
+      } else {
+        if (xOffset < -540 || xOffset > 540) {
+          this.fdCueOffRange = true;
+        } else {
+          this.fdCueOffRange = false;
+        }
+        xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
+      }
+
+      this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - 182.86}px, 0px)`;
+
+      if (this.fdCueOffRange) {
+        this.birdPathCircle.instance.setAttribute('stroke-dasharray', '3 6');
+      } else {
+        this.birdPathCircle.instance.setAttribute('stroke-dasharray', '');
+      }
+
       // console.log(
       //   'FDPitchOrderLim ' +
       //     FDPitchOrderLim +
       //     'FDRollOrderLim ' +
       //     FDRollOrderLim +
-      //     'xOffset ' +
-      //     xOffset +
+      //     'xOffsetLim ' +
+      //     xOffsetLim +
       //     'yOffset ' +
       //     yOffset,
       //   'xOffsetFpv ' + xOffsetFpv + 'yOffsetFpv ' + yOffsetFpv,
       // );
-
-      this.birdPath.instance.style.transform = `translate3d(${xOffset}px, ${yOffset - 182.86}px, 0px)`;
-      //this.birdPathWings.instance.setAttribute('transform', `rotate(${FDRollOffset} 640 512)`);
     }
     this.needsUpdate = false;
   }
@@ -250,8 +279,17 @@ export class FlightPathDirector extends DisplayComponent<{
             visible={this.isVisible}
             flashing={this.shouldFlash}
           >
-            <g ref={this.birdPathWings} id="FlighPathDirector" display={this.sVisibility}>
-              <circle class="SmallStroke Green" cx="640" cy="512" r="10" />
+            <g id="FlighPathDirector" display={this.sVisibility}>
+              {/* <circle class="SmallStroke Green" cx="640" cy="512" r="10" /> */}
+              <path
+                ref={this.birdPathCircle}
+                d="M 630 512 C 630 517.5,  634.5 522,      640 522
+                S 650 517.5,      650 512
+                S 645.5 502,      640 502
+                S 630 506.5,      630 512 Z"
+                class="SmallStroke Green"
+                stroke-dasharray="3 6"
+              />
             </g>
           </FlashOneHertz>
         </svg>
