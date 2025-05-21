@@ -218,7 +218,14 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
     this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
-    this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
+    this.backplane.addPublisher('FmsSymbolsPublisher', this.fmsSymbolsPublisher);
+    this.backplane.addPublisher('EgpwcPublisher', this.egpwcPublisher);
+    this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
+    this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
+    this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
+    this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
+    this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
+    this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
     this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
     this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
     this.backplane.addInstrument('fltOpsAnsu1', this.fltOpsAnsu1, true);
