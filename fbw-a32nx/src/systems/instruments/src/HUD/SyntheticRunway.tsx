@@ -56,18 +56,19 @@ export class SyntheticRunway extends DisplayComponent<{
   private validData = false;
   private alt: number;
   private logOnce = 0;
-  private belowMda = true;
+  private belowMda = true; //set true for debug | false for prod
   private altitude = 0;
   private lat: number;
   private long: number;
   private heading: number;
-
-  private readonly mda = Arinc429RegisterSubject.createEmpty();
-  private readonly dh = Arinc429RegisterSubject.createEmpty();
+  private MdaOrDh: number;
+  private mda: number;
+  private dh: number;
   private nMda = 0;
   private aMda = 0;
   private landingElevation = 0;
   private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
+  private prevRwyHdg;
   // private centerlineGroupRef = FSComponent.createRef<SVGGElement>();
 
   private pathRefs: NodeReference<SVGTextElement>[] = [];
@@ -81,40 +82,29 @@ export class SyntheticRunway extends DisplayComponent<{
   }
 
   private updateIndication(): void {
-    const altDelta = this.mda.get().value - this.altitude;
-    const altDeltaDh = this.dh.get().value - this.altitude;
-    let MdaOrDh = 0;
-    altDelta > altDeltaDh ? (MdaOrDh = altDelta) : (MdaOrDh = altDeltaDh);
-    MdaOrDh > 0 ? (this.belowMda = true) : (this.belowMda = false);
-    if (this.belowMda || this.filteredRadioAltitude < 10) {
+    let altDelta = this.mda;
+    let altDeltaDh = this.dh;
+
+    altDelta > altDeltaDh ? (this.MdaOrDh = altDelta) : (this.MdaOrDh = altDeltaDh);
+    if (this.filteredRadioAltitude < 10) {
       this.sVisibility.set('none');
-    } else {
-      this.declutterMode > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
     }
     // console.log(
-    //     "mdaOrDh: "+ MdaOrDh +
-    //     "this.belowMda: "+ this.belowMda +
-    //     "this.filteredRadioAltitude: "+ this.filteredRadioAltitude
+    //   'altDelta' +
+    //     this.mda +
+    //     ' altDeltaDh' +
+    //     this.dh +
+    //     ' mdaOrDh: ' +
+    //     this.MdaOrDh +
+    //     ' this.belowMda: ' +
+    //     this.belowMda +
+    //     ' this.filteredRadioAltitude: ' +
+    //     this.filteredRadioAltitude,
     // );
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData>();
-
-    sub
-      .on('fm1DhRaw')
-      .whenChanged()
-      .handle((dh) => {
-        this.updateIndication();
-      });
-
-    sub
-      .on('fm1MdaRaw')
-      .whenChanged()
-      .handle((ra) => {
-        this.updateIndication();
-      });
 
     sub
       .on('baroMode')
@@ -123,19 +113,16 @@ export class SyntheticRunway extends DisplayComponent<{
         this.updateIndication();
       });
 
-    this.mda.sub(this.updateIndication.bind(this));
-    sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
-
     this.props.filteredRadioAlt.sub((fra) => {
       this.filteredRadioAltitude = fra;
     }, true);
 
     sub
       .on('declutterMode')
-      .whenChanged()
+
       .handle((value) => {
-        if (this.belowMda) {
+        //console.log(this.filteredRadioAltitude + ' ' + this.sVisibility);
+        if (this.filteredRadioAltitude < 10) {
           this.sVisibility.set('none');
         } else {
           value > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
@@ -151,18 +138,25 @@ export class SyntheticRunway extends DisplayComponent<{
 
     sub
       .on('realTime')
-      .atFrequency(8)
+      .atFrequency(4)
       .handle((_t) => {
         this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
         this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+        this.mda = SimVar.GetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+        this.dh = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
         if (this.data !== undefined) {
-          //console.log("defined data");
+          if (this.prevRwyHdg !== this.data.direction) {
+            this.prevRwyHdg = this.data.direction;
+            this.logOnce = 0;
+            //console.log("defined data");
+          }
           this.updateSyntheticRunway();
         } else {
           console.log('undefined data...');
         }
+        this.updateIndication();
       });
 
     sub.on('trueHeading').handle((h) => {
@@ -197,6 +191,7 @@ export class SyntheticRunway extends DisplayComponent<{
   }
 
   updateSyntheticRunway() {
+    //console.log('update...');
     const JKCoords: LatLongAlt[] = [];
     const centerLineCoords: LatLongAlt[] = [];
 

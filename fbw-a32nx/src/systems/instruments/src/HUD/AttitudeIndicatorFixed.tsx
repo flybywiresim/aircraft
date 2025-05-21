@@ -271,6 +271,54 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
   }
 }
 
+interface DeclutterIndicatorProps {
+  bus: ArincEventBus;
+}
+
+export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps> {
+  private declutterMode;
+
+  private textSub = Subject.create('');
+
+  private declutterModeRef = FSComponent.createRef<SVGPathElement>();
+
+  private handleFdState() {
+    let text: string;
+    if (this.declutterMode == 0) {
+      text = 'N';
+      this.declutterModeRef.instance.style.visibility = 'visible';
+    } else if (this.declutterMode == 1) {
+      text = 'D';
+      this.declutterModeRef.instance.style.visibility = 'visible';
+    } else if (this.declutterMode == 2) {
+      this.declutterModeRef.instance.style.visibility = 'hidden';
+
+      text = '';
+    }
+    this.textSub.set(text);
+  }
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    sub.on('declutterMode').handle((m) => {
+      this.declutterMode = m;
+      this.handleFdState();
+    });
+  }
+
+  render(): VNode {
+    return (
+      <g ref={this.declutterModeRef} id="DeclutterModeIndicator">
+        <text class="FontMedium  MiddleAlign Green" x="1000" y="900">
+          {this.textSub}
+        </text>
+      </g>
+    );
+  }
+}
+
 class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
   private fdEngaged = false;
 

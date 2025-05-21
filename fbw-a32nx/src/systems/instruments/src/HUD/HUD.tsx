@@ -26,7 +26,11 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import './style.scss';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
-import { AttitudeIndicatorFixedCenter, AttitudeIndicatorFixedUpper } from './AttitudeIndicatorFixed';
+import {
+  AttitudeIndicatorFixedCenter,
+  AttitudeIndicatorFixedUpper,
+  DeclutterIndicator,
+} from './AttitudeIndicatorFixed';
 import { FMA } from './FMA';
 import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
 import { Horizon } from './AttitudeIndicatorHorizon';
@@ -373,6 +377,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
           <MachNumber bus={this.props.bus} />
           <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
+          <DeclutterIndicator bus={this.props.bus} />
         </svg>
       </DisplayUnit>
     );
