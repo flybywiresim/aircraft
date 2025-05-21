@@ -54,22 +54,26 @@ export class CDUWindPage {
 
       numEntries = i + 1;
       mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
-        if (value === Keypad.clrValue) {
-          await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
+        try {
+          if (value === Keypad.clrValue) {
+            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
+          } else {
+            const entry = this.parseTrueWindEntry(value);
 
-          CDUWindPage.ShowCLBPage(mcdu, forPlan);
-        } else {
-          const entry = this.parseTrueWindEntry(value);
+            if (entry === null) {
+              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+              scratchpadCallback();
+              return;
+            }
 
-          if (entry === null) {
-            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-            scratchpadCallback();
-            return;
+            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, entry, forPlan);
           }
 
-          await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, entry, forPlan);
-
           CDUWindPage.ShowCLBPage(mcdu, forPlan);
+        } catch (e) {
+          console.error('Error updating climb wind entry:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          scratchpadCallback();
         }
       };
     }
@@ -78,17 +82,23 @@ export class CDUWindPage {
       template[numEntries * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
       mcdu.onLeftInput[numEntries] = async (value, scratchpadCallback) => {
-        const entry = this.parseTrueWindEntry(value);
+        try {
+          const entry = this.parseTrueWindEntry(value);
 
-        if (entry === null) {
-          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+          if (entry === null) {
+            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+            scratchpadCallback();
+            return;
+          }
+
+          await mcdu.flightPlanService.setClimbWindEntry(entry.altitude, entry, forPlan);
+
+          CDUWindPage.ShowCLBPage(mcdu, forPlan);
+        } catch (e) {
+          console.error('Error adding climb wind entry:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
           scratchpadCallback();
-          return;
         }
-
-        await mcdu.flightPlanService.setClimbWindEntry(entry.altitude, entry, forPlan);
-
-        CDUWindPage.ShowCLBPage(mcdu, forPlan);
       };
     }
 
@@ -176,28 +186,33 @@ export class CDUWindPage {
 
       numEntries = i + 1;
       mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
-        if (value === Keypad.clrValue) {
-          if (wind.type !== PropagationType.Entry) {
-            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback();
-            return;
+        try {
+          if (value === Keypad.clrValue) {
+            // Cannot delete a propagated wind entry
+            if (wind.type !== PropagationType.Entry) {
+              mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+              scratchpadCallback();
+              return;
+            }
+
+            await mcdu.flightPlanService.deleteCruiseWindEntry(fpIndex, wind.altitude, forPlan);
+          } else {
+            const entry = this.parseTrueWindEntry(value);
+
+            if (entry === null) {
+              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+              scratchpadCallback();
+              return;
+            }
+
+            await mcdu.flightPlanService.editCruiseWindEntry(fpIndex, wind.altitude, entry, forPlan);
           }
 
-          await mcdu.flightPlanService.deleteCruiseWindEntry(fpIndex, wind.altitude, forPlan);
-
           CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
-        } else {
-          const entry = this.parseTrueWindEntry(value);
-
-          if (entry === null) {
-            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-            scratchpadCallback();
-            return;
-          }
-
-          await mcdu.flightPlanService.editCruiseWindEntry(fpIndex, wind.altitude, entry, forPlan);
-
-          CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
+        } catch (e) {
+          console.error('Error deleting cruise wind entry:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          scratchpadCallback();
         }
       };
     }
@@ -214,9 +229,15 @@ export class CDUWindPage {
           return;
         }
 
-        await mcdu.flightPlanService.addCruiseWindEntry(fpIndex, entry, forPlan);
+        try {
+          await mcdu.flightPlanService.addCruiseWindEntry(fpIndex, entry, forPlan);
 
-        CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
+          CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
+        } catch (e) {
+          console.error('Error adding cruise wind entry:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          scratchpadCallback();
+        }
       };
     }
 
@@ -302,22 +323,26 @@ export class CDUWindPage {
           : '[\xa0]°/[\xa0]{small}{green}/FL100{end}{end}[color]cyan';
 
       mcdu.onLeftInput[lskIndex] = async (value, scratchpadCallback) => {
-        if (value === Keypad.clrValue) {
-          await mcdu.flightPlanService.setAlternateWind(null, forPlan);
+        try {
+          if (value === Keypad.clrValue) {
+            await mcdu.flightPlanService.setAlternateWind(null, forPlan);
+          } else {
+            const wind = CDUWindPage.parseWindVector(value);
 
-          CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
-        } else {
-          const wind = CDUWindPage.parseWindVector(value);
+            if (wind === null) {
+              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+              scratchpadCallback();
+              return;
+            }
 
-          if (wind === null) {
-            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-            scratchpadCallback();
-            return;
+            await mcdu.flightPlanService.setAlternateWind(wind, forPlan);
           }
 
-          await mcdu.flightPlanService.setAlternateWind(wind, forPlan);
-
           CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
+        } catch (e) {
+          console.error('Error updating alternate wind:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          scratchpadCallback();
         }
       };
     }
@@ -337,22 +362,26 @@ export class CDUWindPage {
 
       numEntries = i + 1;
       mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
-        if (value === Keypad.clrValue) {
-          await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, null, forPlan);
+        try {
+          if (value === Keypad.clrValue) {
+            await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, null, forPlan);
+          } else {
+            const entry = this.parseTrueWindEntry(value);
 
-          CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
-        } else {
-          const entry = this.parseTrueWindEntry(value);
+            if (entry === null) {
+              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+              scratchpadCallback();
+              return;
+            }
 
-          if (entry === null) {
-            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-            scratchpadCallback();
-            return;
+            await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, entry, forPlan);
           }
 
-          await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, entry, forPlan);
-
           CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
+        } catch (e) {
+          console.error('Error updating descent wind entry:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          scratchpadCallback();
         }
       };
     }
@@ -369,9 +398,15 @@ export class CDUWindPage {
           return;
         }
 
-        mcdu.flightPlanService.setDescentWindEntry(entry.altitude, entry, forPlan);
+        try {
+          mcdu.flightPlanService.setDescentWindEntry(entry.altitude, entry, forPlan);
 
-        CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
+          CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
+        } catch (e) {
+          console.error('Error adding descent wind entry:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          scratchpadCallback();
+        }
       };
     }
 

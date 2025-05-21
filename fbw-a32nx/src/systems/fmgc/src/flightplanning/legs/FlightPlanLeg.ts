@@ -371,6 +371,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.clearSpeedConstraints();
   }
 
+  hasCruiseWindEntryAt(altitude: number): boolean {
+    return this.cruiseWindEntries.some((entry) => Math.round(entry.altitude / 100) === Math.round(altitude / 100));
+  }
+
   static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
