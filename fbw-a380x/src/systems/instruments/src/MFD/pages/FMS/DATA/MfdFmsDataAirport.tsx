@@ -179,18 +179,18 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
       }
     });
 
-    this.selectedPageIndex.sub((index) => {
-      this.returnButtonVisible.set(index === 0);
-    });
+    this.subs.push(
+      this.selectedPageIndex.sub((index) => {
+        this.returnButtonVisible.set(index === 0);
+      }),
+    );
 
     this.subs.push(
       this.props.mfd.uiService.activeUri.sub((val) => {
         if (val.extra === 'database') {
           this.selectedPageIndex.set(0);
-          this.returnButtonVisible.set(true);
         } else if (val.extra === 'pilot-stored') {
           this.selectedPageIndex.set(1);
-          this.returnButtonVisible.set(false);
         }
       }, true),
     );
