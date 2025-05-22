@@ -3354,7 +3354,7 @@ export class FwsCore {
     const isAbnormalVs = (vs: number): boolean => vs > 1800 || vs < -6350;
     this.abnormalCabVerticalSpeed.set(isAbnormalVs(cabinVs));
 
-    if (this.abnormalCabVerticalSpeed.get()) {
+    if (this.abnormalCabVerticalSpeed.get() && !this.aircraftOnGround) {
       this.cabVsLimitationMemoryNode.write(true, false);
       this.cabVerticalSpeedLimitationActive.set(true);
     } else if (this.shutDownFor50MinutesCheckListReset.get()) {
