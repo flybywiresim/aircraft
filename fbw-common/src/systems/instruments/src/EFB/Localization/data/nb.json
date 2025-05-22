@@ -667,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Bare last inn",
       "None": "Ingen",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Av",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
