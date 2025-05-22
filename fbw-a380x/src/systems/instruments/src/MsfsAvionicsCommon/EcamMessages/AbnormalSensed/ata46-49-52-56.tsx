@@ -40,7 +40,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'IF ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S :',
         sensed: true,
         condition: true,
       },
