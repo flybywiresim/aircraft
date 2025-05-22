@@ -453,7 +453,7 @@ export class FwsCore {
 
   public readonly excessCabinAltitude = Subject.create(false);
 
-  public readonly abnormalCabVirticalSpeed = Subject.create(false);
+  public readonly abnormalCabVerticalSpeed = Subject.create(false);
 
   public readonly cabVerticalSpeedLimitationActive = Subject.create(false);
 
@@ -3352,9 +3352,9 @@ export class FwsCore {
     const cabinVs = cabinVsArinc.isNormalOperation() ? cabinVsArinc.value : mancabinVs;
 
     const isAbnormalVs = (vs: number): boolean => vs > 1800 || vs < -6350;
-    this.abnormalCabVirticalSpeed.set(isAbnormalVs(cabinVs));
+    this.abnormalCabVerticalSpeed.set(isAbnormalVs(cabinVs));
 
-    if (this.abnormalCabVirticalSpeed.get()) {
+    if (this.abnormalCabVerticalSpeed.get()) {
       this.cabVsLimitationMemoryNode.write(true, false);
       this.cabVerticalSpeedLimitationActive.set(true);
     } else if (this.shutDownFor50MinutesCheckListReset.get()) {
