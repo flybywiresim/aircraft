@@ -3880,7 +3880,7 @@ export class FwsAbnormalSensed {
     },
     341800020: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: this.fws.terrSys1Failed,
+      simVarIsActive: this.fws.terrSys1FaultCond,
       notActiveWhenFaults: ['341800022'],
       whichItemsToShow: () => [
         !this.fws.terrSys2Failed.get(),
@@ -3894,7 +3894,7 @@ export class FwsAbnormalSensed {
     },
     341800021: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: this.fws.terrSys2Failed,
+      simVarIsActive: this.fws.terrSys2FaultCond,
       notActiveWhenFaults: ['341800022'],
       whichItemsToShow: () => [
         !this.fws.terrSys1Failed.get(),
@@ -3910,8 +3910,8 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
-        this.fws.terrSys1Failed,
-        this.fws.terrSys2Failed,
+        this.fws.terrSys1FaultCond,
+        this.fws.terrSys2FaultCond,
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true],
@@ -3922,7 +3922,7 @@ export class FwsAbnormalSensed {
     },
     341800023: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: this.fws.taws1Failed,
+      simVarIsActive: this.fws.taws1FaultCond,
       notActiveWhenFaults: ['341800025'],
       whichItemsToShow: () => [
         this.fws.tawsWxrSelected.get() === 1 && !this.fws.taws2Failed.get(),
@@ -3935,7 +3935,7 @@ export class FwsAbnormalSensed {
     },
     341800024: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: this.fws.taws2Failed,
+      simVarIsActive: this.fws.taws2FaultCond,
       notActiveWhenFaults: ['341800025'],
       whichItemsToShow: () => [
         this.fws.tawsWxrSelected.get() === 2 && !this.fws.taws1Failed.get(),
@@ -3948,7 +3948,11 @@ export class FwsAbnormalSensed {
     },
     341800025: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.taws1Failed, this.fws.taws2Failed),
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.taws1FaultCond,
+        this.fws.taws2FaultCond,
+      ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [this.fws.gpwsTerrOff.get(), this.fws.gpwsSysOff.get()],
