@@ -8,6 +8,7 @@ import { AtsuMessageType } from '@datalink/common';
 // FIXME rogue import from EFB
 import { ISimbriefData } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
+import { SimbriefOfpState } from '../LegacyFmsPageInterface';
 
 // FIXME move all to ATSU (systems host)
 
@@ -49,7 +50,13 @@ const lbsToKg = (value) => {
  * Fetch SimBrief OFP data and store on FMCMainDisplay object
  */
 export const getSimBriefOfp = (
-  mcdu: { simbrief: any; setScratchpadMessage(m: McduMessage) },
+  // TODO fix this type
+  mcdu: {
+    simbrief: any;
+    simbriefOfpState: SimbriefOfpState;
+    simbriefOfp: ISimbriefData;
+    setScratchpadMessage(m: McduMessage);
+  },
   updateView: () => void,
   callback = () => {},
 ): Promise<ISimbriefData> => {
@@ -62,11 +69,14 @@ export const getSimBriefOfp = (
   }
 
   mcdu.simbrief['sendStatus'] = 'REQUESTING';
+  mcdu.simbriefOfpState = SimbriefOfpState.Requested;
 
   updateView();
 
   return SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID)
     .then((data) => {
+      mcdu.simbriefOfp = data;
+      mcdu.simbriefOfpState = SimbriefOfpState.Loaded;
       mcdu.simbrief['units'] = data.units;
       mcdu.simbrief['route'] = data.route;
       mcdu.simbrief['cruiseAltitude'] = data.cruiseAltitude;
