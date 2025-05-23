@@ -3143,7 +3143,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const match = s.match(/^([0-9]{4,5})$/);
+    const match = s.match(/^([0-9]{3,5})$/);
     if (match === null) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
@@ -3187,7 +3187,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const match = s.match(/^(([0-9]{4,5})\/?)?(\/([0-9]{4,5}))?$/);
+    const match = s.match(/^(([0-9]{3,5})\/?)?(\/([0-9]{3,5}))?$/);
     if (match === null || (match[2] === undefined && match[4] === undefined) || s.split('/').length > 2) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
@@ -3243,7 +3243,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const match = s.match(/^([0-9]{4,5})$/);
+    const match = s.match(/^([0-9]{3,5})$/);
     if (match === null) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
