@@ -1037,20 +1037,20 @@ void A380PrimComputer::step()
     A380PrimComputer_MATLABFunction(&A380PrimComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word,
       &rtb_y_p);
     if (A380PrimComputer_U.in.discrete_inputs.is_unit_1) {
-      rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.SSM;
-      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.Data;
-      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_2_bus.radio_height_ft.SSM;
-      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_2_bus.radio_height_ft.Data;
+      rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.radio_height_1_ft.SSM;
+      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.radio_height_1_ft.Data;
+      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.radio_height_2_ft.SSM;
+      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.radio_height_2_ft.Data;
     } else if (A380PrimComputer_U.in.discrete_inputs.is_unit_2) {
-      rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.SSM;
-      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.Data;
-      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_1_bus.radio_height_ft.SSM;
-      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_1_bus.radio_height_ft.Data;
+      rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.radio_height_1_ft.SSM;
+      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.radio_height_1_ft.Data;
+      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.radio_height_1_ft.SSM;
+      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.radio_height_1_ft.Data;
     } else {
-      rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_2_bus.radio_height_ft.SSM;
-      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_2_bus.radio_height_ft.Data;
-      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_2_bus.radio_height_ft.SSM;
-      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_2_bus.radio_height_ft.Data;
+      rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.radio_height_2_ft.SSM;
+      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.radio_height_2_ft.Data;
+      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.radio_height_2_ft.SSM;
+      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.radio_height_2_ft.Data;
     }
 
     if (rtb_y_a != static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) {
@@ -4164,8 +4164,8 @@ void A380PrimComputer::step()
       (A380PrimComputer_P.EnumeratedConstant1_Value);
     A380PrimComputer_Y.out.bus_outputs.rudder_2_position_deg.Data = static_cast<real32_T>
       (A380PrimComputer_U.in.analog_inputs.rudder_2_pos_deg);
-    A380PrimComputer_Y.out.bus_outputs.ra_1_bus = A380PrimComputer_U.in.bus_inputs.ra_1_bus;
-    A380PrimComputer_Y.out.bus_outputs.ra_2_bus = A380PrimComputer_U.in.bus_inputs.ra_2_bus;
+    A380PrimComputer_Y.out.bus_outputs.radio_height_1_ft = A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft;
+    A380PrimComputer_Y.out.bus_outputs.radio_height_2_ft = A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft;
     A380PrimComputer_Y.out.bus_outputs.fctl_law_status_word.SSM = static_cast<uint32_T>
       (A380PrimComputer_P.EnumeratedConstant1_Value);
     A380PrimComputer_Y.out.bus_outputs.discrete_status_word_1.SSM = static_cast<uint32_T>

@@ -30,6 +30,20 @@ enum class SignStatusMatrix
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
+
+struct base_prim_pitch_surface_positions
+{
+  real_T left_inboard_elevator_deg;
+  real_T right_inboard_elevator_deg;
+  real_T left_outboard_elevator_deg;
+  real_T right_outboard_elevator_deg;
+  real_T ths_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -288,8 +302,8 @@ struct base_prim_out_bus
   base_arinc_429 rudder_status_word;
   base_arinc_429 rudder_1_position_deg;
   base_arinc_429 rudder_2_position_deg;
-  base_ra_bus ra_1_bus;
-  base_ra_bus ra_2_bus;
+  base_arinc_429 radio_height_1_ft;
+  base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 fe_status_word;
@@ -431,20 +445,6 @@ struct base_prim_lateral_surface_positions
   real_T right_spoiler_8_deg;
   real_T upper_rudder_deg;
   real_T lower_rudder_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-#define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
-
-struct base_prim_pitch_surface_positions
-{
-  real_T left_inboard_elevator_deg;
-  real_T right_inboard_elevator_deg;
-  real_T left_outboard_elevator_deg;
-  real_T right_outboard_elevator_deg;
-  real_T ths_deg;
 };
 
 #endif
