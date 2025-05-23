@@ -77,7 +77,8 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   }
 
   init() {
-    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    // FIXME this should only ever be used within the FMGC
+    const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
     this.clearSelection();
