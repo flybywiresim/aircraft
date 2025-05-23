@@ -32,6 +32,7 @@
 1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
 1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
 1. [A32NX/FMS] Add approach via auto-selection. - @tracernz (Mike)
+1. [A380X/MFD] Fixed ENTER DEST DATA message not clearing automatically - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
