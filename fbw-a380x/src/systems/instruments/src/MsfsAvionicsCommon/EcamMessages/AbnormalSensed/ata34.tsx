@@ -720,10 +720,10 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Green,
       },
       /*
-      // FIX ME Should be split across two lines end aligned with _ within this item:
+      // FIX ME Should be split across two lines end aligned within this item:
       WHEN L/G DOWN & AP OFF:
-      ____________________________ALTN LAW
-      ____________________________USE MAN PITCH TRIM
+                                  ALTN LAW
+                                  USE MAN PITCH TRIM
       */
       {
         name: 'WHEN L/G DOWN AND & OFF : USE MAN PITCH TRIM',
