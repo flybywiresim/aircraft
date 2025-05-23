@@ -1038,13 +1038,24 @@ void A380PrimComputer::step()
       &rtb_y_p);
     if (A380PrimComputer_U.in.discrete_inputs.is_unit_1) {
       rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.SSM;
-      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.Data;
+      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.Data;
+      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_2_bus.radio_height_ft.SSM;
+      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_2_bus.radio_height_ft.Data;
     } else if (A380PrimComputer_U.in.discrete_inputs.is_unit_2) {
       rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.SSM;
-      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.Data;
+      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_1_bus.radio_height_ft.Data;
+      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_1_bus.radio_height_ft.SSM;
+      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_1_bus.radio_height_ft.Data;
     } else {
       rtb_y_a = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_2_bus.radio_height_ft.SSM;
-      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_2_bus.radio_height_ft.Data;
+      rtb_raComputationValue = A380PrimComputer_U.in.bus_inputs.prim_x_bus.ra_2_bus.radio_height_ft.Data;
+      rtb_y_m = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_2_bus.radio_height_ft.SSM;
+      rtb_ra3Word_Data = A380PrimComputer_U.in.bus_inputs.prim_y_bus.ra_2_bus.radio_height_ft.Data;
+    }
+
+    if (rtb_y_a != static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) {
+      rtb_y_m = rtb_y_a;
+      rtb_ra3Word_Data = rtb_raComputationValue;
     }
 
     rtb_OR4 = (rtb_tripleAdrFault || (rtb_doubleAdrFault && A380PrimComputer_P.Constant1_Value_b));
@@ -1058,7 +1069,7 @@ void A380PrimComputer::step()
       NormalOperation)) && (rtb_V_ias > 200.0F) && rtb_OR4), A380PrimComputer_U.in.time.dt,
       A380PrimComputer_P.ConfirmNode1_isRisingEdge, A380PrimComputer_P.ConfirmNode1_timeDelay, &rtb_y_hi,
       &A380PrimComputer_DWork.sf_MATLABFunction_jl);
-    A380PrimComputer_MATLABFunction_c(((rtb_ra3Word_Data > 50.0F) && (rtb_y_a == static_cast<uint32_T>(SignStatusMatrix::
+    A380PrimComputer_MATLABFunction_c(((rtb_ra3Word_Data > 50.0F) && (rtb_y_m == static_cast<uint32_T>(SignStatusMatrix::
       NormalOperation)) && (rtb_V_ias > 200.0F) && rtb_OR4), A380PrimComputer_U.in.time.dt,
       A380PrimComputer_P.ConfirmNode3_isRisingEdge, A380PrimComputer_P.ConfirmNode3_timeDelay, &rtb_y_p,
       &A380PrimComputer_DWork.sf_MATLABFunction_mm);
@@ -1069,7 +1080,7 @@ void A380PrimComputer::step()
       FailureWarning)) || A380PrimComputer_DWork.ra1CoherenceRejected);
     rtb_ra2Invalid = ((A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.SSM == static_cast<uint32_T>
                        (SignStatusMatrix::FailureWarning)) || A380PrimComputer_DWork.ra2CoherenceRejected);
-    rtb_OR = ((rtb_y_a == static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
+    rtb_OR = ((rtb_y_m == static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
               A380PrimComputer_DWork.ra3CoherenceRejected);
     rtb_raComputationValue = 250.0F;
     switch ((!rtb_OR4 + !rtb_ra2Invalid) + !rtb_OR) {
@@ -1098,18 +1109,15 @@ void A380PrimComputer::step()
       break;
 
      case 2:
-      if ((rtb_V_ias <= 180.0F) || ((!rtb_tripleAdrFault) && ((!rtb_doubleAdrFault) ||
-            (!A380PrimComputer_P.Constant1_Value_b)))) {
-        if (rtb_OR4) {
-          rtb_raComputationValue = (A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data + rtb_ra3Word_Data) /
-            2.0F;
-        } else if (rtb_ra2Invalid) {
-          rtb_raComputationValue = (A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data + rtb_ra3Word_Data) /
-            2.0F;
-        } else if (rtb_OR) {
-          rtb_raComputationValue = (A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data +
-            A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data) / 2.0F;
-        }
+      if (rtb_OR4) {
+        rtb_raComputationValue = (A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data + rtb_ra3Word_Data) /
+          2.0F;
+      } else if (rtb_ra2Invalid) {
+        rtb_raComputationValue = (A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data + rtb_ra3Word_Data) /
+          2.0F;
+      } else if (rtb_OR) {
+        rtb_raComputationValue = (A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data +
+          A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data) / 2.0F;
       }
       break;
 
