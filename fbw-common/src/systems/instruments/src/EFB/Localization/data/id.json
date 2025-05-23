@@ -667,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Hanya Muat Saja",
       "None": "Tidak ada",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Mati",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
