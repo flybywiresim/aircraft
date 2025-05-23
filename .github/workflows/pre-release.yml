@@ -177,6 +177,7 @@ jobs:
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env
+          echo TEXTURE_RESOLUTION_8K=true >> .env
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
@@ -293,6 +294,7 @@ jobs:
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env
+          echo TEXTURE_RESOLUTION_8K=false >> .env
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
