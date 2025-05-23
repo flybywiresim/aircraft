@@ -1499,8 +1499,16 @@ export class FwsCore {
 
   public readonly tcasStandbyMemo = Subject.create(false);
 
+  public readonly terrSys1FaultCond = Subject.create(false);
+
+  public readonly terrSys2FaultCond = Subject.create(false);
+
   public readonly terrSys1Failed = Subject.create(false);
   public readonly terrSys2Failed = Subject.create(false);
+
+  public readonly taws1FaultCond = Subject.create(false);
+
+  public readonly taws2FaultCond = Subject.create(false);
 
   public readonly taws1Failed = Subject.create(false);
   public readonly taws2Failed = Subject.create(false);
@@ -4177,12 +4185,17 @@ export class FwsCore {
         this.radioHeight3.valueOr(Infinity) > 1500,
     );
 
+    // TAWS
+    const taws1Powered = this.acESSBusPowered.get() && this.dc108PhBusPowered.get();
+    const taws2Powered = this.ac4BusPowered.get();
     this.terrSys1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool));
+    this.terrSys1FaultCond.set(this.terrSys1Failed.get() && taws1Powered);
     this.terrSys2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool));
-
+    this.terrSys2FaultCond.set(this.terrSys1Failed.get() && taws2Powered);
     this.taws1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool));
     this.taws2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool));
-
+    this.taws1FaultCond.set(this.taws1Failed.get() && taws1Powered);
+    this.taws2FaultCond.set(this.taws2Failed.get() && taws2Powered);
     this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
 
     /* 26 - FIRE */
