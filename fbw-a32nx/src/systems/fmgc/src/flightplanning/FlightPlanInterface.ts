@@ -414,7 +414,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param result the array to write the propagated winds to
    * @param planIndex which flight plan index to do the propagation on
    */
-  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): Promise<PropagatedWindEntry[]>;
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): PropagatedWindEntry[];
 
   /**
    * Adds a cruise wind entry at the specified leg.

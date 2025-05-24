@@ -526,8 +526,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('closeBatch', uuid);
   }
 
-  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): Promise<number> {
-    return this.callFunctionViaRpc('propagateWindsAt', atIndex, result, planIndex);
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], planIndex: number): PropagatedWindEntry[] {
+    return this.propagateWindsAt(atIndex, result, planIndex);
   }
 
   addCruiseWindEntry(atIndex: number, entry: WindEntry, planIndex: number): Promise<void> {

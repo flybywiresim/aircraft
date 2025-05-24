@@ -147,7 +147,7 @@ export class CDUWindPage {
     // TODO handle non-leg gracefully
     const leg = plan.legElementAt(fpIndex);
 
-    const winds = await mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
+    const winds = mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
     const maxCruiseWindEntries = 4;
 
     const template = [
