@@ -80,10 +80,36 @@ struct base_prim_out_bus
   base_arinc_429 rudder_status_word;
   base_arinc_429 rudder_1_position_deg;
   base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 radio_height_1_ft;
+  base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 fe_status_word;
   base_arinc_429 fg_status_word;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
+#define DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
+
+struct base_sec_discrete_inputs
+{
+  boolean_T sec_overhead_button_pressed;
+  boolean_T is_unit_1;
+  boolean_T is_unit_2;
+  boolean_T is_unit_3;
+  boolean_T capt_priority_takeover_pressed;
+  boolean_T fo_priority_takeover_pressed;
+  boolean_T rudder_trim_left_pressed;
+  boolean_T rudder_trim_right_pressed;
+  boolean_T rudder_trim_reset_pressed;
+  boolean_T pitch_trim_up_pressed;
+  boolean_T pitch_trim_down_pressed;
+  boolean_T rat_deployed;
+  boolean_T rat_contactor_closed;
+  boolean_T green_low_pressure;
+  boolean_T yellow_low_pressure;
 };
 
 #endif
@@ -156,30 +182,6 @@ struct base_lgciu_bus
   base_arinc_429 discrete_word_2;
   base_arinc_429 discrete_word_3;
   base_arinc_429 discrete_word_4;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
-#define DEFINED_TYPEDEF_FOR_base_sec_discrete_inputs_
-
-struct base_sec_discrete_inputs
-{
-  boolean_T sec_overhead_button_pressed;
-  boolean_T is_unit_1;
-  boolean_T is_unit_2;
-  boolean_T is_unit_3;
-  boolean_T capt_priority_takeover_pressed;
-  boolean_T fo_priority_takeover_pressed;
-  boolean_T rudder_trim_left_pressed;
-  boolean_T rudder_trim_right_pressed;
-  boolean_T rudder_trim_reset_pressed;
-  boolean_T pitch_trim_up_pressed;
-  boolean_T pitch_trim_down_pressed;
-  boolean_T rat_deployed;
-  boolean_T rat_contactor_closed;
-  boolean_T green_low_pressure;
-  boolean_T yellow_low_pressure;
 };
 
 #endif
