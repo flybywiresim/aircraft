@@ -35,6 +35,7 @@
 1. [A380X/MFD] Fixed ENTER DEST DATA message not clearing automatically - @BravoMike99 (bruno_pt99)
 1. [A380X/FCU] Fix selected speed initial target not being managed speed in non SRS - @BravoMike99 (bruno_pt99)
 1. [A380X/SD] Adjust BLEED page visuals and indications logic - @lukecologne (luke)
+1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
 
 ## 0.13.0
 
