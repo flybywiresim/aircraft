@@ -318,7 +318,7 @@ export class FwsAbnormalSensed {
     211800001: {
       // PACK 1 CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.fdac1Channel1Failure,
+      simVarIsActive: this.fws.pack1Ctl1Fault,
       notActiveWhenFaults: ['211800009', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -329,7 +329,7 @@ export class FwsAbnormalSensed {
     211800002: {
       // PACK 1 CTL 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.fdac1Channel2Failure,
+      simVarIsActive: this.fws.pack1Ctl2Fault,
       notActiveWhenFaults: ['211800009', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -340,7 +340,7 @@ export class FwsAbnormalSensed {
     211800003: {
       // PACK 2 CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.fdac2Channel1Failure,
+      simVarIsActive: this.fws.pack2Ctl1Fault,
       notActiveWhenFaults: ['211800010', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -351,7 +351,7 @@ export class FwsAbnormalSensed {
     211800004: {
       // PACK 2 CTL 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.fdac2Channel2Failure,
+      simVarIsActive: this.fws.pack2Ctl2Fault,
       notActiveWhenFaults: ['211800010', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -673,10 +673,7 @@ export class FwsAbnormalSensed {
     211800035: {
       // ONE PRIMARY CABIN FAN FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 9, 10, 11],
-      simVarIsActive: MappedSubject.create(
-        ([numberOfFanFailures]) => numberOfFanFailures === 1,
-        this.fws.numberOfCabinFanFaults,
-      ),
+      simVarIsActive: this.fws.onePrimaryCabinFanFault,
       notActiveWhenFaults: ['211800023', '211800043', '211800044'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -687,7 +684,7 @@ export class FwsAbnormalSensed {
     211800039: {
       // TEMP CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.taddChannel1Failure,
+      simVarIsActive: this.fws.tempCtl1Fault,
       notActiveWhenFaults: ['211800041'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -698,7 +695,7 @@ export class FwsAbnormalSensed {
     211800040: {
       // TEMP CTL 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.taddChannel2Failure,
+      simVarIsActive: this.fws.tempCtl2Fault,
       notActiveWhenFaults: ['211800041'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -798,10 +795,7 @@ export class FwsAbnormalSensed {
     211800043: {
       // THREE PRIMARY CABIN FANS FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
-      simVarIsActive: MappedSubject.create(
-        ([numberOfFanFailures]) => numberOfFanFailures === 3,
-        this.fws.numberOfCabinFanFaults,
-      ),
+      simVarIsActive: this.fws.threePrimaryCabinFanFault,
       notActiveWhenFaults: ['211800023'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -813,10 +807,7 @@ export class FwsAbnormalSensed {
     211800044: {
       // TWO PRIMARY CABIN FANS FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
-      simVarIsActive: MappedSubject.create(
-        ([numberOfFanFailures]) => numberOfFanFailures === 2,
-        this.fws.numberOfCabinFanFaults,
-      ),
+      simVarIsActive: this.fws.twoPrimaryCabinFanFault,
       notActiveWhenFaults: ['211800023', '211800043'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -828,7 +819,7 @@ export class FwsAbnormalSensed {
     212800001: {
       // AFT VENT CTL 1 FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.vcmAftChannel1Failure,
+      simVarIsActive: this.fws.aftVentCtl1Fault,
       notActiveWhenFaults: ['212800004'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -839,7 +830,7 @@ export class FwsAbnormalSensed {
     212800002: {
       // AFT VENT CTL 2 FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.vcmAftChannel2Failure,
+      simVarIsActive: this.fws.aftVentCtl2Fault,
       notActiveWhenFaults: ['212800004'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -888,7 +879,7 @@ export class FwsAbnormalSensed {
     212800007: {
       // FWD VENT CTL 1 FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.vcmFwdChannel1Failure,
+      simVarIsActive: this.fws.fwdVentCtl1Fault,
       notActiveWhenFaults: ['212800010'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -899,7 +890,7 @@ export class FwsAbnormalSensed {
     212800008: {
       // FWD VENT CTL 2 FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      simVarIsActive: this.fws.vcmFwdChannel2Failure,
+      simVarIsActive: this.fws.fwdVentCtl2Fault,
       notActiveWhenFaults: ['212800010'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -1603,9 +1594,9 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.fms1Fault,
       notActiveWhenFaults: ['221800006'],
       whichItemsToShow: () => [
-        this.fws.fmcAFault.get() && this.fws.fmcCFault.get(),
-        this.fws.fmcAFault.get() && this.fws.fmcBFault.get(),
-        this.fws.fmcAFault.get() && !this.fws.fmcBFault.get() && !this.fws.fmcCFault.get(),
+        !this.fws.fmcAHealthy.get() && !this.fws.fmcCHealthy.get(),
+        !this.fws.fmcAHealthy.get() && !this.fws.fmcBHealthy.get(),
+        !this.fws.fmcAHealthy.get() && this.fws.fmcBHealthy.get() && this.fws.fmcCHealthy.get(),
         true,
       ],
       whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 0],
@@ -1619,9 +1610,9 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.fms2Fault,
       notActiveWhenFaults: ['221800006'],
       whichItemsToShow: () => [
-        this.fws.fmcAFault.get() && this.fws.fmcBFault.get(),
-        this.fws.fmcBFault.get() && this.fws.fmcCFault.get(),
-        this.fws.fmcBFault.get() && !this.fws.fmcAFault.get() && !this.fws.fmcCFault.get(),
+        !this.fws.fmcAHealthy.get() && !this.fws.fmcBHealthy.get(),
+        !this.fws.fmcBHealthy.get() && !this.fws.fmcCHealthy.get(),
+        !this.fws.fmcBHealthy.get() && this.fws.fmcAHealthy.get() && this.fws.fmcCHealthy.get(),
         true,
       ],
       whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 2],
@@ -2413,6 +2404,98 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Fctl,
       inopSysAllPhases: () => [],
     },
+    // PRIM 1 FAULT
+    271800036: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.prim1FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase1112MoreThanOneMin.get(),
+        true,
+        true,
+        true,
+        this.fws.twoPrimsFailed.get(),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        true,
+      ],
+      whichItemsChecked: () => [
+        false,
+        this.fws.prim1OffThenOnMemoryNode.read(),
+        this.fws.prim1OffThenOnMemoryNode.read(),
+        this.fws.prim1PbOff.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    // PRIM 2 FAULT
+    271800037: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.prim2FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase1112MoreThanOneMin.get(),
+        true,
+        true,
+        this.fws.dcEhaPowered.get(),
+        !this.fws.dcEhaPowered.get(),
+        this.fws.twoPrimsFailed.get(),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        true,
+      ],
+      whichItemsChecked: () => [
+        false,
+        this.fws.prim2OffThenOnMemoryNode.read(),
+        this.fws.prim2OffThenOnMemoryNode.read(),
+        this.fws.prim2PbOff.get(),
+        !this.fws.prim2PbOff.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    // PRIM 3 FAULT
+    271800038: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.prim3FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [
+        this.fws.flightPhase1112MoreThanOneMin.get(),
+        true,
+        true,
+        true,
+        this.fws.twoPrimsFailed.get(),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        !this.fws.aircraftOnGround.get() &&
+          (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        true,
+      ],
+      whichItemsChecked: () => [
+        false,
+        this.fws.prim3OffThenOnMemoryNode.read(),
+        this.fws.prim3OffThenOnMemoryNode.read(),
+        this.fws.prim3PbOff.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
     271800058: {
       // SEC 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
@@ -2423,7 +2506,7 @@ export class FwsAbnormalSensed {
         true,
         this.fws.sec1OffThenOnMemoryNode.read(),
         this.fws.sec1OffThenOnMemoryNode.read(),
-        !SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        this.fws.sec1PbOff.get(),
         true,
       ],
       failure: 2,
@@ -2449,13 +2532,20 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.sec2FaultCondition,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [this.fws.flightPhase1112MoreThanOneMin.get(), true, true, true, false, true],
+      whichItemsToShow: () => [
+        this.fws.flightPhase1112MoreThanOneMin.get(),
+        true,
+        true,
+        this.fws.dcEhaPowered.get(),
+        !this.fws.dcEhaPowered.get(),
+        true,
+      ],
       whichItemsChecked: () => [
         true,
         this.fws.sec2OffThenOnMemoryNode.read(),
         this.fws.sec2OffThenOnMemoryNode.read(),
-        !SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
-        true,
+        this.fws.sec2PbOff.get(),
+        !this.fws.sec2PbOff.get(),
         true,
       ],
       failure: 2,
@@ -2486,7 +2576,7 @@ export class FwsAbnormalSensed {
         true,
         this.fws.sec3OffThenOnMemoryNode.read(),
         this.fws.sec3OffThenOnMemoryNode.read(),
-        !SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        this.fws.sec3PbOff.get(),
         true,
       ],
       failure: 2,
@@ -2507,6 +2597,7 @@ export class FwsAbnormalSensed {
       ],
       redundLoss: () => ['270300006'],
     },
+
     272800001: {
       // SLAT NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
@@ -3733,8 +3824,8 @@ export class FwsAbnormalSensed {
         this.fws.acESSBusPowered,
       ),
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [],
-      whichItemsChecked: () => [],
+      whichItemsToShow: () => [true, true, true],
+      whichItemsChecked: () => [true, true, true],
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['340300029', '340300003', '341300003'],
@@ -3789,7 +3880,7 @@ export class FwsAbnormalSensed {
     },
     341800020: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: this.fws.terrSys1Failed,
+      simVarIsActive: this.fws.terrSys1FaultCond,
       notActiveWhenFaults: ['341800022'],
       whichItemsToShow: () => [
         !this.fws.terrSys2Failed.get(),
@@ -3803,7 +3894,7 @@ export class FwsAbnormalSensed {
     },
     341800021: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: this.fws.terrSys2Failed,
+      simVarIsActive: this.fws.terrSys2FaultCond,
       notActiveWhenFaults: ['341800022'],
       whichItemsToShow: () => [
         !this.fws.terrSys1Failed.get(),
@@ -3819,8 +3910,8 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
-        this.fws.terrSys1Failed,
-        this.fws.terrSys2Failed,
+        this.fws.terrSys1FaultCond,
+        this.fws.terrSys2FaultCond,
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true],
@@ -3831,7 +3922,7 @@ export class FwsAbnormalSensed {
     },
     341800023: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: this.fws.taws1Failed,
+      simVarIsActive: this.fws.taws1FaultCond,
       notActiveWhenFaults: ['341800025'],
       whichItemsToShow: () => [
         this.fws.tawsWxrSelected.get() === 1 && !this.fws.taws2Failed.get(),
@@ -3844,7 +3935,7 @@ export class FwsAbnormalSensed {
     },
     341800024: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: this.fws.taws2Failed,
+      simVarIsActive: this.fws.taws2FaultCond,
       notActiveWhenFaults: ['341800025'],
       whichItemsToShow: () => [
         this.fws.tawsWxrSelected.get() === 2 && !this.fws.taws1Failed.get(),
@@ -3857,7 +3948,11 @@ export class FwsAbnormalSensed {
     },
     341800025: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.taws1Failed, this.fws.taws2Failed),
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.taws1FaultCond,
+        this.fws.taws2FaultCond,
+      ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [this.fws.gpwsTerrOff.get(), this.fws.gpwsSysOff.get()],
