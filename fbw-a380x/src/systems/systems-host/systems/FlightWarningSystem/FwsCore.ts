@@ -4186,7 +4186,7 @@ export class FwsCore {
     );
 
     // TAWS
-    const taws1Powered = this.acESSBusPowered.get() && this.dc108PhBusPowered.get();
+    const taws1Powered = this.acESSBusPowered.get();
     const taws2Powered = this.ac4BusPowered.get();
     this.terrSys1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool));
     this.terrSys1FaultCond.set(this.terrSys1Failed.get() && taws1Powered);
