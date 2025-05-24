@@ -237,8 +237,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     return (
       <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
         <g id="PitchGroup" ref={this.pitchGroupRef} class="ScaledStroke Green">
-          <TailstrikeIndicator bus={this.props.bus} />
-
           <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
           <PitchScale
             bus={this.props.bus}
@@ -268,88 +266,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           attExcessive={this.props.isAttExcessive}
         /> */}
       </g>
-    );
-  }
-}
-
-class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private tailStrike = FSComponent.createRef<SVGPathElement>();
-
-  private tailStrikeConditions = {
-    altitude: new Arinc429Word(0),
-    speed: 0,
-    pitch: 0,
-    flightPhase: 0,
-    GAtimer: 0,
-  };
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
-
-    sub.on('chosenRa').handle((ra) => {
-      this.tailStrikeConditions.altitude = ra;
-    });
-
-    sub
-      .on('fmgcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.tailStrikeConditions.flightPhase = fp;
-        if (fp === 6) {
-          this.tailStrikeConditions.GAtimer = 1;
-        }
-      });
-
-    sub
-      .on('speedAr')
-      .whenChanged()
-      .handle((speed) => {
-        this.tailStrikeConditions.speed = speed.value;
-      });
-
-    sub
-      .on('pitchAr')
-      .whenChanged()
-      .handle((pitch) => {
-        if (pitch.isNormalOperation()) {
-          if (pitch.value > 10.7) {
-            this.tailStrike.instance.classList.add('BlinkInfinite');
-          } else {
-            this.tailStrike.instance.classList.remove('BlinkInfinite');
-          }
-        }
-      });
-
-    sub.on('realTime').atFrequency(1).handle(this.hideShow.bind(this));
-  }
-
-  private hideShow(_time: number) {
-    if (this.tailStrikeConditions.GAtimer !== 0) {
-      this.tailStrikeConditions.GAtimer += 1;
-      if (this.tailStrikeConditions.GAtimer >= 5) {
-        this.tailStrikeConditions.GAtimer = 0;
-        this.tailStrike.instance.style.display = 'none';
-      }
-    }
-    if (this.tailStrikeConditions.altitude.value > 400 || this.tailStrikeConditions.speed < 50) {
-      this.tailStrike.instance.style.display = 'none';
-    } else if (this.tailStrikeConditions.flightPhase === 5) {
-      this.tailStrike.instance.style.display = 'inline';
-    }
-  }
-
-  render(): VNode {
-    // FIXME: What is the tailstrike pitch limit with compressed main landing gear for A320? Assume 11.7 degrees now.
-    // FIXME: further fine tune.
-    return (
-      <path
-        ref={this.tailStrike}
-        id="TailstrikeWarning"
-        d="m 650.4,62.08 h 8.09 L 640,84.11 621.51,62.08 h 8.09 l 10.4,12.39 z"
-        class="ScaledStroke Green"
-      />
     );
   }
 }

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, Subscribable, SvgPathStream, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
@@ -265,6 +265,8 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             filteredRadioAlt={this.props.filteredRadioAlt}
           />
           <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
+
+          <TailstrikeIndicator bus={this.props.bus} />
         </g>
       </>
     );
@@ -778,6 +780,117 @@ class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
             FD
           </text>
         </FlashOneHertz>
+      </g>
+    );
+  }
+}
+
+class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private pl = FSComponent.createRef<SVGGElement>();
+  private ref1 = FSComponent.createRef<SVGPathElement>();
+  private ref2 = FSComponent.createRef<SVGPathElement>();
+  private deb = FSComponent.createRef<SVGPathElement>();
+  private onGround = true;
+  private leftGear = true;
+  private rightGear = true;
+  private pitch = 0;
+  private tailStrikePitchLimit = 11.7;
+  private ref = 0;
+  static ONEDEG = 36.514;
+  private lim = 330 + this.tailStrikePitchLimit * TailstrikeIndicator.ONEDEG;
+  private tailStrikeConditions = {
+    altitude: new Arinc429Word(0),
+    speed: 0,
+    pitch: 0,
+    flightPhase: 0,
+    GAtimer: 0,
+  };
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
+
+    sub.on('chosenRa').handle((ra) => {
+      this.tailStrikeConditions.altitude = ra;
+    });
+
+    sub
+      .on('fmgcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.tailStrikeConditions.flightPhase = fp;
+        if (fp === 6) {
+          this.tailStrikeConditions.GAtimer = 1;
+        }
+      });
+
+    sub
+      .on('speedAr')
+      .whenChanged()
+      .handle((speed) => {
+        this.tailStrikeConditions.speed = speed.value;
+      });
+
+    sub.on('pitchAr').handle((pitch) => {
+      if (pitch.isNormalOperation()) {
+        this.pitch = pitch.value;
+        this.ref =
+          330 +
+          pitch.value * TailstrikeIndicator.ONEDEG -
+          (pitch.value / 2 - this.tailStrikePitchLimit / 2) * TailstrikeIndicator.ONEDEG;
+        //check srs value
+        //console.log(this.ref + ' pitch: ' + this.pitch + 'limit: ' + this.tailStrikePitchLimit);
+
+        this.ref1.instance.setAttribute('d', `M 590 ${this.ref} l 40 0 `);
+        this.ref2.instance.setAttribute('d', `M 690 ${this.ref} l -40 0 `);
+        this.pl.instance.setAttribute(
+          'points',
+          ` 590,${this.lim} 640,${this.lim}  640, ${this.lim - 10}    640,${this.lim}   690, ${this.lim} `,
+        );
+      }
+    });
+
+    sub.on('leftMainGearCompressed').handle((v) => {
+      v ? (this.leftGear = true) : (this.leftGear = false);
+      this.checkOnGround();
+    });
+
+    sub.on('rightMainGearCompressed').handle((v) => {
+      v ? (this.rightGear = true) : (this.rightGear = false);
+      this.checkOnGround();
+    });
+  }
+
+  private checkOnGround() {
+    this.leftGear || this.rightGear ? (this.onGround = true) : (this.onGround = false);
+
+    if (this.onGround) {
+      if (this.pitch > this.tailStrikePitchLimit) {
+        this.pl.instance.style.display = 'none';
+        this.ref1.instance.style.display = 'none';
+        this.ref2.instance.style.display = 'none';
+      } else {
+        this.pl.instance.style.display = 'block';
+        this.ref1.instance.style.display = 'block';
+        this.ref2.instance.style.display = 'block';
+      }
+    } else {
+      this.pl.instance.style.display = 'block'; ///////////
+      this.ref1.instance.style.display = 'block';
+      this.ref2.instance.style.display = 'block';
+    }
+  }
+
+  render(): VNode {
+    // FIXME: What is the tailstrike pitch limit with compressed main landing gear for A320? Assume 11.7 degrees now.
+    // FIXME: further fine tune.
+    return (
+      <g>
+        <path ref={this.deb} class="WideStroke  debug" d="" />
+
+        <polyline ref={this.pl} id="TailstrikeWarning" points="" class="WideStroke  Green" />
+        <path ref={this.ref1} class="WideStroke  Green" d="" />
+        <path ref={this.ref2} class="WideStroke  Green" d="" />
       </g>
     );
   }

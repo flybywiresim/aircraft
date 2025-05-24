@@ -542,7 +542,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
           <path id="AltTapeOutline" class="NormalStroke Green" d="m117.75 123.56h13.096v-85.473h-13.096" />
           <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
           <path id="CrosswindAltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
-          <text id="AltFailText" class="Blink9Seconds FontLargest Green EndAlign" x="131.16769" y="83.433167">
+          <text id="AltFailText" class="Blink9Seconds FontLarge Green EndAlign" x="131.16769" y="83.433167">
             ALT
           </text>
         </g>
@@ -883,10 +883,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private stdGroup = FSComponent.createRef<SVGGElement>();
 
-  private qfeGroup = FSComponent.createRef<SVGGElement>();
-
-  private qfeBorder = FSComponent.createRef<SVGGElement>();
-
   private stdVisible = Subject.create(false);
 
   private altiSettingVisible = Subject.create(false);
@@ -1101,50 +1097,50 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     } else {
       this.text.set(this.baroInhg.value.toFixed(2));
     }
-
-    if (this.mode.get() == 'QFE') {
-      this.stdGroup.instance.classList.add('HiddenElement');
-      this.qfeGroup.instance.classList.remove('HiddenElement');
-      this.qfeBorder.instance.classList.remove('HiddenElement');
-    } else if (this.mode.get() == 'QNH') {
-      this.stdGroup.instance.classList.add('HiddenElement');
-      this.qfeGroup.instance.classList.remove('HiddenElement');
-      this.qfeBorder.instance.classList.remove('HiddenElement');
-    } else if (this.mode.get() == 'STD') {
-      this.stdGroup.instance.classList.remove('HiddenElement');
-      this.qfeGroup.instance.classList.add('HiddenElement');
-      this.qfeBorder.instance.classList.add('HiddenElement');
-    } else {
-      this.stdGroup.instance.classList.add('HiddenElement');
-      this.qfeGroup.instance.classList.add('HiddenElement');
-      this.qfeBorder.instance.classList.add('HiddenElement');
-    }
   }
 
   render(): VNode {
     return (
       <>
-        <g ref={this.stdGroup} id="STDAltimeterModeGroup" transform="translate(0 10)">
-          <path class="NormalStroke Green" d="m124.79 131.74h13.096v7.0556h-13.096z" />
-          <text class="FontMediumSmaller Green AlignLeft" x="125.75785" y="137.36">
-            STD
-          </text>
-        </g>
-        <g id="AltimeterGroup" transform="translate(0 10)" display={this.elems.QFE}>
-          <g ref={this.qfeGroup} id="QFEGroup">
-            <path
-              ref={this.qfeBorder}
-              class="NormalStroke Green"
-              d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
-            />
-            <text id="AltimeterModeText" class="FontMediumSmaller Green" x="118.23066" y="138.11342">
-              {this.mode}
-            </text>
-            <text id="AltimeterSettingText" class="FontMediumSmaller MiddleAlign Green" x="141.25583" y="138.09006">
-              {this.text}
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.shouldFlash}
+          visible={this.stdVisible}
+        >
+          <g ref={this.stdGroup} id="STDAltimeterModeGroup" transform="translate(0 10)">
+            <path class="NormalStroke Green" d="m124.79 131.74h13.096v7.0556h-13.096z" />
+            <text class="FontMediumSmaller Green AlignLeft" x="125.75785" y="137.36">
+              STD
             </text>
           </g>
-        </g>
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.shouldFlash}
+          visible={this.altiSettingVisible}
+        >
+          <g id="AltimeterGroup" transform="translate(0 10)" display={this.elems.QFE}>
+            <g id="QFEGroup">
+              <path
+                class={{
+                  NormalStroke: true,
+                  White: true,
+                  HiddenElement: this.qfeBorderHidden,
+                }}
+                d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
+              />
+              <text id="AltimeterModeText" class="FontMediumSmaller Green" x="118.23066" y="138.11342">
+                {this.mode}
+              </text>
+              <text id="AltimeterSettingText" class="FontMediumSmaller MiddleAlign Green" x="141.25583" y="138.09006">
+                {this.text}
+              </text>
+            </g>
+          </g>
+        </FlashOneHertz>
       </>
     );
   }

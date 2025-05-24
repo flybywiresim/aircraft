@@ -511,7 +511,7 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <g id="A2Cell">
-        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 3.2 8 h 28" stroke-dasharray="1 1.8" />
+        {/* <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 3.2 8 h 28" stroke-dasharray="1 1.8" /> */}
         <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653" style="white-space: pre">
           {this.text}
         </text>
@@ -856,6 +856,14 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     return (
       <g id="A3Cell">
         {/* <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 20 16.4 h 30" stroke-dasharray="1 1.8" /> */}
+        <path
+          id="dash"
+          display={this.isArmed}
+          class="NormalStroke Green"
+          d="m 3.2 16.4 h 28"
+          stroke-dasharray="1 1.8"
+        />
+
         <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
           <text class={this.classSub} x="16.989958" y="21.641243">
             {this.textSub}
