@@ -4,8 +4,18 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { PropagatedWindEntry, PropagationType, WindEntry, WindVector } from '@fmgc/flightplanning/data/wind';
+import {
+  formatWindAltitude,
+  formatWindEntry,
+  formatWindVector,
+  PropagatedWindEntry,
+  PropagationType,
+  WindEntry,
+  WindVector,
+} from '@fmgc/flightplanning/data/wind';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { Vec2Math } from '@microsoft/msfs-sdk';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class CDUWindPage {
   static readonly WindCache: PropagatedWindEntry[] = [];
@@ -49,8 +59,7 @@ export class CDUWindPage {
     for (let i = 0; i < Math.min(plan.performanceData.climbWindEntries.length, 5); i++) {
       const wind = plan.performanceData.climbWindEntries[i];
 
-      template[i * 2 + 2][0] =
-        `${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
+      template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]cyan`;
 
       numEntries = i + 1;
       mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
@@ -173,14 +182,13 @@ export class CDUWindPage {
       switch (wind.type) {
         case PropagationType.Forward:
           template[i * 2 + 4][0] =
-            `{small}${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}{end}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
+            `{small}${formatWindVector(wind.vector)}{end}/${formatWindAltitude(wind)}[color]cyan`;
           break;
         case PropagationType.Entry:
-          template[i * 2 + 4][0] =
-            `${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
+          template[i * 2 + 4][0] = `${formatWindVector(wind.vector)}/${formatWindAltitude(wind)}[color]cyan`;
           break;
         case PropagationType.Backward:
-          template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
+          template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${formatWindAltitude(wind)}[color]cyan`;
           break;
       }
 
@@ -319,7 +327,7 @@ export class CDUWindPage {
       template[rowIndex][0] = ' ALTERNATE';
       template[rowIndex + 1][0] =
         plan.performanceData.alternateWind !== null
-          ? `${plan.performanceData.alternateWind.trueDegrees.toFixed(0).padStart(3, '0')}°/${plan.performanceData.alternateWind.magnitude.toFixed(0).padStart(3, '0')}{small}{green}/FL100{end}{end}[color]cyan`
+          ? `${formatWindVector(plan.performanceData.alternateWind)}{small}{green}/FL100{end}{end}[color]cyan`
           : '[\xa0]°/[\xa0]{small}{green}/FL100{end}{end}[color]cyan';
 
       mcdu.onLeftInput[lskIndex] = async (value, scratchpadCallback) => {
@@ -357,8 +365,7 @@ export class CDUWindPage {
     ) {
       const wind = plan.performanceData.descentWindEntries[i + offset];
 
-      template[i * 2 + 2][0] =
-        `${wind.trueDegrees.toFixed(0).padStart(3, '0')}°/${wind.magnitude.toFixed(0).padStart(3, '0')}/FL${(wind.altitude / 100).toFixed(0).padStart(3, '0')}[color]cyan`;
+      template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]cyan`;
 
       numEntries = i + 1;
       mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
@@ -479,9 +486,8 @@ export class CDUWindPage {
     }
 
     return {
-      trueDegrees,
-      magnitude,
       altitude,
+      vector: Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
     };
   }
 
@@ -504,10 +510,7 @@ export class CDUWindPage {
       return null;
     }
 
-    return {
-      trueDegrees,
-      magnitude,
-    };
+    return Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
   }
 
   private static uplinkWinds(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, stage, _showPage) {
@@ -603,10 +606,11 @@ export class CDUWindPage {
             const desWpts = [tod, ...mcdu.simbrief.navlog.filter((val) => val.stage === stage)];
 
             if (isFinite(mcdu.simbrief.alternateAvgWindDir) && isFinite(mcdu.simbrief.alternateAvgWindSpd)) {
-              plan.performanceData.alternateWind = {
-                trueDegrees: mcdu.simbrief.alternateAvgWindDir,
-                magnitude: mcdu.simbrief.alternateAvgWindSpd,
-              };
+              plan.performanceData.alternateWind = Vec2Math.setFromPolar(
+                mcdu.simbrief.alternateAvgWindSpd,
+                mcdu.simbrief.alternateAvgWindDir * MathUtils.DEGREES_TO_RADIANS,
+                Vec2Math.create(),
+              );
             } else {
               plan.performanceData.alternateWind = null;
             }

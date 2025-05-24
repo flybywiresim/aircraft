@@ -1,11 +1,12 @@
-export interface WindEntry extends WindVector {
+import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { Vec2Math } from '@microsoft/msfs-sdk';
+
+export interface WindEntry {
+  vector: WindVector;
   altitude: number;
 }
 
-export interface WindVector {
-  trueDegrees: number;
-  magnitude: number;
-}
+export type WindVector = Float64Array;
 
 export enum PropagationType {
   Forward,
@@ -17,3 +18,21 @@ export type PropagatedWindEntry = WindEntry & {
   type: PropagationType;
   sourceLegIndex: number;
 };
+
+export const formatWindVector = (vector: WindVector) =>
+  `${formatWindTrueDegrees(vector)}/${formatWindMagnitude(vector)}`;
+
+export const formatWindEntry = (entry: WindEntry) => `${formatWindVector(entry.vector)}/${formatWindAltitude(entry)}`;
+
+export const formatWindTrueDegrees = (vector: WindVector) =>
+  `${MathUtils.normalise360(Vec2Math.theta(vector) * MathUtils.RADIANS_TO_DEGREES)
+    .toFixed(0)
+    .padStart(3, '0')}°`;
+
+export const formatWindMagnitude = (vector: WindVector) => Math.round(Vec2Math.abs(vector)).toFixed(0).padStart(3, '0');
+
+// TODO winds TA/TL
+export const formatWindAltitude = (entry: WindEntry) =>
+  `FL${Math.round(entry.altitude / 100)
+    .toFixed(0)
+    .padStart(3, '0')}`;
