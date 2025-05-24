@@ -183,7 +183,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
 
-    this.removeForcedTurnAt(turnEndLegIndexInPlan + 1);
+    if (!this.requiresTurnDirectionAt(turnEndLegIndexInPlan + 1)) {
+      this.removeForcedTurnAt(turnEndLegIndexInPlan + 1);
+    }
     this.setActiveLegIndex(turnEndLegIndexInPlan);
   }
 
