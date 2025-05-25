@@ -8,6 +8,34 @@
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Visual update to reflect later avionics batches (overlapping tab selectors) - @flogross89 (floridude)
+1. [A380X/APU] Fix too low APU BLEED pressure during engine starts (fix by BBK) - @flogross89 (floridude)
+1. [A380X/SD] Fix BLEED indications for APU BLEED and cross bleeds; Add HP GND air supply triangle - @flogross89 (floridude)
+1. [A380X/ELEC] Fix electrical distribution for ground servicing mode - @Gurgel100 (Pascal)
+1. [A380X/ECAM] Improved STROBE LT OFF memo behaviour - @Jonny23787 (Jonathan)
+1. [A380X/FCU] Update FCU font for QFE based on new references - @heclak (Heclak)
+1. [A32NX/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
+1. [A32NX/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
+1. [A380X/MFD] Add speed limit modification on VERT REV SPD page - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWC] Fix PRED W/S OFF memo colour logic - @tracernz (Mike)
+1. [A380X/SD] Add video page with 'NOT AVAIL' text - @dzoeteman (Deniz)
+1. [A380X/PFD] Inhibit rudder trim indication in the air - @Jonny23787 (Jonathan)
+1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
+1. [A380X/ECAM] Improve ALL PRIMARY CABIN FANS FAULT - @Jonny23787 (Jonathan)
+1. [A380X/FCU] Reduce FCU texture size from 5120 to 2560 - @heclak (Heclak)
+1. [A380X/MFD] Fix VERT DEV not updating in APPR page during descend phase - @heclak (Heclak)
+1. [A380X/VD] Add vertical display (first implementation) - @flogross89 (floridude)
+1. [FMS] Fix pseudo waypoint transmission for F/O side when EFIS range different from CAPT side - @flogross89 (floridude)
+1. [A380X/SURV] Enable SURV system switching via MFD SURV page; Add ECAM faults for TERR/GPWS - @flogross89 (floridude)
+1. [A380X/MFD] MFD F-PLN page data display improvements when no predictions or flightplan available - @BravoMike99 (bruno_pt99)
+1. [FMS] Use proper DME location for AF, CD, FD legs on MSFS2024 and add MSFS2020 fallback to improve AF legs - @tracernz (Mike)
+1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
+1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
+1. [A32NX/FMS] Add approach via auto-selection. - @tracernz (Mike)
+1. [A380X/MFD] Fixed ENTER DEST DATA message not clearing automatically - @BravoMike99 (bruno_pt99)
+1. [A380X/FCU] Fix selected speed initial target not being managed speed in non SRS - @BravoMike99 (bruno_pt99)
+1. [A380X/SD] Adjust BLEED page visuals and indications logic - @lukecologne (luke)
+1. [A380X] Add default CPT and FO seat positions to FLT files - @heclak (Heclak)
 
 ## 0.13.0
 
@@ -200,6 +228,7 @@
 1. [A380X/FMC] Fixed FIX INFO temporary flightplan handling - @Benjozork (Benjamin Dupont)
 1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
 1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
+1. [EFB/PERF] Harmonize takeoff and landing performance calculators - @FoxtrotSierra6829 (FoxtrotSierra)
 
 ## 0.12.0
 

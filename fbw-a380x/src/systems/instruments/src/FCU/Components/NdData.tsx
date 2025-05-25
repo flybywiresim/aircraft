@@ -54,62 +54,62 @@ export class NdData extends DisplayComponent<NdDataProps> {
         <div class="TopRow">
           <img
             style="position: absolute; top: 0; left: 0"
-            width="620px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/CSTR.png"
           />
           <img
-            style="position: absolute; top: 0; left: 890px"
-            width="620px"
+            style="position: absolute; top: 0; left: 445px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/WPT.png"
           />
           <img
-            style="position: absolute; top: 0; left: 1840px"
-            width="620px"
+            style="position: absolute; top: 0; left: 920px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/VORD.png"
           />
           <img
-            style="position: absolute; top: 0; left: 2790px"
-            width="620px"
+            style="position: absolute; top: 0; left: 1395px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/NDB.png"
           />
           <img
-            style="position: absolute; top: 0; left: 3740px"
-            width="620px"
+            style="position: absolute; top: 0; left: 1870px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/ARPT.png"
           />
           {/* LIGHT TESTS */}
           <img
             style="position: absolute; top: 0; left: 0"
-            width="620px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
           <img
-            style="position: absolute; top: 0; left: 890px"
-            width="620px"
+            style="position: absolute; top: 0; left: 445px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
           <img
-            style="position: absolute; top: 0; left: 1840px"
-            width="620px"
+            style="position: absolute; top: 0; left: 920px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
           <img
-            style="position: absolute; top: 0; left: 2790px"
-            width="620px"
+            style="position: absolute; top: 0; left: 1395px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
           <img
-            style="position: absolute; top: 0; left: 3740px"
-            width="620px"
+            style="position: absolute; top: 0; left: 1870px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
@@ -118,62 +118,62 @@ export class NdData extends DisplayComponent<NdDataProps> {
         <div class="BottomRow">
           <img
             style="position: absolute; top: 0; left: 0"
-            width="620px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src={this.navaidMode1.map((v) => NdData.NAVAID_1_IMAGES[v])}
           />
           <img
-            style="position: absolute; top: 0; left: 890px"
-            width="620px"
+            style="position: absolute; top: 0; left: 445px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/WX.png"
           />
           <img
-            style="position: absolute; top: 0; left: 1840px"
-            width="620px"
+            style="position: absolute; top: 0; left: 920px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/TERR.png"
           />
           <img
-            style="position: absolute; top: 0; left: 2790px"
-            width="620px"
+            style="position: absolute; top: 0; left: 1395px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src="/Images/fbw-a380x/fcu/TRAF.png"
           />
           <img
-            style="position: absolute; top: 0; left: 3740px"
-            width="620px"
+            style="position: absolute; top: 0; left: 1870px"
+            width="310px"
             class={{ hidden: this.isLightTestActive }}
             src={this.navaidMode2.map((v) => NdData.NAVAID_2_IMAGES[v])}
           />
           {/* LIGHT TESTS */}
           <img
             style="position: absolute; top: 0; left: 0"
-            width="620px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
           <img
-            style="position: absolute; top: 0; left: 890px"
-            width="620px"
+            style="position: absolute; top: 0; left: 445px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
           <img
-            style="position: absolute; top: 0; left: 1840px"
-            width="620px"
+            style="position: absolute; top: 0; left: 920px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
           <img
-            style="position: absolute; top: 0; left: 2790px"
-            width="620px"
+            style="position: absolute; top: 0; left: 1395px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />
           <img
-            style="position: absolute; top: 0; left: 3740px"
-            width="620px"
+            style="position: absolute; top: 0; left: 1870px"
+            width="310px"
             class={{ hidden: this.isLightTestActive.map(SubscribableMapFunctions.not()) }}
             src="/Images/fbw-a380x/fcu/TEST.png"
           />

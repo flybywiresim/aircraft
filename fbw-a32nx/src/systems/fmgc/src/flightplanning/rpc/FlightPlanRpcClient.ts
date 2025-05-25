@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { EventBus, EventSubscriber, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanServerRpcEvents } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
@@ -354,6 +353,25 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     planIndex: number,
   ): Promise<void> {
     return this.callFunctionViaRpc('editFixInfoEntry', index, callback, planIndex);
+  }
+
+  setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setPilotEntryClimbSpeedLimitSpeed', value, planIndex, alternate);
+  }
+  setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setPilotEntryClimbSpeedLimitAltitude', value, planIndex, alternate);
+  }
+  deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('deleteClimbSpeedLimit', planIndex, alternate);
+  }
+  setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setPilotEntryDescentSpeedLimitSpeed', value, planIndex, alternate);
+  }
+  setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setPilotEntryDescentSpeedLimitAltitude', value, planIndex, alternate);
+  }
+  deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('deleteDescentSpeedLimit', planIndex, alternate);
   }
 
   isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
