@@ -1739,6 +1739,10 @@ export class PseudoFWC {
     this.autoThrustOffInvoluntaryAural.set(this.autoThrustOffInvoluntaryFlipFlop2.read());
     this.autoThrustOffInvoluntaryText.set(this.autoThrustOffInvoluntaryFlipFlop1.read());
 
+    this.thrLocked.set(
+      this.ecu1MaintenanceWord6.bitValueOr(12, false) || this.ecu2MaintenanceWord6.bitValueOr(12, false),
+    );
+
     // AUTO BRAKE OFF
     this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
 
