@@ -775,13 +775,17 @@ export class PseudoFWC {
 
   private onGroundImmediate = false;
 
-  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
+  private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(false);
 
-  public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
+  private readonly autoBrakeDeactivatedMemoTrigerredNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
 
-  public readonly autoBrakeOff = Subject.create(false);
+  private readonly autobrakeDeactivatedMcNode = new NXLogicTriggeredMonostableNode(3);
 
-  public autoBrakeOffAuralTriggered = false;
+  private readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
+
+  private readonly autoBrakeOff = Subject.create(false);
+
+  private autoBrakeOffAuralTriggered = false;
 
   /* NAVIGATION */
 
@@ -1699,22 +1703,26 @@ export class PseudoFWC {
     this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
 
     // AUTO BRAKE OFF
-    this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
+    this.autobrakeDeactivatedPulseNode.write(
+      !!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'),
+      deltaTime,
+    );
 
-    if (!this.autoBrakeDeactivatedNode.read()) {
-      this.requestMasterCautionFromABrkOff = false;
+    const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedMemoTrigerredNode.write(
+      this.autobrakeDeactivatedPulseNode.read() &&
+        this.aircraftOnGround.get() &&
+        this.computedAirSpeedToNearest2.get() > 33,
+      deltaTime,
+    );
+
+    // Emit master caution for 3s
+    this.requestMasterCautionFromABrkOff = this.autobrakeDeactivatedMcNode.write(autoBrakeOffShouldTrigger, deltaTime);
+
+    if (!this.autoBrakeDeactivatedMemoTrigerredNode.read()) {
       this.autoBrakeOffAuralTriggered = false;
     }
 
-    this.autoBrakeOffAuralConfirmNode.write(this.autoBrakeDeactivatedNode.read(), deltaTime);
-
-    const autoBrakeOffShouldTrigger =
-      this.aircraftOnGround.get() && this.computedAirSpeedToNearest2.get() > 33 && this.autoBrakeDeactivatedNode.read();
-
-    if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
-      // Triggered in this cycle -> request master caution
-      this.requestMasterCautionFromABrkOff = true;
-    }
+    this.autoBrakeOffAuralConfirmNode.write(this.autoBrakeDeactivatedMemoTrigerredNode.read(), deltaTime);
 
     // FIXME double callout if ABRK fails
     this.autoBrakeOff.set(autoBrakeOffShouldTrigger);
@@ -2939,12 +2947,6 @@ export class PseudoFWC {
   }
 
   autoThrottleInstinctiveDisconnect() {
-    // When instinctive A/THR disc. p/b is pressed after ABRK deactivation, inhibit audio+memo, don't request master caution
-    // Unclear refs, whether this has to happen within the audio confirm node time (1s)
-    if (this.autoBrakeDeactivatedNode.read()) {
-      this.requestMasterCautionFromABrkOff = false;
-    }
-
     this.aThrDiscInputBuffer.write(true, false);
 
     if (this.autoThrustOffVoluntary.get()) {

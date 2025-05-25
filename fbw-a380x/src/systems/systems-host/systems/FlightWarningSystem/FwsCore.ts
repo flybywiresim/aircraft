@@ -1275,17 +1275,19 @@ export class FwsCore {
 
   public readonly gearLeverPos = Subject.create(false);
 
-  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
+  private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(false);
 
-  public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
+  private readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
+
+  private readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
 
   public readonly autoBrakeOff = Subject.create(false);
 
-  public autoBrakeOffAuralTriggered = false;
+  private autoBrakeOffAuralTriggered = false;
 
-  public autoBrakeOffMemoInhibited = false;
+  private autoBrakeOffMemoInhibited = false;
 
-  public btvExitMissedPulseNode = new NXLogicPulseNode();
+  private readonly btvExitMissedPulseNode = new NXLogicPulseNode();
 
   /* NAVIGATION */
 
@@ -2865,7 +2867,17 @@ export class FwsCore {
     this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
 
     // AUTO BRAKE OFF
-    this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
+    this.autobrakeDeactivatedPulseNode.write(
+      !!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'),
+      deltaTime,
+    );
+
+    const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedNode.write(
+      this.autobrakeDeactivatedPulseNode.read() &&
+        this.aircraftOnGround.get() &&
+        this.computedAirSpeedToNearest2.get() > 33,
+      deltaTime,
+    );
 
     if (!this.autoBrakeDeactivatedNode.read()) {
       this.autoBrakeOffMemoInhibited = false;
@@ -2877,12 +2889,6 @@ export class FwsCore {
       this.autoBrakeDeactivatedNode.read() && !this.autoBrakeOffMemoInhibited,
       deltaTime,
     );
-
-    const autoBrakeOffShouldTrigger =
-      this.aircraftOnGround.get() &&
-      this.computedAirSpeedToNearest2.get() > 33 &&
-      this.autoBrakeDeactivatedNode.read() &&
-      !this.autoBrakeOffMemoInhibited;
 
     if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
       // Triggered in this cycle -> request master caution
