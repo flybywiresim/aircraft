@@ -38,6 +38,7 @@
 1. [A380X] Add default CPT and FO seat positions to FLT files - @heclak (Heclak)
 1. [A380X/ND] Show RNP on approach identifier for RNP AR approaches - @BravoMike99 (bruno_pt99)
 1. [ND] Improve vertical position of approach message - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWS] Make master caution from autobrake off trigger for 3 seconds - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
