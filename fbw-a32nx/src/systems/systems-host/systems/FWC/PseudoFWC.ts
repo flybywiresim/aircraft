@@ -407,6 +407,16 @@ export class PseudoFWC {
 
   public readonly autoThrustOffInvoluntaryText = Subject.create(false);
 
+  // A/THR LIMITED
+
+  public readonly autoThrustLimitedConfNode = new NXLogicConfirmNode(5, true);
+
+  public readonly autoThrustLimitedMtrigNode = new NXLogicTriggeredMonostableNode(5, true);
+
+  private autoThrustLimitedDelayNode = false;
+
+  public readonly autoThrustLimited = Subject.create(false);
+
   /** TO CONF pressed in phase 2 or 3 SR */
   private toConfigCheckedInPhase2Or3 = false;
 
@@ -1743,6 +1753,17 @@ export class PseudoFWC {
       this.ecu1MaintenanceWord6.bitValueOr(12, false) || this.ecu2MaintenanceWord6.bitValueOr(12, false),
     );
 
+    // A/THR LIMITED
+    const athrIsLimited = aThrEngaged && this.atsDiscreteWord.bitValueOr(25, false);
+    this.autoThrustLimitedConfNode.write(athrIsLimited, deltaTime);
+    this.autoThrustLimitedMtrigNode.write(
+      this.autoThrustLimitedConfNode.read() && !this.autoThrustLimitedDelayNode,
+      deltaTime,
+    );
+    this.autoThrustLimitedDelayNode = this.autoThrustLimitedMtrigNode.read();
+
+    this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedMtrigNode.read());
+
     // AUTO BRAKE OFF
     this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
 
@@ -3051,6 +3072,17 @@ export class PseudoFWC {
       simVarIsActive: this.autoThrustOffInvoluntaryAural,
       whichCodeToReturn: () => [],
       codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    2200024: {
+      // A/THR LIMITED
+      flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
+      simVarIsActive: this.autoThrustLimited,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['220002401', '220002402'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,

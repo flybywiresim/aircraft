@@ -198,6 +198,8 @@ const EWDMessages = {
   '220002101': '\x1b<4mA/THR OFF',
   '220002201': '\x1b<4m\x1b4mAUTO FLT\x1bm A/THR OFF',
   '220002202': '\x1b<5m -THR LEVERS........MOVE',
+  '220002401': '\x1b<4m\x1b4mAUTO FLT\x1bm A/THR LIMITED',
+  '220002402': '\x1b<5m -THR LEVERS........MOVE',
   '220020201': '\x1b<4m\x1b4mAUTO FLT\x1bm FCU 1+2 FAULT',
   '220020202': '\x1b<5m -PFD BARO REF: STD ONLY',
   '220021001': '\x1b<4m\x1b4mAUTO FLT\x1bm FCU 1 FAULT',
