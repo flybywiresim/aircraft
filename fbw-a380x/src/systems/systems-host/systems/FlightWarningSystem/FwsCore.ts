@@ -2879,16 +2879,13 @@ export class FwsCore {
       deltaTime,
     );
 
-    if (!this.autoBrakeDeactivatedNode.read()) {
+    if (!autoBrakeOffShouldTrigger) {
       this.autoBrakeOffMemoInhibited = false;
       this.requestMasterCautionFromABrkOff = false;
       this.autoBrakeOffAuralTriggered = false;
     }
 
-    this.autoBrakeOffAuralConfirmNode.write(
-      this.autoBrakeDeactivatedNode.read() && !this.autoBrakeOffMemoInhibited,
-      deltaTime,
-    );
+    this.autoBrakeOffAuralConfirmNode.write(autoBrakeOffShouldTrigger && !this.autoBrakeOffMemoInhibited, deltaTime);
 
     if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
       // Triggered in this cycle -> request master caution
