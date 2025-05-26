@@ -24,12 +24,7 @@ import {
   WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
-import {
-  FlightPlanElement,
-  FlightPlanLeg,
-  FlightPlanLegFlags,
-  isDiscontinuity,
-} from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/segments/DepartureSegment';
 import { ArrivalSegment } from '@fmgc/flightplanning/segments/ArrivalSegment';
 import { ApproachSegment } from '@fmgc/flightplanning/segments/ApproachSegment';
@@ -1149,7 +1144,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         if (!this.requiresTurnDirectionAt(duplicatePlanIndex + 1)) {
           // Remove overfly on previous leg because it no longer makes sense
-          if (this.maybeElementAt(index - 1)?.isDiscontinuity === false) {
+          if (this.hasLegAt(index - 1)) {
             this.setOverflyAt(index - 1, false);
           }
           // Remove forced turn on following leg
@@ -1199,7 +1194,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           .withDefinitionFrom(duplicateLeg)
           .withPilotEnteredDataFrom(duplicateLeg);
 
-        if (!this.requiresTurnDirectionAt(duplicatePlanIndex + 1)) {
+        if (this.hasLegAt(index) && !this.requiresTurnDirectionAt(duplicatePlanIndex + 1)) {
           // A forced turn implies an overfly on the previous leg, so also remove it
           // because it no longer makes sense
           this.setOverflyAt(index, false);
@@ -1231,7 +1226,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   protected requiresTurnDirectionAt(index: number): boolean {
     const leg = this.maybeElementAt(index);
 
-    if (leg === undefined || isDiscontinuity(leg)) {
+    if (!isLeg(leg)) {
       return false;
     }
 
@@ -1240,7 +1235,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   protected removeForcedTurnAt(index: number) {
     const leg = this.maybeElementAt(index);
-    if (leg?.isDiscontinuity === false) {
+
+    if (isLeg(leg)) {
       if (LnavConfig.VERBOSE_FPM_LOG) {
         console.log(`[fpm] removeForcedTurnAt - ${leg.ident}`);
       }
@@ -2683,6 +2679,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       keepUpstreamVsDownstream ? planIndex + 1 : planIndex,
     );
     this.incrementVersion();
+  }
+
+  protected hasLegAt(index: number): boolean {
+    return isLeg(this.maybeElementAt(index));
   }
 }
 
