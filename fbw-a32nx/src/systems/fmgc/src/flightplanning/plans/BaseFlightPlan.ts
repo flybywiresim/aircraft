@@ -1231,7 +1231,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   protected requiresTurnDirectionAt(index: number): boolean {
     const leg = this.maybeElementAt(index);
 
-    if (isDiscontinuity(leg)) {
+    if (leg === undefined || isDiscontinuity(leg)) {
       return false;
     }
 
