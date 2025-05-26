@@ -793,9 +793,20 @@
 
                 <!-- CPT HUD SCREEN -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                    <NODE_ID>SCREEN_HUD_L</NODE_ID>
+                    <NODE_ID>HUD_SCREEN_L_TEX</NODE_ID>
                     <POTENTIOMETER>88</POTENTIOMETER>
-                    <PART_ID>SCREEN_HUD1</PART_ID>
+                    <PART_ID>HUD_SCREEN_L_TEX</PART_ID>
+                    <CAMERA_TITLE>HUD</CAMERA_TITLE>
+                    <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
+                    <EMISSIVE_CODE>12</EMISSIVE_CODE>
+                </UseTemplate>
+
+
+                <!-- FO HUD SCREEN -->
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>HUD_SCREEN_R_TEX</NODE_ID>
+                    <POTENTIOMETER>90</POTENTIOMETER>
+                    <PART_ID>HUD_SCREEN_R_TEX</PART_ID>
                     <CAMERA_TITLE>HUD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>12</EMISSIVE_CODE>
@@ -3644,7 +3655,7 @@
                                 <PART_ID>PUSH_OVHD_RCDR_TEST</PART_ID>
                                 <HOLD_SIMVAR>L:A32NX_RCDR_TEST</HOLD_SIMVAR>
                                 <TOOLTIPID>Test CVR</TOOLTIPID>
-                                
+
                             </UseTemplate>
                         </Component>
 
@@ -3713,7 +3724,7 @@
                             <NO_SEQ2 />
                             <ROUND />
                         </UseTemplate>
-     
+
 
                             <!-- CALLS ALL (PACEHOLDER WAITING FOR HUD CONTROL PANEL) -->
                             <UseTemplate Name="FBW_Anim_Interactions">

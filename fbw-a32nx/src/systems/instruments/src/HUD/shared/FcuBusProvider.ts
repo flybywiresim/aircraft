@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Instrument } from '@microsoft/msfs-sdk';
 import { HUDSimvars } from './HUDSimvarPublisher';
@@ -67,54 +67,54 @@ export class FcuBusProvider implements Instrument {
     });
 
     subscriber.on('fcuEisLeftDiscreteWord1Raw').handle((word) => {
-      //   if (getDisplayIndex() === 1) {
-      // }
-      publisher.pub('fcuEisDiscreteWord1', new Arinc429Word(word));
+      if (getDisplayIndex() === 1) {
+        publisher.pub('fcuEisDiscreteWord1', new Arinc429Word(word));
+      }
     });
 
     subscriber.on('fcuEisLeftDiscreteWord2Raw').handle((word) => {
-      // if (getDisplayIndex() === 1) {
-      //   }
-      this.fcuEisDiscreteWord2 = new Arinc429Word(word);
-      publisher.pub('fcuEisDiscreteWord2', this.fcuEisDiscreteWord2);
+      if (getDisplayIndex() === 1) {
+        this.fcuEisDiscreteWord2 = new Arinc429Word(word);
+        publisher.pub('fcuEisDiscreteWord2', this.fcuEisDiscreteWord2);
+      }
     });
 
     subscriber.on('fcuEisLeftBaroRaw').handle((word) => {
-      //   if (getDisplayIndex() === 1) {
-      // }
-      publisher.pub('fcuEisBaro', new Arinc429Word(word));
+      if (getDisplayIndex() === 1) {
+        publisher.pub('fcuEisBaro', new Arinc429Word(word));
+      }
     });
 
     subscriber.on('fcuEisLeftBaroHpaRaw').handle((word) => {
-      //     if (getDisplayIndex() === 1) {
-      // }
-      publisher.pub('fcuEisBaroHpa', new Arinc429Word(word));
+      if (getDisplayIndex() === 1) {
+        publisher.pub('fcuEisBaroHpa', new Arinc429Word(word));
+      }
     });
 
-    // subscriber.on('fcuEisRightDiscreteWord1Raw').handle((word) => {
-    //   if (getDisplayIndex() === 2) {
-    //     publisher.pub('fcuEisDiscreteWord1', new Arinc429Word(word));
-    //   }
-    // });
+    subscriber.on('fcuEisRightDiscreteWord1Raw').handle((word) => {
+      if (getDisplayIndex() === 2) {
+        publisher.pub('fcuEisDiscreteWord1', new Arinc429Word(word));
+      }
+    });
 
-    // subscriber.on('fcuEisRightDiscreteWord2Raw').handle((word) => {
-    //   if (getDisplayIndex() === 2) {
-    //     this.fcuEisDiscreteWord2 = new Arinc429Word(word);
-    //     publisher.pub('fcuEisDiscreteWord2', this.fcuEisDiscreteWord2);
-    //   }
-    // });
+    subscriber.on('fcuEisRightDiscreteWord2Raw').handle((word) => {
+      if (getDisplayIndex() === 2) {
+        this.fcuEisDiscreteWord2 = new Arinc429Word(word);
+        publisher.pub('fcuEisDiscreteWord2', this.fcuEisDiscreteWord2);
+      }
+    });
 
-    // subscriber.on('fcuEisRightBaroRaw').handle((word) => {
-    //   if (getDisplayIndex() === 2) {
-    //     publisher.pub('fcuEisBaro', new Arinc429Word(word));
-    //   }
-    // });
+    subscriber.on('fcuEisRightBaroRaw').handle((word) => {
+      if (getDisplayIndex() === 2) {
+        publisher.pub('fcuEisBaro', new Arinc429Word(word));
+      }
+    });
 
-    // subscriber.on('fcuEisRightBaroHpaRaw').handle((word) => {
-    //   if (getDisplayIndex() === 2) {
-    //     publisher.pub('fcuEisBaroHpa', new Arinc429Word(word));
-    //   }
-    // });
+    subscriber.on('fcuEisRightBaroHpaRaw').handle((word) => {
+      if (getDisplayIndex() === 2) {
+        publisher.pub('fcuEisBaroHpa', new Arinc429Word(word));
+      }
+    });
 
     subscriber.on('fcuDiscreteWord1Raw').handle((word) => {
       publisher.pub('fcuDiscreteWord1', new Arinc429Word(word));

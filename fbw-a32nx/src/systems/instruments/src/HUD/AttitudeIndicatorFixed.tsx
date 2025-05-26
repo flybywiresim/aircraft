@@ -829,6 +829,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       .whenChanged()
       .handle((speed) => {
         this.tailStrikeConditions.speed = speed.value;
+        this.checkOnGround();
       });
 
     sub.on('pitchAr').handle((pitch) => {
@@ -875,9 +876,9 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         this.ref2.instance.style.display = 'block';
       }
     } else {
-      this.pl.instance.style.display = 'block'; ///////////
-      this.ref1.instance.style.display = 'block';
-      this.ref2.instance.style.display = 'block';
+      this.pl.instance.style.display = 'none';
+      this.ref1.instance.style.display = 'none';
+      this.ref2.instance.style.display = 'none';
     }
   }
 
@@ -886,7 +887,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     // FIXME: further fine tune.
     return (
       <g>
-        <path ref={this.deb} class="WideStroke  debug" d="" />
+        {/* <path ref={this.deb} class="WideStroke  debug" d="" /> */}
 
         <polyline ref={this.pl} id="TailstrikeWarning" points="" class="WideStroke  Green" />
         <path ref={this.ref1} class="WideStroke  Green" d="" />
