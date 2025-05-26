@@ -714,7 +714,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
       return;
     }
 
