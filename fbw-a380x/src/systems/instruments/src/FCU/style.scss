@@ -127,10 +127,11 @@ text.Label.Visible {
 
 #FCU_CONTENT #Mainframe #LargeScreen {
   width: 100%;
-  height: 16%;
+  height: 32%;
   display: block;
   position: absolute;
   background-color: $display-colour-background;
+  top:8%;
 }
 
 #FCU_CONTENT #Mainframe #LargeScreen #Speed {
@@ -176,17 +177,25 @@ text.Label.Visible {
   position: absolute;
 }
 
-#FCU_CONTENT #Mainframe #SmallScreen {
+#FCU_CONTENT #Mainframe #Baros .SmallScreen {
   width: 27%;
-  height: 17%;
+  height: 34%;
   display: block;
   position: absolute;
-  top: 16%;
+  top: 72%;
   background-color: $display-colour-background;
+
+  &.LeftSide {
+   left: 120%;
+  }
+
+  &.RightSide {
+    left: 160%;
+  }
 }
 
-#FCU_CONTENT #Mainframe #SmallScreen #Selected,
-#FCU_CONTENT #Mainframe #SmallScreen #Standard {
+#FCU_CONTENT #Mainframe #Baros .SmallScreen #Selected,
+#FCU_CONTENT #Mainframe #Baros .SmallScreen #Standard {
   width: 100%;
   height: 100%;
   top: 0;

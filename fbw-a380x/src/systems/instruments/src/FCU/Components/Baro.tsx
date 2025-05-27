@@ -93,28 +93,54 @@ export class Baro extends DisplayComponent<BaroProps> {
 
   render(): VNode | null {
     return (
-      <div id="SmallScreen">
-        <div id="Selected">
-          <svg width="100%" height="100%" class="Baro">
-            <text
-              id="QNH"
-              x="6%"
-              y="23%"
-              class={{
-                Common: true,
-                Label: true,
-                Visible: this.isQnhLabelVisible,
-              }}
-            >
-              QNH
-            </text>
-            <text id="PreSelBaroValue" class="Common Active" x="97%" y="30%" text-anchor="end">
-              {this.preSelBaroText}
-            </text>
-            <text id="Value" class="Common Value" x="4%" y="95%">
-              {this.baroText}
-            </text>
-          </svg>
+      <div id="Baros">
+        <div class="SmallScreen LeftSide">
+          <div id="Selected">
+            <svg width="100%" height="100%" class="Baro">
+              <text
+                id="QNH"
+                x="6%"
+                y="23%"
+                class={{
+                  Common: true,
+                  Label: true,
+                  Visible: this.isQnhLabelVisible,
+                }}
+              >
+                QNH
+              </text>
+              <text id="PreSelBaroValue" class="Common Active" x="97%" y="30%" text-anchor="end">
+                {this.preSelBaroText}
+              </text>
+              <text id="Value" class="Common Value" x="4%" y="95%">
+                {this.baroText}
+              </text>
+            </svg>
+          </div>
+        </div>
+        <div class="SmallScreen RightSide">
+          <div id="Selected">
+            <svg width="100%" height="100%" class="Baro">
+              <text
+                id="QNH"
+                x="6%"
+                y="23%"
+                class={{
+                  Common: true,
+                  Label: true,
+                  Visible: this.isQnhLabelVisible,
+                }}
+              >
+                QNH
+              </text>
+              <text id="PreSelBaroValue" class="Common Active" x="97%" y="30%" text-anchor="end">
+                {this.preSelBaroText}
+              </text>
+              <text id="Value" class="Common Value" x="4%" y="95%">
+                {this.baroText}
+              </text>
+            </svg>
+          </div>
         </div>
       </div>
     );
