@@ -3,44 +3,44 @@
 import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
-  private fromIcao = Subject.create<string>('');
+  private readonly fromIcao = Subject.create<string>('');
 
-  private rwyIdent = Subject.create<string>('');
+  private readonly rwyIdent = Subject.create<string>('');
 
-  private rwyLength = Subject.create<string>('');
+  private readonly rwyLength = Subject.create<string>('');
 
-  private rwyCrs = Subject.create<string>('');
+  private readonly rwyCrs = Subject.create<string>('');
 
-  private rwyEoSid = Subject.create<string>('');
+  private readonly rwyEoSid = Subject.create<string>('');
 
-  private rwyFreq = Subject.create<string>('');
+  private readonly rwyFreq = Subject.create<string>('');
 
-  private rwySid = Subject.create<string>('');
+  private readonly rwySid = Subject.create<string>('');
 
-  private rwyTrans = Subject.create<string>('');
+  private readonly rwyTrans = Subject.create<string>('');
 
-  private rwyOptions = Subject.create<ButtonMenuItem[]>([]);
+  private readonly rwyOptions = Subject.create<ButtonMenuItem[]>([]);
 
-  private sidDisabled = Subject.create<boolean>(false);
+  private readonly sidDisabled = Subject.create<boolean>(false);
 
-  private sidOptions = Subject.create<ButtonMenuItem[]>([]);
+  private readonly sidOptions = Subject.create<ButtonMenuItem[]>([]);
 
-  private transDisabled = Subject.create<boolean>(false);
+  private readonly transDisabled = Subject.create<boolean>(false);
 
-  private transOptions = Subject.create<ButtonMenuItem[]>([]);
+  private readonly transOptions = Subject.create<ButtonMenuItem[]>([]);
 
-  private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-  private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+  private readonly tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    const isAltn = this.props.fmcService.master?.revisedWaypointIsAltn.get();
+    const isAltn = this.props.fmcService.master?.revisedLegIsAltn.get();
     const flightPlan = isAltn ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan?.originAirport) {
@@ -99,7 +99,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
           const sortedDepartures = flightPlan.availableDepartures.sort((a, b) => a.ident.localeCompare(b.ident));
           sortedDepartures.forEach((dep) => {
             sids.push({
-              label: dep.ident,
+              label: dep.authorisationRequired ? `${dep.ident} (RNP)` : dep.ident,
               action: async () => {
                 await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(
                   dep.databaseId,

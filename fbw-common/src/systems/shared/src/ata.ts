@@ -103,6 +103,7 @@ export const AtaChaptersDescription = Object.freeze({
   31: 'The cockpit displays give critical flight information to the pilots. In a failure where displays are lost, the pilots must deal with a lack of flight data given to them.',
   32: 'The landing gear components are responsible for supporting and steering the aircraft on the ground, and make it possible to retract and store the landing gear in flight. Includes the functioning and maintenance aspects of the landing gear doors.',
   34: 'The navigation systems provide data about the position, speed, heading, and altitude of the aircraft. Failures in a system such as the ADIRS can cause a loss of data sent to instrumentation.',
+  46: 'Information systems provide means of communication between Airline Operational Control (AOC), Air Traffic Control (ATC), and various applications around the organization of on-board information (e.g. via the OIS)',
 });
 
 export type AtaChapterNumber = keyof typeof AtaChaptersTitle;

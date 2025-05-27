@@ -7,12 +7,10 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import {
   AirportSubsectionCode,
   AltitudeDescriptor,
+  Fix,
   LinePathVector,
-  NdbNavaid,
   PathVectorType,
   SectionCode,
-  VhfNavaid,
-  Waypoint,
 } from '@flybywiresim/fbw-sdk';
 import { distanceTo, placeBearingDistance } from 'msfs-geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
@@ -39,7 +37,7 @@ export class FALeg extends Leg {
    * @param segment The flight plan segment this leg appears in.
    */
   constructor(
-    public readonly fix: Waypoint | VhfNavaid | NdbNavaid,
+    public readonly fix: Fix,
     private readonly course: number,
     private readonly altitude: number,
     public readonly metadata: Readonly<LegMetadata>,

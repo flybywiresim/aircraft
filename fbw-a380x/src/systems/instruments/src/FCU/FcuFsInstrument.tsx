@@ -58,7 +58,7 @@ export class FcuFsInstrument implements FsInstrument {
     ],
   });
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   //private readonly isFailedKey = A380Failure.Fcu;
   private readonly isFailed = Subject.create(false);

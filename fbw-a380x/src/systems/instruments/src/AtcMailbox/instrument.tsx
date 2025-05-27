@@ -19,7 +19,7 @@ class AtcMailboxInstrument implements FsInstrument {
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   constructor(public readonly instrument: BaseInstrument) {
     this.hEventPublisher = new HEventPublisher(this.bus);

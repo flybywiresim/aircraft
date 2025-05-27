@@ -221,7 +221,7 @@ export class LnavDriver implements GuidanceComponent {
             // Set FG inputs
 
             if (!this.lastAvail) {
-              SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
+              SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
               this.lastAvail = true;
             }
 
@@ -246,7 +246,7 @@ export class LnavDriver implements GuidanceComponent {
             const { heading, phiCommand: forcedPhiHeading } = params;
 
             if (!this.lastAvail) {
-              SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
+              SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
               this.lastAvail = true;
             }
 
@@ -302,7 +302,7 @@ export class LnavDriver implements GuidanceComponent {
             const { course, phiCommand: forcedPhiCourse } = params;
 
             if (!this.lastAvail) {
-              SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
+              SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', true);
               this.lastAvail = true;
             }
 
@@ -396,7 +396,7 @@ export class LnavDriver implements GuidanceComponent {
     /* Set FG parameters */
 
     if (!available && this.lastAvail !== false) {
-      SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', false);
+      SimVar.SetSimVarValue('L:A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL', 'Bool', false);
       SimVar.SetSimVarValue('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles', 0);
       SimVar.SetSimVarValue('L:A32NX_FG_TRACK_ANGLE_ERROR', 'degree', 0);
       SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);

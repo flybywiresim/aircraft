@@ -1074,6 +1074,7 @@ export class PseudoFWC {
   private readonly noSmokingSwitchPosition = Subject.create(0);
 
   private readonly predWSOn = Subject.create(false);
+  private readonly predWsToConfTest = new NXLogicMemoryNode(true);
 
   private readonly seatBelt = Subject.create(0);
 
@@ -2059,6 +2060,7 @@ export class PseudoFWC {
     this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
     this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
     this.predWSOn.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_Position', 'Bool'));
+    this.predWsToConfTest.write(this.toConfigTest && this.fwcFlightPhase.get() === 2, this.fwcFlightPhase.get() !== 2);
     this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
     this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
@@ -2660,7 +2662,7 @@ export class PseudoFWC {
 
     /* SETTINGS */
 
-    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0') !== '0');
+    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
 
     /* CABIN READY */
 
@@ -4975,7 +4977,7 @@ export class PseudoFWC {
         this.fwcFlightPhase,
       ),
       whichCodeToReturn: () => [
-        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigNormal.get() ? 1 : 0,
+        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.predWsToConfTest.read() ? 1 : 0,
       ],
       codesToReturn: ['000054001', '000054002'],
       memoInhibit: () => false,

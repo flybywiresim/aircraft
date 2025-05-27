@@ -1705,7 +1705,7 @@ impl InertialReference {
                 || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
                     && self
                         .remaining_align_duration
-                        .map_or(false, |duration| duration.as_secs() < 120)));
+                        .is_some_and(|duration| duration.as_secs() < 120)));
 
         let true_heading_ssm = if heading_available {
             SignStatus::NormalOperation
@@ -2118,6 +2118,7 @@ fn subtract_delta_from_duration(context: &UpdateContext, duration: Duration) -> 
 
 trait NormaliseAngleExt {
     fn normalised(self) -> Angle;
+    #[allow(dead_code)]
     fn normalised_180(self) -> Angle;
 }
 

@@ -50,7 +50,7 @@ export class Baro extends DisplayComponent<BaroProps> {
   private readonly preSelBaroText = MappedSubject.create(
     ([correction, isVisible, isLightTest, mode]) => {
       if (isLightTest) {
-        return '8p88'; // p is used as a standin character for the Q test character
+        return '8.p.8.8'; // p is used as a standin character for the Q test character
       } else if (mode === BaroMode.Qfe) {
         return 'qfe';
       } else if (isVisible) {

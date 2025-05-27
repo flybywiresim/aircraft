@@ -1,3 +1,6 @@
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import {
   FSComponent,
   EventBus,
@@ -45,7 +48,7 @@ class MfdInstrument implements FsInstrument {
   private readonly fmcBFailed = Subject.create(false);
   private readonly fmcCFailed = Subject.create(false);
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   constructor(public readonly instrument: BaseInstrument) {
     this.backplane.addPublisher('mfd', this.simVarPublisher);

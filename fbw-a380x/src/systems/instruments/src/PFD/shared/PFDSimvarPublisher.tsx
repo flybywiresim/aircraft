@@ -25,7 +25,7 @@ export interface PFDSimvars {
   fmaModeReversion: boolean;
   fmaSpeedProtection: boolean;
   AThrMode: number;
-  apVsSelected: number;
+  selectedVs: number;
   approachCapability: number;
   ap1Active: boolean;
   ap2Active: boolean;
@@ -113,6 +113,10 @@ export interface PFDSimvars {
   autoBrakeDecel: boolean;
   fpaRaw: number;
   daRaw: number;
+  fcdc1DiscreteWord1Raw: number;
+  fcdc2DiscreteWord1Raw: number;
+  fcdc1DiscreteWord2Raw: number;
+  fcdc2DiscreteWord2Raw: number;
   ls1Button: boolean;
   ls2Button: boolean;
   xtk: number;
@@ -167,6 +171,11 @@ export interface PFDSimvars {
   spoilersArmed: boolean;
   fcuLeftVelocityVectorOn: boolean;
   fcuRightVelocityVectorOn: boolean;
+  btvExitMissed: boolean;
+  fcuApproachModeActive: boolean;
+  fcuLocModeActive: boolean;
+  hydGreenSysPressurized: boolean;
+  hydYellowSysPressurized: boolean;
 }
 
 export enum PFDVars {
@@ -193,7 +202,7 @@ export enum PFDVars {
   fmaModeReversion = 'L:A32NX_FMA_MODE_REVERSION',
   fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
   AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
-  apVsSelected = 'L:A32NX_AUTOPILOT_VS_SELECTED',
+  selectedVs = 'L:A32NX_AUTOPILOT_VS_SELECTED',
   approachCapability = 'L:A32NX_APPROACH_CAPABILITY',
   ap1Active = 'L:A32NX_AUTOPILOT_1_ACTIVE',
   ap2Active = 'L:A32NX_AUTOPILOT_2_ACTIVE',
@@ -280,6 +289,10 @@ export enum PFDVars {
   autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
   fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
   daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
+  fcdc1DiscreteWord1Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
+  fcdc2DiscreteWord1Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
+  fcdc1DiscreteWord2Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
+  fcdc2DiscreteWord2Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_2',
   ls1Button = 'L:A380X_EFIS_L_LS_BUTTON_IS_ON',
   ls2Button = 'L:A380X_EFIS_R_LS_BUTTON_IS_ON',
   xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
@@ -329,11 +342,16 @@ export enum PFDVars {
   lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   trimPosition = 'ELEVATOR TRIM POSITION',
-  cgPercent = 'CG PERCENT',
+  cgPercent = 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
   fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
   fcuRightVelocityVectorOn = 'L:A380X_EFIS_R_VV_BUTTON_IS_ON',
+  btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
+  fcuApproachModeActive = 'L:A32NX_FCU_APPR_MODE_ACTIVE',
+  fcuLocModeActive = 'L:A32NX_FCU_LOC_MODE_ACTIVE',
+  hydGreenSysPressurized = 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH',
+  hydYellowSysPressurized = 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -361,7 +379,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fmaModeReversion', { name: PFDVars.fmaModeReversion, type: SimVarValueType.Bool }],
     ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Bool }],
     ['AThrMode', { name: PFDVars.AThrMode, type: SimVarValueType.Number }],
-    ['apVsSelected', { name: PFDVars.apVsSelected, type: SimVarValueType.FPM }],
+    ['selectedVs', { name: PFDVars.selectedVs, type: SimVarValueType.FPM }],
     ['approachCapability', { name: PFDVars.approachCapability, type: SimVarValueType.Number }],
     ['ap1Active', { name: PFDVars.ap1Active, type: SimVarValueType.Bool }],
     ['ap2Active', { name: PFDVars.ap2Active, type: SimVarValueType.Bool }],
@@ -414,6 +432,8 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['metricAltToggle', { name: PFDVars.metricAltToggle, type: SimVarValueType.Bool }],
     ['tla1', { name: PFDVars.tla1, type: SimVarValueType.Number }],
     ['tla2', { name: PFDVars.tla2, type: SimVarValueType.Number }],
+    ['tla3', { name: PFDVars.tla3, type: SimVarValueType.Number }],
+    ['tla4', { name: PFDVars.tla4, type: SimVarValueType.Number }],
     ['tcasState', { name: PFDVars.tcasState, type: SimVarValueType.Enum }],
     ['tcasCorrective', { name: PFDVars.tcasCorrective, type: SimVarValueType.Bool }],
     ['tcasRedZoneL', { name: PFDVars.tcasRedZoneL, type: SimVarValueType.Number }],
@@ -446,6 +466,10 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['autoBrakeDecel', { name: PFDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
     ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
     ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
+    ['fcdc1DiscreteWord1Raw', { name: PFDVars.fcdc1DiscreteWord1Raw, type: SimVarValueType.Number }],
+    ['fcdc2DiscreteWord1Raw', { name: PFDVars.fcdc2DiscreteWord1Raw, type: SimVarValueType.Number }],
+    ['fcdc1DiscreteWord2Raw', { name: PFDVars.fcdc1DiscreteWord2Raw, type: SimVarValueType.Number }],
+    ['fcdc2DiscreteWord2Raw', { name: PFDVars.fcdc2DiscreteWord2Raw, type: SimVarValueType.Number }],
     ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
     ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
     ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
@@ -500,6 +524,11 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
     ['fcuLeftVelocityVectorOn', { name: PFDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],
     ['fcuRightVelocityVectorOn', { name: PFDVars.fcuRightVelocityVectorOn, type: SimVarValueType.Bool }],
+    ['btvExitMissed', { name: PFDVars.btvExitMissed, type: SimVarValueType.Bool }],
+    ['fcuApproachModeActive', { name: PFDVars.fcuApproachModeActive, type: SimVarValueType.Bool }],
+    ['fcuLocModeActive', { name: PFDVars.fcuLocModeActive, type: SimVarValueType.Bool }],
+    ['hydGreenSysPressurized', { name: PFDVars.hydGreenSysPressurized, type: SimVarValueType.Bool }],
+    ['hydYellowSysPressurized', { name: PFDVars.hydYellowSysPressurized, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

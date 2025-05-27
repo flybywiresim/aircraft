@@ -631,6 +631,7 @@
     "Real": "असली",
     "Realism": {
       "AdirsAlignTime": "ADIRS संरेखित समय",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "ऑटोफ़िल चेकलिस्ट",
       "BoardingTime": "बोर्डिंग टाइम",
       "DmcSelfTestTime": "डीएमसी सेल्फ टेस्ट टाइम",
@@ -666,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "सिर्फ लोड करें",
       "None": "कोई नहीं",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "बंद",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",

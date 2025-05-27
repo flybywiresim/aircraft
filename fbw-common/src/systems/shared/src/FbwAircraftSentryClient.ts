@@ -113,30 +113,25 @@ export class FbwAircraftSentryClient {
           const instrument = document.querySelector('vcockpit-panel > *');
 
           if (instrument) {
-            instrument.addEventListener('FlightStart', () => {
-              // ...and give ourselves some breathing room
-              setTimeout(() => {
-                resolve(
-                  FbwAircraftSentryClient.requestConsent()
-                    .then((didConsent) => {
-                      if (didConsent) {
-                        NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
+            resolve(
+              FbwAircraftSentryClient.requestConsent()
+                .then((didConsent) => {
+                  if (didConsent) {
+                    NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
 
-                        console.log('[SentryClient] User requested consent state Given. Initializing sentry');
+                    console.log('[SentryClient] User requested consent state Given. Initializing sentry');
 
-                        return FbwAircraftSentryClient.attemptInitializeSentry(config);
-                      }
+                    return FbwAircraftSentryClient.attemptInitializeSentry(config);
+                  }
 
-                      NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+                  NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
-                      console.log('[SentryClient] User requested consent state Refused. Doing nothing');
+                  console.log('[SentryClient] User requested consent state Refused. Doing nothing');
 
-                      return false;
-                    })
-                    .catch(() => false),
-                );
-              }, 1_000);
-            });
+                  return false;
+                })
+                .catch(() => false),
+            );
           } else {
             reject(new Error('[SentryClient] Could not find an instrument element to hook onto'));
           }

@@ -5,21 +5,31 @@
 
 import {
   Airport,
+  AltitudeConstraint,
   AltitudeDescriptor,
   Approach,
   ApproachType,
   ApproachWaypointDescriptor,
+  areDatabaseItemsEqual,
   Arrival,
+  ConstraintUtils,
   Departure,
   Fix,
   LegType,
   ProcedureTransition,
   Runway,
   SpeedDescriptor,
+  TurnDirection,
+  WaypointConstraintType,
   WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
-import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import {
+  FlightPlanElement,
+  FlightPlanLeg,
+  FlightPlanLegFlags,
+  isDiscontinuity,
+} from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/segments/DepartureSegment';
 import { ArrivalSegment } from '@fmgc/flightplanning/segments/ArrivalSegment';
 import { ApproachSegment } from '@fmgc/flightplanning/segments/ApproachSegment';
@@ -44,7 +54,6 @@ import { BitFlags, EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
-import { WaypointConstraintType, ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
 import {
@@ -930,10 +939,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       const previousElement = this.elementAt(index - 1);
       const element = this.elementAt(index);
       const [prevSegment, prevIndexInSegment] = this.segmentPositionForIndex(index - 1);
-      const nextElement = this.elementAt(index + 1);
+      const nextElement = this.maybeElementAt(index + 1);
 
       // Also clear hold if we clear leg before hold
-      const numElementsToDelete = nextElement.isDiscontinuity === false && nextElement.isHX() ? 2 : 1;
+      const numElementsToDelete = nextElement?.isDiscontinuity === false && nextElement.isHX() ? 2 : 1;
 
       if (previousElement.isDiscontinuity === false) {
         if (element.isDiscontinuity === false) {
@@ -948,15 +957,41 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
           if (previousElement.isXI()) {
             prevSegment.allLegs.splice(prevIndexInSegment, 1);
           }
-        } else if (nextElement.isDiscontinuity === false) {
+        } else if (nextElement?.isDiscontinuity === false) {
           if (previousElement.terminatesWithWaypoint(nextElement.terminationWaypoint())) {
             // Disco with same point before and after it
             this.mergeConstraints(previousElement, nextElement);
 
+            // Only keep one waypoint - see FBW-22-09
             this.removeRange(index, index + 2);
           } else {
             // Regular disco
+            if (nextElement.isXF()) {
+              const [nextSegment, nextIndexInSegment] = this.segmentPositionForIndex(index + 1);
+
+              // Convert next element to TF
+              // We do this because we get the wrong turn direction sometimes if we keep it a CF leg for example
+              const newNextElement = FlightPlanLeg.fromEnrouteFix(
+                nextSegment,
+                nextElement.terminationWaypoint(),
+                nextElement.annotation,
+              )
+                .withDefinitionFrom(nextElement)
+                .withPilotEnteredDataFrom(nextElement);
+
+              nextSegment.allLegs.splice(nextIndexInSegment, 1, newNextElement);
+
+              if (nextSegment !== segment) {
+                this.syncSegmentLegsChange(nextSegment);
+              }
+            }
+
+            // Remove disco
             segment.allLegs.splice(indexInSegment, 1);
+          }
+
+          if (!this.requiresTurnDirectionAt(index + 2)) {
+            this.removeForcedTurnAt(index + 2);
           }
         }
       } else {
@@ -1099,20 +1134,27 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param waypoint the waypoint to insert
    */
   async insertWaypointBefore(index: number, waypoint: Fix) {
+    // If the waypoint already exists, remove everything between the two waypoints
     const duplicate = this.findDuplicate(waypoint, index);
     if (duplicate) {
-      const [duplicateSegment, duplicateIndex, duplicatePlanIndex] = duplicate;
+      const [duplicateSegment, _, duplicatePlanIndex] = duplicate;
+
       if (duplicatePlanIndex < this.firstMissedApproachLegIndex) {
-        // If the waypoint already exists, remove everything between the two waypoints
-        const duplicateLeg = duplicateSegment.allLegs[duplicateIndex];
-        if (duplicateLeg.isDiscontinuity === true) {
-          throw new Error('[FMS/FPM] Duplicate waypoint was a discontinuity');
-        }
+        const duplicateLeg = this.legElementAt(duplicatePlanIndex);
 
         // Make new leg a TF leg. If this is not allowed, it will be converted when we restring
         const leg = FlightPlanLeg.fromEnrouteFix(duplicateSegment, waypoint)
           .withDefinitionFrom(duplicateLeg)
           .withPilotEnteredDataFrom(duplicateLeg);
+
+        if (!this.requiresTurnDirectionAt(duplicatePlanIndex + 1)) {
+          // Remove overfly on previous leg because it no longer makes sense
+          if (this.maybeElementAt(index - 1)?.isDiscontinuity === false) {
+            this.setOverflyAt(index - 1, false);
+          }
+          // Remove forced turn on following leg
+          this.removeForcedTurnAt(duplicatePlanIndex + 1);
+        }
 
         this.removeRange(index, duplicatePlanIndex + 1);
 
@@ -1123,9 +1165,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const previousElement = this.maybeElementAt(index - 1);
-    if (previousElement?.isDiscontinuity === false && previousElement.isXI()) {
-      this.removeElementAt(index - 1);
-      index -= 1;
+    if (previousElement?.isDiscontinuity === false) {
+      this.setOverflyAt(index - 1, false);
+
+      if (previousElement.isXI()) {
+        this.removeElementAt(index - 1);
+        index -= 1;
+      }
     }
 
     const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
@@ -1140,27 +1186,68 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param waypoint the waypoint to insert
    */
   async nextWaypoint(index: number, waypoint: Fix) {
+    // If the waypoint already exists, remove everything between the two waypoints
     const duplicate = this.findDuplicate(waypoint, index);
     if (duplicate) {
-      // If the waypoint already exists, remove everything between the two waypoints
-      const duplicatePlanIndex = duplicate[2];
+      const [duplicateSegment, _, duplicatePlanIndex] = duplicate;
 
-      this.removeRange(index + 1, duplicatePlanIndex);
+      if (duplicatePlanIndex < this.firstMissedApproachLegIndex) {
+        const duplicateLeg = this.legElementAt(duplicatePlanIndex);
 
-      this.enqueueOperation(FlightPlanQueuedOperation.Restring);
-      await this.flushOperationQueue();
-    } else {
-      const afterElement = this.elementAt(index);
+        // Make new leg a TF leg. If this is not allowed, it will be converted when we restring
+        const leg = FlightPlanLeg.fromEnrouteFix(duplicateSegment, waypoint)
+          .withDefinitionFrom(duplicateLeg)
+          .withPilotEnteredDataFrom(duplicateLeg);
 
-      const [insertSegment] = this.segmentPositionForIndex(index);
-      const leg = FlightPlanLeg.fromEnrouteFix(
-        insertSegment,
-        waypoint,
-        undefined,
-        afterElement.isDiscontinuity === true ? LegType.IF : LegType.TF,
-      );
+        if (!this.requiresTurnDirectionAt(duplicatePlanIndex + 1)) {
+          // A forced turn implies an overfly on the previous leg, so also remove it
+          // because it no longer makes sense
+          this.setOverflyAt(index, false);
+          // Remove forced turn on following leg, since it no longer makes sense
+          this.removeForcedTurnAt(duplicatePlanIndex + 1);
+        }
 
-      await this.insertElementAfter(index, leg, true);
+        this.removeRange(index + 1, duplicatePlanIndex + 1);
+
+        await this.insertElementAfter(index, leg);
+
+        return;
+      }
+    }
+
+    const afterElement = this.elementAt(index);
+
+    const [insertSegment] = this.segmentPositionForIndex(index);
+    const leg = FlightPlanLeg.fromEnrouteFix(
+      insertSegment,
+      waypoint,
+      undefined,
+      afterElement.isDiscontinuity === true ? LegType.IF : LegType.TF,
+    );
+
+    await this.insertElementAfter(index, leg, true);
+  }
+
+  protected requiresTurnDirectionAt(index: number): boolean {
+    const leg = this.maybeElementAt(index);
+
+    if (isDiscontinuity(leg)) {
+      return false;
+    }
+
+    return leg.isHX() || leg.type === LegType.PI || leg.type === LegType.RF || leg.type === LegType.AF;
+  }
+
+  protected removeForcedTurnAt(index: number) {
+    const leg = this.maybeElementAt(index);
+    if (leg?.isDiscontinuity === false) {
+      if (LnavConfig.VERBOSE_FPM_LOG) {
+        console.log(`[fpm] removeForcedTurnAt - ${leg.ident}`);
+      }
+
+      leg.definition.turnDirection = TurnDirection.Either;
+
+      this.syncLegDefinitionChange(index);
     }
   }
 
@@ -1460,9 +1547,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     element.pilotEnteredAltitudeConstraint = constraint;
     if (!constraint) {
-      element.definition.altitudeDescriptor = AltitudeDescriptor.None;
-      element.definition.altitude1 = undefined;
-      element.definition.altitude2 = undefined;
+      element.clearAltitudeConstraints();
     }
 
     this.syncLegDefinitionChange(index);
@@ -1484,9 +1569,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     if (!speed) {
-      element.pilotEnteredSpeedConstraint = undefined;
-      element.definition.speedDescriptor = undefined;
-      element.definition.speed = undefined;
+      element.clearSpeedConstraints();
     } else {
       element.pilotEnteredSpeedConstraint = { speedDescriptor: SpeedDescriptor.Maximum, speed };
     }
@@ -2029,31 +2112,40 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const xiToXf = lastLegInFirst.isXI() && element.isXF();
 
         if (xiToXf) {
-          if (LnavConfig.VERBOSE_FPM_LOG) {
-            console.log(`[fpm] stringSegmentsForwards - cutBefore (xiToXf)) = ${i}`);
-          }
-
-          // Convert TF to CF
-          if (element.type === LegType.TF) {
-            const prevElement = second.allLegs[i - 1];
-            if (!prevElement || prevElement.isDiscontinuity === true) {
-              throw new Error('[FMS/FPM] TF leg without a preceding leg');
-            } else if (!prevElement.terminationWaypoint()) {
-              throw new Error('[FMS/FPM] TF leg without a preceding leg with a termination waypoint');
+          // If the last leg in the first segment is a PI leg, we need to check if the waypoint is the same as the one in the second segment
+          if (
+            lastLegInFirst.type !== LegType.PI ||
+            areDatabaseItemsEqual(lastLegInFirst.definition.waypoint, element.definition.waypoint)
+          ) {
+            if (LnavConfig.VERBOSE_FPM_LOG) {
+              console.log(`[fpm] stringSegmentsForwards - cutBefore (xiToXf)) = ${i}`);
             }
 
-            const track = bearingTo(prevElement.terminationWaypoint().location, element.terminationWaypoint().location);
-            element.type = LegType.CF;
-            element.definition.magneticCourse = track;
-            // Get correct ident/annotation for CF leg
-            [element.ident, element.annotation] = procedureLegIdentAndAnnotation(
-              element.definition,
-              element.annotation,
-            );
-          }
+            // Convert TF to CF
+            if (element.type === LegType.TF) {
+              const prevElement = second.allLegs[i - 1];
+              if (!prevElement || prevElement.isDiscontinuity === true) {
+                throw new Error('[FMS/FPM] TF leg without a preceding leg');
+              } else if (!prevElement.terminationWaypoint()) {
+                throw new Error('[FMS/FPM] TF leg without a preceding leg with a termination waypoint');
+              }
 
-          cutBefore = i;
-          break;
+              const track = bearingTo(
+                prevElement.terminationWaypoint().location,
+                element.terminationWaypoint().location,
+              );
+              element.type = LegType.CF;
+              element.definition.magneticCourse = track;
+              // Get correct ident/annotation for CF leg
+              [element.ident, element.annotation] = procedureLegIdentAndAnnotation(
+                element.definition,
+                element.annotation,
+              );
+            }
+
+            cutBefore = i;
+            break;
+          }
         }
       }
     }

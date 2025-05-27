@@ -30,7 +30,7 @@ use uom::si::{
     velocity::knot,
 };
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum AcscId {
     Acsc1(Channel),
     Acsc2(Channel),
@@ -1025,9 +1025,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
             context,
             pneumatic
                 .pack_flow_valve_inlet_pressure(self.id + 1)
-                .map_or(false, |p| {
-                    p.get::<psi>() < Self::PACK_INLET_PRESSURE_MIN_PSIG
-                }),
+                .is_some_and(|p| p.get::<psi>() < Self::PACK_INLET_PRESSURE_MIN_PSIG),
         );
     }
 

@@ -3,18 +3,26 @@
 
 export const WD_NUM_LINES = 17;
 
-import { EcamAbnormalSensedAta212223 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
+import {
+  EcamAbnormalSensedAta212223,
+  EcamDeferredProcAta212223,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
 import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
 import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
 import { EcamAbnormalSensedAta27 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
 import { EcamAbnormalSensedAta28 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata28';
 import { EcamAbnormalSensedAta2930 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata29-30';
-import { EcamAbnormalSensedAta313233 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata31-32-33';
+import {
+  EcamAbnormalSensedAta313233,
+  EcamDeferredProcAta313233,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata31-32-33';
 import { EcamAbnormalSensedAta34 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata34';
 import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata35-36-42';
 import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
 import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
+import { EcamAbnormalSecondaryFailures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/secondary-failures';
+import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 
 // Convention for IDs:
 // First two digits: ATA chapter. 00 for T.O and LDG memos
@@ -51,44 +59,19 @@ export const EcamMemos: { [n: string]: string } = {
   '000002009': '   \x1b<3m-GND SPLRs ARM',
   '000002010': '   \x1b<5m-FLAPS ........LDG',
   '000002011': '   \x1b<3m-FLAPS : LDG',
-  '320000001': '\x1b<4mAUTO BRK OFF',
-  '320000002': '\x1b<3mPARK BRK ON',
-  '321000001': '\x1b<3mFLT L/G DOWN',
-  '321000002': '\x1b<3mL/G GRVTY EXTN',
-  '322000001': '\x1b<4mN/W STEER DISC',
-  '322000002': '\x1b<3mN/W STEER DISC',
-  '000005001': '\x1b<3mREFUELG',
-  '000005501': '\x1b<3mGND SPLRs ARMED',
-  '000056101': '\x1b<3mCOMPANY ALERT',
-  '000056102': '\x1b<3m\x1b)mCOMPANY ALERT',
-  '000006001': '\x1b<3mSPEED BRK',
-  '000006002': '\x1b<4mSPEED BRK',
-  '000010501': '\x1b<3mOUTR TK FUEL XFRD',
-  '000011001': '\x1b<3mFOB BELOW 3 T',
-  '000011002': '\x1b<3mFOB BELOW 6600 LBS',
-  '000013501': '\x1b<3mACARS STBY',
-  '000066001': '\x1b<3mGSM DISC < 4MN',
-  '290000001': '\x1b<3mG ELEC PMP A CTL',
-  '290000002': '\x1b<3mG ELEC PMP B CTL',
-  '290000003': '\x1b<3mY ELEC PMP A CTL',
-  '290000004': '\x1b<3mY ELEC PMP B CTL',
   '000017001': '\x1b<3mAPU AVAIL',
   '000018001': '\x1b<3mAPU BLEED',
-  '000019001': '\x1b<3mLDG LT',
+  '000029001': '\x1b<3mSWITCHG PNL',
+  '210000001': '\x1b<3mHI ALT AIRPORT',
+  '220000001': '\x1b<2mAP OFF',
+  '220000002': '\x1b<4mA/THR OFF',
+  '221000001': '\x1b<3mFMS SWTG',
   '240000001': '\x1b<3mCOMMERCIAL PART SHED',
   '241000001': '\x1b<4mELEC EXT PWR',
   '241000002': '\x1b<3mELEC EXT PWR',
   '242000001': '\x1b<4mRAT OUT',
   '242000002': '\x1b<3mRAT OUT',
   '243000001': '\x1b<3mREMOTE C/B CTL ON',
-  '000023001': '\x1b<3mMAN LDG ELEV',
-  '000029001': '\x1b<3mSWITCHG PNL',
-  '000035001': '\x1b<2mLAND ASAP',
-  '000036001': '\x1b<4mLAND ASAP',
-  '000056001': '\x1b<3mHI ALT SET',
-  '220000001': '\x1b<2mAP OFF',
-  '220000002': '\x1b<4mA/THR OFF',
-  '221000001': '\x1b<3mFMS SWTG',
   '230000001': '\x1b<3mCAPT ON RMP 3',
   '230000002': '\x1b<3mF/O ON RMP 3',
   '230000003': '\x1b<3mCAPT+F/O ON RMP 3',
@@ -118,6 +101,10 @@ export const EcamMemos: { [n: string]: string } = {
   '280000010': '\x1b<3mREFUEL PNL DOOR OPEN',
   '280000011': '\x1b<3mREFUEL PNL DOOR OPEN',
   '280000012': '\x1b<3mTRIM TK XFRD',
+  '290000001': '\x1b<3mG ELEC PMP A CTL',
+  '290000002': '\x1b<3mG ELEC PMP B CTL',
+  '290000003': '\x1b<3mY ELEC PMP A CTL',
+  '290000004': '\x1b<3mY ELEC PMP B CTL',
   '300000001': '\x1b<3mENG A-ICE',
   '300000002': '\x1b<3mWING A-ICE',
   '300000003': '\x1b<3mICE NOT DETECTED',
@@ -125,6 +112,16 @@ export const EcamMemos: { [n: string]: string } = {
   '314000001': '\x1b<6mT.O INHIBIT',
   '314000002': '\x1b<6mLDG INHIBIT',
   '317000001': '\x1b<3mCLOCK INT',
+  '320000001': '\x1b<4mAUTO BRK OFF',
+  '320000002': '\x1b<3mPARK BRK ON',
+  '321000001': '\x1b<3mFLT L/G DOWN',
+  '321000002': '\x1b<3mL/G GRVTY EXTN',
+  '322000001': '\x1b<4mN/W STEER DISC',
+  '322000002': '\x1b<3mN/W STEER DISC',
+  '333000001': '\x1b<3mSTROBE LT OFF',
+  '335000001': '\x1b<3mSEAT BELTS',
+  '335000002': '\x1b<3mNO SMOKING',
+  '335000003': '\x1b<3mNO MOBILE',
   '340000001': '\x1b<3mTRUE NORTH REF',
   '340002701': '\x1b<3mIR 1 IN ATT ALIGN',
   '340002702': '\x1b<3mIR 2 IN ATT ALIGN',
@@ -139,10 +136,6 @@ export const EcamMemos: { [n: string]: string } = {
   '340003004': '\x1b<4mIR IN ALIGN 6 MN',
   '340003005': '\x1b<3mIR IN ALIGN 5 MN',
   '340003006': '\x1b<4mIR IN ALIGN 5 MN',
-  '333000001': '\x1b<3mSTROBE LT OFF',
-  '335000001': '\x1b<3mSEAT BELTS',
-  '335000002': '\x1b<3mNO SMOKING',
-  '335000003': '\x1b<3mNO MOBILE',
   '340003007': '\x1b<3mIR IN ALIGN 4 MN',
   '340003008': '\x1b<4mIR IN ALIGN 4 MN',
   '340003101': '\x1b<3mIR IN ALIGN 3 MN',
@@ -179,19 +172,7 @@ export const EcamMemos: { [n: string]: string } = {
 };
 
 /** Only these IDs will be shown in the PFD MEMO section */
-export const pfdMemoDisplay: string[] = [
-  '322000001',
-  '000006002',
-  '000032501',
-  '000035001',
-  '000036001',
-  '000054502',
-  '220000001',
-  '220000002',
-  '300000001',
-  '300000002',
-  '320000001',
-];
+export const pfdMemoDisplay: string[] = ['000006002', '220000001', '220000002', '300000001', '300000002', '320000001'];
 
 /** All possible INFOs (e.g. CAT 3 SINGLE ONLY), with special formatting characters. */
 export const EcamInfos: { [n: string]: string } = {
@@ -208,8 +189,11 @@ export const EcamInfos: { [n: string]: string } = {
   220200008: '\x1b<3mLOC MODE AVAIL ONLY',
   220200009: '\x1b<3mWHEN L/G DOWN AND AP OFF: USE MAN PITCH TRIM',
   220200010: '\x1b<3mCAT 1 ONLY',
+  220200011: '\x1b<3mFMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
+  270200001: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
+  270200002: '\x1bF/CTL BKUP CTL ACTIVE',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
   320200002: '\x1b<3mBRK PRESS AUTO LIMITED ON ALL L/Gs',
   320200003: '\x1b<3mDELAY BRAKING UNTIL NLG TOUCHDOWN',
@@ -221,7 +205,6 @@ export const EcamInfos: { [n: string]: string } = {
   340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
   800200001: '\x1b<3mFMS PRED UNRELIABLE',
-  800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
   800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
   800200005: '\x1b<3mNO BRAKED PIVOT TURN',
@@ -243,6 +226,7 @@ export const EcamLimitations: { [n: string]: string } = {
   260400001: '\x1b<5mAPU BLEED DO NOT USE',
   260400002: '\x1b<5mMAX SPEED : 250/.55',
   270400001: '\x1b<5mFOR LDG : FLAP LVR 3',
+  270400002: '\x1b<5mMAX SPEED: 310 KT', // for altn law
   290400001: '\x1b<5mSLATS SLOW',
   290400002: '\x1b<5mFLAPS SLOW',
   300400001: '\x1b<5mAVOID ICING CONDs',
@@ -465,29 +449,51 @@ export const EcamInopSys: { [n: string]: string } = {
   260300060: '\x1b<4mU3R RCC SMK DET',
   260300061: '\x1b<4mU1L SHOWER SMK DET',
   260300062: '\x1b<4mU1R SHOWER SMK DET',
-  290300001: '\x1b<4m G ELEC PMP A',
-  290300002: '\x1b<4m G ELEC PMP B',
-  290300003: '\x1b<4m Y ELEC PMP A',
-  290300004: '\x1b<4m Y ELEC PMP B',
-  290300005: '\x1b<4m G ENG 1 PMP A',
-  290300006: '\x1b<4m G ENG 1 PMP B',
-  290300007: '\x1b<4m G ENG 2 PMP A',
-  290300008: '\x1b<4m G ENG 2 PMP B',
-  290300009: '\x1b<4m Y ENG 3 PMP A',
-  290300010: '\x1b<4m Y ENG 3 PMP B',
-  290300011: '\x1b<4m Y ENG 4 PMP A',
-  290300012: '\x1b<4m Y ENG 4 PMP B',
-  290300013: '\x1b<4m G SYS CHAN A OVHT DET',
-  290300014: '\x1b<4m G SYS CHAN B OVHT DET',
-  290300015: '\x1b<4m Y SYS CHAN A OVHT DET',
-  290300016: '\x1b<4m Y SYS CHAN B OVHT DET',
-  290300017: '\x1b<4m G HSMU',
-  290300018: '\x1b<4m Y HSMU',
-  290300019: '\x1b<4m G SYS OVHT DET',
-  290300020: '\x1b<4m Y SYS OVHT DET',
-  290300021: '\x1b<4m G HYD SYS',
-  290300022: '\x1b<4m Y HYD SYS',
+  270300001: '\x1b<4mSEC 1',
+  270300002: '\x1b<4mSEC 2',
+  270300003: '\x1b<4mSEC 3',
+  270300004: '\x1b<4mRUDDER TRIM',
+  270300005: '\x1b<4mRUDDER TRIM 1',
+  270300006: '\x1b<4mRUDDER TRIM 2',
+  270300007: '\x1b<4mF/CTL REDUNDANCY',
+  270300008: '\x1b<4mUPPR RUDDER',
+  270300009: '\x1b<4mLWR RUDDER',
+  290100001: '\x1b<4mPART SPLRs',
+  290100003: '\x1b<4mFLAPS SYS 1',
+  290100004: '\x1b<4mFLAPS SYS 2',
+  290100005: '\x1b<4mSLATS SYS 1',
+  290100006: '\x1b<4mSLATS SYS 2',
+  290100007: '\x1b<4mSTABILIZER',
+  290100008: '\x1b<4mF/CTL PROT',
+  290100009: '\x1b<4mL OUTR AILERON',
+  290100010: '\x1b<4mR OUTR AILERON',
+  290100011: '\x1b<4mMOST SPLRs',
+  290100012: '\x1b<4mFLAPS',
+  290300001: '\x1b<4mG ELEC PMP A',
+  290300002: '\x1b<4mG ELEC PMP B',
+  290300003: '\x1b<4mY ELEC PMP A',
+  290300004: '\x1b<4mY ELEC PMP B',
+  290300005: '\x1b<4mG ENG 1 PMP A',
+  290300006: '\x1b<4mG ENG 1 PMP B',
+  290300007: '\x1b<4mG ENG 2 PMP A',
+  290300008: '\x1b<4mG ENG 2 PMP B',
+  290300009: '\x1b<4mY ENG 3 PMP A',
+  290300010: '\x1b<4mY ENG 3 PMP B',
+  290300011: '\x1b<4mY ENG 4 PMP A',
+  290300012: '\x1b<4mY ENG 4 PMP B',
+  290300013: '\x1b<4mG SYS CHAN A OVHT DET',
+  290300014: '\x1b<4mG SYS CHAN B OVHT DET',
+  290300015: '\x1b<4mY SYS CHAN A OVHT DET',
+  290300016: '\x1b<4mY SYS CHAN B OVHT DET',
+  290300017: '\x1b<4mG HSMU',
+  290300018: '\x1b<4mY HSMU',
+  290300019: '\x1b<4mG SYS OVHT DET',
+  290300020: '\x1b<4mY SYS OVHT DET',
+  290300021: '\x1b<4mG HYD SYS',
+  290300022: '\x1b<4mY HYD SYS',
   310300001: '\x1b<4mAUTO CALLOUT',
+  310300002: '\x1b<4mFWS 1',
+  310300003: '\x1b<4mFWS 2',
   320300001: '\x1b<4mA-SKID',
   320300002: '\x1b<4mAUTO BRK',
   320300003: '\x1b<4mPART A-SKID',
@@ -510,6 +516,8 @@ export const EcamInopSys: { [n: string]: string } = {
   320300020: '\x1b<4mNORM N/W STEER',
   320300021: '\x1b<4mPEDAL STEER CTL',
   320300022: '\x1b<4mROW/ROP',
+  320300023: '\x1b<4mPART L/G RETRACTION',
+  320300024: '\x1b<4mNORM B/W STEER',
   340300001: '\x1b<4mGPWS 1',
   340300002: '\x1b<4mGPWS 2',
   340300003: '\x1b<4mGPWS 1+2',
@@ -552,6 +560,9 @@ export const EcamInopSys: { [n: string]: string } = {
   341300001: '\x1b<4mPRED W/S 1',
   341300002: '\x1b<4mPRED W/S 2',
   341300003: '\x1b<4mPRED W/S 1+2',
+  340300046: '\x1b<4mTAWS SYS 1',
+  340300047: '\x1b<4mTAWS SYS 2',
+  340300048: '\x1b<4mTAWS SYS 1+2',
 };
 
 export enum ChecklistLineStyle {
@@ -559,19 +570,27 @@ export enum ChecklistLineStyle {
   Cyan = 'Cyan',
   Green = 'Green',
   Amber = 'Amber',
+  White = 'White',
   Headline = 'Headline',
   SubHeadline = 'SubHeadline',
   SeparationLine = 'SeparationLine',
   ChecklistItem = 'ChecklistItem',
+  ChecklistItemInactive = 'ChecklistItemInactive',
   CompletedChecklist = 'CompletedChecklist',
+  CompletedDeferredProcedure = 'CompletedDeferredProcedure',
+  DeferredProcedure = 'DeferredProcedure',
+  OmissionDots = 'OmissionDots',
+  LandAsap = 'LandAsap',
+  LandAnsa = 'LandAnsa',
+  ChecklistCondition = 'ChecklistCondition',
 }
 
 interface AbstractChecklistItem {
-  /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. */
+  /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. For conditions, don't include the leading "IF" */
   name: string;
   /** Sensed or not sensed item. Sensed items are automatically checked. Non-sensed items will have a checkbox drawn in front of them on the EWD */
   sensed: boolean;
-  /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. */
+  /** On which level of indentation to print the item. 0 equals the first level. Optional, not set means first level. Important for items subordinated to conditions. */
   level?: number;
   /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   style?: ChecklistLineStyle;
@@ -585,7 +604,26 @@ export interface ChecklistAction extends AbstractChecklistItem {
   colonIfCompleted?: boolean;
 }
 
-interface ChecklistCondition extends AbstractChecklistItem {}
+export interface ChecklistCondition extends AbstractChecklistItem {
+  /** If this line is a condition. Can be sensed or not sensed (i.e. manually activated). */
+  condition: true;
+}
+
+export interface ChecklistSpecialItem extends AbstractChecklistItem {}
+
+export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistAction {
+  return (c as ChecklistAction)?.labelNotCompleted !== undefined;
+}
+
+export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
+  return (c as ChecklistCondition)?.condition !== undefined;
+}
+
+export function isAbnormalSensedProcedure(
+  c: AbnormalProcedure | DeferredProcedure | NormalProcedure,
+): c is AbnormalProcedure {
+  return (c as AbnormalProcedure)?.recommendation !== undefined;
+}
 
 export interface AbnormalProcedure {
   /** Title of the fault, e.g. "_HYD_ G SYS PRESS LO". \n produces second line. Accepts special formatting tokens  */
@@ -593,7 +631,7 @@ export interface AbnormalProcedure {
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
   /** An array of possible checklist items. */
-  items: (ChecklistAction | ChecklistCondition)[];
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
 }
@@ -603,12 +641,31 @@ export interface NormalProcedure {
   title: string;
   /** An array of possible checklist items.. */
   items: ChecklistAction[];
-  /** Checklist is deferred, i.e. only activated by request */
-  deferred?: boolean;
+  /** Checklist is only activated by request, deactivated per default */
+  onlyActivatedByRequest?: boolean;
 }
 
-export function isChecklistAction(element: ChecklistAction | ChecklistCondition): element is ChecklistAction {
-  return 'labelNotCompleted' in element;
+export interface AbnormalNonSensedProcedure {
+  /** Title of the checklist, e.g. "BEFORE START".  */
+  title: string;
+  /** An array of possible checklist items.. */
+  items: ChecklistAction[];
+}
+
+export enum DeferredProcedureType {
+  ALL_PHASES,
+  AT_TOP_OF_DESCENT,
+  FOR_APPROACH,
+  FOR_LANDING,
+}
+export interface DeferredProcedure {
+  /** Which abnormal procedures triggers this deferred procedure */
+  fromAbnormalProcs: string[];
+  /** (optional, only used from batch 7) Title of the procedure, Accepts special formatting tokens  */
+  title?: string;
+  /** An array of possible checklist items. */
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  type: DeferredProcedureType;
 }
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
@@ -625,10 +682,26 @@ export const EcamAbnormalSensedProcedures: { [n: string]: AbnormalProcedure } = 
   ...EcamAbnormalSensedAta46495256,
   ...EcamAbnormalSensedAta70,
   ...EcamAbnormalSensedAta80Rest,
+  ...EcamAbnormalSecondaryFailures,
 };
 
-/** All abnormal non-sensed procedures (via ECL) should be here. Don't start for now, format needs to be defined. */
-export const EcamAbnormalNonSensedProcedures: { [n: string]: AbnormalProcedure } = {};
+// Abnormal non-sensed are also contained in EcamAbnormalSensedProcedures
+export const EcamAbnormalProcedures: { [n: string]: AbnormalProcedure } = EcamAbnormalSensedProcedures;
+
+export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
+  'ENG',
+  'F/CTL',
+  'L/G',
+  'NAV',
+  'FUEL',
+  'MISCELLANEOUS',
+];
+
+/** All abnormal sensed procedures (alerts, via ECL) should be here. */
+export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
+  ...EcamDeferredProcAta212223,
+  ...EcamDeferredProcAta313233,
+};
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {
@@ -641,6 +714,7 @@ export interface WdLineData {
   lastLine: boolean;
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
+  originalItemIndex?: number;
 }
 
 export enum WdSpecialLine {
