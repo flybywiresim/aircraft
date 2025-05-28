@@ -508,3 +508,7 @@ export type FlightPlanElement = FlightPlanLeg | Discontinuity;
 export function isDiscontinuity(o: any): o is Discontinuity {
   return typeof o === 'object' && o.isDiscontinuity === true;
 }
+
+export function isLeg(o: any): o is FlightPlanLeg {
+  return typeof o === 'object' && o.isDiscontinuity === false;
+}
