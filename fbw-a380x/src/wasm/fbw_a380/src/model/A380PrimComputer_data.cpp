@@ -158,7 +158,11 @@ base_prim_logic_outputs rtP_prim_logic_output_MATLABStruct{
   0.0,
   0.0,
   0.0,
-  0.0
+  0.0,
+  false,
+  false,
+  false,
+  false
 } ;
 
 base_prim_laws_outputs rtP_prim_laws_output_MATLABStruct{
@@ -270,6 +274,10 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   26.0,
 
+  15.0,
+
+  16.0,
+
   23.0,
 
   23.0,
@@ -281,6 +289,18 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   13.0,
 
   14.0,
+
+  11.0,
+
+  12.0,
+
+  13.0,
+
+  11.0,
+
+  12.0,
+
+  13.0,
 
   12.0,
 
@@ -787,8 +807,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
   a380_pitch_efcs_law::DirectLaw,
 
   a380_pitch_efcs_law::AlternateLaw2,
-
-  50.0F,
 
   false,
 
@@ -1905,10 +1923,30 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
           {
             0U,
             0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
           }
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F
@@ -2780,7 +2818,11 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
       0.0,
       0.0,
       0.0,
-      0.0
+      0.0,
+      false,
+      false,
+      false,
+      false
     },
 
     {
@@ -2820,6 +2862,16 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
     },
 
     {
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
       {
         0U,
         0.0F
@@ -3362,6 +3414,16 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
     {
       0U,
       0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
     }
   },
 
@@ -3602,8 +3664,6 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
 
   { 3U, 5U },
-
-  false,
 
   false,
 
