@@ -4984,6 +4984,12 @@
                 <ANIM_NAME>SWITCH_DOOR_LOCK</ANIM_NAME>
                 <INVERT_ANIM>1</INVERT_ANIM>
             </UseTemplate>
+
+            <!-- COCKPIT DOOR LOCK STATUS -->
+            <UseTemplate Name="FBW_Push_Toggle">
+                <NODE_ID>PUSH_CKPT_DOOR</NODE_ID>
+                <TOOLTIPID>COCKPIT DOOR LOCK STATUS</TOOLTIPID>
+            </UseTemplate>
         </Component>
 
         <Component ID="Chronometer">
