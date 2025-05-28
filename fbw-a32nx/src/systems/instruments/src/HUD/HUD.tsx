@@ -106,6 +106,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
   private headingFailed = Subject.create(true);
 
   private displayBrightness = Subject.create(0);
+  private lastBrightnessValue = Subject.create(0);
 
   private displayFailed = Subject.create(false);
 
@@ -138,6 +139,31 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
     this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
     const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent>();
+
+    sub.on('hEvent').handle((ev) => {
+      if (ev.startsWith('A320_Neo_HUD_L')) {
+        let vL = SimVar.GetSimVarValue('L:A320_Neo_HUD_L_POS', 'number');
+        vL == 0 ? (vL = 1) : (vL = 0);
+        SimVar.SetSimVarValue('L:A320_Neo_HUD_L_POS', 'number', vL);
+        this.displayBrightness.set(0);
+        if (vL == 0) {
+          setTimeout(() => {
+            this.displayBrightness.set(this.lastBrightnessValue.get());
+          }, 1250);
+        }
+      }
+      if (ev.startsWith('A320_Neo_HUD_R')) {
+        let vR = SimVar.GetSimVarValue('L:A320_Neo_HUD_R_POS', 'number');
+        vR == 0 ? (vR = 1) : (vR = 0);
+        SimVar.SetSimVarValue('L:A320_Neo_HUD_R_POS', 'number', vR);
+        this.displayBrightness.set(0);
+        if (vR == 0) {
+          setTimeout(() => {
+            this.displayBrightness.set(this.lastBrightnessValue.get());
+          }, 1250);
+        }
+      }
+    });
 
     sub
       .on('activeVerticalMode')
@@ -223,6 +249,9 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       .whenChanged()
       .handle((value) => {
         this.displayBrightness.set(value);
+        if (value != 0) {
+          this.lastBrightnessValue.set(value);
+        }
       });
 
     sub
