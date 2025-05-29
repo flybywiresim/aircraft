@@ -252,7 +252,7 @@ struct AdirsSimulatorData {
 }
 impl AdirsSimulatorData {
     const MACH: &'static str = "AIRSPEED MACH";
-    const VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
+    const INERTIAL_VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
     const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
     const LATITUDE: &'static str = "PLANE LATITUDE";
     const LONGITUDE: &'static str = "PLANE LONGITUDE";
@@ -276,7 +276,7 @@ impl AdirsSimulatorData {
             mach_id: context.get_identifier(Self::MACH.to_owned()),
             mach: Default::default(),
 
-            vertical_speed_id: context.get_identifier(Self::VERTICAL_SPEED.to_owned()),
+            vertical_speed_id: context.get_identifier(Self::INERTIAL_VERTICAL_SPEED.to_owned()),
             vertical_speed: Default::default(),
 
             true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED.to_owned()),
@@ -2283,9 +2283,9 @@ mod tests {
             self
         }
 
-        fn vertical_speed_of(mut self, velocity: Velocity) -> Self {
+        fn inertial_vertical_speed_of(mut self, velocity: Velocity) -> Self {
             self.write_by_name(
-                AdirsSimulatorData::VERTICAL_SPEED,
+                AdirsSimulatorData::INERTIAL_VERTICAL_SPEED,
                 velocity.get::<foot_per_minute>(),
             );
             self
@@ -4512,7 +4512,7 @@ mod tests {
         ) {
             let vs = Velocity::new::<foot_per_minute>(500.);
             let mut test_bed = all_adirus_aligned_test_bed_with()
-                .vertical_speed_of(vs)
+                .inertial_vertical_speed_of(vs)
                 .and()
                 .ground_speed_of(Velocity::new::<knot>(
                     InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
@@ -4541,7 +4541,7 @@ mod tests {
         ) {
             let vs = Velocity::new::<foot_per_minute>(500.);
             let mut test_bed = all_adirus_aligned_test_bed_with()
-                .vertical_speed_of(vs)
+                .inertial_vertical_speed_of(vs)
                 .and()
                 .ground_speed_of(Velocity::new::<knot>(
                     InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
@@ -4560,7 +4560,8 @@ mod tests {
         #[case(3)]
         fn vertical_speed_is_supplied_by_ir(#[case] adiru_number: usize) {
             let vertical_speed = Velocity::new::<foot_per_minute>(300.);
-            let mut test_bed = all_adirus_aligned_test_bed_with().vertical_speed_of(vertical_speed);
+            let mut test_bed =
+                all_adirus_aligned_test_bed_with().inertial_vertical_speed_of(vertical_speed);
             test_bed.run();
 
             assert_eq!(
