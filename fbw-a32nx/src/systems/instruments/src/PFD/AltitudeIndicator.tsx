@@ -19,6 +19,7 @@ import {
   Arinc429WordData,
   Arinc429RegisterSubject,
   Arinc429LocalVarConsumerSubject,
+  Arinc429ConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
@@ -245,38 +246,27 @@ interface AltitudeIndicatorProps {
 }
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
-  private subscribable = Subject.create<number>(0);
-
-  private tapeRef = FSComponent.createRef<HTMLDivElement>();
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const pf = this.props.bus.getSubscriber<Arinc429Values>();
-
-    pf.on('altitudeAr').handle((a) => {
-      if (a.isNormalOperation()) {
-        this.subscribable.set(a.value);
-        this.tapeRef.instance.style.display = 'inline';
-      } else {
-        this.tapeRef.instance.style.display = 'none';
-      }
-    });
-  }
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
   render(): VNode {
     return (
       <g id="AltitudeTape">
         <AltTapeBackground />
         <LandingElevationIndicator bus={this.props.bus} />
-        <g ref={this.tapeRef}>
+        <g
+          style={{
+            display: this.altitude.map((v) => (v.isNormalOperation() || v.isFunctionalTest() ? 'inline' : 'none')),
+          }}
+        >
           <VerticalTape
             displayRange={DisplayRange + 60}
             valueSpacing={ValueSpacing}
             distanceSpacing={DistanceSpacing}
             lowerLimit={-1500}
             upperLimit={50000}
-            tapeValue={this.subscribable}
+            tapeValue={this.altitude.map((v) => v.value)}
             type="altitude"
           />
         </g>
@@ -319,15 +309,13 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     this.fwc2DiscreteWord,
   );
 
-  private abnormal = FSComponent.createRef<SVGGElement>();
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
-  private readonly altFlagVisible = Subject.create(false);
+  private readonly altFlagVisible = this.altitude.map((v) => !v.isNormalOperation() && !v.isFunctionalTest());
 
   private readonly tcasFailed = ConsumerSubject.create(null, false);
-
-  private normal = FSComponent.createRef<SVGGElement>();
-
-  private altitude = Subject.create(0);
 
   private fcuSelectedAlt = new Arinc429Word(0);
 
@@ -344,19 +332,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & FgBus & FcuBus>();
-
-    sub.on('altitudeAr').handle((altitude) => {
-      if (!altitude.isNormalOperation()) {
-        this.normal.instance.style.display = 'none';
-        this.abnormal.instance.removeAttribute('style');
-      } else {
-        this.altitude.set(altitude.value);
-        this.abnormal.instance.style.display = 'none';
-        this.normal.instance.removeAttribute('style');
-      }
-      this.altFlagVisible.set(!altitude.isNormalOperation());
-    });
+    const sub = this.props.bus.getSubscriber<PFDSimvars & FgBus & FcuBus>();
 
     this.tcasFailed.setConsumer(sub.on('tcasFail'));
 
@@ -396,7 +372,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   render(): VNode {
     return (
       <>
-        <g ref={this.abnormal} style="display: none">
+        <g style={{ display: this.altFlagVisible.map((v) => (v ? 'inherit' : 'none')) }}>
           <path id="AltTapeOutline" class="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />
           <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
           <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.altFlagVisible}>
@@ -453,7 +429,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             </text>
           </g>
         </FlashOneHertz>
-        <g ref={this.normal} style="display: none">
+        <g style={{ display: this.altFlagVisible.map((v) => (v ? 'none' : 'inherit')) }}>
           <path
             id="AltTapeOutline"
             class="NormalStroke White"
@@ -465,7 +441,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             selectedAltitude={this.shownTargetAltitude}
             altitudeColor={this.targetAltitudeColor}
           />
-          <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
+          <AltimeterIndicator bus={this.props.bus} altitude={this.altitude.map((v) => v.value)} />
           <MetricAltIndicator
             bus={this.props.bus}
             targetAlt={this.shownTargetAltitude}
