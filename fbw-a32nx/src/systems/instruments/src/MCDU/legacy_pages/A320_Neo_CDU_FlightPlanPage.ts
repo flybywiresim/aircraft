@@ -401,7 +401,9 @@ export class CDUFlightPlanPage {
             speedConstraint = Wind.NoTrueDegreesPrediction;
 
             if (verticalWaypoint?.windPrediction) {
-              speedConstraint = formatWindTrueDegrees(verticalWaypoint?.windPrediction);
+              speedConstraint = isFromLeg
+                ? formatWindTrueDegrees(verticalWaypoint?.windPrediction)
+                : `{small}${formatWindTrueDegrees(verticalWaypoint?.windPrediction)}{end}`;
               spdColor = color;
             }
           } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
@@ -688,8 +690,8 @@ export class CDUFlightPlanPage {
         let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (isPageB) {
-          if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.estimatedFuelOnBoard)) {
-            timeCell = `{small}${NXUnits.poundsToUser(pwp.flightPlanInfo.estimatedFuelOnBoard / 1000)
+          if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.remainingFuelOnBoard)) {
+            timeCell = `{small}${NXUnits.poundsToUser(pwp.flightPlanInfo.remainingFuelOnBoard / 1000)
               .toFixed(1)
               .padStart(4, '\xa0')}{end}`;
 
@@ -764,6 +766,7 @@ export class CDUFlightPlanPage {
           fixAnnotation: `{${color}}${pwp.mcduHeader || ''}{end}`,
           bearingTrack,
           isOverfly: false,
+          pwp,
         };
 
         addLskAt(
@@ -924,6 +927,7 @@ export class CDUFlightPlanPage {
         speedConstraint: cSpd,
         altitudeConstraint: cAlt,
         ident: cIdent,
+        pwp: cPwp,
       } = scrollWindow[rowI];
       let spdRpt = false;
       let altRpt = false;
@@ -948,17 +952,18 @@ export class CDUFlightPlanPage {
         if (rowI > 0) {
           const {
             marker: pMarker,
-            pwp: pPwp,
             holdResumeExit: pHold,
             speedConstraint: pSpd,
             altitudeConstraint: pAlt,
           } = scrollWindow[rowI - 1];
-          if (!pMarker && !pPwp && !pHold) {
+          if (!pMarker && !pHold) {
             firstWp = Math.min(firstWp, rowI);
             if (rowI === firstWp) {
               showNm = true;
             }
+
             if (
+              !cPwp &&
               cSpd !== Speed.NoPrediction &&
               cSpd !== Wind.NoTrueDegreesPrediction &&
               cSpdColor !== 'magenta' &&
@@ -968,6 +973,7 @@ export class CDUFlightPlanPage {
             }
 
             if (
+              !cPwp &&
               cAlt !== Altitude.NoPrediction &&
               cAlt !== Wind.NoMagnitudePrediction &&
               cAltColor !== 'magenta' &&
@@ -983,7 +989,7 @@ export class CDUFlightPlanPage {
         }
 
         scrollText[rowI * 2] = renderFixHeader(scrollWindow[rowI], showNm, showDist, showFix);
-        scrollText[rowI * 2 + 1] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt);
+        scrollText[rowI * 2 + 1] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt, isPageB);
 
         // Marker
       } else {
@@ -1312,6 +1318,7 @@ function renderFixContent(
   },
   spdRepeat = false,
   altRepeat = false,
+  isPageB = false,
 ) {
   const {
     ident,
@@ -1326,9 +1333,12 @@ function renderFixContent(
     timeColor,
   } = rowObj;
 
+  const spdRepeatStr = '\xa0"\xa0';
+  const altRepeatSr = isPageB ? '\xa0"\xa0' : '\xa0\xa0\xa0"\xa0\xa0';
+
   return [
     `${ident}${isOverfly ? Keypad.ovfyValue : ''}[color]${color}`,
-    `{${spdColor}}${spdRepeat ? '\xa0"\xa0' : speedConstraint}{end}{${altColor}}{${altSize}}/${altRepeat ? '\xa0\xa0\xa0"\xa0\xa0' : altitudeConstraint}{end}{end}`,
+    `{${spdColor}}${spdRepeat ? spdRepeatStr : speedConstraint}{end}{${altColor}}{${altSize}}/${altRepeat ? altRepeatSr : altitudeConstraint}{end}{end}`,
     `${timeCell}{sp}{sp}{sp}{sp}[color]${timeColor}`,
   ];
 }
