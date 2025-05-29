@@ -96,4 +96,6 @@ export interface PseudoWaypointFlightPlanInfo {
   speed: Knots;
 
   secondsFromPresent: Seconds;
+
+  remainingFuelOnBoard: Pounds;
 }
