@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useSimVar, useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
@@ -11,6 +11,7 @@ import { SvgGroup } from '../../Common/SvgGroup';
 import { Spoilers } from '../../Common/Spoilers';
 
 import '../../Common/CommonStyles.scss';
+import '../../Common/animations.scss';
 
 const roundTemperature = (rawTemp: number): number => Math.min(995, Math.max(0, Math.round(rawTemp / 5) * 5));
 
@@ -235,29 +236,6 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
   const [autoBrakeActive] = useSimVar('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean', maxStaleness);
   const autoBrakeDisengaged = !autoBrakeActive;
 
-  const [isVisible, setIsVisible] = useState(true);
-  const [shouldFlash, setShouldFlash] = useState(false);
-
-  useEffect(() => {
-    if (autoBrakeDisengaged) {
-      setShouldFlash(true);
-      const flashInterval = setInterval(() => {
-        setIsVisible((prev) => !prev);
-      }, 500);
-
-      const timeoutId = setTimeout(() => {
-        setShouldFlash(false);
-        setIsVisible(true);
-        clearInterval(flashInterval);
-      }, 10000);
-
-      return () => {
-        clearInterval(flashInterval);
-        clearTimeout(timeoutId);
-      };
-    }
-  }, [autoBrakeDisengaged]);
-
   if (autoBrakeLevel !== 0) {
     return (
       <SvgGroup x={x} y={y}>
@@ -270,10 +248,12 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
         </SvgGroup>
       </SvgGroup>
     );
-  } else if (autoBrakeDisengaged && shouldFlash) {
+  }
+
+  if (autoBrakeDisengaged) {
     return (
       <SvgGroup x={x} y={y}>
-        {isVisible && <text className="Large Green">AUTO BRK</text>}
+        <text className="Large Green Blink10Seconds">AUTO BRK</text>
       </SvgGroup>
     );
   }
