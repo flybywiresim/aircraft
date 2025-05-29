@@ -67,9 +67,10 @@ export class FlightPathDirector extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus>();
 
-    sub.on('crosswindMode').handle((d) => {
+    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((d) => {
       this.crosswindMode = d;
     });
     sub
@@ -85,7 +86,7 @@ export class FlightPathDirector extends DisplayComponent<{
         }
       });
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');

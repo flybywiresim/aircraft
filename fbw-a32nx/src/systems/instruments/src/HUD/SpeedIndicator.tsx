@@ -28,6 +28,7 @@ import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { AutoThrustMode } from '@shared/autopilot';
 import { WindMode, HudElemsVis, getBitMask } from './HUDUtils';
+import { getDisplayIndex } from './HUD';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -41,9 +42,10 @@ export class AirspeedIndicator extends DisplayComponent<{ bus: ArincEventBus; in
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents>();
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -281,6 +283,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents>();
 
     sub
@@ -304,14 +307,14 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
         this.setElems();
       });
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
         this.setElems();
       });
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

@@ -29,6 +29,7 @@ import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReado
 import { VerticalTape } from './VerticalTape';
 import { AutoThrustMode } from '@shared/autopilot';
 import { HudElemsVis, LagFilter, getBitMask } from './HUDUtils';
+import { getDisplayIndex } from './HUD';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -296,6 +297,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & FcuBus>();
 
     sub
@@ -318,14 +320,14 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
         this.setElems();
       });
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
         this.setElems();
       });
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -452,6 +454,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus>();
 
     sub
@@ -475,14 +478,14 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
         this.setElems();
       });
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
         this.setElems();
       });
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -926,6 +929,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & FcuBus & Arinc429Values>();
 
     sub
@@ -974,14 +978,14 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.setElems();
       });
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
         this.setElems();
       });
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

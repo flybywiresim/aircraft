@@ -230,14 +230,14 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       });
 
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
         this.setElems();
       });
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -245,7 +245,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       });
 
     sub
-      .on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo')
+      .on(isCaptainSide ? 'hudPotentiometerCaptain' : 'hudPotentiometerFo')
       .whenChanged()
       .handle((value) => {
         this.displayBrightness.set(value);
@@ -446,11 +446,12 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
     const fiveDeg = 182.857;
 
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

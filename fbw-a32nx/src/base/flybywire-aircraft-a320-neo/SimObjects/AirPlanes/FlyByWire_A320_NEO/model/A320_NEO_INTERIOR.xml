@@ -22,7 +22,128 @@
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
         <Include ModelBehaviorFile="A32NX\LockHighlight.xml"/>
 
+
         <!-- HUD -->
+
+        <!-- CPT BTNS -->
+
+        <!-- CPT HUD BRIGHTNESS -->
+
+        <Component ID="SWITCH_EFIS_HUD_L_XWIND" Node="SWITCH_EFIS_HUD_L_XWIND">
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
+                <NODE_ID>KNOB_EFIS_HUD_L_BRIGHTNESS</NODE_ID>
+                <PART_ID>KNOB_EFIS_HUD_L_BRIGHTNESS</PART_ID>
+                <ANIMTIP_0>HUD Brightness Decrease</ANIMTIP_0>
+                <ANIMTIP_1>HUD Brightness Increase</ANIMTIP_1>
+                <POTENTIOMETER>71</POTENTIOMETER>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>HUD_SCREEN_L_TEX</NODE_ID>
+                <POTENTIOMETER>71</POTENTIOMETER>
+                <PART_ID>HUD_SCREEN_L_TEX</PART_ID>
+                <CAMERA_TITLE>HUD</CAMERA_TITLE>
+                <EMISSIVE_CODE>12</EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- XWIND MODE -->
+
+        <Component ID="SWITCH_EFIS_HUD_L_XWIND" Node="SWITCH_EFIS_HUD_L_XWIND">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
+                <ANIM_NAME>SWITCH_EFIS_HUD_L_XWIND</ANIM_NAME>
+                <NODE_ID>SWITCH_EFIS_HUD_L_XWIND</NODE_ID>
+                <PART_ID>SWITCH_EFIS_HUD_L_XWIND</PART_ID>
+                <TOGGLE_EVENT>A32NX_HUD_L_CROSSWIND_MODE</TOGGLE_EVENT>
+                <SIMVAR_NAME>A32NX_HUD_L_CROSSWIND_MODE</SIMVAR_NAME>
+                <ADDITIONAL_EVENT_CODE>(&gt;H:A32NX_HUD_L_CROSSWIND_MODE)</ADDITIONAL_EVENT_CODE>
+                <SIMVAR_GROUP>L</SIMVAR_GROUP>
+                <ANIMTIP_0>Turn HUD Crosswind mode ON</ANIMTIP_0>
+                <ANIMTIP_1>Turn HUD Crosswind mode OFF</ANIMTIP_1>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            </UseTemplate>
+        </Component>
+
+        <!-- DECLUTTER MODE -->
+
+        <Component ID="PUSH_EFIS_HUD_L_DECLUTTER" Node="PUSH_EFIS_HUD_L_DECLUTTER">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                <NODE_ID>PUSH_EFIS_HUD_L_DECLUTTER</NODE_ID>
+                <LEFT_SINGLE_CODE>1 (L:A32NX_HUD_L_DECLUTTER_MODE, Number) + 3 % (&gt;L:A32NX_HUD_L_DECLUTTER_MODE)</LEFT_SINGLE_CODE>
+                <MOMENTARY/>
+                <NO_SEQ1 />
+                <NO_SEQ2 />
+                <ROUND />
+            </UseTemplate>
+        </Component>
+
+
+
+
+
+        <!-- FO BTNS -->
+
+        <!-- FO HUD BRIGHTNESS -->
+
+        <Component ID="SWITCH_EFIS_HUD_R_XWIND" Node="SWITCH_EFIS_HUD_R_XWIND">
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
+                <NODE_ID>KNOB_EFIS_HUD_R_BRIGHTNESS</NODE_ID>
+                <PART_ID>KNOB_EFIS_HUD_R_BRIGHTNESS</PART_ID>
+                <ANIMTIP_0>HUD Brightness Decrease</ANIMTIP_0>
+                <ANIMTIP_1>HUD Brightness Increase</ANIMTIP_1>
+                <POTENTIOMETER>72</POTENTIOMETER>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>HUD_SCREEN_R_TEX</NODE_ID>
+                <POTENTIOMETER>72</POTENTIOMETER>
+                <PART_ID>HUD_SCREEN_R_TEX</PART_ID>
+                <CAMERA_TITLE>HUD2</CAMERA_TITLE>
+                <EMISSIVE_CODE>12</EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- XWIND MODE -->
+
+        <Component ID="SWITCH_EFIS_HUD_R_XWIND" Node="SWITCH_EFIS_HUD_R_XWIND">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
+                <ANIM_NAME>SWITCH_EFIS_HUD_R_XWIND</ANIM_NAME>
+                <NODE_ID>SWITCH_EFIS_HUD_R_XWIND</NODE_ID>
+                <PART_ID>SWITCH_EFIS_HUD_R_XWIND</PART_ID>
+                <TOGGLE_EVENT>A32NX_HUD_R_CROSSWIND_MODE</TOGGLE_EVENT>
+                <SIMVAR_NAME>A32NX_HUD_R_CROSSWIND_MODE</SIMVAR_NAME>
+                <ADDITIONAL_EVENT_CODE>(&gt;H:A32NX_HUD_R_CROSSWIND_MODE)</ADDITIONAL_EVENT_CODE>
+                <SIMVAR_GROUP>L</SIMVAR_GROUP>
+                <ANIMTIP_0>Turn HUD Crosswind mode ON</ANIMTIP_0>
+                <ANIMTIP_1>Turn HUD Crosswind mode OFF</ANIMTIP_1>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            </UseTemplate>
+        </Component>
+
+        <!-- DECLUTTER MODE -->
+
+        <Component ID="PUSH_EFIS_HUD_R_DECLUTTER" Node="PUSH_EFIS_HUD_R_DECLUTTER">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                <NODE_ID>PUSH_EFIS_HUD_R_DECLUTTER</NODE_ID>
+                <LEFT_SINGLE_CODE>1 (L:A32NX_HUD_R_DECLUTTER_MODE, Number) + 3 % (&gt;L:A32NX_HUD_R_DECLUTTER_MODE)</LEFT_SINGLE_CODE>
+                <MOMENTARY/>
+                <NO_SEQ1 />
+                <NO_SEQ2 />
+                <ROUND />
+            </UseTemplate>
+        </Component>
+
+        <!-- HUD MODEL -->
 
         <Component ID="ARM1_L" Node="ARM1_L">
             <UseTemplate Name="ASOBO_GT_Anim_Code">
@@ -3780,42 +3901,22 @@
                         </Component>
 
                         <Component ID="CALLS">
-                            <!-- CALLS MECH (PACEHOLDER WAITING FOR HUD CONTROL PANEL) -->
-                            <!-- <UseTemplate Name="FBW_Anim_Interactions">
+
+                            <!-- CALLS MECH -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
                                 <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
                                 <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_MECH</HOLD_SIMVAR>
-                            </UseTemplate> -->
-
-                        <UseTemplate Name="FBW_Anim_Interactions">
-                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
-                            <NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
-                            <LEFT_SINGLE_CODE>1 (L:A32NX_HUD_DECLUTTER_MODE, Number) + 3 % (&gt;L:A32NX_HUD_DECLUTTER_MODE)</LEFT_SINGLE_CODE>
-                            <MOMENTARY/>
-                            <NO_SEQ1 />
-                            <NO_SEQ2 />
-                            <ROUND />
-                        </UseTemplate>
-
-
-                            <!-- CALLS ALL (PACEHOLDER WAITING FOR HUD CONTROL PANEL) -->
-                            <UseTemplate Name="FBW_Anim_Interactions">
-                                <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
-                                <NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
-                                <PART_ID>PUSH_OVHD_CALLS_ALL</PART_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_HUD_CROSSWIND_MODE</TOGGLE_SIMVAR>
                             </UseTemplate>
-
-                            <!-- <UseTemplate Name="FBW_Anim_Interactions">
+                            <!-- CALLS ALL -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
                                 <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
                                 <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
                                 <PART_ID>PUSH_OVHD_CALLS_ALL</PART_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_ALL</HOLD_SIMVAR>
-                            </UseTemplate> -->
+                            </UseTemplate>
                             <!-- CALLS FWD -->
                             <UseTemplate Name="FBW_Anim_Interactions">
                                 <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>

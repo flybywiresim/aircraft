@@ -23,6 +23,7 @@ import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/provider
 
 import { WindMode, HudElemsVis, HudElemsVisStr, getBitMask } from './HUDUtils';
 import { AutoThrustMode } from '@shared/autopilot';
+import { getDisplayIndex } from './HUD';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -231,6 +232,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus>();
 
     this.props.isAttExcessive.sub((_a) => {
@@ -260,14 +262,14 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
         this.setElems();
       });
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
         this.setElems();
       });
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

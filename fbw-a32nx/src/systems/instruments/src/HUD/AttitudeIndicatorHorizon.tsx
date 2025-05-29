@@ -62,6 +62,8 @@ class HeadingBug extends DisplayComponent<{
 
   private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
 
+  private DeclutterSimVar = '';
+
   private readonly visibilitySub = MappedSubject.create(
     ([heading, attitude, fdActive, selectedHeading]) => {
       const headingDelta = getSmallestAngle(selectedHeading, heading.value);
@@ -94,6 +96,7 @@ class HeadingBug extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & Arinc429Values>();
 
     this.heading.setConsumer(sub.on('heading').withArinc429Precision(2));
@@ -102,7 +105,10 @@ class HeadingBug extends DisplayComponent<{
       .on('fwcFlightPhase')
       .whenChanged()
       .handle((fp) => {
-        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE', 'Number');
+        isCaptainSide
+          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
+          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
+        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
         this.flightPhase = fp;
         //onGround
         if (this.flightPhase <= 2 || this.flightPhase >= 9) {
@@ -115,7 +121,7 @@ class HeadingBug extends DisplayComponent<{
       });
 
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         value > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
@@ -315,10 +321,11 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
 
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
@@ -485,6 +492,9 @@ class PitchScale extends DisplayComponent<{
   private needsUpdate = false;
 
   private threeDegLine = FSComponent.createRef<SVGGElement>();
+
+  private DeclutterSimVar = '';
+
   private data: LSPath = {
     roll: new Arinc429Word(0),
     pitch: new Arinc429Word(0),
@@ -494,6 +504,7 @@ class PitchScale extends DisplayComponent<{
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<
       Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
     >();
@@ -502,7 +513,10 @@ class PitchScale extends DisplayComponent<{
       .on('fmgcFlightPhase')
       .whenChanged()
       .handle((fp) => {
-        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE', 'Number');
+        isCaptainSide
+          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
+          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
+        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
         this.fmgcFlightPhase = fp;
         //force fma during climb and descent
         if (fp == 1 || fp == 2 || fp == 4) {
@@ -523,7 +537,10 @@ class PitchScale extends DisplayComponent<{
       .on('fwcFlightPhase')
       .whenChanged()
       .handle((fp) => {
-        this.declutterMode = SimVar.GetSimVarValue('L:A32NX_HUD_DECLUTTER_MODE', 'Number');
+        isCaptainSide
+          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
+          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
+        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
         this.flightPhase = fp;
         //onGround
         if (this.flightPhase <= 2 || this.flightPhase >= 9) {
@@ -559,7 +576,7 @@ class PitchScale extends DisplayComponent<{
       });
 
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');

@@ -71,9 +71,10 @@ export class FlightPathVector extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus>();
 
-    sub.on('crosswindMode').handle((d) => {
+    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((d) => {
       this.crosswindMode = d;
     });
     sub

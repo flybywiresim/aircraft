@@ -40,10 +40,11 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
 
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
@@ -303,8 +304,9 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars>();
-    sub.on('declutterMode').handle((m) => {
+    sub.on(isCaptainSide ? 'declutterModeL' : 'declutterModeR').handle((m) => {
       this.declutterMode = m;
       this.handleFdState();
     });
@@ -413,6 +415,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
 
     sub
@@ -460,7 +463,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
       });
 
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');

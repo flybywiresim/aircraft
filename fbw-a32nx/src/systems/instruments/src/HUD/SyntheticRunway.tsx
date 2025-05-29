@@ -104,6 +104,7 @@ export class SyntheticRunway extends DisplayComponent<{
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData>();
 
     sub
@@ -118,7 +119,7 @@ export class SyntheticRunway extends DisplayComponent<{
     }, true);
 
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
 
       .handle((value) => {
         //console.log(this.filteredRadioAltitude + ' ' + this.sVisibility);

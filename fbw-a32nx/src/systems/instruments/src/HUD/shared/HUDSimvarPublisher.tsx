@@ -46,13 +46,17 @@ export type HUDSimvars = AdirsSimVars &
     fd1Active: boolean;
     fd2Active: boolean;
     AThrMode: number;
-    crosswindMode: boolean;
-    declutterMode: number;
+    crosswindModeL: boolean;
+    declutterModeL: number;
+    crosswindModeR: boolean;
+    declutterModeR: number;
     coldDark: number;
     elec: boolean;
     elecFo: boolean;
     potentiometerCaptain: number;
     potentiometerFo: number;
+    hudPotentiometerCaptain: number;
+    hudPotentiometerFo: number;
     pitch: number;
     roll: number;
     baroCorrectedAltitude: number;
@@ -254,13 +258,17 @@ export enum HUDVars {
   fd1Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:1',
   fd2Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:2',
   AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
-  crosswindMode = 'L:A32NX_HUD_CROSSWIND_MODE',
-  declutterMode = 'L:A32NX_HUD_DECLUTTER_MODE',
+  crosswindModeL = 'L:A32NX_HUD_L_CROSSWIND_MODE',
+  declutterModeL = 'L:A32NX_HUD_L_DECLUTTER_MODE',
+  crosswindModeR = 'L:A32NX_HUD_R_CROSSWIND_MODE',
+  declutterModeR = 'L:A32NX_HUD_R_DECLUTTER_MODE',
   coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
   elec = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
   elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
   potentiometerCaptain = 'LIGHT POTENTIOMETER:88',
   potentiometerFo = 'LIGHT POTENTIOMETER:90',
+  hudPotentiometerCaptain = 'LIGHT POTENTIOMETER:71',
+  hudPotentiometerFo = 'LIGHT POTENTIOMETER:72',
   pitch = 'L:A32NX_ADIRS_IR_1_PITCH',
   roll = 'L:A32NX_ADIRS_IR_1_ROLL',
   magHeadingRaw = 'L:A32NX_ADIRS_IR_1_HEADING',
@@ -468,13 +476,17 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['fd1Active', { name: HUDVars.fd1Active, type: SimVarValueType.Bool }],
     ['fd2Active', { name: HUDVars.fd2Active, type: SimVarValueType.Bool }],
     ['AThrMode', { name: HUDVars.AThrMode, type: SimVarValueType.Number }],
-    ['crosswindMode', { name: HUDVars.crosswindMode, type: SimVarValueType.Bool }],
-    ['declutterMode', { name: HUDVars.declutterMode, type: SimVarValueType.Number }],
+    ['crosswindModeL', { name: HUDVars.crosswindModeL, type: SimVarValueType.Bool }],
+    ['declutterModeL', { name: HUDVars.declutterModeL, type: SimVarValueType.Number }],
+    ['crosswindModeR', { name: HUDVars.crosswindModeR, type: SimVarValueType.Bool }],
+    ['declutterModeR', { name: HUDVars.declutterModeR, type: SimVarValueType.Number }],
     ['coldDark', { name: HUDVars.coldDark, type: SimVarValueType.Number }],
     ['elec', { name: HUDVars.elec, type: SimVarValueType.Bool }],
     ['elecFo', { name: HUDVars.elecFo, type: SimVarValueType.Bool }],
     ['potentiometerCaptain', { name: HUDVars.potentiometerCaptain, type: SimVarValueType.Number }],
     ['potentiometerFo', { name: HUDVars.potentiometerFo, type: SimVarValueType.Number }],
+    ['hudPotentiometerCaptain', { name: HUDVars.hudPotentiometerCaptain, type: SimVarValueType.Number }],
+    ['hudPotentiometerFo', { name: HUDVars.hudPotentiometerFo, type: SimVarValueType.Number }],
     ['pitch', { name: HUDVars.pitch, type: SimVarValueType.Number }],
     ['roll', { name: HUDVars.roll, type: SimVarValueType.Number }],
     ['baroCorrectedAltitude', { name: HUDVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
