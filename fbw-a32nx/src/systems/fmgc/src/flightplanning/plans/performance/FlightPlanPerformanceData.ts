@@ -14,6 +14,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { WindEntry, WindVector } from '../../data/wind';
+import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export interface FlightPlanPerformanceData {
   /**
@@ -609,6 +610,16 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
+
+    cloned.climbWindEntries = this.climbWindEntries.map(({ altitude, vector }) => ({
+      altitude,
+      vector: Vec2Math.copy(vector, Vec2Math.create()),
+    }));
+    cloned.descentWindEntries = this.descentWindEntries.map(({ altitude, vector }) => ({
+      altitude,
+      vector: Vec2Math.copy(vector, Vec2Math.create()),
+    }));
+    cloned.alternateWind = this.alternateWind !== null ? Vec2Math.copy(this.alternateWind, Vec2Math.create()) : null;
 
     return cloned as this;
   }
