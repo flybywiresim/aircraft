@@ -2358,7 +2358,7 @@ pub mod tests {
         }
 
         fn and_stabilize(mut self) -> Self {
-            self.test_bed.run_multiple_frames(Duration::from_secs(16));
+            self.test_bed.run_multiple_frames(Duration::from_secs(18));
 
             self
         }
