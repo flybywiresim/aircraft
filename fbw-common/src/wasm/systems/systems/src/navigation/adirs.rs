@@ -935,6 +935,7 @@ struct AirDataReference {
     discrete_word_1: AdirsData<u32>,
 
     static_pressure_filter: LowPassFilter<Pressure>,
+    vertical_speed_filter: LowPassFilter<f64>,
 
     remaining_initialisation_duration: Option<Duration>,
 }
@@ -968,6 +969,8 @@ impl AirDataReference {
 
     // Approx 8 Hz filter
     const STATIC_PORT_TIME_CONSTANT: Duration = Duration::from_millis(125);
+    // 1 second filter
+    const VERTICAL_SPEED_TIME_CONSTANT: Duration = Duration::from_secs(1);
 
     fn new(context: &mut InitContext, number: usize, vmo: Velocity, mmo: MachNumber) -> Self {
         Self {
@@ -1023,7 +1026,11 @@ impl AirDataReference {
             angle_of_attack: AdirsData::new_adr(context, number, Self::ANGLE_OF_ATTACK),
             discrete_word_1: AdirsData::new_adr(context, number, Self::DISCRETE_WORD_1),
 
-            static_pressure_filter: LowPassFilter::new(Self::STATIC_PORT_TIME_CONSTANT),
+            static_pressure_filter: LowPassFilter::new_with_init_value(
+                Self::STATIC_PORT_TIME_CONSTANT,
+                InternationalStandardAtmosphere::ground_pressure(),
+            ),
+            vertical_speed_filter: LowPassFilter::new(Self::VERTICAL_SPEED_TIME_CONSTANT),
 
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
@@ -1120,6 +1127,10 @@ impl AirDataReference {
             self.static_air_temperature.set_failure_warning();
             self.angle_of_attack.set_failure_warning();
             self.is_overspeed = false;
+
+            self.static_pressure_filter
+                .reset(context.ambient_pressure());
+            self.vertical_speed_filter.reset(0.);
         } else {
             // If it is on and initialized, output normal values.
 
@@ -1200,18 +1211,13 @@ impl AirDataReference {
                 .set_normal_operation_value(static_pressure);
 
             let delta_alt = pressure_altitude - last_valid_pressure_altitude;
-            let delta_static_press = static_pressure - last_valid_static_pressure;
-            if context.delta_as_secs_f64() > 0. {
-                self.barometric_vertical_speed.set_normal_operation_value(
-                    if delta_static_press.abs() > Pressure::default() {
-                        ((delta_static_press / Time::new::<second>(context.delta_as_secs_f64()))
-                            * (delta_alt / delta_static_press))
-                            .get::<foot_per_minute>()
-                    } else {
-                        0.
-                    },
-                );
+            if context.delta() > Duration::default() {
+                let raw_vs = (delta_alt / Time::new::<second>(context.delta_as_secs_f64()))
+                    .get::<foot_per_minute>();
+                self.vertical_speed_filter.update(context.delta(), raw_vs);
             }
+            self.barometric_vertical_speed
+                .set_normal_operation_value(self.vertical_speed_filter.output());
 
             // If CAS is below 30kn, output as 0 with SSM = NCD
             let computed_airspeed = context.indicated_airspeed();
