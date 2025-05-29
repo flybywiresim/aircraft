@@ -204,7 +204,7 @@ export class FwsAbnormalNonSensed {
       whichItemsChecked: () => [false, false, false, false],
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
-      sysPage: SdPages.Fctl,
+      sysPage: SdPages.None,
       info: () => [!this.fws.speedBrakeCommand.get() && !this.fws.spoilersArmed.get() ? '270200002' : ''],
     },
     270900004: {
@@ -225,7 +225,7 @@ export class FwsAbnormalNonSensed {
       whichItemsChecked: () => [false, false, this.fws.tawsFlapModeOff.get(), false, false, false, false, false],
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
-      sysPage: SdPages.Fctl,
+      sysPage: SdPages.None,
       limitationsAllPhases: () => ['800400001'],
       limitationsApprLdg: () => [
         this.fws.flapsHandle.get() === 3 ? '270400001' : '',
@@ -258,7 +258,7 @@ export class FwsAbnormalNonSensed {
       ],
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
-      sysPage: SdPages.Fctl,
+      sysPage: SdPages.None,
       limitationsAllPhases: () => [],
       limitationsApprLdg: (checked) => (checked[2] ? ['270400002', '220400001', '800400004', '800400003'] : []),
       inopSysApprLdg: () => ['320300007'],
