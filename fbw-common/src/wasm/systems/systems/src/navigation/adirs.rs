@@ -2387,13 +2387,15 @@ mod tests {
         }
 
         fn altimeter_setting_of(mut self, altimeter: Pressure) -> Self {
-            self.write_by_name(
+            self.write_arinc429_by_name(
                 AdirsSimulatorData::BARO_CORRECTION_1_HPA,
                 altimeter.get::<hectopascal>(),
+                SignStatus::NormalOperation,
             );
-            self.write_by_name(
+            self.write_arinc429_by_name(
                 AdirsSimulatorData::BARO_CORRECTION_2_HPA,
                 altimeter.get::<hectopascal>(),
+                SignStatus::NormalOperation,
             );
             self
         }
@@ -3420,7 +3422,8 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
 
-            test_bed.run();
+            // let the filter run a bit
+            test_bed.run_iterations_with_delta(5, Duration::from_millis(250));
 
             assert_about_eq!(
                 test_bed
@@ -3482,14 +3485,23 @@ mod tests {
         #[case(2)]
         #[case(3)]
         fn altitude_is_supplied_by_adr(#[case] adiru_number: usize) {
+            use uom::si::pressure::pascal;
+
             let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_pressure_altitude(Length::new::<foot>(38000.));
+            // set_pressure_altitude is only valid in the troposhere (due to InternationalStandardAtmosphere::pressure_at_altitude)
+            // test_bed.set_pressure_altitude(Length::new::<foot>(41000.));
+            test_bed.set_ambient_pressure(Pressure::new::<pascal>(17874.)); // 41000 feet
 
-            test_bed.run();
+            test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
 
-            assert_eq!(
-                test_bed.altitude(adiru_number).normal_value().unwrap(),
-                Length::new::<foot>(38000.)
+            assert_about_eq!(
+                test_bed
+                    .altitude(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<foot>(),
+                41000.,
+                2.,
             );
         }
 
@@ -3501,14 +3513,16 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_pressure_altitude(Length::new::<foot>(10000.));
 
-            test_bed.run();
+            test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
 
-            assert_eq!(
+            assert_about_eq!(
                 test_bed
                     .baro_corrected_altitude_1(adiru_number)
                     .normal_value()
-                    .unwrap(),
-                Length::new::<foot>(10000.)
+                    .unwrap()
+                    .get::<foot>(),
+                10000.,
+                2.,
             );
         }
 
@@ -3520,14 +3534,16 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_pressure_altitude(Length::new::<foot>(10000.));
 
-            test_bed.run();
+            test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
 
-            assert_eq!(
+            assert_about_eq!(
                 test_bed
                     .baro_corrected_altitude_2(adiru_number)
                     .normal_value()
-                    .unwrap(),
-                Length::new::<foot>(10000.)
+                    .unwrap()
+                    .get::<foot>(),
+                10000.,
+                2.,
             );
         }
 
@@ -3722,15 +3738,23 @@ mod tests {
         #[case(3)]
         fn barometric_vertical_speed_is_supplied_by_adr(#[case] adiru_number: usize) {
             let vertical_speed = Velocity::new::<foot_per_minute>(300.);
-            let mut test_bed = all_adirus_aligned_test_bed_with().vertical_speed_of(vertical_speed);
-            test_bed.run();
+            let mut test_bed = all_adirus_aligned_test_bed_with();
+            let mut altitude = Length::new::<foot>(0.);
+            for _ in 0..5 {
+                test_bed.set_pressure_altitude(altitude);
+                test_bed.run();
 
-            assert_eq!(
+                altitude += vertical_speed * Time::new::<second>(1.);
+            }
+
+            assert_about_eq!(
                 test_bed
                     .barometric_vertical_speed(adiru_number)
                     .normal_value()
-                    .unwrap(),
-                vertical_speed
+                    .unwrap()
+                    .get::<foot_per_minute>(),
+                vertical_speed.get::<foot_per_minute>(),
+                10.
             );
         }
 

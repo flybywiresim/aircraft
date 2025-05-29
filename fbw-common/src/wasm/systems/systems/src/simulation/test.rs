@@ -48,6 +48,12 @@ pub trait TestBed {
         self.test_bed_mut().run_with_delta(delta);
     }
 
+    fn run_iterations_with_delta(&mut self, iterations: u32, delta: Duration) {
+        for _ in 0..iterations {
+            self.test_bed_mut().run_with_delta(delta);
+        }
+    }
+
     fn fail(&mut self, failure_type: FailureType) {
         self.test_bed_mut().fail(failure_type);
     }
