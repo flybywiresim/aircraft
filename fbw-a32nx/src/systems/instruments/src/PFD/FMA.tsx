@@ -931,7 +931,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       text = 'ALT';
       additionalText = 'CRZ';
       this.additionalTextDx.set(1.4);
-      this.additionalTextClass.set('green');
+      this.additionalTextClass.set('Green');
     } else if (fpaMode) {
       text = 'FPA';
       if (!(this.selectedFPA.isNoComputedData() || this.selectedFPA.isFailureWarning())) {
