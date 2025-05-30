@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -67,7 +67,7 @@ export interface Fmgc {
   getCleanSpeed(): Knots;
   getTripWind(): number;
   getWinds(): FmcWinds;
-  getApproachWind(): FmcWindVector;
+  getApproachWind(): FmcWindVector | null;
   getApproachQnh(): number;
   getApproachTemperature(): number;
   getDestEFOB(): number; // Metric tons
@@ -164,6 +164,8 @@ export class GuidanceController {
     FmgcFlightPhase.Preflight,
   );
 
+  private readonly approachIdentSize: number;
+
   private updateEfisState(side: EfisSide, state: EfisState<number>): void {
     const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
     const ndRange = this.efisNDRangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
@@ -218,7 +220,7 @@ export class GuidanceController {
 
     if (this.symbolConfig.publishDepartureIdent && phase < FmgcFlightPhase.Cruise) {
       if (this.flightPlanService.active.isDepartureProcedureActive) {
-        apprMsg = this.flightPlanService.active.originDeparture.ident;
+        apprMsg = this.flightPlanService.active.originDeparture.ident.padEnd(this.approachIdentSize);
       }
     } else {
       const runway = this.flightPlanService.active.destinationRunway;
@@ -228,14 +230,20 @@ export class GuidanceController {
         if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
           const appr = this.flightPlanService.active.approach;
           // Nothing is shown on the ND for runway-by-itself approaches
-          apprMsg = appr && appr.type !== ApproachType.Unknown ? ApproachUtils.longApproachName(appr).padEnd(9) : '';
+          apprMsg =
+            appr && appr.type !== ApproachType.Unknown
+              ? ApproachUtils.longApproachName(appr) +
+                (appr.authorisationRequired && this.symbolConfig.showRnpArLabel ? '(RNP)' : '').padEnd(
+                  this.approachIdentSize,
+                )
+              : '';
         }
       }
     }
 
     if (apprMsg !== this.approachMessage) {
       this.approachMessage = apprMsg;
-      const apprMsgVars = SimVarString.pack(apprMsg, 9);
+      const apprMsgVars = SimVarString.pack(apprMsg, this.approachIdentSize);
       // setting the simvar as a number greater than about 16 million causes precision error > 1... but this works..
       SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_0', 'string', apprMsgVars[0].toString());
       SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_1', 'string', apprMsgVars[1].toString());
@@ -311,6 +319,7 @@ export class GuidanceController {
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
     this.symbolConfig = acConfig.fmSymbolConfig;
+    this.approachIdentSize = this.symbolConfig.showRnpArLabel ? 14 : 9;
   }
 
   init() {

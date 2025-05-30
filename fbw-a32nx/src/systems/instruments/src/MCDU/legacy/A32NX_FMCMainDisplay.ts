@@ -70,6 +70,7 @@ import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { ISimbriefData } from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { FuelPredComputations, SimbriefOfpState } from './LegacyFmsPageInterface';
 import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
+import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -424,7 +425,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.maxCruiseFL = 390;
     this.recMaxCruiseFL = 398;
     this.resetCoroute();
-    // +ve for tailwind, -ve for headwind
     this.unconfirmedV1Speed = undefined;
     this.unconfirmedVRSpeed = undefined;
     this.unconfirmedV2Speed = undefined;
@@ -1984,7 +1984,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         Number.isFinite(plan.performanceData.approachQnh) &&
         Number.isFinite(plan.performanceData.approachTemperature) &&
         Number.isFinite(plan.performanceData.approachWindDirection) &&
-        Number.isFinite(plan.performanceData.approachWindDirection)
+        Number.isFinite(plan.performanceData.approachWindMagnitude)
       );
     });
   }
@@ -4930,11 +4930,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.winds;
   }
 
-  public getApproachWind() {
+  public getApproachWind(): FmcWindVector | null {
     const activePlan = this.currFlightPlanService.active;
     const destination = activePlan.destinationAirport;
 
-    if (!destination || !destination.location || !isFinite(activePlan.performanceData.approachWindDirection)) {
+    if (
+      !destination ||
+      !destination.location ||
+      !Number.isFinite(activePlan.performanceData.approachWindDirection) ||
+      !Number.isFinite(activePlan.performanceData.approachWindMagnitude)
+    ) {
       return { direction: 0, speed: 0 };
     }
 
