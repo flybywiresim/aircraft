@@ -31,7 +31,16 @@
 1. [FMS] Use proper DME location for AF, CD, FD legs on MSFS2024 and add MSFS2020 fallback to improve AF legs - @tracernz (Mike)
 1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
 1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
+1. [A32NX/FMS] Add approach via auto-selection. - @tracernz (Mike)
+1. [A380X/MFD] Fixed ENTER DEST DATA message not clearing automatically - @BravoMike99 (bruno_pt99)
+1. [A380X/FCU] Fix selected speed initial target not being managed speed in non SRS - @BravoMike99 (bruno_pt99)
+1. [A380X/SD] Adjust BLEED page visuals and indications logic - @lukecologne (luke)
+1. [A380X] Add default CPT and FO seat positions to FLT files - @heclak (Heclak)
+1. [A380X/ND] Show RNP on approach identifier for RNP AR approaches - @BravoMike99 (bruno_pt99)
+1. [ND] Improve vertical position of approach message - @BravoMike99 (bruno_pt99)
+1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
 1. [A380X/SD] Add flashing for AUTO BRK element - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
+
 
 ## 0.13.0
 
