@@ -41,7 +41,6 @@
 1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
 1. [A380X/SD] Add flashing for AUTO BRK element - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
 
-
 ## 0.13.0
 
 1. [GENERAL] Fixed issue in C++ WASM Framework that caused performance degradation in some WASM modules - @frankkopp (cdr_maverick)
