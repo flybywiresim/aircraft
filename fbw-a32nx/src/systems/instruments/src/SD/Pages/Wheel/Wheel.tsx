@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useSimVar, useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
@@ -234,7 +234,19 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
 
   const [autoBrakeLevel] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'Number', maxStaleness);
   const [autoBrakeActive] = useSimVar('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean', maxStaleness);
-  const autoBrakeDisengaged = !autoBrakeActive;
+
+  const [wasAutoBrakeActive, setAutoBrakeWasActive] = useState(!!autoBrakeActive);
+  const [isAutoBrakeBlinking, setAutoBrakeIsBlinking] = useState(false);
+
+  const shouldAutoBrakeBlink = !autoBrakeActive && autoBrakeLevel === 0 && (isAutoBrakeBlinking || wasAutoBrakeActive);
+
+  if (shouldAutoBrakeBlink !== isAutoBrakeBlinking) {
+    setAutoBrakeIsBlinking(shouldAutoBrakeBlink);
+  }
+
+  if (!!autoBrakeActive !== wasAutoBrakeActive) {
+    setAutoBrakeWasActive(!!autoBrakeActive);
+  }
 
   if (autoBrakeLevel !== 0) {
     return (
@@ -250,10 +262,10 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
     );
   }
 
-  if (autoBrakeDisengaged) {
+  if (isAutoBrakeBlinking) {
     return (
       <SvgGroup x={x} y={y}>
-        <text className="Large Green Blink10Seconds">AUTO BRK</text>
+        <text className="Large Green Transparent Blink10Seconds">AUTO BRK</text>
       </SvgGroup>
     );
   }
