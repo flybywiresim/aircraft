@@ -121,16 +121,15 @@
                     <COVER_ANIM_NAME>#COVER_NODE_ID#</COVER_ANIM_NAME>
                     <COVER_IE_NAME>#BUTTON_NAME#_COVER</COVER_IE_NAME>
                     <COVER_USE_INPUT_EVENT>#INPUT_EVENT_ID_SOURCE#</COVER_USE_INPUT_EVENT>
-                    <!-- TODO -->
-                    <!--WWISE_COVER_EVENT_OPEN></WWISE_COVER_EVENT_OPEN>
-                    <WWISE_COVER_EVENT_CLOSE></WWISE_COVER_EVENT_CLOSE-->
                 </True>
             </Condition>
         </Parameters>
         <Parameters Type="Default">
             <NODE_ID>#PART_ID#</NODE_ID>
-            <ANIM_LAG>500</ANIM_LAG>
-            <!-- TODO WWISE -->
+            <ANIM_DURATION>0.25</ANIM_DURATION>
+            <ANIM_LAG>3000</ANIM_LAG>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <TOOLTIP_TITLE>A32NX.TOOLTIPS.ECP_#BUTTON_NAME#_TITLE</TOOLTIP_TITLE>
             <TT_DESCRIPTION_ID>A32NX.TOOLTIPS.ECP_#BUTTON_NAME#_ACTION</TT_DESCRIPTION_ID>
         </Parameters>
@@ -157,6 +156,9 @@
             <COVER_NODE_ID>LOCK_ECAM_EMERCANC</COVER_NODE_ID>
             <BUTTON_NAME>EMER_CANCEL</BUTTON_NAME>
             <NO_SEQ2/>
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <ANIM_DURATION>0.2</ANIM_DURATION>
+            <ANIM_LAG>1000</ANIM_LAG>
         </Parameters>
 
         <UseTemplate Name="FBW_A32NX_ECP_Button"/>
