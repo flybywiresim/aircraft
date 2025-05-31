@@ -37,7 +37,6 @@ class SystemsHost extends BaseInstrument {
 
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
 
-  private readonly a32nxFcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
   private readonly adrBusPublisher = new A32NXAdrBusPublisher(this.bus);
   private readonly dmcBusPublisher = new A32NXDisplayManagementPublisher(this.bus);
   private readonly elecSysPublisher = new A32NXElectricalSystemPublisher(this.bus);
@@ -63,7 +62,6 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerSupply);
     this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
-    this.backplane.addPublisher('a32nxFcuBusPublisher', this.a32nxFcuBusPublisher);
     this.backplane.addPublisher('AdrBus', this.adrBusPublisher);
     this.backplane.addPublisher('DmcBus', this.dmcBusPublisher);
     this.backplane.addPublisher('ElecSys', this.elecSysPublisher);
