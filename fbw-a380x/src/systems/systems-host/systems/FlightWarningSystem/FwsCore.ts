@@ -718,6 +718,9 @@ export class FwsCore {
 
   public readonly altn2LawConfirmNodeOutput = Subject.create(false);
 
+  public readonly altnLawCondition = Subject.create(false);
+  public readonly altn1ALawCondition = Subject.create(false);
+
   public readonly directLawCondition = Subject.create(false);
 
   public readonly elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
@@ -757,9 +760,7 @@ export class FwsCore {
   public readonly lrElevFaultCondition = Subject.create(false);
 
   public readonly sec1Healthy = Subject.create(false);
-
   public readonly sec2Healthy = Subject.create(false);
-
   public readonly sec3Healthy = Subject.create(false);
 
   public readonly sec1FaultCondition = Subject.create(false);
@@ -774,9 +775,12 @@ export class FwsCore {
   public readonly sec3OffThenOnPulseNode = new NXLogicPulseNode(true);
   public readonly sec3OffThenOnMemoryNode = new NXLogicMemoryNode();
 
+  public readonly prim1Healthy = Subject.create(false);
   public readonly prim2Healthy = Subject.create(false);
-
   public readonly prim3Healthy = Subject.create(false);
+
+  public readonly allPrimFailed = Subject.create(false);
+  public readonly allPrimAndSecFailed = Subject.create(false);
 
   public readonly showLandingInhibit = Subject.create(false);
 
@@ -859,6 +863,9 @@ export class FwsCore {
   public readonly rudderTrimNotToWarning = Subject.create(false);
 
   public readonly rudderTrimPosition = Subject.create(0);
+
+  public readonly lowerRudderFault = Subject.create(false);
+  public readonly upperRudderFault = Subject.create(false);
 
   public readonly flapsLeverNotZero = Subject.create(false);
 
@@ -3431,8 +3438,13 @@ export class FwsCore {
     const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
     const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
 
+    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool'));
     this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
     this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
+    this.allPrimFailed.set(!this.prim1Healthy.get() && !this.prim2Healthy.get() && !this.prim3Healthy.get());
+    this.allPrimAndSecFailed.set(
+      this.allPrimFailed.get() && !this.sec1Healthy.get() && !this.sec2Healthy.get() && !this.sec3Healthy.get(),
+    );
 
     // ELAC 1 FAULT computation
     const se1f =
@@ -3516,6 +3528,11 @@ export class FwsCore {
     // ALTN LAW 1 computation
     const SPA1 = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
     this.altn1LawConfirmNodeOutput.set(this.altn1LawConfirmNode.write(SPA1 && !flightPhase112, deltaTime));
+
+    this.altnLawCondition.set((this.altn1LawConfirmNode.read() || this.altn2LawConfirmNode.read()) && !flightPhase112);
+    this.altn1ALawCondition.set(
+      (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) && !flightPhase112,
+    );
 
     // DIRECT LAW computation
     const SPBUL =
@@ -3693,6 +3710,10 @@ export class FwsCore {
     this.rudderTrimConfigInPhase3or4or5Sr.write(rudderTrimConfigInPhase3or4or5, phase6 || !rudderTrimConfig);
     this.rudderTrimNotToAudio.set(rudderTrimConfigTestInPhase129 || rudderTrimConfigInPhase3or4or5);
     this.rudderTrimNotToWarning.set(rudderTrimConfigTestInPhase129 || this.rudderTrimConfigInPhase3or4or5Sr.read());
+
+    // Rudder faults FIXME add
+    // this.lowerRudderFault.set();
+    // this.upperRudderFault.set();
 
     // flaps lvr not zero
     this.flapsLeverNotZero.set(
