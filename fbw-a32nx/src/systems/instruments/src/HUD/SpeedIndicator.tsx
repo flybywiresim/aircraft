@@ -685,6 +685,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
 
     sub
@@ -701,14 +702,14 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       });
 
     sub
-      .on('declutterMode')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
         this.setElems();
       });
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
