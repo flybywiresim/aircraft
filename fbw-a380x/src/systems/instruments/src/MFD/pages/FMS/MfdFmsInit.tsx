@@ -1,6 +1,5 @@
 import { FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import './MfdFmsInit.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
@@ -24,6 +23,8 @@ import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { AtsuStatusCodes } from '@datalink/common';
 import { FmsRouterMessages } from '@datalink/router';
+
+import './MfdFmsInit.scss';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -482,7 +483,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field" style="width: auto;">
                 CRZ TEMP
               </div>
-              <InputField<number>
+              <InputField<number, number, false>
                 dataEntryFormat={new CrzTempFormat()}
                 dataHandlerDuringValidation={async (v) => {
                   this.props.fmcService.master?.fmgc.data.cruiseTemperaturePilotEntry.set(v);
@@ -490,7 +491,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 mandatory={Subject.create(false)}
                 enteredByPilot={this.props.fmcService.master.fmgc.data.cruiseTemperatureIsPilotEntered}
                 disabled={this.crzTempDisabled}
-                value={this.props.fmcService.master.fmgc.data.cruiseTemperature}
+                readonlyValue={this.props.fmcService.master.fmgc.data.cruiseTemperature}
                 containerStyle="width: 110px; justify-content: flex-end;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -518,14 +519,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field" style="width: auto;">
                 TROPO
               </div>
-              <InputField<number>
+              <InputField<number, number, false>
                 dataEntryFormat={new TropoFormat()}
                 dataHandlerDuringValidation={async (v) =>
                   this.props.fmcService.master?.fmgc.data.tropopausePilotEntry.set(v)
                 }
                 mandatory={Subject.create(false)}
                 enteredByPilot={this.props.fmcService.master.fmgc.data.tropopauseIsPilotEntered}
-                value={this.props.fmcService.master.fmgc.data.tropopause}
+                readonlyValue={this.props.fmcService.master.fmgc.data.tropopause}
                 onModified={() => {}}
                 alignText="flex-end"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -537,11 +538,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field" style="margin-top: 90px;">
                 TRIP WIND
               </div>
-              <InputField<number>
+              <InputField<number, number, false>
                 dataEntryFormat={new TripWindFormat()}
+                dataHandlerDuringValidation={async (v) => this.props.fmcService.master?.fmgc.data.tripWind.set(v)}
                 mandatory={Subject.create(false)}
                 disabled={this.tripWindDisabled} // TODO
-                value={this.props.fmcService.master.fmgc.data.tripWind}
+                readonlyValue={this.props.fmcService.master.fmgc.data.tripWind}
                 containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}

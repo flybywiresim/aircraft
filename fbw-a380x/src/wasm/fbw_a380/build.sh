@@ -33,6 +33,7 @@ clang \
   -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
+  -D_LARGEFILE64_SOURCE \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
@@ -74,10 +75,12 @@ clang++ \
   -target wasm32-unknown-wasi \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
+  -D_LARGEFILE64_SOURCE \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
   -DNOMINMAX \
+  -DJSON_HAS_FILESYSTEM=0 \
   -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
@@ -131,6 +134,7 @@ clang++ \
   "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
+  "${DIR}/src/model/look2_iflf_binlxpw.cpp" \
   "${DIR}/src/model/maximum_Abpa9SzA.cpp" \
   "${DIR}/src/model/mod_OlzklkXq.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \

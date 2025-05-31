@@ -18,6 +18,7 @@ import {
   MsfsMiscPublisher,
   NotificationManager,
   PilotSeatManager,
+  TelexCheck,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
@@ -88,6 +89,8 @@ class ExtrasHost extends BaseInstrument {
   private readonly aircraftSync: AircraftSync;
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
+
+  private readonly telexCheck = new TelexCheck();
 
   public readonly xmlConfig: Document;
   /**interactionpoint 8 is GPU connection and 1 GPU in total */
@@ -184,6 +187,7 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor.startPublish();
         this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
+        this.telexCheck.showPopup();
       }
       this.gameState = gs;
     }

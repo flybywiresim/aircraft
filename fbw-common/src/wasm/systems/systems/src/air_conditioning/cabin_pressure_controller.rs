@@ -27,7 +27,7 @@ use uom::si::{
     velocity::{foot_per_minute, knot, meter_per_second},
 };
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum CpcId {
     Cpc1,
     Cpc2,
@@ -514,14 +514,14 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         }
         self.pressure_schedule_manager
             .as_ref()
-            .map_or(false, |manager| manager.should_switch_cpc())
+            .is_some_and(|manager| manager.should_switch_cpc())
             || self.has_fault()
     }
 
     pub fn should_open_outflow_valve(&self) -> bool {
         self.pressure_schedule_manager
             .as_ref()
-            .map_or(false, |manager| manager.should_open_outflow_valve())
+            .is_some_and(|manager| manager.should_open_outflow_valve())
     }
 
     pub fn reset_cpc_switch(&mut self) {

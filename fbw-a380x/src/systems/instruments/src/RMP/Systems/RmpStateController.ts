@@ -24,7 +24,7 @@ export class A380xRmpStateController implements Instrument {
 
   private readonly standbyLedVar = `L:A380X_RMP_${this.rmpIndex}_GREEN_LED`;
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   private readonly rmp3BusA = Subject.create(false);
 

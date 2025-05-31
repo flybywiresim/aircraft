@@ -11,7 +11,6 @@ import {
   WaypointDescriptor,
   EfisOption,
   EfisNdMode,
-  NdSymbol,
   NdSymbolTypeFlags,
   AltitudeDescriptor,
   EfisSide,
@@ -20,6 +19,12 @@ import {
   NearbyFacilityType,
   isNearbyVhfFacility,
   isMsfs2024,
+  WaypointConstraintType,
+  InternalFmsSymbol,
+  NdSymbol,
+  VdSymbol,
+  FmsData,
+  NdPwpSymbolTypeFlags,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -39,10 +44,11 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
+import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { FlightPlanSegment } from '../flightplanning/segments/FlightPlanSegment';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -59,6 +65,8 @@ export class EfisSymbols<T extends number> {
   private lastRange = 0;
 
   private lastEfisOption = 0;
+
+  private lastPpos: Coordinates = { lat: 0, long: 0 };
 
   private lastMrp: Coordinates = { lat: 0, long: 0 };
 
@@ -106,6 +114,7 @@ export class EfisSymbols<T extends number> {
     private readonly navaidTuner: NavaidTuner,
     private readonly efisInterface: EfisInterface,
     private readonly rangeValues: T[], // TODO factor this out of here. The EfisInterface should directly supply a edit area
+    private readonly transmitVd: boolean = false,
   ) {
     this.nearbyAirportMonitor.setMaxResults(100);
     this.nearbyNdbNavaidMonitor.setMaxResults(100);
@@ -186,6 +195,7 @@ export class EfisSymbols<T extends number> {
     const mrpChanged = distanceTo(this.lastMrp, mapReferencePoint) > 2;
     if (mrpChanged) {
       this.lastMrp = mapReferencePoint;
+      this.lastPpos = ppos;
     }
     const trueHeadingChanged = MathUtils.diffAngle(trueHeading, this.lastTrueHeading) > 2;
     if (trueHeadingChanged) {
@@ -301,12 +311,12 @@ export class EfisSymbols<T extends number> {
       return;
     }
 
-    const symbols: NdSymbol[] = [];
+    const symbols: InternalFmsSymbol[] = [];
 
     // symbols most recently inserted always end up at the end of the array
     // we reverse the array at the end to make sure symbols are drawn in the correct order
     // eslint-disable-next-line no-loop-func
-    const upsertSymbol = (symbol: NdSymbol): void => {
+    const upsertSymbol = (symbol: InternalFmsSymbol): void => {
       // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
       const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
       if (symbolIdx !== -1) {
@@ -316,6 +326,9 @@ export class EfisSymbols<T extends number> {
         symbol.length = symbol.length ?? oldSymbol.length;
         symbol.location = symbol.location ?? oldSymbol.location;
         symbol.type |= oldSymbol.type;
+        if (oldSymbol.typePwp) {
+          symbol.typePwp |= oldSymbol.typePwp;
+        }
         if (oldSymbol.radials) {
           if (symbol.radials) {
             symbol.radials.push(...oldSymbol.radials);
@@ -414,7 +427,7 @@ export class EfisSymbols<T extends number> {
     // (currently sequences with guidance which is too early)
     // eslint-disable-next-line no-lone-blocks
 
-    // ALTN
+    // ACTIVE
     if (this.flightPlanService.hasActive && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)) {
       const symbols = this.getFlightPlanSymbols(
         false,
@@ -429,6 +442,7 @@ export class EfisSymbols<T extends number> {
         editArea,
         formatConstraintAlt,
         formatConstraintSpeed,
+        this.guidanceController.vnavDriver.mcduProfile,
       );
 
       for (const symbol of symbols) {
@@ -542,13 +556,38 @@ export class EfisSymbols<T extends number> {
     // Pseudo waypoints
 
     for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
+      // Some PWP are only relevant for a specific display side
+      if (
+        (this.side === 'L' && pwp.efisSymbolFlag & NdSymbolTypeFlags.RightSideOnly) ||
+        (this.side === 'R' && pwp.efisSymbolFlag & NdSymbolTypeFlags.LeftSideOnly)
+      ) {
+        continue;
+      }
+
+      // End of VD marker needs direction
+      let direction: number | undefined = undefined;
+
+      if (
+        pwp.efisPwpSymbolFlag & NdPwpSymbolTypeFlags.PwpEndOfVdMarker &&
+        this.guidanceController.activeGeometry.legs.has(pwp.alongLegIndex)
+      ) {
+        const leg = this.guidanceController.activeGeometry.legs.get(pwp.alongLegIndex);
+        const orientation = Geometry.getLegOrientationAtDistanceFromEnd(leg, pwp.distanceFromLegTermination);
+        if (orientation !== null) {
+          direction = orientation;
+        }
+      }
+
       upsertSymbol({
         databaseId: `W      ${pwp.ident}`,
         ident: pwp.ident,
         location: pwp.efisSymbolLla,
+        direction,
         type: pwp.efisSymbolFlag,
+        typePwp: pwp.efisPwpSymbolFlag,
         // When in HDG/TRK, this defines where on the track line the PWP lies
         distanceFromAirplane: pwp.distanceFromStart,
+        predictedAltitude: pwp.flightPlanInfo?.altitude ?? undefined,
       });
     }
 
@@ -580,7 +619,11 @@ export class EfisSymbols<T extends number> {
       this.guidanceController.efisStateForSide[this.side].dataLimitReached = false;
     }
 
-    this.syncer.sendEvent(this.syncEvent, symbols);
+    this.transmitNdSymbols(symbols);
+
+    if (this.transmitVd) {
+      this.transmitVdSymbols(symbols);
+    }
 
     // make sure we don't run too often
     this.blockUpdate = true;
@@ -602,7 +645,8 @@ export class EfisSymbols<T extends number> {
     editArea: EditArea,
     formatConstraintAlt: (alt: number, descent: boolean, prefix?: string) => string,
     formatConstraintSpeed: (speed: number, prefix?: string) => string,
-  ): NdSymbol[] {
+    predictions?: NavGeometryProfile,
+  ): InternalFmsSymbol[] {
     const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
     const isLatAutoControlArmed = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
     const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
@@ -615,7 +659,7 @@ export class EfisSymbols<T extends number> {
       ? this.efisInterface.shouldTransmitAlternateMissed(flightPlan.index, isPlanMode)
       : this.efisInterface.shouldTransmitMissed(flightPlan.index, isPlanMode);
 
-    const ret: NdSymbol[] = [];
+    const ret: InternalFmsSymbol[] = [];
 
     // FP legs
     for (let i = flightPlan.legCount - 1; i >= flightPlan.fromLegIndex && i >= 0; i--) {
@@ -781,13 +825,30 @@ export class EfisSymbols<T extends number> {
         constraints.push(`${Math.round(leg.calculated.cumulativeDistanceToEndWithTransitions)}NM`);
       }
 
+      const distanceFromAirplane =
+        predictions && predictions.waypointPredictions.has(i)
+          ? predictions.waypointPredictions.get(i).distanceFromAircraft
+          : undefined;
+
+      const predictedAltitude =
+        predictions && predictions.waypointPredictions.has(i)
+          ? predictions.waypointPredictions.get(i).altitude
+          : undefined;
+
       ret.push({
         databaseId,
         ident: leg.ident,
         location,
         type,
         constraints: constraints.length > 0 ? constraints : undefined,
+        altConstraint: leg.altitudeConstraint,
+        isAltitudeConstraintMet:
+          predictions && predictions.waypointPredictions.has(i)
+            ? predictions.waypointPredictions.get(i).isAltitudeConstraintMet
+            : true,
         direction,
+        distanceFromAirplane,
+        predictedAltitude,
       });
     }
 
@@ -808,13 +869,13 @@ export class EfisSymbols<T extends number> {
 
     // FP airports/runways
 
-    const airports: [Airport | undefined, Runway | undefined][] = [
+    const airports: [Airport | undefined, Runway | undefined, FlightPlanSegment | undefined][] = [
       // The alternate origin airport symbol is not shown as it is the same as the primary destination
-      [flightPlan.originAirport, flightPlan.originRunway],
-      [flightPlan.destinationAirport, flightPlan.destinationRunway],
+      [flightPlan.originAirport, flightPlan.originRunway, flightPlan.originSegment],
+      [flightPlan.destinationAirport, flightPlan.destinationRunway, flightPlan.destinationSegment],
     ];
 
-    for (const [airport, runway] of airports) {
+    for (const [airport, runway, segment] of airports) {
       if (!airport) {
         continue;
       }
@@ -825,6 +886,11 @@ export class EfisSymbols<T extends number> {
 
       const databaseId = `A${airport.ident}${planAltnStr}${planIndexStr}${runwayIdentStr}`;
 
+      const distanceFromAirplane =
+        (segment.lastLeg?.calculated?.cumulativeDistanceWithTransitions ??
+          distanceTo(this.lastPpos, airport.location)) -
+        (this.guidanceController.vnavDriver.mcduProfile?.distanceToPresentPosition ?? 0);
+
       if (runway) {
         if (this.isWithinEditArea(runway.startLocation, mapReferencePoint, mapOrientation, editArea)) {
           ret.push({
@@ -834,6 +900,8 @@ export class EfisSymbols<T extends number> {
             direction: runway.bearing,
             length: runway.length / MathUtils.METRES_TO_NAUTICAL_MILES,
             type: NdSymbolTypeFlags.Runway,
+            distanceFromAirplane: distanceFromAirplane,
+            predictedAltitude: runway.thresholdLocation.alt,
           });
         }
       } else if (this.isWithinEditArea(airport.location, mapReferencePoint, mapOrientation, editArea)) {
@@ -842,6 +910,8 @@ export class EfisSymbols<T extends number> {
           ident: airport.ident,
           location: airport.location,
           type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
+          distanceFromAirplane: distanceFromAirplane,
+          predictedAltitude: airport.location.alt,
         });
       }
     }
@@ -984,6 +1054,45 @@ export class EfisSymbols<T extends number> {
     }
 
     return matchingGeometryLeg.terminationWaypoint.location;
+  }
+
+  private transmitNdSymbols(symbols: InternalFmsSymbol[]) {
+    const ndSymbols: NdSymbol[] = symbols.map((s): NdSymbol => {
+      return {
+        databaseId: s.databaseId,
+        ident: s.ident,
+        location: s.location,
+        direction: s.direction,
+        length: s.length,
+        type: s.type,
+        typePwp: s.typePwp,
+        constraints: s.constraints,
+        radials: s.radials,
+        radii: s.radii,
+        distanceFromAirplane: s.distanceFromAirplane,
+      };
+    });
+    this.syncer.sendEvent(this.syncEvent, ndSymbols);
+  }
+
+  private transmitVdSymbols(symbols: InternalFmsSymbol[]) {
+    const vdSymbols: VdSymbol[] = symbols.map((s): VdSymbol => {
+      return {
+        databaseId: s.databaseId,
+        ident: s.ident,
+        location: s.location,
+        predictedAltitude: s.predictedAltitude,
+        direction: s.direction,
+        length: s.length,
+        type: s.type,
+        typePwp: s.typePwp,
+        constraints: s.constraints,
+        altConstraint: s.altConstraint,
+        isAltitudeConstraintMet: s.isAltitudeConstraintMet,
+        distanceFromAirplane: s.distanceFromAirplane,
+      };
+    });
+    this.bus.getPublisher<FmsData>().pub(`vdSymbols_${this.side}`, vdSymbols, true);
   }
 }
 
