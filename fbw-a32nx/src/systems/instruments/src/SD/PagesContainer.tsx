@@ -53,7 +53,7 @@ export const PagesContainer = () => {
 
   const [pageWhenUnselected, setPageWhenUnselected] = useState(SdPages.Door);
 
-  const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECAM_ALL_Push_IsDown', 'Bool', 20);
+  const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECP_DISCRETE_OUT_ALL', 'Bool', 20);
   const [fwcFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 500);
   const [crzCondTimer, setCrzCondTimer] = useState(CRZ_CONDITION_TIMER_DURATION);
   const [ecamFCTLTimer, setEcamFCTLTimer] = useState(FCTL_CONDITION_TIMER_DURATION);
@@ -124,6 +124,7 @@ export const PagesContainer = () => {
       setEcamButtonLightDelayTimer((t) => t - deltaTime);
       if (ecamButtonLightDelayTimer <= 0) {
         setPage(currentPage);
+
         setEcamButtonLightDelayTimer(Number.MIN_SAFE_INTEGER);
       }
     }

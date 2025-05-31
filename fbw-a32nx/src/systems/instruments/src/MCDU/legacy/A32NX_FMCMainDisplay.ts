@@ -4,7 +4,7 @@
 import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
-  Arinc429OutputWord,
+  Arinc429LocalVarOutputWord,
   Arinc429SignStatusMatrix,
   Arinc429Word,
   DatabaseIdent,
@@ -5372,7 +5372,7 @@ const DefaultPerformanceData = Object.freeze({
 });
 
 /** Writes FM output words for both FMS. */
-class FmArinc429OutputWord extends Arinc429OutputWord {
+class FmArinc429OutputWord extends Arinc429LocalVarOutputWord {
   private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
 
   override async writeToSimVarIfDirty() {
