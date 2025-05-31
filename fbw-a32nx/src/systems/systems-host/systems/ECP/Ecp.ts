@@ -30,8 +30,7 @@ import {
 import { DmcEcpLightStatus, FakeDmcEvents } from './FakeDmc';
 import { A320Failure } from '../../../failures/src/a320';
 
-// TODO
-const OUTPUT_BUS_TRANSMIT_INTERVAL_MS = 100;
+const OUTPUT_BUS_TRANSMIT_INTERVAL_MS = 33;
 
 class EcpKey {
   /** The keys are output as pressed for a minimum of 8 transmissions on the bus. */
@@ -51,7 +50,7 @@ class EcpKey {
 
   public handlePress(): void {
     this.isPhysicalKeyPressed = true;
-    if (this.ecpOperatingNormally.get()) {
+    if (this.ecpOperatingNormally.get() && this.holdTime <= Number.EPSILON) {
       this.holdTime = EcpKey.MIN_HOLD_TIME_MS;
     }
   }
@@ -138,7 +137,7 @@ export class Ecp implements Instrument {
   private readonly bootTimer = new DebounceTimer();
   private readonly isOperatingNormally = Subject.create(false);
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   /** Hardwired input from the ANN LT switch. */
   private readonly lightTestInput = ConsumerSubject.create(this.sub.on('ovhd_ann_lt_test'), false);
