@@ -16,6 +16,9 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
 import { FlightPathDirector } from './FlightPathDirector';
 
+const DistanceSpacing = (1024 / 28) * 5; //182.857
+const ValueSpacing = 5;
+
 interface AttitudeIndicatorFixedUpperProps {
   bus: ArincEventBus;
 }
@@ -330,8 +333,10 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private fdYawCommand = new Arinc429Word(0);
 
+  private yawGroupRef = FSComponent.createRef<SVGGElement>();
   private yawRef = FSComponent.createRef<SVGPathElement>();
-
+  private yawGroupVerticalOffset = 0;
+  private pitch = 0;
   private handleFdState() {
     const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
     const showFd = this.fdEngaged && !fdOff;
@@ -339,12 +344,12 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
     const showYaw = showFd && !(this.fdYawCommand.isFailureWarning() || this.fdYawCommand.isNoComputedData());
 
     if (showYaw) {
-      const offset = -Math.max(Math.min(this.fdYawCommand.value, 45), -45) * 0.44;
-
-      this.yawRef.instance.style.visibility = 'visible';
-      this.yawRef.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+      const offset = -Math.max(Math.min(this.fdYawCommand.value * 3, 120), -120);
+      this.yawGroupVerticalOffset = (DistanceSpacing / ValueSpacing) * (this.pitch - 1.15);
+      this.yawGroupRef.instance.style.visibility = 'visible';
+      this.yawGroupRef.instance.style.transform = `translate3d(${offset}px, ${this.yawGroupVerticalOffset}px, 0px)`;
     } else {
-      this.yawRef.instance.style.visibility = 'hidden';
+      this.yawGroupRef.instance.style.visibility = 'hidden';
     }
   }
 
@@ -376,16 +381,20 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
         this.handleFdState();
       });
+    sub.on('pitchAr').handle((p) => {
+      this.pitch = p.value;
+
+      console.log('this.pitch: ' + this.pitch + ' this.yawGroupVerticalOffset ' + this.yawGroupVerticalOffset);
+      this.handleFdState();
+    });
   }
 
   render(): VNode {
     return (
-      <path
-        ref={this.yawRef}
-        id="GroundYawSymbol"
-        class="NormalStroke Green"
-        d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z"
-      />
+      <g ref={this.yawGroupRef}>
+        <path ref={this.yawRef} id="GroundYawSymbol" class="SmallStroke Green" d="M 640 420 l 3 4 v 30 h -6 v -30 z" />
+        <path id="AircraftReferenceOnGround" class="SmallStroke Green" d="m 630, 405 h 20 L 640,420 Z" />
+      </g>
     );
   }
 }
@@ -490,62 +499,19 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
           this.pitch = pitch.value;
         }
       });
-
-    // sub.on('chosenRa').handle((ra) => {
-    //   this.radioAltitude = ra;
-    //   if (ra.value > 100) {
-    //     this.visibilityAirSub.set('display:inline');
-    //     this.visibilityGroundSub.set('display:none');
-    //   } else {
-    //     this.visibilityAirSub.set('display:none');
-    //     this.visibilityGroundSub.set('display:inline');
-    //   }
-    // });
-
-    // sub
-    //   .on('fd1Active')
-    //   .whenChanged()
-    //   .handle((fd) => {
-    //     if (getDisplayIndex() === 1) {
-    //       this.fdActive = fd;
-    //       if (this.isActive()) {
-    //         this.visibilityGroundSub.set('block');
-    //         this.visibilityAirSub.set('none');
-    //       } else {
-    //         this.visibilityGroundSub.set('none');
-    //         this.visibilityAirSub.set('none');
-    //       }
-    //     }
-    //   });
-
-    // sub
-    //   .on('fd2Active')
-    //   .whenChanged()
-    //   .handle((fd) => {
-    //     if (getDisplayIndex() === 2) {
-    //       this.fdActive = fd;
-    //       if (this.isActive()) {
-    //         this.visibilityGroundSub.set('block');
-    //         this.visibilityAirSub.set('none');
-    //       } else {
-    //         this.visibilityGroundSub.set('none');
-    //         this.visibilityAirSub.set('none');
-    //       }
-    //     }
-    //   });
   }
 
   render(): VNode {
     return (
       <g id="AircraftReferences">
         <g id="AircraftReferenceInAir" class="SmallStroke Green" display={this.visibilityAirSub}>
-          <path d="m 600,336.52  v -7.38 h -41.63" />
-          <path d="m 636.25,332.89 h 7.5 v -7.5 h -7.5 z" />
-          <path d="m 680,336.52 v -7.38 h 41.63" />
+          <path d="m 625,335  v -6 h -30" />
+          <path d="m 637,332 h 6 v -6 h -6 z" />
+          <path d="m 655, 335 v -6 h 30" />
         </g>
-        <g id="AircraftReferenceOnGround" class="SmallStroke Green" display={this.visibilityGroundSub}>
-          <path d="m 630,391.28 h 20 L 640,410 Z" />
-        </g>
+        {/* <g ref={this.gndRef} id="AircraftReferenceOnGround" class="SmallStroke Green">
+          <path d="m 630, 405 h 20 L 640,420 Z" />
+        </g> */}
       </g>
     );
   }

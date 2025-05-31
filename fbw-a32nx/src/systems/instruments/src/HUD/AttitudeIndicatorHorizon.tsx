@@ -156,12 +156,6 @@ class HeadingBug extends DisplayComponent<{
     return (
       <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" style={this.headingBugSubject} display={this.sVisibility}>
         <path
-          id="gndHorizonHeadingBug"
-          class="ThickStroke"
-          d="m 630,490 h 20 l -10,21z"
-          display={this.sGndHeadingBugVisibility}
-        />
-        <path
           id="airHorizonHeadingBug"
           class="ThickStroke Green"
           d="m 640,500  l 0 24"

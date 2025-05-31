@@ -1113,7 +1113,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
           visible={this.stdVisible}
         >
           <g ref={this.stdGroup} id="STDAltimeterModeGroup" transform="translate(0 10)">
-            <path class="NormalStroke Green" d="m124.79 131.74h13.096v7.0556h-13.096z" />
+            <path class="NormalStroke Green" d="m124 131.74h13v7.0556h-13z" />
             <text class="FontMediumSmaller Green AlignLeft" x="125.75785" y="137.36">
               STD
             </text>

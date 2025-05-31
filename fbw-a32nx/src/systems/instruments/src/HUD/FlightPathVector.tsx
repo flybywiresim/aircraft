@@ -405,12 +405,10 @@ export class SelectedFlightPathAngle extends DisplayComponent<{ bus: ArincEventB
 }
 
 interface SpeedStateInfo {
+  pfdTargetSpeed: Arinc429WordData;
+  fcuSelectedSpeed: Arinc429WordData;
   speed: Arinc429WordData;
-  selectedTargetSpeed: number;
-  managedTargetSpeed: number;
-  holdValue: number;
-  isSelectedSpeed: boolean;
-  isMach: boolean;
+  fmgcDiscreteWord5: Arinc429Word;
 }
 
 class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
@@ -418,17 +416,16 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   private declutterMode = 0;
   private crosswindMode = false;
   private sVisibility = Subject.create<String>('');
+  private outOfRange = Subject.create<String>('');
   private speedRefs: NodeReference<SVGElement>[] = [];
 
   private needsUpdate = true;
 
   private speedState: SpeedStateInfo = {
     speed: new Arinc429Word(0),
-    selectedTargetSpeed: 100,
-    managedTargetSpeed: 100,
-    holdValue: 100,
-    isSelectedSpeed: false,
-    isMach: false,
+    pfdTargetSpeed: new Arinc429Word(0),
+    fcuSelectedSpeed: new Arinc429Word(0),
+    fmgcDiscreteWord5: new Arinc429Word(0),
   };
 
   onAfterRender(node: VNode): void {
@@ -456,10 +453,26 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
       });
 
     sub
-      .on('isSelectedSpeed')
+      .on('pfdSelectedSpeed')
+      .withArinc429Precision(2)
+      .handle((s) => {
+        this.speedState.pfdTargetSpeed = s;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('fmgcDiscreteWord5')
       .whenChanged()
       .handle((s) => {
-        this.speedState.isSelectedSpeed = s;
+        this.speedState.fmgcDiscreteWord5 = s;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('fcuSelectedAirspeed')
+      .withArinc429Precision(2)
+      .handle((s) => {
+        this.speedState.fcuSelectedSpeed = s;
         this.needsUpdate = true;
       });
 
@@ -468,22 +481,6 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
       .withArinc429Precision(2)
       .handle((s) => {
         this.speedState.speed = s;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('holdValue')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.holdValue = s;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('machActive')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.isMach = s;
         this.needsUpdate = true;
       });
 
@@ -503,7 +500,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
       if (refNum.includes(i)) {
         this.speedRefs[i].instance.style.visibility = 'visible';
       } else {
-        this.speedRefs[i].instance.style.visibility = 'hidden';
+        this.speedRefs[i].instance.style.visibility = 'visible';
       }
     }
   }
@@ -512,42 +509,66 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
     if (this.needsUpdate === true) {
       this.needsUpdate = false;
 
-      if (this.speedState.isSelectedSpeed) {
-        if (this.speedState.isMach) {
-          const holdValue = this.speedState.holdValue;
-          this.speedState.selectedTargetSpeed = SimVar.GetGameVarValue(
-            'FROM MACH TO KIAS',
-            'number',
-            holdValue === null ? undefined : holdValue,
-          );
-        } else {
-          this.speedState.selectedTargetSpeed = this.speedState.holdValue;
-        }
-      }
+      const fmgcPfdSelectedSpeedValid = !(
+        this.speedState.pfdTargetSpeed.isNoComputedData() || this.speedState.pfdTargetSpeed.isFailureWarning()
+      );
+      const isSpeedManaged =
+        this.speedState.fmgcDiscreteWord5.bitValueOr(19, false) &&
+        !(this.speedState.fmgcDiscreteWord5.bitValueOr(20, false) || !fmgcPfdSelectedSpeedValid);
 
-      const deltaSpeed =
-        this.speedState.speed.value -
-        (this.speedState.isSelectedSpeed ? this.speedState.selectedTargetSpeed : this.speedState.managedTargetSpeed);
+      const chosenTargetSpeed = fmgcPfdSelectedSpeedValid
+        ? this.speedState.pfdTargetSpeed
+        : this.speedState.fcuSelectedSpeed;
+
+      const deltaSpeed = this.speedState.speed.value - chosenTargetSpeed.value;
       const sign = Math.sign(deltaSpeed);
 
-      if (Math.abs(deltaSpeed) < 1) {
-        this.setVisible([0]);
-      } else if (Math.abs(deltaSpeed) < 10) {
-        this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 4.6} h 12 v ${deltaSpeed * 4.6}`);
-        this.speedRefs[2].instance.setAttribute('d', `m 601,512 v ${-deltaSpeed * 4.6}`);
-        this.setVisible([1, 2]);
-      } else if (Math.abs(deltaSpeed) < 20) {
-        this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 4.6} h 12 v ${deltaSpeed * 4.6}`);
-        this.speedRefs[2].instance.setAttribute('d', `m 601,512 v ${-sign * 46}`);
-        this.speedRefs[3].instance.style.transform = `translate3d(0px, ${-sign * 46}px, 0px)`;
-        this.speedRefs[4].instance.setAttribute(
-          'd',
-          `m 601,${512 - sign * 46} v ${-sign * (Math.abs(deltaSpeed) - 10) * 4.6}`,
-        );
-        this.setVisible([1, 2, 3, 4]);
+      // console.log(
+      //   'speedState.speed: ' +
+      //     this.speedState.speed.value +
+      //     ' deltaSpeed: ' +
+      //     deltaSpeed +
+      //     ' chosenTargetSpeed: ' +
+      //     chosenTargetSpeed.value,
+      // );
+
+      // if (Math.abs(deltaSpeed) < 1) {
+      //   this.setVisible([0]);
+
+      // } else if (Math.abs(deltaSpeed) < 10) {
+      //   this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 4.6} h 12 v ${deltaSpeed * 4.6}`);
+      //   this.speedRefs[2].instance.setAttribute('d', `m 601,512 v ${-deltaSpeed * 4.6}`);
+      //   this.setVisible([1, 2]);
+      // } else if (Math.abs(deltaSpeed) < 20) {
+      //   this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 4.6} h 12 v ${deltaSpeed * 4.6}`);
+      //   this.speedRefs[2].instance.setAttribute('d', `m 601,512 v ${-sign * 46}`);
+      //   this.speedRefs[3].instance.style.transform = `translate3d(0px, ${-sign * 46}px, 0px)`;
+      //   this.speedRefs[4].instance.setAttribute(
+      //     'd',
+      //     `m 601,${512 - sign * 46} v ${-sign * (Math.abs(deltaSpeed) - 10) * 4.6}`,
+      //   );
+      //   this.setVisible([1, 2, 3, 4]);
+      // } else {
+      //   this.speedRefs[5].instance.style.transform = `translate3d(0px, ${-sign * 46}px, 0px)`;
+      //   this.setVisible([5]);
+      // }
+
+      this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 3.33} h 12 v ${deltaSpeed * 3.33}`);
+
+      if (Math.abs(deltaSpeed) >= 27) {
+        this.speedRefs[0].instance.style.visibility = 'visible';
+        sign == 1
+          ? this.speedRefs[0].instance.setAttribute('transform', 'translate(0 -90)')
+          : this.speedRefs[0].instance.setAttribute('transform', 'translate(0 0)');
+        //this.outOfRange.set('')
       } else {
-        this.speedRefs[5].instance.style.transform = `translate3d(0px, ${-sign * 46}px, 0px)`;
-        this.setVisible([5]);
+        this.speedRefs[0].instance.style.visibility = 'hidden';
+      }
+
+      if (Math.abs(deltaSpeed) > 1 && Math.abs(deltaSpeed) < 27) {
+        this.speedRefs[1].instance.style.visibility = 'visible';
+      } else {
+        this.speedRefs[1].instance.style.visibility = 'hidden';
       }
     }
   }
@@ -559,12 +580,29 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
     return (
       <>
         <g id="DeltaSpeedGroup" display={this.sVisibility}>
-          <path
+          <g ref={this.speedRefs[0]} transform={this.outOfRange} class="ScaledStroke CornerRound Green" stroke="red">
+            <path class="ScaledStroke CornerRound Green" d="m 595,602 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,592 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,582 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,572 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,562 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,552 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,542 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,532 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,522 h 11" stroke="green" />
+            <path class="ScaledStroke CornerRound Green" d="m 595,512 h 11" stroke="green" />
+          </g>
+
+          <path ref={this.speedRefs[1]} d="" class="ScaledStroke CornerRound Green GreenFill2" stroke="red" />
+
+          {/* <path
             ref={this.speedRefs[0]}
             class="ScaledStroke CornerRound Green"
             d="m 595,507.4 h 12 v 9.2 h -12 z"
             style="visibility:hidden"
           />
+
+
           <path ref={this.speedRefs[1]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
           <path ref={this.speedRefs[2]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
           <path
@@ -585,6 +623,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
             <path class="ScaledStroke CornerRound Green" d="m 595,537.4 h 11" style="visibility:hidden" />
             <path class="ScaledStroke CornerRound Green" d="m 595,547.6 h 11" style="visibility:hidden" />
           </g>
+          */}
         </g>
       </>
     );

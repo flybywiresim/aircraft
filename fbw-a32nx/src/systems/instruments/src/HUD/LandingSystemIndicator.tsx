@@ -404,6 +404,7 @@ class LocBcIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
   private flightPhase = -1;
+  private fmgcFlightPhase = -1;
   private declutterMode = 0;
   private readonly lsVisible = ConsumerSubject.create(null, false);
   private LSLocRef = FSComponent.createRef<SVGGElement>();
@@ -418,7 +419,9 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
   private locDiamond = FSComponent.createRef<SVGPathElement>();
 
   private diamondGroup = FSComponent.createRef<SVGGElement>();
-
+  private LSLocGroupVerticalOffset = 0;
+  private pitch = 0;
+  private doOnce = 0;
   private handleNavRadialError(radialError: number): void {
     const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
     const dots = deviation / 0.8;
@@ -439,11 +442,35 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
     }
   }
 
+  private setLocGroupPos() {
+    if (this.LsState) {
+      if (this.onGround) {
+        this.LSLocRef.instance.style.visibility = 'visible';
+        this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+      } else {
+        if (this.declutterMode == 2) {
+          this.LSLocRef.instance.style.visibility = 'hidden';
+        } else {
+          this.LSLocRef.instance.style.visibility = 'visible';
+        }
+        this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+      }
+    } else {
+      if (this.onGround) {
+        this.LSLocRef.instance.style.visibility = 'visible';
+        this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+      } else {
+        this.LSLocRef.instance.style.visibility = 'hidden';
+        this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+      }
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values>();
 
     sub
       .on('fwcFlightPhase')
@@ -451,33 +478,19 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
       .handle((fp) => {
         this.flightPhase = fp;
       });
+    sub
+      .on('fmgcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.fmgcFlightPhase = fp;
+      });
 
     sub
       .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
-        if (this.LsState) {
-          if (this.onGround) {
-            this.LSLocRef.instance.style.visibility = 'visible';
-            this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
-          } else {
-            if (this.declutterMode == 2) {
-              this.LSLocRef.instance.style.visibility = 'hidden';
-            } else {
-              this.LSLocRef.instance.style.visibility = 'visible';
-            }
-            this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
-          }
-        } else {
-          if (this.onGround) {
-            this.LSLocRef.instance.style.visibility = 'visible';
-            this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
-          } else {
-            this.LSLocRef.instance.style.visibility = 'hidden';
-            this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
-          }
-        }
+        this.setLocGroupPos();
       });
 
     sub
@@ -512,28 +525,26 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
       .whenChanged()
       .handle((value) => {
         this.LsState = value;
-        if (this.LsState) {
-          if (this.onGround) {
-            this.LSLocRef.instance.style.visibility = 'visible';
-            this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
-          } else {
-            if (this.declutterMode == 2) {
-              this.LSLocRef.instance.style.visibility = 'hidden';
-            } else {
-              this.LSLocRef.instance.style.visibility = 'visible';
-            }
-            this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
-          }
-        } else {
-          if (this.onGround) {
-            this.LSLocRef.instance.style.visibility = 'visible';
-            this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
-          } else {
-            this.LSLocRef.instance.style.visibility = 'hidden';
-            this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
-          }
-        }
+        this.setLocGroupPos();
       });
+    sub.on('pitchAr').handle((p) => {
+      this.pitch = p.value;
+    });
+
+    sub.on('realTime').handle((t) => {
+      if (this.fmgcFlightPhase == 1) {
+        this.doOnce = 0;
+        this.LSLocRef.instance.style.visibility = 'visible';
+        this.LSLocGroupVerticalOffset = 60 + ((DistanceSpacing / ValueSpacing) * this.pitch) / 2.5;
+        this.LSLocRef.instance.style.transform = `translate3d(0px, ${this.LSLocGroupVerticalOffset}px, 0px)`;
+      } else {
+        if (this.doOnce == 0) {
+          console.log(this.LSLocGroupVerticalOffset + '  ' + this.pitch);
+          this.doOnce = 1;
+          this.LSLocRef.instance.style.visibility = 'hidden';
+        }
+      }
+    });
   }
 
   render(): VNode {

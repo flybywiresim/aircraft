@@ -37,7 +37,10 @@ let DisplayRange = 42;
 const decelValueSpacing = 10;
 const decelDistanceSpacing = 5;
 
-export class AirspeedIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+export class AirspeedIndicator extends DisplayComponent<{
+  bus: ArincEventBus;
+  instrument: BaseInstrument;
+}> {
   private crosswindMode = false;
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -942,7 +945,7 @@ class DecelMode extends DisplayComponent<{
   render(): VNode {
     return (
       <g id="decelModeChanged">
-        <path ref={this.decelRef} class="NormalStroke Green" visibility="hidden" d="" />
+        <path ref={this.decelRef} class="NormalStroke Green" d="" />
         {/* <text ref={this.decelTxt1} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 103)">MIN</text>
             <text ref={this.decelTxt2} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 115)">MED</text>
             <text ref={this.decelTxt3} class="ScaledStroke Green FontMediumSmaller" transform="translate(20 123)">MAX</text> */}
@@ -1487,12 +1490,13 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     super.onAfterRender(node);
     this.needsUpdate = true;
     const mode = this.props.mode.valueOf();
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<
       HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & FgBus & FcuBus
     >();
 
     sub
-      .on('crosswindMode')
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.handleCrosswinMode();
@@ -1577,6 +1581,13 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       } else {
         const text = Math.round(chosenTargetSpeed.value).toString().padStart(3, '0');
         this.textSub.set(text);
+      }
+
+      const fSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
+      if (chosenTargetSpeed.value < fSpeed) {
+        this.speedTargetRef.instance.classList.add('GreenFill2');
+      } else {
+        this.speedTargetRef.instance.classList.remove('GreenFill2');
       }
     }
   }
