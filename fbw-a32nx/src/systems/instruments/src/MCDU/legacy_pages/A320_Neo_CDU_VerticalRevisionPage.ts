@@ -11,6 +11,7 @@ import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -55,7 +56,10 @@ export class CDUVerticalRevisionPage {
     }
 
     const showSpeedLim =
-      mcdu._fuelPredDone || isOrigin || isDestination || constraintType !== WaypointConstraintType.Unknown;
+      CDUInitPage.fuelPredConditionsMet(mcdu, forPlan) ||
+      isOrigin ||
+      isDestination ||
+      constraintType !== WaypointConstraintType.Unknown;
     // the conditions other than isDestination are a workaround for no ToC
     const showDesSpeedLim =
       showSpeedLim &&
@@ -138,11 +142,11 @@ export class CDUVerticalRevisionPage {
       const distanceToDest = mcdu.getDistanceToDestination();
       const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
       l4Title = '\xa0QNH';
-      if (isFinite(mcdu.perfApprQNH)) {
-        if (mcdu.perfApprQNH < 500) {
-          l4Cell = `{cyan}${mcdu.perfApprQNH.toFixed(2)}{end}`;
+      if (Number.isFinite(mainTargetPlan.performanceData.approachQnh)) {
+        if (mainTargetPlan.performanceData.approachQnh < 500) {
+          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.toFixed(2)}{end}`;
         } else {
-          l4Cell = `{cyan}${mcdu.perfApprQNH.toFixed(0)}{end}`;
+          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.toFixed(0)}{end}`;
         }
       } else if (closeToDest) {
         l4Cell = '{amber}____{end}';
@@ -150,7 +154,7 @@ export class CDUVerticalRevisionPage {
         l4Cell = '{cyan}[\xa0\xa0]{end}';
       }
       mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
-        if (mcdu.setPerfApprQNH(value)) {
+        if (mcdu.setPerfApprQNH(value, forPlan)) {
           CDUVerticalRevisionPage.ShowPage(
             mcdu,
             waypoint,
@@ -704,7 +708,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
       return;
     }
 
@@ -754,7 +758,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
     }
 
     if (alt !== undefined) {
@@ -771,7 +775,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
     }
   }
 
