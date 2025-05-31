@@ -66,7 +66,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'PITCH TRIM',
         labelNotCompleted: 'T.O',
-        sensed: true,
+        sensed: false,
       },
       {
         name: 'RUDDER TRIM',
