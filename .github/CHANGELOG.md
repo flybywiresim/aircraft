@@ -197,6 +197,7 @@
 1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
 1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
 1. [EFB/PERF] Harmonize takeoff and landing performance calculators - @FoxtrotSierra6829 (FoxtrotSierra)
+1. [A32NX/FWC] Add A/THR LIMITED ECAM warning - @lukecologne (luke)
 
 ## 0.12.0
 
