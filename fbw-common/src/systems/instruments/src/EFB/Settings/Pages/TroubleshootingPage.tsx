@@ -29,7 +29,7 @@ export const TroubleshootingPage = () => {
 
   return (
     <SettingsPage name={t('Settings.Troubleshooting.Title')}>
-      <pre className="w-full font-mono text-base">
+      <pre className="w-full whitespace-pre-wrap font-mono text-base">
         Aircraft Version: {buildInfo?.version}
         {'\n'}
         MSFS2024: {isMsfs2024() ? 'True\n' : 'False\n'}

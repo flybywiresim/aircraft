@@ -259,7 +259,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     new Promise((resolve) => setTimeout(resolve, 5000)).then(() => {});
 
-    NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    // FIXME this should only ever be used within the FMGC
+    NavigationDatabaseService.activeDatabase = new NavigationDatabase(this.props.bus, NavigationDatabaseBackend.Msfs);
 
     NavigationDatabaseService.activeDatabase.getDatabaseIdent().then((db) => {
       const from = new Date(db.effectiveFrom);
