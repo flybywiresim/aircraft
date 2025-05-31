@@ -92,6 +92,10 @@ export class AdirsValueProvider<T extends AdirsSimVars> {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BAROMETRIC_VERTICAL_SPEED`,
           type: SimVarValueType.Number,
         });
+        this.varProvider.updateSimVarSource('pressureAltitude', {
+          name: `L:A32NX_ADIRS_ADR_${airSource}_ALTITUDE`,
+          type: SimVarValueType.Number,
+        });
         this.varProvider.updateSimVarSource('baroCorrectedAltitude', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BARO_CORRECTED_ALTITUDE_${displayIndex}`,
           type: SimVarValueType.Number,

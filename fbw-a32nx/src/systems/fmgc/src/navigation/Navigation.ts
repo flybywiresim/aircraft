@@ -19,7 +19,7 @@ import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/Nav
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, Subject } from '@microsoft/msfs-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanService } from '../flightplanning/FlightPlanService';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
@@ -50,7 +50,14 @@ export interface SelectedNavaid {
   facility: VhfNavaid | NdbNavaid | IlsNavaid | null;
 }
 
+export interface NavigationEvents {
+  /** The selected pressure altitude in feet, or null if invalid/NCD. */
+  fms_nav_pressure_altitude: number | null;
+}
+
 export class Navigation implements NavigationProvider {
+  private readonly publisher = this.bus.getPublisher<NavigationEvents>();
+
   private static readonly adiruOrder = [1, 3, 2];
 
   private static readonly arincWordCache = Arinc429Register.empty();
@@ -79,7 +86,7 @@ export class Navigation implements NavigationProvider {
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_BARO_CORRECTED_ALTITUDE_1`,
   );
 
-  private pressureAltitude: number | null = null;
+  private pressureAltitude = Subject.create<number | null>(null);
 
   private static readonly pressureAltitudeVars = Array.from(
     { length: 3 },
@@ -136,6 +143,8 @@ export class Navigation implements NavigationProvider {
   init(): void {
     this.navaidTuner.init();
 
+    this.pressureAltitude.sub((v) => this.publisher.pub('fms_nav_pressure_altitude', v, false, true), true);
+
     this.nearbyAirportMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
       NearbyFacilityType.Airport,
     );
@@ -171,7 +180,7 @@ export class Navigation implements NavigationProvider {
     for (const adiru of Navigation.adiruOrder) {
       const simVar = simVars[adiru - 1];
       Navigation.arincWordCache.setFromSimVar(simVar);
-      if (Navigation.arincWordCache.isNormalOperation()) {
+      if (Navigation.arincWordCache.isNormalOperation() || Navigation.arincWordCache.isFunctionalTest()) {
         return Navigation.arincWordCache.value;
       }
     }
@@ -208,7 +217,7 @@ export class Navigation implements NavigationProvider {
 
   private updateAirData(): void {
     this.baroAltitude = this.getAdiruValue(Navigation.baroAltitudeVars);
-    this.pressureAltitude = this.getAdiruValue(Navigation.pressureAltitudeVars);
+    this.pressureAltitude.set(this.getAdiruValue(Navigation.pressureAltitudeVars));
 
     this.computedAirspeed = this.getAdiruValue(Navigation.computedAirspeedVars);
     this.trueAirspeed = this.getAdiruValue(Navigation.trueAirspeedVars);
@@ -237,7 +246,7 @@ export class Navigation implements NavigationProvider {
   }
 
   public getPressureAltitude(): number | null {
-    return this.pressureAltitude;
+    return this.pressureAltitude.get();
   }
 
   public getComputedAirspeed(): number | null {

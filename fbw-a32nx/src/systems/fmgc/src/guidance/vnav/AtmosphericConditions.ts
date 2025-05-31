@@ -25,7 +25,7 @@ export class AtmosphericConditions {
     this.update();
   }
 
-  // TODO: Surely some of these things should come from the ADRs
+  // FIXME this data should come from the FMS navigation function (NavigationEvents on the bus)
   update() {
     this.ambientTemperatureFromSim = SimVar.GetSimVarValue('AMBIENT TEMPERATURE', 'celsius');
     this.altitudeFromSim = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
@@ -35,7 +35,7 @@ export class AtmosphericConditions {
     this.windSpeedFromSim = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'Knots');
     this.windDirectionFromSim = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'Degrees');
     // This is what the AP uses
-    this.pressureAltFromSim = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
+    this.pressureAltFromSim = SimVar.GetSimVarValue('INDICATED ALTITUDE:4', 'feet');
 
     this.computedIsaDeviation = this.ambientTemperatureFromSim - Common.getIsaTemp(this.altitudeFromSim);
   }

@@ -1,17 +1,31 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, Instrument, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
-
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+
+import {
+  Arinc429ConsumerSubject,
+  Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
+  Arinc429RegisterSubject,
+  Arinc429Word,
+  Arinc429WordData,
+  ArincEventBus,
+} from '@flybywiresim/fbw-sdk';
+import { ClockEvents, ConsumerSubject, Instrument, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
+
 import { PFDSimvars } from './PFDSimvarPublisher';
+import { LagFilter } from 'instruments/src/PFD/PFDUtils';
 
 export interface Arinc429Values {
   pitchAr: Arinc429WordData;
   rollAr: Arinc429Word;
+
+  /** The "displayed altitude" in feet. It's baro corrected for QFE/QNH modes, otherwise pressure alt. */
   altitudeAr: Arinc429Word;
+
   magTrack: Arinc429Word;
   magHeading: Arinc429Word;
   speedAr: Arinc429Word;
@@ -58,6 +72,8 @@ export interface Arinc429Values {
   ecu2MaintenanceWord6: Arinc429Word;
 }
 export class ArincValueProvider implements Instrument {
+  private readonly sub = this.bus.getSubscriber<ClockEvents & FcuBus & PFDSimvars>();
+
   private roll = new Arinc429Word(0);
 
   private pitch = Arinc429Register.empty();
@@ -68,7 +84,19 @@ export class ArincValueProvider implements Instrument {
 
   private speed = new Arinc429Word(0);
 
-  private altitude = new Arinc429Word(0);
+  /** Displayed altitude. */
+  private readonly altitude = Arinc429RegisterSubject.createEmpty();
+
+  private readonly unfilteredAltitude = Arinc429RegisterSubject.createEmpty();
+
+  private readonly baroCorrectedAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('baroCorrectedAltitude'));
+
+  private readonly pressureAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('pressureAltitude'));
+
+  private readonly altitudeFilter = new LagFilter(1 / 0.3);
+  private lastAltitudeFilterTime = -1;
+
+  private readonly fcuDiscrete2 = Arinc429ConsumerSubject.create(this.sub.on('fcuEisDiscreteWord2'));
 
   private mach = new Arinc429Word(0);
 
@@ -120,12 +148,16 @@ export class ArincValueProvider implements Instrument {
 
   private readonly fm2Subs: Subscription[] = [];
 
+  // each alti source should have a pipe, and only one pipe should be unpaused at a time
+  private readonly baroAltitudePipe = this.baroCorrectedAltitude.pipe(this.unfilteredAltitude, true);
+  private readonly pressureAltitudePipe = this.pressureAltitude.pipe(this.unfilteredAltitude, true);
+
   constructor(private readonly bus: ArincEventBus) {}
 
   /** @inheritdoc */
   public init() {
     const publisher = this.bus.getPublisher<Arinc429Values>();
-    const subscriber = this.bus.getSubscriber<PFDSimvars>();
+    const subscriber = this.bus.getSubscriber<FcuBus & PFDSimvars>();
 
     subscriber.on('pitch').handle((p) => {
       this.pitch.set(p);
@@ -149,10 +181,19 @@ export class ArincValueProvider implements Instrument {
       publisher.pub('speedAr', this.speed);
     });
 
-    subscriber.on('baroCorrectedAltitude').handle((a) => {
-      this.altitude = new Arinc429Word(a);
-      publisher.pub('altitudeAr', this.altitude);
-    });
+    this.altitude.sub((v) => publisher.pub('altitudeAr', v));
+
+    this.fcuDiscrete2.sub((v) => {
+      // default to STD if FCU invalid
+      const isStd = v.bitValue(28) || v.isFailureWarning();
+      if (isStd) {
+        this.baroAltitudePipe.pause();
+        this.pressureAltitudePipe.resume(true);
+      } else {
+        this.pressureAltitudePipe.pause();
+        this.baroAltitudePipe.resume(true);
+      }
+    }, true);
 
     subscriber.on('mach').handle((m) => {
       this.mach = new Arinc429Word(m);
@@ -527,11 +568,20 @@ export class ArincValueProvider implements Instrument {
     subscriber.on('ecu2MaintenanceWord6Raw').handle((word) => {
       publisher.pub('ecu2MaintenanceWord6', new Arinc429Word(word));
     });
+
+    // Do the filter at hi freq for accuracy, but we don't want to publish the ARINC word at hi-freq
+    // as hi-frequency SVG redraws would be very bad.
+    this.sub.on('simTimeHiFreq').handle((time) => {
+      const deltaTime = MathUtils.clamp(time - this.lastAltitudeFilterTime, 0, 300);
+      this.lastAltitudeFilterTime = time;
+
+      this.altitudeFilter.step(this.unfilteredAltitude.get().value, deltaTime / 1000);
+    });
   }
 
   /** @inheritdoc */
   public onUpdate(): void {
-    // noop
+    this.altitude.setValueSsm(this.altitudeFilter.previousOutput(), this.unfilteredAltitude.get().ssm);
   }
 
   private determineAndPublishChosenRadioAltitude(publisher: Publisher<Arinc429Values>) {

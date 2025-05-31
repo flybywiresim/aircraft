@@ -176,7 +176,8 @@ impl SlatFlapControlComputer {
             (0 | 1, 1)
                 if context.indicated_airspeed().get::<knot>()
                     > Self::CRUISE_BAULK_AIRSPEED_THRESHOLD_KNOTS
-                    || context.indicated_altitude().get::<foot>()
+                    // FIXME use ADRs
+                    || context.pressure_altitude().get::<foot>()
                         > Self::CRUISE_BAULK_ALTITUDE_THRESHOLD_FEET =>
             {
                 FlapsConf::Conf0

@@ -8,13 +8,21 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { VerticalMode } from '@shared/autopilot';
-import { Arinc429Register, Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
+  Arinc429RegisterSubject,
+  Arinc429Word,
+  ArincEventBus,
+} from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
+import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 
 const DisplayRange = 600;
 const ValueSpacing = 100;
@@ -124,6 +132,8 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
 }
 
 class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
+
   private visibility = Subject.create('hidden');
 
   private path = Subject.create('');
@@ -138,20 +148,23 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
   private inLandingPhases = false;
 
-  private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
   private readonly mda = Arinc429RegisterSubject.createEmpty();
 
   private landingElevation = new Arinc429Word(0);
 
   private updateIndication(): void {
+    const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(29, false);
+    const isQfe = !isQnh && !this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+
     this.qnhLandingAltValid =
       !this.landingElevation.isFailureWarning() &&
       !this.landingElevation.isNoComputedData() &&
       this.inLandingPhases &&
-      this.altMode === 'QNH';
+      isQnh;
 
-    this.qfeLandingAltValid = this.inLandingPhases && this.altMode === 'QFE';
+    this.qfeLandingAltValid = this.inLandingPhases && isQfe;
 
     const altDelta = this.mda.get().value - this.altitude;
 
@@ -174,6 +187,11 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isFo = getDisplayIndex() === 2;
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+    );
+
     const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
     sub
@@ -193,14 +211,6 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
       });
 
     sub
-      .on('baroMode')
-      .whenChanged()
-      .handle((m) => {
-        this.altMode = m;
-        this.updateIndication();
-      });
-
-    sub
       .on('altitudeAr')
       .withArinc429Precision(0)
       .handle((a) => {
@@ -210,6 +220,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
       });
 
     this.mda.sub(this.updateIndication.bind(this));
+    this.fcuEisDiscreteWord2.sub(this.updateIndication.bind(this));
 
     sub
       .on('fwcFlightPhase')
@@ -370,7 +381,9 @@ interface SelectedAltIndicatorProps {
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
-  private mode: 'QNH' | 'QFE' | 'STD' = 'QNH';
+  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
   private selectedAltLowerGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -500,6 +513,11 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isFo = getDisplayIndex() === 2;
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+    );
+
     const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
     sub
@@ -544,22 +562,20 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
         this.getOffset();
       });
 
-    sub
-      .on('baroMode')
-      .whenChanged()
-      .handle((m) => {
-        this.mode = m;
+    this.fcuEisDiscreteWord2.sub(() => {
+      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
 
-        if (this.mode === 'STD') {
-          this.selectedAltLowerFLText.instance.style.visibility = 'visible';
-          this.selectedAltUpperFLText.instance.style.visibility = 'visible';
-        } else {
-          this.selectedAltLowerFLText.instance.style.visibility = 'hidden';
-          this.selectedAltUpperFLText.instance.style.visibility = 'hidden';
-        }
-        this.handleAltitudeDisplay();
-        this.setText();
-      });
+      if (isStd) {
+        this.selectedAltLowerFLText.instance.style.visibility = 'visible';
+        this.selectedAltUpperFLText.instance.style.visibility = 'visible';
+      } else {
+        this.selectedAltLowerFLText.instance.style.visibility = 'hidden';
+        this.selectedAltUpperFLText.instance.style.visibility = 'hidden';
+      }
+
+      this.handleAltitudeDisplay();
+      this.setText();
+    });
   }
 
   private updateTargetAltitude(targetAltitude: number, isManaged: boolean, constraint: number) {
@@ -585,7 +601,8 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   private setText() {
     let boxLength = 19.14;
     let text = '0';
-    if (this.mode === 'STD') {
+    const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+    if (isStd) {
       text = Math.round(this.shownTargetAltitude / 100)
         .toString()
         .padStart(3, '0');
@@ -676,13 +693,33 @@ interface AltimeterIndicatorProps {
 }
 
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
+  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
+
+  private readonly fcuEisDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly fcuBaroCorrectionHg = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly fcuBaroCorrectionHpa = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly isHg = this.fcuEisDiscreteWord1.map((v) => v.bitValueOr(11, false));
+
+  private readonly text = Subject.create('');
+
+  private readonly hgTextPipe = this.fcuBaroCorrectionHg.pipe(
+    this.text,
+    (v) => (v.isNormalOperation() || v.isFunctionalTest() ? v.value.toFixed(2) : ''),
+    true,
+  );
+
+  private readonly hpaTextPipe = this.fcuBaroCorrectionHpa.pipe(
+    this.text,
+    (v) => (v.isNormalOperation() || v.isFunctionalTest() ? v.value.toFixed(0) : ''),
+    true,
+  );
+
   private mode = Subject.create('');
-
-  private text = Subject.create('');
-
-  private pressure = 0;
-
-  private unit = '';
 
   private transAltAr = Arinc429Register.empty();
 
@@ -699,35 +736,43 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isFo = getDisplayIndex() === 2;
+
+    this.fcuEisDiscreteWord1.setConsumer(
+      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_1_right' : 'a380x_fcu_eis_discrete_word_1_left'),
+    );
+    this.fcuEisDiscreteWord2.setConsumer(
+      this.sub.on(isFo ? 'a380x_fcu_eis_discrete_word_2_right' : 'a380x_fcu_eis_discrete_word_2_left'),
+    );
+    this.fcuBaroCorrectionHg.setConsumer(this.sub.on(isFo ? 'a380x_fcu_eis_baro_right' : 'a380x_fcu_eis_baro_left'));
+    this.fcuBaroCorrectionHpa.setConsumer(
+      this.sub.on(isFo ? 'a380x_fcu_eis_baro_hpa_right' : 'a380x_fcu_eis_baro_hpa_left'),
+    );
+
     const sub = this.props.bus.getArincSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
 
-    sub
-      .on('baroMode')
-      .whenChanged()
-      .handle((m) => {
-        if (m === 'QFE') {
-          this.mode.set(m);
-          this.stdGroup.instance.classList.add('HiddenElement');
-          this.qfeGroup.instance.classList.remove('HiddenElement');
-          this.qfeBorder.instance.classList.remove('HiddenElement');
-        } else if (m === 'QNH') {
-          this.mode.set(m);
-          this.stdGroup.instance.classList.add('HiddenElement');
-          this.qfeGroup.instance.classList.remove('HiddenElement');
-          this.qfeBorder.instance.classList.add('HiddenElement');
-        } else if (m === 'STD') {
-          this.mode.set(m);
-          this.stdGroup.instance.classList.remove('HiddenElement');
-          this.qfeGroup.instance.classList.add('HiddenElement');
-          this.qfeBorder.instance.classList.add('HiddenElement');
-        } else {
-          this.mode.set(m);
-          this.stdGroup.instance.classList.add('HiddenElement');
-          this.qfeGroup.instance.classList.add('HiddenElement');
-          this.qfeBorder.instance.classList.add('HiddenElement');
-        }
-        this.getText();
-      });
+    this.fcuEisDiscreteWord2.sub(() => {
+      const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(29, false);
+      const isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
+      const isQfe = !isQnh && !isStd;
+
+      if (isQfe) {
+        this.mode.set('QFE');
+        this.stdGroup.instance.classList.add('HiddenElement');
+        this.qfeGroup.instance.classList.remove('HiddenElement');
+        this.qfeBorder.instance.classList.remove('HiddenElement');
+      } else if (isQnh) {
+        this.mode.set('QNH');
+        this.stdGroup.instance.classList.add('HiddenElement');
+        this.qfeGroup.instance.classList.remove('HiddenElement');
+        this.qfeBorder.instance.classList.add('HiddenElement');
+      } else if (isStd) {
+        this.mode.set('STD');
+        this.stdGroup.instance.classList.remove('HiddenElement');
+        this.qfeGroup.instance.classList.add('HiddenElement');
+        this.qfeBorder.instance.classList.add('HiddenElement');
+      }
+    }, true);
 
     sub
       .on('fmgcFlightPhase')
@@ -745,7 +790,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.transAltAr.set(ta);
 
         this.handleBlink();
-        this.getText();
       });
 
     sub
@@ -755,24 +799,17 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.transLvlAr.set(tl);
 
         this.handleBlink();
-        this.getText();
       });
 
-    sub
-      .on('units')
-      .whenChanged()
-      .handle((u) => {
-        this.unit = u;
-        this.getText();
-      });
-
-    sub
-      .on('pressure')
-      .whenChanged()
-      .handle((p) => {
-        this.pressure = p;
-        this.getText();
-      });
+    this.isHg.sub((isHg) => {
+      if (isHg) {
+        this.hpaTextPipe.pause();
+        this.hgTextPipe.resume(true);
+      } else {
+        this.hgTextPipe.pause();
+        this.hpaTextPipe.resume(true);
+      }
+    }, true);
 
     this.props.altitude.sub((_a) => {
       this.handleBlink();
@@ -798,18 +835,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       this.qfeGroup.instance.classList.add('BlinkInfinite');
     } else {
       this.qfeGroup.instance.classList.remove('BlinkInfinite');
-    }
-  }
-
-  private getText() {
-    if (this.pressure !== null) {
-      if (this.unit === 'millibar') {
-        this.text.set(Math.round(this.pressure).toString());
-      } else {
-        this.text.set(this.pressure.toFixed(2));
-      }
-    } else {
-      this.text.set('');
     }
   }
 
