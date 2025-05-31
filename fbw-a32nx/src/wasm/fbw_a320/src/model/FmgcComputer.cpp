@@ -484,6 +484,7 @@ void FmgcComputer::step()
     -1.897274956835846E-5, 1.520958826384842E-5, 7.1712086474912069E-6, -4.4094939746938354E-6, 1.3759855421341094E-5,
     2.4370072289329445E-5, 0.05, 0.05, 0.1, 0.1, 0.1, 0.15 };
 
+  const base_arinc_429 *rtb_Switch2_o_0;
   boolean_T Memory_PreviousInput_d_tmp;
   boolean_T Memory_PreviousInput_d_tmp_tmp;
   boolean_T Memory_PreviousInput_k_tmp_tmp;
@@ -916,9 +917,14 @@ void FmgcComputer::step()
         FmgcComputer_P.Constant1_Value.adr_computation_data.corrected_average_static_pressure.Data;
     }
 
-    FmgcComputer_MATLABFunction_i(&FmgcComputer_U.in.bus_inputs.fcu_bus.eis_discrete_word_2_left,
-      FmgcComputer_P.BitfromLabel1_bit, &rtb_y_jm);
-    FmgcComputer_MATLABFunction_m(&FmgcComputer_U.in.bus_inputs.fcu_bus.eis_discrete_word_2_left, &rtb_y_if);
+    if (FmgcComputer_U.in.discrete_inputs.is_unit_1) {
+      rtb_Switch2_o_0 = &FmgcComputer_U.in.bus_inputs.fcu_bus.eis_discrete_word_2_left;
+    } else {
+      rtb_Switch2_o_0 = &FmgcComputer_U.in.bus_inputs.fcu_bus.eis_discrete_word_2_right;
+    }
+
+    FmgcComputer_MATLABFunction_i(rtb_Switch2_o_0, FmgcComputer_P.BitfromLabel1_bit, &rtb_y_jm);
+    FmgcComputer_MATLABFunction_m(rtb_Switch2_o_0, &rtb_y_if);
     if ((rtb_y_jm != 0U) || (!rtb_y_if)) {
       rtb_fm_weight_lbs_SSM = rtb_adrComputationBus_altitude_standard_ft_SSM;
       rtb_Max_a = rtb_adrComputationBus_altitude_standard_ft_Data;
