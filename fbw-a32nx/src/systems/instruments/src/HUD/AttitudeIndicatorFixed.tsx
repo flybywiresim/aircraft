@@ -201,40 +201,46 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
     const sub = this.props.bus.getSubscriber<Arinc429Values>();
 
-    sub.on('rollAr').handle((r) => {
-      this.roll = r;
-      if (!this.roll.isNormalOperation()) {
-        this.visibilitySub.set('display:none');
-        this.failureVis.set('display:block');
-        this.attFlagVisible.set(true);
-        this.fdVisibilitySub.set('display:none');
-      } else {
-        this.visibilitySub.set('display:inline');
-        this.failureVis.set('display:none');
-        this.attFlagVisible.set(true);
-        if (!this.props.isAttExcessive.get()) {
-          this.fdVisibilitySub.set('display:inline');
+    sub
+      .on('rollAr')
+      .whenChanged()
+      .handle((r) => {
+        this.roll = r;
+        if (!this.roll.isNormalOperation()) {
+          this.visibilitySub.set('display:none');
+          this.failureVis.set('display:block');
+          this.attFlagVisible.set(true);
+          this.fdVisibilitySub.set('display:none');
+        } else {
+          this.visibilitySub.set('display:inline');
+          this.failureVis.set('display:none');
+          this.attFlagVisible.set(true);
+          if (!this.props.isAttExcessive.get()) {
+            this.fdVisibilitySub.set('display:inline');
+          }
         }
-      }
-    });
+      });
 
-    sub.on('pitchAr').handle((p) => {
-      this.pitch = p;
+    sub
+      .on('pitchAr')
+      .whenChanged()
+      .handle((p) => {
+        this.pitch = p;
 
-      if (!this.pitch.isNormalOperation()) {
-        this.visibilitySub.set('display:none');
-        this.failureVis.set('display:block');
-        this.attFlagVisible.set(true);
-        this.fdVisibilitySub.set('display:none');
-      } else {
-        this.visibilitySub.set('display:inline');
-        this.failureVis.set('display:none');
-        this.attFlagVisible.set(true);
-        if (!this.props.isAttExcessive.get()) {
-          this.fdVisibilitySub.set('display:inline');
+        if (!this.pitch.isNormalOperation()) {
+          this.visibilitySub.set('display:none');
+          this.failureVis.set('display:block');
+          this.attFlagVisible.set(true);
+          this.fdVisibilitySub.set('display:none');
+        } else {
+          this.visibilitySub.set('display:inline');
+          this.failureVis.set('display:none');
+          this.attFlagVisible.set(true);
+          if (!this.props.isAttExcessive.get()) {
+            this.fdVisibilitySub.set('display:inline');
+          }
         }
-      }
-    });
+      });
 
     this.props.isAttExcessive.sub((a) => {
       if (a) {

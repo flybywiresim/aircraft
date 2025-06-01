@@ -123,7 +123,7 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
         lowestValue += this.props.valueSpacing;
       }
 
-      for (let i = 0; i < this.tickRefs.length - 1; i++) {
+      for (let i = 0; i < this.tickRefs.length; i++) {
         const elementValue = lowestValue + i * this.props.valueSpacing;
         if (elementValue <= (this.props.upperLimit ?? Infinity)) {
           const offset = (-elementValue * this.props.distanceSpacing) / this.props.valueSpacing;

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Instrument, Publisher } from '@microsoft/msfs-sdk';
-import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './HUDSimvarPublisher';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
@@ -51,18 +51,18 @@ export class FgBusProvider implements Instrument {
     const subscriber = this.bus.getSubscriber<HUDSimvars>();
 
     subscriber.on('fcuEisLeftDiscreteWord2Raw').handle((word) => {
-      // if (getDisplayIndex() === 1) {
-      // }
-      this.fcuEisDiscreteWord2 = new Arinc429Word(word);
-      this.determineFmgcToUseForFlightDirector(publisher);
+      if (getDisplayIndex() === 1) {
+        this.fcuEisDiscreteWord2 = new Arinc429Word(word);
+        this.determineFmgcToUseForFlightDirector(publisher);
+      }
     });
 
-    // subscriber.on('fcuEisRightDiscreteWord2Raw').handle((word) => {
-    //   if (getDisplayIndex() === 2) {
-    //     this.fcuEisDiscreteWord2 = new Arinc429Word(word);
-    //     this.determineFmgcToUseForFlightDirector(publisher);
-    //   }
-    // });
+    subscriber.on('fcuEisRightDiscreteWord2Raw').handle((word) => {
+      if (getDisplayIndex() === 2) {
+        this.fcuEisDiscreteWord2 = new Arinc429Word(word);
+        this.determineFmgcToUseForFlightDirector(publisher);
+      }
+    });
 
     subscriber.on('fmgc1PfdSelectedSpeedRaw').handle((word) => {
       if (this.fg1Selected) {
@@ -267,7 +267,7 @@ export class FgBusProvider implements Instrument {
   onUpdate(): void {}
 
   private determineFmgcToUseForFlightDirector(publisher: Publisher<FgBus>) {
-    const side2 = 2;
+    const side2 = getDisplayIndex() === 2;
 
     const fd1Engaged = this.fmgc1DiscreteWord4.bitValueOr(13, false);
     const fd2Engaged = this.fmgc2DiscreteWord4.bitValueOr(13, false);
@@ -288,7 +288,7 @@ export class FgBusProvider implements Instrument {
   }
 
   private determineFmgcToUse() {
-    const side2 = 2;
+    const side2 = getDisplayIndex() === 2;
 
     const ap1Engaged = this.fmgc1DiscreteWord4.bitValueOr(12, false);
     const fd1Engaged = this.fmgc1DiscreteWord4.bitValueOr(13, false);

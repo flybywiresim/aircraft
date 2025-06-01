@@ -33,6 +33,7 @@ import {
 
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { FgBus } from './shared/FgBusProvider';
 
 const DistanceSpacing = (1024 / 28) * 5;
 const ValueSpacing = 5;
@@ -84,41 +85,55 @@ export class FlightPathVector extends DisplayComponent<{
         this.fcuDiscreteWord1 = a;
         this.needsUpdate = true;
       });
-    sub.on('fpa').handle((fpa) => {
-      this.data.fpa = fpa;
-      this.needsUpdate = true;
-    });
-    sub.on('da').handle((da) => {
-      this.data.da = da;
-      this.needsUpdate = true;
-    });
-    sub.on('rollAr').handle((r) => {
-      this.data.roll = r;
-      this.needsUpdate = true;
-    });
-    sub.on('pitchAr').handle((p) => {
-      this.data.pitch = p;
-      this.needsUpdate = true;
-    });
-    sub.on('realTime').handle((_t) => {
-      if (this.needsUpdate) {
-        this.needsUpdate = false;
+    sub
+      .on('fpa')
+      .whenChanged()
+      .handle((fpa) => {
+        this.data.fpa = fpa;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('da')
+      .whenChanged()
+      .handle((da) => {
+        this.data.da = da;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('rollAr')
+      .whenChanged()
+      .handle((r) => {
+        this.data.roll = r;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('pitchAr')
+      .whenChanged()
+      .handle((p) => {
+        this.data.pitch = p;
+        this.needsUpdate = true;
+      });
+    sub.on('realTime').handle(this.onFrameUpdate.bind(this));
+  }
 
-        const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, true);
-        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
-        if (daAndFpaValid) {
-          this.fpvFlagVisible.set(false);
-          this.bird.instance.classList.remove('HiddenElement');
-          this.moveBird();
-        } else if (!trkFpaActive) {
-          this.fpvFlagVisible.set(false);
-          this.bird.instance.classList.add('HiddenElement');
-        } else if (this.data.pitch.isNormalOperation() && this.data.roll.isNormalOperation()) {
-          this.fpvFlagVisible.set(true);
-          this.bird.instance.classList.add('HiddenElement');
-        }
+  private onFrameUpdate(_realTime: number): void {
+    if (this.needsUpdate === true) {
+      this.needsUpdate = false;
+
+      const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, true);
+      const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+      if (daAndFpaValid) {
+        this.fpvFlagVisible.set(false);
+        this.bird.instance.classList.remove('HiddenElement');
+        this.moveBird();
+      } else if (!trkFpaActive) {
+        this.fpvFlagVisible.set(false);
+        this.bird.instance.classList.add('HiddenElement');
+      } else if (this.data.pitch.isNormalOperation() && this.data.roll.isNormalOperation()) {
+        this.fpvFlagVisible.set(true);
+        this.bird.instance.classList.add('HiddenElement');
       }
-    });
+    }
   }
 
   private moveBird() {
@@ -173,21 +188,20 @@ export class FlightPathVector extends DisplayComponent<{
           <g id="FlightPathVector">
             <path
               ref={this.birdPathCircle}
-              d="M 624 512 C 624 520.8,  631.2 528,      640 528
-              S 656 520.8,      656 512
-              S 648.8 496,      640 496
-              S 624 503.2,      624 512 Z"
+              d="M 627 512 C 627 519,  633 525,      640 525
+              S 653 519,      653 512
+              S 647 499,      640 499
+              S 627 505,      627 512 Z"
               class="SmallStroke Green"
               stroke-dasharray="3 6"
             />
 
-            <path ref={this.birdPath1} class="SmallStroke Green" d="m 590,512 h 34" stroke-dasharray="3 6" />
-            <path ref={this.birdPath2} class="SmallStroke Green" d="m 656,512 h 34" stroke-dasharray="3 6" />
-            <path ref={this.birdPath3} class="SmallStroke Green" d="M 640,496 v -16" stroke-dasharray="3 6" />
+            <path ref={this.birdPath1} class="SmallStroke Green" d="m 590,512 h 37" stroke-dasharray="3 6" />
+            <path ref={this.birdPath2} class="SmallStroke Green" d="m 653,512 h 37" stroke-dasharray="3 6" />
+            <path ref={this.birdPath3} class="SmallStroke Green" d="M 640,499 v -19" stroke-dasharray="3 6" />
           </g>
           <TotalFlightPathAngle bus={this.props.bus} />
 
-          <SelectedFlightPathAngle bus={this.props.bus} />
           <DeltaSpeed bus={this.props.bus} />
           <RadioAltAndDH
             bus={this.props.bus}
@@ -235,6 +249,7 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
     sub
       .on('vCTrend')
       .withArinc429Precision(2)
+      .whenChanged()
       .handle((word) => {
         this.vCTrend = word;
 
@@ -298,110 +313,6 @@ interface FlightPathDirectorData {
   fdRoll: number;
   fdPitch: number;
   fdActive: boolean;
-}
-
-export class SelectedFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus }> {
-  private refElement = FSComponent.createRef<SVGGElement>();
-
-  private vCTrend = new Arinc429Word(0);
-
-  private text = '';
-
-  private fdActive = false;
-
-  private needsUpdate = false;
-
-  private selectedFpa = 0;
-
-  private selectFpaChanged = false;
-
-  private activeVerticalMode = VerticalMode.NONE;
-
-  private armedVerticalMode = VerticalMode.NONE;
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
-
-    sub
-      .on('fd1Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.fdActive = fd;
-          this.needsUpdate = true;
-        }
-      });
-
-    sub
-      .on('fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.fdActive = fd;
-          this.needsUpdate = true;
-        }
-      });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((vm) => {
-        this.activeVerticalMode = vm;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('selectedFpa')
-      .whenChanged()
-      .handle((a) => {
-        this.selectedFpa = a;
-        if (this.activeVerticalMode === VerticalMode.FPA) {
-          this.selectFpaChanged = true;
-        }
-        const offset = (-this.selectedFpa * 1024) / 28;
-        this.refElement.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((vm) => {
-        this.armedVerticalMode = vm;
-        this.needsUpdate = true;
-      });
-
-    sub.on('realTime').handle((_t) => {
-      if (this.needsUpdate) {
-        this.needsUpdate = false;
-
-        if (this.fdActive && this.selectFpaChanged) {
-          this.selectFpaChanged = false;
-          this.refElement.instance.style.visibility = 'visible';
-          this.refElement.instance.classList.remove('Apear5s');
-          this.refElement.instance.classList.add('Apear5s');
-        } else if (this.fdActive && this.armedVerticalMode === VerticalMode.FPA) {
-          this.refElement.instance.classList.remove('Apear5s');
-          this.refElement.instance.style.visibility = 'visible';
-        } else {
-          this.refElement.instance.style.visibility = 'hidden';
-        }
-      }
-    });
-  }
-
-  render(): VNode | null {
-    return (
-      <g id="SelectedFlightPathAngle" ref={this.refElement}>
-        <circle class="ScaledStroke Green" cx="640" cy="512" r="5" />
-        <text class="FontLarge StartAlign Green" x="518" y="682">
-          {this.text}
-        </text>
-      </g>
-    );
-  }
 }
 
 interface SpeedStateInfo {
@@ -484,14 +395,6 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
         this.needsUpdate = true;
       });
 
-    // sub
-    //   .on('targetSpeedManaged')
-    //   .whenChanged()
-    //   .handle((s) => {
-    //     this.speedState.managedTargetSpeed = s;
-    //     this.needsUpdate = true;
-    //   });
-
     sub.on('realTime').handle(this.onFrameUpdate.bind(this));
   }
 
@@ -522,37 +425,6 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
 
       const deltaSpeed = this.speedState.speed.value - chosenTargetSpeed.value;
       const sign = Math.sign(deltaSpeed);
-
-      // console.log(
-      //   'speedState.speed: ' +
-      //     this.speedState.speed.value +
-      //     ' deltaSpeed: ' +
-      //     deltaSpeed +
-      //     ' chosenTargetSpeed: ' +
-      //     chosenTargetSpeed.value,
-      // );
-
-      // if (Math.abs(deltaSpeed) < 1) {
-      //   this.setVisible([0]);
-
-      // } else if (Math.abs(deltaSpeed) < 10) {
-      //   this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 4.6} h 12 v ${deltaSpeed * 4.6}`);
-      //   this.speedRefs[2].instance.setAttribute('d', `m 601,512 v ${-deltaSpeed * 4.6}`);
-      //   this.setVisible([1, 2]);
-      // } else if (Math.abs(deltaSpeed) < 20) {
-      //   this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 4.6} h 12 v ${deltaSpeed * 4.6}`);
-      //   this.speedRefs[2].instance.setAttribute('d', `m 601,512 v ${-sign * 46}`);
-      //   this.speedRefs[3].instance.style.transform = `translate3d(0px, ${-sign * 46}px, 0px)`;
-      //   this.speedRefs[4].instance.setAttribute(
-      //     'd',
-      //     `m 601,${512 - sign * 46} v ${-sign * (Math.abs(deltaSpeed) - 10) * 4.6}`,
-      //   );
-      //   this.setVisible([1, 2, 3, 4]);
-      // } else {
-      //   this.speedRefs[5].instance.style.transform = `translate3d(0px, ${-sign * 46}px, 0px)`;
-      //   this.setVisible([5]);
-      // }
-
       this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 3.33} h 12 v ${deltaSpeed * 3.33}`);
 
       if (Math.abs(deltaSpeed) >= 27) {
@@ -594,36 +466,6 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
           </g>
 
           <path ref={this.speedRefs[1]} d="" class="ScaledStroke CornerRound Green GreenFill2" stroke="red" />
-
-          {/* <path
-            ref={this.speedRefs[0]}
-            class="ScaledStroke CornerRound Green"
-            d="m 595,507.4 h 12 v 9.2 h -12 z"
-            style="visibility:hidden"
-          />
-
-
-          <path ref={this.speedRefs[1]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
-          <path ref={this.speedRefs[2]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
-          <path
-            ref={this.speedRefs[3]}
-            class="ScaledStroke CornerRound Green"
-            d="m 595,512 h 12"
-            style="visibility:hidden"
-          />
-          <path ref={this.speedRefs[4]} class="ScaledStroke CornerRound Green" style="visibility:hidden" />
-          <g ref={this.speedRefs[5]} class="ScaledStroke CornerRound Green" style="visibility:hidden">
-            <path class="ScaledStroke CornerRound Green" d="m 595,466 h 11" style="visibility:hidden" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,476.2 h 11" style="visibility:hidden" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,486.4 h 11" style="visibility:hidden" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,496.6 h 11" style="visibility:hidden" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,506.8 h 11" style="visibility:hidden" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,517 h 11" style="visibility:hidden" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,527.2 h 11" style="visibility:hidden" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,537.4 h 11" style="visibility:hidden" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,547.6 h 11" style="visibility:hidden" />
-          </g>
-          */}
         </g>
       </>
     );
@@ -636,7 +478,6 @@ class RadioAltAndDH extends DisplayComponent<{
   attExcessive: Subscribable<boolean>;
 }> {
   private sVisibility = Subject.create('none');
-  private sFlareVisibility = Subject.create('none');
   private daRaGroup = FSComponent.createRef<SVGGElement>();
 
   private roll = new Arinc429Word(0);
@@ -795,16 +636,36 @@ class FlareIndicator extends DisplayComponent<{
 }> {
   private sVisibility = Subject.create('none');
   private flareGroup = FSComponent.createRef<SVGGElement>();
+  private fmgcDiscreteWord1 = new Arinc429Word(0);
+  private fmgcDiscreteWord2 = new Arinc429Word(0);
+  private setVisibility() {
+    const rollOutActive = this.fmgcDiscreteWord2.bitValueOr(26, false);
+    const flareActive = this.fmgcDiscreteWord1.bitValueOr(25, false);
+    if (flareActive) {
+      this.sVisibility.set('block');
+    }
+    if (rollOutActive) {
+      this.sVisibility.set('none');
+    }
+  }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & FgBus>();
 
     sub
-      .on('fmgc1PitchFdCommandRaw')
+      .on('fmgcDiscreteWord1')
       .whenChanged()
-      .handle((v) => {
-        v === VerticalMode.FLARE ? this.sVisibility.set('block') : this.sVisibility.set('none');
+      .handle((word) => {
+        this.fmgcDiscreteWord1 = word;
+        this.setVisibility();
+      });
+    sub
+      .on('fmgcDiscreteWord2')
+      .whenChanged()
+      .handle((word) => {
+        this.fmgcDiscreteWord2 = word;
+        this.setVisibility();
       });
   }
 

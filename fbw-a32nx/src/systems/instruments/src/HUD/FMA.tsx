@@ -492,6 +492,7 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
       .handle((am) => {
         if (am) {
           this.autoBrkRef.instance.style.visibility = 'hidden';
+          this.isArmed.set('none');
         } else {
           this.autoBrkRef.instance.style.visibility = 'visible';
         }
@@ -513,7 +514,7 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <g id="A2Cell">
-        {/* <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 3.2 8 h 28" stroke-dasharray="1 1.8" /> */}
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 3.2 8 h 28" stroke-dasharray="1 1.8" />
         <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653" style="white-space: pre">
           {this.text}
         </text>

@@ -206,17 +206,53 @@ export class FlightPathDirector extends DisplayComponent<{
       const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
       const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
 
-      const FDRollOrder = this.data.rollFdCommand.value;
-      const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
-      const FDPitchOrder = this.data.pitchFdCommand.value; //in degrees on pitch scale
-      const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 5), -5);
+      //FD Smoothing when close to FPV
+      //roll
+      let FDRollOrder = this.data.rollFdCommand.value;
+      let FDRollOrder2 = FDRollOrder;
+      let cx, cy, r;
+      cx = -30;
+      cy = 90;
+      r = 94.86835;
+      if (FDRollOrder >= 0) {
+        FDRollOrder2 = cy - Math.sqrt(r ** 2 - (FDRollOrder - cx) ** 2);
+      } else {
+        FDRollOrder2 = -cy + Math.sqrt(r ** 2 - (FDRollOrder + cx) ** 2);
+      }
+      const FDRollOrderLim = Math.max(Math.min(FDRollOrder2, 45), -45);
 
-      const FDRollOffset = FDRollOrderLim * 0.77;
+      //pitch
+      const FDPitchOrder = this.data.pitchFdCommand.value; //in degrees on pitch scale
+      let FDPitchOrder2 = FDRollOrder;
+
+      cx = -5;
+      cy = 13;
+      r = 13.9284;
+      if (FDPitchOrder >= 0) {
+        FDPitchOrder2 = cy - Math.sqrt(r ** 2 - (FDPitchOrder - cx) ** 2);
+      } else {
+        FDPitchOrder2 = -cy + Math.sqrt(r ** 2 - (FDPitchOrder + cx) ** 2);
+      }
+      const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder2, 5), -5);
+
       const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
       const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
 
-      const xOffset = xOffsetFpv + FDRollOrderLim * 9;
+      const xOffset = xOffsetFpv + FDRollOrderLim * 13;
       const yOffset = yOffsetFpv + FDPitchOrderLim * (182.86 / 5);
+
+      // console.log(
+      //   'initial fdr: ' +
+      //     FDRollOrder +
+      //     '  new:  ' +
+      //     FDRollOrder2 +
+      //     '  xOffset: ' +
+      //     xOffset +
+      //     '  testOffset: ' +
+      //     testOffset +
+      //     '  FDRollOrderLim: ' +
+      //     FDRollOrderLim,
+      // );
 
       //set lateral limit for fdCue
       if (this.crosswindMode == 0) {
@@ -276,14 +312,14 @@ export class FlightPathDirector extends DisplayComponent<{
             visible={this.isVisible}
             flashing={this.shouldFlash}
           >
-            <g id="FlighPathDirector" display={this.sVisibility}>
+            <g id="FlightPathDirector" display={this.sVisibility}>
               {/* <circle class="SmallStroke Green" cx="640" cy="512" r="10" /> */}
               <path
                 ref={this.birdPathCircle}
-                d="M 630 512 C 630 517.5,  634.5 522,      640 522
-                S 650 517.5,      650 512
-                S 645.5 502,      640 502
-                S 630 506.5,      630 512 Z"
+                d="M 631 512 C 631 517,  635 521,      640 521
+                S 649 517,      649 512
+                S 645 503,      640 503
+                S 631 507,      631 512 Z"
                 class="SmallStroke Green"
                 stroke-dasharray="3 6"
               />
