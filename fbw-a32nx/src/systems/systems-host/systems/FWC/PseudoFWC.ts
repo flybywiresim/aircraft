@@ -26,7 +26,6 @@ import {
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
   Arinc429Word,
-  Arinc429WordData,
   NXDataStore,
   NXLogicClockNode,
   NXLogicConfirmNode,
@@ -400,14 +399,6 @@ export class PseudoFWC {
 
   public readonly fmgc2DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord4'));
 
-  public readonly fmgcApproachCapability = Subject.create(0);
-
-  public readonly approachCapabilityDowngradeDebounce = new NXLogicTriggeredMonostableNode(0.5, true);
-
-  public readonly approachCapabilityDowngradeSuppress = new NXLogicTriggeredMonostableNode(3, true);
-
-  public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
-
   /** A/THR OFF */
 
   private autoThrustInstinctiveDisconnectPressed = false;
@@ -471,6 +462,30 @@ export class PseudoFWC {
   public readonly modeReversionMtrig2 = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly modeReversion = Subject.create(false);
+
+  // AP/FD Capability Change
+
+  public readonly fmgc1CapabilityChangeConf1 = new NXLogicConfirmNode(1, true);
+
+  public readonly fmgc1CapabilityChangeMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly fmgc1CapabilityChangeMtrig2 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly fmgc1CapabilityChangeMtrig3 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly fmgc1CapabilityChangeMtrig4 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly fmgc2CapabilityChangeConf1 = new NXLogicConfirmNode(1, true);
+
+  public readonly fmgc2CapabilityChangeMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly fmgc2CapabilityChangeMtrig2 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly fmgc2CapabilityChangeMtrig3 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly fmgc2CapabilityChangeMtrig4 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly capabilityChange = Subject.create(false);
 
   /** TO CONF pressed in phase 2 or 3 SR */
   private toConfigCheckedInPhase2Or3 = false;
@@ -1483,7 +1498,6 @@ export class PseudoFWC {
     this.flightPhase67.set([6, 7].includes(this.fwcFlightPhase.get()));
     this.flightPhase78.set([7, 8].includes(this.fwcFlightPhase.get()));
     const flightPhase567 = [5, 6, 7].includes(this.fwcFlightPhase.get());
-    const flightPhase167 = [1, 6, 7].includes(this.fwcFlightPhase.get());
 
     // TO Config convenience vars
     const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
@@ -1785,49 +1799,50 @@ export class PseudoFWC {
     this.modeReversion.set(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read());
 
     // AP/FD capability change
-    let fmgcApproachCapability = 0;
-    const getApproachCapability = (dw3: Arinc429WordData, dw4: Arinc429WordData): number => {
-      let appCap = 0;
-      const landModeActive = dw4.bitValueOr(14, false);
-      const landModeArmed = dw3.bitValueOr(20, false);
-      const land2Capacity = dw4.bitValueOr(23, false);
-      const land3FailPassiveCapacity = dw4.bitValueOr(24, false);
-      const land3FailOperationalCapacity = dw4.bitValueOr(25, false);
 
-      if (land2Capacity) {
-        appCap = 2;
-      } else if (land3FailPassiveCapacity) {
-        appCap = 3;
-      } else if (land3FailOperationalCapacity) {
-        appCap = 4;
-      } else if (landModeActive || landModeArmed) {
-        appCap = 1;
-      } else {
-        appCap = 0;
-      }
-      return appCap;
-    };
-
-    if (this.fmgc1DiscreteWord3.get().isNormalOperation() && this.fmgc1DiscreteWord4.get().isNormalOperation()) {
-      fmgcApproachCapability = getApproachCapability(this.fmgc1DiscreteWord3.get(), this.fmgc1DiscreteWord4.get());
-    } else if (this.fmgc2DiscreteWord3.get().isNormalOperation() && this.fmgc2DiscreteWord4.get().isNormalOperation()) {
-      fmgcApproachCapability = getApproachCapability(this.fmgc2DiscreteWord3.get(), this.fmgc2DiscreteWord4.get());
-    }
-
-    const capabilityDowngrade =
-      fmgcApproachCapability < this.fmgcApproachCapability.get() && fmgcApproachCapability > 0;
-    this.approachCapabilityDowngradeDebounce.write(
-      capabilityDowngrade && flightPhase167 && !this.approachCapabilityDowngradeSuppress.read(),
-      deltaTime,
+    const fmgc1NotLand3FailOperationalCapacity = !this.fmgc1DiscreteWord4.get().bitValueOr(25, true);
+    const fmgc1NotLand3FailPassiveCapacity = !this.fmgc1DiscreteWord4.get().bitValueOr(24, true);
+    const fmgc1NotLand2Capacity = !this.fmgc1DiscreteWord4.get().bitValueOr(23, true);
+    const fmgc1NotLandArmedOrEngaged = !(
+      this.fmgc1DiscreteWord4.get().bitValueOr(14, true) || this.fmgc1DiscreteWord3.get().bitValueOr(20, true)
     );
-    this.approachCapabilityDowngradeDebouncePulse.write(this.approachCapabilityDowngradeDebounce.read(), deltaTime);
-    this.approachCapabilityDowngradeSuppress.write(this.approachCapabilityDowngradeDebouncePulse.read(), deltaTime);
-    // Capability downgrade after debounce --> triple click
-    if (this.approachCapabilityDowngradeDebouncePulse.read()) {
-      this.soundManager.enqueueSound('pause0p8s');
-      this.soundManager.enqueueSound('tripleClick');
-    }
-    this.fmgcApproachCapability.set(fmgcApproachCapability);
+
+    this.fmgc1CapabilityChangeMtrig1.write(fmgc1NotLand3FailOperationalCapacity, deltaTime);
+    this.fmgc1CapabilityChangeMtrig2.write(fmgc1NotLand3FailPassiveCapacity, deltaTime);
+    this.fmgc1CapabilityChangeMtrig3.write(fmgc1NotLand2Capacity, deltaTime);
+    this.fmgc1CapabilityChangeConf1.write(fmgc1NotLandArmedOrEngaged, deltaTime);
+    this.fmgc1CapabilityChangeMtrig4.write(this.fmgc1CapabilityChangeConf1.read(), deltaTime);
+
+    const fmgc1CapabilityChange =
+      this.fmgc1CapabilityChangeMtrig1.read() ||
+      (fmgc1NotLand3FailOperationalCapacity && this.fmgc1CapabilityChangeMtrig2.read()) ||
+      (fmgc1NotLand3FailOperationalCapacity &&
+        fmgc1NotLand3FailPassiveCapacity &&
+        this.fmgc1CapabilityChangeMtrig3.read()) ||
+      this.fmgc1CapabilityChangeMtrig4.read();
+
+    const fmgc2NotLand3FailOperationalCapacity = !this.fmgc2DiscreteWord4.get().bitValueOr(25, true);
+    const fmgc2NotLand3FailPassiveCapacity = !this.fmgc2DiscreteWord4.get().bitValueOr(24, true);
+    const fmgc2NotLand2Capacity = !this.fmgc2DiscreteWord4.get().bitValueOr(23, true);
+    const fmgc2NotLandArmedOrEngaged = !(
+      this.fmgc2DiscreteWord4.get().bitValueOr(14, true) || this.fmgc2DiscreteWord3.get().bitValueOr(20, true)
+    );
+
+    this.fmgc2CapabilityChangeMtrig1.write(fmgc2NotLand3FailOperationalCapacity, deltaTime);
+    this.fmgc2CapabilityChangeMtrig2.write(fmgc2NotLand3FailPassiveCapacity, deltaTime);
+    this.fmgc2CapabilityChangeMtrig3.write(fmgc2NotLand2Capacity, deltaTime);
+    this.fmgc2CapabilityChangeConf1.write(fmgc2NotLandArmedOrEngaged, deltaTime);
+    this.fmgc2CapabilityChangeMtrig4.write(this.fmgc2CapabilityChangeConf1.read(), deltaTime);
+
+    const fmgc2CapabilityChange =
+      this.fmgc2CapabilityChangeMtrig1.read() ||
+      (fmgc2NotLand3FailOperationalCapacity && this.fmgc2CapabilityChangeMtrig2.read()) ||
+      (fmgc2NotLand3FailOperationalCapacity &&
+        fmgc2NotLand3FailPassiveCapacity &&
+        this.fmgc2CapabilityChangeMtrig3.read()) ||
+      this.fmgc2CapabilityChangeMtrig4.read();
+
+    this.capabilityChange.set(fmgc1CapabilityChange || fmgc2CapabilityChange);
 
     // A/THR OFF VOLUNTARY
     const athrOffVoluntaryBelow50ft = this.radioHeight1.valueOr(2500) < 50 || this.radioHeight2.valueOr(2500) < 50;
@@ -3337,6 +3352,22 @@ export class PseudoFWC {
       auralWarning: MappedSubject.create(
         ([active]) => (active ? FwcAuralWarning.TripleClick : FwcAuralWarning.None),
         this.modeReversion,
+      ),
+      whichCodeToReturn: () => [null],
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+      cancel: false,
+    },
+    2200030: {
+      // AP/FD Capability Change
+      flightPhaseInhib: [2, 3, 4, 5, 8, 9, 10],
+      simVarIsActive: this.capabilityChange,
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.TripleClick : FwcAuralWarning.None),
+        this.capabilityChange,
       ),
       whichCodeToReturn: () => [null],
       codesToReturn: [],
