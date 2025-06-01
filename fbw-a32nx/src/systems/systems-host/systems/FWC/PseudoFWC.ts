@@ -152,7 +152,6 @@ export class PseudoFWC {
   private requestSingleChimeFromAThrOff = false;
 
   private requestMasterWarningFromFaults = false;
-  private requestMasterWarningFromApOff = false;
 
   private auralCrcKeys: string[] = [];
 
@@ -322,41 +321,73 @@ export class PseudoFWC {
 
   private toSpeedsNotInsertedWarning = Subject.create(false);
 
-  /** If multiple AP discs are triggered between FWS cycles, memorize the amount */
-  public autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
+  /** AP OFF Voluntary */
 
-  public readonly autoPilotDisengagedInstantPulse = new NXLogicPulseNode(false);
+  public apInstinctiveDisconnectPressed = false;
 
-  /** 1.8s according to references, but was raised to 1.9s to allow for triple click to finish */
-  public readonly autoPilotInstinctiveDiscPressedInLast1p5Sec = new NXLogicTriggeredMonostableNode(1.5, true);
+  public readonly apOffVoluntaryPulse1 = new NXLogicPulseNode(false);
 
-  /** 1.8s according to references, but was raised to 1.9s to allow for triple click to finish */
-  public readonly autoPilotInstinctiveDiscPressedTwiceInLast1p5Sec = new NXLogicTriggeredMonostableNode(1.5, true);
+  public readonly apOffVoluntaryPulse2 = new NXLogicPulseNode(false);
 
-  public readonly autoPilotInstinctiveDiscPressedPulse = new NXLogicPulseNode(true);
+  public readonly apOffVoluntaryPulse3 = new NXLogicPulseNode(true);
 
-  /** Stay in first warning stage for 1.8s. Raised to 1.9s to allow for triple click to finish */
-  public readonly autoPilotOffVoluntaryEndAfter1p5s = new NXLogicTriggeredMonostableNode(1.5, true);
+  public readonly apOffVoluntaryPulse4 = new NXLogicPulseNode(false);
 
-  public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.8, true);
+  public readonly apOffVoluntaryConfirm = new NXLogicConfirmNode(0.2);
 
-  public readonly autoPilotOffVoluntaryFirstCavalryChargeActivePulse = new NXLogicPulseNode(false);
+  public readonly apOffVoluntaryMtrig1 = new NXLogicTriggeredMonostableNode(1.3, true);
 
-  public readonly autoPilotOffVoluntaryDiscPulse = new NXLogicPulseNode(true);
+  public readonly apOffVoluntaryMtrig2 = new NXLogicTriggeredMonostableNode(5, true);
 
-  public readonly autoPilotOffVoluntaryMemory = new NXLogicMemoryNode(true);
+  public readonly apOffVoluntaryMtrig3 = new NXLogicTriggeredMonostableNode(1.5, true);
 
-  public readonly autoPilotOffInvoluntaryMemory = new NXLogicMemoryNode(false);
+  public readonly apOffVoluntaryMtrig4 = new NXLogicTriggeredMonostableNode(3, true);
 
-  public readonly autoPilotOffAlertShown = Subject.create(false);
+  public readonly apOffVoluntaryMtrig5 = new NXLogicTriggeredMonostableNode(3, true);
 
-  public readonly autoPilotOffInvoluntary = Subject.create(false);
+  public readonly apOffVoluntaryMtrig6 = new NXLogicTriggeredMonostableNode(9, true);
 
-  public readonly autoPilotOffAlertShownMemory = new NXLogicMemoryNode(false);
+  public readonly apOffVoluntaryMtrig7 = new NXLogicTriggeredMonostableNode(9, true);
 
-  public readonly autoPilotOffUnacknowledged = new NXLogicMemoryNode(false);
+  public readonly apOffVoluntaryMtrig8 = new NXLogicTriggeredMonostableNode(0.5, true);
 
-  public readonly autoPilotOffShowMemo = Subject.create(false);
+  public readonly apOffVoluntaryMtrig9 = new NXLogicTriggeredMonostableNode(1.5, false);
+
+  public readonly apOffVoluntaryMemory = new NXLogicMemoryNode(true);
+
+  public readonly apOffVoluntaryCavcharge = Subject.create(false);
+
+  public readonly apOffVoluntaryMasterwarning = Subject.create(false);
+
+  public readonly apOffVoluntaryText = Subject.create(false);
+
+  /** AP OFF Unvoluntary */
+
+  public readonly apOffInvoluntaryMtrig1 = new NXLogicTriggeredMonostableNode(1.3, true);
+
+  public readonly apOffInvoluntaryMtrig2 = new NXLogicTriggeredMonostableNode(1.5, true);
+
+  public readonly apOffInvoluntaryPulse1 = new NXLogicPulseNode(false);
+
+  public readonly apOffInvoluntaryPulse2 = new NXLogicPulseNode(true);
+
+  public readonly apOffInvoluntaryPulse3 = new NXLogicPulseNode(true);
+
+  public readonly apOffInvoluntaryPulse4 = new NXLogicPulseNode(true);
+
+  public readonly apOffInvoluntaryPulse5 = new NXLogicPulseNode(true);
+
+  public readonly apOffInvoluntaryPulse6 = new NXLogicPulseNode(true);
+
+  public readonly apOffInvoluntaryMemory1 = new NXLogicMemoryNode(false);
+
+  public readonly apOffInvoluntaryMemory2 = new NXLogicMemoryNode(false);
+
+  public readonly apOffInvoluntaryAural = Subject.create(false);
+
+  public readonly apOffInvoluntaryText = Subject.create(false);
+
+  /** AP/FD Capability change */
 
   public readonly fmgc1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord3'));
 
@@ -373,6 +404,8 @@ export class PseudoFWC {
   public readonly approachCapabilityDowngradeSuppress = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
+
+  /** A/THR OFF */
 
   private autoThrustInstinctiveDisconnectPressed = false;
 
@@ -1156,7 +1189,7 @@ export class PseudoFWC {
         case 'A32NX.FCU_AP_DISCONNECT_PUSH':
         case 'A32NX.AUTOPILOT_DISENGAGE':
         case 'AUTOPILOT_OFF':
-          this.autoPilotInstinctiveDisconnect();
+          this.apInstinctiveDisconnectPressed = true;
           break;
       }
     });
@@ -1418,9 +1451,6 @@ export class PseudoFWC {
     // Play sounds
     this.soundManager.onUpdate(deltaTime);
 
-    // Write pulse nodes for buffered inputs
-    this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
-
     // Inputs update
     this.processEcpButtons(deltaTime);
 
@@ -1649,79 +1679,90 @@ export class PseudoFWC {
       (onGroundCount > 1 && raInvalid);
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
 
-    // AP OFF
-    const apEngaged: boolean =
+    // AP OFF Voluntary
+    const anyApEngaged: boolean =
       SimVar.GetSimVarValue('L:A32NX_FMGC_1_AP_ENGAGED', SimVarValueType.Bool) ||
       SimVar.GetSimVarValue('L:A32NX_FMGC_2_AP_ENGAGED', SimVarValueType.Bool);
-    this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
+    this.apOffVoluntaryPulse1.write(anyApEngaged, deltaTime);
+    this.apOffVoluntaryConfirm.write(!anyApEngaged, deltaTime);
 
-    const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p5Sec.read();
-    this.autoPilotInstinctiveDiscPressedInLast1p5Sec.write(this.autoPilotInstinctiveDiscPressedPulse.read(), deltaTime);
+    this.apOffVoluntaryPulse3.write(this.apInstinctiveDisconnectPressed, deltaTime);
+    this.apOffVoluntaryMtrig1.write(this.apInstinctiveDisconnectPressed, deltaTime);
 
-    const voluntaryApDisc =
-      this.autoPilotDisengagedInstantPulse.read() && this.autoPilotInstinctiveDiscPressedInLast1p5Sec.read();
-    this.autoPilotOffVoluntaryEndAfter1p5s.write(voluntaryApDisc, deltaTime);
-    this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
+    const apOffAndInstinctiveDisc = this.apOffVoluntaryPulse1.read() && this.apOffVoluntaryMtrig1.read();
+    this.apOffVoluntaryMtrig4.write(apOffAndInstinctiveDisc, deltaTime);
+    this.apOffVoluntaryMtrig6.write(apOffAndInstinctiveDisc, deltaTime);
 
-    this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
-    this.autoPilotOffVoluntaryFirstCavalryChargeActivePulse.write(
-      this.autoPilotOffVoluntaryFirstCavalryChargeActive.read(),
+    // If there is any warning currently active, with a higher priority that the AP OFF cavalry charge.
+    // This will inhibit cancellation of the AP OFF warning using the master warn button.
+    const higherPriorityWarningActive = this.stallWarning.get() || this.overspeedWarning.get();
+    const instinctiveDiscOrMwCancel =
+      this.apOffVoluntaryPulse3.read() ||
+      ((masterWarningButtonLeft || masterWarningButtonRight) && !higherPriorityWarningActive);
+    const apOffConfirmedAndCancel = instinctiveDiscOrMwCancel && this.apOffVoluntaryConfirm.read();
+    this.apOffVoluntaryMtrig8.write(apOffConfirmedAndCancel, deltaTime);
+    this.apOffVoluntaryMtrig9.write(this.apOffVoluntaryMtrig8.read(), deltaTime);
+    this.apOffVoluntaryMtrig5.write(apOffConfirmedAndCancel, deltaTime);
+    this.apOffVoluntaryMtrig7.write(apOffConfirmedAndCancel, deltaTime);
+
+    // If a cavalry charge is currently being emitted by the sound manager.
+    const cavChargeEmitted =
+      this.soundManager.getCurrentSoundPlaying() == 'cavalryChargeCont' ||
+      this.soundManager.getCurrentSoundPlaying() == 'cavalryChargeOnce';
+    this.apOffVoluntaryMtrig3.write(cavChargeEmitted, deltaTime);
+    this.apOffVoluntaryPulse2.write(this.apOffVoluntaryMtrig3.read(), deltaTime);
+
+    this.apOffVoluntaryMtrig2.write(apOffAndInstinctiveDisc, deltaTime);
+    this.apOffVoluntaryPulse4.write(this.apOffVoluntaryMtrig2.read(), deltaTime);
+
+    this.apOffVoluntaryMemory.write(
+      apOffAndInstinctiveDisc,
+      this.apOffVoluntaryPulse4.read() || this.apOffVoluntaryPulse2.read(),
+    );
+
+    this.apOffVoluntaryCavcharge.set(
+      this.apOffVoluntaryMemory.read() && !anyApEngaged && !this.apOffVoluntaryMtrig9.read(),
+    );
+    this.apOffVoluntaryMasterwarning.set(
+      this.apOffVoluntaryMtrig4.read() && !anyApEngaged && !this.apOffVoluntaryMtrig5.read(),
+    );
+    this.apOffVoluntaryText.set(this.apOffVoluntaryMtrig6.read() && !anyApEngaged && !this.apOffVoluntaryMtrig7.read());
+
+    // AP OFF Involuntary
+    this.apOffInvoluntaryMtrig1.write(this.apInstinctiveDisconnectPressed, deltaTime);
+    this.apOffInvoluntaryPulse1.write(anyApEngaged, deltaTime);
+    this.apOffInvoluntaryPulse2.write(this.apInstinctiveDisconnectPressed, deltaTime);
+    this.apOffInvoluntaryPulse3.write(anyApEngaged, deltaTime);
+    this.apOffInvoluntaryPulse4.write(this.fwcFlightPhase.get() == 1, deltaTime);
+    this.apOffInvoluntaryPulse5.write(
+      !anyApEngaged && cavChargeEmitted && (masterWarningButtonLeft || masterWarningButtonRight),
       deltaTime,
     );
 
-    this.autoPilotInstinctiveDiscPressedTwiceInLast1p5Sec.write(
-      this.autoPilotInstinctiveDiscPressedPulse.read() &&
-        (this.autoPilotInstinctiveDiscCountSinceLastFwsCycle > 1 || apDiscPressedInLast1p8SecBeforeThisCycle),
-      deltaTime,
+    const apOffInvoluntaryInhibitConditions =
+      this.fwcFlightPhase.get() == 1 && !blueSysPressurised && !yellowSysPressurised && !greenSysPressurised;
+    this.apOffInvoluntaryMemory1.write(
+      !apOffInvoluntaryInhibitConditions && !this.apOffInvoluntaryMtrig1.read() && this.apOffInvoluntaryPulse1.read(),
+      this.apOffInvoluntaryPulse3.read() || this.apOffInvoluntaryPulse4.read(),
+    );
+    this.apOffInvoluntaryPulse6.write(this.apOffInvoluntaryMemory1.read(), deltaTime);
+    this.apOffInvoluntaryMtrig2.write(this.apOffInvoluntaryPulse6.read(), deltaTime);
+
+    const apOffInvoluntaryCancelAfterDelay =
+      !this.apOffInvoluntaryMtrig2.read() &&
+      (this.apOffInvoluntaryPulse5.read() || (!anyApEngaged && this.apOffInvoluntaryPulse2.read()));
+    const apOffInvoluntaryCancelApEngageOrPhase1 =
+      this.apOffInvoluntaryPulse3.read() || this.apOffInvoluntaryPulse4.read();
+    this.apOffInvoluntaryMemory2.write(
+      this.apOffInvoluntaryPulse6.read(),
+      apOffInvoluntaryCancelApEngageOrPhase1 || apOffInvoluntaryCancelAfterDelay,
     );
 
-    this.autoPilotOffVoluntaryMemory.write(
-      this.autoPilotOffVoluntaryDiscPulse.read(),
-      apEngaged ||
-        this.autoPilotInstinctiveDiscPressedTwiceInLast1p5Sec.read() ||
-        !this.autoPilotOffVoluntaryEndAfter1p5s.read(),
-    );
+    this.apOffInvoluntaryAural.set(this.apOffInvoluntaryMemory2.read());
 
-    const discPbPressedAfterDisconnection =
-      !this.autoPilotDisengagedInstantPulse.read() &&
-      (this.autoPilotInstinctiveDiscPressedPulse.read() || masterWarningButtonLeft || masterWarningButtonRight);
+    this.apOffInvoluntaryText.set(this.apOffInvoluntaryMemory1.read());
 
-    this.autoPilotOffUnacknowledged.write(
-      this.autoPilotDisengagedInstantPulse.read(),
-      apEngaged || this.autoPilotInstinctiveDiscPressedTwiceInLast1p5Sec.read() || discPbPressedAfterDisconnection,
-    );
-
-    this.autoPilotOffInvoluntaryMemory.write(
-      !apEngaged && !this.autoPilotOffVoluntaryMemory.read() && this.autoPilotOffUnacknowledged.read(),
-      !this.autoPilotOffUnacknowledged.read(),
-    );
-
-    this.autoPilotOffAlertShownMemory.write(
-      this.autoPilotOffInvoluntaryMemory.read(),
-      this.fwcFlightPhase.get() === 1 || apEngaged,
-    );
-    this.autoPilotOffAlertShown.set(this.autoPilotOffAlertShownMemory.read());
-    this.autoPilotOffInvoluntary.set(this.autoPilotOffInvoluntaryMemory.read());
-    this.autoPilotOffShowMemo.set(this.autoPilotOffVoluntaryMemory.read() || this.autoPilotOffInvoluntaryMemory.read());
-
-    if (this.autoPilotDisengagedInstantPulse.read()) {
-      // Request quiet CRC one time
-      this.requestMasterWarningFromApOff = true;
-      this.soundManager.enqueueSound('cavalryChargeOnce'); // On the A320, play first cav charge completely no matter what
-    }
-    if (this.autoPilotOffVoluntaryFirstCavalryChargeActivePulse.read()) {
-      this.soundManager.dequeueSound('cavalryChargeOnce');
-    }
-    if (!this.autoPilotOffVoluntaryMemory.read() && !this.autoPilotOffInvoluntaryMemory.read()) {
-      this.requestMasterWarningFromApOff = false;
-      this.soundManager.dequeueSound('cavalryChargeOnce');
-      this.soundManager.dequeueSound('cavalryChargeCont');
-    }
-
-    this.autoPilotInstinctiveDiscPressedPulse.write(false, deltaTime);
-
-    // approach capability downgrade. Debounce first, then suppress for a certain amount of time
-    // (to avoid multiple triple clicks, and a delay which is too long)
+    // AP/FD capability change
     let fmgcApproachCapability = 0;
     const getApproachCapability = (dw3: Arinc429WordData, dw4: Arinc429WordData): number => {
       let appCap = 0;
@@ -2778,7 +2819,6 @@ export class PseudoFWC {
     }
     if ((masterWarningButtonLeft || masterWarningButtonRight) && this.nonCancellableWarningCount === 0) {
       this.requestMasterWarningFromFaults = this.nonCancellableWarningCount > 0;
-      this.requestMasterWarningFromApOff = false;
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
     }
 
@@ -3072,7 +3112,7 @@ export class PseudoFWC {
         this.requestMasterCautionFromAThrOff,
     );
 
-    this.masterWarning.set(this.requestMasterWarningFromFaults || this.requestMasterWarningFromApOff);
+    this.masterWarning.set(this.requestMasterWarningFromFaults);
 
     if (leftFailureSystemCount + rightFailureSystemCount === 0) {
       SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
@@ -3110,8 +3150,8 @@ export class PseudoFWC {
 
     // Reset all buffered inputs
     this.apDiscInputBuffer.write(false, true);
-    this.autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
     this.autoThrustInstinctiveDisconnectPressed = false;
+    this.apInstinctiveDisconnectPressed = false;
   }
 
   updateRowRopWarnings() {
@@ -3151,26 +3191,62 @@ export class PseudoFWC {
     }
   }
 
-  autoPilotInstinctiveDisconnect() {
-    this.apDiscInputBuffer.write(true, false);
-    if (this.apDiscInputBuffer.read()) {
-      this.autoPilotInstinctiveDiscCountSinceLastFwsCycle++;
-    }
-  }
-
   ewdMessageFailures: EWDMessageDict = {
     // 22 - AUTOFLIGHT
-    220800001: {
+    2200005: {
       // AP OFF involuntary
       flightPhaseInhib: [],
-      simVarIsActive: this.autoPilotOffAlertShown,
-      auralWarning: this.autoPilotOffInvoluntary.map((a) => (a ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None)),
+      simVarIsActive: this.apOffInvoluntaryText,
+      auralWarning: MappedSubject.create(
+        ([textActive, auralActive]) =>
+          textActive && auralActive ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None,
+        this.apOffInvoluntaryText,
+        this.apOffInvoluntaryAural,
+      ),
       whichCodeToReturn: () => [0],
-      codesToReturn: ['220800001'],
+      codesToReturn: ['220000501'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
       side: 'LEFT',
+    },
+    2200010: {
+      // AP OFF Voluntary Master Warning
+      flightPhaseInhib: [],
+      simVarIsActive: this.apOffVoluntaryMasterwarning,
+      whichCodeToReturn: () => [],
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 3,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    // These two should not be affected by CLR and RCL, only EMER CANC and cancel
+    2200012: {
+      // AP OFF Voluntary Cav Charge
+      flightPhaseInhib: [],
+      simVarIsActive: this.apOffVoluntaryCavcharge,
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None),
+        this.apOffVoluntaryCavcharge,
+      ),
+      whichCodeToReturn: () => [],
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 3,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
+    2200015: {
+      // AP OFF Voluntary Special Line
+      flightPhaseInhib: [],
+      simVarIsActive: this.apOffVoluntaryText,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['220001501'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
     },
     2200020: {
       // A/THR OFF Voluntary Master Caution

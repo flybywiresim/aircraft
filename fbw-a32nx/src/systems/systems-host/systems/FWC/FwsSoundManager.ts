@@ -273,6 +273,11 @@ export class FwsSoundManager {
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
   }
 
+  /** Get the current emitted sound, for example for the AP OFF logic computation. */
+  getCurrentSoundPlaying() {
+    return this.currentSoundPlaying;
+  }
+
   /** Add sound to queue. Don't add if already playing */
   enqueueSound(soundKey: keyof typeof FwsAuralsList) {
     const sound = FwsAuralsList[soundKey];
