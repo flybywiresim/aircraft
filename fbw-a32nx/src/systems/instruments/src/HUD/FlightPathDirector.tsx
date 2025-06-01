@@ -93,7 +93,7 @@ export class FlightPathDirector extends DisplayComponent<{
         this.declutterMode = value;
       });
     sub
-      .on('fdEngaged')
+      .on(isCaptainSide ? 'fd1Active' : 'fd2Active')
       .whenChanged()
       .handle((fd) => {
         this.data.fdEngaged = fd;
@@ -166,10 +166,9 @@ export class FlightPathDirector extends DisplayComponent<{
 
     sub.on('realTime').handle((_t) => {
       this.handlePath();
-      // if (this.needsUpdate && this.isVisible.get()) {
-      //   this.moveBird();
-      // }
-      this.moveBird();
+      if (this.needsUpdate && this.isVisible.get()) {
+        this.moveBird();
+      }
     });
 
     this.props.isAttExcessive.sub((_a) => {
@@ -181,19 +180,16 @@ export class FlightPathDirector extends DisplayComponent<{
     const rollFdInvalid = this.data.rollFdCommand.isFailureWarning() || this.data.rollFdCommand.isNoComputedData();
     const pitchFdInvalid = this.data.pitchFdCommand.isFailureWarning() || this.data.pitchFdCommand.isNoComputedData();
     const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
-    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
-
     if (
       rollFdInvalid ||
       pitchFdInvalid ||
       !daAndFpaValid ||
       !this.data.fdEngaged ||
-      !trkFpaActive ||
       this.data.fdOff ||
       this.props.isAttExcessive.get()
     ) {
-      this.birdPath.instance.style.visibility = 'visible';
-      this.isVisible.set(true);
+      this.birdPath.instance.style.visibility = 'hidden';
+      this.isVisible.set(false);
     } else {
       this.birdPath.instance.style.visibility = 'visible';
       this.isVisible.set(true);

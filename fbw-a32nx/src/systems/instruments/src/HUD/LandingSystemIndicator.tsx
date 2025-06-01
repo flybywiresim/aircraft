@@ -539,7 +539,6 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
         this.LSLocRef.instance.style.transform = `translate3d(0px, ${this.LSLocGroupVerticalOffset}px, 0px)`;
       } else {
         if (this.doOnce == 0) {
-          console.log(this.LSLocGroupVerticalOffset + '  ' + this.pitch);
           this.doOnce = 1;
           this.LSLocRef.instance.style.visibility = 'hidden';
         }

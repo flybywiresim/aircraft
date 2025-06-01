@@ -335,6 +335,7 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private yawGroupRef = FSComponent.createRef<SVGGElement>();
   private yawRef = FSComponent.createRef<SVGPathElement>();
+  private yawAcftRef = FSComponent.createRef<SVGPathElement>();
   private yawGroupVerticalOffset = 0;
   private pitch = 0;
   private handleFdState() {
@@ -347,7 +348,8 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
       const offset = -Math.max(Math.min(this.fdYawCommand.value * 3, 120), -120);
       this.yawGroupVerticalOffset = (DistanceSpacing / ValueSpacing) * (this.pitch - 1.15);
       this.yawGroupRef.instance.style.visibility = 'visible';
-      this.yawGroupRef.instance.style.transform = `translate3d(${offset}px, ${this.yawGroupVerticalOffset}px, 0px)`;
+      this.yawRef.instance.style.transform = `translate3d(${offset}px, ${this.yawGroupVerticalOffset}px, 0px)`;
+      this.yawAcftRef.instance.style.transform = `translate3d(0px, ${this.yawGroupVerticalOffset}px, 0px)`;
     } else {
       this.yawGroupRef.instance.style.visibility = 'hidden';
     }
@@ -383,8 +385,6 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
       });
     sub.on('pitchAr').handle((p) => {
       this.pitch = p.value;
-
-      console.log('this.pitch: ' + this.pitch + ' this.yawGroupVerticalOffset ' + this.yawGroupVerticalOffset);
       this.handleFdState();
     });
   }
@@ -393,7 +393,12 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
     return (
       <g ref={this.yawGroupRef}>
         <path ref={this.yawRef} id="GroundYawSymbol" class="SmallStroke Green" d="M 640 420 l 3 4 v 30 h -6 v -30 z" />
-        <path id="AircraftReferenceOnGround" class="SmallStroke Green" d="m 630, 405 h 20 L 640,420 Z" />
+        <path
+          ref={this.yawAcftRef}
+          id="AircraftReferenceOnGround"
+          class="SmallStroke Green"
+          d="m 630, 405 h 20 L 640,420 Z"
+        />
       </g>
     );
   }
