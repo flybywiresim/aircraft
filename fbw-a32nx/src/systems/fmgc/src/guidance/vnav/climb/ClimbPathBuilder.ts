@@ -11,7 +11,7 @@ import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { Predictions, StepResults } from '../Predictions';
-import { VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
+import { ProfilePhase, VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
 import { BaseGeometryProfile } from '../profile/BaseGeometryProfile';
 import { AtmosphericConditions } from '../AtmosphericConditions';
 
@@ -529,6 +529,7 @@ export class ClimbPathBuilder {
       speed: step.speed,
       remainingFuelOnBoard: remainingFuelOnBoard - step.fuelBurned,
       mach: this.computationParametersObserver.get().managedClimbSpeedMach,
+      profilePhase: ProfilePhase.Climb,
     }));
   }
 

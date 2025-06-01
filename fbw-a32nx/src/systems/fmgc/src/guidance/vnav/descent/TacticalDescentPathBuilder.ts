@@ -16,6 +16,7 @@ import {
   ApproachCheckpoint,
   MaxSpeedConstraint,
   NavGeometryProfile,
+  ProfilePhase,
   VerticalCheckpoint,
   VerticalCheckpointForDeceleration,
   VerticalCheckpointReason,
@@ -640,7 +641,7 @@ class PhaseTable {
           (sequence.lastCheckpoint as VerticalCheckpointForDeceleration).targetSpeed = phase.toSpeed;
         }
 
-        sequence.addCheckpointFromStep(phaseResult, phase.reasonAfter);
+        sequence.addCheckpointFromStep(phaseResult, phase.reasonAfter, ProfilePhase.Descent);
 
         phase.lastResult = sequence.lastCheckpoint;
       } else {

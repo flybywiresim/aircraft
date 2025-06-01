@@ -7,6 +7,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import {
   DescentAltitudeConstraint,
   NavGeometryProfile,
+  ProfilePhase,
   VerticalCheckpoint,
   VerticalCheckpointReason,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -181,6 +182,7 @@ export class ApproachPathBuilder {
       remainingFuelOnBoard: estimatedFuelOnBoardAtDestination,
       secondsFromPresent: estimatedSecondsFromPresentAtDestination,
       mach: managedDescentSpeedMach,
+      profilePhase: ProfilePhase.Descent,
     });
 
     const distanceToOneThousandAgl =
@@ -198,7 +200,11 @@ export class ApproachPathBuilder {
       this.configuration.setFromSpeed(approachSpeed, this.observer.get()),
     );
 
-    sequence.addCheckpointFromStep(finalApproachStep, VerticalCheckpointReason.AtmosphericConditions);
+    sequence.addCheckpointFromStep(
+      finalApproachStep,
+      VerticalCheckpointReason.AtmosphericConditions,
+      ProfilePhase.Descent,
+    );
 
     // Build path to FAF by flying the descent angle but decelerating
     const fafStep = this.buildDecelerationPath(
@@ -313,7 +319,11 @@ export class ApproachPathBuilder {
         windProfile.getHeadwindComponent(distanceFromStart - decelerationSegmentDistance, minimumAltitude),
         this.configuration.setFromSpeed(decelerationSequence.lastCheckpoint.speed, this.observer.get(), useSpeedbrakes),
       );
-      currentDecelerationAttempt.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.AltitudeConstraint);
+      currentDecelerationAttempt.addCheckpointFromStep(
+        descentSegment,
+        VerticalCheckpointReason.AltitudeConstraint,
+        ProfilePhase.Descent,
+      );
 
       if (VnavConfig.DEBUG_PROFILE && descentSegment.distanceTraveled > 0) {
         throw new Error('[FMS/VNAV] Descent segment should have a negative distance traveled');
@@ -369,7 +379,11 @@ export class ApproachPathBuilder {
         // Insert TOO STEEP PATH
         const scaling = desiredDistanceToCover / -descentSegment.distanceTraveled;
         this.scaleStepBasedOnLastCheckpoint(sequence.lastCheckpoint, descentSegment, scaling);
-        sequence.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.GeometricPathTooSteep);
+        sequence.addCheckpointFromStep(
+          descentSegment,
+          VerticalCheckpointReason.GeometricPathTooSteep,
+          ProfilePhase.Descent,
+        );
         sequence.copyLastCheckpoint({
           reason: VerticalCheckpointReason.AltitudeConstraint,
           altitude: minimumAltitude,
@@ -393,7 +407,7 @@ export class ApproachPathBuilder {
       speedTarget - decelerationSequence.lastCheckpoint.speed > 1 ||
       decelerationSequence.lastCheckpoint.speed < cleanSpeed
     ) {
-      sequence.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.AltitudeConstraint);
+      sequence.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.AltitudeConstraint, ProfilePhase.Descent);
       sequence.push(...secondDecelerationSequence.get());
     }
   }
@@ -488,7 +502,11 @@ export class ApproachPathBuilder {
           // We tried to declerate, but it took us beyond targetDistanceFromStart, so we scale down the step
           const scaling = Math.min(1, remainingDistance / decelerationStep.distanceTraveled);
           this.scaleStepBasedOnLastCheckpoint(decelerationSequence.lastCheckpoint, decelerationStep, scaling);
-          decelerationSequence.addCheckpointFromStep(decelerationStep, VerticalCheckpointReason.AtmosphericConditions);
+          decelerationSequence.addCheckpointFromStep(
+            decelerationStep,
+            VerticalCheckpointReason.AtmosphericConditions,
+            ProfilePhase.Descent,
+          );
         }
 
         const remainingDistanceToConstraint =
@@ -520,7 +538,11 @@ export class ApproachPathBuilder {
             throw new Error('[FMS/VNAV] Descent step distance should not be positive');
           }
 
-          decelerationSequence.addCheckpointFromStep(constantStep, VerticalCheckpointReason.SpeedConstraint);
+          decelerationSequence.addCheckpointFromStep(
+            constantStep,
+            VerticalCheckpointReason.SpeedConstraint,
+            ProfilePhase.Descent,
+          );
         } else {
           decelerationSequence.copyLastCheckpoint({ reason: VerticalCheckpointReason.SpeedConstraint });
         }
@@ -557,7 +579,11 @@ export class ApproachPathBuilder {
         if (decelerationStep.distanceTraveled < remainingDistance) {
           const scaling = Math.min(1, remainingDistance / decelerationStep.distanceTraveled);
           this.scaleStepBasedOnLastCheckpoint(decelerationSequence.lastCheckpoint, decelerationStep, scaling);
-          decelerationSequence.addCheckpointFromStep(decelerationStep, VerticalCheckpointReason.AtmosphericConditions);
+          decelerationSequence.addCheckpointFromStep(
+            decelerationStep,
+            VerticalCheckpointReason.AtmosphericConditions,
+            ProfilePhase.Descent,
+          );
 
           return decelerationSequence;
         }
@@ -566,6 +592,7 @@ export class ApproachPathBuilder {
           decelerationStep,
           FlapConfigurationProfile.getFlapCheckpointReasonByFlapConf(config.flapConfig),
           FlapConfigurationProfile.getApproachPhaseTargetSpeed(config.flapConfig, parameters),
+          ProfilePhase.Descent,
         );
       }
     }
@@ -595,6 +622,7 @@ export class ApproachPathBuilder {
         constantSpeedStep,
         FlapConfigurationProfile.getFlapCheckpointReasonByFlapConf(config.flapConfig),
         FlapConfigurationProfile.getApproachPhaseTargetSpeed(config.flapConfig, parameters),
+        ProfilePhase.Descent,
       );
     }
 

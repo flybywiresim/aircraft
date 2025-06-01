@@ -9,6 +9,7 @@ import {
   VerticalCheckpointReason,
   MaxSpeedConstraint,
   VerticalCheckpoint,
+  ProfilePhase,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
@@ -135,7 +136,12 @@ export class IdlePathBuilder {
           ? VerticalCheckpointReason.StartDecelerationToLimit
           : VerticalCheckpointReason.StartDecelerationToConstraint;
 
-        sequence.addDecelerationCheckpointFromStep(speedStep, checkpointReason, previousCasTarget);
+        sequence.addDecelerationCheckpointFromStep(
+          speedStep,
+          checkpointReason,
+          previousCasTarget,
+          ProfilePhase.Descent,
+        );
       } else {
         // Try alt path
         let finalAltitude = Math.min(altitude + 1500, topOfDescentAltitude);
@@ -179,9 +185,9 @@ export class IdlePathBuilder {
             remainingFuelOnBoard,
             headwind,
           );
-          sequence.addCheckpointFromStep(distanceStep, VerticalCheckpointReason.SpeedConstraint);
+          sequence.addCheckpointFromStep(distanceStep, VerticalCheckpointReason.SpeedConstraint, ProfilePhase.Descent);
         } else {
-          sequence.addCheckpointFromStep(altitudeStep, reason);
+          sequence.addCheckpointFromStep(altitudeStep, reason, ProfilePhase.Descent);
         }
       }
 

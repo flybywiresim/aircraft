@@ -16,6 +16,7 @@ import {
   GeographicCruiseStep,
   MaxSpeedConstraint,
   NavGeometryProfile,
+  ProfilePhase,
   VerticalCheckpoint,
   VerticalCheckpointReason,
 } from '../profile/NavGeometryProfile';
@@ -113,7 +114,11 @@ export class CruisePathBuilder {
         ),
       );
 
-      sequence.addCheckpointFromStep(accelerationStep, VerticalCheckpointReason.AtmosphericConditions);
+      sequence.addCheckpointFromStep(
+        accelerationStep,
+        VerticalCheckpointReason.AtmosphericConditions,
+        ProfilePhase.Cruise,
+      );
     }
 
     if (VnavConfig.DEBUG_PROFILE && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
@@ -204,6 +209,7 @@ export class CruisePathBuilder {
     sequence.addCheckpointFromStep(
       stepResults,
       isClimbVsDescent ? VerticalCheckpointReason.TopOfStepClimb : VerticalCheckpointReason.BottomOfStepDescent,
+      ProfilePhase.Cruise,
     );
 
     return true;
