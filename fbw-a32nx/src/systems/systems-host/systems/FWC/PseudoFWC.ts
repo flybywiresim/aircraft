@@ -3280,24 +3280,17 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'RIGHT',
     },
-    // This is a hack to separate Aural and text components of warning
-    220002201: {
+    2200022: {
       // A/THR OFF Involuntary Text
       flightPhaseInhib: [4, 8, 10],
       simVarIsActive: this.autoThrustOffInvoluntaryText,
+      auralWarning: MappedSubject.create(
+        ([textActive, auralActive]) => (textActive && auralActive ? FwcAuralWarning.SingleChime : FwcAuralWarning.None),
+        this.autoThrustOffInvoluntaryText,
+        this.autoThrustOffInvoluntaryAural,
+      ),
       whichCodeToReturn: () => [0, this.thrLocked.get() ? 1 : null],
       codesToReturn: ['220002201', '220002202'],
-      memoInhibit: () => false,
-      failure: 0,
-      sysPage: -1,
-      side: 'LEFT',
-    },
-    220002203: {
-      // A/THR OFF Involuntary Aural
-      flightPhaseInhib: [4, 8, 10],
-      simVarIsActive: this.autoThrustOffInvoluntaryAural,
-      whichCodeToReturn: () => [],
-      codesToReturn: [],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
