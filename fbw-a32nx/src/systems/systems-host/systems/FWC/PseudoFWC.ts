@@ -3224,14 +3224,15 @@ export class PseudoFWC {
       // AP OFF Voluntary Master Warning
       flightPhaseInhib: [],
       simVarIsActive: this.apOffVoluntaryMasterwarning,
-      whichCodeToReturn: () => [],
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
       side: 'RIGHT',
     },
-    // These two should not be affected by CLR and RCL, only EMER CANC and cancel
+    // These two should not be affected by CLR and RCL, only EMER CANC and cancel.
     2200012: {
       // AP OFF Voluntary Cav Charge
       flightPhaseInhib: [],
@@ -3240,10 +3241,12 @@ export class PseudoFWC {
         ([active]) => (active ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None),
         this.apOffVoluntaryCavcharge,
       ),
-      whichCodeToReturn: () => [],
+      whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
-      failure: 3,
+      // This should only emit the cavalry charge, but not activate the master warn.
+      // So, list it as failure level 0 (I don't think this has any other effect).
+      failure: 0,
       sysPage: -1,
       side: 'RIGHT',
     },
@@ -3262,7 +3265,7 @@ export class PseudoFWC {
       // A/THR OFF Voluntary Master Caution
       flightPhaseInhib: [1, 4, 8, 10],
       simVarIsActive: this.autoThrustOffVoluntaryMasterCaution,
-      whichCodeToReturn: () => [],
+      whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
       failure: 2,
