@@ -3044,13 +3044,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     let value = parseInt(s);
-    if (!isFinite(value) || !/^\d{4,5}$/.test(s)) {
+    if (!isFinite(value) || !/^\d{1,5}$/.test(s)) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
     }
 
     value = Math.round(value / 10) * 10;
-    if (value < 1000 || value > 45000) {
+    if (value < 0 || value > 39800) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
@@ -4011,12 +4011,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return true;
     }
 
-    if (!/^\d{4,5}$/.test(s)) {
+    if (!/^\d{1,5}$/.test(s)) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
     }
     const value = Math.round(parseInt(s) / 10) * 10;
-    if (value < 1000 || value > 45000) {
+    if (value < 0 || value > 39800) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
