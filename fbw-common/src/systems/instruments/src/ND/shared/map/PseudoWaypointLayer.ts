@@ -23,6 +23,9 @@ import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManage
 const DECEL_PATH = new Path2D(
   'm 14.5125 0 c 0 8.015 -6.4975 14.5125 -14.5125 14.5125 c -8.015 0 -14.5125 -6.4975 -14.5125 -14.5125 c 0 -8.015 6.4975 -14.5125 14.5125 -14.5125 c 8.015 0 14.5125 6.4975 14.5125 14.5125 z m -12.15 -9.7875 h -7.7625 v 18.225 h 7.7625 l 2.7 -3.375 v -11.475 l -2.7 -3.375 z',
 );
+const ETP_PATH = new Path2D(
+  'm 14.5125 0 c 0 8.015 -6.4975 14.5125 -14.5125 14.5125 c -8.015 0 -14.5125 -6.4975 -14.5125 -14.5125 c 0 -8.015 6.4975 -14.5125 14.5125 -14.5125 c 8.015 0 14.5125 6.4975 14.5125 14.5125 z',
+);
 const START_OF_CLIMB_PATH = new Path2D('M 0 0 h 22.2 l 19.8 -16.2 m -6 0 h 6 v 6');
 const LEVEL_OFF_CLIMB_PATH = new Path2D('M -42 16.2 l 19.8 -16.2 h 22.2 m -4.2 -4.2 l 4.2 4.2 l -4.2 4.2');
 const START_OF_DESCENT_PATH = new Path2D('M 0 0 h 22.2 l 19.8 16.2 m -6 0 h 6 v -6');
@@ -151,6 +154,13 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
     ) {
       context.fillStyle = color;
       this.paintPath(context, x, y, END_OF_VD_PATH, rotate);
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpEtp) {
+      const green = '#0f0';
+
+      context.strokeStyle = green;
+      this.paintPath(context, x, y, ETP_PATH);
+
+      PaintUtils.paintText(isColorLayer, context, x + 13, y + 18, symbol.ident, green);
     }
   }
 

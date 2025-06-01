@@ -327,7 +327,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
               NdPwpSymbolTypeFlags.PwpCdaFlap2 |
               NdPwpSymbolTypeFlags.PwpDecel |
               NdPwpSymbolTypeFlags.PwpTimeMarker |
-              NdPwpSymbolTypeFlags.PwpSpeedChange)),
+              NdPwpSymbolTypeFlags.PwpSpeedChange |
+              NdPwpSymbolTypeFlags.PwpEtp)),
     );
 
     this.pwpLayer.data = pseudoWaypoints;
