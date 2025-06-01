@@ -147,7 +147,6 @@ export class PseudoFWC {
 
   private requestMasterCautionFromFaults = false;
   private requestMasterCautionFromABrkOff = false;
-  private requestMasterCautionFromAThrOff = false;
 
   private requestSingleChimeFromAThrOff = false;
 
@@ -2852,7 +2851,6 @@ export class PseudoFWC {
       this.auralSingleChimePending = false;
       this.requestMasterCautionFromFaults = false;
       this.requestMasterCautionFromABrkOff = false;
-      this.requestMasterCautionFromAThrOff = false;
     }
     if ((masterWarningButtonLeft || masterWarningButtonRight) && this.nonCancellableWarningCount === 0) {
       this.requestMasterWarningFromFaults = this.nonCancellableWarningCount > 0;
@@ -3151,11 +3149,7 @@ export class PseudoFWC {
       }
     }
 
-    this.masterCaution.set(
-      this.requestMasterCautionFromFaults ||
-        this.requestMasterCautionFromABrkOff ||
-        this.requestMasterCautionFromAThrOff,
-    );
+    this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromABrkOff);
 
     this.masterWarning.set(this.requestMasterWarningFromFaults);
 
