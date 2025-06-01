@@ -33,7 +33,6 @@
 1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
 1. [A32NX/FMS] Removed required leading zeros for acceleration, thrust reduction, and transition altitudes - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Adjusted TRANS ALT allowed entry range - @Jonny23787 (Jonathan)
-1. [A32NX/FMS] Adjusted position of flight phase and flight number on PROG page  - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
