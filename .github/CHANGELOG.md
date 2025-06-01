@@ -39,7 +39,7 @@
 1. [A380X/ND] Show RNP on approach identifier for RNP AR approaches - @BravoMike99 (bruno_pt99)
 1. [ND] Improve vertical position of approach message - @BravoMike99 (bruno_pt99)
 1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
-1. [A380x/FWS]: Update normal checklists and harmonize TO memo - @becas22 (bernardor96)
+1. [A380x/FWS]: Update normal checklists to newer Airbus standard and harmonize TO memo - @becas22 (bernardor96)
 
 ## 0.13.0
 
