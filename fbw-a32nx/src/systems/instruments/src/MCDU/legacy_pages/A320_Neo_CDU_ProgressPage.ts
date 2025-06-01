@@ -181,7 +181,7 @@ export class CDUProgressPage {
     }
 
     mcdu.setTemplate([
-      ['{green}' + flightPhase.padStart(13, '\xa0') + '{end}\xa0' + flightNo.padEnd(17, '\xa0')],
+      ['{green}' + flightPhase.padStart(15, '\xa0') + '{end}\xa0' + flightNo.padEnd(11, '\xa0')],
       ['\xa0' + 'CRZ\xa0', 'OPT\xa0\xa0\xa0\xa0REC MAX'],
       [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + '{magenta}FL' + flMax.toString() + '\xa0{end}'],
       [''],
