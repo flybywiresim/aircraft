@@ -186,6 +186,8 @@ export class PseudoFWC {
     this.fireActive,
   );
 
+  private readonly cavalryChargeActive = Subject.create(true);
+
   private readonly fwcOut124 = Arinc429RegisterSubject.createEmpty();
 
   private readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
@@ -1198,6 +1200,11 @@ export class PseudoFWC {
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
 
     this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
+
+    this.cavalryChargeActive.sub(
+      (cavcharge) => this.soundManager.handleSoundCondition('cavalryChargeCont', cavcharge),
+      true,
+    );
 
     this.masterCaution.sub((caution) => {
       // Inhibit master warning/cautions until FWC startup has been completed
@@ -2906,6 +2913,7 @@ export class PseudoFWC {
     let rightFailureSystemCount = 0;
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
+    const auralCavchargeKeys: string[] = [];
 
     // Update failuresLeft list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
@@ -3010,7 +3018,7 @@ export class PseudoFWC {
       }
 
       if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
-        this.soundManager.enqueueSound('cavalryChargeCont');
+        auralCavchargeKeys.push(key);
       }
     }
 
@@ -3024,6 +3032,8 @@ export class PseudoFWC {
     if (this.auralScKeys.length === 0) {
       this.auralSingleChimePending = false;
     }
+
+    this.cavalryChargeActive.set(auralCavchargeKeys.length !== 0);
 
     const failLeft = tempFailureArrayLeft.length > 0;
 
