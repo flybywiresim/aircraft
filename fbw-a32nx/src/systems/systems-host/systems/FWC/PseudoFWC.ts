@@ -83,6 +83,7 @@ enum FwcAuralWarning {
   SingleChime,
   Crc,
   CavalryCharge,
+  TripleClick,
 }
 
 export class PseudoFWC {
@@ -462,6 +463,14 @@ export class PseudoFWC {
   private autoThrustLimitedDelayNode = false;
 
   public readonly autoThrustLimited = Subject.create(false);
+
+  // AP/FD reversion
+
+  public readonly modeReversionMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly modeReversionMtrig2 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly modeReversion = Subject.create(false);
 
   /** TO CONF pressed in phase 2 or 3 SR */
   private toConfigCheckedInPhase2Or3 = false;
@@ -1769,6 +1778,12 @@ export class PseudoFWC {
 
     this.apOffInvoluntaryText.set(this.apOffInvoluntaryMemory1.read());
 
+    // AP/FD Reversion Triple Click
+    this.modeReversionMtrig1.write(this.fmgc1DiscreteWord4.get().bitValueOr(28, false), deltaTime);
+    this.modeReversionMtrig2.write(this.fmgc2DiscreteWord4.get().bitValueOr(28, false), deltaTime);
+
+    this.modeReversion.set(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read());
+
     // AP/FD capability change
     let fmgcApproachCapability = 0;
     const getApproachCapability = (dw3: Arinc429WordData, dw4: Arinc429WordData): number => {
@@ -3020,6 +3035,11 @@ export class PseudoFWC {
       if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
         auralCavchargeKeys.push(key);
       }
+
+      if (newWarning && value.auralWarning?.get() === FwcAuralWarning.TripleClick) {
+        this.soundManager.enqueueSound('pause0p8s');
+        this.soundManager.enqueueSound('tripleClick');
+      }
     }
 
     this.auralCrcKeys = auralCrcKeys;
@@ -3309,6 +3329,22 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       side: 'LEFT',
+    },
+    2200175: {
+      // AP/FD Mode Reversion
+      flightPhaseInhib: [2, 3, 4, 8, 9, 10],
+      simVarIsActive: this.modeReversion,
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.TripleClick : FwcAuralWarning.None),
+        this.modeReversion,
+      ),
+      whichCodeToReturn: () => [null],
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+      cancel: false,
     },
     2200202: {
       // FCU 1+2 FAULT

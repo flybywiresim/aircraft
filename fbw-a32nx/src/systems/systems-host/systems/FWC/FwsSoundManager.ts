@@ -65,7 +65,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     continuous: true,
   },
   tripleClick: {
-    localVarName: 'A32NX_FMA_TRIPLE_CLICK',
+    wwiseEventName: '3click',
     length: 0.62,
     priority: 3,
     type: FwsAuralWarningType.AuralWarning,
