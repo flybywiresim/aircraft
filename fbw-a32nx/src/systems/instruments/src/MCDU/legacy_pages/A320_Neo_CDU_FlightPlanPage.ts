@@ -690,8 +690,8 @@ export class CDUFlightPlanPage {
         let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (isPageB) {
-          if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.remainingFuelOnBoard)) {
-            timeCell = `{small}${NXUnits.poundsToUser(pwp.flightPlanInfo.remainingFuelOnBoard / 1000)
+          if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.estimatedFuelOnBoard)) {
+            timeCell = `{small}${NXUnits.poundsToUser(pwp.flightPlanInfo.estimatedFuelOnBoard / 1000)
               .toFixed(1)
               .padStart(4, '\xa0')}{end}`;
 

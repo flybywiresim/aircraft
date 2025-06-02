@@ -76,7 +76,6 @@ import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { SimbriefOfpState } from './LegacyFmsPageInterface';
 import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
-import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
@@ -4888,35 +4887,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public getTripWind() {
     // FIXME convert vnav to use +ve for tailwind, -ve for headwind, it's the other way around at the moment
     return -(this.flightPlanService.active?.performanceData.pilotTripWind.get() ?? 0);
-  }
-
-  public getWinds() {
-    // FIXME
-    return {
-      climb: [],
-      cruise: [],
-      des: [],
-      alternate: null,
-    };
-  }
-
-  public getApproachWind(): FmcWindVector | null {
-    const activePlan = this.currFlightPlanService.active;
-    const destination = activePlan.destinationAirport;
-
-    if (
-      !destination ||
-      !destination.location ||
-      !Number.isFinite(activePlan.performanceData.approachWindDirection.get()) ||
-      !Number.isFinite(activePlan.performanceData.approachWindMagnitude.get())
-    ) {
-      return { direction: 0, speed: 0 };
-    }
-
-    const magVar = Facilities.getMagVar(destination.location.lat, destination.location.long);
-    const trueHeading = A32NX_Util.magneticToTrue(activePlan.performanceData.approachWindDirection.get(), magVar);
-
-    return { direction: trueHeading, speed: activePlan.performanceData.approachWindMagnitude.get() };
   }
 
   public getApproachQnh() {

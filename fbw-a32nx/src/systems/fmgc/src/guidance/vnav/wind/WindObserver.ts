@@ -1,21 +1,31 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
-// SPDX-License-Identifier: GPL-3.0
+import { Arinc429Register } from '@flybywiresim/fbw-sdk';
+import { WindEntry } from '../../../flightplanning/data/wind';
+import { Vec2Math } from '@microsoft/msfs-sdk';
 
-import { WindVector } from '@fmgc/guidance/vnav/wind';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+export type WindMeasurement = WindEntry;
 
 export class WindObserver {
-  constructor(private irsIndex: number) {}
+  private readonly register: Arinc429Register = Arinc429Register.empty();
 
-  get(): WindVector | null {
-    const windDirection = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${this.irsIndex}_WIND_DIRECTION`);
-    const windSpeed = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${this.irsIndex}_WIND_SPEED`);
+  get(result: WindMeasurement): WindMeasurement | null {
+    for (let i = 1; i <= 3; i++) {
+      this.register.setFromSimVar(`L:A32NX_ADIRS_IR_${i}_WIND_DIRECTION`);
+      if (this.register.isNoComputedData() || this.register.isFailureWarning()) continue;
+      const windDirection = this.register.value;
 
-    if (!windDirection.isNormalOperation() || !windSpeed.isNormalOperation()) {
-      return null;
+      this.register.setFromSimVar(`L:A32NX_ADIRS_IR_${i}_WIND_SPEED`);
+      if (this.register.isNoComputedData() || this.register.isFailureWarning()) continue;
+      const windSpeed = this.register.value;
+
+      this.register.setFromSimVar(`L:A32NX_ADIRS_ADR_${i}_ALTITUDE`);
+      if (this.register.isNoComputedData() || this.register.isFailureWarning()) continue;
+
+      result.altitude = this.register.value;
+      Vec2Math.setFromPolar(windSpeed, windDirection, result.vector);
+
+      return result;
     }
 
-    return new WindVector(windDirection.value, windSpeed.value);
+    return null;
   }
 }

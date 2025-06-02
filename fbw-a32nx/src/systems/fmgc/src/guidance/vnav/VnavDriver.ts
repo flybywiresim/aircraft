@@ -16,8 +16,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { LatchedDescentGuidance } from '@fmgc/guidance/vnav/descent/LatchedDescentGuidance';
 import { DescentGuidance } from '@fmgc/guidance/vnav/descent/DescentGuidance';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
-import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { VerticalProfileManager } from '@fmgc/guidance/vnav/VerticalProfileManager';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -50,8 +48,6 @@ export class VnavDriver implements GuidanceComponent {
 
   private descentGuidance: DescentGuidance | LatchedDescentGuidance;
 
-  private headingProfile: NavHeadingProfile;
-
   private profileManager: VerticalProfileManager;
 
   // We cache this here, so we don't have to recompute it every guidance step
@@ -79,10 +75,8 @@ export class VnavDriver implements GuidanceComponent {
     private readonly guidanceController: GuidanceController,
     private readonly computationParametersObserver: VerticalProfileComputationParametersObserver,
     private readonly atmosphericConditions: AtmosphericConditions,
-    private readonly windProfileFactory: WindProfileFactory,
     private readonly acConfig: AircraftConfig,
   ) {
-    this.headingProfile = new NavHeadingProfile(flightPlanService);
     this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
 
     this.constraintReader = new ConstraintReader(flightPlanService, guidanceController);
@@ -106,12 +100,9 @@ export class VnavDriver implements GuidanceComponent {
 
     this.profileManager = new VerticalProfileManager(
       this.flightPlanService,
-      this.guidanceController,
       this.computationParametersObserver,
       this.atmosphericConditions,
       this.constraintReader,
-      this.headingProfile,
-      this.windProfileFactory,
       this.aircraftToDescentProfileRelation,
       this.acConfig,
     );
@@ -152,8 +143,6 @@ export class VnavDriver implements GuidanceComponent {
 
     const newParameters = this.computationParametersObserver.get();
 
-    this.windProfileFactory.updateAircraftDistanceFromStart(this.constraintReader.distanceToPresentPosition);
-    this.headingProfile.updateGeometry(geometry);
     this.currentMcduSpeedProfile?.update(this.constraintReader.distanceToPresentPosition);
 
     // No predictions in go around phase

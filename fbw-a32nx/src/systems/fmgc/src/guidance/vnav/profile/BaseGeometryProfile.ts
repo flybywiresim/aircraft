@@ -15,6 +15,7 @@ import {
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { WindInterface } from '../wind/WindProfile';
 
 export interface PerfToAltPrediction {
   altitude: Feet;
@@ -44,6 +45,8 @@ export abstract class BaseGeometryProfile {
   abstract get cruiseSteps(): GeographicCruiseStep[];
 
   abstract get distanceToPresentPosition(): NauticalMiles;
+
+  abstract readonly winds: WindInterface;
 
   get lastCheckpoint(): VerticalCheckpoint | null {
     if (this.checkpoints.length < 1) {

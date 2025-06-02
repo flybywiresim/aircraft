@@ -10,6 +10,10 @@ import { isAltitudeConstraintMet } from '@fmgc/guidance/vnav/descent/DescentPath
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AltitudeConstraint, AltitudeDescriptor, SpeedConstraint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { WindProfile } from '../wind/WindProfile';
+import { Vec2Math } from '@microsoft/msfs-sdk';
+import { WindVector } from '../../../flightplanning/data/wind';
+import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
 
 export enum ProfilePhase {
   Climb,
@@ -19,7 +23,6 @@ export enum ProfilePhase {
 
 // TODO: Merge this with VerticalCheckpoint
 export interface VerticalWaypointPrediction {
-  waypointIndex: number;
   distanceFromStart: NauticalMiles;
   secondsFromPresent: Seconds;
   altitude: Feet;
@@ -29,10 +32,10 @@ export interface VerticalWaypointPrediction {
   isAltitudeConstraintMet: boolean;
   isSpeedConstraintMet: boolean;
   altError: number;
-  distanceToTopOfDescent: NauticalMiles | null;
   estimatedFuelOnBoard: Pounds;
   distanceFromAircraft: NauticalMiles;
   profilePhase: ProfilePhase;
+  windPrediction: WindVector;
 }
 
 export enum VerticalCheckpointReason {
@@ -90,6 +93,8 @@ export interface VerticalCheckpoint {
   remainingFuelOnBoard: number;
   speed: Knots;
   mach: Mach;
+  // wind: WindVector;
+  profilePhase: ProfilePhase;
 }
 
 export interface VerticalCheckpointForDeceleration extends VerticalCheckpoint {
@@ -148,6 +153,8 @@ export interface GeographicCruiseStep {
 
 export class NavGeometryProfile extends BaseGeometryProfile {
   public waypointPredictions: Map<number, VerticalWaypointPrediction> = new Map();
+
+  readonly winds = new WindProfile(this.flightPlanService, FlightPlanIndex.Active);
 
   constructor(
     private flightPlanService: FlightPlanService,
@@ -219,10 +226,6 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       return predictions;
     }
 
-    const topOfClimb = this.findVerticalCheckpoint(VerticalCheckpointReason.TopOfClimb);
-    const topOfDescent = this.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
-    const distanceToPresentPosition = this.distanceToPresentPosition;
-
     const activePlan = this.flightPlanService.active;
 
     for (let i = activePlan.activeLegIndex - 1; i < activePlan.firstMissedApproachLegIndex; i++) {
@@ -233,14 +236,15 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       }
 
       const distanceFromStart = leg.calculated?.cumulativeDistanceWithTransitions;
-      const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } =
+      const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard, profilePhase } =
         this.interpolateEverythingFromStart(distanceFromStart);
 
       const altitudeConstraint = leg.altitudeConstraint;
       const speedConstraint = leg.speedConstraint;
 
+      const windPrediction = this.winds.getWindForecastAtLeg(i, altitude, profilePhase, Vec2Math.create());
+
       predictions.set(i, {
-        waypointIndex: i,
         distanceFromStart,
         secondsFromPresent,
         altitude,
@@ -250,28 +254,14 @@ export class NavGeometryProfile extends BaseGeometryProfile {
         speedConstraint,
         isSpeedConstraintMet: this.isSpeedConstraintMet(speed, speedConstraint),
         altError: this.computeAltError(altitude, altitudeConstraint),
-        distanceToTopOfDescent: topOfDescent ? topOfDescent.distanceFromStart - distanceFromStart : null,
         estimatedFuelOnBoard: remainingFuelOnBoard,
-        distanceFromAircraft: distanceFromStart - distanceToPresentPosition,
-        profilePhase: this.interpolateProfilePhase(distanceFromStart, topOfClimb, topOfDescent),
+        distanceFromAircraft: distanceFromStart - this.distanceToPresentPosition,
+        profilePhase,
+        windPrediction,
       });
     }
 
     return predictions;
-  }
-
-  private interpolateProfilePhase(
-    distanceFromStart: NauticalMiles,
-    topOfClimb: VerticalCheckpoint | null,
-    topOfDescent: VerticalCheckpoint | null,
-  ): ProfilePhase {
-    if (topOfClimb && distanceFromStart < topOfClimb.distanceFromStart) {
-      return ProfilePhase.Climb;
-    } else if (topOfDescent && distanceFromStart < topOfDescent.distanceFromStart) {
-      return ProfilePhase.Cruise;
-    }
-
-    return ProfilePhase.Descent;
   }
 
   private isSpeedConstraintMet(speed: Knots, constraint?: SpeedConstraint): boolean {
