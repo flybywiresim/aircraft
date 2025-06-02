@@ -13,14 +13,12 @@ import {
   VNode,
   HEvent,
   ClockEvents,
-  SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 
 const TensDigits = (value: number) => {
   let text: string;

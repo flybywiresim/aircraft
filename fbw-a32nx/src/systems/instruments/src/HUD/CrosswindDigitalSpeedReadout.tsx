@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -13,12 +12,8 @@ import {
   VNode,
   HEvent,
   ClockEvents,
-  SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
-
-import { SimplaneBaroMode } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
@@ -59,25 +54,6 @@ const HundredsDigit = (value: number) => {
     text = value.toString();
   }
 
-  return text;
-};
-const ThousandsDigit = (value: number) => {
-  let text: string;
-  if (!Number.isNaN(value)) {
-    text = (value % 10).toString();
-  } else {
-    text = '';
-  }
-
-  return text;
-};
-const TenThousandsDigit = (value: number) => {
-  let text: string;
-  if (!Number.isNaN(value)) {
-    text = value.toString();
-  } else {
-    text = '';
-  }
   return text;
 };
 

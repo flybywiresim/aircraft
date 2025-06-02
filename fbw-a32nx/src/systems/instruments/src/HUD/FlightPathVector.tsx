@@ -18,21 +18,14 @@ import {
   Arinc429Register,
   Arinc429RegisterSubject,
 } from '@flybywiresim/fbw-sdk';
-import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
 import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { getDisplayIndex } from './HUD';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import {
-  calculateHorizonOffsetFromPitch,
-  calculateVerticalOffsetFromRoll,
-  LagFilter,
-  getSmallestAngle,
-} from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll } from './HUDUtils';
 
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 import { FgBus } from './shared/FgBusProvider';
 
 const DistanceSpacing = (1024 / 28) * 5;
@@ -301,18 +294,6 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
-interface FlightPathDirectorData {
-  roll: Arinc429WordData;
-  pitch: Arinc429WordData;
-  fpa: Arinc429WordData;
-  da: Arinc429WordData;
-  activeVerticalMode: number;
-  activeLateralMode: number;
-  fdRoll: number;
-  fdPitch: number;
-  fdActive: boolean;
-}
-
 interface SpeedStateInfo {
   pfdTargetSpeed: Arinc429WordData;
   fcuSelectedSpeed: Arinc429WordData;
@@ -413,9 +394,6 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
       const fmgcPfdSelectedSpeedValid = !(
         this.speedState.pfdTargetSpeed.isNoComputedData() || this.speedState.pfdTargetSpeed.isFailureWarning()
       );
-      const isSpeedManaged =
-        this.speedState.fmgcDiscreteWord5.bitValueOr(19, false) &&
-        !(this.speedState.fmgcDiscreteWord5.bitValueOr(20, false) || !fmgcPfdSelectedSpeedValid);
 
       const chosenTargetSpeed = fmgcPfdSelectedSpeedValid
         ? this.speedState.pfdTargetSpeed

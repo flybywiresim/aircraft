@@ -14,8 +14,6 @@ import {
   MappedSubject,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
-
-import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -1489,7 +1487,6 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.needsUpdate = true;
-    const mode = this.props.mode.valueOf();
     const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<
       HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & FgBus & FcuBus
@@ -1498,7 +1495,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     sub
       .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
-      .handle((value) => {
+      .handle(() => {
         this.handleCrosswinMode();
       });
 

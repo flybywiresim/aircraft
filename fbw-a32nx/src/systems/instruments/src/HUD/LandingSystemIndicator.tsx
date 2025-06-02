@@ -5,7 +5,6 @@
 import {
   ClockEvents,
   ConsumerSubject,
-  ConsumerValue,
   DisplayComponent,
   FSComponent,
   HEvent,
@@ -531,7 +530,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
       this.pitch = p.value;
     });
 
-    sub.on('realTime').handle((t) => {
+    sub.on('realTime').handle(() => {
       if (this.fmgcFlightPhase == 1) {
         this.doOnce = 0;
         this.LSLocRef.instance.style.visibility = 'visible';
@@ -740,14 +739,6 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
       });
   }
   private MoveGlideSlopeGroup() {
-    const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
-    const pitchSubFpaConv =
-      calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
-    const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
-    const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
-
-    const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
-    const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
     if (this.crosswindMode == false) {
       this.LSGsRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + (3 * DistanceSpacing) / ValueSpacing) / 2.5}px, 0px)`;
     } else {
@@ -860,14 +851,6 @@ class VDevIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 
   private MoveGlideSlopeGroup() {
-    const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
-    const pitchSubFpaConv =
-      calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
-    const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
-    const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
-
-    const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
-    const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
     this.VDevRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + (3 * DistanceSpacing) / ValueSpacing) / 2.5}px, 0px)`;
     //DistanceSpacing
   }

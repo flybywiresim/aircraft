@@ -16,7 +16,7 @@ import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
-import { WindMode, HudElemsVis, getBitMask } from './HUDUtils';
+import { HudElemsVis, getBitMask } from './HUDUtils';
 import { AutoThrustMode } from '@shared/autopilot';
 import { getDisplayIndex } from './HUD';
 
@@ -293,7 +293,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>; nee
       this.pathSub.set(path);
     });
 
-    this.props.needleColour.sub((colour) => {
+    this.props.needleColour.sub(() => {
       this.indicatorRef.instance.setAttribute('class', `ScaledStroke Green`);
     }, true);
   }

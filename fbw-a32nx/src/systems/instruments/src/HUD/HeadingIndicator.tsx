@@ -11,7 +11,6 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
-  Value,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
@@ -456,7 +455,7 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
   private readonly trueFlagRef = FSComponent.createRef<SVGGElement>();
 
   /** @inheritdoc */
-  onAfterRender(node: VNode): void {
+  onAfterRender(): void {
     this.props.bus
       .getSubscriber<DmcLogicEvents>()
       .on('trueRefActive')

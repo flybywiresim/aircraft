@@ -21,81 +21,18 @@ import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
 
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
-import { VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { AutoThrustMode } from '@shared/autopilot';
-import { HudElemsVis, LagFilter, getBitMask } from './HUDUtils';
+import { HudElemsVis, getBitMask } from './HUDUtils';
 import { getDisplayIndex } from './HUD';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
 const DistanceSpacing = 7.5;
-
-class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private landingElevationIndicator = FSComponent.createRef<SVGPathElement>();
-
-  private altitude = 0;
-
-  private landingElevation = new Arinc429Word(0);
-
-  private flightPhase = 0;
-
-  private delta = 0;
-
-  private handleLandingElevation() {
-    const landingElevationValid =
-      !this.landingElevation.isFailureWarning() && !this.landingElevation.isNoComputedData();
-    const delta = this.altitude - this.landingElevation.value;
-    const offset = ((delta - DisplayRange) * DistanceSpacing) / ValueSpacing;
-    this.delta = delta;
-    if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8) || !landingElevationValid) {
-      this.landingElevationIndicator.instance.classList.add('HiddenElement');
-    } else {
-      this.landingElevationIndicator.instance.classList.remove('HiddenElement');
-    }
-    this.landingElevationIndicator.instance.setAttribute('d', `m130.85 123.56h-13.096v${offset}h13.096z`);
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
-
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-
-        if ((fp !== 7 && fp !== 8) || this.delta > DisplayRange) {
-          this.landingElevationIndicator.instance.classList.add('HiddenElement');
-        } else {
-          this.landingElevationIndicator.instance.classList.remove('HiddenElement');
-        }
-      });
-
-    sub
-      .on('landingElevation')
-      .whenChanged()
-      .handle((le) => {
-        this.landingElevation = le;
-        this.handleLandingElevation();
-      });
-
-    sub.on('altitudeAr').handle((a) => {
-      this.altitude = a.value;
-      this.handleLandingElevation();
-    });
-  }
-
-  render(): VNode {
-    return <path ref={this.landingElevationIndicator} id="AltTapeLandingElevation" class="EarthFill" />;
-  }
-}
 
 class RadioAltIndicator extends DisplayComponent<{ bus: ArincEventBus; filteredRadioAltitude: Subscribable<number> }> {
   private visibilitySub = Subject.create('hidden');
@@ -364,12 +301,6 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
         </g>
       </g>
     );
-  }
-}
-
-class AltTapeBackground extends DisplayComponent<any> {
-  render(): VNode {
-    return <path id="AltTapeBackground" d="m130.85 123.56h-13.096v-85.473h13.096z" class="TapeBackground" />;
   }
 }
 
@@ -954,7 +885,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     sub
       .on('baroMode')
       .whenChanged()
-      .handle((m) => {
+      .handle(() => {
         this.getText();
       });
     sub

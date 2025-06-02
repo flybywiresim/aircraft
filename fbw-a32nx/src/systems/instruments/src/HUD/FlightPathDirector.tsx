@@ -208,7 +208,7 @@ export class FlightPathDirector extends DisplayComponent<{
 
       //FD Smoothing when close to FPV
       //roll
-      let FDRollOrder = this.data.rollFdCommand.value;
+      const FDRollOrder = this.data.rollFdCommand.value;
       let FDRollOrder2 = FDRollOrder;
       let cx, cy, r;
       cx = -30;

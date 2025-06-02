@@ -12,19 +12,17 @@ import {
   Subscribable,
   VNode,
   HEvent,
-  NodeReference,
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
-import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { calculateHorizonOffsetFromPitch, LagFilter, getSmallestAngle } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './HUD';
-import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
+import { HeadingOfftape } from './HeadingIndicator';
 
 const DisplayRange = 35;
 const DistanceSpacing = 182.86;
@@ -77,7 +75,7 @@ class HeadingBug extends DisplayComponent<{
   );
 
   private readonly headingBugSubject = MappedSubject.create(
-    ([heading, selectedHeading, yOffset, visible]) => {
+    ([heading, selectedHeading, visible]) => {
       if (visible) {
         const headingDelta = getSmallestAngle(selectedHeading, heading.value);
 
@@ -634,7 +632,6 @@ class PitchScale extends DisplayComponent<{
     const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
-    const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
     this.threeDegLine.instance.style.transform = `translate3d(${xOffset}px, 0px, 0px)`;
   }
   render(): VNode {

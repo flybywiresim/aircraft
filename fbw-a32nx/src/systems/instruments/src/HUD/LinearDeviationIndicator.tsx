@@ -1,18 +1,9 @@
-import {
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  Subject,
-  VNode,
-  ConsumerSubject,
-  SubscribableMapFunctions,
-  HEvent,
-} from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, Subject, VNode, HEvent } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { AutoThrustMode } from '@shared/autopilot';
-import { HudElemsVis, LagFilter, getBitMask } from './HUDUtils';
+import { HudElemsVis, getBitMask } from './HUDUtils';
 import { getDisplayIndex } from './HUD';
 
 type LinearDeviationIndicatorProps = {

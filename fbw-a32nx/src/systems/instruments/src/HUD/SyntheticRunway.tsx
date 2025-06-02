@@ -11,37 +11,12 @@ import {
   VNode,
   NodeReference,
 } from '@microsoft/msfs-sdk';
-import {
-  ArincEventBus,
-  Arinc429Word,
-  Arinc429RegisterSubject,
-  Arinc429WordData,
-  GenericDataListenerSync,
-  LegType,
-  RunwaySurface,
-  TurnDirection,
-  VorType,
-  EfisOption,
-  EfisNdMode,
-  NdSymbol,
-  NdSymbolTypeFlags,
-  HUDSyntheticRunway,
-} from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
 
-import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
 import { getDisplayIndex } from './HUD';
-import { calculateHorizonOffsetFromPitch, getSmallestAngle } from './HUDUtils';
+import { getSmallestAngle } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
-import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { DmcEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
-
-class initAndFinalBearings {
-  initialBearing: number;
-  finalBearing: number;
-}
 
 export class SyntheticRunway extends DisplayComponent<{
   bus: ArincEventBus;
@@ -74,16 +49,9 @@ export class SyntheticRunway extends DisplayComponent<{
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
 
-  private toRadians(deg: number) {
-    return (deg / 180) * Math.PI;
-  }
-  private toDdegrees(rad: number) {
-    return (rad / Math.PI) * 180;
-  }
-
   private updateIndication(): void {
-    let altDelta = this.mda;
-    let altDeltaDh = this.dh;
+    const altDelta = this.mda;
+    const altDeltaDh = this.dh;
 
     altDelta > altDeltaDh ? (this.MdaOrDh = altDelta) : (this.MdaOrDh = altDeltaDh);
     if (this.filteredRadioAltitude < 10) {

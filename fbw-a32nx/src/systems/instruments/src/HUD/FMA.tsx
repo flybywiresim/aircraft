@@ -9,7 +9,6 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
-  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
@@ -21,9 +20,11 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
-import { WindMode, HudElemsVis, HudElemsVisStr, getBitMask } from './HUDUtils';
+import { HudElemsVis, getBitMask } from './HUDUtils';
 import { AutoThrustMode } from '@shared/autopilot';
 import { getDisplayIndex } from './HUD';
+
+/* eslint-disable no-constant-condition,no-dupe-else-if -- for keeping the FMA code while it's not active yet */
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;

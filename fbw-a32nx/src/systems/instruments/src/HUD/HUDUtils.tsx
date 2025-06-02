@@ -1,7 +1,7 @@
 import { Subject } from '@microsoft/msfs-sdk';
 
 export const calculateHorizonOffsetFromPitch = (pitch: number) => {
-  let offset = (pitch * 1024) / 28;
+  const offset = (pitch * 1024) / 28;
   return offset;
 };
 
@@ -219,7 +219,7 @@ export function getBitMask(
 ): HudElemsVisStr {
   const nArr = [];
 
-  let elemVis: HudElemsVisStr = {
+  const elemVis: HudElemsVisStr = {
     xWindAltTape: '',
     altTape: '',
     xWindSpdTape: '',
@@ -231,19 +231,6 @@ export function getBitMask(
     QFE: '',
   };
 
-  let elems: HudElemsVis = {
-    xWindAltTape: Subject.create<String>(''),
-    altTape: Subject.create<String>(''),
-    xWindSpdTape: Subject.create<String>(''),
-    spdTapeOrForcedOnLand: Subject.create<String>(''),
-    altTapeMaskFill: Subject.create<String>(''),
-    windIndicator: Subject.create<String>(''),
-    FMA: Subject.create<String>(''),
-    VS: Subject.create<String>(''),
-    QFE: Subject.create<String>(''),
-  };
-
-  let n = -1;
   let bitMask = -1;
   onToPower ? (nArr[0] = 1) : (nArr[0] = 0);
   onGround ? (nArr[1] = 1) : (nArr[1] = 0);

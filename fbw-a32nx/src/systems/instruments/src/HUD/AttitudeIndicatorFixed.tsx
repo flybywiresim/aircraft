@@ -2,18 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subject, Subscribable, SvgPathStream, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
+import { LateralMode } from '@shared/autopilot';
 import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
 
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { LagFilter } from './HUDUtils';
 import { FlightPathDirector } from './FlightPathDirector';
 
 const DistanceSpacing = (1024 / 28) * 5; //182.857
@@ -547,248 +545,10 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
   }
 }
 
-class FlightDirector extends DisplayComponent<{ bus: ArincEventBus }> {
-  private fdEngaged = false;
-
-  private fcuEisDiscreteWord2 = new Arinc429Word(0);
-
-  private fcuDiscreteWord1 = new Arinc429Word(0);
-
-  private fmgcDiscreteWord2 = new Arinc429Word(0);
-
-  private fmgcDiscreteWord5 = new Arinc429Word(0);
-
-  private fdRollCommand = new Arinc429Word(0);
-
-  private fdPitchCommand = new Arinc429Word(0);
-
-  private fdYawCommand = new Arinc429Word(0);
-
-  private leftMainGearCompressed = false;
-
-  private rightMainGearCompressed = false;
-
-  private lateralRef1 = FSComponent.createRef<SVGPathElement>();
-
-  private lateralRef2 = FSComponent.createRef<SVGPathElement>();
-
-  private verticalRef1 = FSComponent.createRef<SVGPathElement>();
-
-  private verticalRef2 = FSComponent.createRef<SVGPathElement>();
-
-  private readonly fdFlagVisibleSub = Subject.create(false);
-
-  private readonly lateralShouldFlash = Subject.create(false);
-
-  private readonly longitudinalShouldFlash = Subject.create(false);
-
-  private readonly lateralVisible = Subject.create(false);
-
-  private readonly longitudinalVisible = Subject.create(false);
-
-  private handleFdState() {
-    const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
-    const showFd = this.fdEngaged && !fdOff;
-
-    const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, false);
-
-    const showRoll = showFd && !(this.fdRollCommand.isFailureWarning() || this.fdRollCommand.isNoComputedData());
-
-    if (showRoll) {
-      const FDRollOffset = Math.min(Math.max(this.fdRollCommand.value, -45), 45) * 15 + 640;
-
-      this.lateralVisible.set(true);
-      this.lateralRef1.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
-
-      this.lateralRef2.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
-    } else {
-      this.lateralVisible.set(false);
-    }
-
-    const showPitch = showFd && !(this.fdPitchCommand.isFailureWarning() || this.fdPitchCommand.isNoComputedData());
-
-    if (showPitch) {
-      const FDPitchOffset = Math.min(Math.max(this.fdPitchCommand.value, -22.5), 22.5) * 15 + 512;
-
-      this.longitudinalVisible.set(true);
-      this.verticalRef1.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
-
-      this.verticalRef2.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
-    } else {
-      this.longitudinalVisible.set(false);
-    }
-
-    const onGround = this.leftMainGearCompressed || this.rightMainGearCompressed;
-    if (
-      !fdOff &&
-      (!this.fdEngaged ||
-        this.fdRollCommand.isFailureWarning() ||
-        this.fdPitchCommand.isFailureWarning() ||
-        (this.fdYawCommand.isFailureWarning() && onGround))
-    ) {
-      this.fdFlagVisibleSub.set(true);
-    } else {
-      this.fdFlagVisibleSub.set(false);
-    }
-  }
-
-  private handleFdBarsFlashing() {
-    const fdRollBarFlashing = this.fmgcDiscreteWord2.bitValueOr(28, false);
-    const fdPitchBarFlashing = this.fmgcDiscreteWord5.bitValueOr(24, false);
-
-    this.lateralShouldFlash.set(fdRollBarFlashing);
-    this.longitudinalShouldFlash.set(fdPitchBarFlashing);
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & FgBus & FcuBus>();
-
-    sub
-      .on('fdEngaged')
-      .whenChanged()
-      .handle((fd) => {
-        this.fdEngaged = fd;
-
-        this.handleFdState();
-      });
-
-    sub
-      .on('fcuEisDiscreteWord2')
-      .whenChanged()
-      .handle((tr) => {
-        this.fcuEisDiscreteWord2 = tr;
-
-        this.handleFdState();
-      });
-
-    sub
-      .on('fcuDiscreteWord1')
-      .whenChanged()
-      .handle((tr) => {
-        this.fcuDiscreteWord1 = tr;
-
-        this.handleFdState();
-      });
-
-    sub
-      .on('fmgcDiscreteWord2')
-      .whenChanged()
-      .handle((tr) => {
-        this.fmgcDiscreteWord2 = tr;
-
-        this.handleFdBarsFlashing();
-      });
-
-    sub
-      .on('fmgcDiscreteWord5')
-      .whenChanged()
-      .handle((tr) => {
-        this.fmgcDiscreteWord5 = tr;
-
-        this.handleFdBarsFlashing();
-      });
-
-    sub
-      .on('rollFdCommand')
-      .withArinc429Precision(2)
-      .handle((fd) => {
-        this.fdRollCommand = fd;
-
-        this.handleFdState();
-      });
-
-    sub
-      .on('pitchFdCommand')
-      .withArinc429Precision(2)
-      .handle((fd) => {
-        this.fdPitchCommand = fd;
-
-        this.handleFdState();
-      });
-
-    sub
-      .on('yawFdCommand')
-      .withArinc429Precision(2)
-      .handle((fd) => {
-        this.fdYawCommand = fd;
-
-        this.handleFdState();
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.leftMainGearCompressed = g;
-        this.handleFdState();
-      });
-
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.rightMainGearCompressed = g;
-        this.handleFdState();
-      });
-  }
-
-  render(): VNode | null {
-    return (
-      <g>
-        {/* These are split up in this order to prevent the shadow of one FD bar to go above the other green FD bar */}
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={Infinity}
-          visible={this.lateralVisible}
-          flashing={this.lateralShouldFlash}
-        >
-          <path ref={this.lateralRef1} class="ThickOutline" d="m68.903 61.672v38.302" />
-        </FlashOneHertz>
-
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={Infinity}
-          visible={this.longitudinalVisible}
-          flashing={this.longitudinalShouldFlash}
-        >
-          <path ref={this.verticalRef1} class="ThickOutline" d="m49.263 80.823h39.287" />
-        </FlashOneHertz>
-
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={Infinity}
-          visible={this.lateralVisible}
-          flashing={this.lateralShouldFlash}
-        >
-          <path ref={this.lateralRef2} class="ThickStroke Green" id="FlightDirectorRoll" d="m68.903 61.672v38.302" />
-        </FlashOneHertz>
-
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={Infinity}
-          visible={this.longitudinalVisible}
-          flashing={this.longitudinalShouldFlash}
-        >
-          <path ref={this.verticalRef2} class="ThickStroke Green" id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
-        </FlashOneHertz>
-
-        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fdFlagVisibleSub}>
-          <text id="FDFlag" x="52.702862" y="56.065434" class="FontLargest EndAlign Red">
-            FD
-          </text>
-        </FlashOneHertz>
-      </g>
-    );
-  }
-}
-
 class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private pl = FSComponent.createRef<SVGGElement>();
   private ref1 = FSComponent.createRef<SVGPathElement>();
   private ref2 = FSComponent.createRef<SVGPathElement>();
-  private deb = FSComponent.createRef<SVGPathElement>();
   private onGround = true;
   private leftGear = true;
   private rightGear = true;
