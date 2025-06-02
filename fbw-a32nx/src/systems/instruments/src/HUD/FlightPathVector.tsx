@@ -200,7 +200,7 @@ export class FlightPathVector extends DisplayComponent<{
             <path ref={this.birdPath2} class="SmallStroke Green" d="m 653,512 h 37" stroke-dasharray="3 6" />
             <path ref={this.birdPath3} class="SmallStroke Green" d="M 640,499 v -19" stroke-dasharray="3 6" />
           </g>
-          <TotalFlightPathAngle bus={this.props.bus} />
+          <SpeedChevrons bus={this.props.bus} />
 
           <DeltaSpeed bus={this.props.bus} />
           <RadioAltAndDH
@@ -215,9 +215,7 @@ export class FlightPathVector extends DisplayComponent<{
   }
 }
 
-// // FIXME the same logic with the speed trend tape. Need confirmation.
-
-export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus }> {
+export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
   private refElement = FSComponent.createRef<SVGGElement>();
   private leftChevron = FSComponent.createRef<SVGGElement>();
   private rightChevron = FSComponent.createRef<SVGGElement>();
@@ -295,7 +293,7 @@ export class TotalFlightPathAngle extends DisplayComponent<{ bus: ArincEventBus 
 
   render(): VNode | null {
     return (
-      <g id="TotalFlightPathAngle" ref={this.refElement}>
+      <g id="SpeedChevrons" ref={this.refElement}>
         <path ref={this.leftChevron} class="SmallStroke Green" d="m 574,500 12,12 -12,12" />
         <path ref={this.rightChevron} class="SmallStroke Green" d="m 706,500 -12,12 12,12" />
       </g>

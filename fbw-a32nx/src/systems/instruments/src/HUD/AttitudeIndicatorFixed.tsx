@@ -344,11 +344,17 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
   private yawAcftRef = FSComponent.createRef<SVGPathElement>();
   private yawGroupVerticalOffset = 0;
   private pitch = 0;
+  private lmgc = true;
+  private rmgc = true;
   private handleFdState() {
     const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
     const showFd = this.fdEngaged && !fdOff;
 
-    const showYaw = showFd && !(this.fdYawCommand.isFailureWarning() || this.fdYawCommand.isNoComputedData());
+    const showYaw =
+      this.lmgc &&
+      this.rmgc &&
+      showFd &&
+      !(this.fdYawCommand.isFailureWarning() || this.fdYawCommand.isNoComputedData());
 
     if (showYaw) {
       const offset = -Math.max(Math.min(this.fdYawCommand.value * 3, 120), -120);
@@ -365,6 +371,19 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus>();
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((v) => {
+        this.lmgc = v;
+      });
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((v) => {
+        this.rmgc = v;
+      });
 
     sub.on('yawFdCommand').handle((fy) => {
       this.fdYawCommand = fy;

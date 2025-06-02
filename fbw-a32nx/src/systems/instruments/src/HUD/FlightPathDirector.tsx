@@ -225,9 +225,9 @@ export class FlightPathDirector extends DisplayComponent<{
       const FDPitchOrder = this.data.pitchFdCommand.value; //in degrees on pitch scale
       let FDPitchOrder2 = FDRollOrder;
 
-      cx = -5;
-      cy = 13;
-      r = 13.9284;
+      cx = -10;
+      cy = 18;
+      r = 20.5913;
       if (FDPitchOrder >= 0) {
         FDPitchOrder2 = cy - Math.sqrt(r ** 2 - (FDPitchOrder - cx) ** 2);
       } else {
