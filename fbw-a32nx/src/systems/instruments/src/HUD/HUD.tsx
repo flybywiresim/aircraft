@@ -32,7 +32,6 @@ import {
   DeclutterIndicator,
 } from './AttitudeIndicatorFixed';
 import { FMA } from './FMA';
-import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { LandingSystem } from './LandingSystemIndicator';
 import { LinearDeviationIndicator } from './LinearDeviationIndicator';
@@ -448,7 +447,6 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
 
     const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
-    const fiveDeg = 182.857;
 
     sub
       .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
@@ -466,8 +464,7 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
 
       let rSign = 1;
 
-      let xPos = -D * Math.sin(radRoll);
-      let yPos = D / Math.cos(radRoll);
+      const xPos = -D * Math.sin(radRoll);
 
       // xposition from frame2 to eval if extention should be drawn
       if (this.crosswindMode == false) {
@@ -498,13 +495,12 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           Lspd = 570;
         }
       }
-      let xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
-      let xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
+      const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
+      const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
 
       if (roll.isNormalOperation()) {
         this.spdRollDev = -(640 - 168) * Math.tan(radRoll);
         this.altRollDev = Lalt * Math.tan(radRoll);
-        const yOffset = -this.yOffset.get();
         this.rollGroupRef.instance.style.display = 'block';
         this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
 
@@ -521,11 +517,11 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
         const cx = (640 + xPos * Math.cos(radRoll * rSign)).toString();
         const cy = (512 + xPos * Math.sin(radRoll)).toString();
 
-        let ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //acual eval point
-        let ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //acual eval point
+        const ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //acual eval point
+        const ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //acual eval point
 
-        let exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
-        let eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
+        const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
+        const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
 
         //vertial offset of eval point from horizon
         let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
@@ -572,8 +568,6 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
           this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
           this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
         }
-        const t1 = F1HorizonPitchOffset - F1SpdSideVertDev;
-        const t2 = yPos - F1SpdSideVertDev;
         // console.log(
         //     "\nD: "+D +
         //     "\nD cos r: "+D*Math.cos(radRoll) +
