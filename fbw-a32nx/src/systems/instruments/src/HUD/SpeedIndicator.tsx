@@ -1583,8 +1583,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
         this.textSub.set(text);
       }
 
-      const fSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
-      if (chosenTargetSpeed.value < fSpeed) {
+      if (isSpeedManaged) {
         this.speedTargetRef.instance.classList.add('GreenFill2');
       } else {
         this.speedTargetRef.instance.classList.remove('GreenFill2');
