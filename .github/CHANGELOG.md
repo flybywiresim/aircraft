@@ -39,6 +39,7 @@
 1. [A380X/ND] Show RNP on approach identifier for RNP AR approaches - @BravoMike99 (bruno_pt99)
 1. [ND] Improve vertical position of approach message - @BravoMike99 (bruno_pt99)
 1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
+1. [A380X/FMS] Add TL indication for tailwind on APPR PERF - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
