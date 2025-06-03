@@ -12,7 +12,13 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429RegisterSubject,
+  Arinc429Register,
+  Arinc429ConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
@@ -825,19 +831,17 @@ class AB3Cell extends DisplayComponent<{ AB3Message: Subscribable<string[]> }> {
 }
 
 class B1Cell extends ShowForSecondsComponent<CellProps> {
-  private boxClassSub = Subject.create('');
+  sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus & ExtendedClockEvents>();
 
-  private boxPathStringSub = Subject.create('');
+  private readonly boxClassSub = Subject.create('');
 
-  private activeVerticalModeClassSub = Subject.create('');
+  private readonly boxPathStringSub = Subject.create('');
+
+  private readonly activeVerticalModeClassSub = Subject.create('');
 
   private readonly verticalText = Subject.create('');
 
   private readonly additionalText = Subject.create('');
-
-  private readonly additionalTextClass = Subject.create('');
-
-  private readonly additionalTextDx = Subject.create(0);
 
   private readonly inSpeedProtection = Subject.create(false);
 
@@ -849,7 +853,56 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
   private selectedFPA = new Arinc429Word(0);
 
-  private fmgcDiscreteWord1 = new Arinc429Word(0);
+  private readonly fmgcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fmgcDiscreteWord1'));
+
+  private readonly gsMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(22, false));
+
+  private readonly gsTrackMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(20, false));
+
+  private readonly gsCaptureMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(21, false));
+
+  private readonly expediteMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(24, false));
+
+  private readonly descentMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(12, false));
+
+  private readonly climbMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(11, false));
+
+  private readonly pitchTakeoffMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(15, false));
+
+  private readonly pitchGoaroundMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(16, false));
+
+  private readonly openMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(14, false));
+
+  private readonly trackMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(20, false));
+
+  private readonly captureMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(21, false));
+
+  private readonly finalDesMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(23, false));
+
+  private readonly vsMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(17, false));
+
+  private readonly fpaMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(18, false));
+
+  private readonly altMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(19, false));
+
+  private readonly dashMode = this.fmgcDiscreteWord1.map((w) => w.bitValueOr(26, false));
+
+  private readonly fmAltitudeConstraintValid = Arinc429ConsumerSubject.create(
+    this.sub.on('fmgcFmAltitudeConstraint'),
+  ).map((w) => w.isNormalOperation());
+
+  private readonly altCrz = MappedSubject.create(
+    ([altMode, dashMode, fmAltitudeConstraintValid]) => dashMode && (altMode || !fmAltitudeConstraintValid),
+    this.altMode,
+    this.dashMode,
+    this.fmAltitudeConstraintValid,
+  );
+
+  private readonly vsOrFpaMode = MappedSubject.create(SubscribableMapFunctions.or(), this.vsMode, this.fpaMode);
+
+  private readonly additionalTextDx = this.vsOrFpaMode.map((v) => (v ? 0 : 1.4));
+
+  private readonly additionalTextClass = this.vsOrFpaMode.map((v) => (v ? 'Cyan' : ''));
 
   private fmgcDiscreteWord2 = new Arinc429Word(0);
 
@@ -859,8 +912,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
   private fmgcDiscreteWord7 = new Arinc429Word(0);
 
-  private fmAltitudeConstraint = new Arinc429Word(0);
-
   private previousText = '';
 
   constructor(props: CellProps) {
@@ -868,23 +919,23 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private getText(): boolean {
-    const gsMode = this.fmgcDiscreteWord1.bitValueOr(22, false);
-    const gsTrackMode = this.fmgcDiscreteWord1.bitValueOr(20, false);
-    const gsCaptureMode = this.fmgcDiscreteWord1.bitValueOr(21, false);
-    const expedMode = this.fmgcDiscreteWord1.bitValueOr(24, false);
-    const descentMode = this.fmgcDiscreteWord1.bitValueOr(12, false);
-    const climbMode = this.fmgcDiscreteWord1.bitValueOr(11, false);
-    const pitchTakeoffMode = this.fmgcDiscreteWord1.bitValueOr(15, false);
-    const pitchGoaroundMode = this.fmgcDiscreteWord1.bitValueOr(16, false);
-    const openMode = this.fmgcDiscreteWord1.bitValueOr(14, false);
-    const trackMode = this.fmgcDiscreteWord1.bitValueOr(20, false);
-    const captureMode = this.fmgcDiscreteWord1.bitValueOr(21, false);
-    const altMode = this.fmgcDiscreteWord1.bitValueOr(19, false);
-    const dashMode = this.fmgcDiscreteWord1.bitValueOr(26, false);
-    const altConstraintValid = this.fmAltitudeConstraint.isNormalOperation();
-    const fpaMode = this.fmgcDiscreteWord1.bitValueOr(18, false);
-    const vsMode = this.fmgcDiscreteWord1.bitValueOr(17, false);
-    const finalDesMode = this.fmgcDiscreteWord1.bitValueOr(23, false);
+    const gsMode = this.gsMode.get();
+    const gsTrackMode = this.gsTrackMode.get();
+    const gsCaptureMode = this.gsCaptureMode.get();
+    const expedMode = this.expediteMode.get();
+    const descentMode = this.descentMode.get();
+    const climbMode = this.climbMode.get();
+    const pitchTakeoffMode = this.pitchTakeoffMode.get();
+    const pitchGoaroundMode = this.pitchGoaroundMode.get();
+    const openMode = this.openMode.get();
+    const trackMode = this.trackMode.get();
+    const captureMode = this.captureMode.get();
+    const altMode = this.altMode.get();
+    const dashMode = this.dashMode.get();
+    const altConstraintValid = this.fmAltitudeConstraintValid.get();
+    const fpaMode = this.fpaMode.get();
+    const vsMode = this.vsMode.get();
+    const finalDesMode = this.finalDesMode.get();
     const tcasMode = this.fmgcDiscreteWord7.bitValueOr(13, false);
 
     const navMode = this.fmgcDiscreteWord2.bitValueOr(12, false);
@@ -927,11 +978,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       text = 'ALT CST*';
     } else if (trackMode && altMode && !dashMode && altConstraintValid) {
       text = 'ALT CST';
-    } else if (dashMode && (!altMode || !altConstraintValid)) {
+    } else if (this.altCrz.get()) {
       text = 'ALT';
       additionalText = 'CRZ';
-      this.additionalTextDx.set(1.4);
-      this.additionalTextClass.set('');
     } else if (fpaMode) {
       text = 'FPA';
       if (!(this.selectedFPA.isNoComputedData() || this.selectedFPA.isFailureWarning())) {
@@ -944,8 +993,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       } else {
         additionalText = '-----';
       }
-      this.additionalTextClass.set('Cyan');
-      this.additionalTextDx.set(0);
     } else if (vsMode) {
       if (!(this.selectedVS.isNoComputedData() || this.selectedVS.isFailureWarning())) {
         const vsValue = this.selectedVS.value;
@@ -954,8 +1001,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         additionalText = '-----';
       }
       text = 'V/S';
-      this.additionalTextDx.set(0);
-      this.additionalTextClass.set('Cyan');
     } else {
       text = '';
       this.isShown = false;
@@ -1008,17 +1053,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus & ExtendedClockEvents>();
+    this.fmgcDiscreteWord1.sub(() => this.getText(), true);
 
-    sub
-      .on('fmgcDiscreteWord1')
-      .whenChanged()
-      .handle((word) => {
-        this.fmgcDiscreteWord1 = word;
-        this.getText();
-      });
-
-    sub
+    this.sub
       .on('fmgcDiscreteWord2')
       .whenChanged()
       .handle((word) => {
@@ -1026,7 +1063,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         this.getText();
       });
 
-    sub
+    this.sub
       .on('fmgcDiscreteWord3')
       .whenChanged()
       .handle((word) => {
@@ -1034,7 +1071,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         this.getText();
       });
 
-    sub
+    this.sub
       .on('fmgcDiscreteWord4')
       .whenChanged()
       .handle((word) => {
@@ -1042,7 +1079,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         this.getText();
       });
 
-    sub
+    this.sub
       .on('fmgcDiscreteWord7')
       .whenChanged()
       .handle((word) => {
@@ -1050,15 +1087,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         this.getText();
       });
 
-    sub
-      .on('fmgcFmAltitudeConstraint')
-      .whenChanged()
-      .handle((word) => {
-        this.fmAltitudeConstraint = word;
-        this.getText();
-      });
+    this.fmAltitudeConstraintValid.sub(() => this.getText(), true);
 
-    sub
+    this.sub
       .on('fcuSelectedFpa')
       .whenChanged()
       .handle((fpa) => {
@@ -1066,7 +1097,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         this.getText();
       });
 
-    sub
+    this.sub
       .on('fcuSelectedVerticalSpeed')
       .whenChanged()
       .handle((svs) => {
