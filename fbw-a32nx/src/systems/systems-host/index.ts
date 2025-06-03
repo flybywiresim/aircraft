@@ -19,6 +19,10 @@ import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/pro
 import { A32NXAdrBusPublisher } from '@shared/publishers/A32NXAdrBusPublisher';
 import { A32NXDisplayManagementPublisher } from '@shared/publishers/A32NXDisplayManagementPublisher';
 import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
+import { Ecp } from './systems/ECP/Ecp';
+import { A32NXOverheadDiscretePublisher } from '../shared/src/publishers/A32NXOverheadDiscretePublisher';
+import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
+import { FakeDmc } from './systems/ECP/FakeDmc';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -46,19 +50,15 @@ class SystemsHost extends BaseInstrument {
 
   private readonly pseudoFwc = new PseudoFWC(this.bus, this);
 
-  /**
-   * "mainmenu" = 0
-   * "loading" = 1
-   * "briefing" = 2
-   * "ingame" = 3
-   */
-  private gameState = 0;
-
   constructor() {
     super();
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
+    this.backplane.addInstrument('Ecp', new Ecp(this.bus));
+    this.backplane.addInstrument('FakeDmc', new FakeDmc(this.bus));
+
+    this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerSupply);
     this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
@@ -67,6 +67,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('ElecSys', this.elecSysPublisher);
     this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
     this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
+    this.backplane.addPublisher('OverheadPublisher', new A32NXOverheadDiscretePublisher(this.bus));
+    this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
 
     this.pseudoFwc.init();
     let lastUpdateTime: number;
@@ -111,14 +113,6 @@ class SystemsHost extends BaseInstrument {
 
   public Update(): void {
     super.Update();
-
-    if (this.gameState !== 3) {
-      const gamestate = this.getGameState();
-      if (gamestate === 3) {
-        this.hEventPublisher.startPublish();
-      }
-      this.gameState = gamestate;
-    }
 
     this.backplane.onUpdate();
   }
