@@ -486,7 +486,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprHeadwind = Subject.create<string>('');
 
-  private towerHeadwindValue = Subject.create<boolean>(false);
+  private readonly towerHeadwind = Subject.create<number | null>(null);
 
   private apprCrosswind = Subject.create<string>('');
 
@@ -1065,12 +1065,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               apprWind.direction,
               this.loadedFlightPlan.destinationRunway.magneticBearing,
             );
+            this.towerHeadwind.set(towerHeadwind);
+
             if (towerHeadwind < 0) {
               this.apprHeadwind.set(`${Math.abs(towerHeadwind).toFixed(0).padStart(3, '0')}`);
-              this.towerHeadwindValue.set(true);
             } else {
               this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
-              this.towerHeadwindValue.set(false);
             }
 
             const towerCrosswind = A380SpeedsUtils.getHeadwind(
@@ -2538,8 +2538,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
                         <div class="mfd-label-value-container" style="padding: 15px;">
-                          <span class="mfd-label mfd-spacing-right">{this.towerHeadwindValue.get() ? 'TL' : 'HD'}</span>
-                          <span class="mfd-value">{this.apprHeadwind}</span>
+                          <span class="mfd-label mfd-spacing-right">
+                            {this.towerHeadwind.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'))}
+                          </span>
+                          <span class="mfd-value">
+                            {this.towerHeadwind.map((v) =>
+                              v === null ? '---' : Math.abs(v).toFixed(0).padStart(3, '0'),
+                            )}
+                          </span>
                           <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                         </div>
                         <div class="mfd-label-value-container" style="padding: 15px;">
