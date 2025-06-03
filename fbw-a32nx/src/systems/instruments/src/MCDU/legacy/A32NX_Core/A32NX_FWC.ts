@@ -1,4 +1,5 @@
 import {
+  Arinc429Register,
   Arinc429Word,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
@@ -67,6 +68,8 @@ export class A32NX_FWC {
   private _wasInRange = false;
   private _wasReach200ft = false;
 
+  private readonly ecpWarningButtonStatus = Arinc429Register.empty();
+
   update(_deltaTime, _core) {
     this._updateFlightPhase(_deltaTime);
     this._updateButtons(_deltaTime);
@@ -76,7 +79,8 @@ export class A32NX_FWC {
   }
 
   _updateButtons(_deltaTime) {
-    this.toConfigTest = SimVar.GetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean');
+    this.ecpWarningButtonStatus.setFromSimVar('A32NX_ECP_WARNING_SWITCH_WORD');
+    this.toConfigTest = this.ecpWarningButtonStatus.bitValue(18);
   }
 
   _updateFlightPhase(_deltaTime) {
