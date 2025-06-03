@@ -3041,6 +3041,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
+- `L:A32NX_FM{1 | 2}_FLIGHT_NUMBER_{1 | 2 | 3 | 4}`
+  - Arinc429<ISO5>
+  - The flight number encoded as 4 ISO5 words, up to 7 chars total.
+
 - `L:A32NX_FM{number}_LANDING_ELEVATION`
     - ARINC429<number> (feet MSL)
     - The landing elevation at the active destination
