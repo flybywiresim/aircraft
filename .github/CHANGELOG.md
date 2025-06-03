@@ -32,6 +32,16 @@
 1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
 1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
 1. [A32NX/FMS] Add approach via auto-selection. - @tracernz (Mike)
+1. [A380X/MFD] Fixed ENTER DEST DATA message not clearing automatically - @BravoMike99 (bruno_pt99)
+1. [A380X/FCU] Fix selected speed initial target not being managed speed in non SRS - @BravoMike99 (bruno_pt99)
+1. [A380X/SD] Adjust BLEED page visuals and indications logic - @lukecologne (luke)
+1. [A380X] Add default CPT and FO seat positions to FLT files - @heclak (Heclak)
+1. [A380X/ND] Show RNP on approach identifier for RNP AR approaches - @BravoMike99 (bruno_pt99)
+1. [ND] Improve vertical position of approach message - @BravoMike99 (bruno_pt99)
+1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
+1. [A32NX/ECP] Implemented realistic simulation of the ECAM control panel - @tracernz (Mike)
+1. [A32NX] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
+1. [A380X] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
 
 ## 0.13.0
 
@@ -225,6 +235,7 @@
 1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
 1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
 1. [EFB/PERF] Harmonize takeoff and landing performance calculators - @FoxtrotSierra6829 (FoxtrotSierra)
+1. [A32NX/FWC] Add A/THR LIMITED ECAM warning - @lukecologne (luke)
 
 ## 0.12.0
 

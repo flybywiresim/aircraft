@@ -4,7 +4,7 @@
 import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
-  Arinc429OutputWord,
+  Arinc429LocalVarOutputWord,
   Arinc429SignStatusMatrix,
   Arinc429Word,
   DatabaseIdent,
@@ -64,6 +64,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -103,8 +104,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public averageWind = 0;
   public perfApprQNH = NaN;
   public perfApprTemp = NaN;
-  public perfApprWindHeading = NaN;
-  public perfApprWindSpeed = NaN;
+  public perfApprWindHeading: number | null = null;
+  public perfApprWindSpeed: number | null = null;
   public unconfirmedV1Speed = undefined;
   public unconfirmedVRSpeed = undefined;
   public unconfirmedV2Speed = undefined;
@@ -470,8 +471,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.averageWind = 0;
     this.perfApprQNH = NaN;
     this.perfApprTemp = NaN;
-    this.perfApprWindHeading = NaN;
-    this.perfApprWindSpeed = NaN;
+    this.perfApprWindHeading = null;
+    this.perfApprWindSpeed = null;
     this.unconfirmedV1Speed = undefined;
     this.unconfirmedVRSpeed = undefined;
     this.unconfirmedV2Speed = undefined;
@@ -1516,7 +1517,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       weight = this.zeroFuelWeight + Math.max(0, (vnavPrediction.estimatedFuelOnBoard * 0.4535934) / 1000);
     }
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
-    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+    if (this.perfApprWindSpeed !== null && this.perfApprWindHeading !== null) {
       this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3, this._towerHeadwind);
     } else {
       this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3);
@@ -2034,8 +2035,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return (
         isFinite(this.perfApprQNH) &&
         isFinite(this.perfApprTemp) &&
-        isFinite(this.perfApprWindHeading) &&
-        isFinite(this.perfApprWindSpeed)
+        this.perfApprWindHeading !== null &&
+        this.perfApprWindSpeed !== null
       );
     });
   }
@@ -3984,8 +3985,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setPerfApprWind(s: string): boolean {
     if (s === Keypad.clrValue) {
-      this.perfApprWindHeading = NaN;
-      this.perfApprWindSpeed = NaN;
+      this.perfApprWindHeading = null;
+      this.perfApprWindSpeed = null;
       return true;
     }
 
@@ -4041,7 +4042,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    */
   private getVAppGsMini() {
     let vAppTarget = this.getVApp();
-    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+    if (this.perfApprWindSpeed !== null && this.perfApprWindHeading !== null) {
       vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
     }
     return vAppTarget;
@@ -4392,7 +4393,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public updateTowerHeadwind() {
-    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+    if (this.perfApprWindHeading !== null && this.perfApprWindSpeed !== null) {
       const activePlan = this.flightPlanService.active;
 
       if (activePlan.destinationRunway) {
@@ -5101,12 +5102,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.winds;
   }
 
-  public getApproachWind() {
+  public getApproachWind(): FmcWindVector | null {
     const activePlan = this.currFlightPlanService.active;
     const destination = activePlan.destinationAirport;
 
-    if (!destination || !destination.location || !isFinite(this.perfApprWindHeading)) {
-      return { direction: 0, speed: 0 };
+    if (!destination || !destination.location || this.perfApprWindHeading === null || this.perfApprWindSpeed === null) {
+      return null;
     }
 
     const magVar = Facilities.getMagVar(destination.location.lat, destination.location.long);
@@ -5371,7 +5372,7 @@ const DefaultPerformanceData = Object.freeze({
 });
 
 /** Writes FM output words for both FMS. */
-class FmArinc429OutputWord extends Arinc429OutputWord {
+class FmArinc429OutputWord extends Arinc429LocalVarOutputWord {
   private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
 
   override async writeToSimVarIfDirty() {
