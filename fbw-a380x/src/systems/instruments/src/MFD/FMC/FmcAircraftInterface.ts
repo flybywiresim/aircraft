@@ -22,6 +22,8 @@ import { A380OperatingSpeeds, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { EngineVars } from 'instruments/src/MsfsAvionicsCommon/providers/EnginePublisher';
+import { FlapsSlatsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FlapsSlatsPublisher';
 import { VerticalMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
@@ -736,8 +738,6 @@ export class FmcAircraftInterface {
 
   private setHoldSpeedMessageActive = false;
 
-  private forGaSetTogaMessageActive = false;
-
   /** in knots */
   private takeoffEngineOutSpeed: number | null = null;
 
@@ -1032,6 +1032,12 @@ export class FmcAircraftInterface {
       }
     }
   }
+
+  private forGaSetTogaMessageActive = false;
+
+  gaMessage() {
+  if (this.flightPhase.get() === 5 && this.
+
 
   private apMasterStatus: boolean = false;
 
