@@ -461,6 +461,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
 
     this.navigationDatabaseService.activeDatabase.getDatabaseIdent().then((dbIdent) => (this.navDbIdent = dbIdent));
+
+    this.atsu?.init();
   }
 
   protected initVariables(resetTakeoffData = true) {
@@ -725,6 +727,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.efisSymbolsRight.update();
 
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
+
+    this.atsu?.onUpdate();
   }
 
   protected onFmPowerStateChanged(newState) {
