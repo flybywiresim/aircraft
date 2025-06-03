@@ -484,8 +484,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprIdent = Subject.create<string>('');
 
-  private apprHeadwind = Subject.create<string>('');
-
   private readonly towerHeadwind = Subject.create<number | null>(null);
 
   private apprCrosswind = Subject.create<string>('');
@@ -1067,12 +1065,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             );
             this.towerHeadwind.set(towerHeadwind);
 
-            if (towerHeadwind < 0) {
-              this.apprHeadwind.set(`${Math.abs(towerHeadwind).toFixed(0).padStart(3, '0')}`);
-            } else {
-              this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
-            }
-
             const towerCrosswind = A380SpeedsUtils.getHeadwind(
               apprWind.speed,
               apprWind.direction,
@@ -1080,7 +1072,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             );
             this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
           } else {
-            this.apprHeadwind.set('---');
+            this.towerHeadwind.set(null);
             this.apprCrosswind.set('---');
           }
         }),
