@@ -48,25 +48,31 @@ export class FakeDmc implements Instrument {
   private readonly ecpSystemButtons = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_ecp_system_switch_word'),
   );
+  private readonly ecpWarningButtons = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_ecp_warning_switch_word'),
+  );
 
   constructor(private readonly bus: EventBus) {}
 
   public init(): void {
-    this.buttonMapperFactory(SdPages.Eng, 11);
-    this.buttonMapperFactory(SdPages.Bleed, 12);
-    this.buttonMapperFactory(SdPages.Apu, 13);
-    this.buttonMapperFactory(SdPages.Hyd, 14);
-    this.buttonMapperFactory(SdPages.Elec, 15);
-    this.buttonMapperFactory(SdPages.Cond, 17);
-    this.buttonMapperFactory(SdPages.Press, 18);
-    this.buttonMapperFactory(SdPages.Fuel, 19);
-    this.buttonMapperFactory(SdPages.Fctl, 20);
-    this.buttonMapperFactory(SdPages.Door, 21);
-    this.buttonMapperFactory(SdPages.Wheel, 22);
+    // Map buttons to the legacy local var for the react SD
+    this.buttonMapperFactory(SdPages.Eng, 11, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Bleed, 12, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Apu, 13, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Hyd, 14, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Elec, 15, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Cond, 17, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Press, 18, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Fuel, 19, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Fctl, 20, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Door, 21, this.ecpSystemButtons);
+    this.buttonMapperFactory(SdPages.Wheel, 22, this.ecpSystemButtons);
+
+    this.buttonMapperFactory(SdPages.Status, 13, this.ecpWarningButtons);
   }
 
-  private buttonMapperFactory(sdPage: SdPages, bit: number) {
-    return this.ecpSystemButtons
+  private buttonMapperFactory(sdPage: SdPages, bit: number, word: Arinc429LocalVarConsumerSubject) {
+    return word
       .map((w) => w.bitValueOr(bit, false))
       .sub(
         (v) =>
