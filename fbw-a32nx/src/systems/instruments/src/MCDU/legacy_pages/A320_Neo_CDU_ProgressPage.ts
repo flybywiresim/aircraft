@@ -5,6 +5,7 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
 
 export class CDUProgressPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -181,7 +182,7 @@ export class CDUProgressPage {
     }
 
     mcdu.setTemplate([
-      ['{green}' + flightPhase.padStart(15, '\xa0') + '{end}\xa0' + flightNo.padEnd(11, '\xa0')],
+      [...FormatLine(new Column(11, flightPhase, Column.green, { alignRight: true }), new Column(13, flightNo))],
       ['\xa0' + 'CRZ\xa0', 'OPT\xa0\xa0\xa0\xa0REC MAX'],
       [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + '{magenta}FL' + flMax.toString() + '\xa0{end}'],
       [''],
