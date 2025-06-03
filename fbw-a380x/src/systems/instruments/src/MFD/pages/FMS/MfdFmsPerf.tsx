@@ -486,7 +486,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprHeadwind = Subject.create<string>('');
 
-  private apprTailwind = Subject.create<string>('');
+  private towerHeadwindValue = Subject.create<boolean>(false);
 
   private apprCrosswind = Subject.create<string>('');
 
@@ -1066,10 +1066,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               this.loadedFlightPlan.destinationRunway.magneticBearing,
             );
             if (towerHeadwind < 0) {
-              this.apprTailwind.set(`${Math.abs(towerHeadwind).toFixed(0).padStart(2, '0')}`);
+              this.apprHeadwind.set(`${Math.abs(towerHeadwind).toFixed(0).padStart(3, '0')}`);
+              this.towerHeadwindValue.set(true);
             } else {
               this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
+              this.towerHeadwindValue.set(false);
             }
+
             const towerCrosswind = A380SpeedsUtils.getHeadwind(
               apprWind.speed,
               apprWind.direction,
@@ -1078,7 +1081,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
           } else {
             this.apprHeadwind.set('---');
-            this.apprTailwind.set('---');
             this.apprCrosswind.set('---');
           }
         }),
@@ -2536,12 +2538,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
                         <div class="mfd-label-value-container" style="padding: 15px;">
-                          <span class="mfd-label mfd-spacing-right">
-                            {this.apprHeadwind.get() !== '' ? 'TL' : 'HD'}
-                          </span>
-                          <span class="mfd-value">
-                            {this.apprHeadwind.get() !== '' ? this.apprTailwind : this.apprHeadwind}
-                          </span>
+                          <span class="mfd-label mfd-spacing-right">{this.towerHeadwindValue.get() ? 'TL' : 'HD'}</span>
+                          <span class="mfd-value">{this.apprHeadwind}</span>
                           <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                         </div>
                         <div class="mfd-label-value-container" style="padding: 15px;">
