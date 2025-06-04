@@ -335,6 +335,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.pilotEnteredSpeedConstraint = from.pilotEnteredSpeedConstraint;
     this.constraintType = from.constraintType;
     this.cruiseStep = from.cruiseStep;
+    this.cruiseWindEntries = from.cruiseWindEntries;
     /**
      * Don't copy holds. When we string the arrival to the upstream plan, the upstream plan may have a hold
      * and the downstream leg doesn't, but the upstream leg is the one that's kept. In this case, we don't want to remove the hold
