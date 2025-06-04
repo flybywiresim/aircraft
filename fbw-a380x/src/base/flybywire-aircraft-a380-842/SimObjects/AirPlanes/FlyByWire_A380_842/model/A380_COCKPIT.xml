@@ -1236,35 +1236,35 @@
                     </DefaultTemplateParameters>
 
                     <UseTemplate Name="FBW_ISIS_Knob_Template">
-                        <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
-                        <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
+                        <ANIM_NAME>KNOB_ISIS_1_SET_SEL</ANIM_NAME>
+                        <NODE_ID>KNOB_ISIS_1_SET_SEL</NODE_ID>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Template">
-                        <NODE_ID>PUSH_BARO_BUGS</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_MODE</NODE_ID>
                         <TOOLTIPID>Toggle ISI Bugs</TOOLTIPID>
                         <BTN_ID>BUGS</BTN_ID>
                         <ONLY_SEQ1 />
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Template">
-                        <NODE_ID>PUSH_BARO_LS</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_LS_DIR</NODE_ID>
                         <TOOLTIPID>Toggle LS scales</TOOLTIPID>
                         <BTN_ID>LS</BTN_ID>
                         <ONLY_SEQ1 />
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
-                        <NODE_ID>PUSH_BARO_PLUS</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_PLUS</NODE_ID>
                         <TOOLTIPID>Increase ISI brightness</TOOLTIPID>
                         <BTN_ID>PLUS</BTN_ID>
                         <ONLY_SEQ1 />
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
-                        <NODE_ID>PUSH_BARO_MINUS</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_MINUS</NODE_ID>
                         <TOOLTIPID>Decrease ISI brightness</TOOLTIPID>
                         <BTN_ID>MINUS</BTN_ID>
                         <ONLY_SEQ1 />
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
-                        <NODE_ID>PUSH_BARO_RST</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_MENU</NODE_ID>
                         <TOOLTIPID>Reset ISI Attitude</TOOLTIPID>
                         <BTN_ID>RST</BTN_ID>
                         <ONLY_SEQ1 />
