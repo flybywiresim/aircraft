@@ -2849,7 +2849,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   async propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): Promise<number> {
     let numWindEntries = 0;
 
-    for (let i = 0; i < this.firstMissedApproachLegIndex && numWindEntries < maxNumEntries; i++) {
+    for (let i = 0; i < this.firstMissedApproachLegIndex; i++) {
       const element = this.maybeElementAt(i);
 
       // TODO check if leg is part of cruise segment?
@@ -2878,7 +2878,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             result[existingEntryIndex].type = windPropagationType;
             result[existingEntryIndex].sourceLegIndex = i;
           }
-        } else {
+        } else if (numWindEntries < maxNumEntries) {
           if (numWindEntries >= result.length) {
             result.push({
               altitude: windEntry.altitude,
@@ -2911,13 +2911,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (!leg.isXF()) {
       console.error('[FMS/FPM] Tried to add a cruise wind entry to a non-XF leg');
-      return;
-    }
-
-    const existingEntries = this.propagateWindsAt(atIndex, BaseFlightPlan.WindCache, maxNumEntries);
-
-    if (existingEntries.length >= maxNumEntries) {
-      console.error('[FMS/FPM] Tried to add a cruise wind entry to a full list');
       return;
     }
 
