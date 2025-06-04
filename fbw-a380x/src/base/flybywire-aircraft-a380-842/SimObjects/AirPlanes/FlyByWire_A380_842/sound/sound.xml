@@ -84,7 +84,71 @@
         <Sound WwiseData="true" WwiseEvent="flaps380stop" NodeName="BASE_RIGHT" ConeHeading="180" CancelConeHeadingWhenInside="false" Continuous="false" LocalVar="A32NX_IS_FLAPS_MOVING" Units="BOOL" Index="1">
             <Range UpperBound="0" />
         </Sound>
-
+        
+        <!-- CABIN ANNOUNCEMENTS  ============================================================================================-->
+        <Sound WwiseEvent="custom_sound_01" WwiseData="false" FileName="WELCOME_ONBOARD" Continuous="False" LocalVar="A380X_WELCOME_ANC" Units="bool" MuteOnVPChange="True" ViewPoint="Inside">
+            <Requires LocalVar="A380X_WELCOME_ANC" Units="bool">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+            <VolumeCurve LocalVar="A380X_RMP_1_PA_VOL" Units="Number" Index="1">
+                <Point SimValue= "0.0" Output="0.0"/>
+                <Point SimValue= "100.0" Output="100.0"/>
+            </VolumeCurve> 
+        </Sound>
+        <Sound WwiseEvent="custom_sound_03" WwiseData="false" FileName="SAFETY_BRIEFING" Continuous="False" LocalVar="A380X_SAFETY_ANC" Units="bool" MuteOnVPChange="True" ViewPoint="Inside">
+            <Requires LocalVar="A380X_SAFETY_ANC" Units="bool">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+            <VolumeCurve LocalVar="A380X_RMP_1_PA_VOL" Units="Number" Index="1">
+                <Point SimValue= "0.0" Output="0.0"/>
+                <Point SimValue= "100.0" Output="100.0"/>
+            </VolumeCurve> 
+        </Sound>
+        <Sound WwiseEvent="custom_sound_04" WwiseData="false" FileName="CREW_TAKEOFF" Continuous="False" LocalVar="A380X_PREPARE_TAKEOFF_ANC" Units="bool" MuteOnVPChange="True" ViewPoint="Inside">
+            <Requires LocalVar="A380X_PREPARE_TAKEOFF_ANC" Units="bool">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+            <VolumeCurve LocalVar="A380X_RMP_1_PA_VOL" Units="Number" Index="1">
+                <Point SimValue= "0.0" Output="0.0"/>
+                <Point SimValue= "100.0" Output="100.0"/>
+            </VolumeCurve>
+        </Sound>
+        <Sound WwiseEvent="custom_sound_05" WwiseData="false" FileName="SERVICE_STARTED" Continuous="False" LocalVar="A380X_SERVICE_START_ANC" Units="bool" MuteOnVPChange="True" ViewPoint="Inside">
+            <Requires LocalVar="A380X_SERVICE_START_ANC" Units="bool">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+            <VolumeCurve LocalVar="A380X_RMP_1_PA_VOL" Units="Number" Index="1">
+                <Point SimValue= "0.0" Output="0.0"/>
+                <Point SimValue= "100.0" Output="100.0"/>
+            </VolumeCurve>
+        </Sound>
+        <Sound WwiseEvent="custom_sound_06" WwiseData="false" FileName="START_DECENT" Continuous="False" LocalVar="A380X_START_DECENT_ANC" Units="bool" MuteOnVPChange="True" ViewPoint="Inside">
+            <Requires LocalVar="A380X_START_DECENT_ANC" Units="bool">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+            <VolumeCurve LocalVar="A380X_RMP_1_PA_VOL" Units="Number" Index="1">
+                <Point SimValue= "0.0" Output="0.0"/>
+                <Point SimValue= "100.0" Output="100.0"/>
+            </VolumeCurve>
+        </Sound>
+        <Sound WwiseEvent="custom_sound_07" WwiseData="false" FileName="PREPARE_LANDING" Continuous="False" LocalVar="A380X_PREPARE_LANDING_ANC" Units="bool" MuteOnVPChange="True" ViewPoint="Inside">
+            <Requires LocalVar="A380X_PREPARE_LANDING_ANC" Units="bool">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+            <VolumeCurve LocalVar="A380X_RMP_1_PA_VOL" Units="Number" Index="1">
+                <Point SimValue= "0.0" Output="0.0"/>
+                <Point SimValue= "100.0" Output="100.0"/>
+            </VolumeCurve>
+        </Sound>
+        <Sound WwiseEvent="custom_sound_08" WwiseData="false" FileName="ARRIVAL_DEBOARDING" Continuous="False" LocalVar="A380X_ARRIVAL_ANC" Units="bool" MuteOnVPChange="True" ViewPoint="Inside">
+            <Requires LocalVar="A380X_ARRIVAL_ANC" Units="bool">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+            <VolumeCurve LocalVar="A380X_RMP_1_PA_VOL" Units="Number" Index="1">
+                <Point SimValue= "0.0" Output="0.0"/>
+                <Point SimValue= "100.0" Output="100.0"/>
+            </VolumeCurve>
+        </Sound>
         <!-- APU  =========================================================================  -->
 
         <Sound WwiseData="true" WwiseEvent="apuwhine" ViewPoint="Inside" NodeName="FX_EXHAUST_APU" LocalVar="A32NX_APU_N_RAW" Units="PERCENT" Index="0">
