@@ -95,10 +95,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   );
 
   private readonly distanceToWaypointDisplay = this.distanceToWaypoint.map((v) =>
-    v ? v.toFixed(v > 9999 ? 0 : 1).padStart(6) : '----.-',
+    v ? v.toFixed(v > 9999 ? 0 : 1).padStart(6, '\xa0') : '----.-',
   );
 
-  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? ' ° ' : '\xa0\xa0\xa0'));
+  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? '°\xa0\xa0' : '\xa0\xa0\xa0'));
 
   private readonly distanceToWaypointUnit = this.bearingToWaypoint.map((v) => (v ? 'NM' : '\xa0\xa0'));
 
@@ -361,16 +361,16 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-value bigger">{this.gpsPositionText}</span>
             </div>
           </div>
-          <div class="mfd-pos-monitor-pos-update-waypoint-container">
+          <div class="fr space-between">
             <Button
               label="POSITION <br /> UPDATE"
               disabled={Subject.create(true)}
               onClick={() => {}}
-              buttonStyle="width: 130px;"
+              buttonStyle="width: 136px; height:58px; margin-top:18px;"
             />
             <div>
-              <div class="mfd-label-value-container">
-                <span class="mfd-label mfd-spacing-right">BRG / DIST TO</span>
+              <div class="mfd-label-value-container" style={'margin-right:20px; justify-content:flex-end;'}>
+                <span class="mfd-label bigger mfd-spacing-right">BRG / DIST TO</span>
                 <InputField<Fix, string, false>
                   dataEntryFormat={new FixFormat()}
                   readonlyValue={this.monitorWaypoint}
@@ -397,11 +397,14 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
-              <div class="mfd-label-value-container">
-                <span class="mfd-value">{this.bearingToWaypointDisplay}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">{this.bearingUnit}</span>
-                <span class="mfd-value">/{this.distanceToWaypointDisplay}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">{this.distanceToWaypointUnit}</span>
+              <div class="fr" style={'width: 430px;'}>
+                <span class="mfd-value bigger">{this.bearingToWaypointDisplay}</span>
+                <span class="mfd-label-unit bigger mfd-unit-trailing">{this.bearingUnit}</span>
+                <span class="mfd-value bigger" style={'margin-right: 15px;'}>
+                  /
+                </span>
+                <span class="mfd-value bigger">{this.distanceToWaypointDisplay}</span>
+                <span class="mfd-label-unit bigger mfd-unit-trailing">{this.distanceToWaypointUnit}</span>
               </div>
             </div>
           </div>
@@ -417,18 +420,18 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <Button
                 label="NAVAIDS"
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/navaids')}
-                buttonStyle="margin-right: 5px; width:150px;"
+                buttonStyle="margin-right: 5px; width:140px;"
               />
               <Button
                 label="GPS"
                 disabled={Subject.create(true)}
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/gps')}
-                buttonStyle="margin-right: 5px; width:150px;"
+                buttonStyle="margin-right: 5px; width:125px;"
               />
               <Button
                 label="IRS"
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/irs')}
-                buttonStyle="margin-right: 5px; width:150px;"
+                buttonStyle="margin-right: 5px; width:125px;"
               />
             </div>
           </div>
