@@ -122,9 +122,16 @@ export class CDUWindPage {
       }
     };
 
-    mcdu.onRightInput[1] = () => {
+    mcdu.onRightInput[1] = async () => {
       if (requestEnable) {
-        CDUWindPage.uplinkWinds(mcdu, forPlan, 'CLB', CDUWindPage.ShowCLBPage);
+        try {
+          await mcdu.uplinkWinds(forPlan);
+        } catch (e) {
+          console.error('Error requesting winds:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        }
+
+        CDUWindPage.ShowCLBPage(mcdu, forPlan);
       }
     };
   }
@@ -132,6 +139,18 @@ export class CDUWindPage {
   private static findNextCruiseLegIndex(plan: BaseFlightPlan, fromIndex: number): number {
     // Find the first cruise leg index starting from the given index
     for (let i = fromIndex; i < plan.firstMissedApproachLegIndex; i++) {
+      const leg = plan.maybeElementAt(i);
+
+      if (leg?.isDiscontinuity === false && leg.isXF()) {
+        return i;
+      }
+    }
+    return -1; // Return -1 if no cruise leg is found
+  }
+
+  private static findPreviousCruiseLegIndex(plan: BaseFlightPlan, fromIndex: number): number {
+    // Find the first cruise leg index starting from the given index
+    for (let i = fromIndex; i >= 0; i--) {
       const leg = plan.maybeElementAt(i);
 
       if (leg?.isDiscontinuity === false && leg.isXF()) {
@@ -262,13 +281,20 @@ export class CDUWindPage {
       CDUWindPage.Return();
     };
 
-    mcdu.onRightInput[1] = () => {
+    mcdu.onRightInput[1] = async () => {
       if (requestEnable) {
-        CDUWindPage.uplinkWinds(mcdu, forPlan, 'CRZ', CDUWindPage.ShowCRZPage);
+        try {
+          await mcdu.uplinkWinds(forPlan);
+        } catch (e) {
+          console.error('Error requesting winds:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        }
+
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
       }
     };
 
-    const previousCruiseLegIndex = this.findNextCruiseLegIndex(plan, 0);
+    const previousCruiseLegIndex = this.findPreviousCruiseLegIndex(plan, fpIndex - 1);
     const nextCruiseLegIndex = this.findNextCruiseLegIndex(plan, fpIndex + 1);
 
     const allowScrollingDown = previousCruiseLegIndex >= 0 && previousCruiseLegIndex < fpIndex;
@@ -446,9 +472,16 @@ export class CDUWindPage {
       }
     };
 
-    mcdu.onRightInput[1] = () => {
+    mcdu.onRightInput[1] = async () => {
       if (requestEnable) {
-        CDUWindPage.uplinkWinds(mcdu, forPlan, 'DSC', CDUWindPage.ShowDESPage);
+        try {
+          await mcdu.uplinkWinds(forPlan);
+        } catch (e) {
+          console.error('Error requesting winds:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        }
+
+        CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
       }
     };
 
@@ -513,14 +546,14 @@ export class CDUWindPage {
     return Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
   }
 
-  private static uplinkWinds(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, stage, _showPage) {
+  private static uplinkWinds(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, stage, _showPage: () => void) {
     const plan = mcdu.getFlightPlan(forPlan);
 
     getSimBriefOfp(
       mcdu,
       () => {},
       () => {
-        let windData = [];
+        let windData: WindEntry[] = [];
         let lastAltitude = 0;
         switch (stage) {
           case 'CLB': {
@@ -537,10 +570,10 @@ export class CDUWindPage {
                   const direction = parseInt(clbWpt.wind_data.level[altIdx].wind_dir);
 
                   windData.push({
-                    direction,
-                    speed,
-                    altitude: altitude / 100,
+                    altitude: Math.round(altitude / 100) * 100,
+                    vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
                   });
+
                   lastAltitude = altitude;
                   altIdx++;
                 }
@@ -570,9 +603,8 @@ export class CDUWindPage {
                   // Check again that we didn't backtrack
                   if (idxAltitude > lastAltitude) {
                     windData.push({
-                      direction,
-                      speed,
-                      altitude: idxAltitude / 100,
+                      altitude: Math.round(idxAltitude / 100) * 100,
+                      vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
                     });
                     lastAltitude = idxAltitude;
                   }
@@ -580,24 +612,43 @@ export class CDUWindPage {
               });
             });
 
-            plan.performanceData.climbWindEntries = windData;
+            for (const wind of windData) {
+              mcdu.flightPlanService.setClimbWindEntry(wind.altitude, wind, forPlan);
+            }
+
             break;
           }
           case 'CRZ': {
             // FIXME winds implement
-            // const toc = mcdu.simbrief.navlog.find((val) => val.ident === 'TOC');
-            // mcdu.winds.cruise = [];
-            // toc.wind_data.level.forEach((val) => {
-            //   const direction = parseInt(val.wind_dir);
-            //   const speed = parseInt(val.wind_spd);
-            //   const altitude = parseInt(val.altitude) / 100;
-            //   mcdu.winds.cruise.push({
-            //     direction,
-            //     speed,
-            //     altitude,
-            //   });
-            //   lastAltitude = altitude;
-            // });
+            mcdu.simbrief.navlog.forEach((fix) => {
+              if (fix.stage !== stage || fix.ident === 'TOC' || fix.ident === 'TOD' || fix.type === 'apt') {
+                return;
+              }
+
+              const legIndex = plan.findLegIndexByFixIdent(fix.ident);
+
+              if (legIndex < 0) {
+                console.warn(`Could not find leg index for fix ${fix.ident} in CRZ stage.`);
+                return;
+              }
+
+              fix.wind_data.level.forEach((val) => {
+                const direction = parseInt(val.wind_dir);
+                const speed = parseInt(val.wind_spd);
+                const altitude = parseInt(val.altitude) / 100;
+
+                mcdu.flightPlanService.addCruiseWindEntry(
+                  legIndex,
+                  {
+                    altitude: Math.round(altitude) * 100,
+                    vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
+                  },
+                  forPlan,
+                );
+
+                lastAltitude = altitude;
+              });
+            });
             break;
           }
           case 'DSC': {
@@ -627,10 +678,10 @@ export class CDUWindPage {
                   const direction = parseInt(desWpt.wind_data.level[altIdx].wind_dir);
 
                   windData.push({
-                    direction,
-                    speed,
-                    altitude: altitude / 100,
+                    altitude: Math.round(altitude / 100) * 100,
+                    vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
                   });
+
                   lastAltitude = altitude;
                   altIdx--;
                 }
@@ -660,20 +711,23 @@ export class CDUWindPage {
                   // Check again that we didn't backtrack
                   if (idxAltitude < lastAltitude) {
                     windData.push({
-                      direction,
-                      speed,
-                      altitude: idxAltitude / 100,
+                      altitude: Math.round(idxAltitude / 100) * 100,
+                      vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
                     });
                     lastAltitude = idxAltitude;
                   }
                 }
               });
             });
-            plan.performanceData.descentWindEntries = windData;
+
+            for (const wind of windData) {
+              mcdu.flightPlanService.setDescentWindEntry(wind.altitude, wind, forPlan);
+            }
+
             break;
           }
         }
-        _showPage(mcdu);
+        _showPage();
       },
     );
   }

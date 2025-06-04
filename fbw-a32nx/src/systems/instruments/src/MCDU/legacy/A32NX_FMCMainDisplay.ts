@@ -57,7 +57,7 @@ import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
-import { BitFlags, EventBus, Subscription, SimVarValueType } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, SimVarValueType, Subscription, Vec2Math } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
@@ -82,6 +82,7 @@ import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlig
 import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
 import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputations';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
+import { getSimBriefOfp } from './A32NX_Core/A32NX_ATSU';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -5559,6 +5560,199 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public logTroubleshootingError(msg: any) {
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);
+  }
+
+  public async uplinkWinds(forPlan: FlightPlanIndex): Promise<void> {
+    const plan = this.getFlightPlan(forPlan);
+    if (!plan) {
+      throw new Error(`Flight plan ${forPlan} does not exist.`);
+    }
+
+    const data = await getSimBriefOfp(this.mcdu, () => {});
+
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
+
+    {
+      const toc = data.navlog.find((val) => val.ident === 'TOC');
+      const windData: typeof toc.wind_data.level = [];
+      const maxNumClimbWindEntries = 5;
+
+      if (toc) {
+        toc.wind_data.level.sort((a, b) => parseInt(a.altitude) - parseInt(b.altitude));
+
+        const lowestLevel = toc.wind_data.level[0];
+        if (lowestLevel !== undefined) {
+          windData.push(lowestLevel);
+        }
+
+        const highestLevel = toc.wind_data.level.find((level) => parseInt(level.altitude) >= cruiseLevel * 100);
+        if (highestLevel !== lowestLevel) {
+          windData.push(highestLevel);
+        }
+
+        const numWindEntriesLeft = maxNumClimbWindEntries - windData.length;
+
+        // TODO remove this restriction
+        if (numWindEntriesLeft === maxNumClimbWindEntries - 2) {
+          for (let i = 0; i < numWindEntriesLeft; i++) {
+            const optimalLevel =
+              parseInt(lowestLevel.altitude) +
+              ((i + 1) / maxNumClimbWindEntries) * (parseInt(highestLevel.altitude) - parseInt(lowestLevel.altitude));
+
+            // Find the closest wind level to the optimal level
+            const closestWindLevel = toc.wind_data.level.reduce((prev, curr) => {
+              if (prev === undefined) {
+                return curr;
+              } else if (curr === lowestLevel || curr === highestLevel) {
+                return prev;
+              }
+
+              const prevDiff = Math.abs(parseInt(prev.altitude) - optimalLevel);
+              const currDiff = Math.abs(parseInt(curr.altitude) - optimalLevel);
+
+              return currDiff < prevDiff ? curr : prev;
+            });
+
+            if (closestWindLevel !== lowestLevel && closestWindLevel !== highestLevel) {
+              windData.push(closestWindLevel);
+            }
+          }
+        }
+
+        for (const wind of windData) {
+          await this.flightPlanService.setClimbWindEntry(
+            Math.round(parseInt(wind.altitude) / 100) * 100,
+            {
+              vector: Vec2Math.setFromPolar(
+                parseInt(wind.wind_spd),
+                parseInt(wind.wind_dir) * MathUtils.DEGREES_TO_RADIANS,
+                Vec2Math.create(),
+              ),
+              altitude: parseInt(wind.altitude),
+            },
+            forPlan,
+          );
+        }
+      }
+    }
+    {
+      const stage = 'CRZ';
+      const levels = new Set();
+      const maxNumCruiseWindLevels = 4;
+
+      for (const fix of data.navlog) {
+        if (fix.stage !== stage || fix.ident === 'TOC' || fix.ident === 'TOD' || fix.type === 'apt') {
+          continue;
+        }
+
+        const legIndex = plan.findLegIndexByFixIdent(fix.ident);
+
+        if (legIndex < 0) {
+          console.warn(`Could not find leg index for fix ${fix.ident} in CRZ stage.`);
+          continue;
+        }
+
+        // Find entry closest below or at the cruise level
+        const entryClosestBelow = fix.wind_data.level.reduce((prev, curr) => {
+          if (prev === undefined) {
+            return curr;
+          }
+
+          const prevAltitude = Math.round(parseInt(prev.altitude) / 100) * 100;
+          const currAltitude = Math.round(parseInt(curr.altitude) / 100) * 100;
+
+          return currAltitude > prevAltitude && currAltitude <= cruiseLevel * 100 ? curr : prev;
+        }, undefined);
+
+        const entriesAbove = fix.wind_data.level.filter(
+          (val) => Math.round(parseInt(val.altitude) / 100) * 100 > cruiseLevel * 100,
+        );
+
+        for (const val of [entryClosestBelow, ...entriesAbove]) {
+          const altitude = Math.round(parseInt(val.altitude) / 100) * 100;
+          if (!levels.has(altitude) && levels.size >= maxNumCruiseWindLevels) {
+            continue;
+          }
+
+          const direction = parseInt(val.wind_dir);
+          const speed = parseInt(val.wind_spd);
+
+          await this.flightPlanService.addCruiseWindEntry(
+            legIndex,
+            {
+              altitude,
+              vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
+            },
+            forPlan,
+          );
+
+          levels.add(altitude);
+        }
+      }
+    }
+    {
+      const tod = data.navlog.find((val) => val.ident === 'TOD');
+      const windData: typeof tod.wind_data.level = [];
+      const maxNumDescentWindEntries = 10;
+
+      if (tod) {
+        tod.wind_data.level.sort((a, b) => parseInt(a.altitude) - parseInt(b.altitude));
+
+        const lowestLevel = tod.wind_data.level[0];
+        if (lowestLevel !== undefined) {
+          windData.push(lowestLevel);
+        }
+
+        const highestLevel = tod.wind_data.level.find((level) => parseInt(level.altitude) >= cruiseLevel * 100);
+        if (highestLevel !== lowestLevel) {
+          windData.push(highestLevel);
+        }
+
+        const numWindEntriesLeft = maxNumDescentWindEntries - windData.length;
+
+        // TODO remove this restriction
+        if (numWindEntriesLeft === maxNumDescentWindEntries - 2) {
+          for (let i = 0; i < numWindEntriesLeft; i++) {
+            const optimalLevel =
+              parseInt(lowestLevel.altitude) +
+              ((i + 1) / maxNumDescentWindEntries) * (parseInt(highestLevel.altitude) - parseInt(lowestLevel.altitude));
+
+            // Find the closest wind level to the optimal level
+            const closestWindLevel = tod.wind_data.level.reduce((prev, curr) => {
+              if (prev === undefined) {
+                return curr;
+              } else if (curr === lowestLevel || curr === highestLevel) {
+                return prev;
+              }
+
+              const prevDiff = Math.abs(parseInt(prev.altitude) - optimalLevel);
+              const currDiff = Math.abs(parseInt(curr.altitude) - optimalLevel);
+
+              return currDiff < prevDiff ? curr : prev;
+            });
+
+            if (closestWindLevel !== lowestLevel && closestWindLevel !== highestLevel) {
+              windData.push(closestWindLevel);
+            }
+          }
+        }
+
+        for (const wind of windData) {
+          await this.flightPlanService.setDescentWindEntry(
+            Math.round(parseInt(wind.altitude) / 100) * 100,
+            {
+              vector: Vec2Math.setFromPolar(
+                parseInt(wind.wind_spd),
+                parseInt(wind.wind_dir) * MathUtils.DEGREES_TO_RADIANS,
+                Vec2Math.create(),
+              ),
+              altitude: parseInt(wind.altitude),
+            },
+            forPlan,
+          );
+        }
+      }
+    }
   }
 
   // ---------------------------
