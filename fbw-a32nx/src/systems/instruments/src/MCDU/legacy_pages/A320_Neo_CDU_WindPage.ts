@@ -419,10 +419,13 @@ export class CDUWindPage {
       };
     }
 
-    if (plan.performanceData.descentWindEntries.length < 10) {
+    const canAddDescentWind = plan.performanceData.descentWindEntries.length < 10;
+    const hasSpaceOnPage = numEntries < numDescentWindEntriesPerPage;
+
+    if (hasSpaceOnPage && canAddDescentWind) {
       template[numEntries * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
-      mcdu.onLeftInput[numEntries] = (value, scratchpadCallback) => {
+      mcdu.onLeftInput[numEntries] = async (value, scratchpadCallback) => {
         const entry = this.parseTrueWindEntry(value);
 
         if (entry === null) {
@@ -432,7 +435,7 @@ export class CDUWindPage {
         }
 
         try {
-          mcdu.flightPlanService.setDescentWindEntry(entry.altitude, entry, forPlan);
+          await mcdu.flightPlanService.setDescentWindEntry(entry.altitude, entry, forPlan);
 
           CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
         } catch (e) {
@@ -445,7 +448,8 @@ export class CDUWindPage {
 
     const canScrollDown =
       plan.performanceData.descentWindEntries.length > numDescentWindEntriesPerPage - 1 && offset > 0;
-    const canScrollUp = offset < plan.performanceData.descentWindEntries.length - (numDescentWindEntriesPerPage - 1);
+    const canScrollUp =
+      offset < Math.min(plan.performanceData.descentWindEntries.length + 1, 10) - numDescentWindEntriesPerPage;
 
     if (canScrollDown) {
       mcdu.onDown = () => {
