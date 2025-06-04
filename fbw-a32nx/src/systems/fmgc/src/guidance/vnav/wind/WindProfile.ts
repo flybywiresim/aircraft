@@ -133,9 +133,9 @@ export class WindProfile implements WindInterface {
     const hasTripWindEntry = tripWind !== null;
 
     const legIndex = this.tracks.getLegIndex(distanceFromStart);
-    const prevLegIndex = legIndex - 1; // TODO handle discontinuities
+    const prevLegIndex = this.findLegIndexBefore(legIndex);
 
-    if (legIndex < 0) {
+    if (legIndex < 0 || prevLegIndex < 0) {
       return Vec2Math.set(0, 0, result);
     }
 
@@ -226,6 +226,16 @@ export class WindProfile implements WindInterface {
       forecast,
       result,
     );
+  }
+
+  private findLegIndexBefore(beforeIndex: number): number {
+    for (let i = beforeIndex - 1; i >= 0; i--) {
+      if (this.plan.hasLegAt(i)) {
+        return i;
+      }
+    }
+
+    return -1;
   }
 }
 
