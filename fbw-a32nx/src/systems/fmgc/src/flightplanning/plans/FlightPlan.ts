@@ -10,7 +10,7 @@ import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable } from '@micr
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
@@ -763,5 +763,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
   async setAlternateWind(entry: WindVector | null): Promise<void> {
     this.setPerformanceData('alternateWind', entry);
+  }
+
+  hasWindEntries() {
+    return (
+      this.performanceData.climbWindEntries.length > 0 ||
+      this.performanceData.descentWindEntries.length > 0 ||
+      this.allLegs.some((el) => isLeg(el) && el.cruiseWindEntries.length > 0)
+    );
   }
 }
