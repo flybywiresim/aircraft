@@ -400,10 +400,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <div class="fr" style={'width: 430px;'}>
                 <span class="mfd-value bigger">{this.bearingToWaypointDisplay}</span>
                 <span class="mfd-label-unit bigger mfd-unit-trailing">{this.bearingUnit}</span>
-                <span class="mfd-value bigger" style={'margin-right: 15px;'}>
-                  /
+                <span class="mfd-value bigger" style={'margin-left:10px'}>
+                  /{this.distanceToWaypointDisplay}
                 </span>
-                <span class="mfd-value bigger">{this.distanceToWaypointDisplay}</span>
                 <span class="mfd-label-unit bigger mfd-unit-trailing">{this.distanceToWaypointUnit}</span>
               </div>
             </div>
