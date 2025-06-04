@@ -3564,7 +3564,7 @@
                                 <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_2</LOCK_NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART2_TOGGLE</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_ENGMANSTART1_TOGGLE, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -3577,45 +3577,45 @@
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_ENGMANSTART_3</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_3</LOCK_NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART2_TOGGLE</TOGGLE_SIMVAR>
+                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART3_TOGGLE</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A32NX_ENGMANSTART3_TOGGLE, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_ENGMANSTART2_TOGGLE, Bool))%{if}Turn OFF
-                                    engine 2 manual start%{else}Turn ON engine 2 manual start%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A32NX_ENGMANSTART3_TOGGLE, Bool))%{if}Turn OFF
+                                    engine 3 manual start%{else}Turn ON engine 3 manual start%{end}</TOOLTIPID>
                             </UseTemplate>
 
                             <!-- 4 -->
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_ENGMANSTART_4</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_4</LOCK_NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART2_TOGGLE</TOGGLE_SIMVAR>
+                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART4_TOGGLE</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A32NX_ENGMANSTART4_TOGGLE, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_ENGMANSTART2_TOGGLE, Bool))%{if}Turn OFF
-                                    engine 2 manual start%{else}Turn ON engine 2 manual start%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A32NX_ENGMANSTART4_TOGGLE, Bool))%{if}Turn OFF
+                                    engine 4 manual start%{else}Turn ON engine 4 manual start%{end}</TOOLTIPID>
                             </UseTemplate>
 
                             <!-- ALTN -->
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_ENGMANSTARTALTN</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTARTALTN</LOCK_NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART1_TOGGLE</TOGGLE_SIMVAR>
+                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTARTALTN_TOGGLE</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A32NX_ENGMANSTARTALTN_TOGGLE, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_ENGMANSTART2_TOGGLE, Bool))%{if}Turn OFF
-                                    engine 2 manual start%{else}Turn ON engine 2 manual start%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A32NX_ENGMANSTARTALTN_TOGGLE, Bool))%{if}Turn OFF
+                                    engine altn mode%{else}Turn ON engine altn mode%{end}</TOOLTIPID>
                             </UseTemplate>
                         </Component>
 
