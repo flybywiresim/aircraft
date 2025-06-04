@@ -81,6 +81,7 @@ import {
   NavaidSubsectionCode,
   SectionCode,
 } from '../../../shared/types/SectionCode';
+import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 
 type FacilityType<T> = T extends JS_FacilityIntersection
   ? Waypoint
@@ -100,6 +101,7 @@ export class MsfsMapping {
   // eslint-disable-next-line no-useless-constructor
   constructor(
     private cache: FacilityCache,
+    private readonly logError: ErrorLogger,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -749,7 +751,7 @@ export class MsfsMapping {
 
             return ret;
           } catch (e) {
-            console.error(`Error mapping approach ${msAirport.icao} ${approach.name}`, e);
+            this.logError(`[MsfsMapping] Error mapping approach ${msAirport.icao} ${approach.name}: ${String(e)}`);
           }
           return null;
         })
@@ -785,7 +787,7 @@ export class MsfsMapping {
           };
           return ret;
         } catch (e) {
-          console.error(`Error mapping arrival ${msAirport.icao} ${arrival.name}`, e);
+          this.logError(`[MsfsMapping] Error mapping arrival ${msAirport.icao} ${arrival.name}: ${String(e)}`);
         }
         return null;
       })
@@ -832,7 +834,7 @@ export class MsfsMapping {
           };
           return ret;
         } catch (e) {
-          console.error(`Error mapping departure ${msAirport.icao} ${departure.name}`, e);
+          this.logError(`[MsfsMapping] Error mapping departure ${msAirport.icao} ${departure.name}: ${String(e)}`);
         }
         return null;
       })
