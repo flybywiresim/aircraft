@@ -36,9 +36,11 @@ const ValueSpacing = 100;
 const DistanceSpacing = 7.5;
 
 class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private landingElevationIndicator = FSComponent.createRef<SVGPathElement>();
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
-  private altitude = 0;
+  private landingElevationIndicator = FSComponent.createRef<SVGPathElement>();
 
   private landingElevation = new Arinc429Word(0);
 
@@ -49,7 +51,7 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
   private handleLandingElevation() {
     const landingElevationValid =
       !this.landingElevation.isFailureWarning() && !this.landingElevation.isNoComputedData();
-    const delta = this.altitude - this.landingElevation.value;
+    const delta = this.altitude.get().value - this.landingElevation.value;
     const offset = ((delta - DisplayRange) * DistanceSpacing) / ValueSpacing;
     this.delta = delta;
     if (delta > DisplayRange || (this.flightPhase !== 7 && this.flightPhase !== 8) || !landingElevationValid) {
@@ -86,10 +88,7 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
         this.handleLandingElevation();
       });
 
-    sub.on('altitudeAr').handle((a) => {
-      this.altitude = a.value;
-      this.handleLandingElevation();
-    });
+    this.altitude.sub(this.handleLandingElevation.bind(this));
   }
 
   render(): VNode {
@@ -139,11 +138,13 @@ class RadioAltIndicator extends DisplayComponent<{ bus: ArincEventBus; filteredR
 }
 
 class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private visibility = Subject.create('hidden');
 
   private path = Subject.create('');
-
-  private altitude = 0;
 
   private radioAltitudeValid = false;
 
@@ -168,7 +169,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
     this.qfeLandingAltValid = this.inLandingPhases && !this.fcuEisDiscreteWord2.bitValueOr(29, true);
 
-    const altDelta = this.mda.get().value - this.altitude;
+    const altDelta = this.mda.get().value - this.altitude.get().value;
 
     const showMda =
       (this.radioAltitudeValid || this.qnhLandingAltValid || this.qfeLandingAltValid) &&
@@ -215,13 +216,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
         this.updateIndication();
       });
 
-    sub
-      .on('altitudeAr')
-      .withArinc429Precision(0)
-      .handle((a) => {
-        this.altitude = a.value;
-        this.updateIndication();
-      });
+    this.altitude.sub(this.updateIndication.bind(this), true);
 
     this.mda.sub(this.updateIndication.bind(this));
 
@@ -488,6 +483,10 @@ interface SelectedAltIndicatorProps {
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private baroInStd = false;
 
   private selectedAltLowerText = FSComponent.createRef<SVGTextElement>();
@@ -511,8 +510,6 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   private targetSymbolRef = FSComponent.createRef<SVGPathElement>();
 
   private altTapeTargetText = FSComponent.createRef<SVGTextElement>();
-
-  private altitude = new Arinc429Word(0);
 
   private shownTargetAltitude = new Arinc429Word(0);
 
@@ -549,14 +546,10 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & FcuBus>();
 
-    sub
-      .on('altitudeAr')
-      .withArinc429Precision(2)
-      .handle((a) => {
-        this.altitude = a;
-        this.handleAltitudeDisplay();
-        this.getOffset();
-      });
+    this.altitude.sub(() => {
+      this.handleAltitudeDisplay();
+      this.getOffset();
+    }, true);
 
     sub
       .on('fcuEisDiscreteWord2')
@@ -593,12 +586,12 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
       this.selectedAltLowerGroupRef.instance.style.display = 'none';
       this.targetGroupRef.instance.style.display = 'none';
       this.selectedAltFailed.set(true);
-    } else if (this.altitude.value - this.shownTargetAltitude.value > DisplayRange) {
+    } else if (this.altitude.get().value - this.shownTargetAltitude.value > DisplayRange) {
       this.selectedAltLowerGroupRef.instance.style.display = 'block';
       this.selectedAltUpperGroupRef.instance.style.display = 'none';
       this.targetGroupRef.instance.style.display = 'none';
       this.selectedAltFailed.set(false);
-    } else if (this.altitude.value - this.shownTargetAltitude.value < -DisplayRange) {
+    } else if (this.altitude.get().value - this.shownTargetAltitude.value < -DisplayRange) {
       this.targetGroupRef.instance.style.display = 'none';
       this.selectedAltUpperGroupRef.instance.style.display = 'block';
       this.selectedAltLowerGroupRef.instance.style.display = 'none';
@@ -627,7 +620,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   }
 
   private getOffset() {
-    const offset = ((this.altitude.value - this.shownTargetAltitude.value) * DistanceSpacing) / ValueSpacing;
+    const offset = ((this.altitude.get().value - this.shownTargetAltitude.value) * DistanceSpacing) / ValueSpacing;
     this.targetGroupRef.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
   }
 
@@ -913,6 +906,10 @@ interface MetricAltIndicatorProps {
 }
 
 class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private needsUpdate = false;
 
   private metricAlt = FSComponent.createRef<SVGGElement>();
@@ -944,10 +941,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
 
     this.mda.sub(() => (this.needsUpdate = true));
 
-    sub.on('altitudeAr').handle((a) => {
-      this.state.altitude = a;
-      this.needsUpdate = true;
-    });
+    this.altitude.sub(() => (this.needsUpdate = true));
 
     this.props.altitudeColor.sub((color) => {
       this.state.altitudeColor = color;

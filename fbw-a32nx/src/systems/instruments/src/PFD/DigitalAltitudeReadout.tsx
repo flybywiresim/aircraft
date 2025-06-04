@@ -11,7 +11,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -68,7 +68,9 @@ interface DigitalAltitudeReadoutProps {
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
   private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-  private readonly altitude = Arinc429RegisterSubject.createEmpty();
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
   private isNegativeSub = Subject.create('hidden');
 
@@ -142,7 +144,6 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     });
 
     sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    sub.on('altitudeAr').handle((v) => this.altitude.setWord(v.rawWord));
   }
 
   render(): VNode {
