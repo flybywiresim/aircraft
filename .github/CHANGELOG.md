@@ -39,6 +39,9 @@
 1. [A380X/ND] Show RNP on approach identifier for RNP AR approaches - @BravoMike99 (bruno_pt99)
 1. [ND] Improve vertical position of approach message - @BravoMike99 (bruno_pt99)
 1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
+1. [A32NX/ECP] Implemented realistic simulation of the ECAM control panel - @tracernz (Mike)
+1. [A32NX] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
+1. [A380X] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
 
 ## 0.13.0
 
@@ -232,6 +235,7 @@
 1. [A380X/OIS] Fix OIT brightness being incorrectly connected to RMP 2 and RMP 3 screen brightness - @heclak (Heclak)
 1. [A380X/OIS] OIT brightness will now be set automatically at spawn - @heclak (Heclak)
 1. [EFB/PERF] Harmonize takeoff and landing performance calculators - @FoxtrotSierra6829 (FoxtrotSierra)
+1. [A32NX/FWC] Add A/THR LIMITED ECAM warning - @lukecologne (luke)
 
 ## 0.12.0
 

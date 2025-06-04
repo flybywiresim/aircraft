@@ -234,7 +234,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
 
-    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
     this.#navigation = new Navigation(this.bus, this.flightPlanService);

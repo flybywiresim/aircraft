@@ -4,7 +4,7 @@
 import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
-  Arinc429OutputWord,
+  Arinc429LocalVarOutputWord,
   Arinc429SignStatusMatrix,
   Arinc429Word,
   DatabaseIdent,
@@ -83,7 +83,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public readonly currFlightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData());
   public readonly rpcServer = new FlightPlanRpcServer(this.bus, this.currFlightPlanService);
   public readonly currNavigationDatabaseService = NavigationDatabaseService;
-  public readonly navigationDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+  public readonly navigationDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
 
   private readonly flightPhaseUpdateThrottler = new UpdateThrottler(800);
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);
@@ -5443,7 +5443,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 }
 
 /** Writes FM output words for both FMS. */
-class FmArinc429OutputWord extends Arinc429OutputWord {
+class FmArinc429OutputWord extends Arinc429LocalVarOutputWord {
   private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
 
   override async writeToSimVarIfDirty() {
