@@ -192,7 +192,8 @@ export class NearbyFacilityCache {
   private onReceiveFacility(msfsFac: JS_FacilityAirport | JS_FacilityIntersection | JS_FacilityNDB): void {
     const type = NearbyFacilityCache.getNearbyTypeFromIcao(msfsFac.icao);
     if (type === NearbyFacilityType.VhfNavaid || type === undefined) {
-      throw new Error('VORs should never get here!');
+      // VOR intersections might get here due to other facility listener users requesting them
+      return;
     }
 
     if (this.pendingRequests.has(msfsFac.icao)) {

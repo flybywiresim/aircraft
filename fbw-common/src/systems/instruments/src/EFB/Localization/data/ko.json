@@ -567,8 +567,8 @@
     },
     "Title": "빠른 설정"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
+  "QuickControls.TT.CabinAutoBrightness": "자동 객실 조명 켜기/끄기",
+  "QuickControls.TT.CabinLighting": "객실 조명 설정",
   "Settings": {
     "About": {
       "Title": "정보"
@@ -631,11 +631,11 @@
     "Real": "실제",
     "Realism": {
       "AdirsAlignTime": "ADIRS 정렬 시간",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "단계별 고도 자동 상승",
       "AutofillChecklists": "체크리스트 자동 완성",
       "BoardingTime": "승객 탑승 시간",
       "DmcSelfTestTime": "DMC 자체 점검 시간",
-      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
+      "EclSoftKeys": "EWD 전자 체크리스트용 소프트 키 표시",
       "FirstOfficerAvatar": "부기장 아바타 표시",
       "HomeCockpitMode": "실내 조종석 모드",
       "McduFocusTimeout": "MCDU 포커스 타임아웃 (초)",
@@ -667,6 +667,7 @@
       "Left": "왼쪽",
       "LoadOnly": "불러오기 전용",
       "None": "없음",
+      "OansPerformanceMode": "OANS 성능 모드(사용하지 않을 경우 공항 지도 로딩 안함)",
       "Off": "끄기",
       "PilotSeat": "조종할 좌석",
       "Right": "오른쪽",
@@ -743,7 +744,7 @@
       "Blue": "블루",
       "Brightness": "밝기",
       "Dark": "다크",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
+      "DisablePushbackConflictWarning": "푸시백 시스템 충돌 경고 비활성화",
       "Language": "언어",
       "Light": "라이트",
       "Local": "현지",
@@ -760,8 +761,8 @@
       "UtcAndLocal": "UTC 및 현지 시간"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
+  "Settings.SimOptions.CabinAutoBrightness": "자동 객실 조명",
+  "Settings.SimOptions.CabinManualBrightness": "객실 조명 밝기",
   "StatusBar": {
     "Apr": "4월",
     "Aug": "8월",
