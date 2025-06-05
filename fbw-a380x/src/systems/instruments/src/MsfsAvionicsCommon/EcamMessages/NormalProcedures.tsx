@@ -180,7 +180,8 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'T.O SPEEDS & THRUST',
-        labelNotCompleted: '___ (BOTH)',
+        labelNotCompleted: 'CHECK (BOTH)',
+        labelCompleted: 'CHECKED',
         sensed: false,
       },
       {
