@@ -208,6 +208,7 @@ export const EcamInfos: { [n: string]: string } = {
   800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
   800200005: '\x1b<3mNO BRAKED PIVOT TURN',
+  800200006: '\x1b<3mFMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
 };
 
 /** All possible LIMITATIONs, with special formatting characters. */
@@ -237,6 +238,9 @@ export const EcamLimitations: { [n: string]: string } = {
   800400002: '\x1b<5mLDG DIST AFFECTED',
   800400003: '\x1b<5mLDG PERF AFFECTED',
   800400004: '\x1b<5mFOR GA : KEEP S/F CONF',
+  800400005: '\x1b<5mMAX DIFF PR : 1 PSI',
+  800400006: '\x1b<5mMAX SPEED : 300 / .85',
+  800400007: '\x1b<5mMIN SPEED : GREEN DOT',
 };
 
 /** All possible INOP sys, with special formatting characters. */
