@@ -879,6 +879,7 @@ pub struct LandingGearControlInterfaceUnit {
     discrete_word_1_id: VariableIdentifier,
     discrete_word_2_id: VariableIdentifier,
     discrete_word_3_id: VariableIdentifier,
+    discrete_word_4_id: VariableIdentifier,
 
     is_powered: bool,
     is_powered_previous_state: bool,
@@ -944,6 +945,8 @@ impl LandingGearControlInterfaceUnit {
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_2", lgciu_number(lgciu_id))),
             discrete_word_3_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_3", lgciu_number(lgciu_id))),
+            discrete_word_4_id: context
+                .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_4", lgciu_number(lgciu_id))),
 
             is_powered: false,
             is_powered_previous_state: false,
@@ -1221,6 +1224,32 @@ impl LandingGearControlInterfaceUnit {
             word
         }
     }
+
+    pub fn discrete_word_4(&self) -> Arinc429Word<u32> {
+        if !self.is_powered {
+            Arinc429Word::new(0, SignStatus::FailureWarning)
+        } else {
+            // Label 23
+            let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+            // If the differential movement between the inboard and outboard flap is more than 15mm, sensors send failure signal.
+            // Failures not implemented.
+
+            // LH Flap attachment failure
+            word.set_bit(21, false);
+
+            // LH flat attachment sensor valid
+            word.set_bit(22, true);
+
+            // RH Flap attachment failure
+            word.set_bit(25, false);
+
+            // RH flat attachment sensor valid
+            word.set_bit(26, true);
+
+            word
+        }
+    }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1278,6 +1307,7 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
         writer.write(&self.discrete_word_1_id, self.discrete_word_1());
         writer.write(&self.discrete_word_2_id, self.discrete_word_2());
         writer.write(&self.discrete_word_3_id, self.discrete_word_3());
+        writer.write(&self.discrete_word_4_id, self.discrete_word_4());
     }
 }
 
@@ -1742,6 +1772,45 @@ mod tests {
 
     fn test_bed_in_flight_with() -> LgciusTestBed {
         test_bed(StartState::Cruise)
+    }
+
+    #[test]
+    fn landing_gear_simvars() {
+        let test_bed = test_bed_on_ground_with().on_the_ground();
+
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_COMPRESSED"));
+
+        assert!(test_bed.contains_variable_with_name("GEAR_HANDLE_POSITION"));
+        assert!(test_bed.contains_variable_with_name("GEAR_LEVER_POSITION_REQUEST"));
+        assert!(test_bed.contains_variable_with_name("GEAR_HANDLE_HITS_LOCK_SOUND"));
+
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_FAULT"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_FAULT"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_1"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_1"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_2"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_2"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_3"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_3"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_4"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_4"));
     }
 
     #[test]
