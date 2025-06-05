@@ -445,7 +445,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
                     <Route path="/presets" component={Presets} />
                     <Route path="/settings" component={Settings} />
                     <Route path="/settings/flypad" component={FlyPadPage} />
-                 </Switch>
+                  </Switch>
                 </div>
               </div>
             </div>
