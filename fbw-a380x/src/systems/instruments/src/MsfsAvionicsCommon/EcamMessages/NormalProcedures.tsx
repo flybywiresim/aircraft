@@ -146,7 +146,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'PACK 1 & 2',
-        labelNotCompleted: '____',
+        labelNotCompleted: 'ON',
         sensed: false,
       },
     ],
