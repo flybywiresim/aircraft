@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_ElacComputer_types_h_
-#define RTW_HEADER_ElacComputer_types_h_
+#ifndef ElacComputer_types_h_
+#define ElacComputer_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_pitch_efcs_law_
 #define DEFINED_TYPEDEF_FOR_pitch_efcs_law_
@@ -36,6 +36,17 @@ enum class lateral_efcs_law
   NormalLaw = 0,
   DirectLaw,
   None
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
+#define DEFINED_TYPEDEF_FOR_base_arinc_429_
+
+struct base_arinc_429
+{
+  uint32_T SSM;
+  real32_T Data;
 };
 
 #endif
@@ -131,24 +142,14 @@ struct base_elac_analog_inputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
-#define DEFINED_TYPEDEF_FOR_base_arinc_429_
-
-struct base_arinc_429
-{
-  uint32_T SSM;
-  real32_T Data;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_adr_bus_
 #define DEFINED_TYPEDEF_FOR_base_adr_bus_
 
 struct base_adr_bus
 {
   base_arinc_429 altitude_standard_ft;
-  base_arinc_429 altitude_corrected_ft;
+  base_arinc_429 altitude_corrected_1_ft;
+  base_arinc_429 altitude_corrected_2_ft;
   base_arinc_429 mach;
   base_arinc_429 airspeed_computed_kn;
   base_arinc_429 airspeed_true_kn;

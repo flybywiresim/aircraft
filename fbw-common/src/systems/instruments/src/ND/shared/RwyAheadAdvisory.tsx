@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { FmsOansData } from '@flybywiresim/oanc';
+import { Arinc429Word, FmsOansData } from '@flybywiresim/fbw-sdk';
 import { RopRowOansSimVars } from '../../MsfsAvionicsCommon/providers';
 
 export interface RwyAheadAdvisoryProps {
@@ -19,7 +18,7 @@ export class RwyAheadAdvisory extends DisplayComponent<RwyAheadAdvisoryProps> {
 
   private readonly flagDisplay = this.oansWord1Raw.map((word) => {
     const w = new Arinc429Word(word);
-    return w.getBitValueOr(11, false) ? 'block' : 'none';
+    return w.bitValueOr(11, false) ? 'block' : 'none';
   });
 
   onAfterRender(node: VNode) {

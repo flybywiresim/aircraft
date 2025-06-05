@@ -1041,6 +1041,7 @@ mod tests {
             0.,
             Velocity::new::<knot>(0.),
             Velocity::new::<knot>(0.),
+            Velocity::new::<knot>(0.),
             altitude,
             altitude,
             InternationalStandardAtmosphere::temperature_at_altitude(altitude),

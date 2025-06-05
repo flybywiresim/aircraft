@@ -2,43 +2,79 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEventPublisher, KeyEventManager, Wait, GameStateProvider } from '@microsoft/msfs-sdk';
+import {
+  Clock,
+  ClockEvents,
+  EventBus,
+  HEventPublisher,
+  InstrumentBackplane,
+  StallWarningPublisher,
+} from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
 import { PowerSupplyBusses } from './systems/powersupply';
+import { PseudoFWC } from 'systems-host/systems/FWC/PseudoFWC';
+import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
+import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import { Ecp } from './systems/ECP/Ecp';
+import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
+import { A32NXOverheadDiscretePublisher } from '../shared/src/publishers/A32NXOverheadDiscretePublisher';
+import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
+import { FakeDmc } from './systems/ECP/FakeDmc';
 
 class SystemsHost extends BaseInstrument {
-  private readonly bus: EventBus;
+  private readonly bus = new EventBus();
 
-  private readonly hEventPublisher: HEventPublisher;
+  private readonly backplane = new InstrumentBackplane();
 
-  private readonly powerSupply: PowerSupplyBusses;
+  private readonly clock = new Clock(this.bus);
 
-  private readonly atsu: AtsuSystem;
+  private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private keyInterceptManager: KeyEventManager;
+  private readonly powerSupply = new PowerSupplyBusses(this.bus);
 
-  /**
-   * "mainmenu" = 0
-   * "loading" = 1
-   * "briefing" = 2
-   * "ingame" = 3
-   */
-  private gameState = 0;
+  private readonly atsu = new AtsuSystem(this.bus);
+
+  private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
+
+  private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
+
+  private readonly a32nxFcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+
+  private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
+
+  private readonly pseudoFwc = new PseudoFWC(this.bus, this);
 
   constructor() {
     super();
 
-    this.bus = new EventBus();
-    this.hEventPublisher = new HEventPublisher(this.bus);
-    this.powerSupply = new PowerSupplyBusses(this.bus);
-    this.atsu = new AtsuSystem(this.bus);
-    Promise.all([
-      KeyEventManager.getManager(this.bus),
-      Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
-    ]).then(([keyEventManager]) => {
-      this.keyInterceptManager = keyEventManager;
-      this.initLighting();
-    });
+    this.backplane.addInstrument('Clock', this.clock);
+    this.backplane.addInstrument('AtsuSystem', this.atsu);
+    this.backplane.addInstrument('Ecp', new Ecp(this.bus));
+    this.backplane.addInstrument('FakeDmc', new FakeDmc(this.bus));
+
+    this.backplane.addPublisher('HEvent', this.hEventPublisher);
+    this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
+    this.backplane.addPublisher('PowerPublisher', this.powerSupply);
+    this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
+    this.backplane.addPublisher('a32nxFcuBusPublisher', this.a32nxFcuBusPublisher);
+    this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
+    this.backplane.addPublisher('A32NXElectricalSystemPublisher', new A32NXElectricalSystemPublisher(this.bus));
+    this.backplane.addPublisher('OverheadPublisher', new A32NXOverheadDiscretePublisher(this.bus));
+    this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
+
+    this.pseudoFwc.init();
+    let lastUpdateTime: number;
+    this.bus
+      .getSubscriber<ClockEvents>()
+      .on('simTimeHiFreq')
+      .atFrequency(50)
+      .handle((now) => {
+        const dt = lastUpdateTime === undefined ? 0 : now - lastUpdateTime;
+        lastUpdateTime = now;
+
+        this.pseudoFwc.update(dt);
+      });
   }
 
   get templateID(): string {
@@ -56,9 +92,6 @@ class SystemsHost extends BaseInstrument {
   public connectedCallback(): void {
     super.connectedCallback();
 
-    this.powerSupply.connectedCallback();
-    this.atsu.connectedCallback();
-
     // Needed to fetch METARs from the sim
     RegisterViewListener(
       'JS_LISTENER_FACILITY',
@@ -67,71 +100,14 @@ class SystemsHost extends BaseInstrument {
       },
       true,
     );
+
+    this.backplane.init();
   }
 
   public Update(): void {
     super.Update();
 
-    if (this.gameState !== 3) {
-      const gamestate = this.getGameState();
-      if (gamestate === 3) {
-        this.hEventPublisher.startPublish();
-        this.powerSupply.startPublish();
-        this.atsu.startPublish();
-      }
-      this.gameState = gamestate;
-    }
-
-    this.powerSupply.update();
-    this.atsu.update();
-  }
-
-  private initLighting() {
-    /** automatic brightness based on ambient light, [0, 1] scale */
-    const autoBrightness = Math.max(
-      15,
-      Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')),
-    );
-
-    // DOME
-    if (autoBrightness < 50) {
-      this.keyInterceptManager.triggerKey('CABIN_LIGHTS_SET', false, 1);
-    }
-    this.setPotentiometer(7, autoBrightness < 50 ? 20 : 0);
-    // MAIN FLOOD
-    this.setPotentiometer(83, autoBrightness < 50 ? 20 : 0);
-    // FCU INTEG
-    this.setPotentiometer(84, autoBrightness < 50 ? 1.5 * autoBrightness : 0);
-    // MAIN & PED INTEG
-    this.setPotentiometer(85, autoBrightness < 50 ? 1.5 * autoBrightness : 0);
-    // OVHD INTEG
-    this.setPotentiometer(86, autoBrightness < 50 ? 1.5 * autoBrightness : 0);
-    // FCU Displays
-    this.setPotentiometer(87, autoBrightness);
-    // CAPT PFD DU
-    this.setPotentiometer(88, autoBrightness);
-    // CAPT ND DU
-    this.setPotentiometer(89, autoBrightness);
-    // F/O PFD DU
-    this.setPotentiometer(90, autoBrightness);
-    // F/O ND DU
-    this.setPotentiometer(91, autoBrightness);
-    // Upper ECAM DU
-    this.setPotentiometer(92, autoBrightness);
-    // Lower ECAM DU
-    this.setPotentiometer(93, autoBrightness);
-    // CAPT MCDU
-    SimVar.SetSimVarValue('L:A32NX_MCDU_L_BRIGHTNESS', 'number', (8 * autoBrightness) / 100);
-    // FO MCDU
-    SimVar.SetSimVarValue('L:A32NX_MCDU_R_BRIGHTNESS', 'number', (8 * autoBrightness) / 100);
-    // CAPT DCDU
-    SimVar.SetSimVarValue('L:A32NX_PANEL_DCDU_L_BRIGHTNESS', 'number', autoBrightness / 100);
-    // FO DCDU
-    SimVar.SetSimVarValue('L:A32NX_PANEL_DCDU_R_BRIGHTNESS', 'number', autoBrightness / 100);
-  }
-
-  private setPotentiometer(potentiometer, brightness) {
-    this.keyInterceptManager.triggerKey('LIGHT_POTENTIOMETER_SET', false, potentiometer, brightness);
+    this.backplane.onUpdate();
   }
 }
 

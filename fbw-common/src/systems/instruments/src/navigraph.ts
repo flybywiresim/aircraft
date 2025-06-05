@@ -4,7 +4,7 @@
 import { initializeApp, Scope } from 'navigraph/app';
 import { getAuth } from 'navigraph/auth';
 import { getChartsAPI } from 'navigraph/charts';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '../../shared/src/persistence';
 
 initializeApp({
   clientId: process.env.CLIENT_ID,

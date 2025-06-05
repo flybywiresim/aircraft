@@ -1,15 +1,12 @@
 export const AirlineModifiableInformation: AmiCollection = {
   EK: {
-    thrRedAlt: 1500, // ft AGL
-    accAlt: 1500, // ft AGL
-    eoAccAlt: 1500, // ft AGL
     perfFactor: 0, // %
     idleFactor: 0, // %
     perfCode: 'ARM',
-    taxiFuel: 200, // kg
+    taxiFuel: 1500, // kg
     rteRsv: 5, // %
     rsvMin: 0, // kg
-    rsvMax: 10_000, // kg
+    rsvMax: 50_000, // kg
     rsvInflt: true, // YES / NO
     rsvAltn: false, // YES / NO
     finalTg: 30, // minutes
@@ -25,18 +22,6 @@ interface AmiCollection {
 }
 
 interface Ami {
-  /**
-   * ft AGL, thrust reduction altitude
-   */
-  thrRedAlt: Feet;
-  /**
-   * ft AGL, acceleration altitude
-   */
-  accAlt: Feet;
-  /**
-   * ft AGL, engine out acceleration altitude
-   */
-  eoAccAlt: Feet;
   /**
    * %, performance factor
    */

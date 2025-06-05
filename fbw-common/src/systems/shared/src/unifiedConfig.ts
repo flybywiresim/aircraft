@@ -53,27 +53,7 @@ export interface AirframeDimensions {
  */
 export interface FlypadInfo {
   payload: PayloadFlypadInfo;
-  throttle: ThrottleFlypadInfo;
-  pushback: PushbackFlypadInfo;
 }
-
-export interface ThrottleFlypadInfo {
-  numberOfAxis: number;
-  axisOptions: number[];
-  axisMapping: ThrottleFlypadAxisMapping;
-}
-
-export interface ThrottleFlypadAxisMapping {
-  1?: number[][];
-  2?: number[][];
-  3?: number[][];
-  4?: number[][];
-}
-
-export interface PushbackFlypadInfo {
-  turnIndicatorTuningDefault: number;
-}
-
 export interface PayloadFlypadInfo {
   planeCanvas: PayloadPlaneCanvas;
   chartLimits: PayloadChartLimits;

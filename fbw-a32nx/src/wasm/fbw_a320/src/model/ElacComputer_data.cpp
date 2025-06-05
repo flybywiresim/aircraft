@@ -434,43 +434,6 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
           {
             0U,
             0.0F
-          }
-        },
-
-        {
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
-          },
-
-          {
-            0U,
-            0.0F
           },
 
           {
@@ -480,6 +443,58 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
         },
 
         {
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          },
+
+          {
+            0U,
+            0.0F
+          }
+        },
+
+        {
+          {
+            0U,
+            0.0F
+          },
+
           {
             0U,
             0.0F

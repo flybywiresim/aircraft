@@ -24,7 +24,7 @@ export class A380xRmpStateController implements Instrument {
 
   private readonly standbyLedVar = `L:A380X_RMP_${this.rmpIndex}_GREEN_LED`;
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   private readonly rmp3BusA = Subject.create(false);
 
@@ -54,19 +54,19 @@ export class A380xRmpStateController implements Instrument {
   ) {
     switch (rmpIndex) {
       case 1:
-        this.dcPowerVar = 'A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
+        this.dcPowerVar = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
         this.failureKey = A380Failure.RadioManagementPanel1;
         this.selectBusAVars = ['L:FBW_VHF1_BUS_A', 'L:FBW_VHF3_BUS_A', 'L:FBW_HF1_BUS_A'];
         this.screenPotentiometer = 80;
         break;
       case 2:
-        this.dcPowerVar = 'A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
+        this.dcPowerVar = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
         this.failureKey = A380Failure.RadioManagementPanel2;
         this.selectBusAVars = ['L:FBW_VHF2_BUS_A', 'L:FBW_HF2_BUS_A'];
         this.screenPotentiometer = 81;
         break;
       case 3:
-        this.dcPowerVar = 'A32NX_ELEC_DC_1_BUS_IS_POWERED';
+        this.dcPowerVar = 'L:A32NX_ELEC_DC_1_BUS_IS_POWERED';
         this.failureKey = A380Failure.RadioManagementPanel3;
         this.selectBusAVars = ['L:FBW_RMP3_BUS_A'];
         this.screenPotentiometer = 82;

@@ -18,13 +18,13 @@ abstract class TurnAreaExceedance implements FMMessageSelector {
 
   private trigFalling = new Trigger(true);
 
-  private guidanceController: GuidanceController;
+  private guidanceController?: GuidanceController;
 
-  private navigation: Navigation;
+  private navigation?: Navigation;
 
-  init(baseInstrument: BaseInstrument): void {
-    this.guidanceController = baseInstrument.guidanceController;
-    this.navigation = baseInstrument.navigation;
+  init(navigation: Navigation, guidanceController: GuidanceController): void {
+    this.guidanceController = guidanceController;
+    this.navigation = navigation;
   }
 
   process(deltaTime: number): FMMessageUpdate {

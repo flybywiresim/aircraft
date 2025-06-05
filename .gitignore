@@ -29,12 +29,13 @@
 !fbw-a32nx/src/base/manifest-base.json
 !package.json
 
-!jest.config.js
-!/jest/**
+!vitest.config.mjs
 
 !CMakeLists.txt
 
 # Project folders
+!large-files
+large-files/node_modules
 
 # === A32NX ===
 /fbw-a32nx/*

@@ -33,9 +33,11 @@ clang \
   -flto \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
+  -D_LARGEFILE64_SOURCE \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -DNOMINMAX \
   -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
@@ -73,9 +75,12 @@ clang++ \
   -target wasm32-unknown-wasi \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
+  -D_LARGEFILE64_SOURCE \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -DNOMINMAX \
+  -DJSON_HAS_FILESYSTEM=0 \
   -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
@@ -99,6 +104,8 @@ clang++ \
   "${DIR}/src/fac/Fac.cpp" \
   -I "${DIR}/src/failures" \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
+  -I "${DIR}/src/fcdc" \
+  "${DIR}/src/fcdc/Fcdc.cpp" \
   -I "${DIR}/src/utils" \
   "${DIR}/src/utils/ConfirmNode.cpp" \
   "${DIR}/src/utils/SRFlipFLop.cpp" \
@@ -111,7 +118,10 @@ clang++ \
   "${DIR}/src/model/AutopilotStateMachine.cpp" \
   "${DIR}/src/model/Autothrust_data.cpp" \
   "${DIR}/src/model/Autothrust.cpp" \
+  "${DIR}/src/model/binsearch_u32d.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
+  "${DIR}/src/model/A380FacComputer_data.cpp" \
+  "${DIR}/src/model/A380FacComputer.cpp" \
   "${DIR}/src/model/A380PrimComputer_data.cpp" \
   "${DIR}/src/model/A380PrimComputer.cpp" \
   "${DIR}/src/model/A380SecComputer_data.cpp" \
@@ -121,22 +131,21 @@ clang++ \
   "${DIR}/src/model/A380PitchDirectLaw.cpp" \
   "${DIR}/src/model/A380LateralNormalLaw.cpp" \
   "${DIR}/src/model/A380LateralDirectLaw.cpp" \
-  "${DIR}/src/model/FacComputer_data.cpp" \
-  "${DIR}/src/model/FacComputer.cpp" \
+  "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
-  "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
-  "${DIR}/src/model/look2_pbinlxpw.cpp" \
-  "${DIR}/src/model/mod_mvZvttxs.cpp" \
-  "${DIR}/src/model/mod_2RcCQkwc.cpp" \
+  "${DIR}/src/model/look2_iflf_binlxpw.cpp" \
+  "${DIR}/src/model/maximum_Abpa9SzA.cpp" \
+  "${DIR}/src/model/mod_OlzklkXq.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
+  "${DIR}/src/model/plook_binx.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${COMMON_DIR}/fbw_common/src/zlib" \
   "${COMMON_DIR}/fbw_common/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
-  "${DIR}/src/FlightDataRecorder.cpp" \
+  "${DIR}/src/recording/FlightDataRecorder.cpp" \
   "${DIR}/src/Arinc429.cpp" \
   "${DIR}/src/Arinc429Utils.cpp" \
   "${COMMON_DIR}/fbw_common/src/LocalVariable.cpp" \

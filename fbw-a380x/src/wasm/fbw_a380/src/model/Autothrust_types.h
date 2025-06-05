@@ -1,7 +1,6 @@
-#ifndef RTW_HEADER_Autothrust_types_h_
-#define RTW_HEADER_Autothrust_types_h_
+#ifndef Autothrust_types_h_
+#define Autothrust_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_athr_mode_
 #define DEFINED_TYPEDEF_FOR_athr_mode_
 
@@ -34,6 +33,53 @@ enum class athr_status
   DISENGAGED = 0,
   ENGAGED_ARMED,
   ENGAGED_ACTIVE
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_athr_data_
+#define DEFINED_TYPEDEF_FOR_athr_data_
+
+struct athr_data
+{
+  real_T nz_g;
+  real_T Theta_deg;
+  real_T Phi_deg;
+  real_T V_ias_kn;
+  real_T V_tas_kn;
+  real_T V_mach;
+  real_T V_gnd_kn;
+  real_T alpha_deg;
+  real_T H_ft;
+  real_T H_ind_ft;
+  real_T H_radio_ft;
+  real_T H_dot_fpm;
+  real_T ax_m_s2;
+  real_T ay_m_s2;
+  real_T az_m_s2;
+  real_T bx_m_s2;
+  real_T by_m_s2;
+  real_T bz_m_s2;
+  real_T Psi_magnetic_deg;
+  real_T Psi_magnetic_track_deg;
+  boolean_T on_ground;
+  real_T flap_handle_index;
+  boolean_T is_engine_operative_1;
+  boolean_T is_engine_operative_2;
+  boolean_T is_engine_operative_3;
+  boolean_T is_engine_operative_4;
+  real_T commanded_engine_N1_1_percent;
+  real_T commanded_engine_N1_2_percent;
+  real_T commanded_engine_N1_3_percent;
+  real_T commanded_engine_N1_4_percent;
+  real_T engine_N1_1_percent;
+  real_T engine_N1_2_percent;
+  real_T engine_N1_3_percent;
+  real_T engine_N1_4_percent;
+  real_T TAT_degC;
+  real_T OAT_degC;
+  real_T ISA_degC;
+  real_T ambient_density_kg_per_m3;
 };
 
 #endif
@@ -76,8 +122,8 @@ struct athr_raw_data
   real_T flap_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
-  real_T is_engine_operative_3;
-  real_T is_engine_operative_4;
+  boolean_T is_engine_operative_3;
+  boolean_T is_engine_operative_4;
   real_T commanded_engine_N1_1_percent;
   real_T commanded_engine_N1_2_percent;
   real_T commanded_engine_N1_3_percent;
@@ -132,6 +178,8 @@ struct athr_input
   boolean_T is_anti_ice_wing_active;
   boolean_T is_anti_ice_engine_1_active;
   boolean_T is_anti_ice_engine_2_active;
+  boolean_T is_anti_ice_engine_3_active;
+  boolean_T is_anti_ice_engine_4_active;
   boolean_T is_air_conditioning_1_active;
   boolean_T is_air_conditioning_2_active;
   boolean_T FD_active;
@@ -180,53 +228,6 @@ enum class athr_mode_message
   LVR_CLB,
   LVR_MCT,
   LVR_ASYM
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_athr_data_
-#define DEFINED_TYPEDEF_FOR_athr_data_
-
-struct athr_data
-{
-  real_T nz_g;
-  real_T Theta_deg;
-  real_T Phi_deg;
-  real_T V_ias_kn;
-  real_T V_tas_kn;
-  real_T V_mach;
-  real_T V_gnd_kn;
-  real_T alpha_deg;
-  real_T H_ft;
-  real_T H_ind_ft;
-  real_T H_radio_ft;
-  real_T H_dot_fpm;
-  real_T ax_m_s2;
-  real_T ay_m_s2;
-  real_T az_m_s2;
-  real_T bx_m_s2;
-  real_T by_m_s2;
-  real_T bz_m_s2;
-  real_T Psi_magnetic_deg;
-  real_T Psi_magnetic_track_deg;
-  boolean_T on_ground;
-  real_T flap_handle_index;
-  boolean_T is_engine_operative_1;
-  boolean_T is_engine_operative_2;
-  real_T is_engine_operative_3;
-  real_T is_engine_operative_4;
-  real_T commanded_engine_N1_1_percent;
-  real_T commanded_engine_N1_2_percent;
-  real_T commanded_engine_N1_3_percent;
-  real_T commanded_engine_N1_4_percent;
-  real_T engine_N1_1_percent;
-  real_T engine_N1_2_percent;
-  real_T engine_N1_3_percent;
-  real_T engine_N1_4_percent;
-  real_T TAT_degC;
-  real_T OAT_degC;
-  real_T ISA_degC;
-  real_T ambient_density_kg_per_m3;
 };
 
 #endif
@@ -289,67 +290,6 @@ struct athr_out
 {
   athr_time time;
   athr_data data;
-  athr_data_computed data_computed;
-  athr_input input;
-  athr_output output;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_AToClpcym1Jfdzal25tWQD_
-#define DEFINED_TYPEDEF_FOR_struct_AToClpcym1Jfdzal25tWQD_
-
-struct struct_AToClpcym1Jfdzal25tWQD
-{
-  real_T nz_g;
-  real_T Theta_deg;
-  real_T Phi_deg;
-  real_T V_ias_kn;
-  real_T V_tas_kn;
-  real_T V_mach;
-  real_T V_gnd_kn;
-  real_T alpha_deg;
-  real_T H_ft;
-  real_T H_ind_ft;
-  real_T H_radio_ft;
-  real_T H_dot_fpm;
-  real_T ax_m_s2;
-  real_T ay_m_s2;
-  real_T az_m_s2;
-  real_T bx_m_s2;
-  real_T by_m_s2;
-  real_T bz_m_s2;
-  real_T Psi_magnetic_deg;
-  real_T Psi_magnetic_track_deg;
-  boolean_T on_ground;
-  real_T flap_handle_index;
-  boolean_T is_engine_operative_1;
-  boolean_T is_engine_operative_2;
-  boolean_T is_engine_operative_3;
-  boolean_T is_engine_operative_4;
-  real_T commanded_engine_N1_1_percent;
-  real_T commanded_engine_N1_2_percent;
-  real_T commanded_engine_N1_3_percent;
-  real_T commanded_engine_N1_4_percent;
-  real_T engine_N1_1_percent;
-  real_T engine_N1_2_percent;
-  real_T engine_N1_3_percent;
-  real_T engine_N1_4_percent;
-  real_T TAT_degC;
-  real_T OAT_degC;
-  real_T ISA_degC;
-  real_T ambient_density_kg_per_m3;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_QMVdjQ6NWn0vSjcEHgvQjC_
-#define DEFINED_TYPEDEF_FOR_struct_QMVdjQ6NWn0vSjcEHgvQjC_
-
-struct struct_QMVdjQ6NWn0vSjcEHgvQjC
-{
-  athr_time time;
-  struct_AToClpcym1Jfdzal25tWQD data;
   athr_data_computed data_computed;
   athr_input input;
   athr_output output;

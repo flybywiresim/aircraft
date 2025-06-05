@@ -29,37 +29,124 @@ import { WhenCanWeExpectBackOnRoute } from './WhenCanWe/WhenCanWeExpectBackOnRou
 export const MaxRequestElements = 5;
 
 export type MessageVisualizationProps = {
-    x?: number;
-    y?: number;
-    mode: FansMode;
-    index: number;
-    messageElements: { id: string, message: CpdlcMessageElement | undefined, readyToSend: boolean }[];
-    onDelete: () => void;
-}
+  x?: number;
+  y?: number;
+  mode: FansMode;
+  index: number;
+  messageElements: { id: string; message: CpdlcMessageElement | undefined; readyToSend: boolean }[];
+  onDelete: () => void;
+};
 
-export const MessageTable: { [id: string]: { visualization: React.FC<MessageVisualizationProps>, blacklisting: string[], exchanging: string | undefined, singleMessage: boolean } } = {
-    RequestClimb: { visualization: RequestClimb, blacklisting: [], exchanging: 'RequestDescend', singleMessage: false },
-    RequestDescend: { visualization: RequestDescend, blacklisting: [], exchanging: 'RequestClimb', singleMessage: false },
-    RequestLevel: { visualization: RequestLevel, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestLevelBlock: { visualization: RequestLevelBlock, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestCruiseClimb: { visualization: RequestCruiseClimb, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestITP: { visualization: RequestITP, blacklisting: [], exchanging: undefined, singleMessage: true },
-    RequestDirect: { visualization: RequestDirect, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestOffset: { visualization: RequestOffset, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestWeatherDeviation: { visualization: RequestWeatherDeviation, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestHeading: { visualization: RequestHeading, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestGroundTrack: { visualization: RequestGroundTrack, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestSpeed: { visualization: RequestSpeed, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestSpeedRange: { visualization: RequestSpeedRange, blacklisting: [], exchanging: undefined, singleMessage: false },
-    RequestDepartureClearance: { visualization: RequestDepartureClearance, blacklisting: [], exchanging: undefined, singleMessage: true },
-    RequestOceanicClearance: { visualization: RequestOceanicClearance, blacklisting: [], exchanging: undefined, singleMessage: true },
-    RequestGenericClearance: { visualization: RequestGenericClearance, blacklisting: [], exchanging: undefined, singleMessage: false },
-    WhenCanWeExpectLowerLevel: { visualization: WhenCanWeExpectLowerLevel, blacklisting: [], exchanging: 'WhenCanWeExpectHigherLevel', singleMessage: false },
-    WhenCanWeExpectHigherLevel: { visualization: WhenCanWeExpectHigherLevel, blacklisting: [], exchanging: 'WhenCanWeExpectLowerLevel', singleMessage: false },
-    WhenCanWeExpectClimb: { visualization: WhenCanWeExpectClimb, blacklisting: [], exchanging: 'WhenCanWeExpectDescend', singleMessage: false },
-    WhenCanWeExpectDescend: { visualization: WhenCanWeExpectDescend, blacklisting: [], exchanging: 'WhenCanWeExpectClimb', singleMessage: false },
-    WhenCanWeExpectCruiseClimb: { visualization: WhenCanWeExpectCruiseClimb, blacklisting: [], exchanging: undefined, singleMessage: false },
-    WhenCanWeExpectSpeed: { visualization: WhenCanWeExpectSpeed, blacklisting: [], exchanging: undefined, singleMessage: false },
-    WhenCanWeExpectSpeedRange: { visualization: WhenCanWeExpectSpeedRange, blacklisting: [], exchanging: undefined, singleMessage: false },
-    WhenCanWeExpectBackOnRoute: { visualization: WhenCanWeExpectBackOnRoute, blacklisting: [], exchanging: undefined, singleMessage: false },
+export const MessageTable: {
+  [id: string]: {
+    visualization: React.FC<MessageVisualizationProps>;
+    blacklisting: string[];
+    exchanging: string | undefined;
+    singleMessage: boolean;
+  };
+} = {
+  RequestClimb: { visualization: RequestClimb, blacklisting: [], exchanging: 'RequestDescend', singleMessage: false },
+  RequestDescend: { visualization: RequestDescend, blacklisting: [], exchanging: 'RequestClimb', singleMessage: false },
+  RequestLevel: { visualization: RequestLevel, blacklisting: [], exchanging: undefined, singleMessage: false },
+  RequestLevelBlock: {
+    visualization: RequestLevelBlock,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  RequestCruiseClimb: {
+    visualization: RequestCruiseClimb,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  RequestITP: { visualization: RequestITP, blacklisting: [], exchanging: undefined, singleMessage: true },
+  RequestDirect: { visualization: RequestDirect, blacklisting: [], exchanging: undefined, singleMessage: false },
+  RequestOffset: { visualization: RequestOffset, blacklisting: [], exchanging: undefined, singleMessage: false },
+  RequestWeatherDeviation: {
+    visualization: RequestWeatherDeviation,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  RequestHeading: { visualization: RequestHeading, blacklisting: [], exchanging: undefined, singleMessage: false },
+  RequestGroundTrack: {
+    visualization: RequestGroundTrack,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  RequestSpeed: { visualization: RequestSpeed, blacklisting: [], exchanging: undefined, singleMessage: false },
+  RequestSpeedRange: {
+    visualization: RequestSpeedRange,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  RequestDepartureClearance: {
+    visualization: RequestDepartureClearance,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: true,
+  },
+  RequestOceanicClearance: {
+    visualization: RequestOceanicClearance,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: true,
+  },
+  RequestGenericClearance: {
+    visualization: RequestGenericClearance,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  WhenCanWeExpectLowerLevel: {
+    visualization: WhenCanWeExpectLowerLevel,
+    blacklisting: [],
+    exchanging: 'WhenCanWeExpectHigherLevel',
+    singleMessage: false,
+  },
+  WhenCanWeExpectHigherLevel: {
+    visualization: WhenCanWeExpectHigherLevel,
+    blacklisting: [],
+    exchanging: 'WhenCanWeExpectLowerLevel',
+    singleMessage: false,
+  },
+  WhenCanWeExpectClimb: {
+    visualization: WhenCanWeExpectClimb,
+    blacklisting: [],
+    exchanging: 'WhenCanWeExpectDescend',
+    singleMessage: false,
+  },
+  WhenCanWeExpectDescend: {
+    visualization: WhenCanWeExpectDescend,
+    blacklisting: [],
+    exchanging: 'WhenCanWeExpectClimb',
+    singleMessage: false,
+  },
+  WhenCanWeExpectCruiseClimb: {
+    visualization: WhenCanWeExpectCruiseClimb,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  WhenCanWeExpectSpeed: {
+    visualization: WhenCanWeExpectSpeed,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  WhenCanWeExpectSpeedRange: {
+    visualization: WhenCanWeExpectSpeedRange,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
+  WhenCanWeExpectBackOnRoute: {
+    visualization: WhenCanWeExpectBackOnRoute,
+    blacklisting: [],
+    exchanging: undefined,
+    singleMessage: false,
+  },
 };

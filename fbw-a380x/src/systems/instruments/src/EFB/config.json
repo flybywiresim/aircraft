@@ -7,5 +7,8 @@
     },
     "additionalImports": [
         "/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"
+    ],
+    "extraDeps": [
+        "/fbw-common/src/systems/instruments/src/EFB"
     ]
 }

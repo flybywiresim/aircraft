@@ -18,6 +18,8 @@ export interface VhfNavaid extends BaseFix<SectionCode.Navaid> {
    * Beware: this is NOT the same as magnetic variation
    */
   stationDeclination: Degrees;
+  /** Whether the station is true referenced (implies {@link stationDeclination} is 0 as well). */
+  trueReferenced?: boolean;
   dmeLocation?: Coordinates & { alt?: Feet };
   type: VhfNavaidType;
   class?: VorClass;
@@ -27,6 +29,12 @@ export interface VhfNavaid extends BaseFix<SectionCode.Navaid> {
    * distance from centre location for nearby query
    */
   distance?: NauticalMiles;
+}
+
+export function isVhfNavaid(o: any): o is VhfNavaid {
+  return (
+    typeof o === 'object' && o.sectionCode === SectionCode.Navaid && o.subSectionCode === NavaidSubsectionCode.VhfNavaid
+  );
 }
 
 // TODO enum

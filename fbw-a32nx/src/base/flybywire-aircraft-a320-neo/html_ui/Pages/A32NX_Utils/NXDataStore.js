@@ -1,6 +1,6 @@
 Include.addScript("/JS/dataStorage.js");
 
-// TODO use the ts version in src/shared
+// FIXME delete. Last user is fbw-a32nx\src\base\flybywire-aircraft-a320-neo\html_ui\Pages\VLivery\Liveries\A32NX_Registration\Registration.js
 class NXDataStore {
     /* private */ static get listener() {
         if (NXDataStore._listener === undefined) {
@@ -19,11 +19,11 @@ class NXDataStore {
 
     static set(key, val) {
         SetStoredData(`A32NX_${key}`, val);
-        this.listener.triggerToAllSubscribers('A32NX_NXDATASTORE_UPDATE', key, val);
+        this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, val);
     }
 
     static subscribe(key, callback) {
-        return Coherent.on('A32NX_NXDATASTORE_UPDATE', (updatedKey, value) => {
+        return Coherent.on('FBW_NXDATASTORE_UPDATE', (updatedKey, value) => {
             if (key === '*' || key === updatedKey) {
                 callback(updatedKey, value);
             }

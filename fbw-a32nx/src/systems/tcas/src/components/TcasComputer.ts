@@ -2,21 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable camelcase */
-/* eslint-disable no-empty-function */
-/* eslint-disable no-useless-constructor */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable no-console */
 import {
   MathUtils,
   Arinc429Word,
   GenericDataListenerSync,
-  NXDataStore,
   UpdateThrottler,
   LocalSimVar,
+  AirDataSwitchingKnob,
+  registerTrafficListener,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { TcasComponent } from '../lib/TcasComponent';
 import {
   TCAS_CONST as TCAS,
   JS_NPCPlane,
@@ -166,14 +161,11 @@ export class ResAdvisory {
 /**
  * TCAS computer singleton
  */
-export class TcasComputer implements TcasComponent {
-  private static _instance?: TcasComputer; // for debug
+export class TcasComputer {
+  private static instance?: TcasComputer;
 
-  private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
-    this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', false);
-  }); // bind to listener
-
-  private debug: boolean; // TCAS_DEBUG on/off
+  /** TCAS_DEBUG on/off */
+  private debug = false;
 
   private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
@@ -221,11 +213,7 @@ export class TcasComputer implements TcasComponent {
 
   private ppos: LatLongData; // Plane PPOS
 
-  private baroCorrectedAltitude1: Arinc429Word | null; // ADR1/2 Altitude
-
-  private adr3BaroCorrectedAltitude1: Arinc429Word | null; // ADR3 Altitude
-
-  private pressureAlt: number | null; // Pressure Altitude
+  private pressureAlt: Arinc429Word | null; // Pressure Altitude
 
   private planeAlt: number | null; // Plane Altitude
 
@@ -249,21 +237,26 @@ export class TcasComputer implements TcasComponent {
 
   private gpwsWarning: boolean; // GPWS warning on/off
 
-  public static get instance(): TcasComputer {
-    // for debug
-    if (!this._instance) {
-      this._instance = new TcasComputer();
-    }
-    return this._instance;
+  // private since this is a singleton class
+  private constructor() {
+    registerTrafficListener();
   }
 
   /**
    * Initialise TCAS singleton
    */
-  init(): void {
+  public static init(): void {
+    if (!this.instance) {
+      this.instance = new TcasComputer();
+    }
+    this.instance.init();
+  }
+
+  /**
+   * Initialise TCAS singleton
+   */
+  private init(): void {
     SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
-    this.debug = false;
-    NXDataStore.set('TCAS_DEBUG', '0'); // force debug off
     this.tcasPower = false;
     this.tcasMode = new LocalSimVar('L:A32NX_TCAS_MODE', 'Enum');
     this.tcasState = new LocalSimVar('L:A32NX_TCAS_STATE', 'Enum');
@@ -293,20 +286,27 @@ export class TcasComputer implements TcasComponent {
    */
   private updateVars(): void {
     // Note: these values are calculated/not used in the real TCAS computer, here we just read SimVars
-    // this.debug = NXDataStore.get('TCAS_DEBUG', '0') !== '0';
     this.verticalSpeed = SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per minute');
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+    this.planeAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
 
-    this.tcasPower = !!SimVar.GetSimVarValue('A32NX_ELEC_DC_1_BUS_IS_POWERED', 'boolean');
+    this.tcasPower = !!SimVar.GetSimVarValue('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'boolean');
     this.tcasSwitchPos = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', 'number');
     this.altRptgSwitchPos = SimVar.GetSimVarValue('L:A32NX_SWITCH_ATC_ALT', 'number');
     this.tcasThreat = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Traffic_Position', 'number');
     this.xpdrStatus = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'number');
     this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_TRANSPONDER_SYSTEM', 'number');
-    // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
-    this.pressureAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
-    this.planeAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+
+    const alternateAirDataSourceSelect =
+      SimVar.GetSimVarValue('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum') ===
+      (this.activeXpdr === 0 ? AirDataSwitchingKnob.Capt : AirDataSwitchingKnob.Fo);
+    this.pressureAlt = Arinc429Word.fromSimVarValue(
+      alternateAirDataSourceSelect
+        ? `L:A32NX_ADIRS_ADR_3_ALTITUDE`
+        : `L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`,
+    );
+
     const radioAlt1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const radioAlt2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
     this.radioAlt =
@@ -314,10 +314,6 @@ export class TcasComputer implements TcasComponent {
       !(!radioAlt1.isNoComputedData() && radioAlt2.isFailureWarning())
         ? radioAlt2
         : radioAlt1;
-    this.baroCorrectedAltitude1 = Arinc429Word.fromSimVarValue(
-      `L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_BARO_CORRECTED_ALTITUDE_1`,
-    );
-    this.adr3BaroCorrectedAltitude1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_BARO_CORRECTED_ALTITUDE_1');
     this.trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
     this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
     this.simRate = SimVar.GetGlobalVarValue('SIMULATION RATE', 'number');
@@ -355,7 +351,7 @@ export class TcasComputer implements TcasComponent {
       this.inhibitions = Inhibit.ALL_DESC_RA;
     } else if (!this.radioAlt.isNoComputedData() && this.radioAlt.value < 1550) {
       this.inhibitions = Inhibit.ALL_INCR_DESC_RA;
-    } else if (this.pressureAlt > 39000) {
+    } else if (this.pressureAlt.value > 39000) {
       this.inhibitions = Inhibit.ALL_CLIMB_RA;
     } else {
       this.inhibitions = Inhibit.NONE;
@@ -393,12 +389,9 @@ export class TcasComputer implements TcasComponent {
 
     // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
     if (
-      !this.baroCorrectedAltitude1 ||
-      !this.adr3BaroCorrectedAltitude1 ||
-      !this.baroCorrectedAltitude1.isNormalOperation() ||
-      !this.adr3BaroCorrectedAltitude1.isNormalOperation() ||
+      !this.pressureAlt ||
+      (!this.pressureAlt.isNormalOperation() && !this.pressureAlt.isFunctionalTest()) ||
       this.radioAlt.isFailureWarning() ||
-      this.baroCorrectedAltitude1.value - this.adr3BaroCorrectedAltitude1.value > 300 ||
       !this.tcasPower
     ) {
       this.tcasFault.setVar(true);
@@ -417,13 +410,25 @@ export class TcasComputer implements TcasComponent {
         this.radioAlt.value <= TCAS.SENSE[3][Limits.MAX]
       ) {
         this.sensitivity.setVar(3);
-      } else if (this.pressureAlt > TCAS.SENSE[4][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[4][Limits.MAX]) {
+      } else if (
+        this.pressureAlt.value > TCAS.SENSE[4][Limits.MIN] &&
+        this.pressureAlt.value <= TCAS.SENSE[4][Limits.MAX]
+      ) {
         this.sensitivity.setVar(4);
-      } else if (this.pressureAlt > TCAS.SENSE[5][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[5][Limits.MAX]) {
+      } else if (
+        this.pressureAlt.value > TCAS.SENSE[5][Limits.MIN] &&
+        this.pressureAlt.value <= TCAS.SENSE[5][Limits.MAX]
+      ) {
         this.sensitivity.setVar(5);
-      } else if (this.pressureAlt > TCAS.SENSE[6][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[6][Limits.MAX]) {
+      } else if (
+        this.pressureAlt.value > TCAS.SENSE[6][Limits.MIN] &&
+        this.pressureAlt.value <= TCAS.SENSE[6][Limits.MAX]
+      ) {
         this.sensitivity.setVar(6);
-      } else if (this.pressureAlt > TCAS.SENSE[7][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[7][Limits.MAX]) {
+      } else if (
+        this.pressureAlt.value > TCAS.SENSE[7][Limits.MIN] &&
+        this.pressureAlt.value <= TCAS.SENSE[7][Limits.MAX]
+      ) {
         this.sensitivity.setVar(7);
       } else {
         this.sensitivity.setVar(8);
@@ -479,7 +484,7 @@ export class TcasComputer implements TcasComponent {
             traffic.alt,
             this.ppos.lat,
             this.ppos.long,
-            this.pressureAlt,
+            this.planeAlt,
           );
           const newClosureRate = ((traffic.slantDistance - newSlantDist) / (_deltaTime / 1000)) * 3600; // knots = nautical miles per hour
           traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
@@ -1294,9 +1299,17 @@ export class TcasComputer implements TcasComponent {
 
   /**
    * Main update loop
+   * @param deltaTime delta time of this frame
+   */
+  public static update(deltaTime: number): void {
+    this.instance?.update(deltaTime);
+  }
+
+  /**
+   * Main update loop
    * @param _deltaTime delta time of this frame
    */
-  update(_deltaTime: number): void {
+  private update(_deltaTime: number): void {
     this.soundManager.update(_deltaTime);
 
     const deltaTime = this.updateThrottler.canUpdate(_deltaTime * (this.simRate || 1));

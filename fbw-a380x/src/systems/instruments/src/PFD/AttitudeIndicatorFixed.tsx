@@ -1,6 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -11,18 +11,22 @@ interface AttitudeIndicatorFixedUpperProps {
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values>();
+
   private roll = new Arinc429Word(0);
 
   private pitch = new Arinc429Word(0);
 
   private visibilitySub = Subject.create('hidden');
 
+  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
+
+  private readonly isNormalLawActive = this.fcdcDiscreteWord1.map((dw) => dw.bitValue(11) && !dw.isFailureWarning());
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values>();
-
-    sub.on('rollAr').handle((roll) => {
+    this.sub.on('rollAr').handle((roll) => {
       this.roll = roll;
       if (!this.roll.isNormalOperation()) {
         this.visibilitySub.set('hidden');
@@ -31,7 +35,7 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
       }
     });
 
-    sub.on('pitchAr').handle((pitch) => {
+    this.sub.on('pitchAr').handle((pitch) => {
       this.pitch = pitch;
       if (!this.pitch.isNormalOperation()) {
         this.visibilitySub.set('hidden');
@@ -44,11 +48,19 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   render(): VNode {
     return (
       <g id="AttitudeUpperInfoGroup" visibility={this.visibilitySub}>
-        <g id="RollProtGroup" class="SmallStroke Green">
+        <g
+          id="RollProtGroup"
+          class="SmallStroke Green"
+          style={{ display: this.isNormalLawActive.map((nl) => (nl ? 'block' : 'none')) }}
+        >
           <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
           <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
         </g>
-        <g id="RollProtLost" style="display: none" class="NormalStroke Amber">
+        <g
+          id="RollProtLost"
+          class="NormalStroke Amber"
+          style={{ display: this.isNormalLawActive.map((nl) => (!nl ? 'block' : 'none')) }}
+        >
           <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
           <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
         </g>
@@ -146,6 +158,9 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           <SidestickIndicator bus={this.props.bus} />
           <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 
+          <FlightPathVector bus={this.props.bus} />
+          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
+
           <g style={this.fdVisibilitySub}>
             <FDYawBar bus={this.props.bus} />
             <FlightDirector bus={this.props.bus} />
@@ -161,8 +176,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
             <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
           </g>
-          <FlightPathVector bus={this.props.bus} />
-          <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         </g>
       </>
     );

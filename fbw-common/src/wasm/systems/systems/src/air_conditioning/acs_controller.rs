@@ -30,7 +30,7 @@ use uom::si::{
     velocity::knot,
 };
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum AcscId {
     Acsc1(Channel),
     Acsc2(Channel),
@@ -693,8 +693,8 @@ impl ZoneController {
         pressurization: &impl CabinAltitude,
         zone_measured_temperature: ThermodynamicTemperature,
     ) -> ThermodynamicTemperature {
-        let altitude_correction: f64 =
-            pressurization.altitude().get::<foot>() * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
+        let altitude_correction: f64 = pressurization.altitude().get::<foot>().max(0.)
+            * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
         let corrected_selected_temp: f64 =
             self.zone_selected_temperature.get::<kelvin>() + altitude_correction;
 
@@ -1025,9 +1025,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
             context,
             pneumatic
                 .pack_flow_valve_inlet_pressure(self.id + 1)
-                .map_or(false, |p| {
-                    p.get::<psi>() < Self::PACK_INLET_PRESSURE_MIN_PSIG
-                }),
+                .is_some_and(|p| p.get::<psi>() < Self::PACK_INLET_PRESSURE_MIN_PSIG),
         );
     }
 
@@ -2205,6 +2203,7 @@ mod acs_controller_tests {
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2
         const SAFETY_VALVE_SIZE: f64 = 0.02; //m2
         const DOOR_OPENING_AREA: f64 = 1.5; // m2
+        const HULL_BREACH_AREA: f64 = 0.02; // m2
 
         const MAX_CLIMB_RATE: f64 = 750.; // fpm
         const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm

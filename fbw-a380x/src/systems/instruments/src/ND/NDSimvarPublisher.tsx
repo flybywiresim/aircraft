@@ -19,8 +19,6 @@ export type NDSimvars = AdirsSimVars &
     ilsCourse: number;
     selectedHeading: Degrees;
     showSelectedHeading: boolean;
-    pposLat: Degrees;
-    pposLong: Degrees;
     absoluteTime: Seconds;
     kccuOnL: boolean;
     kccuOnR: boolean;
@@ -34,8 +32,6 @@ export enum NDVars {
   ilsCourse = 'L:A32NX_FM_LS_COURSE',
   selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
   showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
-  pposLat = 'PLANE LATITUDE', // TODO replace with fm position
-  pposLong = 'PLANE LONGITUDE', // TODO replace with fm position
   absoluteTime = 'E:ABSOLUTE TIME',
   kccuOnL = 'L:A32NX_KCCU_L_KBD_ON_OFF',
   kccuOnR = 'L:A32NX_KCCU_R_KBD_ON_OFF',
@@ -53,8 +49,6 @@ export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
     ['ilsCourse', { name: NDVars.ilsCourse, type: SimVarValueType.Number }],
     ['selectedHeading', { name: NDVars.selectedHeading, type: SimVarValueType.Degree }],
     ['showSelectedHeading', { name: NDVars.showSelectedHeading, type: SimVarValueType.Bool }],
-    ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
-    ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
     ['absoluteTime', { name: NDVars.absoluteTime, type: SimVarValueType.Seconds }],
     ['kccuOnL', { name: NDVars.kccuOnL, type: SimVarValueType.Bool }],
     ['kccuOnR', { name: NDVars.kccuOnR, type: SimVarValueType.Bool }],

@@ -34,12 +34,11 @@ use fire_and_smoke_protection::A380FireAndSmokeProtection;
 use fuel::FuelLevel;
 use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
-use navigation::A380RadioAltimeters;
+use navigation::{A380AirDataInertialReferenceSystemBuilder, A380RadioAltimeters};
 use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
 use reverser::{A380ReverserController, A380Reversers};
-
-use uom::si::{f64::Length, length::nautical_mile, quantities::Velocity, velocity::knot};
+use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
     accept_iterable,
@@ -54,7 +53,7 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
-    shared::{ElectricalBusType, MachNumber},
+    shared::ElectricalBusType,
     simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
     },
@@ -109,11 +108,7 @@ impl A380 {
         A380 {
             adcn,
             adcn_simvar_translation,
-            adirs: AirDataInertialReferenceSystem::new(
-                context,
-                Velocity::new::<knot>(340.),
-                MachNumber(0.89),
-            ),
+            adirs: A380AirDataInertialReferenceSystemBuilder::build(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_pw980(
@@ -148,7 +143,7 @@ impl A380 {
             hydraulic: A380Hydraulic::new(context),
             hydraulic_overhead: A380HydraulicOverheadPanel::new(context),
             autobrake_panel: A380AutobrakePanel::new(context),
-            landing_gear: LandingGear::new(context),
+            landing_gear: LandingGear::new(context, true),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             cds: A380ControlDisplaySystem::new(context),

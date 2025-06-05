@@ -3,14 +3,25 @@ import {
   ClockEvents,
   ConsumerSubject,
   DisplayComponent,
+  EventSubscriber,
   FSComponent,
+  HEvent,
   MappedSubject,
   Subject,
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, MathUtils } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429ConsumerSubject,
+  Arinc429LocalVarConsumerSubject,
+  ArincEventBus,
+  MathUtils,
+} from '@flybywiresim/fbw-sdk';
+import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
+import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
+import { FwcDataEvents, SecDataEvents } from '@flybywiresim/msfs-avionics-common';
 
 export class LowerArea extends DisplayComponent<{
   bus: ArincEventBus;
@@ -22,10 +33,10 @@ export class LowerArea extends DisplayComponent<{
         <path class="ThickStroke White" d="M 2.1 157.7 h 154.4" />
         <path class="ThickStroke White" d="M 67 158 v 51.8" />
 
-        <Memos />
-        <FlapsIndicator bus={this.props.bus} />
+        <Memos bus={this.props.bus} />
+        <SlatsFlapsDisplay bus={this.props.bus} />
 
-        <Limitations visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
+        <Limitations bus={this.props.bus} visible={this.props.pitchTrimIndicatorVisible.map((it) => !it)} />
       </g>
     );
   }
@@ -34,8 +45,10 @@ export class LowerArea extends DisplayComponent<{
 const circlePath = (r: number, cx: number, cy: number) =>
   `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
 
-class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values & PFDSimvars>();
+const SPOILERS_HIDE_DEFLECTION_BELOW_DEG = 5.15;
+
+class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<ClockEvents & Arinc429Values & PFDSimvars & FwcDataEvents>();
 
   private targetClass = Subject.create('');
 
@@ -56,7 +69,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
 
   private readonly spoilerExtensionVisible = MappedSubject.create(
-    ([pos, armed]) => (pos > 0.05 || armed ? 'visible' : 'hidden'),
+    ([pos, armed]) => (pos > SPOILERS_HIDE_DEFLECTION_BELOW_DEG || armed ? 'visible' : 'hidden'),
     this.spoilersCommandedPosition,
     this.spoilersArmed,
   );
@@ -118,21 +131,21 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       .on('slatsFlapsStatus')
       .whenChanged()
       .handle((s) => {
-        this.configClean = s.getBitValue(17);
-        this.config1 = s.getBitValue(18);
-        this.config2 = s.getBitValue(19);
-        this.config3 = s.getBitValue(20);
-        this.configFull = s.getBitValue(21);
-        this.flaps1AutoRetract = s.getBitValue(26);
+        this.configClean = s.bitValue(17);
+        this.config1 = s.bitValue(18);
+        this.config2 = s.bitValue(19);
+        this.config3 = s.bitValue(20);
+        this.configFull = s.bitValue(21);
+        this.flaps1AutoRetract = s.bitValue(26);
 
-        this.flapReliefEngaged.set(s.getBitValue(22));
-        this.alphaLockEngaged.set(s.getBitValue(24));
+        this.flapReliefEngaged.set(s.bitValue(22));
+        this.alphaLockEngaged.set(s.bitValue(24));
 
-        this.slatsFault.set(s.getBitValue(11));
-        this.flapsFault.set(s.getBitValue(12));
+        this.slatsFault.set(s.bitValue(11));
+        this.flapsFault.set(s.bitValue(12));
 
-        this.slatsDataValid.set(s.getBitValue(28));
-        this.flapsDataValid.set(s.getBitValue(29));
+        this.slatsDataValid.set(s.bitValue(28));
+        this.flapsDataValid.set(s.bitValue(29));
 
         if (this.configClean) {
           this.targetText.set('0');
@@ -441,7 +454,9 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
             class={this.speedBrakesStillExtended.map((it) =>
               it ? 'NormalStroke Amber CornerRound' : 'NormalStroke Green CornerRound',
             )}
-            visibility={this.spoilersCommandedPosition.map((p) => (p >= 0.05 ? 'inherit' : 'hidden'))}
+            visibility={this.spoilersCommandedPosition.map((p) =>
+              p >= SPOILERS_HIDE_DEFLECTION_BELOW_DEG ? 'inherit' : 'hidden',
+            )}
           />
           <path
             d="M 21.6 183.5 h 3 l -1.5 3 z"
@@ -450,6 +465,7 @@ class FlapsIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           />
         </g>
         <GearIndicator bus={this.props.bus} />
+        <RudderTrimIndicator bus={this.props.bus} />
       </g>
     );
   }
@@ -465,7 +481,7 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
     // TODO change to proper LGCIS input once LGCIS is implemented
     sub.on('lgciuDiscreteWord1').handle((word) => {
-      const gearDownAndLocked = word.getBitValue(23) && word.getBitValue(24) && word.getBitValue(25);
+      const gearDownAndLocked = word.bitValue(23) && word.bitValue(24) && word.bitValue(25);
       this.landingGearDownAndLocked.set(gearDownAndLocked ? 'visible' : 'hidden');
     });
   }
@@ -482,26 +498,274 @@ class GearIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
-class Limitations extends DisplayComponent<{ visible: Subscribable<boolean> }> {
+class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & FwcDataEvents & SecDataEvents & ClockEvents & PFDSimvars & HEvent
+  >();
+
+  private readonly onGround = Arinc429LocalVarConsumerSubject.create(this.sub.on('fwc_discrete_word_126_1')).map((w) =>
+    w.bitValueOr(28, false),
+  );
+
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
+  private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+
+  private readonly engine1Running = ConsumerSubject.create(this.sub.on('engOneRunning'), true);
+  private readonly engine2Running = ConsumerSubject.create(this.sub.on('engTwoRunning'), true);
+  private readonly engine3Running = ConsumerSubject.create(this.sub.on('engThreeRunning'), true);
+  private readonly engine4Running = ConsumerSubject.create(this.sub.on('engFourRunning'), true);
+
+  private readonly rudderTrim1Engaged = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_status_word_1'),
+  ).map((w) => w.bitValueOr(28, false));
+
+  private readonly rudderTrim3Engaged = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_status_word_3'),
+  ).map((w) => w.bitValueOr(28, false));
+
+  private readonly rudderTrimAvailable = MappedSubject.create(
+    ([eng1, eng3]) => eng1 || eng3,
+    this.rudderTrim1Engaged,
+    this.rudderTrim3Engaged,
+  );
+
+  private readonly rudderTrim1Order = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_trim_actual_position_1'),
+  );
+
+  private readonly rudderTrim3Order = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('sec_rudder_trim_actual_position_3'),
+  );
+
+  private readonly rudderTrimOrder = MappedSubject.create(
+    ([eng1, order1, order3]) => (eng1 ? order1.valueOr(0) : order3.valueOr(0)),
+    this.rudderTrim1Engaged,
+    this.rudderTrim1Order,
+    this.rudderTrim3Order,
+  );
+
+  private readonly rudderTrimOrderText = this.rudderTrimOrder.map(
+    (v) => `${v >= 0 || Math.abs(v) < 0.01 ? 'L' : 'R'}${Math.abs(v).toFixed(1).padStart(5, '\xa0')}`,
+  );
+
+  private readonly rudderTrimIndicatorVisibilityCondition = Subject.create(false);
+
+  private readonly rudderTrimIndicatorVisibilityStatus = Subject.create(false);
+
+  private readonly rudderTrimOrderTextClass = MappedSubject.create(
+    ([v, phase]) => {
+      const absTrim = Math.abs(v);
+      if (absTrim < 0.3 || phase == 6 || phase == 7 || phase == 8 || phase == 9) {
+        return 'HiddenElement';
+      } else if (absTrim < 3.6) {
+        return 'FontSmallest Amber';
+      } else {
+        return 'FontSmallest Red';
+      }
+    },
+    this.rudderTrimOrder,
+    this.fwcFlightPhase,
+  );
+
+  private readonly rudderTrimOrderTextVisibility = this.rudderTrimOrder.map((t) =>
+    Math.abs(t) < 0.3 ? 'hidden' : 'inherit',
+  );
+
+  private readonly rudderTrimOrderPolygonPoints = this.rudderTrimOrder.map((v) => {
+    const xOffset = -11.5 * (v / 25.5);
+    return `${52.5 + xOffset},186.25 ${54 + xOffset},187.75 ${52.5 + xOffset},189.25 ${51 + xOffset},187.75`;
+  });
+
+  private rudderTrimWasMoved = false;
+
+  private engineHasFailed = false;
+
+  private delayStartTime: number = 0;
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.sub.on('hEvent').handle((ev) => {
+      if (ev === 'A32NX.RUDDER_TRIM_MANUALLY_MOVED') {
+        this.rudderTrimWasMoved = true;
+      }
+    });
+
+    this.sub
+      .on('simTime')
+      .atFrequency(4)
+      .handle((t) => {
+        const gnd = this.onGround.get();
+        const cas = this.speed.get();
+        const rt = this.rudderTrimOrder.get();
+
+        const inFlightOrGroundFaster60Exceeds1Deg = (!gnd || (gnd && cas.valueOr(0) > 60)) && Math.abs(rt) > 1;
+        const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(61) < 60 && Math.abs(rt) > 0.3;
+
+        if (
+          this.fwcFlightPhase.get() >= 2 &&
+          !gnd &&
+          (!this.engine1Running.get() ||
+            !this.engine2Running.get() ||
+            !this.engine3Running.get() ||
+            !this.engine4Running.get())
+        ) {
+          this.engineHasFailed = true;
+        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 2) {
+          this.engineHasFailed = false;
+        }
+
+        const visCondition =
+          this.rudderTrimWasMoved ||
+          onGroundSlower60Exceeds0p3 ||
+          inFlightOrGroundFaster60Exceeds1Deg ||
+          this.engineHasFailed;
+        this.rudderTrimWasMoved = false;
+
+        if (visCondition && !this.rudderTrimIndicatorVisibilityCondition.get()) {
+          this.rudderTrimIndicatorVisibilityStatus.set(true);
+        } else if (this.rudderTrimIndicatorVisibilityCondition.get() && !visCondition) {
+          this.delayStartTime = t;
+          this.rudderTrimIndicatorVisibilityStatus.set(true);
+        }
+        this.rudderTrimIndicatorVisibilityCondition.set(visCondition);
+
+        if (
+          !this.rudderTrimIndicatorVisibilityCondition.get() &&
+          t - this.delayStartTime > 7_000 &&
+          !this.engineHasFailed
+        ) {
+          this.rudderTrimIndicatorVisibilityStatus.set(false);
+        }
+      });
+  }
+
   render(): VNode {
     return (
-      <g visibility={this.props.visible.map((it) => (it ? 'visible' : 'hidden'))}>
-        <text x={76} y={184} class="FontIntermediate Amber">
-          LIMITATIONS NOT AVAIL
+      <g
+        visibility={MappedSubject.create(
+          ([vis, avail]) => (vis && avail ? 'inherit' : 'hidden'),
+          this.rudderTrimIndicatorVisibilityStatus,
+          this.rudderTrimAvailable,
+        )}
+      >
+        <text x={41.2} y={184.7} class={'FontSmallest White'}>
+          RUD TRIM
         </text>
+        <rect width="23" height="3.5" x="41" y="186" class="NormalOutline White" />
+        <line x1="52.5" y1="186" x2="52.5" y2="189.5" class="NormalOutline White" />
+        <polygon points={this.rudderTrimOrderPolygonPoints} class="Cyan Fill Stroke" />
+        <g visibility={this.rudderTrimOrderTextVisibility}>
+          <text x={41.2} y={194.5} class={this.rudderTrimOrderTextClass}>
+            {this.rudderTrimOrderText}
+          </text>
+          <text
+            x={57.5}
+            y={194.5}
+            class={this.rudderTrimOrderTextClass.map((v) => (v !== 'HiddenElement' ? 'FontSmallest Cyan' : v))}
+          >
+            °
+          </text>
+        </g>
       </g>
     );
   }
 }
 
-class Memos extends DisplayComponent<{}> {
+class Limitations extends DisplayComponent<{ bus: ArincEventBus; visible: Subscribable<boolean> }> {
+  private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
+
+  private readonly availChecker = new FwsPfdAvailabilityChecker(this.sub);
+
+  private static lineSubject(index: number, sub: EventSubscriber<FwsPfdSimvars>) {
+    return ConsumerSubject.create(sub.on(`limitations_line_${index}`).whenChanged(), 0).map(
+      (it) => EcamLimitations[it] ?? '',
+    );
+  }
+
+  private readonly limitationsLine = [
+    Limitations.lineSubject(1, this.sub),
+    Limitations.lineSubject(2, this.sub),
+    Limitations.lineSubject(3, this.sub),
+    Limitations.lineSubject(4, this.sub),
+    Limitations.lineSubject(5, this.sub),
+    Limitations.lineSubject(6, this.sub),
+    Limitations.lineSubject(7, this.sub),
+    Limitations.lineSubject(8, this.sub),
+  ];
+
   render(): VNode {
     return (
-      <g>
-        <text x={12} y={170} class="FontIntermediate Amber">
-          MEMO NOT AVAIL
-        </text>
+      <g visibility={this.props.visible.map((it) => (it ? 'inherit' : 'hidden'))}>
+        <g visibility={this.availChecker.fwsAvail.map((it) => (it ? 'inherit' : 'hidden'))}>
+          {this.limitationsLine.map((line, index) => (
+            <FormattedFwcText x={70} y={165 + index * 6.1} message={line} pfd={true} />
+          ))}
+        </g>
+        <g visibility={this.availChecker.fwsAvail.map((it) => (it ? 'hidden' : 'inherit'))}>
+          <FormattedFwcText x={78} y={186} message={'\x1b<4mLIMITATIONS NOT AVAIL'} pfd={true} />
+        </g>
       </g>
     );
   }
+}
+
+const padMemoCode = (code: number) => code.toString().padStart(9, '0');
+class Memos extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getSubscriber<FwsPfdSimvars>();
+
+  private readonly availChecker = new FwsPfdAvailabilityChecker(this.sub);
+
+  private readonly memoLine1 = ConsumerSubject.create(this.sub.on('memo_line_1').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
+  private readonly memoLine2 = ConsumerSubject.create(this.sub.on('memo_line_2').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
+  private readonly memoLine3 = ConsumerSubject.create(this.sub.on('memo_line_3').whenChanged(), 0).map(
+    (it) => EcamMemos[padMemoCode(it)] ?? '',
+  );
+
+  render(): VNode {
+    return (
+      <>
+        <g id="memos" visibility={this.availChecker.fwsAvail.map((it) => (it ? 'inherit' : 'hidden'))}>
+          <FormattedFwcText x={4} y={165} message={this.memoLine1} pfd={true} />
+          <FormattedFwcText x={4} y={171.1} message={this.memoLine2} pfd={true} />
+          <FormattedFwcText x={4} y={177.2} message={this.memoLine3} pfd={true} />
+        </g>
+        <g id="memoNotAvail" visibility={this.availChecker.fwsAvail.map((it) => (it ? 'hidden' : 'inherit'))}>
+          <FormattedFwcText x={8} y={172} message={'\x1b<4mMEMO NOT AVAIL'} pfd={true} />
+        </g>
+      </>
+    );
+  }
+}
+
+class FwsPfdAvailabilityChecker {
+  constructor(private sub: EventSubscriber<FwsPfdSimvars>) {}
+
+  private readonly fws1IsHealthy = ConsumerSubject.create(this.sub.on('fws1_is_healthy'), true);
+  private readonly fws2IsHealthy = ConsumerSubject.create(this.sub.on('fws2_is_healthy'), true);
+
+  private readonly afdx_3_1_reachable = ConsumerSubject.create(this.sub.on('afdx_3_1_reachable'), true);
+  private readonly afdx_13_11_reachable = ConsumerSubject.create(this.sub.on('afdx_13_11_reachable'), true);
+  private readonly afdx_4_2_reachable = ConsumerSubject.create(this.sub.on('afdx_4_2_reachable'), true);
+  private readonly afdx_14_12_reachable = ConsumerSubject.create(this.sub.on('afdx_14_12_reachable'), true);
+
+  public readonly fwsAvail = MappedSubject.create(
+    ([healthy1, healthy2, r_3_1, r_13_11, r_4_2, r_14_12]) =>
+      (healthy1 && (r_3_1 || r_13_11)) || (healthy2 && (r_4_2 || r_14_12)),
+    this.fws1IsHealthy,
+    this.fws2IsHealthy,
+    this.afdx_3_1_reachable,
+    this.afdx_13_11_reachable,
+    this.afdx_4_2_reachable,
+    this.afdx_14_12_reachable,
+  );
+
+  public readonly fwsFailed = this.fwsAvail.map((it) => !it);
 }

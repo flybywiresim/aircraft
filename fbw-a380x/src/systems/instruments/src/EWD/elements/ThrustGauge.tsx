@@ -10,6 +10,8 @@ import {
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
+
 import {
   GaugeComponent,
   GaugeMarkerComponent,
@@ -18,6 +20,7 @@ import {
   ThrottlePositionDonutComponent,
   ThrustTransientComponent,
 } from 'instruments/src/MsfsAvionicsCommon/gauges';
+import { Arinc429ConsumerSubject, Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 interface ThrustGaugeProps {
   bus: EventBus;
@@ -28,11 +31,13 @@ interface ThrustGaugeProps {
   n1Degraded: Subscribable<boolean>;
 }
 
+const METOTS_N1_LIMIT = 76.5;
+
 export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & EwdSimvars>();
 
   private readonly n1 = ConsumerSubject.create(
-    this.sub.on(`n1_${this.props.engine}`).withPrecision(1).whenChanged(),
+    this.sub.on(`n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
@@ -42,7 +47,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly throttlePositionN1 = ConsumerSubject.create(
-    this.sub.on(`throttle_position_${this.props.engine}`).withPrecision(2).whenChanged(),
+    this.sub.on(`throttle_position_n1_${this.props.engine}`).withPrecision(2).whenChanged(),
     0,
   );
 
@@ -60,8 +65,7 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private readonly thrustLimitToga = ConsumerSubject.create(this.sub.on('thrust_limit_toga').whenChanged(), 0);
   private readonly thrustLimitRev = ConsumerSubject.create(this.sub.on('thrust_limit_rev').whenChanged(), 0);
 
-  private readonly packs1 = ConsumerSubject.create(this.sub.on('packs1').whenChanged(), false);
-  private readonly packs2 = ConsumerSubject.create(this.sub.on('packs2').whenChanged(), false);
+  private readonly cpiomBAgsDiscrete = Arinc429ConsumerSubject.create(undefined);
 
   private readonly revDeploying = ConsumerSubject.create(
     this.sub.on(`reverser_deploying_${this.props.engine}`).whenChanged(),
@@ -84,9 +88,9 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   );
 
   private readonly thrustLimitMax = MappedSubject.create(
-    ([packs1, packs2, thrustLimitToga]) => (!packs1 && !packs2 ? thrustLimitToga : thrustLimitToga + 0.6),
-    this.packs1,
-    this.packs2,
+    ([cpiomB, thrustLimitToga]) =>
+      !cpiomB.bitValueOr(13, false) && !cpiomB.bitValueOr(14, false) ? thrustLimitToga : thrustLimitToga + 0.6,
+    this.cpiomBAgsDiscrete,
     this.thrustLimitToga,
   );
 
@@ -121,15 +125,27 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
 
   private readonly thrustPercent = MappedSubject.create(
     ([n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
-      Math.min(
-        1,
-        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
-      ) * 100,
+      ThrustGauge.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
     this.n1,
     this.thrustLimitIdle,
     this.thrustLimitMax,
     this.thrIdleOffset,
   );
+
+  /** Expects values in percent 0-100, returns 0-100 */
+  public static thrustPercentFromN1(
+    n1: number,
+    thrustLimitIdle: number,
+    thrustLimitMax: number,
+    thrIdleOffset: number,
+  ) {
+    return (
+      Math.min(
+        1,
+        Math.max(0, (n1 - thrustLimitIdle) / (thrustLimitMax - thrustLimitIdle)) * (1 - thrIdleOffset) + thrIdleOffset,
+      ) * 100
+    );
+  }
 
   private readonly thrustPercentReverse = MappedSubject.create(
     ([n1, thrustLimitIdle, thrustLimitRev]) =>
@@ -158,6 +174,23 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
 
   private readonly availRevText = this.availVisible.map((it) => (it ? 'AVAIL' : 'REV'));
 
+  private readonly cas1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_1'));
+
+  // FIXME replace with actual available thrust when ACUTE is implemented
+  private readonly maxThrustAvail = MappedSubject.create(
+    ([cas, thrustLimitIdle, thrustLimitMax, thrIdleOffset]) =>
+      cas.isNoComputedData() || cas.valueOr(100) < 35
+        ? Math.max(
+            thrIdleOffset * 100,
+            ThrustGauge.thrustPercentFromN1(METOTS_N1_LIMIT, thrustLimitIdle, thrustLimitMax, thrIdleOffset),
+          ) / 10
+        : 10,
+    this.cas1,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+    this.thrIdleOffset,
+  );
+
   private radius = 64;
   private startAngle = 230;
   private endAngle = 90;
@@ -168,6 +201,12 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
   private revRadius = 58;
   private revMin = 0;
   private revMax = 3;
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.cpiomBAgsDiscrete.setConsumer(this.sub.on('cpiomBAgsDiscrete'));
+  }
 
   render() {
     return (
@@ -215,8 +254,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
               <GaugeThrustComponent
                 x={this.props.x}
                 y={this.props.y}
-                valueIdle={0.3}
-                valueMax={10}
+                valueIdle={Subject.create(0.42)}
+                valueMax={this.maxThrustAvail}
                 radius={this.radius}
                 startAngle={this.startAngle}
                 endAngle={this.endAngle}
@@ -386,8 +425,8 @@ export class ThrustGauge extends DisplayComponent<ThrustGaugeProps> {
             <GaugeThrustComponent
               x={this.props.x}
               y={this.props.y}
-              valueIdle={0.04}
-              valueMax={2.6}
+              valueIdle={Subject.create(0.04)}
+              valueMax={Subject.create(2.6)}
               radius={this.revRadius}
               startAngle={this.revStartAngle}
               endAngle={this.revEndAngle}

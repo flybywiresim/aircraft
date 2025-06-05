@@ -277,11 +277,10 @@
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_Push_Toggle">
-            <LEFT_SINGLE_CODE>#ID# (&gt;K:ENGINE_BLEED_AIR_SOURCE_TOGGLE)</LEFT_SINGLE_CODE>
+            <TOOLTIPID>%((L:A32NX_OVHD_PNEU_ENG_#ID#_BLEED_PB_IS_AUTO, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_ENGINE_#ID#_BLEED_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_ENGINE_#ID#_BLEED_TURN_OFF%{end}</TOOLTIPID>
             <SEQ1_CODE>(L:A32NX_OVHD_PNEU_ENG_#ID#_BLEED_PB_HAS_FAULT, Bool)</SEQ1_CODE>
-            <SEQ2_CODE>(A:BLEED AIR ENGINE:#ID#, Bool) !</SEQ2_CODE>
-            <DOWN_CODE>(A:BLEED AIR ENGINE:#ID#, Bool)</DOWN_CODE>
-            <TOOLTIPID>%((A:BLEED AIR ENGINE:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_ENGINE_#ID#_BLEED_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_ENGINE_#ID#_BLEED_TURN_OFF%{end}</TOOLTIPID>
+            <SEQ2_CODE>(L:A32NX_OVHD_PNEU_ENG_#ID#_BLEED_PB_IS_AUTO, Bool) !</SEQ2_CODE>
+            <TOGGLE_SIMVAR>L:A32NX_OVHD_PNEU_ENG_#ID#_BLEED_PB_IS_AUTO</TOGGLE_SIMVAR>
         </UseTemplate>
     </Template>
 
@@ -382,11 +381,8 @@
             <UseTemplate Name="ASOBO_GT_Push_Button_Held">
                 <TOOLTIPID>%((L:A32NX_AUTOPILOT_ACTIVE, Bool))%{if}Disc. Autopilot%{else}Take priority%{end}</TOOLTIPID>
                 <LEFT_SINGLE_CODE>
-                    (L:A32NX_AUTOPILOT_ACTIVE, Bool) if{
-                        (&gt;K:AUTOPILOT_OFF)
-                    } els{
-                        1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
-                    }
+                    (&gt;K:AUTOPILOT_OFF)
+                    1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
@@ -607,12 +603,6 @@
                                 </CLOCKWISE_CODE>
                                 <CLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</CLOCKWISE_CONDITION>
                                 <ANTICLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</ANTICLOCKWISE_CONDITION>
-                                <PULL_CODE>
-                                    #MODE_STD# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
-                                </PULL_CODE>
-                                <PUSH_CODE>
-                                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == if{ #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) } els{ (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) }
-                                </PUSH_CODE>
                                 <CENTER_RADIUS>0</CENTER_RADIUS>
                                 <OVERRIDE_PUSH_ANIM_CODE>0 100 (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == ? 50 (O:_PushAnimVar) ?</OVERRIDE_PUSH_ANIM_CODE>
                                 <COUNT>36</COUNT>
@@ -665,7 +655,9 @@
 18 sp0
 (A:GENERAL ENG OIL PRESSURE:1, psi) l0 &lt; sp1
 (A:GENERAL ENG OIL PRESSURE:2, psi) l0 &lt; sp2
-(L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED, bool) l1 and l2 and
+(A:GENERAL ENG OIL PRESSURE:3, psi) l0 &lt; sp3
+(A:GENERAL ENG OIL PRESSURE:4, psi) l0 &lt; sp4
+(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, bool) l1 and l2 and l3 and l4 and
             </GNDCTL_PERMISSIVES>
         </DefaultTemplateParameters>
         <UseTemplate Name="FBW_Push_Held">

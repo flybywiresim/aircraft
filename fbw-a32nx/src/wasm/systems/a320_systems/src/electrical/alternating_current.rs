@@ -6,17 +6,18 @@ use std::time::Duration;
 use systems::{
     apu::ApuGenerator,
     electrical::{
-        AlternatingCurrentElectricalSystem, Contactor, ElectricalBus, Electricity,
-        EmergencyGenerator, ExternalPowerSource, IntegratedDriveGenerator, TransformerRectifier,
+        AlternatingCurrentElectricalSystem, Contactor, ElectricalBus, ElectricalElement,
+        Electricity, EmergencyGenerator, ExternalPowerSource, IntegratedDriveGenerator,
+        TransformerRectifier,
     },
     engine::Engine,
     shared::{
-        AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType,
+        AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EngineFirePushButtons,
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
-use uom::si::{f64::*, power::kilowatt, velocity::knot};
+use uom::si::{f64::*, power::kilowatt};
 
 pub(super) struct A320AlternatingCurrentElectrical {
     main_power_sources: A320MainPowerSources,
@@ -36,6 +37,7 @@ pub(super) struct A320AlternatingCurrentElectrical {
     ac_stat_inv_bus: ElectricalBus,
     ac_gnd_flt_service_bus: ElectricalBus,
     ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor,
+    auxiliary_supplies: A320AuxiliaryPowerSupplies,
 }
 impl A320AlternatingCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
@@ -66,6 +68,7 @@ impl A320AlternatingCurrentElectrical {
                 ElectricalBusType::AlternatingCurrentGndFltService,
             ),
             ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor::new(context, "12XN"),
+            auxiliary_supplies: A320AuxiliaryPowerSupplies::new(context),
         }
     }
 
@@ -184,24 +187,43 @@ impl A320AlternatingCurrentElectrical {
 
     pub fn update_after_direct_current(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
         emergency_generator: &EmergencyGenerator,
         dc_state: &impl A320DirectCurrentElectricalSystem,
+        spd_cond: bool,
     ) {
         electricity.flow(dc_state.static_inverter(), &self.ac_stat_inv_bus);
 
         self.static_inv_to_ac_ess_bus_contactor
             .close_when(self.should_close_15xe2_contactor(
-                context,
                 electricity,
                 emergency_generator,
+                spd_cond,
             ));
         electricity.flow(
             dc_state.static_inverter(),
             &self.static_inv_to_ac_ess_bus_contactor,
         );
         electricity.flow(&self.static_inv_to_ac_ess_bus_contactor, &self.ac_ess_bus);
+    }
+
+    /// ## Dependencies:
+    /// * AC electrical
+    /// * DC electrical
+    pub fn update_auxiliary(
+        &mut self,
+        electricity: &mut Electricity,
+        emergency_overhead: &A320EmergencyElectricalOverheadPanel,
+    ) {
+        self.auxiliary_supplies.update(
+            electricity,
+            &self.main_power_sources,
+            &self.ac_bus_1,
+            &self.ac_bus_2,
+            &self.ac_ess_shed_bus,
+            &self.ac_stat_inv_bus,
+            emergency_overhead,
+        );
     }
 
     fn update_shedding(
@@ -253,13 +275,13 @@ impl A320AlternatingCurrentElectrical {
     /// the static inverter to the AC ESS BUS.
     fn should_close_15xe2_contactor(
         &self,
-        context: &UpdateContext,
         electricity: &Electricity,
         emergency_generator: &EmergencyGenerator,
+        spd_cond: bool,
     ) -> bool {
         !self.any_non_essential_bus_powered(electricity)
             && !electricity.is_powered(emergency_generator)
-            && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
+            && spd_cond
     }
 
     pub fn debug_assert_invariants(&self) {
@@ -332,6 +354,8 @@ impl SimulationElement for A320AlternatingCurrentElectrical {
         self.ac_gnd_flt_service_bus.accept(visitor);
         self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
             .accept(visitor);
+
+        self.auxiliary_supplies.accept(visitor);
 
         visitor.visit(self);
     }
@@ -460,6 +484,14 @@ impl A320MainPowerSources {
         electricity.flow(&self.bus_tie_2_contactor, bus);
     }
 
+    fn power_by_generator_1(
+        &self,
+        electricity: &mut Electricity,
+        element: &impl ElectricalElement,
+    ) {
+        electricity.flow(&self.engine_1_gen, element);
+    }
+
     pub fn gen_contactor_open(&self, number: usize) -> bool {
         self.engine_generator_contactors[number - 1].is_open()
     }
@@ -540,6 +572,115 @@ impl SimulationElement for A320AcEssFeedContactors {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.ac_ess_feed_contactor_1.accept(visitor);
         self.ac_ess_feed_contactor_2.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+struct A320AuxiliaryPowerSupplies {
+    // Fuel pumps 1 supply
+    fuel_pump_1_supply: ElectricalBus,
+    fuel_pump_1_normal_contactor: Contactor,
+    fuel_pump_1_standby_contactor: Contactor,
+
+    // Fuel pumps 2 supply
+    fuel_pump_2_supply: ElectricalBus,
+    fuel_pump_2_contactor: Contactor,
+
+    // APU fuel pump supply
+    apu_fuel_pump_supply: ElectricalBus,
+    apu_fuel_pump_static_inverter_contactor: Contactor,
+    apu_fuel_pump_ess_sched_contactor: Contactor,
+}
+impl A320AuxiliaryPowerSupplies {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            fuel_pump_1_supply: ElectricalBus::new(
+                context,
+                ElectricalBusType::Virtual("FUEL_PUMP_1_SUPPLY"),
+            ),
+            fuel_pump_1_normal_contactor: Contactor::new(context, "17QA"), // 18QA for R WING pump, both have the same condition
+            fuel_pump_1_standby_contactor: Contactor::new(context, "53QA"), // 54QA for R WING pump, both have the same condition
+
+            fuel_pump_2_supply: ElectricalBus::new(
+                context,
+                ElectricalBusType::Virtual("FUEL_PUMP_2_SUPPLY"),
+            ),
+            fuel_pump_2_contactor: Contactor::new(context, "19QA"), // 20QA for R WING pump, both have the same condition
+
+            apu_fuel_pump_supply: ElectricalBus::new(
+                context,
+                ElectricalBusType::Virtual("FUEL_PUMP_APU_SUPPLY"),
+            ),
+            apu_fuel_pump_static_inverter_contactor: Contactor::new(context, "9QC.1"),
+            apu_fuel_pump_ess_sched_contactor: Contactor::new(context, "9QC.2"),
+        }
+    }
+
+    fn update(
+        &mut self,
+        electricity: &mut Electricity,
+        main_power_sources: &A320MainPowerSources,
+        ac_bus_1: &ElectricalBus,
+        ac_bus_2: &ElectricalBus,
+        ac_ess_sched: &ElectricalBus,
+        static_inverter_bus: &ElectricalBus,
+        overhead: &A320EmergencyElectricalOverheadPanel,
+    ) {
+        let dc_ess_powered =
+            electricity.any_is_powered(&[ElectricalBusType::DirectCurrentEssential]);
+        let dc_1_powered = electricity.any_is_powered(&[ElectricalBusType::DirectCurrent(1)]);
+        let dc_2_powered = electricity.any_is_powered(&[ElectricalBusType::DirectCurrent(2)]);
+        let gen_1_line_on = overhead.generator_1_line_is_on();
+
+        // Contactor powered by DC 1 but only when DC ESS is powered too
+        self.fuel_pump_1_normal_contactor
+            .close_when(gen_1_line_on && dc_1_powered && dc_ess_powered);
+        // Contactor powered by DC ESS if DC 1 is not powered or gen 1 line is off
+        self.fuel_pump_1_standby_contactor
+            .close_when((!gen_1_line_on || !dc_1_powered) && dc_ess_powered);
+
+        electricity.flow(ac_bus_1, &self.fuel_pump_1_normal_contactor);
+        main_power_sources.power_by_generator_1(electricity, &self.fuel_pump_1_standby_contactor);
+        electricity.flow(&self.fuel_pump_1_normal_contactor, &self.fuel_pump_1_supply);
+        electricity.flow(
+            &self.fuel_pump_1_standby_contactor,
+            &self.fuel_pump_1_supply,
+        );
+
+        // Contactor powered by DC 2
+        self.fuel_pump_2_contactor.close_when(dc_2_powered);
+        electricity.flow(ac_bus_2, &self.fuel_pump_2_contactor);
+        electricity.flow(&self.fuel_pump_2_contactor, &self.fuel_pump_2_supply);
+
+        let ess_sched_powered = electricity.is_powered(ac_ess_sched);
+        self.apu_fuel_pump_static_inverter_contactor
+            .close_when(!ess_sched_powered);
+        self.apu_fuel_pump_ess_sched_contactor
+            .close_when(ess_sched_powered);
+        electricity.flow(
+            static_inverter_bus,
+            &self.apu_fuel_pump_static_inverter_contactor,
+        );
+        electricity.flow(ac_ess_sched, &self.apu_fuel_pump_ess_sched_contactor);
+        electricity.flow(
+            &self.apu_fuel_pump_static_inverter_contactor,
+            &self.apu_fuel_pump_supply,
+        );
+        electricity.flow(
+            &self.apu_fuel_pump_ess_sched_contactor,
+            &self.apu_fuel_pump_supply,
+        );
+    }
+}
+impl SimulationElement for A320AuxiliaryPowerSupplies {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.fuel_pump_1_supply.accept(visitor);
+        self.fuel_pump_1_normal_contactor.accept(visitor);
+        self.fuel_pump_1_standby_contactor.accept(visitor);
+        self.apu_fuel_pump_supply.accept(visitor);
+        self.apu_fuel_pump_static_inverter_contactor.accept(visitor);
+        self.apu_fuel_pump_ess_sched_contactor.accept(visitor);
 
         visitor.visit(self);
     }

@@ -9,7 +9,7 @@
     "/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"
   ],
   "extraDeps": [
-    "fbw-common/src/systems/instruments/src/EFB",
-    "fbw-a32nx/src/systems/shared/src/performance"
+    "/fbw-common/src/systems/instruments/src/EFB",
+    "/fbw-a32nx/src/systems/shared/src/performance"
   ]
 }

@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_A380PrimComputer_types_h_
-#define RTW_HEADER_A380PrimComputer_types_h_
+#ifndef A380PrimComputer_types_h_
+#define A380PrimComputer_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
 #define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
@@ -30,19 +30,6 @@ enum class SignStatusMatrix
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
-#define DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
-
-struct base_prim_temporary_ap_input
-{
-  boolean_T ap_engaged;
-  real_T roll_command;
-  real_T pitch_command;
-  real_T yaw_command;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
 #define DEFINED_TYPEDEF_FOR_base_prim_pitch_surface_positions_
 
@@ -53,6 +40,32 @@ struct base_prim_pitch_surface_positions
   real_T left_outboard_elevator_deg;
   real_T right_outboard_elevator_deg;
   real_T ths_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_time_
+#define DEFINED_TYPEDEF_FOR_base_time_
+
+struct base_time
+{
+  real_T dt;
+  real_T simulation_time;
+  real_T monotonic_time;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sim_data_
+#define DEFINED_TYPEDEF_FOR_base_sim_data_
+
+struct base_sim_data
+{
+  boolean_T slew_on;
+  boolean_T pause_on;
+  boolean_T tracking_mode_on_override;
+  boolean_T tailstrike_protection_on;
+  boolean_T computer_running;
 };
 
 #endif
@@ -82,32 +95,6 @@ struct base_prim_discrete_inputs
   boolean_T pitch_trim_down_pressed;
   boolean_T green_low_pressure;
   boolean_T yellow_low_pressure;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_time_
-#define DEFINED_TYPEDEF_FOR_base_time_
-
-struct base_time
-{
-  real_T dt;
-  real_T simulation_time;
-  real_T monotonic_time;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_sim_data_
-#define DEFINED_TYPEDEF_FOR_base_sim_data_
-
-struct base_sim_data
-{
-  boolean_T slew_on;
-  boolean_T pause_on;
-  boolean_T tracking_mode_on_override;
-  boolean_T tailstrike_protection_on;
-  boolean_T computer_running;
 };
 
 #endif
@@ -247,6 +234,19 @@ struct base_sfcc_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_out_bus_
 #define DEFINED_TYPEDEF_FOR_base_prim_out_bus_
 
@@ -302,8 +302,12 @@ struct base_prim_out_bus
   base_arinc_429 rudder_status_word;
   base_arinc_429 rudder_1_position_deg;
   base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 radio_height_1_ft;
+  base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 discrete_status_word_1;
+  base_arinc_429 fe_status_word;
+  base_arinc_429 fg_status_word;
 };
 
 #endif
@@ -336,6 +340,7 @@ struct base_sec_out_bus
   base_arinc_429 rudder_status_word;
   base_arinc_429 rudder_1_position_deg;
   base_arinc_429 rudder_2_position_deg;
+  base_arinc_429 rudder_trim_actual_pos_deg;
   base_arinc_429 fctl_law_status_word;
   base_arinc_429 misc_data_status_word;
 };
@@ -365,6 +370,8 @@ struct base_prim_bus_inputs
   base_ra_bus ra_2_bus;
   base_sfcc_bus sfcc_1_bus;
   base_sfcc_bus sfcc_2_bus;
+  base_lgciu_bus lgciu_1_bus;
+  base_lgciu_bus lgciu_2_bus;
   real_T irdc_1_bus;
   real_T irdc_2_bus;
   real_T irdc_3_bus;
@@ -377,6 +384,19 @@ struct base_prim_bus_inputs
   base_sec_out_bus sec_1_bus;
   base_sec_out_bus sec_2_bus;
   base_sec_out_bus sec_3_bus;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+
+struct base_prim_temporary_ap_input
+{
+  boolean_T ap_engaged;
+  real_T roll_command;
+  real_T pitch_command;
+  real_T yaw_command;
 };
 
 #endif
@@ -597,7 +617,16 @@ struct base_prim_logic_outputs
   base_elac_adr_computation_data adr_computation_data;
   base_elac_ir_computation_data ir_computation_data;
   real_T ra_computation_data_ft;
-  boolean_T dual_ra_failure;
+  boolean_T all_ra_failure;
+  boolean_T all_sfcc_lost;
+  real_T flap_handle_index;
+  real_T flap_angle_deg;
+  real_T slat_angle_deg;
+  real_T slat_flap_actual_pos;
+  boolean_T double_lgciu_failure;
+  boolean_T slats_locked;
+  boolean_T flaps_locked;
+  boolean_T landing_gear_down;
 };
 
 #endif

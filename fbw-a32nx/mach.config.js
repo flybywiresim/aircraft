@@ -30,11 +30,13 @@ module.exports = {
     typecheckingPlugin(),
   ],
   instruments: [
-    msfsAvionicsInstrument('PFD'),
-    msfsAvionicsInstrument('ND'),
-    msfsAvionicsInstrument('EWD'),
     msfsAvionicsInstrument('Clock'),
+    msfsAvionicsInstrument('EWD'),
+    msfsAvionicsInstrument('FCU'),
+    msfsAvionicsInstrument('MCDU', 'McduBaseInstrument.ts'),
+    msfsAvionicsInstrument('ND'),
     msfsAvionicsInstrument('OANC'),
+    msfsAvionicsInstrument('PFD'),
 
     reactInstrument('SD'),
     reactInstrument('DCDU'),
@@ -47,10 +49,10 @@ module.exports = {
   ],
 };
 
-function msfsAvionicsInstrument(name, folder = name) {
+function msfsAvionicsInstrument(name, index = 'instrument.tsx') {
   return {
     name,
-    index: `src/systems/instruments/src/${folder}/instrument.tsx`,
+    index: `src/systems/instruments/src/${name}/${index}`,
     simulatorPackage: {
       type: 'baseInstrument',
       templateId: `A32NX_${name}`,

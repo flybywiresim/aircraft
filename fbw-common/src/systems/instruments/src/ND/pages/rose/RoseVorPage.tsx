@@ -12,14 +12,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, Arinc429ConsumerSubject, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { Flag } from '../../shared/Flag';
 import { NDControlEvents } from '../../NDControlEvents';
 import { VorInfoIndicator } from './VorInfoIndicator';
-import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
 import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManagementEvents';
 import { GenericVorEvents } from '../../types/GenericVorEvents';
 
@@ -86,6 +85,23 @@ export class RoseVorPage<T extends number> extends RoseMode<T, RoseVorProps<T>> 
   render(): VNode | null {
     return (
       <g visibility={this.isVisible.map((v) => (v ? 'visible' : 'hidden'))}>
+        {/* inverted map overlays for terrain map in WASM module  */}
+        <path
+          name="rose-mode-bottom-left-map-area"
+          d="M45,625 L122,625 L174,683 L174,768 L0,768 L0,0 L45,0L45,625"
+          class="nd-inverted-map-area"
+        />
+        <path
+          name="rose-mode-bottom-right-map-area"
+          d="M591,768 L591,626 L648,562 L723,562 L723,0 L768,0 L768,768 L591,769"
+          class="nd-inverted-map-area"
+        />
+        <path
+          name="rose-mode-top-map-area"
+          d="M45,0 L45,155, L282,155 a250,250 0 0 1 204,0 L723,155 L723,0 L45,0"
+          class="nd-inverted-map-area"
+        />
+
         <VorInfoIndicator bus={this.props.bus} index={this.props.index} />
 
         <RoseModeUnderlay

@@ -1,8 +1,7 @@
 import { ConsumerSubject, EventBus, Instrument, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429SignStatusMatrix, Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
-import { PfdSpeedsDropInSimvars } from 'instruments/src/PFD/shared/PfdSpeedsDropInPublisher';
 
 export interface Arinc429Values {
   slatsFlapsStatus: Arinc429Word;
@@ -25,6 +24,8 @@ export interface Arinc429Values {
   fcdcDiscreteWord1: Arinc429Word;
   fcdc1DiscreteWord1: Arinc429Word;
   fcdc2DiscreteWord1: Arinc429Word;
+  fcdc1DiscreteWord2: Arinc429Word;
+  fcdc2DiscreteWord2: Arinc429Word;
   facToUse: number;
   vAlphaMax: Arinc429Word;
   vAlphaProt: Arinc429Word;
@@ -83,6 +84,16 @@ export class ArincValueProvider implements Instrument {
 
   private staticPressure = new Arinc429Word(0);
 
+  private fcdc1DiscreteWord1 = new Arinc429Word(0);
+
+  private fcdc2DiscreteWord1 = new Arinc429Word(0);
+
+  private fcdc1DiscreteWord2 = new Arinc429Word(0);
+
+  private fcdc2DiscreteWord2 = new Arinc429Word(0);
+
+  private fcdcToUse = 0;
+
   private fac1Healthy = false;
 
   private fac2Healthy = false;
@@ -103,21 +114,12 @@ export class ArincValueProvider implements Instrument {
 
   private readonly fm2Subs: Subscription[] = [];
 
-  // FIXME delete these when PRIM FE implemented
-  private alphaProtSsm = Arinc429SignStatusMatrix.NoComputedData;
-  private alphaMaxSsm = Arinc429SignStatusMatrix.NoComputedData;
-  private stallWarnSsm = Arinc429SignStatusMatrix.NoComputedData;
-  private vManSsm = Arinc429SignStatusMatrix.NoComputedData;
-  private v3Ssm = Arinc429SignStatusMatrix.NoComputedData;
-  private v4Ssm = Arinc429SignStatusMatrix.NoComputedData;
-  private vLsSsm = Arinc429SignStatusMatrix.NoComputedData;
-
   constructor(private readonly bus: EventBus) {}
 
   /** @inheritdoc */
   public init(): void {
     const publisher = this.bus.getPublisher<Arinc429Values>();
-    const subscriber = this.bus.getSubscriber<PFDSimvars & PfdSpeedsDropInSimvars>();
+    const subscriber = this.bus.getSubscriber<PFDSimvars>();
 
     subscriber.on('slatsFlapsStatusRaw').handle((w) => {
       publisher.pub('slatsFlapsStatus', new Arinc429Word(w));
@@ -232,42 +234,13 @@ export class ArincValueProvider implements Instrument {
       this.determineFacToUse(publisher);
     });
 
-    // FIXME when PRIM FE is implemented, delete the following block and un-comment the rest
-    subscriber.on('alphaMaxRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.alphaMaxSsm;
-      word.value = speed;
-      publisher.pub('vAlphaMax', word);
-    });
-    subscriber.on('alphaProtRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.alphaProtSsm;
-      word.value = speed;
-      publisher.pub('vAlphaProt', word);
-    });
-    subscriber.on('stallWarnRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.stallWarnSsm;
-      word.value = speed;
-      publisher.pub('vStallWarn', word);
-    });
-    subscriber.on('fac1VAlphaMaxRaw').handle((word) => {
-      this.alphaMaxSsm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1VAlphaProtRaw').handle((word) => {
-      this.alphaProtSsm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1VStallWarnRaw').handle((word) => {
-      this.stallWarnSsm = new Arinc429Word(word).ssm;
-    });
-
     subscriber.on('fac1VAlphaMaxRaw').handle((word) => {
       this.fac1VAlphaMax = new Arinc429Word(word);
       this.determineFacToUse(publisher);
       if (this.facToUse === 1) {
-        // publisher.pub('vAlphaMax', this.fac1VAlphaMax);
+        publisher.pub('vAlphaMax', this.fac1VAlphaMax);
       } else if (this.facToUse === 0) {
-        // publisher.pub('vAlphaMax', new Arinc429Word(0));
+        publisher.pub('vAlphaMax', new Arinc429Word(0));
       }
     });
 
@@ -275,10 +248,10 @@ export class ArincValueProvider implements Instrument {
       this.fac2VAlphaMax = new Arinc429Word(word);
       this.determineFacToUse(publisher);
       if (this.facToUse === 2) {
-        // publisher.pub('vAlphaMax', this.fac2VAlphaMax);
+        publisher.pub('vAlphaMax', this.fac2VAlphaMax);
       }
     });
-    /*
+
     subscriber.on('fac1VAlphaProtRaw').handle((word) => {
       if (this.facToUse === 1) {
         publisher.pub('vAlphaProt', new Arinc429Word(word));
@@ -306,7 +279,6 @@ export class ArincValueProvider implements Instrument {
         publisher.pub('vStallWarn', new Arinc429Word(word));
       }
     });
-    */
 
     subscriber.on('fac1VMaxRaw').handle((word) => {
       if (this.facToUse === 1) {
@@ -350,44 +322,6 @@ export class ArincValueProvider implements Instrument {
       }
     });
 
-    // FIXME when PRIM FE is implemented, delete the following block and un-comment the rest
-    subscriber.on('vManRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.vManSsm;
-      word.value = speed;
-      publisher.pub('vMan', word);
-    });
-    subscriber.on('v4Raw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.v4Ssm;
-      word.value = speed;
-      publisher.pub('v4', word);
-    });
-    subscriber.on('v3Raw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.v3Ssm;
-      word.value = speed;
-      publisher.pub('v3', word);
-    });
-    subscriber.on('vLsRaw').handle((speed) => {
-      const word = Arinc429Word.empty();
-      word.ssm = this.vLsSsm;
-      word.value = speed;
-      publisher.pub('vLs', word);
-    });
-    subscriber.on('fac1VManRaw').handle((word) => {
-      this.vManSsm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1V3Raw').handle((word) => {
-      this.v3Ssm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1V4Raw').handle((word) => {
-      this.v4Ssm = new Arinc429Word(word).ssm;
-    });
-    subscriber.on('fac1VLsRaw').handle((word) => {
-      this.vLsSsm = new Arinc429Word(word).ssm;
-    });
-    /*
     subscriber.on('fac1VManRaw').handle((word) => {
       if (this.facToUse === 1) {
         publisher.pub('vMan', new Arinc429Word(word));
@@ -443,7 +377,6 @@ export class ArincValueProvider implements Instrument {
         publisher.pub('vLs', new Arinc429Word(word));
       }
     });
-    */
 
     subscriber.on('fac1EstimatedBetaRaw').handle((word) => {
       if (this.facToUse === 1) {
@@ -478,12 +411,33 @@ export class ArincValueProvider implements Instrument {
       publisher.pub('lgciuDiscreteWord1', this.lgciuDiscreteWord1);
     });
 
-    // Word with Normal Operation status indicating that pitch and roll are in normal law. To be replaced by proper FCDC implementation.
-    const pitchRollNormalLawNOWord = 14076346368;
+    subscriber.on('fcdc1DiscreteWord1Raw').handle((discreteWord1) => {
+      this.fcdc1DiscreteWord1 = new Arinc429Word(discreteWord1);
+      this.fcdcToUse = this.determineFcdcToUse();
+      publisher.pub('fcdc1DiscreteWord1', this.fcdc1DiscreteWord1);
+      if (this.fcdcToUse === 1) {
+        publisher.pub('fcdcDiscreteWord1', this.fcdc1DiscreteWord1);
+      }
+    });
 
-    publisher.pub('fcdcDiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
-    publisher.pub('fcdc1DiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
-    publisher.pub('fcdc2DiscreteWord1', new Arinc429Word(pitchRollNormalLawNOWord));
+    subscriber.on('fcdc2DiscreteWord1Raw').handle((discreteWord1) => {
+      this.fcdc2DiscreteWord1 = new Arinc429Word(discreteWord1);
+      this.fcdcToUse = this.determineFcdcToUse();
+      publisher.pub('fcdc2DiscreteWord1', this.fcdc2DiscreteWord1);
+      if (this.fcdcToUse === 2) {
+        publisher.pub('fcdcDiscreteWord1', this.fcdc2DiscreteWord1);
+      }
+    });
+
+    subscriber.on('fcdc1DiscreteWord2Raw').handle((discreteWord2) => {
+      this.fcdc1DiscreteWord2 = new Arinc429Word(discreteWord2);
+      publisher.pub('fcdc1DiscreteWord2', this.fcdc1DiscreteWord2);
+    });
+
+    subscriber.on('fcdc2DiscreteWord2Raw').handle((discreteWord2) => {
+      this.fcdc2DiscreteWord2 = new Arinc429Word(discreteWord2);
+      publisher.pub('fcdc2DiscreteWord2', this.fcdc2DiscreteWord2);
+    });
 
     this.fm1Subs.push(
       subscriber.on('fm1EisDiscrete2Raw').handle((raw) => publisher.pub('fmEisDiscreteWord2Raw', raw), true),
@@ -586,6 +540,27 @@ export class ArincValueProvider implements Instrument {
     } else {
       publisher.pub('landingElevation', this.ownLandingElevation);
     }
+  }
+
+  private determineFcdcToUse() {
+    if (getDisplayIndex() === 1) {
+      if (
+        (this.fcdc1DiscreteWord1.isFailureWarning() && !this.fcdc2DiscreteWord1.isFailureWarning()) ||
+        (!this.fcdc1DiscreteWord1.bitValueOr(24, false) && this.fcdc2DiscreteWord1.bitValueOr(24, false))
+      ) {
+        return 2;
+      }
+      return 1;
+    }
+    if (
+      !(
+        (!this.fcdc1DiscreteWord1.isFailureWarning() && this.fcdc2DiscreteWord1.isFailureWarning()) ||
+        (this.fcdc1DiscreteWord1.bitValueOr(24, false) && !this.fcdc2DiscreteWord1.bitValueOr(24, false))
+      )
+    ) {
+      return 2;
+    }
+    return 1;
   }
 
   // Determine which FAC bus to use for FE function. If FAC HEALTHY discrete is low or any word is coded FW,

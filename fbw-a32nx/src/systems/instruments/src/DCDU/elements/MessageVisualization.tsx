@@ -7,15 +7,12 @@ import { useInteractionEvents } from '@flybywiresim/fbw-sdk';
 import { MailboxStatusMessage } from '@datalink/common';
 import { Checkerboard } from './Checkerboard';
 
-interface ColorizedWord {
-  word: string;
-  highlight: boolean;
-  watchdog: boolean;
-}
-
-interface ColorizedLine {
-  length: number;
-  words: ColorizedWord[];
+interface MessageViewData {
+  wordOffset: number;
+  lineOffset: number;
+  highlightActive: boolean;
+  view: string[][];
+  pageCount: number;
 }
 
 type MessageVisualizationProps = {
@@ -34,245 +31,149 @@ type MessageVisualizationProps = {
   reachedEndOfMessage: (uid: number, reachedEnd: boolean) => void;
 };
 
-function visualizeLine(
-  line: ColorizedWord[],
-  startIdx: number,
-  startY: number,
-  deltaY: number,
-  useDeltaY: boolean,
-  reminder: boolean,
-  ignoreHighlight: boolean,
-  backgroundActive: boolean,
-) {
-  if (startIdx >= line.length) {
-    return <></>;
-  }
-
-  const highlight = line[startIdx].highlight && !ignoreHighlight;
-  const monitoring = line[startIdx].watchdog && !ignoreHighlight;
-  let className = 'message-tspan';
-  if (!reminder) {
-    if (backgroundActive) {
-      className += ' message-onbackground';
-    } else if (monitoring) {
-      className += ' message-monitoring';
-    } else if (highlight) {
-      className += ' message-highlight';
-    }
-  }
-  let nextIdx = line.length;
-  let message = '';
-
-  for (let i = startIdx; i < line.length; ++i) {
-    message += `${line[i].word}\xa0`;
-    if (i + 1 < line.length && line[i].highlight !== line[i + 1].highlight) {
-      nextIdx = i + 1;
-      break;
-    }
-  }
-
-  if (startIdx === 0) {
-    if (useDeltaY) {
-      return (
-        <>
-          <tspan x="224" dy={deltaY} className={className}>
-            {message}
-          </tspan>
-          {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
-        </>
-      );
-    }
-    return (
-      <>
-        <tspan x="224" y={startY} className={className}>
-          {message}
-        </tspan>
-        {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
-      </>
-    );
-  }
-
-  // no new line
-  return (
-    <>
-      <tspan className={className}>{message}</tspan>
-      {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
-    </>
-  );
-}
-
-function visualizeLines(
-  lines: ColorizedLine[],
+const renderMessageView = (
+  view: MessageViewData,
   backgroundIdx: number,
   yStart: number,
   deltaY: number,
   reminder: boolean,
   ignoreHighlight: boolean,
-) {
-  if (lines.length === 0) {
-    return <></>;
-  }
+  watchdogIndices: number[],
+): React.ReactNode => {
+  const renderWord = (
+    word: string,
+    highlight: boolean,
+    watchdog: boolean,
+    backgroundActive: boolean,
+    coordinate?: [number, number],
+  ): React.ReactNode => {
+    const monitoring = watchdog && !ignoreHighlight;
+    let className = 'message-tspan';
+    if (!reminder) {
+      if (backgroundActive) {
+        className += ' message-onbackground';
+      } else if (monitoring) {
+        className += ' message-monitoring';
+      } else if (highlight) {
+        className += ' message-highlight';
+      }
+    }
 
-  const firstLine = lines[0];
-  lines.shift();
+    return (
+      <tspan
+        x={coordinate ? coordinate[0] : undefined}
+        dy={coordinate ? coordinate[1] : undefined}
+        className={className}
+      >
+        {`${word.replace(/@/gi, '')}\xa0`}
+      </tspan>
+    );
+  };
 
-  let lineCount = 0;
-  return (
+  return view.view.map((line, lineIndex) => (
     <>
-      {visualizeLine(firstLine.words, 0, yStart, deltaY, false, reminder, ignoreHighlight, backgroundIdx <= 0)}
-      {lines.map((line) => {
-        lineCount += 1;
-        return visualizeLine(
-          line.words,
-          0,
-          yStart,
-          deltaY,
-          true,
-          reminder,
-          ignoreHighlight,
-          backgroundIdx <= lineCount,
+      {line.map((word, wordIndex) => {
+        const highlightWord = view.highlightActive || word.startsWith('@') === true;
+
+        const node = renderWord(
+          word,
+          highlightWord,
+          watchdogIndices.findIndex((elem) => elem === view.wordOffset) !== -1,
+          backgroundIdx <= lineIndex,
+          wordIndex === 0 ? [224, lineIndex === 0 ? yStart : deltaY] : undefined,
         );
+
+        view.highlightActive = highlightWord && word.endsWith('@') === false;
+        view.wordOffset += 1;
+
+        return node;
       })}
     </>
-  );
-}
+  ));
+};
 
-function indexInList(list: number[], index: number): boolean {
-  for (const value of list) {
-    if (value === index) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function colorizeWords(message: string, keepNewlines: boolean, watchdogIndices: number[]): ColorizedWord[] {
-  const words: ColorizedWord[] = [];
+const createMessageView = (message: string, keepNewlines: boolean, pageIndex: number): MessageViewData => {
+  // remove new lines if not required
   if (!keepNewlines) {
     message = message.replace(/\n/gi, ' ');
   }
 
-  let watchdogColor = false;
-  let highlightColor = false;
-  const messageWords = message.match(/[-@_A-Z0-9]+|\[\s+\]/g);
-  if (!messageWords) {
-    return [];
-  }
+  // replace forced new line strings by newlines
+  message = message.replace(/_/gi, '\n');
 
-  for (let word of messageWords) {
-    if (word.length === 0) {
-      continue;
-    }
+  // split the string into words, but keep the newlines
+  const wordsAndNewlines = message.split(/(\n)|\s+/).filter(Boolean);
 
-    /* check if the color needs to be changed */
-    const highlightMarkers: number[] = [];
-    for (let i = 0; i < word.length; ++i) {
-      if (word[i] === '@') highlightMarkers.push(i);
-    }
-
-    // replace the color marker
-    word = word.replace(/@/gi, '');
-
-    // we need to change the highlight state
-    if (highlightMarkers.length === 1 && highlightMarkers[0] === 0) {
-      highlightColor = !highlightColor;
-      watchdogColor = false;
-      if (highlightColor) {
-        if (indexInList(watchdogIndices, words.length)) {
-          watchdogColor = true;
-        }
+  // create the lines with respect to the newlines
+  const lines: string[][] = [[]];
+  wordsAndNewlines.forEach((word) => {
+    if (word === '\n') {
+      // create a new line only if words are inserted in the last line
+      if (lines.length > 0 && lines[lines.length - 1].length > 0) {
+        lines.push([]);
       }
-    } else if (highlightMarkers.length !== 0) {
-      highlightColor = !highlightColor;
-      if (highlightColor) {
-        if (indexInList(watchdogIndices, words.length)) {
-          watchdogColor = true;
-        }
-      }
+      return;
     }
 
-    words.push({ word, highlight: highlightColor, watchdog: watchdogColor });
+    // get the character count of the line (incl. whitespaces per word)
+    let totalLineLength = lines[lines.length - 1].reduce((sum, str) => sum + str.length, 0);
+    totalLineLength += lines[lines.length - 1].length - 1;
 
-    // only one word needs to be highlighted
-    if (highlightMarkers.length === 1 && highlightMarkers[0] !== 0) {
-      highlightColor = !highlightColor;
-    } else if (highlightMarkers.length !== 0) {
-      highlightColor = !highlightColor;
+    // get the length of the new word and ignore the highlight characters
+    const newWordLength = word.replace('@', '').length;
+
+    // check if we reached the maximum number of characters (words + whitespaces)
+    if (totalLineLength + newWordLength + 1 <= 30) {
+      lines[lines.length - 1].push(word);
+    } else {
+      lines.push([word]);
     }
+  });
+
+  const pageChunks: string[][][] = [];
+  let visibleLines: string[][] | undefined = undefined;
+  let highlighted = false;
+  let wordOffset = 0;
+
+  // split the lines into chunks
+  // the first page shows only new lines -> add five lines
+  // all following pages show the last line of the previous pages -> split into four lines
+  pageChunks.push(lines.slice(0, 5));
+  for (let i = 5; i < lines.length; i += 4) {
+    pageChunks.push(lines.slice(i, i + 4));
   }
 
-  return words;
-}
+  const chunkViewIndex = Math.max(0, Math.min(pageChunks.length - 1, pageIndex));
 
-function insertWord(lines: ColorizedLine[], word: ColorizedWord, keepNewlines: boolean): void {
-  // create a new line, but ignore if the word is too long
-  if (!keepNewlines) {
-    if (lines[lines.length - 1].length + word.word.length + 1 >= 27 && lines[lines.length - 1].length !== 0) {
-      lines.push({ length: 0, words: [] });
-    }
+  // calculate the rendering parameters before the unshift as the original page is relevant
+  const predecessorWords = pageChunks
+    .slice(0, chunkViewIndex)
+    .reduce((acc, value) => acc.concat(value), [])
+    .reduce((acc, value) => acc.concat(value), []);
+  wordOffset = predecessorWords.length;
+
+  // get all highlight words and check the last one if it is the start or end of a highlight marker
+  const highlights = predecessorWords.filter((str) => str.startsWith('@') || str.endsWith('@'));
+  if (highlights.length !== 0) {
+    highlighted = highlights[highlights.length - 1].endsWith('@') === false;
   }
 
-  // add a space character
-  if (lines[lines.length - 1].length !== 0) {
-    lines[lines.length - 1].length += 1;
+  // repeat the last line of the previous page
+  for (let i = pageChunks.length - 1; i >= 1; --i) {
+    pageChunks[i].unshift(pageChunks[i - 1][i === 1 ? 4 : 3]);
   }
 
-  // add the word
-  lines[lines.length - 1].length += word.word.length;
-  lines[lines.length - 1].words.push(word);
-}
+  // get the word offset for the page and ignore special newline entries
+  visibleLines = pageChunks[chunkViewIndex];
 
-function createVisualizationLines(message: string, keepNewlines: boolean, watchdogIndices: number[]): ColorizedLine[] {
-  const lines: ColorizedLine[] = [];
-
-  if (!keepNewlines) {
-    const words = colorizeWords(message, keepNewlines, watchdogIndices);
-    lines.push({ length: 0, words: [] });
-
-    words.forEach((word) => {
-      let newline = false;
-
-      // iterate over forced newlines, if needed
-      word.word.split(/_/).forEach((entry) => {
-        // add a new line
-        if (newline) {
-          lines.push({ length: 0, words: [] });
-        }
-
-        // insert the word
-        insertWord(lines, { word: entry, highlight: word.highlight, watchdog: word.watchdog }, keepNewlines);
-        newline = !keepNewlines;
-      });
-    });
-  } else {
-    const inputLines = message.split(/\n/);
-    let lastLineHighlight = false;
-
-    inputLines.forEach((line) => {
-      const words = colorizeWords(line, keepNewlines, watchdogIndices);
-      if (words.length === 1 && /-+/.test(line)) {
-        lastLineHighlight = false;
-      }
-
-      if (words.length !== 0) {
-        // invert the highlights due to the old highlighted text of the last line
-        if (lastLineHighlight) {
-          words.forEach((word) => {
-            word.highlight = !word.highlight;
-            if (!word.highlight) {
-              word.watchdog = false;
-            }
-          });
-        }
-        lastLineHighlight = words[words.length - 1].highlight;
-      }
-
-      lines.push({ length: 0, words });
-    });
-  }
-
-  return lines;
-}
+  return {
+    wordOffset,
+    lineOffset: chunkViewIndex === 0 ? 0 : 5 + (chunkViewIndex - 1) * 4,
+    highlightActive: highlighted,
+    view: visibleLines,
+    pageCount: pageChunks.length,
+  };
+};
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(
   ({
@@ -326,29 +227,18 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(
       return <></>;
     }
 
-    let lines = createVisualizationLines(message, keepNewlines, watchdogIndices);
-
-    // calculate visualized lines, incl. repeated last line of previous page
-    // thereafter get the number of pages
-    const messagePageCountWithoutOverlap = Math.ceil(lines.length / maxLines);
-    const messagePageCount = Math.ceil((lines.length + messagePageCountWithoutOverlap - 1) / maxLines);
-    if (messagePageCount !== pageCount) {
-      reachedEndOfMessage(messageUid, messagePageCount === 1);
-      setPageCount(messagePageCount);
+    const messageView = createMessageView(message, keepNewlines, pageIndex);
+    const messageViewLineEnd = messageView.lineOffset + messageView.view.length;
+    if (messageView.pageCount !== pageCount) {
+      reachedEndOfMessage(messageUid, messageView.pageCount === 1);
+      setPageCount(messageView.pageCount);
       setPageIndex(0);
     }
 
     // no text defined
-    if (pageCount === 0) {
+    if (messageView.pageCount === 0) {
       return <></>;
     }
-
-    // get the indices
-    const startIndex = pageIndex * maxLines - pageIndex;
-    const endIndex = Math.min(startIndex + maxLines, lines.length);
-
-    // get visible lines
-    lines = lines.slice(startIndex, endIndex);
 
     // calculate the position of the background rectangle
     let backgroundY = 520;
@@ -357,27 +247,27 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(
     if (backgroundColor[0] !== 0 || backgroundColor[1] !== 0 || backgroundColor[2] !== 0) {
       if (seperatorLine) {
         backgroundNeeded = true;
-        if (seperatorLine <= startIndex) {
+        if (seperatorLine <= messageView.lineOffset) {
           // first line contains downlink message
-          contentHeight += lines.length * 220;
-        } else if (seperatorLine < endIndex) {
+          contentHeight += messageView.view.length * 220;
+        } else if (seperatorLine < messageViewLineEnd) {
           // mix of uplink and downlink message
-          contentHeight += (endIndex - seperatorLine) * 220;
-          backgroundY += (lines.length - (endIndex - seperatorLine)) * 220;
+          contentHeight += (messageViewLineEnd - seperatorLine) * 220;
+          backgroundY += (messageView.view.length - (messageViewLineEnd - seperatorLine)) * 220;
         } else {
           backgroundNeeded = false;
         }
       } else {
-        contentHeight += lines.length * 220;
+        contentHeight += messageView.view.length * 220;
         backgroundNeeded = true;
       }
     }
     const rgb = `rgb(${backgroundColor[0]},${backgroundColor[1]},${backgroundColor[2]})`;
     let backgroundIdx = maxLines;
     if (backgroundNeeded) {
-      if (seperatorLine && seperatorLine >= startIndex) {
-        backgroundIdx = seperatorLine - startIndex >= maxLines ? 0 : seperatorLine - startIndex;
-      } else if (seperatorLine) {
+      if (seperatorLine) {
+        backgroundIdx = seperatorLine - messageView.lineOffset;
+      } else {
         backgroundIdx = 0;
       }
     }
@@ -388,7 +278,15 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(
           <Checkerboard x={130} y={backgroundY} width={3600} height={contentHeight} cellSize={10} fill={rgb} />
         )}
         <text className={cssClass}>
-          {visualizeLines(lines, backgroundIdx, yStart, deltaY, messageIsReminder, ignoreHighlight)}
+          {renderMessageView(
+            messageView,
+            backgroundIdx,
+            yStart,
+            deltaY,
+            messageIsReminder,
+            ignoreHighlight,
+            watchdogIndices,
+          )}
         </text>
         {pageCount > 1 && (
           <>

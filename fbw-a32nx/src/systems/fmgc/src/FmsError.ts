@@ -17,6 +17,6 @@ export enum FmsErrorType {
 
 export class FmsError extends Error {
   constructor(public type: FmsErrorType) {
-    super();
+    super(FmsErrorType[type]);
   }
 }

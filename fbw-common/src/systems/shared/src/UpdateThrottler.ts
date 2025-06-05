@@ -1,41 +1,33 @@
+// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 /**
  * Utility class to throttle instrument updates
  */
 export class UpdateThrottler {
-  private intervalMs: number;
+  private currentTime = 0;
+  private lastUpdateTime = 0;
 
-  private currentTime: number;
-
-  private lastUpdateTime: number;
-
-  private refreshOffset: number;
-
-  private refreshNumber: number;
+  // Take a random offset to space out updates from different instruments among different
+  // frames as much as possible.
+  private refreshOffset = Math.floor(Math.random() * this.intervalMs);
+  private refreshNumber = 0;
 
   /**
    * @param {number} intervalMs Interval between updates, in milliseconds
    */
-  constructor(intervalMs) {
-    this.intervalMs = intervalMs;
-    this.currentTime = 0;
-    this.lastUpdateTime = 0;
-
-    // Take a random offset to space out updates from different instruments among different
-    // frames as much as possible.
-    this.refreshOffset = Math.floor(Math.random() * intervalMs);
-    this.refreshNumber = 0;
-  }
+  constructor(private readonly intervalMs: number) {}
 
   /**
    * Checks whether the instrument should be updated in the current frame according to the
    * configured update interval.
    *
-   * @param {number} deltaTime
-   * @param {boolean} [forceUpdate = false] - True if you want to force an update during this frame.
+   * @param deltaTime
+   * @param forceUpdate True if you want to force an update during this frame.
    * @returns -1 if the instrument should not update, or the time elapsed since the last
    *          update in milliseconds
    */
-  canUpdate(deltaTime, forceUpdate = false) {
+  canUpdate(deltaTime: number, forceUpdate = false): number {
     this.currentTime += deltaTime;
     const number = Math.floor((this.currentTime + this.refreshOffset) / this.intervalMs);
     const update = number > this.refreshNumber;
@@ -44,7 +36,8 @@ export class UpdateThrottler {
       const accumulatedDelta = this.currentTime - this.lastUpdateTime;
       this.lastUpdateTime = this.currentTime;
       return accumulatedDelta;
+    } else {
+      return -1;
     }
-    return -1;
   }
 }

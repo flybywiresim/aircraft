@@ -42,7 +42,7 @@ export class RmpPageStack extends DisplayComponent<RmpPageStackProps> {
   private previousPage: Pages | null = null;
   private readonly activePage = Subject.create<Pages>('vhf');
 
-  onAfterRender(node: VNode): void {
+  onAfterRender(): void {
     this.activePage.sub((v) => {
       if (this.previousPage) {
         this.pages[this.previousPage].ref.instance.setActive(false);

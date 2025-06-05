@@ -10,17 +10,20 @@ import {
 } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from 'instruments/src/EWD/shared/ArincValueProvider';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+import { ThrustGauge } from 'instruments/src/EWD/elements/ThrustGauge';
 
 export class N1Limit extends DisplayComponent<{
   x: number;
   y: number;
   active: Subscribable<boolean>;
+  hidden: Subscribable<boolean>;
   bus: ArincEventBus;
 }> {
-  private readonly N1LimitType = ConsumerSubject.create(null, 0);
-  private readonly N1ThrustLimit = ConsumerSubject.create(null, 0);
-  private readonly flexTemp = ConsumerSubject.create(null, 0);
-  private readonly sat = Arinc429ConsumerSubject.create(undefined);
+  private readonly sub = this.props.bus.getArincSubscriber<EwdSimvars & Arinc429Values>();
+  private readonly N1LimitType = ConsumerSubject.create(this.sub.on('thrust_limit_type'), 0);
+  private readonly N1ThrustLimit = ConsumerSubject.create(this.sub.on('thrust_limit'), 0);
+  private readonly flexTemp = ConsumerSubject.create(this.sub.on('flex'), 0);
+  private readonly sat = Arinc429ConsumerSubject.create(this.sub.on('sat').withArinc429Precision(0));
   private readonly thrustLimitTypeArray = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
 
   private readonly displayFlexTemp = MappedSubject.create(
@@ -33,20 +36,31 @@ export class N1Limit extends DisplayComponent<{
     this.props.active,
   );
 
+  private readonly cpiomBAgsDiscrete = Arinc429ConsumerSubject.create(undefined);
+  private readonly thrustLimitIdle = ConsumerSubject.create(this.sub.on('thrust_limit_idle').whenChanged(), 0);
+  private readonly thrustLimitToga = ConsumerSubject.create(this.sub.on('thrust_limit_toga').whenChanged(), 0);
+  private readonly thrustLimitMax = MappedSubject.create(
+    ([cpiomB, thrustLimitToga]) =>
+      !cpiomB.bitValueOr(13, false) && !cpiomB.bitValueOr(14, false) ? thrustLimitToga : thrustLimitToga + 0.6,
+    this.cpiomBAgsDiscrete,
+    this.thrustLimitToga,
+  );
+
+  private readonly thrustLimitTHR = MappedSubject.create(
+    ([n1, thrustLimitIdle, thrustLimitMax]) =>
+      ThrustGauge.thrustPercentFromN1(n1, thrustLimitIdle, thrustLimitMax, 0.042),
+    this.N1ThrustLimit,
+    this.thrustLimitIdle,
+    this.thrustLimitMax,
+  );
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<EwdSimvars & Arinc429Values>();
-
-    this.N1LimitType.setConsumer(sub.on('thrust_limit_type').whenChanged());
-    this.N1ThrustLimit.setConsumer(sub.on('thrust_limit').whenChanged());
-    this.flexTemp.setConsumer(sub.on('flex').whenChanged());
-    this.sat.setConsumer(sub.on('sat').withArinc429Precision(0));
   }
 
   render(): VNode {
     return (
-      <g id="Thrust-Rating-Mode">
+      <g id="Thrust-Rating-Mode" style={{ display: this.props.hidden.map((v) => (v ? 'none' : '')) }}>
         <text
           class="F26 Center Amber"
           x={this.props.x - 18}
@@ -70,7 +84,7 @@ export class N1Limit extends DisplayComponent<{
           x={this.props.x + 69}
           y={this.props.y - 2}
         >
-          {this.N1ThrustLimit.map((l) => splitDecimals(l)[0])}
+          {this.thrustLimitTHR.map((l) => splitDecimals(l)[0])}
         </text>
         <text
           class="F26 End Green"
@@ -86,7 +100,7 @@ export class N1Limit extends DisplayComponent<{
           x={this.props.x + 101}
           y={this.props.y - 2}
         >
-          {this.N1ThrustLimit.map((l) => splitDecimals(l)[1])}
+          {this.thrustLimitTHR.map((l) => splitDecimals(l)[1])}
         </text>
         <text
           class="F20 End Cyan"

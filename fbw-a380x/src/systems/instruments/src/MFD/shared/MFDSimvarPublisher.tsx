@@ -19,6 +19,7 @@ export type MfdSimvars = {
   xpdrAvail: boolean;
   xpdrCode: number;
   xpdrState: number;
+  tcasFail: boolean;
   gpwsTerrOff: boolean;
   gpwsSysOff: boolean;
   gpwsGsInhibit: boolean;
@@ -29,6 +30,13 @@ export type MfdSimvars = {
   fmcAIsHealthy: boolean;
   fmcBIsHealthy: boolean;
   fmcCIsHealthy: boolean;
+  fmsCaptFailed: boolean;
+  fmsFoFailed: boolean;
+  wxrTawsSysSelected: number;
+  terr1Failed: boolean;
+  terr2Failed: boolean;
+  gpws1Failed: boolean;
+  gpws2Failed: boolean;
 };
 
 export type InternalKccuKeyEvent = {
@@ -54,6 +62,7 @@ export enum MfdVars {
   xpdrAvail = 'TRANSPONDER AVAILABLE',
   xpdrCode = 'TRANSPONDER CODE:1',
   xpdrState = 'TRANSPONDER STATE:1',
+  tcasFail = 'L:A32NX_TCAS_FAULT',
   gpwsTerrOff = 'L:A32NX_GPWS_TERR_OFF',
   gpwsSysOff = 'L:A32NX_GPWS_SYS_OFF',
   gpwsGsInhibit = 'L:A32NX_GPWS_GS_OFF',
@@ -64,12 +73,18 @@ export enum MfdVars {
   fmcAIsHealthy = 'L:A32NX_FMC_A_IS_HEALTHY',
   fmcBIsHealthy = 'L:A32NX_FMC_B_IS_HEALTHY',
   fmcCIsHealthy = 'L:A32NX_FMC_C_IS_HEALTHY',
+  fmsCaptFailed = 'L:A32NX_FMS_L_FAILED',
+  fmsFoFailed = 'L:A32NX_FMS_R_FAILED',
+  wxrTawsSysSelected = 'L:A32NX_WXR_TAWS_SYS_SELECTED',
+  terr1Failed = 'L:A32NX_TERR_1_FAILED',
+  terr2Failed = 'L:A32NX_TERR_2_FAILED',
+  gpws1Failed = 'L:A32NX_GPWS_1_FAILED',
+  gpws2Failed = 'L:A32NX_GPWS_2_FAILED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
 export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
   private static simvars = new Map<keyof MfdSimvars, SimVarDefinition>([
-    ['coldDark', { name: MfdVars.coldDark, type: SimVarValueType.Number }],
     ['elec', { name: MfdVars.elec, type: SimVarValueType.Bool }],
     ['elecFo', { name: MfdVars.elecFo, type: SimVarValueType.Bool }],
     ['potentiometerCaptain', { name: MfdVars.potentiometerCaptain, type: SimVarValueType.Number }],
@@ -87,6 +102,7 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['xpdrAvail', { name: MfdVars.xpdrAvail, type: SimVarValueType.Bool }],
     ['xpdrCode', { name: MfdVars.xpdrCode, type: SimVarValueType.Number }],
     ['xpdrState', { name: MfdVars.xpdrState, type: SimVarValueType.Enum }],
+    ['tcasFail', { name: MfdVars.tcasFail, type: SimVarValueType.Bool }],
     ['gpwsTerrOff', { name: MfdVars.gpwsTerrOff, type: SimVarValueType.Bool }],
     ['gpwsSysOff', { name: MfdVars.gpwsSysOff, type: SimVarValueType.Bool }],
     ['gpwsGsInhibit', { name: MfdVars.gpwsGsInhibit, type: SimVarValueType.Bool }],
@@ -97,6 +113,13 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['fmcAIsHealthy', { name: MfdVars.fmcAIsHealthy, type: SimVarValueType.Bool }],
     ['fmcBIsHealthy', { name: MfdVars.fmcBIsHealthy, type: SimVarValueType.Bool }],
     ['fmcCIsHealthy', { name: MfdVars.fmcCIsHealthy, type: SimVarValueType.Bool }],
+    ['fmsCaptFailed', { name: MfdVars.fmsCaptFailed, type: SimVarValueType.Bool }],
+    ['fmsFoFailed', { name: MfdVars.fmsFoFailed, type: SimVarValueType.Bool }],
+    ['wxrTawsSysSelected', { name: MfdVars.wxrTawsSysSelected, type: SimVarValueType.Number }],
+    ['terr1Failed', { name: MfdVars.terr1Failed, type: SimVarValueType.Bool }],
+    ['terr2Failed', { name: MfdVars.terr2Failed, type: SimVarValueType.Bool }],
+    ['gpws1Failed', { name: MfdVars.gpws1Failed, type: SimVarValueType.Bool }],
+    ['gpws2Failed', { name: MfdVars.gpws2Failed, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

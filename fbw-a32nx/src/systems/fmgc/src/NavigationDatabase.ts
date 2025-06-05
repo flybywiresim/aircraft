@@ -10,11 +10,18 @@ import {
   DatabaseIdent,
   Fix,
   IlsNavaid,
+  logTroubleshootingError,
   MsfsBackend,
   NdbNavaid,
+  NearbyFacilityMonitor,
+  NearbyFacilityType,
+  ProcedureLeg,
+  TestBackend,
   VhfNavaid,
   Waypoint,
 } from '@flybywiresim/fbw-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { ErrorLogger } from '../../../../../fbw-common/src/systems/navdata/shared/types/ErrorLogger';
 
 /**
  * The backend for a navigation database
@@ -22,6 +29,7 @@ import {
 export enum NavigationDatabaseBackend {
   Msfs,
   Navigraph,
+  Test,
 }
 
 /**
@@ -32,11 +40,20 @@ export enum NavigationDatabaseBackend {
 export class NavigationDatabase {
   readonly backendDatabase: Database;
 
-  constructor(backend: NavigationDatabaseBackend) {
+  constructor(
+    private readonly bus: EventBus,
+    backend: NavigationDatabaseBackend,
+  ) {
     if (backend === NavigationDatabaseBackend.Msfs) {
-      this.backendDatabase = new Database(new MsfsBackend() as any);
+      const logError: ErrorLogger = (msg: string) => {
+        logTroubleshootingError(this.bus, msg);
+        console.warn(msg);
+      };
+      this.backendDatabase = new Database(new MsfsBackend(logError));
+    } else if (backend === NavigationDatabaseBackend.Test) {
+      this.backendDatabase = new Database(new TestBackend());
     } else {
-      throw new Error("[FMS/DB] Cannot instantiate NavigationDatabase with backend other than 'Msfs'");
+      throw new Error("[FMS/DB] Cannot instantiate NavigationDatabase with backend other than 'Msfs' or 'Test'");
     }
   }
 
@@ -48,7 +65,7 @@ export class NavigationDatabase {
     return this.backendDatabase.getWaypoints([ident]);
   }
 
-  async searchAllFix(ident: string): Promise<(Waypoint | VhfNavaid | NdbNavaid)[]> {
+  async searchAllFix(ident: string): Promise<Fix[]> {
     return [
       ...(await this.backendDatabase.getWaypoints([ident])),
       ...(await this.backendDatabase.getNavaids([ident])),
@@ -83,7 +100,25 @@ export class NavigationDatabase {
     return this.backendDatabase.getAirways([ident]);
   }
 
+  public getHolds(fixIdentifier: string, airportIdentifier: string): Promise<ProcedureLeg[]> {
+    return this.backendDatabase.getHolds(fixIdentifier, airportIdentifier);
+  }
+
   public getDatabaseIdent(): Promise<DatabaseIdent> {
     return this.backendDatabase.getDatabaseIdent();
+  }
+
+  public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {
+    return this.backendDatabase.createNearbyFacilityMonitor(type);
+  }
+
+  /**
+   * Gets a VHF navaid from the database given the database ID.
+   * @param databaseId The database ID.
+   * @returns The VHF navaid.
+   * @throws If the navaid doesn't exist (only call this if you already know it exists!).
+   */
+  public getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {
+    return this.backendDatabase.getVhfNavaidFromId(databaseId);
   }
 }

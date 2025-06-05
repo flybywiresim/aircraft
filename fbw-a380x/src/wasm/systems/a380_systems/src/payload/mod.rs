@@ -81,11 +81,12 @@ impl From<usize> for A380Cargo {
     }
 }
 pub struct A380Payload {
-    payload_manager: PayloadManager<14, 3, 3>,
+    payload_manager: PayloadManager<14, 5, 3>,
 }
 impl A380Payload {
     // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
     pub const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
+    // TODO: Move into a toml cfg
     const A380_PAX: [PaxInfo<'static>; 14] = [
         PaxInfo {
             max_pax: 28,
@@ -179,6 +180,7 @@ impl A380Payload {
         },
         // PAX UPPER AFT: 18
     ];
+    // TODO: Move into a toml cfg
     const A380_CARGO: [CargoInfo<'static>; 3] = [
         CargoInfo {
             max_cargo_kg: 28577.,
@@ -228,22 +230,34 @@ impl A380Payload {
                 Mass::new::<kilogram>(c.max_cargo_kg),
             )
         });
+        let default_boarding_agent =
+            BoardingAgent::new(None, [10, 13, 12, 11, 1, 0, 9, 8, 7, 6, 5, 4, 3, 2]);
+
+        // TODO: Move into a toml cfg
         let boarding_agents = [
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:0".to_owned()),
-                [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-            ),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:0".to_owned())),
+                [10, 13, 12, 11, 1, 0, 9, 8, 7, 6, 5, 4, 3, 2],
+            ), // M1L
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:2".to_owned()),
-                [10, 11, 12, 13, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            ),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:2".to_owned())),
+                [1, 0, 9, 8, 7, 6, 5, 2, 3, 4, 10, 11, 12, 13],
+            ), // M2L
             BoardingAgent::new(
-                context.get_identifier("INTERACTIVE POINT OPEN:10".to_owned()),
-                [2, 3, 4, 5, 6, 7, 8, 9, 13, 12, 11, 10, 1, 0],
-            ),
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:6".to_owned())),
+                [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+            ), // M4L
+            BoardingAgent::new(
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:8".to_owned())),
+                [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+            ), // M5L
+            BoardingAgent::new(
+                Some(context.get_identifier("INTERACTIVE POINT OPEN:10".to_owned())),
+                [10, 13, 12, 11, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+            ), // U1L
         ];
 
-        let passenger_deck = PassengerDeck::new(pax, boarding_agents);
+        let passenger_deck = PassengerDeck::new(pax, default_boarding_agent, boarding_agents);
         let cargo_deck = CargoDeck::new(cargo);
 
         A380Payload {

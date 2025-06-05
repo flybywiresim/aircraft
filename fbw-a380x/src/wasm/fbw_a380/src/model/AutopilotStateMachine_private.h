@@ -1,5 +1,5 @@
-#ifndef RTW_HEADER_AutopilotStateMachine_private_h_
-#define RTW_HEADER_AutopilotStateMachine_private_h_
+#ifndef AutopilotStateMachine_private_h_
+#define AutopilotStateMachine_private_h_
 #include "rtwtypes.h"
 #include "multiword_types.h"
 #include "AutopilotStateMachine_types.h"

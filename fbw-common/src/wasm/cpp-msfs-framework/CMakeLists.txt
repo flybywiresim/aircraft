@@ -7,6 +7,7 @@ set(SOURCE_FILES
     MsfsHandler/DataTypes/NamedVariable.cpp
     MsfsHandler/MsfsHandler.cpp
     lib/tinyxml2/tinyxml2.cpp
+    lib/fmt/format.cc
 )
 set(INCLUDE_FILES
     MsfsHandler/DataManager.h
@@ -40,6 +41,7 @@ set(INCLUDE_FILES
     lib/string_utils.hpp
     lib/tinyxml2/tinyxml2.h
     lib/quantity.hpp
+    lib/fmt
 )
 
 # create the targets for all packages

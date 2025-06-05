@@ -82,7 +82,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
   /** CONF 1+F runway limited weights at sea level/ISA/0 slope/no bleed/fwd cg/no wind/dry, MTOW [kg], runway length [metres] => lookup key = (runway length) */
   private static readonly runwayPerfLimitConf1 = new LerpLookupTable([
-    [54_000, 1000],
+    [53_950, 1000],
     [59_300, 1219],
     [68_700, 1604],
     [75_700, 1959],
@@ -914,31 +914,31 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   };
 
   private static readonly v2SecondSegBrakeThresholds: Record<number, [number, number]> = {
-    1: [-0.009368, 186.79],
+    1: [-0.011031, 189.0],
     2: [0.02346, 68.33],
-    3: [0.022112, 83.141],
+    3: [0.014175, 106.14],
   };
 
   private static readonly v2SecondSegBrakeBaseTable1: Record<number, [number, number]> = {
     1: [0.72637, 101.077],
-    2: [0.74005, 97.073],
+    2: [0.74005, 97.048],
     3: [0.3746, 130.078],
   };
 
   private static readonly v2SecondSegBrakeBaseTable2: Record<number, [number, number]> = {
-    1: [0.63964, 102.127],
-    2: [0.692636, 92.9863],
+    1: [0.868263, 85.8],
+    2: [0.46666, 111.0],
     3: [0.859926, 82.4377],
   };
 
   private static readonly v2SecondSegBrakeRunwayTable1: Record<number, [number, number]> = {
     1: [3180, -0.015997],
-    2: [3180, -0.014862],
+    2: [3180, -0.012],
     3: [3180, -0.019296],
   };
 
   private static readonly v2SecondSegBrakeRunwayTable2: Record<number, [number, number]> = {
-    1: [3180, -0.003612],
+    1: [3180, -0.007],
     2: [3180, -0.007],
     3: [3180, -0.013],
   };

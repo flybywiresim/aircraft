@@ -83,10 +83,7 @@ export class RmpAmuBusPublisher extends SimVarPublisher<RmpAmuBusEvents> {
       ['rmp_amu_int_transmit', { name: `L:A380X_RMP_#index#_INT_TX`, type: SimVarValueType.Bool, indexed: true }],
       ['rmp_amu_cab_transmit', { name: `L:A380X_RMP_#index#_CAB_TX`, type: SimVarValueType.Bool, indexed: true }],
       ['rmp_amu_pa_transmit', { name: `L:A380X_RMP_#index#_PA_TX`, type: SimVarValueType.Bool, indexed: true }],
-      [
-        'rmp_amu_nav_filter',
-        { name: `L:A380X_RMP_#index#_NAV_FILTER`, type: SimVarValueType.Bool, indexed: true },
-      ],
+      ['rmp_amu_nav_filter', { name: `L:A380X_RMP_#index#_NAV_FILTER`, type: SimVarValueType.Bool, indexed: true }],
 
       ['rmp_amu_vhf1_receive', { name: `L:A380X_RMP_#index#_VHF_VOL_RX_1`, type: SimVarValueType.Bool, indexed: true }],
       ['rmp_amu_vhf2_receive', { name: `L:A380X_RMP_#index#_VHF_VOL_RX_2`, type: SimVarValueType.Bool, indexed: true }],
@@ -112,7 +109,7 @@ export class RmpAmuBusPublisher extends SimVarPublisher<RmpAmuBusEvents> {
       ['rmp_amu_pa_volume', { name: `L:A380X_RMP_#index#_PA_VOL`, type: SimVarValueType.Number, indexed: true }],
       ['rmp_amu_nav_volume', { name: `L:A380X_RMP_#index#_NAV_VOL`, type: SimVarValueType.Number, indexed: true }],
 
-      ['rmp_amu_nav_sel', { name: `L:A380X_RMP_#index#_NAV_SEL`, type :SimVarValueType.Enum, indexed: true }],
+      ['rmp_amu_nav_sel', { name: `L:A380X_RMP_#index#_NAV_SEL`, type: SimVarValueType.Enum, indexed: true }],
     ]);
 
     super(simvars, bus, pacer);

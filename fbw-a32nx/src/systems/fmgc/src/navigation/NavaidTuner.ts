@@ -278,7 +278,7 @@ export class NavaidTuner {
   /** Whether the tuning event blocked message has been shown before. It is only shown once. */
   private blockEventMessageShown = false;
 
-  private notificationManager = new NotificationManager();
+  private notificationManager = new NotificationManager(this.bus);
 
   constructor(
     private readonly bus: EventBus,
@@ -351,7 +351,7 @@ export class NavaidTuner {
 
   private handleKeyEvent(key: string, value1?: number, value0?: number, value2?: number): void {
     if (NavaidTuner.TUNING_EVENT_INTERCEPTS.includes(key)) {
-      if (this.rmpTuningActive) {
+      if (this.rmpTuningActive || !this.isInit) {
         // pass the tuning event through to the sim
         Coherent.call('TRIGGER_KEY_EVENT', key, true, value0 ?? 0, value1 ?? 0, value2 ?? 0);
       } else if (!this.blockEventMessageShown) {
@@ -621,12 +621,12 @@ export class NavaidTuner {
     return this.adfTuningStatus.map((adfStatus) => adfStatus.facility).filter((fac) => fac !== undefined);
   }
 
-  deselectNavaid(icao: string): void {
-    this.navaidSelectionManager.deselectNavaid(icao);
+  deselectNavaid(databaseId: string): void {
+    this.navaidSelectionManager.deselectNavaid(databaseId);
   }
 
-  reselectNavaid(icao: string): void {
-    this.navaidSelectionManager.reselectNavaid(icao);
+  reselectNavaid(databaseId: string): void {
+    this.navaidSelectionManager.reselectNavaid(databaseId);
   }
 
   get deselectedNavaids(): string[] {

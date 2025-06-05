@@ -106,7 +106,13 @@ export function pointToLineDistance(point: Position, lineStart: Position, lineEn
   );
 }
 
-export function globalToAirportCoordinates(airportPos: Coordinates, coordinates: Coordinates): [number, number] {
+/**
+ *
+ * @param airportPos airport coordinates, (0, 0) of local coordinate system
+ * @param coordinates coordinates to be transformed
+ * @param out Output argument: Write airport coordinates here
+ */
+export function globalToAirportCoordinates(airportPos: Coordinates, coordinates: Coordinates, out: Position): Position {
   const bearing = bearingTo(airportPos, coordinates);
   const distance = distanceTo(airportPos, coordinates);
 
@@ -115,5 +121,8 @@ export function globalToAirportCoordinates(airportPos: Coordinates, coordinates:
 
   const nmToMeters = 1_000 / 0.539957;
 
-  return [yNm * nmToMeters, xNm * nmToMeters];
+  out[0] = yNm * nmToMeters;
+  out[1] = xNm * nmToMeters;
+
+  return out;
 }

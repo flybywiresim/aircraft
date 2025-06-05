@@ -11,6 +11,7 @@ use ntest::MaxDifference;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
+    angle::radian,
     f64::*,
     length::meter,
     mass_rate::kilogram_per_second,
@@ -149,14 +150,14 @@ pub trait ReverserPosition {
     fn reverser_position(&self) -> Ratio;
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 #[repr(usize)]
 pub enum LgciuId {
     Lgciu1 = 0,
     Lgciu2 = 1,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProximityDetectorId {
     UplockGearNose1,
     UplockGearNose2,
@@ -185,7 +186,7 @@ pub enum ProximityDetectorId {
     DownlockDoorRight2,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum GearActuatorId {
     GearNose,
     GearDoorNose,
@@ -254,16 +255,18 @@ pub trait AdirsMeasurementOutputs {
 }
 
 pub trait AdirsDiscreteOutputs {
-    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
-    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_1(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_2(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_3(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_4(&self, adiru_number: usize) -> bool;
 }
 
 pub enum GearWheel {
     NOSE = 0,
     LEFT = 1,
     RIGHT = 2,
+    WINGLEFT = 3,
+    WINGRIGHT = 4,
 }
 
 pub trait SectionPressure {
@@ -273,7 +276,7 @@ pub trait SectionPressure {
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum HydraulicColor {
     Green,
     Blue,
@@ -289,7 +292,7 @@ impl Display for HydraulicColor {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AirbusEngineDrivenPumpId {
     Edp1a,
     Edp1b,
@@ -319,7 +322,7 @@ impl Display for AirbusEngineDrivenPumpId {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AirbusElectricPumpId {
     GreenA,
     GreenB,
@@ -386,6 +389,11 @@ pub enum ElectricalBusType {
     /// As sub buses represent such a small area, their state is not exported towards
     /// the simulator.
     Sub(&'static str),
+
+    /// A virtual bus is a bus which exists to help to provide a more realistic simulation
+    /// but doesn't exist in the real plane.
+    /// It's used for example to simulate that a device is powered by multiple powersources.
+    Virtual(&'static str),
 }
 impl Display for ElectricalBusType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -404,6 +412,7 @@ impl Display for ElectricalBusType {
             ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
             ElectricalBusType::DirectCurrentNamed(name) => write!(f, "{}", name),
             ElectricalBusType::Sub(name) => write!(f, "SUB_{}", name),
+            ElectricalBusType::Virtual(name) => write!(f, "VIRTUAL_{name}"),
         }
     }
 }
@@ -771,6 +780,23 @@ pub fn local_acceleration_at_plane_coordinate(
     centripetal_acceleration + tangential_acceleration_of_point
 }
 
+/// Gives the steering angle for a wheel that would freely caster if plane is rotating on yaw axis
+pub fn steering_angle_from_plane_yaw_rate(
+    context: &UpdateContext,
+    wheel_distance_to_rotation_center: Length,
+) -> Angle {
+    if context.local_velocity().to_ms_vector()[2].abs() > 0.01 {
+        Angle::new::<radian>(
+            (wheel_distance_to_rotation_center.get::<meter>()
+                * context.rotation_velocity_rad_s()[1]
+                / context.local_velocity().to_ms_vector()[2])
+                .atan(),
+        )
+    } else {
+        Angle::default()
+    }
+}
+
 pub struct InternationalStandardAtmosphere;
 impl InternationalStandardAtmosphere {
     const TEMPERATURE_LAPSE_RATE: f64 = 0.0065;
@@ -1042,7 +1068,7 @@ impl Resolution for f64 {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub enum FireDetectionZone {
     Engine(usize),
     Apu,
@@ -1059,7 +1085,7 @@ impl Display for FireDetectionZone {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub enum FireDetectionLoopID {
     A,
     B,

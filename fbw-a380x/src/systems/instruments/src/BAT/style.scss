@@ -1,4 +1,4 @@
-$colour-main: hsl(40, 100%, 50%);
+$colour-main: hsl(0, 0%, 100%);
 
 @font-face {
   font-family: "Digital";
@@ -8,13 +8,17 @@ $colour-main: hsl(40, 100%, 50%);
 }
 
 .bat-svg {
-  background-color: hsl(55, 82%, 2%);
-  box-shadow: inset 0px 0px 110px -20px rgba(255, 175, 0, 0.25);
+  background-color: hsl(248, 94%, 48%);
+  box-shadow: inset 0px 0px 110px -20px hsl(0, 0%, 0%);
   height: 100%;
   width: 100%;
   left: 0;
   /* TODO: Remove opacity when SAI/ISIS/CLOCK/BAT/ATC/RMP/RUD TRIM is split and not share the same emissive/mesh */
   opacity: 0.5;
+}
+
+.bat-svg.off {
+  background-color: hsla(0, 0%, 0%, 0);
 }
 
 text {
