@@ -363,8 +363,11 @@ void FlyByWireInterface::setupLocalVariables() {
   idFdrEvent = std::make_unique<LocalVariable>("A32NX_DFDR_EVENT_ON");
 
   // register L variables for the sidestick
-  idSideStickPositionX = std::make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
-  idSideStickPositionY = std::make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
+  idSideStickLPositionX = std::make_unique<LocalVariable>("A32NX_SIDESTICK_L_POSITION_X");
+  idSideStickLPositionY = std::make_unique<LocalVariable>("A32NX_SIDESTICK_L_POSITION_Y");
+  idSideStickRPositionX = std::make_unique<LocalVariable>("A32NX_SIDESTICK_R_POSITION_X");
+  idSideStickRPositionY = std::make_unique<LocalVariable>("A32NX_SIDESTICK_R_POSITION_Y");
+  idSideStickPrimarySide = std::make_unique<LocalVariable>("FBW_PILOT_SEAT");
   idRudderPedalPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
 
   // register L variables for flight guidance
@@ -1461,10 +1464,11 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.elac_engaged_from_switch = idElacPushbuttonPressed[elacIndex]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.normal_powersupply_lost = false;
 
-  elacs[elacIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
-  elacs[elacIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
-  elacs[elacIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
-  elacs[elacIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
+  const bool leftIsPrimary = idSideStickPrimarySide->get() == 0;
+  elacs[elacIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -(leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
+  elacs[elacIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = -(!leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
+  elacs[elacIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -(leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
+  elacs[elacIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = -(!leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
   double leftElevPos = -idLeftElevatorPosition->get();
   double rightElevPos = -idRightElevatorPosition->get();
   elacs[elacIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos * 30;
@@ -2640,12 +2644,20 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
 
 bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   // get data from interface ------------------------------------------------------------------------------------------
-  SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
   // write sidestick position
-  idSideStickPositionX->set(-1.0 * simInput.inputs[1]);
-  idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
+  if (idSideStickPrimarySide->get() == 0) {
+    idSideStickLPositionX->set(-1.0 * simInput.inputs[1]);
+    idSideStickLPositionY->set(-1.0 * simInput.inputs[0]);
+    idSideStickRPositionX->set(-1.0 * simInput.secondaryInputs[1]);
+    idSideStickRPositionY->set(-1.0 * simInput.secondaryInputs[0]);
+  } else {
+    idSideStickLPositionX->set(-1.0 * simInput.secondaryInputs[1]);
+    idSideStickLPositionY->set(-1.0 * simInput.secondaryInputs[0]);
+    idSideStickRPositionX->set(-1.0 * simInput.inputs[1]);
+    idSideStickRPositionY->set(-1.0 * simInput.inputs[0]);
+  }
 
   // set rudder pedals position
   idRudderPedalPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]))));

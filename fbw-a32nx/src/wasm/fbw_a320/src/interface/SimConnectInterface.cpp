@@ -261,6 +261,8 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_ELEVATOR_SET, "AXIS_ELEVATOR_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_AILERONS_SET, "AXIS_AILERONS_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_RUDDER_SET, "AXIS_RUDDER_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_AXIS_ELEVATOR_SET, "A32NX.SECONDARY_AXIS_ELEVATOR_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_AXIS_AILERONS_SET, "A32NX.SECONDARY_AXIS_AILERONS_SET", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_SET, "RUDDER_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_LEFT, "RUDDER_LEFT", true);
@@ -278,12 +280,19 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERON_SET, "AILERON_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERONS_LEFT, "AILERONS_LEFT", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERONS_RIGHT, "AILERONS_RIGHT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_AILERON_SET, "A32NX.SECONDARY_AILERON_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_AILERONS_LEFT, "A32NX.SECONDARY_AILERONS_LEFT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_AILERONS_RIGHT, "A32NX.SECONDARY_AILERONS_RIGHT", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::CENTER_AILER_RUDDER, "CENTER_AILER_RUDDER", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_CENTER_AILER_RUDDER, "A32NX.SECONDARY_CENTER_AILER_RUDDER", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_SET, "ELEVATOR_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_DOWN, "ELEV_DOWN", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_UP, "ELEV_UP", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_ELEVATOR_SET, "A32NX.SECONDARY_ELEVATOR_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_ELEV_DOWN, "A32NX.SECONDARY_ELEV_DOWN", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::SECONDARY_ELEV_UP, "A32NX.SECONDARY_ELEV_UP", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
@@ -1555,6 +1564,30 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
+    case Events::SECONDARY_AXIS_ELEVATOR_SET: {
+      simInput.secondaryInputs[AXIS_ELEVATOR_SET] = static_cast<long>(data0) / 16384.0;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_AXIS_ELEVATOR_SET: ";
+        std::cout << static_cast<long>(data0);
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_ELEVATOR_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::SECONDARY_AXIS_AILERONS_SET: {
+      simInput.secondaryInputs[AXIS_AILERONS_SET] = static_cast<long>(data0) / 16384.0;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_AXIS_AILERONS_SET: ";
+        std::cout << static_cast<long>(data0);
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_AILERONS_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
     case Events::RUDDER_SET: {
       simInput.inputs[AXIS_RUDDER_SET] = static_cast<long>(data0) / 16384.0;
       if (loggingFlightControlsEnabled) {
@@ -1749,6 +1782,43 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
+    case Events::SECONDARY_AILERON_SET: {
+      simInput.secondaryInputs[AXIS_AILERONS_SET] = static_cast<long>(data0) / 16384.0;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_AILERON_SET: ";
+        std::cout << static_cast<long>(data0);
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_AILERONS_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::SECONDARY_AILERONS_LEFT: {
+      simInput.secondaryInputs[AXIS_AILERONS_SET] = fmin(1.0, simInput.secondaryInputs[AXIS_AILERONS_SET] + flightControlsKeyChangeAileron);
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_AILERONS_LEFT: ";
+        std::cout << "(no data)";
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_AILERONS_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::SECONDARY_AILERONS_RIGHT: {
+      simInput.secondaryInputs[AXIS_AILERONS_SET] =
+          fmax(-1.0, simInput.secondaryInputs[AXIS_AILERONS_SET] - flightControlsKeyChangeAileron);
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_AILERONS_RIGHT: ";
+        std::cout << "(no data)";
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_AILERONS_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
     case Events::CENTER_AILER_RUDDER: {
       simInput.inputs[AXIS_RUDDER_SET] = 0.0;
       simInput.inputs[AXIS_AILERONS_SET] = 0.0;
@@ -1759,6 +1829,21 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
         std::cout << simInput.inputs[AXIS_AILERONS_SET];
         std::cout << " / ";
         std::cout << simInput.inputs[AXIS_RUDDER_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::SECONDARY_CENTER_AILER_RUDDER: {
+      simInput.secondaryInputs[AXIS_RUDDER_SET] = 0.0;
+      simInput.secondaryInputs[AXIS_AILERONS_SET] = 0.0;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_CENTER_AILER_RUDDER: ";
+        std::cout << "(no data)";
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_AILERONS_SET];
+        std::cout << " / ";
+        std::cout << simInput.secondaryInputs[AXIS_RUDDER_SET];
         std::cout << std::endl;
       }
       break;
@@ -1795,6 +1880,44 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
         std::cout << "(no data)";
         std::cout << " -> ";
         std::cout << simInput.inputs[AXIS_ELEVATOR_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::SECONDARY_ELEVATOR_SET: {
+      simInput.secondaryInputs[AXIS_ELEVATOR_SET] = static_cast<long>(data0) / 16384.0;
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_ELEVATOR_SET: ";
+        std::cout << static_cast<long>(data0);
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_ELEVATOR_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::SECONDARY_ELEV_DOWN: {
+      simInput.secondaryInputs[AXIS_ELEVATOR_SET] =
+          fmin(1.0, simInput.secondaryInputs[AXIS_ELEVATOR_SET] + flightControlsKeyChangeElevator);
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_ELEV_DOWN: ";
+        std::cout << "(no data)";
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_ELEVATOR_SET];
+        std::cout << std::endl;
+      }
+      break;
+    }
+
+    case Events::SECONDARY_ELEV_UP: {
+      simInput.secondaryInputs[AXIS_ELEVATOR_SET] =
+          fmax(-1.0, simInput.secondaryInputs[AXIS_ELEVATOR_SET] - flightControlsKeyChangeElevator);
+      if (loggingFlightControlsEnabled) {
+        std::cout << "WASM: SECONDARY_ELEV_UP: ";
+        std::cout << "(no data)";
+        std::cout << " -> ";
+        std::cout << simInput.secondaryInputs[AXIS_ELEVATOR_SET];
         std::cout << std::endl;
       }
       break;

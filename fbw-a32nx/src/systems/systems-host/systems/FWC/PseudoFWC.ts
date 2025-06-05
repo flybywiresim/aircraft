@@ -90,6 +90,9 @@ enum FwcAuralWarning {
   CavalryCharge,
   TripleClick,
   CChord,
+  PriorityLeft,
+  PriorityRight,
+  DualInput,
 }
 
 export class PseudoFWC {
@@ -594,6 +597,21 @@ export class PseudoFWC {
   private readonly bat2Off = Subject.create(false);
 
   /* 27 - FLIGHT CONTROLS */
+  private readonly fcdc1CaptPitchCommand = Arinc429Register.empty();
+
+  private readonly fcdc2CaptPitchCommand = Arinc429Register.empty();
+
+  private readonly fcdc1CaptRollCommand = Arinc429Register.empty();
+
+  private readonly fcdc2CaptRollCommand = Arinc429Register.empty();
+
+  private readonly fcdc1FoPitchCommand = Arinc429Register.empty();
+
+  private readonly fcdc2FoPitchCommand = Arinc429Register.empty();
+
+  private readonly fcdc1FoRollCommand = Arinc429Register.empty();
+
+  private readonly fcdc2FoRollCommand = Arinc429Register.empty();
 
   private readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
 
@@ -652,6 +670,32 @@ export class PseudoFWC {
   private readonly sec2FaultLine123Display = Subject.create(false);
 
   private readonly sec3FaultLine123Display = Subject.create(false);
+
+  private readonly priorityLeftMemory = new NXLogicMemoryNode(false);
+
+  private readonly priorityLeftPulse = new NXLogicPulseNode(true);
+
+  private readonly priorityLeftMtrig = new NXLogicTriggeredMonostableNode(5, true);
+
+  private readonly priorityLeft = Subject.create(false);
+
+  private readonly priorityRightMemory = new NXLogicMemoryNode(false);
+
+  private readonly priorityRightPulse = new NXLogicPulseNode(true);
+
+  private readonly priorityRightMtrig = new NXLogicTriggeredMonostableNode(5, true);
+
+  private readonly priorityRight = Subject.create(false);
+
+  private readonly dualInputConfirm = new NXLogicConfirmNode(0.5, true);
+
+  private readonly dualInputPulse = new NXLogicPulseNode(true);
+
+  private readonly dualInputMtrig = new NXLogicTriggeredMonostableNode(5, true);
+
+  private dualInputDelay = false;
+
+  private readonly dualInput = Subject.create(false);
 
   private readonly showLandingInhibit = Subject.create(false);
 
@@ -2467,6 +2511,15 @@ export class PseudoFWC {
     const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
     const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
 
+    this.fcdc1CaptPitchCommand.setFromSimVar('L:A32NX_FCDC_1_CAPT_PITCH_COMMAND');
+    this.fcdc2CaptPitchCommand.setFromSimVar('L:A32NX_FCDC_2_CAPT_PITCH_COMMAND');
+    this.fcdc1CaptRollCommand.setFromSimVar('L:A32NX_FCDC_1_CAPT_ROLL_COMMAND');
+    this.fcdc2CaptRollCommand.setFromSimVar('L:A32NX_FCDC_2_CAPT_ROLL_COMMAND');
+    this.fcdc1FoPitchCommand.setFromSimVar('L:A32NX_FCDC_1_FO_PITCH_COMMAND');
+    this.fcdc2FoPitchCommand.setFromSimVar('L:A32NX_FCDC_2_FO_PITCH_COMMAND');
+    this.fcdc1FoRollCommand.setFromSimVar('L:A32NX_FCDC_1_FO_ROLL_COMMAND');
+    this.fcdc2FoRollCommand.setFromSimVar('L:A32NX_FCDC_2_FO_ROLL_COMMAND');
+
     // ELAC 1 FAULT computation
     const se1f =
       (fcdc1DiscreteWord1.bitValueOr(19, false) || fcdc2DiscreteWord1.bitValueOr(19, false)) &&
@@ -2604,6 +2657,60 @@ export class PseudoFWC {
         rhElevGreenFail &&
         ![1, 10].includes(this.fwcFlightPhase.get()),
     );
+
+    // PRIORITY LEFT
+    const rightSidestickDeactivated =
+      fcdc1DiscreteWord2.bitValueOr(29, false) || fcdc2DiscreteWord2.bitValueOr(29, false);
+    const priorityLeftOutput = this.soundManager.getCurrentSoundPlaying() === 'priorityLeft';
+    this.priorityLeftPulse.write(rightSidestickDeactivated, deltaTime);
+    this.priorityLeftMemory.write(this.priorityLeftPulse.read(), priorityLeftOutput);
+    this.priorityLeft.set(this.priorityLeftMemory.read());
+
+    // PRIORITY RIGHT
+    const leftSidestickDeactivated =
+      fcdc1DiscreteWord2.bitValueOr(28, false) || fcdc2DiscreteWord2.bitValueOr(28, false);
+    const priorityRightOutput = this.soundManager.getCurrentSoundPlaying() === 'priorityRight';
+    this.priorityRightPulse.write(leftSidestickDeactivated, deltaTime);
+    this.priorityRightMemory.write(this.priorityRightPulse.read(), priorityRightOutput);
+    this.priorityRight.set(this.priorityRightMemory.read());
+
+    // DUAL INPUT
+    const captPitchInput =
+      Math.abs(
+        this.fcdc1CaptPitchCommand.isNormalOperation()
+          ? this.fcdc1CaptPitchCommand.value
+          : this.fcdc2CaptPitchCommand.value,
+      ) >= 2 &&
+      (this.fcdc1CaptPitchCommand.isNormalOperation() || this.fcdc2CaptPitchCommand.isNormalOperation());
+    const captRollInput =
+      Math.abs(
+        this.fcdc1CaptRollCommand.isNormalOperation()
+          ? this.fcdc1CaptRollCommand.value
+          : this.fcdc2CaptRollCommand.value,
+      ) >= 2 &&
+      (this.fcdc1CaptRollCommand.isNormalOperation() || this.fcdc2CaptRollCommand.isNormalOperation());
+    const foPitchInput =
+      Math.abs(
+        this.fcdc1FoPitchCommand.isNormalOperation() ? this.fcdc1FoPitchCommand.value : this.fcdc2FoPitchCommand.value,
+      ) >= 2 &&
+      (this.fcdc1FoPitchCommand.isNormalOperation() || this.fcdc2FoPitchCommand.isNormalOperation());
+    const foRollInput =
+      Math.abs(
+        this.fcdc1FoRollCommand.isNormalOperation() ? this.fcdc1FoRollCommand.value : this.fcdc2FoRollCommand.value,
+      ) >= 2 &&
+      (this.fcdc1FoRollCommand.isNormalOperation() || this.fcdc2FoRollCommand.isNormalOperation());
+
+    const dualInputCondition = (captPitchInput || captRollInput) && (foPitchInput || foRollInput);
+    const oneStickDisabled = fcdc1DiscreteWord2.isNormalOperation()
+      ? fcdc1DiscreteWord2.bitValue(28) || fcdc1DiscreteWord2.bitValue(29)
+      : fcdc2DiscreteWord2.bitValue(28) || fcdc2DiscreteWord2.bitValue(29);
+
+    this.dualInputConfirm.write(dualInputCondition && !oneStickDisabled, deltaTime);
+    const dualInputCondition2 = this.dualInputConfirm.read() && !oneStickDisabled && !this.dualInputDelay;
+    this.dualInputMtrig.write(dualInputCondition2, deltaTime);
+    this.dualInputDelay = this.dualInputMtrig.read();
+    this.dualInputPulse.write(dualInputCondition2, deltaTime);
+    this.dualInput.set(this.dualInputPulse.read());
 
     // GND SPLRS FAULT status
     const sec1GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(14) || fcdc2DiscreteWord5.bitValue(14);
@@ -3419,6 +3526,18 @@ export class PseudoFWC {
 
       if (value.auralWarning?.get() === FwcAuralWarning.CChord) {
         auralCChordKeys.push(key);
+      }
+
+      if (newWarning && value.auralWarning?.get() === FwcAuralWarning.PriorityLeft) {
+        this.soundManager.enqueueSound('priorityLeft');
+      }
+
+      if (newWarning && value.auralWarning?.get() === FwcAuralWarning.PriorityRight) {
+        this.soundManager.enqueueSound('priorityRight');
+      }
+
+      if (newWarning && value.auralWarning?.get() === FwcAuralWarning.DualInput) {
+        this.soundManager.enqueueSound('dualInput');
       }
     }
 
@@ -4480,6 +4599,22 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'LEFT',
     },
+    2700598: {
+      // DUAL INPUT
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(false),
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.DualInput : FwcAuralWarning.None),
+        this.dualInput,
+      ),
+      whichCodeToReturn: () => [null],
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'LEFT',
+      cancel: false,
+    },
     2700870: {
       // GND SPLR NOT ARMED
       flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
@@ -5052,6 +5187,38 @@ export class PseudoFWC {
       failure: 2,
       sysPage: 9,
       side: 'LEFT',
+    },
+    3400002: {
+      // PRIORITY LEFT
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(false),
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.PriorityLeft : FwcAuralWarning.None),
+        this.priorityLeft,
+      ),
+      whichCodeToReturn: () => [null],
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'LEFT',
+      cancel: false,
+    },
+    3400003: {
+      // PRIORITY RIGHT
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(false),
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.PriorityRight : FwcAuralWarning.None),
+        this.priorityRight,
+      ),
+      whichCodeToReturn: () => [null],
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'LEFT',
+      cancel: false,
     },
     3400140: {
       // RA 1 FAULT

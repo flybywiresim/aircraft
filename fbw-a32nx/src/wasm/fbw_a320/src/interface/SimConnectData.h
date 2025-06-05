@@ -123,6 +123,7 @@ struct SimData {
 
 struct SimInput {
   double inputs[3];
+  double secondaryInputs[2];
 };
 
 struct SimInputRudderTrim {
