@@ -3,13 +3,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 export class SpeedMargin {
   private vmo: Knots = 350;
 
   private mmo: Mach = 0.82;
 
-  constructor(private observer: VerticalProfileComputationParametersObserver) {}
+  constructor(
+    private aircraftConfig: AircraftConfig,
+    private observer: VerticalProfileComputationParametersObserver,
+  ) {
+    this.vmo = this.aircraftConfig.vnavConfig.VMO;
+    this.mmo = this.aircraftConfig.vnavConfig.MMO;
+  }
 
   getTarget(indicatedAirspeed: Knots, targetSpeed: Knots): Knots {
     const [lowerMargin, upperMargin] = this.getMargins(targetSpeed);
@@ -22,19 +29,18 @@ export class SpeedMargin {
 
     const vmax = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number');
     const vMan = this.getVman(approachSpeed);
-
     const vls = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
-    const vmin = Math.max(vls, vMan);
 
-    const mmoAsIas = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', this.mmo);
+    const maxMachAsIas = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', this.mmo - 0.006);
     const isMachTarget =
       managedDescentSpeed - SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', managedDescentSpeedMach) > 1;
 
+    const distanceToLowerMargin = 20;
     const distanceToUpperMargin = !isMachTarget && managedDescentSpeed - currentTarget > 1 ? 5 : 20;
 
     return [
-      Math.max(vmin, Math.min(currentTarget - 20, vmax, this.vmo - 3, mmoAsIas - 0.006)),
-      Math.max(vmin, Math.min(vmax, this.vmo - 3, mmoAsIas - 0.006, currentTarget + distanceToUpperMargin)),
+      Math.max(vls, vMan, Math.min(currentTarget - distanceToLowerMargin, vmax, this.vmo - 3, maxMachAsIas)),
+      Math.max(vls, vMan, Math.min(currentTarget + distanceToUpperMargin, vmax, this.vmo - 3, maxMachAsIas)),
     ];
   }
 

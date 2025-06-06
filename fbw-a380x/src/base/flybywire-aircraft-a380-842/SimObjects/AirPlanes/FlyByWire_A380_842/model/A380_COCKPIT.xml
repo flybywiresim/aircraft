@@ -14,6 +14,8 @@
     </LODS>
 
     <Behaviors>
+        <Include ModelBehaviorFile="A380X\id_definitions.xml" />
+
         <!-- Legacy includes -->
         <Include RelativeFile="behaviour\legacy\Interior\A32NX_Interior_Includes.xml" />
         <Include RelativeFile="behaviour\legacy\generated\A32NX_Interior_Generics.xml" />
@@ -367,7 +369,7 @@
                 <Component ID="SCREEN_OITL">
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                         <NODE_ID>SCREEN_OIT_LEFT</NODE_ID>
-                        <POTENTIOMETER>81</POTENTIOMETER>
+                        <POTENTIOMETER>@POT_EFIS_CS_OIT</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
                 </Component>
@@ -379,7 +381,7 @@
                 <Component ID="SCREEN_OITR">
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                         <NODE_ID>SCREEN_OIT_RIGHT</NODE_ID>
-                        <POTENTIOMETER>82</POTENTIOMETER>
+                        <POTENTIOMETER>@POT_EFIS_FO_OIT</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
                 </Component>
@@ -993,7 +995,7 @@
                         <NODE_ID>KNOB_EFIS_CS_OIT</NODE_ID>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_OIT_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_OIT_INCREASE</ANIMTIP_1>
-                        <POTENTIOMETER>81</POTENTIOMETER>
+                        <POTENTIOMETER>@POT_EFIS_CS_OIT</POTENTIOMETER>
                     </UseTemplate>
                 </Component>
 
@@ -1144,7 +1146,7 @@
                         <PART_ID>OIT_Brightness_FO</PART_ID>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_OIT_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_OIT_INCREASE</ANIMTIP_1>
-                        <POTENTIOMETER>82</POTENTIOMETER>
+                        <POTENTIOMETER>@POT_EFIS_FO_OIT</POTENTIOMETER>
                     </UseTemplate>
                 </Component>
 
@@ -4053,14 +4055,15 @@
                     <Component ID="APU">
                         <DefaultTemplateParameters>
                             <TYPE>APU</TYPE>
-                            <ID>1</ID>
                             <BUTTON_ID>APU</BUTTON_ID>
+                            <ID></ID>
                         </DefaultTemplateParameters>
 
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
                             <PART_ID>PUSH_OVHD_FIRE_AGENT</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
+                            <ID>1</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -4753,6 +4756,12 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <NAME>FWS2</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>AESU1</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>AESU2</NAME>
                     </UseTemplate>
                 </Component>
             </Component>

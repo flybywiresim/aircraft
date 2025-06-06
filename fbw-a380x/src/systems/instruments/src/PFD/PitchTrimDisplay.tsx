@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,
   DisplayComponent,
@@ -52,7 +52,14 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   );
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
-  private readonly flightPhaseAfterTouchdown = this.fwcFlightPhase.map((fp) => (fp > 9 ? 'hidden' : 'inherit'));
+
+  private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
+
+  private readonly maintenancePositionWhiteLineVisibility = MappedSubject.create(
+    ([fp, gs]) => (fp >= 11 && gs.isNormalOperation() && gs.value <= 30 ? 'inherit' : 'hidden'),
+    this.fwcFlightPhase,
+    this.groundSpeed,
+  );
 
   private readonly engOneRunning = ConsumerSubject.create(this.sub.on('engOneRunning'), false);
   private readonly engTwoRunning = ConsumerSubject.create(this.sub.on('engTwoRunning'), false);
@@ -183,7 +190,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
       this.rightWheelY,
       this.trimAreasTransform,
       this.fwcFlightPhase,
-      this.flightPhaseAfterTouchdown,
+      this.maintenancePositionWhiteLineVisibility,
       this.anyEngRunning,
       this.cgPercent,
       this.cgPercentText,
@@ -314,7 +321,14 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 stroke-width="4"
                 visibility={this.gwCgVisibility}
               />
-              <rect width="20" height="4" x="5" y="274" fill="white" visibility={this.flightPhaseAfterTouchdown} />
+              <rect
+                width="20"
+                height="4"
+                x="5"
+                y="274"
+                fill="white"
+                visibility={this.maintenancePositionWhiteLineVisibility}
+              />
             </g>
             <rect x="275" y="23" width="30" height="207" fill="url(#shadowGradient)" />
           </g>
