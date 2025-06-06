@@ -550,6 +550,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('setDescentWindEntry', altitude, entry, planIndex);
   }
 
+  deleteClimbWindEntries(planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('deleteClimbWindEntries', planIndex);
+  }
+
   setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void> {
     return this.callFunctionViaRpc('setAlternateWind', entry, planIndex);
   }

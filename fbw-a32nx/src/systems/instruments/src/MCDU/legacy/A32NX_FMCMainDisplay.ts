@@ -781,6 +781,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         /** Disarm preselected speed/mach for next flight phase */
         this.updatePreSelSpeedMach(undefined);
 
+        this.flightPlanService.deleteClimbWindEntries(FlightPlanIndex.Active);
+
         break;
       }
 
@@ -792,11 +794,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
 
         this.checkDestData();
-        this._EfobBelowMinClr = false;
-
-        this.triggerCheckSpeedModeMessage(undefined);
 
         this.flightPlanService.setPerformanceData('cruiseFlightLevel', null);
+        this.triggerCheckSpeedModeMessage(undefined);
+        this.flightPlanService.deleteClimbWindEntries(FlightPlanIndex.Active);
 
         break;
       }
@@ -809,8 +810,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
 
         SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
-
         this.checkDestData();
+        this.flightPlanService.deleteClimbWindEntries(FlightPlanIndex.Active);
 
         break;
       }
@@ -843,6 +844,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           );
           this.updateThrustReductionAcceleration();
         }
+
+        this.flightPlanService.deleteClimbWindEntries(FlightPlanIndex.Active);
 
         if (this.page.Current === this.page.ProgressPage) {
           CDUProgressPage.ShowPage(this.mcdu);
@@ -5751,6 +5754,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             forPlan,
           );
         }
+      }
+    }
+    {
+      if (Number.isFinite(data.alternate.averageWindDirection) && Number.isFinite(data.alternate.averageWindSpeed)) {
+        this.flightPlanService.setAlternateWind(
+          Vec2Math.setFromPolar(
+            data.alternate.averageWindSpeed,
+            data.alternate.averageWindDirection * MathUtils.DEGREES_TO_RADIANS,
+            Vec2Math.create(),
+          ),
+          forPlan,
+        );
+      } else {
+        this.flightPlanService.setAlternateWind(null, forPlan);
       }
     }
   }

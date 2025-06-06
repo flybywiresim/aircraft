@@ -464,6 +464,12 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   setDescentWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void>;
 
   /**
+   * Deletes all climb wind entries
+   * @param planIndex which flight plan index to delete the entries from
+   */
+  deleteClimbWindEntries(planIndex: number): Promise<void>;
+
+  /**
    * Sets the average wind vector to the alternate destination. If the provided vector is null, the entry is deleted.
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in

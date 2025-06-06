@@ -930,6 +930,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS);
   }
 
+  deleteClimbWindEntries(planIndex: number) {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.deleteClimbWindEntries();
+  }
+
   setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
 
