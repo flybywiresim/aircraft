@@ -320,7 +320,7 @@ export class CDUWindPage {
     mcdu.setArrows(allowScrollingUp, allowScrollingDown, true, true);
   }
 
-  static ShowDESPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, offset = 0) {
+  static ShowDESPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, page: number = 0) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DescentWind;
 
@@ -351,54 +351,23 @@ export class CDUWindPage {
       ['', ''],
     ];
 
-    if (alternateAirport) {
-      const rowIndex = Math.min(plan.performanceData.descentWindEntries.length * 2 + 3, 11);
-      const lskIndex = Math.min(plan.performanceData.descentWindEntries.length + 1, 5);
+    const numDescentWindEntriesPerPage = 6;
+    const maxNumDescentWindEntries = FpmConfigs.A320_HONEYWELL_H3.NUM_DESCENT_WIND_LEVELS;
 
-      template[rowIndex][0] = ' ALTERNATE';
-      template[rowIndex + 1][0] =
-        plan.performanceData.alternateWind !== null
-          ? `${formatWindVector(plan.performanceData.alternateWind)}{small}{green}/FL100{end}{end}[color]cyan`
-          : '[\xa0]°/[\xa0]{small}{green}/FL100{end}{end}[color]cyan';
+    // How many rows of e.g "120°/20/FL220" are shown on this page
+    const numWindEntriesOnPage = Math.max(
+      0,
+      Math.min(
+        plan.performanceData.descentWindEntries.length - page * numDescentWindEntriesPerPage,
+        numDescentWindEntriesPerPage,
+      ),
+    );
 
-      mcdu.onLeftInput[lskIndex] = async (value, scratchpadCallback) => {
-        try {
-          if (value === Keypad.clrValue) {
-            await mcdu.flightPlanService.setAlternateWind(null, forPlan);
-          } else {
-            const wind = CDUWindPage.parseWindVector(value);
-
-            if (wind === null) {
-              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-              scratchpadCallback();
-              return;
-            }
-
-            await mcdu.flightPlanService.setAlternateWind(wind, forPlan);
-          }
-
-          CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
-        } catch (e) {
-          console.error('Error updating alternate wind:', e);
-          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-          scratchpadCallback();
-        }
-      };
-    }
-
-    const numDescentWindEntriesPerPage = 5;
-
-    let numEntries = 0;
-    for (
-      let i = 0;
-      i < Math.min(plan.performanceData.descentWindEntries.length - offset, numDescentWindEntriesPerPage);
-      i++
-    ) {
-      const wind = plan.performanceData.descentWindEntries[i + offset];
+    for (let i = 0; i < numWindEntriesOnPage; i++) {
+      const wind = plan.performanceData.descentWindEntries[i + page * numDescentWindEntriesPerPage];
 
       template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]cyan`;
 
-      numEntries = i + 1;
       mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
         try {
           if (value === Keypad.clrValue) {
@@ -415,7 +384,7 @@ export class CDUWindPage {
             await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, entry, forPlan);
           }
 
-          CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
+          CDUWindPage.ShowDESPage(mcdu, forPlan, page);
         } catch (e) {
           console.error('Error updating descent wind entry:', e);
           mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
@@ -424,13 +393,16 @@ export class CDUWindPage {
       };
     }
 
-    const canAddDescentWind = plan.performanceData.descentWindEntries.length < 10;
-    const hasSpaceOnPage = numEntries < numDescentWindEntriesPerPage;
+    // Whether to show "[ ]°/[ ]/[   ]" on this page
+    const canAddEntryOnPage =
+      plan.performanceData.descentWindEntries.length >= page * numDescentWindEntriesPerPage &&
+      plan.performanceData.descentWindEntries.length < (page + 1) * numDescentWindEntriesPerPage &&
+      plan.performanceData.descentWindEntries.length < maxNumDescentWindEntries;
 
-    if (hasSpaceOnPage && canAddDescentWind) {
-      template[numEntries * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
+    if (canAddEntryOnPage) {
+      template[numWindEntriesOnPage * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
-      mcdu.onLeftInput[numEntries] = async (value, scratchpadCallback) => {
+      mcdu.onLeftInput[numWindEntriesOnPage] = async (value, scratchpadCallback) => {
         const entry = this.parseTrueWindEntry(value);
 
         if (entry === null) {
@@ -442,7 +414,7 @@ export class CDUWindPage {
         try {
           await mcdu.flightPlanService.setDescentWindEntry(entry.altitude, entry, forPlan);
 
-          CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
+          CDUWindPage.ShowDESPage(mcdu, forPlan, page);
         } catch (e) {
           console.error('Error adding descent wind entry:', e);
           mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
@@ -451,20 +423,61 @@ export class CDUWindPage {
       };
     }
 
-    const canScrollDown =
-      plan.performanceData.descentWindEntries.length > numDescentWindEntriesPerPage - 1 && offset > 0;
-    const canScrollUp =
-      offset < Math.min(plan.performanceData.descentWindEntries.length + 1, 10) - numDescentWindEntriesPerPage;
+    const numWindRowsOnPage = numWindEntriesOnPage + (canAddEntryOnPage ? 1 : 0);
+    // Whether to show the alternate wind entry on this page
+    const shouldShowAlternateOnPage = alternateAirport && numWindRowsOnPage < numDescentWindEntriesPerPage;
+
+    if (shouldShowAlternateOnPage) {
+      template[numWindRowsOnPage * 2 + 1][0] = ' ALTERNATE';
+      template[numWindRowsOnPage * 2 + 2][0] =
+        plan.performanceData.alternateWind !== null
+          ? `${formatWindVector(plan.performanceData.alternateWind)}{small}{green}/FL100{end}{end}[color]cyan`
+          : '[\xa0]°/[\xa0]{small}{green}/FL100{end}{end}[color]cyan';
+
+      mcdu.onLeftInput[numWindRowsOnPage] = async (value, scratchpadCallback) => {
+        try {
+          if (value === Keypad.clrValue) {
+            await mcdu.flightPlanService.setAlternateWind(null, forPlan);
+          } else {
+            const wind = CDUWindPage.parseWindVector(value);
+
+            if (wind === null) {
+              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+              scratchpadCallback();
+              return;
+            }
+
+            await mcdu.flightPlanService.setAlternateWind(wind, forPlan);
+          }
+
+          CDUWindPage.ShowDESPage(mcdu, forPlan, page);
+        } catch (e) {
+          console.error('Error updating alternate wind:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          scratchpadCallback();
+        }
+      };
+    }
+
+    const totalNumRows =
+      plan.performanceData.descentWindEntries.length + // e.g "120°/20/FL220"
+      (plan.performanceData.descentWindEntries.length < maxNumDescentWindEntries ? 1 : 0) + // e.g "[ ]°/[ ]/[   ]"
+      (alternateAirport !== undefined ? 1 : 0); // Alternate wind entry
+
+    const numPages = Math.ceil(totalNumRows / numDescentWindEntriesPerPage);
+
+    const canScrollDown = page > 0;
+    const canScrollUp = page < numPages - 1;
 
     if (canScrollDown) {
       mcdu.onDown = () => {
-        CDUWindPage.ShowDESPage(mcdu, forPlan, offset - 1);
+        CDUWindPage.ShowDESPage(mcdu, forPlan, Math.max(0, page - 1));
       };
     }
 
     if (canScrollUp) {
       mcdu.onUp = () => {
-        CDUWindPage.ShowDESPage(mcdu, forPlan, offset + 1);
+        CDUWindPage.ShowDESPage(mcdu, forPlan, Math.min(numPages - 1, page + 1));
       };
     }
 
@@ -490,7 +503,7 @@ export class CDUWindPage {
           mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
         }
 
-        CDUWindPage.ShowDESPage(mcdu, forPlan, offset);
+        CDUWindPage.ShowDESPage(mcdu, forPlan, page);
       }
     };
 

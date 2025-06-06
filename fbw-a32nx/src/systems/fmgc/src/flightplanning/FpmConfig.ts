@@ -80,6 +80,7 @@ export class FpmConfigs {
     PERSIST_TAXI_FUEL_ON_SEC_SWAP: false,
     NUM_CRUISE_WIND_LEVELS: 4,
     NUM_CLIMB_WIND_LEVELS: 5,
+    // Normally 5, 10 with the 4D RTA option
     NUM_DESCENT_WIND_LEVELS: 10,
   };
 }
