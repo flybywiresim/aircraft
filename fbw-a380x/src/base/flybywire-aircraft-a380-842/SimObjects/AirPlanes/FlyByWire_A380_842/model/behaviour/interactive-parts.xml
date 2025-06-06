@@ -632,7 +632,7 @@
         <Component ID="A380_CPT_MEALTABLE" Node="A380_CPT_MEALTABLE_CLICK">
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
                 <ANIM_NAME>A380_CPT_MEALTABLE</ANIM_NAME>
-                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_LAG>80</ANIM_LAG>
                 <ANIM_CODE>(L:A380_CPT_MEALTABLE) 100 *</ANIM_CODE>
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
@@ -650,7 +650,7 @@
         <Component ID="A380_CPT_KEYBOARD" Node="A380_CPT_KEYBOARD_CLICK">
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
                 <ANIM_NAME>A380_CPT_KEYBOARD</ANIM_NAME>
-                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_LAG>80</ANIM_LAG>
                 <ANIM_CODE>(L:A380_CPT_KEYBOARD) 100 *</ANIM_CODE>
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
@@ -668,7 +668,7 @@
         <Component ID="A380_CPT_FOOTREST" Node="A380_CPT_FOOTREST_CLICK">
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
                 <ANIM_NAME>A380_CPT_FOOTREST</ANIM_NAME>
-                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_LAG>80</ANIM_LAG>
                 <ANIM_CODE>(L:A380_CPT_FOOTREST) 100 *</ANIM_CODE>
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
@@ -700,7 +700,7 @@
         <Component ID="A380_FO_MEALTABLE" Node="A380_FO_MEALTABLE_CLICK">
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
                 <ANIM_NAME>A380_FO_MEALTABLE</ANIM_NAME>
-                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_LAG>80</ANIM_LAG>
                 <ANIM_CODE>(L:A380_FO_MEALTABLE) 100 *</ANIM_CODE>
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
@@ -718,7 +718,7 @@
         <Component ID="A380_FO_KEYBOARD" Node="A380_FO_KEYBOARD_CLICK">
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
                 <ANIM_NAME>A380_FO_KEYBOARD</ANIM_NAME>
-                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_LAG>80</ANIM_LAG>
                 <ANIM_CODE>(L:A380_FO_KEYBOARD) 100 *</ANIM_CODE>
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
@@ -736,7 +736,7 @@
         <Component ID="A380_FO_FOOTREST" Node="A380_FO_FOOTREST_CLICK">
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
                 <ANIM_NAME>A380_FO_FOOTREST</ANIM_NAME>
-                <ANIM_LAG>35</ANIM_LAG>
+                <ANIM_LAG>80</ANIM_LAG>
                 <ANIM_CODE>(L:A380_FO_FOOTREST) 100 *</ANIM_CODE>
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
