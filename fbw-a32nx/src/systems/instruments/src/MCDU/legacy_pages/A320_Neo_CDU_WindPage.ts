@@ -16,6 +16,7 @@ import {
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 export class CDUWindPage {
   static readonly WindCache: PropagatedWindEntry[] = [];
@@ -39,9 +40,11 @@ export class CDUWindPage {
       requestButton = 'REQUEST [color]amber';
     }
 
+    const phase = mcdu.flightPhaseManager.phase;
+
     const template = [
       ['CLIMB WIND'],
-      ['TRU WIND/ALT', 'HISTORY\xa0[color]inop'],
+      ['TRU WIND/ALT', phase === FmgcFlightPhase.Preflight ? 'HISTORY\xa0[color]inop' : ''],
       ['', 'WIND>[color]inop'],
       ['', 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
@@ -59,35 +62,37 @@ export class CDUWindPage {
     for (let i = 0; i < Math.min(plan.performanceData.climbWindEntries.length, 5); i++) {
       const wind = plan.performanceData.climbWindEntries[i];
 
-      template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]cyan`;
+      template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]${phase < FmgcFlightPhase.Climb ? 'cyan' : 'green'}`;
 
       numEntries = i + 1;
-      mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
-        try {
-          if (value === Keypad.clrValue) {
-            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
-          } else {
-            const entry = this.parseTrueWindEntry(value);
+      if (phase < FmgcFlightPhase.Climb) {
+        mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
+          try {
+            if (value === Keypad.clrValue) {
+              await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
+            } else {
+              const entry = this.parseTrueWindEntry(value);
 
-            if (entry === null) {
-              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
-              scratchpadCallback();
-              return;
+              if (entry === null) {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                scratchpadCallback();
+                return;
+              }
+
+              await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, entry, forPlan);
             }
 
-            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, entry, forPlan);
+            CDUWindPage.ShowCLBPage(mcdu, forPlan);
+          } catch (e) {
+            console.error('Error updating climb wind entry:', e);
+            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+            scratchpadCallback();
           }
-
-          CDUWindPage.ShowCLBPage(mcdu, forPlan);
-        } catch (e) {
-          console.error('Error updating climb wind entry:', e);
-          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-          scratchpadCallback();
-        }
-      };
+        };
+      }
     }
 
-    if (plan.performanceData.climbWindEntries.length < 5) {
+    if (plan.performanceData.climbWindEntries.length < 5 && phase < FmgcFlightPhase.Climb) {
       template[numEntries * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
       mcdu.onLeftInput[numEntries] = async (value, scratchpadCallback) => {
