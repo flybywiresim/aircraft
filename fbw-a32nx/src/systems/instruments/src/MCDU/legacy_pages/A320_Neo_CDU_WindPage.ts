@@ -17,6 +17,8 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 export class CDUWindPage {
   static readonly WindCache: PropagatedWindEntry[] = [];
@@ -24,7 +26,24 @@ export class CDUWindPage {
   static Return() {}
 
   static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
-    CDUWindPage.ShowCLBPage(mcdu, forPlan);
+    const phase = mcdu.flightPhaseManager.phase;
+
+    switch (phase) {
+      case FmgcFlightPhase.Preflight:
+      case FmgcFlightPhase.Takeoff:
+      case FmgcFlightPhase.Climb:
+        CDUWindPage.ShowCLBPage(mcdu, forPlan);
+        break;
+      case FmgcFlightPhase.Cruise:
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(mcdu.getFlightPlan(forPlan), 0));
+        break;
+      case FmgcFlightPhase.Descent:
+      case FmgcFlightPhase.Approach:
+      case FmgcFlightPhase.GoAround:
+      case FmgcFlightPhase.Done:
+      default:
+        CDUWindPage.ShowDESPage(mcdu, forPlan);
+    }
   }
 
   static ShowCLBPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
@@ -146,7 +165,7 @@ export class CDUWindPage {
     for (let i = fromIndex; i < plan.firstMissedApproachLegIndex; i++) {
       const leg = plan.maybeElementAt(i);
 
-      if (leg?.isDiscontinuity === false && leg.isXF()) {
+      if (leg?.isDiscontinuity === false && leg.isXF() && leg.segment.class === SegmentClass.Enroute) {
         return i;
       }
     }
@@ -158,7 +177,7 @@ export class CDUWindPage {
     for (let i = fromIndex; i >= 0; i--) {
       const leg = plan.maybeElementAt(i);
 
-      if (leg?.isDiscontinuity === false && leg.isXF()) {
+      if (leg?.isDiscontinuity === false && leg.isXF() && leg.segment.class === SegmentClass.Enroute) {
         return i;
       }
     }
@@ -183,6 +202,11 @@ export class CDUWindPage {
     const winds = mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
     const maxCruiseWindEntries = 4;
 
+    const canGoToPrevPhase = mcdu.flightPhaseManager.phase < FmgcFlightPhase.Cruise;
+
+    const prevPhaseText = canGoToPrevPhase ? 'PREV{sp}' : '';
+    const prevPhaseButton = canGoToPrevPhase ? 'PHASE>' : '';
+
     const template = [
       ['CRZ WIND'],
       ['', '', `AT {green}{big}${(leg.ident ?? '').padEnd(7, '\xa0')}{end}{end}`],
@@ -191,8 +215,8 @@ export class CDUWindPage {
       ['', requestButton],
       ['', ''],
       ['', ''],
-      ['', 'PREV{sp}'],
-      ['', 'PHASE>'],
+      ['', prevPhaseText],
+      ['', prevPhaseButton],
       ['', 'NEXT{sp}'],
       ['', 'PHASE>'],
       ['', ''],
@@ -275,9 +299,12 @@ export class CDUWindPage {
 
     mcdu.setTemplate(template);
 
-    mcdu.onRightInput[3] = () => {
-      CDUWindPage.ShowCLBPage(mcdu, forPlan);
-    };
+    if (canGoToPrevPhase) {
+      mcdu.onRightInput[3] = () => {
+        CDUWindPage.ShowCLBPage(mcdu, forPlan);
+      };
+    }
+
     mcdu.onRightInput[4] = () => {
       CDUWindPage.ShowDESPage(mcdu, forPlan);
     };

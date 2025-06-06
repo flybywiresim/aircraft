@@ -488,7 +488,7 @@ export class CDUVerticalRevisionPage {
         } else if (phase === ProfilePhase.Descent) {
           CDUWindPage.ShowDESPage(mcdu, forPlan);
         } else {
-          CDUWindPage.ShowCLBPage(mcdu, forPlan);
+          CDUWindPage.ShowPage(mcdu, forPlan);
         }
       }; // WIND
     }
