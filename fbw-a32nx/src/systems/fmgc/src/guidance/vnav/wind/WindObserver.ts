@@ -1,4 +1,4 @@
-import { Arinc429Register } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, MathUtils } from '@flybywiresim/fbw-sdk';
 import { WindEntry } from '../../../flightplanning/data/wind';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
@@ -21,7 +21,7 @@ export class WindObserver {
       if (this.register.isNoComputedData() || this.register.isFailureWarning()) continue;
 
       result.altitude = this.register.value;
-      Vec2Math.setFromPolar(windSpeed, windDirection, result.vector);
+      Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
 
       return result;
     }
