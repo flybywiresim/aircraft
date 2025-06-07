@@ -208,4 +208,17 @@ describe('RadioUtils.getNextValidChannel', () => {
     expect(RadioUtils.getNextValidChannel(0x136_975_0, 1, true)).toBe(0x136_975_0);
     expect(RadioUtils.getNextValidChannel(0x136_975_0, 1, false)).toBe(0x136_975_0);
   });
+
+  describe('RadioUtils.getClosestValidFrequency', () => {
+    it('finds the same frequency when it is valid', () => {
+      expect(RadioUtils.getClosestValidFrequency(0x118_000_0)).toBe(0x118_000_0);
+      expect(RadioUtils.getClosestValidFrequency(0x136_975_0)).toBe(0x136_975_0);
+    });
+    it('finds the closest valid frequency when it is not valid', () => {
+      expect(RadioUtils.getClosestValidFrequency(0x0)).toBe(0x118_000_0);
+      expect(RadioUtils.getClosestValidFrequency(0x117_975_0)).toBe(0x118_000_0);
+      expect(RadioUtils.getClosestValidFrequency(0x137_000_0)).toBe(0x136_975_0);
+      expect(RadioUtils.getClosestValidFrequency(0x510_000_0)).toBe(0x136_975_0);
+    });
+  });
 });

@@ -357,4 +357,16 @@ export class RadioUtils {
 
     return MathUtils.clamp(ret, channelInfo.min, channelInfo.max);
   }
+
+  /**
+   * Finds the closest valid frequency for a given frequency.
+   * @param bcd32 The desired frequency.
+   * @param type The channel type.
+   * @returns The closest valid frequency.
+   */
+  public static getClosestValidFrequency(bcd32: number, type = RadioChannelType.VhfCom8_33_25): number {
+    const channelInfo = RadioUtils.CHANNEL_TYPES[type];
+    const desiredChannel = RadioUtils.findClosestChannel(bcd32, type);
+    return MathUtils.clamp((bcd32 & ~channelInfo.channelMask) | desiredChannel, channelInfo.min, channelInfo.max);
+  }
 }

@@ -18,6 +18,7 @@ import {
   PilotSeat,
   PilotSeatEvents,
   PopUpDialog,
+  RadioChannelType,
   RadioUtils,
   RmpState,
   RmpUtils,
@@ -257,20 +258,27 @@ export class KeyInterceptor {
 
   private onComWholeIncrement(index: ComRadioIndex, sign: 1 | -1): void {
     RmpUtils.getStandbyFrequencyLocalVar(index).set(
-      RadioUtils.incrementBcd32(RmpUtils.getStandbyFrequencyLocalVar(index).get(), 4, sign),
+      RadioUtils.getClosestValidFrequency(
+        RadioUtils.incrementBcd32(RmpUtils.getStandbyFrequencyLocalVar(index).get(), 4, sign),
+        RadioChannelType.VhfCom8_33_25,
+      ),
     );
     RmpUtils.getStandbyModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
   private onComActiveSet(index: ComRadioIndex, isHertz: boolean, data: KeyEventData): void {
     const frequency = isHertz ? RadioUtils.packBcd32(data.value0) : RadioUtils.bcd16ToBcd32(data.value0);
-    RmpUtils.getActiveFrequencyLocalVar(index).set(frequency);
+    RmpUtils.getActiveFrequencyLocalVar(index).set(
+      RadioUtils.getClosestValidFrequency(frequency, RadioChannelType.VhfCom8_33_25),
+    );
     RmpUtils.getActiveModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
   private onComStandbySet(index: ComRadioIndex, isHertz: boolean, data: KeyEventData): void {
     const frequency = isHertz ? RadioUtils.packBcd32(data.value0) : RadioUtils.bcd16ToBcd32(data.value0);
-    RmpUtils.getStandbyFrequencyLocalVar(index).set(frequency);
+    RmpUtils.getStandbyFrequencyLocalVar(index).set(
+      RadioUtils.getClosestValidFrequency(frequency, RadioChannelType.VhfCom8_33_25),
+    );
     RmpUtils.getStandbyModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
