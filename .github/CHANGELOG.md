@@ -55,6 +55,7 @@
 1. [A380X/RMP] Added handling of all COM key events for API users - @tracernz (Mike)
 1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
 1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
+1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
 
 ## 0.13.0
 
