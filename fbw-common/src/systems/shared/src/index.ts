@@ -49,3 +49,4 @@ export * from './GPUManagement';
 export * from './Troubleshooting';
 export * from './types';
 export * from './TelexCheck';
+export * from './ViewListenerUtils';

@@ -15,6 +15,7 @@ export interface AdirsSimVars {
   pitch: number;
   roll: number;
   magHeadingRaw: number;
+  pressureAltitude: number;
   baroCorrectedAltitude: number;
   speed: number;
   vsInert: number;
@@ -40,6 +41,7 @@ export enum AdirsVars {
   roll = 'L:A32NX_ADIRS_IR_1_ROLL',
   magHeadingRaw = 'L:A32NX_ADIRS_IR_1_HEADING',
   trueHeadingRaw = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
+  pressureAltitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
   baroCorrectedAltitude1 = 'L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1',
   speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
   vsInert = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
@@ -63,6 +65,7 @@ export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefiniti
   ['roll', { name: AdirsVars.roll, type: SimVarValueType.Number }],
   ['magHeadingRaw', { name: AdirsVars.magHeadingRaw, type: SimVarValueType.Number }],
   ['trueHeadingRaw', { name: AdirsVars.trueHeadingRaw, type: SimVarValueType.Number }],
+  ['pressureAltitude', { name: AdirsVars.pressureAltitude, type: SimVarValueType.Number }],
   ['baroCorrectedAltitude', { name: AdirsVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
   ['speed', { name: AdirsVars.speed, type: SimVarValueType.Number }],
   ['magTrackRaw', { name: AdirsVars.magTrackRaw, type: SimVarValueType.Number }],

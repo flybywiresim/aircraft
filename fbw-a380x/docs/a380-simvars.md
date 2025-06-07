@@ -828,8 +828,31 @@
     - Bool
     - True when the overhead fire test pushbutton is pressed
 
+## Flight Controls (ATA 27)
 
-## Flaps / Slats (ATA 27)
+- A32NX_FCDC_{number}_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    - | Bit |                Description               |
+      |:---:|:----------------------------------------:|
+      | 11  | Pitch Normal Law Active                  |
+      | 12  | Pitch Alternate Law 1 Active             |
+      | 13  | Pitch Alternate Law 2 Active             |
+      | 14  | Pitch Alternate Law 1A Active            |
+      | 15  | Pitch Direct Law Active                  |
+      | 16  | Roll Normal Law Active                   |
+      | 17  | Roll Direct Law Active                   |
+      | 18  |                                          |
+      | 19  | ELAC 1 Pitch Fault                       |
+      | 20  | ELAC 1 Roll Fault                        |
+      | 21  | ELAC 2 Pitch Fault                       |
+      | 22  | ELAC 2 Roll Fault                        |
+      | 23  | ELAC 1 Fault                             |
+      | 24  | ELAC 2 Fault                             |
+      | 25  | SEC 1 Fault                              |
+      | 26  | SEC 2 Fault                              |
+      | 27  |                                          |
+      | 28  | FCDC Opposite Fault                      |
+      | 29  | SEC 3 Fault                              |
 
 - A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
     - Slat/Flap actual position discrete word of the SFCC bus output
@@ -1016,7 +1039,8 @@
 
 - A380X_EFIS_{side}_BARO_PRESELECTED
     - Number (hPa or inHg)
-    - Pre-selected QNH when in STD mode
+    - Pre-selected QNH when in STD mode, or 0 when not displayed.
+    - Not for FBW systems use!
     - {side} = L or R
 
 ## Bleed Air ATA 36

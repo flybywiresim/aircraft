@@ -9,10 +9,17 @@ const BleedGnd: FC = () => {
 
   const showGndIndication = onGround && !airspeed.isFailureWarning() && airspeed.value < 50;
 
+  const x = 343;
+  const y = 327;
+
   return (
-    <g id={`Gnd`} className={showGndIndication ? 'Show' : 'Hide'}>
-      <Triangle x={334} y={323} colour={'White'} fill={0} orientation={180} scale={1.2} />
-      <text x={334} y={295} className="White F23 MiddleAlign">
+    <g
+      id={`Gnd`}
+      className={showGndIndication ? 'Show' : 'Hide'}
+      style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}
+    >
+      <Triangle x={0} y={0} colour={'White'} fill={0} orientation={180} scale={1.3} />
+      <text x={1} y={-30} className="White F22 MiddleAlign">
         GND
       </text>
     </g>

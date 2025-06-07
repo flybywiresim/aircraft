@@ -718,6 +718,9 @@ export class FwsCore {
 
   public readonly altn2LawConfirmNodeOutput = Subject.create(false);
 
+  public readonly altnLawCondition = Subject.create(false);
+  public readonly altn1ALawCondition = Subject.create(false);
+
   public readonly directLawCondition = Subject.create(false);
 
   public readonly elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
@@ -757,9 +760,7 @@ export class FwsCore {
   public readonly lrElevFaultCondition = Subject.create(false);
 
   public readonly sec1Healthy = Subject.create(false);
-
   public readonly sec2Healthy = Subject.create(false);
-
   public readonly sec3Healthy = Subject.create(false);
 
   public readonly sec1FaultCondition = Subject.create(false);
@@ -774,9 +775,12 @@ export class FwsCore {
   public readonly sec3OffThenOnPulseNode = new NXLogicPulseNode(true);
   public readonly sec3OffThenOnMemoryNode = new NXLogicMemoryNode();
 
+  public readonly prim1Healthy = Subject.create(false);
   public readonly prim2Healthy = Subject.create(false);
-
   public readonly prim3Healthy = Subject.create(false);
+
+  public readonly allPrimFailed = Subject.create(false);
+  public readonly allPrimAndSecFailed = Subject.create(false);
 
   public readonly showLandingInhibit = Subject.create(false);
 
@@ -860,7 +864,12 @@ export class FwsCore {
 
   public readonly rudderTrimPosition = Subject.create(0);
 
-  public readonly flapsLeverNotZeroWarning = Subject.create(false);
+  public readonly lowerRudderFault = Subject.create(false);
+  public readonly upperRudderFault = Subject.create(false);
+
+  public readonly flapsLeverNotZero = Subject.create(false);
+
+  public readonly flapsBaulkActiveWord = Arinc429Register.empty();
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
@@ -1389,6 +1398,9 @@ export class FwsCore {
 
   public readonly gpwsTerrOff = Subject.create(false);
 
+  public readonly gpws1Failed = Subject.create(false);
+  public readonly gpws2Failed = Subject.create(false);
+
   public readonly xpdrAltReportingRequest = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true); // fixme signal should come from XPDR?
 
   public readonly xpdrStby = Subject.create(false);
@@ -1420,6 +1432,14 @@ export class FwsCore {
   private readonly tcasStandbyMemo3sConfNode = new NXLogicConfirmNode(3);
 
   public readonly tcasStandbyMemo = Subject.create(false);
+
+  public readonly terrSys1Failed = Subject.create(false);
+  public readonly terrSys2Failed = Subject.create(false);
+
+  public readonly taws1Failed = Subject.create(false);
+  public readonly taws2Failed = Subject.create(false);
+
+  public readonly tawsWxrSelected = Subject.create(0);
 
   /** 35 OXYGEN */
   public readonly paxOxyMasksDeployed = Subject.create(false);
@@ -2198,6 +2218,7 @@ export class FwsCore {
     this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
+    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD');
 
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
@@ -3417,8 +3438,13 @@ export class FwsCore {
     const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
     const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
 
+    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool'));
     this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
     this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
+    this.allPrimFailed.set(!this.prim1Healthy.get() && !this.prim2Healthy.get() && !this.prim3Healthy.get());
+    this.allPrimAndSecFailed.set(
+      this.allPrimFailed.get() && !this.sec1Healthy.get() && !this.sec2Healthy.get() && !this.sec3Healthy.get(),
+    );
 
     // ELAC 1 FAULT computation
     const se1f =
@@ -3502,6 +3528,11 @@ export class FwsCore {
     // ALTN LAW 1 computation
     const SPA1 = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
     this.altn1LawConfirmNodeOutput.set(this.altn1LawConfirmNode.write(SPA1 && !flightPhase112, deltaTime));
+
+    this.altnLawCondition.set((this.altn1LawConfirmNode.read() || this.altn2LawConfirmNode.read()) && !flightPhase112);
+    this.altn1ALawCondition.set(
+      (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) && !flightPhase112,
+    );
 
     // DIRECT LAW computation
     const SPBUL =
@@ -3680,11 +3711,16 @@ export class FwsCore {
     this.rudderTrimNotToAudio.set(rudderTrimConfigTestInPhase129 || rudderTrimConfigInPhase3or4or5);
     this.rudderTrimNotToWarning.set(rudderTrimConfigTestInPhase129 || this.rudderTrimConfigInPhase3or4or5Sr.read());
 
+    // Rudder faults FIXME add
+    // this.lowerRudderFault.set();
+    // this.upperRudderFault.set();
+
     // flaps lvr not zero
-    this.flapsLeverNotZeroWarning.set(
+    this.flapsLeverNotZero.set(
       (adr1PressureAltitude.valueOr(0) >= 22000 ||
         adr2PressureAltitude.valueOr(0) >= 22000 ||
-        adr3PressureAltitude.valueOr(0) >= 22000) &&
+        adr3PressureAltitude.valueOr(0) >= 22000 ||
+        this.flapsBaulkActiveWord.bitValueOr(25, false)) &&
         this.flightPhase.get() === 8 &&
         !this.slatFlapSelectionS0F0,
     );
@@ -3836,11 +3872,13 @@ export class FwsCore {
       !((flightPhase8 && !allRaInvalid) || flightPhase4567) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
     this.lgLeverRedArrow.set(redArrow);
 
-    // 32 - Surveillance Logic
+    // 34 - Surveillance Logic
     this.gpwsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
     this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
     this.gpwsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
     this.gpwsSysOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
+    this.gpws1Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_1_FAILED', 'Bool'));
+    this.gpws2Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_2_FAILED', 'Bool'));
 
     // fix me check for fault condition when implemented
     const transponder1State = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'Enum');
@@ -3916,6 +3954,14 @@ export class FwsCore {
         this.radioHeight2.valueOr(Infinity) > 1500 &&
         this.radioHeight3.valueOr(Infinity) > 1500,
     );
+
+    this.terrSys1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool));
+    this.terrSys2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool));
+
+    this.taws1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool));
+    this.taws2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool));
+
+    this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
 
     /* 26 - FIRE */
 

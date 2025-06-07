@@ -39,7 +39,6 @@ import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } fro
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -289,6 +288,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     true,
   ]);
 
+  private readonly speedConstraintSpeed = Subject.create<number | null>(null);
+
+  private readonly speedConstraintAltitude = Subject.create<number | null>(null);
+
+  private readonly speedConstraintReason = this.speedConstraintAltitude.map((v) => (v ? (v / 100).toFixed(0) : null));
+
   // CLB page subjects, refs and methods
   private clbNoiseFieldsRefs = [
     FSComponent.createRef<HTMLDivElement>(),
@@ -495,14 +500,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
 
-  private readonly apprWindDirectionValue = (
-    this.props.fmcService.master?.fmgc.data.approachWind ?? Subject.create<FmcWindVector | null>(null)
-  ).map((it) => (it ? it.direction : null));
-
-  private readonly apprWindSpeedValue = (
-    this.props.fmcService.master?.fmgc.data.approachWind ?? Subject.create<FmcWindVector | null>(null)
-  ).map((it) => (it ? it.speed : null));
-
   private missedThrRedAlt = Subject.create<number | null>(null);
 
   private missedThrRedAltIsPilotEntered = Subject.create<boolean>(false);
@@ -527,8 +524,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     if (!pd || !fm || !this.loadedFlightPlan) {
       return;
     }
-
-    console.time('PERF:onNewData');
 
     this.crzFl.set(pd.cruiseFlightLevel);
     this.crzFlIsMandatory.set(
@@ -690,12 +685,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation();
     if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent && vDev != null) {
-      this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `-${vDev.toFixed(0)}FT`);
+      this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `${vDev.toFixed(0)}FT`);
     } else {
       this.apprVerticalDeviation.set('+-----');
     }
 
-    console.timeEnd('PERF:onNewData');
+    const speedLimit = this.props.fmcService.master?.fmgc.getClimbSpeedLimit();
+    if (speedLimit) {
+      this.speedConstraintSpeed.set(speedLimit.speed);
+      this.speedConstraintAltitude.set(speedLimit.underAltitude);
+    }
   }
 
   public onAfterRender(node: VNode): void {
@@ -1082,14 +1081,29 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }),
     );
 
+    // Update VERT DEV on APPR page. Possible optimization to only sub during descent phase
     this.subs.push(
+      sub
+        .on('realTime')
+        .atFrequency(0.5)
+        .handle((_t) => {
+          if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent) {
+            const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation();
+            if (vDev != null) {
+              this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `${vDev.toFixed(0)}FT`);
+            }
+          }
+        }),
+    );
+
+    this.subs.push(
+      this.speedConstraintReason,
       this.climbPreSelSpeedGreen,
       this.climbPreSelManagedSpeedGreen,
       this.crzPreSelManagedGreenLine1,
       this.crzPreSelManagedGreenLine2,
       this.desTableModeLine1Green,
       this.desTableModeLine2Green,
-
       this.flightPhaseInFlight,
       this.toPageInactive,
       this.clbPageInactive,
@@ -1112,8 +1126,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.transFlToAlt,
       this.apprLandingWeightFormatted,
       this.apprRadioText,
-      this.apprWindDirectionValue,
-      this.apprWindSpeedValue,
     );
   }
 
@@ -1990,19 +2002,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       style="grid-row-start: span 3; display: flex; justify-content: flex-start; align-items: center;"
                     >
                       <div class="mfd-label-value-container">
-                        <span class="mfd-value">
-                          {this.props.fmcService.master.fmgc.data.climbSpeedLimit.get().speed.toFixed(0)}
-                        </span>
+                        <span class="mfd-value">{this.speedConstraintSpeed}</span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <span class="mfd-value">/</span>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                        <span class="mfd-value">
-                          {(this.props.fmcService.master.fmgc.data.climbSpeedLimit.get().underAltitude / 100).toFixed(
-                            0,
-                          )}
-                        </span>
+                        <span class="mfd-value">{this.speedConstraintReason}</span>
                       </div>
                     </div>
                     <div ref={this.clbNoiseEndInputRef}>
@@ -2504,31 +2510,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div style="display: flex; flex-direction: row;">
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">MAG WIND</span>
                         <div style="border: 1px solid lightgrey; display: flex; flex-direction: row; padding: 2px;">
-                          <InputField<number, number, false>
+                          <InputField<number>
                             dataEntryFormat={new WindDirectionFormat()}
                             mandatory={Subject.create(false)}
-                            readonlyValue={this.apprWindDirectionValue ?? Subject.create(null)}
-                            onModified={(v) =>
-                              this.props.fmcService.master?.fmgc.data.approachWind.set({
-                                direction: v ?? 0,
-                                speed: this.props.fmcService.master.fmgc.data.approachWind.get()?.speed ?? 0,
-                              })
-                            }
+                            value={this.props.fmcService.master?.fmgc.data.approachWindDirection}
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
                           />
-                          <InputField<number, number, false>
+                          <InputField<number>
                             dataEntryFormat={new WindSpeedFormat()}
                             mandatory={Subject.create(false)}
-                            readonlyValue={this.apprWindSpeedValue ?? Subject.create(null)}
-                            onModified={(v) =>
-                              this.props.fmcService.master?.fmgc.data.approachWind.set({
-                                direction: this.props.fmcService.master.fmgc.data.approachWind.get()?.direction ?? 0,
-                                speed: v ?? 0,
-                              })
-                            }
+                            value={this.props.fmcService.master.fmgc.data.approachWindSpeed}
                             containerStyle="margin-left: 10px;"
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
