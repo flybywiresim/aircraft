@@ -83,6 +83,7 @@ enum FwcAuralWarning {
   Crc,
   CavalryCharge,
   TripleClick,
+  CChord,
 }
 
 export class PseudoFWC {
@@ -186,6 +187,8 @@ export class PseudoFWC {
   );
 
   private readonly cavalryChargeActive = Subject.create(true);
+
+  private readonly cChordActive = Subject.create(true);
 
   private readonly fwcOut124 = Arinc429RegisterSubject.createEmpty();
 
@@ -390,6 +393,10 @@ export class PseudoFWC {
 
   /** AP/FD Capability change */
 
+  public readonly fmgc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord1'));
+
+  public readonly fmgc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord1'));
+
   public readonly fmgc1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc1DiscreteWord3'));
 
   public readonly fmgc2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmgc2DiscreteWord3'));
@@ -454,6 +461,38 @@ export class PseudoFWC {
 
   public readonly autoThrustLimited = Subject.create(false);
 
+  // ALT ALERT
+
+  public readonly altAlertCChord = Subject.create(false);
+
+  public readonly altAlertPulsing = Subject.create(false);
+
+  public readonly altAlertFlashing = Subject.create(false);
+
+  public readonly altAlertInhibitMemory = new NXLogicMemoryNode(true);
+
+  public readonly altAlertInhibitPulse1 = new NXLogicPulseNode(false);
+
+  public readonly altAlertInhibitPulse2 = new NXLogicPulseNode(true);
+
+  public readonly altAlertInhibitPulse3 = new NXLogicPulseNode(false);
+
+  public readonly altAlertInhibitPulse4 = new NXLogicPulseNode(false);
+
+  public readonly altAlertInhibitMtrig1 = new NXLogicTriggeredMonostableNode(1, true);
+
+  public readonly altAlertInhibitMtrig2 = new NXLogicTriggeredMonostableNode(1, true);
+
+  public readonly altAlertPulse = new NXLogicPulseNode(false);
+
+  public readonly altAlertMtrig1 = new NXLogicTriggeredMonostableNode(1.5, true);
+
+  public readonly altAlertMtrig2 = new NXLogicTriggeredMonostableNode(1.5, true);
+
+  public readonly altAlertMemory1 = new NXLogicMemoryNode(false);
+
+  public readonly altAlertMemory2 = new NXLogicMemoryNode(false);
+
   // AP/FD reversion
 
   public readonly modeReversionMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
@@ -493,8 +532,10 @@ export class PseudoFWC {
 
   private toV2VRV2DisagreeWarning = Subject.create(false);
 
+  private readonly fcuDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_discrete_word_1'));
   private readonly fcu1DiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_discrete_word_2'));
   private readonly fcu2DiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_discrete_word_2'));
+  private readonly fcuSelectedAlt = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_fcu_selected_altitude'));
 
   private readonly fcu12Fault = Subject.create(false);
   private readonly fcu1Fault = Subject.create(false);
@@ -794,6 +835,12 @@ export class PseudoFWC {
   private readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
 
   /** 31 - EIS */
+  private readonly dmcLeftDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_discrete_word_272_left'),
+  );
+  private readonly dmcRightDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_discrete_word_272_right'),
+  );
   private readonly dmcLeftDiscreteWord = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_dmc_discrete_word_350_left'),
   );
@@ -1228,6 +1275,8 @@ export class PseudoFWC {
       (cavcharge) => this.soundManager.handleSoundCondition('cavalryChargeCont', cavcharge),
       true,
     );
+
+    this.cChordActive.sub((cChord) => this.soundManager.handleSoundCondition('cChordCont', cChord), true);
 
     this.masterCaution.sub((caution) => {
       // Inhibit master warning/cautions until FWC startup has been completed
@@ -1790,12 +1839,6 @@ export class PseudoFWC {
     this.apOffInvoluntaryAural.set(this.apOffInvoluntaryMemory2.read());
 
     this.apOffInvoluntaryText.set(this.apOffInvoluntaryMemory1.read());
-
-    // AP/FD Reversion Triple Click
-    this.modeReversionMtrig1.write(this.fmgc1DiscreteWord4.get().bitValueOr(28, false), deltaTime);
-    this.modeReversionMtrig2.write(this.fmgc2DiscreteWord4.get().bitValueOr(28, false), deltaTime);
-
-    this.modeReversion.set(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read());
 
     // AP/FD capability change
 
@@ -2833,6 +2876,117 @@ export class PseudoFWC {
     this.altiBaroDiscrepancy.set(!altiDiscrepancyInhibit && this.altiDiscrepancyConf1.read());
     this.altiStdDiscrepancy.set(!altiDiscrepancyInhibit && this.altiDiscrepancyConf2.read());
 
+    // ALT ALERT
+    const fcuAlt = this.fcuSelectedAlt.get().value;
+
+    const captCorrectedAltDifference = Math.abs(leftAdrCorrectedAlt.value - fcuAlt);
+    const foCorrectedAltDifference = Math.abs(rightAdrCorrectedAlt.value - fcuAlt);
+    const pressureAltDifference = Math.abs(leftAdrPressureAlt.value - fcuAlt);
+
+    const altDeltaBelow200 =
+      ((dmcLIsStd || dmcRIsStd) && pressureAltDifference < 200) ||
+      ((dmcLIsQnh || dmcLIsQfe) && captCorrectedAltDifference < 200) ||
+      ((dmcRIsQnh || dmcRIsQfe) && foCorrectedAltDifference < 200);
+
+    const altDeltaBelow750 =
+      ((dmcLIsStd || dmcRIsStd) && pressureAltDifference < 750) ||
+      ((dmcLIsQnh || dmcLIsQfe) && captCorrectedAltDifference < 750) ||
+      ((dmcRIsQnh || dmcRIsQfe) && foCorrectedAltDifference < 750);
+
+    const gearLeverSelectedDown =
+      this.lgciu1DiscreteWord1.bitValueOr(29, false) || this.lgciu2DiscreteWord1.bitValueOr(29, false);
+    const slatsAbove25 = slatsPos.value < 356 && slatsPos.value > 309.53;
+    const altAlertSlatInhibit =
+      this.isAllGearDownlocked ||
+      (gearLeverSelectedDown && (slatsAbove25 || slatsPos.isNoComputedData() || slatsPos.isFailureWarning()));
+    const altAlertFmgcInhibit =
+      (!this.fmgc1DiscreteWord4.get().isNormalOperation() &&
+        !this.fmgc2DiscreteWord4.get().isNormalOperation() &&
+        !this.fmgc1DiscreteWord1.get().isNormalOperation() &&
+        !this.fmgc2DiscreteWord1.get().isNormalOperation()) ||
+      this.fmgc1DiscreteWord1.get().bitValueOr(23, false) ||
+      this.fmgc1DiscreteWord1.get().bitValueOr(22, false) ||
+      this.fmgc1DiscreteWord4.get().bitValueOr(14, false) ||
+      this.fmgc2DiscreteWord1.get().bitValueOr(23, false) ||
+      this.fmgc2DiscreteWord1.get().bitValueOr(22, false) ||
+      this.fmgc2DiscreteWord4.get().bitValueOr(14, false);
+
+    const selectedAltChanged = this.fcuDiscreteWord1.get().bitValueOr(13, false);
+
+    const altAlertGeneralInhibit =
+      !this.fcuSelectedAlt.get().isNormalOperation() ||
+      selectedAltChanged ||
+      altAlertSlatInhibit ||
+      altAlertFmgcInhibit ||
+      (!leftAdrPressureAlt.isNormalOperation() && dmcLIsStd && dmcRIsStd) ||
+      (!leftAdrCorrectedAlt.isNormalOperation() &&
+        !rightAdrCorrectedAlt.isNormalOperation() &&
+        !dmcLIsStd &&
+        !dmcRIsStd);
+
+    this.altAlertInhibitPulse1.write(altDeltaBelow200 && altDeltaBelow750 && !altAlertGeneralInhibit, deltaTime);
+    this.altAlertInhibitPulse2.write(!altDeltaBelow200 && !altDeltaBelow750 && !altAlertGeneralInhibit, deltaTime);
+    this.altAlertInhibitPulse3.write(!altDeltaBelow200 && !altDeltaBelow750 && !altAlertGeneralInhibit, deltaTime);
+    this.altAlertInhibitPulse4.write(!altDeltaBelow200 && altDeltaBelow750 && !altAlertGeneralInhibit, deltaTime);
+    this.altAlertInhibitMtrig1.write(this.isAllGearDownlocked, deltaTime);
+    this.altAlertInhibitMtrig2.write(selectedAltChanged, deltaTime);
+
+    // TODO TCAS mode engaged logic
+    const apFdTcasModeEngaged = false;
+    this.altAlertInhibitMemory.write(
+      apFdTcasModeEngaged && (this.altAlertInhibitPulse1.read() || this.altAlertInhibitPulse2.read()),
+      this.altAlertInhibitPulse3.read() ||
+        this.altAlertInhibitPulse4.read() ||
+        this.altAlertInhibitMtrig1.read() ||
+        this.altAlertInhibitMtrig2.read(),
+    );
+
+    const groundOrTcasMode = apFdTcasModeEngaged || this.aircraftOnGround.get();
+    const altAlertBetween200And750 = altDeltaBelow750 && !altDeltaBelow200 && !altAlertGeneralInhibit;
+    const altAlertBelow200And750 = altDeltaBelow750 && altDeltaBelow200 && !altAlertGeneralInhibit;
+    const altAlertAbove200And750 = !altDeltaBelow750 && !altDeltaBelow200 && !altAlertGeneralInhibit;
+
+    console.log(
+      `mem1set: ${altAlertBelow200And750}, mem1reset: ${altAlertAbove200And750 || this.altAlertInhibitMtrig1.read() || this.altAlertInhibitMtrig1.read()} mem2set: ${altAlertBetween200And750} mem2reset: ${this.altAlertInhibitMtrig1.read() || this.altAlertInhibitMtrig1.read()}`,
+    );
+
+    this.altAlertPulse.write(apFdTcasModeEngaged, deltaTime);
+    this.altAlertMtrig1.write(!anyApEngaged && this.altAlertPulse.read() && !altAlertGeneralInhibit, deltaTime);
+    this.altAlertMtrig2.write(!anyApEngaged && altAlertBetween200And750, deltaTime);
+
+    this.altAlertMemory1.write(
+      altAlertBelow200And750,
+      altAlertAbove200And750 || this.altAlertInhibitMtrig1.read() || this.altAlertInhibitMtrig2.read(),
+    );
+    this.altAlertMemory2.write(
+      altAlertBetween200And750,
+      this.altAlertInhibitMtrig1.read() || this.altAlertInhibitMtrig2.read(),
+    );
+
+    const altAlertBetween200And750AndMemory1 = altAlertBetween200And750 && this.altAlertMemory1.read();
+    const altAlertAbove200And750AndMemory2 = altAlertAbove200And750 && this.altAlertMemory2.read();
+
+    this.altAlertCChord.set(
+      !groundOrTcasMode &&
+        (this.altAlertMtrig1.read() ||
+          this.altAlertMtrig2.read() ||
+          (!this.altAlertInhibitMemory.read() &&
+            (altAlertBetween200And750AndMemory1 || altAlertAbove200And750AndMemory2))),
+    );
+    this.altAlertPulsing.set(!groundOrTcasMode && altAlertBetween200And750 && !altAlertBetween200And750AndMemory1);
+    this.altAlertFlashing.set(
+      !groundOrTcasMode && (altAlertBetween200And750AndMemory1 || altAlertAbove200And750AndMemory2),
+    );
+
+    this.fwcOut126.setBitValue(26, this.altAlertFlashing.get() && !this.altAlertPulsing.get());
+    this.fwcOut126.setBitValue(27, this.altAlertFlashing.get() || this.altAlertPulsing.get());
+
+    // AP/FD Reversion Triple Click
+    this.modeReversionMtrig1.write(this.fmgc1DiscreteWord4.get().bitValueOr(28, false), deltaTime);
+    this.modeReversionMtrig2.write(this.fmgc2DiscreteWord4.get().bitValueOr(28, false), deltaTime);
+
+    this.modeReversion.set(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read());
+
     /* SETTINGS */
 
     this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
@@ -2942,6 +3096,7 @@ export class PseudoFWC {
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
+    const auralCChordKeys: string[] = [];
 
     // Update failuresLeft list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
@@ -3053,6 +3208,10 @@ export class PseudoFWC {
         this.soundManager.enqueueSound('pause0p8s');
         this.soundManager.enqueueSound('tripleClick');
       }
+
+      if (value.auralWarning?.get() === FwcAuralWarning.CChord) {
+        auralCChordKeys.push(key);
+      }
     }
 
     this.auralCrcKeys = auralCrcKeys;
@@ -3067,6 +3226,8 @@ export class PseudoFWC {
     }
 
     this.cavalryChargeActive.set(auralCavchargeKeys.length !== 0);
+
+    this.cChordActive.set(auralCChordKeys.length !== 0);
 
     const failLeft = tempFailureArrayLeft.length > 0;
 
@@ -3336,6 +3497,21 @@ export class PseudoFWC {
       codesToReturn: ['220002401', '220002402'],
       memoInhibit: () => false,
       failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    2200050: {
+      // AP/FD Mode Reversion
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(false),
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.CChord : FwcAuralWarning.None),
+        this.altAlertCChord,
+      ),
+      whichCodeToReturn: () => [null],
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 3,
       sysPage: -1,
       side: 'LEFT',
     },

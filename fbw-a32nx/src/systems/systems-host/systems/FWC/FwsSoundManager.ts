@@ -120,15 +120,8 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: true,
   },
-  cChordOnce: {
-    localVarName: 'A32NX_ALT_DEVIATION',
-    length: 1.0,
-    priority: 3,
-    type: FwsAuralWarningType.AuralWarning,
-    continuous: false,
-  },
   cChordCont: {
-    localVarName: 'A32NX_ALT_DEVIATION',
+    localVarName: 'A32NX_FWC_CCHORD',
     priority: 3,
     type: FwsAuralWarningType.AuralWarning,
     continuous: true,
