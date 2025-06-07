@@ -37,6 +37,10 @@ const Time = Object.freeze({
   Empty: '\xa0\xa0\xa0\xa0',
   NoPrediction: '----',
 });
+const Efob = Object.freeze({
+  Empty: '\xa0\xa0\xa0\xa0',
+  NoPrediction: '\xa0---.-',
+});
 const Wind = Object.freeze({
   EmptyTrueDegrees: '\xa0\xa0\xa0\xa0',
   EmptyTrueMagnitude: '\xa0\xa0\xa0',
@@ -343,7 +347,7 @@ export class CDUFlightPlanPage {
         }
 
         // Time/EFOB
-        let timeCell: string = Time.NoPrediction;
+        let timeCell: string = isPageB ? Efob.NoPrediction : Time.NoPrediction;
         let timeColor = 'white';
         if (!isPageB && verticalWaypoint && Number.isFinite(verticalWaypoint.secondsFromPresent)) {
           const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
@@ -363,7 +367,7 @@ export class CDUFlightPlanPage {
             .padStart(4, '\xa0')}{end}`;
 
           timeColor = color;
-        } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
+        } else if (!isPageB && !inAlternate && fpIndex === targetPlan.originLegIndex) {
           timeCell = '{big}0000{end}';
           timeColor = color;
         }
@@ -926,11 +930,13 @@ export class CDUFlightPlanPage {
         altColor: cAltColor,
         speedConstraint: cSpd,
         altitudeConstraint: cAlt,
+        timeCell: cTime,
         ident: cIdent,
         pwp: cPwp,
       } = scrollWindow[rowI];
       let spdRpt = false;
       let altRpt = false;
+      let timeRpt = false;
       let showFix = true;
       let showDist = true;
       let showNm = false;
@@ -940,12 +946,12 @@ export class CDUFlightPlanPage {
         scrollText[rowI * 2] = [
           '',
           `{amber}${immExit ? 'IMM\xa0\xa0' : ''}${resumeHold ? 'RESUME\xa0' : ''}{end}`,
-          'HOLD\xa0\xa0\xa0\xa0',
+          isPageB ? '' : 'HOLD\xa0\xa0\xa0\xa0',
         ];
         scrollText[rowI * 2 + 1] = [
           `{${color}}HOLD ${turnDirection}{end}`,
           `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`,
-          `\xa0{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`,
+          isPageB ? '' : `\xa0{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`,
         ];
       } else if (!cMarker) {
         // Waypoint
@@ -955,6 +961,7 @@ export class CDUFlightPlanPage {
             holdResumeExit: pHold,
             speedConstraint: pSpd,
             altitudeConstraint: pAlt,
+            timeCell: pTime,
           } = scrollWindow[rowI - 1];
           if (!pMarker && !pHold) {
             firstWp = Math.min(firstWp, rowI);
@@ -981,6 +988,10 @@ export class CDUFlightPlanPage {
             ) {
               altRpt = true;
             }
+
+            if (!cPwp && isPageB && cTime === pTime && cTime !== Efob.NoPrediction && cTime !== Time.NoPrediction) {
+              timeRpt = true;
+            }
             // If previous row is a marker, clear all headers unless it's a speed limit
           } else if (!pHold) {
             showDist = false;
@@ -989,7 +1000,7 @@ export class CDUFlightPlanPage {
         }
 
         scrollText[rowI * 2] = renderFixHeader(scrollWindow[rowI], showNm, showDist, showFix);
-        scrollText[rowI * 2 + 1] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt, isPageB);
+        scrollText[rowI * 2 + 1] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt, timeRpt, isPageB);
 
         // Marker
       } else {
@@ -1141,8 +1152,8 @@ export class CDUFlightPlanPage {
     mcdu.onPrevPage = () => CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
 
     mcdu.setArrows(allowScroll, allowScroll, true, true);
-    scrollText[0][1] = isPageB ? '{sp}{sp}T.WIND{sp}{sp}' : 'SPD/ALT{sp}{sp}{sp}';
-    scrollText[0][2] = isPageB ? 'EFOB{sp}{sp}{sp}{sp}' : isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}';
+    scrollText[0][1] = isPageB ? '{sp}{sp}{sp}T.WIND{sp}' : 'SPD/ALT{sp}{sp}{sp}';
+    scrollText[0][2] = isPageB ? '{sp}EFOB{sp}{sp}{sp}' : isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}';
 
     if (!showFrom) {
       fromHeader.update('');
@@ -1318,6 +1329,7 @@ function renderFixContent(
   },
   spdRepeat = false,
   altRepeat = false,
+  timeRepeat = false,
   isPageB = false,
 ) {
   const {
@@ -1333,13 +1345,14 @@ function renderFixContent(
     timeColor,
   } = rowObj;
 
-  const spdRepeatStr = '\xa0"\xa0';
+  const spdRepeatStr = isPageB ? '\xa0"\xa0\xa0' : '\xa0"\xa0';
   const altRepeatSr = isPageB ? '\xa0"\xa0' : '\xa0\xa0\xa0"\xa0\xa0';
+  const slashStr = isPageB && altRepeat && spdRepeat ? '\xa0' : '/';
 
   return [
     `${ident}${isOverfly ? Keypad.ovfyValue : ''}[color]${color}`,
-    `{${spdColor}}${spdRepeat ? spdRepeatStr : speedConstraint}{end}{${altColor}}{${altSize}}/${altRepeat ? altRepeatSr : altitudeConstraint}{end}{end}`,
-    `${timeCell}{sp}{sp}{sp}{sp}[color]${timeColor}`,
+    `{${spdColor}}${spdRepeat ? spdRepeatStr : speedConstraint}{end}{${altColor}}{${altSize}}${slashStr}${altRepeat ? altRepeatSr : altitudeConstraint}{end}{end}`,
+    `${timeRepeat ? '"\xa0' : timeCell}${isPageB ? '{sp}{sp}' : '{sp}{sp}{sp}{sp}'}[color]${timeColor}`,
   ];
 }
 
@@ -1347,8 +1360,8 @@ function emptyFplnPage(forPlan: FlightPlanIndex, isPageB = false) {
   return [
     [
       '',
-      isPageB ? '{sp}{sp}T.WIND{sp}{sp}' : 'SPD/ALT{sp}{sp}{sp}',
-      isPageB ? 'EFOB{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}',
+      isPageB ? '{sp}{sp}{sp}T.WIND{sp}' : 'SPD/ALT{sp}{sp}{sp}',
+      isPageB ? '{sp}EFOB{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}',
     ],
     [
       `PPOS[color]${forPlan === FlightPlanIndex.Active ? 'green' : 'white'}`,
