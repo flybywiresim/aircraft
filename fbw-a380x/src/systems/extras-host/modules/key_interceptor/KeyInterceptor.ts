@@ -249,35 +249,29 @@ export class KeyInterceptor {
   }
 
   private onComFractIncrement(index: ComRadioIndex, sign: 1 | -1, carry: boolean): void {
-    SimVar.SetSimVarValueRegNumber(
-      RmpUtils.getStandbyFrequencyLocalVar(index),
-      RadioUtils.getNextValidChannel(
-        SimVar.GetSimVarValueFastReg(RmpUtils.getStandbyFrequencyLocalVar(index)),
-        sign,
-        carry,
-      ),
+    RmpUtils.getStandbyFrequencyLocalVar(index).set(
+      RadioUtils.getNextValidChannel(RmpUtils.getStandbyFrequencyLocalVar(index).get(), sign, carry),
     );
-    SimVar.SetSimVarValueRegNumber(RmpUtils.getStandbyModeLocalVar(index), FrequencyMode.Frequency);
+    RmpUtils.getStandbyModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
   private onComWholeIncrement(index: ComRadioIndex, sign: 1 | -1): void {
-    SimVar.SetSimVarValueRegNumber(
-      RmpUtils.getStandbyFrequencyLocalVar(index),
-      RadioUtils.incrementBcd32(SimVar.GetSimVarValueFastReg(RmpUtils.getStandbyFrequencyLocalVar(index)), 4, sign),
+    RmpUtils.getStandbyFrequencyLocalVar(index).set(
+      RadioUtils.incrementBcd32(RmpUtils.getStandbyFrequencyLocalVar(index).get(), 4, sign),
     );
-    SimVar.SetSimVarValueRegNumber(RmpUtils.getStandbyModeLocalVar(index), FrequencyMode.Frequency);
+    RmpUtils.getStandbyModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
   private onComActiveSet(index: ComRadioIndex, isHertz: boolean, data: KeyEventData): void {
     const frequency = isHertz ? RadioUtils.packBcd32(data.value0) : RadioUtils.bcd16ToBcd32(data.value0);
-    SimVar.SetSimVarValueRegNumber(RmpUtils.getActiveFrequencyLocalVar(index), frequency);
-    SimVar.SetSimVarValueRegNumber(RmpUtils.getActiveModeLocalVar(index), FrequencyMode.Frequency);
+    RmpUtils.getActiveFrequencyLocalVar(index).set(frequency);
+    RmpUtils.getActiveModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
   private onComStandbySet(index: ComRadioIndex, isHertz: boolean, data: KeyEventData): void {
     const frequency = isHertz ? RadioUtils.packBcd32(data.value0) : RadioUtils.bcd16ToBcd32(data.value0);
-    SimVar.SetSimVarValueRegNumber(RmpUtils.getStandbyFrequencyLocalVar(index), frequency);
-    SimVar.SetSimVarValueRegNumber(RmpUtils.getStandbyModeLocalVar(index), FrequencyMode.Frequency);
+    RmpUtils.getStandbyFrequencyLocalVar(index).set(frequency);
+    RmpUtils.getStandbyModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
   private onComSwap(index: ComRadioIndex): void {
