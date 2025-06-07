@@ -289,13 +289,13 @@ export class KeyInterceptor {
   private onComRxSelect(index: ComRadioIndex, data: KeyEventData): void {
     const rxOn = data.value0 === 1;
     if (this.shouldControlRmp1()) {
-      SimVar.SetSimVarValue(`L:A380X_RMP_1_VHF_RX_${index}`, SimVarValueType.Bool, rxOn);
+      SimVar.SetSimVarValue(`L:A380X_RMP_1_VHF_VOL_RX_SWITCH_${index}`, SimVarValueType.Bool, rxOn);
     }
     if (this.shouldControlRmp2()) {
-      SimVar.SetSimVarValue(`L:A380X_RMP_2_VHF_RX_${index}`, SimVarValueType.Bool, rxOn);
+      SimVar.SetSimVarValue(`L:A380X_RMP_2_VHF_VOL_RX_SWITCH_${index}`, SimVarValueType.Bool, rxOn);
     }
     if (this.shouldControlRmp3()) {
-      SimVar.SetSimVarValue(`L:A380X_RMP_3_VHF_RX_${index}`, SimVarValueType.Bool, rxOn);
+      SimVar.SetSimVarValue(`L:A380X_RMP_3_VHF_VOL_RX_SWITCH_${index}`, SimVarValueType.Bool, rxOn);
     }
   }
 
@@ -322,7 +322,7 @@ export class KeyInterceptor {
   }
 
   private onComVolumeSet(index: ComRadioIndex, data: KeyEventData): void {
-    const volume = MathUtils.clamp(data.value0 ?? 0, 0, 1);
+    const volume = MathUtils.clamp(data.value0 ?? 0, 0, 100);
     if (this.shouldControlRmp1()) {
       SimVar.SetSimVarValue(`L:A380X_RMP_1_VHF_VOL_${index}`, SimVarValueType.Number, volume);
     }
@@ -337,7 +337,7 @@ export class KeyInterceptor {
   private onComVolumeInc(index: ComRadioIndex, sign: 1 | -1): void {
     const increment = 2 * sign;
     if (this.shouldControlRmp1()) {
-      const localVar = `A380X_RMP_1_VHF_VOL_${index}`;
+      const localVar = `L:A380X_RMP_1_VHF_VOL_${index}`;
       SimVar.SetSimVarValue(
         localVar,
         SimVarValueType.Number,
@@ -345,7 +345,7 @@ export class KeyInterceptor {
       );
     }
     if (this.shouldControlRmp2()) {
-      const localVar = `A380X_RMP_2_VHF_VOL_${index}`;
+      const localVar = `L:A380X_RMP_2_VHF_VOL_${index}`;
       SimVar.SetSimVarValue(
         localVar,
         SimVarValueType.Number,
@@ -353,7 +353,7 @@ export class KeyInterceptor {
       );
     }
     if (this.shouldControlRmp3()) {
-      const localVar = `A380X_RMP_3_VHF_VOL_${index}`;
+      const localVar = `L:A380X_RMP_3_VHF_VOL_${index}`;
       SimVar.SetSimVarValue(
         localVar,
         SimVarValueType.Number,
@@ -364,28 +364,46 @@ export class KeyInterceptor {
 
   private onComReceiveAll(toggle: boolean, data: KeyEventData): void {
     if (this.shouldControlRmp1()) {
-      const rx1On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_RX_1', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_RX_1', SimVarValueType.Bool, rx1On);
-      const rx2On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_RX_2', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_RX_2', SimVarValueType.Bool, rx2On);
-      const rx3On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_RX_3', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_RX_3', SimVarValueType.Bool, rx3On);
+      const rx1On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool, rx1On);
+      const rx2On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool, rx2On);
+      const rx3On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool, rx3On);
     }
     if (this.shouldControlRmp2()) {
-      const rx1On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_RX_1', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_RX_1', SimVarValueType.Bool, rx1On);
-      const rx2On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_RX_2', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_RX_2', SimVarValueType.Bool, rx2On);
-      const rx3On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_RX_3', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_RX_3', SimVarValueType.Bool, rx3On);
+      const rx1On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool, rx1On);
+      const rx2On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool, rx2On);
+      const rx3On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool, rx3On);
     }
     if (this.shouldControlRmp3()) {
-      const rx1On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_RX_1', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_RX_1', SimVarValueType.Bool, rx1On);
-      const rx2On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_RX_2', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_RX_2', SimVarValueType.Bool, rx2On);
-      const rx3On = toggle ? SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_RX_3', SimVarValueType.Bool) : data.value0 > 0;
-      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_RX_3', SimVarValueType.Bool, rx3On);
+      const rx1On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool, rx1On);
+      const rx2On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool, rx2On);
+      const rx3On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool, rx3On);
     }
   }
 }
