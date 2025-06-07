@@ -14,6 +14,7 @@ import {
   GroundSupportPublisher,
   BaroUnitSelector,
   TelexCheck,
+  PilotSeatPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { A380XKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
@@ -122,6 +123,7 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
+    this.backplane.addPublisher('PilotSeatPublisher', new PilotSeatPublisher(this.bus));
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
