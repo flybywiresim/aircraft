@@ -634,9 +634,18 @@ export class CDUPerformancePage {
 
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
     const [toUtcLabel, toDistLabel] = isFlying ? ['\xa0UTC', 'DIST'] : ['', ''];
-    const [toReasonCell, toDistCell, toTimeCell] = isFlying
-      ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu)
-      : ['', '', ''];
+    const legsWithSteps = mcdu.flightPlanService.active.allLegs.filter(
+      (it) => it.isDiscontinuity === false && it.cruiseStep,
+    );
+
+    const [toReasonCell = '', toDistCell = '', toTimeCell = '', stepLevelCell = '', stepWaypoint = ''] = isFlying
+      ? CDUPerformancePage.formatToReasonDistanceAndTime(
+          mcdu,
+          legsWithSteps?.[0] && 'cruiseStep' in legsWithSteps[0] && legsWithSteps[0].cruiseStep
+            ? legsWithSteps[0].cruiseStep.toAltitude
+            : undefined,
+        )
+      : []; //remove stepWaypoint and place in different section
     const desCabinRateCell = '{small}-350{end}';
     const shouldShowStepAltsOption =
       mcdu.cruiseLevel &&
@@ -705,8 +714,8 @@ export class CDUPerformancePage {
       [`\xa0CRZ[color]${titleColor}`],
       ['ACT MODE', 'DEST EFOB', timeLabel],
       [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
-      ['CI'],
-      [costIndexCell, toReasonCell],
+      ['CI', stepWaypoint],
+      [costIndexCell, toReasonCell, stepLevelCell],
       ['MANAGED', toDistLabel, toUtcLabel],
       [managedSpeedCell, toDistCell, toTimeCell],
       [preselTitle, 'DES CABIN RATE'],
@@ -1356,32 +1365,42 @@ export class CDUPerformancePage {
     return [destEfobCell, destTimeCell];
   }
 
-  static formatToReasonDistanceAndTime(mcdu: LegacyFmsPageInterface) {
+  static formatStepWaypoint(mcdu: LegacyFmsPageInterface, LegWithSteps, index) {
     const toPrediction = mcdu.guidanceController.vnavDriver.getPerfCrzToPrediction();
+    let stepWaypointCell = '';
 
-    let reasonCell = '(T/D)';
+    if (toPrediction.reason === 'StepClimb' || toPrediction.reason === 'StepDescent') {
+      stepWaypointCell = `{small}AT${LegWithSteps[index]}{end}`;
+    }
+
+    return stepWaypointCell;
+  }
+
+  static formatToReasonDistanceAndTime(mcdu: LegacyFmsPageInterface, toAltitude) {
+    const toPrediction = mcdu.guidanceController.vnavDriver.getPerfCrzToPrediction();
+    const flightLevel = Math.round(toAltitude / 100);
+
+    let displayCell = '';
     let distCell = '---';
     let timeCell = '----';
 
     if (toPrediction) {
+      displayCell =
+        toPrediction.reason === 'StepClimb' || toPrediction.reason === 'StepDescent'
+          ? `{green}STEP TO FL${flightLevel}{end}`
+          : `{white}TO{end}\xa0{green}(T/D){end}`;
+
       if (Number.isFinite(toPrediction.distanceFromPresentPosition)) {
         distCell = Math.round(toPrediction.distanceFromPresentPosition) + '[color]green';
       }
 
       if (Number.isFinite(toPrediction.secondsFromPresent)) {
         const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
         timeCell = FmsFormatters.secondsToUTC(utcTime + toPrediction.secondsFromPresent) + '[color]green';
-      }
-
-      if (toPrediction.reason === 'StepClimb') {
-        reasonCell = '(S/C)';
-      } else if (toPrediction.reason === 'StepDescent') {
-        reasonCell = '(S/D)';
       }
     }
 
-    return ['{small}TO{end}\xa0{green}' + reasonCell + '{end}', distCell, timeCell];
+    return [displayCell, distCell, timeCell];
   }
 
   static formatCostIndexCell(mcdu: LegacyFmsPageInterface, hasFromToPair, allowModification) {
