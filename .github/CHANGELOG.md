@@ -64,6 +64,7 @@
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
 1. [EFB] Renamed "Weight Unit" pin program to "US Units" to reflect it's actual effect and real-world name - @tracernz (Mike)
 1. [A32NX/MCDU] Fix units on arrival airport runway lenghts - @Lucas-IQ21 (Lucas)
+1. [A32NX/A380X] Handle the MASTER_CAUTION_ACKNOWLEDGE and MASTER_WARNING_ACKNOWLEDGE key events - @tracernz (Mike)
 
 ## 0.13.0
 

@@ -1,8 +1,15 @@
 // Copyright (c) 2022-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, KeyEvents, KeyEventManager, KeyEventData } from '@microsoft/msfs-sdk';
-import { InterRmpBusEvents, NotificationManager } from '@flybywiresim/fbw-sdk';
+import {
+  EventBus,
+  KeyEvents,
+  KeyEventManager,
+  KeyEventData,
+  SimVarValueType,
+  ConsumerSubject,
+} from '@microsoft/msfs-sdk';
+import { NotificationManager, PilotSeat, PilotSeatEvents } from '@flybywiresim/fbw-sdk';
 
 interface KeyInterceptDefinition {
   /** A handler to be called when this key is inercepted. Defaults to no handler. */
@@ -26,11 +33,18 @@ export abstract class KeyInterceptor {
 
   protected dialogVisible = false;
 
+  private readonly sub = this.bus.getSubscriber<PilotSeatEvents>();
+  protected readonly pilotSeat = ConsumerSubject.create(this.sub.on('pilot_seat'), PilotSeat.Left);
+
   constructor(
     protected readonly bus: EventBus,
     protected readonly notification: NotificationManager,
   ) {
-    this.keys = new Map(this.getExtraIntercepts());
+    this.keys = new Map([
+      ['MASTER_CAUTION_ACKNOWLEDGE', { handler: this.onMasterCautionAck.bind(this) }],
+      ['MASTER_WARNING_ACKNOWLEDGE', { handler: this.onMasterWarningAck.bind(this) }],
+      ...this.getExtraIntercepts(),
+    ]);
 
     KeyEventManager.getManager(this.bus).then((manager) => {
       this.keyInterceptManager = manager;
@@ -66,5 +80,19 @@ export abstract class KeyInterceptor {
     }
 
     config.handler?.(data);
+  }
+
+  private togglePilotLocalVar(name: string, highTime = 500): void {
+    const localVar = `L:${name}_${this.pilotSeat.get() === PilotSeat.Right ? 'R' : 'L'}`;
+    SimVar.SetSimVarValue(localVar, SimVarValueType.Bool, true);
+    setTimeout(() => SimVar.SetSimVarValue(localVar, SimVarValueType.Bool, false), highTime);
+  }
+
+  private onMasterCautionAck(): void {
+    this.togglePilotLocalVar('PUSH_AUTOPILOT_MASTERCAUT');
+  }
+
+  private onMasterWarningAck(): void {
+    this.togglePilotLocalVar('PUSH_AUTOPILOT_MASTERAWARN');
   }
 }

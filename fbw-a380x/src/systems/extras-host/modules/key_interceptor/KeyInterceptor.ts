@@ -1,32 +1,24 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { KeyEventData, ComRadioIndex, SimVarValueType, ConsumerValue } from '@microsoft/msfs-sdk';
 import {
   FrequencyMode,
-  InterRmpBusEvents,
   KeyInterceptDefinitions,
   KeyInterceptor,
   MathUtils,
   NotificationType,
   PilotSeat,
-  PilotSeatEvents,
   PopUpDialog,
   RadioChannelType,
   RadioUtils,
   RmpState,
   RmpUtils,
 } from '@flybywiresim/fbw-sdk';
+import { ComRadioIndex, KeyEventData, SimVarValueType } from '@microsoft/msfs-sdk';
+
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
 export class A380XKeyInterceptor extends KeyInterceptor {
-  private readonly publisher = this.bus.getPublisher<InterRmpBusEvents>();
-
-  private readonly pilotSeat = ConsumerValue.create(
-    this.bus.getSubscriber<PilotSeatEvents>().on('pilot_seat'),
-    PilotSeat.Left,
-  );
-
   private readonly rmp1StateVar = SimVar.GetRegisteredId('L:A380X_RMP_1_STATE', SimVarValueType.Enum, document.title);
   private readonly rmp2StateVar = SimVar.GetRegisteredId('L:A380X_RMP_2_STATE', SimVarValueType.Enum, document.title);
   private readonly rmp3StateVar = SimVar.GetRegisteredId('L:A380X_RMP_3_STATE', SimVarValueType.Enum, document.title);

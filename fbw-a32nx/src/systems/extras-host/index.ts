@@ -18,6 +18,7 @@ import {
   MsfsMiscPublisher,
   NotificationManager,
   PilotSeatManager,
+  PilotSeatPublisher,
   TelexCheck,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
@@ -136,6 +137,7 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
     this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
+    this.backplane.addPublisher('PilotSeatPublisher', new PilotSeatPublisher(this.bus));
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
