@@ -2279,16 +2279,8 @@
 
         <!-- Altitude deviation warning =====================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWC_CCHORD" Continuous="true">
             <Range LowerBound="1" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="cchordshort" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION_SHORT" Continuous="false">
-            <Range LowerBound="1" />
-        </Sound>
-
-        <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FMA_TRIPLE_CLICK" Continuous="false">
-            <Range LowerBound="1"/>
         </Sound>
 
         <!-- Stall warning =====================================================================-->
