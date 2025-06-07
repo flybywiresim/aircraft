@@ -16,7 +16,7 @@ export class RegisteredSimVar<T> implements MutableAccessible<T> {
   }
 
   /** @inheritdoc */
-  public set(value: T): void {
+  public set(value: T): Promise<void> {
     return Coherent.call('setValueReg_Number', this.id, value);
   }
 }
