@@ -10,6 +10,7 @@ import {
   WeatherMessage,
   AtisType,
   AtsuTimestamp,
+  WindUplinkMessage,
 } from '../../common/src';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
@@ -58,6 +59,7 @@ export class Aoc {
         this.blacklistedMessageIds.push(uid);
       }
     });
+    this.digitalInputs.addDataCallback('requestWinds', (sentCallback) => this.requestWinds(sentCallback));
   }
 
   public powerUp(): void {
@@ -166,5 +168,10 @@ export class Aoc {
 
       this.digitalOutputs.resynchronizeAocMessage(message);
     });
+  }
+
+  private async requestWinds(sentCallback: () => void): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    if (!this.poweredUp) return [AtsuStatusCodes.ComFailed, null];
+    return this.digitalOutputs.requestWinds(sentCallback);
   }
 }

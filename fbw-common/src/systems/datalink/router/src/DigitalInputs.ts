@@ -15,6 +15,7 @@ import {
   WeatherMessage,
   RmpDataBusTypes,
   Conversion,
+  WindUplinkMessage,
 } from '../../common/src';
 import { AtcAocRouterMessages, FmsRouterMessages } from './databus';
 import { AtsuFlightPhase } from '../../common/src/types/AtsuFlightPhase';
@@ -33,6 +34,7 @@ export type RouterDigitalInputCallbacks = {
   connect: (callsign: string) => Promise<AtsuStatusCodes>;
   disconnect: () => Promise<AtsuStatusCodes>;
   stationAvailable: (callsign: string) => Promise<AtsuStatusCodes>;
+  requestWinds: (sentCallback: () => void) => Promise<[AtsuStatusCodes, WindUplinkMessage | null]>;
 };
 
 export class DigitalInputs {
@@ -53,6 +55,7 @@ export class DigitalInputs {
     connect: null,
     disconnect: null,
     stationAvailable: null,
+    requestWinds: null,
   };
 
   public FlightPhase: AtsuFlightPhase = AtsuFlightPhase.Preflight;
@@ -292,6 +295,24 @@ export class DigitalInputs {
     });
     this.subscriber.on('vhf3Powered').handle((powered: boolean) => (this.Vhf3Powered = powered));
     this.subscriber.on('vhf3DataMode').handle((dataMode: boolean) => (this.Vhf3DataMode = dataMode));
+
+    this.subscriber.on('routerRequestWinds').handle(async (request) => {
+      if (this.callbacks.requestWinds !== null) {
+        const synchronized = this.synchronizedAoc || this.synchronizedAtc;
+        this.callbacks
+          .requestWinds(() => this.publisher.pub('routerRequestSent', request.requestId, synchronized, false))
+          .then((response) => {
+            this.publisher.pub('routerReceivedWinds', { requestId: request.requestId, response }, synchronized, false);
+          });
+      } else {
+        this.publisher.pub(
+          'routerReceivedWinds',
+          { requestId: request.requestId, response: [AtsuStatusCodes.ComFailed, null] },
+          this.synchronizedAtc,
+          false,
+        );
+      }
+    });
   }
 
   public powerUp(): void {

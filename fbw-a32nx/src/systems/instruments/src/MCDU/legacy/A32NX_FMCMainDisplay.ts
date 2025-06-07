@@ -5571,6 +5571,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       throw new Error(`Flight plan ${forPlan} does not exist.`);
     }
 
+    const [status, uplink] = await this.atsu.receiveWindUplink(() => console.log('Uplinking winds with ATSU...'));
+    if (status === AtsuStatusCodes.Ok) {
+      console.log(
+        `Uplinked winds successfully. Alternate wind ${uplink.alternate.averageWindDirection.toFixed(0).padStart(3, '0')}°/${uplink.alternate.averageWindSpeed}°`,
+      );
+    }
+
     const data = await getSimBriefOfp(this.mcdu, () => {});
 
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();

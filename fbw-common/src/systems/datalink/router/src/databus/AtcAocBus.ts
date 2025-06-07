@@ -9,6 +9,7 @@ import {
   FreetextMessage,
   OclMessage,
   WeatherMessage,
+  WindUplinkMessage,
 } from '../../../common/src';
 
 export interface AtcAocRouterMessages {
@@ -25,6 +26,8 @@ export interface AtcAocRouterMessages {
   routerRequestTaf: { requestId: number; icaos: string[] };
   routerRequestSent: number;
   routerReceivedWeather: { requestId: number; response: [AtsuStatusCodes, WeatherMessage] };
+  routerRequestWinds: { requestId: number };
+  routerReceivedWinds: { requestId: number; response: [AtsuStatusCodes, WindUplinkMessage | null] };
 }
 
 export interface RouterAtcAocMessages {
