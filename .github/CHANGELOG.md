@@ -50,6 +50,7 @@
 1. [A32NX/PFD] Add CHECK ALT message - @tracernz (Mike)
 1. [A380X] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
 1. [A380X/PFD] Fixed missing red lines on altitude tape failure indications - @tracernz (Mike)
+1. [A380X/PFD] Fixed logic for the flap position display - @HarmanSingh48 (Harman)
 
 ## 0.13.0
 
