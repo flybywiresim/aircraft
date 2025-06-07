@@ -51,6 +51,10 @@
 1. [A380X] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
 1. [A380X/PFD] Fixed missing red lines on altitude tape failure indications - @tracernz (Mike)
 1. [A380X/PFD] Fixed logic for the flap position display - @HarmanSingh48 (Harman)
+1. [A380X/RMP] Added localvars for RMP frequencies and state for API users - @tracernz (Mike)
+1. [A380X/RMP] Added handling of all COM key events for API users - @tracernz (Mike)
+1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
+1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 
 ## 0.13.0
 
