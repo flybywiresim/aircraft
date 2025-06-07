@@ -29,22 +29,22 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
     return this.mainFlightPlan.destinationAirport;
   }
 
-  clone(fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {
+  clone(fromMainFlightPlan: BaseFlightPlan<P>, options?: number): AlternateFlightPlan<P> {
     const newPlan = new AlternateFlightPlan(fromMainFlightPlan.index, fromMainFlightPlan);
 
     newPlan.version = this.version;
-    newPlan.originSegment = this.originSegment.clone(newPlan);
-    newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan);
-    newPlan.departureSegment = this.departureSegment.clone(newPlan);
-    newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan);
-    newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan);
-    newPlan.arrivalEnrouteTransitionSegment = this.arrivalEnrouteTransitionSegment.clone(newPlan);
-    newPlan.arrivalSegment = this.arrivalSegment.clone(newPlan);
-    newPlan.arrivalRunwayTransitionSegment = this.arrivalRunwayTransitionSegment.clone(newPlan);
-    newPlan.approachViaSegment = this.approachViaSegment.clone(newPlan);
-    newPlan.approachSegment = this.approachSegment.clone(newPlan);
-    newPlan.destinationSegment = this.destinationSegment.clone(newPlan);
-    newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan);
+    newPlan.originSegment = this.originSegment.clone(newPlan, options);
+    newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan, options);
+    newPlan.departureSegment = this.departureSegment.clone(newPlan, options);
+    newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan, options);
+    newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan, options);
+    newPlan.arrivalEnrouteTransitionSegment = this.arrivalEnrouteTransitionSegment.clone(newPlan, options);
+    newPlan.arrivalSegment = this.arrivalSegment.clone(newPlan, options);
+    newPlan.arrivalRunwayTransitionSegment = this.arrivalRunwayTransitionSegment.clone(newPlan, options);
+    newPlan.approachViaSegment = this.approachViaSegment.clone(newPlan, options);
+    newPlan.approachSegment = this.approachSegment.clone(newPlan, options);
+    newPlan.destinationSegment = this.destinationSegment.clone(newPlan, options);
+    newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan, options);
 
     newPlan.availableOriginRunways = [...this.availableOriginRunways];
     newPlan.availableDepartures = [...this.availableDepartures];
@@ -82,13 +82,15 @@ export class AlternateOriginSegment extends OriginSegment {
     return this.mainDestinationSegment.destinationAirport;
   }
 
-  clone(forPlan: AlternateFlightPlan<FlightPlanPerformanceData>): AlternateOriginSegment {
+  clone(forPlan: AlternateFlightPlan<FlightPlanPerformanceData>, options?: number): AlternateOriginSegment {
     // Important that we don't pass in `this.mainDestinationSegment` here, since this will be of the old plan.
     // Instead, pass in `mainDestinationSegment` on the origin of the new plan
     const newSegment = new AlternateOriginSegment(forPlan, forPlan.originSegment.mainDestinationSegment);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.airport = this.airport;
     newSegment.runway = this.runway;
 

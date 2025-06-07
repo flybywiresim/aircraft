@@ -2,46 +2,55 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachUtils, NXUnits, RunwayUtils } from '@flybywiresim/fbw-sdk';
+import { ApproachUtils, NXUnits, RunwayUtils, ApproachType } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FmsFormatters } from '../legacy/FmsFormatters';
+import { FlightPlanIndex } from '../../../../fmgc/src/flightplanning/FlightPlanManager';
 
 export class CDUPerformancePage {
-  private static _timer;
-  private static _lastPhase;
+  private static _timer: number | undefined = undefined;
+  private static _lastPhase: FmgcFlightPhase | undefined = undefined;
 
-  static ShowPage(mcdu: LegacyFmsPageInterface, _phase = undefined) {
+  static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, _phase = undefined) {
+    if (forPlan >= FlightPlanIndex.FirstSecondary) {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.onUnload = () => {
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+      };
+    }
     mcdu.activeSystem = 'FMGC';
 
     switch (_phase || mcdu.flightPhaseManager.phase) {
       case FmgcFlightPhase.Preflight:
-        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+        CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         break;
       case FmgcFlightPhase.Takeoff:
-        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+        CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         break;
       case FmgcFlightPhase.Climb:
-        CDUPerformancePage.ShowCLBPage(mcdu);
+        CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         break;
       case FmgcFlightPhase.Cruise:
-        CDUPerformancePage.ShowCRZPage(mcdu);
+        CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
         break;
       case FmgcFlightPhase.Descent:
-        CDUPerformancePage.ShowDESPage(mcdu);
+        CDUPerformancePage.ShowDESPage(mcdu, forPlan);
         break;
       case FmgcFlightPhase.Approach:
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
         break;
       case FmgcFlightPhase.GoAround:
-        CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+        CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan);
         break;
     }
   }
-  static ShowTAKEOFFPage(mcdu: LegacyFmsPageInterface) {
+  static ShowTAKEOFFPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageTakeoff;
     CDUPerformancePage._timer = 0;
@@ -50,17 +59,19 @@ export class CDUPerformancePage {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 50) {
         if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
-          CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+          CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         } else {
-          CDUPerformancePage.ShowPage(mcdu);
+          CDUPerformancePage.ShowPage(mcdu, forPlan);
         }
       }
     };
 
-    // TODO SEC F-PLN
-    const targetPlan = mcdu.flightPlanService.active;
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
+    const targetPlan = mcdu.getFlightPlan(forPlan);
 
+    const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC\xa0' : '\xa0\xa0\xa0\xa0';
     let titleColor = 'white';
+
     if (mcdu.flightPhaseManager.phase === FmgcFlightPhase.Takeoff) {
       titleColor = 'green';
     }
@@ -88,73 +99,74 @@ export class CDUPerformancePage {
     let vRCheck = '{small}\xa0\xa0\xa0{end}';
     let v2Check = '{small}\xa0\xa0\xa0{end}';
     if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
-      v1 = '{amber}___{end}';
-      if (mcdu.unconfirmedV1Speed) {
+      v1 = isActivePlan ? '{amber}___{end}' : '{cyan}[\xa0]{end}';
+
+      if (isActivePlan && mcdu.unconfirmedV1Speed) {
         v1Check = `{small}{cyan}${('' + mcdu.unconfirmedV1Speed).padEnd(3)}{end}{end}`;
-      } else if (mcdu.v1Speed) {
-        v1 = `{cyan}${('' + mcdu.v1Speed).padEnd(3)}{end}`;
+      } else if (targetPlan.performanceData.v1) {
+        v1 = `{cyan}${('' + targetPlan.performanceData.v1).padEnd(3)}{end}`;
       }
       mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-        if (value === '') {
+        if (isActivePlan && value === '') {
           if (mcdu.unconfirmedV1Speed) {
-            mcdu.v1Speed = mcdu.unconfirmedV1Speed;
+            mcdu.setV1Speed(mcdu.unconfirmedV1Speed, forPlan);
             mcdu.unconfirmedV1Speed = undefined;
           } else {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             scratchpadCallback();
           }
-          CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+          CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         } else {
-          if (mcdu.trySetV1Speed(value)) {
-            CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+          if (mcdu.trySetV1Speed(value, forPlan)) {
+            CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
           } else {
             scratchpadCallback();
           }
         }
       };
-      vR = '{amber}___{end}';
-      if (mcdu.unconfirmedVRSpeed) {
+      vR = isActivePlan ? '{amber}___{end}' : '{cyan}[\xa0]{end}';
+      if (isActivePlan && mcdu.unconfirmedVRSpeed) {
         vRCheck = `{small}{cyan}${('' + mcdu.unconfirmedVRSpeed).padEnd(3)}{end}{end}`;
-      } else if (mcdu.vRSpeed) {
-        vR = `{cyan}${('' + mcdu.vRSpeed).padEnd(3)}{end}`;
+      } else if (targetPlan.performanceData.vr) {
+        vR = `{cyan}${('' + targetPlan.performanceData.vr).padEnd(3)}{end}`;
       }
       mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (value === '') {
+        if (isActivePlan && value === '') {
           if (mcdu.unconfirmedVRSpeed) {
-            mcdu.vRSpeed = mcdu.unconfirmedVRSpeed;
+            mcdu.setVrSpeed(mcdu.unconfirmedVRSpeed, forPlan);
             mcdu.unconfirmedVRSpeed = undefined;
           } else {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             scratchpadCallback();
           }
-          CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+          CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         } else {
-          if (mcdu.trySetVRSpeed(value)) {
-            CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+          if (mcdu.trySetVRSpeed(value, forPlan)) {
+            CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
           } else {
             scratchpadCallback();
           }
         }
       };
-      v2 = '{amber}___{end}';
-      if (mcdu.unconfirmedV2Speed) {
+      v2 = isActivePlan ? '{amber}___{end}' : '{cyan}[\xa0]{end}';
+      if (isActivePlan && mcdu.unconfirmedV2Speed) {
         v2Check = `{small}{cyan}${('' + mcdu.unconfirmedV2Speed).padEnd(3)}{end}{end}`;
-      } else if (mcdu.v2Speed) {
-        v2 = `{cyan}${('' + mcdu.v2Speed).padEnd(3)}{end}`;
+      } else if (targetPlan.performanceData.v2) {
+        v2 = `{cyan}${('' + targetPlan.performanceData.v2).padEnd(3)}{end}`;
       }
       mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-        if (value === '') {
+        if (isActivePlan && value === '') {
           if (mcdu.unconfirmedV2Speed) {
-            mcdu.v2Speed = mcdu.unconfirmedV2Speed;
+            mcdu.setV2Speed(mcdu.unconfirmedV2Speed, forPlan);
             mcdu.unconfirmedV2Speed = undefined;
           } else {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             scratchpadCallback();
           }
-          CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+          CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         } else {
-          if (mcdu.trySetV2Speed(value)) {
-            CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+          if (mcdu.trySetV2Speed(value, forPlan)) {
+            CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
           } else {
             scratchpadCallback();
           }
@@ -164,14 +176,15 @@ export class CDUPerformancePage {
       v1 = '\xa0\xa0\xa0';
       vR = '\xa0\xa0\xa0';
       v2 = '\xa0\xa0\xa0';
-      if (mcdu.v1Speed) {
-        v1 = `{green}${('' + mcdu.v1Speed).padEnd(3)}{end}`;
+
+      if (targetPlan.performanceData.v1 !== null) {
+        v1 = `{green}${('' + targetPlan.performanceData.v1).padEnd(3)}{end}`;
       }
-      if (mcdu.vRSpeed) {
-        vR = `{green}${('' + mcdu.vRSpeed).padEnd(3)}{end}`;
+      if (targetPlan.performanceData.vr !== null) {
+        vR = `{green}${('' + targetPlan.performanceData.vr).padEnd(3)}{end}`;
       }
-      if (mcdu.v2Speed) {
-        v2 = `{green}${('' + mcdu.v2Speed).padEnd(3)}{end}`;
+      if (targetPlan.performanceData.v2 !== null) {
+        v2 = `{green}${('' + targetPlan.performanceData.v2).padEnd(3)}{end}`;
       }
       mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
         if (value !== '') {
@@ -209,8 +222,8 @@ export class CDUPerformancePage {
       }
 
       mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
-        if (mcdu.trySetTakeOffTransAltitude(value)) {
-          CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+        if (mcdu.trySetTakeOffTransAltitude(value, forPlan)) {
+          CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
@@ -224,19 +237,18 @@ export class CDUPerformancePage {
         : 'cyan'
       : 'white';
 
-    const plan = mcdu.flightPlanService.active;
-    const thrRed = plan.performanceData.thrustReductionAltitude;
-    const thrRedPilot = plan.performanceData.thrustReductionAltitudeIsPilotEntered;
-    const acc = plan.performanceData.accelerationAltitude;
-    const accPilot = plan.performanceData.accelerationAltitudeIsPilotEntered;
-    const eoAcc = plan.performanceData.engineOutAccelerationAltitude;
-    const eoAccPilot = plan.performanceData.engineOutAccelerationAltitudeIsPilotEntered;
+    const thrRed = targetPlan.performanceData.thrustReductionAltitude;
+    const thrRedPilot = targetPlan.performanceData.thrustReductionAltitudeIsPilotEntered;
+    const acc = targetPlan.performanceData.accelerationAltitude;
+    const accPilot = targetPlan.performanceData.accelerationAltitudeIsPilotEntered;
+    const eoAcc = targetPlan.performanceData.engineOutAccelerationAltitude;
+    const eoAccPilot = targetPlan.performanceData.engineOutAccelerationAltitudeIsPilotEntered;
 
     const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== null ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== null ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
 
     mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
-      if (mcdu.trySetThrustReductionAccelerationAltitude(value)) {
-        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+      if (mcdu.trySetThrustReductionAccelerationAltitude(value, forPlan)) {
+        CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
@@ -245,8 +257,8 @@ export class CDUPerformancePage {
     // eng out acceleration altitude
     const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
     mcdu.onRightInput[4] = (value, scratchpadCallback) => {
-      if (mcdu.trySetEngineOutAcceleration(value)) {
-        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+      if (mcdu.trySetEngineOutAcceleration(value, forPlan)) {
+        CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
@@ -256,7 +268,7 @@ export class CDUPerformancePage {
     let flpRetrCell = '---';
     let sltRetrCell = '---';
     let cleanCell = '---';
-    if (isFinite(mcdu.zeroFuelWeight)) {
+    if (Number.isFinite(targetPlan.performanceData.zeroFuelWeight)) {
       const flapSpeed = mcdu.computedVfs;
       if (flapSpeed !== 0) {
         flpRetrCell = `{green}${flapSpeed.toFixed(0)}{end}`;
@@ -288,24 +300,25 @@ export class CDUPerformancePage {
     // variable (yuck) or encode it using a very small, but negative value
     // such as -0.001.
     const formattedThs =
-      mcdu.ths !== null
-        ? mcdu.ths >= 0 && !Object.is(mcdu.ths, -0)
-          ? `UP${Math.abs(mcdu.ths).toFixed(1)}`
-          : `DN${Math.abs(mcdu.ths).toFixed(1)}`
+      targetPlan.performanceData.trimmableHorizontalStabilizer !== null
+        ? targetPlan.performanceData.trimmableHorizontalStabilizer >= 0 &&
+          !Object.is(targetPlan.performanceData.trimmableHorizontalStabilizer, -0)
+          ? `UP${Math.abs(targetPlan.performanceData.trimmableHorizontalStabilizer).toFixed(1)}`
+          : `DN${Math.abs(targetPlan.performanceData.trimmableHorizontalStabilizer).toFixed(1)}`
         : '';
     if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
-      const flaps = mcdu.flaps !== null ? mcdu.flaps : '[]';
+      const flaps = targetPlan.performanceData.takeoffFlaps !== null ? targetPlan.performanceData.takeoffFlaps : '[]';
       const ths = formattedThs ? formattedThs : '[\xa0\xa0\xa0]';
       flapsThs = `${flaps}/${ths}[color]cyan`;
       mcdu.onRightInput[2] = (value, scratchpadCallback) => {
-        if (mcdu.trySetFlapsTHS(value)) {
-          CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+        if (mcdu.trySetFlapsTHS(value, forPlan)) {
+          CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
       };
     } else {
-      const flaps = mcdu.flaps !== null ? mcdu.flaps : '';
+      const flaps = targetPlan.performanceData.takeoffFlaps !== null ? targetPlan.performanceData.takeoffFlaps : '';
       const ths = formattedThs ? formattedThs : '\xa0\xa0\xa0\xa0\xa0';
       flapsThs = `${flaps}/${ths}[color]green`;
     }
@@ -313,32 +326,32 @@ export class CDUPerformancePage {
     // flex takeoff temperature
     let flexTakeOffTempCell = '[\xa0\xa0]°[color]cyan';
     if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
-      if (isFinite(mcdu.perfTOTemp)) {
+      if (Number.isFinite(targetPlan.performanceData.flexTakeoffTemperature)) {
         if (mcdu._toFlexChecked) {
-          flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]cyan`;
+          flexTakeOffTempCell = `${targetPlan.performanceData.flexTakeoffTemperature.toFixed(0)}°[color]cyan`;
         } else {
-          flexTakeOffTempCell = `{small}${mcdu.perfTOTemp.toFixed(0)}{end}${flexTakeOffTempCell}[color]cyan`;
+          flexTakeOffTempCell = `{small}${targetPlan.performanceData.flexTakeoffTemperature.toFixed(0)}{end}${flexTakeOffTempCell}[color]cyan`;
         }
       }
       mcdu.onRightInput[3] = (value, scratchpadCallback) => {
         if (mcdu._toFlexChecked) {
-          if (mcdu.setPerfTOFlexTemp(value)) {
-            CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+          if (mcdu.setPerfTOFlexTemp(value, forPlan)) {
+            CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
           } else {
             scratchpadCallback();
           }
         } else {
-          if (value === '' || mcdu.setPerfTOFlexTemp(value)) {
+          if (value === '' || mcdu.setPerfTOFlexTemp(value, forPlan)) {
             mcdu._toFlexChecked = true;
-            CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+            CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
           } else {
             scratchpadCallback();
           }
         }
       };
     } else {
-      if (isFinite(mcdu.perfTOTemp)) {
-        flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]green`;
+      if (Number.isFinite(targetPlan.performanceData.flexTakeoffTemperature)) {
+        flexTakeOffTempCell = `${targetPlan.performanceData.flexTakeoffTemperature.toFixed(0)}°[color]green`;
       } else {
         flexTakeOffTempCell = '';
       }
@@ -347,32 +360,35 @@ export class CDUPerformancePage {
     let next = 'NEXT\xa0';
     let nextPhase = 'PHASE>';
     if (
+      isActivePlan &&
       (mcdu.unconfirmedV1Speed || mcdu.unconfirmedVRSpeed || mcdu.unconfirmedV2Speed || !mcdu._toFlexChecked) &&
       mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff
     ) {
       next = 'CONFIRM\xa0';
       nextPhase = 'TO DATA*';
       mcdu.onRightInput[5] = () => {
-        mcdu.v1Speed = mcdu.unconfirmedV1Speed ? mcdu.unconfirmedV1Speed : mcdu.v1Speed;
-        mcdu.vRSpeed = mcdu.unconfirmedVRSpeed ? mcdu.unconfirmedVRSpeed : mcdu.vRSpeed;
-        mcdu.v2Speed = mcdu.unconfirmedV2Speed ? mcdu.unconfirmedV2Speed : mcdu.v2Speed;
+        mcdu.setV1Speed(mcdu.unconfirmedV1Speed ? mcdu.unconfirmedV1Speed : targetPlan.performanceData.v1, forPlan);
+        mcdu.setVrSpeed(mcdu.unconfirmedVRSpeed ? mcdu.unconfirmedVRSpeed : targetPlan.performanceData.vr, forPlan);
+        mcdu.setV2Speed(mcdu.unconfirmedV2Speed ? mcdu.unconfirmedV2Speed : targetPlan.performanceData.v2, forPlan);
         mcdu.unconfirmedV1Speed = undefined;
         mcdu.unconfirmedVRSpeed = undefined;
         mcdu.unconfirmedV2Speed = undefined;
         mcdu._toFlexChecked = true;
-        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+        CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
       };
     } else {
       mcdu.rightInputDelay[5] = () => {
         return mcdu.getDelaySwitchPage();
       };
       mcdu.onRightInput[5] = () => {
-        CDUPerformancePage.ShowCLBPage(mcdu);
+        CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
       };
     }
 
+    const titleCell = `${titlePrefix}TAKE\xa0OFF\xa0RWY\xa0{green}${runway.padStart(3, '\xa0')}{end}\xa0\xa0\xa0\xa0[color]${titleColor}`;
+
     mcdu.setTemplate([
-      ['TAKE OFF RWY\xa0{green}' + runway.padStart(3, '\xa0') + '{end}[color]' + titleColor],
+      [titleCell],
       ['\xa0V1\xa0\xa0FLP RETR', ''],
       [v1 + v1Check + '\xa0F=' + flpRetrCell, ''],
       ['\xa0VR\xa0\xa0SLT RETR', 'TO SHIFT\xa0'],
@@ -387,7 +403,7 @@ export class CDUPerformancePage {
       ['<TO DATA[color]inop', nextPhase],
     ]);
   }
-  static ShowCLBPage(mcdu: LegacyFmsPageInterface, confirmAppr = false) {
+  static ShowCLBPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, confirmAppr = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageClb;
     CDUPerformancePage._timer = 0;
@@ -396,25 +412,33 @@ export class CDUPerformancePage {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
         if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
-          CDUPerformancePage.ShowCLBPage(mcdu);
+          CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         } else {
-          CDUPerformancePage.ShowPage(mcdu);
+          CDUPerformancePage.ShowPage(mcdu, forPlan);
         }
       }
     };
 
-    const hasFromToPair =
-      mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport; // TODO use the right flight plan
-    const showManagedSpeed = hasFromToPair && mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex);
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
+    const targetPlan = mcdu.getFlightPlan(forPlan);
+
+    const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
+    const showManagedSpeed = hasFromToPair && targetPlan.performanceData.costIndex !== null;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Climb;
     const isTakeoffOrClimbActive = isPhaseActive || mcdu.flightPhaseManager.phase === FmgcFlightPhase.Takeoff;
+    const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
     const titleColor = isPhaseActive ? 'green' : 'white';
+    const preselectedClimbSpeed = targetPlan.performanceData.preselectedClimbSpeed;
     const isSelected =
-      (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) ||
-      (!isPhaseActive && mcdu.preSelectedClbSpeed !== undefined);
+      (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) || (!isPhaseActive && preselectedClimbSpeed !== null);
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(mcdu, hasFromToPair, true);
-    const canClickManagedSpeed = showManagedSpeed && mcdu.preSelectedClbSpeed !== undefined && !isPhaseActive;
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
+      targetPlan.performanceData.costIndex,
+      isActivePlan,
+      hasFromToPair,
+      true,
+    );
+    const canClickManagedSpeed = showManagedSpeed && preselectedClimbSpeed !== null && !isPhaseActive;
 
     // Predictions to altitude
     const vnavDriver = mcdu.guidanceController.vnavDriver;
@@ -426,8 +450,11 @@ export class CDUPerformancePage {
         ? mcdu.perfClbPredToAltitudePilot
         : Math.min(cruiseAltitude, fcuAltitude);
 
-    const predToLabel = isTakeoffOrClimbActive ? '\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}' : '';
-    const predToCell = isTakeoffOrClimbActive
+    const shouldShowPredTo = isActivePlan && isTakeoffOrClimbActive;
+    const shouldShowExpedite = isActivePlan && isPhaseActive;
+
+    const predToLabel = shouldShowPredTo ? '\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}' : '';
+    const predToCell = shouldShowPredTo
       ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.getOriginTransitionAltitude())}[color]cyan`
       : '';
 
@@ -437,12 +464,14 @@ export class CDUPerformancePage {
     let expeditePredToDistanceCell = '';
     let expeditePredToTimeCell = '';
 
-    if (isTakeoffOrClimbActive && vnavDriver) {
+    if (shouldShowPredTo && vnavDriver) {
       [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
         vnavDriver.ndProfile,
         altitudeToPredict,
         true,
       );
+    }
+    if (shouldShowExpedite && vnavDriver) {
       [expeditePredToDistanceCell, expeditePredToTimeCell] =
         CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
           vnavDriver.expediteProfile,
@@ -473,8 +502,8 @@ export class CDUPerformancePage {
       managedSpeedCell = `${canClickManagedSpeed ? '*' : '\xa0'}${climbSpeed.toFixed(0)}`;
 
       mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
-        if (mcdu.trySetPreSelectedClimbSpeed(value)) {
-          CDUPerformancePage.ShowCLBPage(mcdu);
+        if (mcdu.trySetPreSelectedClimbSpeed(value, forPlan)) {
+          CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
@@ -484,13 +513,13 @@ export class CDUPerformancePage {
       mcdu,
       isPhaseActive,
       isSelected,
-      mcdu.preSelectedClbSpeed,
+      targetPlan.performanceData.preselectedClimbSpeed,
     );
 
     if (hasFromToPair) {
       mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value)) {
-          CDUPerformancePage.ShowCLBPage(mcdu);
+        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
+          CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
@@ -499,57 +528,60 @@ export class CDUPerformancePage {
 
     if (canClickManagedSpeed) {
       mcdu.onLeftInput[2] = (_, scratchpadCallback) => {
-        if (mcdu.trySetPreSelectedClimbSpeed(Keypad.clrValue)) {
-          CDUPerformancePage.ShowCLBPage(mcdu);
+        if (mcdu.trySetPreSelectedClimbSpeed(Keypad.clrValue, forPlan)) {
+          CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         }
 
         scratchpadCallback();
       };
     }
 
-    if (isTakeoffOrClimbActive) {
+    if (shouldShowPredTo) {
       mcdu.onRightInput[1] = (value, scratchpadCallback) => {
         if (mcdu.trySetPerfClbPredToAltitude(value)) {
-          CDUPerformancePage.ShowCLBPage(mcdu);
+          CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
       };
     }
 
-    const [toUtcLabel, toDistLabel] = isTakeoffOrClimbActive ? ['\xa0UTC', 'DIST'] : ['', ''];
+    const [toUtcLabel, toDistLabel] = shouldShowPredTo ? ['\xa0UTC', 'DIST'] : ['', ''];
 
     const bottomRowLabels = ['\xa0PREV', 'NEXT\xa0'];
     const bottomRowCells = ['<PHASE', 'PHASE>'];
     mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
-    if (isPhaseActive) {
+    if (isActivePlan && isPhaseActive) {
       if (confirmAppr) {
         bottomRowLabels[0] = '\xa0CONFIRM[color]amber';
         bottomRowCells[0] = '*APPR PHASE[color]amber';
         mcdu.onLeftInput[5] = async () => {
           if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
-            CDUPerformancePage.ShowAPPRPage(mcdu);
+            CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
           }
         };
       } else {
         bottomRowLabels[0] = '\xa0ACTIVATE[color]cyan';
         bottomRowCells[0] = '{APPR PHASE[color]cyan';
         mcdu.onLeftInput[5] = () => {
-          CDUPerformancePage.ShowCLBPage(mcdu, true);
+          CDUPerformancePage.ShowCLBPage(mcdu, forPlan, true);
         };
       }
     } else {
       mcdu.onLeftInput[5] = () => {
-        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+        CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
       };
     }
 
     mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
     mcdu.onRightInput[5] = () => {
-      CDUPerformancePage.ShowCRZPage(mcdu);
+      CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
     };
+
+    const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}CLB{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
+
     mcdu.setTemplate([
-      [`\xa0CLB[color]${titleColor}`],
+      [titleCell],
       ['ACT MODE'],
       [`${actModeCell}[color]green`],
       ['CI'],
@@ -563,13 +595,15 @@ export class CDUPerformancePage {
       [selectedSpeedTitle],
       [selectedSpeedCell, isSelected ? predToDistanceCell : '', isSelected ? predToTimeCell : ''],
       [''],
-      isPhaseActive ? ['{small}EXPEDITE{end}[color]green', expeditePredToDistanceCell, expeditePredToTimeCell] : [''],
+      shouldShowExpedite
+        ? ['{small}EXPEDITE{end}[color]green', expeditePredToDistanceCell, expeditePredToTimeCell]
+        : [''],
       bottomRowLabels,
       bottomRowCells,
     ]);
   }
 
-  static ShowCRZPage(mcdu: LegacyFmsPageInterface, confirmAppr = false) {
+  static ShowCRZPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, confirmAppr = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageCrz;
     CDUPerformancePage._timer = 0;
@@ -578,43 +612,55 @@ export class CDUPerformancePage {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
         if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
-          CDUPerformancePage.ShowCRZPage(mcdu);
+          CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
         } else {
-          CDUPerformancePage.ShowPage(mcdu);
+          CDUPerformancePage.ShowPage(mcdu, forPlan);
         }
       }
     };
 
-    const hasFromToPair =
-      mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport; // TODO use the right flight plan
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
+    const targetPlan = mcdu.getFlightPlan(forPlan);
+
+    const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Cruise;
+    const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
     const titleColor = isPhaseActive ? 'green' : 'white';
+    const preselectedCruiseSpeed = targetPlan.performanceData.preselectedCruiseSpeed;
     const isSelected =
-      (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) ||
-      (!isPhaseActive && mcdu.preSelectedCrzSpeed !== undefined);
+      (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) || (!isPhaseActive && preselectedCruiseSpeed !== null);
     const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(mcdu, hasFromToPair, true);
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
+      targetPlan.performanceData.costIndex,
+      isActivePlan,
+      hasFromToPair,
+      true,
+    );
+
+    const shouldShowToTdInformation = isActivePlan && isFlying;
+    const shouldShowCabinRate = isActivePlan;
 
     // TODO: Figure out correct condition
-    const showManagedSpeed = hasFromToPair && mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex);
-    const canClickManagedSpeed = showManagedSpeed && mcdu.preSelectedCrzSpeed !== undefined && !isPhaseActive;
+    const showManagedSpeed = hasFromToPair && targetPlan.performanceData.costIndex !== null;
+    const canClickManagedSpeed = showManagedSpeed && preselectedCruiseSpeed !== null && !isPhaseActive;
     let managedSpeedCell = '{small}\xa0---/---{end}[color]white';
     if (
       showManagedSpeed &&
-      mcdu.cruiseLevel &&
+      targetPlan.performanceData.cruiseFlightLevel !== null &&
       Number.isFinite(mcdu.managedSpeedCruise) &&
       Number.isFinite(mcdu.managedSpeedCruiseMach)
     ) {
-      const shouldShowCruiseMach = mcdu.cruiseLevel > 250;
+      const shouldShowCruiseMach = targetPlan.performanceData.cruiseFlightLevel > 250;
       managedSpeedCell = `{small}${canClickManagedSpeed ? '*' : '\xa0'}${shouldShowCruiseMach ? mcdu.managedSpeedCruiseMach.toFixed(2).replace('0.', '.') : mcdu.managedSpeedCruise.toFixed(0)}{end}[color]green`;
     }
+
     const preselTitle = isPhaseActive ? '' : 'PRESEL';
     let preselCell = '';
     if (!isPhaseActive) {
-      const hasPreselectedSpeedOrMach = mcdu.preSelectedCrzSpeed !== undefined;
+      const hasPreselectedSpeedOrMach = preselectedCruiseSpeed !== null;
       if (hasPreselectedSpeedOrMach) {
-        preselCell = `\xa0${mcdu.preSelectedCrzSpeed < 1 ? mcdu.preSelectedCrzSpeed.toFixed(2).replace('0.', '.') : mcdu.preSelectedCrzSpeed.toFixed(0)}[color]cyan`;
+        preselCell = `\xa0${preselectedCruiseSpeed < 1 ? preselectedCruiseSpeed.toFixed(2).replace('0.', '.') : preselectedCruiseSpeed.toFixed(0)}[color]cyan`;
       } else {
         preselCell = '{small}*{end}[ ][color]cyan';
       }
@@ -622,8 +668,8 @@ export class CDUPerformancePage {
 
     if (hasFromToPair) {
       mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value)) {
-          CDUPerformancePage.ShowCRZPage(mcdu);
+        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
+          CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
@@ -633,11 +679,13 @@ export class CDUPerformancePage {
     const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
 
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
-    const [toUtcLabel, toDistLabel] = isFlying ? ['\xa0UTC', 'DIST'] : ['', ''];
-    const [toReasonCell, toDistCell, toTimeCell] = isFlying
+    const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
+    const [toReasonCell, toDistCell, toTimeCell] = shouldShowToTdInformation
       ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu)
       : ['', '', ''];
-    const desCabinRateCell = '{small}-350{end}';
+
+    const desCabinRateCell = shouldShowCabinRate ? '{small}-350{end}' : '';
+
     const shouldShowStepAltsOption =
       mcdu.cruiseLevel &&
       (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Descent ||
@@ -645,72 +693,82 @@ export class CDUPerformancePage {
 
     const bottomRowLabels = ['\xa0PREV', 'NEXT\xa0'];
     const bottomRowCells = ['<PHASE', 'PHASE>'];
+
     mcdu.leftInputDelay[5] = () => {
       return mcdu.getDelaySwitchPage();
     };
-    if (isPhaseActive) {
+
+    if (isActivePlan && isPhaseActive) {
       if (confirmAppr) {
         bottomRowLabels[0] = '\xa0CONFIRM[color]amber';
         bottomRowCells[0] = '*APPR PHASE[color]amber';
         mcdu.onLeftInput[5] = async () => {
           if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
-            CDUPerformancePage.ShowAPPRPage(mcdu);
+            CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
           }
         };
       } else {
         bottomRowLabels[0] = '\xa0ACTIVATE[color]cyan';
         bottomRowCells[0] = '{APPR PHASE[color]cyan';
         mcdu.onLeftInput[5] = () => {
-          CDUPerformancePage.ShowCRZPage(mcdu, true);
+          CDUPerformancePage.ShowCRZPage(mcdu, forPlan, true);
         };
       }
     } else {
       mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
-        if (mcdu.trySetPreSelectedCruiseSpeed(value)) {
-          CDUPerformancePage.ShowCRZPage(mcdu);
+        if (mcdu.trySetPreSelectedCruiseSpeed(value, forPlan)) {
+          CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
       };
       mcdu.onLeftInput[5] = () => {
-        CDUPerformancePage.ShowCLBPage(mcdu);
+        CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
       };
     }
     if (canClickManagedSpeed) {
       mcdu.onLeftInput[2] = (_, scratchpadCallback) => {
-        if (mcdu.trySetPreSelectedCruiseSpeed(Keypad.clrValue)) {
-          CDUPerformancePage.ShowCRZPage(mcdu);
+        if (mcdu.trySetPreSelectedCruiseSpeed(Keypad.clrValue, forPlan)) {
+          CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
         }
 
         scratchpadCallback();
       };
     }
-    mcdu.onRightInput[3] = () => {
-      // DES CABIN RATE
-      mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
-    };
+
+    if (shouldShowCabinRate) {
+      mcdu.onRightInput[3] = () => {
+        // DES CABIN RATE
+        mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+      };
+    }
+
     if (shouldShowStepAltsOption) {
       CDUStepAltsPage.Return = () => {
-        CDUPerformancePage.ShowCRZPage(mcdu, false);
+        CDUPerformancePage.ShowCRZPage(mcdu, forPlan, false);
       };
       mcdu.onRightInput[4] = () => {
         CDUStepAltsPage.ShowPage(mcdu);
       };
     }
+
     mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
     mcdu.onRightInput[5] = () => {
-      CDUPerformancePage.ShowDESPage(mcdu);
+      CDUPerformancePage.ShowDESPage(mcdu, forPlan);
     };
+
+    const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}CRZ{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
+
     mcdu.setTemplate([
-      [`\xa0CRZ[color]${titleColor}`],
+      [titleCell],
       ['ACT MODE', 'DEST EFOB', timeLabel],
       [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
       ['CI'],
       [costIndexCell, toReasonCell],
       ['MANAGED', toDistLabel, toUtcLabel],
       [managedSpeedCell, toDistCell, toTimeCell],
-      [preselTitle, 'DES CABIN RATE'],
-      [preselCell, `\xa0{cyan}${desCabinRateCell}{end}{white}{small}FT/MN{end}{end}`],
+      [preselTitle, shouldShowCabinRate ? 'DES CABIN RATE' : ''],
+      [preselCell, shouldShowCabinRate ? `\xa0{cyan}${desCabinRateCell}{end}{white}{small}FT/MN{end}{end}` : ''],
       [''],
       ['', shouldShowStepAltsOption ? 'STEP ALTS>' : ''],
       bottomRowLabels,
@@ -718,7 +776,7 @@ export class CDUPerformancePage {
     ]);
   }
 
-  static ShowDESPage(mcdu: LegacyFmsPageInterface, confirmAppr = false) {
+  static ShowDESPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, confirmAppr = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageDes;
     CDUPerformancePage._timer = 0;
@@ -727,20 +785,25 @@ export class CDUPerformancePage {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
         if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
-          CDUPerformancePage.ShowDESPage(mcdu);
+          CDUPerformancePage.ShowDESPage(mcdu, forPlan);
         } else {
-          CDUPerformancePage.ShowPage(mcdu);
+          CDUPerformancePage.ShowPage(mcdu, forPlan);
         }
       }
     };
 
-    const hasFromToPair =
-      mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport; // TODO use the right flight plan
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
+    const targetPlan = mcdu.getFlightPlan(forPlan);
+
+    const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Descent;
+    const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
     const titleColor = isPhaseActive ? 'green' : 'white';
     const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
     const isSelected = isPhaseActive && Simplane.getAutoPilotAirspeedSelected();
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
+
+    const shouldShowPredTo = isActivePlan && isPhaseActive;
 
     // Predictions to altitude
     const vnavDriver = mcdu.guidanceController.vnavDriver;
@@ -748,15 +811,15 @@ export class CDUPerformancePage {
     const altitudeToPredict =
       mcdu.perfDesPredToAltitudePilot !== undefined ? mcdu.perfDesPredToAltitudePilot : fcuAltitude;
 
-    const predToLabel = isPhaseActive ? '\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}' : '';
-    const predToCell = isPhaseActive
+    const predToLabel = shouldShowPredTo ? '\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}' : '';
+    const predToCell = shouldShowPredTo
       ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.getDestinationTransitionLevel() * 100)}[color]cyan`
       : '';
 
     let predToDistanceCell = '';
     let predToTimeCell = '';
 
-    if (isPhaseActive && vnavDriver) {
+    if (shouldShowPredTo && vnavDriver) {
       [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(
         vnavDriver.ndProfile,
         altitudeToPredict,
@@ -764,18 +827,26 @@ export class CDUPerformancePage {
       );
     }
 
-    const costIndexCell = CDUPerformancePage.formatCostIndexCell(mcdu, hasFromToPair, !isPhaseActive);
+    const costIndexCell = CDUPerformancePage.formatCostIndexCell(
+      targetPlan.performanceData.costIndex,
+      isActivePlan,
+      hasFromToPair,
+      !isPhaseActive,
+    );
 
-    const econDesPilotEntered = mcdu.managedSpeedDescendPilot !== undefined;
-    const econDes = econDesPilotEntered ? mcdu.managedSpeedDescendPilot : mcdu.managedSpeedDescend;
-    const econDesMachPilotEntered = mcdu.managedSpeedDescendMachPilot !== undefined;
-    const econDesMach = econDesMachPilotEntered ? mcdu.managedSpeedDescendMachPilot : mcdu.managedSpeedDescendMach;
+    const econDesPilotEntered = targetPlan.performanceData.pilotManagedDescentSpeed !== null;
+    const econDes = econDesPilotEntered
+      ? targetPlan.performanceData.pilotManagedDescentSpeed ?? undefined
+      : mcdu.managedSpeedDescend;
+    const econDesMachPilotEntered = targetPlan.performanceData.pilotManagedDescentMach !== null;
+    const econDesMach = econDesMachPilotEntered
+      ? targetPlan.performanceData.pilotManagedDescentMach ?? undefined
+      : mcdu.managedSpeedDescendMach;
 
     // TODO: Figure out correct condition
     const showManagedSpeed =
       hasFromToPair &&
-      mcdu.isCostIndexSet &&
-      Number.isFinite(mcdu.costIndex) &&
+      targetPlan.performanceData.costIndex !== null &&
       econDesMach !== undefined &&
       econDes !== undefined;
     const managedDescentSpeedCellMach = `{${econDesMachPilotEntered ? 'big' : 'small'}}${econDesMach.toFixed(2).replace('0.', '.')}{end}`;
@@ -792,45 +863,48 @@ export class CDUPerformancePage {
     );
     const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
-    const [toUtcLabel, toDistLabel] = isPhaseActive ? ['\xa0UTC', 'DIST'] : ['', ''];
+    const [toUtcLabel, toDistLabel] = shouldShowPredTo ? ['\xa0UTC', 'DIST'] : ['', ''];
 
     const bottomRowLabels = ['\xa0PREV', 'NEXT\xa0'];
     const bottomRowCells = ['<PHASE', 'PHASE>'];
     mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
-    if (isPhaseActive) {
+    if (shouldShowPredTo) {
       mcdu.onRightInput[1] = (value, scratchpadCallback) => {
         if (mcdu.trySetPerfDesPredToAltitude(value)) {
-          CDUPerformancePage.ShowDESPage(mcdu);
+          CDUPerformancePage.ShowDESPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
       };
+    }
 
+    if (isActivePlan && isPhaseActive) {
       if (confirmAppr) {
         bottomRowLabels[0] = '\xa0CONFIRM[color]amber';
         bottomRowCells[0] = '*APPR PHASE[color]amber';
         mcdu.onLeftInput[5] = async () => {
           if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
-            CDUPerformancePage.ShowAPPRPage(mcdu);
+            CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
           }
         };
       } else {
         bottomRowLabels[0] = '\xa0ACTIVATE[color]cyan';
         bottomRowCells[0] = '{APPR PHASE[color]cyan';
         mcdu.onLeftInput[5] = () => {
-          CDUPerformancePage.ShowDESPage(mcdu, true);
+          CDUPerformancePage.ShowDESPage(mcdu, forPlan, true);
         };
       }
     } else {
       mcdu.onLeftInput[5] = () => {
-        CDUPerformancePage.ShowCRZPage(mcdu);
+        CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
       };
     }
+
     // Can only modify cost index until the phase is active
     if (hasFromToPair && !isPhaseActive) {
       mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.tryUpdateCostIndex(value)) {
-          CDUPerformancePage.ShowDESPage(mcdu);
+        if (mcdu.tryUpdateCostIndex(value, forPlan)) {
+          CDUPerformancePage.ShowDESPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
@@ -839,8 +913,8 @@ export class CDUPerformancePage {
 
     if (showManagedSpeed) {
       mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-        if (mcdu.trySetManagedDescentSpeed(value)) {
-          CDUPerformancePage.ShowDESPage(mcdu);
+        if (mcdu.trySetManagedDescentSpeed(value, forPlan)) {
+          CDUPerformancePage.ShowDESPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
@@ -849,10 +923,13 @@ export class CDUPerformancePage {
 
     mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
     mcdu.onRightInput[5] = () => {
-      CDUPerformancePage.ShowAPPRPage(mcdu);
+      CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
     };
+
+    const titleCell = `\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0\xa0\xa0{${titleColor}}DES{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`;
+
     mcdu.setTemplate([
-      [`\xa0DES[color]${titleColor}`],
+      [titleCell],
       ['ACT MODE', 'DEST EFOB', timeLabel],
       [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
       ['CI'],
@@ -868,11 +945,12 @@ export class CDUPerformancePage {
     ]);
   }
 
-  static ShowAPPRPage(mcdu: LegacyFmsPageInterface) {
+  static ShowAPPRPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageAppr;
 
-    const plan = mcdu.flightPlanService.active;
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
+    const plan = mcdu.getFlightPlan(forPlan);
 
     CDUPerformancePage._timer = 0;
     CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
@@ -880,7 +958,7 @@ export class CDUPerformancePage {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
         if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
-          CDUPerformancePage.ShowAPPRPage(mcdu);
+          CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
         }
       }
     };
@@ -889,53 +967,53 @@ export class CDUPerformancePage {
     const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
 
     let qnhCell = '[\xa0\xa0][color]cyan';
-    if (isFinite(mcdu.perfApprQNH)) {
-      if (mcdu.perfApprQNH < 500) {
-        qnhCell = mcdu.perfApprQNH.toFixed(2) + '[color]cyan';
+    if (Number.isFinite(plan.performanceData.approachQnh)) {
+      if (plan.performanceData.approachQnh < 500) {
+        qnhCell = plan.performanceData.approachQnh.toFixed(2) + '[color]cyan';
       } else {
-        qnhCell = mcdu.perfApprQNH.toFixed(0) + '[color]cyan';
+        qnhCell = plan.performanceData.approachQnh.toFixed(0) + '[color]cyan';
       }
-    } else if (closeToDest) {
+    } else if (closeToDest && isActivePlan) {
       qnhCell = '____[color]amber';
     }
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-      if (mcdu.setPerfApprQNH(value)) {
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+      if (mcdu.setPerfApprQNH(value, forPlan)) {
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
     };
 
     let tempCell = '{cyan}[\xa0]°{end}';
-    if (isFinite(mcdu.perfApprTemp)) {
+    if (Number.isFinite(plan.performanceData.approachTemperature)) {
       tempCell =
         '{cyan}' +
-        (mcdu.perfApprTemp >= 0 ? '+' : '-') +
-        ('' + Math.abs(mcdu.perfApprTemp).toFixed(0)).padStart(2).replace(/ /g, '\xa0') +
+        (plan.performanceData.approachTemperature >= 0 ? '+' : '-') +
+        ('' + Math.abs(plan.performanceData.approachTemperature).toFixed(0)).padStart(2).replace(/ /g, '\xa0') +
         '°{end}';
-    } else if (closeToDest) {
+    } else if (closeToDest && isActivePlan) {
       tempCell = '{amber}___°{end}';
     }
     mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-      if (mcdu.setPerfApprTemp(value)) {
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+      if (mcdu.setPerfApprTemp(value, forPlan)) {
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
     };
     let magWindHeadingCell = '[\xa0]';
-    if (mcdu.perfApprWindHeading !== null) {
-      magWindHeadingCell = ('' + mcdu.perfApprWindHeading.toFixed(0)).padStart(3, '0');
+    if (Number.isFinite(plan.performanceData.approachWindDirection)) {
+      magWindHeadingCell = ('' + plan.performanceData.approachWindDirection.toFixed(0)).padStart(3, '0');
     }
     let magWindSpeedCell = '[\xa0]';
-    if (mcdu.perfApprWindSpeed !== null) {
-      magWindSpeedCell = mcdu.perfApprWindSpeed.toFixed(0).padStart(3, '0');
+    if (Number.isFinite(plan.performanceData.approachWindMagnitude)) {
+      magWindSpeedCell = plan.performanceData.approachWindMagnitude.toFixed(0).padStart(3, '0');
     }
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-      if (mcdu.setPerfApprWind(value)) {
+      if (mcdu.setPerfApprWind(value, forPlan)) {
         mcdu.updateTowerHeadwind();
         mcdu.updatePerfSpeeds();
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
@@ -958,8 +1036,8 @@ export class CDUPerformancePage {
       }
     }
     mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
-      if (mcdu.setPerfApprTransAlt(value)) {
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+      if (mcdu.setPerfApprTransAlt(value, forPlan)) {
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
@@ -970,58 +1048,58 @@ export class CDUPerformancePage {
     let flpRetrCell = '---';
     let sltRetrCell = '---';
     let cleanCell = '---';
-    if (isFinite(mcdu.zeroFuelWeight) && mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
+    if (Number.isFinite(plan.performanceData.zeroFuelWeight) && mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
       vappCell = `{cyan}{small}${mcdu.approachSpeeds.vapp.toFixed(0)}{end}{end}`;
       vlsCell = `{green}${mcdu.approachSpeeds.vls.toFixed(0)}{end}`;
       flpRetrCell = `{green}${mcdu.approachSpeeds.f.toFixed(0)}{end}`;
       sltRetrCell = `{green}${mcdu.approachSpeeds.s.toFixed(0)}{end}`;
       cleanCell = `{green}${mcdu.approachSpeeds.gd.toFixed(0)}{end}`;
     }
-    if (isFinite(mcdu.vApp)) {
+    if (Number.isFinite(plan.performanceData.pilotVapp)) {
       // pilot override
-      vappCell = `{cyan}${mcdu.vApp.toFixed(0).padStart(3, '\xa0')}{end}`;
+      vappCell = `{cyan}${plan.performanceData.pilotVapp.toFixed(0).padStart(3, '\xa0')}{end}`;
     }
     mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
-      if (mcdu.setPerfApprVApp(value)) {
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+      if (mcdu.setPerfApprVApp(value, forPlan)) {
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
     };
     mcdu.onRightInput[4] = () => {
-      mcdu.setPerfApprFlaps3(!mcdu.perfApprFlaps3);
+      mcdu.setPerfApprFlaps3(!plan.performanceData.approachFlapsThreeSelected, forPlan);
       mcdu.updatePerfSpeeds();
-      CDUPerformancePage.ShowAPPRPage(mcdu);
+      CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
     };
 
     let baroCell = '[\xa0\xa0\xa0]';
-    if (mcdu.perfApprMDA !== null) {
-      baroCell = mcdu.perfApprMDA.toFixed(0);
+    if (plan.performanceData.approachBaroMinimum !== null) {
+      baroCell = plan.performanceData.approachBaroMinimum.toFixed(0);
     }
     mcdu.onRightInput[1] = (value, scratchpadCallback) => {
-      if (mcdu.setPerfApprMDA(value) && mcdu.setPerfApprDH(Keypad.clrValue)) {
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+      if (mcdu.setPerfApprMDA(value, forPlan) && mcdu.setPerfApprDH(Keypad.clrValue, forPlan)) {
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
     };
 
     const approach = plan.approach;
-    const isILS = approach && approach.type === 5;
+    const isILS = approach && approach.type === ApproachType.Ils;
     let radioLabel = '';
     let radioCell = '';
     if (isILS) {
       radioLabel = 'RADIO';
-      if (typeof mcdu.perfApprDH === 'number') {
-        radioCell = mcdu.perfApprDH.toFixed(0);
-      } else if (mcdu.perfApprDH === 'NO DH') {
+      if (typeof plan.performanceData.approachRadioMinimum === 'number') {
+        radioCell = plan.performanceData.approachRadioMinimum.toFixed(0);
+      } else if (plan.performanceData.approachRadioMinimum === 'NO DH') {
         radioCell = 'NO DH';
       } else {
         radioCell = '[\xa0]';
       }
       mcdu.onRightInput[2] = (value, scratchpadCallback) => {
-        if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(Keypad.clrValue)) {
-          CDUPerformancePage.ShowAPPRPage(mcdu);
+        if (mcdu.setPerfApprDH(value, forPlan) && mcdu.setPerfApprMDA(Keypad.clrValue, forPlan)) {
+          CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
         }
@@ -1030,6 +1108,9 @@ export class CDUPerformancePage {
 
     const bottomRowLabels = ['\xa0PREV', 'NEXT\xa0'];
     const bottomRowCells = ['<PHASE', 'PHASE>'];
+
+    const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
+
     let titleColor = 'white';
     if (mcdu.flightPhaseManager.phase === FmgcFlightPhase.Approach) {
       bottomRowLabels[0] = '';
@@ -1041,14 +1122,14 @@ export class CDUPerformancePage {
           return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-          CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+          CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan);
         };
       } else {
         mcdu.leftInputDelay[5] = () => {
           return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-          CDUPerformancePage.ShowDESPage(mcdu);
+          CDUPerformancePage.ShowDESPage(mcdu, forPlan);
         };
       }
     }
@@ -1060,11 +1141,11 @@ export class CDUPerformancePage {
         return mcdu.getDelaySwitchPage();
       };
       mcdu.onRightInput[5] = () => {
-        CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+        CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan);
       };
     }
 
-    let titleCell = `${'\xa0'.repeat(5)}{${titleColor}}APPR{end}\xa0`;
+    let titleCell = `\xa0${titlePrefix}\xa0{${titleColor}}APPR{end}\xa0`;
     if (approach) {
       const approachName = ApproachUtils.shortApproachName(approach);
       titleCell += `{green}${approachName}{end}` + '\xa0'.repeat(24 - 10 - approachName.length);
@@ -1088,14 +1169,16 @@ export class CDUPerformancePage {
       /* 5l */ ['VAPP\xa0\xa0\xa0VLS', 'LDG CONF\xa0'],
       /* 5L */ [
         `${vappCell}${'\xa0'.repeat(4)}${vlsCell}`,
-        mcdu.perfApprFlaps3 ? '{cyan}CONF3/{end}{small}FULL{end}*' : '{cyan}FULL/{end}{small}CONF3{end}*',
+        plan.performanceData.approachFlapsThreeSelected
+          ? '{cyan}CONF3/{end}{small}FULL{end}*'
+          : '{cyan}FULL/{end}{small}CONF3{end}*',
       ],
       /* 6l */ bottomRowLabels,
       /* 6L */ bottomRowCells,
     ]);
   }
 
-  static ShowGOAROUNDPage(mcdu: LegacyFmsPageInterface, confirmAppr = false) {
+  static ShowGOAROUNDPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, confirmAppr = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.PerformancePageGoAround;
     CDUPerformancePage._timer = 0;
@@ -1104,15 +1187,17 @@ export class CDUPerformancePage {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
         if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
-          CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+          CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan);
         } else {
-          CDUPerformancePage.ShowPage(mcdu);
+          CDUPerformancePage.ShowPage(mcdu, forPlan);
         }
       }
     };
 
-    const haveDestination = mcdu.flightPlanService.active.destinationAirport !== undefined;
+    const plan = mcdu.getFlightPlan(forPlan);
+    const haveDestination = plan.destinationAirport !== undefined;
 
+    const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
     const titleColor = mcdu.flightPhaseManager.phase === FmgcFlightPhase.GoAround ? 'green' : 'white';
     const altitudeColour = haveDestination
       ? mcdu.flightPhaseManager.phase >= FmgcFlightPhase.GoAround
@@ -1120,7 +1205,6 @@ export class CDUPerformancePage {
         : 'cyan'
       : 'white';
 
-    const plan = mcdu.flightPlanService.active;
     const thrRed = plan.performanceData.missedThrustReductionAltitude;
     const thrRedPilot = plan.performanceData.missedThrustReductionAltitudeIsPilotEntered;
     const acc = plan.performanceData.missedAccelerationAltitude;
@@ -1132,16 +1216,16 @@ export class CDUPerformancePage {
     const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== null ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;
 
     mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
-      if (mcdu.trySetThrustReductionAccelerationAltitudeGoaround(value)) {
-        CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+      if (mcdu.trySetThrustReductionAccelerationAltitudeGoaround(value, forPlan)) {
+        CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
     };
 
     mcdu.onRightInput[4] = (value, scratchpadCallback) => {
-      if (mcdu.trySetEngineOutAccelerationAltitudeGoaround(value)) {
-        CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+      if (mcdu.trySetEngineOutAccelerationAltitudeGoaround(value, forPlan)) {
+        CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan);
       } else {
         scratchpadCallback();
       }
@@ -1150,17 +1234,17 @@ export class CDUPerformancePage {
     let flpRetrCell = '---';
     let sltRetrCell = '---';
     let cleanCell = '---';
-    if (isFinite(mcdu.zeroFuelWeight)) {
+    if (Number.isFinite(plan.performanceData.zeroFuelWeight)) {
       const flapSpeed = mcdu.computedVfs;
-      if (isFinite(flapSpeed)) {
+      if (Number.isFinite(flapSpeed)) {
         flpRetrCell = `{green}${flapSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
       const slatSpeed = mcdu.computedVss;
-      if (isFinite(slatSpeed)) {
+      if (Number.isFinite(slatSpeed)) {
         sltRetrCell = `{green}${slatSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
       const cleanSpeed = mcdu.computedVgd;
-      if (isFinite(cleanSpeed)) {
+      if (Number.isFinite(cleanSpeed)) {
         cleanCell = `{green}${cleanSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
     }
@@ -1182,7 +1266,7 @@ export class CDUPerformancePage {
         };
         mcdu.onLeftInput[5] = async () => {
           if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
-            CDUPerformancePage.ShowAPPRPage(mcdu);
+            CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
           }
         };
       } else {
@@ -1192,7 +1276,7 @@ export class CDUPerformancePage {
           return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-          CDUPerformancePage.ShowGOAROUNDPage(mcdu, true);
+          CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan, true);
         };
       }
       bottomRowLabels[1] = '\xa0\xa0\xa0\xa0\xa0\xa0\xa0{white}NEXT{end}\xa0';
@@ -1201,7 +1285,7 @@ export class CDUPerformancePage {
         return mcdu.getDelaySwitchPage();
       };
       mcdu.onRightInput[5] = () => {
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
       };
     } else {
       bottomRowLabels[0] = '\xa0{white}PREV{end}\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
@@ -1210,12 +1294,12 @@ export class CDUPerformancePage {
         return mcdu.getDelaySwitchPage();
       };
       mcdu.onLeftInput[5] = () => {
-        CDUPerformancePage.ShowAPPRPage(mcdu);
+        CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
       };
     }
 
     mcdu.setTemplate([
-      [`{${titleColor}}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0GO\xa0AROUND\xa0\xa0\xa0\xa0\xa0\xa0{end}`],
+      [`{${titleColor}}\xa0${titlePrefix}\xa0\xa0\xa0\xa0\xa0GO\xa0AROUND\xa0\xa0\xa0\xa0\xa0\xa0{end}`],
       ['', '', '\xa0\xa0\xa0\xa0\xa0FLP\xa0RETR\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
       ['', '', `\xa0\xa0\xa0\xa0\xa0\xa0\xa0F=${flpRetrCell}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0`],
       ['', '', '\xa0\xa0\xa0\xa0\xa0SLT RETR\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
@@ -1231,9 +1315,14 @@ export class CDUPerformancePage {
     ]);
   }
 
-  static getClbSelectedTitleAndValue(mcdu: LegacyFmsPageInterface, isPhaseActive, isSelected, preSel) {
+  static getClbSelectedTitleAndValue(
+    mcdu: LegacyFmsPageInterface,
+    isPhaseActive: boolean,
+    isSelected: boolean,
+    preSel?: number,
+  ) {
     if (!isPhaseActive) {
-      return ['PRESEL', (isFinite(preSel) ? '\xa0' + preSel : '*[ ]') + '[color]cyan'];
+      return ['PRESEL', (Number.isFinite(preSel) ? '\xa0' + preSel : '*[ ]') + '[color]cyan'];
     }
 
     if (!isSelected) {
@@ -1259,7 +1348,7 @@ export class CDUPerformancePage {
     }
   }
 
-  static getDesSelectedTitleAndValue(mcdu: LegacyFmsPageInterface, isPhaseActive, isSelected) {
+  static getDesSelectedTitleAndValue(mcdu: LegacyFmsPageInterface, isPhaseActive: boolean, isSelected: boolean) {
     if (!isPhaseActive || !isSelected) {
       return ['', ''];
     }
@@ -1384,13 +1473,18 @@ export class CDUPerformancePage {
     return ['{small}TO{end}\xa0{green}' + reasonCell + '{end}', distCell, timeCell];
   }
 
-  static formatCostIndexCell(mcdu: LegacyFmsPageInterface, hasFromToPair, allowModification) {
+  static formatCostIndexCell(
+    costIndex: number | null,
+    isActive: boolean,
+    hasFromToPair: boolean,
+    allowModification: boolean,
+  ) {
     let costIndexCell = '---';
     if (hasFromToPair) {
-      if (mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex)) {
-        costIndexCell = `${mcdu.costIndex.toFixed(0)}[color]${allowModification ? 'cyan' : 'green'}`;
+      if (costIndex !== null) {
+        costIndexCell = `${costIndex.toFixed(0)}[color]${allowModification ? 'cyan' : 'green'}`;
       } else {
-        costIndexCell = '___[color]amber';
+        costIndexCell = isActive ? '___[color]amber' : '[\xa0][color]cyan';
       }
     }
 
