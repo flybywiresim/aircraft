@@ -1117,6 +1117,26 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_{side}_FLAPS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the flaps out of 40 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 2 for A320
+        - From 1 (inboard) to 3 for A380
+
+- A32NX_{side}_SLATS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the slats out of 27 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 5 for A320
+        - From 1 (inboard) to 8 for A380
+
 - A32NX_LEFT_FLAPS_POSITION_PERCENT
     - Percent
     - Indicates the angle of the left flaps out of 40 degrees
@@ -1132,6 +1152,26 @@
 - A32NX_RIGHT_SLATS_POSITION_PERCENT
     - Percent
     - Indicates the angle of the right slats out of 27 degrees
+
+- A32NX_{position}_FLAPS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the flaps
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 2 for A320
+        - From 1 (inboard) to 3 for A380
+
+- A32NX_{position}_SLATS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the slats
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 5 for A320
+        - From 1 (inboard) to 8 for A380
 
 - A32NX_LEFT_FLAPS_ANGLE
     - Degrees
