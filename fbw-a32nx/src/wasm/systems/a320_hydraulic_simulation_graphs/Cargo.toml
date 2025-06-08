@@ -12,7 +12,7 @@ doc = false
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 a320_systems = { path = "../a320_systems" }
 uom = "0.36.0"
-rand = "0.8.0"
+rand = "0.9.1"
 ntest = "0.9.3"
 num-derive = "0.4.2"
 num-traits = "0.2.14"

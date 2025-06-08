@@ -61,11 +61,11 @@ mod not_wasm {
     use rand_distr::{Distribution, Normal};
 
     pub fn random_number() -> u8 {
-        rand::thread_rng().gen()
+        rand::rng().random()
     }
 
     pub fn random_from_range(from: f64, to: f64) -> f64 {
-        rand::thread_rng().gen_range(from..to)
+        rand::rng().random_range(from..to)
     }
 
     /// Random value from normal distribution. Output limited to -4 / +4 sigma
@@ -73,7 +73,7 @@ mod not_wasm {
         let normal = Normal::new(mean, std_dev).unwrap();
         let limit_offset = 4. * std_dev;
         normal
-            .sample(&mut rand::thread_rng())
+            .sample(&mut rand::rng())
             .max(mean - limit_offset)
             .min(mean + limit_offset)
     }
