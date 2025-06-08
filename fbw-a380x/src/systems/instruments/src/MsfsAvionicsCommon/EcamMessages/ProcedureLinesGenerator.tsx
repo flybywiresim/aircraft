@@ -92,12 +92,10 @@ export class ProcedureLinesGenerator {
           // Look for parent condition(s)
           let active = true;
           for (let recI = i; recI >= 0; recI--) {
-            active =
-              (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])
-                ? active && itemsChecked[recI]
-                : active;
+            const isParentCondition = (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI]);
+            active = isParentCondition ? active && itemsChecked[recI] : active;
 
-            if ((proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])) {
+            if (isParentCondition) {
               break;
             }
           }
