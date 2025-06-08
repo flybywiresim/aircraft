@@ -11,6 +11,6 @@ ntest = "0.9.0"
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
-rstest = "0.12.0"
+rstest.workspace = true
 rand = "0.9.1"
 rand_pcg = "0.9.0"

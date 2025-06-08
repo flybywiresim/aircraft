@@ -17,4 +17,4 @@ fxhash = "0.2.1"
 bitflags = "2.9.1"
 
 [dev-dependencies]
-rstest = "0.12.0"
+rstest.workspace = true

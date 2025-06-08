@@ -16,5 +16,5 @@ toml = { version = "0.8.19", features = ["parse"] }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
-rstest = "0.12.0"
+rstest.workspace = true
 rand_pcg = "0.9.0"
