@@ -15,7 +15,7 @@ num-traits = "0.2.19"
 nalgebra = "0.33.0"
 bounded-vec-deque = "0.1.1"
 fxhash = "0.2.1"
-bitflags = "1.3.2"
+bitflags = "2.9.1"
 
 [dev-dependencies]
 rstest = "0.12.0"
