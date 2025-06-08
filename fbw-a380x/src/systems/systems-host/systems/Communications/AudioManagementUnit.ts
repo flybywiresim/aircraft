@@ -11,7 +11,7 @@ import {
   Subscribable,
 } from '@microsoft/msfs-sdk';
 import { RadioNavSelectedNavaid, RmpAmuBusEvents } from './RmpAmuBusPublisher';
-import { FailuresConsumer, RmpState } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, RegisteredSimVar, RmpState } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 
 export type AmuIndex = 1 | 2;
@@ -32,16 +32,11 @@ export class AudioManagementUnit implements Instrument {
   private readonly onsideRmpIndex = this.index;
   private readonly offsideRmpIndex = this.index === 2 ? 1 : 2;
 
-  private readonly onsideRmpStateLocalVar = SimVar.GetRegisteredId(
-    `A380X_RMP_${this.onsideRmpIndex}_STATE`,
+  private readonly onsideRmpStateLocalVar = RegisteredSimVar.create<number>(
+    `L:A380X_RMP_${this.onsideRmpIndex}_STATE`,
     SimVarValueType.Enum,
-    document.title,
   );
-  private readonly rmp3StateLocalVar = SimVar.GetRegisteredId(
-    `A380X_RMP_3_STATE`,
-    SimVarValueType.Enum,
-    document.title,
-  );
+  private readonly rmp3StateLocalVar = RegisteredSimVar.create<number>(`L:A380X_RMP_3_STATE`, SimVarValueType.Enum);
 
   private readonly mainPowerVar = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
 
@@ -111,10 +106,8 @@ export class AudioManagementUnit implements Instrument {
     const powered = SimVar.GetSimVarValue(this.mainPowerVar, SimVarValueType.Bool) > 0;
     this._isHealthy.set(!failed && powered);
 
-    this.onsideRmpSwitchedOn.set(
-      AudioManagementUnit.isRmpOn(SimVar.GetSimVarValueFastReg(this.onsideRmpStateLocalVar)),
-    );
-    this.rmp3SwitchedOn.set(AudioManagementUnit.isRmpOn(SimVar.GetSimVarValueFastReg(this.rmp3StateLocalVar)));
+    this.onsideRmpSwitchedOn.set(AudioManagementUnit.isRmpOn(this.onsideRmpStateLocalVar.get()));
+    this.rmp3SwitchedOn.set(AudioManagementUnit.isRmpOn(this.rmp3StateLocalVar.get()));
   }
 
   public getActiveNavAudio(): RadioNavSelectedNavaid {
