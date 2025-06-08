@@ -11,6 +11,9 @@ members = [
     "fbw-common/src/wasm/systems/systems_wasm",
 ]
 
+[workspace.dependencies]
+uom = "0.37.0"
+
 [profile.release]
 lto = true
 strip = true
