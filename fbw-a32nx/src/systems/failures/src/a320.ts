@@ -79,6 +79,11 @@ export const A320Failure = Object.freeze({
 
   LeftPfdDisplay: 31000,
   RightPfdDisplay: 31001,
+  LeftNdDisplay: 31002,
+  RightNdDisplay: 31003,
+  UpperEcamDisplay: 31004,
+  LowerEcamDisplay: 31005,
+  EcamControlPanel: 31006,
 
   LgciuPowerSupply1: 32000,
   LgciuPowerSupply2: 32001,
@@ -193,6 +198,7 @@ export const A320FailureDefinitions: FailureDefinition[] = [
 
   [31, A320Failure.LeftPfdDisplay, 'Captain PFD display'],
   [31, A320Failure.RightPfdDisplay, 'F/O PFD display'],
+  [31, A320Failure.EcamControlPanel, 'ECAM Control Panel'],
 
   [32, A320Failure.LgciuPowerSupply1, 'LGCIU 1 Power supply'],
   [32, A320Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],

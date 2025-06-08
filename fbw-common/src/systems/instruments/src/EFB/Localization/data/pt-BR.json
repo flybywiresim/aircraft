@@ -667,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Carregar somente",
       "None": "Nenhum",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Desativado",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",

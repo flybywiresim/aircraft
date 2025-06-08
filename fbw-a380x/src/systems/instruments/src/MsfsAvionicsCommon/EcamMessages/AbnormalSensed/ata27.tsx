@@ -60,14 +60,41 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   271800008: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm ALTERNATE LAW (PROT LOST)',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm ALTN LAW (PROT LOST)',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'MAX SPEED: 310 KT',
+        style: ChecklistLineStyle.Cyan,
+        sensed: false,
+      },
+    ],
   },
   271800009: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm DIRECT LAW',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'MAX SPEED: 310/.86',
+        style: ChecklistLineStyle.Cyan,
+        sensed: false,
+      },
+      {
+        name: 'MANEUVER WITH CARE',
+        style: ChecklistLineStyle.Cyan,
+        sensed: false,
+      },
+      {
+        name: 'AFS CTL PNL KNOB AVAIL FOR BUG SETTING',
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+      {
+        name: 'F/CTL BKUP CTL ACTIVE',
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+    ],
   },
   271800010: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm DOUBLE ELEVATOR FAULT',
@@ -341,7 +368,18 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   271800062: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SINGLE RUDDER FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        style: ChecklistLineStyle.Cyan,
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE WITHOUT ACCURATE FMS PENALTY INSERTION',
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+    ],
   },
   271800063: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SPD BRKs FAULT',

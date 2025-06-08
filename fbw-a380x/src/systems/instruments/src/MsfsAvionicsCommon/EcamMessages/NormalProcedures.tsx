@@ -13,13 +13,12 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'GEAR PINS & COVERS',
-        labelNotCompleted: 'REMOVE',
-        labelCompleted: 'REMOVED',
+        labelNotCompleted: 'REMOVED',
         sensed: false,
       },
       {
-        name: 'FUEL QTY',
-        labelNotCompleted: '___KG',
+        name: 'FUEL QUANTITY',
+        labelNotCompleted: '____ KG',
         sensed: false,
       },
       {
@@ -31,7 +30,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'BARO REF',
         labelNotCompleted: '____ (BOTH)',
-        labelCompleted: 'SET',
         sensed: false,
       },
     ],
@@ -41,13 +39,12 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'PARKING BRAKE',
-        labelNotCompleted: '___',
+        labelNotCompleted: '____',
         sensed: false,
       },
       {
         name: 'T.O SPEEDS & THRUST',
-        labelNotCompleted: 'CHECK (BOTH)',
-        labelCompleted: 'CHECKED',
+        labelNotCompleted: '____ (BOTH)',
         sensed: false,
       },
       {
@@ -63,13 +60,13 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'ANTI ICE',
-        labelNotCompleted: '___',
+        labelNotCompleted: '____',
         sensed: false,
       },
       {
         name: 'PITCH TRIM',
         labelNotCompleted: 'T.O',
-        sensed: true,
+        sensed: false,
       },
       {
         name: 'RUDDER TRIM',
@@ -84,13 +81,11 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'FLIGHT CONTROLS',
         labelNotCompleted: 'CHECKED (BOTH)',
-        labelCompleted: 'CHECKED',
         sensed: false,
       },
       {
         name: 'FLAPS SETTING',
-        labelNotCompleted: 'CONF ___ (BOTH)',
-        labelCompleted: 'CONF ___',
+        labelNotCompleted: 'CONF ____ (BOTH)',
         sensed: false,
       },
       {
@@ -113,7 +108,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'GND SPLRs',
         labelNotCompleted: 'ARM',
-        labelCompleted: 'ARM',
         colonIfCompleted: false,
         sensed: true,
         level: 1,
@@ -125,7 +119,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         level: 1,
       },
       {
-        name: 'AUTO BRAKE',
+        name: 'AUTO BRK',
         labelNotCompleted: 'RTO',
         colonIfCompleted: false,
         sensed: true,
@@ -134,7 +128,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'T.O CONFIG',
         labelNotCompleted: 'TEST',
-        labelCompleted: 'NORMAL',
+        labelCompleted: 'NORM',
         colonIfCompleted: false,
         sensed: true,
         level: 1,
@@ -146,18 +140,11 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'T.O RWY',
-        labelNotCompleted: '___ (BOTH)',
-        labelCompleted: 'CONFIRMED',
+        labelNotCompleted: '____ (BOTH)',
         sensed: false,
       },
       {
-        name: 'CABIN CREW',
-        labelNotCompleted: 'ADVISE',
-        labelCompleted: 'ADVISED',
-        sensed: false,
-      },
-      {
-        name: 'PACKS 1+2',
+        name: 'PACK 1 & 2',
         labelNotCompleted: 'ON',
         sensed: false,
       },
@@ -169,25 +156,22 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     items: [
       {
         name: 'RWY & SID',
-        labelNotCompleted: '___',
+        labelNotCompleted: '____',
         sensed: false,
       },
       {
         name: 'FLAPS SETTING',
-        labelNotCompleted: 'CONF ___ (BOTH)',
-        labelCompleted: 'CONF ___',
+        labelNotCompleted: 'CONF ____ (BOTH)',
         sensed: false,
       },
       {
         name: 'T.O SPEEDS & THRUST',
-        labelNotCompleted: 'CHECK (BOTH)',
-        labelCompleted: 'CHECKED',
+        labelNotCompleted: '____ (BOTH)',
         sensed: false,
       },
       {
         name: 'FCU ALT',
-        labelNotCompleted: '___',
-        labelCompleted: 'SET',
+        labelNotCompleted: '____',
         sensed: false,
       },
     ],
@@ -210,7 +194,6 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       {
         name: 'BARO REF',
         labelNotCompleted: '____ (BOTH)',
-        labelCompleted: 'SET',
         sensed: false,
       },
       {
@@ -221,14 +204,12 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
       },
       {
         name: 'MINIMUM',
-        labelNotCompleted: '___',
-        labelCompleted: 'SET',
+        labelNotCompleted: '____',
         sensed: false,
       },
       {
         name: 'AUTO BRAKE',
-        labelNotCompleted: '___',
-        labelCompleted: 'SET',
+        labelNotCompleted: '____',
         sensed: false,
       },
     ],
@@ -270,8 +251,8 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
     title: 'PARKING',
     items: [
       {
-        name: 'PARK BRAKE OR CHOCKS',
-        labelNotCompleted: 'AS RQRD',
+        name: 'PARKING BRAKE OR CHOCKS',
+        labelNotCompleted: 'SET',
         sensed: false,
       },
       {
@@ -303,7 +284,7 @@ export const EcamNormalProcedures: { [n: number]: NormalProcedure } = {
         sensed: true,
       },
       {
-        name: 'EMER EXIT LT',
+        name: 'EMER EXIT LIGHT',
         labelNotCompleted: 'OFF',
         colonIfCompleted: false,
         sensed: true,

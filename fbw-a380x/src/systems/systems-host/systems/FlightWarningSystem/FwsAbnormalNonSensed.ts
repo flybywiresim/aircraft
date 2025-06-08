@@ -175,7 +175,7 @@ export class FwsAbnormalNonSensed {
       sysPage: SdPages.Fctl,
       limitationsApprLdg: () => ['320400004', '700400001', '800400002'],
       inopSysApprLdg: () => ['320300007'],
-      info: () => ['220200011', '220200012', '320200004'],
+      info: () => ['220200013', '220200012', '320200004'],
     },
     270900002: {
       // F/CTL RUDDER TRIM RUNAWAY
@@ -260,7 +260,7 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
       limitationsAllPhases: () => [],
-      limitationsApprLdg: (checked) => (checked[2] ? ['270400002', '220400001', '800400004', '800400003'] : []),
+      limitationsApprLdg: (checked) => (checked[2] ? ['270400004', '220400001', '800400004', '800400003'] : []),
       inopSysApprLdg: () => ['320300007'],
     },
     320900006: {

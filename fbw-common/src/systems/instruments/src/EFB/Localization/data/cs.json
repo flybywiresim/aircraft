@@ -631,7 +631,7 @@
     "Real": "Reálný",
     "Realism": {
       "AdirsAlignTime": "Čas zarovnání ADIRS",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "Automatický Step Climb",
       "AutofillChecklists": "Automaticky vyplňovat checklisty",
       "BoardingTime": "Čas nastupování cestujících",
       "DmcSelfTestTime": "Inicializační test DMC",
@@ -667,6 +667,7 @@
       "Left": "Vlevo",
       "LoadOnly": "Pouze při načtení",
       "None": "Nikdy",
+      "OansPerformanceMode": "Režim výkonu OANS (Odnačíst mapu letiště, když se nepoužívá)",
       "Off": "Vypnuto",
       "PilotSeat": "Sedadlo pilota pro ovládání",
       "Right": "Vpravo",
