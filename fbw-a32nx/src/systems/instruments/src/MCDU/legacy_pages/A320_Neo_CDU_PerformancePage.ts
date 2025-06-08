@@ -638,14 +638,18 @@ export class CDUPerformancePage {
       (it) => it.isDiscontinuity === false && it.cruiseStep,
     );
 
-    const [toReasonCell = '', toDistCell = '', toTimeCell = '', stepLevelCell = '', stepWaypoint = ''] = isFlying
+    const [toReasonCell = '', toDistCell = '', toTimeCell = '', stepLevelCell = ''] = isFlying
       ? CDUPerformancePage.formatToReasonDistanceAndTime(
           mcdu,
           legsWithSteps?.[0] && 'cruiseStep' in legsWithSteps[0] && legsWithSteps[0].cruiseStep
             ? legsWithSteps[0].cruiseStep.toAltitude
             : undefined,
         )
-      : []; //remove stepWaypoint and place in different section
+      : [];
+    const stepWaypoint =
+      isFlying && legsWithSteps?.[0] && 'ident' in legsWithSteps[0]
+        ? CDUPerformancePage.formatStepWaypoint(mcdu, (legsWithSteps[0] as { ident: string }).ident)
+        : '';
     const desCabinRateCell = '{small}-350{end}';
     const shouldShowStepAltsOption =
       mcdu.cruiseLevel &&
@@ -1365,12 +1369,12 @@ export class CDUPerformancePage {
     return [destEfobCell, destTimeCell];
   }
 
-  static formatStepWaypoint(mcdu: LegacyFmsPageInterface, LegWithSteps, index) {
+  static formatStepWaypoint(mcdu: LegacyFmsPageInterface, waypointIdent: string) {
     const toPrediction = mcdu.guidanceController.vnavDriver.getPerfCrzToPrediction();
     let stepWaypointCell = '';
 
     if (toPrediction.reason === 'StepClimb' || toPrediction.reason === 'StepDescent') {
-      stepWaypointCell = `{small}AT${LegWithSteps[index]}{end}`;
+      stepWaypointCell = `{small}AT ${waypointIdent}{end}`;
     }
 
     return stepWaypointCell;
