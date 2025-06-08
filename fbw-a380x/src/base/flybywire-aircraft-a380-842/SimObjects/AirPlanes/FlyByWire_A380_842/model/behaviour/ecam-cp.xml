@@ -133,7 +133,7 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                     1 (&gt;L:#SIMVAR#)
                 </LEFT_SINGLE_CODE>
@@ -167,7 +167,7 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                     1 (&gt;L:#SIMVAR#)
                 </LEFT_SINGLE_CODE>
