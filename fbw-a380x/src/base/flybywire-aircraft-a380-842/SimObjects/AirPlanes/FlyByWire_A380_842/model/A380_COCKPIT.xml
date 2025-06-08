@@ -1238,6 +1238,7 @@
                     <UseTemplate Name="FBW_ISIS_Knob_Template">
                         <ANIM_NAME>KNOB_ISIS_1_SET_SEL</ANIM_NAME>
                         <NODE_ID>KNOB_ISIS_1_SET_SEL</NODE_ID>
+                        <ALTIMETER_INDEX>3</ALTIMETER_INDEX>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Template">
                         <NODE_ID>PUSH_ISIS_1_MODE</NODE_ID>

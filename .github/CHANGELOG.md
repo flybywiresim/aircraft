@@ -39,9 +39,22 @@
 1. [A380X/ND] Show RNP on approach identifier for RNP AR approaches - @BravoMike99 (bruno_pt99)
 1. [ND] Improve vertical position of approach message - @BravoMike99 (bruno_pt99)
 1. [A380X/FBW] Improve alternate law and direct law activation conditions and ECAM procedures - @flogross89 (floridude)
+1. [A380x/FWS]: Update normal checklists to newer Airbus standard and harmonize TO memo - @becas22 (bernardor96)
 1. [A32NX/ECP] Implemented realistic simulation of the ECAM control panel - @tracernz (Mike)
 1. [A32NX] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
 1. [A380X] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
+1. [ADR] Implement accurate altimetry computations - @tracernz (Mike)
+1. [A32NX] Split EIS baro corrections between captain and first officer side - @tracernz (Mike)
+1. [A32NX] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
+1. [A32NX/FWC] Add baro ref and altitude discrepancy warnings - @tracernz (Mike)
+1. [A32NX/PFD] Add CHECK ALT message - @tracernz (Mike)
+1. [A380X] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
+1. [A380X/PFD] Fixed missing red lines on altitude tape failure indications - @tracernz (Mike)
+1. [A380X/RMP] Added localvars for RMP frequencies and state for API users - @tracernz (Mike)
+1. [A380X/RMP] Added handling of all COM key events for API users - @tracernz (Mike)
+1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
+1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
+1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
 
 ## 0.13.0
 
