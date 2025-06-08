@@ -110,9 +110,6 @@ export class FwsCore {
 
   private readonly flightPhases = new FwsFlightPhases(this);
 
-  /** Time to inhibit master warnings and cautions during startup in ms */
-  private static readonly FWC_STARTUP_TIME = 60000;
-
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
 
