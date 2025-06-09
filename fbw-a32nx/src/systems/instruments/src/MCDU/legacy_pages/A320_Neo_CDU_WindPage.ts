@@ -90,10 +90,9 @@ export class CDUWindPage {
             if (value === Keypad.clrValue) {
               await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
             } else {
-              const entry = this.parseTrueWindEntry(value);
+              const entry = this.parseWindEntryEdit(mcdu, value, wind);
 
               if (entry === null) {
-                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return;
               }
@@ -116,10 +115,9 @@ export class CDUWindPage {
 
       mcdu.onLeftInput[numEntries] = async (value, scratchpadCallback) => {
         try {
-          const entry = this.parseTrueWindEntry(value);
+          const entry = this.parseWindEntry(mcdu, value);
 
           if (entry === null) {
-            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             scratchpadCallback();
             return;
           }
@@ -253,10 +251,9 @@ export class CDUWindPage {
 
             await mcdu.flightPlanService.deleteCruiseWindEntry(fpIndex, wind.altitude, forPlan);
           } else {
-            const entry = this.parseTrueWindEntry(value);
+            const entry = this.parseWindEntryEdit(mcdu, value, wind);
 
             if (entry === null) {
-              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
               scratchpadCallback();
               return;
             }
@@ -277,10 +274,9 @@ export class CDUWindPage {
       template[numEntries * 2 + 4][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
       mcdu.onLeftInput[numEntries + 1] = async (value, scratchpadCallback) => {
-        const entry = this.parseTrueWindEntry(value);
+        const entry = this.parseWindEntry(mcdu, value);
 
         if (entry === null) {
-          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
           scratchpadCallback();
           return;
         }
@@ -400,10 +396,9 @@ export class CDUWindPage {
           if (value === Keypad.clrValue) {
             await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, null, forPlan);
           } else {
-            const entry = this.parseTrueWindEntry(value);
+            const entry = this.parseWindEntryEdit(mcdu, value, wind);
 
             if (entry === null) {
-              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
               scratchpadCallback();
               return;
             }
@@ -430,10 +425,9 @@ export class CDUWindPage {
       template[numWindEntriesOnPage * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
       mcdu.onLeftInput[numWindEntriesOnPage] = async (value, scratchpadCallback) => {
-        const entry = this.parseTrueWindEntry(value);
+        const entry = this.parseWindEntry(mcdu, value);
 
         if (entry === null) {
-          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
           scratchpadCallback();
           return;
         }
@@ -466,10 +460,9 @@ export class CDUWindPage {
           if (value === Keypad.clrValue) {
             await mcdu.flightPlanService.setAlternateWind(null, forPlan);
           } else {
-            const wind = CDUWindPage.parseWindVector(value);
+            const wind = CDUWindPage.parseWindVector(mcdu, value);
 
             if (wind === null) {
-              mcdu.setScratchpadMessage(NXSystemMessages.formatError);
               scratchpadCallback();
               return;
             }
@@ -539,60 +532,119 @@ export class CDUWindPage {
     mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
   }
 
-  private static parseTrueWindEntry(input: string): WindEntry | null {
-    const elements = input.split('/');
-    if (elements.length != 3) {
+  private static parseWindEntry(mcdu: LegacyFmsPageInterface, input: string): WindEntry | null {
+    const elements = input.split('/', 3);
+    if (elements.length !== 3) {
+      mcdu.setScratchpadMessage(NXSystemMessages.formatError);
       return null;
     }
 
-    let trueDegrees = parseInt(elements[0]);
-    if (trueDegrees === 360) {
-      trueDegrees = 0;
-    }
-    if (!Number.isFinite(trueDegrees) || trueDegrees < 0 || trueDegrees > 359) {
+    const vector = this.parseWindVector(mcdu, `${elements[0]}/${elements[1]}`);
+    if (vector === null) {
       return null;
     }
 
-    const magnitude = parseInt(elements[1]);
-    if (!Number.isFinite(magnitude) || magnitude < 0 || magnitude > 999) {
+    const altitude = this.parseWindEntryAltitude(mcdu, elements[2]);
+    if (altitude === null) {
       return null;
     }
 
-    let altitude = parseInt(elements[2]);
-    if (altitude < 1000) {
-      altitude *= 100;
-    }
-
-    if (!Number.isFinite(altitude) || altitude < 0 || altitude > 45000) {
-      return null;
-    }
-
-    return {
-      altitude,
-      vector: Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
-    };
+    return { altitude, vector };
   }
 
-  private static parseWindVector(input: string): WindVector | null {
+  private static parseWindEntryEdit(
+    mcdu: LegacyFmsPageInterface,
+    input: string,
+    oldEntry: WindEntry,
+  ): WindEntry | null {
     const elements = input.split('/');
-    if (elements.length != 2) {
+    if (elements.length === 1) {
+      return null;
+    } else if (elements.length === 2) {
+      // Either "120/40" or "/40"
+      if (elements[0] === '') {
+        // "/40"
+        const altitude = this.parseWindEntryAltitude(mcdu, elements[1]);
+        if (altitude === null) {
+          return null;
+        }
+
+        return {
+          altitude,
+          vector: oldEntry.vector,
+        };
+      } else {
+        // "120/40"
+        const vector = this.parseWindVector(mcdu, input);
+        if (vector === null) {
+          return null;
+        }
+
+        return {
+          altitude: oldEntry.altitude,
+          vector,
+        };
+      }
+    }
+
+    return this.parseWindEntry(mcdu, input);
+  }
+
+  private static parseWindVector(mcdu: LegacyFmsPageInterface, input: string): WindVector | null {
+    if (!input.match(/^\d{1,3}\/\d{1,3}$/)) {
+      mcdu.setScratchpadMessage(NXSystemMessages.formatError);
       return null;
     }
 
-    let trueDegrees = parseInt(elements[0]);
-    if (trueDegrees === 360) {
-      trueDegrees = 0;
-    }
-    if (!Number.isFinite(trueDegrees) || trueDegrees < 0 || trueDegrees > 359) {
+    const elements = input.split('/');
+
+    const trueDegrees = parseInt(elements[0], 10);
+    if (!Number.isFinite(trueDegrees)) {
+      mcdu.setScratchpadMessage(NXSystemMessages.formatError);
       return null;
     }
 
-    const magnitude = parseInt(elements[1]);
-    if (!Number.isFinite(magnitude) || magnitude < 0 || magnitude > 999) {
+    if (trueDegrees < 0 || trueDegrees > 360) {
+      mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+      return null;
+    }
+
+    const magnitude = parseInt(elements[1], 10);
+    if (!Number.isFinite(magnitude)) {
+      mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+      return null;
+    }
+
+    if (magnitude < 0 || magnitude > 250) {
+      mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return null;
     }
 
     return Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
+  }
+
+  private static parseWindEntryAltitude(mcdu: LegacyFmsPageInterface, input: string): number | null {
+    if (!input.match(/^((FL)?\d{1,3}|\d{4,5})$/)) {
+      mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+      return null;
+    }
+
+    let altitude = parseInt(input.replace('FL', ''), 10);
+    if (altitude < 1000) {
+      altitude *= 100;
+    }
+
+    if (!Number.isFinite(altitude)) {
+      mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+      return null;
+    }
+
+    if (altitude < 0 || altitude > 45000) {
+      mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+      return null;
+    }
+
+    return altitude;
   }
 
   private static uplinkWinds(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, stage, _showPage: () => void) {
