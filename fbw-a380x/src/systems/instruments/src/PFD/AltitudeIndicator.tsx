@@ -839,7 +839,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 }
 
 interface MetricAltIndicatorState {
-  altitude: Arinc429Word;
   MDA: number;
   targetAltSelected: number;
   targetAltManaged: number;
@@ -860,8 +859,8 @@ class MetricAltIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private metricAltTargetText = FSComponent.createRef<SVGTextElement>();
 
+  // FIXME remove this weird pattern... the state of the component belongs directly to the component
   private state: MetricAltIndicatorState = {
-    altitude: new Arinc429Word(0),
     MDA: 0,
     targetAltSelected: 0,
     targetAltManaged: 0,
@@ -915,7 +914,7 @@ class MetricAltIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         this.metricAlt.instance.style.display = 'none';
       } else {
         this.metricAlt.instance.style.display = 'inline';
-        const currentMetricAlt = Math.round((this.state.altitude.value * 0.3048) / 10) * 10;
+        const currentMetricAlt = Math.round((this.altitude.get().value * 0.3048) / 10) * 10;
         this.metricAltText.instance.textContent = currentMetricAlt.toString();
 
         const targetMetric =
@@ -930,7 +929,7 @@ class MetricAltIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           this.metricAltTargetText.instance.classList.replace('Magenta', 'Cyan');
         }
 
-        if (this.state.altitude.value < this.state.MDA) {
+        if (this.altitude.get().value < this.state.MDA) {
           this.metricAltText.instance.classList.replace('Green', 'Amber');
         } else {
           this.metricAltText.instance.classList.replace('Amber', 'Green');
