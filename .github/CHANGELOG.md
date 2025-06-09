@@ -55,6 +55,8 @@
 1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
 1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
+1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
+1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 
 ## 0.13.0
 
@@ -143,8 +145,6 @@
 1. [A380X/LIGHTS] Fix function of FCU brightness knobs - @heclak (Heclak)
 1. [A380X/FWS] Fix "NO ZFW OR ZFWCG DATA" ECAM alert after landing - @flogross89 (floridude)
 1. [A380X/SD] Add brake temperature color change to amber when brakes are hot - @heclak (Heclak)
-1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
-1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 1. [A380X/FCU] Fix display of values on FCU during light test - @heclak (Heclak)
 1. [A380X/FMS] Fix VLS computation error for CONF 1, might have lead to FMS crashes during climb out - @flogross89 (floridude)
 1. [A380X/PFD] Fix PFD DU / ND DU brightness knobs - @MichelZ

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 import {
   EventBus,
   IndexedEventType,
@@ -8,9 +11,9 @@ import {
 } from '@microsoft/msfs-sdk';
 
 interface MsfsFlightModelBaseEvents {
-  /** Gets the openess in percent of an interactive point, usually doors */
+  /** Interactive Point current percentage of opening (if door) or deployment (if hose/cable). Percent over 100 */
   msfs_interactive_point_open: number;
-  /** Gets target in percent of an interactive point, usually doors */
+  /** The Interactive Point goal percentage of opening (if it's for a door) or percentage of deployment (if it's for a hose or cable). Percent over 100 */
   msfs_interactive_point_goal: number;
 }
 
