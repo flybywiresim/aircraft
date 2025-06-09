@@ -135,6 +135,7 @@ export const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
       transLevel: parseInt(alternate.trans_level, 10),
       averageWindDirection: parseInt(alternate.avg_wind_dir, 10),
       averageWindSpeed: parseInt(alternate.avg_wind_spd, 10),
+      cruiseAltitude: parseInt(alternate.cruise_altitude, 10),
     },
     times: {
       contFuelTime: times.contfuel_time,

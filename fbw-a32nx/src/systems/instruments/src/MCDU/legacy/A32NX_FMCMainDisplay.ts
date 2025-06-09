@@ -5764,7 +5764,18 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
     }
     {
-      if (Number.isFinite(data.alternate.averageWindDirection) && Number.isFinite(data.alternate.averageWindSpeed)) {
+      if (Number.isFinite(data.alternate?.averageWindDirection) && Number.isFinite(data.alternate?.averageWindSpeed)) {
+        const uplinkedAlternateCruiseAltitude = data.alternate?.cruiseAltitude;
+        const computedAlternateCruiseAltitude = this.computeAlternateCruiseLevel(forPlan);
+
+        if (
+          uplinkedAlternateCruiseAltitude !== undefined &&
+          computedAlternateCruiseAltitude !== undefined &&
+          Math.round(uplinkedAlternateCruiseAltitude / 100) !== Math.round(computedAlternateCruiseAltitude)
+        ) {
+          this.addMessageToQueue(NXSystemMessages.checkAltnWind);
+        }
+
         this.flightPlanService.setAlternateWind(
           Vec2Math.setFromPolar(
             data.alternate.averageWindSpeed,
@@ -5777,6 +5788,31 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         this.flightPlanService.setAlternateWind(null, forPlan);
       }
     }
+  }
+
+  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
+    const plan = this.getFlightPlan(forPlan);
+    if (!plan) {
+      return undefined;
+    }
+
+    if (!plan.destinationAirport) {
+      return undefined;
+    }
+
+    // TODO use actual flight plan distance rather than great circle distance
+    const distance = Avionics.Utils.computeGreatCircleDistance(
+      plan.destinationAirport.location,
+      plan.alternateDestinationAirport.location,
+    );
+
+    if (distance > 200) {
+      return 310;
+    } else if (distance > 100) {
+      return 220;
+    }
+
+    return 100;
   }
 
   // ---------------------------

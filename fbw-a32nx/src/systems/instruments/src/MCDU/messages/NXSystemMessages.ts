@@ -68,6 +68,7 @@ export const NXSystemMessages = {
   arptTypeAlreadyInUse: new TypeIMessage('ARPT/TYPE ALREADY USED'), // FIXME move out of FMS
   awyWptMismatch: new TypeIMessage('AWY/WPT MISMATCH'),
   cancelAtisUpdate: new TypeIMessage('CANCEL UPDATE BEFORE'), // FIXME move out of FMS
+  checkAltnWind: new TypeIIMessage('CHECK ALTN WIND'),
   checkMinDestFob: new TypeIIMessage('CHECK MIN DEST FOB'),
   checkSpeedMode: new TypeIIMessage('CHECK SPEED MODE'),
   checkToData: new TypeIIMessage('CHECK TAKE OFF DATA', true),

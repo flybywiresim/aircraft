@@ -449,11 +449,13 @@ export class CDUWindPage {
     const shouldShowAlternateOnPage = alternateAirport && numWindRowsOnPage < numDescentWindEntriesPerPage;
 
     if (shouldShowAlternateOnPage) {
+      const alternateCruiseLevel = mcdu.computeAlternateCruiseLevel(forPlan);
+
       template[numWindRowsOnPage * 2 + 1][0] = ' ALTERNATE';
       template[numWindRowsOnPage * 2 + 2][0] =
         plan.performanceData.alternateWind !== null
-          ? `${formatWindVector(plan.performanceData.alternateWind)}{small}{green}/FL100{end}{end}[color]cyan`
-          : '[\xa0]°/[\xa0]{small}{green}/FL100{end}{end}[color]cyan';
+          ? `${formatWindVector(plan.performanceData.alternateWind)}{small}{green}/FL${alternateCruiseLevel.toFixed(0).padStart(3, '0')}{end}{end}[color]cyan`
+          : `[\xa0]°/[\xa0]{small}{green}/FL${alternateCruiseLevel.toFixed(0).padStart(3, '0')}{end}{end}[color]cyan`;
 
       mcdu.onLeftInput[numWindRowsOnPage] = async (value, scratchpadCallback) => {
         try {
