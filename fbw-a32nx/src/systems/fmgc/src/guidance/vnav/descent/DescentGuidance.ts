@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -6,7 +6,7 @@ import { RequestedVerticalMode, TargetAltitude, TargetVerticalSpeed } from '@fmg
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { NavGeometryProfile, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -217,6 +217,7 @@ export class DescentGuidance {
     const isSpeedAuto = Simplane.getAutoPilotAirspeedManaged();
     const isApproachPhaseActive = this.observer.get().flightPhase === FmgcFlightPhase.Approach;
     const isHoldActive = this.guidanceController.isManualHoldActive();
+    const isStepDescentActive = VerticalCheckpointReason.StepDescent;
     const targetVerticalSpeed = this.aircraftToDescentProfileRelation.currentTargetVerticalSpeed();
 
     this.targetAltitudeGuidance = this.atmosphericConditions.currentPressureAltitude - linearDeviation;
@@ -224,12 +225,15 @@ export class DescentGuidance {
     this.updatePathCaptureState(linearDeviation, targetVerticalSpeed);
     const shouldGoOffPath = this.pathCaptureState === PathCaptureState.OffPath;
 
-    if ((!isHoldActive && shouldGoOffPath && linearDeviation > 0) || this.isInOverspeedCondition) {
+    if (
+      (!isHoldActive && !isStepDescentActive && shouldGoOffPath && linearDeviation > 0) ||
+      this.isInOverspeedCondition
+    ) {
       // above path
       this.requestedVerticalMode = RequestedVerticalMode.SpeedThrust;
-    } else if (shouldGoOffPath || isBeforeTopOfDescent || isHoldActive) {
+    } else if (shouldGoOffPath || isBeforeTopOfDescent || isHoldActive || isStepDescentActive) {
       // below path
-      if (isHoldActive) {
+      if (isHoldActive || isStepDescentActive) {
         this.requestedVerticalMode = RequestedVerticalMode.VsSpeed;
         this.targetVerticalSpeed = -1000;
       } else if (isOnGeometricPath) {
@@ -386,6 +390,7 @@ export class DescentGuidance {
   private updateSpeedMarginState() {
     const { flightPhase } = this.observer.get();
     const isHoldActive = this.guidanceController.isManualHoldActive();
+    const isStepDescentActive = VerticalCheckpointReason.StepDescent;
 
     if (flightPhase !== FmgcFlightPhase.Descent) {
       this.changeSpeedState(DescentSpeedGuidanceState.NotInDescentPhase);
@@ -394,6 +399,7 @@ export class DescentGuidance {
 
     const shouldShowMargins =
       !isHoldActive &&
+      !isStepDescentActive &&
       this.verticalState === DescentVerticalGuidanceState.ProvidingGuidance &&
       Simplane.getAutoPilotAirspeedManaged();
     this.changeSpeedState(
