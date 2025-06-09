@@ -1,10 +1,24 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, FmsOansData } from '@flybywiresim/fbw-sdk';
+import {
+  ConsumerValue,
+  EventBus,
+  GameStateProvider,
+  SimVarValueType,
+  Subject,
+  Subscription,
+  UnitType,
+} from '@microsoft/msfs-sdk';
+import {
+  Arinc429SignStatusMatrix,
+  Arinc429Word,
+  FmsData,
+  MathUtils,
+  NXDataStore,
+  VerticalPathCheckpoint,
+} from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Vmcl, Vmo, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -16,13 +30,18 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { VerticalMode } from '@shared/autopilot';
+import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
  * Essentially part of the FMC (-A/-B/-C)
  */
 export class FmcAircraftInterface {
+  private readonly subs = [] as Subscription[];
+
   private gameState = GameStateProvider.get();
   // ARINC words
   // arinc bus output words
@@ -118,6 +137,12 @@ export class FmcAircraftInterface {
     0,
   );
 
+  private readonly fmsOrigin = Subject.create<string | null>('');
+  private readonly fmsDepartureRunway = Subject.create<string | null>('');
+  private readonly fmsDestination = Subject.create<string | null>('');
+  private readonly fmsLandingRunway = Subject.create<string | null>('');
+  private readonly fmsAlternate = Subject.create<string | null>('');
+
   constructor(
     private bus: EventBus,
     private fmc: FmcInterface,
@@ -127,45 +152,75 @@ export class FmcAircraftInterface {
     this.init();
   }
 
+  destroy() {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+  }
+
   private init(): void {
     // write local vars for other systems
-    this.fmgc.data.greenDotSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', v), true);
-    this.fmgc.data.slatRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', v), true);
-    this.fmgc.data.flapRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', v), true);
-
-    this.speedVs1g.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', v), true);
-    this.speedVls.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', v), true);
-    this.speedVmax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', v), true);
-    this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true);
-    this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true);
-    this.speedShortTermManaged.sub(
-      (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v),
-      true,
+    this.subs.push(
+      this.fmgc.data.greenDotSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', v), true),
+    );
+    this.subs.push(
+      this.fmgc.data.slatRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', v), true),
+    );
+    this.subs.push(
+      this.fmgc.data.flapRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', v), true),
     );
 
-    this.fmgc.data.approachFlapConfig.sub(
-      (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v === FlapConf.CONF_3),
-      true,
-    );
-
-    this.fmc.fmgc.data.zeroFuelWeight.sub((zfw) => {
-      this.arincZeroFuelWeight.setBnrValue(
-        zfw ? zfw : 0,
-        zfw ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-        19,
-        524288,
-        0,
-      );
-    });
-
-    this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.sub((zfwCg) =>
-      this.arincZeroFuelWeightCg.setBnrValue(
-        zfwCg ? zfwCg : 0,
-        zfwCg ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-        12,
-        64,
-        0,
+    this.subs.push(this.speedVs1g.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', v), true));
+    this.subs.push(this.speedVls.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', v), true));
+    this.subs.push(this.speedVmax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', v), true));
+    this.subs.push(this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true));
+    this.subs.push(this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true));
+    this.subs.push(
+      this.speedShortTermManaged.sub(
+        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v),
+        true,
       ),
+    );
+
+    this.subs.push(
+      this.fmgc.data.approachFlapConfig.sub(
+        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v === FlapConf.CONF_3),
+        true,
+      ),
+    );
+
+    this.subs.push(
+      this.fmc.fmgc.data.zeroFuelWeight.sub((zfw) => {
+        this.arincZeroFuelWeight.setBnrValue(
+          zfw ? zfw : 0,
+          zfw ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+          19,
+          524288,
+          0,
+        );
+      }),
+    );
+
+    this.subs.push(
+      this.fmc.fmgc.data.zeroFuelWeightCenterOfGravity.sub((zfwCg) =>
+        this.arincZeroFuelWeightCg.setBnrValue(
+          zfwCg ? zfwCg : 0,
+          zfwCg ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+          12,
+          64,
+          0,
+        ),
+      ),
+    );
+
+    const pub = this.bus.getPublisher<FmsData>();
+    this.subs.push(
+      this.fmsOrigin.sub((v) => pub.pub('fmsOrigin', v, true), true),
+      this.fmsDepartureRunway.sub((v) => pub.pub('fmsDepartureRunway', v, true), true),
+      this.fmsDestination.sub((v) => pub.pub('fmsDestination', v, true), true),
+      this.fmsLandingRunway.sub((v) => pub.pub('fmsLandingRunway', v, true), true),
+      this.fmsAlternate.sub((v) => pub.pub('fmsAlternate', v, true), true),
+      this.fmgc.data.atcCallsign.sub((v) => pub.pub('fmsFlightNumber', v, true), true),
     );
   }
 
@@ -495,29 +550,36 @@ export class FmcAircraftInterface {
     return phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && isCloseToDestination);
   }
 
-  updateOansAirports() {
-    if (this.flightPlanService.hasActive) {
-      const pub = this.bus.getPublisher<FmsOansData>();
-      if (this.flightPlanService.active?.originAirport?.ident) {
-        pub.pub('fmsOrigin', this.flightPlanService.active.originAirport.ident, true);
-      }
+  updateFmsData() {
+    this.fmsOrigin.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.originAirport?.ident
+        ? this.flightPlanService.active.originAirport.ident
+        : null,
+    );
 
-      if (this.flightPlanService.active?.originRunway?.ident) {
-        pub.pub('fmsDepartureRunway', this.flightPlanService.active.originRunway.ident, true);
-      }
+    this.fmsDepartureRunway.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.originRunway?.ident
+        ? this.flightPlanService.active.originRunway.ident
+        : null,
+    );
 
-      if (this.flightPlanService.active?.destinationAirport?.ident) {
-        pub.pub('fmsDestination', this.flightPlanService.active.destinationAirport.ident, true);
-      }
+    this.fmsDestination.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.destinationAirport?.ident
+        ? this.flightPlanService.active.destinationAirport.ident
+        : null,
+    );
 
-      if (this.flightPlanService.active?.destinationRunway?.ident) {
-        pub.pub('fmsLandingRunway', this.flightPlanService.active.destinationRunway.ident, true);
-      }
+    this.fmsLandingRunway.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.destinationRunway?.ident
+        ? this.flightPlanService.active.destinationRunway.ident
+        : null,
+    );
 
-      if (this.flightPlanService.active?.alternateDestinationAirport?.ident) {
-        pub.pub('fmsAlternate', this.flightPlanService.active.alternateDestinationAirport.ident, true);
-      }
-    }
+    this.fmsAlternate.set(
+      this.flightPlanService.hasActive && this.flightPlanService.active?.alternateDestinationAirport?.ident
+        ? this.flightPlanService.active.alternateDestinationAirport.ident
+        : null,
+    );
   }
 
   activatePreSelSpeedMach(preSel: number) {
@@ -581,12 +643,12 @@ export class FmcAircraftInterface {
     // apply speed limit/alt
     if (this.flightPhase.get() <= FmgcFlightPhase.Cruise) {
       const climbSpeedLimit = this.fmgc.getClimbSpeedLimit();
-      if (climbSpeedLimit.speed !== null && alt <= climbSpeedLimit.underAltitude) {
+      if (climbSpeedLimit !== null && alt <= climbSpeedLimit.underAltitude) {
         kcas = Math.min(climbSpeedLimit.speed, kcas);
       }
     } else if (this.flightPhase.get() < FmgcFlightPhase.GoAround) {
       const descentSpeedLimit = this.fmgc.getDescentSpeedLimit();
-      if (descentSpeedLimit.speed !== null && alt <= descentSpeedLimit.underAltitude) {
+      if (descentSpeedLimit !== null && alt <= descentSpeedLimit.underAltitude) {
         kcas = Math.min(descentSpeedLimit.speed, kcas);
       }
     }
@@ -759,12 +821,10 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Climb: {
           let speed = this.fmgc.getManagedClimbSpeed();
+          const speedLimit = this.fmgc.getClimbSpeedLimit();
 
-          if (
-            this.fmgc.getClimbSpeedLimit() !== undefined &&
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < this.fmgc.getClimbSpeedLimit().underAltitude
-          ) {
-            speed = Math.min(speed, this.fmgc.getClimbSpeedLimit().speed);
+          if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
+            speed = Math.min(speed, speedLimit.speed);
           }
 
           speed = Math.min(speed, this.getSpeedConstraint());
@@ -775,12 +835,9 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Cruise: {
           let speed = this.fmgc.getManagedCruiseSpeed();
-
-          if (
-            this.fmgc.getClimbSpeedLimit() !== undefined &&
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < this.fmgc.getClimbSpeedLimit().underAltitude
-          ) {
-            speed = Math.min(speed, this.fmgc.getClimbSpeedLimit().speed);
+          const speedLimit = this.fmgc.getClimbSpeedLimit();
+          if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
+            speed = Math.min(speed, speedLimit.speed);
           }
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedCruiseSpeedMach());
@@ -813,7 +870,7 @@ export class FmcAircraftInterface {
         case FmgcFlightPhase.GoAround: {
           if (this.fmaVerticalMode.get() === VerticalMode.SRS_GA) {
             const speed = Math.min(
-              this.fmgc.data.approachVls.get() + (engineOut ? 15 : 25),
+              this.fmgc.data.approachVls.get() ?? Infinity + (engineOut ? 15 : 25),
               Math.max(
                 SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'),
                 this.fmgc.data.approachSpeed.get() ?? 0,
@@ -925,7 +982,7 @@ export class FmcAircraftInterface {
     let towerHeadwind = 0;
     const appWind = this.fmgc.data.approachWind.get();
     const destRwy = this.fmgc.getDestinationRunway();
-    if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
+    if (appWind !== null) {
       if (destRwy) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(appWind.speed, appWind.direction, destRwy.magneticBearing);
       }
@@ -937,17 +994,17 @@ export class FmcAircraftInterface {
   private speedLimitExceeded = false;
 
   checkSpeedLimit() {
-    let speedLimit: number;
-    let speedLimitAlt: number;
+    let speedLimit: number | undefined;
+    let speedLimitAlt: number | undefined;
     switch (this.flightPhase.get()) {
       case FmgcFlightPhase.Climb:
       case FmgcFlightPhase.Cruise:
-        speedLimit = this.fmgc.getClimbSpeedLimit().speed;
-        speedLimitAlt = this.fmgc.getClimbSpeedLimit().underAltitude;
+        speedLimit = this.fmgc.getClimbSpeedLimit()?.speed;
+        speedLimitAlt = this.fmgc.getClimbSpeedLimit()?.underAltitude;
         break;
       case FmgcFlightPhase.Descent:
-        speedLimit = this.fmgc.getDescentSpeedLimit().speed;
-        speedLimitAlt = this.fmgc.getDescentSpeedLimit().underAltitude;
+        speedLimit = this.fmgc.getDescentSpeedLimit()?.speed;
+        speedLimitAlt = this.fmgc.getDescentSpeedLimit()?.underAltitude;
         break;
       default:
         // no speed limit in other phases
@@ -955,7 +1012,7 @@ export class FmcAircraftInterface {
         return;
     }
 
-    if (speedLimit === undefined) {
+    if (speedLimit === undefined || speedLimitAlt === undefined) {
       this.speedLimitExceeded = false;
       return;
     }
@@ -1142,7 +1199,7 @@ export class FmcAircraftInterface {
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
     const appWind = this.fmgc.data.approachWind.get();
     let towerHeadwind = 0;
-    if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
+    if (appWind !== null) {
       if (this.flightPlanService.active.destinationRunway) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(
           appWind.speed,
@@ -1170,17 +1227,16 @@ export class FmcAircraftInterface {
     this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
     this.speedVapp.set(Math.round(approachSpeeds.vapp));
 
-    // Retrieve CAS and altitude from ADRs
-    const cas = this.fmc.navigation.getComputedAirspeed();
+    // Retrieve altitude from ADRs
     const alt = this.fmc.navigation.getPressureAltitude();
 
-    if (cas !== null && alt !== null) {
-      // Only update speeds if ADR data valid
+    if (alt !== null) {
+      // Only update speeds if ADR altitude data valid.
 
       const flapLever = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
       const speeds = new A380OperatingSpeeds(
         grossWeight,
-        cas,
+        this.fmc.navigation.getComputedAirspeed() ?? 0, // CAS is NCD for low speeds/standstill, leading to null here
         flapLever,
         this.flightPhase.get(),
         this.fmgc.getV2Speed(),
@@ -1234,7 +1290,7 @@ export class FmcAircraftInterface {
       SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
     }
 
-    if (this.fmc.enginesWereStarted.get()) {
+    if (this.fmc.enginesWereStarted.get() && this.flightPhase.get() !== FmgcFlightPhase.Done) {
       this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
     }
   }
@@ -1612,10 +1668,21 @@ export class FmcAircraftInterface {
     return SimVar.GetSimVarValue('AUTOPILOT ALTITUDE SLOT INDEX', 'number') === 2;
   }
 
-  getManagedTargets(v: number, m: number) {
-    const alt = ADIRS.getBaroCorrectedAltitude();
-    const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', m);
-    return alt && alt.isNormalOperation() && alt.value > 20_000 && v > vM ? [vM, true] : [v, false];
+  getManagedTargets(v: number, m: number): [number, boolean] {
+    const sat = ADIRS.getStaticAirTemperature();
+    const press = ADIRS.getCorrectedAverageStaticPressure();
+
+    if (
+      sat !== undefined &&
+      (sat.isNormalOperation() || sat.isFunctionalTest()) &&
+      press !== undefined &&
+      (press.isNormalOperation() || press.isFunctionalTest())
+    ) {
+      const vM = MathUtils.convertMachToKCas(m, press.value);
+      return v > vM ? [vM, true] : [v, false];
+    } else {
+      return [v, false];
+    }
   }
 
   // TODO/VNAV: Speed constraint
@@ -1765,6 +1832,60 @@ export class FmcAircraftInterface {
     }
   }
 
+  private stepAheadTriggeredForAltitude: number | null = null;
+
+  public checkForStepClimb() {
+    const [approachingCruiseStep, cruiseStepLegIndex] = MfdFmsFplnVertRev.nextCruiseStep(this.flightPlanService.active);
+
+    if (approachingCruiseStep && !approachingCruiseStep.isIgnored && cruiseStepLegIndex) {
+      const distanceToStep =
+        this.fmc.guidanceController.vnavDriver.mcduProfile?.waypointPredictions.get(
+          cruiseStepLegIndex,
+        )?.distanceFromAircraft;
+
+      if (
+        distanceToStep !== undefined &&
+        distanceToStep < 20 &&
+        this.stepAheadTriggeredForAltitude !== approachingCruiseStep.toAltitude
+      ) {
+        this.fmc.addMessageToQueue(NXSystemMessages.stepAhead, undefined, undefined);
+
+        const autoStepClimb = NXDataStore.get('AUTO_STEP_CLIMB', 'DISABLED') === 'ENABLED';
+        if (autoStepClimb && !this.fmc.guidanceController.vnavDriver.isSelectedVerticalModeActive()) {
+          // Set new FCU alt, push FCU knob
+          Coherent.call('AP_ALT_VAR_SET_ENGLISH', 3, approachingCruiseStep.toAltitude, true).catch(console.error);
+          SimVar.SetSimVarValue('H:A320_Neo_FCU_ALT_PUSH', 'number', 1);
+          SimVar.SetSimVarValue('H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE', 'number', 1);
+        }
+        this.stepAheadTriggeredForAltitude = approachingCruiseStep.toAltitude;
+      }
+    }
+
+    // Check for STEP DELETED message
+    if (SimVar.GetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', SimVarValueType.Bool) === 1) {
+      // Add message
+      this.fmc.addMessageToQueue(NXSystemMessages.stepDeleted, undefined, undefined);
+
+      SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', SimVarValueType.Bool, false);
+    }
+  }
+
+  public transmitVerticalPath(
+    targetProfile: VerticalPathCheckpoint[],
+    vdAltitudeConstraints: VdAltitudeConstraint[],
+    actualProfile: VerticalPathCheckpoint[],
+    descentProfile: VerticalPathCheckpoint[],
+    trackChangeDistance: number | null,
+  ) {
+    const pub = this.bus.getPublisher<MfdSurvEvents>();
+
+    pub.pub('a32nx_fms_vertical_target_profile', targetProfile, true);
+    pub.pub('a32nx_fms_vertical_constraints', vdAltitudeConstraints, true);
+    pub.pub('a32nx_fms_vertical_actual_profile', actualProfile, true);
+    pub.pub('a32nx_fms_vertical_descent_profile', descentProfile, true);
+    pub.pub('a32nx_fms_vd_track_change_distance', trackChangeDistance, true);
+  }
+
   //-----------------------------------------------------------------------------------
   // TODO:FPM REWRITE: Start of functions to refactor
   //-----------------------------------------------------------------------------------
@@ -1779,6 +1900,24 @@ export class FmcAircraftInterface {
     }
 
     return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
+  }
+
+  private hasTooSteepPathAhead = false;
+
+  checkTooSteepPath() {
+    const hasTooSteepPathAhead = this.fmc.guidanceController?.vnavDriver?.shouldShowTooSteepPathAhead();
+
+    if (hasTooSteepPathAhead !== this.hasTooSteepPathAhead) {
+      this.hasTooSteepPathAhead = hasTooSteepPathAhead;
+
+      if (hasTooSteepPathAhead) {
+        this.fmc.addMessageToQueue(
+          NXSystemMessages.tooSteepPathAhead,
+          () => !this.fmc.guidanceController?.vnavDriver?.shouldShowTooSteepPathAhead(),
+          undefined,
+        );
+      }
+    }
   }
 }
 

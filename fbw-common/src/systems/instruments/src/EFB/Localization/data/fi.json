@@ -631,6 +631,7 @@
     "Real": "Todellinen",
     "Realism": {
       "AdirsAlignTime": "ADIRS:in kohdistuksen kesto",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Tarkistuslistan täyttö automaattisesti",
       "BoardingTime": "Koneeseennousuaika",
       "DmcSelfTestTime": "DMC itsenäisen testauksen aika",
@@ -666,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Vain lataus",
       "None": "Ei mitään",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Pois päältä",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",

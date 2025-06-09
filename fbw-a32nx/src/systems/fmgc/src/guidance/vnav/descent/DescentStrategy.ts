@@ -6,18 +6,14 @@ import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { FlightPathAngleStrategy, VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { AircraftConfiguration as AircraftCtlSurfcConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
+import {
+  AircraftConfiguration as AircraftCtlSurfcConfiguration,
+  DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
+} from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
 import { Predictions, StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
-
-export const DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG: AircraftCtlSurfcConfiguration = {
-  flapConfig: FlapConf.CLEAN,
-  speedbrakesExtended: false,
-  gearExtended: false,
-};
 
 export interface DescentStrategy {
   /**
@@ -218,7 +214,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(midwayAltitude, speed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, midwayAltitude, computedMach, tropoPause) +
-      VnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.altitudeStep(
       this.acConfig,
@@ -254,7 +250,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, speed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
-      VnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     return Predictions.distanceStep(
       this.acConfig,
@@ -290,7 +286,7 @@ export class IdleDescentStrategy implements DescentStrategy {
     const computedMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const predictedN1 =
       EngineModel.getIdleCorrectedN1(this.acConfig.engineModelParameters, initialAltitude, computedMach, tropoPause) +
-      VnavConfig.IDLE_N1_MARGIN;
+      this.acConfig.vnavConfig.IDLE_N1_MARGIN;
 
     const initialMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, initialSpeed), mach);
     const finalMach = Math.min(this.atmosphericConditions.computeMachFromCas(initialAltitude, finalSpeed), mach);

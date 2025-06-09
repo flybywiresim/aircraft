@@ -631,6 +631,7 @@
     "Real": "حقيقي",
     "Realism": {
       "AdirsAlignTime": "وقت محاذاة ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "ملئ تلقائي لقوائم الفحص",
       "BoardingTime": "وقت الصعود",
       "DmcSelfTestTime": "وقت الاختبار الذاتي DMC",
@@ -666,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "تحميل فقط",
       "None": "لا شيء",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "إيقاف",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",

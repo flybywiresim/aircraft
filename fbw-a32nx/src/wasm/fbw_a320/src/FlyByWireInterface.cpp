@@ -61,9 +61,6 @@ void FlyByWireInterface::disconnect() {
 bool FlyByWireInterface::update(double sampleTime) {
   bool result = true;
 
-  // update failures handler
-  failuresConsumer.update();
-
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 
@@ -123,6 +120,58 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= updateTcas();
 
   result &= updateFcu(calculatedSampleTime);
+
+  if (idSyncFoEfisEnabled->get()) {
+    const auto& fcuBusOutput = fcu.getBusOutputs();
+    bool isLeftStd = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_left, 28, false);
+    bool isRightStd = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_right, 28, false);
+    bool isLeftQnh = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_left, 29, false);
+    bool isRightQnh = Arinc429Utils::bitFromValueOr(fcuBusOutput.eis_discrete_word_2_right, 29, false);
+
+    if (simConnectInterface.wasLastBaroInputRightSide()) {
+      if (idFcuEisPanelBaroIsInhg[1]->get()) {
+        if (fcuBusOutput.baro_setting_left_inhg.Data != fcuBusOutput.baro_setting_right_inhg.Data) {
+          const DWORD kohlsman = fcuBusOutput.baro_setting_right_inhg.Data * 541.822186666672;
+          simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
+          std::cout << "FBWInterface: Syncing left baro to " << fcuBusOutput.baro_setting_right_inhg.Data << std::endl;
+        }
+      } else if (fcuBusOutput.baro_setting_left_hpa.Data != fcuBusOutput.baro_setting_right_hpa.Data) {
+        const DWORD kohlsman = fcuBusOutput.baro_setting_right_hpa.Data * 16.;
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
+        std::cout << "FBWInterface: Syncing left baro to " << fcuBusOutput.baro_setting_right_hpa.Data << std::endl;
+      }
+
+      // FIXME need to handle QFE and we won't be able to do it this way
+      if (!isLeftStd && isRightStd) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PULL);
+        std::cout << "FBWInterface: Syncing left baro to STD" << std::endl;
+      } else if (!isLeftQnh && isRightQnh) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_PUSH);
+        std::cout << "FBWInterface: Syncing left baro to QNH" << std::endl;
+      }
+    } else {
+      if (idFcuEisPanelBaroIsInhg[1]->get()) {
+        if (fcuBusOutput.baro_setting_left_inhg.Data != fcuBusOutput.baro_setting_right_inhg.Data) {
+          const DWORD kohlsman = fcuBusOutput.baro_setting_left_inhg.Data * 541.822186666672;
+          simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
+          std::cout << "FBWInterface: Syncing right baro to " << fcuBusOutput.baro_setting_left_inhg.Data << std::endl;
+        }
+      } else if (fcuBusOutput.baro_setting_left_hpa.Data != fcuBusOutput.baro_setting_right_hpa.Data) {
+        const DWORD kohlsman = fcuBusOutput.baro_setting_left_hpa.Data * 16.;
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
+        std::cout << "FBWInterface: Syncing right baro to " << fcuBusOutput.baro_setting_left_hpa.Data << std::endl;
+      }
+
+      // FIXME need to handle QFE and we won't be able to do it this way
+      if (isLeftStd && !isRightStd) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PULL);
+        std::cout << "FBWInterface: Syncing right baro to STD" << std::endl;
+      } else if (isLeftQnh && !isRightQnh) {
+        simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_PUSH);
+        std::cout << "FBWInterface: Syncing right baro to QNH" << std::endl;
+      }
+    }
+  }
 
   result &= updateFcuShim();
 
@@ -345,14 +394,15 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmsSpeedMarginLow = std::make_unique<LocalVariable>("A32NX_PFD_LOWER_SPEED_MARGIN");
   idFmsSpeedMarginVisible = std::make_unique<LocalVariable>("A32NX_PFD_SHOW_SPEED_MARGINS");
 
-  idFlightGuidanceAvailable = std::make_unique<LocalVariable>("A32NX_FG_AVAIL");
-  idFlightGuidanceCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
-  idFlightGuidanceTrackAngleError = std::make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
-  idFlightGuidancePhiCommand = std::make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
-  idFlightGuidancePhiLimit = std::make_unique<LocalVariable>("A32NX_FG_PHI_LIMIT");
-  idFlightGuidanceRequestedVerticalMode = std::make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
-  idFlightGuidanceTargetAltitude = std::make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
-  idFlightGuidanceTargetVerticalSpeed = std::make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
+  idFmLateralPlanAvail = std::make_unique<LocalVariable>("A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL");
+  idFmCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
+  idFmTrackAngleError = std::make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
+  idFmPhiCommand = std::make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
+  idFmPhiLimit = std::make_unique<LocalVariable>("A32NX_FG_PHI_LIMIT");
+  idFmVerticalProfileAvail = std::make_unique<LocalVariable>("A32NX_FM_VERTICAL_PROFILE_AVAIL");
+  idFmRequestedVerticalMode = std::make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
+  idFmTargetAltitude = std::make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
+  idFmTargetVerticalSpeed = std::make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
   idFmRnavAppSelected = std::make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
   idFmFinalCanEngage = std::make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
 
@@ -461,7 +511,8 @@ void FlyByWireInterface::setupLocalVariables() {
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
     idAdrAltitudeStandard[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ALTITUDE");
-    idAdrAltitudeCorrected[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BARO_CORRECTED_ALTITUDE_1");
+    idAdrAltitudeCorrected1[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BARO_CORRECTED_ALTITUDE_1");
+    idAdrAltitudeCorrected2[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BARO_CORRECTED_ALTITUDE_2");
     idAdrMach[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_MACH");
     idAdrAirspeedComputed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_COMPUTED_AIRSPEED");
     idAdrAirspeedTrue[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_TRUE_AIRSPEED");
@@ -1271,7 +1322,8 @@ bool FlyByWireInterface::updateIls(int ilsIndex) {
 
 bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adrBusOutputs[adirsIndex].altitude_standard_ft = Arinc429Utils::fromSimVar(idAdrAltitudeStandard[adirsIndex]->get());
-  adrBusOutputs[adirsIndex].altitude_corrected_ft = Arinc429Utils::fromSimVar(idAdrAltitudeCorrected[adirsIndex]->get());
+  adrBusOutputs[adirsIndex].altitude_corrected_1_ft = Arinc429Utils::fromSimVar(idAdrAltitudeCorrected1[adirsIndex]->get());
+  adrBusOutputs[adirsIndex].altitude_corrected_2_ft = Arinc429Utils::fromSimVar(idAdrAltitudeCorrected2[adirsIndex]->get());
   adrBusOutputs[adirsIndex].mach = Arinc429Utils::fromSimVar(idAdrMach[adirsIndex]->get());
   adrBusOutputs[adirsIndex].airspeed_computed_kn = Arinc429Utils::fromSimVar(idAdrAirspeedComputed[adirsIndex]->get());
   adrBusOutputs[adirsIndex].airspeed_true_kn = Arinc429Utils::fromSimVar(idAdrAirspeedTrue[adirsIndex]->get());
@@ -1736,7 +1788,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
   bool athr_instinctive_disc = simConnectInterface.getSimInputThrottles().ATHR_disconnect || idAutothrustDisconnect->get() == 1;
-  bool ap_instinctive_disc = simInputAutopilot.AP_disconnect || idCaptPriorityButtonPressed->get() || idFoPriorityButtonPressed->get();
+  bool ap_instinctive_disc = simInputAutopilot.AP_disconnect;
 
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.is_unit_1 = fmgcIndex == 0;
   fmgcs[fmgcIndex].modelInputs.in.discrete_inputs.athr_opp_engaged = fmgcsDiscreteOutputs[oppFmgcIndex].athr_own_engaged;
@@ -1780,27 +1832,26 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
 
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fm_valid = true;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_flight_phase = static_cast<fmgc_flight_phase>(idFmgcFlightPhase->get());
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.selected_approach_type = fmgc_approach_type::None;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.selected_approach_type =
+      idFmRnavAppSelected->get() ? fmgc_approach_type::RNAV : fmgc_approach_type::ILS;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.backbeam_selected = idFm1BackbeamSelected->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_loc_distance = (simData.nav_dme_valid != 0) ? simData.nav_dme_nmi : 0;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_unrealistic_gs_angle_deg = (simData.nav_gs_valid != 0) ? -simData.nav_gs_deg : 0;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_weight_lbs = simData.total_weight_kg * 2.205;
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_cg_percent = simData.CG_percent_MAC;
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.lateral_flight_plan_valid = idFlightGuidanceAvailable->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = idFlightGuidanceCrossTrackError->get() < 1;
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_c_deg = idFlightGuidancePhiCommand->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.xtk_nmi = idFlightGuidanceCrossTrackError->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.tke_deg = idFlightGuidanceTrackAngleError->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_limit_deg = idFlightGuidancePhiLimit->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.lateral_flight_plan_valid = idFmLateralPlanAvail->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.nav_capture_condition = std::abs(idFmCrossTrackError->get()) < 1;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_c_deg = idFmPhiCommand->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.xtk_nmi = idFmCrossTrackError->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.tke_deg = idFmTrackAngleError->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.phi_limit_deg = idFmPhiLimit->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.direct_to_nav_engage = simInputAutopilot.DIR_TO_trigger;
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vertical_flight_plan_valid =
-      idFlightGuidanceAvailable->get();  // TODO add proper variable here
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vertical_flight_plan_valid = idFmVerticalProfileAvail->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.final_app_can_engage = idFmFinalCanEngage->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.next_alt_cstr_ft = idFmgcAltitudeConstraint->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.requested_des_submode =
-      static_cast<fmgc_des_submode>(idFlightGuidanceRequestedVerticalMode->get());
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.alt_profile_tgt_ft = idFlightGuidanceTargetAltitude->get();
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vs_target_ft_min = idFlightGuidanceTargetVerticalSpeed->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.requested_des_submode = static_cast<fmgc_des_submode>(idFmRequestedVerticalMode->get());
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.alt_profile_tgt_ft = idFmTargetAltitude->get();
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.vs_target_ft_min = idFmTargetVerticalSpeed->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_2_kts = idFmgcV2->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_app_kts = idFmgcV_APP->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.v_managed_kts = idFmsManagedSpeedTarget->get();
@@ -2353,10 +2404,14 @@ bool FlyByWireInterface::updateFcuShim() {
   if (simData.ap_fd_1_active != fd1Active) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1, SIMCONNECT_GROUP_PRIORITY_STANDARD);
   }
-  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
                                    Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_left_hpa, 1013) * 16, 1);
-  SimOutputAltimeter altiOutput = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true)};
-  simConnectInterface.sendData(altiOutput, false);
+  simConnectInterface.sendEventEx1(SimConnectInterface::Events::KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD,
+                                   Arinc429Utils::valueOr(fcuBusOutputs.baro_setting_right_hpa, 1013) * 16, 2);
+  SimOutputAltimeter stdOutputLeft = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true)};
+  simConnectInterface.sendData(stdOutputLeft, 1);
+  SimOutputAltimeter stdOutputRight = {Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_right, 28, true)};
+  simConnectInterface.sendData(stdOutputRight, 2);
   idFcuShimLeftBaroMode->set(getBaroMode(Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 28, true),
                                          Arinc429Utils::bitFromValueOr(fcuBusOutputs.eis_discrete_word_2_left, 29, false)));
 
@@ -2726,7 +2781,7 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
   auto simData = simConnectInterface.getSimData();
 
   // determine if change is needed
-  if (simData.kohlsmanSettingStd_3 == 0) {
+  if (simData.kohlsmanSettingStd_4 == 0) {
     SimOutputAltimeter out = {true};
     simConnectInterface.sendData(out);
   }

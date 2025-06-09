@@ -631,6 +631,7 @@
     "Real": "Realisme",
     "Realism": {
       "AdirsAlignTime": "Waktu Penghidupan ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Ceklis Otomatis Terisi",
       "BoardingTime": "Waktu Boarding",
       "DmcSelfTestTime": "Waktu Pencobaan Mandiri DMC",
@@ -666,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Hanya Muat Saja",
       "None": "Tidak ada",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Mati",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",

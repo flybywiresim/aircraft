@@ -24,6 +24,10 @@
     - [Flight Augmentation Computer (FAC)](#flight-augmentation-computer-fac)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
+  - [Indication and Recording Systems (ATA 31)](#indication-and-recording-systems-ata-31)
+    - [ECP](#ecp)
+      - [ARINC429 Output Bus](#arinc429-output-bus)
+      - [Hardwired Discretes](#hardwired-discretes)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
@@ -1588,6 +1592,7 @@ These variables are the interface between the 3D model and the systems/code.
         - FM1
         - IND
         - RDY
+        - BLANK
         - FM2
 
 ## ADIRS
@@ -1685,7 +1690,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_BARO_CORRECTED_ALTITUDE_{side}
     - Arinc429Word<Feet>
     - The baro corrected altitude in feet.
-    - TODO currently returns pressure altitude when STD mode is selected
     - {side}
         - 1: Captain
         - 2: First Officer
@@ -2086,6 +2090,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Indicates to the FG that a localiser back beam is tuned.
 
+- A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL
+    - Boolean
+    - Indicates to the FG if the FM lateral flight plan is valid, for lateral managed modes (NAV).
+    - Internal to FM/FG communication.
+
 - A32NX_FG_PHI_LIMIT
     - Number in Degrees
     - Indicates the current bank limit requested by the FM
@@ -2105,6 +2114,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number in degrees
     - Used for laternal guidance in mode NAV
     - Bank angle command
+
+- A32NX_FM_VERTICAL_PROFILE_AVAIL
+    - Boolean
+    - Indicates to the FG if the FM vertical flight profile is valid, for vertical managed modes.
+    - Internal to FM/FG communication
 
 - A32NX_FG_REQUESTED_VERTICAL_MODE
     - Enum
@@ -2148,6 +2162,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - This Simvar is true
         - NAV mode is engaged
         - FINAL mode is armed
+
+- A32NX_SpeedPreselVal
+    - Number
+    - Indicates the preselected speed value, -1 if no value is preselected
+    - Internal to FM/FG communication, other avionics should use the FG bus var
+
+- A32NX_MachPreselVal
+    - Number
+    - Indicates the preselect mach value, -1 if no value is preselected
+    - Internal to FM/FG communication, other avionics should use the FG bus var
 
 ## Autothrust System
 
@@ -2752,7 +2776,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_IS_AUTO:
     - Indicates whether the engine bleed air is on
-    - Is aliased from aircraft variable A:BLEED AIR ENGINE
     - Bool
     - {number}
         - 1
@@ -3846,6 +3869,92 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_HYD_TRIM_WHEEL_PERCENT
     - Percent
     - Trim wheel position in percent
+
+## Indication and Recording Systems (ATA 31)
+
+### ECP
+
+Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
+
+#### ARINC429 Output Bus
+
+- `L:A32NX_ECP_WARNING_SWITCH_WORD`
+  - The ECP warning switch word containg button pressed state.
+    Transmitted to each FWC, DMC, TAWS, FDIMU, and ATSU.
+  - Arinc429<Discrete>
+    | Bit |            Description            |
+    |:---:|:---------------------------------:|
+    | 11  | CLR 1                             |
+    | 13  | STS                               |
+    | 14  | RCL                               |
+    | 16  | CLR 2                             |
+    | 17  | EMERGENCY CANCEL                  |
+    | 18  | TO CONFIG TEST                    |
+
+- `L:A32NX_ECP_SYSTEM_SWITCH_WORD`
+  - The ECP system switch word containg button pressed state.
+    Transmitted to each FWC, DMC, TAWS, FDIMU, and ATSU.
+  - Arinc429<Discrete>
+    | Bit |            Description            |
+    |:---:|:---------------------------------:|
+    | 11  | ENG                               |
+    | 12  | BLEED                             |
+    | 13  | APU                               |
+    | 14  | HYD                               |
+    | 15  | ELEC                              |
+    | 17  | COND                              |
+    | 18  | PRESS                             |
+    | 19  | FUEL                              |
+    | 20  | FLT/CTL                           |
+    | 21  | DOOR                              |
+    | 22  | BRAKES                            |
+    | 23  | ALL                               |
+
+- `L:A32NX_ECP_LIGHT_STATUS_WORD`
+  - The ECP light status word containg button light state.
+    Transmitted to each FWC, DMC, TAWS, FDIMU, and ATSU.
+  - Arinc429<Discrete>
+    | Bit |            Description            |
+    |:---:|:---------------------------------:|
+    | 11  | ENG                               |
+    | 12  | BLEED                             |
+    | 13  | APU                               |
+    | 14  | HYD                               |
+    | 15  | ELEC                              |
+    | 16  | STATUS                            |
+    | 17  | COND                              |
+    | 18  | PRESS                             |
+    | 19  | FUEL                              |
+    | 20  | FLT/CTL                           |
+    | 21  | DOOR                              |
+    | 22  | BRAKES                            |
+    | 23  | CLR 1                             |
+    | 24  | CLR 2                             |
+    | 26  | L. TEST                           |
+    | 27  | DIM                               |
+
+#### Hardwired Discretes
+
+- `L:A32NX_ECP_DISCRETE_OUT_STS`
+  - The hardwired discrete for STS button to each FWC.
+  - Boolean
+
+- `L:A32NX_ECP_DISCRETE_OUT_RCL`
+  - The hardwired discrete for RCL button to each FWC.
+  - Boolean
+
+- `L:A32NX_ECP_DISCRETE_OUT_CLR`
+  - The hardwired discrete for CLR button to each FWC.
+  - Boolean
+
+- `L:A32NX_ECP_DISCRETE_OUT_EMER_CANC`
+  - The hardwired discrete for emergency cancel/audio suppression to each FWC and the TAWS.
+  - Boolean
+
+- `L:A32NX_ECP_DISCRETE_OUT_ALL`
+  - The hardwired discrete for emergency cancel/audio suppression to each DMC.
+  - Boolean
+
 
 ## Landing Gear (ATA 32)
 

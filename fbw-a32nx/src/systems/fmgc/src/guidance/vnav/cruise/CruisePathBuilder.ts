@@ -20,6 +20,7 @@ import {
   VerticalCheckpointReason,
 } from '../profile/NavGeometryProfile';
 import { AtmosphericConditions } from '../AtmosphericConditions';
+import { VnavConfig } from '../VnavConfig';
 
 export class CruisePathBuilder {
   constructor(
@@ -124,7 +125,7 @@ export class CruisePathBuilder {
       sequence.addCheckpointFromStep(accelerationStep, VerticalCheckpointReason.AtmosphericConditions);
     }
 
-    if (config.vnavConfig.DEBUG_PROFILE && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
+    if (VnavConfig.DEBUG_PROFILE && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
       console.warn(
         '[FMS/VNAV] An acceleration step in the cruise took us past T/D. This is not implemented properly yet. Blame BBK',
       );
@@ -262,15 +263,7 @@ export class CruisePathBuilder {
     const { zeroFuelWeight, cruiseAltitude, managedCruiseSpeedMach, tropoPause } =
       this.computationParametersObserver.get();
 
-    const averageCas = (speed + finalSpeed) / 2;
-    const averageClimbSpeedMach = Math.min(
-      managedCruiseSpeedMach,
-      this.atmosphericConditions.computeMachFromCas(cruiseAltitude, averageCas),
-    );
-    const totalAirTemperature = this.atmosphericConditions.totalAirTemperatureFromMach(
-      cruiseAltitude,
-      averageClimbSpeedMach,
-    );
+    const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(cruiseAltitude);
 
     return Predictions.speedChangeStep(
       config,
@@ -280,7 +273,7 @@ export class CruisePathBuilder {
       finalSpeed,
       managedCruiseSpeedMach,
       managedCruiseSpeedMach,
-      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, cruiseAltitude, totalAirTemperature),
+      EngineModel.getClimbThrustCorrectedN1(config.engineModelParameters, cruiseAltitude, staticAirTemperature),
       zeroFuelWeight,
       remainingFuelOnBoard,
       headwind.value,

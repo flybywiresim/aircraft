@@ -631,6 +631,7 @@
     "Real": "Πραγματικά",
     "Realism": {
       "AdirsAlignTime": "Χρόνος Ευθυγράμμισης ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Λίστες Ελέγχου Αυτόματης Συμπλήρωσης",
       "BoardingTime": "Χρόνος Επιβίβασης ",
       "DmcSelfTestTime": "Χρόνος Αυτοδοκιμής DMC",
@@ -666,6 +667,7 @@
       "Left": "Αριστερά",
       "LoadOnly": "Φόρτωση Μόνο",
       "None": "Κανένα",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Απενεργοποιημένο",
       "PilotSeat": "Κάθισμα πιλότου για έλεγχο",
       "Right": "Δεξιά",

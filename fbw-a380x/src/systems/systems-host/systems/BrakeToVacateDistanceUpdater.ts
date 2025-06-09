@@ -10,9 +10,10 @@ import {
   pointDistance,
 } from '@flybywiresim/oanc';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
-import { NavigationDatabase, NavigationDatabaseBackend, NavigationDatabaseService } from '@fmgc/index';
 import { placeBearingDistance } from 'msfs-geo';
 import { Position } from '@turf/turf';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 
 /**
  * Utility class for brake to vacate (BTV) functions on the A380
@@ -76,7 +77,8 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   }
 
   init() {
-    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    // FIXME this should only ever be used within the FMGC
+    const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
     this.clearSelection();
