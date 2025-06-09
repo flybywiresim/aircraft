@@ -83,7 +83,7 @@ export class WindProfile implements WindInterface {
       );
     }
 
-    return 0;
+    return Vec2Math.set(0, 0, result);
   }
 
   getDescentTailwind(distanceFromStart: NauticalMiles, altitude: Feet): TailwindComponent {
@@ -147,7 +147,7 @@ export class WindProfile implements WindInterface {
       );
     }
 
-    return 0;
+    return Vec2Math.set(0, 0, result);
   }
 
   getCruiseTailwind(distanceFromStart: NauticalMiles, distanceFromAircraft: number, altitude: Feet): TailwindComponent {
@@ -252,7 +252,7 @@ export class WindProfile implements WindInterface {
       return tripWind;
     }
 
-    return 0;
+    return Vec2Math.set(0, 0, result);
   }
 
   getWindForecast(
@@ -545,7 +545,7 @@ class LegWinds {
       return tripWind;
     }
 
-    return 0;
+    return Vec2Math.set(0, 0, result);
   }
 }
 
