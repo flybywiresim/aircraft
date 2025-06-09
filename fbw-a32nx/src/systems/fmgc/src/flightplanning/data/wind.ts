@@ -7,6 +7,7 @@ export interface WindEntry {
 }
 
 export type WindVector = Float64Array;
+export type TailwindComponent = number;
 
 export enum PropagationType {
   Forward,
@@ -28,8 +29,20 @@ export const formatWindTrueDegrees = (vector: WindVector) =>
   `${MathUtils.normalise360(Vec2Math.theta(vector) * MathUtils.RADIANS_TO_DEGREES)
     .toFixed(0)
     .padStart(3, '0')}°`;
+export const formatWindPredictionDirection = (prediction: WindVector | TailwindComponent) =>
+  typeof prediction === 'number'
+    ? prediction > 0
+      ? 'TAIL'
+      : 'HEAD'
+    : `${MathUtils.normalise360(Vec2Math.theta(prediction) * MathUtils.RADIANS_TO_DEGREES)
+        .toFixed(0)
+        .padStart(3, '0')}°`;
 
 export const formatWindMagnitude = (vector: WindVector) => Math.round(Vec2Math.abs(vector)).toFixed(0).padStart(3, '0');
+export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindComponent) =>
+  Math.round(typeof prediction === 'number' ? Math.abs(prediction) : Vec2Math.abs(prediction))
+    .toFixed(0)
+    .padStart(3, '0');
 
 // TODO winds TA/TL
 export const formatWindAltitude = (entry: WindEntry) =>

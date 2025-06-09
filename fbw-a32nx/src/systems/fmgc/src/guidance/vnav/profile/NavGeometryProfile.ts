@@ -12,7 +12,7 @@ import { AltitudeConstraint, AltitudeDescriptor, SpeedConstraint } from '@flybyw
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { WindProfile } from '../wind/WindProfile';
 import { Vec2Math } from '@microsoft/msfs-sdk';
-import { WindVector } from '../../../flightplanning/data/wind';
+import { TailwindComponent, WindVector } from '../../../flightplanning/data/wind';
 import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
 
 export enum ProfilePhase {
@@ -35,7 +35,7 @@ export interface VerticalWaypointPrediction {
   estimatedFuelOnBoard: Pounds;
   distanceFromAircraft: NauticalMiles;
   profilePhase: ProfilePhase;
-  windPrediction: WindVector;
+  windPrediction: WindVector | TailwindComponent;
 }
 
 export enum VerticalCheckpointReason {

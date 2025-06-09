@@ -15,7 +15,7 @@ import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/Flight
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
-import { formatWindMagnitude, formatWindTrueDegrees } from '@fmgc/flightplanning/data/wind';
+import { formatWindPredictionMagnitude, formatWindPredictionDirection } from '@fmgc/flightplanning/data/wind';
 
 const Markers = {
   FPLN_DISCONTINUITY: ['---F-PLN DISCONTINUITY--'],
@@ -404,10 +404,10 @@ export class CDUFlightPlanPage {
           if (isPageB) {
             speedConstraint = Wind.NoTrueDegreesPrediction;
 
-            if (verticalWaypoint?.windPrediction) {
+            if (verticalWaypoint?.windPrediction !== undefined) {
               speedConstraint = isFromLeg
-                ? formatWindTrueDegrees(verticalWaypoint?.windPrediction)
-                : `{small}${formatWindTrueDegrees(verticalWaypoint?.windPrediction)}{end}`;
+                ? formatWindPredictionDirection(verticalWaypoint?.windPrediction)
+                : `{small}${formatWindPredictionDirection(verticalWaypoint?.windPrediction)}{end}`;
               spdColor = color;
             }
           } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
@@ -445,8 +445,8 @@ export class CDUFlightPlanPage {
           if (isPageB) {
             altitudeConstraint = Wind.NoMagnitudePrediction;
 
-            if (verticalWaypoint?.windPrediction) {
-              altitudeConstraint = formatWindMagnitude(verticalWaypoint.windPrediction);
+            if (verticalWaypoint?.windPrediction !== undefined) {
+              altitudeConstraint = formatWindPredictionMagnitude(verticalWaypoint.windPrediction);
               altColor = color;
               altSize = isFromLeg ? 'big' : 'small';
             }
@@ -718,8 +718,8 @@ export class CDUFlightPlanPage {
         if (isPageB) {
           speed = Wind.NoTrueDegreesPrediction;
 
-          if (!shouldHidePredictions && pwp.flightPlanInfo.windPrediction) {
-            speed = `{small}${formatWindTrueDegrees(pwp.flightPlanInfo.windPrediction)}{end}`;
+          if (!shouldHidePredictions && pwp.flightPlanInfo?.windPrediction !== undefined) {
+            speed = `{small}${formatWindPredictionDirection(pwp.flightPlanInfo.windPrediction)}{end}`;
             spdColor = color;
           }
         } else {
@@ -735,8 +735,8 @@ export class CDUFlightPlanPage {
         if (isPageB) {
           altitudeConstraint = Wind.NoMagnitudePrediction;
 
-          if (!shouldHidePredictions && pwp.flightPlanInfo.windPrediction) {
-            altitudeConstraint = formatWindMagnitude(pwp.flightPlanInfo.windPrediction);
+          if (!shouldHidePredictions && pwp.flightPlanInfo?.windPrediction !== undefined) {
+            altitudeConstraint = formatWindPredictionMagnitude(pwp.flightPlanInfo.windPrediction);
             altColor = color;
           }
         } else if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.altitude)) {
@@ -970,7 +970,7 @@ export class CDUFlightPlanPage {
             }
 
             if (
-              !cPwp &&
+              (!cPwp || isPageB) &&
               cSpd !== Speed.NoPrediction &&
               cSpd !== Wind.NoTrueDegreesPrediction &&
               cSpdColor !== 'magenta' &&
@@ -980,7 +980,7 @@ export class CDUFlightPlanPage {
             }
 
             if (
-              !cPwp &&
+              (!cPwp || isPageB) &&
               cAlt !== Altitude.NoPrediction &&
               cAlt !== Wind.NoMagnitudePrediction &&
               cAltColor !== 'magenta' &&
