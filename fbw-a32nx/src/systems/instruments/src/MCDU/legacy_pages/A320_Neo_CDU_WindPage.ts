@@ -29,10 +29,11 @@ export class CDUWindPage {
 
   static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     const phase = mcdu.flightPhaseManager.phase;
+    const plan = mcdu.getFlightPlan(forPlan);
 
     switch (phase) {
       case FmgcFlightPhase.Cruise:
-        CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(mcdu, mcdu.getFlightPlan(forPlan), 0));
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(mcdu, plan, 0));
         break;
       case FmgcFlightPhase.Descent:
       case FmgcFlightPhase.Approach:
@@ -161,11 +162,17 @@ export class CDUWindPage {
     };
   }
 
+  /**
+   * Find the index of the first cruise leg in the flight plan downstream of the given index. The search will never start before the active leg index.
+   * @param mcdu
+   * @param plan the flight plan to search in
+   * @param fromIndex the index to start searching from (the search will never start before the active leg index)
+   * @returns The index of the next cruise leg, or -1 if no cruise leg is found.
+   */
   private static findNextCruiseLegIndex(mcdu: LegacyFmsPageInterface, plan: BaseFlightPlan, fromIndex: number): number {
     const legPredictions = mcdu.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
 
-    // Find the first cruise leg index starting from the given index
-    for (let i = fromIndex; i < plan.firstMissedApproachLegIndex; i++) {
+    for (let i = Math.max(fromIndex, plan.activeLegIndex); i < plan.firstMissedApproachLegIndex; i++) {
       const leg = plan.maybeElementAt(i);
       if (!isLeg(leg) || !leg.isXF()) {
         continue;
@@ -182,9 +189,16 @@ export class CDUWindPage {
       }
     }
 
-    return -1; // Return -1 if no cruise leg is found
+    return -1;
   }
 
+  /**
+   * Find the index of the first cruise leg in the flight plan upstream of the given index. The search will always end at or downstream of the active leg index.
+   * @param mcdu
+   * @param plan the flight plan to search in
+   * @param fromIndex the index to start searching from (the search will always end downstream of the active leg index)
+   * @returns The index of the previous cruise leg, or -1 if no cruise leg is found.
+   */
   private static findPreviousCruiseLegIndex(
     mcdu: LegacyFmsPageInterface,
     plan: BaseFlightPlan,
@@ -192,8 +206,7 @@ export class CDUWindPage {
   ): number {
     const legPredictions = mcdu.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
 
-    // Find the first cruise leg index starting from the given index
-    for (let i = fromIndex; i >= 0; i--) {
+    for (let i = fromIndex; i >= Math.max(0, plan.activeLegIndex); i--) {
       const leg = plan.maybeElementAt(i);
       if (!isLeg(leg) || !leg.isXF()) {
         continue;
@@ -210,7 +223,7 @@ export class CDUWindPage {
       }
     }
 
-    return -1; // Return -1 if no cruise leg is found
+    return -1;
   }
 
   static async ShowCRZPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, fpIndex: number) {
