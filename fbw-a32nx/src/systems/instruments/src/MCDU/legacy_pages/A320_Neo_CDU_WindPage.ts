@@ -64,6 +64,7 @@ export class CDUWindPage {
     }
 
     const phase = mcdu.flightPhaseManager.phase;
+    const canModifyWinds = phase < FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Done;
 
     const template = [
       ['CLIMB WIND'],
@@ -85,36 +86,40 @@ export class CDUWindPage {
     for (let i = 0; i < Math.min(plan.performanceData.climbWindEntries.length, 5); i++) {
       const wind = plan.performanceData.climbWindEntries[i];
 
-      template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]${phase < FmgcFlightPhase.Climb ? 'cyan' : 'green'}`;
+      template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
 
       numEntries = i + 1;
-      if (phase < FmgcFlightPhase.Climb) {
-        mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
-          try {
-            if (value === Keypad.clrValue) {
-              await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
-            } else {
-              const entry = this.parseWindEntryEdit(mcdu, value, wind);
+      mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
+        if (!canModifyWinds) {
+          mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+          scratchpadCallback();
+          return;
+        }
 
-              if (entry === null) {
-                scratchpadCallback();
-                return;
-              }
+        try {
+          if (value === Keypad.clrValue) {
+            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
+          } else {
+            const entry = this.parseWindEntryEdit(mcdu, value, wind);
 
-              await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, entry, forPlan);
+            if (entry === null) {
+              scratchpadCallback();
+              return;
             }
 
-            CDUWindPage.ShowCLBPage(mcdu, forPlan);
-          } catch (e) {
-            console.error('Error updating climb wind entry:', e);
-            mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
-            scratchpadCallback();
+            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, entry, forPlan);
           }
-        };
-      }
+
+          CDUWindPage.ShowCLBPage(mcdu, forPlan);
+        } catch (e) {
+          console.error('Error updating climb wind entry:', e);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          scratchpadCallback();
+        }
+      };
     }
 
-    if (plan.performanceData.climbWindEntries.length < 5 && phase < FmgcFlightPhase.Climb) {
+    if (plan.performanceData.climbWindEntries.length < 5 && canModifyWinds) {
       template[numEntries * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
       mcdu.onLeftInput[numEntries] = async (value, scratchpadCallback) => {
@@ -244,10 +249,8 @@ export class CDUWindPage {
     const winds = mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
     const maxCruiseWindEntries = 4;
 
-    const canGoToPrevPhase = mcdu.flightPhaseManager.phase < FmgcFlightPhase.Cruise;
-
-    const prevPhaseText = canGoToPrevPhase ? 'PREV{sp}' : '';
-    const prevPhaseButton = canGoToPrevPhase ? 'PHASE>' : '';
+    const phase = mcdu.flightPhaseManager.phase;
+    const canGoToPrevPhase = phase < FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Done;
 
     const template = [
       ['CRZ WIND'],
@@ -257,8 +260,8 @@ export class CDUWindPage {
       ['', requestButton],
       ['', ''],
       ['', ''],
-      ['', prevPhaseText],
-      ['', prevPhaseButton],
+      ['', canGoToPrevPhase ? 'PREV{sp}' : ''],
+      ['', canGoToPrevPhase ? 'PHASE>' : ''],
       ['', 'NEXT{sp}'],
       ['', 'PHASE>'],
       ['', ''],
@@ -395,6 +398,10 @@ export class CDUWindPage {
 
     const alternateAirport = plan ? plan.alternateDestinationAirport : undefined;
 
+    const phase = mcdu.flightPhaseManager.phase;
+    const canGoToPrevPhase = phase < FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Done;
+    const canModifyWinds = phase >= FmgcFlightPhase.Descent || phase <= FmgcFlightPhase.GoAround;
+
     let requestButton = 'REQUEST*[color]amber';
     let requestEnable = true;
     if (mcdu.simbrief.sendStatus === 'REQUESTING') {
@@ -410,8 +417,8 @@ export class CDUWindPage {
       ['', requestButton],
       ['', ''],
       ['', ''],
-      ['', 'PREV{sp}'],
-      ['', 'PHASE>'],
+      ['', canGoToPrevPhase ? 'PREV{sp}' : ''],
+      ['', canGoToPrevPhase ? 'PHASE>' : ''],
       ['', ''],
       ['', ''],
       ['', ''],
@@ -433,9 +440,15 @@ export class CDUWindPage {
     for (let i = 0; i < numWindEntriesOnPage; i++) {
       const wind = plan.performanceData.descentWindEntries[i + page * numDescentWindEntriesPerPage];
 
-      template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]cyan`;
+      template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
 
       mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
+        if (!canModifyWinds) {
+          mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+          scratchpadCallback();
+          return;
+        }
+
         try {
           if (value === Keypad.clrValue) {
             await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, null, forPlan);
@@ -461,6 +474,7 @@ export class CDUWindPage {
 
     // Whether to show "[ ]°/[ ]/[   ]" on this page
     const canAddEntryOnPage =
+      canModifyWinds &&
       plan.performanceData.descentWindEntries.length >= page * numDescentWindEntriesPerPage &&
       plan.performanceData.descentWindEntries.length < (page + 1) * numDescentWindEntriesPerPage &&
       plan.performanceData.descentWindEntries.length < maxNumDescentWindEntries;
@@ -551,14 +565,16 @@ export class CDUWindPage {
 
     mcdu.setTemplate(template);
 
-    mcdu.onRightInput[3] = () => {
-      const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, 0);
-      if (nextCruiseLegIndex >= 0) {
-        CDUWindPage.ShowCRZPage(mcdu, forPlan, nextCruiseLegIndex);
-      } else {
-        CDUWindPage.ShowCLBPage(mcdu, forPlan);
-      }
-    };
+    if (canGoToPrevPhase) {
+      mcdu.onRightInput[3] = () => {
+        const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, 0);
+        if (nextCruiseLegIndex >= 0) {
+          CDUWindPage.ShowCRZPage(mcdu, forPlan, nextCruiseLegIndex);
+        } else {
+          CDUWindPage.ShowCLBPage(mcdu, forPlan);
+        }
+      };
+    }
 
     mcdu.onRightInput[1] = async () => {
       if (requestEnable) {
