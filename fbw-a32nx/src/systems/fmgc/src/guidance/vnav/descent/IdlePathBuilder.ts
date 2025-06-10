@@ -15,7 +15,6 @@ import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/Tempora
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { BaseGeometryProfile } from '../profile/BaseGeometryProfile';
-import { WindComponent } from '../wind';
 
 export class IdlePathBuilder {
   private readonly idleDescentStrategy: DescentStrategy;
@@ -93,7 +92,7 @@ export class IdlePathBuilder {
       i++
     ) {
       const { distanceFromStart, altitude, speed, remainingFuelOnBoard } = sequence.lastCheckpoint;
-      const headwind = new WindComponent(-profile.winds.getDescentTailwind(distanceFromStart, altitude));
+      const headwind = -profile.winds.getDescentTailwind(distanceFromStart, altitude);
 
       const isUnderSpeedLimitAltitude =
         speedProfile.shouldTakeDescentSpeedLimitIntoAccount() && altitude < descentSpeedLimit.underAltitude;

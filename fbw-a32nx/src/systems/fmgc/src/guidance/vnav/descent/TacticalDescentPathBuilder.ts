@@ -28,7 +28,6 @@ import {
   VerticalProfileComputationParametersObserver,
 } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { WindInterface } from '@fmgc/guidance/vnav/wind/WindProfile';
 
 type MinimumDescentAltitudeConstraint = {
@@ -626,12 +625,9 @@ class PhaseTable {
 
       if (phase.shouldExecute(sequence.lastCheckpoint)) {
         // TODO winds get rid of WindComponent
-        const headwind = new WindComponent(
-          -this.winds.getDescentTailwind(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
-        );
         const phaseResult = phase.execute(phase.shouldFlyAsLevelSegment ? levelFlightStrategy : descentStrategy)(
           sequence.lastCheckpoint,
-          headwind,
+          -this.winds.getDescentTailwind(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
           this.configuration.setFromSpeed(sequence.lastCheckpoint.speed, this.parameters),
         );
 
@@ -668,7 +664,7 @@ abstract class SubPhase {
 
   abstract execute(
     strategy: DescentStrategy,
-  ): (start: VerticalCheckpoint, headwind: WindComponent, configuration?: AircraftConfiguration) => StepResults;
+  ): (start: VerticalCheckpoint, headwind: number, configuration?: AircraftConfiguration) => StepResults;
 
   protected scaleStepBasedOnLastCheckpoint(lastCheckpoint: VerticalCheckpoint, step: StepResults, scaling: number) {
     step.distanceTraveled *= scaling;
@@ -727,7 +723,7 @@ class DescendingDeceleration extends SubPhase {
   }
 
   override execute(strategy: DescentStrategy) {
-    return (start: VerticalCheckpoint, headwind: WindComponent, configuration: AircraftConfiguration) => {
+    return (start: VerticalCheckpoint, headwind: number, configuration: AircraftConfiguration) => {
       const step = strategy.predictToSpeed(
         start.altitude,
         this.toSpeed,
@@ -764,7 +760,7 @@ class DescendToAltitude extends SubPhase {
   }
 
   override execute(strategy: DescentStrategy) {
-    return (start: VerticalCheckpoint, headwind: WindComponent) =>
+    return (start: VerticalCheckpoint, headwind: number) =>
       strategy.predictToAltitude(
         start.altitude,
         this.toAltitude,
@@ -793,7 +789,7 @@ class DescendToDistance extends SubPhase {
   }
 
   override execute(strategy: DescentStrategy) {
-    return (start: VerticalCheckpoint, headwind: WindComponent, configuration: AircraftConfiguration) => {
+    return (start: VerticalCheckpoint, headwind: number, configuration: AircraftConfiguration) => {
       const step = strategy.predictToDistance(
         start.altitude,
         this.toDistance - start.distanceFromStart,

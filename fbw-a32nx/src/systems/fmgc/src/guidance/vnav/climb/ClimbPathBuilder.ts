@@ -13,7 +13,6 @@ import { Predictions, StepResults } from '../Predictions';
 import { ProfilePhase, VerticalCheckpoint, VerticalCheckpointReason } from '../profile/NavGeometryProfile';
 import { BaseGeometryProfile } from '../profile/BaseGeometryProfile';
 import { AtmosphericConditions } from '../AtmosphericConditions';
-import { WindComponent } from '../wind';
 
 export class ClimbPathBuilder {
   constructor(
@@ -146,15 +145,13 @@ export class ClimbPathBuilder {
 
       const speedTarget = speedProfile.getTarget(distanceFromStart, altitude, ManagedSpeedType.Climb);
       if (speedTarget - speed > 1) {
-        const headwind = new WindComponent(-profile.winds.getClimbTailwind(distanceFromStart, altitude));
-
         const accelerationStep = climbStrategy.predictToSpeed(
           altitude,
           speedTarget,
           speed,
           managedClimbSpeedMach,
           remainingFuelOnBoard,
-          headwind,
+          -profile.winds.getClimbTailwind(distanceFromStart, altitude),
         );
 
         // If we shoot through the final altitude trying to accelerate, pretend we didn't accelerate all the way
@@ -225,7 +222,7 @@ export class ClimbPathBuilder {
       const isAboveCrossoverAltitude =
         speedTarget > this.atmosphericConditions.computeCasFromMach(altitude, managedClimbSpeedMach);
 
-      const headwind = new WindComponent(-profile.winds.getClimbTailwind(distanceFromStart, altitude));
+      const headwind = -profile.winds.getClimbTailwind(distanceFromStart, altitude);
 
       // If we're below the target speed, we need to accelerate, unless we're above the crossover altitude. In that case, IAS is always below the managed IAS speed.
       const step =
@@ -286,15 +283,13 @@ export class ClimbPathBuilder {
     const { managedClimbSpeedMach } = this.computationParametersObserver.get();
     const { distanceFromStart, altitude, speed: initialSpeed, remainingFuelOnBoard } = profile.lastCheckpoint;
 
-    const headwind = new WindComponent(-profile.winds.getClimbTailwind(distanceFromStart, altitude));
-
     const step = climbStrategy.predictToDistance(
       altitude,
       distance,
       initialSpeed,
       managedClimbSpeedMach,
       remainingFuelOnBoard,
-      headwind,
+      -profile.winds.getClimbTailwind(distanceFromStart, altitude),
     );
 
     this.addCheckpointFromStep(profile, step, reason);

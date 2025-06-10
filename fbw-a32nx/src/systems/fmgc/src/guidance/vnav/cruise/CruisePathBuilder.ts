@@ -8,7 +8,6 @@ import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
-import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { Predictions, StepResults } from '../Predictions';
 import {
@@ -195,7 +194,8 @@ export class CruisePathBuilder {
           managedCruiseSpeed,
           managedCruiseSpeedMach,
           remainingFuelOnBoard,
-          WindComponent.zero(),
+          // TODO winds - make wind prediction here
+          0,
         )
       : stepDescentStrategy.predictToAltitude(
           altitude,
@@ -203,7 +203,8 @@ export class CruisePathBuilder {
           managedCruiseSpeed,
           managedCruiseSpeed,
           remainingFuelOnBoard,
-          WindComponent.zero(),
+          // TODO winds - make wind prediction here
+          0,
         );
 
     // If the step end is closer than 50 NM to T/D, the step is ignored.
