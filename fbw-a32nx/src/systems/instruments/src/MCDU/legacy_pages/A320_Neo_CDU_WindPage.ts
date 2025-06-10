@@ -19,6 +19,8 @@ import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
+import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 export class CDUWindPage {
   static readonly WindCache: PropagatedWindEntry[] = [];
@@ -29,20 +31,21 @@ export class CDUWindPage {
     const phase = mcdu.flightPhaseManager.phase;
 
     switch (phase) {
-      case FmgcFlightPhase.Preflight:
-      case FmgcFlightPhase.Takeoff:
-      case FmgcFlightPhase.Climb:
-        CDUWindPage.ShowCLBPage(mcdu, forPlan);
-        break;
       case FmgcFlightPhase.Cruise:
-        CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(mcdu.getFlightPlan(forPlan), 0));
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(mcdu, mcdu.getFlightPlan(forPlan), 0));
         break;
       case FmgcFlightPhase.Descent:
       case FmgcFlightPhase.Approach:
       case FmgcFlightPhase.GoAround:
+        CDUWindPage.ShowDESPage(mcdu, forPlan);
+        break;
+      case FmgcFlightPhase.Preflight:
+      case FmgcFlightPhase.Takeoff:
+      case FmgcFlightPhase.Climb:
       case FmgcFlightPhase.Done:
       default:
-        CDUWindPage.ShowDESPage(mcdu, forPlan);
+        CDUWindPage.ShowCLBPage(mcdu, forPlan);
+        break;
     }
   }
 
@@ -136,7 +139,7 @@ export class CDUWindPage {
     mcdu.setTemplate(template);
 
     mcdu.onRightInput[4] = () => {
-      const nextCruiseLegIndex = this.findNextCruiseLegIndex(plan, 0);
+      const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, 0);
       if (nextCruiseLegIndex >= 0) {
         CDUWindPage.ShowCRZPage(mcdu, forPlan, nextCruiseLegIndex);
       } else {
@@ -158,27 +161,55 @@ export class CDUWindPage {
     };
   }
 
-  private static findNextCruiseLegIndex(plan: BaseFlightPlan, fromIndex: number): number {
+  private static findNextCruiseLegIndex(mcdu: LegacyFmsPageInterface, plan: BaseFlightPlan, fromIndex: number): number {
+    const legPredictions = mcdu.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+
     // Find the first cruise leg index starting from the given index
     for (let i = fromIndex; i < plan.firstMissedApproachLegIndex; i++) {
       const leg = plan.maybeElementAt(i);
+      if (!isLeg(leg) || !leg.isXF()) {
+        continue;
+      }
 
-      if (leg?.isDiscontinuity === false && leg.isXF() && leg.segment.class === SegmentClass.Enroute) {
+      const legPrediction = legPredictions?.get(i);
+      const isCruiseLeg =
+        legPrediction !== undefined
+          ? legPrediction.profilePhase === ProfilePhase.Cruise
+          : leg.segment.class === SegmentClass.Enroute;
+
+      if (isCruiseLeg) {
         return i;
       }
     }
+
     return -1; // Return -1 if no cruise leg is found
   }
 
-  private static findPreviousCruiseLegIndex(plan: BaseFlightPlan, fromIndex: number): number {
+  private static findPreviousCruiseLegIndex(
+    mcdu: LegacyFmsPageInterface,
+    plan: BaseFlightPlan,
+    fromIndex: number,
+  ): number {
+    const legPredictions = mcdu.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+
     // Find the first cruise leg index starting from the given index
     for (let i = fromIndex; i >= 0; i--) {
       const leg = plan.maybeElementAt(i);
+      if (!isLeg(leg) || !leg.isXF()) {
+        continue;
+      }
 
-      if (leg?.isDiscontinuity === false && leg.isXF() && leg.segment.class === SegmentClass.Enroute) {
+      const legPrediction = legPredictions?.get(i);
+      const isCruiseLeg =
+        legPrediction !== undefined
+          ? legPrediction.profilePhase === ProfilePhase.Cruise
+          : leg.segment.class === SegmentClass.Enroute;
+
+      if (isCruiseLeg) {
         return i;
       }
     }
+
     return -1; // Return -1 if no cruise leg is found
   }
 
@@ -194,7 +225,7 @@ export class CDUWindPage {
     }
 
     const plan = mcdu.getFlightPlan(forPlan);
-    // TODO handle non-leg gracefully
+    // TODO winds handle non-leg gracefully
     const leg = plan.legElementAt(fpIndex);
 
     const winds = mcdu.flightPlanService.propagateWindsAt(fpIndex, this.WindCache, forPlan);
@@ -322,8 +353,8 @@ export class CDUWindPage {
       }
     };
 
-    const previousCruiseLegIndex = this.findPreviousCruiseLegIndex(plan, fpIndex - 1);
-    const nextCruiseLegIndex = this.findNextCruiseLegIndex(plan, fpIndex + 1);
+    const previousCruiseLegIndex = this.findPreviousCruiseLegIndex(mcdu, plan, fpIndex - 1);
+    const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, fpIndex + 1);
 
     const allowScrollingDown = previousCruiseLegIndex >= 0 && previousCruiseLegIndex < fpIndex;
     const allowScrollingUp = nextCruiseLegIndex >= 0 && nextCruiseLegIndex > fpIndex;
@@ -508,7 +539,7 @@ export class CDUWindPage {
     mcdu.setTemplate(template);
 
     mcdu.onRightInput[3] = () => {
-      const nextCruiseLegIndex = this.findNextCruiseLegIndex(plan, 0);
+      const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, 0);
       if (nextCruiseLegIndex >= 0) {
         CDUWindPage.ShowCRZPage(mcdu, forPlan, nextCruiseLegIndex);
       } else {
