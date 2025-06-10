@@ -818,7 +818,6 @@ export class FwsCore {
   public readonly sec3OffThenOnMemoryNode = new NXLogicMemoryNode();
 
   public readonly prim1Healthy = Subject.create(false);
-  public readonly prim1Healthy = Subject.create(false);
   public readonly prim2Healthy = Subject.create(false);
   public readonly prim3Healthy = Subject.create(false);
 
@@ -845,7 +844,13 @@ export class FwsCore {
 
   public readonly dcEhaPowered = Subject.create(false);
 
-  public readonly allPrimFailed = Subject.create(false);
+  public readonly allPrimFailed = MappedSubject.create(
+    SubscribableMapFunctions.nand(),
+    this.prim1Healthy,
+    this.prim2Healthy,
+    this.prim3Healthy,
+  );
+
   public readonly allPrimAndSecFailed = Subject.create(false);
 
   public readonly showLandingInhibit = Subject.create(false);
@@ -3633,50 +3638,12 @@ export class FwsCore {
     this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool'));
     this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
     this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
-    this.allPrimFailed.set(!this.prim1Healthy.get() && !this.prim2Healthy.get() && !this.prim3Healthy.get());
-    this.allPrimAndSecFailed.set(
-      this.allPrimFailed.get() && !this.sec1Healthy.get() && !this.sec2Healthy.get() && !this.sec3Healthy.get(),
-    );
-
-    // ELAC 1 FAULT computation
-    const se1f =
-      (fcdc1DiscreteWord1.bitValueOr(19, false) || fcdc2DiscreteWord1.bitValueOr(19, false)) &&
-      (fcdc1DiscreteWord1.bitValueOr(20, false) || fcdc2DiscreteWord1.bitValueOr(20, false));
-    const elac1FaultCondition =
-      !(flightPhase112 && (fcdc1DiscreteWord3.bitValueOr(19, false) || fcdc2DiscreteWord3.bitValueOr(19, false))) &&
-      this.dcESSBusPowered.get() &&
-      (fcdc1DiscreteWord1.bitValueOr(23, false) ||
-        fcdc2DiscreteWord1.bitValueOr(23, false) ||
-        (!this.elac1HydConfirmNodeOutput.get() && se1f));
-    this.elac1FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.bitValueOr(19, false) || fcdc2DiscreteWord3.bitValueOr(19, false)) &&
-        (fcdc1DiscreteWord1.bitValueOr(23, false) || fcdc2DiscreteWord1.bitValueOr(23, false)),
-    );
-    this.elac1HydConfirmNodeOutput.set(this.elac1HydConfirmNode.write(!greenSysPressurised, deltaTime));
-    this.elac1FaultConfirmNodeOutput.set(this.elac1FaultConfirmNode.write(elac1FaultCondition, deltaTime));
-
-    // ELAC 2 FAULT computation
-    const se2f =
-      (fcdc1DiscreteWord1.bitValueOr(21, false) || fcdc2DiscreteWord1.bitValueOr(21, false)) &&
-      (fcdc1DiscreteWord1.bitValueOr(22, false) || fcdc2DiscreteWord1.bitValueOr(22, false));
-    const elac2FaultCondition =
-      !(flightPhase112 && (fcdc1DiscreteWord3.bitValueOr(20, false) || fcdc2DiscreteWord3.bitValueOr(20, false))) &&
-      this.dc2BusPowered.get() &&
-      (fcdc1DiscreteWord1.bitValueOr(24, false) ||
-        fcdc2DiscreteWord1.bitValueOr(24, false) ||
-        (!this.elac2HydConfirmNodeOutput.get() && se2f));
-    this.elac2FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.bitValueOr(20, false) || fcdc2DiscreteWord3.bitValueOr(20, false)) &&
-        (fcdc1DiscreteWord1.bitValueOr(24, false) || fcdc2DiscreteWord1.bitValueOr(24, false)),
-    );
-    this.elac2HydConfirmNodeOutput.set(
-      this.elac2HydConfirmNode.write(!greenSysPressurised || !yellowSysPressurised, deltaTime),
-    );
-    this.elac2FaultConfirmNodeOutput.set(this.elac2FaultConfirmNode.write(elac2FaultCondition, deltaTime));
-
     this.sec1Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'bool'));
     this.sec2Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_2_HEALTHY', 'bool'));
     this.sec3Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'bool'));
+    this.allPrimAndSecFailed.set(
+      this.allPrimFailed.get() && !this.sec1Healthy.get() && !this.sec2Healthy.get() && !this.sec3Healthy.get(),
+    );
 
     this.sec1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
 
