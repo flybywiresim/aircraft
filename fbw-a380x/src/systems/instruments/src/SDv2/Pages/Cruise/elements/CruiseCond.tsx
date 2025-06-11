@@ -1,5 +1,5 @@
 import { ConsumerSubject, EventBus, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent as DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyablePage';
+import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { SDSimvars } from '../../../SDSimvarPublisher';
 
 export interface CruiseCondProps {
@@ -96,6 +96,12 @@ export class CabinTemperatures extends DestroyableComponent<CruiseCondProps> {
   );
   private readonly minUpperDeckTemp = this.minMaxUpperDeckTemp.map((v) => v[0].toFixed(0));
   private readonly maxUpperDeckTemp = this.minMaxUpperDeckTemp.map((v) => v[1].toFixed(0));
+
+  public onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(...this.mainDeckTemp, ...this.upperDeckTemp);
+  }
 
   render() {
     return (

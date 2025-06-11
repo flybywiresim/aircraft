@@ -14,7 +14,7 @@ import {
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { PermanentData } from './StatusArea';
 import { AtcMailbox } from './AtcMailbox';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyablePage';
+import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { SdPages } from '@shared/EcamSystemPages';
 
 import './style.scss';

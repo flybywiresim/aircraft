@@ -1,5 +1,5 @@
 import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyablePage';
+import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 import { fuelForDisplay } from '../../../Common/FuelFunctions';
 import { PageTitle } from '../Generic/PageTitle';
