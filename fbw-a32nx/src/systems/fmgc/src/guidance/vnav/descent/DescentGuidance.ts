@@ -217,7 +217,10 @@ export class DescentGuidance {
     const isSpeedAuto = Simplane.getAutoPilotAirspeedManaged();
     const isApproachPhaseActive = this.observer.get().flightPhase === FmgcFlightPhase.Approach;
     const isHoldActive = this.guidanceController.isManualHoldActive();
-    const isStepDescentActive = VerticalCheckpointReason.StepDescent;
+    const isCruisePhase = this.observer.get().flightPhase === FmgcFlightPhase.Cruise;
+    const hasStepDescent = this.aircraftToDescentProfileRelation.profile?.checkpoints.some(
+      (checkpoint) => checkpoint.reason === VerticalCheckpointReason.StepDescent,
+    );
     const targetVerticalSpeed = this.aircraftToDescentProfileRelation.currentTargetVerticalSpeed();
 
     this.targetAltitudeGuidance = this.atmosphericConditions.currentPressureAltitude - linearDeviation;
@@ -225,15 +228,23 @@ export class DescentGuidance {
     this.updatePathCaptureState(linearDeviation, targetVerticalSpeed);
     const shouldGoOffPath = this.pathCaptureState === PathCaptureState.OffPath;
 
-    if (
-      (!isHoldActive && !isStepDescentActive && shouldGoOffPath && linearDeviation > 0) ||
-      this.isInOverspeedCondition
-    ) {
+    if (isCruisePhase) {
+      this.requestedVerticalMode = RequestedVerticalMode.VsSpeed;
+      this.targetVerticalSpeed = -1000;
+      return;
+    }
+
+    if (hasStepDescent && this.observer.get().flightPhase === FmgcFlightPhase.Cruise) {
+      this.changeState(DescentVerticalGuidanceState.Observing);
+      return;
+    }
+
+    if ((!isHoldActive && shouldGoOffPath && linearDeviation > 0) || this.isInOverspeedCondition) {
       // above path
       this.requestedVerticalMode = RequestedVerticalMode.SpeedThrust;
-    } else if (shouldGoOffPath || isBeforeTopOfDescent || isHoldActive || isStepDescentActive) {
+    } else if (shouldGoOffPath || isBeforeTopOfDescent || isHoldActive) {
       // below path
-      if (isHoldActive || isStepDescentActive) {
+      if (isHoldActive) {
         this.requestedVerticalMode = RequestedVerticalMode.VsSpeed;
         this.targetVerticalSpeed = -1000;
       } else if (isOnGeometricPath) {

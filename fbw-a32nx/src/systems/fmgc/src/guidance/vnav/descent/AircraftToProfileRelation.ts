@@ -12,6 +12,7 @@ import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class AircraftToDescentProfileRelation {
+  [x: string]: any;
   public isValid: boolean = false;
 
   public currentProfile?: NavGeometryProfile;
