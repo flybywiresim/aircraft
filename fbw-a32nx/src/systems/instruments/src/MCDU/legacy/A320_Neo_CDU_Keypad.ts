@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDUDataIndexPage } from '../legacy_pages/A320_Neo_CDU_DataIndexPage';
 import { CDUDirectToPage } from '../legacy_pages/A320_Neo_CDU_DirectToPage';
@@ -9,6 +13,7 @@ import { CDUPerformancePage } from '../legacy_pages/A320_Neo_CDU_PerformancePage
 import { CDUProgressPage } from '../legacy_pages/A320_Neo_CDU_ProgressPage';
 import { CDUSecFplnMain } from '../legacy_pages/A320_Neo_CDU_SecFplnMain';
 import { CDUAtcMenu } from '../legacy_pages/atsu/A320_Neo_CDU_ATC_Menu';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class Keypad {
   private static readonly _AvailableKeys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -25,7 +30,7 @@ export class Keypad {
       CDUDirectToPage.ShowPage(this.mcdu);
     },
     FPLN: () => CDUFlightPlanPage.ShowPage(this.mcdu),
-    FUEL: () => this.mcdu.goToFuelPredPage(),
+    FUEL: () => this.mcdu.goToFuelPredPage(FlightPlanIndex.Active),
     INIT: () => {
       if (this.mcdu.flightPhaseManager.phase === FmgcFlightPhase.Done) {
         this.mcdu.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
@@ -37,7 +42,7 @@ export class Keypad {
       if (this.mcdu.flightPhaseManager.phase === FmgcFlightPhase.Done) {
         this.mcdu.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
       }
-      CDUPerformancePage.ShowPage(this.mcdu);
+      CDUPerformancePage.ShowPage(this.mcdu, FlightPlanIndex.Active);
     },
     PROG: () => CDUProgressPage.ShowPage(this.mcdu),
     RAD: () => CDUNavRadioPage.ShowPage(this.mcdu),

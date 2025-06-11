@@ -59,12 +59,7 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
-
-export enum FlightPlanQueuedOperation {
-  Restring,
-  RebuildArrivalAndApproach,
-  SyncSegmentLegs,
-}
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements ReadonlyFlightPlan
@@ -1265,10 +1260,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.approachViaSegment.setProcedure(undefined);
     await this.arrivalEnrouteTransitionSegment.setProcedure(undefined);
     await this.arrivalSegment.setProcedure(undefined);
-    await this.destinationSegment.setDestinationIcao(airportIdent);
-    await this.destinationSegment.setDestinationRunway(undefined);
 
-    await this.flushOperationQueue();
+    await this.setDestinationAirport(airportIdent);
+    await this.setDestinationRunway(undefined);
 
     this.enrouteSegment.allLegs.splice(legIndexInEnroute + 1, legsToDelete);
 
