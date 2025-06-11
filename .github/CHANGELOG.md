@@ -55,6 +55,8 @@
 1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
 1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
+1. [A380X/FWS] Added DEST EFOB & FMS SWTG memos - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added CHECK MIN FUEL AT DEST & DEST EFOB BELOW MIN message with associated amber EFOB color on MFD pages - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
