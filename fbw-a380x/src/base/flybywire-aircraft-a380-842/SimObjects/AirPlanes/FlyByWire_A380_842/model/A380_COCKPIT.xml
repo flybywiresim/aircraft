@@ -1231,6 +1231,7 @@
                     <UseTemplate Name="FBW_ISIS_Knob_Template">
                         <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
                         <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
+                        <ALTIMETER_INDEX>3</ALTIMETER_INDEX>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Template">
                         <NODE_ID>PUSH_BARO_BUGS</NODE_ID>
@@ -4756,6 +4757,12 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <NAME>FWS2</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>AESU1</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>AESU2</NAME>
                     </UseTemplate>
                 </Component>
             </Component>

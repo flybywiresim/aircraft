@@ -8,6 +8,7 @@ import {
   SimVarPublisherEntry,
   SimVarValueType,
 } from '@microsoft/msfs-sdk';
+import { VdSymbol } from '../../../index-no-react';
 
 /**
  * Transmitted from FMS
@@ -32,6 +33,9 @@ export interface BaseFmsData {
   /** A429 raw value */
   fmLandingElevation: number;
   fmGrossWeight: number;
+  /** Symbols displayed on VD */
+  vdSymbols_L: VdSymbol[];
+  vdSymbols_R: VdSymbol[];
 }
 
 type IndexedTopics = 'fmZeroFuelWeight' | 'fmZeroFuelWeightCg' | 'fmLandingElevation';
