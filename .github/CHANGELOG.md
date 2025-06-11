@@ -55,6 +55,8 @@
 1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
 1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
+1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
+1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 
 ## 0.13.0
 
