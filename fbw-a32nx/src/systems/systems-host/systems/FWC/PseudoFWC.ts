@@ -2946,10 +2946,6 @@ export class PseudoFWC {
     const altAlertBelow200And750 = altDeltaBelow750 && altDeltaBelow200 && !altAlertGeneralInhibit;
     const altAlertAbove200And750 = !altDeltaBelow750 && !altDeltaBelow200 && !altAlertGeneralInhibit;
 
-    console.log(
-      `mem1set: ${altAlertBelow200And750}, mem1reset: ${altAlertAbove200And750 || this.altAlertInhibitMtrig1.read() || this.altAlertInhibitMtrig1.read()} mem2set: ${altAlertBetween200And750} mem2reset: ${this.altAlertInhibitMtrig1.read() || this.altAlertInhibitMtrig1.read()}`,
-    );
-
     this.altAlertPulse.write(apFdTcasModeEngaged, deltaTime);
     this.altAlertMtrig1.write(!anyApEngaged && this.altAlertPulse.read() && !altAlertGeneralInhibit, deltaTime);
     this.altAlertMtrig2.write(!anyApEngaged && altAlertBetween200And750, deltaTime);
@@ -3009,6 +3005,7 @@ export class PseudoFWC {
     if ((masterWarningButtonLeft || masterWarningButtonRight) && this.nonCancellableWarningCount === 0) {
       this.requestMasterWarningFromFaults = this.nonCancellableWarningCount > 0;
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
+      this.cChordActive.set(this.nonCancellableWarningCount > 0);
     }
 
     /* T.O. CONFIG CHECK */
@@ -3135,6 +3132,9 @@ export class PseudoFWC {
           if (value.failure === 2) {
             this.requestMasterCautionFromFaults = true;
           }
+          if (value.auralWarning?.get() === FwcAuralWarning.CChord) {
+            this.cChordActive.set(true);
+          }
         }
 
         if (value.cancel === false && value.failure === 3) {
@@ -3227,7 +3227,9 @@ export class PseudoFWC {
 
     this.cavalryChargeActive.set(auralCavchargeKeys.length !== 0);
 
-    this.cChordActive.set(auralCChordKeys.length !== 0);
+    if (auralCChordKeys.length === 0) {
+      this.cChordActive.set(false);
+    }
 
     const failLeft = tempFailureArrayLeft.length > 0;
 
@@ -3503,11 +3505,8 @@ export class PseudoFWC {
     2200050: {
       // AP/FD Mode Reversion
       flightPhaseInhib: [],
-      simVarIsActive: Subject.create(false),
-      auralWarning: MappedSubject.create(
-        ([active]) => (active ? FwcAuralWarning.CChord : FwcAuralWarning.None),
-        this.altAlertCChord,
-      ),
+      simVarIsActive: this.altAlertCChord,
+      auralWarning: this.altAlertCChord.map((active) => (active ? FwcAuralWarning.CChord : FwcAuralWarning.None)),
       whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
