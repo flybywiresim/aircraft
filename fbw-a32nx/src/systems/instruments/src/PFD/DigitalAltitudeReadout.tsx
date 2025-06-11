@@ -93,6 +93,11 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     this.fwcWord126,
   );
 
+  private readonly flashing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false) && fwcWord126.bitValueOr(26, false),
+    this.fwcWord126,
+  );
+
   private isNegativeSub = Subject.create('hidden');
 
   private showThousandsZeroSub = Subject.create(false);
@@ -232,8 +237,8 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
           bus={this.props.bus}
           flashDuration={Infinity}
           flashing={this.flashingOrPulsing}
-          className1={'Yellow'}
-          className2={MappedSubject.create(([pulsing]) => (pulsing ? 'DimmedYellow' : 'HiddenElement'), this.pulsing)}
+          className1={this.flashing.map((flashing) => (flashing ? 'Amber' : 'Yellow'))}
+          className2={this.pulsing.map((pulsing) => (pulsing ? 'DimmedYellow' : 'HiddenElement'))}
         >
           <path
             id="AltReadoutOutline"
