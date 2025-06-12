@@ -34,6 +34,9 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
   public displayModeChangedPath = (cancel = false) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
     if (cancel || !this.isShown) {
       clearTimeout(this.timeout);
       this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
@@ -44,6 +47,7 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
         this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
       }, this.displayTimeInSeconds * 1000) as unknown as number;
     }
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -62,6 +66,8 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
   };
 }
 
@@ -164,6 +170,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -240,11 +247,17 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
     this.sub
       .on('fmaVerticalArmed')
       .whenChanged()
       .handle((a) => {
         this.armedVerticalModeSub.set(a);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -253,6 +266,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 =======
         this.handleFMABorders();
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       });
 
     this.sub
@@ -260,6 +275,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
       .whenChanged()
       .handle((activeLateralMode) => {
         this.activeLateralMode = activeLateralMode;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       });
@@ -276,11 +292,16 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+      });
+
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
     this.sub
       .on('setHoldSpeed')
       .whenChanged()
       .handle((shs) => {
         this.setHoldSpeed = shs;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -289,6 +310,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 =======
         this.handleFMABorders();
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       });
 
     this.sub
@@ -298,12 +321,15 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.tcasRaInhibited.set(tra);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         this.handleFMABorders();
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
         this.handleFMABorders();
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       });
 
     this.sub
@@ -313,12 +339,15 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.trkFpaDeselected.set(trk);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         this.handleFMABorders();
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
         this.handleFMABorders();
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       });
 
     this.sub
@@ -328,12 +357,15 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.tdReached = tdr;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         this.handleFMABorders();
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
         this.handleFMABorders();
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       });
   }
 
@@ -342,6 +374,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
       <g id="FMA">
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         {/* //Debug */}
         <g class="NormalStroke Grey" display="none">
           <g transform="scale(1 1),translate(0 0)">
@@ -354,6 +389,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
           <path class="NormalStroke Red" d="m 725 0 v100" />
           <path class="NormalStroke Red" d="m 874 0 v100" />
           <path class="NormalStroke Red" d="m 1024 0 v100" />
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -366,6 +402,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         </g>
 
         <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
@@ -463,6 +501,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   private className = Subject.create('FontMediumSmaller MiddleAlign Green');
 =======
   private className = Subject.create('FontMediumSmaller MiddleAlign Cyan');
@@ -470,6 +509,9 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 =======
   private className = Subject.create('FontMediumSmaller MiddleAlign Cyan');
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+  private className = Subject.create('FontMediumSmaller MiddleAlign Green');
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
 
   private autoBrkRef = FSComponent.createRef<SVGTextElement>();
 
@@ -535,6 +577,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       <text ref={this.autoBrkRef} class={this.className} x="341" y="71.6" style="white-space: pre">
 =======
       <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653" style="white-space: pre">
@@ -542,6 +585,9 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 =======
       <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653" style="white-space: pre">
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+      <text ref={this.autoBrkRef} class={this.className} x="341" y="71.6" style="white-space: pre">
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         {this.text}
       </text>
     );
@@ -620,6 +666,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         text = `
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
                                 <text class="FontMedium MiddleAlign Green" x="341" y="35.6">MAN</text>
                                 <text class="FontMedium MiddleAlign Green" x="341" y="71.75">TOGA</text>
@@ -633,11 +680,17 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+                                <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
+                                <text class="FontMedium MiddleAlign Green" x="341" y="35.6">MAN</text>
+                                <text class="FontMedium MiddleAlign Green" x="341" y="71.75">TOGA</text>
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                             `;
         break;
       case 2:
         this.displayModeChangedPath(true);
         text = `<g>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                                 <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
@@ -653,6 +706,11 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+                                <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
+                                <text class="FontMedium MiddleAlign Green" x="341" y="35.6">MAN</text>
+                                <text class="FontMedium MiddleAlign Green" x="341" y="71.75">GA SOFT</text>
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                             </g>`;
         break;
       case 3: {
@@ -662,11 +720,15 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         text = `<g>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                                 <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
                                 <text class="FontMedium MiddleAlign Green" x="341" y="35.6">MAN</text>
                                 <text class="FontMedium MiddleAlign Green" x="341" y="71.75">FLX</text>
                                 <text class="FontMedium MiddleAlign Green" x="103" y="74.25">+</text>
                                 <text class="FontMedium MiddleAlign Green" x="130.5" y="71.75">
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -679,6 +741,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                                 ${FlexText}
                                 </text>
                             </g>`;
@@ -688,6 +752,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       case 4:
         this.displayModeChangedPath(true);
         text = `<g>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                                 <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
@@ -703,11 +768,17 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+                                <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
+                                <text class="FontMedium MiddleAlign Green" x="341" y="35.6">MAN</text>
+                                <text class="FontMedium MiddleAlign Green" x="341" y="71.75">DTO</text>
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                             </g>`;
         break;
       case 5:
         this.displayModeChangedPath(true);
         text = `<g>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                                 <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
@@ -723,6 +794,11 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+                                <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 z" />
+                                <text class="FontMedium MiddleAlign Green" x="341" y="35.6">MAN</text>
+                                <text class="FontMedium MiddleAlign Green" x="341" y="71.75">MCT</text>
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                             </g>`;
         break;
       case 6:
@@ -730,6 +806,9 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         text = `<g>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                                 <path class="NormalStroke Green" d="m 296 9 v 67.5 h 90 v -67.5 zz" />
                                 <text class="FontMedium MiddleAlign Green" x="341" y="35.6">MAN</text>
                                 <text class="FontMedium MiddleAlign Green" x="341" y="71.75">THR</text>
@@ -757,6 +836,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         break;
       case 12:
         text = '<text  class="FontMediumSmaller MiddleAlign Green" x="341" y="35.6">THR IDLE</text>';
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -791,11 +871,14 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         this.displayModeChangedPath();
         break;
       case 13:
         this.displayModeChangedPath(true);
         text = `<g>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                                 <path class="NormalStroke Green BlinkInfinite" d="m263 9 h 156 v 30.2 h-156 z" />
@@ -808,11 +891,16 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+                                <path class="NormalStroke Green BlinkInfinite" d="m263 9 h 156 v 30.2 h-156 z" />
+                                <text class="FontMedium MiddleAlign Green" x="341" y="35.6">A.FLOOR</text>
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                             </g>`;
         break;
       case 14:
         this.displayModeChangedPath(true);
         text = `<g>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                                 <path class="NormalStroke Green BlinkInfinite" d="m263 9 h 156 v 30.2 h-156 z" />
@@ -825,6 +913,10 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+                                <path class="NormalStroke Green BlinkInfinite" d="m263 9 h 156 v 30.2 h-156 z" />
+                                <text class="FontMedium MiddleAlign Green" x="341" y="35.6">TOGA LK</text>
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                             </g>`;
         break;
       default:
@@ -833,6 +925,9 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             case 1:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
               text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BTV</text>';
               this.displayModeChangedPath();
               break;
@@ -854,6 +949,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
               break;
             case 6:
               text = '<text class="FontMedium MiddleAlign Green" x="341" y="35.6">BRK RTO</text>';
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -882,6 +978,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
               this.displayModeChangedPath();
               break;
             default:
@@ -944,10 +1042,14 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
           visibility="hidden"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           class="NormalStroke Green"
           d="m263 9 h 156 v 30.2 h -156z"
         />
         <g id="A1A2" ref={this.cellRef} />
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -959,6 +1061,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       </>
     );
   }
@@ -985,6 +1089,9 @@ class A3Cell extends DisplayComponent<A3CellProps> {
         text = 'THR LK';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         className = 'Green BlinkInfinite';
         break;
       case 2:
@@ -1002,6 +1109,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       case 5:
         text = 'LVR ASYM';
         className = 'Green';
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -1026,6 +1134,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         break;
       default:
         text = '';
@@ -1040,6 +1150,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       this.textSub.set('BRK RTO');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       this.classSub.set('FontMediumSmaller MiddleAlign Green');
 =======
       this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
@@ -1047,6 +1158,9 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 =======
       this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+      this.classSub.set('FontMediumSmaller MiddleAlign Green');
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
     } else {
       this.textSub.set('');
     }
@@ -1091,6 +1205,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       <text class={this.classSub} x="341" y="108">
 =======
       <text class={this.classSub} x="16.989958" y="21.641243">
@@ -1098,6 +1213,9 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 =======
       <text class={this.classSub} x="16.989958" y="21.641243">
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+      <text class={this.classSub} x="341" y="108">
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         {this.textSub}
       </text>
     );
@@ -1148,6 +1266,7 @@ class AB3Cell extends DisplayComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       <text class="FontMedium MiddleAlign Green" x="35.434673" y="21.656223">
 =======
       <text class="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">
@@ -1155,6 +1274,9 @@ class AB3Cell extends DisplayComponent<CellProps> {
 =======
       <text class="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+      <text class="FontMedium MiddleAlign Green" x="35.434673" y="21.656223">
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         {this.textSub}
       </text>
     );
@@ -1293,6 +1415,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
     } else {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       this.boxClassSub.set('NormalStroke Green');
 =======
       this.boxClassSub.set('NormalStroke White');
@@ -1300,6 +1423,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 =======
       this.boxClassSub.set('NormalStroke White');
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+      this.boxClassSub.set('NormalStroke Green');
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
     }
 
     if (inSpeedProtection) {
@@ -1312,6 +1438,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         ? 'm 433 9 h 135 v 67.5 h -135 z'
         : 'm 433 9 h 135 v 30.2 h -135 z';
 =======
@@ -1322,6 +1449,10 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         ? 'm34.656 1.8143h29.918v13.506h-29.918z'
         : 'm34.656 1.8143h29.918v6.0476h-29.918z';
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+        ? 'm 433 9 h 135 v 67.5 h -135 z'
+        : 'm 433 9 h 135 v 30.2 h -135 z';
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
 
     this.boxPathStringSub.set(boxPathString);
 
@@ -1332,6 +1463,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseGreenFill' : 'Green'}>${additionalText}</tspan>`;
 =======
     this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
@@ -1339,6 +1471,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 =======
     this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+    this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseGreenFill' : 'Green'}>${additionalText}</tspan>`;
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
 
     return text.length > 0;
   }
@@ -1423,6 +1558,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       <g id="B1">
         <path ref={this.modeChangedPathRef} class={this.boxClassSub} visibility="hidden" d={this.boxPathStringSub} />
         <path
@@ -1437,6 +1575,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         />
 
         <text ref={this.fmaTextRef} style="white-space: pre" class={this.activeVerticalModeClassSub} x="501" y="36">
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -1465,6 +1604,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           {/* set directly via innerhtml as tspan was invisble for some reason when set here */}
         </text>
       </g>
@@ -1501,6 +1642,7 @@ class B2Cell extends DisplayComponent<CellProps> {
         let text1: string;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         let color1 = 'Green';
 =======
         let color1 = 'Cyan';
@@ -1508,6 +1650,9 @@ class B2Cell extends DisplayComponent<CellProps> {
 =======
         let color1 = 'Cyan';
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+        let color1 = 'Green';
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         let vertModeActive = true;
         if (openClimbArmed) {
           text1 = '      OP CLB';
@@ -1552,10 +1697,14 @@ class B2Cell extends DisplayComponent<CellProps> {
       <g>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         <text class={this.classSub} style="white-space: pre" x="463.5" y="72">
           {this.text1Sub}
         </text>
         <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Green" x="538.5" y="72">
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -1567,6 +1716,8 @@ class B2Cell extends DisplayComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           {this.text2Sub}
         </text>
       </g>
@@ -1661,6 +1812,9 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       <g id="C1">
         <path
           ref={this.modeChangedPathRef}
@@ -1669,6 +1823,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
           d="m 582.5 9 v 30.2 h 135 v -30.2 z"
         />
         <text class="FontMedium MiddleAlign Green" x="650.5" y="36">
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -1684,6 +1839,8 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           {this.textSub}
         </text>
       </g>
@@ -1736,6 +1893,7 @@ class C2Cell extends DisplayComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Green" x="650.5" y="68">
 =======
       <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">
@@ -1743,6 +1901,9 @@ class C2Cell extends DisplayComponent<CellProps> {
 =======
       <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+      <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Green" x="650.5" y="68">
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         {this.textSub}
       </text>
     );
@@ -1797,6 +1958,9 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       <g id="BC1">
         <path
           ref={this.modeChangedPathRef}
@@ -1805,6 +1969,7 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
           d="m 506 9h 150 v 30.2 h -150 z"
         />
         <text class="FontMedium MiddleAlign Green" x="576" y="36">
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -1820,6 +1985,8 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           {this.textSub}
         </text>
       </g>
@@ -1853,6 +2020,9 @@ const getBC3Message = (
     text = 'USE MAN PITCH TRIM';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
     className = 'PulseGreen9Seconds Green';
   } else if (false) {
     text = 'FOR GA: SET TOGA';
@@ -1893,6 +2063,7 @@ const getBC3Message = (
   } else if (unrestrictedClimbDescent === 2) {
     text = 'FCU ALT ABOVE A/C';
     className = 'DisappearAfter10Seconds FontMediumSmaller Green';
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -1940,6 +2111,8 @@ const getBC3Message = (
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
   } else {
     return [null, null];
   }
@@ -2126,10 +2299,14 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
           this.text2Sub.set(text2);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           this.modeChangedPathRef.instance.setAttribute('d', 'm 732  9 h 135 v 67.5 h -135 z');
         } else {
           this.text2Sub.set('');
           this.modeChangedPathRef.instance.setAttribute('d', 'm 732  9 h 135 v 30.2 h -135 z');
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -2141,6 +2318,8 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         }
         if (text1.length === 0 && !text2) {
           this.isShown = false;
@@ -2153,6 +2332,9 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       <g id="D1D2">
         <text class="FontMedium MiddleAlign Green" x="800" y="36">
           {this.text1Sub}
@@ -2161,6 +2343,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
           {this.text2Sub}
         </text>
         <path ref={this.modeChangedPathRef} class="NormalStroke Green" visibility="hidden" />
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -2176,6 +2359,8 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       </g>
     );
   }
@@ -2200,6 +2385,7 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Green" xml:space="preserve">${MDAText}</tspan>`;
 =======
           this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
@@ -2207,6 +2393,9 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
 =======
           this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+          this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Green" xml:space="preserve">${MDAText}</tspan>`;
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         } else {
           this.textRef.instance.innerHTML = '';
         }
@@ -2224,6 +2413,7 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
           this.textRef.instance.innerHTML = `
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                         <tspan>RADIO</tspan><tspan class="Green" xml:space="preserve">${DHText}</tspan>
 =======
                         <tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>
@@ -2231,6 +2421,9 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
 =======
                         <tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+                        <tspan>RADIO</tspan><tspan class="Green" xml:space="preserve">${DHText}</tspan>
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
                     `;
         } else if (dh === -2) {
           this.textRef.instance.innerHTML = '<tspan>NO DH</tspan>';
@@ -2240,6 +2433,7 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
         }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         this.classNameSub.set(`${fontSize} MiddleAlign Green`);
 =======
         this.classNameSub.set(`${fontSize} MiddleAlign White`);
@@ -2247,10 +2441,14 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
 =======
         this.classNameSub.set(`${fontSize} MiddleAlign White`);
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+        this.classNameSub.set(`${fontSize} MiddleAlign Green`);
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       });
   }
 
   render(): VNode {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     return <text ref={this.textRef} class={this.classNameSub} x="800" y="104" />;
@@ -2260,6 +2458,9 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
 =======
     return <text ref={this.textRef} class={this.classNameSub} x="118.38384" y="21.104172" />;
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+    return <text ref={this.textRef} class={this.classNameSub} x="800" y="104" />;
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
   }
 }
 
@@ -2319,6 +2520,9 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       <g id="E1">
         <path
           ref={this.modeChangedPathRef}
@@ -2327,6 +2531,7 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
           d="m 881 9 v 30.2 h 135 v -30.2 z"
         />
         <text class="FontMedium MiddleAlign Green" x="949" y="36">
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -2342,6 +2547,8 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           {this.textSub}
         </text>
       </g>
@@ -2427,6 +2634,9 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       <g id="E2">
         <path
           ref={this.modeChangedPathRef}
@@ -2435,6 +2645,7 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
           class="NormalStroke Green"
         />
         <text class="FontMedium MiddleAlign Green" x="949" style="word-spacing: -1.9844px" y="72">
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -2450,6 +2661,8 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           {this.textSub}
         </text>
       </g>
@@ -2471,10 +2684,14 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
       case 1:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         className = 'Green';
         break;
       case 2:
         className = 'Green';
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -2486,6 +2703,8 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
         break;
       default:
         this.isShown = false;
@@ -2517,6 +2736,9 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
     return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
       <g id="E3">
         <path
           ref={this.modeChangedPathRef}
@@ -2525,6 +2747,7 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
           d="m 881 80 h 135 v 30.2 h -135 z"
         />
         <text class={this.classSub} x="949" y="107.15">
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
@@ -2540,6 +2763,8 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
+=======
+>>>>>>> 3647e779a84a5f84f1fe04821951b2c94dda84c3
           A/THR
         </text>
       </g>
