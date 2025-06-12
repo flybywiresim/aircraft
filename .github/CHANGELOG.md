@@ -55,6 +55,7 @@
 1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
 1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
+1. [A380X/FMC] Use the estimated gross weight to compute the max level for step climbs - @tracernz (Mike)
 1. [ND] Fixed TAS, GS & Wind data not taking source switching into account - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
