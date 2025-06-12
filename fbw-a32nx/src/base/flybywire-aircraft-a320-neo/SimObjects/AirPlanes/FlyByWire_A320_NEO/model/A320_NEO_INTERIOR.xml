@@ -1157,6 +1157,7 @@
                     <UseTemplate Name="FBW_ISIS_Knob_Template">
                         <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
                         <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
+                        <ALTIMETER_INDEX>3</ALTIMETER_INDEX>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
