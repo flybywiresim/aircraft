@@ -148,6 +148,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           this.pitchGroupRef.instance.style.display = 'block';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
 
@@ -158,14 +159,19 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
         } else {
           this.pitchGroupRef.instance.style.display = 'none';
         }
         this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG}px, 0px)`;
         const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG;
+<<<<<<< HEAD
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 =======
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
         this.yOffset.set(yOffset);
       });
 

@@ -7,6 +7,7 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 import { FIVE_DEG } from './HUDUtils';
@@ -15,6 +16,10 @@ import { LateralMode } from '@shared/autopilot';
 =======
 
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
+=======
+import { FIVE_DEG } from './HUDUtils';
+import { LateralMode } from '@shared/autopilot';
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 interface AttitudeIndicatorFixedUpperProps {
   bus: EventBus;
 }
@@ -108,6 +113,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
   onAfterRender(node: VNode): void {
@@ -116,6 +122,8 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
     const sub = this.props.bus.getSubscriber<Arinc429Values>();
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
   private declutterMode = 0;
   private onGround = true;
   private visibilityAirSub = Subject.create('none');
@@ -141,9 +149,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
       .handle((value) => {
         this.onGround = value;
       });
+<<<<<<< HEAD
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 =======
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 
     sub.on('rollAr').handle((r) => {
       this.roll = r;
@@ -185,7 +196,10 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
     });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
     sub
       .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
@@ -204,9 +218,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
         }
       });
+<<<<<<< HEAD
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 =======
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
   }
 
   render(): VNode {
@@ -225,12 +242,15 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           <SidestickIndicator bus={this.props.bus} />
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 =======
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 =======
           <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 
           <FlightPathVector bus={this.props.bus} />
           <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
@@ -240,6 +260,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             <FlightDirector bus={this.props.bus} />
           </g>
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -255,15 +276,20 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
           <g id="AircraftReferences">
             <g id="AircraftReferenceInAir" class="SmallStroke Green" display={this.visibilityAirSub}>
               <path d="m 625,335  v -6 h -30" />
               <path d="m 637,332 h 6 v -6 h -6 z" />
               <path d="m 655, 335 v -6 h 30" />
             </g>
+<<<<<<< HEAD
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 =======
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
+=======
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
           </g>
         </g>
       </>

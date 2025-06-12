@@ -9,6 +9,7 @@ export const ONE_DEG = 36.5714;
 export const calculateHorizonOffsetFromPitch = (pitch: number) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
   if (pitch > -5 && pitch <= 20) {
@@ -31,6 +32,10 @@ export const calculateHorizonOffsetFromPitch = (pitch: number) => {
 >>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 =======
 >>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
+=======
+  const offset = (pitch * 1024) / 28;
+  return offset;
+>>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 };
 
 export const calculateVerticalOffsetFromRoll = (roll: number) => {
