@@ -94,5 +94,6 @@ export async function getRunways(icao: string): Promise<Runway[]> {
     }
   }
 
+  runways.sort((a, b) => a.ident.localeCompare(b.ident));
   return runways;
 }
