@@ -58,6 +58,7 @@
 1. [A380X/FMC] Use the estimated gross weight to compute the max level for step climbs - @tracernz (Mike)
 1. [ND] Fixed TAS, GS & Wind data not taking source switching into account - @BravoMike99 (bruno_pt99)
 1. [A32NX/SD] Add flashing for AUTO BRK element - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
+1. [A32NX/FMS] Change GA PERF speeds to match APPR PERF speeds - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
