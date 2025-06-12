@@ -100,7 +100,16 @@ export class CabinTemperatures extends DestroyableComponent<CruiseCondProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subscriptions.push(...this.mainDeckTemp, ...this.upperDeckTemp);
+    this.subscriptions.push(
+      ...this.mainDeckTemp,
+      ...this.upperDeckTemp,
+      this.minMaxMainDeckTemp,
+      this.minMainDeckTemp,
+      this.maxMainDeckTemp,
+      this.minMaxUpperDeckTemp,
+      this.minUpperDeckTemp,
+      this.maxUpperDeckTemp,
+    );
   }
 
   render() {
