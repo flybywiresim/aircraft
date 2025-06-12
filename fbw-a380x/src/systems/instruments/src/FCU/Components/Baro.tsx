@@ -7,6 +7,7 @@ import { BaroEvents, BaroMode } from '../Managers/BaroManager';
 
 export interface BaroProps {
   readonly bus: EventBus;
+  readonly index: number;
 }
 
 export class Baro extends DisplayComponent<BaroProps> {
@@ -67,7 +68,7 @@ export class Baro extends DisplayComponent<BaroProps> {
 
   render(): VNode | null {
     return (
-      <div id="SmallScreen">
+      <div id={`baro-screen-${this.props.index}`} class="baro-screen">
         <div id="Selected">
           <svg width="100%" height="100%" class="Baro">
             <text

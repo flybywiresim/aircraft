@@ -30,8 +30,8 @@ export class FcuDisplay extends DisplayComponent<FcuDisplayProps> {
               </div>
             </div>
 
-            <Baro bus={this.props.bus} />
-            {/* FIXME need a second baro for FO side */}
+            <Baro bus={this.props.bus} index={1} />
+            <Baro bus={this.props.bus} index={2} />
 
             <NdData bus={this.props.bus} index={1} />
             <NdData bus={this.props.bus} index={2} />
