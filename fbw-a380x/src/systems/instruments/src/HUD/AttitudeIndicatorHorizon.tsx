@@ -9,20 +9,16 @@ import {
   ConsumerSubject,
   SubscribableMapFunctions,
   HEvent,
+  NodeReference,
 } from '@microsoft/msfs-sdk';
 
-import {
-  Arinc429ConsumerSubject,
-  Arinc429Register,
-  Arinc429WordData,
-  Arinc429Word,
-  ArincEventBus,
-} from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429WordData, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import {
   calculateHorizonOffsetFromPitch,
   calculateVerticalOffsetFromRoll,
   LagFilter,
   getSmallestAngle,
+  HudElemsValues,
 } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -31,6 +27,8 @@ import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValuePro
 import { getDisplayIndex } from './HUD';
 import { ONE_DEG, FIVE_DEG } from './HUDUtils';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { HeadingOfftape } from './HeadingIndicator';
+
 const DisplayRange = 35;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
@@ -125,7 +123,7 @@ interface HorizonProps {
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
 
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -133,45 +131,28 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   private yOffset = Subject.create(0);
 
+  private headingFailed = Subject.create(true);
+
   private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
 
   private readonly isNormalLawActive = this.fcdcDiscreteWord1.map((dw) => dw.bitValue(11) && !dw.isFailureWarning());
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
+    this.sub.on('headingAr').handle((h) => {
+      this.headingFailed.set(!h.isNormalOperation());
+    });
     this.sub
       .on('pitchAr')
       .withArinc429Precision(3)
       .handle((pitch) => {
         if (pitch.isNormalOperation()) {
           this.pitchGroupRef.instance.style.display = 'block';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-
-          this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG}px, 0px)`;
-        } else {
-          this.pitchGroupRef.instance.style.display = 'none';
-        }
-        const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
         } else {
           this.pitchGroupRef.instance.style.display = 'none';
         }
         this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG}px, 0px)`;
         const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG;
-<<<<<<< HEAD
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
         this.yOffset.set(yOffset);
       });
 
@@ -199,8 +180,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           />
 
           {/* horizon */}
-          <path id="HorizonLine" d="m -100 512 h 1480" class="SmallStroke Green" />
-          <path id="center" d="m 640 0 v 1024" class="SmallStroke Red" />
+          <path id="HorizonLine" d="m -100 512 h 1480" class="NormalStroke Green" />
 
           <HorizontalTape
             type="headingTape"
@@ -210,440 +190,15 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             distanceSpacing={DistanceSpacing}
             yOffset={Subject.create(0)}
           />
-          {/* If you're wondering why some paths have an "h0" appended, it's to work around a
-                rendering bug in webkit, where paths with only one line is rendered blurry. */}
 
-          <g class="NormalStroke White">
-            <path d="m66.406 85.323h5h0" />
-            <path d="m64.406 89.823h9h0" />
-            <path d="m66.406 94.073h5h0" />
-            <path d="m59.406 97.823h19h0" />
-            <path d="m64.406 103.82h9h0" />
-            <path d="m59.406 108.82h19h0" />
-            <path d="m55.906 118.82h26h0" />
-            <path d="m52.906 138.82h32h0" />
-            <path d="m47.906 168.82h42h0" />
-            <path d="m66.406 76.323h5h0" />
-            <path d="m64.406 71.823h9h0" />
-            <path d="m66.406 67.323h5h0" />
-            <path d="m59.406 62.823h19h0" />
-            <path d="m66.406 58.323h5h0" />
-            <path d="m64.406 53.823h9h0" />
-            <path d="m66.406 49.323h5h0" />
-            <path d="m59.406 44.823h19h0" />
-            <path d="m66.406 40.573h5h0" />
-            <path d="m64.406 36.823h9h0" />
-            <path d="m66.406 33.573h5h0" />
-            <path d="m55.906 30.823h26h0" />
-            <path d="m52.906 10.823h32h0" />
-            <path d="m47.906-19.177h42h0" />
-          </g>
+          <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
 
-          <g
-            id="PitchProtUpper"
-            class="NormalStroke Green"
-            style={{ display: this.isNormalLawActive.map((nl) => (nl ? 'inherit' : 'none')) }}
-          >
-            <path d="m51.506 31.523h4m-4-1.4h4" />
-            <path d="m86.306 31.523h-4m4-1.4h-4" />
-          </g>
-          <g
-            id="PitchProtLostUpper"
-            class="NormalStroke Amber"
-            style={{ display: this.isNormalLawActive.map((nl) => (!nl ? 'inherit' : 'none')) }}
-          >
-            <path d="m52.699 30.116 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
-            <path d="m85.114 31.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
-          </g>
-          <g
-            id="PitchProtLower"
-            class="NormalStroke Green"
-            style={{ display: this.isNormalLawActive.map((nl) => (nl ? 'inherit' : 'none')) }}
-          >
-            <path d="m59.946 104.52h4m-4-1.4h4" />
-            <path d="m77.867 104.52h-4m4-1.4h-4" />
-          </g>
-          <g
-            id="PitchProtLostLower"
-            class="NormalStroke Amber"
-            style={{ display: this.isNormalLawActive.map((nl) => (!nl ? 'inherit' : 'none')) }}
-          >
-            <path d="m61.199 103.12 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
-            <path d="m76.614 104.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
-          </g>
-
-          <path d="m68.906 121.82-8.0829 14h2.8868l5.1962-9 5.1962 9h2.8868z" class="NormalStroke Red" />
-          <path d="m57.359 163.82 11.547-20 11.547 20h-4.0414l-7.5056-13-7.5056 13z" class="NormalStroke Red" />
-          <path d="m71.906 185.32v3.5h15l-18-18-18 18h15v-3.5h-6.5l9.5-9.5 9.5 9.5z" class="NormalStroke Red" />
-          <path d="m60.824 13.823h2.8868l5.1962 9 5.1962-9h2.8868l-8.0829 14z" class="NormalStroke Red" />
-          <path d="m61.401-13.177h-4.0414l11.547 20 11.547-20h-4.0414l-7.5056 13z" class="NormalStroke Red" />
-          <path d="m68.906-26.177-9.5-9.5h6.5v-3.5h-15l18 18 18-18h-15v3.5h6.5z" class="NormalStroke Red" />
-
-          <TailstrikeIndicator bus={this.props.bus} />
-
-          <path d="m23.906 80.823h90h0" class="NormalOutline" />
-          <path d="m23.906 80.823h90h0" class="NormalStroke White" />
-
-          <g class="FontMediumSmaller White Fill EndAlign">
-            <text x="55.729935" y="64.812828">
-              10
-            </text>
-            <text x="88.618317" y="64.812714">
-              10
-            </text>
-            <text x="54.710766" y="46.931034">
-              20
-            </text>
-            <text x="89.564583" y="46.930969">
-              20
-            </text>
-            <text x="50.867237" y="32.910896">
-              30
-            </text>
-            <text x="93.408119" y="32.910839">
-              30
-            </text>
-            <text x="48.308414" y="12.690886">
-              50
-            </text>
-            <text x="96.054962" y="12.690853">
-              50
-            </text>
-            <text x="43.050652" y="-17.138285">
-              80
-            </text>
-            <text x="101.48304" y="-17.138248">
-              80
-            </text>
-            <text x="55.781109" y="99.81395">
-              10
-            </text>
-            <text x="88.669487" y="99.813919">
-              10
-            </text>
-            <text x="54.645519" y="110.8641">
-              20
-            </text>
-            <text x="89.892426" y="110.86408">
-              20
-            </text>
-            <text x="51.001217" y="120.96314">
-              30
-            </text>
-            <text x="93.280037" y="120.96311">
-              30
-            </text>
-            <text x="48.220913" y="140.69778">
-              50
-            </text>
-            <text x="96.090324" y="140.69786">
-              50
-            </text>
-            <text x="43.125065" y="170.80962">
-              80
-            </text>
-            <text x="101.38947" y="170.80959">
-              80
-            </text>
-          </g>
+          {/* <TailstrikeIndicator bus={this.props.bus} /> */}
         </g>
-        <path d="m40.952 49.249v-20.562h55.908v20.562z" class="NormalOutline SkyFill" />
-        <path d="m40.952 49.249v-20.562h55.908v20.562z" class="NormalStroke White" />
 
         <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
-        <RisingGround bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAlt} />
 
         <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
-        <RadioAltAndDH
-          bus={this.props.bus}
-          filteredRadioAltitude={this.props.filteredRadioAlt}
-          attExcessive={this.props.isAttExcessive}
-        />
-      </g>
-    );
-  }
-}
-
-class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
-  private tailStrike = FSComponent.createRef<SVGPathElement>();
-
-  private needsUpdate = false;
-
-  private tailStrikeConditions = {
-    altitude: new Arinc429Word(0),
-    speed: 0,
-    tla1: 0,
-    tla2: 0,
-    tla3: 0,
-    tla4: 0,
-    leftGearCompressed: true,
-    rightGearCompressed: true,
-    approachPhase: false,
-  };
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
-
-    sub.on('chosenRa').handle((ra) => {
-      this.tailStrikeConditions.altitude = ra;
-      this.needsUpdate = true;
-    });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((lg) => {
-        this.tailStrikeConditions.leftGearCompressed = lg;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((rg) => {
-        this.tailStrikeConditions.rightGearCompressed = rg;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('fmgcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.tailStrikeConditions.approachPhase = fp === 5;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('tla1')
-      .whenChanged()
-      .handle((tla) => {
-        this.tailStrikeConditions.tla1 = tla;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tla2')
-      .whenChanged()
-      .handle((tla) => {
-        this.tailStrikeConditions.tla2 = tla;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('tla3')
-      .whenChanged()
-      .handle((tla) => {
-        this.tailStrikeConditions.tla3 = tla;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tla4')
-      .whenChanged()
-      .handle((tla) => {
-        this.tailStrikeConditions.tla4 = tla;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('speedAr')
-      .whenChanged()
-      .handle((speed) => {
-        this.tailStrikeConditions.speed = speed.value;
-        this.needsUpdate = true;
-      });
-
-    sub.on('realTime').onlyAfter(2).handle(this.hideShow.bind(this));
-  }
-
-  private hideShow(_time: number) {
-    if (this.needsUpdate) {
-      this.needsUpdate = false;
-
-      // FIX ME indicatior should disappear 3 seconds after takeoff and 4 seconds after go aroud initaition. Use better logic without FM flight phase?
-      if (
-        ((this.tailStrikeConditions.tla1 >= 35 ||
-          this.tailStrikeConditions.tla2 >= 35 ||
-          this.tailStrikeConditions.tla3 >= 35 ||
-          this.tailStrikeConditions.tla4 >= 35) &&
-          this.tailStrikeConditions.leftGearCompressed &&
-          this.tailStrikeConditions.rightGearCompressed) ||
-        (this.tailStrikeConditions.approachPhase &&
-          this.tailStrikeConditions.altitude.value < 400 &&
-          this.tailStrikeConditions.speed > 50)
-      ) {
-        this.tailStrike.instance.style.display = 'inline';
-      } else {
-        this.tailStrike.instance.style.display = 'none';
-      }
-    }
-  }
-
-  render(): VNode {
-    return (
-      <path
-        ref={this.tailStrike}
-        id="TailstrikeWarning"
-        d="m72.682 50.223h2.9368l-6.7128 8-6.7128-8h2.9368l3.7759 4.5z"
-        class="NormalStroke Amber"
-      />
-    );
-  }
-}
-
-class RadioAltAndDH extends DisplayComponent<{
-  bus: ArincEventBus;
-  filteredRadioAltitude: Subscribable<number>;
-  attExcessive: Subscribable<boolean>;
-}> {
-  private daRaGroup = FSComponent.createRef<SVGGElement>();
-
-  private roll = new Arinc429Word(0);
-
-  private dh = 0;
-
-  private filteredRadioAltitude = 0;
-
-  private radioAltitude = new Arinc429Word(0);
-
-  private transAltAr = Arinc429Register.empty();
-
-  private transLvlAr = Arinc429Register.empty();
-
-  private fmgcFlightPhase = 0;
-
-  private altitude = new Arinc429Word(0);
-
-  private attDhText = FSComponent.createRef<SVGTextElement>();
-
-  private radioAltText = Subject.create('0');
-
-  private radioAlt = FSComponent.createRef<SVGTextElement>();
-
-  private classSub = Subject.create('');
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
-
-    sub.on('rollAr').handle((roll) => {
-      this.roll = roll;
-    });
-
-    sub
-      .on('dh')
-      .whenChanged()
-      .handle((dh) => {
-        this.dh = dh;
-      });
-
-    sub
-      .on('fmTransAltRaw')
-      .whenChanged()
-      .handle((ta) => {
-        this.transAltAr.set(ta);
-      });
-
-    sub
-      .on('fmTransLvlRaw')
-      .whenChanged()
-      .handle((tl) => {
-        this.transLvlAr.set(tl);
-      });
-
-    sub
-      .on('fmgcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.fmgcFlightPhase = fp;
-      });
-
-    sub.on('altitudeAr').handle((a) => {
-      this.altitude = a;
-    });
-
-    sub.on('chosenRa').handle((ra) => {
-      if (!this.props.attExcessive.get()) {
-        this.radioAltitude = ra;
-        const raFailed = !this.radioAltitude.isFailureWarning();
-        const raHasData = !this.radioAltitude.isNoComputedData();
-        const raValue = this.filteredRadioAltitude;
-        const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
-        const useTransAltVsLvl = this.fmgcFlightPhase <= 3;
-        const chosenTransalt = useTransAltVsLvl ? this.transAltAr : this.transLvlAr;
-        const belowTransitionAltitude =
-          chosenTransalt.isNormalOperation() &&
-          !this.altitude.isNoComputedData() &&
-          this.altitude.value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
-        let size = 'FontLarge';
-        const DHValid = this.dh >= 0;
-
-        let text = '';
-        let color = 'Amber';
-
-        if (raHasData) {
-          if (raFailed) {
-            if (raValue < 2500) {
-              if (raValue > 400 || (raValue > this.dh + 100 && DHValid)) {
-                color = 'Green';
-              }
-              if (raValue < 400) {
-                size = 'FontLargest';
-              }
-              if (raValue < 5) {
-                text = Math.round(raValue).toString();
-              } else if (raValue <= 50) {
-                text = (Math.round(raValue / 5) * 5).toString();
-              } else if (raValue > 50 || (raValue > this.dh + 100 && DHValid)) {
-                text = (Math.round(raValue / 10) * 10).toString();
-              }
-            }
-          } else {
-            color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
-            text = 'RA';
-          }
-        }
-
-        this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
-        if (raFailed && DHValid && raValue <= this.dh) {
-          this.attDhText.instance.style.visibility = 'visible';
-        } else {
-          this.attDhText.instance.style.visibility = 'hidden';
-        }
-        this.radioAltText.set(text);
-        this.classSub.set(`${size} ${color} MiddleAlign TextOutline`);
-      }
-    });
-
-    this.props.filteredRadioAltitude.sub((fra) => {
-      this.filteredRadioAltitude = fra;
-    }, true);
-
-    this.props.attExcessive.sub((ae) => {
-      if (ae) {
-        this.radioAlt.instance.style.visibility = 'hidden';
-      } else {
-        this.radioAlt.instance.style.visibility = 'visible';
-      }
-    });
-  }
-
-  render(): VNode {
-    return (
-      <g ref={this.daRaGroup} id="DHAndRAGroup">
-        <text
-          ref={this.attDhText}
-          id="AttDHText"
-          x="73.511879"
-          y="115"
-          class="FontLargest Amber EndAlign Blink9Seconds TextOutline"
-        >
-          DH
-        </text>
-        <text ref={this.radioAlt} id="RadioAlt" x="69.202454" y="121.5" class={this.classSub}>
-          {this.radioAltText}
-        </text>
       </g>
     );
   }
@@ -679,11 +234,20 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
   private latAcc = 0;
 
+  private pitchScale = '';
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElemsValues>();
 
+    sub
+      .on('pitchScale')
+      .whenChanged()
+      .handle((v) => {
+        this.pitchScale = v.get().toString();
+        this.rollTriangle.instance.style.display = `${this.pitchScale}`;
+      });
     sub
       .on('leftMainGearCompressed')
       .whenChanged()
@@ -757,71 +321,27 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
     } else {
       const beta = this.beta;
       const betaTarget = this.betaTarget;
-      offset = Math.max(Math.min(beta - betaTarget, 15), -15);
+      offset = Math.max(Math.min((beta - betaTarget) * 5, 75), -75);
     }
 
     const betaTargetActive = this.betaTargetActive === 1;
-    const SIIndexOffset = this.sideslipIndicatorFilter.step(offset, this.props.instrument.deltaTime / 1000);
+    const SIIndexOffset = Math.max(
+      0.00001,
+      this.sideslipIndicatorFilter.step(offset, this.props.instrument.deltaTime / 1000),
+    );
 
     this.rollTriangle.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
-    this.classNameSub.set(`${betaTargetActive ? 'Cyan' : 'Yellow'}`);
+    this.classNameSub.set(`${betaTargetActive ? 'Green' : 'Green'}`);
     this.slideSlip.instance.style.transform = `translate3d(${SIIndexOffset}px, 0px, 0px)`;
   }
 
   render(): VNode {
     return (
-      <g id="RollTriangleGroup" ref={this.rollTriangle} class="NormalStroke Yellow CornerRound">
-        <path d="m66.074 43.983 2.8604-4.2333 2.8604 4.2333z" />
-        <path id="SideSlipIndicator" ref={this.slideSlip} d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z" />
-      </g>
-    );
-  }
-}
-
-class RisingGround extends DisplayComponent<{ bus: EventBus; filteredRadioAltitude: Subscribable<number> }> {
-  private radioAlt = new Arinc429Word(0);
-
-  private lastPitch = new Arinc429Word(0);
-
-  private horizonGroundRectangle = FSComponent.createRef<SVGGElement>();
-
-  private setOffset() {
-    const targetPitch =
-      this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()
-        ? 200
-        : 0.1 * this.props.filteredRadioAltitude.get();
-
-    const targetOffset = Math.max(
-      Math.min(calculateHorizonOffsetFromPitch(this.lastPitch.value + targetPitch) - 31.563, 0),
-      -63.093,
-    );
-    this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
-
-    sub.on('pitchAr').handle((pitch) => {
-      this.lastPitch = pitch;
-    });
-
-    sub.on('chosenRa').handle((p) => {
-      this.radioAlt = p;
-      this.setOffset();
-    });
-
-    this.props.filteredRadioAltitude.sub((_fra) => {
-      this.setOffset();
-    });
-  }
-
-  render(): VNode {
-    return (
-      <g ref={this.horizonGroundRectangle} id="HorizonGroundRectangle">
-        <path d="m113.95 157.74h-90.08v-45.357h90.08z" class="NormalOutline EarthFill" />
-        <path d="m113.95 157.74h-90.08v-45.357h90.08z" class="NormalStroke White" />
+      <g id="RollTriangleGroup" ref={this.rollTriangle} class="NormalStroke Green CornerRound">
+        <g transform="translate(295 -60)">
+          <path d="m330.37 219.915 14.302 -21.166 14.302 21.166z" />
+          <path id="SideSlipIndicator" ref={this.slideSlip} d="m369.87 236.04 -7.492 -11.087h-35.414l-7.492 11.087z" />
+        </g>
       </g>
     );
   }
@@ -832,7 +352,6 @@ class PitchScale extends DisplayComponent<{
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
 }> {
-  private fmgcFlightPhase = -1;
   private forcedFma = false;
   private flightPhase = -1;
   private declutterMode = 0;
@@ -846,8 +365,11 @@ class PitchScale extends DisplayComponent<{
   private needsUpdate = false;
 
   private threeDegLine = FSComponent.createRef<SVGGElement>();
-
+  private pitchScaleVis = FSComponent.createRef<SVGGElement>();
+  private pitchScale = '';
   private DeclutterSimVar = '';
+  private negIterNum = 5;
+  private posIterNum = 7;
 
   private data: LSPath = {
     roll: new Arinc429Word(0),
@@ -860,94 +382,33 @@ class PitchScale extends DisplayComponent<{
     super.onAfterRender(node);
     const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<
-      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
+      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElemsValues
     >();
 
-    sub
-      .on('fmgcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        isCaptainSide
-          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
-          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
-        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
-        this.fmgcFlightPhase = fp;
-        //force fma during climb and descent
-        if (fp == 1 || fp == 2 || fp == 4) {
-          this.forcedFma = true;
-          if (this.declutterMode == 2) {
-            this.sVisibility.set('block');
-            this.sVisibilityDeclutterMode2.set('block');
-          } else {
-            this.sVisibility.set('block');
-            this.sVisibilityDeclutterMode2.set('block');
-          }
-        } else {
-          this.forcedFma = false;
-        }
-      });
+    sub.on('pitchScale').handle((v) => {
+      this.pitchScale = v.get().toString();
+      this.pitchScaleVis.instance.style.display = `${this.pitchScale}`;
+    });
 
     sub
-      .on('fwcFlightPhase')
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
-      .handle((fp) => {
-        isCaptainSide
-          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
-          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
-        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
-        this.flightPhase = fp;
-        //onGround
-        if (this.flightPhase <= 2 || this.flightPhase >= 9) {
+      .handle((value) => {
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
+        this.declutterMode = value;
+        if (this.forcedFma) {
+          this.sVisibility.set('block');
+          this.sVisibilityDeclutterMode2.set('block');
+        } else {
           if (this.declutterMode == 2) {
             this.sVisibility.set('none');
-            this.sVisibilityDeclutterMode2.set('none');
-          }
-          if (this.declutterMode < 2) {
+            this.sVisibilityDeclutterMode2.set('block');
+          } else {
             this.sVisibility.set('block');
             this.sVisibilityDeclutterMode2.set('block');
           }
         }
-        //inFlight
-        if (this.flightPhase > 2 && this.flightPhase <= 9) {
-          if (this.forcedFma) {
-            if (this.declutterMode == 2) {
-              this.sVisibility.set('block');
-              this.sVisibilityDeclutterMode2.set('block');
-            } else {
-              this.sVisibility.set('block');
-              this.sVisibilityDeclutterMode2.set('block');
-            }
-          } else {
-            if (this.declutterMode == 2) {
-              this.sVisibility.set('none');
-              this.sVisibilityDeclutterMode2.set('block');
-            } else {
-              this.sVisibility.set('block');
-              this.sVisibilityDeclutterMode2.set('block');
-            }
-          }
-        }
       });
-
-    // sub
-    //   .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
-    //   .whenChanged()
-    //   .handle((value) => {
-    //     this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-    //     this.declutterMode = value;
-    //     if (this.forcedFma) {
-    //       this.sVisibility.set('block');
-    //       this.sVisibilityDeclutterMode2.set('block');
-    //     } else {
-    //       if (this.declutterMode == 2) {
-    //         this.sVisibility.set('none');
-    //         this.sVisibilityDeclutterMode2.set('block');
-    //       } else {
-    //         this.sVisibility.set('block');
-    //         this.sVisibilityDeclutterMode2.set('block');
-    //       }
-    //     }
-    //   });
 
     sub.on('hEvent').handle((eventName) => {
       if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
@@ -999,31 +460,31 @@ class PitchScale extends DisplayComponent<{
   render(): VNode {
     const result = [] as SVGTextElement[];
 
-    for (let i = 1; i < 7; i++) {
+    for (let i = 1; i < this.posIterNum; i++) {
       result.push(<path d={`M 518.26,${512 - i * FIVE_DEG} h -71.1 v 11`} display={this.sVisibility} />);
       result.push(<path d={`M 761.74,${512 - i * FIVE_DEG} h 71.1 v 11`} display={this.sVisibility} />);
     }
 
-    for (let i = 1; i < 5; i++) {
+    for (let i = 1; i < this.negIterNum; i++) {
       // negative pitch, right dotted lines
       i == 1 ? (this.sVisibilitySwitch = this.sVisibilityDeclutterMode2) : (this.sVisibilitySwitch = this.sVisibility);
       result.push(
-        <path class="SmallStroke Green" d={`m 761.74,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
-        <path class="SmallStroke Green" d={`m 781.44,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
-        <path class="SmallStroke Green" d={`m 801.14,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 761.74,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 781.44,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 801.14,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
         <path
-          class="SmallStroke Green"
+          class="NormalStroke Green"
           d={`m 820.84,${512 + i * FIVE_DEG} h 12 v -11 `}
           display={this.sVisibilitySwitch}
         />,
       );
       // negative pitch, left dotted lines
       result.push(
-        <path class="SmallStroke Green" d={`m 518.26,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
-        <path class="SmallStroke Green" d={`m 498.56,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
-        <path class="SmallStroke Green" d={`m 478.86,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 518.26,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 498.56,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 478.86,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
         <path
-          class="SmallStroke Green"
+          class="NormalStroke Green"
           d={`m 459.16,${512 + i * FIVE_DEG} h -12 v -11`}
           display={this.sVisibilitySwitch}
         />,
@@ -1077,8 +538,257 @@ class PitchScale extends DisplayComponent<{
     }
 
     return (
-      <g id="pitchScale" class="SmallStroke Green">
+      <g id="pitchScale" class="NormalStroke Green" ref={this.pitchScaleVis}>
         {result}
+      </g>
+    );
+  }
+}
+
+interface ExtendedHorizonProps {
+  bus: ArincEventBus;
+  instrument: BaseInstrument;
+  filteredRadioAlt: Subscribable<number>;
+}
+
+export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
+  private debugVal = FSComponent.createRef<SVGGElement>();
+  private spanRefs: NodeReference<SVGTSpanElement>[] = [];
+  private pitchGroupRef = FSComponent.createRef<SVGGElement>();
+  private rollGroupRef = FSComponent.createRef<SVGGElement>();
+  private path = FSComponent.createRef<SVGPathElement>();
+  private path2 = FSComponent.createRef<SVGPathElement>();
+  private path3 = FSComponent.createRef<SVGPathElement>();
+  private extendedAlt = FSComponent.createRef<SVGPathElement>();
+  private extendedSpd = FSComponent.createRef<SVGPathElement>();
+
+  private pitch = 0;
+  private yOffset = Subject.create(0);
+
+  private xAltTop = Subject.create<String>('');
+  private yAltTop = Subject.create<String>('');
+
+  private xSpdTop = Subject.create<String>('');
+  private ySpdTop = Subject.create<String>('');
+
+  private spdRollDev = 0;
+  private altRollDev = 0;
+  private crosswindMode = false;
+  private upperBound = 0;
+  private lowerBound = 0;
+  private valuesToLog = new Map<string, number>();
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+    const isCaptainSide = getDisplayIndex() === 1;
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
+
+    sub
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
+      });
+
+    sub
+      .on('rollAr')
+      .whenChanged()
+      .handle((roll) => {
+        const radRoll = (roll.value / 180) * Math.PI;
+
+        //frame of reference 1  air pitch   :F1
+        //frame 2  center: airHorizonHeadingBug x: hud horizon :F2
+        const D = calculateHorizonOffsetFromPitch(this.pitch);
+
+        let rSign = 1;
+
+        const xPos = -D * Math.sin(radRoll);
+
+        // xposition from frame2 to eval if extention should be drawn
+        if (this.crosswindMode == false) {
+          this.lowerBound = -6.143; //= -6.143;
+          this.upperBound = 426; //= 355;
+        } else {
+          this.upperBound = -14; //= -27.143;
+          this.lowerBound = -217; //= -199.143;
+        }
+
+        let Lalt = 0;
+        let Lspd = 0;
+        if (roll.value < 0) {
+          if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
+            Lspd = 455; // 472;
+            Lalt = 400; // 400;
+          } else {
+            Lalt = 494; // 494;
+            Lspd = 570; // 570;
+          }
+        } else {
+          if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
+            Lalt = 400; // 400;
+            Lspd = 455; // 472;
+          } else {
+            Lalt = 494; // 494;
+            Lspd = 570; // 570;
+          }
+        }
+        const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
+        const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
+
+        if (roll.isNormalOperation()) {
+          this.spdRollDev = -(640 - 168) * Math.tan(radRoll);
+          this.altRollDev = Lalt * Math.tan(radRoll);
+          this.rollGroupRef.instance.style.display = 'block';
+          this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
+
+          if (roll.value < 0) {
+            rSign = -1;
+          } else {
+            rSign = 1;
+          }
+
+          const ax = '640 ';
+          const ay = '512 ';
+          const bx = '0 ';
+          const by = (-D).toString();
+          const cx = (640 + xPos * Math.cos(radRoll * rSign)).toString();
+          const cy = (512 + xPos * Math.sin(radRoll)).toString();
+
+          const ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //actual eval point
+          const ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //actual eval point
+
+          const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
+          const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
+
+          //vertial offset of eval point from horizon
+          let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
+          if (Number(ey) < 512) {
+            F1AltSideVertDev *= -1;
+          }
+          let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
+          if (Number(eys) < 512) {
+            F1SpdSideVertDev *= -1;
+          }
+
+          // debug eval point pos circles
+          this.xAltTop.set(xPosF.toString());
+          this.yAltTop.set((512).toString());
+          this.xSpdTop.set(xPosFspd.toString());
+          this.ySpdTop.set((512).toString());
+          // end debug
+          //debug draws : toggle .DEBUG to block in styles.scss to show
+          this.path.instance.setAttribute('d', `m ${ax} ${ay} l ${bx}  ${by} L ${cx}  ${cy}     z`);
+          this.path2.instance.setAttribute('d', `m ${ax} ${ay} L ${ex}  ${ey}  L ${xPosF} 512     z`);
+          this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
+          //end debug
+
+          const F1HorizonPitchOffset = D * Math.cos(radRoll);
+
+          if (
+            F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
+            F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
+          ) {
+            this.extendedAlt.instance.setAttribute('class', 'NormalStroke Green');
+            this.extendedAlt.instance.setAttribute('d', ``);
+          } else {
+            this.extendedAlt.instance.setAttribute('class', 'NormalStroke Green');
+            this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
+          }
+
+          if (
+            F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
+            F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
+          ) {
+            this.extendedSpd.instance.setAttribute('class', 'NormalStroke Green');
+            this.extendedSpd.instance.setAttribute('d', ``);
+          } else {
+            this.extendedSpd.instance.setAttribute('class', 'NormalStroke Green');
+            this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
+          }
+
+          ////debug TextBox
+
+          this.debugVal.instance.setAttribute('transform', `translate(640 512) rotate(${roll.value})`);
+
+          this.valuesToLog.set('F1HorizonPitchOffset - F1AltSideVertDev', F1HorizonPitchOffset - F1AltSideVertDev);
+          this.valuesToLog.set('xPosF', xPosF);
+          this.valuesToLog.set('xPosFspd', xPosFspd);
+          this.valuesToLog.set('roll', roll.value);
+
+          let i = 0;
+          this.valuesToLog.forEach((value, key) => {
+            this.spanRefs[i].instance.textContent = `${key}: ${value}`;
+            i++;
+          });
+        } else {
+          this.rollGroupRef.instance.style.display = 'none';
+        }
+      });
+
+    sub.on('pitchAr').handle((pitch) => {
+      this.pitch = pitch.value;
+      if (pitch.isNormalOperation()) {
+        this.pitchGroupRef.instance.style.display = 'block';
+        this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG}px, 0px)`;
+        const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG;
+        this.yOffset.set(yOffset);
+      }
+    });
+  }
+
+  private buildLog(): NodeReference<SVGGElement>[] {
+    this.valuesToLog.set('F1HorizonPitchOffset - F1AltSideVertDev', 0);
+    this.valuesToLog.set('xPosF', 0);
+    this.valuesToLog.set('xPosFspd', 0);
+    this.valuesToLog.set('roll', 0);
+    this.valuesToLog.set('L1', 0);
+    this.valuesToLog.set('x2', 0);
+
+    const spans = [];
+    this.valuesToLog.forEach((value, key) => {
+      const spanRef = FSComponent.createRef<SVGTSpanElement>();
+      spans.push(
+        <tspan ref={spanRef} x="0" dy="1.2em" class="White FontSmallest">
+          {`${key}: ${value}`}
+        </tspan>,
+      );
+      this.spanRefs.push(spanRef);
+    });
+    return spans;
+  }
+
+  render(): VNode {
+    return (
+      <g id="ExtendedHorizon">
+        {/* dasharray is 320 refs */}
+        <path d="m 0 323 h 1280" class="red DEBUG" stroke-dasharray="2 2" />
+        <path d="m 0 327 h 1280" class="red DEBUG" />
+        <path d="m 0 688 h 1280" class="red DEBUG" stroke-dasharray="2 2" />
+        <path d="m 0 755 h 1280" class="red DEBUG" />
+        <path d="m 0 302 h 1280" class="blue DEBUG" />
+        <path d="m 0 130 h 1280" class="blue DEBUG" />
+        <path d="m 0 216 h 1280" class="blue DEBUG" />
+
+        <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
+          <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">
+            {/* <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} /> */}
+
+            <path ref={this.extendedAlt} id="extendedAlt" d="" class="NormalStroke Green" />
+            <path ref={this.extendedSpd} id="extendedSpd" d="" class="NormalStroke Green" />
+
+            {/* debug  */}
+            <circle cx={this.xAltTop} cy={this.yAltTop} r="5" class="blue DEBUG" display="block" />
+            <circle cx={this.xSpdTop} cy={this.ySpdTop} r="5" class="blue DEBUG" display="block" />
+            <circle cx="640" cy="512" r="5" class="blue DEBUG" display="block" />
+            <path id="path1" ref={this.path} d="" class="yellow  DEBUG" />
+            <path id="path2" ref={this.path2} d="" class="yellow DEBUG" />
+            <path id="path3" ref={this.path3} d="" class="yellow DEBUG" />
+
+            <g id="debugVal" ref={this.debugVal}>
+              <text class=" DEBUG White NormalStroke FontSmallest">{this.buildLog()}</text>
+            </g>
+            {/* debug  */}
+          </g>
+        </g>
       </g>
     );
   }

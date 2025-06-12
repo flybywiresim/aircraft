@@ -7,23 +7,27 @@ import {
   MappedSubject,
   Subject,
   VNode,
+  ClockEvents,
+  NodeReference,
 } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from './HUD';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
+import { FIVE_DEG } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch } from './HUDUtils';
 
 export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
   private lsButtonPressedVisibility = false;
 
   private xtkValid = Subject.create(false);
 
+  private isDecluttered = Subject.create(false);
+
   private ldevRequest = false;
 
   private lsGroupRef = FSComponent.createRef<SVGGElement>();
-
-  private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
 
   private deviationGroup = FSComponent.createRef<SVGGElement>();
 
@@ -33,35 +37,64 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
 
   private altitude = Arinc429Word.empty();
 
-  private handleGsReferenceLine() {
-    if (this.lsButtonPressedVisibility || this.altitude.isNormalOperation()) {
-      this.gsReferenceLine.instance.style.display = 'inline';
-    } else if (!this.lsButtonPressedVisibility) {
-      this.gsReferenceLine.instance.style.display = 'none';
-    }
-  }
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
 
+  private readonly declutterModeL = ConsumerSubject.create(this.sub.on('declutterModeL'), 0);
+  private readonly declutterModeR = ConsumerSubject.create(this.sub.on('declutterModeR'), 0);
+  private readonly ls1Button = ConsumerSubject.create(this.sub.on('ls1Button'), false);
+  private readonly ls2Button = ConsumerSubject.create(this.sub.on('ls2Button'), false);
+  private readonly isVisibleL = MappedSubject.create(
+    ([declutterModeL, ls1Button]) => {
+      return declutterModeL != 2 && ls1Button;
+    },
+    this.declutterModeL,
+    this.ls1Button,
+  );
+  private readonly isVisibleR = MappedSubject.create(
+    ([declutterModeR, ls2Button]) => {
+      return declutterModeR != 2 && ls2Button;
+    },
+    this.declutterModeR,
+    this.ls2Button,
+  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const isCaptainSide = getDisplayIndex() === 1;
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values>();
-
-    sub
-      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
+    this.sub
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
-      .handle((lsButton) => {
-        this.lsButtonPressedVisibility = lsButton;
-        this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-        this.deviationGroup.instance.style.display = this.lsButtonPressedVisibility ? 'none' : 'inline';
-        this.handleGsReferenceLine();
+      .handle(() => {
+        if (isCaptainSide) {
+          this.lsGroupRef.instance.style.display = this.isVisibleL.get() ? 'inline' : 'none';
+        } else {
+          this.lsGroupRef.instance.style.display = this.isVisibleR.get() ? 'inline' : 'none';
+        }
+        // console.log(
+        //   'dec: \n  isVisibleL \n' + this.isVisibleL.get(),
+        //   ' isVisibleR \n' + this.isVisibleR.get(),
+        //   ' ls1Button \n' + this.ls1Button.get(),
+        //   ' ls2Button \n' + this.ls2Button.get(),
+        //   ' declutterModeL \n' + this.declutterModeL.get(),
+        //   ' declutterModeR \n' + this.declutterModeR.get(),
+        // );
+      });
+    this.sub
+      .on(isCaptainSide ? 'ls1Button' : 'ls2Button')
+      .whenChanged()
+      .handle(() => {
+        if (isCaptainSide) {
+          this.lsGroupRef.instance.style.display = this.isVisibleL.get() ? 'inline' : 'none';
+        } else {
+          this.lsGroupRef.instance.style.display = this.isVisibleR.get() ? 'inline' : 'none';
+        }
       });
 
-    sub.on('altitudeAr').handle((altitude) => {
+    this.sub.on('altitudeAr').handle((altitude) => {
       this.altitude = altitude;
-      this.handleGsReferenceLine();
     });
 
-    sub
+    this.sub
       .on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight')
       .whenChanged()
       .handle((ldevRequest) => {
@@ -69,7 +102,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
         this.updateLdevVisibility();
       });
 
-    sub
+    this.sub
       .on('xtk')
       .whenChanged()
       .handle((xtk) => {
@@ -88,7 +121,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
   render(): VNode {
     return (
       <>
-        <g id="LSGroup" ref={this.lsGroupRef} style="display: none">
+        <g id="LSGroup" ref={this.lsGroupRef} style="display: none" transform=" translate(0 0)">
           <LandingSystemInfo bus={this.props.bus} />
 
           <g id="LSGroup">
@@ -97,7 +130,6 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
             <MarkerBeaconIndicator bus={this.props.bus} />
             <LsTitle bus={this.props.bus} />
           </g>
-          <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
         </g>
 
         <g>
@@ -105,13 +137,14 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
         </g>
         <g id="DeviationGroup" ref={this.deviationGroup} style="display: none">
           <g id="LateralDeviationGroup" ref={this.ldevRef} style="display: none">
+            {/* ////TODO rnav use 3.0 scaling */}
             <LDevIndicator bus={this.props.bus} />
           </g>
           <g id="VerticalDeviationGroup" ref={this.vdevRef} style="display: none">
             <VDevIndicator bus={this.props.bus} />
           </g>
         </g>
-        <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
+        {/* <path ref={this.gsReferenceLine} class="Green Fill" d="m404.32 280.234v5.292h-31.397v-5.292z" /> */}
       </>
     );
   }
@@ -211,7 +244,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
         distTrailing = '';
       }
       // eslint-disable-next-line max-len
-      this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontLarge StartAlign">${distLeading}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${distTrailing}</tspan>`;
+      this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontSmall  StartAlign">${distLeading}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${distTrailing}</tspan>`;
     } else {
       this.dmeVisibilitySub.set('display: none');
     }
@@ -219,20 +252,20 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <g id="LSInfoGroup" ref={this.lsInfoGroup}>
-        <text id="ILSIdent" class="Magenta FontLarge AlignLeft" x="1.184" y="143.11522">
+      <g id="LSInfoGroup" ref={this.lsInfoGroup} transform=" translate(85 350)">
+        <text id="ILSIdent" class="Green FontSmall  AlignLeft" x="15" y="490">
           {this.identText}
         </text>
-        <text id="ILSFreqLeading" class="Magenta FontLarge AlignLeft" x="1.3610243" y="149.11575">
+        <text id="ILSFreqLeading" class="Green FontSmall  AlignLeft" x="15" y="519.9">
           {this.freqTextLeading}
         </text>
-        <text id="ILSFreqTrailing" class="Magenta FontLarge AlignLeft" x="12.964463" y="149.24084">
+        <text id="ILSFreqTrailing" class="Green FontSmall  AlignLeft" x="60" y="520">
           {this.freqTextTrailing}
         </text>
 
         <g id="ILSDistGroup" style={this.dmeVisibilitySub}>
-          <text ref={this.destRef} class="Magenta AlignLeft" x="1.3685881" y="155.26602" />
-          <text class="Cyan FontSmallest AlignLeft" x="17.159119" y="155.22606">
+          <text ref={this.destRef} class="Green AlignLeft" x="15" y="550" />
+          <text class="Cyan FontSmallest AlignLeft" x="65" y="550">
             NM
           </text>
         </g>
@@ -242,6 +275,15 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
+  private flightPhase = -1;
+  private fmgcFlightPhase = -1;
+  private declutterMode = 0;
+  private onGround = true;
+  private LsState = false;
+  private LSLocRef = FSComponent.createRef<SVGGElement>();
+  private LSLocGroupVerticalOffset = 0;
+  private pitch = 0;
+  private doOnce = 0;
   private lagFilter = new LagFilter(1.5);
 
   private rightDiamond = FSComponent.createRef<SVGPathElement>();
@@ -268,15 +310,70 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
       this.locDiamond.instance.classList.remove('HiddenElement');
       this.rightDiamond.instance.classList.add('HiddenElement');
       this.leftDiamond.instance.classList.add('HiddenElement');
-      this.locDiamond.instance.style.transform = `translate3d(${(dots * 30.221) / 2}px, 0px, 0px)`;
+      this.locDiamond.instance.style.transform = `translate3d(${(dots * 90.6) / 2}px, 0px, 0px)`;
     }
   }
-
+  private setLocGroupPos() {
+    if (this.LsState) {
+      if (this.onGround) {
+        this.LSLocRef.instance.style.visibility = 'visible';
+        this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
+      } else {
+        if (this.declutterMode == 2) {
+          this.LSLocRef.instance.style.visibility = 'hidden';
+        } else {
+          this.LSLocRef.instance.style.visibility = 'visible';
+        }
+        this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
+      }
+    } else {
+      if (this.onGround) {
+        this.LSLocRef.instance.style.visibility = 'visible';
+        this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
+      } else {
+        this.LSLocRef.instance.style.visibility = 'hidden';
+        this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
+      }
+    }
+  }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const isCaptainSide = getDisplayIndex() === 1;
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+    sub
+      .on('fwcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.flightPhase = fp;
+      });
+    sub
+      .on('fmgcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.fmgcFlightPhase = fp;
+      });
 
+    sub
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .whenChanged()
+      .handle((value) => {
+        this.declutterMode = value;
+        this.setLocGroupPos();
+      });
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((value) => {
+        this.onGround = value;
+        if (value) {
+          this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
+          this.LSLocRef.instance.style.visibility = 'visible';
+        } else {
+          this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
+          this.LSLocRef.instance.style.visibility = 'hidden';
+        }
+      });
     sub
       .on('hasLoc')
       .whenChanged()
@@ -290,54 +387,92 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
           this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
         }
       });
+    sub
+      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
+      .whenChanged()
+      .handle((value) => {
+        this.LsState = value;
+        this.setLocGroupPos();
+      });
+    sub.on('pitchAr').handle((p) => {
+      this.pitch = p.value;
+    });
+
+    sub.on('realTime').handle(() => {
+      // if (this.fmgcFlightPhase == 1) {
+      //   this.doOnce = 0;
+      //   this.LSLocRef.instance.style.visibility = 'visible';
+      //   this.LSLocGroupVerticalOffset = 380 + (DistanceSpacing / ValueSpacing) * this.pitch;
+      //   this.LSLocRef.instance.style.transform = `translate3d(433.5px, ${this.LSLocGroupVerticalOffset}px, 0px)`;
+      // } else {
+      //   if (this.doOnce == 0) {
+      //     this.doOnce = 1;
+      //     this.LSLocRef.instance.style.visibility = 'hidden';
+      //   }
+      // }
+    });
   }
 
   render(): VNode {
     return (
-      <g id="LocalizerSymbolsGroup">
-        <path
-          class="NormalStroke White"
-          d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke White"
-          d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke White"
-          d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke White"
-          d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
+      <g ref={this.LSLocRef} id="LocalizerSymbolsGroup">
+        <path class="NormalStroke Green" d="m164.412 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m119.079 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m255.072 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m300.39 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
         <g class="HiddenElement" ref={this.diamondGroup}>
           <path
             id="LocDiamondRight"
             ref={this.rightDiamond}
-            class="NormalStroke Magenta HiddenElement"
-            d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198"
+            class="NormalStroke Green HiddenElement"
+            d="m297.381 399.09 11.333 -7.559 -11.333 -7.559"
           />
           <path
             id="LocDiamondLeft"
             ref={this.leftDiamond}
-            class="NormalStroke Magenta HiddenElement"
-            d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198"
+            class="NormalStroke Green HiddenElement"
+            d="m116.058 399.09 -11.333 -7.559 11.333 -7.559"
           />
           <path
             id="LocDiamond"
             ref={this.locDiamond}
-            class="NormalStroke Magenta HiddenElement"
-            d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
+            class="NormalStroke Green HiddenElement"
+            d="m195.387 391.53 11.333 7.559 11.333 -7.559 -11.333 -7.559z"
           />
         </g>
-        <path id="LocalizerNeutralLine" class="Yellow Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
+        <path id="LocalizerNeutralLine" class="Green Fill" d="m204.294 403.5v-24.191h4.536v24.191z" />
       </g>
     );
   }
 }
-
+interface LSPath {
+  roll: Arinc429WordData;
+  pitch: Arinc429WordData;
+  fpa: Arinc429WordData;
+  da: Arinc429WordData;
+}
 class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
+  private data: LSPath = {
+    roll: new Arinc429Word(0),
+    pitch: new Arinc429Word(0),
+    fpa: new Arinc429Word(0),
+    da: new Arinc429Word(0),
+  };
+
+  private LSGsRef = new NodeReference<SVGGElement>();
+
+  private needsUpdate = false;
+
+  private crosswindMode = false;
+
+  private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
+
+  private deviationGroup = FSComponent.createRef<SVGGElement>();
+
+  private altitude = Arinc429Word.empty();
+
+  private lsButtonPressedVisibility = false;
+
   private lagFilter = new LagFilter(1.5);
 
   private upperDiamond = FSComponent.createRef<SVGPathElement>();
@@ -366,14 +501,87 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
       this.upperDiamond.instance.classList.add('HiddenElement');
       this.lowerDiamond.instance.classList.add('HiddenElement');
       this.glideSlopeDiamond.instance.classList.remove('HiddenElement');
-      this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${(dots * 30.238) / 2}px, 0px)`;
+      this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${(dots * 90.6) / 2}px, 0px)`;
     }
   }
-
+  private handleGsReferenceLine() {
+    if (this.lsButtonPressedVisibility || this.altitude.isNormalOperation()) {
+      this.gsReferenceLine.instance.style.display = 'inline';
+    } else if (!this.lsButtonPressedVisibility) {
+      this.gsReferenceLine.instance.style.display = 'none';
+    }
+  }
+  private MoveGlideSlopeGroup() {
+    if (this.crosswindMode == false) {
+      this.LSGsRef.instance.style.transform = `translate3d(625px, ${FIVE_DEG + 13 + calculateHorizonOffsetFromPitch(this.data.pitch.value)}px, 0px)`;
+    } else {
+      this.LSGsRef.instance.style.transform = `translate3d(625px, 84px, 0px)`;
+    }
+    //DistanceSpacing
+  }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const isCaptainSide = getDisplayIndex() === 1;
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
+    sub
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
+      });
+    sub
+      .on('fpa')
+      .whenChanged()
+      .handle((fpa) => {
+        this.data.fpa = fpa;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('da')
+      .whenChanged()
+      .handle((da) => {
+        this.data.da = da;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('rollAr')
+      .whenChanged()
+      .handle((r) => {
+        this.data.roll = r;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('pitchAr')
+      .whenChanged()
+      .handle((p) => {
+        this.data.pitch = p;
+        this.needsUpdate = true;
+      });
+    sub.on('realTime').handle((_t) => {
+      if (this.needsUpdate) {
+        this.needsUpdate = false;
+        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+        if (daAndFpaValid) {
+          // this.threeDegRef.instance.classList.remove('HiddenElement');
+          this.MoveGlideSlopeGroup();
+        } else {
+          // this.threeDegRef.instance.classList.add('HiddenElement');
+        }
+      }
+    });
+    sub
+      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
+      .whenChanged()
+      .handle((lsButton) => {
+        this.lsButtonPressedVisibility = lsButton;
+        this.handleGsReferenceLine();
+      });
+
+    sub.on('altitudeAr').handle((altitude) => {
+      this.altitude = altitude;
+      this.handleGsReferenceLine();
+    });
 
     sub
       .on('hasGlideslope')
@@ -397,43 +605,32 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
 
   render(): VNode {
     return (
-      <g id="LocalizerSymbolsGroup">
-        <path
-          class="NormalStroke White"
-          d="m110.71 50.585a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke White"
-          d="m110.71 65.704a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke White"
-          d="m110.71 95.942a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke White"
-          d="m110.71 111.06a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
+      <g id="GlideSlopeSymbolsGroup" ref={this.LSGsRef}>
+        <path class="NormalStroke Green" d="m332.13 151.755a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m332.13 197.112a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m332.13 287.826a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m332.13 333.18a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
         <g class="HideGSDiamond" ref={this.diamondGroup}>
           <path
             id="GlideSlopeDiamondLower"
             ref={this.upperDiamond}
-            class="NormalStroke Magenta HiddenElement"
-            d="m107.19 111.06 2.5184 3.7798 2.5184-3.7798"
+            class="NormalStroke Green HiddenElement"
+            d="m321.57 333.18 7.555 11.339 7.555 -11.339"
           />
           <path
             id="GlideSlopeDiamondUpper"
             ref={this.lowerDiamond}
-            class="NormalStroke Magenta HiddenElement"
-            d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798"
+            class="NormalStroke Green HiddenElement"
+            d="m321.57 151.755 7.555 -11.339 7.555 11.339"
           />
           <path
             id="GlideSlopeDiamond"
             ref={this.glideSlopeDiamond}
-            class="NormalStroke Magenta HiddenElement"
-            d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z"
+            class="NormalStroke Green HiddenElement"
+            d="m329.1 231.129 -7.555 11.339 7.555 11.339 7.555 -11.339z"
           />
         </g>
+        <path ref={this.gsReferenceLine} class="Green Fill" d="m 317 243 h 24.191 v 4.536 h -24.191 z" />
       </g>
     );
   }
@@ -475,10 +672,10 @@ class VDevIndicator extends DisplayComponent<{ bus: EventBus }> {
         <text class="FontSmall AlignRight Green" x="95.022" y="43.126">
           V/DEV
         </text>
-        <path class="NormalStroke White" d="m108.7 65.704h2.0147" />
-        <path class="NormalStroke White" d="m108.7 50.585h2.0147" />
-        <path class="NormalStroke White" d="m108.7 111.06h2.0147" />
-        <path class="NormalStroke White" d="m108.7 95.942h2.0147" />
+        <path class="NormalStroke Green" d="m108.7 65.704h2.0147" />
+        <path class="NormalStroke Green" d="m108.7 50.585h2.0147" />
+        <path class="NormalStroke Green" d="m108.7 111.06h2.0147" />
+        <path class="NormalStroke Green" d="m108.7 95.942h2.0147" />
         <path
           id="VDevSymbolLower"
           ref={this.VDevSymbolLower}
@@ -544,10 +741,10 @@ class LDevIndicator extends DisplayComponent<{ bus: EventBus }> {
         <text class="FontSmall AlignRight Green" x="30.888" y="122.639">
           L/DEV
         </text>
-        <path class="NormalStroke White" d="m38.686 129.51v2.0158" />
-        <path class="NormalStroke White" d="m53.796 129.51v2.0158" />
-        <path class="NormalStroke White" d="m84.017 129.51v2.0158" />
-        <path class="NormalStroke White" d="m99.127 129.51v2.0158" />
+        <path class="NormalStroke Green" d="m38.686 129.51v2.0158" />
+        <path class="NormalStroke Green" d="m53.796 129.51v2.0158" />
+        <path class="NormalStroke Green" d="m84.017 129.51v2.0158" />
+        <path class="NormalStroke Green" d="m99.127 129.51v2.0158" />
         <path
           id="LDevSymbolLeft"
           ref={this.LDevSymbolLeft}
@@ -566,7 +763,7 @@ class LDevIndicator extends DisplayComponent<{ bus: EventBus }> {
           class="NormalStroke Green"
           d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z"
         />
-        <path id="LDevNeutralLine" class="Yellow Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
+        <path id="LDevNeutralLine" class="Green Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
       </g>
     );
   }
@@ -582,7 +779,7 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     const sub = this.props.bus.getSubscriber<HUDSimvars>();
 
-    const baseClass = 'FontLarge StartAlign';
+    const baseClass = 'FontMedium  StartAlign';
 
     sub
       .on('markerBeacon')
@@ -594,10 +791,10 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
           this.classNames.set(`${baseClass} Cyan OuterMarkerBlink`);
           this.markerText.set('OM');
         } else if (markerState === 2) {
-          this.classNames.set(`${baseClass} Amber MiddleMarkerBlink`);
+          this.classNames.set(`${baseClass} Green MiddleMarkerBlink`);
           this.markerText.set('MM');
         } else {
-          this.classNames.set(`${baseClass} White InnerMarkerBlink`);
+          this.classNames.set(`${baseClass} Green InnerMarkerBlink`);
           this.markerText.set('IM');
         }
       });
@@ -605,7 +802,7 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <text id="ILSMarkerText" class={this.classNames} x="107" y="133">
+      <text id="ILSMarkerText" class={this.classNames} x="880" y="765">
         {this.markerText}
       </text>
     );
@@ -645,7 +842,7 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <text class="FontLargest Magenta MiddleAlign" ref={this.lsTitle} x="104" y="126">
+      <text class="FontMedium Green MiddleAlign" ref={this.lsTitle} x="905" y="800">
         ILS
       </text>
     );
@@ -687,7 +884,7 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <text class="FontLargest Amber Blink9Seconds" x="104.33" y="124.8" ref={this.lsReminder}>
+      <text class="FontLargest Green Blink9Seconds" x="905" y="800" ref={this.lsReminder}>
         LS
       </text>
     );

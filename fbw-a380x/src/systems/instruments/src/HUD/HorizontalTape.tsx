@@ -33,19 +33,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     result.labels.push(
       <text
         id="HeadingLabel"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        class="Green MiddleAlign FontMedium"
-=======
         class="Green MiddleAlign FontSmallest"
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
-        class="Green MiddleAlign FontMedium"
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
-        class="Green MiddleAlign FontSmallest"
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
         ref={textRef}
         x="640"
         y="540"
@@ -73,19 +61,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
         result.labels.unshift(
           <text
             id="HeadingLabel"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            class={`Green MiddleAlign FontMedium`}
-=======
             class={`Green MiddleAlign FontSmallest`}
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
-            class={`Green MiddleAlign FontMedium`}
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
-            class={`Green MiddleAlign FontSmallest`}
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
             ref={textRef}
             x="640"
             y="540"
@@ -99,19 +75,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
         result.labels.push(
           <text
             id="HeadingLabel"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            class={`Green MiddleAlign FontMedium`}
-=======
             class={`Green MiddleAlign FontSmallest`}
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
-            class={`Green MiddleAlign FontMedium`}
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
-            class={`Green MiddleAlign FontSmallest`}
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
             ref={textRef}
             x="640"
             y="540"

@@ -1,5 +1,7 @@
-import { DisplayComponent, FSComponent, NodeReference, Subscribable, VNode } from '@microsoft/msfs-sdk';
-
+import { DisplayComponent, EventBus, FSComponent, NodeReference, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { HudElemsValues } from './HUDUtils';
+import { getDisplayIndex } from './HUD';
+import { HUDSimvars } from './shared/HUDSimvarPublisher';
 interface VerticalTapeProps {
   displayRange: number;
   valueSpacing: number;
@@ -8,9 +10,11 @@ interface VerticalTapeProps {
   lowerLimit: number;
   upperLimit: number;
   type: 'altitude' | 'speed';
+  bus: EventBus;
 }
 
 export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
+  private crosswindMode = false;
   private refElement = FSComponent.createRef<SVGGElement>();
 
   private tickRefs: NodeReference<SVGGElement>[] = [];
@@ -44,8 +48,8 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
           const tickRef = FSComponent.createRef<SVGGElement>();
           graduationPoints.push(
             <g ref={tickRef} transform={`translate(0 ${offset})`}>
-              <path class="NormalStroke White" d="m19.031 80.818h-2.8206" />
-              <text class="FontIntermediate MiddleAlign White" x="9.5348943" y="82.936722">
+              <path class="NormalStroke Green" d="m85.354 362.469h-12.65" />
+              <text class="FontIntermediate MiddleAlign Green" x="42.6075" y="372.255">
                 {text}
               </text>
             </g>,
@@ -86,9 +90,9 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
 
           graduationPoints.push(
             <g ref={tickRef} transform={`translate(0 ${offset}`}>
-              <path class="NormalStroke White HiddenElement" d="m115.79 81.889 1.3316-1.0783-1.3316-1.0783" />
-              <path class="NormalStroke White" d="m130.85 80.819h-2.0147" />
-              <text class="FontMedium MiddleAlign White" x="123.28826" y="82.64006">
+              <path class="NormalStroke Green HiddenElement" d="m519.318 367.272 5.972 -4.837 -5.972 -4.837" />
+              <path class="NormalStroke Green" d="m586.862 362.473h-9.035" />
+              <text class="FontMedium MiddleAlign Green" x="552.9478461" y="370.6406691">
                 {text}
               </text>
             </g>,
@@ -102,6 +106,29 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HudElemsValues & HUDSimvars>();
+
+    const isCaptainSide = getDisplayIndex() === 1;
+
+    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
+      this.crosswindMode = value;
+      if (this.props.type === 'altitude') {
+        if (this.crosswindMode) {
+          for (let i = 0; i < this.tickRefs.length - 1; i++) {
+            this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
+            this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.add('HiddenElement');
+          }
+        } else {
+          for (let i = 0; i < this.tickRefs.length - 1; i++) {
+            if ((parseInt(this.tickRefs[i].instance.textContent) * 100) % 500 === 0) {
+              this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
+              this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
+            }
+          }
+        }
+      }
+    });
 
     this.props.tapeValue.sub((newValue) => {
       const multiplier = 100;

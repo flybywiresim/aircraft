@@ -5,7 +5,7 @@ import { HUDSimvarPublisher, HUDSimvars } from './HUDSimvarPublisher';
 export class AdirsValueProvider implements Instrument {
   constructor(
     private readonly bus: EventBus,
-    private readonly pfdSimvar: HUDSimvarPublisher,
+    private readonly hudSimvar: HUDSimvarPublisher,
   ) {}
 
   /** @inheritdoc */
@@ -18,31 +18,31 @@ export class AdirsValueProvider implements Instrument {
       .whenChanged()
       .handle((k) => {
         const inertialSource = getSupplier(displayIndex, k);
-        this.pfdSimvar.updateSimVarSource('vsInert', {
+        this.hudSimvar.updateSimVarSource('vsInert', {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_VERTICAL_SPEED`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('pitch', {
+        this.hudSimvar.updateSimVarSource('pitch', {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_PITCH`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('roll', {
+        this.hudSimvar.updateSimVarSource('roll', {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_ROLL`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('heading', {
+        this.hudSimvar.updateSimVarSource('heading', {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_HEADING`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('groundTrack', {
+        this.hudSimvar.updateSimVarSource('groundTrack', {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_TRACK`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('fpaRaw', {
+        this.hudSimvar.updateSimVarSource('fpaRaw', {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_FLIGHT_PATH_ANGLE`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('daRaw', {
+        this.hudSimvar.updateSimVarSource('daRaw', {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_DRIFT_ANGLE`,
           type: SimVarValueType.Number,
         });
@@ -53,19 +53,19 @@ export class AdirsValueProvider implements Instrument {
       .whenChanged()
       .handle((a) => {
         const airSource = getSupplier(displayIndex, a);
-        this.pfdSimvar.updateSimVarSource('speed', {
+        this.hudSimvar.updateSimVarSource('speed', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_COMPUTED_AIRSPEED`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('vsBaro', {
+        this.hudSimvar.updateSimVarSource('vsBaro', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BAROMETRIC_VERTICAL_SPEED`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('baroCorrectedAltitude', {
+        this.hudSimvar.updateSimVarSource('baroCorrectedAltitude', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BARO_CORRECTED_ALTITUDE_1`,
           type: SimVarValueType.Number,
         });
-        this.pfdSimvar.updateSimVarSource('mach', {
+        this.hudSimvar.updateSimVarSource('mach', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_MACH`,
           type: SimVarValueType.Number,
         });

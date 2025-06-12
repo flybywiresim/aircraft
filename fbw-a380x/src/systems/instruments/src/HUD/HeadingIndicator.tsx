@@ -1,11 +1,19 @@
-import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  HEvent,
+  Subject,
+  Subscribable,
+  VNode,
+  ClockEvents,
+} from '@microsoft/msfs-sdk';
 import { FIVE_DEG, getSmallestAngle } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './HUD';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-
 const DisplayRange = 18;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
@@ -64,11 +72,10 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
           </text>
         </g>
         <g id="HeadingOfftapeGroup" ref={this.normalRef}>
-          <path id="HeadingTapeOutline" class="NormalStroke White" d="m32.138 156.23v-10.886h73.536v10.886" />
           <SelectedHeading heading={this.heading} bus={this.props.bus} />
           <QFUIndicator heading={this.heading} ILSCourse={this.ILSCourse} lsPressed={this.lsPressed} />
-          <path class="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
-          <GroundTrackBug bus={this.props.bus} heading={this.heading} />
+          <path class="Fill Green" d="m642 532 h -4 v -40 h 4 z" />
+          <GroundTrackBug bus={this.props.bus} />
           <TrueFlag bus={this.props.bus} />
         </g>
       </>
@@ -87,10 +94,6 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
   private showSelectedHeading = 0;
 
   private targetIndicator = FSComponent.createRef<SVGPathElement>();
-
-  private headingTextRight = FSComponent.createRef<SVGPathElement>();
-
-  private headingTextLeft = FSComponent.createRef<SVGPathElement>();
 
   private text = Subject.create('');
 
@@ -135,9 +138,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
     this.text.set(Math.round(selectedHeading).toString().padStart(3, '0'));
 
     if (Number.isNaN(selectedHeading)) {
-      this.headingTextLeft.instance.classList.add('HiddenElement');
       this.targetIndicator.instance.classList.add('HiddenElement');
-      this.headingTextRight.instance.classList.add('HiddenElement');
       return;
     }
 
@@ -146,19 +147,9 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
 
       this.targetIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
       this.targetIndicator.instance.classList.remove('HiddenElement');
-      this.headingTextRight.instance.classList.add('HiddenElement');
-      this.headingTextLeft.instance.classList.add('HiddenElement');
       return;
     }
     this.targetIndicator.instance.classList.add('HiddenElement');
-
-    if (headingDelta > 0) {
-      this.headingTextRight.instance.classList.remove('HiddenElement');
-      this.headingTextLeft.instance.classList.add('HiddenElement');
-    } else {
-      this.headingTextRight.instance.classList.add('HiddenElement');
-      this.headingTextLeft.instance.classList.remove('HiddenElement');
-    }
   }
 
   render(): VNode {
@@ -167,61 +158,52 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
         <path
           ref={this.targetIndicator}
           id="HeadingTargetIndicator"
-          class="NormalStroke Cyan CornerRound"
-          d="m69.978 145.1 1.9501-5.3609h-6.0441l1.9501 5.3609"
+          class="NormalStroke Green CornerRound"
+          d="m641 512 10 -25 h -22 l 10 25"
         />
-        <text
-          ref={this.headingTextRight}
-          id="SelectedHeadingTextRight"
-          class="FontSmallest MiddleAlign Cyan"
-          x="101.70432"
-          y="144.34792"
-        >
-          {this.text}
-        </text>
-        <text
-          ref={this.headingTextLeft}
-          id="SelectedHeadingTextLeft"
-          class="FontSmallest MiddleAlign Cyan"
-          x="36.418198"
-          y="144.32108"
-        >
-          {this.text}
-        </text>
       </>
     );
   }
 }
 
 interface GroundTrackBugProps {
-  heading: Subscribable<number>;
   bus: EventBus;
 }
 
 class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   private trackIndicator = FSComponent.createRef<SVGGElement>();
+  private heading = 0;
+  private groundTrack = 0;
+  private needsUpdate = false;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values>();
-
+    const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents>();
+    sub.on('headingAr').handle((hdg) => {
+      this.needsUpdate = true;
+      this.heading = hdg.value;
+    });
     sub.on('groundTrackAr').handle((groundTrack) => {
-      //  if (groundTrack.isNormalOperation()) {
-      const offset = (getSmallestAngle(groundTrack.value, this.props.heading.get()) * DistanceSpacing) / ValueSpacing;
-      this.trackIndicator.instance.style.display = 'inline';
-      this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
-      //   } else {
-      //       this.trackIndicator.instance.style.display = 'none';
-      //   }
+      this.needsUpdate = true;
+      this.groundTrack = groundTrack.value;
+    });
+
+    sub.on('realTime').handle((_t) => {
+      if (this.needsUpdate) {
+        this.needsUpdate = false;
+        const offset = (getSmallestAngle(this.groundTrack, this.heading) * DistanceSpacing) / ValueSpacing;
+        this.trackIndicator.instance.style.display = 'inline';
+        this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+      }
     });
   }
 
   render(): VNode {
     return (
       <g ref={this.trackIndicator} id="ActualTrackIndicator">
-        <path class="ThickOutline CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
-        <path class="ThickStroke Green CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
+        <path class="ThickOutline CornerRound" d="m640 512 -6 9 6 9 6 -9z" />
+        <path class="ThickStroke Green CornerRound" d="m640 512 -6 9 6 9 6 -9z" />
       </g>
     );
   }
@@ -233,10 +215,6 @@ class QFUIndicator extends DisplayComponent<{
   lsPressed: Subscribable<boolean>;
 }> {
   private qfuContainer = FSComponent.createRef<SVGGElement>();
-
-  private ilsCourseRight = FSComponent.createRef<SVGGElement>();
-
-  private ilsCourseLeft = FSComponent.createRef<SVGGElement>();
 
   private ilsCoursePointer = FSComponent.createRef<SVGGElement>();
 
@@ -263,20 +241,14 @@ class QFUIndicator extends DisplayComponent<{
         this.qfuContainer.instance.classList.remove('HiddenElement');
         if (Math.abs(delta) > DisplayRange) {
           if (delta > 0) {
-            this.ilsCourseRight.instance.classList.remove('HiddenElement');
-            this.ilsCourseLeft.instance.classList.add('HiddenElement');
             this.ilsCoursePointer.instance.classList.add('HiddenElement');
           } else {
-            this.ilsCourseLeft.instance.classList.remove('HiddenElement');
-            this.ilsCourseRight.instance.classList.add('HiddenElement');
             this.ilsCoursePointer.instance.classList.add('HiddenElement');
           }
         } else {
           const offset = (getSmallestAngle(this.ilsCourse, this.heading) * DistanceSpacing) / ValueSpacing;
           this.ilsCoursePointer.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
           this.ilsCoursePointer.instance.classList.remove('HiddenElement');
-          this.ilsCourseRight.instance.classList.add('HiddenElement');
-          this.ilsCourseLeft.instance.classList.add('HiddenElement');
         }
       }
     });
@@ -293,20 +265,14 @@ class QFUIndicator extends DisplayComponent<{
         this.qfuContainer.instance.classList.remove('HiddenElement');
         if (Math.abs(delta) > DisplayRange) {
           if (delta > 0) {
-            this.ilsCourseRight.instance.classList.remove('HiddenElement');
-            this.ilsCourseLeft.instance.classList.add('HiddenElement');
             this.ilsCoursePointer.instance.classList.add('HiddenElement');
           } else {
-            this.ilsCourseLeft.instance.classList.remove('HiddenElement');
-            this.ilsCourseRight.instance.classList.add('HiddenElement');
             this.ilsCoursePointer.instance.classList.add('HiddenElement');
           }
         } else {
           const offset = (getSmallestAngle(this.ilsCourse, this.heading) * DistanceSpacing) / ValueSpacing;
           this.ilsCoursePointer.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
           this.ilsCoursePointer.instance.classList.remove('HiddenElement');
-          this.ilsCourseRight.instance.classList.add('HiddenElement');
-          this.ilsCourseLeft.instance.classList.add('HiddenElement');
         }
       }
     });
@@ -325,20 +291,7 @@ class QFUIndicator extends DisplayComponent<{
     return (
       <g ref={this.qfuContainer}>
         <g id="ILSCoursePointer" class="HiddenElement" ref={this.ilsCoursePointer}>
-          <path class="ThickOutline" d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
-          <path class="ThickStroke Magenta" d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
-        </g>
-        <g id="ILSCourseRight" class="HiddenElement" ref={this.ilsCourseRight}>
-          <path class="BlackFill NormalStroke White" d="m100.57 149.68h12.088v6.5516h-12.088z" />
-          <text id="ILSCourseTextRight" class="FontMedium MiddleAlign Magenta" x="106.95047" y="155.22305">
-            {this.text}
-          </text>
-        </g>
-        <g id="ILSCourseLeft" class="HiddenElement" ref={this.ilsCourseLeft}>
-          <path class="BlackFill NormalStroke White" d="m26.094 156.18v-6.5516h12.088v6.5516z" />
-          <text id="ILSCourseTextLeft" class="FontMedium MiddleAlign Magenta" x="32.406616" y="155.22305">
-            {this.text}
-          </text>
+          <path class="NormalStroke Green" d="m 640 505 h 20 m-10 -32.5 v 40" />
         </g>
       </g>
     );

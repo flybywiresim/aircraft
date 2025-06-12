@@ -12,6 +12,8 @@ import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
+import { HudElemsValues } from './HUDUtils';
+import { getDisplayIndex } from './HUD';
 
 interface VerticalSpeedIndicatorProps {
   bus: ArincEventBus;
@@ -29,6 +31,9 @@ interface TcasState {
 }
 
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
+  private crosswindMode = false;
+  private VS = '';
+  private VSRef = FSComponent.createRef<SVGGElement>();
   private yOffsetSub = Subject.create(0);
 
   private needleColour = Subject.create('Green');
@@ -59,8 +64,25 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElemsValues>();
 
+    const isCaptainSide = getDisplayIndex() === 1;
+    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
+      this.crosswindMode = value;
+      if (this.crosswindMode) {
+        // transform="translate(475 135)
+        this.VSRef.instance.style.transform = 'translate3d(485px, -35px, 0px)';
+      } else {
+        this.VSRef.instance.style.transform = 'translate3d(485px, 155px, 0px)';
+      }
+    });
+    sub
+      .on('VS')
+      .whenChanged()
+      .handle((v) => {
+        this.VS = v.get().toString();
+        this.VSRef.instance.style.display = `${this.VS}`;
+      });
     sub
       .on('tcasState')
       .whenChanged()
@@ -140,7 +162,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
               this.filteredRadioAltitude >= 1000) ||
             (vs.value <= -1200 && radioAltitudeValid && this.filteredRadioAltitude <= 1000)
           ) {
-            this.needleColour.set('Amber');
+            this.needleColour.set('Green');
           } else {
             this.needleColour.set('Green');
           }
@@ -149,13 +171,13 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         const sign = Math.sign(filteredVS);
 
         if (absVSpeed < 1000) {
-          this.yOffsetSub.set((filteredVS / 1000) * -27.22);
+          this.yOffsetSub.set((filteredVS / 1000) * -136.1);
         } else if (absVSpeed < 2000) {
-          this.yOffsetSub.set(((filteredVS - sign * 1000) / 1000) * -10.1 - sign * 27.22);
+          this.yOffsetSub.set(((filteredVS - sign * 1000) / 1000) * -50.5 - sign * 136.1);
         } else if (absVSpeed < 6000) {
-          this.yOffsetSub.set(((filteredVS - sign * 2000) / 4000) * -10.1 - sign * 37.32);
+          this.yOffsetSub.set(((filteredVS - sign * 2000) / 4000) * -50.5 - sign * 186.6);
         } else {
-          this.yOffsetSub.set(sign * -47.37);
+          this.yOffsetSub.set(sign * -237);
         }
       });
 
@@ -170,17 +192,15 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   render(): VNode {
     return (
-      <g>
-        <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
-
+      <g id="VerticalSpeedIndicator" ref={this.VSRef}>
         <g id="VSpeedFailText" ref={this.vsFailed}>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="153.13206" y="77.501472">
+          <text class="Blink9Seconds FontLargest Green EndAlign" x="686.7972891000001" y="347.59410192">
             V
           </text>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="153.13406" y="83.211388">
+          <text class="Blink9Seconds FontLargest Green EndAlign" x="686.8062591" y="373.20307518">
             /
           </text>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="152.99374" y="88.870819">
+          <text class="Blink9Seconds FontLargest Green EndAlign" x="686.1769239" y="398.585623215">
             S
           </text>
         </g>
@@ -188,49 +208,13 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         <VSpeedTcas ref={this.vspeedTcas} bus={this.props.bus} />
 
         <g id="VerticalSpeedGroup" ref={this.vsNormal}>
-          <g class="Fill White">
-            <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
-            <path d="m149.92 44.26v-1.4615h1.9151v1.4615z" />
-            <path d="m149.92 34.054v-1.2095h1.9151v1.2095z" />
-            <path d="m151.84 107.31h-1.9151v1.4615h1.9151z" />
-            <path d="m151.84 117.39h-1.9151v1.4615h1.9151z" />
-            <path d="m151.84 127.59h-1.9151v1.2095h1.9151z" />
-          </g>
-          <g class="SmallStroke  White">
-            <path d="m149.92 67.216h1.7135h0" />
-            <path d="m151.84 48.569h-1.9151h0" />
-            <path d="m151.84 38.489h-1.9151h0" />
-            <path d="m149.92 94.43h1.7135h0" />
-            <path d="m151.84 113.08h-1.9151h0" />
-            <path d="m151.84 123.16h-1.9151h0" />
-          </g>
-          <g class="FontSmallest MiddleAlign Fill White">
-            <text x="148.47067" y="109.72845">
-              1
-            </text>
-            <text x="148.24495" y="119.8801">
-              2
-            </text>
-            <text x="148.27068" y="129.90607">
-              6
-            </text>
-            <text x="148.49667" y="55.316456">
-              1
-            </text>
-            <text x="148.26495" y="45.356102">
-              2
-            </text>
-            <text x="148.21367" y="35.195072">
-              6
-            </text>
-          </g>
-          <path class="Fill Yellow" d="m145.79 80.067h6.0476v1.5119h-6.0476z" />
+          <path class="Fill Green" d="m 665 361 h 20 v 4 h -20 z" />
           <VSpeedNeedle yOffset={this.yOffsetSub} needleColour={this.needleColour} />
 
           <VSpeedText
             bus={this.props.bus}
             yOffset={this.yOffsetSub}
-            textColour={this.needleColour.map((c) => (c === 'White' ? 'Green' : c))}
+            textColour={this.needleColour.map((c) => (c === 'Green' ? 'Green' : c))}
           />
         </g>
       </g>
@@ -246,10 +230,10 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>; nee
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const dxFull = 12;
-    const dxBorder = 5;
-    const centerX = 162.74;
-    const centerY = 80.822;
+    const dxFull = 54;
+    const dxBorder = 22.5;
+    const centerX = 732.6;
+    const centerY = 363;
 
     this.props.yOffset.sub((yOffset) => {
       const path = `m${centerX - dxBorder} ${centerY + (dxBorder / dxFull) * yOffset} l ${dxBorder - dxFull} ${(1 - dxBorder / dxFull) * yOffset}`;
@@ -259,14 +243,14 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>; nee
     });
 
     this.props.needleColour.sub((colour) => {
-      this.indicatorRef.instance.setAttribute('class', `HugeStroke ${colour}`);
+      this.indicatorRef.instance.setAttribute('class', `ThickStroke ${colour}`);
     }, true);
   }
 
   render(): VNode | null {
     return (
       <>
-        <path ref={this.outLineRef} class="HugeOutline" />
+        <path ref={this.outLineRef} class="NormalOutline" />
         <path ref={this.indicatorRef} id="VSpeedIndicator" />
       </>
     );
@@ -298,7 +282,7 @@ class VSpeedText extends DisplayComponent<{
 
       const sign = Math.sign(vs.value);
 
-      const textOffset = this.props.yOffset.get() - sign * 2.4;
+      const textOffset = this.props.yOffset.get() - sign * 12;
 
       const text = (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
       this.vsTextRef.instance.textContent = text;
@@ -314,8 +298,7 @@ class VSpeedText extends DisplayComponent<{
   render(): VNode {
     return (
       <g ref={this.groupRef} id="VSpeedTextGroup">
-        <path class="BackgroundFill" d="m158.4 83.011h-7.0514v-4.3989h7.0514z" />
-        <text ref={this.vsTextRef} id="VSpeedText" x="155.14055" y="82.554756" />
+        <text ref={this.vsTextRef} id="VSpeedText" x="695.8029" y="370.0125" />
       </g>
     );
   }
@@ -374,7 +357,7 @@ class VSpeedTcas extends DisplayComponent<VSpeedTcasProps> {
     return (
       <>
         <g id="VerticalSpeedTCASGroup" ref={this.tcasGroup}>
-          <rect ref={this.background} class="TapeBackground" height="101.8" width="5.5404" y="29.92" x="151.84" />
+          <rect ref={this.background} class="TapeBackground" height="509" width="27.7" y="149.6" x="759.2" />
           <VSpeedTcasZone
             ref={this.redZoneElement}
             zoneBoundLow={this.redZone}

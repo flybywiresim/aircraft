@@ -1,11 +1,15 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   DisplayComponent,
-  EventBus,
   FSComponent,
   NodeReference,
   Subject,
   Subscribable,
   VNode,
+  EventBus,
 } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
@@ -55,11 +59,11 @@ const TenThousandsDigit = (value: number) => {
   return text;
 };
 
-interface DigitalAltitudeReadoutProps {
+interface CrosswindDigitalAltitudeReadoutProps {
   bus: EventBus;
 }
 
-export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
+export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindDigitalAltitudeReadoutProps> {
   private mda = 0;
 
   private isNegativeSub = Subject.create('hidden');
@@ -143,9 +147,9 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
   render(): VNode {
     return (
-      <g id="AltReadoutGroup">
+      <g id="CrosswindAltReadoutGroup">
         <g>
-          <svg x="515" y="340" width="72.5" height="44.853" viewBox="0 0 72.5 44.853">
+          <svg x="520" y="342" width="72.5" height="44.853" viewBox="0 0 72.5 44.853">
             <Drum
               type="ten-thousands"
               position={this.tenThousandsPosition}
@@ -182,10 +186,9 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
               amount={10}
             />
           </svg>
-          <svg x="583" y="327" width="44.3235" height="71.565" viewBox="0 0 44.3235 71.565">
+          <svg x="583" y="342" width="44.3235" height="45" viewBox="0 0 44.3235 45">
             <Drum
               type="tens"
-              amount={4}
               position={this.tenDigitsSub}
               value={this.tenDigitsSub}
               color={this.colorSub}
@@ -193,6 +196,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
               valueSpacing={20}
               distanceSpacing={23.5}
               displayRange={40}
+              amount={4}
             />
           </svg>
         </g>
@@ -202,11 +206,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
           style="display: none"
           d="m663.05 408.345h23.672m-23.672 -8.466h23.672"
         />
-        <path
-          id="AltReadoutOutline"
-          class="NormalStroke Green"
-          d="m 522 340 h65.48v-13.355h44.323v71.565h-44.323v-13.355h-65.48"
-        />
+        <path id="AltReadoutOutline" class="NormalStroke Green" d="m528 341.25 h 100 v45 h -100 z" />
 
         <g id="AltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>
           <text class="Green" x="607.5857" y="389.784735">
@@ -265,7 +265,7 @@ class Drum extends DisplayComponent<DrumProperties> {
             ref={digitRef}
             transform={`translate(0 ${offset})`}
             class={`FontLarge MiddleAlign Green`}
-            x="66"
+            x="60"
             y="34"
           />,
         );
@@ -275,7 +275,7 @@ class Drum extends DisplayComponent<DrumProperties> {
             ref={digitRef}
             transform={`translate(0 ${offset})`}
             class={`FontLarge MiddleAlign Green`}
-            x="48.5"
+            x="42.5"
             y="34"
           />,
         );
@@ -285,7 +285,7 @@ class Drum extends DisplayComponent<DrumProperties> {
             ref={digitRef}
             transform={`translate(0 ${offset})`}
             class={`FontLarge MiddleAlign Green`}
-            x="30.25"
+            x="24.25"
             y="34"
           />,
         );
@@ -296,7 +296,7 @@ class Drum extends DisplayComponent<DrumProperties> {
             transform={`translate(0 ${offset})`}
             class={`FontSmallest MiddleAlign Green`}
             x="27.5"
-            y="44.5665"
+            y="34"
           />,
         );
       }

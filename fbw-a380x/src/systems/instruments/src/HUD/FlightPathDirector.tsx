@@ -1,12 +1,20 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  Subscribable,
+  VNode,
+  Subject,
+} from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from './HUD';
 import { calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-
-const DistanceSpacing = 15;
-const ValueSpacing = 10;
+import { ONE_DEG, FIVE_DEG } from './HUDUtils';
+const DistanceSpacing = FIVE_DEG;
+const ValueSpacing = 5;
 
 interface FlightPathVectorData {
   roll: Arinc429Word;
@@ -32,8 +40,11 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
     activeLateralMode: 0,
     activeVerticalMode: 0,
   };
-
-  private isTrkFpaActive = false;
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private crosswindMode;
+  private fdCueOffRange;
+  private sVisibility = Subject.create<String>('');
 
   private needsUpdate = false;
 
@@ -41,37 +52,40 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
 
   private birdPath = FSComponent.createRef<SVGGElement>();
 
-  private birdPathWings = FSComponent.createRef<SVGGElement>();
-
+  private birdPathCircle = FSComponent.createRef<SVGPathElement>();
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
-
     sub
-      .on('fd1Active')
+      .on('fwcFlightPhase')
       .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.data.fdActive = fd;
-          this.needsUpdate = true;
+      .handle((fp) => {
+        this.flightPhase = fp;
+        if (fp < 4 || fp >= 10) {
+          this.sVisibility.set('none');
         }
+        if (fp >= 4 && fp < 10) {
+          this.sVisibility.set('block');
+        }
+      });
+    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((d) => {
+      this.crosswindMode = d;
+    });
+    sub
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .whenChanged()
+      .handle((value) => {
+        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
+        this.declutterMode = value;
       });
 
     sub
-      .on('fd2Active')
+      .on(isCaptainSide ? 'fd1Active' : 'fd2Active')
       .whenChanged()
       .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.data.fdActive = fd;
-          this.needsUpdate = true;
-        }
-      });
-    sub
-      .on('trkFpaActive')
-      .whenChanged()
-      .handle((a) => {
-        this.isTrkFpaActive = a;
+        this.data.fdActive = fd;
         this.needsUpdate = true;
       });
 
@@ -134,14 +148,12 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
   }
 
   private handlePath() {
-    const showLateralFD =
-      this.data.activeLateralMode !== 0 && this.data.activeLateralMode !== 34 && this.data.activeLateralMode !== 40;
+    const showLateralFD = this.data.activeLateralMode !== 0 && this.data.activeLateralMode !== 34;
     const showVerticalFD = this.data.activeVerticalMode !== 0 && this.data.activeVerticalMode !== 34;
     const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
 
     if (
       (!showVerticalFD && !showLateralFD) ||
-      !this.isTrkFpaActive ||
       !this.data.fdActive ||
       !daAndFpaValid ||
       this.props.isAttExcessive.get()
@@ -155,27 +167,132 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
   }
 
   private moveBird() {
-    if (this.data.fdActive && this.isTrkFpaActive) {
-      const FDRollOrder = this.data.fdRoll;
-      const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
-      const FDPitchOrder = this.data.fdPitch;
-      const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * 1.9;
+    // if (this.data.fdActive) {
+    //   const FDRollOrder = this.data.fdRoll;
+    //   const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
+    //   const FDPitchOrder = this.data.fdPitch;
+    //   const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * 1.9;
 
-      const daLimConv = (Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing) / ValueSpacing;
+    //   const daLimConv = (Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing) / ValueSpacing;
+    //   const pitchSubFpaConv =
+    //     calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
+    //   const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
+    //   const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
+
+    //   const FDRollOffset = FDRollOrderLim * 0.77;
+    //   const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
+    //   const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
+
+    //   const xOffset = xOffsetFpv - FDPitchOrderLim * rollSin;
+    //   const yOffset = yOffsetFpv + FDPitchOrderLim * rollCos;
+
+    //   this.birdPath.instance.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0px)`;
+    //   this.birdPathWings.instance.setAttribute('transform', `rotate(${FDRollOffset} 15.5 15.5)`);
+    // }
+    // this.needsUpdate = false;
+    let xOffsetLim;
+
+    if (this.isVisible) {
+      const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
       const pitchSubFpaConv =
         calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
       const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
       const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
 
-      const FDRollOffset = FDRollOrderLim * 0.77;
+      // //FD Smoothing when close to FPV
+      // //roll
+      // const FDRollOrder = this.data.fdRoll;
+      // let FDRollOrder2 = FDRollOrder;
+      // let cx, cy, r;
+      // cx = -30;
+      // cy = 90;
+      // r = 94.86835;
+      // if (FDRollOrder >= 0) {
+      //   FDRollOrder2 = cy - Math.sqrt(r ** 2 - (FDRollOrder - cx) ** 2);
+      // } else {
+      //   FDRollOrder2 = -cy + Math.sqrt(r ** 2 - (FDRollOrder + cx) ** 2);
+      // }
+      // const FDRollOrderLim = Math.max(Math.min(FDRollOrder2, 45), -45);
+
+      // //pitch
+      // const FDPitchOrder = this.data.fdPitch; //in degrees on pitch scale
+      // let FDPitchOrder2 = FDRollOrder;
+
+      // cx = -10;
+      // cy = 18;
+      // r = 20.5913;
+      // if (FDPitchOrder >= 0) {
+      //   FDPitchOrder2 = cy - Math.sqrt(r ** 2 - (FDPitchOrder - cx) ** 2);
+      // } else {
+      //   FDPitchOrder2 = -cy + Math.sqrt(r ** 2 - (FDPitchOrder + cx) ** 2);
+      // }
+      // const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder2, 5), -5);
+
+      const FDRollOrder = this.data.fdRoll;
+      const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
+      const FDPitchOrder = this.data.fdPitch; //in degrees on pitch scale
+      const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 45), -45);
+
       const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
       const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
 
-      const xOffset = xOffsetFpv - FDPitchOrderLim * rollSin;
-      const yOffset = yOffsetFpv + FDPitchOrderLim * rollCos;
+      const xOffset = xOffsetFpv + FDRollOrderLim * 13;
+      const yOffset = yOffsetFpv + FDPitchOrderLim * 13 + rollSin * (xOffset - xOffsetFpv); // * rollCos;
 
-      this.birdPath.instance.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0px)`;
-      this.birdPathWings.instance.setAttribute('transform', `rotate(${FDRollOffset} 15.5 15.5)`);
+      // console.log(
+      //   'xOffsetFpv: ' +
+      //     xOffsetFpv +
+      //     '  yOffsetFpv:  ' +
+      //     yOffsetFpv +
+      //     '  xOffset: ' +
+      //     xOffset +
+      //     '  yOffset: ' +
+      //     yOffset +
+      //     '  rollCos: ' +
+      //     rollCos +
+      //     '  rollSin: ' +
+      //     rollSin +
+      //     '  FDRollOrder: ' +
+      //     FDRollOrder,
+      // );
+
+      //set lateral limit for fdCue
+      if (this.crosswindMode == 0) {
+        if (xOffset < -428 || xOffset > 360) {
+          this.fdCueOffRange = true;
+        } else {
+          this.fdCueOffRange = false;
+        }
+
+        xOffsetLim = Math.max(Math.min(xOffset, 360), -428);
+      } else {
+        if (xOffset < -540 || xOffset > 540) {
+          this.fdCueOffRange = true;
+        } else {
+          this.fdCueOffRange = false;
+        }
+        xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
+      }
+
+      this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
+
+      if (this.fdCueOffRange) {
+        this.birdPathCircle.instance.setAttribute('stroke-dasharray', '3 6');
+      } else {
+        this.birdPathCircle.instance.setAttribute('stroke-dasharray', '');
+      }
+
+      // console.log(
+      //   'FDPitchOrderLim ' +
+      //     FDPitchOrderLim +
+      //     'FDRollOrderLim ' +
+      //     FDRollOrderLim +
+      //     'xOffsetLim ' +
+      //     xOffsetLim +
+      //     'yOffset ' +
+      //     yOffset,
+      //   'xOffsetFpv ' + xOffsetFpv + 'yOffsetFpv ' + yOffsetFpv,
+      // );
     }
     this.needsUpdate = false;
   }
@@ -183,25 +300,17 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
   render(): VNode {
     return (
       <g ref={this.birdPath}>
-        <svg
-          x="53.4"
-          y="65.3"
-          width="31px"
-          height="31px"
-          version="1.1"
-          viewBox="0 0 31 31"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <g ref={this.birdPathWings} class="CornerRound">
+        <svg>
+          <g id="FlightPathDirector" display={this.sVisibility}>
+            {/* <circle class="SmallStroke Green" cx="640" cy="512" r="10" /> */}
             <path
-              class="NormalOutline"
-              // eslint-disable-next-line max-len
-              d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
-            />
-            <path
+              ref={this.birdPathCircle}
+              d="M 631 512 C 631 517,  635 521,      640 521
+                S 649 517,      649 512
+                S 645 503,      640 503
+                S 631 507,      631 512 Z"
               class="NormalStroke Green"
-              // eslint-disable-next-line max-len
-              d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
+              stroke-dasharray="3 6"
             />
           </g>
         </svg>

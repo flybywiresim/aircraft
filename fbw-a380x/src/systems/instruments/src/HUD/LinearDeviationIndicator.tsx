@@ -1,7 +1,7 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
-
+import { ONE_DEG, ALT_TAPE_XPOS, ALT_TAPE_YPOS, HudElemsValues } from './HUDUtils';
 type LinearDeviationIndicatorProps = {
   bus: EventBus;
 };
@@ -27,14 +27,25 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
   private latchSymbolVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
+  private linearDevRef = FSComponent.createRef<SVGGElement>();
+
+  private altTape = '';
+
   // TODO: Use ARINC value for this
   private flightPathAltitude: Feet = 0;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HudElemsValues>();
+    this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars>();
-
+    sub
+      .on('altTape')
+      .whenChanged()
+      .handle((v) => {
+        this.altTape = v.get().toString();
+        this.linearDevRef.instance.style.display = `${this.altTape}`;
+      });
     sub.on('altitudeAr').handle((alt) => {
       if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
         this.upperLinearDeviationReadoutVisibility.set('hidden');
@@ -110,32 +121,32 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
   render(): VNode {
     return (
-      <g id="LinearDeviationIndicator">
-        <text visibility={this.upperLinearDeviationReadoutVisibility} x="110" y="42.5" class="FontSmallest Green">
+      <g id="LinearDeviationIndicator" ref={this.linearDevRef}>
+        <text visibility={this.upperLinearDeviationReadoutVisibility} x="493" y="186" class="FontSmallest Green">
           {this.upperLinearDeviationReadoutText}
         </text>
         <g id="LinearDeviationDot" transform={this.componentTransform}>
           <path
             id="EntireDot"
             visibility={this.linearDeviationDotVisibility}
-            d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z"
+            d="m534.881 362.37a6.777 6.78 0 1 0 -13.554 0 6.777 6.78 0 1 0 13.554 0z"
             class="Fill Green"
           />
           <path
             id="DotUpperHalf"
             visibility={this.linearDeviationDotUpperHalfVisibility}
-            d="m116.24 80.796c4.9e-4 -0.83466 0.67686-1.511 1.511-1.511 0.83418 0 1.5105 0.67635 1.511 1.511h-1.511z"
+            d="m521.336 362.37c0.003 -3.743 3.035 -6.777 6.777 -6.777 3.741 0 6.775 3.034 6.777 6.777h-6.777z"
             class="Fill Green"
           />
           <path
             id="DotLowerHalf"
             visibility={this.linearDeviationDotLowerHalfVisibility}
-            d="m116.24 80.796c4.9e-4 0.83465 0.67686 1.511 1.511 1.511 0.83418 0 1.5105-0.67636 1.511-1.511h-1.511z"
+            d="m521.336 362.37c0.003 3.743 3.035 6.777 6.777 6.777 3.741 0 6.775 -3.034 6.777 -6.777h-6.777z"
             class="Fill Green"
           />
-          <path visibility={this.latchSymbolVisibility} d="m 119 78.3 h -3 v 5 h 3" class="Magenta" />
+          <path visibility={this.latchSymbolVisibility} d="m106.743 70.235h-2.691v4.485h2.691 " class="Magenta" />
         </g>
-        <text visibility={this.lowerLinearDeviationReadoutVisibility} x="110" y="123" class="FontSmallest Green">
+        <text visibility={this.lowerLinearDeviationReadoutVisibility} x="493" y="556" class="FontSmallest Green">
           {this.lowerLinearDeviationReadoutText}
         </text>
       </g>
@@ -143,6 +154,6 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   }
 
   private pixelOffsetFromDeviation(deviation: number) {
-    return (deviation * 40.5) / 500;
+    return (deviation * 183) / 500;
   }
 }

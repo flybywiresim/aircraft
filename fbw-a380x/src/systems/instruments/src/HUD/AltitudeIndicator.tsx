@@ -15,16 +15,19 @@ import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/Sim
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FmgcFlightPhase } from '@shared/flightphase';
-
-const DisplayRange = 600;
+import { ALT_TAPE_XPOS, ALT_TAPE_YPOS, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
+import { HudElemsValues, WindMode } from './HUDUtils';
+import { getDisplayIndex } from './HUD';
+import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
+let DisplayRange = 600;
 const ValueSpacing = 100;
-const DistanceSpacing = 7.5;
+const DistanceSpacing = 33.3;
 
 class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private landingElevationIndicator = FSComponent.createRef<SVGPathElement>();
-
+  private crosswindMode = false;
+  private xWindOffset = 0;
   private altitude = 0;
-
   private landingElevation = new Arinc429Word(0);
 
   private flightPhase = 0;
@@ -35,14 +38,14 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
     const landingElevationValid =
       !this.landingElevation.isFailureWarning() && !this.landingElevation.isNoComputedData();
     const delta = this.altitude - this.landingElevation.value;
-    const offset = ((delta - DisplayRange) * DistanceSpacing) / ValueSpacing;
+    const offset = ((delta - DisplayRange) * DistanceSpacing) / ValueSpacing + this.xWindOffset;
     this.delta = delta;
     if (delta > DisplayRange || (this.flightPhase !== 9 && this.flightPhase !== 10) || !landingElevationValid) {
       this.landingElevationIndicator.instance.classList.add('HiddenElement');
     } else {
       this.landingElevationIndicator.instance.classList.remove('HiddenElement');
     }
-    this.landingElevationIndicator.instance.setAttribute('d', `m130.85 123.56h-13.096v${offset}h13.096z`);
+    this.landingElevationIndicator.instance.setAttribute('d', `m586.862 554.167h-58.736v${offset}h58.736z`);
   }
 
   onAfterRender(node: VNode): void {
@@ -63,6 +66,20 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
         }
       });
 
+    const isCaptainSide = getDisplayIndex() === 1;
+    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
+      this.crosswindMode = value;
+      if (this.crosswindMode) {
+        DisplayRange = 200;
+        this.xWindOffset = -150;
+        this.landingElevationIndicator.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+      } else {
+        DisplayRange = 600;
+        this.xWindOffset = 0;
+        this.landingElevationIndicator.instance.style.transform = 'translate3d(0px, 0px, 0px)';
+      }
+    });
+
     sub
       .on('landingElevation')
       .whenChanged()
@@ -78,11 +95,14 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
   }
 
   render(): VNode {
-    return <path ref={this.landingElevationIndicator} id="AltTapeLandingElevation" class="EarthFill" />;
+    return <path ref={this.landingElevationIndicator} id="AltTapeLandingElevation" class="GreenFill2" />;
   }
 }
 
 class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioAltitude: Subscribable<number> }> {
+  private altTapeGndRef = FSComponent.createRef<SVGPathElement>();
+  private crosswindMode = false;
+  private xWindOffset = 0;
   private visibilitySub = Subject.create('hidden');
 
   private offsetSub = Subject.create('');
@@ -99,18 +119,32 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
     } else {
       this.visibilitySub.set('visible');
       const offset = ((this.props.filteredRadioAltitude.get() - DisplayRange) * DistanceSpacing) / ValueSpacing;
-      this.offsetSub.set(`m131.15 123.56h2.8709v${offset}h-2.8709z`);
+      this.crosswindMode
+        ? this.offsetSub.set(`m588.208 437 h12.876v${offset}h-12.876z`)
+        : this.offsetSub.set(`m588.208 556 h12.876v${offset}h-12.876z`);
     }
   }
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
 
     this.props.filteredRadioAltitude.sub((_filteredRadioAltitude) => {
       this.setOffset();
     }, true);
+
+    const isCaptainSide = getDisplayIndex() === 1;
+    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
+      this.crosswindMode = value;
+      if (this.crosswindMode) {
+        DisplayRange = 200;
+        this.xWindOffset = -137;
+      } else {
+        DisplayRange = 600;
+        this.xWindOffset = 0;
+      }
+      this.setOffset();
+    });
 
     sub.on('chosenRa').handle((ra) => {
       this.radioAltitude = ra;
@@ -119,7 +153,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
   }
 
   render(): VNode {
-    return <path visibility={this.visibilitySub} id="AltTapeGroundReference" class="Fill Red" d={this.offsetSub} />;
+    return <path visibility={this.visibilitySub} id="AltTapeGroundReference" class="BarGreen" d={this.offsetSub} />;
   }
 }
 
@@ -223,7 +257,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
   }
 
   render(): VNode {
-    return <path visibility={this.visibility} id="AltTapeMdaIndicator" class="Fill Amber" d={this.path} />;
+    return <path visibility={this.visibility} id="AltTapeMdaIndicator" class="Fill Green" d={this.path} />;
   }
 }
 
@@ -232,16 +266,33 @@ interface AltitudeIndicatorProps {
 }
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
+  private crosswindMode = false;
+  private xWindAltTape = Subject.create<String>('');
+  private altTape = Subject.create<String>('');
   private subscribable = Subject.create<number>(0);
 
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
+  private altIndicatorGroupRef = FSComponent.createRef<SVGGElement>();
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const pf = this.props.bus.getSubscriber<Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HudElemsValues & HUDSimvars>();
+    this.altIndicatorGroupRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
 
-    pf.on('altitudeAr').handle((a) => {
+    const isCaptainSide = getDisplayIndex() === 1;
+    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
+      this.crosswindMode = value;
+      if (this.crosswindMode) {
+        DisplayRange = 200;
+        this.tapeRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+      } else {
+        DisplayRange = 600;
+        this.tapeRef.instance.style.transform = 'translate3d(0px, 0px, 0px)';
+      }
+    });
+
+    sub.on('altitudeAr').handle((a) => {
       if (a.isNormalOperation()) {
         this.subscribable.set(a.value);
         this.tapeRef.instance.style.display = 'inline';
@@ -249,14 +300,23 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
         this.tapeRef.instance.style.display = 'none';
       }
     });
+
+    sub.on('altTape').handle((v) => {
+      this.altTape.set(v.get());
+      this.altTape.get() === 'none' && this.xWindAltTape.get() === 'none'
+        ? (this.altIndicatorGroupRef.instance.style.display = 'none')
+        : (this.altIndicatorGroupRef.instance.style.display = 'block');
+    });
+    sub.on('xWindAltTape').handle((v) => {
+      this.xWindAltTape.set(v.get());
+    });
   }
 
   render(): VNode {
     return (
-      <g id="AltitudeTape">
-        <AltTapeBackground />
+      <g id="AltitudeTape" ref={this.altIndicatorGroupRef}>
         <LandingElevationIndicator bus={this.props.bus} />
-        <g ref={this.tapeRef}>
+        <g ref={this.tapeRef} transform="translate3d(0px, 0px, 0px)">
           <VerticalTape
             displayRange={DisplayRange + 30}
             valueSpacing={ValueSpacing}
@@ -265,16 +325,11 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
             upperLimit={50000}
             tapeValue={this.subscribable}
             type="altitude"
+            bus={this.props.bus}
           />
         </g>
       </g>
     );
-  }
-}
-
-class AltTapeBackground extends DisplayComponent<any> {
-  render(): VNode {
-    return <path id="AltTapeBackground" d="m130.85 123.56h-13.096v-85.473h13.096z" class="TapeBackground" />;
   }
 }
 
@@ -284,6 +339,12 @@ interface AltitudeIndicatorOfftapeProps {
 }
 
 export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicatorOfftapeProps> {
+  private altTape = 'block';
+  private xWindAltTape = 'none';
+
+  private altTapeRef = FSComponent.createRef<SVGGElement>();
+  private xWindAltTapeRef = FSComponent.createRef<SVGGElement>();
+
   private abnormal = FSComponent.createRef<SVGGElement>();
 
   private tcasFailed = FSComponent.createRef<SVGGElement>();
@@ -292,10 +353,27 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
   private altitude = Subject.create(0);
 
+  private altIndicatorOffTapeGroupRef = FSComponent.createRef<SVGGElement>();
+  private doOnce = 0;
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElemsValues>();
+    sub
+      .on('altTape')
+      .whenChanged()
+      .handle((v) => {
+        this.altTape = v.get().toString();
+        this.altTapeRef.instance.style.display = `${this.altTape}`;
+      });
+    sub
+      .on('xWindAltTape')
+      .whenChanged()
+      .handle((v) => {
+        this.xWindAltTape = v.get().toString();
+        this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
+        this.xWindAltTapeRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+      });
 
     sub.on('altitudeAr').handle((altitude) => {
       if (!altitude.isNormalOperation()) {
@@ -318,55 +396,77 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
           this.tcasFailed.instance.style.display = 'none';
         }
       });
+    this.altIndicatorOffTapeGroupRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
   }
 
   render(): VNode {
     return (
-      <>
+      <g id="altOfftapeGroup" ref={this.altIndicatorOffTapeGroupRef}>
         <g ref={this.abnormal} style="display: none">
-          <path id="AltTapeOutlineUpper" className="NormalStroke Red" d="m 117.75,38.09 h 13.10 6.73" />
-          <path id="AltTapeOutlineLower" className="NormalStroke Red" d="m 117.75,123.56 h 13.10 6.73" />
-          <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
-          <text id="AltFailText" class="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">
+          <path id="AltTapeOutlineVert" class="NormalStroke Green" d="m587 170.834v383" />
+          <path id="AltTapeOutlineUpper" class="NormalStroke Green" d="m528 170.834h100" />
+          <path id="AltTapeOutlineLower" class="NormalStroke Green" d="m528 554.167h100" />
+          <path
+            id="AltReadoutBackground"
+            class="BlackFill"
+            d="m587 382.606h-58.888v-40.233h58.888v-11.979h39.758v64.194h-39.758z"
+          />
+          <text id="AltFailText" class="Blink9Seconds FontLargest Green EndAlign" x="588" y="374">
             ALT
           </text>
         </g>
         <g ref={this.tcasFailed} style="display: none">
-          <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="96">
+          <text class="Blink9Seconds FontLargest Green EndAlign" x="634.6275" y="430.56">
             T
           </text>
-          <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="104">
+          <text class="Blink9Seconds FontLargest Green EndAlign" x="634.6275" y="430.56">
             C
           </text>
-          <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="112">
+          <text class="Blink9Seconds FontLargest Green EndAlign" x="634.6275" y="430.56">
             A
           </text>
-          <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="120">
+          <text class="Blink9Seconds FontLargest Green EndAlign" x="634.6275" y="430.56">
             S
           </text>
         </g>
-        <g ref={this.normal} style="display: none">
-          <path id="AltTapeOutlineUpper" class="NormalStroke White" d="m 117.75,38.09 h 13.10 6.73" />
-          <path id="AltTapeOutlineLower" class="NormalStroke White" d="m 117.75,123.56 h 13.10 6.73" />
-          <MinimumDescentAltitudeIndicator bus={this.props.bus} />
-          <SelectedAltIndicator bus={this.props.bus} />
-          <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
-          <MetricAltIndicator bus={this.props.bus} />
-          <path
-            id="AltReadoutBackground"
-            class="BlackFill"
-            d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z"
-          />
-          <RadioAltIndicator bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAltitude} />
-          <DigitalAltitudeReadout bus={this.props.bus} />
+
+        <g id="NormalOfftapeGroup" ref={this.normal} style="display: none">
+          <g id="CrosswindAltTape" class="cwTest" transform="translate3d(0px, -311px, 0px)" ref={this.xWindAltTapeRef}>
+            <path id="AltTapeOutlineVert" class="NormalStroke Green" d="m587 288.5 v 150" />
+            <path id="AltTapeOutlineUpper" class="NormalStroke Green" d="m528 288.5 h100" />
+            <path id="AltTapeOutlineLower" class="NormalStroke Green" d="m528 438.5 h100" />
+            <MinimumDescentAltitudeIndicator bus={this.props.bus} />
+            <SelectedAltIndicator bus={this.props.bus} mode={WindMode.CrossWind} />
+            <path id="AltReadoutBackground" class="BlackFill" d="m528 341.25 h 100 v45 h -100z" />
+            <RadioAltIndicator bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAltitude} />
+            <CrosswindDigitalAltitudeReadout bus={this.props.bus} />
+          </g>
+
+          <g id="NormalAltTape" ref={this.altTapeRef}>
+            <path id="AltTapeOutlineVert" class="NormalStroke Green" d="m587 170.834v383" />
+            <path id="AltTapeOutlineUpper" class="NormalStroke Green" d="m528 170.834h100" />
+            <path id="AltTapeOutlineLower" class="NormalStroke Green" d="m528 554.167h100" />
+            <MinimumDescentAltitudeIndicator bus={this.props.bus} />
+            <SelectedAltIndicator bus={this.props.bus} mode={WindMode.Normal} />
+            <path
+              id="AltReadoutBackground"
+              class="BlackFill"
+              d="m587 382.606h-58.888v-40.233h58.888v-11.979h39.758v64.194h-39.758z"
+            />
+            <RadioAltIndicator bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAltitude} />
+            <DigitalAltitudeReadout bus={this.props.bus} />
+          </g>
         </g>
-      </>
+        <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
+        <MetricAltIndicator bus={this.props.bus} />
+      </g>
     );
   }
 }
 
 interface SelectedAltIndicatorProps {
   bus: ArincEventBus;
+  mode: WindMode;
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
@@ -414,87 +514,9 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
       this.activeVerticalMode !== VerticalMode.VS &&
       this.activeVerticalMode !== VerticalMode.FPA;
 
-    const selectedAltIgnored =
-      (this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode < VerticalMode.ROLL_OUT) ||
-      this.activeVerticalMode === VerticalMode.FINAL;
-
     this.isManaged = this.constraint > 0 && clbActive;
 
     this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
-
-    if (selectedAltIgnored) {
-      this.selectedAltLowerFLText.instance.classList.remove('Cyan');
-      this.selectedAltLowerFLText.instance.classList.remove('Magenta');
-      this.selectedAltLowerFLText.instance.classList.add('White');
-
-      this.selectedAltLowerText.instance.classList.remove('Cyan');
-      this.selectedAltLowerText.instance.classList.remove('Magenta');
-      this.selectedAltLowerText.instance.classList.add('White');
-
-      this.selectedAltUpperFLText.instance.classList.remove('Cyan');
-      this.selectedAltUpperFLText.instance.classList.remove('Magenta');
-      this.selectedAltUpperFLText.instance.classList.add('White');
-
-      this.selectedAltUpperText.instance.classList.remove('Cyan');
-      this.selectedAltUpperText.instance.classList.remove('Magenta');
-      this.selectedAltUpperText.instance.classList.add('White');
-
-      this.altTapeTargetText.instance.classList.remove('Cyan');
-      this.altTapeTargetText.instance.classList.add('White');
-
-      this.targetSymbolRef.instance.classList.remove('Cyan');
-      this.targetSymbolRef.instance.classList.remove('Magenta');
-
-      this.targetSymbolRef.instance.classList.add('White');
-    } else if (this.isManaged) {
-      this.selectedAltLowerFLText.instance.classList.remove('Cyan');
-      this.selectedAltLowerFLText.instance.classList.remove('White');
-      this.selectedAltLowerFLText.instance.classList.add('Magenta');
-
-      this.selectedAltLowerText.instance.classList.remove('Cyan');
-      this.selectedAltLowerText.instance.classList.remove('White');
-      this.selectedAltLowerText.instance.classList.add('Magenta');
-
-      this.selectedAltUpperFLText.instance.classList.remove('Cyan');
-      this.selectedAltUpperFLText.instance.classList.remove('White');
-      this.selectedAltUpperFLText.instance.classList.add('Magenta');
-
-      this.selectedAltUpperText.instance.classList.remove('Cyan');
-      this.selectedAltUpperText.instance.classList.remove('White');
-      this.selectedAltUpperText.instance.classList.add('Magenta');
-
-      this.altTapeTargetText.instance.classList.remove('Cyan');
-      this.altTapeTargetText.instance.classList.remove('White');
-      this.altTapeTargetText.instance.classList.add('Magenta');
-
-      this.targetSymbolRef.instance.classList.remove('Cyan');
-      this.targetSymbolRef.instance.classList.remove('White');
-      this.targetSymbolRef.instance.classList.add('Magenta');
-    } else {
-      this.selectedAltLowerFLText.instance.classList.add('Cyan');
-      this.selectedAltLowerFLText.instance.classList.remove('Magenta');
-      this.selectedAltLowerFLText.instance.classList.remove('White');
-
-      this.selectedAltLowerText.instance.classList.add('Cyan');
-      this.selectedAltLowerText.instance.classList.remove('Magenta');
-      this.selectedAltLowerText.instance.classList.remove('White');
-
-      this.selectedAltUpperFLText.instance.classList.add('Cyan');
-      this.selectedAltUpperFLText.instance.classList.remove('Magenta');
-      this.selectedAltUpperFLText.instance.classList.remove('White');
-
-      this.selectedAltUpperText.instance.classList.add('Cyan');
-      this.selectedAltUpperText.instance.classList.remove('Magenta');
-      this.selectedAltUpperText.instance.classList.remove('White');
-
-      this.altTapeTargetText.instance.classList.add('Cyan');
-      this.altTapeTargetText.instance.classList.remove('Magenta');
-      this.altTapeTargetText.instance.classList.remove('White');
-
-      this.targetSymbolRef.instance.classList.add('Cyan');
-      this.targetSymbolRef.instance.classList.remove('Magenta');
-      this.targetSymbolRef.instance.classList.remove('White');
-    }
   }
 
   onAfterRender(node: VNode): void {
@@ -542,6 +564,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
         this.altitude = a;
         this.handleAltitudeDisplay();
         this.getOffset();
+        this.handleCrosswinMode();
       });
 
     sub
@@ -582,19 +605,33 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     }
   }
 
+  private handleCrosswinMode() {
+    if (this.props.mode === WindMode.Normal) {
+      this.selectedAltLowerText.instance.setAttribute('y', '580');
+      this.selectedAltLowerFLText.instance.setAttribute('y', '580');
+      this.selectedAltUpperText.instance.setAttribute('y', '167');
+      this.selectedAltUpperFLText.instance.setAttribute('y', '167');
+    } else {
+      this.selectedAltLowerText.instance.setAttribute('y', '465');
+      this.selectedAltLowerFLText.instance.setAttribute('y', '465');
+      this.selectedAltUpperText.instance.setAttribute('y', '280');
+      this.selectedAltUpperFLText.instance.setAttribute('y', '280');
+    }
+  }
+
   private setText() {
-    let boxLength = 19.14;
+    let boxLength = 95.7;
     let text = '0';
     if (this.mode === 'STD') {
       text = Math.round(this.shownTargetAltitude / 100)
         .toString()
         .padStart(3, '0');
-      boxLength = 12.5;
+      boxLength = 62.5;
     } else {
       text = Math.round(this.shownTargetAltitude).toString().padStart(5, ' ');
     }
     this.textSub.set(text);
-    this.blackFill.instance.setAttribute('d', `m117.75 77.784h${boxLength}v6.0476h-${boxLength}z`);
+    this.blackFill.instance.setAttribute('d', `m 528.109 348.861 h ${boxLength}v 27.123 h-${boxLength} z`);
   }
 
   private getOffset() {
@@ -609,9 +646,9 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
           <text
             id="SelectedAltLowerText"
             ref={this.selectedAltLowerText}
-            class="FontMedium EndAlign Cyan"
-            x="137.7511"
-            y="128.70299"
+            class="FontMedium EndAlign Green"
+            x="618"
+            y="580"
             style="white-space: pre"
           >
             {this.textSub}
@@ -619,9 +656,9 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
           <text
             id="SelectedAltLowerFLText"
             ref={this.selectedAltLowerFLText}
-            class="FontSmall MiddleAlign Cyan"
-            x="120.87094"
-            y="128.71681"
+            class="FontSmall MiddleAlign Green"
+            x="542"
+            y="580"
           >
             FL
           </text>
@@ -630,9 +667,9 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
           <text
             id="SelectedAltUpperText"
             ref={this.selectedAltUpperText}
-            class="FontMedium EndAlign Cyan"
-            x="138.22987"
-            y="37.250134"
+            class="FontMedium EndAlign Green"
+            x="620"
+            y="167"
             style="white-space: pre"
           >
             {this.textSub}
@@ -640,9 +677,9 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
           <text
             id="SelectedAltUpperFLText"
             ref={this.selectedAltUpperFLText}
-            class="FontSmall MiddleAlign Cyan"
-            x="120.85925"
-            y="37.125755"
+            class="FontSmall MiddleAlign Green"
+            x="542"
+            y="167"
           >
             FL
           </text>
@@ -650,16 +687,16 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
         <g id="AltTapeTargetSymbol" ref={this.targetGroupRef}>
           <path class="BlackFill" ref={this.blackFill} />
           <path
-            class="NormalStroke Cyan"
+            class="NormalStroke Green"
             ref={this.targetSymbolRef}
-            d="m122.79 83.831v6.5516h-7.0514v-8.5675l2.0147-1.0079m4.8441-3.0238v-6.5516h-6.8588v8.5675l2.0147 1.0079"
+            d="m550.713 375.982v29.384h-31.626v-38.426l9.035 -4.521m21.726 -13.562v-29.384h-30.762v38.426l9.035 4.521"
           />
           <text
             id="AltTapeTargetText"
             ref={this.altTapeTargetText}
-            class="FontMedium StartAlign Cyan"
-            x="118.228"
-            y="83.067062"
+            class="FontMedium StartAlign Green"
+            x="530.25258"
+            y="372.55577307"
             style="white-space: pre"
           >
             {this.textSub}
@@ -676,6 +713,9 @@ interface AltimeterIndicatorProps {
 }
 
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
+  private QFE = '';
+  private QFERef = FSComponent.createRef<SVGGElement>();
+
   private mode = Subject.create('');
 
   private text = Subject.create('');
@@ -699,7 +739,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & Arinc429Values & HudElemsValues>();
 
     sub
       .on('baroMode')
@@ -728,7 +768,10 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         }
         this.getText();
       });
-
+    sub.on('QFE').handle((v) => {
+      this.QFE = v.get().toString();
+      this.QFERef.instance.style.display = `${this.QFE}`;
+    });
     sub
       .on('fmgcFlightPhase')
       .whenChanged()
@@ -786,9 +829,9 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.transLvlAr.isNormalOperation() &&
         100 * this.transLvlAr.value > this.props.altitude.get()
       ) {
-        this.stdGroup.instance.classList.add('BlinkInfinite');
+        this.QFERef.instance.classList.add('BlinkInfinite');
       } else {
-        this.stdGroup.instance.classList.remove('BlinkInfinite');
+        this.QFERef.instance.classList.remove('BlinkInfinite');
       }
     } else if (
       this.fmgcFlightPhase <= FmgcFlightPhase.Cruise &&
@@ -816,25 +859,23 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   render(): VNode {
     return (
       <>
-        <g ref={this.stdGroup} id="STDAltimeterModeGroup">
-          <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
-          <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">
-            STD
-          </text>
-        </g>
-        <g id="AltimeterGroup">
-          <g ref={this.qfeGroup} id="QFEGroup">
-            <path
-              ref={this.qfeBorder}
-              class="NormalStroke White"
-              d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
-            />
-            <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">
-              {this.mode}
+        <g id="BaroModeGroup" ref={this.QFERef}>
+          <g ref={this.stdGroup} id="STDAltimeterModeGroup">
+            <path class="NormalStroke Green" d="m559.683 590.854h58.736v31.644h-58.736z" />
+            <text class="FontMedium Green AlignLeft" x="564.024" y="616.0596">
+              STD
             </text>
-            <text id="AltimeterSettingText" class="FontMedium StartAlign Cyan" x="131" y="138.09006">
-              {this.text}
-            </text>
+          </g>
+          <g id="AltimeterGroup">
+            <g ref={this.qfeGroup} id="QFEGroup">
+              <path ref={this.qfeBorder} class="NormalStroke Green" d="m524.013 596.805h62.513v26.431h-62.513z" />
+              <text id="AltimeterModeText" class="FontMedium Green" x="530.26" y="619.4386887">
+                {this.mode}
+              </text>
+              <text id="AltimeterSettingText" class="FontMedium StartAlign Green" x="587.535" y="619.3339191">
+                {this.text}
+              </text>
+            </g>
           </g>
         </g>
       </>
@@ -853,12 +894,13 @@ interface MetricAltIndicatorState {
 
 class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
   private needsUpdate = false;
-
+  private altTape = '';
   private metricAlt = FSComponent.createRef<SVGGElement>();
 
   private metricAltText = FSComponent.createRef<SVGTextElement>();
 
   private metricAltTargetText = FSComponent.createRef<SVGTextElement>();
+  private metricAltTargetMText = FSComponent.createRef<SVGTextElement>();
 
   private state: MetricAltIndicatorState = {
     altitude: new Arinc429Word(0),
@@ -873,6 +915,23 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
+    const isCaptainSide = getDisplayIndex() === 1;
+    sub
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .whenChanged()
+      .handle((v) => {
+        if (v) {
+          this.metricAltTargetText.instance.setAttribute('x', '557');
+          this.metricAltTargetMText.instance.setAttribute('x', '608');
+          this.metricAltTargetText.instance.setAttribute('y', '60');
+          this.metricAltTargetMText.instance.setAttribute('y', '60');
+        } else {
+          this.metricAltTargetText.instance.setAttribute('x', '457');
+          this.metricAltTargetMText.instance.setAttribute('x', '498');
+          this.metricAltTargetText.instance.setAttribute('y', '170');
+          this.metricAltTargetMText.instance.setAttribute('y', '170');
+        }
+      });
 
     sub
       .on('mda')
@@ -926,18 +985,6 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
             ((this.state.altIsManaged ? this.state.targetAltManaged : this.state.targetAltSelected) * 0.3048) / 10,
           ) * 10;
         this.metricAltTargetText.instance.textContent = targetMetric.toString();
-
-        if (this.state.altIsManaged) {
-          this.metricAltTargetText.instance.classList.replace('Cyan', 'Magenta');
-        } else {
-          this.metricAltTargetText.instance.classList.replace('Magenta', 'Cyan');
-        }
-
-        if (this.state.altitude.value < this.state.MDA) {
-          this.metricAltText.instance.classList.replace('Green', 'Amber');
-        } else {
-          this.metricAltText.instance.classList.replace('Amber', 'Green');
-        }
       }
     }
   }
@@ -945,16 +992,16 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
   render(): VNode {
     return (
       <g id="MetricAltGroup" ref={this.metricAlt}>
-        <path class="NormalStroke Yellow" d="m116.56 140.22h29.213v7.0556h-29.213z" />
-        <text class="FontMedium Cyan MiddleAlign" x="142.03537" y="145.8689">
+        <path class="NormalStroke Green" d="m522.772 628.887h131.02v31.644h-131.02z" />
+        <text class="FontMedium Green MiddleAlign" x="637.0286344499999" y="654.2220165">
           M
         </text>
         <text
           ref={this.metricAltText}
           id="MetricAltText"
           class="FontMedium Green MiddleAlign"
-          x="128.64708"
-          y="145.86191"
+          x="576.9821538"
+          y="654.19066635"
         >
           0
         </text>
@@ -962,13 +1009,18 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
           <text
             id="MetricAltTargetText"
             ref={this.metricAltTargetText}
-            class="FontSmallest Cyan MiddleAlign"
-            x="94.088852"
-            y="37.926617"
+            class="FontSmallest Green MiddleAlign"
+            x="457.47"
+            y="170.100877245"
           >
             0
           </text>
-          <text class="FontSmallest Cyan MiddleAlign" x="105.25774" y="37.872921">
+          <text
+            ref={this.metricAltTargetMText}
+            class="FontSmallest Green MiddleAlign"
+            x="497.83500000000004"
+            y="169.860050685"
+          >
             M
           </text>
         </g>

@@ -1,32 +1,22 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
-import { Arinc429ConsumerSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-import { FIVE_DEG } from './HUDUtils';
+import { FIVE_DEG, HudElemsValues } from './HUDUtils';
 import { LateralMode } from '@shared/autopilot';
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
-
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
-import { FIVE_DEG } from './HUDUtils';
-import { LateralMode } from '@shared/autopilot';
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 interface AttitudeIndicatorFixedUpperProps {
   bus: EventBus;
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HudElemsValues>();
 
+  private pitchScaleVisRef = FSComponent.createRef<SVGGElement>();
+  private alternateLawRef = FSComponent.createRef<SVGGElement>();
+  private pitchScale = '';
   private roll = new Arinc429Word(0);
 
   private pitch = new Arinc429Word(0);
@@ -40,64 +30,81 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub.on('rollAr').handle((roll) => {
-      this.roll = roll;
-      if (!this.roll.isNormalOperation()) {
-        this.visibilitySub.set('hidden');
-      } else {
-        this.visibilitySub.set('visible');
-      }
-    });
+    this.sub
+      .on('pitchScale')
+      .whenChanged()
+      .handle((v) => {
+        this.pitchScale = v.get().toString();
+        this.pitchScaleVisRef.instance.style.display = `${this.pitchScale}`;
+      });
 
-    this.sub.on('pitchAr').handle((pitch) => {
-      this.pitch = pitch;
-      if (!this.pitch.isNormalOperation()) {
-        this.visibilitySub.set('hidden');
-      } else {
-        this.visibilitySub.set('visible');
-      }
-    });
+    this.sub
+      .on('rollAr')
+      .whenChanged()
+      .handle((roll) => {
+        this.roll = roll;
+        if (!this.roll.isNormalOperation()) {
+          this.pitchScaleVisRef.instance.style.display = 'none';
+          this.alternateLawRef.instance.style.display = 'none';
+        } else {
+          this.pitchScaleVisRef.instance.style.display = 'block';
+          Math.abs(roll.value) > 35 && Math.abs(roll.value) <= 71
+            ? (this.alternateLawRef.instance.style.display = 'block')
+            : (this.alternateLawRef.instance.style.display = 'none');
+        }
+        if (Math.abs(roll.value) > 71) {
+          this.pitchScaleVisRef.instance.style.display = 'none';
+          this.alternateLawRef.instance.style.display = 'none';
+        }
+      });
+
+    this.sub
+      .on('pitchAr')
+      .whenChanged()
+      .handle((pitch) => {
+        this.pitch = pitch;
+        if (!this.pitch.isNormalOperation()) {
+          this.pitchScaleVisRef.instance.style.display = 'none';
+        } else {
+          if (pitch.value > 39 || pitch.value < -25) {
+            this.pitchScaleVisRef.instance.style.display = 'none';
+            this.alternateLawRef.instance.style.display = 'none';
+          } else {
+            this.pitchScaleVisRef.instance.style.display = 'block';
+          }
+        }
+      });
   }
 
   render(): VNode {
     return (
-      <g id="AttitudeUpperInfoGroup" visibility={this.visibilitySub}>
-        <g
-          id="RollProtGroup"
-          class="SmallStroke Green"
-          style={{ display: this.isNormalLawActive.map((nl) => (nl ? 'block' : 'none')) }}
-        >
-          <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
-          <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
+      <g id="AttitudeUpperInfoGroup" ref={this.pitchScaleVisRef}>
+        <g id="RollIndicatorFixed" class="NormalStroke Green">
+          <path d="m 640,138.44282 12.21523,-20.20611 h -24.43047 zz" />
+          <path d="m 735.2  164 14.1,-24.5" />
+          <path d="m 705.1 150 7.7,-20.7" />
+          <path d="m 673 141.5 4,-22.2" />
+          <path d="m 544.8  164 -14.1,-24.5" />
+          <path d="m 574.9 150 -7.7,-20.7" />
+          <path d="m 607 141.5 -4,-22.2" />
+
+          <g id="alternateLawRollRef" ref={this.alternateLawRef}>
+            <path d="m 774.5 194.5 20,-20" />
+            <path d="m 813 249 19,-9" />
+            <path d="m 505.5 194.5 -20,-20" />
+            <path d="m 467 249 -19,-9" />
+            <path d="M 467.5 249.3 A 190 190 263 0 1  812.5 249.3 " />
+          </g>
         </g>
-        <g
-          id="RollProtLost"
-          class="NormalStroke Amber"
-          style={{ display: this.isNormalLawActive.map((nl) => (!nl ? 'block' : 'none')) }}
-        >
-          <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
-          <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
-        </g>
-        <g class="SmallStroke White">
-          <path d="m98.645 51.067 2.8492-2.8509" />
-          <path d="m39.168 51.067-2.8492-2.8509" />
-          <path d="m90.858 44.839a42.133 42.158 0 0 0-43.904 0" />
-          <path d="m89.095 43.819 1.8313-3.1738 1.7448 1.0079-1.8313 3.1738" />
-          <path d="m84.259 41.563 0.90817-2.4967-1.8932-0.68946-0.90818 2.4966" />
-          <path d="m75.229 39.142 0.46109-2.6165 1.9841 0.35005-0.46109 2.6165" />
-          <path d="m60.6 39.492-0.46109-2.6165 1.9841-0.35005 0.46109 2.6165" />
-          <path d="m53.553 41.563-0.90818-2.4967 0.9466-0.34474 0.9466-0.34472 0.90818 2.4966" />
-          <path d="m46.973 44.827-1.8313-3.1738 1.7448-1.0079 1.8313 3.1738" />
-        </g>
-        <path class="NormalStroke Yellow CornerRound" d="m68.906 38.650-2.5184-3.7000h5.0367l-2.5184 3.7000" />
       </g>
     );
   }
 }
 
 interface AttitudeIndicatorFixedCenterProps {
-  bus: EventBus;
+  bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
+  filteredRadioAlt: Subscribable<number>;
 }
 
 export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndicatorFixedCenterProps> {
@@ -111,19 +118,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
   private fdVisibilitySub = Subject.create('hidden');
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<Arinc429Values>();
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
   private declutterMode = 0;
   private onGround = true;
   private visibilityAirSub = Subject.create('none');
@@ -149,12 +143,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
       .handle((value) => {
         this.onGround = value;
       });
-<<<<<<< HEAD
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
 
     sub.on('rollAr').handle((r) => {
       this.roll = r;
@@ -194,12 +182,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         this.fdVisibilitySub.set('display:inline');
       }
     });
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
     sub
       .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
@@ -218,12 +200,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
         }
       });
-<<<<<<< HEAD
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
   }
 
   render(): VNode {
@@ -239,57 +215,23 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           ATT
         </text>
         <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
-          <SidestickIndicator bus={this.props.bus} />
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
-          <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-
-          <FlightPathVector bus={this.props.bus} />
+          <FlightPathVector
+            bus={this.props.bus}
+            isAttExcessive={this.props.isAttExcessive}
+            filteredRadioAlt={this.props.filteredRadioAlt}
+          />
           <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
 
           <g style={this.fdVisibilitySub}>
             <FDYawBar bus={this.props.bus} />
-            <FlightDirector bus={this.props.bus} />
           </g>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-          <path class="NormalOutline" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-          <path class="NormalStroke Yellow" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-          <g class="NormalOutline">
-            <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
-            <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
-          </g>
-          <g id="FixedAircraftReference" class="NormalStroke Yellow BlackFill">
-            <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
-            <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
           <g id="AircraftReferences">
             <g id="AircraftReferenceInAir" class="SmallStroke Green" display={this.visibilityAirSub}>
               <path d="m 625,335  v -6 h -30" />
               <path d="m 637,332 h 6 v -6 h -6 z" />
               <path d="m 655, 335 v -6 h 30" />
             </g>
-<<<<<<< HEAD
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
-=======
->>>>>>> 655ccacf88efcabb4496cd2a50ce21632c5b84c4
-=======
->>>>>>> 412fe6564dca7e0d2c74cb35c05eac94a6e82aaa
           </g>
         </g>
       </>
@@ -393,290 +335,50 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
   }
 }
 
-class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
-  private lateralMode = 0;
-
-  private verticalMode = 0;
-
-  private fdActive = false;
-
-  private trkFpaActive = false;
-
-  private fdBank = 0;
-
-  private fdPitch = 0;
-
-  private fdRef = FSComponent.createRef<SVGGElement>();
-
-  private lateralRef1 = FSComponent.createRef<SVGPathElement>();
-
-  private lateralRef2 = FSComponent.createRef<SVGPathElement>();
-
-  private verticalRef1 = FSComponent.createRef<SVGPathElement>();
-
-  private verticalRef2 = FSComponent.createRef<SVGPathElement>();
-
-  private handleFdState() {
-    const [toggled, showLateral, showVertical] = this.isActive();
-
-    let FDRollOffset = 0;
-    let FDPitchOffset = 0;
-
-    if (toggled && showLateral) {
-      const FDRollOrder = this.fdBank;
-      FDRollOffset = Math.min(Math.max(FDRollOrder, -45), 45) * 0.44;
-
-      this.lateralRef1.instance.setAttribute('visibility', 'visible');
-      this.lateralRef1.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
-
-      this.lateralRef2.instance.setAttribute('visibility', 'visible');
-      this.lateralRef2.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
-    } else {
-      this.lateralRef1.instance.setAttribute('visibility', 'hidden');
-      this.lateralRef2.instance.setAttribute('visibility', 'hidden');
-    }
-
-    if (toggled && showVertical) {
-      const FDPitchOrder = this.fdPitch;
-      FDPitchOffset = Math.min(Math.max(FDPitchOrder, -22.5), 22.5) * 0.89;
-
-      this.verticalRef1.instance.setAttribute('visibility', 'visible');
-      this.verticalRef1.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
-
-      this.verticalRef2.instance.setAttribute('visibility', 'visible');
-      this.verticalRef2.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
-    } else {
-      this.verticalRef1.instance.setAttribute('visibility', 'hidden');
-      this.verticalRef2.instance.setAttribute('visibility', 'hidden');
-    }
-  }
-
-  private isActive(): [boolean, boolean, boolean] {
-    const toggled = this.fdActive && !this.trkFpaActive;
-
-    const showLateralFD = this.lateralMode !== 0 && this.lateralMode !== 34 && this.lateralMode !== 40;
-    const showVerticalFD = this.verticalMode !== 0 && this.verticalMode !== 34;
-
-    return [toggled, showLateralFD, showVerticalFD];
-  }
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
-
-    sub
-      .on('fd1Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 1) {
-          this.fdActive = fd;
-
-          if (this.isActive()[0]) {
-            this.fdRef.instance.style.display = 'inline';
-          } else {
-            this.fdRef.instance.style.display = 'none';
-          }
-        }
-      });
-
-    sub
-      .on('fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        if (getDisplayIndex() === 2) {
-          this.fdActive = fd;
-
-          if (this.isActive()[0]) {
-            this.fdRef.instance.style.display = 'inline';
-          } else {
-            this.fdRef.instance.style.display = 'none';
-          }
-        }
-      });
-
-    sub
-      .on('trkFpaActive')
-      .whenChanged()
-      .handle((tr) => {
-        this.trkFpaActive = tr;
-
-        if (this.isActive()[0]) {
-          this.fdRef.instance.style.display = 'inline';
-        } else {
-          this.fdRef.instance.style.display = 'none';
-        }
-      });
-
-    sub
-      .on('fdBank')
-      .withPrecision(2)
-      .handle((fd) => {
-        this.fdBank = fd;
-
-        this.handleFdState();
-      });
-    sub
-      .on('fdPitch')
-      .withPrecision(2)
-      .handle((fd) => {
-        this.fdPitch = fd;
-
-        this.handleFdState();
-      });
-
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((vm) => {
-        this.lateralMode = vm;
-
-        this.handleFdState();
-      });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((lm) => {
-        this.verticalMode = lm;
-
-        this.handleFdState();
-      });
-  }
-
-  render(): VNode | null {
-    return (
-      <g ref={this.fdRef} style="display: none">
-        <g class="ThickOutline">
-          <path ref={this.lateralRef1} d="m68.903 61.672v38.302" />
-
-          <path ref={this.verticalRef1} d="m49.263 80.823h39.287" />
-        </g>
-        <g class="ThickStroke Green">
-          <path ref={this.lateralRef2} id="FlightDirectorRoll" d="m68.903 61.672v38.302" />
-
-          <path ref={this.verticalRef2} id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
-        </g>
-      </g>
-    );
-  }
+interface DeclutterIndicatorProps {
+  bus: ArincEventBus;
 }
 
-class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
-  private sideStickX = 0;
+export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps> {
+  private declutterMode;
 
-  private sideStickY = 0;
+  private textSub = Subject.create('');
 
-  private leftGearcompressed = true;
+  private declutterModeRef = FSComponent.createRef<SVGPathElement>();
 
-  private rightGearCompressed = true;
+  private handleFdState() {
+    let text: string;
+    if (this.declutterMode == 0) {
+      text = 'N';
+      this.declutterModeRef.instance.style.visibility = 'visible';
+    } else if (this.declutterMode == 1) {
+      text = 'D';
+      this.declutterModeRef.instance.style.visibility = 'visible';
+    } else if (this.declutterMode == 2) {
+      this.declutterModeRef.instance.style.visibility = 'hidden';
 
-  private crossHairRef = FSComponent.createRef<SVGPathElement>();
-
-  private onGroundForVisibility = Subject.create('visible');
-
-  private engOneRunning = false;
-
-  private engTwoRunning = false;
-
-  private engThreeRunning = false;
-
-  private engFourRunning = false;
-
-  private handleSideStickIndication() {
-    const onGround = this.leftGearcompressed || this.rightGearCompressed;
-    const oneEngineRunning = this.engOneRunning || this.engTwoRunning || this.engThreeRunning || this.engFourRunning;
-
-    if (onGround && oneEngineRunning) {
-      this.onGroundForVisibility.set('visible');
-      this.crossHairRef.instance.style.transform = `translate3d(${this.sideStickX}px, ${this.sideStickY}px, 0px)`;
-    } else {
-      this.onGroundForVisibility.set('hidden');
+      text = '';
     }
+    this.textSub.set(text);
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getSubscriber<HUDSimvars>();
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.leftGearcompressed = g;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.rightGearCompressed = g;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('sideStickX')
-      .whenChanged()
-      .handle((x) => {
-        this.sideStickX = x * 29.56;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('sideStickY')
-      .whenChanged()
-      .handle((y) => {
-        this.sideStickY = -y * 23.02;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('engOneRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engOneRunning = e;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('engTwoRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engTwoRunning = e;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('engThreeRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engThreeRunning = e;
-        this.handleSideStickIndication();
-      });
-
-    sub
-      .on('engFourRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engFourRunning = e;
-        this.handleSideStickIndication();
-      });
+    sub.on(isCaptainSide ? 'declutterModeL' : 'declutterModeR').handle((m) => {
+      this.declutterMode = m;
+      this.handleFdState();
+    });
   }
 
   render(): VNode {
     return (
-      <g id="GroundCursorGroup" class="NormalStroke White" visibility={this.onGroundForVisibility}>
-        <path
-          id="GroundCursorBorders"
-          d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441"
-        />
-        <path
-          ref={this.crossHairRef}
-          id="GroundCursorCrosshair"
-          d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341"
-        />
+      <g ref={this.declutterModeRef} id="DeclutterModeIndicator">
+        <text class="FontMedium  MiddleAlign Green" x="1000" y="900">
+          {this.textSub}
+        </text>
       </g>
     );
   }

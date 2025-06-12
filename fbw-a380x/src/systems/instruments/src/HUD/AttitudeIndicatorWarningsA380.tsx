@@ -57,9 +57,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
     return (
       <g id="WarningGroupA380" ref={this.warningGroupRef} style="display: block;">
         <text
-          x="69"
-          y="100"
-          class="FontLargest Red MiddleAlign Blink9Seconds TextOutline"
+          x="640"
+          y="512"
+          class="FontLargest Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(([pullUp]) => pullUp, this.gpwsPullUpActive).map((it) =>
               it ? 'block' : 'none',
@@ -69,9 +69,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           PULL UP
         </text>
         <text
-          x="69"
-          y="100"
-          class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
+          x="640"
+          y="512"
+          class="FontLargest Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([sr, ds, gs, t, tlf, tlg, tlt, pu]) => sr && !ds && !gs && !t && !tlf && !tlg && !tlt && !pu,
@@ -89,9 +89,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           SINK RATE
         </text>
         <text
-          x="69"
-          y="100"
-          class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
+          x="640"
+          y="512"
+          class="FontLargest Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([ds, gs, t, tlf, tlg, tlt, pu]) => ds && !gs && !t && !tlf && !tlg && !tlt && !pu,
@@ -108,9 +108,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           DONT SINK
         </text>
         <text
-          x="69"
-          y="100"
-          class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
+          x="640"
+          y="512"
+          class="FontLargest Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([tlg, tlt, pu]) => tlg && !tlt && !pu,
@@ -123,9 +123,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           TOO LOW GEAR
         </text>
         <text
-          x="69"
-          y="100"
-          class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
+          x="640"
+          y="512"
+          class="FontLargest Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([tlt, pu]) => tlt && !pu,
@@ -137,9 +137,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           TOO LOW TERRAIN
         </text>
         <text
-          x="69"
-          y="100"
-          class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
+          x="640"
+          y="512"
+          class="FontLargest Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([tlf, tlg, tlt, pu]) => tlf && !tlg && !tlt && !pu,
@@ -153,9 +153,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           TOO LOW FLAPS
         </text>
         <text
-          x="69"
-          y="100"
-          class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
+          x="640"
+          y="512"
+          class="FontLargest Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([gs, t, tlf, tlg, tlt, pu]) => gs && !t && !tlf && !tlg && !tlt && !pu,
@@ -171,9 +171,9 @@ export class AttitudeIndicatorWarningsA380 extends DisplayComponent<AttitudeIndi
           GLIDE SLOPE
         </text>
         <text
-          x="69"
-          y="100"
-          class="FontLargest Amber MiddleAlign Blink9Seconds TextOutline"
+          x="640"
+          y="512"
+          class="FontLargest Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([t, tlf, tlg, tlt, pu]) => t && !tlf && !tlg && !tlt && !pu,

@@ -9,28 +9,33 @@ import {
   SubscribableMapFunctions,
   Subscription,
   VNode,
+  HEvent,
 } from '@microsoft/msfs-sdk';
-// import { LowerArea } from 'instruments/src/HUD/LowerArea';
 import { Arinc429LocalVarConsumerSubject, Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
-
 import { AttitudeIndicatorWarnings } from '@flybywiresim/hud';
 import { AttitudeIndicatorWarningsA380 } from 'instruments/src/HUD/AttitudeIndicatorWarningsA380';
 import { LinearDeviationIndicator } from 'instruments/src/HUD/LinearDeviationIndicator';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
-import { LagFilter } from './HUDUtils';
+import { HudElemsValues, LagFilter } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
 import { AttitudeIndicatorFixedCenter, AttitudeIndicatorFixedUpper } from './AttitudeIndicatorFixed';
 import { FMA } from './FMA';
-import { HeadingOfftape } from './HeadingIndicator';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { LandingSystem } from './LandingSystemIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { Grid } from './HUDUtils';
+import { AutoThrustMode } from 'shared/autopilot';
+import { VerticalMode } from '@shared/autopilot';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import './style.scss';
 import { HUDSimvars } from 'instruments/src/HUD/shared/HUDSimvarPublisher';
-
+import { A380Failure } from '../../../failures';
+import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
+import { ExtendedHorizon } from './AttitudeIndicatorHorizon';
+import { DecelIndicator } from './DecelSpeedIndicator';
+import { DeclutterIndicator } from './AttitudeIndicatorFixed';
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
     .find((it) => it.tagName.toLowerCase() !== 'wasm-instrument')
@@ -57,6 +62,37 @@ interface HUDProps extends ComponentProps {
 }
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
+  private spdTapeOrForcedOnLand = '';
+  private xWindSpdTape = '';
+  private altTape = '';
+  private xWindAltTape = '';
+  private windIndicator = '';
+  private spdTapeOrForcedOnLandRef = FSComponent.createRef<SVGPathElement>();
+  private xWindSpdTapeRef = FSComponent.createRef<SVGPathElement>();
+  private altTapeRef = FSComponent.createRef<SVGPathElement>();
+  private xWindAltTapeRef = FSComponent.createRef<SVGPathElement>();
+  private spdTapeOrForcedOnLandRef2 = FSComponent.createRef<SVGPathElement>();
+  private xWindSpdTapeRef2 = FSComponent.createRef<SVGPathElement>();
+  private altTapeRef2 = FSComponent.createRef<SVGPathElement>();
+  private xWindAltTapeRef2 = FSComponent.createRef<SVGPathElement>();
+
+  private windIndicatorRef = FSComponent.createRef<SVGGElement>();
+  private onLanding = false;
+  private onRollout = false;
+  private onDecel = false;
+  private landSpeed = false;
+  private flightPhase = -1;
+  private declutterMode = 0;
+  private bitMask = 0;
+  private athMode = 0;
+  private onToPower = false;
+  private onGround = true;
+  private crosswindMode = false;
+  private lgRightCompressed = false;
+
+  private displayBrightness = Subject.create(0);
+  private lastBrightnessValue = Subject.create(0);
+
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & HUDSimvars>();
 
@@ -78,6 +114,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
   private failuresConsumer: FailuresConsumer;
 
+  private displayPowered = Subject.create(0);
   private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
 
   private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed'), false);
@@ -128,7 +165,142 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const isCaptainSide = getDisplayIndex() === 1;
+    this.failuresConsumer.register(isCaptainSide ? A380Failure.DirectCurrent1 : A380Failure.DirectCurrent2);
 
+    const sub = this.props.bus.getSubscriber<
+      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElemsValues
+    >();
+
+    sub.on('spdTapeOrForcedOnLand').handle((v) => {
+      this.spdTapeOrForcedOnLand = v.get().toString();
+      this.spdTapeOrForcedOnLandRef.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
+      this.spdTapeOrForcedOnLandRef2.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
+      //console.log('qsdqsd   ' + this.spdTapeOrForcedOnLand);
+    });
+    sub.on('xWindSpdTape').handle((v) => {
+      this.xWindSpdTape = v.get().toString();
+      this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
+      this.xWindSpdTapeRef2.instance.style.display = `${this.xWindSpdTape}`;
+    });
+    sub.on('altTape').handle((v) => {
+      this.altTape = v.get().toString();
+      this.altTapeRef.instance.style.display = `${this.altTape}`;
+      this.altTapeRef2.instance.style.display = `${this.altTape}`;
+    });
+    sub.on('xWindAltTape').handle((v) => {
+      this.xWindAltTape = v.get().toString();
+      this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
+      this.xWindAltTapeRef2.instance.style.display = `${this.xWindAltTape}`;
+    });
+    sub.on('windIndicator').handle((v) => {
+      this.windIndicator = v.get().toString();
+      this.windIndicatorRef.instance.style.display = `${this.windIndicator}`;
+    });
+
+    sub.on('hEvent').handle((ev) => {
+      if (ev.startsWith('A320_Neo_HUD_L')) {
+        let vL = SimVar.GetSimVarValue('L:A320_Neo_HUD_L_POS', 'number');
+        vL == 0 ? (vL = 1) : (vL = 0);
+        SimVar.SetSimVarValue('L:A320_Neo_HUD_L_POS', 'number', vL);
+        this.displayBrightness.set(0);
+        if (vL == 0) {
+          setTimeout(() => {
+            this.displayBrightness.set(this.lastBrightnessValue.get());
+          }, 1250);
+        }
+      }
+      if (ev.startsWith('A320_Neo_HUD_R')) {
+        let vR = SimVar.GetSimVarValue('L:A320_Neo_HUD_R_POS', 'number');
+        vR == 0 ? (vR = 1) : (vR = 0);
+        SimVar.SetSimVarValue('L:A320_Neo_HUD_R_POS', 'number', vR);
+        this.displayBrightness.set(0);
+        if (vR == 0) {
+          setTimeout(() => {
+            this.displayBrightness.set(this.lastBrightnessValue.get());
+          }, 1250);
+        }
+      }
+    });
+
+    sub
+      .on('activeVerticalMode')
+      .whenChanged()
+      .handle((value) => {
+        value == VerticalMode.ROLL_OUT ? (this.onRollout = true) : (this.onRollout = false);
+        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
+          this.onLanding = true;
+        } else {
+          this.onLanding = false;
+        }
+      });
+
+    sub
+      .on('autoBrakeDecel')
+      .whenChanged()
+      .handle((value) => {
+        this.onDecel = value;
+        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
+          this.onLanding = true;
+        } else {
+          this.onLanding = false;
+        }
+      });
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((value) => {
+        this.onGround = value;
+
+        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
+          this.onLanding = true;
+        } else {
+          this.onLanding = false;
+        }
+      });
+
+    sub
+      .on('AThrMode')
+      .whenChanged()
+      .handle((value) => {
+        this.athMode = value;
+        this.athMode == AutoThrustMode.MAN_FLEX ||
+        this.athMode == AutoThrustMode.MAN_TOGA ||
+        this.athMode == AutoThrustMode.TOGA_LK
+          ? (this.onToPower = true)
+          : (this.onToPower = false);
+      });
+
+    sub
+      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .whenChanged()
+      .handle((value) => {
+        this.declutterMode = value;
+      });
+    sub
+      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
+      });
+
+    sub
+      .on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo')
+      .whenChanged()
+      .handle((value) => {
+        this.displayBrightness.set(value);
+        if (value != 0) {
+          this.lastBrightnessValue.set(value);
+        }
+      });
+
+    sub
+      .on(isCaptainSide ? 'elec' : 'elecFo')
+      .whenChanged()
+      .handle((value) => {
+        this.displayPowered.set(value);
+      });
     this.subscriptions.push(
       this.sub.on('headingAr').handle((h) => {
         if (this.headingFailed.get() !== h.isNormalOperation()) {
@@ -154,6 +326,13 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         .on('realTime')
         .atFrequency(1)
         .handle((_t) => {
+          this.groundSpeed.get().value > 30 ? (this.landSpeed = true) : (this.landSpeed = false);
+          if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
+            this.onLanding = true;
+          } else {
+            this.onLanding = false;
+          }
+
           this.failuresConsumer.update();
           if (
             !this.isAttExcessive.get() &&
@@ -237,21 +416,92 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
           />
-          <AttitudeIndicatorFixedCenter bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
           <path
+            id="PitchScaleMask"
+            class="BackgroundFill"
+            d="m 0 0 h 1280 v 1024 h -1280 Z M 1 125 h 1278 v 800 h -1278 Z"
+          />
+
+          <g id="TapesMasks">
+            <path ref={this.altTapeRef} id="AltTapeMask" class="BlackFill" d="M 1039 323 v 430 h 120 v -430 z"></path>
+            <path
+              ref={this.spdTapeOrForcedOnLandRef}
+              id="SpdTapeMask"
+              class="BlackFill"
+              d="M 95 329 v 383 h 123 v -383  z"
+            ></path>
+
+            <path
+              ref={this.xWindSpdTapeRef}
+              id="CrosswindSpdTapeMask"
+              class="NormalStroke  BackgroundFill"
+              //d="M 111 119 v 182 h 98 v -182 z"
+              d="M 111 238 v 182 h 98 v -182 z"
+            />
+            <path
+              ref={this.xWindAltTapeRef}
+              id="CrosswindAltTapeMask"
+              class="BlackFill"
+              // d="M 1039 135 v 152 h 120 v -152 z"
+              d="M 1039 255 v 150 h 100 v -150 z"
+            ></path>
+          </g>
+
+          <g id="WindIndicator" class="Wind" transform="translate(250 200) " ref={this.windIndicatorRef}>
+            <WindIndicator bus={this.props.bus} />
+          </g>
+          <AltitudeIndicator bus={this.props.bus} />
+          <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} />
+          <g id="TapesMasks2">
+            <path
+              id="Mask2Cw"
+              class="BackgroundFill"
+              ref={this.xWindSpdTapeRef2}
+              // d="M 95 0 H 207 V 1024 H 95 Z  M 96 119 v 182 h 110 v -182 z" //full xwind offset
+              d="M 95 0 H 210 V 1024 H 95 Z  M 96 238 v 182 h 113 v -182 z"
+            />
+            <path
+              id="Mask2"
+              class="BackgroundFill"
+              ref={this.spdTapeOrForcedOnLandRef2}
+              // eslint-disable-next-line max-len
+              //d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z"
+              d="M 95 0 H 207 V 1024 H 95 Z  M 96 329 v 383 h 110 v -383 z"
+            />
+
+            <path
+              id="Mask3"
+              class="BackgroundFill"
+              ref={this.altTapeRef2}
+              d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 329 v 383 h 113 v -383 z"
+              // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z"
+            />
+            <path
+              id="Mask4"
+              class="BackgroundFill"
+              ref={this.xWindAltTapeRef2}
+              // d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 135 v 152 h 113 v -152 z"
+              d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 254 v 152 h 113 v -152 z"
+            />
+          </g>
+
+          <AttitudeIndicatorFixedCenter
+            bus={this.props.bus}
+            isAttExcessive={this.isAttExcessive}
+            filteredRadioAlt={this.filteredRadioAltitude}
+          />
+          <ExtendedHorizon
+            bus={this.props.bus}
+            instrument={this.props.instrument}
+            filteredRadioAlt={this.filteredRadioAltitude}
+          />
+
+          {/* <path
             id="Mask1"
             class="BackgroundFill"
             // eslint-disable-next-line max-len
             d="m 32.138 101.25 c 7.4164 13.363 21.492 21.652 36.768 21.652 c 15.277 0 29.352 -8.2886 36.768 -21.652 v -40.859 c -7.4164 -13.363 -21.492 -21.652 -36.768 -21.652 c -15.277 0 -29.352 8.2886 -36.768 21.652 z m -32.046 110.498 h 158.66 v -211.75 h -158.66 z"
-          />
-          <AltitudeIndicator bus={this.props.bus} />
-          <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} />
-          <path
-            id="Mask2"
-            class="BackgroundFill"
-            // eslint-disable-next-line max-len
-            d="m 32.138 145.34 h 73.536 v 10.382 h -73.536 z m 0 -44.092 c 7.4164 13.363 21.492 21.652 36.768 21.652 c 15.277 0 29.352 -8.2886 36.768 -21.652 v -40.859 c -7.4164 -13.363 -21.492 -21.652 -36.768 -21.652 c -15.277 0 -29.352 8.2886 -36.768 21.652 z m -32.046 110.498 h 158.66 v -211.746 h -158.66 z m 115.14 -88.191 v -85.473 h 20.344 v 85.473 z m -113.33 0 v -85.473 h 27.548 v 85.473 z"
-          />
+          /> */}
           <AirspeedIndicatorOfftape bus={this.props.bus} />
 
           <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
@@ -263,16 +513,15 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             instrument={this.props.instrument}
             filteredRadioAltitude={this.filteredRadioAltitude}
           />
-          <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
           <AltitudeIndicatorOfftape bus={this.props.bus} filteredRadioAltitude={this.filteredRadioAltitude} />
           <LinearDeviationIndicator bus={this.props.bus} />
+          <DecelIndicator bus={this.props.bus} instrument={this.props.instrument} />
 
           <MachNumber bus={this.props.bus} />
           <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
 
-          {/* <LowerArea bus={this.props.bus} pitchTrimIndicatorVisible={this.pitchTrimIndicatorVisible} /> */}
+          <DeclutterIndicator bus={this.props.bus} />
         </svg>
-        {/* <PitchTrimDisplay bus={this.props.bus} visible={this.pitchTrimIndicatorVisible} /> */}
       </CdsDisplayUnit>
     );
   }

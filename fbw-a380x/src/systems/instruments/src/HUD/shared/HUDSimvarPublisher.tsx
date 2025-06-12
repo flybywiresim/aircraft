@@ -2,6 +2,9 @@ import { EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk
 import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
 export interface HUDSimvars {
+  windDirection: number;
+  windSpeed: number;
+  trueHeadingRaw: number;
   apVsSelected: number;
   crosswindModeL: boolean;
   declutterModeL: number;
@@ -184,6 +187,9 @@ export interface HUDSimvars {
 }
 
 export enum HUDVars {
+  windDirection = 'L:A32NX_ADIRS_IR_1_WIND_DIRECTION',
+  windSpeed = 'L:A32NX_ADIRS_IR_1_WIND_SPEED',
+  trueHeadingRaw = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
   apVsSelected = 'L:A32NX_AUTOPILOT_VS_SELECTED',
   crosswindModeL = 'L:A380X_HUD_L_CROSSWIND_MODE',
   declutterModeL = 'L:A380X_HUD_L_DECLUTTER_MODE',
@@ -195,8 +201,8 @@ export enum HUDVars {
   coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
   elec = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
   elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
-  potentiometerCaptain = 'LIGHT POTENTIOMETER:88',
-  potentiometerFo = 'LIGHT POTENTIOMETER:90',
+  potentiometerCaptain = 'LIGHT POTENTIOMETER:71',
+  potentiometerFo = 'LIGHT POTENTIOMETER:72',
   pitch = 'L:A32NX_ADIRS_IR_1_PITCH',
   roll = 'L:A32NX_ADIRS_IR_1_ROLL',
   heading = 'L:A32NX_ADIRS_IR_1_HEADING',
@@ -367,6 +373,9 @@ export enum HUDVars {
 /** A publisher to poll and publish nav/com simvars. */
 export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
   private static simvars = new Map<keyof HUDSimvars, SimVarDefinition>([
+    ['windDirection', { name: HUDVars.windDirection, type: SimVarValueType.Number }],
+    ['windSpeed', { name: HUDVars.windSpeed, type: SimVarValueType.Number }],
+    ['trueHeadingRaw', { name: HUDVars.trueHeadingRaw, type: SimVarValueType.Number }],
     ['apVsSelected', { name: HUDVars.apVsSelected, type: SimVarValueType.FPM }],
     ['crosswindModeL', { name: HUDVars.crosswindModeL, type: SimVarValueType.Bool }],
     ['declutterModeL', { name: HUDVars.declutterModeL, type: SimVarValueType.Number }],

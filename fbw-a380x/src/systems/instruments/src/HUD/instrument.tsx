@@ -7,12 +7,12 @@ import { HUDComponent } from './HUD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { HUDSimvarPublisher } from './shared/HUDSimvarPublisher';
+import { HudValueProvider } from './shared/HudValueProvider';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
 import './style.scss';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
-
 class A380X_HUD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
@@ -44,6 +44,7 @@ class A380X_HUD extends BaseInstrument {
 
   private readonly fwsPfdPublisher = new FwsPfdSimvarPublisher(this.bus);
 
+  private readonly hudProvider = new HudValueProvider(this.bus);
   constructor() {
     super();
 
@@ -64,6 +65,7 @@ class A380X_HUD extends BaseInstrument {
     this.backplane.addPublisher('SecPublisher', this.secPublisher);
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
+    this.backplane.addInstrument('HudProvider', this.hudProvider);
   }
 
   get templateID(): string {

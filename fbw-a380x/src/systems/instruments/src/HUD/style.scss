@@ -24,6 +24,30 @@
   font-family: "OpenBus", monospace !important;
 }
 
+// .cwTest * {
+//   stroke: blue !important;
+// }
+.notXwind{
+  display:block;
+}
+.Xwind{
+  display:none;
+}
+.ReadoutBackgroundFill{
+  stroke: $display-green;
+  fill: #000000;
+}
+.maskFill{
+  fill: $display-cyan;
+  stroke: none;
+}
+
+.PulseGreeFill {
+  @include GenericPulsingFill($display-green, pulse-green-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
 .PulseCyanFill {
   @include GenericPulsingFill($display-cyan, pulse-cyan-fill);
   animation-duration: 1s;
@@ -50,7 +74,11 @@
   stroke: $display-red;
   stroke-width: 0.11px;
 }
-
+.BarGreen {
+  fill: $display-green;
+  stroke: $display-green;
+  stroke-width: 0.11px;
+}
 .SmallStroke {
   stroke-width: 2px;
   stroke-linecap: round;
@@ -107,39 +135,39 @@
 }
 
 .FontLargest {
-  font-size: 21px;
+  font-size: 42px;
 }
 
 .FontLarge {
-  font-size: 19.5px;
+  font-size: 35px;
 }
 
 .FontMedium {
-  font-size: 18px;
+  font-size: 32px;
 }
 
 .FontIntermediate {
-  font-size: 16.5px;
+  font-size: 33px;
 }
 
 .FontMediumSmaller {
-  font-size: 15.2px;
+  font-size: 30.4px;
 }
 
 .FontSmall {
-  font-size: 15px;
+  font-size: 30px;
 }
 
 .FontSmallest {
-  font-size: 13.5px;
+  font-size: 27px;
 }
 
 .FontTinyToSmallest {
-  font-size: 12.9px;
+  font-size: 25.8px;
 }
 
 .FontTiny {
-  font-size: 12px;
+  font-size: 24px;
 }
 
 .StartAlign {
@@ -239,7 +267,15 @@ tspan.Black {
   stroke: $display-green;
   fill: none;
 }
-
+.GreenFill{
+  fill: #00ff0080;
+}
+.GreenFill2{
+  fill: rgba(0, 255, 0, 0.3);
+}
+.InverseGreen{
+  stroke: #000000;
+}
 .Green.Fill {
   fill: $display-green;
   stroke: none;
@@ -364,4 +400,33 @@ tspan.Red {
   left: 580px;
   width: 100px;
   height: 257px;
+}
+
+.Wind text{
+  fill: $display-green;
+  stroke: none;
+}
+.blue{
+  stroke: blue;
+  fill: #0000ff80;
+  stroke-width: 2px;
+}
+.yellow{
+  stroke: yellow;
+  fill: rgba(255, 255, 0, 0.144);
+  stroke-width: .5px;
+}
+.purple{
+  stroke: purple;
+  fill: purple;
+  stroke-width: 2px;
+}
+.red{
+  stroke: red;
+  fill: red;
+  stroke-width: 2px;
+}
+
+.DEBUG{
+  display: none;
 }
