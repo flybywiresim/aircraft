@@ -1,4 +1,5 @@
 use super::linear_actuator::Actuator;
+use crate::shared::AverageExt;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, FeedbackPositionPickoffUnit, SectionPressure,
 };
@@ -126,6 +127,9 @@ pub struct SecondarySurface {
     surface_position_ids: Vec<VariableIdentifier>,
     surface_angle_ids: Vec<VariableIdentifier>,
 
+    surface_position_overall_id: VariableIdentifier,
+    surface_angle_overall_id: VariableIdentifier,
+
     surface_positions: Vec<Ratio>,
     surface_angles: Vec<Angle>,
 }
@@ -156,19 +160,26 @@ impl SecondarySurface {
             surface_angles.push(Angle::default());
         }
 
+        let surface_position_overall_id =
+            context.get_identifier(format!("{}_{}_POSITION_PERCENT", side, surface));
+        let surface_angle_overall_id =
+            context.get_identifier(format!("{}_{}_ANGLE", side, surface));
+
         Self {
             surface_position_ids,
             surface_angle_ids,
             surface_positions,
             surface_angles,
+            surface_position_overall_id,
+            surface_angle_overall_id,
         }
     }
 
     // No failures are considered. All surfaces have the same deflection.
     fn update(&mut self, position: &Ratio, angle: &Angle) {
         for idx in 0..self.surface_positions.len() {
-            self.surface_positions[idx] = position.clone();
-            self.surface_angles[idx] = angle.clone();
+            self.surface_positions[idx] = *position;
+            self.surface_angles[idx] = *angle;
         }
     }
 }
@@ -179,12 +190,16 @@ impl SimulationElement for SecondarySurface {
             let position = self.surface_positions[idx];
             writer.write(&id, position.get::<percent>());
         }
+        let position: Ratio = self.surface_positions.iter().average();
+        writer.write(&self.surface_position_overall_id, position.get::<percent>());
 
         for idx in 0..self.surface_angles.len() {
             let id = self.surface_angle_ids[idx];
             let position = self.surface_angles[idx];
             writer.write(&id, position.get::<degree>());
         }
+        let position: Angle = self.surface_angles.iter().average();
+        writer.write(&self.surface_angle_overall_id, position.get::<degree>());
     }
 }
 
