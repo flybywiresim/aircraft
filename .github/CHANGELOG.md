@@ -57,6 +57,18 @@
 1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
 1. [A380X/FMC] Use the estimated gross weight to compute the max level for step climbs - @tracernz (Mike)
 1. [ND] Fixed TAS, GS & Wind data not taking source switching into account - @BravoMike99 (bruno_pt99)
+1. [A380X] Fixed RMP 1 keypad backlighting - @heclak (Heclak)
+1. [A380X] Fixed animations and emissives of some ECAM buttons - @heclak (Heclak)
+1. [A380X] Overhead maintenance panel backlighting is no longer controlled by integrated lighting - @heclak (Heclak)
+1. [A380X] Tweaked EFB positioning - @heclak (Heclak)
+1. [A380X] Fixed FO EFB and OIT display not working - @heclak (Heclak)
+1. [A380X] Improved CPT and FO tray clickspot and animation - @heclak (Heclak)
+1. [A380X] Fixed glareshield sidestick priority annuciators not showing in light test - @heclak (Heclak)
+1. [A380X] Fixed GND HF DATALINK switch stuck in ON state - @heclak (Heclak)
+1. [A380X] Fixed CPT MFD DU knob animation not aligned to panel decal - @heclak (Heclak)
+1. [A380X] Fixed protuding mesh under right wing when spoilers are moved or wing is flexing - @heclak (Heclak)
+1. [A380X] Removed unwanted mesh in front of main landing gear - @heclak (Heclak)
+1. [A380X] Sidestick pushbuttons on CPT and FO sidesticks are made clickable - @heclak (Heclak)
 
 ## 0.13.0
 
