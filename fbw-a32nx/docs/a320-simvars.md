@@ -1153,7 +1153,7 @@
     - Percent
     - Indicates the angle of the right slats out of 27 degrees
 
-- A32NX_{position}_FLAPS_{number}_ANGLE
+- A32NX_{side}_FLAPS_{number}_ANGLE
     - Degrees
     - The actual angle of the flaps
     - Side
@@ -1163,7 +1163,7 @@
         - From 1 (inboard) to 2 for A320
         - From 1 (inboard) to 3 for A380
 
-- A32NX_{position}_SLATS_{number}_ANGLE
+- A32NX_{side}_SLATS_{number}_ANGLE
     - Degrees
     - The actual angle of the slats
     - Side
@@ -1188,6 +1188,22 @@
 - A32NX_RIGHT_SLATS_ANGLE
     - Degrees
     - The actual angle of the right slats
+
+- A32NX_FLAPS_IPPU_ANGLE
+    - Degrees
+    - The angle of the flaps IPPU synchro
+
+- A32NX_FLAPS_FPPU_ANGLE
+    - Degrees
+    - The angle of the flaps FPPU synchro
+
+- A32NX_SLATS_IPPU_ANGLE
+    - Degrees
+    - The angle of the slats IPPU synchro
+
+- A32NX_SLATS_FPPU_ANGLE
+    - Degrees
+    - The angle of the slats FPPU synchro
 
 - A32NX_IS_FLAPS_MOVING
     - Boolean
