@@ -36,6 +36,8 @@ export enum DisplayUnitID {
   FoMfd,
   Ewd,
   Sd,
+  CaptHud,
+  FoHud,
 }
 
 const DisplayUnitToDCBus: { [k in DisplayUnitID]: DcElectricalBus[] } = {
@@ -47,6 +49,8 @@ const DisplayUnitToDCBus: { [k in DisplayUnitID]: DcElectricalBus[] } = {
   [DisplayUnitID.FoMfd]: [DcElectricalBus.Dc1, DcElectricalBus.Dc2],
   [DisplayUnitID.Ewd]: [DcElectricalBus.DcEss], // powered by 423PP
   [DisplayUnitID.Sd]: [DcElectricalBus.Dc2],
+  [DisplayUnitID.CaptHud]: [DcElectricalBus.DcEssInFlight], //guess
+  [DisplayUnitID.FoHud]: [DcElectricalBus.Dc2], //guess
 };
 
 const DisplayUnitToPotentiometer: { [k in DisplayUnitID]: number } = {
@@ -58,6 +62,8 @@ const DisplayUnitToPotentiometer: { [k in DisplayUnitID]: number } = {
   [DisplayUnitID.FoMfd]: 99,
   [DisplayUnitID.Ewd]: 92,
   [DisplayUnitID.Sd]: 93,
+  [DisplayUnitID.CaptHud]: 71,
+  [DisplayUnitID.FoHud]: 72,
 };
 
 interface DisplayUnitProps {
@@ -65,6 +71,7 @@ interface DisplayUnitProps {
   displayUnitId: DisplayUnitID;
   failed?: Subscribable<boolean>;
   test?: Subscribable<number>;
+  brightness?: Subscribable<number>;
 }
 
 enum DisplayUnitState {
