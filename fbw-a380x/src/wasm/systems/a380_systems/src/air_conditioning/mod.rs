@@ -2172,7 +2172,7 @@ mod tests {
                 stored_ofv_open_amount: None,
                 vertical_speed: Velocity::default(),
             };
-            test_bed.set_indicated_altitude(Length::default());
+            test_bed.set_pressure_altitude(Length::default());
             test_bed.indicated_airspeed(Velocity::new::<knot>(250.));
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             test_bed.command_pack_flow_selector_position(0);
@@ -2184,7 +2184,7 @@ mod tests {
         fn on_ground(mut self) -> Self {
             self.set_ambient_pressure(Pressure::new::<hectopascal>(1013.25));
             self.indicated_airspeed(Velocity::default());
-            self.set_indicated_altitude(Length::default());
+            self.set_pressure_altitude(Length::default());
             self.set_vertical_speed(Velocity::default());
             self.command_on_ground(true);
             self.command_sea_level_pressure(Pressure::new::<hectopascal>(1013.25));
@@ -2643,7 +2643,7 @@ mod tests {
                 final_altitude,
             ));
             self.set_vertical_speed(Velocity::default());
-            self.set_indicated_altitude(final_altitude);
+            self.set_pressure_altitude(final_altitude);
             self.run_with_vertical_speed(Duration::from_secs(1));
             self
         }
@@ -2966,7 +2966,7 @@ mod tests {
     fn test_bed_in_cruise() -> CabinAirTestBed {
         let mut test_bed =
             test_bed().command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
-        test_bed.set_indicated_altitude(Length::new::<foot>(20000.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(20000.));
         test_bed.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
         test_bed.set_vertical_speed(Velocity::default());
         test_bed = test_bed.iterate(55);
@@ -5569,7 +5569,7 @@ mod tests {
 
                 let mut test_bed_2 = test_bed()
                     .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
-                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.set_pressure_altitude(Length::new::<foot>(20000.));
                 test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
                 test_bed_2.set_vertical_speed(Velocity::default());
                 test_bed_2 = test_bed_2.iterate(55);
@@ -5593,7 +5593,7 @@ mod tests {
                     .command_ocsm_auto_failure(OcsmId::Three)
                     .command_ocsm_auto_failure(OcsmId::Four)
                     .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
-                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.set_pressure_altitude(Length::new::<foot>(20000.));
                 test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
                 test_bed_2.set_vertical_speed(Velocity::default());
                 test_bed_2 = test_bed_2.iterate(55);
@@ -5615,7 +5615,7 @@ mod tests {
                     .command_ocsm_auto_failure(OcsmId::One)
                     .command_ocsm_auto_failure(OcsmId::Four)
                     .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
-                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.set_pressure_altitude(Length::new::<foot>(20000.));
                 test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
                 test_bed_2.set_vertical_speed(Velocity::default());
                 test_bed_2 = test_bed_2.iterate(55);
@@ -5636,7 +5636,7 @@ mod tests {
                 let mut test_bed_2 = test_bed()
                     .command_cpcs_failure(CpiomId::B1)
                     .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
-                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.set_pressure_altitude(Length::new::<foot>(20000.));
                 test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
                 test_bed_2.set_vertical_speed(Velocity::default());
                 test_bed_2 = test_bed_2.iterate(55);
@@ -5659,7 +5659,7 @@ mod tests {
                     .command_cpcs_failure(CpiomId::B2)
                     .command_cpcs_failure(CpiomId::B4)
                     .command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
-                test_bed_2.set_indicated_altitude(Length::new::<foot>(20000.));
+                test_bed_2.set_pressure_altitude(Length::new::<foot>(20000.));
                 test_bed_2.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
                 test_bed_2.set_vertical_speed(Velocity::default());
                 test_bed_2 = test_bed_2.iterate(55);

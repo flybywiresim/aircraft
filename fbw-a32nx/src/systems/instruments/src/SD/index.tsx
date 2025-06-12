@@ -3,37 +3,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DisplayUnit } from '@instruments/common/displayUnit';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { render } from '@instruments/common/index';
-import { useInteractionEvent, useSimVar } from '@flybywiresim/fbw-sdk';
-import './style.scss';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 
 import { PagesContainer } from './PagesContainer';
 import { StatusArea } from './StatusArea/StatusArea';
 
-const Idle = () => {
-  const [inop, setInop] = useState(false);
+import './style.scss';
 
+const Idle = () => {
   const [doorVideoEnabledNow] = useSimVar('L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE', 'Bool');
   const [doorVideoPressedNow] = useSimVar('L:PUSH_DOORPANEL_VIDEO', 'Bool');
-  const [doorVideoVisible, setDoorVideoVisible] = useState(false);
 
-  useEffect(() => {
-    if (doorVideoEnabledNow && doorVideoPressedNow) {
-      setDoorVideoVisible(true);
-    } else {
-      setDoorVideoVisible(false);
-    }
-  }, [doorVideoEnabledNow, doorVideoPressedNow]);
-
-  useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
-    if (!inop) {
-      setInop(true);
-      setTimeout(() => {
-        setInop(false);
-      }, 3000);
-    }
-  });
+  const doorVideoVisible = doorVideoEnabledNow && doorVideoPressedNow;
 
   return (
     <div id="Mainframe">

@@ -234,7 +234,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
 
-    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
     this.#navigation = new Navigation(this.bus, this.flightPlanService);
@@ -479,8 +479,9 @@ export class FlightManagementComputer implements FmcInterface {
     return null;
   }
 
-  public getRecMaxFlightLevel(): number | null {
-    const gw = this.fmgc.getGrossWeightKg();
+  /** @inheritdoc */
+  public getRecMaxFlightLevel(grossWeight?: number): number | null {
+    const gw = grossWeight ?? this.fmgc.getGrossWeightKg();
     if (!gw) {
       return null;
     }

@@ -1,14 +1,27 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, KeyEvents, KeyEventManager, KeyEventData, ComRadioIndex } from '@microsoft/msfs-sdk';
+import {
+  EventBus,
+  KeyEvents,
+  KeyEventManager,
+  KeyEventData,
+  ComRadioIndex,
+  SimVarValueType,
+  ConsumerValue,
+  MathUtils,
+} from '@microsoft/msfs-sdk';
 import {
   FrequencyMode,
-  InterRmpBusEvents,
   NotificationManager,
   NotificationType,
+  PilotSeat,
+  PilotSeatEvents,
   PopUpDialog,
+  RadioChannelType,
   RadioUtils,
+  RmpState,
+  RmpUtils,
 } from '@flybywiresim/fbw-sdk';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
@@ -83,9 +96,16 @@ export class KeyInterceptor {
     // --- EXTERNAL POWER events ---
   };
 
-  private publisher = this.bus.getPublisher<InterRmpBusEvents>();
-
   private keyInterceptManager: KeyEventManager;
+
+  private readonly pilotSeat = ConsumerValue.create(
+    this.bus.getSubscriber<PilotSeatEvents>().on('pilot_seat'),
+    PilotSeat.Left,
+  );
+
+  private readonly rmp1StateVar = SimVar.GetRegisteredId('L:A380X_RMP_1_STATE', SimVarValueType.Enum, document.title);
+  private readonly rmp2StateVar = SimVar.GetRegisteredId('L:A380X_RMP_2_STATE', SimVarValueType.Enum, document.title);
+  private readonly rmp3StateVar = SimVar.GetRegisteredId('L:A380X_RMP_3_STATE', SimVarValueType.Enum, document.title);
 
   private dialogVisible = false;
 
@@ -197,51 +217,193 @@ export class KeyInterceptor {
     this.dialogVisible = false;
   }
 
-  private onComFractIncrement(_index: ComRadioIndex, _sign: 1 | -1, _carry: boolean): void {
-    // FIXME implement, inop for now
+  private isRmpSyncEnabled(): boolean {
+    return SimVar.GetSimVarValue('L:A32NX_FO_SYNC_EFIS_ENABLED', SimVarValueType.Bool) > 0;
   }
 
-  private onComWholeIncrement(_index: ComRadioIndex, _sign: 1 | -1): void {
-    // FIXME implement, inop for now
+  private shouldControlRmp1(): boolean {
+    const rmp1State = SimVar.GetSimVarValueFastReg(this.rmp1StateVar);
+    const rmp3State = SimVar.GetSimVarValueFastReg(this.rmp3StateVar);
+    const rmp1On = rmp1State === RmpState.On || rmp1State === RmpState.OnFailed;
+    const rmp3Off = rmp3State === RmpState.OffFailed || rmp3State === RmpState.OffStandby;
+    return this.isRmpSyncEnabled() || rmp3Off || (this.pilotSeat.get() === PilotSeat.Left && rmp1On);
+  }
+
+  private shouldControlRmp2(): boolean {
+    const rmp2State = SimVar.GetSimVarValueFastReg(this.rmp2StateVar);
+    const rmp3State = SimVar.GetSimVarValueFastReg(this.rmp3StateVar);
+    const rmp2On = rmp2State === RmpState.On || rmp2State === RmpState.OnFailed;
+    const rmp3Off = rmp3State === RmpState.OffFailed || rmp3State === RmpState.OffStandby;
+    return this.isRmpSyncEnabled() || rmp3Off || (this.pilotSeat.get() === PilotSeat.Right && rmp2On);
+  }
+
+  private shouldControlRmp3(): boolean {
+    const rmp1State = SimVar.GetSimVarValueFastReg(this.rmp1StateVar);
+    const rmp2State = SimVar.GetSimVarValueFastReg(this.rmp2StateVar);
+    const rmp1Off = rmp1State === RmpState.OffFailed || rmp1State === RmpState.OffStandby;
+    const rmp2Off = rmp2State === RmpState.OffFailed || rmp2State === RmpState.OffStandby;
+    return (
+      this.isRmpSyncEnabled() ||
+      (this.pilotSeat.get() === PilotSeat.Left && rmp1Off) ||
+      (this.pilotSeat.get() === PilotSeat.Right && rmp2Off)
+    );
+  }
+
+  private onComFractIncrement(index: ComRadioIndex, sign: 1 | -1, carry: boolean): void {
+    RmpUtils.getStandbyFrequencyLocalVar(index).set(
+      RadioUtils.getNextValidChannel(RmpUtils.getStandbyFrequencyLocalVar(index).get(), sign, carry),
+    );
+    RmpUtils.getStandbyModeLocalVar(index).set(FrequencyMode.Frequency);
+  }
+
+  private onComWholeIncrement(index: ComRadioIndex, sign: 1 | -1): void {
+    RmpUtils.getStandbyFrequencyLocalVar(index).set(
+      RadioUtils.getClosestValidFrequency(
+        RadioUtils.incrementBcd32(RmpUtils.getStandbyFrequencyLocalVar(index).get(), 4, sign),
+        RadioChannelType.VhfCom8_33_25,
+      ),
+    );
+    RmpUtils.getStandbyModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
   private onComActiveSet(index: ComRadioIndex, isHertz: boolean, data: KeyEventData): void {
-    const frequencyEvent: keyof InterRmpBusEvents = `inter_rmp_set_vhf_active_${index}`;
-    const modeEvent: keyof InterRmpBusEvents = `inter_rmp_set_vhf_active_mode_${index}`;
     const frequency = isHertz ? RadioUtils.packBcd32(data.value0) : RadioUtils.bcd16ToBcd32(data.value0);
-    this.publisher.pub(frequencyEvent, frequency, true);
-    this.publisher.pub(modeEvent, FrequencyMode.Frequency, true);
+    RmpUtils.getActiveFrequencyLocalVar(index).set(
+      RadioUtils.getClosestValidFrequency(frequency, RadioChannelType.VhfCom8_33_25),
+    );
+    RmpUtils.getActiveModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
   private onComStandbySet(index: ComRadioIndex, isHertz: boolean, data: KeyEventData): void {
-    const frequencyEvent: keyof InterRmpBusEvents = `inter_rmp_set_vhf_standby_${index}`;
-    const modeEvent: keyof InterRmpBusEvents = `inter_rmp_set_vhf_standby_mode_${index}`;
     const frequency = isHertz ? RadioUtils.packBcd32(data.value0) : RadioUtils.bcd16ToBcd32(data.value0);
-    this.publisher.pub(frequencyEvent, frequency, true);
-    this.publisher.pub(modeEvent, FrequencyMode.Frequency, true);
+    RmpUtils.getStandbyFrequencyLocalVar(index).set(
+      RadioUtils.getClosestValidFrequency(frequency, RadioChannelType.VhfCom8_33_25),
+    );
+    RmpUtils.getStandbyModeLocalVar(index).set(FrequencyMode.Frequency);
   }
 
-  private onComSwap(_index: ComRadioIndex): void {
-    // FIXME implement, inop for now
+  private onComSwap(index: ComRadioIndex): void {
+    RmpUtils.swapVhfFrequency(index);
   }
 
-  private onComRxSelect(_index: ComRadioIndex, _data: KeyEventData): void {
-    // FIXME implement, inop for now
+  private onComRxSelect(index: ComRadioIndex, data: KeyEventData): void {
+    const rxOn = data.value0 === 1;
+    if (this.shouldControlRmp1()) {
+      SimVar.SetSimVarValue(`L:A380X_RMP_1_VHF_VOL_RX_SWITCH_${index}`, SimVarValueType.Bool, rxOn);
+    }
+    if (this.shouldControlRmp2()) {
+      SimVar.SetSimVarValue(`L:A380X_RMP_2_VHF_VOL_RX_SWITCH_${index}`, SimVarValueType.Bool, rxOn);
+    }
+    if (this.shouldControlRmp3()) {
+      SimVar.SetSimVarValue(`L:A380X_RMP_3_VHF_VOL_RX_SWITCH_${index}`, SimVarValueType.Bool, rxOn);
+    }
   }
 
-  private onComTxSelect(_data: KeyEventData): void {
-    // FIXME implement, inop for now
+  private onComTxSelect(data: KeyEventData): void {
+    const vhfIndex = (data.value0 ?? 0) + 1;
+    if (this.shouldControlRmp1()) {
+      SimVar.SetSimVarValue(`H:RMP_1_VHF_CALL_${vhfIndex}_PRESSED`, SimVarValueType.Bool, 1);
+      requestAnimationFrame(() =>
+        SimVar.SetSimVarValue(`H:RMP_1_VHF_CALL_${vhfIndex}_RELEASED`, SimVarValueType.Bool, 1),
+      );
+    }
+    if (this.shouldControlRmp2()) {
+      SimVar.SetSimVarValue(`H:RMP_2_VHF_CALL_${vhfIndex}_PRESSED`, SimVarValueType.Bool, 1);
+      requestAnimationFrame(() =>
+        SimVar.SetSimVarValue(`H:RMP_2_VHF_CALL_${vhfIndex}_RELEASED`, SimVarValueType.Bool, 1),
+      );
+    }
+    if (this.shouldControlRmp3()) {
+      SimVar.SetSimVarValue(`H:RMP_3_VHF_CALL_${vhfIndex}_PRESSED`, SimVarValueType.Bool, 1);
+      requestAnimationFrame(() =>
+        SimVar.SetSimVarValue(`H:RMP_3_VHF_CALL_${vhfIndex}_RELEASED`, SimVarValueType.Bool, 1),
+      );
+    }
   }
 
-  private onComVolumeSet(_index: ComRadioIndex, _data: KeyEventData): void {
-    // FIXME implement, inop for now
+  private onComVolumeSet(index: ComRadioIndex, data: KeyEventData): void {
+    const volume = MathUtils.clamp(data.value0 ?? 0, 0, 100);
+    if (this.shouldControlRmp1()) {
+      SimVar.SetSimVarValue(`L:A380X_RMP_1_VHF_VOL_${index}`, SimVarValueType.Number, volume);
+    }
+    if (this.shouldControlRmp2()) {
+      SimVar.SetSimVarValue(`L:A380X_RMP_2_VHF_VOL_${index}`, SimVarValueType.Number, volume);
+    }
+    if (this.shouldControlRmp3()) {
+      SimVar.SetSimVarValue(`L:A380X_RMP_3_VHF_VOL_${index}`, SimVarValueType.Number, volume);
+    }
   }
 
-  private onComVolumeInc(_index: ComRadioIndex, _sign: 1 | -1, _data: KeyEventData): void {
-    // FIXME implement, inop for now
+  private onComVolumeInc(index: ComRadioIndex, sign: 1 | -1): void {
+    const increment = 2 * sign;
+    if (this.shouldControlRmp1()) {
+      const localVar = `L:A380X_RMP_1_VHF_VOL_${index}`;
+      SimVar.SetSimVarValue(
+        localVar,
+        SimVarValueType.Number,
+        MathUtils.clamp(SimVar.GetSimVarValue(localVar, SimVarValueType.Number) + increment, 0, 100),
+      );
+    }
+    if (this.shouldControlRmp2()) {
+      const localVar = `L:A380X_RMP_2_VHF_VOL_${index}`;
+      SimVar.SetSimVarValue(
+        localVar,
+        SimVarValueType.Number,
+        MathUtils.clamp(SimVar.GetSimVarValue(localVar, SimVarValueType.Number) + increment, 0, 100),
+      );
+    }
+    if (this.shouldControlRmp3()) {
+      const localVar = `L:A380X_RMP_3_VHF_VOL_${index}`;
+      SimVar.SetSimVarValue(
+        localVar,
+        SimVarValueType.Number,
+        MathUtils.clamp(SimVar.GetSimVarValue(localVar, SimVarValueType.Number) + increment, 0, 100),
+      );
+    }
   }
 
-  private onComReceiveAll(_toggle: boolean): void {
-    // FIXME implement, inop for now
+  private onComReceiveAll(toggle: boolean, data: KeyEventData): void {
+    if (this.shouldControlRmp1()) {
+      const rx1On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool, rx1On);
+      const rx2On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool, rx2On);
+      const rx3On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_1_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool, rx3On);
+    }
+    if (this.shouldControlRmp2()) {
+      const rx1On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool, rx1On);
+      const rx2On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool, rx2On);
+      const rx3On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_2_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool, rx3On);
+    }
+    if (this.shouldControlRmp3()) {
+      const rx1On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_1', SimVarValueType.Bool, rx1On);
+      const rx2On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_2', SimVarValueType.Bool, rx2On);
+      const rx3On = toggle
+        ? !SimVar.GetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool)
+        : data.value0 > 0;
+      SimVar.SetSimVarValue('L:A380X_RMP_3_VHF_VOL_RX_SWITCH_3', SimVarValueType.Bool, rx3On);
+    }
   }
 }

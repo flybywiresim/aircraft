@@ -473,12 +473,9 @@ export class FwsFlightPhases {
       return;
     }
 
-    // FIXME better altitude selection
-    this.adrAltitude.setFromSimVar(`L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_${this.fws.fwsNumber}`);
-    if (!this.adrAltitude.isNormalOperation()) {
-      return;
-    }
-    const delta = Math.abs(this.adrAltitude.value - targetAltitude);
+    // FIXME Needs ADR and FCU words + proper alt selection.. might as well just go proper logic at that point
+    const altitude = Simplane.getAltitude();
+    const delta = Math.abs(altitude - targetAltitude);
 
     if (delta < 200) {
       this._wasBelowThreshold = true;
