@@ -8792,6 +8792,7 @@ mod tests {
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_6_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_7_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_8_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_POSITION_PERCENT"));
 
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_1_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_2_POSITION_PERCENT"));
@@ -8801,14 +8802,17 @@ mod tests {
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_6_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_7_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_8_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
 
             assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_1_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_2_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_POSITION_PERCENT"));
 
             assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_1_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_2_POSITION_PERCENT"));
             assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_POSITION_PERCENT"));
 
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_1_ANGLE"));
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_2_ANGLE"));
@@ -8818,6 +8822,7 @@ mod tests {
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_6_ANGLE"));
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_7_ANGLE"));
             assert!(test_bed.contains_variable_with_name("LEFT_SLATS_8_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_ANGLE"));
 
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_1_ANGLE"));
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_2_ANGLE"));
@@ -8827,14 +8832,17 @@ mod tests {
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_6_ANGLE"));
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_7_ANGLE"));
             assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_8_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_ANGLE"));
 
             assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_1_ANGLE"));
             assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_2_ANGLE"));
             assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_3_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
 
             assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_1_ANGLE"));
             assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_2_ANGLE"));
             assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_3_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
         }
 
         #[test]
