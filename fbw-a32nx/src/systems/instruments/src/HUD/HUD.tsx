@@ -41,7 +41,7 @@ import './style.scss';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { AutoThrustMode, VerticalMode } from '@shared/autopilot';
-import { HudElemsVis, LagFilter, getBitMask, calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { HudElemsValues, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
 
 export const getDisplayIndex = () => {
@@ -56,39 +56,18 @@ interface HUDProps extends ComponentProps {
 }
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
-  private elems: HudElemsVis = {
-    xWindAltTape: Subject.create<String>(''),
-    altTape: Subject.create<String>(''),
-    xWindSpdTape: Subject.create<String>(''),
-    spdTapeOrForcedOnLand: Subject.create<String>(''),
-    altTapeMaskFill: Subject.create<String>(''),
-    windIndicator: Subject.create<String>(''),
-    FMA: Subject.create<String>(''),
-    VS: Subject.create<String>(''),
-    QFE: Subject.create<String>(''),
-  };
+  private spdTapeOrForcedOnLand = '';
+  private xWindSpdTape = '';
+  private altTape = '';
+  private windIndicator = '';
+  private spdTapeOrForcedOnLandRef = FSComponent.createRef<SVGPathElement>();
+  private xWindSpdTapeRef = FSComponent.createRef<SVGPathElement>();
+  private altTapeRef = FSComponent.createRef<SVGPathElement>();
+  private spdTapeOrForcedOnLandRef2 = FSComponent.createRef<SVGPathElement>();
+  private xWindSpdTapeRef2 = FSComponent.createRef<SVGPathElement>();
+  private altTapeRef2 = FSComponent.createRef<SVGPathElement>();
+  private windIndicatorRef = FSComponent.createRef<SVGGElement>();
 
-  private setElems() {
-    this.elems.altTape.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape);
-    this.elems.altTapeMaskFill.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill,
-    );
-    this.elems.spdTapeOrForcedOnLand.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand,
-    );
-    this.elems.windIndicator.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator,
-    );
-    this.elems.xWindAltTape.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape,
-    );
-    this.elems.xWindSpdTape.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape,
-    );
-    this.elems.FMA.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA);
-    this.elems.VS.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS);
-    this.elems.QFE.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE);
-  }
   private onLanding = false;
   private groundSpeed = 0;
   private onRollout = false;
@@ -137,8 +116,29 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
     this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent>();
+    const sub = this.props.bus.getSubscriber<
+      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElemsValues
+    >();
 
+    sub.on('spdTapeOrForcedOnLand').handle((v) => {
+      this.spdTapeOrForcedOnLand = v.get().toString();
+      this.spdTapeOrForcedOnLandRef.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
+      this.spdTapeOrForcedOnLandRef2.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
+    });
+    sub.on('xWindSpdTape').handle((v) => {
+      this.xWindSpdTape = v.get().toString();
+      this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
+      this.xWindSpdTapeRef2.instance.style.display = `${this.xWindSpdTape}`;
+    });
+    sub.on('altTape').handle((v) => {
+      this.altTape = v.get().toString();
+      this.altTapeRef.instance.style.display = `${this.altTape}`;
+      this.altTapeRef2.instance.style.display = `${this.altTape}`;
+    });
+    sub.on('windIndicator').handle((v) => {
+      this.windIndicator = v.get().toString();
+      this.windIndicatorRef.instance.style.display = `${this.windIndicator}`;
+    });
     sub.on('hEvent').handle((ev) => {
       if (ev.startsWith('A320_Neo_HUD_L')) {
         let vL = SimVar.GetSimVarValue('L:A320_Neo_HUD_L_POS', 'number');
@@ -211,8 +211,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         } else {
           this.onLanding = false;
         }
-
-        this.setElems();
       });
 
     sub
@@ -225,7 +223,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         this.athMode == AutoThrustMode.TOGA_LK
           ? (this.onToPower = true)
           : (this.onToPower = false);
-        this.setElems();
       });
 
     sub
@@ -233,14 +230,12 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
-        this.setElems();
       });
     sub
       .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
-        this.setElems();
       });
 
     sub
@@ -332,18 +327,33 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           />
 
           <g id="TapesMasks">
-            <g id="AltTapeMask" display={this.elems.altTape}>
-              <path id="AltitudeTapeMask" class="BlackFill" d="m1045 322 h 114 v 365 h-114z"></path>
+            <g id="AltTapeMask">
+              <path
+                ref={this.altTapeRef}
+                id="AltitudeTapeMask"
+                class="BlackFill"
+                d="m1045 322 h 114 v 365 h-114z"
+              ></path>
             </g>
-            <g id="SpdTapeMask" display={this.elems.spdTapeOrForcedOnLand}>
-              <path id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
+            <g id="SpdTapeMask">
+              <path
+                ref={this.spdTapeOrForcedOnLandRef}
+                id="SpeedTapeMask"
+                class="BlackFill"
+                d="m70 322 h 98 v 365 h-98z"
+              ></path>
             </g>
-            <g id="CrosswindSpdTapeMask" display={this.elems.xWindSpdTape}>
-              <path id="cwSpdTapeBg" class="NormalStroke  BackgroundFill" d="m71 128  h 94 v 172 h -94z" />
+            <g id="CrosswindSpdTapeMask">
+              <path
+                ref={this.xWindSpdTapeRef}
+                id="cwSpdTapeBg"
+                class="NormalStroke  BackgroundFill"
+                d="m71 128  h 94 v 172 h -94z"
+              />
             </g>
           </g>
 
-          <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.elems.windIndicator}>
+          <g id="WindIndicator" class="Wind" transform="translate(250 200) " ref={this.windIndicatorRef}>
             <WindIndicator bus={this.props.bus} />
           </g>
 
@@ -356,7 +366,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             <path
               id="Mask2Cw"
               class="BackgroundFill"
-              display={this.elems.xWindSpdTape}
+              ref={this.xWindSpdTapeRef2}
               //d="M 60 0 H 208 V 1024 H 60 Z  M 61 130 v 172h 146 v -172 z"
               d="M 60 0 H 208 V 1024 H 60 Z  M 61 130 v 172h 146 v -172 z"
             />
@@ -364,14 +374,13 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             <path
               id="Mask2"
               class="BackgroundFill"
-              display={this.elems.spdTapeOrForcedOnLand}
+              ref={this.spdTapeOrForcedOnLandRef2}
               d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z"
               // d="M 60 0 H 208 V 1024 H 60 Z  M 61 274 v 364 h 146 v -364 z"
             />
             <path
               id="Mask3"
-              class={this.elems.altTapeMaskFill.get().toString()}
-              display={this.elems.altTape}
+              ref={this.altTapeRef2}
               d="M 1038 250 h 122 V 720 H 1038 Z  M 1039 323 v 364 h 120 v -364 z"
               // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z"
             />

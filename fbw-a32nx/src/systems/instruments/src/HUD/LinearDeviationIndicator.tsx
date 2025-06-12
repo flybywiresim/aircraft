@@ -3,7 +3,7 @@ import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPub
 import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { AutoThrustMode } from '@shared/autopilot';
-import { HudElemsVis, getBitMask } from './HUDUtils';
+import { HudElemsValues } from './HUDUtils';
 import { getDisplayIndex } from './HUD';
 
 type LinearDeviationIndicatorProps = {
@@ -11,39 +11,9 @@ type LinearDeviationIndicatorProps = {
 };
 
 export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIndicatorProps> {
-  private elems: HudElemsVis = {
-    xWindAltTape: Subject.create<String>(''),
-    altTape: Subject.create<String>(''),
-    xWindSpdTape: Subject.create<String>(''),
-    spdTapeOrForcedOnLand: Subject.create<String>(''),
-    altTapeMaskFill: Subject.create<String>(''),
-    windIndicator: Subject.create<String>(''),
-    FMA: Subject.create<String>(''),
-    VS: Subject.create<String>(''),
-    QFE: Subject.create<String>(''),
-  };
+  private linearDevRef = FSComponent.createRef<SVGGElement>();
 
-  private setElems() {
-    this.elems.altTape.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape);
-    this.elems.altTapeMaskFill.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill,
-    );
-    this.elems.spdTapeOrForcedOnLand.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand,
-    );
-    this.elems.windIndicator.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator,
-    );
-    this.elems.xWindAltTape.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape,
-    );
-    this.elems.xWindSpdTape.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape,
-    );
-    this.elems.FMA.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA);
-    this.elems.VS.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS);
-    this.elems.QFE.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE);
-  }
+  private altTape = '';
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
@@ -80,8 +50,15 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HEvent & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HEvent & HUDSimvars & HudElemsValues>();
 
+    sub
+      .on('altTape')
+      .whenChanged()
+      .handle((v) => {
+        this.altTape = v.get().toString();
+        this.linearDevRef.instance.style.display = `${this.altTape}`;
+      });
     sub
       .on('AThrMode')
       .whenChanged()
@@ -92,7 +69,6 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         this.athMode == AutoThrustMode.TOGA_LK
           ? (this.onToPower = true)
           : (this.onToPower = false);
-        this.setElems();
       });
 
     sub
@@ -100,21 +76,18 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
       .whenChanged()
       .handle((value) => {
         this.onGround = value;
-        this.setElems();
       });
     sub
       .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
-        this.setElems();
       });
     sub
       .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
-        this.setElems();
       });
 
     sub.on('altitudeAr').handle((alt) => {
@@ -192,7 +165,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
   render(): VNode {
     return (
-      <g id="LinearDeviationIndicator" transform="scale(4.25 4.25) translate(131 38)" display={this.elems.altTape}>
+      <g id="LinearDeviationIndicator" transform="scale(4.25 4.25) translate(131 38)" ref={this.linearDevRef}>
         <text visibility={this.upperLinearDeviationReadoutVisibility} x="110" y="42.5" class="FontMediumSmaller  Green">
           {this.upperLinearDeviationReadoutText}
         </text>

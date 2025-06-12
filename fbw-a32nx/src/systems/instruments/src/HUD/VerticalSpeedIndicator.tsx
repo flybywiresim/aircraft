@@ -15,8 +15,7 @@ import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { LagFilter } from './HUDUtils';
-import { HudElemsVis, getBitMask } from './HUDUtils';
+import { HudElemsValues, LagFilter } from './HUDUtils';
 import { AutoThrustMode } from '@shared/autopilot';
 import { getDisplayIndex } from './HUD';
 
@@ -36,6 +35,8 @@ interface TcasState {
 }
 
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
+  private VS = '';
+  private VSRef = FSComponent.createRef<SVGGElement>();
   private flightPhase = -1;
   private declutterMode = 0;
   private onGround = true;
@@ -43,39 +44,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
   private bitMask = 0;
   private athMode = 0;
   private onToPower = false;
-  private elems: HudElemsVis = {
-    xWindAltTape: Subject.create<String>(''),
-    altTape: Subject.create<String>(''),
-    xWindSpdTape: Subject.create<String>(''),
-    spdTapeOrForcedOnLand: Subject.create<String>(''),
-    altTapeMaskFill: Subject.create<String>(''),
-    windIndicator: Subject.create<String>(''),
-    FMA: Subject.create<String>(''),
-    VS: Subject.create<String>(''),
-    QFE: Subject.create<String>(''),
-  };
-
-  private setElems() {
-    this.elems.altTape.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape);
-    this.elems.altTapeMaskFill.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill,
-    );
-    this.elems.spdTapeOrForcedOnLand.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand,
-    );
-    this.elems.windIndicator.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator,
-    );
-    this.elems.xWindAltTape.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape,
-    );
-    this.elems.xWindSpdTape.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape,
-    );
-    this.elems.FMA.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA);
-    this.elems.VS.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS);
-    this.elems.QFE.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE);
-  }
 
   private yOffsetSub = Subject.create(0);
 
@@ -110,8 +78,15 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElemsValues>();
 
+    sub
+      .on('VS')
+      .whenChanged()
+      .handle((v) => {
+        this.VS = v.get().toString();
+        this.VSRef.instance.style.display = `${this.VS}`;
+      });
     sub
       .on('AThrMode')
       .whenChanged()
@@ -122,7 +97,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         this.athMode == AutoThrustMode.TOGA_LK
           ? (this.onToPower = true)
           : (this.onToPower = false);
-        this.setElems();
       });
 
     sub
@@ -130,7 +104,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       .whenChanged()
       .handle((value) => {
         this.onGround = value;
-        this.setElems();
       });
 
     sub
@@ -138,7 +111,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
-        this.setElems();
         value == true
           ? this.VSref.instance.setAttribute('transform', 'scale(5 5) translate(90 -37)')
           : this.VSref.instance.setAttribute('transform', 'scale(5 5) translate(90 20)');
@@ -149,7 +121,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
-        this.setElems();
       });
 
     sub
@@ -200,8 +171,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       .on('vs')
       .withArinc429Precision(3)
       .handle((vs) => {
-        this.setElems();
-
         const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
         const absVSpeed = Math.abs(filteredVS);
@@ -227,7 +196,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         }
 
         if (Math.abs(vs.value) < 20) {
-          this.elems.VS.set('none');
+          this.VSref.instance.style.display = 'none';
         }
       });
 
@@ -242,7 +211,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   render(): VNode {
     return (
-      <g id="VerticalSpeedIndicator" ref={this.VSref} display={this.elems.VS} transform="scale(5 5) translate(90 20)">
+      <g id="VerticalSpeedIndicator" ref={this.VSref} transform="scale(5 5) translate(90 20)">
         {/* <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" /> */}
 
         <g id="VSpeedFailText" ref={this.vsFailed}>
@@ -259,7 +228,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
         {/* <VSpeedTcas ref={this.vspeedTcas} bus={this.props.bus} /> */}
 
-        <g id="VerticalSpeedGroup" ref={this.vsNormal} display={this.elems.VS} transform="scale(1 1) translate(0 0)">
+        <g id="VerticalSpeedGroup" ref={this.vsNormal} transform="scale(1 1) translate(0 0)">
           <path class="ScaledStrokeThin  Green" d="m145.79 80.65 h 6.0476 v 0.25 h-6.0476z" />
           <VSpeedNeedle yOffset={this.yOffsetSub} needleColour={this.needleColour} />
 

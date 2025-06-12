@@ -15,6 +15,7 @@ import { getDisplayIndex, HUDComponent } from './HUD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { HUDSimvarPublisher, HUDSimvars, HUDSymbolsPublisher } from './shared/HUDSimvarPublisher';
+import { HudValueProvider } from './shared/HudValueProvider';
 
 import './style.scss';
 
@@ -50,6 +51,8 @@ class A32NX_HUD extends BaseInstrument {
   private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
 
   private readonly symbolPublisher = new HUDSymbolsPublisher(this.bus);
+
+  private readonly hudProvider = new HudValueProvider(this.bus);
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -72,6 +75,7 @@ class A32NX_HUD extends BaseInstrument {
     this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
     this.backplane.addPublisher('Fwc', this.fwcPublisher);
     this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
+    this.backplane.addInstrument('HudProvider', this.hudProvider);
   }
 
   get templateID(): string {

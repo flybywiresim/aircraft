@@ -20,7 +20,7 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
-import { HudElemsVis, getBitMask } from './HUDUtils';
+import { HudElemsValues } from './HUDUtils';
 import { AutoThrustMode } from '@shared/autopilot';
 import { getDisplayIndex } from './HUD';
 
@@ -55,39 +55,9 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
 }
 
 export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscribable<boolean> }> {
-  private elems: HudElemsVis = {
-    xWindAltTape: Subject.create<String>(''),
-    altTape: Subject.create<String>(''),
-    xWindSpdTape: Subject.create<String>(''),
-    spdTapeOrForcedOnLand: Subject.create<String>(''),
-    altTapeMaskFill: Subject.create<String>(''),
-    windIndicator: Subject.create<String>(''),
-    FMA: Subject.create<String>(''),
-    VS: Subject.create<String>(''),
-    QFE: Subject.create<String>(''),
-  };
+  private FMA = '';
 
-  private setElems() {
-    this.elems.altTape.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTape);
-    this.elems.altTapeMaskFill.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).altTapeMaskFill,
-    );
-    this.elems.spdTapeOrForcedOnLand.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).spdTapeOrForcedOnLand,
-    );
-    this.elems.windIndicator.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).windIndicator,
-    );
-    this.elems.xWindAltTape.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindAltTape,
-    );
-    this.elems.xWindSpdTape.set(
-      getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).xWindSpdTape,
-    );
-    this.elems.FMA.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).FMA);
-    this.elems.VS.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).VS);
-    this.elems.QFE.set(getBitMask(this.onToPower, this.onGround, this.crosswindMode, this.declutterMode).QFE);
-  }
+  private FMARef = FSComponent.createRef<SVGGElement>();
 
   private bitMask = 0;
   private athMode = 0;
@@ -234,7 +204,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus & HudElemsValues>();
 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
@@ -242,6 +212,10 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
     this.BC3Message.sub(() => this.handleFMABorders());
 
+    sub.on('FMA').handle((v) => {
+      this.FMA = v.get().toString();
+      this.FMARef.instance.style.display = `${this.FMA}`;
+    });
     sub
       .on('AThrMode')
       .whenChanged()
@@ -252,7 +226,6 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
         this.athMode == AutoThrustMode.TOGA_LK
           ? (this.onToPower = true)
           : (this.onToPower = false);
-        this.setElems();
       });
 
     sub
@@ -260,21 +233,18 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
       .whenChanged()
       .handle((value) => {
         this.onGround = value;
-        this.setElems();
       });
     sub
       .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
-        this.setElems();
       });
     sub
       .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
-        this.setElems();
       });
 
     sub
@@ -342,7 +312,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   render(): VNode {
     return (
-      <g display={this.elems.FMA} id="FMA" transform="scale(5 5) translate(40 0)">
+      <g ref={this.FMARef} id="FMA" transform="scale(5 5) translate(40 0)">
         {/* <g class="NormalStroke Grey">
           <path d={this.firstBorderSub} />
           <path d={this.secondBorderSub} />
