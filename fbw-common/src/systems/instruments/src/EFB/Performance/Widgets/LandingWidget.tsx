@@ -33,7 +33,7 @@ import {
   WIND_MAGNITUDE_AND_DIR_REGEX,
   WIND_MAGNITUDE_ONLY_REGEX,
 } from '../Data/Utils';
-import { getAirportMagVar, getRunways } from '../Data/Runways';
+import { getAirportMagVar, getRunways, Runway } from '../Data/Runways';
 
 interface OutputDisplayProps {
   label: string;
@@ -103,7 +103,11 @@ export const LandingWidget = () => {
     displayedRunwayLength,
   } = useAppSelector((state) => state.performance.landing);
 
-  const { arrivingAirport, arrivingMetar } = useAppSelector((state) => state.simbrief.data);
+  const {
+    arrivingAirport: ofpArrivingAirport,
+    arrivingMetar: ofpArrivingMetar,
+    arrivingRunway: ofpArrivingRunway,
+  } = useAppSelector((state) => state.simbrief.data);
 
   useEffect(() => {
     // in case of head- or tailwind entry only, the runway heading is used to set the wind direction
@@ -223,19 +227,14 @@ export const LandingWidget = () => {
     }
   };
 
-  const handleICAOChange = (icao: string) => {
-    dispatch(clearLandingValues());
-
+  // split out from handlers to avoid races between icao and runways changes
+  const updateIcaoAndRunways = (icao: string | undefined, runwayIdent: string | undefined) => {
     dispatch(setLandingValues({ icao }));
     if (isValidIcao(icao)) {
       getRunways(icao)
         .then((runways) => {
-          dispatch(setLandingValues({ availableRunways: runways }));
-          if (runways.length > 0) {
-            handleRunwayChange(0);
-          } else {
-            handleRunwayChange(-1);
-          }
+          const runwayIndex = runwayIdent !== undefined ? runways.findIndex((r) => r.ident === runwayIdent) : undefined;
+          updateRunways(runwayIndex, runways);
         })
         .catch(() => {
           clearAirportRunways();
@@ -245,10 +244,15 @@ export const LandingWidget = () => {
     }
   };
 
-  const handleRunwayChange = (runwayIndex: number | undefined): void => {
-    clearResult();
+  const updateRunways = (runwayIndex: number, runways: Runway[] | undefined) => {
+    let newRunway = undefined;
+    if (runways !== undefined) {
+      dispatch(setLandingValues({ availableRunways: runways }));
+      newRunway = runwayIndex !== undefined && runwayIndex >= 0 ? runways[runwayIndex] : undefined;
+    } else {
+      newRunway = runwayIndex !== undefined && runwayIndex >= 0 ? availableRunways[runwayIndex] : undefined;
+    }
 
-    const newRunway = runwayIndex !== undefined && runwayIndex >= 0 ? availableRunways[runwayIndex] : undefined;
     if (newRunway !== undefined) {
       const slope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
       dispatch(
@@ -261,27 +265,37 @@ export const LandingWidget = () => {
         }),
       );
     } else {
-      dispatch(
-        setLandingValues({
-          selectedRunwayIndex: -1,
-          runwayHeading: undefined,
-          runwayLength: undefined,
-          slope: undefined,
-          elevation: undefined,
-        }),
-      );
+      clearLandingRunway();
     }
   };
 
+  const handleIcaoChange = (icao: string) => {
+    dispatch(clearLandingValues());
+    updateIcaoAndRunways(icao, undefined);
+  };
+
+  const handleRunwayChange = (runwayIndex: number | undefined): void => {
+    clearResult();
+    updateRunways(runwayIndex, undefined);
+  };
+
+  const clearLandingRunway = () => {
+    dispatch(
+      setLandingValues({
+        selectedRunwayIndex: -1,
+        runwayHeading: undefined,
+        runwayLength: undefined,
+        slope: undefined,
+        elevation: undefined,
+      }),
+    );
+  };
+
   const clearAirportRunways = () => {
+    clearLandingRunway();
     dispatch(
       setLandingValues({
         availableRunways: [],
-        selectedRunwayIndex: -1,
-        runwayBearing: undefined,
-        runwayLength: undefined,
-        runwaySlope: undefined,
-        elevation: undefined,
       }),
     );
   };
@@ -484,7 +498,7 @@ export const LandingWidget = () => {
       syncValuesWithApiMetar(icao);
     } else {
       try {
-        const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
+        const parsedMetar: MetarParserType = parseMetar(ofpArrivingMetar);
 
         const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
 
@@ -504,12 +518,12 @@ export const LandingWidget = () => {
             bodyText={t('Performance.Landing.MetarErrorDialogMessage')}
             cancelText="No"
             confirmText="Yes"
-            onConfirm={() => syncValuesWithApiMetar(arrivingAirport)}
+            onConfirm={() => syncValuesWithApiMetar(ofpArrivingAirport)}
           />,
         );
       }
 
-      dispatch(setLandingValues({ icao: arrivingAirport }));
+      updateIcaoAndRunways(ofpArrivingAirport, ofpArrivingRunway);
     }
   };
 
@@ -517,7 +531,7 @@ export const LandingWidget = () => {
     if (autoFillSource === 'METAR') {
       return isValidIcao(icao);
     }
-    return isValidIcao(arrivingAirport);
+    return isValidIcao(ofpArrivingAirport);
   };
 
   const [temperatureUnit, setTemperatureUnit] = usePersistentProperty(
@@ -580,7 +594,7 @@ export const LandingWidget = () => {
                     className="w-24 text-center uppercase"
                     value={icao}
                     placeholder="ICAO"
-                    onChange={handleICAOChange}
+                    onChange={handleIcaoChange}
                     maxLength={4}
                   />
                 </Label>
