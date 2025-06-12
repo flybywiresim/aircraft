@@ -57,7 +57,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
         <svg height={this.props.height} width={this.triangleWidth}>
           <polygon
             points={`0,${this.props.height} ${this.triangleWidth},0 ${this.triangleWidth},${this.props.height}`}
-            style={`fill:${this.props.isSelected ? '#000000' : '#3c3c3c'};`}
+            style={`fill:${this.props.isSelected ? '#000000' : '#272525'};`}
           />
           <line
             x1="0"
@@ -87,7 +87,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
         <svg height={this.props.height} width={this.triangleWidth}>
           <polygon
             points={`0,0 ${this.triangleWidth},${this.props.height} 0,${this.props.height}`}
-            style={`fill:${this.props.isSelected ? '#000000' : '#3c3c3c'};`}
+            style={`fill:${this.props.isSelected ? '#000000' : '#272525'};`}
           />
           <line
             x1="0"
