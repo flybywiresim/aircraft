@@ -21,6 +21,7 @@
 1. [A380X/SD] Add video page with 'NOT AVAIL' text - @dzoeteman (Deniz)
 1. [A380X/PFD] Inhibit rudder trim indication in the air - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Add RETURN button to DATA/AIRPORT page - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Improve ALL PRIMARY CABIN FANS FAULT - @Jonny23787 (Jonathan)
 1. [A380X/FCU] Reduce FCU texture size from 5120 to 2560 - @heclak (Heclak)
 1. [A380X/MFD] Fix VERT DEV not updating in APPR page during descend phase - @heclak (Heclak)
