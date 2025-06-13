@@ -349,7 +349,7 @@ export function getBitMask(
     elemVis.FMA = 'block';
     elemVis.VS = 'block';
     elemVis.QFE = 'block';
-    elemVis.pitchScale = 'block';
+    elemVis.pitchScale = 'none';
   }
   //onToPower 1 onGnd 1 xwnd on  dec == 2
   if (bitMask == 105) {
@@ -363,7 +363,7 @@ export function getBitMask(
     elemVis.FMA = 'block';
     elemVis.VS = 'block';
     elemVis.QFE = 'block';
-    elemVis.pitchScale = 'block';
+    elemVis.pitchScale = 'none';
   }
 
   //----------
@@ -379,7 +379,7 @@ export function getBitMask(
     elemVis.FMA = 'block';
     elemVis.VS = 'block';
     elemVis.QFE = 'block';
-    elemVis.pitchScale = 'block';
+    elemVis.pitchScale = 'none';
   }
   //onToPower 1 onGnd 1 xwnd off  dec == 2
   if (bitMask == 113) {
@@ -393,7 +393,7 @@ export function getBitMask(
     elemVis.FMA = 'block';
     elemVis.VS = 'block';
     elemVis.QFE = 'block';
-    elemVis.pitchScale = 'block';
+    elemVis.pitchScale = 'none';
   }
 
   //----------
@@ -469,7 +469,7 @@ export function getBitMask(
     elemVis.FMA = 'block';
     elemVis.VS = 'none';
     elemVis.QFE = 'block';
-    elemVis.pitchScale = 'block';
+    elemVis.pitchScale = 'none';
   }
   //onToPower 0 onGnd 1 xwnd on  dec == 2
   if (bitMask == 41) {
@@ -498,7 +498,7 @@ export function getBitMask(
     elemVis.FMA = 'block';
     elemVis.VS = 'none';
     elemVis.QFE = 'block';
-    elemVis.pitchScale = 'block';
+    elemVis.pitchScale = 'none';
   }
   //onToPower 0 onGnd 1 xwnd off  dec == 2
   if (bitMask == 49) {

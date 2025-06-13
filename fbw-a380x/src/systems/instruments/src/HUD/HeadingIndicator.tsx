@@ -21,8 +21,6 @@ const ValueSpacing = 5;
 export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Subscribable<boolean> }> {
   private normalRef = FSComponent.createRef<SVGGElement>();
 
-  private abnormalRef = FSComponent.createRef<SVGGElement>();
-
   private heading = Subject.create(0);
 
   private ILSCourse = Subject.create(0);
@@ -39,10 +37,8 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
 
       if (h.isNormalOperation()) {
         this.normalRef.instance.style.visibility = 'visible';
-        this.abnormalRef.instance.style.visibility = 'hidden';
       } else {
         this.normalRef.instance.style.visibility = 'hidden';
-        this.abnormalRef.instance.style.visibility = 'visible';
       }
     });
 
@@ -64,13 +60,6 @@ export class HeadingOfftape extends DisplayComponent<{ bus: EventBus; failed: Su
   render(): VNode {
     return (
       <>
-        <g ref={this.abnormalRef}>
-          <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" class="TapeBackground" />
-          <path id="HeadingTapeOutline" class="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />
-          <text id="HDGFailText" class="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">
-            HDG
-          </text>
-        </g>
         <g id="HeadingOfftapeGroup" ref={this.normalRef}>
           <SelectedHeading heading={this.heading} bus={this.props.bus} />
           <QFUIndicator heading={this.heading} ILSCourse={this.ILSCourse} lsPressed={this.lsPressed} />

@@ -411,21 +411,21 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             class="BlackFill"
             d="m587 382.606h-58.888v-40.233h58.888v-11.979h39.758v64.194h-39.758z"
           />
-          <text id="AltFailText" class="Blink9Seconds FontLargest Green EndAlign" x="588" y="374">
+          <text id="AltFailText" class="Blink9Seconds FontLargest Green MiddleAlign" x="588" y="374">
             ALT
           </text>
         </g>
         <g ref={this.tcasFailed} style="display: none">
-          <text class="Blink9Seconds FontLargest Green EndAlign" x="634.6275" y="430.56">
+          <text class="Blink9Seconds FontLargest Green MiddleAlign" x="630" y="420">
             T
           </text>
-          <text class="Blink9Seconds FontLargest Green EndAlign" x="634.6275" y="430.56">
+          <text class="Blink9Seconds FontLargest Green MiddleAlign" x="630" y="455">
             C
           </text>
-          <text class="Blink9Seconds FontLargest Green EndAlign" x="634.6275" y="430.56">
+          <text class="Blink9Seconds FontLargest Green MiddleAlign" x="630" y="490">
             A
           </text>
-          <text class="Blink9Seconds FontLargest Green EndAlign" x="634.6275" y="430.56">
+          <text class="Blink9Seconds FontLargest Green MiddleAlign" x="630" y="525">
             S
           </text>
         </g>

@@ -208,11 +208,11 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         <text
           style={this.failureVis}
           id="AttFailText"
-          class="Blink9Seconds FontLargest Red EndAlign"
-          x="75.893127"
-          y="83.136955"
+          class="Blink9Seconds FontLargest Green MiddleAlign"
+          x="640"
+          y="532"
         >
-          ATT
+          ATT / HDG
         </text>
         <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
           <FlightPathVector
