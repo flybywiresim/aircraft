@@ -15,7 +15,7 @@ import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/au
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { Arinc429ConsumerSubject, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429Word, Arinc429WordData, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -45,7 +45,7 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
   };
 }
 
-export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribable<boolean> }> {
+export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscribable<boolean> }> {
   private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
   private activeLateralMode: number = 0;
@@ -74,7 +74,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private readonly radioHeight = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
-  private readonly altitude = ConsumerSubject.create(this.sub.on('altitudeAr'), Arinc429Word.empty());
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
   private readonly landingElevation = ConsumerSubject.create(this.sub.on('landingElevation'), Arinc429Word.empty());
 
