@@ -56,6 +56,9 @@
 1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
 1. [A380X/FMC] Use the estimated gross weight to compute the max level for step climbs - @tracernz (Mike)
+1. [ND] Fixed TAS, GS & Wind data not taking source switching into account - @BravoMike99 (bruno_pt99)
+1. [A32NX/SD] Add flashing for AUTO BRK element - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
+1. [A32NX/FMS] Change GA PERF speeds to match APPR PERF speeds - @Jonny23787 (Jonathan)
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
 
 ## 0.13.0
