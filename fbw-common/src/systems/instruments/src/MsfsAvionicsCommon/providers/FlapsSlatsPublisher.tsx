@@ -30,12 +30,9 @@ export class FlapsSlatsPublisher extends SimVarPublisher<FlapsSlatsEvents> {
     const simvars = new Map<keyof FlapsSlatsEvents, SimVarPublisherEntry<any>>([
       [
         'slats_flaps_status_raw',
-        { name: 'L:A32NX_SFCC_#index#_SLAT_FLAP_SYSTEM_STATUS_WORD', type: SimVarValueType.Number, indexed: true },
+        { name: 'L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD', type: SimVarValueType.Number, indexed: false },
       ],
-      [
-        'flap_handle_index',
-        { name: 'L:A32NX_FLAPS_#index#_HANDLE_INDEX', type: SimVarValueType.Number, indexed: true },
-      ],
+      ['flap_handle_index', { name: 'L:A32NX_FLAPS_HANDLE_INDEX', type: SimVarValueType.Number, indexed: false }],
     ]);
     super(simvars, bus, pacer);
   }

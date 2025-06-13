@@ -10,10 +10,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 export interface BaseEngineEvents {
-  tla_1: number;
-  tla_2: number;
-  tla_3: number;
-  tla_4: number;
+  tla: number;
 }
 
 type EngineIndexedEvents = {
@@ -24,16 +21,13 @@ export interface EngineEvents extends BaseEngineEvents, EngineIndexedEvents {}
 
 export class EnginePublisher extends SimVarPublisher<EngineEvents> {
   /**
-   * Creates a RadioAltimeterPublisher.
+   * Creates a EnginePublisher.
    * @param bus The event bus to which to publish.
    * @param pacer An optional pacer to use to control the rate of publishing.
    */
   public constructor(bus: EventBus, pacer?: PublishPacer<EngineEvents>) {
     const simvars = new Map<keyof EngineEvents, SimVarPublisherEntry<any>>([
-      ['tla_1', { name: 'L:A32NX_AUTOTHRUST_#index#_TLA:1', type: SimVarValueType.Number, indexed: true }],
-      ['tla_2', { name: 'L:A32NX_AUTOTHRUST_#index#_TLA:2', type: SimVarValueType.Number, indexed: true }],
-      ['tla_3', { name: 'L:A32NX_AUTOTHRUST_#index#_TLA:3', type: SimVarValueType.Number, indexed: true }],
-      ['tla_4', { name: 'L:A32NX_AUTOTHRUST_#index#_TLA:4', type: SimVarValueType.Number, indexed: true }],
+      ['tla', { name: 'L:A32NX_AUTOTHRUST_TLA:#index#', type: SimVarValueType.Number, indexed: true }],
     ]);
     super(simvars, bus, pacer);
   }
