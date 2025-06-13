@@ -488,6 +488,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprCrosswind = Subject.create<string>('');
 
+  private towerHeadwindValue = Subject.create<boolean>(false);
+
   private apprSelectedFlapsIndex = Subject.create<number | null>(1);
 
   private apprLandingWeight = Subject.create<number | null>(null);
@@ -1075,6 +1077,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.towerHeadwind.set(null);
             this.apprCrosswind.set('---');
           }
+          this.towerHeadwind.sub((v) => {
+            if (v !== null) {
+              if (v < 0) {
+                this.towerHeadwindValue.set(true);
+              } else {
+                this.towerHeadwindValue.set(false);
+              }
+            }
+          });
         }),
     );
 
