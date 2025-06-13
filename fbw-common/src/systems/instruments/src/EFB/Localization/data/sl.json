@@ -667,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Naloži samo",
       "None": "Brez",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Izklopljeno",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",

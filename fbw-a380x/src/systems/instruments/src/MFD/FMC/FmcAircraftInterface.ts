@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -10,7 +10,14 @@ import {
   Subscription,
   UnitType,
 } from '@microsoft/msfs-sdk';
-import { Arinc429SignStatusMatrix, Arinc429Word, FmsData, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429SignStatusMatrix,
+  Arinc429Word,
+  FmsData,
+  MathUtils,
+  NXDataStore,
+  VerticalPathCheckpoint,
+} from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Vmcl, Vmo, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
@@ -26,6 +33,7 @@ import { VerticalMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -635,12 +643,12 @@ export class FmcAircraftInterface {
     // apply speed limit/alt
     if (this.flightPhase.get() <= FmgcFlightPhase.Cruise) {
       const climbSpeedLimit = this.fmgc.getClimbSpeedLimit();
-      if (climbSpeedLimit.speed !== null && alt <= climbSpeedLimit.underAltitude) {
+      if (climbSpeedLimit !== null && alt <= climbSpeedLimit.underAltitude) {
         kcas = Math.min(climbSpeedLimit.speed, kcas);
       }
     } else if (this.flightPhase.get() < FmgcFlightPhase.GoAround) {
       const descentSpeedLimit = this.fmgc.getDescentSpeedLimit();
-      if (descentSpeedLimit.speed !== null && alt <= descentSpeedLimit.underAltitude) {
+      if (descentSpeedLimit !== null && alt <= descentSpeedLimit.underAltitude) {
         kcas = Math.min(descentSpeedLimit.speed, kcas);
       }
     }
@@ -813,12 +821,10 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Climb: {
           let speed = this.fmgc.getManagedClimbSpeed();
+          const speedLimit = this.fmgc.getClimbSpeedLimit();
 
-          if (
-            this.fmgc.getClimbSpeedLimit() !== undefined &&
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < this.fmgc.getClimbSpeedLimit().underAltitude
-          ) {
-            speed = Math.min(speed, this.fmgc.getClimbSpeedLimit().speed);
+          if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
+            speed = Math.min(speed, speedLimit.speed);
           }
 
           speed = Math.min(speed, this.getSpeedConstraint());
@@ -829,12 +835,9 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Cruise: {
           let speed = this.fmgc.getManagedCruiseSpeed();
-
-          if (
-            this.fmgc.getClimbSpeedLimit() !== undefined &&
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < this.fmgc.getClimbSpeedLimit().underAltitude
-          ) {
-            speed = Math.min(speed, this.fmgc.getClimbSpeedLimit().speed);
+          const speedLimit = this.fmgc.getClimbSpeedLimit();
+          if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
+            speed = Math.min(speed, speedLimit.speed);
           }
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedCruiseSpeedMach());
@@ -979,7 +982,7 @@ export class FmcAircraftInterface {
     let towerHeadwind = 0;
     const appWind = this.fmgc.data.approachWind.get();
     const destRwy = this.fmgc.getDestinationRunway();
-    if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
+    if (appWind !== null) {
       if (destRwy) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(appWind.speed, appWind.direction, destRwy.magneticBearing);
       }
@@ -991,17 +994,17 @@ export class FmcAircraftInterface {
   private speedLimitExceeded = false;
 
   checkSpeedLimit() {
-    let speedLimit: number;
-    let speedLimitAlt: number;
+    let speedLimit: number | undefined;
+    let speedLimitAlt: number | undefined;
     switch (this.flightPhase.get()) {
       case FmgcFlightPhase.Climb:
       case FmgcFlightPhase.Cruise:
-        speedLimit = this.fmgc.getClimbSpeedLimit().speed;
-        speedLimitAlt = this.fmgc.getClimbSpeedLimit().underAltitude;
+        speedLimit = this.fmgc.getClimbSpeedLimit()?.speed;
+        speedLimitAlt = this.fmgc.getClimbSpeedLimit()?.underAltitude;
         break;
       case FmgcFlightPhase.Descent:
-        speedLimit = this.fmgc.getDescentSpeedLimit().speed;
-        speedLimitAlt = this.fmgc.getDescentSpeedLimit().underAltitude;
+        speedLimit = this.fmgc.getDescentSpeedLimit()?.speed;
+        speedLimitAlt = this.fmgc.getDescentSpeedLimit()?.underAltitude;
         break;
       default:
         // no speed limit in other phases
@@ -1009,7 +1012,7 @@ export class FmcAircraftInterface {
         return;
     }
 
-    if (speedLimit === undefined) {
+    if (speedLimit === undefined || speedLimitAlt === undefined) {
       this.speedLimitExceeded = false;
       return;
     }
@@ -1196,7 +1199,7 @@ export class FmcAircraftInterface {
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
     const appWind = this.fmgc.data.approachWind.get();
     let towerHeadwind = 0;
-    if (appWind && Number.isFinite(appWind.speed) && Number.isFinite(appWind.direction)) {
+    if (appWind !== null) {
       if (this.flightPlanService.active.destinationRunway) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(
           appWind.speed,
@@ -1865,6 +1868,22 @@ export class FmcAircraftInterface {
 
       SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', SimVarValueType.Bool, false);
     }
+  }
+
+  public transmitVerticalPath(
+    targetProfile: VerticalPathCheckpoint[],
+    vdAltitudeConstraints: VdAltitudeConstraint[],
+    actualProfile: VerticalPathCheckpoint[],
+    descentProfile: VerticalPathCheckpoint[],
+    trackChangeDistance: number | null,
+  ) {
+    const pub = this.bus.getPublisher<MfdSurvEvents>();
+
+    pub.pub('a32nx_fms_vertical_target_profile', targetProfile, true);
+    pub.pub('a32nx_fms_vertical_constraints', vdAltitudeConstraints, true);
+    pub.pub('a32nx_fms_vertical_actual_profile', actualProfile, true);
+    pub.pub('a32nx_fms_vertical_descent_profile', descentProfile, true);
+    pub.pub('a32nx_fms_vd_track_change_distance', trackChangeDistance, true);
   }
 
   //-----------------------------------------------------------------------------------

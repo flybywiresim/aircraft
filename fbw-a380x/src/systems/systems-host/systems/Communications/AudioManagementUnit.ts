@@ -10,8 +10,8 @@ import {
   Subject,
   Subscribable,
 } from '@microsoft/msfs-sdk';
-import { RadioNavSelectedNavaid, RmpAmuBusEvents } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { RadioNavSelectedNavaid, RmpAmuBusEvents } from './RmpAmuBusPublisher';
+import { FailuresConsumer, RegisteredSimVar, RmpState } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 
 export type AmuIndex = 1 | 2;
@@ -32,6 +32,12 @@ export class AudioManagementUnit implements Instrument {
   private readonly onsideRmpIndex = this.index;
   private readonly offsideRmpIndex = this.index === 2 ? 1 : 2;
 
+  private readonly onsideRmpStateLocalVar = RegisteredSimVar.create<number>(
+    `L:A380X_RMP_${this.onsideRmpIndex}_STATE`,
+    SimVarValueType.Enum,
+  );
+  private readonly rmp3StateLocalVar = RegisteredSimVar.create<number>(`L:A380X_RMP_3_STATE`, SimVarValueType.Enum);
+
   private readonly mainPowerVar = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
 
   private readonly _isHealthy = Subject.create(false);
@@ -39,9 +45,8 @@ export class AudioManagementUnit implements Instrument {
 
   private readonly failureKey = this.index === 2 ? A380Failure.AudioManagementUnit2 : A380Failure.AudioManagementUnit1;
 
-  // TODO hook up
-  private readonly onsideRmpSwitchedOn = Subject.create(true);
-  private readonly rmp3SwitchedOn = Subject.create(true);
+  private readonly onsideRmpSwitchedOn = Subject.create(false);
+  private readonly rmp3SwitchedOn = Subject.create(false);
 
   private readonly activeRmpIndex = MappedSubject.create(
     ([onsideHealthy, rmp3Healthy]) => (onsideHealthy ? this.onsideRmpIndex : rmp3Healthy ? 3 : this.offsideRmpIndex),
@@ -91,11 +96,18 @@ export class AudioManagementUnit implements Instrument {
     this.failuresConsumer.register(this.failureKey);
   }
 
+  private static isRmpOn(state: RmpState): boolean {
+    return state === RmpState.On || state === RmpState.OnFailed;
+  }
+
   /** @inheritdoc */
   onUpdate(): void {
     const failed = this.failuresConsumer.isActive(this.failureKey);
     const powered = SimVar.GetSimVarValue(this.mainPowerVar, SimVarValueType.Bool) > 0;
     this._isHealthy.set(!failed && powered);
+
+    this.onsideRmpSwitchedOn.set(AudioManagementUnit.isRmpOn(this.onsideRmpStateLocalVar.get()));
+    this.rmp3SwitchedOn.set(AudioManagementUnit.isRmpOn(this.rmp3StateLocalVar.get()));
   }
 
   public getActiveNavAudio(): RadioNavSelectedNavaid {
