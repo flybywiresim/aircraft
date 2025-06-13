@@ -13,6 +13,7 @@ import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXFictionalMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { Airport } from '@flybywiresim/fbw-sdk';
 
 export class CDULateralRevisionPage {
   /**
@@ -43,8 +44,22 @@ export class CDULateralRevisionPage {
 
     const isPpos = leg === undefined || (legIndexFP === 0 && leg !== targetPlan.originLeg);
     const isFrom = legIndexFP === targetPlan.fromLegIndex && forPlan === FlightPlanIndex.Active && !inAlternate;
-    const isDeparture = legIndexFP === targetPlan.originLegIndex && !isPpos; // TODO this is bogus... compare icaos
-    const isDestination = legIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
+    const legWaypoint = !isPpos ? mcdu.flightPlanService.active.legElementAt(legIndexFP).definition.waypoint : null;
+    const departure = mcdu.flightPlanService.active.originAirport;
+    const arrival = mcdu.flightPlanService.active.destinationAirport;
+    const currentWaypointAirportIdent = (legWaypoint as Airport)?.airportIdent;
+    const isDeparture =
+      legIndexFP === targetPlan.originLegIndex &&
+      !isPpos &&
+      departure &&
+      currentWaypointAirportIdent &&
+      departure.airportIdent === currentWaypointAirportIdent;
+    const isDestination =
+      legIndexFP === targetPlan.destinationLegIndex &&
+      !isPpos &&
+      arrival &&
+      currentWaypointAirportIdent &&
+      arrival.airportIdent === currentWaypointAirportIdent;
     const isWaypoint = !isDeparture && !isDestination && !isPpos;
     const isManual = leg && leg.isVectors();
 
