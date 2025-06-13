@@ -1706,6 +1706,9 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
   }
 
+  // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
+  fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
+
   FcdcBus output = fcdcs[fcdcIndex].update(sampleTime, failuresConsumer.isActive(failureIndex), idCpiomCxAvailable[fcdcIndex]->get());
 
   idFcdcDiscreteWord1[fcdcIndex]->set(output.efcsStatus1.toSimVar());

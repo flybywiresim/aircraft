@@ -853,17 +853,17 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     ],
   },
   280900001: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm JETTISON',
+    title: '\x1b<4m\x1b4mFUEL\x1bm JETTISON (WIP)',
     sensed: false,
     items: [], // TODO
   },
   280900002: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm FUEL LEAK',
+    title: '\x1b<4m\x1b4mFUEL\x1bm FUEL LEAK (WIP)',
     sensed: false,
     items: [], // TODO
   },
   280900003: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm MAN BALANCING PROCEDURE',
+    title: '\x1b<4m\x1b4mFUEL\x1bm MAN BALANCING PROCEDURE (WIP)',
     sensed: false,
     items: [], // TODO
   },
