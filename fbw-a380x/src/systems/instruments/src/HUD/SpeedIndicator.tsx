@@ -209,9 +209,11 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
   render(): VNode {
     return (
       <>
-        <g id="FailedGroup" ref={this.failedGroup} class="HiddenElement">
-          {/* <path id="SpeedTapeBackground" class="TapeBackground" d="m9.529 617.8v-427.365h85.625v427.365z" /> */}
-          <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Green" x="17.756115" y="83.386398">
+        <g id="FailedGroup" transform="translate(95 159)" ref={this.failedGroup} class="HiddenElement">
+          <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d="m87 170 v 383" />
+          <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m16 170 h 98" />
+          <path id="SpeedTapeOutlineLower" class="NormalStroke Green" d="m16 553 h 98" />
+          <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Green" x="80" y="373">
             SPD
           </text>
         </g>
@@ -1796,6 +1798,11 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
 }
 
 //GroundSpeed indicator
+interface GroundSpeedIndicatorData {
+  readonly lmgc: Subscribable<boolean>;
+  readonly fwcFlightPhase: Subscribable<number>;
+}
+
 class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
   private flightPhase = -1;
   private declutterMode = 0;
@@ -1808,38 +1815,28 @@ class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly trueAirSpeedRegister = Arinc429RegisterSubject.createEmpty();
 
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
+
+  private readonly data: GroundSpeedIndicatorData = {
+    lmgc: ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true),
+    fwcFlightPhase: ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0),
+  };
+
+  private readonly gsVisibility = MappedSubject.create(
+    ([lmgc, fwcFlightPhase]) => {
+      if ((lmgc && fwcFlightPhase < 5) || (lmgc && fwcFlightPhase >= 10)) {
+        return 'block';
+      } else {
+        return 'none';
+      }
+    },
+    this.data.lmgc,
+    this.data.fwcFlightPhase,
+  );
+
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        if (value === true) {
-          this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-          //onDeparture
-          if (this.flightPhase <= 5) {
-            if (value) {
-              this.sVisibility.set('block');
-            } else {
-              this.sVisibility.set('none');
-            }
-          }
-          //onArrival
-          if (this.flightPhase >= 7) {
-            if (value) {
-              this.sVisibility.set('block');
-            } else {
-              this.sVisibility.set('none');
-            }
-          }
-        } else {
-          this.sVisibility.set('none');
-        }
-      });
-    sub
+    this.sub
       .on('groundSpeed')
       .atFrequency(2)
       .handle((value) => this.groundSpeedRegister.setWord(value));
@@ -1848,17 +1845,17 @@ class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
       element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
 
-      // data.value <= 140
-      //   ? (this.groundSpeedRef.instance.style.display = 'block')
-      //   : (this.groundSpeedRef.instance.style.display = 'none');
+      data.value < 100
+        ? (this.groundSpeedRef.instance.style.display = 'block')
+        : (this.groundSpeedRef.instance.style.display = 'none');
     }, true);
   }
 
   render(): VNode | null {
     return (
-      <g id="GndSpdGroup" display={this.sVisibility}>
+      <g id="GndSpdGroup" display={this.gsVisibility}>
         <Layer x={2} y={25}>
-          <text ref={this.groundSpeedRef} x={0} y={0} class="Green FontMediumSmaller">
+          <text ref={this.groundSpeedRef} x={20} y={0} class="Green FontMediumSmaller">
             GS
           </text>
           <text ref={this.groundSpeedRef} x={90} y={0} class="Green FontMediumSmaller EndAlign" />
