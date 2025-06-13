@@ -8,6 +8,7 @@ import {
   Instrument,
   MappedSubject,
   SimVarValueType,
+  Subject,
   Wait,
 } from '@microsoft/msfs-sdk';
 import { GroundSupportEvents, MsfsElectricsEvents, MsfsFlightModelEvents, MsfsMiscEvents } from '@flybywiresim/fbw-sdk';
@@ -28,9 +29,18 @@ export class GPUManagement implements Instrument {
 
   private readonly groundVelocity = ConsumerSubject.create(this.sub.on('msfs_ground_velocity'), 0);
 
+  private readonly cameraState = Subject.create(-1);
+
   private readonly msfsExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
 
   private readonly ExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
+
+  // state 2 is cockpit, state 3 is external
+  private readonly isIngame = MappedSubject.create(
+    ([gameState, cameraState]) => gameState === GameState.ingame && (cameraState === 2 || cameraState === 3),
+    GameStateProvider.get(),
+    this.cameraState,
+  );
 
   private initialIngameFrame: boolean;
   constructor(
@@ -50,7 +60,7 @@ export class GPUManagement implements Instrument {
   }
 
   public init(): void {
-    Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true).then(() => {
+    Wait.awaitSubscribable(this.isIngame, (state) => state, true).then(() => {
       this.sub.on('gpu_toggle').handle(this.toggleGPU.bind(this));
       this.gpuHookedUp.sub((v) => this.setEXTpower(v));
       this.groundVelocity.sub((v) => {
@@ -69,6 +79,8 @@ export class GPUManagement implements Instrument {
         this.setEXTpower(true);
       }
       this.initialIngameFrame = false;
+    } else {
+      this.cameraState.set(SimVar.GetSimVarValue('CAMERA STATE', 'enum'));
     }
   }
 

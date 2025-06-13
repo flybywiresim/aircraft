@@ -8,6 +8,7 @@
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import {
+  BaroUnitSelector,
   ExtrasSimVarPublisher,
   FlightDeckBounds,
   GPUManagement,
@@ -17,6 +18,7 @@ import {
   MsfsMiscPublisher,
   NotificationManager,
   PilotSeatManager,
+  TelexCheck,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
@@ -24,6 +26,7 @@ import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
+import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -87,11 +90,18 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
+  private readonly telexCheck = new TelexCheck();
+
   public readonly xmlConfig: Document;
   /**interactionpoint 8 is GPU connection and 1 GPU in total */
   private readonly gpuManagement = new GPUManagement(this.bus, 8, 1);
 
   private readonly lightSync: LightSync = new LightSync(this.bus);
+
+  private readonly baroUnitSelector = new BaroUnitSelector((isHpa) => {
+    SimVar.SetSimVarValue('L:A32NX_FCU_EFIS_L_BARO_IS_INHG', 'bool', !isHpa);
+    SimVar.SetSimVarValue('L:A32NX_FCU_EFIS_R_BARO_IS_INHG', 'bool', !isHpa);
+  });
 
   /**
    * "mainmenu" = 0
@@ -125,6 +135,7 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
+    this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
@@ -156,6 +167,8 @@ class ExtrasHost extends BaseInstrument {
     this.aircraftSync.connectedCallback();
 
     this.backplane.init();
+
+    this.baroUnitSelector.performSelection();
   }
 
   public parseXMLConfig(): void {
@@ -174,6 +187,7 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor.startPublish();
         this.flightPlanAsoboSync.init();
         this.aircraftSync.startPublish();
+        this.telexCheck.showPopup();
       }
       this.gameState = gs;
     }

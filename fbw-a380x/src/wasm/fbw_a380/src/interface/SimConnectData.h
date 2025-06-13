@@ -32,7 +32,6 @@ struct SimData {
   double H_ind_ft;
   double H_radio_ft;
   double H_dot_fpm;
-  double CG_percent_MAC;
   double total_weight_kg;
   double gear_animation_pos_0;
   double gear_animation_pos_1;
@@ -110,9 +109,10 @@ struct SimData {
   unsigned long long engineAntiIce_3;
   unsigned long long engineAntiIce_4;
   unsigned long long simOnGround;
-  double kohlsmanSetting_0;
   double kohlsmanSetting_1;
-  unsigned long long kohlsmanSettingStd_3;
+  double kohlsmanSetting_2;
+  /// @deprecated Should use ADR pressure altitude
+  unsigned long long kohlsmanSettingStd_4;
   double cameraState;
   double altitude_m;
   double nav_loc_magvar_deg;
@@ -209,7 +209,7 @@ struct SimOutputSpoilers {
 };
 
 struct SimOutputAltimeter {
-  unsigned long long kohlsmanSettingStd_3;
+  unsigned long long kohlsmanSettingStd;
 };
 
 struct ClientDataAutopilotStateMachine {

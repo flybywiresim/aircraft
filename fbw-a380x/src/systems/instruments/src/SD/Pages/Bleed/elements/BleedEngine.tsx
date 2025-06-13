@@ -35,6 +35,23 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
     'number',
     100,
   );
+  const [lhCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_L_OPEN', 'bool', 500);
+  const [centreCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_C_OPEN', 'bool', 500);
+  const [rhCrossBleedValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_R_OPEN', 'bool', 500);
+  const [apuBleedValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
+  const allApuValvesOpen = apuBleedValveOpen;
+
+  let bleedDuctHidden = false;
+  if (engine == 1) {
+    bleedDuctHidden =
+      !engineBleedValveOpen && !allApuValvesOpen && !(lhCrossBleedValveOpen || centreCrossBleedValveOpen);
+  } else if (engine == 2) {
+    bleedDuctHidden = !engineBleedValveOpen && !lhCrossBleedValveOpen;
+  } else if (engine == 3) {
+    bleedDuctHidden = !engineBleedValveOpen && !centreCrossBleedValveOpen;
+  } else {
+    bleedDuctHidden = !engineBleedValveOpen && !(centreCrossBleedValveOpen && rhCrossBleedValveOpen);
+  }
 
   // TODO: Connect these up properly, so the valves can be shown in amber once we have failure conditions.
   // For now, we pretend the valves are always in the commanded state.
@@ -44,13 +61,13 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
   // TODO Degraded accuracy indication for fuel flow and used
 
   return (
-    <>
-      <text x={x - 22} y={y + 28} className="White F29">
+    <g style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}>
+      <text x={-18} y={32} className="White F29">
         {engine}
       </text>
       <image
-        x={x}
-        y={y}
+        x={0}
+        y={0}
         width={80}
         height={124}
         xlinkHref="/Images/fbw-a380x/Engine-Hyd-Bleed-Dithered.png"
@@ -59,84 +76,88 @@ const BleedEngine: React.FC<BleedPageProps> = ({ x, y, engine, sdacDatum }) => {
 
       <g className={engine === 1 ? 'Show' : 'Hide'}>
         {/* x=75   y=525 */}
-        <rect className="BackgroundFill" height={19} width={28} x={x + 35} y={y + 82} />
-        <rect className="BackgroundFill" height={19} width={28} x={x + 5} y={y + 40} />
-        <text className="White F22" x={x + 6} y={y + 58}>
+        <rect className="BackgroundFill" height={20} width={28} x={39} y={85} />
+        <rect className="BackgroundFill" height={19} width={28} x={7} y={44} />
+        <text className="White F23" x={8} y={63}>
           IP
         </text>
-        <text className="White F22" x={x + 37} y={y + 100}>
+        <text className="White F23" x={40} y={105}>
           HP
         </text>
       </g>
 
       {/* Engine Bleed valve */}
       <Valve
-        x={x + 29}
-        y={y - 29}
-        radius={19}
-        css={`Line ${shouldBleedValveBeOpen === engineBleedValveOpen && (engineHpValveOpen || isEngineRunning) ? 'Green' : 'Amber'}`}
+        x={32}
+        y={-24}
+        radius={19.5}
+        css={`Line NoFill ${shouldBleedValveBeOpen === engineBleedValveOpen && (engineHpValveOpen || isEngineRunning) ? 'Green' : 'Amber'}`}
         position={engineBleedValveOpen ? 'V' : 'H'}
         sdacDatum={sdacDatum}
       />
       <path
         className={`SW2 ${shouldBleedValveBeOpen === engineBleedValveOpen && (engineHpValveOpen || isEngineRunning) ? 'Green' : 'Amber'}`}
-        d={`M ${x + 29},${y - 10} l 0,46`}
+        d="M 32,-4 l 0,46"
       />
-      <path className={`${engineBleedValveOpen ? 'SW2 Green' : 'Hide'}`} d={`M ${x + 29},${y - 69} l 0,20`} />
+      <path className={`${engineBleedValveOpen ? 'SW2 Green' : 'Hide'}`} d="M 32,-67 l 0,23" />
 
       {/* HP valve */}
       <Valve
-        x={x + 61}
-        y={y + 40}
-        radius={19}
-        css={`Line ${shouldHpValveBeOpen === engineHpValveOpen && (engineHpValveOpen || isEngineRunning) ? 'Green' : 'Amber'}`}
+        x={64}
+        y={45}
+        radius={19.5}
+        css={`Line NoFill ${shouldHpValveBeOpen === engineHpValveOpen && (engineHpValveOpen || isEngineRunning) ? 'Green' : 'Amber'}`}
         position={engineHpValveOpen ? 'V' : 'H'}
         sdacDatum={sdacDatum}
       />
       <path
         className={`SW2 ${shouldHpValveBeOpen === engineHpValveOpen && (engineHpValveOpen || isEngineRunning) ? 'Green' : 'Amber'}`}
-        d={`M ${x + 61},${y + 59} l 0,20`}
+        d="M 64,65 l 0,20"
       />
+      <path className={engineHpValveOpen ? 'SW2 Green NoFill' : 'Hide'} d="M 64,25 v -12 h -31" />
 
-      {/* Engine Bleed temp */}
-      <path className="Grey SW2" d={`M ${x + 30},${y - 145} l -40,0 l 0,75 l 80,0 l 0,-75 l -40,0`} />
+      {/* Engine Bleed units */}
       <g className={engine % 2 === 0 ? 'Hide' : 'Show'}>
-        <text x={x + 78} y={y - 117} className="Cyan F23">
+        <text x={83} y={-113} className="Cyan F22">
           PSI
         </text>
-        <text x={x + 80} y={y - 75} className="Cyan F23">
+        <text x={85} y={-71} className="Cyan F22">
           °C
         </text>
       </g>
-      {/* Precooler inlet pressure */}
-      <text
-        x={x + 28}
-        y={y - 125}
-        className={`F29 MiddleAlign ${!sdacDatum || precoolerInletPressTwo <= 4 || precoolerInletPressTwo > 60 ? 'Amber' : 'Green'}`}
-      >
-        {!sdacDatum || precoolerInletPressTwo < 0 ? 'XX' : precoolerInletPressTwo}
-      </text>
-      {/* Precooler outlet temperature */}
-      <text
-        x={sdacDatum ? x + 28 : x}
-        y={y - 86}
-        className={`F29 MiddleAlign ${!sdacDatum || precoolerOutletTempFive < 150 || precoolerOutletTempFive > 257 ? 'Amber' : 'Green'}`}
-      >
-        {!sdacDatum ? 'XX' : precoolerOutletTempFive}
-      </text>
 
-      <path className={`${packFlowValveOpen ? 'SW2 Green' : 'Hide'}`} d={`M ${x + 29},${y - 240} l 0,94`} />
+      <g>
+        <path className="Grey NoFill SW2" d="M -9,-141 h 83 v 73 h -83 v -7 z" />
+        {/* Precooler inlet pressure */}
+        <text
+          x={34}
+          y={-122}
+          className={`F27 MiddleAlign ${!sdacDatum || precoolerInletPressTwo <= 4 || precoolerInletPressTwo > 60 ? 'Amber' : 'Green'}`}
+        >
+          {!sdacDatum || precoolerInletPressTwo < 0 ? 'XX' : precoolerInletPressTwo}
+        </text>
+        {/* Precooler outlet temperature */}
+        <text
+          x={34}
+          y={-82}
+          className={`F27 MiddleAlign ${!sdacDatum || precoolerOutletTempFive < 150 || precoolerOutletTempFive > 257 ? 'Amber' : 'Green'}`}
+        >
+          {!sdacDatum ? 'XX' : precoolerOutletTempFive}
+        </text>
+      </g>
+
+      <path className={`${bleedDuctHidden ? 'Hide' : 'SW2 Green'}`} d="M 33,-237 v 95" />
 
       {/* Pack valve */}
       <BleedGauge
-        x={x + 29}
-        y={y - 260}
+        x={33}
+        y={-257}
         engine={engine}
         sdacDatum={sdacDatum}
         packValveOpen={packFlowValveOpen}
         packFlowRate={packFlowValveRate}
       />
-    </>
+    </g>
   );
 };
 

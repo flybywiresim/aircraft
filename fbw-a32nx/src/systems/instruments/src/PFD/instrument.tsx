@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -8,12 +8,17 @@ import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-c
 
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
 import { FcuBusProvider } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBusProvider } from 'instruments/src/PFD/shared/FgBusProvider';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
+import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
+import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
+import { A32NXFwcBusPublisher } from '@shared/publishers/A32NXFwcBusPublisher';
+import { PseudoDmc } from './PseudoDmc';
 
 import './style.scss';
 
@@ -48,6 +53,14 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly fwcPublisher = new FwcPublisher(this.bus);
 
+  private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+  private readonly fwcBusPublisher = new A32NXFwcBusPublisher(this.bus);
+  private readonly elecSystemPublisher = new A32NXElectricalSystemPublisher(this.bus);
+
+  private readonly pseudoDmc = new PseudoDmc(this.bus, this);
+
+  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -68,6 +81,11 @@ class A32NX_PFD extends BaseInstrument {
     this.backplane.addPublisher('Dmc', this.dmcPublisher);
     this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
     this.backplane.addPublisher('Fwc', this.fwcPublisher);
+    this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
+    this.backplane.addPublisher('ElectricalSystem', this.elecSystemPublisher);
+    this.backplane.addPublisher('FwcBus', this.fwcBusPublisher);
+    this.backplane.addInstrument('PseudoDMC', this.pseudoDmc);
+    this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
   }
 
   get templateID(): string {

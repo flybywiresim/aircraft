@@ -631,6 +631,7 @@
     "Real": "Real",
     "Realism": {
       "AdirsAlignTime": "Tempo de alinhamento dos ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Preenchimento automático dos Checklists",
       "BoardingTime": "Tempo de embarque",
       "DmcSelfTestTime": "Tempo de auto teste do DMC",
@@ -666,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Carregar somente",
       "None": "Nenhum",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Desativado",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",

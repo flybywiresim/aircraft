@@ -34,7 +34,9 @@ export enum AtsuMessageComStatus {
 }
 
 export enum AtsuMessageSerializationFormat {
+  // FIXME CDU?
   FmsDisplay,
+  // FIXME CDU?
   FmsDisplayMonitored,
   Mailbox,
   Printer,

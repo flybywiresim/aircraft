@@ -35,7 +35,7 @@ export class Altitude extends DisplayComponent<AltitudeProps> {
           <text id="ALT" class="Common Active" x="31%" y="20%">
             ALT
           </text>
-          <text id="Value" class="Common Value" x="4%" y="86%">
+          <text id="Value" class="Common Value" x="4%" y="97%">
             {this.altText}
           </text>
         </svg>

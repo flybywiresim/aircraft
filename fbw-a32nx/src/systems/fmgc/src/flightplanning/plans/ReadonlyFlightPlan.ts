@@ -2,9 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Approach, Arrival, Departure, ProcedureTransition, Runway } from '@flybywiresim/fbw-sdk';
+import {
+  Airport,
+  Approach,
+  Arrival,
+  Departure,
+  ProcedureTransition,
+  Runway,
+  WaypointConstraintType,
+} from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 
 export interface ReadonlyFlightPlan {
@@ -28,11 +35,11 @@ export interface ReadonlyFlightPlan {
 
   get version(): number;
 
-  get originLeg(): ReadonlyFlightPlanElement;
+  get originLeg(): ReadonlyFlightPlanElement | undefined;
 
   get originLegIndex(): number;
 
-  get destinationLeg(): ReadonlyFlightPlanElement;
+  get destinationLeg(): ReadonlyFlightPlanElement | undefined;
 
   get destinationLegIndex(): number;
 
@@ -58,11 +65,14 @@ export interface ReadonlyFlightPlan {
 
   get arrivalEnrouteTransition(): ProcedureTransition | undefined;
 
-  get arrival(): Arrival | undefined;
+  /**
+   * The arrival procedure. If it's `undefined`, it means that no arrival is set. If it's `null`, it means that the "NO STAR" is explicitly selected.
+   */
+  get arrival(): Arrival | undefined | null;
 
   get arrivalRunwayTransition(): ProcedureTransition | undefined;
 
-  get approachVia(): ProcedureTransition | undefined;
+  get approachVia(): ProcedureTransition | undefined | null;
 
   get approach(): Approach | undefined;
 

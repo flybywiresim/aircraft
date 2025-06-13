@@ -158,12 +158,12 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AIRSPEED TRUE", "KNOTS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AIRSPEED MACH", "MACH");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GROUND VELOCITY", "KNOTS");
+  // FIXME use ADRs
   // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE:3", "FEET");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE:4", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE ALT ABOVE GROUND MINUS CG", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "VELOCITY WORLD Y", "FEET PER MINUTE");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CG PERCENT", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TOTAL WEIGHT", "KILOGRAMS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:0", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:1", "NUMBER");
@@ -241,9 +241,9 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:3", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:4", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "SIM ON GROUND", "BOOL");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:0", "MBAR");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:1", "MBAR");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:2", "MBAR");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:4", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "CAMERA STATE", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE ALTITUDE", "METERS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "NAV MAGVAR:3", "DEGREES");
@@ -622,6 +622,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_SET, "AUTOPILOT_DISENGAGE_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_TOGGLE, "AUTOPILOT_DISENGAGE_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::TOGGLE_FLIGHT_DIRECTOR, "TOGGLE_FLIGHT_DIRECTOR", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_AUTOPILOT_DISENGAGE, "A32NX.AUTOPILOT_DISENGAGE", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_1_PUSH, "A32NX.FCU_AP_1_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_2_PUSH, "A32NX.FCU_AP_2_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_DISCONNECT_PUSH, "A32NX.FCU_AP_DISCONNECT_PUSH", false);
@@ -693,6 +694,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_AUTO_THROTTLE_DISCONNECT, "A32NX.AUTO_THROTTLE_DISCONNECT", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_TO_GA, "AUTO_THROTTLE_TO_GA", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_ATHR_RESET_DISABLE, "A32NX.ATHR_RESET_DISABLE", false);
 
@@ -800,7 +802,7 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
 
-  result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
+  result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:4", "BOOL");
 
   return result;
 }
@@ -1040,10 +1042,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     // create client data
     result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_prim_out_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
     // add data definitions
-    for (int i = 0; i < 54; i++) {
-      result &=
-          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-    }
+    result &= SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, sizeof(base_prim_out_bus));
 
     // request data to be updated when set
     if (i == primDisabled) {
@@ -1247,7 +1246,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::FAC_ANALOG_INPUTS, sizeof(base_fac_analog_inputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 5; i++) {
     result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FAC_ANALOG_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                    SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   }
@@ -2216,7 +2215,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
         std::cout << "WASM: event triggered: AUTOPILOT_DISENGAGE_SET" << std::endl;
 
         // Re emitting masked event for autopilot disconnection
-        execute_calculator_code("(>K:A32NX.AUTOPILOT_DISENGAGE)", nullptr, nullptr, nullptr);
+        sendEvent(SimConnectInterface::Events::A32NX_AUTOPILOT_DISENGAGE, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       }
       break;
     }
@@ -2678,7 +2677,7 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       std::cout << "WASM: event triggered: AUTO_THROTTLE_DISCONNECT" << std::endl;
 
       // Re emitting masked event for autobrake disconnection
-      execute_calculator_code("(>K:A32NX.AUTO_THROTTLE_DISCONNECT)", nullptr, nullptr, nullptr);
+      sendEvent(Events::A32NX_AUTO_THROTTLE_DISCONNECT, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       break;
     }
 

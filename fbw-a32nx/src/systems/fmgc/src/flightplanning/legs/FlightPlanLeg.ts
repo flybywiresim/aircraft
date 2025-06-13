@@ -12,6 +12,9 @@ import {
   ProcedureLeg,
   Runway,
   WaypointDescriptor,
+  WaypointConstraintType,
+  AltitudeConstraint,
+  SpeedConstraint,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -21,7 +24,6 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
@@ -63,6 +65,8 @@ export interface LegCalculations {
   cumulativeDistanceWithTransitions: number;
   /** The cumulative distance in nautical miles from this point to the missed approach point, with leg transition turns taken into account. */
   cumulativeDistanceToEndWithTransitions: number;
+  /** Whether the leg terminates in a vertical discontinuity */
+  endsInTooSteepPath: boolean;
 }
 
 /**
@@ -502,3 +506,11 @@ export interface Discontinuity {
 }
 
 export type FlightPlanElement = FlightPlanLeg | Discontinuity;
+
+export function isDiscontinuity(o: any): o is Discontinuity {
+  return typeof o === 'object' && o.isDiscontinuity === true;
+}
+
+export function isLeg(o: any): o is FlightPlanLeg {
+  return typeof o === 'object' && o.isDiscontinuity === false;
+}

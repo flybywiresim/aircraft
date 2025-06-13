@@ -631,6 +631,7 @@
     "Real": "Rigtig",
     "Realism": {
       "AdirsAlignTime": "ADIRS Justerings Tid",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Tjeklister til autoudfyldning",
       "BoardingTime": "Boarding tid",
       "DmcSelfTestTime": "DMC Selv Test Tid",
@@ -666,6 +667,7 @@
       "Left": "Left",
       "LoadOnly": "Indlæs kun",
       "None": "Ingen",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Fra",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
