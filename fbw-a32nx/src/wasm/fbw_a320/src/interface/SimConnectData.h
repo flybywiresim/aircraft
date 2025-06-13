@@ -99,9 +99,10 @@ struct SimData {
   unsigned long long engineAntiIce_1;
   unsigned long long engineAntiIce_2;
   unsigned long long simOnGround;
-  double kohlsmanSetting_0;
   double kohlsmanSetting_1;
-  unsigned long long kohlsmanSettingStd_3;
+  double kohlsmanSetting_2;
+  /// @deprecated Should use ADR pressure altitude
+  unsigned long long kohlsmanSettingStd_4;
   double cameraState;
   double altitude_m;
   double nav_loc_magvar_deg;
@@ -191,5 +192,5 @@ struct SimOutputSpoilers {
 };
 
 struct SimOutputAltimeter {
-  unsigned long long kohlsmanSettingStd_3;
+  unsigned long long kohlsmanSettingStd;
 };

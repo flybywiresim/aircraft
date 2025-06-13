@@ -6,6 +6,7 @@
 #include "look1_binlxpw.h"
 #include "plook_binx.h"
 #include "intrp3d_l_pw.h"
+#include "look2_iflf_binlxpw.h"
 
 const uint8_T A380FacComputer_IN_Flying{ 1U };
 
@@ -228,10 +229,12 @@ void A380FacComputer::step()
   real_T fractions_1[3];
   real_T fractions_2[3];
   real_T Vcas;
+  real_T ca;
   real_T rtb_BusAssignment_c_flight_envelope_v_ls_kn;
   real_T rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg;
   real_T rtb_BusAssignment_f_flight_envelope_v_alpha_max_kn;
   real_T rtb_BusAssignment_f_flight_envelope_v_fe_next_kn;
+  real_T rtb_BusAssignment_f_flight_envelope_v_max_kn;
   real_T rtb_BusAssignment_f_flight_envelope_v_stall_kn;
   real_T rtb_BusAssignment_kv_flight_envelope_v_alpha_prot_kn;
   real_T rtb_Gain;
@@ -239,8 +242,6 @@ void A380FacComputer::step()
   real_T rtb_Switch1;
   real_T rtb_Switch4_f;
   real_T rtb_Switch6;
-  real_T rtb_Switch_b;
-  real_T rtb_Y_br;
   real_T rtb_Y_g4;
   real_T rtb_Y_l;
   real_T rtb_beta;
@@ -612,14 +613,14 @@ void A380FacComputer::step()
       A380FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_left_percent.Data, A380FacComputer_P.LagFilter1_C1_d,
       A380FacComputer_U.in.time.dt, &rtb_y_oi, &A380FacComputer_DWork.sf_LagFilter_k);
     if (rtb_alpha > A380FacComputer_P.Saturation_UpperSat_a) {
-      rtb_Y_br = A380FacComputer_P.Saturation_UpperSat_a;
+      ca = A380FacComputer_P.Saturation_UpperSat_a;
     } else if (rtb_alpha < A380FacComputer_P.Saturation_LowerSat_l) {
-      rtb_Y_br = A380FacComputer_P.Saturation_LowerSat_l;
+      ca = A380FacComputer_P.Saturation_LowerSat_l;
     } else {
-      rtb_Y_br = rtb_alpha;
+      ca = rtb_alpha;
     }
 
-    A380FacComputer_LagFilter(rtb_Y_br, A380FacComputer_P.LagFilter2_C1, A380FacComputer_U.in.time.dt, &rtb_Switch1,
+    A380FacComputer_LagFilter(ca, A380FacComputer_P.LagFilter2_C1, A380FacComputer_U.in.time.dt, &rtb_Switch1,
       &A380FacComputer_DWork.sf_LagFilter_f);
     A380FacComputer_LagFilter_k(A380FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_left_percent.Data -
       A380FacComputer_U.in.bus_inputs.fmgc_own_bus.n1_right_percent.Data, A380FacComputer_P.LagFilter3_C1,
@@ -752,7 +753,7 @@ void A380FacComputer::step()
     A380FacComputer_RateLimiter(look1_binlxpw(static_cast<real_T>(rtb_Switch_i_idx_0), A380FacComputer_P.alpha0_bp01Data,
       A380FacComputer_P.alpha0_tableData, 5U), A380FacComputer_P.RateLimiterGenericVariableTs1_up_g,
       A380FacComputer_P.RateLimiterGenericVariableTs1_lo_n, A380FacComputer_U.in.time.dt,
-      A380FacComputer_P.reset_Value_k, &rtb_vs1g_h, &A380FacComputer_DWork.sf_RateLimiter_c);
+      A380FacComputer_P.reset_Value_k, &rtb_Switch4_f, &A380FacComputer_DWork.sf_RateLimiter_c);
     A380FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), static_cast<real_T>(rtb_Switch_i_idx_0),
       A380FacComputer_P.alphamax_bp01Data_m, A380FacComputer_P.alphamax_bp02Data_a,
       A380FacComputer_P.alphamax_tableData_b, A380FacComputer_P.alphamax_maxIndex_g, 4U),
@@ -760,7 +761,7 @@ void A380FacComputer::step()
       A380FacComputer_U.in.time.dt, A380FacComputer_P.reset_Value_o, &rtb_Switch1,
       &A380FacComputer_DWork.sf_RateLimiter_a);
     A380FacComputer_CalculateV_alpha_max(static_cast<real_T>(rtb_V_ias),
-      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_vs1g_h, rtb_Switch1,
+      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_Switch4_f, rtb_Switch1,
       &rtb_BusAssignment_f_flight_envelope_v_alpha_max_kn);
     A380FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), static_cast<real_T>(rtb_Switch_i_idx_0),
       A380FacComputer_P.alphaprotection_bp01Data_b, A380FacComputer_P.alphaprotection_bp02Data_m,
@@ -769,7 +770,7 @@ void A380FacComputer::step()
       A380FacComputer_U.in.time.dt, A380FacComputer_P.reset_Value_a, &rtb_Switch1,
       &A380FacComputer_DWork.sf_RateLimiter_n);
     A380FacComputer_CalculateV_alpha_max(static_cast<real_T>(rtb_V_ias),
-      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_vs1g_h, rtb_Switch1,
+      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_Switch4_f, rtb_Switch1,
       &rtb_BusAssignment_kv_flight_envelope_v_alpha_prot_kn);
     A380FacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach), static_cast<real_T>(rtb_Switch_i_idx_0),
       A380FacComputer_P.alphastallwarnmax_bp01Data, A380FacComputer_P.alphastallwarnmax_bp02Data,
@@ -778,7 +779,7 @@ void A380FacComputer::step()
       A380FacComputer_U.in.time.dt, A380FacComputer_P.reset_Value_i, &rtb_Switch6,
       &A380FacComputer_DWork.sf_RateLimiter_j);
     A380FacComputer_CalculateV_alpha_max(static_cast<real_T>(rtb_V_ias),
-      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_vs1g_h, rtb_Switch6, &rtb_Switch);
+      rtb_BusAssignment_d_flight_envelope_alpha_filtered_deg, rtb_Switch4_f, rtb_Switch6, &rtb_Switch);
     if (A380FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_weight_lbs.SSM == static_cast<uint32_T>(SignStatusMatrix::
          NormalOperation)) {
       rtb_DataTypeConversion2 = A380FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_weight_lbs.Data;
@@ -819,16 +820,16 @@ void A380FacComputer::step()
     }
 
     if (rtb_Switch_i_idx_0 == 0.0F) {
-      rtb_Y_br = 1.23;
+      ca = 1.23;
     } else if (rtb_Switch_i_idx_0 == 1.0F) {
-      rtb_Y_br = 1.18;
+      ca = 1.18;
     } else if (A380FacComputer_DWork.takeoff_config != -1.0) {
-      rtb_Y_br = 1.15;
+      ca = 1.15;
     } else {
-      rtb_Y_br = 1.23;
+      ca = 1.23;
     }
 
-    A380FacComputer_RateLimiter_f(rtb_Y_br, A380FacComputer_P.RateLimiterGenericVariableTs_up,
+    A380FacComputer_RateLimiter_f(ca, A380FacComputer_P.RateLimiterGenericVariableTs_up,
       A380FacComputer_P.RateLimiterGenericVariableTs_lo, A380FacComputer_U.in.time.dt,
       A380FacComputer_P.RateLimiterGenericVariableTs_InitialCondition, A380FacComputer_P.reset_Value_m, &rtb_Switch6,
       &A380FacComputer_DWork.sf_RateLimiter_g);
@@ -889,8 +890,8 @@ void A380FacComputer::step()
         A380FacComputer_P.Vmcl10_Value));
     }
 
-    rtb_vs1g_h = A380FacComputer_P.Gain2_Gain_c * rtb_DataTypeConversion2;
-    bpIndices_2[0U] = plook_binx(rtb_vs1g_h, A380FacComputer_P.nDLookupTable_bp01Data_o, 7U, &rtb_vs1g);
+    rtb_Switch4_f = A380FacComputer_P.Gain2_Gain_c * rtb_DataTypeConversion2;
+    bpIndices_2[0U] = plook_binx(rtb_Switch4_f, A380FacComputer_P.nDLookupTable_bp01Data_o, 7U, &rtb_vs1g);
     fractions_2[0U] = rtb_vs1g;
     bpIndices_2[1U] = plook_binx(A380FacComputer_P.Gain3_Gain_a *
       A380FacComputer_U.in.bus_inputs.fmgc_own_bus.fm_cg_percent.Data, A380FacComputer_P.nDLookupTable_bp02Data_m, 1U,
@@ -899,13 +900,13 @@ void A380FacComputer::step()
     bpIndices_2[2U] = plook_binx(A380FacComputer_P.Constant2_Value_c, A380FacComputer_P.nDLookupTable_bp03Data_md, 5U,
       &rtb_vs1g);
     fractions_2[2U] = rtb_vs1g;
-    A380FacComputer_VS1GfromVLS(look2_binlxpw(rtb_vs1g_h, static_cast<real_T>(rtb_alt),
+    A380FacComputer_VS1GfromVLS(look2_binlxpw(rtb_Switch4_f, static_cast<real_T>(rtb_alt),
       A380FacComputer_P.uDLookupTable1_bp01Data_l, A380FacComputer_P.uDLookupTable1_bp02Data_p,
       A380FacComputer_P.uDLookupTable1_tableData_i, A380FacComputer_P.uDLookupTable1_maxIndex_g, 8U), intrp3d_l_pw
       (bpIndices_2, fractions_2, A380FacComputer_P.nDLookupTable_tableData_k, A380FacComputer_P.nDLookupTable_dimSizes_i),
-      A380FacComputer_P.Constant2_Value_c, &rtb_vs1g_h);
-    rtb_vs1g_h = std::fmin(std::fmax(A380FacComputer_P.Gain2_Gain_e * rtb_vs1g_h, A380FacComputer_P.Vmcl20_Value),
-      A380FacComputer_P.Vfe_25_Value);
+      A380FacComputer_P.Constant2_Value_c, &rtb_Switch4_f);
+    rtb_vs1g = std::fmin(std::fmax(A380FacComputer_P.Gain2_Gain_e * rtb_Switch4_f, A380FacComputer_P.Vmcl20_Value),
+                         A380FacComputer_P.Vfe_25_Value);
     rtb_conf = look2_binlxpw(A380FacComputer_P.Gain3_Gain_b * rtb_DataTypeConversion2, static_cast<real_T>(rtb_alt),
       A380FacComputer_P.uDLookupTable_bp01Data_n, A380FacComputer_P.uDLookupTable_bp02Data,
       A380FacComputer_P.uDLookupTable_tableData_m, A380FacComputer_P.uDLookupTable_maxIndex, 8U);
@@ -913,32 +914,35 @@ void A380FacComputer::step()
     rtb_OR1 = ((rtb_Switch_i_idx_0 < A380FacComputer_P.CompareToConstant_const_i) && (rtb_alt <=
                 A380FacComputer_P.CompareToConstant1_const_i));
     if (rtb_Switch_io_idx_2) {
-      rtb_Y_br = A380FacComputer_P.Constant2_Value;
+      rtb_Switch4_f = A380FacComputer_P.Constant2_Value;
     } else {
-      rtb_Y_br = A380FacComputer_P.Constant3_Value;
+      rtb_Switch4_f = A380FacComputer_P.Constant3_Value;
     }
 
-    rtb_Switch4_f = std::fmin(std::fmin(rtb_Y_br, std::sqrt(std::pow((std::pow(A380FacComputer_P.Constant1_Value_p *
-      A380FacComputer_P.Constant1_Value_p * 0.2 + 1.0, 3.5) - 1.0) * (rtb_p_s_c / 1013.25) + 1.0, 0.2857142857142857) -
-      1.0) * 1479.1), look1_binlxpw(static_cast<real_T>(rtb_Switch_i_idx_0), A380FacComputer_P.uDLookupTable_bp01Data_a,
-      A380FacComputer_P.uDLookupTable_tableData_a, 5U));
+    rtb_BusAssignment_f_flight_envelope_v_max_kn = std::fmin(std::fmin(std::fmin(rtb_Switch4_f, std::sqrt(std::pow((std::
+      pow(A380FacComputer_P.Constant1_Value_p * A380FacComputer_P.Constant1_Value_p * 0.2 + 1.0, 3.5) - 1.0) *
+      (rtb_p_s_c / 1013.25) + 1.0, 0.2857142857142857) - 1.0) * 1479.1), static_cast<real_T>(look2_iflf_binlxpw
+      (rtb_Switch_i_idx_1, rtb_Switch_i_idx_2, A380FacComputer_P.uDLookupTable_bp01Data_o,
+       A380FacComputer_P.uDLookupTable_bp02Data_p, A380FacComputer_P.uDLookupTable_tableData_d,
+       A380FacComputer_P.uDLookupTable_maxIndex_j, 5U))), look1_binlxpw(static_cast<real_T>(rtb_Switch_i_idx_0),
+      A380FacComputer_P.uDLookupTable_bp01Data_i, A380FacComputer_P.uDLookupTable_tableData_k, 5U));
     if (rtb_V_ias > A380FacComputer_P.Saturation_UpperSat_j) {
-      rtb_Y_br = A380FacComputer_P.Saturation_UpperSat_j;
+      ca = A380FacComputer_P.Saturation_UpperSat_j;
     } else if (rtb_V_ias < A380FacComputer_P.Saturation_LowerSat_c) {
-      rtb_Y_br = A380FacComputer_P.Saturation_LowerSat_c;
+      ca = A380FacComputer_P.Saturation_LowerSat_c;
     } else {
-      rtb_Y_br = rtb_V_ias;
+      ca = rtb_V_ias;
     }
 
-    rtb_vs1g = A380FacComputer_P.DiscreteDerivativeVariableTs_Gain_l * rtb_Y_br;
-    rtb_Switch6 = rtb_vs1g - A380FacComputer_DWork.Delay_DSTATE_d;
+    rtb_vs1g_h = A380FacComputer_P.DiscreteDerivativeVariableTs_Gain_l * ca;
+    rtb_Switch6 = rtb_vs1g_h - A380FacComputer_DWork.Delay_DSTATE_d;
     A380FacComputer_LagFilter(rtb_Switch6 / A380FacComputer_U.in.time.dt, A380FacComputer_P.LagFilter_C1_f,
-      A380FacComputer_U.in.time.dt, &rtb_Y_br, &A380FacComputer_DWork.sf_LagFilter_i);
-    A380FacComputer_RateLimiter_f(rtb_Y_br, A380FacComputer_P.RateLimiterGenericVariableTs_up_g,
+      A380FacComputer_U.in.time.dt, &rtb_Switch4_f, &A380FacComputer_DWork.sf_LagFilter_i);
+    A380FacComputer_RateLimiter_f(rtb_Switch4_f, A380FacComputer_P.RateLimiterGenericVariableTs_up_g,
       A380FacComputer_P.RateLimiterGenericVariableTs_lo_e, A380FacComputer_U.in.time.dt,
       A380FacComputer_P.RateLimiterGenericVariableTs_InitialCondition_o, A380FacComputer_P.reset_Value_i3, &rtb_Switch6,
       &A380FacComputer_DWork.sf_RateLimiter_f);
-    rtb_Switch_b = A380FacComputer_P.Gain_Gain_j * rtb_Switch6;
+    rtb_Switch4_f = A380FacComputer_P.Gain_Gain_j * rtb_Switch6;
     rtb_BusAssignment_f_flight_envelope_v_stall_kn = rtb_Y_l;
     rtb_BusAssignment_f_flight_envelope_v_3_visible = ((rtb_Switch_i_idx_0 == A380FacComputer_P.CompareToConstant4_const)
       || (rtb_Switch_i_idx_0 == A380FacComputer_P.CompareToConstant2_const));
@@ -972,14 +976,14 @@ void A380FacComputer::step()
       if (A380FacComputer_U.in.bus_inputs.fmgc_own_bus.fg_radio_height_ft.Data >= A380FacComputer_P.Switch6_Threshold_n)
       {
         if ((rtb_y_ph != 0U) && A380FacComputer_U.in.discrete_inputs.elac_1_healthy) {
-          rtb_Y_br = A380FacComputer_U.in.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data;
+          ca = A380FacComputer_U.in.bus_inputs.elac_1_bus.yaw_damper_command_deg.Data;
         } else if ((rtb_y_ig != 0U) && A380FacComputer_U.in.discrete_inputs.elac_2_healthy) {
-          rtb_Y_br = A380FacComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
+          ca = A380FacComputer_U.in.bus_inputs.elac_2_bus.yaw_damper_command_deg.Data;
         } else {
-          rtb_Y_br = A380FacComputer_P.Constant1_Value_m;
+          ca = A380FacComputer_P.Constant1_Value_m;
         }
 
-        rtb_Switch6 = A380FacComputer_P.Gain2_Gain * rtb_Y_br;
+        rtb_Switch6 = A380FacComputer_P.Gain2_Gain * ca;
       } else {
         rtb_Switch6 = A380FacComputer_P.Constant2_Value_m;
       }
@@ -1002,12 +1006,12 @@ void A380FacComputer::step()
       A380FacComputer_DWork.icLoad);
     if (A380FacComputer_DWork.icLoad) {
       if (rtb_AND) {
-        rtb_Y_br = A380FacComputer_U.in.analog_inputs.rudder_trim_position_deg;
+        ca = A380FacComputer_U.in.analog_inputs.rudder_trim_position_deg;
       } else {
-        rtb_Y_br = A380FacComputer_P.Constant_Value_g;
+        ca = A380FacComputer_P.Constant_Value_g;
       }
 
-      A380FacComputer_DWork.Delay_DSTATE_dc = rtb_Y_br - rtb_Switch6;
+      A380FacComputer_DWork.Delay_DSTATE_dc = ca - rtb_Switch6;
     }
 
     A380FacComputer_DWork.Delay_DSTATE_dc += rtb_Switch6;
@@ -1040,9 +1044,9 @@ void A380FacComputer::step()
     }
 
     rtb_Switch6 = A380FacComputer_U.in.time.dt * A380FacComputer_P.WashoutFilter_C1;
-    rtb_Y_br = 2.0 / (rtb_Switch6 + 2.0);
-    A380FacComputer_DWork.pY = (2.0 - rtb_Switch6) / (rtb_Switch6 + 2.0) * A380FacComputer_DWork.pY + (rtb_r * rtb_Y_br
-      - A380FacComputer_DWork.pU * rtb_Y_br);
+    ca = 2.0 / (rtb_Switch6 + 2.0);
+    A380FacComputer_DWork.pY = (2.0 - rtb_Switch6) / (rtb_Switch6 + 2.0) * A380FacComputer_DWork.pY + (rtb_r * ca -
+      A380FacComputer_DWork.pU * ca);
     A380FacComputer_DWork.pU = rtb_r;
     if (rtb_AND || (rtb_y_ool && A380FacComputer_U.in.discrete_inputs.elac_2_healthy && (rtb_y_ep != 0U))) {
       if (rtb_AND) {
@@ -1067,9 +1071,9 @@ void A380FacComputer::step()
 
     A380FacComputer_RateLimiter_p(rtb_Switch6, A380FacComputer_P.RateLimiterGenericVariableTs_up_a,
       A380FacComputer_P.RateLimiterGenericVariableTs_lo_f, A380FacComputer_U.in.time.dt,
-      A380FacComputer_U.in.analog_inputs.yaw_damper_position_deg, !rtb_yawDamperEngaged, &rtb_Y_br,
+      A380FacComputer_U.in.analog_inputs.yaw_damper_position_deg, !rtb_yawDamperEngaged, &ca,
       &A380FacComputer_DWork.sf_RateLimiter_fu);
-    rtb_Switch6 = look1_binlxpw(static_cast<real_T>(rtb_V_ias), A380FacComputer_P.uDLookupTable_bp01Data_i,
+    rtb_Switch6 = look1_binlxpw(static_cast<real_T>(rtb_V_ias), A380FacComputer_P.uDLookupTable_bp01Data_ik,
       A380FacComputer_P.uDLookupTable_tableData_j, 6U);
     if (rtb_Switch6 > A380FacComputer_P.Saturation_UpperSat_g) {
       rtb_Switch6 = A380FacComputer_P.Saturation_UpperSat_g;
@@ -1224,7 +1228,7 @@ void A380FacComputer::step()
     rtb_VectorConcatenate_i[18] = (A380FacComputer_DWork.sAlphaFloor != 0.0);
     A380FacComputer_MATLABFunction_g3(rtb_VectorConcatenate_i, &A380FacComputer_Y.out.bus_outputs.discrete_word_5.Data);
     A380FacComputer_Y.out.data = A380FacComputer_U.in;
-    A380FacComputer_Y.out.laws.yaw_damper_command_deg = rtb_Y_br;
+    A380FacComputer_Y.out.laws.yaw_damper_command_deg = ca;
     A380FacComputer_Y.out.laws.rudder_trim_command_deg = rtb_Y_l;
     A380FacComputer_Y.out.laws.rudder_travel_lim_command_deg = rtb_Y_g4;
     A380FacComputer_Y.out.logic.lgciu_own_valid = rtb_BusAssignment_logic_lgciu_own_valid;
@@ -1289,15 +1293,15 @@ void A380FacComputer::step()
     A380FacComputer_Y.out.flight_envelope.v_stall_kn = rtb_BusAssignment_f_flight_envelope_v_stall_kn;
     A380FacComputer_Y.out.flight_envelope.v_3_kn = rtb_Switch1;
     A380FacComputer_Y.out.flight_envelope.v_3_visible = rtb_BusAssignment_f_flight_envelope_v_3_visible;
-    A380FacComputer_Y.out.flight_envelope.v_4_kn = rtb_vs1g_h;
+    A380FacComputer_Y.out.flight_envelope.v_4_kn = rtb_vs1g;
     A380FacComputer_Y.out.flight_envelope.v_4_visible = ((rtb_Switch_i_idx_0 ==
       A380FacComputer_P.CompareToConstant3_const) || (rtb_Switch_i_idx_0 == A380FacComputer_P.CompareToConstant1_const));
     A380FacComputer_Y.out.flight_envelope.v_man_kn = rtb_conf;
     A380FacComputer_Y.out.flight_envelope.v_man_visible = rtb_DataTypeConversion_kr;
-    A380FacComputer_Y.out.flight_envelope.v_max_kn = rtb_Switch4_f;
+    A380FacComputer_Y.out.flight_envelope.v_max_kn = rtb_BusAssignment_f_flight_envelope_v_max_kn;
     A380FacComputer_Y.out.flight_envelope.v_fe_next_kn = rtb_BusAssignment_f_flight_envelope_v_fe_next_kn;
     A380FacComputer_Y.out.flight_envelope.v_fe_next_visible = rtb_OR1;
-    A380FacComputer_Y.out.flight_envelope.v_c_trend_kn = rtb_Switch_b;
+    A380FacComputer_Y.out.flight_envelope.v_c_trend_kn = rtb_Switch4_f;
     A380FacComputer_Y.out.discrete_outputs.fac_healthy = A380FacComputer_P.Constant2_Value_o;
     A380FacComputer_Y.out.discrete_outputs.yaw_damper_engaged = rtb_yawDamperEngaged;
     A380FacComputer_Y.out.discrete_outputs.rudder_trim_engaged = rtb_rudderTrimEngaged;
@@ -1305,7 +1309,7 @@ void A380FacComputer::step()
     A380FacComputer_Y.out.discrete_outputs.rudder_travel_lim_emergency_reset = A380FacComputer_P.Constant1_Value_d;
     A380FacComputer_Y.out.discrete_outputs.yaw_damper_avail_for_norm_law = yawDamperCanEngage;
     if (rtb_yawDamperEngaged) {
-      A380FacComputer_Y.out.analog_outputs.yaw_damper_order_deg = rtb_Y_br;
+      A380FacComputer_Y.out.analog_outputs.yaw_damper_order_deg = ca;
     } else {
       A380FacComputer_Y.out.analog_outputs.yaw_damper_order_deg = A380FacComputer_P.Constant_Value_b;
     }
@@ -1406,14 +1410,14 @@ void A380FacComputer::step()
     A380FacComputer_Y.out.bus_outputs.v_stall_warn_kn.SSM = static_cast<uint32_T>(rtb_v_stall_warn_kn_SSM);
     A380FacComputer_Y.out.bus_outputs.v_stall_warn_kn.Data = static_cast<real32_T>(rtb_Switch);
     A380FacComputer_Y.out.bus_outputs.speed_trend_kn.SSM = static_cast<uint32_T>(rtb_speed_trend_kn_SSM);
-    A380FacComputer_Y.out.bus_outputs.speed_trend_kn.Data = static_cast<real32_T>(rtb_Switch_b);
+    A380FacComputer_Y.out.bus_outputs.speed_trend_kn.Data = static_cast<real32_T>(rtb_Switch4_f);
     A380FacComputer_Y.out.bus_outputs.v_3_kn.SSM = static_cast<uint32_T>(rtb_v_3_kn_SSM);
     A380FacComputer_Y.out.bus_outputs.v_3_kn.Data = static_cast<real32_T>(rtb_Switch1);
     A380FacComputer_Y.out.bus_outputs.v_4_kn.SSM = static_cast<uint32_T>(rtb_v_4_kn_SSM);
-    A380FacComputer_Y.out.bus_outputs.v_4_kn.Data = static_cast<real32_T>(rtb_vs1g_h);
+    A380FacComputer_Y.out.bus_outputs.v_4_kn.Data = static_cast<real32_T>(rtb_vs1g);
     A380FacComputer_Y.out.bus_outputs.v_man_kn.SSM = static_cast<uint32_T>(rtb_v_man_kn_SSM);
     A380FacComputer_Y.out.bus_outputs.v_man_kn.Data = static_cast<real32_T>(rtb_conf);
-    A380FacComputer_Y.out.bus_outputs.v_max_kn.Data = static_cast<real32_T>(rtb_Switch4_f);
+    A380FacComputer_Y.out.bus_outputs.v_max_kn.Data = static_cast<real32_T>(rtb_BusAssignment_f_flight_envelope_v_max_kn);
     A380FacComputer_Y.out.bus_outputs.v_fe_next_kn.Data = static_cast<real32_T>
       (rtb_BusAssignment_f_flight_envelope_v_fe_next_kn);
     A380FacComputer_Y.out.bus_outputs.discrete_word_3.SSM = static_cast<uint32_T>
@@ -1431,7 +1435,7 @@ void A380FacComputer::step()
     A380FacComputer_Y.out.bus_outputs.rudder_trim_pos_deg.Data = static_cast<real32_T>
       (A380FacComputer_U.in.analog_inputs.rudder_trim_position_deg);
     A380FacComputer_DWork.Delay_DSTATE = rtb_Gain;
-    A380FacComputer_DWork.Delay_DSTATE_d = rtb_vs1g;
+    A380FacComputer_DWork.Delay_DSTATE_d = rtb_vs1g_h;
     A380FacComputer_DWork.icLoad = false;
   } else {
     A380FacComputer_DWork.Runtime_MODE = false;

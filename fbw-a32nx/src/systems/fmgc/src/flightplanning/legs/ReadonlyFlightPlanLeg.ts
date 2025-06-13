@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { LegType } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, LegType, SpeedConstraint, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
-import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 export interface ReadonlyFlightPlanLeg {
