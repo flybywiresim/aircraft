@@ -17,8 +17,7 @@ import { LagFilter, RateLimiter, XWIND_FULL_OFFSET, XWIND_TO_AIR_REF_OFFSET } fr
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { WindMode, HudElemsValues } from './HUDUtils';
-import { getDisplayIndex } from './HUD';
+import { WindMode, HudElems } from './HUDUtils';
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 import { AutoThrustMode } from '../../../shared/autopilot';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
@@ -45,9 +44,9 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
   private groundSpeedRef = FSComponent.createRef<SVGGElement>();
   private lgRightCompressed = true;
 
-  private spdTapeOrForcedOnLand = '';
+  private spdTape = '';
   private xWindSpdTape = '';
-  private spdTapeOrForcedOnLandRef = FSComponent.createRef<SVGGElement>();
+  private spdTapeRef = FSComponent.createRef<SVGGElement>();
   private xWindSpdTapeRef = FSComponent.createRef<SVGGElement>();
 
   private speedSub = Subject.create<number>(0);
@@ -100,12 +99,11 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElemsValues>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
-    sub.on('spdTapeOrForcedOnLand').handle((v) => {
-      this.spdTapeOrForcedOnLand = v.get().toString();
-      this.spdTapeOrForcedOnLandRef.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
+    sub.on('spdTape').handle((v) => {
+      this.spdTape = v.get().toString();
+      this.spdTapeRef.instance.style.display = `${this.spdTape}`;
     });
     sub.on('xWindSpdTape').handle((v) => {
       this.xWindSpdTape = v.get().toString();
@@ -124,21 +122,14 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
           : (this.onToPower = false);
       });
 
-    sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-        this.setOutline();
-      });
-    sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-        this.cwOffsetRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
-        this.setOutline();
-      });
+    sub.on('decMode').handle((value) => {
+      this.declutterMode = value.get();
+      this.setOutline();
+    });
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
+      this.cwOffsetRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`; //// ???????????
+    });
 
     sub
       .on('autoBrakeDecel')
@@ -267,10 +258,9 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
                 <ArsBar bus={this.props.bus} />
               </g>
             </g>
-            <CrosswindDigitalSpeedReadout bus={this.props.bus} />
           </g>
 
-          <g id="NormalSpeedTape" ref={this.spdTapeOrForcedOnLandRef} transform=" translate(95 159)">
+          <g id="NormalSpeedTape" ref={this.spdTapeRef} transform=" translate(95 159)">
             <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d={this.pathSub} />
             <path id="SpeedTapeBelowForty" class="NormalStroke Green" d="m17.071 72.657v38.571" />
 
@@ -657,10 +647,10 @@ const getSpeedTapeOffsetAlwaysVisible = (currentSpeed: number, bugSpeed: number)
 };
 
 export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEventBus }> {
-  private spdTapeOrForcedOnLand = '';
+  private spdTape = '';
   private xWindSpdTape = '';
   private xWindSpdTapeRef = FSComponent.createRef<SVGGElement>();
-  private spdTapeOrForcedOnLandRef = FSComponent.createRef<SVGGElement>();
+  private spdTapeRef = FSComponent.createRef<SVGGElement>();
 
   private flightPhase = -1;
   private declutterMode = 0;
@@ -691,13 +681,12 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   private cwSpdLinesRef = FSComponent.createRef<SVGGElement>();
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const isCaptainSide = getDisplayIndex() === 1;
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElemsValues>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
 
-    sub.on('spdTapeOrForcedOnLand').handle((v) => {
-      this.spdTapeOrForcedOnLand = v.get().toString();
-      this.spdTapeOrForcedOnLandRef.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
+    sub.on('spdTape').handle((v) => {
+      this.spdTape = v.get().toString();
+      this.spdTapeRef.instance.style.display = `${this.spdTape}`;
     });
     sub.on('xWindSpdTape').handle((v) => {
       this.xWindSpdTape = v.get().toString();
@@ -716,19 +705,13 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
           : (this.onToPower = false);
       });
 
-    sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-      });
-    sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-        this.cwSpdLinesRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
-      });
+    sub.on('decMode').handle((value) => {
+      this.declutterMode = value.get();
+    });
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
+      this.cwSpdLinesRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+    });
     sub
       .on('leftMainGearCompressed')
       .whenChanged()
@@ -800,9 +783,11 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
               </g>
 
               <SpeedTarget bus={this.props.bus} mode={WindMode.CrossWind} />
+
+              <CrosswindDigitalSpeedReadout bus={this.props.bus} />
             </g>
           </g>
-          <g id="normal" ref={this.spdTapeOrForcedOnLandRef}>
+          <g id="normal" ref={this.spdTapeRef}>
             <g id="SpeedOfftapeGroup" transform=" translate(95 159)" ref={this.offTapeRef}>
               <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef}>
                 <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d="m87 170 v 383" />
@@ -990,10 +975,9 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents>();
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
-      this.crosswindMode = value;
+    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
       this.crosswindMode ? (DisplayRange = 20) : (DisplayRange = 42);
     });
   }
@@ -1380,15 +1364,13 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     super.onAfterRender(node);
     this.needsUpdate = true;
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<
+      HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & HudElems
+    >();
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
-      .whenChanged()
-      .handle(() => {
-        this.handleCrosswinMode();
-      });
+    sub.on('cWndMode').handle(() => {
+      this.handleCrosswinMode();
+    });
     sub
       .on('isSelectedSpeed')
       .whenChanged()
@@ -1735,7 +1717,7 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
         >
           MACH
         </text>
-        <text id="CurrentMachText" class="FontLargest StartAlign Green" x="112" y="810">
+        <text id="CurrentMachText" class="FontLarge StartAlign Green" x="150" y="770">
           {this.machTextSub}
         </text>
       </>

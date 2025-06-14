@@ -16,8 +16,7 @@ import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ALT_TAPE_XPOS, ALT_TAPE_YPOS, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
-import { HudElemsValues, WindMode } from './HUDUtils';
-import { getDisplayIndex } from './HUD';
+import { HudElems, WindMode } from './HUDUtils';
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
 let DisplayRange = 600;
 const ValueSpacing = 100;
@@ -29,7 +28,6 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
   private xWindOffset = 0;
   private altitude = 0;
   private landingElevation = new Arinc429Word(0);
-
   private flightPhase = 0;
 
   private delta = 0;
@@ -51,7 +49,7 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
 
     sub
       .on('fwcFlightPhase')
@@ -66,9 +64,8 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
         }
       });
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
-      this.crosswindMode = value;
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
       if (this.crosswindMode) {
         DisplayRange = 200;
         this.xWindOffset = -150;
@@ -104,7 +101,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
   private crosswindMode = false;
   private xWindOffset = 0;
   private visibilitySub = Subject.create('hidden');
-
+  private hudMode = 0;
   private offsetSub = Subject.create('');
 
   private radioAltitude = new Arinc429Word(0);
@@ -127,15 +124,14 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
     this.props.filteredRadioAltitude.sub((_filteredRadioAltitude) => {
       this.setOffset();
     }, true);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
-      this.crosswindMode = value;
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
       if (this.crosswindMode) {
         DisplayRange = 200;
         this.xWindOffset = -137;
@@ -267,22 +263,21 @@ interface AltitudeIndicatorProps {
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
   private crosswindMode = false;
+  private declutterMode = 0;
   private xWindAltTape = Subject.create<String>('');
   private altTape = Subject.create<String>('');
   private subscribable = Subject.create<number>(0);
-
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
   private altIndicatorGroupRef = FSComponent.createRef<SVGGElement>();
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HudElemsValues & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HudElems & HUDSimvars>();
     this.altIndicatorGroupRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
-      this.crosswindMode = value;
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
       if (this.crosswindMode) {
         DisplayRange = 200;
         this.tapeRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
@@ -290,6 +285,9 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
         DisplayRange = 600;
         this.tapeRef.instance.style.transform = 'translate3d(0px, 0px, 0px)';
       }
+    });
+    sub.on('decMode').handle((value) => {
+      this.declutterMode = value.get();
     });
 
     sub.on('altitudeAr').handle((a) => {
@@ -358,22 +356,16 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElemsValues>();
-    sub
-      .on('altTape')
-      .whenChanged()
-      .handle((v) => {
-        this.altTape = v.get().toString();
-        this.altTapeRef.instance.style.display = `${this.altTape}`;
-      });
-    sub
-      .on('xWindAltTape')
-      .whenChanged()
-      .handle((v) => {
-        this.xWindAltTape = v.get().toString();
-        this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
-        this.xWindAltTapeRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
-      });
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    sub.on('altTape').handle((v) => {
+      this.altTape = v.get().toString();
+      this.altTapeRef.instance.style.display = `${this.altTape}`;
+    });
+    sub.on('xWindAltTape').handle((v) => {
+      this.xWindAltTape = v.get().toString();
+      this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
+      this.xWindAltTapeRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+    });
 
     sub.on('altitudeAr').handle((altitude) => {
       if (!altitude.isNormalOperation()) {
@@ -739,7 +731,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & Arinc429Values & HudElemsValues>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & Arinc429Values & HudElems>();
 
     sub
       .on('baroMode')
@@ -894,7 +886,8 @@ interface MetricAltIndicatorState {
 
 class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
   private needsUpdate = false;
-  private altTape = '';
+  private metricAltHudVis = '';
+
   private metricAlt = FSComponent.createRef<SVGGElement>();
 
   private metricAltText = FSComponent.createRef<SVGTextElement>();
@@ -914,24 +907,25 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
-    const isCaptainSide = getDisplayIndex() === 1;
-    sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
-      .whenChanged()
-      .handle((v) => {
-        if (v) {
-          this.metricAltTargetText.instance.setAttribute('x', '557');
-          this.metricAltTargetMText.instance.setAttribute('x', '608');
-          this.metricAltTargetText.instance.setAttribute('y', '60');
-          this.metricAltTargetMText.instance.setAttribute('y', '60');
-        } else {
-          this.metricAltTargetText.instance.setAttribute('x', '457');
-          this.metricAltTargetMText.instance.setAttribute('x', '498');
-          this.metricAltTargetText.instance.setAttribute('y', '170');
-          this.metricAltTargetMText.instance.setAttribute('y', '170');
-        }
-      });
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & SimplaneValues & HudElems>();
+
+    sub.on('metricAlt').handle((v) => {
+      this.metricAltHudVis = v.get().toString();
+    });
+
+    sub.on('cWndMode').handle((v) => {
+      if (v.get()) {
+        this.metricAltTargetText.instance.setAttribute('x', '557');
+        this.metricAltTargetMText.instance.setAttribute('x', '608');
+        this.metricAltTargetText.instance.setAttribute('y', '60');
+        this.metricAltTargetMText.instance.setAttribute('y', '60');
+      } else {
+        this.metricAltTargetText.instance.setAttribute('x', '457');
+        this.metricAltTargetMText.instance.setAttribute('x', '498');
+        this.metricAltTargetText.instance.setAttribute('y', '170');
+        this.metricAltTargetMText.instance.setAttribute('y', '170');
+      }
+    });
 
     sub
       .on('mda')
@@ -973,18 +967,22 @@ class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
     if (this.needsUpdate) {
       this.needsUpdate = false;
       const showMetricAlt = this.state.metricAltToggle;
-      if (!showMetricAlt) {
-        this.metricAlt.instance.style.display = 'none';
-      } else {
-        this.metricAlt.instance.style.display = 'inline';
-        const currentMetricAlt = Math.round((this.state.altitude.value * 0.3048) / 10) * 10;
-        this.metricAltText.instance.textContent = currentMetricAlt.toString();
+      if (this.metricAltHudVis === 'block') {
+        if (!showMetricAlt) {
+          this.metricAlt.instance.style.display = 'none';
+        } else {
+          this.metricAlt.instance.style.display = 'inline';
+          const currentMetricAlt = Math.round((this.state.altitude.value * 0.3048) / 10) * 10;
+          this.metricAltText.instance.textContent = currentMetricAlt.toString();
 
-        const targetMetric =
-          Math.round(
-            ((this.state.altIsManaged ? this.state.targetAltManaged : this.state.targetAltSelected) * 0.3048) / 10,
-          ) * 10;
-        this.metricAltTargetText.instance.textContent = targetMetric.toString();
+          const targetMetric =
+            Math.round(
+              ((this.state.altIsManaged ? this.state.targetAltManaged : this.state.targetAltSelected) * 0.3048) / 10,
+            ) * 10;
+          this.metricAltTargetText.instance.textContent = targetMetric.toString();
+        }
+      } else {
+        this.metricAlt.instance.style.display = 'none';
       }
     }
   }

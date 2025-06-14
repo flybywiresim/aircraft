@@ -1,6 +1,5 @@
 import { DisplayComponent, EventBus, FSComponent, NodeReference, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { HudElemsValues } from './HUDUtils';
-import { getDisplayIndex } from './HUD';
+import { HudElems } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 interface VerticalTapeProps {
   displayRange: number;
@@ -107,12 +106,10 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HudElemsValues & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HudElems & HUDSimvars>();
 
-    const isCaptainSide = getDisplayIndex() === 1;
-
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
-      this.crosswindMode = value;
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
       if (this.props.type === 'altitude') {
         if (this.crosswindMode) {
           for (let i = 0; i < this.tickRefs.length - 1; i++) {

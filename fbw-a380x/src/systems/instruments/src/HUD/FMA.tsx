@@ -16,7 +16,7 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { Arinc429ConsumerSubject, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { HudElemsValues } from './HUDUtils';
+import { HudElems } from './HUDUtils';
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
 
@@ -46,7 +46,7 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
 }
 
 export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribable<boolean> }> {
-  private sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & SimplaneValues & HudElemsValues>();
+  private sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & SimplaneValues & HudElems>();
 
   private FMA = '';
 

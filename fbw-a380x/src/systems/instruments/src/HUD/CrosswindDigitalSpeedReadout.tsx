@@ -16,8 +16,7 @@ import {
 import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
-import { getDisplayIndex } from './HUD';
+import { HudElems, XWIND_TO_AIR_REF_OFFSET, XWIND_FULL_OFFSET } from './HUDUtils';
 const UnitDigits = (value: number) => {
   let text: string;
   if (value < 0) {
@@ -100,12 +99,12 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
-    const isCaptainSide = getDisplayIndex() === 1;
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
-      value === true
-        ? (this.cwDrRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`)
+    sub.on('cWndMode').handle((value) => {
+      value.get() === true
+        ? //  - XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET
+          (this.cwDrRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`)
         : (this.cwDrRef.instance.style.transform = `translate3d(0px, 0px, 0px)`);
     });
 

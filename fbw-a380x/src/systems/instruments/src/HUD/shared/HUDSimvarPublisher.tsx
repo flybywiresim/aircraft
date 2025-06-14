@@ -2,6 +2,7 @@ import { EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk
 import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
 
 export interface HUDSimvars {
+  hudMode: number;
   windDirection: number;
   windSpeed: number;
   trueHeadingRaw: number;
@@ -187,6 +188,7 @@ export interface HUDSimvars {
 }
 
 export enum HUDVars {
+  hudMode = 'L:A380X_HUDMODE',
   windDirection = 'L:A32NX_ADIRS_IR_1_WIND_DIRECTION',
   windSpeed = 'L:A32NX_ADIRS_IR_1_WIND_SPEED',
   trueHeadingRaw = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
@@ -373,6 +375,7 @@ export enum HUDVars {
 /** A publisher to poll and publish nav/com simvars. */
 export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
   private static simvars = new Map<keyof HUDSimvars, SimVarDefinition>([
+    ['hudMode', { name: HUDVars.hudMode, type: SimVarValueType.Number }],
     ['windDirection', { name: HUDVars.windDirection, type: SimVarValueType.Number }],
     ['windSpeed', { name: HUDVars.windSpeed, type: SimVarValueType.Number }],
     ['trueHeadingRaw', { name: HUDVars.trueHeadingRaw, type: SimVarValueType.Number }],

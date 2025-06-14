@@ -358,9 +358,15 @@ tspan.Red {
 }
 
 .BackgroundFill {
+  // normal
   fill: $display-background;
   stroke: none;
   fill-rule: evenodd;
+
+  // //debug
+  // fill: #ff0000a1;
+  // stroke: Cyan;
+  // fill-rule: evenodd;
 }
 
 .ModeChangedPath {

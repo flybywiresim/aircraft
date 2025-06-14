@@ -14,7 +14,7 @@ import { getDisplayIndex } from './HUD';
 import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { LagFilter } from './HUDUtils';
+import { HudElems, LagFilter } from './HUDUtils';
 import { FIVE_DEG } from './HUDUtils';
 import { calculateHorizonOffsetFromPitch } from './HUDUtils';
 
@@ -34,64 +34,25 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
   private ldevRef = FSComponent.createRef<SVGGElement>();
 
   private vdevRef = FSComponent.createRef<SVGGElement>();
-
-  private altitude = Arinc429Word.empty();
-
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
+  private groupVis = false;
+  private hudFlightPhaseMode = 0;
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
   private readonly declutterModeL = ConsumerSubject.create(this.sub.on('declutterModeL'), 0);
   private readonly declutterModeR = ConsumerSubject.create(this.sub.on('declutterModeR'), 0);
   private readonly ls1Button = ConsumerSubject.create(this.sub.on('ls1Button'), false);
   private readonly ls2Button = ConsumerSubject.create(this.sub.on('ls2Button'), false);
-  private readonly isVisibleL = MappedSubject.create(
-    ([declutterModeL, ls1Button]) => {
-      return declutterModeL != 2 && ls1Button;
-    },
-    this.declutterModeL,
-    this.ls1Button,
-  );
-  private readonly isVisibleR = MappedSubject.create(
-    ([declutterModeR, ls2Button]) => {
-      return declutterModeR != 2 && ls2Button;
-    },
-    this.declutterModeR,
-    this.ls2Button,
-  );
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     const isCaptainSide = getDisplayIndex() === 1;
-
-    this.sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
-      .whenChanged()
-      .handle(() => {
-        if (isCaptainSide) {
-          this.lsGroupRef.instance.style.display = this.isVisibleL.get() ? 'inline' : 'none';
-        } else {
-          this.lsGroupRef.instance.style.display = this.isVisibleR.get() ? 'inline' : 'none';
-        }
-        // console.log(
-        //   'dec: \n  isVisibleL \n' + this.isVisibleL.get(),
-        //   ' isVisibleR \n' + this.isVisibleR.get(),
-        //   ' ls1Button \n' + this.ls1Button.get(),
-        //   ' ls2Button \n' + this.ls2Button.get(),
-        //   ' declutterModeL \n' + this.declutterModeL.get(),
-        //   ' declutterModeR \n' + this.declutterModeR.get(),
-        // );
-      });
-    this.sub
-      .on(isCaptainSide ? 'ls1Button' : 'ls2Button')
-      .whenChanged()
-      .handle(() => {
-        if (isCaptainSide) {
-          this.lsGroupRef.instance.style.display = this.isVisibleL.get() ? 'inline' : 'none';
-        } else {
-          this.lsGroupRef.instance.style.display = this.isVisibleR.get() ? 'inline' : 'none';
-        }
-      });
-
-    this.sub.on('altitudeAr').handle((altitude) => {
-      this.altitude = altitude;
+    this.sub.on('IlsGS').handle((value) => {
+      value.get().toString() === 'block' ? (this.groupVis = true) : (this.groupVis = false);
+    });
+    this.sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
+      value && this.groupVis
+        ? (this.lsGroupRef.instance.style.display = 'inline')
+        : (this.lsGroupRef.instance.style.display = 'none');
     });
 
     this.sub
@@ -121,16 +82,17 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
   render(): VNode {
     return (
       <>
-        <g id="LSGroup" ref={this.lsGroupRef} style="display: none" transform=" translate(0 0)">
+        <g id="LSGroup" ref={this.lsGroupRef} transform=" translate(0 0)">
           <LandingSystemInfo bus={this.props.bus} />
 
           <g id="LSGroup">
-            <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <MarkerBeaconIndicator bus={this.props.bus} />
             <LsTitle bus={this.props.bus} />
           </g>
         </g>
+        <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
+        {/* loc outside group to display on TO/RollOut */}
 
         <g>
           <LsReminderIndicator bus={this.props.bus} />
@@ -168,11 +130,12 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
   private destRef = FSComponent.createRef<SVGTextElement>();
 
   private lsInfoGroup = FSComponent.createRef<SVGGElement>();
-
+  private elemVis = false;
+  private hasLoc = false;
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
 
     // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
     sub
@@ -244,7 +207,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
         distTrailing = '';
       }
       // eslint-disable-next-line max-len
-      this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontSmall  StartAlign">${distLeading}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${distTrailing}</tspan>`;
+      this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontSmallest  StartAlign">${distLeading}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${distTrailing}</tspan>`;
     } else {
       this.dmeVisibilitySub.set('display: none');
     }
@@ -252,20 +215,20 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <g id="LSInfoGroup" ref={this.lsInfoGroup} transform=" translate(85 350)">
-        <text id="ILSIdent" class="Green FontSmall  AlignLeft" x="15" y="490">
+      <g id="LSInfoGroup" ref={this.lsInfoGroup} transform=" translate(115 300)">
+        <text id="ILSIdent" class="Green FontSmallest  AlignLeft" x="15" y="490">
           {this.identText}
         </text>
-        <text id="ILSFreqLeading" class="Green FontSmall  AlignLeft" x="15" y="519.9">
+        <text id="ILSFreqLeading" class="Green FontSmallest  AlignLeft" x="15" y="511.9">
           {this.freqTextLeading}
         </text>
-        <text id="ILSFreqTrailing" class="Green FontSmall  AlignLeft" x="60" y="520">
+        <text id="ILSFreqTrailing" class="Green FontSmallest  AlignLeft" x="60" y="512">
           {this.freqTextTrailing}
         </text>
 
         <g id="ILSDistGroup" style={this.dmeVisibilitySub}>
-          <text ref={this.destRef} class="Green AlignLeft" x="15" y="550" />
-          <text class="Cyan FontSmallest AlignLeft" x="65" y="550">
+          <text ref={this.destRef} class="Green AlignLeft" x="15" y="535" />
+          <text class="Cyan FontTiny AlignLeft" x="65" y="535">
             NM
           </text>
         </g>
@@ -283,7 +246,10 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
   private LSLocRef = FSComponent.createRef<SVGGElement>();
   private LSLocGroupVerticalOffset = 0;
   private pitch = 0;
-  private doOnce = 0;
+  private locVis = '';
+  private locVisBool = false;
+  private hudFlightPhaseMode = 0;
+  private lsBtnState = false;
   private lagFilter = new LagFilter(1.5);
 
   private rightDiamond = FSComponent.createRef<SVGPathElement>();
@@ -316,22 +282,14 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
   private setLocGroupPos() {
     if (this.LsState) {
       if (this.onGround) {
-        this.LSLocRef.instance.style.visibility = 'visible';
         this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
       } else {
-        if (this.declutterMode == 2) {
-          this.LSLocRef.instance.style.visibility = 'hidden';
-        } else {
-          this.LSLocRef.instance.style.visibility = 'visible';
-        }
         this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
       }
     } else {
       if (this.onGround) {
-        this.LSLocRef.instance.style.visibility = 'visible';
         this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
       } else {
-        this.LSLocRef.instance.style.visibility = 'hidden';
         this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
       }
     }
@@ -339,8 +297,30 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    sub
+      .on('hudFlightPhaseMode')
+      .whenChanged()
+      .handle((mode) => {
+        this.hudFlightPhaseMode = mode.get();
+      });
+
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+    sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
+      this.lsBtnState = value;
+    });
+
+    sub.on('IlsLoc').handle((value) => {
+      this.locVis = value.get().toString();
+      this.locVis === 'block' ? (this.locVisBool = true) : (this.locVisBool = false);
+      if (this.hudFlightPhaseMode === 0) {
+        this.lsBtnState && this.locVisBool
+          ? (this.LSLocRef.instance.style.display = `block`)
+          : (this.LSLocRef.instance.style.display = `none`);
+      } else {
+        this.LSLocRef.instance.style.display = `${this.locVis}`;
+      }
+    });
     sub
       .on('fwcFlightPhase')
       .whenChanged()
@@ -355,10 +335,10 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
-        this.declutterMode = value;
+        this.declutterMode = value.get();
         this.setLocGroupPos();
       });
     sub
@@ -368,10 +348,8 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
         this.onGround = value;
         if (value) {
           this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
-          this.LSLocRef.instance.style.visibility = 'visible';
         } else {
           this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
-          this.LSLocRef.instance.style.visibility = 'hidden';
         }
       });
     sub
@@ -396,20 +374,6 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
       });
     sub.on('pitchAr').handle((p) => {
       this.pitch = p.value;
-    });
-
-    sub.on('realTime').handle(() => {
-      // if (this.fmgcFlightPhase == 1) {
-      //   this.doOnce = 0;
-      //   this.LSLocRef.instance.style.visibility = 'visible';
-      //   this.LSLocGroupVerticalOffset = 380 + (DistanceSpacing / ValueSpacing) * this.pitch;
-      //   this.LSLocRef.instance.style.transform = `translate3d(433.5px, ${this.LSLocGroupVerticalOffset}px, 0px)`;
-      // } else {
-      //   if (this.doOnce == 0) {
-      //     this.doOnce = 1;
-      //     this.LSLocRef.instance.style.visibility = 'hidden';
-      //   }
-      // }
     });
   }
 
@@ -484,6 +448,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
   private diamondGroup = FSComponent.createRef<SVGGElement>();
 
   private hasGlideSlope = false;
+  private GsVis = '';
 
   private handleGlideSlopeError(glideSlopeError: number): void {
     const deviation = this.lagFilter.step(glideSlopeError, this.props.instrument.deltaTime / 1000);
@@ -522,13 +487,17 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
+
+    sub.on('IlsGS').handle((value) => {
+      this.GsVis = value.get().toString();
+      this.LSGsRef.instance.style.display = `${this.GsVis}`;
+    });
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
-        this.crosswindMode = value;
+        this.crosswindMode = value.get();
       });
     sub
       .on('fpa')

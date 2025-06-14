@@ -18,14 +18,14 @@ import {
   calculateVerticalOffsetFromRoll,
   LagFilter,
   getSmallestAngle,
-  HudElemsValues,
+  HudElems,
 } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { SimplaneValues } from '../MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './HUD';
-import { ONE_DEG, FIVE_DEG } from './HUDUtils';
+import { ONE_DEG, FIVE_DEG, PitchscaleMode } from './HUDUtils';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HeadingOfftape } from './HeadingIndicator';
 
@@ -214,7 +214,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
   private classNameSub = Subject.create('Yellow');
 
-  private rollTriangle = FSComponent.createRef<SVGPathElement>();
+  private rollTriangleRef = FSComponent.createRef<SVGGElement>();
 
   private slideSlip = FSComponent.createRef<SVGPathElement>();
 
@@ -234,20 +234,17 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
   private latAcc = 0;
 
-  private pitchScale = '';
+  private attitudeIndicator = '';
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElemsValues>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElems>();
 
-    sub
-      .on('pitchScale')
-      .whenChanged()
-      .handle((v) => {
-        this.pitchScale = v.get().toString();
-        this.rollTriangle.instance.style.display = `${this.pitchScale}`;
-      });
+    sub.on('attitudeIndicator').handle((v) => {
+      this.attitudeIndicator = v.get().toString();
+      this.rollTriangleRef.instance.style.display = `${this.attitudeIndicator}`;
+    });
     sub
       .on('leftMainGearCompressed')
       .whenChanged()
@@ -330,14 +327,14 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
       this.sideslipIndicatorFilter.step(offset, this.props.instrument.deltaTime / 1000),
     );
 
-    this.rollTriangle.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
+    this.rollTriangleRef.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
     this.classNameSub.set(`${betaTargetActive ? 'Green' : 'Green'}`);
     this.slideSlip.instance.style.transform = `translate3d(${SIIndexOffset}px, 0px, 0px)`;
   }
 
   render(): VNode {
     return (
-      <g id="RollTriangleGroup" ref={this.rollTriangle} class="NormalStroke Green CornerRound">
+      <g id="RollTriangleGroup" ref={this.rollTriangleRef} class="NormalStroke Green CornerRound">
         <g transform="translate(295 -60)">
           <path d="m330.37 219.915 14.302 -21.166 14.302 21.166z" />
           <path id="SideSlipIndicator" ref={this.slideSlip} d="m369.87 236.04 -7.492 -11.087h-35.414l-7.492 11.087z" />
@@ -356,6 +353,7 @@ class PitchScale extends DisplayComponent<{
   private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
+
   private sVisibility = Subject.create<String>('');
   private sVisibilityDeclutterMode2 = Subject.create<String>('');
   private sVisibilitySwitch = Subject.create<String>('block');
@@ -365,11 +363,7 @@ class PitchScale extends DisplayComponent<{
   private needsUpdate = false;
 
   private threeDegLine = FSComponent.createRef<SVGGElement>();
-  private pitchScaleVis = FSComponent.createRef<SVGGElement>();
-  private pitchScale = '';
-  private DeclutterSimVar = '';
-  private negIterNum = 5;
-  private posIterNum = 7;
+  private pitchScaleMode = PitchscaleMode.FULL;
 
   private data: LSPath = {
     roll: new Arinc429Word(0),
@@ -378,36 +372,37 @@ class PitchScale extends DisplayComponent<{
     da: new Arinc429Word(0),
   };
 
+  private setPitchScale() {
+    if (this.pitchScaleMode === PitchscaleMode.OFF) {
+      this.sVisibility.set('none');
+      this.sVisibilityDeclutterMode2.set('none');
+    } else if (this.pitchScaleMode === PitchscaleMode.FULL) {
+      this.sVisibility.set('block');
+      this.sVisibilityDeclutterMode2.set('block');
+    } else {
+      this.sVisibility.set('none');
+      this.sVisibilityDeclutterMode2.set('block');
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<
-      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElemsValues
+      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
     >();
 
-    sub.on('pitchScale').handle((v) => {
-      this.pitchScale = v.get().toString();
-      this.pitchScaleVis.instance.style.display = `${this.pitchScale}`;
+    sub.on('pitchScaleMode').handle((v) => {
+      this.pitchScaleMode = v.get();
+      this.setPitchScale();
     });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-        this.declutterMode = value;
-        if (this.forcedFma) {
-          this.sVisibility.set('block');
-          this.sVisibilityDeclutterMode2.set('block');
-        } else {
-          if (this.declutterMode == 2) {
-            this.sVisibility.set('none');
-            this.sVisibilityDeclutterMode2.set('block');
-          } else {
-            this.sVisibility.set('block');
-            this.sVisibilityDeclutterMode2.set('block');
-          }
-        }
+        this.declutterMode = value.get();
+        this.setPitchScale();
       });
 
     sub.on('hEvent').handle((eventName) => {
@@ -460,12 +455,13 @@ class PitchScale extends DisplayComponent<{
   render(): VNode {
     const result = [] as SVGTextElement[];
 
-    for (let i = 1; i < this.posIterNum; i++) {
+    // positive pitch, right dotted lines
+    for (let i = 1; i < 7; i++) {
       result.push(<path d={`M 518.26,${512 - i * FIVE_DEG} h -71.1 v 11`} display={this.sVisibility} />);
       result.push(<path d={`M 761.74,${512 - i * FIVE_DEG} h 71.1 v 11`} display={this.sVisibility} />);
     }
 
-    for (let i = 1; i < this.negIterNum; i++) {
+    for (let i = 1; i < 5; i++) {
       // negative pitch, right dotted lines
       i == 1 ? (this.sVisibilitySwitch = this.sVisibilityDeclutterMode2) : (this.sVisibilitySwitch = this.sVisibility);
       result.push(
@@ -536,9 +532,8 @@ class PitchScale extends DisplayComponent<{
         </text>,
       );
     }
-
     return (
-      <g id="pitchScale" class="NormalStroke Green" ref={this.pitchScaleVis}>
+      <g id="pitchScale" class="NormalStroke Green">
         {result}
       </g>
     );
@@ -579,15 +574,11 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   private valuesToLog = new Map<string, number>();
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
-    sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-      });
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
+    });
 
     sub
       .on('rollAr')
@@ -603,32 +594,32 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
 
         const xPos = -D * Math.sin(radRoll);
 
-        // xposition from frame2 to eval if extention should be drawn
+        // y position from frame2 to eval if extention should be drawn y = 0 is vert pos of acft in air ref
         if (this.crosswindMode == false) {
-          this.lowerBound = -6.143; //= -6.143;
-          this.upperBound = 426; //= 355;
+          this.lowerBound = 0; //= -6.143;
+          this.upperBound = 383; //= 355;
         } else {
-          this.upperBound = -14; //= -27.143;
-          this.lowerBound = -217; //= -199.143;
+          this.lowerBound = -91; //= -199.143;
+          this.upperBound = 91; //= -27.143;
         }
 
-        let Lalt = 0;
-        let Lspd = 0;
+        let Lalt = 0; //right and left edges  of the alt tape
+        let Lspd = 0; //right and left edges  of the spd tape
         if (roll.value < 0) {
           if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-            Lspd = 455; // 472;
+            Lspd = 431; // 472;
             Lalt = 400; // 400;
           } else {
-            Lalt = 494; // 494;
-            Lspd = 570; // 570;
+            Lalt = 497; // 494;
+            Lspd = 530; // 570;
           }
         } else {
           if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
             Lalt = 400; // 400;
-            Lspd = 455; // 472;
+            Lspd = 431; // 472;
           } else {
-            Lalt = 494; // 494;
-            Lspd = 570; // 570;
+            Lalt = 497; // 494;
+            Lspd = 530; // 570;
           }
         }
         const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
@@ -759,14 +750,12 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   render(): VNode {
     return (
       <g id="ExtendedHorizon">
-        {/* dasharray is 320 refs */}
-        <path d="m 0 323 h 1280" class="red DEBUG" stroke-dasharray="2 2" />
-        <path d="m 0 327 h 1280" class="red DEBUG" />
-        <path d="m 0 688 h 1280" class="red DEBUG" stroke-dasharray="2 2" />
-        <path d="m 0 755 h 1280" class="red DEBUG" />
-        <path d="m 0 302 h 1280" class="blue DEBUG" />
-        <path d="m 0 130 h 1280" class="blue DEBUG" />
-        <path d="m 0 216 h 1280" class="blue DEBUG" />
+        {/* y = 329 is vert pos of the inAir acft ref */}
+        <path d="m 0 329 h 1280" class="red DEBUG" />
+        <path d="m 0 712 h 1280" class="red DEBUG" />
+        <path d="m 0 329 h 1280" class="blue DEBUG" stroke-dasharray="5 5" />
+        <path d="m 0 238 h 1280" class="blue DEBUG" />
+        <path d="m 0 420 h 1280" class="blue DEBUG" />
 
         <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
           <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">

@@ -19,7 +19,7 @@ import {
   ArincEventBus,
   Arinc429RegisterSubject,
 } from '@flybywiresim/fbw-sdk';
-import { calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, HudElems } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
@@ -92,8 +92,7 @@ export class FlightPathVector extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
     const moveBirdSub = MappedSubject.create(this.data.roll, this.data.pitch, this.data.fpa, this.data.da).sub(
       this.moveBird.bind(this),
       true,
@@ -102,9 +101,12 @@ export class FlightPathVector extends DisplayComponent<{
 
     moveBirdSub.resume(true);
 
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((d) => {
-      this.crosswindMode = d;
-    });
+    sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value.get();
+      });
   }
 
   private moveBird() {

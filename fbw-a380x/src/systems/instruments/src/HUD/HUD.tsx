@@ -16,7 +16,7 @@ import { AttitudeIndicatorWarnings } from '@flybywiresim/hud';
 import { AttitudeIndicatorWarningsA380 } from 'instruments/src/HUD/AttitudeIndicatorWarningsA380';
 import { LinearDeviationIndicator } from 'instruments/src/HUD/LinearDeviationIndicator';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
-import { HudElemsValues, LagFilter } from './HUDUtils';
+import { LagFilter, HudElems } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
 import { AttitudeIndicatorFixedCenter, AttitudeIndicatorFixedUpper } from './AttitudeIndicatorFixed';
@@ -62,16 +62,16 @@ interface HUDProps extends ComponentProps {
 }
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
-  private spdTapeOrForcedOnLand = '';
+  private spdTape = '';
   private xWindSpdTape = '';
   private altTape = '';
   private xWindAltTape = '';
   private windIndicator = '';
-  private spdTapeOrForcedOnLandRef = FSComponent.createRef<SVGPathElement>();
+  private spdTapeRef = FSComponent.createRef<SVGPathElement>();
   private xWindSpdTapeRef = FSComponent.createRef<SVGPathElement>();
   private altTapeRef = FSComponent.createRef<SVGPathElement>();
   private xWindAltTapeRef = FSComponent.createRef<SVGPathElement>();
-  private spdTapeOrForcedOnLandRef2 = FSComponent.createRef<SVGPathElement>();
+  private spdTapeRef2 = FSComponent.createRef<SVGPathElement>();
   private xWindSpdTapeRef2 = FSComponent.createRef<SVGPathElement>();
   private altTapeRef2 = FSComponent.createRef<SVGPathElement>();
   private xWindAltTapeRef2 = FSComponent.createRef<SVGPathElement>();
@@ -169,14 +169,13 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
     this.failuresConsumer.register(isCaptainSide ? A380Failure.DirectCurrent1 : A380Failure.DirectCurrent2);
 
     const sub = this.props.bus.getSubscriber<
-      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElemsValues
+      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
     >();
 
-    sub.on('spdTapeOrForcedOnLand').handle((v) => {
-      this.spdTapeOrForcedOnLand = v.get().toString();
-      this.spdTapeOrForcedOnLandRef.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
-      this.spdTapeOrForcedOnLandRef2.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
-      //console.log('qsdqsd   ' + this.spdTapeOrForcedOnLand);
+    sub.on('spdTape').handle((v) => {
+      this.spdTape = v.get().toString();
+      this.spdTapeRef.instance.style.display = `${this.spdTape}`;
+      this.spdTapeRef2.instance.style.display = `${this.spdTape}`;
     });
     sub.on('xWindSpdTape').handle((v) => {
       this.xWindSpdTape = v.get().toString();
@@ -273,16 +272,16 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
-        this.declutterMode = value;
+        this.declutterMode = value.get();
       });
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
-        this.crosswindMode = value;
+        this.crosswindMode = value.get();
       });
 
     sub
@@ -419,29 +418,34 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <path
             id="PitchScaleMask"
             class="BackgroundFill"
-            d="m 0 0 h 1280 v 1024 h -1280 Z M 1 125 h 1278 v 800 h -1278 Z"
+            d="m 0 0 h 1280 v 1024 h -1280 Z M 1 125 h 1278v 800 h -1278 Z"
           />
 
           <g id="TapesMasks">
-            <path ref={this.altTapeRef} id="AltTapeMask" class="BlackFill" d="M 1039 323 v 430 h 120 v -430 z"></path>
             <path
-              ref={this.spdTapeOrForcedOnLandRef}
+              ref={this.altTapeRef}
+              id="AltTapeMask"
+              class="LargeStroke BlackFill"
+              d="M 1039 323 v 430 h 120 v -430 z"
+            ></path>
+            <path
+              ref={this.spdTapeRef}
               id="SpdTapeMask"
-              class="BlackFill"
+              class="LargeStroke BlackFill"
               d="M 95 329 v 383 h 123 v -383  z"
             ></path>
 
             <path
               ref={this.xWindSpdTapeRef}
               id="CrosswindSpdTapeMask"
-              class="NormalStroke  BackgroundFill"
+              class="LargeStroke  BlackFill"
               //d="M 111 119 v 182 h 98 v -182 z"
               d="M 111 238 v 182 h 98 v -182 z"
             />
             <path
               ref={this.xWindAltTapeRef}
               id="CrosswindAltTapeMask"
-              class="BlackFill"
+              class="LargeStroke BlackFill"
               // d="M 1039 135 v 152 h 120 v -152 z"
               d="M 1039 255 v 150 h 100 v -150 z"
             ></path>
@@ -455,15 +459,15 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <g id="TapesMasks2">
             <path
               id="Mask2Cw"
-              class="BackgroundFill"
+              class="LargeStroke BackgroundFill "
               ref={this.xWindSpdTapeRef2}
               // d="M 95 0 H 207 V 1024 H 95 Z  M 96 119 v 182 h 110 v -182 z" //full xwind offset
               d="M 95 0 H 210 V 1024 H 95 Z  M 96 238 v 182 h 113 v -182 z"
             />
             <path
               id="Mask2"
-              class="BackgroundFill"
-              ref={this.spdTapeOrForcedOnLandRef2}
+              class="LargeStroke BackgroundFill"
+              ref={this.spdTapeRef2}
               // eslint-disable-next-line max-len
               //d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z"
               d="M 95 0 H 207 V 1024 H 95 Z  M 96 329 v 383 h 110 v -383 z"
@@ -471,14 +475,14 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
             <path
               id="Mask3"
-              class="BackgroundFill"
+              class="LargeStroke BackgroundFill"
               ref={this.altTapeRef2}
               d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 329 v 383 h 113 v -383 z"
               // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z"
             />
             <path
               id="Mask4"
-              class="BackgroundFill"
+              class="LargeStroke BackgroundFill"
               ref={this.xWindAltTapeRef2}
               // d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 135 v 152 h 113 v -152 z"
               d="M 1028 0 h 115 V 1024 H 1028 Z  M 1029 254 v 152 h 113 v -152 z"

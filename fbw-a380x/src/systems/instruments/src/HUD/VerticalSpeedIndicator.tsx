@@ -12,8 +12,7 @@ import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { LagFilter } from './HUDUtils';
-import { HudElemsValues } from './HUDUtils';
-import { getDisplayIndex } from './HUD';
+import { HudElems } from './HUDUtils';
 
 interface VerticalSpeedIndicatorProps {
   bus: ArincEventBus;
@@ -61,20 +60,27 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     tcasGreenZoneH: 0,
   };
 
+  private handlePos() {
+    if (this.crosswindMode) {
+      // transform="translate(475 135)
+      this.VSRef.instance.style.transform = 'translate3d(485px, -35px, 0px)';
+    } else {
+      this.VSRef.instance.style.transform = 'translate3d(485px, 155px, 0px)';
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElemsValues>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((value) => {
-      this.crosswindMode = value;
-      if (this.crosswindMode) {
-        // transform="translate(475 135)
-        this.VSRef.instance.style.transform = 'translate3d(485px, -35px, 0px)';
-      } else {
-        this.VSRef.instance.style.transform = 'translate3d(485px, 155px, 0px)';
-      }
+    sub.on('decMode').handle(() => {
+      this.handlePos();
+    });
+
+    sub.on('cWndMode').handle((value) => {
+      this.crosswindMode = value.get();
+      this.handlePos();
     });
     sub
       .on('VS')

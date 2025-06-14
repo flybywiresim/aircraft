@@ -5,18 +5,19 @@ import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FIVE_DEG, HudElemsValues } from './HUDUtils';
+import { FIVE_DEG, HudElems } from './HUDUtils';
 import { LateralMode } from '@shared/autopilot';
 interface AttitudeIndicatorFixedUpperProps {
   bus: EventBus;
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HudElemsValues>();
-
-  private pitchScaleVisRef = FSComponent.createRef<SVGGElement>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HudElems>();
+  private fullGroupVis = '';
+  private fullGroupRef = FSComponent.createRef<SVGGElement>();
+  private attitudeIndicatorRef = FSComponent.createRef<SVGGElement>();
   private alternateLawRef = FSComponent.createRef<SVGGElement>();
-  private pitchScale = '';
+  private attitudeIndicator = '';
   private roll = new Arinc429Word(0);
 
   private pitch = new Arinc429Word(0);
@@ -30,12 +31,17 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    this.sub.on('attitudeIndicator').handle((value) => {
+      this.fullGroupVis = value.get().toString();
+      this.fullGroupRef.instance.style.display = `${this.fullGroupVis}`;
+    });
+
     this.sub
-      .on('pitchScale')
+      .on('attitudeIndicator')
       .whenChanged()
       .handle((v) => {
-        this.pitchScale = v.get().toString();
-        this.pitchScaleVisRef.instance.style.display = `${this.pitchScale}`;
+        this.attitudeIndicator = v.get().toString();
+        this.attitudeIndicatorRef.instance.style.display = `${this.attitudeIndicator}`;
       });
 
     this.sub
@@ -44,16 +50,16 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
       .handle((roll) => {
         this.roll = roll;
         if (!this.roll.isNormalOperation()) {
-          this.pitchScaleVisRef.instance.style.display = 'none';
+          this.attitudeIndicatorRef.instance.style.display = 'none';
           this.alternateLawRef.instance.style.display = 'none';
         } else {
-          this.pitchScaleVisRef.instance.style.display = 'block';
+          this.attitudeIndicatorRef.instance.style.display = 'block';
           Math.abs(roll.value) > 35 && Math.abs(roll.value) <= 71
             ? (this.alternateLawRef.instance.style.display = 'block')
             : (this.alternateLawRef.instance.style.display = 'none');
         }
         if (Math.abs(roll.value) > 71) {
-          this.pitchScaleVisRef.instance.style.display = 'none';
+          this.attitudeIndicatorRef.instance.style.display = 'none';
           this.alternateLawRef.instance.style.display = 'none';
         }
       });
@@ -64,13 +70,13 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
       .handle((pitch) => {
         this.pitch = pitch;
         if (!this.pitch.isNormalOperation()) {
-          this.pitchScaleVisRef.instance.style.display = 'none';
+          this.attitudeIndicatorRef.instance.style.display = 'none';
         } else {
           if (pitch.value > 39 || pitch.value < -25) {
-            this.pitchScaleVisRef.instance.style.display = 'none';
+            this.attitudeIndicatorRef.instance.style.display = 'none';
             this.alternateLawRef.instance.style.display = 'none';
           } else {
-            this.pitchScaleVisRef.instance.style.display = 'block';
+            this.attitudeIndicatorRef.instance.style.display = 'block';
           }
         }
       });
@@ -78,22 +84,24 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
 
   render(): VNode {
     return (
-      <g id="AttitudeUpperInfoGroup" ref={this.pitchScaleVisRef}>
-        <g id="RollIndicatorFixed" class="NormalStroke Green">
-          <path d="m 640,138.44282 12.21523,-20.20611 h -24.43047 zz" />
-          <path d="m 735.2  164 14.1,-24.5" />
-          <path d="m 705.1 150 7.7,-20.7" />
-          <path d="m 673 141.5 4,-22.2" />
-          <path d="m 544.8  164 -14.1,-24.5" />
-          <path d="m 574.9 150 -7.7,-20.7" />
-          <path d="m 607 141.5 -4,-22.2" />
+      <g id="FullAttitudeUpperInfoGroup" ref={this.fullGroupRef}>
+        <g id="AttitudeUpperInfoGroup" ref={this.attitudeIndicatorRef}>
+          <g id="RollIndicatorFixed" class="NormalStroke Green">
+            <path d="m 640,138.44282 12.21523,-20.20611 h -24.43047 zz" />
+            <path d="m 735.2  164 14.1,-24.5" />
+            <path d="m 705.1 150 7.7,-20.7" />
+            <path d="m 673 141.5 4,-22.2" />
+            <path d="m 544.8  164 -14.1,-24.5" />
+            <path d="m 574.9 150 -7.7,-20.7" />
+            <path d="m 607 141.5 -4,-22.2" />
 
-          <g id="alternateLawRollRef" ref={this.alternateLawRef}>
-            <path d="m 774.5 194.5 20,-20" />
-            <path d="m 813 249 19,-9" />
-            <path d="m 505.5 194.5 -20,-20" />
-            <path d="m 467 249 -19,-9" />
-            <path d="M 467.5 249.3 A 190 190 263 0 1  812.5 249.3 " />
+            <g id="alternateLawRollRef" ref={this.alternateLawRef}>
+              <path d="m 774.5 194.5 20,-20" />
+              <path d="m 813 249 19,-9" />
+              <path d="m 505.5 194.5 -20,-20" />
+              <path d="m 467 249 -19,-9" />
+              <path d="M 467.5 249.3 A 190 190 263 0 1  812.5 249.3 " />
+            </g>
           </g>
         </g>
       </g>
@@ -117,11 +125,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
   private failureVis = Subject.create('hidden');
 
   private fdVisibilitySub = Subject.create('hidden');
-
+  private inAirRef = FSComponent.createRef<SVGGElement>();
+  private gndRef = FSComponent.createRef<SVGGElement>();
   private declutterMode = 0;
   private onGround = true;
-  private visibilityAirSub = Subject.create('none');
-  private visibilityGroundSub = Subject.create('none');
+  private visibilityAirSub = '';
+  private visibilityGroundSub = '';
   private lateralMode = 0;
 
   private fdActive = false;
@@ -134,8 +143,16 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
+
+    sub.on('inAirAcftRef').handle((v) => {
+      this.visibilityAirSub = v.get().toString();
+      this.inAirRef.instance.style.display = `${this.visibilityAirSub}`;
+    });
+
+    sub.on('gndAcftRef').handle((v) => {
+      this.visibilityGroundSub = v.get().toString();
+    });
 
     sub
       .on('leftMainGearCompressed')
@@ -182,24 +199,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         this.fdVisibilitySub.set('display:inline');
       }
     });
-    sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-        if (this.onGround) {
-          if (this.isActive()) {
-            this.visibilityGroundSub.set('block');
-            this.visibilityAirSub.set('none');
-          } else {
-            this.visibilityGroundSub.set('none');
-            this.visibilityAirSub.set('none');
-          }
-        } else {
-          this.visibilityGroundSub.set('none');
-          this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
-        }
-      });
   }
 
   render(): VNode {
@@ -227,7 +226,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           </g>
 
           <g id="AircraftReferences">
-            <g id="AircraftReferenceInAir" class="SmallStroke Green" display={this.visibilityAirSub}>
+            <g id="AircraftReferenceInAir" class="SmallStroke Green" ref={this.inAirRef} display="none">
               <path d="m 625,335  v -6 h -30" />
               <path d="m 637,332 h 6 v -6 h -6 z" />
               <path d="m 655, 335 v -6 h 30" />
@@ -340,13 +339,13 @@ interface DeclutterIndicatorProps {
 }
 
 export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps> {
-  private declutterMode;
+  private declutterMode = 0;
 
   private textSub = Subject.create('');
 
   private declutterModeRef = FSComponent.createRef<SVGPathElement>();
 
-  private handleFdState() {
+  private handleDecIndState() {
     let text: string;
     if (this.declutterMode == 0) {
       text = 'N';
@@ -365,11 +364,10 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
-    sub.on(isCaptainSide ? 'declutterModeL' : 'declutterModeR').handle((m) => {
-      this.declutterMode = m;
-      this.handleFdState();
+    const sub = this.props.bus.getSubscriber<HudElems>();
+    sub.on('decMode').handle((m) => {
+      this.declutterMode = m.get();
+      this.handleDecIndState();
     });
   }
 
