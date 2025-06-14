@@ -28,7 +28,7 @@ import { getDisplayIndex } from './HUD';
 import { ONE_DEG, FIVE_DEG, PitchscaleMode } from './HUDUtils';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HeadingOfftape } from './HeadingIndicator';
-
+import { SyntheticRunway } from './SyntheticRunway';
 const DisplayRange = 35;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
@@ -759,7 +759,7 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
 
         <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
           <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">
-            {/* <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} /> */}
+            <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} />
 
             <path ref={this.extendedAlt} id="extendedAlt" d="" class="NormalStroke Green" />
             <path ref={this.extendedSpd} id="extendedSpd" d="" class="NormalStroke Green" />

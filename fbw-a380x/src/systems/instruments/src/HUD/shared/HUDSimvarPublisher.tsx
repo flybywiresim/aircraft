@@ -1,5 +1,6 @@
-import { EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
+import { BasePublisher, EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
 import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimVarPublisher';
+import { HUDSyntheticRunway, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 export interface HUDSimvars {
   hudMode: number;
@@ -560,5 +561,23 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
 
   public constructor(bus: EventBus) {
     super(HUDSimvarPublisher.simvars, bus);
+  }
+}
+
+export interface HUDSymbolData {
+  symbol: HUDSyntheticRunway;
+}
+
+export class HUDSymbolsPublisher extends BasePublisher<HUDSymbolData> {
+  private readonly events: GenericDataListenerSync[] = [];
+
+  constructor(bus: EventBus) {
+    super(bus);
+
+    this.events.push(
+      new GenericDataListenerSync((ev, data) => {
+        this.publish('symbol', data);
+      }, 'A380X_EFIS_HUD_SYMBOLS'),
+    );
   }
 }

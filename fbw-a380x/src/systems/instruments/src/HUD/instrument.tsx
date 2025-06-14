@@ -6,7 +6,7 @@ import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/F
 import { HUDComponent } from './HUD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
-import { HUDSimvarPublisher } from './shared/HUDSimvarPublisher';
+import { HUDSimvarPublisher, HUDSymbolsPublisher } from './shared/HUDSimvarPublisher';
 import { HudValueProvider } from './shared/HudValueProvider';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 
@@ -45,6 +45,8 @@ class A380X_HUD extends BaseInstrument {
   private readonly fwsPfdPublisher = new FwsPfdSimvarPublisher(this.bus);
 
   private readonly hudProvider = new HudValueProvider(this.bus);
+
+  private readonly symbolPublisher = new HUDSymbolsPublisher(this.bus);
   constructor() {
     super();
 
@@ -66,6 +68,7 @@ class A380X_HUD extends BaseInstrument {
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
     this.backplane.addInstrument('HudProvider', this.hudProvider);
+    this.backplane.addPublisher('HUDSymbolsPublisher', this.symbolPublisher);
   }
 
   get templateID(): string {
