@@ -254,7 +254,7 @@ export class HudValueProvider implements Instrument {
           this.elems.windIndicator.set('none');
           this.elems.QFE.set('block');
           this.elems.metricAlt.set('block');
-          this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
+          this.elems.pitchScaleMode.set(PitchscaleMode.OFF);
           this.elems.hudFlightPhaseMode.set(this.hudMode.get());
           this.elems.cWndMode.set(false);
           this.elems.decMode.set(0);

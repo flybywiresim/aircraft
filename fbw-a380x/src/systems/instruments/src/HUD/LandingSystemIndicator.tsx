@@ -86,13 +86,12 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
           <LandingSystemInfo bus={this.props.bus} />
 
           <g id="LSGroup">
+            <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <MarkerBeaconIndicator bus={this.props.bus} />
             <LsTitle bus={this.props.bus} />
           </g>
         </g>
-        <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
-        {/* loc outside group to display on TO/RollOut */}
 
         <g>
           <LsReminderIndicator bus={this.props.bus} />
@@ -228,7 +227,7 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
         <g id="ILSDistGroup" style={this.dmeVisibilitySub}>
           <text ref={this.destRef} class="Green AlignLeft" x="15" y="535" />
-          <text class="Cyan FontTiny AlignLeft" x="65" y="535">
+          <text class="Green FontTiny AlignLeft" x="65" y="535">
             NM
           </text>
         </g>
@@ -248,7 +247,6 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
   private pitch = 0;
   private locVis = '';
   private locVisBool = false;
-  private hudFlightPhaseMode = 0;
   private lsBtnState = false;
   private lagFilter = new LagFilter(1.5);
 
@@ -280,46 +278,16 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
     }
   }
   private setLocGroupPos() {
-    if (this.LsState) {
-      if (this.onGround) {
-        this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
-      } else {
-        this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
-      }
-    } else {
-      if (this.onGround) {
-        this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
-      } else {
-        this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
-      }
-    }
+    this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
-    sub
-      .on('hudFlightPhaseMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.hudFlightPhaseMode = mode.get();
-      });
 
     const isCaptainSide = getDisplayIndex() === 1;
     sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
       this.lsBtnState = value;
-    });
-
-    sub.on('IlsLoc').handle((value) => {
-      this.locVis = value.get().toString();
-      this.locVis === 'block' ? (this.locVisBool = true) : (this.locVisBool = false);
-      if (this.hudFlightPhaseMode === 0) {
-        this.lsBtnState && this.locVisBool
-          ? (this.LSLocRef.instance.style.display = `block`)
-          : (this.LSLocRef.instance.style.display = `none`);
-      } else {
-        this.LSLocRef.instance.style.display = `${this.locVis}`;
-      }
     });
     sub
       .on('fwcFlightPhase')
@@ -334,6 +302,10 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
         this.fmgcFlightPhase = fp;
       });
 
+    sub.on('IlsLoc').handle((value) => {
+      this.locVis = value.get().toString();
+      this.LSLocRef.instance.style.display = `${this.locVis}`;
+    });
     sub
       .on('decMode')
       .whenChanged()
@@ -341,17 +313,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
         this.declutterMode = value.get();
         this.setLocGroupPos();
       });
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-        if (value) {
-          this.LSLocRef.instance.style.transform = `translate3d(433.5px, 220px, 0px)`;
-        } else {
-          this.LSLocRef.instance.style.transform = `translate3d(433.5px, 400px, 0px)`;
-        }
-      });
+
     sub
       .on('hasLoc')
       .whenChanged()
@@ -365,13 +327,10 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
           this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
         }
       });
-    sub
-      .on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button')
-      .whenChanged()
-      .handle((value) => {
-        this.LsState = value;
-        this.setLocGroupPos();
-      });
+    sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').handle((value) => {
+      this.LsState = value;
+      this.setLocGroupPos();
+    });
     sub.on('pitchAr').handle((p) => {
       this.pitch = p.value;
     });
@@ -757,7 +716,7 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
         if (markerState === 0) {
           this.classNames.set(`${baseClass} HiddenElement`);
         } else if (markerState === 1) {
-          this.classNames.set(`${baseClass} Cyan OuterMarkerBlink`);
+          this.classNames.set(`${baseClass} Green OuterMarkerBlink`);
           this.markerText.set('OM');
         } else if (markerState === 2) {
           this.classNames.set(`${baseClass} Green MiddleMarkerBlink`);

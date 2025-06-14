@@ -1,7 +1,7 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
-import { ONE_DEG, ALT_TAPE_XPOS, ALT_TAPE_YPOS, HudElemsValues } from './HUDUtils';
+import { ONE_DEG, ALT_TAPE_XPOS, ALT_TAPE_YPOS, HudElems } from './HUDUtils';
 type LinearDeviationIndicatorProps = {
   bus: EventBus;
 };
@@ -36,16 +36,13 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HudElemsValues>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HudElems>();
     this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
 
-    sub
-      .on('altTape')
-      .whenChanged()
-      .handle((v) => {
-        this.altTape = v.get().toString();
-        this.linearDevRef.instance.style.display = `${this.altTape}`;
-      });
+    sub.on('altTape').handle((v) => {
+      this.altTape = v.get().toString();
+      this.linearDevRef.instance.style.display = `${this.altTape}`;
+    });
     sub.on('altitudeAr').handle((alt) => {
       if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
         this.upperLinearDeviationReadoutVisibility.set('hidden');

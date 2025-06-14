@@ -82,13 +82,10 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       this.crosswindMode = value.get();
       this.handlePos();
     });
-    sub
-      .on('VS')
-      .whenChanged()
-      .handle((v) => {
-        this.VS = v.get().toString();
-        this.VSRef.instance.style.display = `${this.VS}`;
-      });
+    sub.on('VS').handle((v) => {
+      this.VS = v.get().toString();
+      this.VSRef.instance.style.display = `${this.VS}`;
+    });
     sub
       .on('tcasState')
       .whenChanged()

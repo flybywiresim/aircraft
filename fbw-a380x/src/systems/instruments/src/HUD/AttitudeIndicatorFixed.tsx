@@ -1,11 +1,19 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  Subject,
+  Subscribable,
+  VNode,
+  ClockEvents,
+} from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429ConsumerSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FIVE_DEG, HudElems } from './HUDUtils';
+import { FIVE_DEG, HudElems, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { LateralMode } from '@shared/autopilot';
 interface AttitudeIndicatorFixedUpperProps {
   bus: EventBus;
@@ -113,6 +121,7 @@ interface AttitudeIndicatorFixedCenterProps {
   bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
+  instrument: BaseInstrument;
 }
 
 export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndicatorFixedCenterProps> {
@@ -222,7 +231,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
 
           <g style={this.fdVisibilitySub}>
-            <FDYawBar bus={this.props.bus} />
+            <FDYawBar bus={this.props.bus} instrument={this.props.instrument} />
           </g>
 
           <g id="AircraftReferences">
@@ -238,35 +247,53 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
   }
 }
 
-class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
+class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
   private lateralMode = 0;
 
   private fdYawCommand = 0;
 
   private fdActive = false;
+  private pitch = 0;
 
+  private groundYawGroupRef = FSComponent.createRef<SVGGElement>();
   private yawRef = FSComponent.createRef<SVGPathElement>();
-
+  private GroundYawRef = FSComponent.createRef<SVGPathElement>();
+  private onGround = true;
   private isActive(): boolean {
-    if (!this.fdActive || !(this.lateralMode === 40 || this.lateralMode === 33 || this.lateralMode === 34)) {
+    if (
+      !this.fdActive ||
+      !this.onGround ||
+      !(this.lateralMode === 40 || this.lateralMode === 33 || this.lateralMode === 34)
+    ) {
       return false;
     }
     return true;
   }
 
   private setOffset() {
-    const offset = -Math.max(Math.min(this.fdYawCommand, 45), -45) * 0.44;
+    const groupOffset = calculateHorizonOffsetFromPitch(this.pitch);
+    this.groundYawGroupRef.instance.style.transform = `translate3d(0px, ${groupOffset}px, 0px)`;
+    const offset = -Math.max(Math.min(this.fdYawCommand * 3, 120), -120);
     if (this.isActive()) {
       this.yawRef.instance.style.visibility = 'visible';
-      this.yawRef.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+      this.GroundYawRef.instance.style.visibility = 'visible';
+      this.yawRef.instance.style.transform = `translate3d(${offset}px, 410px, 0px)`;
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
-
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
+    sub.on('pitchAr').handle((p) => {
+      this.pitch = p.value;
+    });
+    sub.on('hudFlightPhaseMode').handle((value) => {
+      value.get() === 0 ? (this.onGround = false) : (this.onGround = true);
+      this.onGround
+        ? (this.groundYawGroupRef.instance.style.display = 'block')
+        : (this.GroundYawRef.instance.style.display = 'none');
+    });
     sub.on('fdYawCommand').handle((fy) => {
       this.fdYawCommand = fy;
 
@@ -274,6 +301,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
         this.setOffset();
       } else {
         this.yawRef.instance.style.visibility = 'hidden';
+        this.GroundYawRef.instance.style.visibility = 'hidden';
       }
     });
 
@@ -287,6 +315,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
           this.setOffset();
         } else {
           this.yawRef.instance.style.visibility = 'hidden';
+          this.GroundYawRef.instance.style.visibility = 'hidden';
         }
       });
 
@@ -302,6 +331,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
             this.setOffset();
           } else {
             this.yawRef.instance.style.visibility = 'hidden';
+            this.GroundYawRef.instance.style.visibility = 'hidden';
           }
         }
       });
@@ -317,6 +347,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
             this.setOffset();
           } else {
             this.yawRef.instance.style.visibility = 'hidden';
+            this.GroundYawRef.instance.style.visibility = 'hidden';
           }
         }
       });
@@ -324,12 +355,166 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <path
-        ref={this.yawRef}
-        id="GroundYawSymbol"
-        class="NormalStroke Green"
-        d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z"
-      />
+      <g id="GroundYawGroup" ref={this.groundYawGroupRef}>
+        <path
+          ref={this.yawRef}
+          id="GroundYawSymbol"
+          class="NormalStroke Green"
+          d="m 640 0 v 40 h 8.059 v -40 l -4.03 -6.854 z"
+        />
+        <path ref={this.GroundYawRef} id="GroundYawRef" class="NormalStroke Green" d="m 640 400  l 10 -17.3 h -20  z" />
+        <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
+      </g>
+    );
+  }
+}
+
+class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
+  private flightPhase = -1;
+  private fmgcFlightPhase = -1;
+  private declutterMode = 0;
+  private onGround = true;
+  private LsState = false;
+  private LSLocRef = FSComponent.createRef<SVGGElement>();
+  private LSLocGroupVerticalOffset = 0;
+  private locVis = '';
+  private locVisBool = false;
+  private hudFlightPhaseMode = 0;
+  private lsBtnState = false;
+  private lagFilter = new LagFilter(1.5);
+
+  private rightDiamond = FSComponent.createRef<SVGPathElement>();
+
+  private leftDiamond = FSComponent.createRef<SVGPathElement>();
+
+  private locDiamond = FSComponent.createRef<SVGPathElement>();
+
+  private diamondGroup = FSComponent.createRef<SVGGElement>();
+
+  private handleNavRadialError(radialError: number): void {
+    const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
+    const dots = deviation / 0.8;
+
+    if (dots > 2) {
+      this.rightDiamond.instance.classList.remove('HiddenElement');
+      this.leftDiamond.instance.classList.add('HiddenElement');
+      this.locDiamond.instance.classList.add('HiddenElement');
+    } else if (dots < -2) {
+      this.rightDiamond.instance.classList.add('HiddenElement');
+      this.leftDiamond.instance.classList.remove('HiddenElement');
+      this.locDiamond.instance.classList.add('HiddenElement');
+    } else {
+      this.locDiamond.instance.classList.remove('HiddenElement');
+      this.rightDiamond.instance.classList.add('HiddenElement');
+      this.leftDiamond.instance.classList.add('HiddenElement');
+      this.locDiamond.instance.style.transform = `translate3d(${(dots * 90.6) / 2}px, 0px, 0px)`;
+    }
+  }
+  private setLocGroupPos() {
+    this.LSLocRef.instance.style.transform = `translate3d(433.5px, 130px, 0px)`;
+  }
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+
+    sub
+      .on('hudFlightPhaseMode')
+      .whenChanged()
+      .handle((mode) => {
+        this.hudFlightPhaseMode = mode.get();
+      });
+
+    const isCaptainSide = getDisplayIndex() === 1;
+    sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
+      this.lsBtnState = value;
+    });
+
+    sub.on('IlsLoc').handle((value) => {
+      this.locVis = value.get().toString();
+      this.locVis === 'block' ? (this.locVisBool = true) : (this.locVisBool = false);
+      if (this.hudFlightPhaseMode === 0) {
+        this.lsBtnState && this.locVisBool
+          ? (this.LSLocRef.instance.style.display = `block`)
+          : (this.LSLocRef.instance.style.display = `none`);
+      } else {
+        this.LSLocRef.instance.style.display = `${this.locVis}`;
+      }
+    });
+    sub
+      .on('fwcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.flightPhase = fp;
+      });
+    sub
+      .on('fmgcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.fmgcFlightPhase = fp;
+      });
+
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((value) => {
+        this.declutterMode = value.get();
+        this.setLocGroupPos();
+      });
+
+    sub.on('hudFlightPhaseMode').handle((value) => {
+      value.get() === 0 ? (this.onGround = false) : (this.onGround = true);
+      this.setLocGroupPos();
+    });
+
+    sub
+      .on('hasLoc')
+      //.whenChanged()
+      .handle((hasLoc) => {
+        if (hasLoc) {
+          this.diamondGroup.instance.classList.remove('HiddenElement');
+          this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
+        } else {
+          this.diamondGroup.instance.classList.add('HiddenElement');
+          this.lagFilter.reset();
+          this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
+        }
+      });
+    sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').handle((value) => {
+      this.LsState = value;
+      this.setLocGroupPos();
+    });
+  }
+
+  render(): VNode {
+    return (
+      <g ref={this.LSLocRef} id="LocalizerSymbolsGroup">
+        <path class="NormalStroke Green" d="m164.412 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m119.079 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m255.072 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <path class="NormalStroke Green" d="m300.39 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
+        <g class="HiddenElement" ref={this.diamondGroup}>
+          <path
+            id="LocDiamondRight"
+            ref={this.rightDiamond}
+            class="NormalStroke Green HiddenElement"
+            d="m297.381 399.09 11.333 -7.559 -11.333 -7.559"
+          />
+          <path
+            id="LocDiamondLeft"
+            ref={this.leftDiamond}
+            class="NormalStroke Green HiddenElement"
+            d="m116.058 399.09 -11.333 -7.559 11.333 -7.559"
+          />
+          <path
+            id="LocDiamond"
+            ref={this.locDiamond}
+            class="NormalStroke Green HiddenElement"
+            d="m195.387 391.53 11.333 7.559 11.333 -7.559 -11.333 -7.559z"
+          />
+        </g>
+        <path id="LocalizerNeutralLine" class="Green Fill" d="m204.294 403.5v-24.191h4.536v24.191z" />
+      </g>
     );
   }
 }

@@ -93,7 +93,7 @@ export class DecelIndicator extends DisplayComponent<{
         if (ad) {
           this.sDecelVis.set('visible');
           setTimeout(() => {
-            this.decelRef.instance.style.visibility = 'visible'; ////hidden
+            this.decelRef.instance.style.visibility = 'hidden'; ////hidden
           }, 3000);
         }
       });
@@ -185,6 +185,7 @@ class DecelSpeedTrendArrow extends DisplayComponent<{
       .whenChanged()
       .handle((am) => {
         am === 6 ? (this.multiplier = 1.25) : (this.multiplier = 1);
+        am === 1 ? (this.btvTxt.instance.style.display = 'block') : (this.btvTxt.instance.style.display = 'none');
       });
 
     sub.on('realTime').handle((_t) => {
@@ -215,8 +216,9 @@ class DecelSpeedTrendArrow extends DisplayComponent<{
         this.offset.set(`m 77.275 ${neutralPos} v${offset.toFixed(10)}`);
 
         this.pathString.set(pathString);
-
-        this.btvTxtY.set((neutralPos + offset).toFixed(3).toString());
+        offset > 0
+          ? this.btvTxtY.set((neutralPos + offset + 20).toFixed(3).toString())
+          : this.btvTxtY.set((neutralPos + offset).toFixed(3).toString());
       }
     });
   }
@@ -226,7 +228,15 @@ class DecelSpeedTrendArrow extends DisplayComponent<{
       <g id="DecelSpeedTrendArrow" ref={this.refElement}>
         <path id="SpeedTrendArrowBase" ref={this.arrowBaseRef} class="NormalStroke Green" d={this.offset} />
         <path id="SpeedTrendArrowHead" ref={this.arrowHeadRef} class="NormalStroke Green" d={this.pathString} />
-        <text id="BtvTxt" ref={this.btvTxt} class="NormalStroke Green" x="50" y={this.btvTxtY} />
+        <text
+          id="BtvTxt"
+          ref={this.btvTxt}
+          class="NormalStroke FontMediumSmaller EndAlign Green"
+          x="80"
+          y={this.btvTxtY}
+        >
+          BTV
+        </text>
 
         <path id="SpeedTrendArrowBase" class="NormalStroke Green" d="m67.275 404.115h20" />
         <path id="SpeedTrendArrowHead" class="NormalStroke Green" d="m67.275 655h20" />
