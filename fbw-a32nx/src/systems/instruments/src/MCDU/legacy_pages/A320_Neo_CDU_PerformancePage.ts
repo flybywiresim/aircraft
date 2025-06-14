@@ -1374,7 +1374,7 @@ export class CDUPerformancePage {
     let stepWaypointCell = '';
 
     if (toPrediction.reason === 'StepClimb' || toPrediction.reason === 'StepDescent') {
-      stepWaypointCell = `{small}AT ${waypointIdent}{end}`;
+      stepWaypointCell = `{small}AT\xa0\xa0 {green}${waypointIdent}{end}`;
     }
 
     return stepWaypointCell;
@@ -1391,7 +1391,7 @@ export class CDUPerformancePage {
     if (toPrediction) {
       displayCell =
         toPrediction.reason === 'StepClimb' || toPrediction.reason === 'StepDescent'
-          ? `{green}STEP TO FL${flightLevel}{end}`
+          ? `{white}{small}STEP TO{end} {green}FL${flightLevel}{end}`
           : `{white}TO{end}\xa0{green}(T/D){end}`;
 
       if (Number.isFinite(toPrediction.distanceFromPresentPosition)) {
