@@ -90,7 +90,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children 
       </div>
     </Link>
     <div className="h-content-section-reduced w-full rounded-lg border-2 border-theme-accent px-6 py-2">
-      <ScrollableContainer height={54} innerClassName="h-full">
+      <ScrollableContainer height={53} innerClassName="h-full">
         <div className="h-full divide-y-2 divide-theme-accent">{children}</div>
       </ScrollableContainer>
     </div>

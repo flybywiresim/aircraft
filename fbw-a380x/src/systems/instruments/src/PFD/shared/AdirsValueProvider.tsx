@@ -46,6 +46,10 @@ export class AdirsValueProvider implements Instrument {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_DRIFT_ANGLE`,
           type: SimVarValueType.Number,
         });
+        this.pfdSimvar.updateSimVarSource('groundSpeed', {
+          name: `L:A32NX_ADIRS_IR_${inertialSource}_GROUND_SPEED`,
+          type: SimVarValueType.Number,
+        });
       });
 
     sub
