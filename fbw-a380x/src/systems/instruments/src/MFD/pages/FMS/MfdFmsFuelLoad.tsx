@@ -71,7 +71,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly altnEta = Subject.create<string>('--:--');
 
   private readonly altnEfob = Subject.create<number | null>(null);
-  private readonly altnEfobText = this.altnEfob.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
+  private readonly altnEfobText = this.altnEfob.map((it) => (it ? it.toFixed(1) : '---.-'));
 
   private readonly extraFuelWeight = Subject.create<number | null>(null);
   private readonly extraFuelWeightText = this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));

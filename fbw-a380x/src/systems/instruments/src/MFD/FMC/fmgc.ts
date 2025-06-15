@@ -637,7 +637,7 @@ export class FmgcDataService implements Fmgc {
     if (destEfob === null || alternateFuel === null) {
       return null;
     }
-    return destEfob - alternateFuel;
+    return destEfob - alternateFuel / 1000;
   }
 
   /** in feet. null if not set */
