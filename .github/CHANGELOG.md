@@ -62,6 +62,7 @@
 1. [A32NX/SD] Add flashing for AUTO BRK element - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
 1. [A32NX/FMS] Change GA PERF speeds to match APPR PERF speeds - @Jonny23787 (Jonathan)
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
+1. [EFB] Fix race conditions in ICAO and runways update in performance calculator - @ta-dzik (ta_dzik)
 
 ## 0.13.0
 
