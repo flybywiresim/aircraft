@@ -70,9 +70,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly altnEta = Subject.create<string>('--:--');
 
-  private readonly altnEfob = Subject.create<string>('---.-');
-
-  private readonly altnEfobBelowMin = Subject.create(false);
+  private readonly altnEfob = Subject.create<number | null>(null);
+  private readonly altnEfobText = this.altnEfob.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
 
   private readonly extraFuelWeight = Subject.create<number | null>(null);
   private readonly extraFuelWeightText = this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
@@ -117,13 +116,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     if (this.loadedFlightPlan.alternateDestinationAirport) {
       this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
       this.altnEta.set('--:--');
-      this.altnEfob.set('---.-');
-      this.altnEfobBelowMin.set(false);
+      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB());
     } else {
       this.altnIcao.set('NONE');
       this.altnEta.set('--:--');
-      this.altnEfob.set('---.-');
-      this.altnEfobBelowMin.set(false);
+      this.altnEfob.set(null);
     }
   }
 
@@ -197,6 +194,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.fuelOnBoardText,
       this.destinationAlternateTimeHeader,
       this.tripFuelWeightText,
+      this.altnEfobText,
       this.extraFuelWeightText,
       this.extraFuelTimeText,
       this.flightPhaseAtLeastTakeoff,
@@ -489,7 +487,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     {this.altnEta}
                   </div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                    <span class={{ 'mfd-value': true, amber: this.altnEfobBelowMin }}>{this.altnEfob}</span>
+                    <span class={{ 'mfd-value': true }}>{this.altnEfob}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                 </div>

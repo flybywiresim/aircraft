@@ -147,7 +147,7 @@ export class FmgcData {
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly alternateFuelCalculated = Subject.create<number | null>(6_500); // FIX ME
+  public readonly alternateFuelCalculated = Subject.create<number | null>(6_500); // FIX ME Hardcoded value. Derive from FMS predictions
 
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -632,11 +632,12 @@ export class FmgcDataService implements Fmgc {
     // TODO estimate alternate fuel
 
     const destEfob = this.getDestEFOB(true);
+    const alternateFuel = this.data.alternateFuel.get();
 
-    if (destEfob == null) {
+    if (destEfob === null || alternateFuel === null) {
       return null;
     }
-    return destEfob - 1.0 > 0 ? destEfob - 1.0 : 0;
+    return destEfob - alternateFuel;
   }
 
   /** in feet. null if not set */

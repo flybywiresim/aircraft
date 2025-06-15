@@ -1242,7 +1242,7 @@ export class FmcAircraftInterface {
    */
   tryEstimateLandingWeight(): number | null {
     const zeroFuelWeight = this.fmgc.data.zeroFuelWeight.get();
-    if (zeroFuelWeight != null) {
+    if (zeroFuelWeight !== null) {
       const destEfob = this.fmgc.getDestEFOB(true);
       if (destEfob !== null) {
         return zeroFuelWeight - destEfob * 1000;
