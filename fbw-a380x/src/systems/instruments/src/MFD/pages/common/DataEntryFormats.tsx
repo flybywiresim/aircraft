@@ -491,7 +491,16 @@ export class TemperatureFormat extends SubscriptionCollector implements DataEntr
       return null;
     }
 
-    const nbr = Number(input);
+    let nbr = Number(input);
+    
+    if (nbr > 0 && input.substring(0, 1) !== '+') {
+      nbr *= -1;
+    }
+    
+    if (nbr > 0 && input.substring(0, 1) === '+') {
+      nbr = input.substring(1);
+    }
+    
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
