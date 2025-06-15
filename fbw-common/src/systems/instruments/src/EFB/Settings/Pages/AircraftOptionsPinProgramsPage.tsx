@@ -73,8 +73,8 @@ export const AircraftOptionsPinProgramsPage = () => {
   ];
 
   const weightUnitButtons: ButtonType[] = [
-    { name: 'kg', setting: '1' },
-    { name: 'lbs', setting: '0' },
+    { name: 'No', setting: '1' },
+    { name: 'Yes', setting: '0' },
   ];
 
   const isisBaroButtons: ButtonType[] = [
