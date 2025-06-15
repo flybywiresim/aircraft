@@ -4048,6 +4048,19 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
       | 27  | LH Nose gear door fully open      |
       | 28  | RH Nose gear door fully open      |
 
+- A32NX_LGCIU_{number}_DISCRETE_WORD_4
+    - Discrete Data word 4 of the LGCIU bus output
+    - Arinc429<Discrete>
+    - {number}
+        - 1
+        - 2
+    - | Bit |             Description             |
+      |:---:|:-----------------------------------:|
+      | 21  | LH flap attachment failure detected |
+      | 22  | LH flap attachment sensor valid     |
+      | 25  | RH flap attachment failure detected |
+      | 26  | RH flap attachment sensor valid     |
+
 - A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
     - Indicates if the shock absorber is compressed (not fully extended)
     - Bool
