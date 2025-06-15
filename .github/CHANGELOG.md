@@ -62,6 +62,7 @@
 1. [A32NX/SD] Add flashing for AUTO BRK element - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
 1. [A32NX/FMS] Change GA PERF speeds to match APPR PERF speeds - @Jonny23787 (Jonathan)
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
+1. [FMS] Make sure radials of CR/VR legs use the station declination as magvar - @BlueberryKing (BlueberryKing)
 
 ## 0.13.0
 
