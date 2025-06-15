@@ -82,7 +82,7 @@ import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlig
 import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
 import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputations';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
-import { getSimBriefOfp } from './A32NX_Core/A32NX_ATSU';
+import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindUplinkParser';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -5565,254 +5565,42 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);
   }
 
-  public async uplinkWinds(forPlan: FlightPlanIndex): Promise<void> {
+  public async uplinkWinds(forPlan: FlightPlanIndex, sentCallback = () => {}): Promise<void> {
     const plan = this.getFlightPlan(forPlan);
     if (!plan) {
       throw new Error(`Flight plan ${forPlan} does not exist.`);
     }
 
-    const [status, uplink] = await this.atsu.receiveWindUplink(() => console.log('Uplinking winds with ATSU...'));
-    if (status === AtsuStatusCodes.Ok) {
-      console.log(
-        `Uplinked winds successfully. Alternate wind ${uplink.alternate.averageWindDirection.toFixed(0).padStart(3, '0')}°/${uplink.alternate.averageWindSpeed}°`,
-      );
-    }
+    if (!plan.pendingWindUplink.isWindUplinkReadyToInsert() && !plan.pendingWindUplink.isWindUplinkInProgress()) {
+      plan.pendingWindUplink.onUplinkRequested();
 
-    const data = await getSimBriefOfp(this.mcdu, () => {});
+      const [status, uplink] = await this.atsu.receiveWindUplink(sentCallback);
 
-    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
+      if (status !== AtsuStatusCodes.Ok) {
+        plan.pendingWindUplink.onUplinkAborted();
+        return;
+      }
 
-    {
-      const toc = data.navlog.find((val) => val.ident === 'TOC');
-      const windData: typeof toc.wind_data.level = [];
-      const maxNumClimbWindEntries = 5;
+      const shouldInsertDirectly = !this.isAnEngineOn() && !plan.hasWindEntries();
 
-      if (toc) {
-        toc.wind_data.level.sort((a, b) => parseInt(a.altitude) - parseInt(b.altitude));
+      PendingWindUplinkParser.setFromUplink(uplink, plan);
 
-        const lowestLevel = toc.wind_data.level[0];
-        if (lowestLevel !== undefined) {
-          windData.push(lowestLevel);
-        }
-
-        const highestLevel = toc.wind_data.level.find((level) => parseInt(level.altitude) >= cruiseLevel * 100);
-        if (highestLevel !== lowestLevel) {
-          windData.push(highestLevel);
-        }
-
-        const numWindEntriesLeft = maxNumClimbWindEntries - windData.length;
-
-        // TODO remove this restriction
-        if (numWindEntriesLeft === maxNumClimbWindEntries - 2) {
-          for (let i = 0; i < numWindEntriesLeft; i++) {
-            const optimalLevel =
-              parseInt(lowestLevel.altitude) +
-              ((i + 1) / maxNumClimbWindEntries) * (parseInt(highestLevel.altitude) - parseInt(lowestLevel.altitude));
-
-            // Find the closest wind level to the optimal level
-            const closestWindLevel = toc.wind_data.level.reduce((prev, curr) => {
-              if (prev === undefined) {
-                return curr;
-              } else if (curr === lowestLevel || curr === highestLevel) {
-                return prev;
-              }
-
-              const prevDiff = Math.abs(parseInt(prev.altitude) - optimalLevel);
-              const currDiff = Math.abs(parseInt(curr.altitude) - optimalLevel);
-
-              return currDiff < prevDiff ? curr : prev;
-            });
-
-            if (closestWindLevel !== lowestLevel && closestWindLevel !== highestLevel) {
-              windData.push(closestWindLevel);
-            }
-          }
-        }
-
-        for (const wind of windData) {
-          await this.flightPlanService.setClimbWindEntry(
-            Math.round(parseInt(wind.altitude) / 100) * 100,
-            {
-              vector: Vec2Math.setFromPolar(
-                parseInt(wind.wind_spd),
-                parseInt(wind.wind_dir) * MathUtils.DEGREES_TO_RADIANS,
-                Vec2Math.create(),
-              ),
-              altitude: parseInt(wind.altitude),
-            },
-            forPlan,
-          );
-        }
+      if (!shouldInsertDirectly) {
+        return;
       }
     }
-    {
-      const stage = 'CRZ';
-      const levels = new Set();
-      const maxNumCruiseWindLevels = 4;
 
-      for (const fix of data.navlog) {
-        if (fix.stage !== stage || fix.ident === 'TOC' || fix.ident === 'TOD' || fix.type === 'apt') {
-          continue;
-        }
-
-        const legIndex = plan.findLegIndexByFixIdent(fix.ident);
-
-        if (legIndex < 0) {
-          console.warn(`Could not find leg index for fix ${fix.ident} in CRZ stage.`);
-          continue;
-        }
-
-        // Find entry closest below or at the cruise level
-        const entryClosestBelow = fix.wind_data.level.reduce((prev, curr) => {
-          if (prev === undefined) {
-            return curr;
-          }
-
-          const prevAltitude = Math.round(parseInt(prev.altitude) / 100) * 100;
-          const currAltitude = Math.round(parseInt(curr.altitude) / 100) * 100;
-
-          return currAltitude > prevAltitude && currAltitude <= cruiseLevel * 100 ? curr : prev;
-        }, undefined);
-
-        const entriesAbove = fix.wind_data.level.filter(
-          (val) => Math.round(parseInt(val.altitude) / 100) * 100 > cruiseLevel * 100,
-        );
-
-        for (const val of [entryClosestBelow, ...entriesAbove]) {
-          const altitude = Math.round(parseInt(val.altitude) / 100) * 100;
-          if (!levels.has(altitude) && levels.size >= maxNumCruiseWindLevels) {
-            continue;
-          }
-
-          const direction = parseInt(val.wind_dir);
-          const speed = parseInt(val.wind_spd);
-
-          await this.flightPlanService.addCruiseWindEntry(
-            legIndex,
-            {
-              altitude,
-              vector: Vec2Math.setFromPolar(speed, direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
-            },
-            forPlan,
-          );
-
-          levels.add(altitude);
-        }
-      }
-    }
-    {
-      const tod = data.navlog.find((val) => val.ident === 'TOD');
-      const windData: typeof tod.wind_data.level = [];
-      const maxNumDescentWindEntries = 10;
-
-      if (tod) {
-        tod.wind_data.level.sort((a, b) => parseInt(a.altitude) - parseInt(b.altitude));
-
-        const lowestLevel = tod.wind_data.level[0];
-        if (lowestLevel !== undefined) {
-          windData.push(lowestLevel);
-        }
-
-        const highestLevel = tod.wind_data.level.find((level) => parseInt(level.altitude) >= cruiseLevel * 100);
-        if (highestLevel !== lowestLevel) {
-          windData.push(highestLevel);
-        }
-
-        const numWindEntriesLeft = maxNumDescentWindEntries - windData.length;
-
-        // TODO remove this restriction
-        if (numWindEntriesLeft === maxNumDescentWindEntries - 2) {
-          for (let i = 0; i < numWindEntriesLeft; i++) {
-            const optimalLevel =
-              parseInt(lowestLevel.altitude) +
-              ((i + 1) / maxNumDescentWindEntries) * (parseInt(highestLevel.altitude) - parseInt(lowestLevel.altitude));
-
-            // Find the closest wind level to the optimal level
-            const closestWindLevel = tod.wind_data.level.reduce((prev, curr) => {
-              if (prev === undefined) {
-                return curr;
-              } else if (curr === lowestLevel || curr === highestLevel) {
-                return prev;
-              }
-
-              const prevDiff = Math.abs(parseInt(prev.altitude) - optimalLevel);
-              const currDiff = Math.abs(parseInt(curr.altitude) - optimalLevel);
-
-              return currDiff < prevDiff ? curr : prev;
-            });
-
-            if (closestWindLevel !== lowestLevel && closestWindLevel !== highestLevel) {
-              windData.push(closestWindLevel);
-            }
-          }
-        }
-
-        for (const wind of windData) {
-          await this.flightPlanService.setDescentWindEntry(
-            Math.round(parseInt(wind.altitude) / 100) * 100,
-            {
-              vector: Vec2Math.setFromPolar(
-                parseInt(wind.wind_spd),
-                parseInt(wind.wind_dir) * MathUtils.DEGREES_TO_RADIANS,
-                Vec2Math.create(),
-              ),
-              altitude: parseInt(wind.altitude),
-            },
-            forPlan,
-          );
-        }
-      }
-    }
-    {
-      if (Number.isFinite(data.alternate?.averageWindDirection) && Number.isFinite(data.alternate?.averageWindSpeed)) {
-        const uplinkedAlternateCruiseAltitude = data.alternate?.cruiseAltitude;
-        const computedAlternateCruiseAltitude = this.computeAlternateCruiseLevel(forPlan);
-
-        if (
-          uplinkedAlternateCruiseAltitude !== undefined &&
-          computedAlternateCruiseAltitude !== undefined &&
-          Math.round(uplinkedAlternateCruiseAltitude / 100) !== Math.round(computedAlternateCruiseAltitude)
-        ) {
-          this.addMessageToQueue(NXSystemMessages.checkAltnWind);
-        }
-
-        this.flightPlanService.setAlternateWind(
-          Vec2Math.setFromPolar(
-            data.alternate.averageWindSpeed,
-            data.alternate.averageWindDirection * MathUtils.DEGREES_TO_RADIANS,
-            Vec2Math.create(),
-          ),
-          forPlan,
-        );
-      } else {
-        this.flightPlanService.setAlternateWind(null, forPlan);
-      }
-    }
-  }
-
-  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
-    const plan = this.getFlightPlan(forPlan);
-    if (!plan) {
-      return undefined;
+    const uplinkAlternateCruiseLevel = plan.pendingWindUplink.alternateWind?.altitude;
+    const computedAlternateCruiseLevel = this.computeAlternateCruiseLevel(forPlan);
+    if (
+      uplinkAlternateCruiseLevel !== undefined &&
+      computedAlternateCruiseLevel !== undefined &&
+      Math.round(uplinkAlternateCruiseLevel) !== Math.round(computedAlternateCruiseLevel)
+    ) {
+      this.addMessageToQueue(NXSystemMessages.checkAltnWind);
     }
 
-    if (!plan.destinationAirport) {
-      return undefined;
-    }
-
-    // TODO use actual flight plan distance rather than great circle distance
-    const distance = Avionics.Utils.computeGreatCircleDistance(
-      plan.destinationAirport.location,
-      plan.alternateDestinationAirport.location,
-    );
-
-    if (distance > 200) {
-      return 310;
-    } else if (distance > 100) {
-      return 220;
-    }
-
-    return 100;
+    await this.flightPlanService.insertWindUplink(forPlan);
   }
 
   // ---------------------------

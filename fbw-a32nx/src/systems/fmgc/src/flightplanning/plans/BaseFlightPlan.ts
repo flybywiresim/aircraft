@@ -2852,8 +2852,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     for (let i = 0; i < this.firstMissedApproachLegIndex; i++) {
       const element = this.maybeElementAt(i);
 
-      // TODO check if leg is part of cruise segment?
-      if (element?.isDiscontinuity === true) {
+      if (!isLeg(element)) {
         continue;
       }
 

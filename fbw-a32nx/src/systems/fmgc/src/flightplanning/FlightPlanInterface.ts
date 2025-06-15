@@ -475,4 +475,10 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param planIndex which flight plan index to set the entry in
    */
   setAlternateWind(entry: WindVector | null, planIndex: number): Promise<void>;
+
+  /**
+   * Inserts a wind uplink entry into the flight plan
+   * @param planIndex which flight plan index to insert the wind uplink into
+   */
+  insertWindUplink(planIndex: number): Promise<void>;
 }

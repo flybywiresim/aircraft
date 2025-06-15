@@ -941,4 +941,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     return plan.setAlternateWind(entry);
   }
+
+  insertWindUplink(planIndex: number): Promise<void> {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    return plan.insertWindUplink(
+      this.config.NUM_CLIMB_WIND_LEVELS,
+      this.config.NUM_CRUISE_WIND_LEVELS,
+      this.config.NUM_DESCENT_WIND_LEVELS,
+    );
+  }
 }

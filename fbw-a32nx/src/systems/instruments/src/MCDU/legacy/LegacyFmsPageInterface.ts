@@ -221,6 +221,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
   uplinkWinds(forPlan: FlightPlanIndex): Promise<void>;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
+  uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;

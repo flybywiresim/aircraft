@@ -25,7 +25,8 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { FlightPlanFlags } from './FlightPlanFlags';
-import { WindEntry } from '../data/wind';
+import { WindEntry, WindVector } from '../data/wind';
+import { PendingWindUplink } from './PendingWindUplink';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -62,8 +63,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   flags: number = FlightPlanFlags.None;
 
+  public readonly pendingWindUplink: PendingWindUplink = new PendingWindUplink();
+
   constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P) {
     super(context, index, bus);
+
     this.performanceData = performanceDataInit;
   }
 
@@ -778,5 +782,47 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.performanceData.descentWindEntries.length > 0 ||
       this.allLegs.some((el) => isLeg(el) && el.cruiseWindEntries.length > 0)
     );
+  }
+
+  async insertWindUplink(
+    maxNumClimbWindEntries: number,
+    maxNumCruiseWindEntries: number,
+    maxNumDescentWindEntries: number,
+  ): Promise<void> {
+    if (!this.pendingWindUplink.isWindUplinkReadyToInsert()) {
+      throw new Error('[FPM] Cannot insert wind uplink when it is not ready to insert');
+    }
+
+    if (this.pendingWindUplink.climbWinds) {
+      for (const wind of this.pendingWindUplink.climbWinds) {
+        await this.setClimbWindEntry(wind.altitude, wind, maxNumClimbWindEntries);
+      }
+    }
+
+    if (this.pendingWindUplink.cruiseWinds) {
+      for (const fix of this.pendingWindUplink.cruiseWinds) {
+        const legIndex = this.findLegIndexByFixIdent(fix.fixIdent);
+
+        if (legIndex < 0) {
+          continue;
+        }
+
+        for (const wind of fix.levels) {
+          await this.addCruiseWindEntry(legIndex, wind, maxNumCruiseWindEntries);
+        }
+      }
+    }
+
+    if (this.pendingWindUplink.descentWinds) {
+      for (const wind of this.pendingWindUplink.descentWinds) {
+        await this.setDescentWindEntry(wind.altitude, wind, maxNumDescentWindEntries);
+      }
+    }
+
+    if (this.pendingWindUplink.alternateWind) {
+      await this.setAlternateWind(this.pendingWindUplink.alternateWind.vector);
+    }
+
+    this.pendingWindUplink.onUplinkInserted();
   }
 }
