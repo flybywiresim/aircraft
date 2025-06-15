@@ -479,8 +479,9 @@ export class FlightManagementComputer implements FmcInterface {
     return null;
   }
 
-  public getRecMaxFlightLevel(): number | null {
-    const gw = this.fmgc.getGrossWeightKg();
+  /** @inheritdoc */
+  public getRecMaxFlightLevel(grossWeight?: number): number | null {
+    const gw = grossWeight ?? this.fmgc.getGrossWeightKg();
     if (!gw) {
       return null;
     }

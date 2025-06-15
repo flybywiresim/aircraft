@@ -50,6 +50,12 @@
 1. [A32NX/PFD] Add CHECK ALT message - @tracernz (Mike)
 1. [A380X] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
 1. [A380X/PFD] Fixed missing red lines on altitude tape failure indications - @tracernz (Mike)
+1. [A380X/RMP] Added localvars for RMP frequencies and state for API users - @tracernz (Mike)
+1. [A380X/RMP] Added handling of all COM key events for API users - @tracernz (Mike)
+1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
+1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
+1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
+1. [A380X/FMC] Use the estimated gross weight to compute the max level for step climbs - @tracernz (Mike)
 
 ## 0.13.0
 
