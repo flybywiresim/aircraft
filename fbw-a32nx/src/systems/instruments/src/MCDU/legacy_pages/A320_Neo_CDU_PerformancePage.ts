@@ -1235,17 +1235,14 @@ export class CDUPerformancePage {
     let sltRetrCell = '---';
     let cleanCell = '---';
     if (Number.isFinite(plan.performanceData.zeroFuelWeight)) {
-      const flapSpeed = mcdu.computedVfs;
-      if (Number.isFinite(flapSpeed)) {
-        flpRetrCell = `{green}${flapSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
+      if (Number.isFinite(mcdu.approachSpeeds.f)) {
+        flpRetrCell = `{green}${mcdu.approachSpeeds.f.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
-      const slatSpeed = mcdu.computedVss;
-      if (Number.isFinite(slatSpeed)) {
-        sltRetrCell = `{green}${slatSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
+      if (Number.isFinite(mcdu.approachSpeeds.s)) {
+        sltRetrCell = `{green}${mcdu.approachSpeeds.s.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
-      const cleanSpeed = mcdu.computedVgd;
-      if (Number.isFinite(cleanSpeed)) {
-        cleanCell = `{green}${cleanSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
+      if (Number.isFinite(mcdu.approachSpeeds.gd)) {
+        cleanCell = `{green}${mcdu.approachSpeeds.gd.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
     }
 
