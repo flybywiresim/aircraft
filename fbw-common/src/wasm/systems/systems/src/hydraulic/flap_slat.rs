@@ -1,9 +1,11 @@
 use super::linear_actuator::Actuator;
+use crate::shared::AverageExt;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, FeedbackPositionPickoffUnit, SectionPressure,
 };
 use crate::simulation::{
-    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use uom::si::{
@@ -121,17 +123,97 @@ impl Actuator for FlapSlatHydraulicMotor {
     }
 }
 
+pub struct SecondarySurface {
+    surface_position_ids: Vec<VariableIdentifier>,
+    surface_angle_ids: Vec<VariableIdentifier>,
+
+    surface_position_overall_id: VariableIdentifier,
+    surface_angle_overall_id: VariableIdentifier,
+
+    surface_positions: Vec<Ratio>,
+    surface_angles: Vec<Angle>,
+}
+impl SecondarySurface {
+    // side is LEFT|RIGHT
+    // surface is SLATS|FLAPS
+    pub fn new(
+        context: &mut InitContext,
+        side: &str,
+        surface: &str,
+        number_of_surfaces: usize,
+    ) -> Self {
+        let mut surface_position_ids = Vec::with_capacity(number_of_surfaces);
+        let mut surface_angle_ids = Vec::with_capacity(number_of_surfaces);
+        let mut surface_positions = Vec::with_capacity(number_of_surfaces);
+        let mut surface_angles = Vec::with_capacity(number_of_surfaces);
+
+        for p in 1..number_of_surfaces + 1 {
+            let surface_position_id =
+                context.get_identifier(format!("{}_{}_{}_POSITION_PERCENT", side, surface, p));
+            surface_position_ids.push(surface_position_id);
+
+            let surface_angle_id =
+                context.get_identifier(format!("{}_{}_{}_ANGLE", side, surface, p));
+            surface_angle_ids.push(surface_angle_id);
+
+            surface_positions.push(Ratio::default());
+            surface_angles.push(Angle::default());
+        }
+
+        let surface_position_overall_id =
+            context.get_identifier(format!("{}_{}_POSITION_PERCENT", side, surface));
+        let surface_angle_overall_id =
+            context.get_identifier(format!("{}_{}_ANGLE", side, surface));
+
+        Self {
+            surface_position_ids,
+            surface_angle_ids,
+            surface_positions,
+            surface_angles,
+            surface_position_overall_id,
+            surface_angle_overall_id,
+        }
+    }
+
+    // No failures are considered. All surfaces have the same deflection.
+    fn update(&mut self, position: &Ratio, angle: &Angle) {
+        for idx in 0..self.surface_positions.len() {
+            self.surface_positions[idx] = *position;
+            self.surface_angles[idx] = *angle;
+        }
+    }
+}
+impl SimulationElement for SecondarySurface {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        for idx in 0..self.surface_positions.len() {
+            let id = self.surface_position_ids[idx];
+            let position = self.surface_positions[idx];
+            writer.write(&id, position.get::<percent>());
+        }
+        let position: Ratio = self.surface_positions.iter().average();
+        writer.write(&self.surface_position_overall_id, position.get::<percent>());
+
+        for idx in 0..self.surface_angles.len() {
+            let id = self.surface_angle_ids[idx];
+            let position = self.surface_angles[idx];
+            writer.write(&id, position.get::<degree>());
+        }
+        let position: Angle = self.surface_angles.iter().average();
+        writer.write(&self.surface_angle_overall_id, position.get::<degree>());
+    }
+}
+
 pub struct FlapSlatAssembly {
-    position_left_percent_id: VariableIdentifier,
-    position_right_percent_id: VariableIdentifier,
-
-    angle_left_id: VariableIdentifier,
-    angle_right_id: VariableIdentifier,
-
     animation_left_id: VariableIdentifier,
     animation_right_id: VariableIdentifier,
+
+    ippu_id: VariableIdentifier,
+    fppu_id: VariableIdentifier,
+
     is_moving_id: VariableIdentifier,
 
+    left_surfaces: SecondarySurface,
+    right_surfaces: SecondarySurface,
     surface_control_arm_position: Angle,
 
     max_synchro_gear_position: Angle,
@@ -155,6 +237,8 @@ pub struct FlapSlatAssembly {
 
     left_position: Ratio,
     right_position: Ratio,
+    ippu_position: Angle,
+    fppu_position: Angle,
 }
 impl FlapSlatAssembly {
     const LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
@@ -168,6 +252,8 @@ impl FlapSlatAssembly {
     pub fn new(
         context: &mut InitContext,
         id: &str,
+        left_surfaces: SecondarySurface,
+        right_surfaces: SecondarySurface,
         motor_displacement: Volume,
         full_pressure_max_speed: AngularVelocity,
         max_synchro_gear_position: Angle,
@@ -179,19 +265,16 @@ impl FlapSlatAssembly {
         circuit_target_pressure: Pressure,
     ) -> Self {
         Self {
-            position_left_percent_id: context
-                .get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
-            position_right_percent_id: context
-                .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
-
-            angle_left_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
-            angle_right_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
-
             animation_left_id: context.get_identifier(format!("LEFT_{}_ANIMATION_POSITION", id)),
             animation_right_id: context.get_identifier(format!("RIGHT_{}_ANIMATION_POSITION", id)),
 
+            ippu_id: context.get_identifier(format!("{}_IPPU_ANGLE", id)),
+            fppu_id: context.get_identifier(format!("{}_FPPU_ANGLE", id)),
+
             is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
+            left_surfaces,
+            right_surfaces,
             surface_control_arm_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
             final_requested_synchro_gear_position: Angle::new::<radian>(0.),
@@ -210,6 +293,8 @@ impl FlapSlatAssembly {
             circuit_target_pressure,
             left_position: Ratio::default(),
             right_position: Ratio::default(),
+            ippu_position: Angle::default(),
+            fppu_position: Angle::default(),
         }
     }
 
@@ -249,6 +334,8 @@ impl FlapSlatAssembly {
         self.update_motors_flow(context);
 
         self.update_position_ratios();
+
+        self.update_surface_variables();
     }
 
     fn update_speed_and_position(&mut self, context: &UpdateContext) {
@@ -450,6 +537,16 @@ impl FlapSlatAssembly {
         self.right_position = self.left_position;
     }
 
+    fn update_surface_variables(&mut self) {
+        self.fppu_position = self.flap_surface_angle();
+        self.ippu_position = self.flap_surface_angle();
+
+        self.left_surfaces
+            .update(&self.left_position, &self.fppu_position);
+        self.right_surfaces
+            .update(&self.right_position, &self.fppu_position);
+    }
+
     fn is_approaching_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
         self.speed.get::<radian_per_second>() > 0.
             && synchro_gear_angle_request - self.position_feedback()
@@ -524,19 +621,16 @@ impl FlapSlatAssembly {
     }
 }
 impl SimulationElement for FlapSlatAssembly {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.position_left_percent_id,
-            self.left_position.get::<percent>(),
-        );
-        writer.write(
-            &self.position_right_percent_id,
-            self.right_position.get::<percent>(),
-        );
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.left_surfaces.accept(visitor);
+        self.right_surfaces.accept(visitor);
 
-        let flaps_surface_angle = self.flap_surface_angle();
-        writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
-        writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.fppu_id, self.fppu_position.get::<degree>());
+        writer.write(&self.ippu_id, self.ippu_position.get::<degree>());
 
         let flaps_fppu_percent =
             (self.position_feedback() / self.max_synchro_gear_position).get::<percent>();
@@ -664,6 +758,18 @@ mod tests {
 
             visitor.visit(self);
         }
+    }
+
+    #[test]
+    fn flap_slat_simvars() {
+        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
+        let test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
+
+        assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANIMATION_POSITION"));
+        assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANIMATION_POSITION"));
+        assert!(test_bed.contains_variable_with_name("FLAPS_IPPU_ANGLE"));
+        assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
+        assert!(test_bed.contains_variable_with_name("IS_FLAPS_MOVING"));
     }
 
     #[test]
@@ -1129,9 +1235,14 @@ mod tests {
     }
 
     fn flap_system(context: &mut InitContext, max_speed: AngularVelocity) -> FlapSlatAssembly {
+        let left_flaps = SecondarySurface::new(context, "LEFT", "FLAPS", 1);
+        let right_flaps = SecondarySurface::new(context, "RIGHT", "FLAPS", 1);
+
         FlapSlatAssembly::new(
             context,
             "FLAPS",
+            left_flaps,
+            right_flaps,
             Volume::new::<cubic_inch>(0.32),
             max_speed,
             Angle::new::<degree>(251.97),
