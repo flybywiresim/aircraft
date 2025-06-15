@@ -35,7 +35,7 @@ export class HudValueProvider implements Instrument {
       publisher.pub('altTapeMaskFill', this.elems2.altTapeMaskFill);
       publisher.pub('windIndicator', this.elems2.windIndicator);
       publisher.pub('FMA', this.elems2.FMA);
-      publisher.pub('VS', this.elems2.VS);
+      publisher.pub('VSI', this.elems2.VSI);
       publisher.pub('QFE', this.elems2.QFE);
       publisher.pub('pitchScale', this.elems2.pitchScale);
     });
@@ -104,7 +104,7 @@ export function setElems(
     altTapeMaskFill: Subject.create<String>(''),
     windIndicator: Subject.create<String>(''),
     FMA: Subject.create<String>(''),
-    VS: Subject.create<String>(''),
+    VSI: Subject.create<String>(''),
     QFE: Subject.create<String>(''),
     pitchScale: Subject.create<String>(''),
   };
@@ -116,7 +116,7 @@ export function setElems(
   elems.xWindAltTape.set(getBitMask(onToPower, onGround, crosswindMode, declutterMode).xWindAltTape);
   elems.xWindSpdTape.set(getBitMask(onToPower, onGround, crosswindMode, declutterMode).xWindSpdTape);
   elems.FMA.set(getBitMask(onToPower, onGround, crosswindMode, declutterMode).FMA);
-  elems.VS.set(getBitMask(onToPower, onGround, crosswindMode, declutterMode).VS);
+  elems.VSI.set(getBitMask(onToPower, onGround, crosswindMode, declutterMode).VSI);
   elems.QFE.set(getBitMask(onToPower, onGround, crosswindMode, declutterMode).QFE);
   elems.pitchScale.set(getBitMask(onToPower, onGround, crosswindMode, declutterMode).pitchScale);
   return elems;
@@ -131,7 +131,7 @@ export function setElems(
 // private altTapeMaskFill = '';
 // private windIndicator = '';
 // private FMA = '';
-// private VS = '';
+// private VSI = '';
 // private QFE = '';
 // private pitchScale = 0;
 
@@ -142,7 +142,7 @@ export function setElems(
 // private altTapeMaskFillRef = FSComponent.createRef<SVGGElement>();
 // private windIndicatorRef = FSComponent.createRef<SVGGElement>();
 // private FMARef = FSComponent.createRef<SVGGElement>();
-// private VSRef = FSComponent.createRef<SVGGElement>();
+// private VSIRef = FSComponent.createRef<SVGGElement>();
 // private QFERef = FSComponent.createRef<SVGGElement>();
 // private pitchScaleRef = FSComponent.createRef<SVGGElement>();
 
@@ -175,9 +175,9 @@ export function setElems(
 //   this.FMA = v.get().toString();
 //   this.FMARef.instance.style.display = `${this.FMA}`;
 // });
-// sub.on('VS').handle((v) => {
-//   this.VS = v.get().toString();
-//   this.VSRef.instance.style.display = `${this.VS}`;
+// sub.on('VSI').handle((v) => {
+//   this.VSI = v.get().toString();
+//   this.VSIRef.instance.style.display = `${this.VSI}`;
 // });
 // sub.on('QFE').handle((v) => {
 //   this.QFE = v.get().toString();

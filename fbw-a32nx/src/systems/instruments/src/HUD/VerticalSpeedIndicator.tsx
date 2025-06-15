@@ -55,8 +55,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   private vsNormal = FSComponent.createRef<SVGGElement>();
 
-  private VSref = FSComponent.createRef<SVGGElement>();
-
   private lagFilter = new LagFilter(2);
 
   private needsUpdate = false;
@@ -81,7 +79,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElemsValues>();
 
     sub
-      .on('VS')
+      .on('VSI')
       .whenChanged()
       .handle((v) => {
         this.VS = v.get().toString();
@@ -112,8 +110,8 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       .handle((value) => {
         this.crosswindMode = value;
         value == true
-          ? this.VSref.instance.setAttribute('transform', 'scale(5 5) translate(90 -37)')
-          : this.VSref.instance.setAttribute('transform', 'scale(5 5) translate(90 20)');
+          ? this.VSRef.instance.setAttribute('transform', 'scale(5 5) translate(90 -37)')
+          : this.VSRef.instance.setAttribute('transform', 'scale(5 5) translate(90 20)');
       });
 
     sub
@@ -196,7 +194,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         }
 
         if (Math.abs(vs.value) < 20) {
-          this.VSref.instance.style.display = 'none';
+          this.VSRef.instance.style.display = 'none';
         }
       });
 
@@ -211,7 +209,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   render(): VNode {
     return (
-      <g id="VerticalSpeedIndicator" ref={this.VSref} transform="scale(5 5) translate(90 20)">
+      <g id="VerticalSpeedIndicator" ref={this.VSRef} transform="scale(5 5) translate(90 20)">
         {/* <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" /> */}
 
         <g id="VSpeedFailText" ref={this.vsFailed}>

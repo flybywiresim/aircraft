@@ -195,7 +195,7 @@ export interface HudElemsValuesStr {
   altTapeMaskFill: string;
   windIndicator: string;
   FMA: string;
-  VS: string;
+  VSI: string;
   QFE: string;
   pitchScale: string;
 }
@@ -208,7 +208,7 @@ export interface HudElemsValues {
   altTapeMaskFill: Subject<String>;
   windIndicator: Subject<String>;
   FMA: Subject<String>;
-  VS: Subject<String>;
+  VSI: Subject<String>;
   QFE: Subject<String>;
   pitchScale: Subject<String>;
 }
@@ -229,7 +229,7 @@ export function getBitMask(
     altTapeMaskFill: '',
     windIndicator: '',
     FMA: '',
-    VS: '',
+    VSI: '',
     QFE: '',
     pitchScale: '',
   };
@@ -259,7 +259,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'block';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -273,7 +273,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'block';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -289,7 +289,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'block';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -303,7 +303,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'block';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -319,7 +319,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -333,7 +333,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -349,7 +349,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'block';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -363,7 +363,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'block';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -379,7 +379,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'none';
+    elemVis.VSI = 'none';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -393,7 +393,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'none';
     elemVis.FMA = 'none';
-    elemVis.VS = 'none';
+    elemVis.VSI = 'none';
     elemVis.QFE = 'none';
     elemVis.pitchScale = 'none';
   }
@@ -408,7 +408,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'none';
+    elemVis.VSI = 'none';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -422,7 +422,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'none';
     elemVis.FMA = 'none';
-    elemVis.VS = 'none';
+    elemVis.VSI = 'none';
     elemVis.QFE = 'none';
     elemVis.pitchScale = 'none';
   }
@@ -438,7 +438,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -452,7 +452,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'none';
     elemVis.FMA = 'none';
-    elemVis.VS = 'none';
+    elemVis.VSI = 'none';
     elemVis.QFE = 'none';
     elemVis.pitchScale = 'block';
   }
@@ -467,7 +467,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'block';
     elemVis.windIndicator = 'block';
     elemVis.FMA = 'block';
-    elemVis.VS = 'block';
+    elemVis.VSI = 'block';
     elemVis.QFE = 'block';
     elemVis.pitchScale = 'block';
   }
@@ -481,7 +481,7 @@ export function getBitMask(
     elemVis.altTapeMaskFill = 'none';
     elemVis.windIndicator = 'none';
     elemVis.FMA = 'none';
-    elemVis.VS = 'none';
+    elemVis.VSI = 'none';
     elemVis.QFE = 'none';
     elemVis.pitchScale = 'block';
   }
