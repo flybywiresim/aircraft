@@ -82,7 +82,7 @@ export class HudValueProvider implements Instrument {
     inAirAcftRef: Subject.create<String>(''),
     flightPathDirector: Subject.create<String>(''),
     flightPathVector: Subject.create<String>(''),
-    VS: Subject.create<String>(''),
+    VSI: Subject.create<String>(''),
     ra: Subject.create<String>(''),
     IlsGS: Subject.create<String>(''),
     IlsLoc: Subject.create<String>(''),
@@ -90,7 +90,7 @@ export class HudValueProvider implements Instrument {
     syntheticRunwway: Subject.create<String>(''),
     windIndicator: Subject.create<String>(''),
     QFE: Subject.create<String>(''),
-    metricAlt: Subject.create<String>(''),
+    metricAlt: Subject.create<boolean>(false),
     pitchScaleMode: Subject.create<number>(0),
     hudFlightPhaseMode: Subject.create<number>(0),
     cWndMode: Subject.create<boolean>(false),
@@ -163,7 +163,7 @@ export class HudValueProvider implements Instrument {
             this.elems.inAirAcftRef.set('none');
             this.elems.flightPathDirector.set('none');
             this.elems.flightPathVector.set('block');
-            this.elems.VS.set('none');
+            this.elems.VSI.set('none');
             this.elems.ra.set('none');
             this.elems.IlsGS.set('none');
             this.elems.IlsLoc.set('block');
@@ -171,7 +171,7 @@ export class HudValueProvider implements Instrument {
             this.elems.syntheticRunwway.set('none');
             this.elems.windIndicator.set('none');
             this.elems.QFE.set('block');
-            this.elems.metricAlt.set('block');
+            this.elems.metricAlt.set(true);
             this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
             this.elems.hudFlightPhaseMode.set(this.hudMode.get());
             this.elems.cWndMode.set(false);
@@ -190,7 +190,7 @@ export class HudValueProvider implements Instrument {
             this.elems.inAirAcftRef.set('none');
             this.elems.flightPathDirector.set('none');
             this.elems.flightPathVector.set('block');
-            this.elems.VS.set('none');
+            this.elems.VSI.set('none');
             this.elems.ra.set('none');
             this.elems.IlsGS.set('none');
             this.elems.IlsLoc.set('block');
@@ -198,7 +198,7 @@ export class HudValueProvider implements Instrument {
             this.elems.syntheticRunwway.set('none');
             this.elems.windIndicator.set('none');
             this.elems.QFE.set('none');
-            this.elems.metricAlt.set('none');
+            this.elems.metricAlt.set(false);
             this.elems.pitchScaleMode.set(PitchscaleMode.OFF);
             this.elems.hudFlightPhaseMode.set(this.hudMode.get());
             this.elems.cWndMode.set(false);
@@ -218,7 +218,7 @@ export class HudValueProvider implements Instrument {
           this.elems.inAirAcftRef.set('none');
           this.elems.flightPathDirector.set('none');
           this.elems.flightPathVector.set('block');
-          this.elems.VS.set('none');
+          this.elems.VSI.set('none');
           this.elems.ra.set('none');
           this.elems.IlsGS.set('none');
           this.elems.IlsLoc.set('block');
@@ -226,7 +226,7 @@ export class HudValueProvider implements Instrument {
           this.elems.syntheticRunwway.set('none');
           this.elems.windIndicator.set('none');
           this.elems.QFE.set('block');
-          this.elems.metricAlt.set('block');
+          this.elems.metricAlt.set(true);
           this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
           this.elems.hudFlightPhaseMode.set(this.hudMode.get());
           this.elems.cWndMode.set(false);
@@ -245,7 +245,7 @@ export class HudValueProvider implements Instrument {
           this.elems.inAirAcftRef.set('none');
           this.elems.flightPathDirector.set('none');
           this.elems.flightPathVector.set('block');
-          this.elems.VS.set('none');
+          this.elems.VSI.set('none');
           this.elems.ra.set('none');
           this.elems.IlsGS.set('none');
           this.elems.IlsLoc.set('block');
@@ -253,7 +253,7 @@ export class HudValueProvider implements Instrument {
           this.elems.syntheticRunwway.set('none');
           this.elems.windIndicator.set('none');
           this.elems.QFE.set('block');
-          this.elems.metricAlt.set('block');
+          this.elems.metricAlt.set(true);
           this.elems.pitchScaleMode.set(PitchscaleMode.OFF);
           this.elems.hudFlightPhaseMode.set(this.hudMode.get());
           this.elems.cWndMode.set(false);
@@ -276,7 +276,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.inAirAcftRef.set('block');
                 this.elems.flightPathDirector.set('block');
                 this.elems.flightPathVector.set('block');
-                this.elems.VS.set('block');
+                this.elems.VSI.set('block');
                 this.elems.ra.set('block');
                 this.elems.IlsGS.set('block');
                 this.elems.IlsLoc.set('block');
@@ -284,7 +284,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.syntheticRunwway.set('block');
                 this.elems.windIndicator.set('block');
                 this.elems.QFE.set('block');
-                this.elems.metricAlt.set('block');
+                this.elems.metricAlt.set(true);
                 this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
                 this.elems.hudFlightPhaseMode.set(this.hudMode.get());
                 this.elems.cWndMode.set(false);
@@ -303,7 +303,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.inAirAcftRef.set('block');
                 this.elems.flightPathDirector.set('block');
                 this.elems.flightPathVector.set('block');
-                this.elems.VS.set('block');
+                this.elems.VSI.set('block');
                 this.elems.ra.set('block');
                 this.elems.IlsGS.set('block');
                 this.elems.IlsLoc.set('block');
@@ -311,7 +311,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.syntheticRunwway.set('block');
                 this.elems.windIndicator.set('block');
                 this.elems.QFE.set('block');
-                this.elems.metricAlt.set('block');
+                this.elems.metricAlt.set(true);
                 this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
                 this.elems.hudFlightPhaseMode.set(this.hudMode.get());
                 this.elems.cWndMode.set(true);
@@ -332,7 +332,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.inAirAcftRef.set('block');
                 this.elems.flightPathDirector.set('block');
                 this.elems.flightPathVector.set('block');
-                this.elems.VS.set('block');
+                this.elems.VSI.set('block');
                 this.elems.ra.set('block');
                 this.elems.IlsGS.set('block');
                 this.elems.IlsLoc.set('block');
@@ -340,7 +340,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.syntheticRunwway.set('none');
                 this.elems.windIndicator.set('block');
                 this.elems.QFE.set('block');
-                this.elems.metricAlt.set('block');
+                this.elems.metricAlt.set(true);
                 this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
                 this.elems.hudFlightPhaseMode.set(this.hudMode.get());
                 this.elems.cWndMode.set(false);
@@ -359,7 +359,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.inAirAcftRef.set('block');
                 this.elems.flightPathDirector.set('block');
                 this.elems.flightPathVector.set('block');
-                this.elems.VS.set('block');
+                this.elems.VSI.set('block');
                 this.elems.ra.set('block');
                 this.elems.IlsGS.set('block');
                 this.elems.IlsLoc.set('block');
@@ -367,7 +367,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.syntheticRunwway.set('none');
                 this.elems.windIndicator.set('block');
                 this.elems.QFE.set('block');
-                this.elems.metricAlt.set('block');
+                this.elems.metricAlt.set(true);
                 this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
                 this.elems.hudFlightPhaseMode.set(this.hudMode.get());
                 this.elems.cWndMode.set(true);
@@ -388,7 +388,7 @@ export class HudValueProvider implements Instrument {
               this.elems.inAirAcftRef.set('none');
               this.elems.flightPathDirector.set('block');
               this.elems.flightPathVector.set('block');
-              this.elems.VS.set('none');
+              this.elems.VSI.set('none');
               this.elems.ra.set('block');
               this.elems.IlsGS.set('none');
               this.elems.IlsLoc.set('none');
@@ -396,7 +396,7 @@ export class HudValueProvider implements Instrument {
               this.elems.syntheticRunwway.set('none');
               this.elems.windIndicator.set('none');
               this.elems.QFE.set('none');
-              this.elems.metricAlt.set('none');
+              this.elems.metricAlt.set(false);
               this.elems.pitchScaleMode.set(PitchscaleMode.FIVEDEG);
               this.elems.hudFlightPhaseMode.set(this.hudMode.get());
               this.elems.cWndMode.set(true);
@@ -418,7 +418,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.inAirAcftRef.set('block');
                 this.elems.flightPathDirector.set('block');
                 this.elems.flightPathVector.set('block');
-                this.elems.VS.set('block');
+                this.elems.VSI.set('block');
                 this.elems.ra.set('block');
                 this.elems.IlsGS.set('block');
                 this.elems.IlsLoc.set('block');
@@ -426,7 +426,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.syntheticRunwway.set('block');
                 this.elems.windIndicator.set('block');
                 this.elems.QFE.set('block');
-                this.elems.metricAlt.set('block');
+                this.elems.metricAlt.set(true);
                 this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
                 this.elems.hudFlightPhaseMode.set(this.hudMode.get());
                 this.elems.cWndMode.set(false);
@@ -445,7 +445,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.inAirAcftRef.set('block');
                 this.elems.flightPathDirector.set('block');
                 this.elems.flightPathVector.set('block');
-                this.elems.VS.set('block');
+                this.elems.VSI.set('block');
                 this.elems.ra.set('block');
                 this.elems.IlsGS.set('block');
                 this.elems.IlsLoc.set('block');
@@ -453,7 +453,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.syntheticRunwway.set('block');
                 this.elems.windIndicator.set('block');
                 this.elems.QFE.set('block');
-                this.elems.metricAlt.set('block');
+                this.elems.metricAlt.set(true);
                 this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
                 this.elems.hudFlightPhaseMode.set(this.hudMode.get());
                 this.elems.cWndMode.set(true);
@@ -474,7 +474,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.inAirAcftRef.set('none');
                 this.elems.flightPathDirector.set('block');
                 this.elems.flightPathVector.set('block');
-                this.elems.VS.set('none');
+                this.elems.VSI.set('none');
                 this.elems.ra.set('block');
                 this.elems.IlsGS.set('none');
                 this.elems.IlsLoc.set('none');
@@ -482,7 +482,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.syntheticRunwway.set('none');
                 this.elems.windIndicator.set('none');
                 this.elems.QFE.set('none');
-                this.elems.metricAlt.set('none');
+                this.elems.metricAlt.set(false);
                 this.elems.pitchScaleMode.set(PitchscaleMode.FIVEDEG);
                 this.elems.hudFlightPhaseMode.set(this.hudMode.get());
                 this.elems.cWndMode.set(false);
@@ -501,7 +501,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.inAirAcftRef.set('none');
                 this.elems.flightPathDirector.set('block');
                 this.elems.flightPathVector.set('block');
-                this.elems.VS.set('none');
+                this.elems.VSI.set('none');
                 this.elems.ra.set('block');
                 this.elems.IlsGS.set('none');
                 this.elems.IlsLoc.set('none');
@@ -509,7 +509,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.syntheticRunwway.set('none');
                 this.elems.windIndicator.set('none');
                 this.elems.QFE.set('none');
-                this.elems.metricAlt.set('none');
+                this.elems.metricAlt.set(false);
                 this.elems.pitchScaleMode.set(PitchscaleMode.FIVEDEG);
                 this.elems.hudFlightPhaseMode.set(this.hudMode.get());
                 this.elems.cWndMode.set(true);
@@ -533,7 +533,7 @@ export class HudValueProvider implements Instrument {
         publisher.pub('inAirAcftRef', this.elems.inAirAcftRef, false, false);
         publisher.pub('flightPathDirector', this.elems.flightPathDirector, false, false);
         publisher.pub('flightPathVector', this.elems.flightPathVector, false, false);
-        publisher.pub('VS', this.elems.VS, false, false);
+        publisher.pub('VSI', this.elems.VSI, false, false);
         publisher.pub('ra', this.elems.ra, false, false);
         publisher.pub('IlsGS', this.elems.IlsGS, false, false);
         publisher.pub('IlsLoc', this.elems.IlsLoc, false, false);

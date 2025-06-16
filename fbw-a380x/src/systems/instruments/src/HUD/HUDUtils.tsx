@@ -247,7 +247,7 @@ export interface HudElems {
   inAirAcftRef: Subject<String>;
   flightPathDirector: Subject<String>;
   flightPathVector: Subject<String>;
-  VS: Subject<String>;
+  VSI: Subject<String>;
   ra: Subject<String>;
   IlsGS: Subject<String>;
   IlsLoc: Subject<String>;
@@ -255,7 +255,7 @@ export interface HudElems {
   syntheticRunwway: Subject<String>;
   windIndicator: Subject<String>;
   QFE: Subject<String>;
-  metricAlt: Subject<String>;
+  metricAlt: Subject<boolean>;
   pitchScaleMode: Subject<number>;
   hudFlightPhaseMode: Subject<number>;
   cWndMode: Subject<boolean>;

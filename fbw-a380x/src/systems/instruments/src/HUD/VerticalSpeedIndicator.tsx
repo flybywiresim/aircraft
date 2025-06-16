@@ -82,7 +82,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       this.crosswindMode = value.get();
       this.handlePos();
     });
-    sub.on('VS').handle((v) => {
+    sub.on('VSI').handle((v) => {
       this.VS = v.get().toString();
       this.VSRef.instance.style.display = `${this.VS}`;
     });
@@ -233,9 +233,9 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>; nee
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const dxFull = 54;
-    const dxBorder = 22.5;
-    const centerX = 732.6;
+    const dxFull = 50;
+    const dxBorder = 13;
+    const centerX = 733;
     const centerY = 363;
 
     this.props.yOffset.sub((yOffset) => {
@@ -286,10 +286,13 @@ class VSpeedText extends DisplayComponent<{
       const sign = Math.sign(vs.value);
 
       const textOffset = this.props.yOffset.get() - sign * 12;
+      const textOffsetX = sign > 0 ? 0 : -5;
 
-      const text = (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
+      const minusSign = sign > 0 ? '' : '-';
+
+      const text = minusSign + (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
       this.vsTextRef.instance.textContent = text;
-      this.groupRef.instance.setAttribute('transform', `translate(0 ${textOffset})`);
+      this.groupRef.instance.setAttribute('transform', `translate(${textOffsetX} ${textOffset})`);
     });
 
     this.props.textColour.sub((colour) => {
