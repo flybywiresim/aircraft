@@ -12,7 +12,7 @@ export class FmsMessagePublisher extends SimVarPublisher<FmsMessageVars> {
     super(
       new Map([
         ['tdReached', { name: 'L:A32NX_PFD_MSG_TD_REACHED', type: SimVarValueType.Bool }],
-        ['destEfobBelowMin', { name: 'L:A32NX_FMS_DEST_EFOB_BELOW_MIN', type: SimVarValueType.Bool }],
+        ['destEfobBelowMin', { name: 'L:A380X_FMS_DEST_EFOB_BELOW_MIN', type: SimVarValueType.Bool }],
       ]),
       bus,
     );

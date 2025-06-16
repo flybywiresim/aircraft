@@ -150,7 +150,7 @@ export class FmcAircraftInterface {
   private readonly fmsLandingRunway = Subject.create<string | null>('');
   private readonly fmsAlternate = Subject.create<string | null>('');
   private readonly destEfobBelowMin = this.fmgc.data.destEfobBelowMin.sub((v) => {
-    SimVar.SetSimVarValue('L:A32NX_FMS_DEST_EFOB_BELOW_MIN', SimVarValueType.Bool, v);
+    SimVar.SetSimVarValue('L:A380X_FMS_DEST_EFOB_BELOW_MIN', SimVarValueType.Bool, v);
   }, true);
 
   private readonly destEfobBelowMinScratchPadMessage = Subject.create(false);
