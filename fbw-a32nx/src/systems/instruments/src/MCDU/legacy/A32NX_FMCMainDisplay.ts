@@ -5288,27 +5288,31 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         plan.destinationAirport.location,
         plan.alternateDestinationAirport.location,
       );
+      const alternateCruiseLevel = this.computeAlternateCruiseLevel(forPlan);
 
       if (distanceToAlt < 20) {
         computations.alternateFuel = 0;
         computations.alternateTime = 0;
       } else {
-        // TODO get cruise from alternate plan
-        const placeholderFl = 120;
         // TODO get trip wind from alternate plan
         const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(distanceToAlt), 0);
 
         const deviation =
           (zfw + computations.finalHoldingFuel - A32NX_FuelPred.refWeight) *
-          A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
-        if (20 < airDistance && airDistance < 200 && 100 < placeholderFl && placeholderFl < 290) {
+          A32NX_FuelPred.computeNumbers(
+            airDistance,
+            alternateCruiseLevel,
+            A32NX_FuelPred.computations.CORRECTIONS,
+            true,
+          );
+        if (20 < airDistance && airDistance < 200 && 100 < alternateCruiseLevel && alternateCruiseLevel < 290) {
           computations.alternateFuel =
-            (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) +
+            (A32NX_FuelPred.computeNumbers(airDistance, alternateCruiseLevel, A32NX_FuelPred.computations.FUEL, true) +
               deviation) /
             1000;
           computations.alternateTime = A32NX_FuelPred.computeNumbers(
             airDistance,
-            placeholderFl,
+            alternateCruiseLevel,
             A32NX_FuelPred.computations.TIME,
             true,
           );
@@ -5425,6 +5429,31 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
       this.tryCheckToData();
     }
+  }
+
+  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
+    const plan = this.getFlightPlan(forPlan);
+    if (!plan) {
+      return undefined;
+    }
+
+    if (!plan.destinationAirport || !plan.alternateDestinationAirport) {
+      return undefined;
+    }
+
+    // TODO use actual flight plan distance rather than great circle distance
+    const distance = Avionics.Utils.computeGreatCircleDistance(
+      plan.destinationAirport.location,
+      plan.alternateDestinationAirport.location,
+    );
+
+    if (distance > 200) {
+      return 310;
+    } else if (distance > 100) {
+      return 220;
+    }
+
+    return 100;
   }
 
   // ---------------------------

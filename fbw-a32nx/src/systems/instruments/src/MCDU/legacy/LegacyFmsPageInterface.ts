@@ -247,6 +247,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setVrSpeed(speed: number, forPlan: FlightPlanIndex): void;
   setV2Speed(speed: number, forPlan: FlightPlanIndex): void;
   onSecondaryActivated(): void;
+  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
