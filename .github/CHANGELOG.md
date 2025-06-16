@@ -52,7 +52,6 @@
 1. [A32NX/PFD] Add CHECK ALT message - @tracernz (Mike)
 1. [A380X] Increased available baro correction range to 745-1100 hPa - @tracernz (Mike)
 1. [A380X/PFD] Fixed missing red lines on altitude tape failure indications - @tracernz (Mike)
-1. [A32NX/PFD] Improve ALT CRZ FMA text spacing - @BravoMike99 (bruno_pt99)
 1. [A380X/RMP] Added localvars for RMP frequencies and state for API users - @tracernz (Mike)
 1. [A380X/RMP] Added handling of all COM key events for API users - @tracernz (Mike)
 1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
