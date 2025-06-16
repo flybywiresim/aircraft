@@ -358,6 +358,10 @@ export class FmsClient {
     });
   }
 
+  public hasActiveAtc(): boolean {
+    return this.atcStationStatus.current !== '';
+  }
+
   public currentStation(): string {
     return this.atcStationStatus.current;
   }
