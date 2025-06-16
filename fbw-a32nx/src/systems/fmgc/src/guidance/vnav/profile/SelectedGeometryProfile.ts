@@ -11,6 +11,7 @@ import {
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { ConstantWindProfile, WindInterface } from '../wind/WindProfile';
 import { FlightPlan } from '../../../flightplanning/plans/FlightPlan';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 export class SelectedGeometryProfile extends BaseGeometryProfile {
   public override maxAltitudeConstraints: MaxAltitudeConstraint[] = [];
@@ -25,9 +26,12 @@ export class SelectedGeometryProfile extends BaseGeometryProfile {
 
   public override distanceToPresentPosition: number = 0;
 
-  public override readonly winds: WindInterface = new ConstantWindProfile(this.plan);
+  public override readonly winds: WindInterface = new ConstantWindProfile(this.bus, this.plan);
 
-  constructor(private readonly plan: FlightPlan) {
+  constructor(
+    private readonly bus: EventBus,
+    private readonly plan: FlightPlan,
+  ) {
     super();
   }
 

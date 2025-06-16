@@ -32,6 +32,7 @@ import {
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 export class VnavDriver implements GuidanceComponent {
   version: number = 0;
@@ -71,6 +72,7 @@ export class VnavDriver implements GuidanceComponent {
   private prevMcduPredReadyToDisplay = false;
 
   constructor(
+    private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanService,
     private readonly guidanceController: GuidanceController,
     private readonly computationParametersObserver: VerticalProfileComputationParametersObserver,
@@ -99,6 +101,7 @@ export class VnavDriver implements GuidanceComponent {
         );
 
     this.profileManager = new VerticalProfileManager(
+      this.bus,
       this.flightPlanService,
       this.computationParametersObserver,
       this.atmosphericConditions,

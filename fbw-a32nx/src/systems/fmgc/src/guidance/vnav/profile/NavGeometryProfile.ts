@@ -11,7 +11,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AltitudeConstraint, AltitudeDescriptor, SpeedConstraint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { WindProfile } from '../wind/WindProfile';
-import { Vec2Math } from '@microsoft/msfs-sdk';
+import { EventBus, Vec2Math } from '@microsoft/msfs-sdk';
 import { TailwindComponent, WindVector } from '../../../flightplanning/data/wind';
 import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
 
@@ -154,9 +154,10 @@ export interface GeographicCruiseStep {
 export class NavGeometryProfile extends BaseGeometryProfile {
   public waypointPredictions: Map<number, VerticalWaypointPrediction> = new Map();
 
-  readonly winds = new WindProfile(this.flightPlanService, FlightPlanIndex.Active);
+  readonly winds = new WindProfile(this.bus, this.flightPlanService, FlightPlanIndex.Active);
 
   constructor(
+    private readonly bus: EventBus,
     private flightPlanService: FlightPlanService,
     private constraintReader: ConstraintReader,
     private atmosphericConditions: AtmosphericConditions,

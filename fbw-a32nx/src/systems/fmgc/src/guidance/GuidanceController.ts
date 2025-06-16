@@ -302,6 +302,7 @@ export class GuidanceController {
 
     this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
     this.vnavDriver = new VnavDriver(
+      bus,
       flightPlanService,
       this,
       this.verticalProfileComputationParametersObserver,

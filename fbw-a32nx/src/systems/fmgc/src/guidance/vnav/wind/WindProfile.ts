@@ -4,7 +4,7 @@
 
 import { FlightPlan } from '../../../flightplanning/plans/FlightPlan';
 import { isDiscontinuity } from '../../../flightplanning/legs/FlightPlanLeg';
-import { Vec2Math } from '@microsoft/msfs-sdk';
+import { EventBus, Vec2Math } from '@microsoft/msfs-sdk';
 import { PropagatedWindEntry, TailwindComponent, WindVector } from '../../../flightplanning/data/wind';
 import { Common } from '../common';
 import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
@@ -22,11 +22,12 @@ export class WindProfile implements WindInterface {
 
   private readonly tracks: FlightPlanTrackProfile = new FlightPlanTrackProfile(this.plan);
 
-  private readonly measurementDevice: WindObserver = new WindObserver();
+  private readonly measurementDevice: WindObserver = new WindObserver(this.bus);
 
   private readonly legWinds: LegWinds = new LegWinds(this.flightPlanService, this.index);
 
   constructor(
+    private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanService,
     private readonly index: FlightPlanIndex,
   ) {}
@@ -355,11 +356,14 @@ export class ConstantWindProfile implements WindInterface {
 
   private static readonly WindMeasurementCache: WindMeasurement = { altitude: NaN, vector: Vec2Math.create() };
 
-  private readonly measurementDevice: WindObserver = new WindObserver();
+  private readonly measurementDevice: WindObserver = new WindObserver(this.bus);
 
   private readonly register = Arinc429Register.empty();
 
-  constructor(private readonly plan: FlightPlan) {}
+  constructor(
+    private readonly bus: EventBus,
+    private readonly plan: FlightPlan,
+  ) {}
 
   private getTrueTrack(): number | null {
     for (let i = 1; i <= 3; i++) {

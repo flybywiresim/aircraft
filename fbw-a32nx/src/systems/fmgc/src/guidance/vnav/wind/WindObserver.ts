@@ -1,31 +1,33 @@
-import { Arinc429Register, MathUtils } from '@flybywiresim/fbw-sdk';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { WindEntry } from '../../../flightplanning/data/wind';
-import { Vec2Math } from '@microsoft/msfs-sdk';
+import { ConsumerValue, EventBus, Vec2Math } from '@microsoft/msfs-sdk';
+import { NavigationEvents } from '@fmgc/navigation/Navigation';
 
 export type WindMeasurement = WindEntry;
 
 export class WindObserver {
-  private readonly register: Arinc429Register = Arinc429Register.empty();
+  private readonly sub = this.bus.getSubscriber<NavigationEvents>();
+
+  private readonly windDirection = ConsumerValue.create(this.sub.on('fms_nav_wind_direction'), null);
+
+  private readonly windSpeed = ConsumerValue.create(this.sub.on('fms_nav_wind_speed'), null);
+
+  private readonly altitude = ConsumerValue.create(this.sub.on('fms_nav_pressure_altitude'), null);
+
+  constructor(private readonly bus: EventBus) {}
 
   get(result: WindMeasurement): WindMeasurement | null {
-    for (let i = 1; i <= 3; i++) {
-      this.register.setFromSimVar(`L:A32NX_ADIRS_IR_${i}_WIND_DIRECTION`);
-      if (this.register.isNoComputedData() || this.register.isFailureWarning()) continue;
-      const windDirection = this.register.value;
+    const windDirection = this.windDirection.get();
+    const windSpeed = this.windSpeed.get();
+    const altitude = this.altitude.get();
 
-      this.register.setFromSimVar(`L:A32NX_ADIRS_IR_${i}_WIND_SPEED`);
-      if (this.register.isNoComputedData() || this.register.isFailureWarning()) continue;
-      const windSpeed = this.register.value;
-
-      this.register.setFromSimVar(`L:A32NX_ADIRS_ADR_${i}_ALTITUDE`);
-      if (this.register.isNoComputedData() || this.register.isFailureWarning()) continue;
-
-      result.altitude = this.register.value;
-      Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
-
-      return result;
+    if (windDirection === null || windSpeed === null || altitude === null) {
+      return null;
     }
 
-    return null;
+    result.altitude = altitude;
+    Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
+
+    return result;
   }
 }
