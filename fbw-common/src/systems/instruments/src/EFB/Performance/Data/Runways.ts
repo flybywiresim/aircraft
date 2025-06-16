@@ -56,6 +56,15 @@ function getAirport(icao: string): Promise<RawAirport> {
   });
 }
 
+function compareRunways(runway1: Runway, runway2: Runway) {
+  if (runway1.ident > runway2.ident) {
+    return 1;
+  } else if (runway1.ident < runway2.ident) {
+    return -1;
+  }
+  return 0;
+}
+
 export async function getAirportMagVar(icao: string): Promise<number | null> {
   const airport = await getAirport(icao);
   return Facilities.getMagVar(airport.lat, airport.lon);
@@ -94,5 +103,6 @@ export async function getRunways(icao: string): Promise<Runway[]> {
     }
   }
 
+  runways.sort(compareRunways);
   return runways;
 }
