@@ -280,7 +280,7 @@ class QFUIndicator extends DisplayComponent<{
     return (
       <g ref={this.qfuContainer}>
         <g id="ILSCoursePointer" class="HiddenElement" ref={this.ilsCoursePointer}>
-          <path class="NormalStroke Green" d="m 640 505 h 20 m-10 -32.5 v 40" />
+          <path class="NormalStroke Green" d="m 630 505 h 20 m-10 -32.5 v 40" />
         </g>
       </g>
     );

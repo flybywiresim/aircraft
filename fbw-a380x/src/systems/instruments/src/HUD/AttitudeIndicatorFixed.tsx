@@ -292,7 +292,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrum
       value.get() === 0 ? (this.onGround = false) : (this.onGround = true);
       this.onGround
         ? (this.groundYawGroupRef.instance.style.display = 'block')
-        : (this.GroundYawRef.instance.style.display = 'none');
+        : (this.groundYawGroupRef.instance.style.display = 'none');
     });
     sub.on('fdYawCommand').handle((fy) => {
       this.fdYawCommand = fy;
@@ -418,12 +418,9 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
-    sub
-      .on('hudFlightPhaseMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.hudFlightPhaseMode = mode.get();
-      });
+    sub.on('hudFlightPhaseMode').handle((mode) => {
+      this.hudFlightPhaseMode = mode.get();
+    });
 
     const isCaptainSide = getDisplayIndex() === 1;
     sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {

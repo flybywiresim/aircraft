@@ -26,12 +26,9 @@ import { LandingSystem } from './LandingSystemIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { Grid } from './HUDUtils';
-import { AutoThrustMode } from 'shared/autopilot';
-import { VerticalMode } from '@shared/autopilot';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import './style.scss';
 import { HUDSimvars } from 'instruments/src/HUD/shared/HUDSimvarPublisher';
-import { A380Failure } from '../../../failures';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { ExtendedHorizon } from './AttitudeIndicatorHorizon';
 import { DecelIndicator } from './DecelSpeedIndicator';
@@ -43,10 +40,6 @@ export const getDisplayIndex = () => {
   const duId = url ? parseInt(url.substring(url.length - 1), 10) : -1;
 
   switch (duId) {
-    case 0:
-      return 1;
-    case 3:
-      return 2;
     case 8:
       return 1;
     case 9:
@@ -77,18 +70,8 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
   private xWindAltTapeRef2 = FSComponent.createRef<SVGPathElement>();
 
   private windIndicatorRef = FSComponent.createRef<SVGGElement>();
-  private onLanding = false;
-  private onRollout = false;
-  private onDecel = false;
-  private landSpeed = false;
-  private flightPhase = -1;
   private declutterMode = 0;
-  private bitMask = 0;
-  private athMode = 0;
-  private onToPower = false;
-  private onGround = true;
   private crosswindMode = false;
-  private lgRightCompressed = false;
 
   private displayBrightness = Subject.create(0);
   private lastBrightnessValue = Subject.create(0);
@@ -114,7 +97,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
   private failuresConsumer: FailuresConsumer;
 
-  private displayPowered = Subject.create(0);
   private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
 
   private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed'), false);
@@ -165,8 +147,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const isCaptainSide = getDisplayIndex() === 1;
-    this.failuresConsumer.register(isCaptainSide ? A380Failure.DirectCurrent1 : A380Failure.DirectCurrent2);
 
     const sub = this.props.bus.getSubscriber<
       Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
@@ -223,55 +203,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
     });
 
     sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((value) => {
-        value == VerticalMode.ROLL_OUT ? (this.onRollout = true) : (this.onRollout = false);
-        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
-          this.onLanding = true;
-        } else {
-          this.onLanding = false;
-        }
-      });
-
-    sub
-      .on('autoBrakeDecel')
-      .whenChanged()
-      .handle((value) => {
-        this.onDecel = value;
-        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
-          this.onLanding = true;
-        } else {
-          this.onLanding = false;
-        }
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-
-        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
-          this.onLanding = true;
-        } else {
-          this.onLanding = false;
-        }
-      });
-
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
-      });
-
-    sub
       .on('decMode')
       .whenChanged()
       .handle((value) => {
@@ -284,22 +215,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         this.crosswindMode = value.get();
       });
 
-    sub
-      .on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo')
-      .whenChanged()
-      .handle((value) => {
-        this.displayBrightness.set(value);
-        if (value != 0) {
-          this.lastBrightnessValue.set(value);
-        }
-      });
-
-    sub
-      .on(isCaptainSide ? 'elec' : 'elecFo')
-      .whenChanged()
-      .handle((value) => {
-        this.displayPowered.set(value);
-      });
     this.subscriptions.push(
       this.sub.on('headingAr').handle((h) => {
         if (this.headingFailed.get() !== h.isNormalOperation()) {
@@ -325,13 +240,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         .on('realTime')
         .atFrequency(1)
         .handle((_t) => {
-          this.groundSpeed.get().value > 30 ? (this.landSpeed = true) : (this.landSpeed = false);
-          if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
-            this.onLanding = true;
-          } else {
-            this.onLanding = false;
-          }
-
           this.failuresConsumer.update();
           if (
             !this.isAttExcessive.get() &&
@@ -501,12 +409,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             filteredRadioAlt={this.filteredRadioAltitude}
           />
 
-          {/* <path
-            id="Mask1"
-            class="BackgroundFill"
-            // eslint-disable-next-line max-len
-            d="m 32.138 101.25 c 7.4164 13.363 21.492 21.652 36.768 21.652 c 15.277 0 29.352 -8.2886 36.768 -21.652 v -40.859 c -7.4164 -13.363 -21.492 -21.652 -36.768 -21.652 c -15.277 0 -29.352 8.2886 -36.768 21.652 z m -32.046 110.498 h 158.66 v -211.75 h -158.66 z"
-          /> */}
           <AirspeedIndicatorOfftape bus={this.props.bus} />
 
           <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />

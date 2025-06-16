@@ -18,9 +18,9 @@
             </UseTemplate>
         </Component>
     </Template>
-    <Template Name="FBW_A380X_Components_InteractiveParts">
 
     <Template Name="FBW_A380X_Components_InteractiveParts">
+
         <!-- CPT OXY -->
 
         <Component ID="CPT_OXY_FWD" Node="CPT_OXY_FWD">
