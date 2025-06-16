@@ -14,6 +14,15 @@ export interface UplinkedWindLevel extends UplinkedWindEntry {
   altitude: number;
 }
 
-interface UplinkedCruiseWindEntry extends UplinkedWindLevel {
+interface UplinkedWaypointWindEntry extends UplinkedWindLevel {
+  type: 'waypoint';
   fixIdent: string;
 }
+
+interface UplinkedLatLonWindEntry extends UplinkedWindLevel {
+  type: 'latlon';
+  lat: number;
+  long: number;
+}
+
+type UplinkedCruiseWindEntry = UplinkedWaypointWindEntry | UplinkedLatLonWindEntry;

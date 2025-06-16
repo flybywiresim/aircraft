@@ -114,17 +114,35 @@ export class SimBriefConnector {
       // CRZ
       {
         for (const fix of navlog) {
-          if (fix.stage !== 'CRZ' || fix.ident === 'TOC' || fix.ident === 'TOD' || fix.type === 'apt') {
+          if (
+            fix.stage !== 'CRZ' ||
+            fix.ident === 'TOC' ||
+            fix.ident === 'TOD' ||
+            fix.type === 'apt' ||
+            fix.is_sid_star === '1'
+          ) {
             continue;
           }
 
           for (const val of fix.wind_data.level) {
-            result.cruiseWinds.push({
-              fixIdent: fix.ident,
-              trueDegrees: parseInt(val.wind_dir),
-              magnitude: parseInt(val.wind_spd),
-              altitude: Math.round(parseInt(val.altitude) / 100) * 100,
-            });
+            if (fix.type === 'ltlg') {
+              result.cruiseWinds.push({
+                type: 'latlon',
+                lat: parseFloat(fix.pos_lat),
+                long: parseFloat(fix.pos_long),
+                trueDegrees: parseInt(val.wind_dir),
+                magnitude: parseInt(val.wind_spd),
+                altitude: Math.round(parseInt(val.altitude) / 100) * 100,
+              });
+            } else {
+              result.cruiseWinds.push({
+                type: 'waypoint',
+                fixIdent: fix.ident,
+                trueDegrees: parseInt(val.wind_dir),
+                magnitude: parseInt(val.wind_spd),
+                altitude: Math.round(parseInt(val.altitude) / 100) * 100,
+              });
+            }
           }
         }
       }

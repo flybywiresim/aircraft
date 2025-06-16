@@ -109,12 +109,27 @@ export class PendingWindUplinkParser {
           ),
         };
 
-        const existingFixWinds = plan.pendingWindUplink.cruiseWinds?.find((w) => w.fixIdent === uplinkedEntry.fixIdent);
+        const existingFixWinds = plan.pendingWindUplink.cruiseWinds?.find(
+          (w) =>
+            (w.type === 'waypoint' && uplinkedEntry.type === 'waypoint' && w.fixIdent === uplinkedEntry.fixIdent) ||
+            (w.type === 'latlon' &&
+              uplinkedEntry.type === 'latlon' &&
+              MathUtils.isAboutEqual(w.lat, uplinkedEntry.lat) &&
+              MathUtils.isAboutEqual(w.long, uplinkedEntry.long)),
+        );
         if (existingFixWinds) {
           existingFixWinds.levels.push(pendingEntry);
-        } else {
+        } else if (uplinkedEntry.type === 'waypoint') {
           plan.pendingWindUplink.cruiseWinds.push({
+            type: 'waypoint',
             fixIdent: uplinkedEntry.fixIdent,
+            levels: [pendingEntry],
+          });
+        } else if (uplinkedEntry.type === 'latlon') {
+          plan.pendingWindUplink.cruiseWinds.push({
+            type: 'latlon',
+            lat: uplinkedEntry.lat,
+            long: uplinkedEntry.long,
             levels: [pendingEntry],
           });
         }

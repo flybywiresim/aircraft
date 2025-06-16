@@ -239,7 +239,14 @@ export class CDUWindPage {
         template[i * 2 + 4][0] = `---°/---/-----`;
       }
     } else if (doesCrzWindUplinkExist) {
-      const winds = plan.pendingWindUplink.cruiseWinds.find((fix) => fix.fixIdent === leg.ident)?.levels ?? [];
+      const winds =
+        plan.pendingWindUplink.cruiseWinds.find(
+          (fix) =>
+            (fix.type === 'waypoint' && fix.fixIdent === leg.ident) ||
+            (fix.type === 'latlon' &&
+              MathUtils.isAboutEqual(fix.lat, leg.terminationWaypoint().location.lat) &&
+              MathUtils.isAboutEqual(fix.long, leg.terminationWaypoint().location.long)),
+        )?.levels ?? [];
 
       for (let i = 0; i < winds.length; i++) {
         const wind = winds[i];

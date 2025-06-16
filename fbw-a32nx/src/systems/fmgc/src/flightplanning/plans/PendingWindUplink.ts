@@ -1,9 +1,21 @@
 import { WindEntry } from '../data/wind';
 
-interface PendingCruiseWind {
-  fixIdent: string;
+interface BasePendingCruiseWind {
   levels: WindEntry[];
 }
+
+interface PendingWaypointCruiseWind extends BasePendingCruiseWind {
+  type: 'waypoint';
+  fixIdent: string;
+}
+
+interface PendingLatLonCruiseWind extends BasePendingCruiseWind {
+  type: 'latlon';
+  lat: number;
+  long: number;
+}
+
+type PendingCruiseWind = PendingWaypointCruiseWind | PendingLatLonCruiseWind;
 
 enum PendingWindUplinkState {
   Idle,

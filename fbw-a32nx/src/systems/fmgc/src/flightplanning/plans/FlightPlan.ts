@@ -801,7 +801,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (this.pendingWindUplink.cruiseWinds) {
       for (const fix of this.pendingWindUplink.cruiseWinds) {
-        const legIndex = this.findLegIndexByFixIdent(fix.fixIdent);
+        const legIndex =
+          fix.type === 'waypoint'
+            ? this.findLegIndexByFixIdent(fix.fixIdent)
+            : this.findLegIndexByCoordinates(fix.lat, fix.long);
 
         if (legIndex < 0) {
           continue;
