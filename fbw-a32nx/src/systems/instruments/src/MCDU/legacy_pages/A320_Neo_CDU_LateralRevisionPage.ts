@@ -94,7 +94,6 @@ export class CDULateralRevisionPage {
     }
 
     let offsetCell = '';
-    // TODO hide on sec?
     if (isDeparture || isWaypoint) {
       offsetCell = '<OFFSET[color]inop';
     }

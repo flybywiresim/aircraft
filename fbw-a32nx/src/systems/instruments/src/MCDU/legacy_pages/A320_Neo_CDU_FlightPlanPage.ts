@@ -368,7 +368,6 @@ export class CDUFlightPlanPage {
         let distance = '';
         // Active waypoint is live distance, others are distances in the flight plan
         if (isActive) {
-          // TODO sec
           if (Number.isFinite(mcdu.guidanceController.activeLegCompleteLegPathDtg)) {
             distance = Math.round(
               Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegCompleteLegPathDtg)),
