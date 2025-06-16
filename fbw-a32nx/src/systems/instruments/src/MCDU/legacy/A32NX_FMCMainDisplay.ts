@@ -5423,7 +5423,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const phase = this.getFlightPhase();
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
-      this.addMessageToQueue(NXSystemMessages.checkToData);
+      this.tryCheckToData();
     }
   }
 
