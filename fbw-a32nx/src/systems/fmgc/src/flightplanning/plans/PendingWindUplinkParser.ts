@@ -15,6 +15,9 @@ export class PendingWindUplinkParser {
       return [];
     }
 
+    // Assume cruise level is FL390 so we get a good spread of wind levels
+    const cruiseAltitude = (plan.performanceData.cruiseFlightLevel ?? 390) * 100;
+
     // 1. Check if we have uplinked entries for existing levels
     // 2. For the remaining number of entries, spread them across the climb profile
 
@@ -26,7 +29,7 @@ export class PendingWindUplinkParser {
 
     // Find the lowest level above the cruise flight level, or the highest level if none are above
     const highestLevel = uplinkedLevels.reduce(
-      (acc, level) => (acc === undefined || acc.altitude < plan.performanceData.cruiseFlightLevel * 100 ? level : acc),
+      (acc, level) => (acc === undefined || acc.altitude < cruiseAltitude ? level : acc),
       undefined,
     );
 
