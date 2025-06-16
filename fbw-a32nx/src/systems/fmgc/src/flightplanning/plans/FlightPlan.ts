@@ -722,21 +722,29 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   async setClimbWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
-    this.setClbDesWindEntry('climbWindEntries', altitude, entry, maxNumberEntries);
+    this.setClbDesWindEntry(this.performanceData.climbWindEntries, altitude, entry, maxNumberEntries);
+    // Do this so the RPC event is sent
+    this.setPerformanceData(
+      'climbWindEntries',
+      this.performanceData.climbWindEntries.sort((a, b) => a.altitude - b.altitude),
+    );
   }
 
   async setDescentWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
-    this.setClbDesWindEntry('descentWindEntries', altitude, entry, maxNumberEntries);
+    this.setClbDesWindEntry(this.performanceData.descentWindEntries, altitude, entry, maxNumberEntries);
+    // Do this so the RPC event is sent
+    this.setPerformanceData(
+      'descentWindEntries',
+      this.performanceData.descentWindEntries.sort((a, b) => b.altitude - a.altitude),
+    );
   }
 
   private setClbDesWindEntry(
-    windEntryKey: 'climbWindEntries' | 'descentWindEntries',
+    windEntries: WindEntry[],
     altitude: number,
     entry: WindEntry | null,
     maxNumberEntries: number,
   ) {
-    const windEntries = this.performanceData[windEntryKey];
-
     const existingEntryIndex = windEntries.findIndex((it) => it.altitude === altitude);
 
     if (entry === null) {
@@ -761,11 +769,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         windEntries.push(entry);
       }
     }
-
-    windEntries.sort((a, b) => b.altitude - a.altitude);
-
-    // Do this so the RPC event is sent
-    this.setPerformanceData(windEntryKey, windEntries);
   }
 
   async deleteClimbWindEntries(): Promise<void> {

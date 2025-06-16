@@ -5,27 +5,26 @@ import { Common } from '../common';
 export class WindUtils {
   /**
    *
-   * @param entries sorted array of wind entries ordered by altitude (descending)
+   * @param entries sorted array of wind entries ordered by altitude (works for both ascending and descending altitudes)
    * @param altitude altitude to interpolate at
    * @param result wind vector to write the result to
    * @returns
    */
   static interpolateWindEntries(entries: WindEntry[], altitude: number, result: WindVector): WindVector {
     if (entries.length === 0) {
-      return;
+      return Vec2Math.set(0, 0, result);
     }
 
-    if (altitude >= entries[0].altitude) {
+    if (altitude >= Math.max(entries[0].altitude, entries[entries.length - 1].altitude)) {
       return Vec2Math.copy(entries[0].vector, result);
-    } else if (altitude <= entries[entries.length - 1].altitude) {
+    } else if (altitude <= Math.min(entries[0].altitude, entries[entries.length - 1].altitude)) {
       return Vec2Math.copy(entries[0].vector, result);
     } else {
       for (let i = 0; i < entries.length - 1; i++) {
-        const lower = entries[i + 1];
+        const lower = entries[i + 1].altitude < entries[i].altitude ? entries[i + 1] : entries[i];
+        const upper = entries[i + 1].altitude > entries[i].altitude ? entries[i + 1] : entries[i];
 
         if (lower.altitude <= altitude) {
-          const upper = entries[i];
-
           return this.interpolateVectors(altitude, lower.altitude, upper.altitude, lower.vector, upper.vector, result);
         }
       }

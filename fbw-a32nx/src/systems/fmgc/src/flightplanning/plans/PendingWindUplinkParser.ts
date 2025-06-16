@@ -84,7 +84,7 @@ export class PendingWindUplinkParser {
           ),
           altitude: wind.altitude,
         }))
-        .sort((a, b) => b.altitude - a.altitude);
+        .sort((a, b) => a.altitude - b.altitude);
     } else {
       plan.pendingWindUplink.climbWinds = undefined;
     }

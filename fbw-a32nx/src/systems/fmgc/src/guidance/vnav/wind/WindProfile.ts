@@ -65,7 +65,7 @@ export class WindProfile implements WindInterface {
     const originAlt = this.plan.originRunway?.thresholdLocation.alt ?? this.plan.originAirport?.location.alt ?? 0;
 
     if (hasClimbWindEntry) {
-      const lowestAltitude = climbWindEntries[climbWindEntries.length - 1].altitude;
+      const lowestAltitude = climbWindEntries[0].altitude;
 
       if (altitude < lowestAltitude) {
         // We use 1e-14 instead of 0 to preserve the direction of the vector when scaling it down to zero
@@ -74,7 +74,7 @@ export class WindProfile implements WindInterface {
           Common.interpolate(MathUtils.clamp(altitude, originAlt, lowestAltitude), originAlt, lowestAltitude, 0, 1),
         );
 
-        return Vec2Math.multScalar(climbWindEntries[climbWindEntries.length - 1].vector, scaling, result);
+        return Vec2Math.multScalar(climbWindEntries[0].vector, scaling, result);
       }
 
       return WindUtils.interpolateWindEntries(climbWindEntries, altitude, result);
