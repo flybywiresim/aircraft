@@ -1,6 +1,5 @@
 import { DisplayComponent, EventBus, FSComponent, NodeReference, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { HudElems } from './HUDUtils';
-import { HUDSimvars } from './shared/HUDSimvarPublisher';
 interface VerticalTapeProps {
   displayRange: number;
   valueSpacing: number;
@@ -9,11 +8,11 @@ interface VerticalTapeProps {
   lowerLimit: number;
   upperLimit: number;
   type: 'altitude' | 'speed';
-  bus: EventBus;
 }
 
 export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
   private crosswindMode = false;
+  private bus = new EventBus();
   private refElement = FSComponent.createRef<SVGGElement>();
 
   private tickRefs: NodeReference<SVGGElement>[] = [];
@@ -106,7 +105,7 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HudElems & HUDSimvars>();
+    const sub = this.bus.getSubscriber<HudElems>();
 
     sub.on('cWndMode').handle((value) => {
       this.crosswindMode = value.get();

@@ -9,7 +9,7 @@ import { ArincValueProvider } from './shared/ArincValueProvider';
 import { HUDSimvarPublisher, HUDSymbolsPublisher } from './shared/HUDSimvarPublisher';
 import { HudValueProvider } from './shared/HudValueProvider';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-
+import { A380XFcuBusPublisher } from '../../../shared/src/publishers/A380XFcuBusPublisher';
 import './style.scss';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
@@ -44,6 +44,8 @@ class A380X_HUD extends BaseInstrument {
 
   private readonly fwsPfdPublisher = new FwsPfdSimvarPublisher(this.bus);
 
+  private readonly fcuBusPublisher = new A380XFcuBusPublisher(this.bus);
+
   private readonly hudProvider = new HudValueProvider(this.bus);
 
   private readonly symbolPublisher = new HUDSymbolsPublisher(this.bus);
@@ -67,6 +69,7 @@ class A380X_HUD extends BaseInstrument {
     this.backplane.addPublisher('SecPublisher', this.secPublisher);
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
+    this.backplane.addPublisher('FcuBusPublisher', this.fcuBusPublisher);
     this.backplane.addInstrument('HudProvider', this.hudProvider);
     this.backplane.addPublisher('HUDSymbolsPublisher', this.symbolPublisher);
   }

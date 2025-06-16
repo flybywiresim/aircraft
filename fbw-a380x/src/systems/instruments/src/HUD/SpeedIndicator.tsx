@@ -225,7 +225,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
                   displayRange={DisplayRange + 6}
                   distanceSpacing={DistanceSpacing}
                   type="speed"
-                  bus={this.props.bus}
                 >
                   <V1BugElement bus={this.props.bus} />
                   <VRBugElement bus={this.props.bus} />
@@ -272,7 +271,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
               displayRange={DisplayRange + 6}
               distanceSpacing={DistanceSpacing}
               type="speed"
-              bus={this.props.bus}
             >
               <V1BugElement bus={this.props.bus} />
               <VRBugElement bus={this.props.bus} />
@@ -1521,6 +1519,9 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       }
     }
 
+    if (this.decelActive) {
+      this.BoundBgRef.instance.style.visibility = 'hidden';
+    }
     return inRange;
   }
 
