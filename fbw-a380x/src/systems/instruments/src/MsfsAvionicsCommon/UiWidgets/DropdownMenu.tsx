@@ -20,7 +20,7 @@ import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryF
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
   selectedIndex: Subject<number | null>;
-  freeTextAllowed: boolean;
+  freeTextAllowed?: boolean;
   idPrefix: string;
   /** If defined, this component does not update the selectedIndex prop by itself, but rather calls this method. */
   onModified?: (newSelectedIndex: number | null, freeTextEntry: string) => void;
@@ -88,10 +88,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   private onFieldSubmit(text: string) {
     if (this.props.onModified && !this.props.inactive?.get()) {
       // selected index of -1 marks free text entry
-      if (this.props.freeTextAllowed) {
+      if (!this.props.freeTextAllowed) {
         this.props.onModified(-1, text);
       }
-
       this.dropdownMenuRef.instance.style.display = 'none';
       this.freeTextEntered = true;
       this.inputFieldValue.set(text);
