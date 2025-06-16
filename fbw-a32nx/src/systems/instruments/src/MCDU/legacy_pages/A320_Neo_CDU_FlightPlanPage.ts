@@ -1347,7 +1347,7 @@ function renderFixContent(
 
   const spdRepeatStr = isPageB ? '\xa0"\xa0\xa0' : '\xa0"\xa0';
   const altRepeatSr = isPageB ? '\xa0"\xa0' : '\xa0\xa0\xa0"\xa0\xa0';
-  const slashStr = isPageB && altRepeat && spdRepeat ? '\xa0' : '/';
+  const slashStr = isPageB && altRepeat ? '\xa0' : '/';
 
   return [
     `${ident}${isOverfly ? Keypad.ovfyValue : ''}[color]${color}`,
