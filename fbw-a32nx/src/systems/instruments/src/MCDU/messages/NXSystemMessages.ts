@@ -81,6 +81,7 @@ export const NXSystemMessages = {
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
   invalidFplnUplink: new TypeIIMessage('INVALID F-PLN UPLINK', false),
+  invalidWindTempUplk: new TypeIIMessage('INVALID WIND/TEMP UPLK'),
   mandatoryFields: new TypeIMessage('ENTER MANDATORY FIELDS'), // FIXME move out of FMS
   formatError: new TypeIMessage('FORMAT ERROR'),
   fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'),
@@ -114,6 +115,8 @@ export const NXSystemMessages = {
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
   temporaryFplnExists: new TypeIMessage('TEMPORARY F-PLN EXISTS'),
+  windTempDataUplk: new TypeIIMessage('WIND/TEMP DATA UPLK'),
+  windUplinkPending: new TypeIIMessage('WIND UPLINK PENDING', true),
 };
 
 // FIXME move ATSU messages out of FMS
