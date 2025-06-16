@@ -10,8 +10,10 @@ import {
   Subscribable,
   VNode,
   NodeReference,
+  MappedSubject,
+  ConsumerSubject,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, ArincEventBus, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
 import { getSmallestAngle, HudElems } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
@@ -20,9 +22,7 @@ export class SyntheticRunway extends DisplayComponent<{
   bus: ArincEventBus;
   filteredRadioAlt: Subscribable<number>;
 }> {
-  private filteredRadioAltitude = 0;
   private flightPhase = -1;
-  private declutterMode = 0;
   private crosswindMode = false;
   private sVisibility = Subject.create<String>('');
   private data: HUDSyntheticRunway;
@@ -30,13 +30,10 @@ export class SyntheticRunway extends DisplayComponent<{
   private alt: number;
   private logOnce = 0;
   private belowMda = true; //set true for debug | false for prod
-  private altitude = 0;
   private lat: number;
   private long: number;
   private heading: number;
   private MdaOrDh: number;
-  private mda: number;
-  private dh: number;
   private nMda = 0;
   private aMda = 0;
   private landingElevation = 0;
@@ -47,70 +44,74 @@ export class SyntheticRunway extends DisplayComponent<{
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
 
+  private sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems>();
+
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+  private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa').whenChanged());
+  private readonly mda = ConsumerSubject.create(this.sub.on('mda').whenChanged(), 0);
+  private readonly dh = ConsumerSubject.create(this.sub.on('dh').whenChanged(), 0);
+  private readonly declutterMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), Subject.create(0));
+
+  private readonly visToggle = MappedSubject.create(
+    ([mda, dh, altitude, ra, declutterMode]) => {
+      const mdaDiff = altitude.value - mda;
+      const dhDiff = ra.value - dh;
+
+      if (declutterMode.get() === 0) {
+        if (mda > 50 || dh > 50) {
+          if (mda > 0) {
+            return mdaDiff < -50 ? 'none' : 'block';
+          } else if (dh > 0) {
+            return dhDiff < -50 ? 'none' : 'block';
+          }
+        } else if (dh > 25 && dh <= 50) {
+          return dhDiff < -25 ? 'none' : 'block';
+        } else if (dh <= 25) {
+          return dhDiff <= 0 ? 'none' : 'block';
+        } else {
+          return 'block';
+        }
+      } else {
+        return 'none';
+      }
+    },
+    this.mda,
+    this.dh,
+    this.altitude,
+    this.ra,
+    this.declutterMode,
+  );
+
   private updateIndication(): void {
-    if (this.filteredRadioAltitude < 100) {
-      this.sVisibility.set('none');
-    }
-    // console.log(
-    //   'altDelta' +
-    //     this.mda +
-    //     ' altDeltaDh' +
-    //     this.dh +
-    //     ' mdaOrDh: ' +
-    //     this.MdaOrDh +
-    //     ' this.belowMda: ' +
-    //     this.belowMda +
-    //     ' this.filteredRadioAltitude: ' +
-    //     this.filteredRadioAltitude,
-    // );
+    this.sVisibility.set(this.visToggle.get());
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems>();
 
-    sub
-      .on('radioAltitude1')
+    this.sub
+      .on('symbol')
       .whenChanged()
-      .handle(() => {
-        this.updateIndication();
-      });
-
-    this.props.filteredRadioAlt.sub((fra) => {
-      this.filteredRadioAltitude = fra;
-    }, true);
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        //console.log(this.filteredRadioAltitude + ' ' + this.sVisibility);
-        if (this.filteredRadioAltitude < 100) {
-          this.sVisibility.set('none');
-        } else {
-          value.get() > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+      .handle((data) => {
+        this.data = data;
+        if (this.data === undefined) {
+          console.log('symbol data not loaded');
         }
       });
 
-    sub.on('symbol').handle((data) => {
-      this.data = data;
-      if (this.data === undefined) {
-        console.log('symbol data not loaded');
-      }
-    });
+    this.sub
+      .on('headingAr')
+      .whenChanged()
+      .handle((h) => {
+        this.heading = this.magneticToTrue(h.value);
+      });
 
-    sub.on('headingAr').handle((h) => {
-      this.heading = this.magneticToTrue(h.value);
-    });
-
-    sub.on('realTime').handle(this.onFrameUpdate.bind(this));
+    this.sub.on('realTime').handle(this.onFrameUpdate.bind(this));
   }
 
   private onFrameUpdate(_realTime: number): void {
     this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
     this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-    this.mda = SimVar.GetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
-    this.dh = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
     if (this.data !== undefined) {
       if (this.prevRwyHdg !== this.data.direction) {
@@ -119,10 +120,11 @@ export class SyntheticRunway extends DisplayComponent<{
         //console.log("defined data");
       }
       this.updateSyntheticRunway();
+      this.updateIndication();
     } else {
+      this.logOnce == 0;
       console.log('undefined data...');
     }
-    this.updateIndication();
   }
 
   private magneticToTrue(magneticHeading: Degrees, amgVar?: Degrees): Degrees {
@@ -221,13 +223,13 @@ export class SyntheticRunway extends DisplayComponent<{
         'p2 lon: ' + JKCoords[1].long,
         'p2 alt: ' + JKCoords[1].alt,
 
-        'p3 lat: ' + this.data.cornerCoordinates[2].lat,
-        'p3 lon: ' + this.data.cornerCoordinates[2].long,
-        'p3 alt: ' + this.data.cornerCoordinates[2].alt,
+        'p3 lat: ' + JKCoords[2].lat,
+        'p3 lon: ' + JKCoords[2].long,
+        'p3 alt: ' + JKCoords[2].alt,
 
-        'p4 lat: ' + this.data.cornerCoordinates[3].lat,
-        'p4 lon: ' + this.data.cornerCoordinates[3].long,
-        'p4 alt: ' + this.data.cornerCoordinates[3].alt,
+        'p4 lat: ' + JKCoords[3].lat,
+        'p4 lon: ' + JKCoords[3].long,
+        'p4 alt: ' + JKCoords[3].alt,
 
         'p5 lat: ' + centerLineCoords[0].lat,
         'p5 lon: ' + centerLineCoords[0].long,

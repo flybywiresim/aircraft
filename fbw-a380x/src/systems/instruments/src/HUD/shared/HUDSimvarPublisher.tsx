@@ -3,6 +3,10 @@ import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimV
 import { HUDSyntheticRunway, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 export interface HUDSimvars {
+  brakePedalInputLeft: number;
+  brakePedalInputRight: number;
+  throttle2Position: number;
+  throttle3Position: number;
   hudMode: number;
   windDirection: number;
   windSpeed: number;
@@ -189,6 +193,10 @@ export interface HUDSimvars {
 }
 
 export enum HUDVars {
+  brakePedalInputLeft = 'L:A32NX_LEFT_BRAKE_PEDAL_INPUT',
+  brakePedalInputRight = 'L:A32NX_RIGHT_BRAKE_PEDAL_INPUT',
+  throttle2Position = 'L:XMLVAR_Throttle2Position',
+  throttle3Position = 'L:XMLVAR_Throttle3Position',
   hudMode = 'L:A380X_HUDMODE',
   windDirection = 'L:A32NX_ADIRS_IR_1_WIND_DIRECTION',
   windSpeed = 'L:A32NX_ADIRS_IR_1_WIND_SPEED',
@@ -376,6 +384,10 @@ export enum HUDVars {
 /** A publisher to poll and publish nav/com simvars. */
 export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
   private static simvars = new Map<keyof HUDSimvars, SimVarDefinition>([
+    ['brakePedalInputLeft', { name: HUDVars.brakePedalInputLeft, type: SimVarValueType.Number }],
+    ['brakePedalInputRight', { name: HUDVars.brakePedalInputRight, type: SimVarValueType.Number }],
+    ['throttle2Position', { name: HUDVars.throttle2Position, type: SimVarValueType.Number }],
+    ['throttle3Position', { name: HUDVars.throttle3Position, type: SimVarValueType.Number }],
     ['hudMode', { name: HUDVars.hudMode, type: SimVarValueType.Number }],
     ['windDirection', { name: HUDVars.windDirection, type: SimVarValueType.Number }],
     ['windSpeed', { name: HUDVars.windSpeed, type: SimVarValueType.Number }],

@@ -33,6 +33,7 @@ import { WindIndicator } from '../../../../../../fbw-common/src/systems/instrume
 import { ExtendedHorizon } from './AttitudeIndicatorHorizon';
 import { DecelIndicator } from './DecelSpeedIndicator';
 import { DeclutterIndicator } from './AttitudeIndicatorFixed';
+import { HudWarnings } from './HudWarnings';
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
     .find((it) => it.tagName.toLowerCase() !== 'wasm-instrument')
@@ -415,6 +416,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <AttitudeIndicatorFixedUpper bus={this.props.bus} />
           <AttitudeIndicatorWarnings bus={this.props.bus} instrument={this.props.instrument} />
           <AttitudeIndicatorWarningsA380 bus={this.props.bus} instrument={this.props.instrument} />
+          <HudWarnings bus={this.props.bus} instrument={this.props.instrument} />
           <VerticalSpeedIndicator
             bus={this.props.bus}
             instrument={this.props.instrument}

@@ -87,45 +87,9 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
     return (
       <g id="WarningGroup" ref={this.warningGroupRef} style="display: block;">
         <text
-          x="69"
-          y="78"
-          class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
-          style={{
-            display: MappedSubject.create(
-              ([maxReverse, maxRmB, wetTooShort, tooShort, stall]) =>
-                (maxReverse || maxRmB) && !wetTooShort && !tooShort && !stall,
-              this.maxReverseActive,
-              this.maxReverseMaxBrakingActive,
-              this.ifWetRwyTooShortActive,
-              this.rwyTooShortActive,
-              this.stallActive,
-            ).map((it) => (it ? 'block' : 'none')),
-          }}
-        >
-          MAX REVERSE
-        </text>
-        <text
-          x="69"
+          x="640"
           y="70.25"
-          class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
-          style={{
-            display: MappedSubject.create(
-              ([maxBraking, wetTooShort, tooShort, stall, stopRudder]) =>
-                maxBraking && !wetTooShort && !tooShort && !stall && !stopRudder,
-              this.maxReverseMaxBrakingActive,
-              this.ifWetRwyTooShortActive,
-              this.rwyTooShortActive,
-              this.stallActive,
-              this.stopRudderInputActive,
-            ).map((it) => (it ? 'block' : 'none')),
-          }}
-        >
-          MAX BRAKING
-        </text>
-        <text
-          x="69"
-          y="70.25"
-          class="FontMediumSmaller Amber MiddleAlign Blink9Seconds TextOutline"
+          class="FontMediumSmaller Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([ifWetTooShort, tooShort, stall]) => ifWetTooShort && !tooShort && !stall,
@@ -138,9 +102,9 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
           IF WET:RWY TOO SHORT
         </text>
         <text
-          x="69"
+          x="640"
           y="70.25"
-          class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
+          class="FontLarge Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([rwyTooShort, stall]) => rwyTooShort && !stall,
@@ -152,9 +116,9 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
           RWY TOO SHORT
         </text>
         <text
-          x="69"
+          x="640"
           y="78"
-          class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
+          class="FontLarge Green MiddleAlign Blink9Seconds TextOutline"
           style={{ display: this.stallActive.map((it) => (it ? 'block' : 'none')) }}
         >
           STALL
@@ -162,9 +126,9 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
           STALL
         </text>
         <text
-          x="69"
+          x="640"
           y="70.25"
-          class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
+          class="FontLarge Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([stopRudder, wetTooShort, tooShort, stall]) => stopRudder && !wetTooShort && !tooShort && !stall,
@@ -178,9 +142,9 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
           STOP RUDDER INPUT
         </text>
         <text
-          x="69"
+          x="640"
           y="78"
-          class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
+          class="FontLarge Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([windshear, maxReverse, maxBraking]) => windshear && !maxReverse && !maxBraking,
@@ -193,9 +157,9 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
           WINDSHEAR
         </text>
         <text
-          x="69"
+          x="640"
           y="78"
-          class="FontLarge Amber MiddleAlign Blink9Seconds TextOutline"
+          class="FontLarge Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([wsCaution, wsWarning, maxReverse, maxBraking, windshear, stall]) =>
@@ -212,9 +176,9 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
           W/S AHEAD
         </text>
         <text
-          x="69"
+          x="640"
           y="78"
-          class="FontLarge Red MiddleAlign Blink9Seconds TextOutline"
+          class="FontLarge Green MiddleAlign Blink9Seconds TextOutline"
           style={{
             display: MappedSubject.create(
               ([wsAheadWarning, maxReverse, maxBraking, windshear, stall]) =>
@@ -230,8 +194,16 @@ export class AttitudeIndicatorWarnings extends DisplayComponent<AttitudeIndicato
           W/S AHEAD
         </text>
         <g style={{ display: this.rwyAheadActive.map((it) => (it ? 'block' : 'none')) }}>
-          <rect x="50" y="69" width="38" height="8" stroke="yellow" fill="black" />
-          <text x="69" y="75.5" class="FontLarge Yellow MiddleAlign RwyAheadAnimation TextOutline">
+          <rect
+            x="545"
+            y="220"
+            width="190"
+            height="40"
+            stroke="green"
+            fill="black"
+            style="stroke-color: green; stroke-width: 3px;"
+          />
+          <text x="640" y="252" class="FontLarge Green MiddleAlign RwyAheadAnimation TextOutline">
             RWY AHEAD
           </text>
         </g>

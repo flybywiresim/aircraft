@@ -51,7 +51,7 @@ export class DecelIndicator extends DisplayComponent<{
           case 1:
             //BTV
             this.yOffset.set(0);
-            this.decelRef.instance.setAttribute('d', `m95 ${508.5 + this.yOffset.get()} h 65 v -27 h -65z`);
+            this.decelRef.instance.setAttribute('d', ``);
             break;
           case 2:
             //LO
@@ -77,7 +77,7 @@ export class DecelIndicator extends DisplayComponent<{
           case 6:
             // RTO
             this.yOffset.set(160);
-            this.decelRef.instance.setAttribute('d', `m95 ${508.5 + this.yOffset.get()} h 57 v -27 h -57z`);
+            this.decelRef.instance.setAttribute('d', ``);
             break;
 
           default:
@@ -127,9 +127,6 @@ export class DecelIndicator extends DisplayComponent<{
         <text class="ScaledStroke Green FontMediumSmaller" transform="translate(100 585)">
           HI
         </text>
-        <text class="ScaledStroke Green FontMediumSmaller" transform="translate(100 665)">
-          RTO
-        </text>
         <g id="decelModeChanged">
           <path ref={this.decelRef} class="NormalStroke Green" d="" />
         </g>
@@ -151,7 +148,7 @@ class DecelSpeedTrendArrow extends DisplayComponent<{
 
   private arrowHeadRef = FSComponent.createRef<SVGPathElement>();
 
-  private btvTxt = FSComponent.createRef<SVGTextElement>();
+  private arrowText = FSComponent.createRef<SVGTextElement>();
 
   private offset = Subject.create<string>('');
 
@@ -163,7 +160,7 @@ class DecelSpeedTrendArrow extends DisplayComponent<{
 
   private previousAirspeed = 0;
 
-  private btvTxtY = Subject.create<string>('');
+  private arrowTextY = Subject.create<string>('');
 
   private multiplier = 0;
 
@@ -185,7 +182,14 @@ class DecelSpeedTrendArrow extends DisplayComponent<{
       .whenChanged()
       .handle((am) => {
         am === 6 ? (this.multiplier = 1.25) : (this.multiplier = 1);
-        am === 1 ? (this.btvTxt.instance.style.display = 'block') : (this.btvTxt.instance.style.display = 'none');
+
+        if (am === 1 || am === 6) {
+          am === 1 ? (this.arrowText.instance.textContent = 'BTV') : (this.arrowText.instance.textContent = 'RTO');
+          this.arrowText.instance.style.display = 'block';
+        } else {
+          this.arrowText.instance.style.display = 'none';
+          this.arrowText.instance.textContent = '';
+        }
       });
 
     sub.on('realTime').handle((_t) => {
@@ -217,8 +221,8 @@ class DecelSpeedTrendArrow extends DisplayComponent<{
 
         this.pathString.set(pathString);
         offset > 0
-          ? this.btvTxtY.set((neutralPos + offset + 20).toFixed(3).toString())
-          : this.btvTxtY.set((neutralPos + offset).toFixed(3).toString());
+          ? this.arrowTextY.set((neutralPos + offset + 20).toFixed(3).toString())
+          : this.arrowTextY.set((neutralPos + offset).toFixed(3).toString());
       }
     });
   }
@@ -229,17 +233,16 @@ class DecelSpeedTrendArrow extends DisplayComponent<{
         <path id="SpeedTrendArrowBase" ref={this.arrowBaseRef} class="NormalStroke Green" d={this.offset} />
         <path id="SpeedTrendArrowHead" ref={this.arrowHeadRef} class="NormalStroke Green" d={this.pathString} />
         <text
-          id="BtvTxt"
-          ref={this.btvTxt}
+          id="arrowText"
+          ref={this.arrowText}
           class="NormalStroke FontMediumSmaller EndAlign Green"
           x="80"
-          y={this.btvTxtY}
+          y={this.arrowTextY}
         >
           BTV
         </text>
 
         <path id="SpeedTrendArrowBase" class="NormalStroke Green" d="m67.275 404.115h20" />
-        <path id="SpeedTrendArrowHead" class="NormalStroke Green" d="m67.275 655h20" />
       </g>
     );
   }
