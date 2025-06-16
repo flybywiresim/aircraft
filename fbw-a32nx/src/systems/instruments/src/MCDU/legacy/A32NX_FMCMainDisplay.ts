@@ -57,7 +57,7 @@ import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
-import { BitFlags, EventBus, SimVarValueType, Subscription, Vec2Math } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, SimVarValueType, Subscription } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
@@ -2428,7 +2428,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public onUplinkInProgress() {
-    this.setScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
+    this.addMessageToQueue(NXSystemMessages.uplinkInsertInProg);
   }
 
   public onUplinkDone(forPlan: FlightPlanIndex) {
@@ -5578,6 +5578,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
       if (status !== AtsuStatusCodes.Ok) {
         plan.pendingWindUplink.onUplinkAborted();
+        this.addMessageToQueue(NXSystemMessages.invalidWindTempUplk);
         return;
       }
 
@@ -5585,7 +5586,19 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
       PendingWindUplinkParser.setFromUplink(uplink, plan);
 
+      this.addMessageToQueue(
+        NXSystemMessages.windTempDataUplk,
+        () => !plan.pendingWindUplink.isWindUplinkReadyToInsert(),
+      );
+
       if (!shouldInsertDirectly) {
+        if (this.flightPlanService.hasTemporary || this.page.Current === this.page.DirectToPage) {
+          this.addMessageToQueue(
+            NXSystemMessages.windUplinkPending,
+            () => !plan.pendingWindUplink.isWindUplinkReadyToInsert(),
+          );
+        }
+
         return;
       }
     }
