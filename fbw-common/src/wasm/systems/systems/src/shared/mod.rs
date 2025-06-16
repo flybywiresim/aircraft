@@ -90,7 +90,7 @@ pub trait AngularSpeedSensor {
     fn speed(&self) -> AngularVelocity;
 }
 
-pub trait FeedbackPositionPickoffUnit {
+pub trait PositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 

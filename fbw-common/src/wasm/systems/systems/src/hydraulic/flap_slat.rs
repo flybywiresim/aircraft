@@ -1,7 +1,7 @@
 use super::linear_actuator::Actuator;
 use crate::shared::AverageExt;
 use crate::shared::{
-    interpolation, low_pass_filter::LowPassFilter, FeedbackPositionPickoffUnit, SectionPressure,
+    interpolation, low_pass_filter::LowPassFilter, PositionPickoffUnit, SectionPressure,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -237,8 +237,6 @@ pub struct FlapSlatAssembly {
 
     left_position: Ratio,
     right_position: Ratio,
-    ippu_position: Angle,
-    fppu_position: Angle,
 }
 impl FlapSlatAssembly {
     const LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
@@ -293,8 +291,6 @@ impl FlapSlatAssembly {
             circuit_target_pressure,
             left_position: Ratio::default(),
             right_position: Ratio::default(),
-            ippu_position: Angle::default(),
-            fppu_position: Angle::default(),
         }
     }
 
@@ -538,13 +534,12 @@ impl FlapSlatAssembly {
     }
 
     fn update_surface_variables(&mut self) {
-        self.fppu_position = self.flap_surface_angle();
-        self.ippu_position = self.flap_surface_angle();
+        let surface_position = self.flap_surface_angle();
 
         self.left_surfaces
-            .update(&self.left_position, &self.fppu_position);
+            .update(&self.left_position, &surface_position);
         self.right_surfaces
-            .update(&self.right_position, &self.fppu_position);
+            .update(&self.right_position, &surface_position);
     }
 
     fn is_approaching_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
@@ -629,8 +624,9 @@ impl SimulationElement for FlapSlatAssembly {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.fppu_id, self.fppu_position.get::<degree>());
-        writer.write(&self.ippu_id, self.ippu_position.get::<degree>());
+        // I assume FPPU and IPPU have the same value. No mismatch implemented.
+        writer.write(&self.fppu_id, self.position_feedback().get::<degree>());
+        writer.write(&self.ippu_id, self.position_feedback().get::<degree>());
 
         let flaps_fppu_percent =
             (self.position_feedback() / self.max_synchro_gear_position).get::<percent>();
@@ -640,7 +636,7 @@ impl SimulationElement for FlapSlatAssembly {
         writer.write(&self.is_moving_id, self.is_surface_moving());
     }
 }
-impl FeedbackPositionPickoffUnit for FlapSlatAssembly {
+impl PositionPickoffUnit for FlapSlatAssembly {
     fn angle(&self) -> Angle {
         self.position_feedback()
     }
