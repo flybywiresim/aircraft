@@ -213,4 +213,5 @@ export interface HUDSyntheticRunway {
   length: number;
   width: number;
   cornerCoordinates: LatLongAlt[];
+  centerlineCoordinates: LatLongAlt[];
 }

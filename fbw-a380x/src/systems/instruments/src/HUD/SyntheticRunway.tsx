@@ -81,7 +81,7 @@ export class SyntheticRunway extends DisplayComponent<{
 
     sub
       .on('decMode')
-
+      .whenChanged()
       .handle((value) => {
         //console.log(this.filteredRadioAltitude + ' ' + this.sVisibility);
         if (this.filteredRadioAltitude < 100) {
@@ -98,32 +98,31 @@ export class SyntheticRunway extends DisplayComponent<{
       }
     });
 
-    sub
-      .on('realTime')
-      .atFrequency(4)
-      .handle((_t) => {
-        this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
-        this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-        this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-        this.mda = SimVar.GetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
-        this.dh = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
-
-        if (this.data !== undefined) {
-          if (this.prevRwyHdg !== this.data.direction) {
-            this.prevRwyHdg = this.data.direction;
-            this.logOnce = 0;
-            //console.log("defined data");
-          }
-          this.updateSyntheticRunway();
-        } else {
-          console.log('undefined data...');
-        }
-        this.updateIndication();
-      });
-
     sub.on('headingAr').handle((h) => {
       this.heading = this.magneticToTrue(h.value);
     });
+
+    sub.on('realTime').handle(this.onFrameUpdate.bind(this));
+  }
+
+  private onFrameUpdate(_realTime: number): void {
+    this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+    this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+    this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+    this.mda = SimVar.GetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+    this.dh = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
+
+    if (this.data !== undefined) {
+      if (this.prevRwyHdg !== this.data.direction) {
+        this.prevRwyHdg = this.data.direction;
+        this.logOnce = 0;
+        //console.log("defined data");
+      }
+      this.updateSyntheticRunway();
+    } else {
+      console.log('undefined data...');
+    }
+    this.updateIndication();
   }
 
   private magneticToTrue(magneticHeading: Degrees, amgVar?: Degrees): Degrees {
@@ -158,53 +157,38 @@ export class SyntheticRunway extends DisplayComponent<{
     return new LatLongAlt(dLat2, dLon2);
   }
 
+  //aiming point 311 meters (1020ft) from threshold
+  // https://www.faa.gov/documentLibrary/media/Advisory_Circular/150-5340-1M-Chg-1-Airport-Markings.pdf
+  private threshHeighAbvGnd = 1020 * Math.tan((3 / 180) * Math.PI);
+
   updateSyntheticRunway() {
     //console.log('update...');
     const JKCoords: LatLongAlt[] = [];
     const centerLineCoords: LatLongAlt[] = [];
 
-    const np1 = this.DestFromPointCoordsBearingDistance(
-      this.data.direction,
-      this.data.length,
-      this.data.cornerCoordinates[3].lat,
-      this.data.cornerCoordinates[3].long,
-    );
-    const np2 = this.DestFromPointCoordsBearingDistance(
-      this.data.direction,
-      this.data.length,
-      this.data.cornerCoordinates[2].lat,
-      this.data.cornerCoordinates[2].long,
-    );
-    JKCoords[0] = np1;
-    JKCoords[1] = np2;
+    JKCoords[0] = this.data.cornerCoordinates[0];
+    JKCoords[1] = this.data.cornerCoordinates[1];
     JKCoords[2] = this.data.cornerCoordinates[2];
     JKCoords[3] = this.data.cornerCoordinates[3];
+    centerLineCoords[0] = this.data.centerlineCoordinates[0];
+    centerLineCoords[1] = this.data.centerlineCoordinates[1];
+    centerLineCoords[2] = this.data.centerlineCoordinates[2];
+    centerLineCoords[3] = this.data.centerlineCoordinates[3];
+    centerLineCoords[4] = this.data.centerlineCoordinates[4];
 
-    JKCoords[0].alt = this.data.cornerCoordinates[0].alt - 50;
-    JKCoords[1].alt = this.data.cornerCoordinates[1].alt - 50;
-    JKCoords[2].alt = this.data.cornerCoordinates[2].alt - 50;
-    JKCoords[3].alt = this.data.cornerCoordinates[3].alt - 50;
+    if (this.logOnce == 0) {
+      JKCoords[0].alt = this.data.cornerCoordinates[0].alt - this.threshHeighAbvGnd;
+      JKCoords[1].alt = this.data.cornerCoordinates[1].alt - this.threshHeighAbvGnd;
+      JKCoords[2].alt = this.data.cornerCoordinates[2].alt - this.threshHeighAbvGnd;
+      JKCoords[3].alt = this.data.cornerCoordinates[3].alt - this.threshHeighAbvGnd;
+      //extended centerline   //1852: nautical miles to meters
 
-    //extended centerline   //1852: nautical miles to meters
-    const p5 = new LatLongAlt();
-    p5.lat = this.data.thresholdLocation.lat;
-    p5.long = this.data.thresholdLocation.long;
-    p5.alt = this.data.thresholdCrossingHeight - 50; //in feet
-    centerLineCoords.push(p5);
-
-    const p6 = this.DestFromPointCoordsBearingDistance((this.data.direction + 180) % 360, 7500, p5.lat, p5.long);
-    p6.alt = this.data.thresholdCrossingHeight - 50; //in feet
-    centerLineCoords.push(p6);
-    const p7 = this.DestFromPointCoordsBearingDistance((this.data.direction + 180) % 360, 7500, p6.lat, p6.long);
-    p7.alt = this.data.thresholdCrossingHeight - 50; //in feet
-    centerLineCoords.push(p7);
-    const p8 = this.DestFromPointCoordsBearingDistance((this.data.direction + 180) % 360, 7500, p7.lat, p7.long);
-    p8.alt = this.data.thresholdCrossingHeight - 50; //in feet
-    centerLineCoords.push(p8);
-    const p9 = this.DestFromPointCoordsBearingDistance((this.data.direction + 180) % 360, 7500, p8.lat, p8.long);
-    p9.alt = this.data.thresholdCrossingHeight - 50; //in feet
-    centerLineCoords.push(p9);
-
+      centerLineCoords[0].alt = this.data.centerlineCoordinates[0].alt - this.threshHeighAbvGnd;
+      centerLineCoords[1].alt = this.data.centerlineCoordinates[1].alt - this.threshHeighAbvGnd;
+      centerLineCoords[2].alt = this.data.centerlineCoordinates[2].alt - this.threshHeighAbvGnd;
+      centerLineCoords[3].alt = this.data.centerlineCoordinates[3].alt - this.threshHeighAbvGnd;
+      centerLineCoords[4].alt = this.data.centerlineCoordinates[4].alt - this.threshHeighAbvGnd;
+    }
     if (this.logOnce == 0) {
       this.logOnce += 1;
 
@@ -255,7 +239,7 @@ export class SyntheticRunway extends DisplayComponent<{
       );
     }
 
-    if (this.data && JKCoords.length === 4) {
+    if (JKCoords.length === 4) {
       for (let i = 0; i < 4; i++) {
         this.pathRefs[i].instance.setAttribute('d', this.drawPath(JKCoords[i], JKCoords[(i + 1) % 4]));
       }

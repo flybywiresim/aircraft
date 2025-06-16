@@ -527,36 +527,19 @@ export class FmcAircraftInterface {
       this.arincDestinationLongitude.setBnrValue(longitude || 0, ssm, 18, 180, -180);
     }
 
-    function DestFromPointCoordsBearingDistance(brng: number, d: number, Lat1: number, Lon1: number): LatLongAlt {
-      const rBrng = (brng / 180) * Math.PI;
-      const rLat1 = (Lat1 / 180) * Math.PI;
-      const rLon1 = (Lon1 / 180) * Math.PI;
-      const R = 6371;
-
-      const rLat2 = Math.asin(Math.sin(rLat1) * Math.cos(d / R) + Math.cos(rLat1) * Math.sin(d / R) * Math.cos(rBrng));
-      const rLon2 =
-        rLon1 +
-        Math.atan2(
-          Math.sin(rBrng) * Math.sin(d / R) * Math.cos(rLat1),
-          Math.cos(d / R) - Math.sin(rLat1) * Math.sin(rLat2),
-        );
-
-      const dLat2 = (rLat2 / Math.PI) * 180;
-      const dLon2 = (rLon2 / Math.PI) * 180;
-
-      return new LatLongAlt(dLat2, dLon2);
-    }
     const activeFp = this.flightPlanService.active;
     if (activeFp.destinationRunway !== undefined) {
-      const endCoordinates = DestFromPointCoordsBearingDistance(
-        runway.bearing,
-        runway.length,
-        runway.startLocation.lat,
-        runway.startLocation.long,
-      );
       if (runway) {
+        const endCoordinates = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing,
+          runway.length / 1852, //meters to NM
+          runway.startLocation.lat,
+          runway.startLocation.long,
+        );
         const cornerCoor: LatLongAlt[] = [];
-        const p1 = DestFromPointCoordsBearingDistance(
+        const centerLineCoords: LatLongAlt[] = [];
+
+        const p1 = Avionics.Utils.bearingDistanceToCoordinates(
           runway.bearing - 90,
           runway.width / 2 / 1852,
           endCoordinates.lat,
@@ -564,14 +547,13 @@ export class FmcAircraftInterface {
         );
         p1.alt = runway.thresholdCrossingHeight - runway.length * 3.281 * Math.tan((runway.gradient / 180) * Math.PI); //in feet
         cornerCoor.push(p1);
-
-        const p2 = DestFromPointCoordsBearingDistance(
+        const p2 = Avionics.Utils.bearingDistanceToCoordinates(
           runway.bearing + 90,
           runway.width / 2 / 1852,
           endCoordinates.lat,
           endCoordinates.long,
         );
-        p2.alt = runway.thresholdCrossingHeight - runway.length * 3.281 * Math.tan((runway.gradient / 180) * Math.PI); //in feet
+        p2.alt = p1.alt; //in feet
         cornerCoor.push(p2);
 
         const p3 = Avionics.Utils.bearingDistanceToCoordinates(
@@ -591,6 +573,26 @@ export class FmcAircraftInterface {
         p4.alt = runway.thresholdCrossingHeight; //in feet
         cornerCoor.push(p4);
 
+        //extended centerline   //1852: nautical miles to meters
+        const p5 = new LatLongAlt();
+        p5.lat = runway.thresholdLocation.lat;
+        p5.long = runway.thresholdLocation.long;
+        p5.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p5);
+
+        const p6 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p5.lat, p5.long);
+        p6.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p6);
+        const p7 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p6.lat, p6.long);
+        p7.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p7);
+        const p8 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p7.lat, p7.long);
+        p8.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p8);
+        const p9 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p8.lat, p8.long);
+        p9.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p9);
+
         const HUDSymbol: HUDSyntheticRunway = {
           gradient: runway.gradient,
           location: runway.location,
@@ -604,6 +606,7 @@ export class FmcAircraftInterface {
           length: runway.length,
           width: (runway as any).width,
           cornerCoordinates: cornerCoor,
+          centerlineCoordinates: centerLineCoords,
         };
         this.syncer.sendEvent('A380X_EFIS_HUD_SYMBOLS', HUDSymbol);
       }
