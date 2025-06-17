@@ -488,7 +488,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprCrosswind = Subject.create<string>('');
 
-  private towerHeadwindValue = Subject.create<boolean>(false);
+  private windDirectionLabel = this.towerHeadwind.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'));
+
+  private windSpeedDisplay = this.towerHeadwind.map((v) =>
+    v === null ? '---' : Math.abs(v).toFixed(0).padStart(3, '0'),
+  );
 
   private apprSelectedFlapsIndex = Subject.create<number | null>(1);
 
@@ -1077,16 +1081,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.towerHeadwind.set(null);
             this.apprCrosswind.set('---');
           }
-          this.towerHeadwind.sub((v) => {
-            if (v !== null) {
-              if (v < 0) {
-                this.towerHeadwindValue.set(true);
-              } else {
-                this.towerHeadwindValue.set(false);
-              }
-            }
-          });
         }),
+      this.windDirectionLabel,
+      this.windSpeedDisplay,
     );
 
     // Update VERT DEV on APPR page. Possible optimization to only sub during descent phase
@@ -2541,14 +2538,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
                         <div class="mfd-label-value-container" style="padding: 15px;">
-                          <span class="mfd-label mfd-spacing-right">
-                            {this.towerHeadwind.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'))}
-                          </span>
-                          <span class="mfd-value">
-                            {this.towerHeadwind.map((v) =>
-                              v === null ? '---' : Math.abs(v).toFixed(0).padStart(3, '0'),
-                            )}
-                          </span>
+                          <span class="mfd-label mfd-spacing-right">{this.windDirectionLabel}</span>
+                          <span class="mfd-value">{this.windSpeedDisplay}</span>
                           <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                         </div>
                         <div class="mfd-label-value-container" style="padding: 15px;">
