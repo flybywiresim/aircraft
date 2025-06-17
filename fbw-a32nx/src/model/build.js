@@ -11,7 +11,7 @@ const ComponentTypeSize = {
     5123: 2,
     5125: 4,
     5126: 4,
-    };
+};
 
 const ComponentTypeSigned = {
     5120: true,
@@ -20,7 +20,7 @@ const ComponentTypeSigned = {
     5123: false,
     5125: false,
     5126: true,
-    };
+};
 
 const ComponentTypeFloat = {
     5120: false,
@@ -29,14 +29,14 @@ const ComponentTypeFloat = {
     5123: true,
     5125: false,
     5126: true,
-    };
+};
 
 const AccessorType = {
     SCALAR: 1,
     VEC2: 2,
     VEC3: 3,
     VEC4: 4,
-    };
+};
 
 function addNodes(pathA, nodes, outputPath) {
     const gltfA = JSON.parse(fs.readFileSync(pathA, 'utf8'));
@@ -49,7 +49,7 @@ function addNodes(pathA, nodes, outputPath) {
     // Backup nodes
     const nodesBackup = nodes;
 
-        for (const node of nodes) {
+    for (const node of nodes) {
         if (!Number.isFinite(node.mesh)) {
             for (let i = 0; i < gltfA.meshes.length; i += 1) {
                 if (gltfA.meshes[i].name === node.mesh) {
@@ -352,7 +352,7 @@ function applyOutputSamplerModifications(buffer, gltfPath, modifications) {
                 }
             }
         }
-            }
+    }
     return buffer;
 }
 
