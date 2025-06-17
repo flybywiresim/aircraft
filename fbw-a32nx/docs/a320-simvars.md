@@ -1125,8 +1125,7 @@
         - LEFT
         - RIGHT
     - Number
-        - From 1 (inboard) to 2 for A320
-        - From 1 (inboard) to 3 for A380
+        - From 1 (inboard) to 2
 
 - A32NX_{side}_SLATS_{number}_POSITION_PERCENT
     - Percent
@@ -1135,8 +1134,7 @@
         - LEFT
         - RIGHT
     - Number
-        - From 1 (inboard) to 5 for A320
-        - From 1 (inboard) to 8 for A380
+        - From 1 (inboard) to 5
 
 - A32NX_LEFT_FLAPS_POSITION_PERCENT
     - Percent
@@ -1161,8 +1159,7 @@
         - LEFT
         - RIGHT
     - Number
-        - From 1 (inboard) to 2 for A320
-        - From 1 (inboard) to 3 for A380
+        - From 1 (inboard) to 2
 
 - A32NX_{side}_SLATS_{number}_ANGLE
     - Degrees
@@ -1171,8 +1168,7 @@
         - LEFT
         - RIGHT
     - Number
-        - From 1 (inboard) to 5 for A320
-        - From 1 (inboard) to 8 for A380
+        - From 1 (inboard) to 5
 
 - A32NX_LEFT_FLAPS_ANGLE
     - Degrees
