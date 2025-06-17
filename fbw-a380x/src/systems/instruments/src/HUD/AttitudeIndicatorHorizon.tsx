@@ -29,6 +29,7 @@ import { ONE_DEG, FIVE_DEG, PitchscaleMode } from './HUDUtils';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HeadingOfftape } from './HeadingIndicator';
 import { SyntheticRunway } from './SyntheticRunway';
+import { VerticalMode } from '@shared/autopilot';
 const DisplayRange = 35;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
@@ -193,13 +194,140 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
           <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
 
-          {/* <TailstrikeIndicator bus={this.props.bus} /> */}
+          <TailstrikeIndicator bus={this.props.bus} />
         </g>
 
         <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
 
         <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
       </g>
+    );
+  }
+}
+
+class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
+  private tailStrike = FSComponent.createRef<SVGPathElement>();
+
+  private needsUpdate = false;
+
+  private tailStrikeConditions = {
+    altitude: new Arinc429Word(0),
+    speed: 0,
+    tla1: 0,
+    tla2: 0,
+    tla3: 0,
+    tla4: 0,
+    leftGearCompressed: true,
+    rightGearCompressed: true,
+    approachPhase: false,
+  };
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+
+    sub.on('chosenRa').handle((ra) => {
+      this.tailStrikeConditions.altitude = ra;
+      this.needsUpdate = true;
+    });
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((lg) => {
+        this.tailStrikeConditions.leftGearCompressed = lg;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((rg) => {
+        this.tailStrikeConditions.rightGearCompressed = rg;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('fmgcFlightPhase')
+      .whenChanged()
+      .handle((fp) => {
+        this.tailStrikeConditions.approachPhase = fp === 5;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('tla1')
+      .whenChanged()
+      .handle((tla) => {
+        this.tailStrikeConditions.tla1 = tla;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('tla2')
+      .whenChanged()
+      .handle((tla) => {
+        this.tailStrikeConditions.tla2 = tla;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('tla3')
+      .whenChanged()
+      .handle((tla) => {
+        this.tailStrikeConditions.tla3 = tla;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('tla4')
+      .whenChanged()
+      .handle((tla) => {
+        this.tailStrikeConditions.tla4 = tla;
+        this.needsUpdate = true;
+      });
+
+    sub
+      .on('speedAr')
+      .whenChanged()
+      .handle((speed) => {
+        this.tailStrikeConditions.speed = speed.value;
+        this.needsUpdate = true;
+      });
+
+    sub.on('realTime').onlyAfter(2).handle(this.hideShow.bind(this));
+  }
+
+  private hideShow(_time: number) {
+    if (this.needsUpdate) {
+      this.needsUpdate = false;
+
+      // FIX ME indicatior should disappear 3 seconds after takeoff and 4 seconds after go aroud initaition. Use better logic without FM flight phase?
+      if (
+        ((this.tailStrikeConditions.tla1 >= 35 ||
+          this.tailStrikeConditions.tla2 >= 35 ||
+          this.tailStrikeConditions.tla3 >= 35 ||
+          this.tailStrikeConditions.tla4 >= 35) &&
+          this.tailStrikeConditions.leftGearCompressed &&
+          this.tailStrikeConditions.rightGearCompressed) ||
+        (this.tailStrikeConditions.approachPhase &&
+          this.tailStrikeConditions.altitude.value < 400 &&
+          this.tailStrikeConditions.speed > 50)
+      ) {
+        this.tailStrike.instance.style.display = 'inline';
+      } else {
+        this.tailStrike.instance.style.display = 'none';
+      }
+    }
+  }
+
+  render(): VNode {
+    return (
+      <path
+        ref={this.tailStrike}
+        id="TailstrikeWarning"
+        d="m 658.88 40 h 14.684 l-33.564 40 -33.564 -40 h 14.684 l 18.88  22.5 z"
+        class="NormalStroke Green"
+      />
     );
   }
 }
@@ -364,6 +492,12 @@ class PitchScale extends DisplayComponent<{
 
   private threeDegLine = FSComponent.createRef<SVGGElement>();
   private pitchScaleMode = PitchscaleMode.FULL;
+  private activeVerticalModeSub = Subject.create(0);
+  private selectedFpa = Subject.create(0);
+
+  private threeDegPath = FSComponent.createRef<SVGPathElement>();
+  private threeDegTxtRef = FSComponent.createRef<SVGTextElement>();
+  private threeDegTxtBgRef = FSComponent.createRef<SVGPathElement>();
 
   private data: LSPath = {
     roll: new Arinc429Word(0),
@@ -411,7 +545,16 @@ class PitchScale extends DisplayComponent<{
       }
     });
     this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-
+    sub
+      .on('activeVerticalMode')
+      .whenChanged()
+      .handle((activeVerticalMode) => {
+        this.activeVerticalModeSub.set(activeVerticalMode);
+      });
+    sub.on('selectedFpa').handle((fpa) => {
+      this.selectedFpa.set(fpa);
+      this.needsUpdate = true;
+    });
     sub.on('fpa').handle((fpa) => {
       this.data.fpa = fpa;
       this.needsUpdate = true;
@@ -451,6 +594,47 @@ class PitchScale extends DisplayComponent<{
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     this.threeDegLine.instance.style.transform = `translate3d(${xOffset}px, 0px, 0px)`;
+
+    const fpaTxt = this.selectedFpa.get() % 1 === 0 ? `${this.selectedFpa.get()}.0°` : `${this.selectedFpa.get()}°`;
+
+    if (this.activeVerticalModeSub.get() === VerticalMode.GS_TRACK) {
+      this.threeDegPath.instance.setAttribute(
+        'd',
+        `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
+      );
+      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG + 6.5}`);
+      this.threeDegTxtRef.instance.textContent = '-3.0°'; //TODO get the actual slope of the ILS
+      this.threeDegTxtRef.instance.classList.remove('Green');
+      this.threeDegTxtRef.instance.classList.add('InverseGreen');
+
+      this.threeDegTxtBgRef.instance.classList.add('GreenFill3');
+      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
+      this.threeDegTxtBgRef.instance.setAttribute('d', `m 800 ${512 + (3 / 5) * FIVE_DEG - 13.5} h 45 v 27 h -45 z `);
+    }
+
+    if (this.activeVerticalModeSub.get() === VerticalMode.FPA) {
+      this.threeDegPath.instance.setAttribute(
+        'd',
+        `M 565,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h -80  M 713,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h 80  `,
+      );
+      this.threeDegPath.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
+
+      this.threeDegTxtRef.instance.setAttribute(
+        'y',
+        `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG + 6.5}`,
+      );
+      this.threeDegTxtRef.instance.textContent = fpaTxt;
+      this.threeDegTxtRef.instance.classList.remove('InverseGreen');
+      this.threeDegTxtRef.instance.classList.add('Green');
+
+      this.threeDegTxtBgRef.instance.classList.remove('GreenFill3');
+      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG}`);
+      this.threeDegTxtBgRef.instance.setAttribute('d', ``);
+    }
+
+    this.activeVerticalModeSub.get() != VerticalMode.FPA && this.activeVerticalModeSub.get() != VerticalMode.GS_TRACK
+      ? (this.threeDegTxtBgRef.instance.style.display = `none`)
+      : (this.threeDegTxtBgRef.instance.style.display = `block`);
   }
   render(): VNode {
     const result = [] as SVGTextElement[];
@@ -498,8 +682,11 @@ class PitchScale extends DisplayComponent<{
         class={{ HiddenElement: this.lsHidden }}
         display={this.sVisibilityDeclutterMode2}
       >
-        <path d={`M 565,${512 + (3 / 5) * FIVE_DEG} h -80 `} />
-        <path d={`M 713,${512 + (3 / 5) * FIVE_DEG} h 80 `} />
+        <path ref={this.threeDegPath} d="" />
+        <g id="SlopeTxt">
+          <path ref={this.threeDegTxtBgRef} d="m835 348.5 h45v27h-45z"></path>
+          <text x="822.5" ref={this.threeDegTxtRef} class="FontTinyer MiddleAlign InverseGreen"></text>
+        </g>
       </g>,
     );
 

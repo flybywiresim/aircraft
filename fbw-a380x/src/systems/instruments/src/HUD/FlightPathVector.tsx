@@ -19,7 +19,7 @@ import {
   ArincEventBus,
   Arinc429RegisterSubject,
 } from '@flybywiresim/fbw-sdk';
-import { calculateHorizonOffsetFromPitch, HudElems } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, HudElems, HudMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
@@ -42,15 +42,14 @@ export class FlightPathVector extends DisplayComponent<{
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
 }> {
-  private bird = FSComponent.createRef<SVGGElement>();
-  private birdPathCircle = FSComponent.createRef<SVGPathElement>();
-  private birdPath1 = FSComponent.createRef<SVGPathElement>();
-  private birdPath2 = FSComponent.createRef<SVGPathElement>();
-  private birdPath3 = FSComponent.createRef<SVGPathElement>();
+  private birdGroup = FSComponent.createRef<SVGGElement>();
+  private birdPath = FSComponent.createRef<SVGPathElement>();
+  private birdFreePath = FSComponent.createRef<SVGGElement>();
+  private birdLockedPath = FSComponent.createRef<SVGPathElement>();
   private birdOffRange;
-  private crosswindMode;
+  private crosswindMode = false;
 
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
   private readonly isVelocityVectorActive = ConsumerSubject.create(
     this.sub.on(getDisplayIndex() === 2 ? 'fcuRightVelocityVectorOn' : 'fcuLeftVelocityVectorOn'),
@@ -63,6 +62,9 @@ export class FlightPathVector extends DisplayComponent<{
     fpa: Arinc429ConsumerSubject.create(this.sub.on('fpa')),
     da: Arinc429ConsumerSubject.create(this.sub.on('da')),
   };
+
+  private readonly ap1Active = ConsumerSubject.create(this.sub.on('ap1Active').whenChanged(), false);
+  private readonly ap2Active = ConsumerSubject.create(this.sub.on('ap2Active').whenChanged(), false);
 
   private readonly isRequested = MappedSubject.create(SubscribableMapFunctions.or(), this.isVelocityVectorActive);
 
@@ -92,7 +94,6 @@ export class FlightPathVector extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
     const moveBirdSub = MappedSubject.create(this.data.roll, this.data.pitch, this.data.fpa, this.data.da).sub(
       this.moveBird.bind(this),
       true,
@@ -101,28 +102,16 @@ export class FlightPathVector extends DisplayComponent<{
 
     moveBirdSub.resume(true);
 
-    sub
-      .on('cWndMode')
+    // Use The raw position of the cockpit switch instead of the hudProvider to avoid  the forced reversion on approach if declutter 2 is selected.
+    this.sub
+      .on(getDisplayIndex() === 1 ? 'crosswindModeL' : 'crosswindModeR')
       .whenChanged()
       .handle((value) => {
-        this.crosswindMode = value.get();
+        this.crosswindMode = value;
       });
   }
 
   private moveBird() {
-    // const daLimConv = (Math.max(Math.min(this.data.da.get().value, 21), -21) * DistanceSpacing) / ValueSpacing;
-    // const pitchSubFpaConv =
-    //   calculateHorizonOffsetFromPitch(this.data.pitch.get().value) -
-    //   calculateHorizonOffsetFromPitch(this.data.fpa.get().value);
-    // const rollCos = Math.cos((this.data.roll.get().value * Math.PI) / 180);
-    // const rollSin = Math.sin((-this.data.roll.get().value * Math.PI) / 180);
-
-    // const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
-    // const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
-
-    // this.birdTransformBuilder.set(xOffset, yOffset, 0, 0.01, 0.01);
-    // this.birdTransform.set(this.birdTransformBuilder.resolve());
-
     let xOffsetLim;
     const daLimConv = (this.data.da.get().value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
@@ -135,56 +124,64 @@ export class FlightPathVector extends DisplayComponent<{
     const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
 
     //set lateral limit for fdCue
-    if (this.crosswindMode == 0) {
+    if (this.crosswindMode === false) {
+      this.birdFreePath.instance.style.display = 'none';
+      this.birdLockedPath.instance.setAttribute('display', 'none');
+      if (this.birdOffRange) {
+        this.birdPath.instance.setAttribute('stroke-dasharray', '3 6');
+      } else {
+        this.birdPath.instance.setAttribute('stroke-dasharray', '');
+      }
+
       if (xOffset < -428 || xOffset > 360) {
         this.birdOffRange = true;
       } else {
         this.birdOffRange = false;
       }
-
       xOffsetLim = Math.max(Math.min(xOffset, 360), -428);
+      this.birdGroup.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
     } else {
+      this.birdFreePath.instance.style.display = 'block';
+      this.birdPath.instance.setAttribute('stroke-dasharray', '');
+      this.birdLockedPath.instance.setAttribute('display', 'block');
+
       if (xOffset < -540 || xOffset > 540) {
         this.birdOffRange = true;
       } else {
         this.birdOffRange = false;
       }
       xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
+      this.birdGroup.instance.style.transform = `translate3d(0px, ${yOffset - FIVE_DEG}px, 0px)`;
+
+      this.birdFreePath.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
     }
 
-    this.bird.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
-
-    if (this.birdOffRange) {
-      this.birdPathCircle.instance.setAttribute('stroke-dasharray', '3 6');
-      this.birdPath1.instance.setAttribute('stroke-dasharray', '3 6');
-      this.birdPath2.instance.setAttribute('stroke-dasharray', '3 6');
-      this.birdPath3.instance.setAttribute('stroke-dasharray', '3 6');
-    } else {
-      this.birdPathCircle.instance.setAttribute('stroke-dasharray', '');
-      this.birdPath1.instance.setAttribute('stroke-dasharray', '');
-      this.birdPath2.instance.setAttribute('stroke-dasharray', '');
-      this.birdPath3.instance.setAttribute('stroke-dasharray', '');
-    }
+    this.ap1Active.get() || this.ap2Active.get()
+      ? this.birdPath.instance.setAttribute(
+          'd',
+          'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
+        )
+      : this.birdPath.instance.setAttribute(
+          'd',
+          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
+        );
   }
 
   render(): VNode {
     return (
       <>
-        <g ref={this.bird} id="bird">
+        <g ref={this.birdFreePath}>
+          <path
+            id="BirdFreePath"
+            d="m 627 512 l 10.5 2.5 l 2.5 10.5 l 2.5 -10.5 l 10.5 -2.5 l -10.5 -2.5 l -2.5 -10.5 l -2.5 10.5 z"
+            class="NormalStroke Green"
+          />
+        </g>
+        <g ref={this.birdGroup} id="bird">
           <g id="FlightPathVector">
-            <path
-              ref={this.birdPathCircle}
-              d="M 627 512 C 627 519,  633 525,      640 525
-              S 653 519,      653 512
-              S 647 499,      640 499
-              S 627 505,      627 512 Z"
-              class="NormalStroke Green"
-              stroke-dasharray="3 6"
-            />
+            <path ref={this.birdPath} d="" class="NormalStroke Green" stroke-dasharray="3 6" />
 
-            <path ref={this.birdPath1} class="NormalStroke Green" d="m 590,512 h 37" stroke-dasharray="3 6" />
-            <path ref={this.birdPath2} class="NormalStroke Green" d="m 653,512 h 37" stroke-dasharray="3 6" />
-            <path ref={this.birdPath3} class="NormalStroke Green" d="M 640,499 v -19" stroke-dasharray="3 6" />
+            <path ref={this.birdLockedPath} class="NormalStroke Green" d="m 590 502 v 20  m 100 0 v -20" />
           </g>
           <SpeedChevrons bus={this.props.bus} />
 
@@ -195,6 +192,8 @@ export class FlightPathVector extends DisplayComponent<{
             attExcessive={this.props.isAttExcessive}
           />
           <FlareIndicator bus={this.props.bus} />
+          <SpoilersIndicator bus={this.props.bus} />
+          <ReverserIndicator bus={this.props.bus} />
         </g>
       </>
     );
@@ -300,10 +299,11 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   private crosswindMode = false;
   private sVisibility = Subject.create<String>('');
   private outOfRange = Subject.create<String>('');
-  private speedRefs: NodeReference<SVGElement>[] = [];
+  private speedRefs: NodeReference<SVGPathElement>[] = [];
+  private speedGroupRef = FSComponent.createRef<SVGGElement>();
   private currentTargetSpeed = 0;
   private needsUpdate = true;
-
+  private inFlight = false;
   private speedState: SpeedStateInfo = {
     targetSpeed: 100,
     managedTargetSpeed: 100,
@@ -315,7 +315,9 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
     super.onAfterRender(node);
     this.needsUpdate = true;
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<
+      HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & HudElems
+    >();
 
     sub
       .on('fwcFlightPhase')
@@ -357,16 +359,21 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
         this.speedState.speed = s;
         this.needsUpdate = true;
       });
+
+    sub
+      .on('hudFlightPhaseMode')
+      //.whenChanged()
+      .handle((v) => {
+        v.get() === 0 ? (this.inFlight = true) : (this.inFlight = false);
+      });
     sub.on('realTime').handle(this.onFrameUpdate.bind(this));
   }
 
-  private setVisible(refNum: number[]) {
-    for (let i = 0; i < 6; i++) {
-      if (refNum.includes(i)) {
-        this.speedRefs[i].instance.style.visibility = 'visible';
-      } else {
-        this.speedRefs[i].instance.style.visibility = 'visible';
-      }
+  private setVisible(refNum: boolean) {
+    if (refNum) {
+      this.speedGroupRef.instance.style.display = 'block';
+    } else {
+      this.speedGroupRef.instance.style.display = 'none';
     }
   }
 
@@ -374,51 +381,44 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
     if (this.needsUpdate === true) {
       this.needsUpdate = false;
 
+      this.setVisible(this.inFlight);
       const chosenTargetSpeed = Simplane.getAutoPilotAirspeedHoldValue();
 
       const deltaSpeed = this.speedState.speed.value - chosenTargetSpeed;
       const sign = Math.sign(deltaSpeed);
-      this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 3.33} h 12 v ${deltaSpeed * 3.33}`);
+      const deltaSpeedDraw = Math.abs(deltaSpeed) >= 15 ? sign * 15 : deltaSpeed;
+      this.speedRefs[0].instance.setAttribute('d', `m 596,512 v ${-deltaSpeedDraw * 5} h 9 v ${deltaSpeedDraw * 5}`);
 
-      if (Math.abs(deltaSpeed) >= 27) {
-        this.speedRefs[0].instance.style.visibility = 'visible';
-        sign == 1
-          ? this.speedRefs[0].instance.setAttribute('transform', 'translate(0 -90)')
-          : this.speedRefs[0].instance.setAttribute('transform', 'translate(0 0)');
-        //this.outOfRange.set('')
-      } else {
-        this.speedRefs[0].instance.style.visibility = 'hidden';
-      }
+      for (let i = 1; i < 8; i++) {
+        i * 2 < Math.abs(deltaSpeed)
+          ? (this.speedRefs[i].instance.style.display = 'block')
+          : (this.speedRefs[i].instance.style.display = 'none');
 
-      if (Math.abs(deltaSpeed) > 1 && Math.abs(deltaSpeed) < 27) {
-        this.speedRefs[1].instance.style.visibility = 'visible';
-      } else {
-        this.speedRefs[1].instance.style.visibility = 'hidden';
+        i === 5
+          ? this.speedRefs[i].instance.setAttribute('d', `m 596 ${512 - i * 10 * sign} h 9`)
+          : this.speedRefs[i].instance.setAttribute('d', `m 599.5 ${512 - i * 10 * sign} h 2`);
       }
     }
   }
 
   render(): VNode {
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
       this.speedRefs.push(FSComponent.createRef<SVGPathElement>());
     }
     return (
       <>
-        <g id="DeltaSpeedGroup" display={this.sVisibility}>
-          <g ref={this.speedRefs[0]} transform={this.outOfRange} class="NormalStroke CornerRound Green" stroke="red">
-            <path class="NormalStroke CornerRound Green" d="m 595,602 h 11" stroke="green" />
-            <path class="NormalStroke CornerRound Green" d="m 595,592 h 11" stroke="green" />
-            <path class="NormalStroke CornerRound Green" d="m 595,582 h 11" stroke="green" />
-            <path class="NormalStroke CornerRound Green" d="m 595,572 h 11" stroke="green" />
-            <path class="NormalStroke CornerRound Green" d="m 595,562 h 11" stroke="green" />
-            <path class="NormalStroke CornerRound Green" d="m 595,552 h 11" stroke="green" />
-            <path class="NormalStroke CornerRound Green" d="m 595,542 h 11" stroke="green" />
-            <path class="NormalStroke CornerRound Green" d="m 595,532 h 11" stroke="green" />
-            <path class="NormalStroke CornerRound Green" d="m 595,522 h 11" stroke="green" />
-            {/* <path class="NormalStroke CornerRound Green" d="m 595,512 h 11" stroke="green" /> */}
+        <g ref={this.speedGroupRef} id="DeltaSpeedGroup">
+          <g class="NormalStroke CornerRound Green">
+            <path ref={this.speedRefs[7]} d="m 599 582 h 3" />
+            <path ref={this.speedRefs[6]} d="m 599 572 h 3" />
+            <path ref={this.speedRefs[5]} d="m 596 562 h 9" />
+            <path ref={this.speedRefs[4]} d="m 599 552 h 3" />
+            <path ref={this.speedRefs[3]} d="m 599 542 h 3" />
+            <path ref={this.speedRefs[2]} d="m 599 532 h 3" />
+            <path ref={this.speedRefs[1]} d="m 599 522 h 3" />
           </g>
 
-          <path ref={this.speedRefs[1]} d="" class="NormalStroke CornerRound Green GreenFill2" stroke="red" />
+          <path ref={this.speedRefs[0]} d="" class="NormalStroke CornerRound Green GreenFill2" />
         </g>
       </>
     );
@@ -610,6 +610,157 @@ class FlareIndicator extends DisplayComponent<{
         <path class="NormalStroke Green" d="m 609,496 l 6 -16  l 6 16" />
         <path class="NormalStroke Green" d="m 665,512 v -32" />
         <path class="NormalStroke Green" d="m 659,496 l 6 -16  l 6 16" />
+      </g>
+    );
+  }
+}
+
+export class SpoilersIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems>();
+  private refElement = FSComponent.createRef<SVGGElement>();
+  private leftSpoilers = FSComponent.createRef<SVGGElement>();
+  private rightSpoliers = FSComponent.createRef<SVGGElement>();
+
+  private readonly spCommanded = ConsumerSubject.create(this.sub.on('spoilersCommanded').whenChanged(), 0);
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), Subject.create(0));
+
+  private readonly isDeployed = MappedSubject.create(
+    ([spCommanded, hudMode]) => {
+      return spCommanded > 25 && hudMode.get() === HudMode.ROLLOUT_OR_RTO ? 'block' : 'none';
+    },
+    this.spCommanded,
+    this.hudMode,
+  );
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+  }
+  render(): VNode | null {
+    return (
+      <g id="SpoilersIndicator" display={this.isDeployed}>
+        <path ref={this.leftSpoilers} class="NormalStroke Green Fill" d="m 593 512 v -17 h 17 v 17" />
+        <path ref={this.rightSpoliers} class="NormalStroke Green Fill" d="m 670 512 v -17 h 17 v 17" />
+      </g>
+    );
+  }
+}
+
+export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems>();
+  private revGroupRef = FSComponent.createRef<SVGGElement>();
+  private rev2Ref = FSComponent.createRef<SVGGElement>();
+  private rev3Ref = FSComponent.createRef<SVGGElement>();
+  private rev2TxtRef = FSComponent.createRef<SVGTextElement>();
+  private rev3TxtRef = FSComponent.createRef<SVGTextElement>();
+
+  private readonly eng2State = ConsumerSubject.create(this.sub.on('eng2State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
+  private readonly eng3State = ConsumerSubject.create(this.sub.on('eng3State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
+  private readonly rev2 = ConsumerSubject.create(this.sub.on('rev2').whenChanged(), 0);
+  private readonly rev3 = ConsumerSubject.create(this.sub.on('rev3').whenChanged(), 0);
+  private readonly tla2 = ConsumerSubject.create(this.sub.on('tla2').whenChanged(), 0);
+  private readonly tla3 = ConsumerSubject.create(this.sub.on('tla3').whenChanged(), 0);
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), Subject.create(0));
+
+  private readonly reverser2State = MappedSubject.create(
+    ([rev2, tla2, eng2State]) => {
+      if (rev2 === 1) {
+        if (eng2State === 1) {
+          if (tla2 > -7) {
+            return 1; // rev deployement in progress  display dash
+          } else if (tla2 <= -7) {
+            return 2; // rev on  display R
+          }
+        } else {
+          return 3; // not opperative  display cross
+        }
+      } else {
+        return 0; // show nothing
+      }
+    },
+    this.rev2,
+    this.tla2,
+    this.eng2State,
+    this.hudMode,
+  );
+  private readonly reverser3State = MappedSubject.create(
+    ([rev3, tla3, eng3State]) => {
+      if (rev3 === 1) {
+        if (eng3State === 1) {
+          if (tla3 > -7) {
+            return 1; // rev deployement in progress  display dash
+          } else if (tla3 <= -7) {
+            return 2; // rev on  display R
+          }
+        } else {
+          return 3; // not opperative  display cross
+        }
+      } else {
+        return 0; // show nothing
+      }
+    },
+    this.rev3,
+    this.tla3,
+    this.eng3State,
+  );
+
+  private setState() {
+    if (this.reverser2State.get() === 1) {
+      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z');
+      this.rev2Ref.instance.setAttribute('stroke-dasharray', '3 6');
+      this.rev2TxtRef.instance.textContent = '';
+    } else if (this.reverser2State.get() === 2) {
+      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z');
+      this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
+      this.rev2TxtRef.instance.textContent = 'R';
+    } else if (this.reverser2State.get() === 3) {
+      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+      this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
+      this.rev2TxtRef.instance.textContent = '';
+    } else {
+      this.rev2Ref.instance.setAttribute('d', '');
+      this.rev2TxtRef.instance.textContent = '';
+    }
+
+    if (this.reverser3State.get() === 1) {
+      this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z');
+      this.rev3Ref.instance.setAttribute('stroke-dasharray', '3 6');
+      this.rev3TxtRef.instance.textContent = '';
+    } else if (this.reverser3State.get() === 2) {
+      this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z');
+      this.rev3Ref.instance.setAttribute('stroke-dasharray', '');
+      this.rev3TxtRef.instance.textContent = 'R';
+    } else if (this.reverser3State.get() === 3) {
+      this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+      this.rev3Ref.instance.setAttribute('stroke-dasharray', '');
+      this.rev3TxtRef.instance.textContent = '';
+    } else {
+      this.rev3Ref.instance.setAttribute('d', '');
+      this.rev3TxtRef.instance.textContent = '';
+    }
+  }
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.sub.on('hudFlightPhaseMode').handle((v) => {
+      if (v.get() != 0) {
+        this.revGroupRef.instance.style.display = 'block';
+        this.setState();
+      } else {
+        this.revGroupRef.instance.style.display = 'none';
+      }
+    });
+  }
+  //>
+  render(): VNode | null {
+    return (
+      <g id="ReverseIndicator" ref={this.revGroupRef}>
+        <path ref={this.rev2Ref} class="NormalStroke Green " d="" />
+        <text ref={this.rev2TxtRef} x="623.5" y="480 " class="FontForAnts MiddleAlign Green ">
+          R
+        </text>
+        <path ref={this.rev3Ref} class="NormalStroke Green " d="" />
+        <text ref={this.rev3TxtRef} x="656.5" y="480 " class="FontForAnts MiddleAlign Green ">
+          R
+        </text>
       </g>
     );
   }

@@ -3,6 +3,10 @@ import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimV
 import { HUDSyntheticRunway, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 export interface HUDSimvars {
+  rev2: number;
+  rev3: number;
+  eng2State: number;
+  eng3State: number;
   brakePedalInputLeft: number;
   brakePedalInputRight: number;
   throttle2Position: number;
@@ -193,6 +197,10 @@ export interface HUDSimvars {
 }
 
 export enum HUDVars {
+  eng2State = 'L:A32NX_ENGINE_STATE:2',
+  eng3State = 'L:A32NX_ENGINE_STATE:3',
+  rev2 = 'L:A32NX_AUTOTHRUST_REVERSE:2',
+  rev3 = 'L:A32NX_AUTOTHRUST_REVERSE:3',
   brakePedalInputLeft = 'L:A32NX_LEFT_BRAKE_PEDAL_INPUT',
   brakePedalInputRight = 'L:A32NX_RIGHT_BRAKE_PEDAL_INPUT',
   throttle2Position = 'L:XMLVAR_Throttle2Position',
@@ -384,6 +392,10 @@ export enum HUDVars {
 /** A publisher to poll and publish nav/com simvars. */
 export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
   private static simvars = new Map<keyof HUDSimvars, SimVarDefinition>([
+    ['eng2State', { name: HUDVars.eng2State, type: SimVarValueType.Number }],
+    ['eng3State', { name: HUDVars.eng3State, type: SimVarValueType.Number }],
+    ['rev2', { name: HUDVars.rev2, type: SimVarValueType.Number }],
+    ['rev3', { name: HUDVars.rev3, type: SimVarValueType.Number }],
     ['brakePedalInputLeft', { name: HUDVars.brakePedalInputLeft, type: SimVarValueType.Number }],
     ['brakePedalInputRight', { name: HUDVars.brakePedalInputRight, type: SimVarValueType.Number }],
     ['throttle2Position', { name: HUDVars.throttle2Position, type: SimVarValueType.Number }],

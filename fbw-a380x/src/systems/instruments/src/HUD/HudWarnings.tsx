@@ -1,7 +1,8 @@
 import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, HudMode } from './HUDUtils';
+import { Arinc429Values } from './shared/ArincValueProvider';
 
 interface HudWarningsProps {
   bus: ArincEventBus;
@@ -10,7 +11,13 @@ interface HudWarningsProps {
 
 export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & Arinc429Values>();
+  private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr').whenChanged());
+  private readonly vStallWarn = Arinc429ConsumerSubject.create(this.sub.on('vStallWarn').whenChanged());
+  private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').whenChanged());
+  private readonly hudmode = ConsumerSubject.create(this.sub.on('hudMode').whenChanged(), 1);
+  private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1').whenChanged());
+  private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1').whenChanged());
 
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), Subject.create(0));
   private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode').whenChanged(), 0);
@@ -21,23 +28,63 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    // sub
-    //   .on('egpws_alert_discrete_word_1_1')
-    //   .whenChanged()
-    //   .handle((v) => {
-    //     this.gpwsWord1.setWord(v);
-    //   });
   }
 
-  /** The following precedence of messages is implemented right now (first line is most important message):
-   * MAX REVERSE
-   * MAX BRAKING
-   */
+  //   The following precedence of messages is implemented right now (first line is most important message):
+  //
+  //   BANK BANK
+  //   STALL STALL
+  //   MAX REVERSE
+  //   MAX BRAKING
+  //
 
   render(): VNode {
     return (
       <g id="HudWarningGroup" ref={this.warningGroupRef} style="display: block;">
+        <text
+          x="640"
+          y="596"
+          class="FontLarge Green MiddleAlign"
+          style={{
+            display: MappedSubject.create(([roll]) => {
+              return Math.abs(roll.value) > 65;
+            }, this.roll).map((it) => (it ? 'block' : 'none')),
+          }}
+        >
+          BANK BANK
+        </text>
+        <text
+          x="640"
+          y="669"
+          class="FontLarge Green MiddleAlign"
+          style={{
+            display: MappedSubject.create(
+              ([vStallWarn, airSpeed, fcdc1DiscreteWord1, fcdc2DiscreteWord1, hudmode]) => {
+                const normalLawActive =
+                  fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false);
+                if (
+                  (airSpeed.value - vStallWarn.value < 0 ||
+                    vStallWarn.isFailureWarning() ||
+                    vStallWarn.isNoComputedData()) &&
+                  normalLawActive && // is stall  warn only  with normal law ?
+                  hudmode === 0
+                ) {
+                  return true;
+                } else {
+                  return false;
+                }
+              },
+              this.vStallWarn,
+              this.airSpeed,
+              this.fcdc1DiscreteWord1,
+              this.fcdc2DiscreteWord1,
+              this.hudmode,
+            ).map((it) => (it ? 'block' : 'none')),
+          }}
+        >
+          STALL STALL
+        </text>
+
         <text
           x="640"
           y="595"

@@ -170,6 +170,14 @@
   font-size: 24px;
 }
 
+.FontTinyer {
+  font-size: 20px;
+}
+
+.FontForAnts {
+  font-size: 18px;
+}
+
 .StartAlign {
   text-align: start;
   text-anchor: start;
@@ -272,6 +280,11 @@ tspan.Black {
 }
 .GreenFill2{
   fill: rgba(0, 255, 0, 0.3);
+}
+
+.GreenFill3{
+  fill: rgba(0, 255, 0, 0.75);
+  stroke: none;
 }
 .InverseGreen{
   stroke: #000000;
