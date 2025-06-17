@@ -45,7 +45,7 @@ function addNodes(pathA, nodes, outputPath) {
     const meshesCount = gltfA.meshes.length;
 
     let nodeNum = 0;
-    
+
     // Backup nodes
     const nodesBackup = nodes;
 
