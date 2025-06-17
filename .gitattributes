@@ -8,3 +8,6 @@
 # line endings.
 /fbw-a32nx/src/localization/flypad/*.json text eol=lf
 /fbw-a32nx/src/localization/msfs/*.locPak text eol=lf
+
+# gltfs just make diff messy
+*.gltf binary

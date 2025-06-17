@@ -9,6 +9,7 @@
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Visual update to reflect later avionics batches (overlapping tab selectors) - @flogross89 (floridude)
+1. [A380X/OANS] Fixed BTV message and chrono not appearing on OANS - @Jonny23787 (Jonathan)
 1. [A380X/APU] Fix too low APU BLEED pressure during engine starts (fix by BBK) - @flogross89 (floridude)
 1. [A380X/SD] Fix BLEED indications for APU BLEED and cross bleeds; Add HP GND air supply triangle - @flogross89 (floridude)
 1. [A380X/ELEC] Fix electrical distribution for ground servicing mode - @Gurgel100 (Pascal)
@@ -21,6 +22,7 @@
 1. [A380X/SD] Add video page with 'NOT AVAIL' text - @dzoeteman (Deniz)
 1. [A380X/PFD] Inhibit rudder trim indication in the air - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Add RETURN button to DATA/AIRPORT page - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Improve ALL PRIMARY CABIN FANS FAULT - @Jonny23787 (Jonathan)
 1. [A380X/FCU] Reduce FCU texture size from 5120 to 2560 - @heclak (Heclak)
 1. [A380X/MFD] Fix VERT DEV not updating in APPR page during descend phase - @heclak (Heclak)
@@ -55,6 +57,11 @@
 1. [A380X/RMP] Added standby mode handling for VHF3 - @tracernz (Mike)
 1. [A380X/RMP] Keep the ATC frequency tuned when spawning on the runway in MSFS2024 - @tracernz (Mike)
 1. [A32NX/ND] Fixed ND range change & mode change font size - @Lucas-IQ21 (Lucas)
+1. [A380X/FMC] Use the estimated gross weight to compute the max level for step climbs - @tracernz (Mike)
+1. [ND] Fixed TAS, GS & Wind data not taking source switching into account - @BravoMike99 (bruno_pt99)
+1. [A32NX/SD] Add flashing for AUTO BRK element - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
+1. [A32NX/FMS] Change GA PERF speeds to match APPR PERF speeds - @Jonny23787 (Jonathan)
+1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
 
 ## 0.13.0
 

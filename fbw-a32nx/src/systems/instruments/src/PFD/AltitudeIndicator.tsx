@@ -893,7 +893,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 }
 
 interface MetricAltIndicatorState {
-  altitude: Arinc429WordData;
   targetAlt: Arinc429WordData;
   altitudeColor: TargetAltitudeColor;
   fcuDiscreteWord1: Arinc429Word;
@@ -924,7 +923,6 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
 
   // FIXME remove this weird pattern... the state of the component belongs directly to the component
   private state: MetricAltIndicatorState = {
-    altitude: new Arinc429Word(0),
     altitudeColor: TargetAltitudeColor.Cyan,
     targetAlt: new Arinc429Word(0),
     fcuDiscreteWord1: new Arinc429Word(0),
@@ -1003,7 +1001,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
         this.metricAlt.instance.style.display = 'none';
       } else {
         this.metricAlt.instance.style.display = 'inline';
-        const currentMetricAlt = Math.round((this.state.altitude.value * 0.3048) / 10) * 10;
+        const currentMetricAlt = Math.round((this.altitude.get().value * 0.3048) / 10) * 10;
         this.metricAltText.instance.textContent = currentMetricAlt.toString();
 
         const targetMetric = Math.round((this.state.targetAlt.value * 0.3048) / 10) * 10;
@@ -1014,7 +1012,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
         if (
           !this.mda.get().isNoComputedData() &&
           !this.mda.get().isFailureWarning() &&
-          this.state.altitude.value < this.mda.get().value
+          this.altitude.get().value < this.mda.get().value
         ) {
           this.metricAltText.instance.classList.replace('Green', 'Amber');
         } else {
