@@ -10,6 +10,7 @@ import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { UnitType } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, LateralMode, VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 
 export interface VerticalProfileComputationParameters {
   presentPosition: LatLongAlt;
@@ -119,7 +120,7 @@ export class VerticalProfileComputationParametersObserver {
       preselectedClbSpeed: this.fmgc.getPreSelectedClbSpeed(),
       preselectedCruiseSpeed: this.fmgc.getPreSelectedCruiseSpeed(),
       takeoffFlapsSetting: this.fmgc.getTakeoffFlapsSetting() ?? DefaultVerticalProfileParameters.flapsSetting,
-      estimatedDestinationFuel: UnitType.TONNE.convertTo(this.fmgc.getDestEFOB(false), UnitType.POUND),
+      estimatedDestinationFuel: UnitType.TONNE.convertTo(this.fmgc.getDestEFOB(), UnitType.POUND),
 
       approachQnh: this.fmgc.getApproachQnh(),
       approachTemperature: this.fmgc.getApproachTemperature(),
@@ -206,7 +207,7 @@ export class VerticalProfileComputationParametersObserver {
   }
 
   getFuelOnBoard(): Pounds {
-    const fmFuelOnBoard = this.fmgc.getFOB();
+    const fmFuelOnBoard = this.fmgc.getFOB(FlightPlanIndex.Active);
 
     return Number.isFinite(fmFuelOnBoard) ? UnitType.TONNE.convertTo(fmFuelOnBoard, UnitType.POUND) : undefined;
   }
