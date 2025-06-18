@@ -168,29 +168,6 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
   }
 
   private moveBird() {
-    // if (this.data.fdActive) {
-    //   const FDRollOrder = this.data.fdRoll;
-    //   const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
-    //   const FDPitchOrder = this.data.fdPitch;
-    //   const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * 1.9;
-
-    //   const daLimConv = (Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing) / ValueSpacing;
-    //   const pitchSubFpaConv =
-    //     calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
-    //   const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
-    //   const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
-
-    //   const FDRollOffset = FDRollOrderLim * 0.77;
-    //   const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
-    //   const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
-
-    //   const xOffset = xOffsetFpv - FDPitchOrderLim * rollSin;
-    //   const yOffset = yOffsetFpv + FDPitchOrderLim * rollCos;
-
-    //   this.birdPath.instance.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0px)`;
-    //   this.birdPathWings.instance.setAttribute('transform', `rotate(${FDRollOffset} 15.5 15.5)`);
-    // }
-    // this.needsUpdate = false;
     let xOffsetLim;
 
     if (this.isVisible) {
@@ -199,35 +176,6 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
         calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
       const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
       const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
-
-      // //FD Smoothing when close to FPV
-      // //roll
-      // const FDRollOrder = this.data.fdRoll;
-      // let FDRollOrder2 = FDRollOrder;
-      // let cx, cy, r;
-      // cx = -30;
-      // cy = 90;
-      // r = 94.86835;
-      // if (FDRollOrder >= 0) {
-      //   FDRollOrder2 = cy - Math.sqrt(r ** 2 - (FDRollOrder - cx) ** 2);
-      // } else {
-      //   FDRollOrder2 = -cy + Math.sqrt(r ** 2 - (FDRollOrder + cx) ** 2);
-      // }
-      // const FDRollOrderLim = Math.max(Math.min(FDRollOrder2, 45), -45);
-
-      // //pitch
-      // const FDPitchOrder = this.data.fdPitch; //in degrees on pitch scale
-      // let FDPitchOrder2 = FDRollOrder;
-
-      // cx = -10;
-      // cy = 18;
-      // r = 20.5913;
-      // if (FDPitchOrder >= 0) {
-      //   FDPitchOrder2 = cy - Math.sqrt(r ** 2 - (FDPitchOrder - cx) ** 2);
-      // } else {
-      //   FDPitchOrder2 = -cy + Math.sqrt(r ** 2 - (FDPitchOrder + cx) ** 2);
-      // }
-      // const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder2, 5), -5);
 
       const FDRollOrder = this.data.fdRoll;
       const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
@@ -240,32 +188,15 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
       const xOffset = xOffsetFpv + FDRollOrderLim * 13;
       const yOffset = yOffsetFpv + FDPitchOrderLim * 13 + rollSin * (xOffset - xOffsetFpv); // * rollCos;
 
-      // console.log(
-      //   'xOffsetFpv: ' +
-      //     xOffsetFpv +
-      //     '  yOffsetFpv:  ' +
-      //     yOffsetFpv +
-      //     '  xOffset: ' +
-      //     xOffset +
-      //     '  yOffset: ' +
-      //     yOffset +
-      //     '  rollCos: ' +
-      //     rollCos +
-      //     '  rollSin: ' +
-      //     rollSin +
-      //     '  FDRollOrder: ' +
-      //     FDRollOrder,
-      // );
-
       //set lateral limit for fdCue
       if (this.crosswindMode == 0) {
-        if (xOffset < -428 || xOffset > 360) {
+        if (xOffset < -378 || xOffset > 350) {
           this.fdCueOffRange = true;
         } else {
           this.fdCueOffRange = false;
         }
 
-        xOffsetLim = Math.max(Math.min(xOffset, 360), -428);
+        xOffsetLim = Math.max(Math.min(xOffset, 350), -378);
       } else {
         if (xOffset < -540 || xOffset > 540) {
           this.fdCueOffRange = true;

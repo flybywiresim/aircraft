@@ -36,6 +36,7 @@ export const AircraftOptionsPinProgramsPage = () => {
   const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
   const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
   const [satcomEnabled, setsatcomEnabled] = usePersistentNumberProperty('MODEL_SATCOM_ENABLED', 0);
+  const [hudXwindFpvType, sethudXwindFpvType] = usePersistentProperty('HUD_FPV_TYPE', '0');
 
   const handleSetThrustReductionAlt = (value: string) => {
     setThrustReductionHeightSetting(value);
@@ -90,6 +91,11 @@ export const AircraftOptionsPinProgramsPage = () => {
   const latLonExtendedButtons: ButtonType[] = [
     { name: 'LLnn', setting: '0' },
     { name: 'AxxByyy', setting: '1' },
+  ];
+
+  const hudXwindFpvTypeButtons: ButtonType[] = [
+    { name: 'Locked/Free FPV', setting: '0' },
+    { name: 'Single FPV', setting: '1' },
   ];
 
   return (
@@ -219,6 +225,20 @@ export const AircraftOptionsPinProgramsPage = () => {
             >
               {t('Settings.AircraftOptionsPinPrograms.Select')}
             </Link>
+          </SettingItem>
+
+          <SettingItem name={t('Settings.AircraftOptionsPinPrograms.hudXwindFpvType')}>
+            <SelectGroup>
+              {hudXwindFpvTypeButtons.map((button) => (
+                <SelectItem
+                  key={button.name}
+                  onSelect={() => sethudXwindFpvType(button.setting)}
+                  selected={hudXwindFpvType === button.setting}
+                >
+                  {button.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SettingItem>
         </SettingsPage>
       </Route>

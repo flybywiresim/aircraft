@@ -18,6 +18,7 @@ import {
   Arinc429Word,
   ArincEventBus,
   Arinc429RegisterSubject,
+  NXDataStore,
 } from '@flybywiresim/fbw-sdk';
 import { calculateHorizonOffsetFromPitch, HudElems, HudMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -46,11 +47,10 @@ export class FlightPathVector extends DisplayComponent<{
   private birdPath = FSComponent.createRef<SVGPathElement>();
   private birdFreePath = FSComponent.createRef<SVGGElement>();
   private birdLockedPath = FSComponent.createRef<SVGPathElement>();
-  private birdOffRange;
   private crosswindMode = false;
-
   private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
+  private refElement = FSComponent.createRef<SVGGElement>();
   private readonly isVelocityVectorActive = ConsumerSubject.create(
     this.sub.on(getDisplayIndex() === 2 ? 'fcuRightVelocityVectorOn' : 'fcuLeftVelocityVectorOn'),
     false,
@@ -112,6 +112,12 @@ export class FlightPathVector extends DisplayComponent<{
   }
 
   private moveBird() {
+    const hudXwindFpvType = parseInt(NXDataStore.get('HUD_FPV_TYPE', '0'));
+    hudXwindFpvType === 0 ? this.useLockedFreeFpv() : this.useSingleFpv();
+  }
+  private useLockedFreeFpv() {
+    let birdOffRange = false;
+
     let xOffsetLim;
     const daLimConv = (this.data.da.get().value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
@@ -126,29 +132,29 @@ export class FlightPathVector extends DisplayComponent<{
     //set lateral limit for fdCue
     if (this.crosswindMode === false) {
       this.birdFreePath.instance.style.display = 'none';
-      this.birdLockedPath.instance.setAttribute('display', 'none');
-      if (this.birdOffRange) {
+      this.birdLockedPath.instance.style.display = 'none';
+      if (xOffset < -378 || xOffset > 350) {
+        birdOffRange = true;
+      } else {
+        birdOffRange = false;
+      }
+      if (birdOffRange) {
         this.birdPath.instance.setAttribute('stroke-dasharray', '3 6');
       } else {
         this.birdPath.instance.setAttribute('stroke-dasharray', '');
       }
 
-      if (xOffset < -428 || xOffset > 360) {
-        this.birdOffRange = true;
-      } else {
-        this.birdOffRange = false;
-      }
-      xOffsetLim = Math.max(Math.min(xOffset, 360), -428);
+      xOffsetLim = Math.max(Math.min(xOffset, 350), -378);
       this.birdGroup.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
     } else {
       this.birdFreePath.instance.style.display = 'block';
       this.birdPath.instance.setAttribute('stroke-dasharray', '');
-      this.birdLockedPath.instance.setAttribute('display', 'block');
+      this.birdLockedPath.instance.style.display = 'block';
 
       if (xOffset < -540 || xOffset > 540) {
-        this.birdOffRange = true;
+        birdOffRange = true;
       } else {
-        this.birdOffRange = false;
+        birdOffRange = false;
       }
       xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
       this.birdGroup.instance.style.transform = `translate3d(0px, ${yOffset - FIVE_DEG}px, 0px)`;
@@ -165,6 +171,61 @@ export class FlightPathVector extends DisplayComponent<{
           'd',
           'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
         );
+  }
+
+  private useSingleFpv() {
+    let birdOffRange = false;
+
+    let xOffsetLim;
+    const daLimConv = (this.data.da.get().value * DistanceSpacing) / ValueSpacing;
+    const pitchSubFpaConv =
+      calculateHorizonOffsetFromPitch(this.data.pitch.get().value) -
+      calculateHorizonOffsetFromPitch(this.data.fpa.get().value);
+    const rollCos = Math.cos((this.data.roll.get().value * Math.PI) / 180);
+    const rollSin = Math.sin((-this.data.roll.get().value * Math.PI) / 180);
+
+    const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
+    const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
+
+    //set lateral limit for fdCue
+    if (this.crosswindMode === false) {
+      if (xOffset < -378 || xOffset > 350) {
+        birdOffRange = true;
+      } else {
+        birdOffRange = false;
+      }
+
+      xOffsetLim = Math.max(Math.min(xOffset, 350), -378);
+    } else {
+      if (xOffset < -540 || xOffset > 540) {
+        birdOffRange = true;
+      } else {
+        birdOffRange = false;
+      }
+      xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
+    }
+
+    this.birdGroup.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
+
+    if (birdOffRange) {
+      this.birdPath.instance.setAttribute('stroke-dasharray', '3 6');
+    } else {
+      this.birdPath.instance.setAttribute('stroke-dasharray', '');
+    }
+
+    this.ap1Active.get() || this.ap2Active.get()
+      ? this.birdPath.instance.setAttribute(
+          'd',
+          'm 627 512 l 13 13 l 13 -13 l -13 -13 z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
+        )
+      : this.birdPath.instance.setAttribute(
+          'd',
+          'M 627 512 C 627 519,  633 525, 640 525 S 653 519, 653 512 S 647 499, 640 499 S 627 505, 627 512 Z M 590 512 h 37 m 13 -13 v -19z m 13 13 h 37',
+        );
+
+    this.birdFreePath.instance.style.display = 'none';
+    this.birdLockedPath.instance.style.display = 'none';
+    this.birdPath.instance.style.display = 'block';
   }
 
   render(): VNode {
