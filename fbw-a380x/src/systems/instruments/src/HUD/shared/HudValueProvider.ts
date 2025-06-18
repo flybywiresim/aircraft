@@ -521,6 +521,9 @@ export class HudValueProvider implements Instrument {
         }
 
         //console.log(this.logCase);
+        publisher.pub('cWndMode', this.elems.cWndMode, false, false);
+        publisher.pub('decMode', this.elems.decMode, false, false);
+        publisher.pub('hudFlightPhaseMode', this.elems.hudFlightPhaseMode, false, false);
 
         publisher.pub('spdTape', this.elems.spdTape, false, false);
         publisher.pub('xWindSpdTape', this.elems.xWindSpdTape, false, false);
@@ -543,9 +546,6 @@ export class HudValueProvider implements Instrument {
         publisher.pub('QFE', this.elems.QFE, false, false);
         publisher.pub('metricAlt', this.elems.metricAlt, false, false);
         publisher.pub('pitchScaleMode', this.elems.pitchScaleMode, false, false);
-        publisher.pub('cWndMode', this.elems.cWndMode, false, false);
-        publisher.pub('decMode', this.elems.decMode, false, false);
-        publisher.pub('hudFlightPhaseMode', this.elems.hudFlightPhaseMode, false, false);
       });
 
     this.sub.on('fmgcFlightPhase').handle((fp) => {

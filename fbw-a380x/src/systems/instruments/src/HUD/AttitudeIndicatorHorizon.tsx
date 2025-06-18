@@ -526,18 +526,19 @@ class PitchScale extends DisplayComponent<{
     >();
 
     sub.on('pitchScaleMode').handle((v) => {
-      this.pitchScaleMode = v.get();
-      this.setPitchScale();
+      if (this.pitchScaleMode != v.get()) {
+        this.pitchScaleMode = v.get();
+        this.setPitchScale();
+      }
     });
 
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
+    sub.on('decMode').handle((v) => {
+      if (this.declutterMode != v.get()) {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-        this.declutterMode = value.get();
+        this.declutterMode = v.get();
         this.setPitchScale();
-      });
+      }
+    });
 
     sub.on('hEvent').handle((eventName) => {
       if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
@@ -764,7 +765,9 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
     const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
     sub.on('cWndMode').handle((value) => {
-      this.crosswindMode = value.get();
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+      }
     });
 
     sub

@@ -62,14 +62,17 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
               ([vStallWarn, airSpeed, fcdc1DiscreteWord1, fcdc2DiscreteWord1, hudmode]) => {
                 const normalLawActive =
                   fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false);
-                if (
-                  (airSpeed.value - vStallWarn.value < 0 ||
-                    vStallWarn.isFailureWarning() ||
-                    vStallWarn.isNoComputedData()) &&
-                  normalLawActive && // is stall  warn only  with normal law ?
-                  hudmode === 0
-                ) {
-                  return true;
+                if (hudmode === 0) {
+                  if (
+                    (airSpeed.value - vStallWarn.value < 0 ||
+                      vStallWarn.isFailureWarning() ||
+                      vStallWarn.isNoComputedData()) &&
+                    !normalLawActive // is stall  warn only  with normal law ?
+                  ) {
+                    return true;
+                  } else {
+                    return false;
+                  }
                 } else {
                   return false;
                 }

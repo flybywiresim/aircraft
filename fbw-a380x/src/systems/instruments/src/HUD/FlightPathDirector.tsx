@@ -70,19 +70,17 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
           this.sVisibility.set('block');
         }
       });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
+    sub.on('cWndMode').handle((value) => {
+      if (this.crosswindMode != value.get()) {
         this.crosswindMode = value.get();
-      });
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
+      }
+    });
+    sub.on('decMode').handle((value) => {
+      if (this.declutterMode != value.get()) {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
         this.declutterMode = value.get();
-      });
+      }
+    });
 
     sub
       .on(isCaptainSide ? 'fd1Active' : 'fd2Active')

@@ -31,6 +31,7 @@ interface TcasState {
 
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
   private crosswindMode = false;
+  private declutterMode = 0;
   private VS = '';
   private VSRef = FSComponent.createRef<SVGGElement>();
   private yOffsetSub = Subject.create(0);
@@ -74,17 +75,25 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
-    sub.on('decMode').handle(() => {
-      this.handlePos();
+    sub.on('decMode').handle((v) => {
+      if (this.declutterMode != v.get()) {
+        this.declutterMode = v.get();
+        this.handlePos();
+      }
     });
 
     sub.on('cWndMode').handle((value) => {
-      this.crosswindMode = value.get();
-      this.handlePos();
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+        this.handlePos();
+      }
     });
     sub.on('VSI').handle((v) => {
-      this.VS = v.get().toString();
-      this.VSRef.instance.style.display = `${this.VS}`;
+      if (this.VS != v.get().toString()) {
+        this.VS = v.get().toString();
+        this.VSRef.instance.style.display = `${this.VS}`;
+        this.handlePos();
+      }
     });
     sub
       .on('tcasState')

@@ -40,8 +40,10 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
     this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
 
     sub.on('altTape').handle((v) => {
-      this.altTape = v.get().toString();
-      this.linearDevRef.instance.style.display = `${this.altTape}`;
+      if (this.altTape != v.get().toString()) {
+        this.altTape = v.get().toString();
+        this.linearDevRef.instance.style.display = `${this.altTape}`;
+      }
     });
     sub.on('altitudeAr').handle((alt) => {
       if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {

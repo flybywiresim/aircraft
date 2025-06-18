@@ -108,18 +108,20 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
     const sub = this.bus.getSubscriber<HudElems>();
 
     sub.on('cWndMode').handle((value) => {
-      this.crosswindMode = value.get();
-      if (this.props.type === 'altitude') {
-        if (this.crosswindMode) {
-          for (let i = 0; i < this.tickRefs.length - 1; i++) {
-            this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
-            this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.add('HiddenElement');
-          }
-        } else {
-          for (let i = 0; i < this.tickRefs.length - 1; i++) {
-            if ((parseInt(this.tickRefs[i].instance.textContent) * 100) % 500 === 0) {
-              this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
-              this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+        if (this.props.type === 'altitude') {
+          if (this.crosswindMode) {
+            for (let i = 0; i < this.tickRefs.length - 1; i++) {
+              this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
+              this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.add('HiddenElement');
+            }
+          } else {
+            for (let i = 0; i < this.tickRefs.length - 1; i++) {
+              if ((parseInt(this.tickRefs[i].instance.textContent) * 100) % 500 === 0) {
+                this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
+                this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
+              }
             }
           }
         }

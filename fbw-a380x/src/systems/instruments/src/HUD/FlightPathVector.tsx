@@ -304,6 +304,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   private currentTargetSpeed = 0;
   private needsUpdate = true;
   private inFlight = false;
+  private hudMode = -1;
   private speedState: SpeedStateInfo = {
     targetSpeed: 100,
     managedTargetSpeed: 100,
@@ -364,7 +365,10 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
       .on('hudFlightPhaseMode')
       //.whenChanged()
       .handle((v) => {
-        v.get() === 0 ? (this.inFlight = true) : (this.inFlight = false);
+        if (this.hudMode != v.get()) {
+          this.hudMode = v.get();
+          v.get() === 0 ? (this.inFlight = true) : (this.inFlight = false);
+        }
       });
     sub.on('realTime').handle(this.onFrameUpdate.bind(this));
   }

@@ -155,12 +155,17 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
     const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
     sub.on('inAirAcftRef').handle((v) => {
-      this.visibilityAirSub = v.get().toString();
-      this.inAirRef.instance.style.display = `${this.visibilityAirSub}`;
+      if (this.visibilityAirSub != v.get().toString()) {
+        this.visibilityAirSub = v.get().toString();
+        this.inAirRef.instance.style.display = `${this.visibilityAirSub}`;
+      }
     });
 
     sub.on('gndAcftRef').handle((v) => {
-      this.visibilityGroundSub = v.get().toString();
+      if (this.visibilityGroundSub != v.get().toString()) {
+        this.visibilityGroundSub = v.get().toString();
+        //todo
+      }
     });
 
     sub
@@ -259,6 +264,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrum
   private yawRef = FSComponent.createRef<SVGPathElement>();
   private GroundYawRef = FSComponent.createRef<SVGPathElement>();
   private onGround = true;
+  private hudMode = -1;
   private isActive(): boolean {
     if (
       !this.fdActive ||
@@ -288,11 +294,14 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrum
     sub.on('pitchAr').handle((p) => {
       this.pitch = p.value;
     });
-    sub.on('hudFlightPhaseMode').handle((value) => {
-      value.get() === 0 ? (this.onGround = false) : (this.onGround = true);
-      this.onGround
-        ? (this.groundYawGroupRef.instance.style.display = 'block')
-        : (this.groundYawGroupRef.instance.style.display = 'none');
+    sub.on('hudFlightPhaseMode').handle((v) => {
+      if (this.hudMode != v.get()) {
+        this.hudMode = v.get();
+        v.get() === 0 ? (this.onGround = false) : (this.onGround = true);
+        this.onGround
+          ? (this.groundYawGroupRef.instance.style.display = 'block')
+          : (this.groundYawGroupRef.instance.style.display = 'none');
+      }
     });
     sub.on('fdYawCommand').handle((fy) => {
       this.fdYawCommand = fy;
@@ -419,7 +428,11 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
     sub.on('hudFlightPhaseMode').handle((mode) => {
-      this.hudFlightPhaseMode = mode.get();
+      if (this.hudFlightPhaseMode != mode.get()) {
+        this.hudFlightPhaseMode = mode.get();
+        mode.get() === 0 ? (this.onGround = false) : (this.onGround = true);
+        this.setLocGroupPos();
+      }
     });
 
     const isCaptainSide = getDisplayIndex() === 1;
@@ -428,14 +441,16 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
     });
 
     sub.on('IlsLoc').handle((value) => {
-      this.locVis = value.get().toString();
-      this.locVis === 'block' ? (this.locVisBool = true) : (this.locVisBool = false);
-      if (this.hudFlightPhaseMode === 0) {
-        this.lsBtnState && this.locVisBool
-          ? (this.LSLocRef.instance.style.display = `block`)
-          : (this.LSLocRef.instance.style.display = `none`);
-      } else {
-        this.LSLocRef.instance.style.display = `${this.locVis}`;
+      if (this.locVis != value.get().toString()) {
+        this.locVis = value.get().toString();
+        this.locVis === 'block' ? (this.locVisBool = true) : (this.locVisBool = false);
+        if (this.hudFlightPhaseMode === 0) {
+          this.lsBtnState && this.locVisBool
+            ? (this.LSLocRef.instance.style.display = `block`)
+            : (this.LSLocRef.instance.style.display = `none`);
+        } else {
+          this.LSLocRef.instance.style.display = `${this.locVis}`;
+        }
       }
     });
     sub
@@ -451,17 +466,11 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
         this.fmgcFlightPhase = fp;
       });
 
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
+    sub.on('decMode').handle((value) => {
+      if (this.declutterMode != value.get()) {
         this.declutterMode = value.get();
         this.setLocGroupPos();
-      });
-
-    sub.on('hudFlightPhaseMode').handle((value) => {
-      value.get() === 0 ? (this.onGround = false) : (this.onGround = true);
-      this.setLocGroupPos();
+      }
     });
 
     sub
@@ -485,7 +494,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
 
   render(): VNode {
     return (
-      <g ref={this.LSLocRef} id="LocalizerSymbolsGroup">
+      <g ref={this.LSLocRef} id="YawRefBackCourseLocalizer">
         <path class="NormalStroke Green" d="m164.412 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
         <path class="NormalStroke Green" d="m119.079 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
         <path class="NormalStroke Green" d="m255.072 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
@@ -547,9 +556,11 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HudElems>();
-    sub.on('decMode').handle((m) => {
-      this.declutterMode = m.get();
-      this.handleDecIndState();
+    sub.on('decMode').handle((value) => {
+      if (this.declutterMode != value.get()) {
+        this.declutterMode = value.get();
+        this.handleDecIndState();
+      }
     });
   }
 

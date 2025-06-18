@@ -80,15 +80,17 @@ class LandingElevationIndicator extends DisplayComponent<{ bus: ArincEventBus }>
       });
 
     sub.on('cWndMode').handle((value) => {
-      this.crosswindMode = value.get();
-      if (this.crosswindMode) {
-        DisplayRange = 200;
-        this.xWindOffset = -150;
-        this.landingElevationIndicator.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
-      } else {
-        DisplayRange = 600;
-        this.xWindOffset = 0;
-        this.landingElevationIndicator.instance.style.transform = 'translate3d(0px, 0px, 0px)';
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+        if (this.crosswindMode) {
+          DisplayRange = 200;
+          this.xWindOffset = -150;
+          this.landingElevationIndicator.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+        } else {
+          DisplayRange = 600;
+          this.xWindOffset = 0;
+          this.landingElevationIndicator.instance.style.transform = 'translate3d(0px, 0px, 0px)';
+        }
       }
     });
 
@@ -112,7 +114,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus; filteredRadioA
   private altTapeGndRef = FSComponent.createRef<SVGPathElement>();
   private crosswindMode = false;
   private xWindOffset = 0;
-  private hudMode = 0;
+  private hudMode = -1;
   private visibilitySub = Subject.create('hidden');
 
   private offsetSub = Subject.create('');
@@ -276,8 +278,8 @@ interface AltitudeIndicatorProps {
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
   private crosswindMode = false;
   private declutterMode = 0;
-  private xWindAltTape = Subject.create<String>('');
-  private altTape = Subject.create<String>('');
+  private xWindAltTape = '';
+  private altTape = '';
   private subscribable = Subject.create<number>(0);
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
   private altIndicatorGroupRef = FSComponent.createRef<SVGGElement>();
@@ -307,13 +309,15 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     });
 
     sub.on('altTape').handle((v) => {
-      this.altTape.set(v.get().toString());
-      this.altTape.get() === 'none' && this.xWindAltTape.get() === 'none'
-        ? (this.altIndicatorGroupRef.instance.style.display = 'none')
-        : (this.altIndicatorGroupRef.instance.style.display = 'block');
+      if (this.altTape != v.get().toString()) {
+        this.altTape = v.get().toString();
+        this.altTape === 'none' && this.xWindAltTape === 'none'
+          ? (this.altIndicatorGroupRef.instance.style.display = 'none')
+          : (this.altIndicatorGroupRef.instance.style.display = 'block');
+      }
     });
     sub.on('xWindAltTape').handle((v) => {
-      this.xWindAltTape.set(v.get().toString());
+      this.xWindAltTape = v.get().toString();
     });
   }
 
@@ -712,8 +716,10 @@ interface AltimeterIndicatorProps {
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private QFERef = FSComponent.createRef<SVGGElement>();
   private QFE = '';
-
-  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
+  private declutterMode = 0;
+  private readonly sub = this.props.bus.getSubscriber<
+    A380XFcuBusEvents & HUDSimvars & SimplaneValues & Arinc429Values & HudElems & ClockEvents
+  >();
 
   private readonly fcuEisDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(null);
 
@@ -752,9 +758,17 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private qfeGroup = FSComponent.createRef<SVGGElement>();
 
   private qfeBorder = FSComponent.createRef<SVGGElement>();
+  private needsUpdate = false;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.sub.on('QFE').handle((v) => {
+      if (this.QFE != v.get().toString()) {
+        this.QFE = v.get().toString();
+        this.QFERef.instance.style.display = this.QFE;
+        this.needsUpdate = true;
+      }
+    });
 
     const isFo = getDisplayIndex() === 2;
 
@@ -768,8 +782,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     this.fcuBaroCorrectionHpa.setConsumer(
       this.sub.on(isFo ? 'a380x_fcu_eis_baro_hpa_right' : 'a380x_fcu_eis_baro_hpa_left'),
     );
-
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & Arinc429Values & HudElems>();
 
     this.fcuEisDiscreteWord2.sub(() => {
       const isQnh = this.fcuEisDiscreteWord2.get().bitValueOr(29, false);
@@ -794,7 +806,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       }
     }, true);
 
-    sub
+    this.sub
       .on('fmgcFlightPhase')
       .whenChanged()
       .handle((fp) => {
@@ -803,7 +815,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.handleBlink();
       });
 
-    sub
+    this.sub
       .on('fmTransAltRaw')
       .whenChanged()
       .handle((ta) => {
@@ -812,7 +824,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.handleBlink();
       });
 
-    sub
+    this.sub
       .on('fmTransLvlRaw')
       .whenChanged()
       .handle((tl) => {

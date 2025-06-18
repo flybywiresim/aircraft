@@ -95,17 +95,20 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
   private tenThousandsPosition = Subject.create(0);
 
   private readonly color = MappedSubject.create(([speed]) => (speed > -1 ? 'Green' : 'Green'), this.speed);
-
+  private crosswindMode = false;
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
     sub.on('cWndMode').handle((value) => {
-      value.get() === true
-        ? //  - XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET
-          (this.cwDrRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`)
-        : (this.cwDrRef.instance.style.transform = `translate3d(0px, 0px, 0px)`);
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+        value.get() === true
+          ? //  - XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET
+            (this.cwDrRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`)
+          : (this.cwDrRef.instance.style.transform = `translate3d(0px, 0px, 0px)`);
+      }
     });
 
     this.speed.sub((speed) => {

@@ -102,12 +102,16 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
     sub.on('spdTape').handle((v) => {
-      this.spdTape = v.get().toString();
-      this.spdTapeRef.instance.style.display = `${this.spdTape}`;
+      if (this.spdTape != v.get().toString()) {
+        this.spdTape = v.get().toString();
+        this.spdTapeRef.instance.style.display = `${this.spdTape}`;
+      }
     });
     sub.on('xWindSpdTape').handle((v) => {
-      this.xWindSpdTape = v.get().toString();
-      this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
+      if (this.xWindSpdTape != v.get().toString()) {
+        this.xWindSpdTape = v.get().toString();
+        this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
+      }
     });
 
     sub
@@ -123,12 +127,16 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
       });
 
     sub.on('decMode').handle((value) => {
-      this.declutterMode = value.get();
-      this.setOutline();
+      if (this.declutterMode != value.get()) {
+        this.declutterMode = value.get();
+        this.setOutline();
+      }
     });
     sub.on('cWndMode').handle((value) => {
-      this.crosswindMode = value.get();
-      this.cwOffsetRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`; //// ???????????
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+        this.cwOffsetRef.instance.style.transform = `translate3d(0px, ${XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+      }
     });
 
     sub
@@ -683,12 +691,16 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
 
     sub.on('spdTape').handle((v) => {
-      this.spdTape = v.get().toString();
-      this.spdTapeRef.instance.style.display = `${this.spdTape}`;
+      if (this.spdTape != v.get().toString()) {
+        this.spdTape = v.get().toString();
+        this.spdTapeRef.instance.style.display = `${this.spdTape}`;
+      }
     });
     sub.on('xWindSpdTape').handle((v) => {
-      this.xWindSpdTape = v.get().toString();
-      this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
+      if (this.xWindSpdTape != v.get().toString()) {
+        this.xWindSpdTape = v.get().toString();
+        this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
+      }
     });
 
     sub
@@ -704,11 +716,15 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       });
 
     sub.on('decMode').handle((value) => {
-      this.declutterMode = value.get();
+      if (this.declutterMode != value.get()) {
+        this.declutterMode = value.get();
+      }
     });
     sub.on('cWndMode').handle((value) => {
-      this.crosswindMode = value.get();
-      this.cwSpdLinesRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+        this.cwSpdLinesRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+      }
     });
     sub
       .on('leftMainGearCompressed')
@@ -975,8 +991,10 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
     sub.on('cWndMode').handle((value) => {
-      this.crosswindMode = value.get();
-      this.crosswindMode ? (DisplayRange = 20) : (DisplayRange = 42);
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+        this.crosswindMode ? (DisplayRange = 20) : (DisplayRange = 42);
+      }
     });
   }
 
@@ -1336,7 +1354,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   private decelActive = false;
 
   private needsUpdate = true;
-
+  private crosswindMode = false;
   private speedState: SpeedStateInfo = {
     speed: new Arinc429Word(0),
     targetSpeed: 100,
@@ -1366,8 +1384,11 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & HudElems
     >();
 
-    sub.on('cWndMode').handle(() => {
-      this.handleCrosswinMode();
+    sub.on('cWndMode').handle((value) => {
+      if (this.crosswindMode != value.get()) {
+        this.crosswindMode = value.get();
+        this.handleCrosswinMode();
+      }
     });
     sub
       .on('isSelectedSpeed')

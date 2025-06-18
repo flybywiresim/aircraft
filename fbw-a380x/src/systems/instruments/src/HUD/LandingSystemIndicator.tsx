@@ -42,12 +42,15 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
   private readonly declutterModeR = ConsumerSubject.create(this.sub.on('declutterModeR'), 0);
   private readonly ls1Button = ConsumerSubject.create(this.sub.on('ls1Button'), false);
   private readonly ls2Button = ConsumerSubject.create(this.sub.on('ls2Button'), false);
-
+  private gsVis = '';
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     const isCaptainSide = getDisplayIndex() === 1;
     this.sub.on('IlsGS').handle((value) => {
-      value.get().toString() === 'block' ? (this.groupVis = true) : (this.groupVis = false);
+      if (this.gsVis != value.get().toString()) {
+        this.gsVis = value.get().toString();
+        value.get().toString() === 'block' ? (this.groupVis = true) : (this.groupVis = false);
+      }
     });
     this.sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
       value && this.groupVis
@@ -303,16 +306,17 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
       });
 
     sub.on('IlsLoc').handle((value) => {
-      this.locVis = value.get().toString();
-      this.LSLocRef.instance.style.display = `${this.locVis}`;
+      if (this.locVis != value.get().toString()) {
+        this.locVis = value.get().toString();
+        this.LSLocRef.instance.style.display = `${this.locVis}`;
+      }
     });
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
+    sub.on('decMode').handle((value) => {
+      if (this.declutterMode != value.get()) {
         this.declutterMode = value.get();
         this.setLocGroupPos();
-      });
+      }
+    });
 
     sub
       .on('hasLoc')
@@ -449,15 +453,16 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
     sub.on('IlsGS').handle((value) => {
-      this.GsVis = value.get().toString();
-      this.LSGsRef.instance.style.display = `${this.GsVis}`;
+      if (this.GsVis != value.get().toString()) {
+        this.GsVis = value.get().toString();
+        this.LSGsRef.instance.style.display = `${this.GsVis}`;
+      }
     });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
+    sub.on('cWndMode').handle((value) => {
+      if (this.crosswindMode != value.get()) {
         this.crosswindMode = value.get();
-      });
+      }
+    });
     sub
       .on('fpa')
       .whenChanged()

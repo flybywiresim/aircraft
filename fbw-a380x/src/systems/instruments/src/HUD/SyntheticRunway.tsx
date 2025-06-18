@@ -164,33 +164,36 @@ export class SyntheticRunway extends DisplayComponent<{
   private threshHeighAbvGnd = 1020 * Math.tan((3 / 180) * Math.PI);
 
   updateSyntheticRunway() {
+    const data2 = JSON.parse(JSON.stringify(this.data));
+    //if anyone has a better way to pass this.data by value I want to knwow
     //console.log('update...');
     const JKCoords: LatLongAlt[] = [];
     const centerLineCoords: LatLongAlt[] = [];
 
-    JKCoords[0] = this.data.cornerCoordinates[0];
-    JKCoords[1] = this.data.cornerCoordinates[1];
-    JKCoords[2] = this.data.cornerCoordinates[2];
-    JKCoords[3] = this.data.cornerCoordinates[3];
-    centerLineCoords[0] = this.data.centerlineCoordinates[0];
-    centerLineCoords[1] = this.data.centerlineCoordinates[1];
-    centerLineCoords[2] = this.data.centerlineCoordinates[2];
-    centerLineCoords[3] = this.data.centerlineCoordinates[3];
-    centerLineCoords[4] = this.data.centerlineCoordinates[4];
+    JKCoords[0] = data2.cornerCoordinates[0];
+    JKCoords[1] = data2.cornerCoordinates[1];
+    JKCoords[2] = data2.cornerCoordinates[2];
+    JKCoords[3] = data2.cornerCoordinates[3];
 
-    if (this.logOnce == 0) {
-      JKCoords[0].alt = this.data.cornerCoordinates[0].alt - this.threshHeighAbvGnd;
-      JKCoords[1].alt = this.data.cornerCoordinates[1].alt - this.threshHeighAbvGnd;
-      JKCoords[2].alt = this.data.cornerCoordinates[2].alt - this.threshHeighAbvGnd;
-      JKCoords[3].alt = this.data.cornerCoordinates[3].alt - this.threshHeighAbvGnd;
-      //extended centerline   //1852: nautical miles to meters
+    centerLineCoords[0] = data2.centerlineCoordinates[0];
+    centerLineCoords[1] = data2.centerlineCoordinates[1];
+    centerLineCoords[2] = data2.centerlineCoordinates[2];
+    centerLineCoords[3] = data2.centerlineCoordinates[3];
+    centerLineCoords[4] = data2.centerlineCoordinates[4];
 
-      centerLineCoords[0].alt = this.data.centerlineCoordinates[0].alt - this.threshHeighAbvGnd;
-      centerLineCoords[1].alt = this.data.centerlineCoordinates[1].alt - this.threshHeighAbvGnd;
-      centerLineCoords[2].alt = this.data.centerlineCoordinates[2].alt - this.threshHeighAbvGnd;
-      centerLineCoords[3].alt = this.data.centerlineCoordinates[3].alt - this.threshHeighAbvGnd;
-      centerLineCoords[4].alt = this.data.centerlineCoordinates[4].alt - this.threshHeighAbvGnd;
-    }
+    JKCoords[0].alt = JKCoords[0].alt - this.threshHeighAbvGnd;
+    JKCoords[1].alt = JKCoords[1].alt - this.threshHeighAbvGnd;
+    JKCoords[2].alt = JKCoords[2].alt - this.threshHeighAbvGnd;
+    JKCoords[3].alt = JKCoords[3].alt - this.threshHeighAbvGnd;
+
+    // //extended centerline   //1852: nautical miles to meters
+
+    centerLineCoords[0].alt = centerLineCoords[0].alt - this.threshHeighAbvGnd;
+    centerLineCoords[1].alt = centerLineCoords[1].alt - this.threshHeighAbvGnd;
+    centerLineCoords[2].alt = centerLineCoords[2].alt - this.threshHeighAbvGnd;
+    centerLineCoords[3].alt = centerLineCoords[3].alt - this.threshHeighAbvGnd;
+    centerLineCoords[4].alt = centerLineCoords[4].alt - this.threshHeighAbvGnd;
+
     if (this.logOnce == 0) {
       this.logOnce += 1;
 
@@ -241,7 +244,7 @@ export class SyntheticRunway extends DisplayComponent<{
       );
     }
 
-    if (JKCoords.length === 4) {
+    if (JKCoords.length) {
       for (let i = 0; i < 4; i++) {
         this.pathRefs[i].instance.setAttribute('d', this.drawPath(JKCoords[i], JKCoords[(i + 1) % 4]));
       }
