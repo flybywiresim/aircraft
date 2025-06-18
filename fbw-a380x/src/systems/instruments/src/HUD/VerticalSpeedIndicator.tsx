@@ -75,26 +75,29 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
-    sub.on('decMode').handle((v) => {
-      if (this.declutterMode != v.get()) {
-        this.declutterMode = v.get();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((value) => {
+        this.declutterMode = value;
         this.handlePos();
-      }
-    });
+      });
 
-    sub.on('cWndMode').handle((value) => {
-      if (this.crosswindMode != value.get()) {
-        this.crosswindMode = value.get();
+    sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
         this.handlePos();
-      }
-    });
-    sub.on('VSI').handle((v) => {
-      if (this.VS != v.get().toString()) {
-        this.VS = v.get().toString();
+      });
+    sub
+      .on('VSI')
+      .whenChanged()
+      .handle((v) => {
+        this.VS = v;
         this.VSRef.instance.style.display = `${this.VS}`;
         this.handlePos();
-      }
-    });
+      });
     sub
       .on('tcasState')
       .whenChanged()

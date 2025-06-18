@@ -1,4 +1,4 @@
-import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, HudMode } from './HUDUtils';
@@ -19,7 +19,7 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1').whenChanged());
   private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1').whenChanged());
 
-  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), Subject.create(0));
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
   private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode').whenChanged(), 0);
   private readonly brakePedalInputLeft = ConsumerSubject.create(this.sub.on('brakePedalInputLeft').whenChanged(), 0);
   private readonly brakePedalInputRight = ConsumerSubject.create(this.sub.on('brakePedalInputRight').whenChanged(), 0);
@@ -116,7 +116,7 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
                   brakePedalInputLeft > 90 &&
                   brakePedalInputRight > 90 &&
                   autoBrakeMode === 0 &&
-                  hudMode.get() === HudMode.ROLLOUT_OR_RTO
+                  hudMode === HudMode.ROLLOUT_OR_RTO
                 );
               },
               this.brakePedalInputLeft,

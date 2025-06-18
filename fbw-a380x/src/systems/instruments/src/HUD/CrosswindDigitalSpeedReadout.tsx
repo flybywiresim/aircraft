@@ -101,15 +101,15 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
-    sub.on('cWndMode').handle((value) => {
-      if (this.crosswindMode != value.get()) {
-        this.crosswindMode = value.get();
-        value.get() === true
-          ? //  - XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET
-            (this.cwDrRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`)
+    sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
+        value === true
+          ? (this.cwDrRef.instance.style.transform = `translate3d(0px, ${-XWIND_FULL_OFFSET + XWIND_TO_AIR_REF_OFFSET}px, 0px)`)
           : (this.cwDrRef.instance.style.transform = `translate3d(0px, 0px, 0px)`);
-      }
-    });
+      });
 
     this.speed.sub((speed) => {
       const isNegative = speed < 0;

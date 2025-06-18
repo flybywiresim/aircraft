@@ -424,12 +424,10 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
 
     sub
       .on('hudFlightPhaseMode')
-      //.whenChanged()
+      .whenChanged()
       .handle((v) => {
-        if (this.hudMode != v.get()) {
-          this.hudMode = v.get();
-          v.get() === 0 ? (this.inFlight = true) : (this.inFlight = false);
-        }
+        this.hudMode = v;
+        v === 0 ? (this.inFlight = true) : (this.inFlight = false);
       });
     sub.on('realTime').handle(this.onFrameUpdate.bind(this));
   }
@@ -687,11 +685,11 @@ export class SpoilersIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   private rightSpoliers = FSComponent.createRef<SVGGElement>();
 
   private readonly spCommanded = ConsumerSubject.create(this.sub.on('spoilersCommanded').whenChanged(), 0);
-  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), Subject.create(0));
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
 
   private readonly isDeployed = MappedSubject.create(
     ([spCommanded, hudMode]) => {
-      return spCommanded > 25 && hudMode.get() === HudMode.ROLLOUT_OR_RTO ? 'block' : 'none';
+      return spCommanded > 25 && hudMode === HudMode.ROLLOUT_OR_RTO ? 'block' : 'none';
     },
     this.spCommanded,
     this.hudMode,
@@ -723,7 +721,7 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   private readonly rev3 = ConsumerSubject.create(this.sub.on('rev3').whenChanged(), 0);
   private readonly tla2 = ConsumerSubject.create(this.sub.on('tla2').whenChanged(), 0);
   private readonly tla3 = ConsumerSubject.create(this.sub.on('tla3').whenChanged(), 0);
-  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), Subject.create(0));
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
 
   private readonly reverser2State = MappedSubject.create(
     ([rev2, tla2, eng2State]) => {
@@ -805,14 +803,17 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub.on('hudFlightPhaseMode').handle((v) => {
-      if (v.get() != 0) {
-        this.revGroupRef.instance.style.display = 'block';
-        this.setState();
-      } else {
-        this.revGroupRef.instance.style.display = 'none';
-      }
-    });
+    this.sub
+      .on('hudFlightPhaseMode')
+      .whenChanged()
+      .handle((v) => {
+        if (v !== 0) {
+          this.revGroupRef.instance.style.display = 'block';
+          this.setState();
+        } else {
+          this.revGroupRef.instance.style.display = 'none';
+        }
+      });
   }
   //>
   render(): VNode | null {

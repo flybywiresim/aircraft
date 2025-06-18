@@ -39,16 +39,19 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub.on('attitudeIndicator').handle((value) => {
-      this.fullGroupVis = value.get().toString();
-      this.fullGroupRef.instance.style.display = `${this.fullGroupVis}`;
-    });
+    this.sub
+      .on('attitudeIndicator')
+      .whenChanged()
+      .handle((value) => {
+        this.fullGroupVis = value;
+        this.fullGroupRef.instance.style.display = `${this.fullGroupVis}`;
+      });
 
     this.sub
       .on('attitudeIndicator')
       .whenChanged()
       .handle((v) => {
-        this.attitudeIndicator = v.get().toString();
+        this.attitudeIndicator = v;
         this.attitudeIndicatorRef.instance.style.display = `${this.attitudeIndicator}`;
       });
 
@@ -154,19 +157,21 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
     const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
-    sub.on('inAirAcftRef').handle((v) => {
-      if (this.visibilityAirSub != v.get().toString()) {
-        this.visibilityAirSub = v.get().toString();
+    sub
+      .on('inAirAcftRef')
+      .whenChanged()
+      .handle((v) => {
+        this.visibilityAirSub = v;
         this.inAirRef.instance.style.display = `${this.visibilityAirSub}`;
-      }
-    });
+      });
 
-    sub.on('gndAcftRef').handle((v) => {
-      if (this.visibilityGroundSub != v.get().toString()) {
-        this.visibilityGroundSub = v.get().toString();
+    sub
+      .on('gndAcftRef')
+      .whenChanged()
+      .handle((v) => {
+        this.visibilityGroundSub = v;
         //todo
-      }
-    });
+      });
 
     sub
       .on('leftMainGearCompressed')
@@ -294,15 +299,16 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrum
     sub.on('pitchAr').handle((p) => {
       this.pitch = p.value;
     });
-    sub.on('hudFlightPhaseMode').handle((v) => {
-      if (this.hudMode != v.get()) {
-        this.hudMode = v.get();
-        v.get() === 0 ? (this.onGround = false) : (this.onGround = true);
+    sub
+      .on('hudFlightPhaseMode')
+      .whenChanged()
+      .handle((v) => {
+        this.hudMode = v;
+        v === 0 ? (this.onGround = false) : (this.onGround = true);
         this.onGround
           ? (this.groundYawGroupRef.instance.style.display = 'block')
           : (this.groundYawGroupRef.instance.style.display = 'none');
-      }
-    });
+      });
     sub.on('fdYawCommand').handle((fy) => {
       this.fdYawCommand = fy;
 
@@ -427,22 +433,25 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
-    sub.on('hudFlightPhaseMode').handle((mode) => {
-      if (this.hudFlightPhaseMode != mode.get()) {
-        this.hudFlightPhaseMode = mode.get();
-        mode.get() === 0 ? (this.onGround = false) : (this.onGround = true);
+    sub
+      .on('hudFlightPhaseMode')
+      .whenChanged()
+      .handle((mode) => {
+        this.hudFlightPhaseMode = mode;
+        mode === 0 ? (this.onGround = false) : (this.onGround = true);
         this.setLocGroupPos();
-      }
-    });
+      });
 
     const isCaptainSide = getDisplayIndex() === 1;
     sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
       this.lsBtnState = value;
     });
 
-    sub.on('IlsLoc').handle((value) => {
-      if (this.locVis != value.get().toString()) {
-        this.locVis = value.get().toString();
+    sub
+      .on('IlsLoc')
+      .whenChanged()
+      .handle((value) => {
+        this.locVis = value;
         this.locVis === 'block' ? (this.locVisBool = true) : (this.locVisBool = false);
         if (this.hudFlightPhaseMode === 0) {
           this.lsBtnState && this.locVisBool
@@ -451,8 +460,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
         } else {
           this.LSLocRef.instance.style.display = `${this.locVis}`;
         }
-      }
-    });
+      });
     sub
       .on('fwcFlightPhase')
       .whenChanged()
@@ -466,12 +474,13 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
         this.fmgcFlightPhase = fp;
       });
 
-    sub.on('decMode').handle((value) => {
-      if (this.declutterMode != value.get()) {
-        this.declutterMode = value.get();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((value) => {
+        this.declutterMode = value;
         this.setLocGroupPos();
-      }
-    });
+      });
 
     sub
       .on('hasLoc')
@@ -556,12 +565,13 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HudElems>();
-    sub.on('decMode').handle((value) => {
-      if (this.declutterMode != value.get()) {
-        this.declutterMode = value.get();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((value) => {
+        this.declutterMode = value;
         this.handleDecIndState();
-      }
-    });
+      });
   }
 
   render(): VNode {

@@ -50,14 +50,14 @@ export class SyntheticRunway extends DisplayComponent<{
   private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa').whenChanged());
   private readonly mda = ConsumerSubject.create(this.sub.on('mda').whenChanged(), 0);
   private readonly dh = ConsumerSubject.create(this.sub.on('dh').whenChanged(), 0);
-  private readonly declutterMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), Subject.create(0));
+  private readonly declutterMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
 
   private readonly visToggle = MappedSubject.create(
     ([mda, dh, altitude, ra, declutterMode]) => {
       const mdaDiff = altitude.value - mda;
       const dhDiff = ra.value - dh;
 
-      if (declutterMode.get() === 0) {
+      if (declutterMode === 0) {
         if (mda > 50 || dh > 50) {
           if (mda > 0) {
             return mdaDiff < -50 ? 'none' : 'block';

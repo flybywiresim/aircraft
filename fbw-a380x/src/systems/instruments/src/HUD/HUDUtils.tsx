@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, VNode, Subject } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 // import { LowerArea } from 'instruments/src/HUD/LowerArea';
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import './style.scss';
@@ -236,28 +236,28 @@ export enum WindMode {
 }
 
 export interface HudElems {
-  spdTape: Subject<String>;
-  xWindSpdTape: Subject<String>;
-  altTape: Subject<String>;
-  xWindAltTape: Subject<String>;
-  attitudeIndicator: Subject<String>;
-  FMA: Subject<String>;
-  headingTrk: Subject<String>;
-  gndAcftRef: Subject<String>;
-  inAirAcftRef: Subject<String>;
-  flightPathDirector: Subject<String>;
-  flightPathVector: Subject<String>;
-  VSI: Subject<String>;
-  ra: Subject<String>;
-  IlsGS: Subject<String>;
-  IlsLoc: Subject<String>;
-  IlsHorizonTrk: Subject<String>;
-  syntheticRunwway: Subject<String>;
-  windIndicator: Subject<String>;
-  QFE: Subject<String>;
-  metricAlt: Subject<boolean>;
-  pitchScaleMode: Subject<number>;
-  hudFlightPhaseMode: Subject<number>;
-  cWndMode: Subject<boolean>;
-  decMode: Subject<number>;
+  spdTape: string;
+  xWindSpdTape: string;
+  altTape: string;
+  xWindAltTape: string;
+  attitudeIndicator: string;
+  FMA: string;
+  headingTrk: string;
+  gndAcftRef: string;
+  inAirAcftRef: string;
+  flightPathDirector: string;
+  flightPathVector: string;
+  VSI: string;
+  ra: string;
+  IlsGS: string;
+  IlsLoc: string;
+  IlsHorizonTrk: string;
+  syntheticRunwway: string;
+  windIndicator: string;
+  QFE: string;
+  metricAlt: boolean;
+  pitchScaleMode: number;
+  hudFlightPhaseMode: number;
+  cWndMode: boolean;
+  decMode: number;
 }

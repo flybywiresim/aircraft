@@ -149,12 +149,13 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub.on('FMA').handle((v) => {
-      if (this.FMA != v.get().toString()) {
-        this.FMA = v.get().toString();
+    this.sub
+      .on('FMA')
+      .whenChanged()
+      .handle((v) => {
+        this.FMA = v;
         this.FMARef.instance.style.display = `${this.FMA}`;
-      }
-    });
+      });
     this.sub
       .on('fmaVerticalArmed')
       .whenChanged()

@@ -369,10 +369,13 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElems>();
 
-    sub.on('attitudeIndicator').handle((v) => {
-      this.attitudeIndicator = v.get().toString();
-      this.rollTriangleRef.instance.style.display = `${this.attitudeIndicator}`;
-    });
+    sub
+      .on('attitudeIndicator')
+      .whenChanged()
+      .handle((v) => {
+        this.attitudeIndicator = v;
+        this.rollTriangleRef.instance.style.display = `${this.attitudeIndicator}`;
+      });
     sub
       .on('leftMainGearCompressed')
       .whenChanged()
@@ -502,11 +505,10 @@ class PitchScale extends DisplayComponent<{
 
   private readonly ls1btn = ConsumerSubject.create(this.sub.on('ls1Button').whenChanged(), false);
   private readonly ls2btn = ConsumerSubject.create(this.sub.on('ls2Button').whenChanged(), false);
-  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode2').whenChanged(), 0);
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
   private readonly threeDegLineVis = MappedSubject.create(
     ([ls1btn, ls2btn, decMode]) => {
       if (ls1btn || ls2btn) {
-        console.log(decMode);
         return decMode === 2 ? 'none' : 'block';
       } else {
         return 'none';
@@ -539,20 +541,22 @@ class PitchScale extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub.on('pitchScaleMode').handle((v) => {
-      if (this.pitchScaleMode != v.get()) {
-        this.pitchScaleMode = v.get();
+    this.sub
+      .on('pitchScaleMode')
+      .whenChanged()
+      .handle((v) => {
+        this.pitchScaleMode = v;
         this.setPitchScale();
-      }
-    });
+      });
 
-    this.sub.on('decMode').handle((v) => {
-      if (this.declutterMode != v.get()) {
+    this.sub
+      .on('decMode')
+      .whenChanged()
+      .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-        this.declutterMode = v.get();
+        this.declutterMode = value;
         this.setPitchScale();
-      }
-    });
+      });
 
     this.sub
       .on('activeVerticalMode')
@@ -767,11 +771,12 @@ export class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
     super.onAfterRender(node);
     const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
-    sub.on('cWndMode').handle((value) => {
-      if (this.crosswindMode != value.get()) {
-        this.crosswindMode = value.get();
-      }
-    });
+    sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
+      });
 
     sub
       .on('rollAr')

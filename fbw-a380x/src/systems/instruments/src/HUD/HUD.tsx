@@ -153,40 +153,45 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
     >();
 
-    sub.on('spdTape').handle((v) => {
-      if (this.spdTape != v.get().toString()) {
-        this.spdTape = v.get().toString();
+    sub
+      .on('spdTape')
+      .whenChanged()
+      .handle((v) => {
+        this.spdTape = v;
         this.spdTapeRef.instance.style.display = `${this.spdTape}`;
         this.spdTapeRef2.instance.style.display = `${this.spdTape}`;
-      }
-    });
-    sub.on('xWindSpdTape').handle((v) => {
-      if (this.xWindSpdTape != v.get().toString()) {
-        this.xWindSpdTape = v.get().toString();
+      });
+    sub
+      .on('xWindSpdTape')
+      .whenChanged()
+      .handle((v) => {
+        this.xWindSpdTape = v;
         this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
         this.xWindSpdTapeRef2.instance.style.display = `${this.xWindSpdTape}`;
-      }
-    });
-    sub.on('altTape').handle((v) => {
-      if (this.altTape != v.get().toString()) {
-        this.altTape = v.get().toString();
+      });
+    sub
+      .on('altTape')
+      .whenChanged()
+      .handle((v) => {
+        this.altTape = v;
         this.altTapeRef.instance.style.display = `${this.altTape}`;
         this.altTapeRef2.instance.style.display = `${this.altTape}`;
-      }
-    });
-    sub.on('xWindAltTape').handle((v) => {
-      if (this.xWindAltTape != v.get().toString()) {
-        this.xWindAltTape = v.get().toString();
+      });
+    sub
+      .on('xWindAltTape')
+      .whenChanged()
+      .handle((v) => {
+        this.xWindAltTape = v;
         this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
         this.xWindAltTapeRef2.instance.style.display = `${this.xWindAltTape}`;
-      }
-    });
-    sub.on('windIndicator').handle((v) => {
-      if (this.windIndicator != v.get().toString()) {
-        this.windIndicator = v.get().toString();
+      });
+    sub
+      .on('windIndicator')
+      .whenChanged()
+      .handle((v) => {
+        this.windIndicator = v.toString();
         this.windIndicatorRef.instance.style.display = `${this.windIndicator}`;
-      }
-    });
+      });
 
     sub.on('hEvent').handle((ev) => {
       if (ev.startsWith('A320_Neo_HUD_L')) {
@@ -213,16 +218,18 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       }
     });
 
-    sub.on('decMode').handle((value) => {
-      if (this.declutterMode != value.get()) {
-        this.declutterMode = value.get();
-      }
-    });
-    sub.on('cWndMode').handle((value) => {
-      if (this.crosswindMode != value.get()) {
-        this.crosswindMode = value.get();
-      }
-    });
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((value) => {
+        this.declutterMode = value;
+      });
+    sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
+      });
 
     this.subscriptions.push(
       this.sub.on('headingAr').handle((h) => {

@@ -39,12 +39,13 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
     const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HudElems>();
     this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
 
-    sub.on('altTape').handle((v) => {
-      if (this.altTape != v.get().toString()) {
-        this.altTape = v.get().toString();
+    sub
+      .on('altTape')
+      .whenChanged()
+      .handle((v) => {
+        this.altTape = v;
         this.linearDevRef.instance.style.display = `${this.altTape}`;
-      }
-    });
+      });
     sub.on('altitudeAr').handle((alt) => {
       if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
         this.upperLinearDeviationReadoutVisibility.set('hidden');

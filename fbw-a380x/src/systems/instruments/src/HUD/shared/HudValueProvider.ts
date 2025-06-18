@@ -1,4 +1,4 @@
-import { Instrument, ClockEvents, ConsumerSubject, MappedSubject, Subject } from '@microsoft/msfs-sdk';
+import { Instrument, ClockEvents, ConsumerSubject, MappedSubject } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { HUDSimvars } from './HUDSimvarPublisher';
 import { HudMode, PitchscaleMode, HudElems } from '../HUDUtils';
@@ -7,94 +7,36 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './ArincValueProvider';
 
-// hudmode  Normal   flightpahse  notApp  xwind  0  dec  0
-// spdTape ON   xWindSpdTape OFF  altTape: ON   xWindAltTape: OFF  attitudeIndicator: ON   FMA: ON   headingTrk: ON   gndAcftRef: OFF  inAirAcftRef: ON
-//FPD: ON   FPV: ON   VS: ON   ra: ON   IlsGS: ON   IlsLoc: ON  IlsHorizonTrk: ON   syntheticRunwway: ON   windIndicator: ON   QFE: ON   pitchScaleMode: FULL
-// hudmode  Normal   flightpahse  notApp  xwind  0  dec  1or2
-// spdTape ON  xWindSpdTape OFF altTape: ON xWindAltTape: OFF  attitudeIndicator: ON   FMA: ON   headingTrk: ON   gndAcftRef: OFF  inAirAcftRef: ON
-//FPD: ON   FPV: ON   VS: ON   ra: ON   IlsGS: ON   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: OFF   windIndicator: ON   QFE: ON   pitchScaleMode: FULL
-//-----------------------------------------------------------
-// hudmode  Normal   flightpahse  notApp  xwind  1  dec  0
-// spdTape OFF  xWindSpdTape ON altTape: OFF xWindAltTape: ON  attitudeIndicator: ON   FMA: ON   headingTrk: ON   gndAcftRef: OFF  inAirAcftRef: ON
-//FPD: ON   FPV: ON   VS: ON   ra: ON   IlsGS: ON   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: ON   windIndicator: ON   QFE: ON   pitchScaleMode: FULL
-// hudmode  Normal   flightpahse  notApp  xwind  1  dec  1or2
-// spdTape OFF  xWindSpdTape ON altTape: OFF xWindAltTape: ON  attitudeIndicator: ON   FMA: ON   headingTrk: ON   gndAcftRef: OFF  inAirAcftRef: ON
-//FPD: ON   FPV: ON   VS: ON   ra: ON   IlsGS: ON   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: OFF   windIndicator: ON   QFE: ON   pitchScaleMode: FULL
-//-----------------------------------------------------------
-// hudmode  Normal   flightpahse   App    xwind  0  dec  0
-// spdTape ON   xWindSpdTape OFF  altTape: ON   xWindAltTape: OFF  attitudeIndicator: ON   FMA: ON   headingTrk: ON   gndAcftRef: OFF  inAirAcftRef: ON
-//FPD: ON   FPV: ON   VS: ON   ra: ON   IlsGS: ON   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: ON   windIndicator: ON   QFE: ON   pitchScaleMode: FULL
-// hudmode  Normal   flightpahse   App    xwind  0  dec  1
-// spdTape ON  xWindSpdTape OFF altTape: ON xWindAltTape: OFF  attitudeIndicator: ON   FMA: ON   headingTrk: ON   gndAcftRef: OFF  inAirAcftRef: ON
-//FPD: ON   FPV: ON   VS: ON   ra: ON   IlsGS: ON   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: OFF   windIndicator: ON   QFE: ON   pitchScaleMode: FULL
-// hudmode  Normal   flightpahse   App    xwind  0  dec  2   ////same as // hudmode  Normal   flightpahse   App    xwind  1  dec  2       (no xwind mode in dec 2 xwind tapes are forced)
-// spdTape OFF  xWindSpdTape ON altTape: OFF xWindAltTape: ON  attitudeIndicator: OFF   FMA: ON   headingTrk: OFF   gndAcftRef: OFF  inAirAcftRef: OFF
-//FPD: ON   FPV: ON   VS: OFF   ra: ON   IlsGS: OFF   IlsLoc: OFF   IlsHorizonTrk: OFF   syntheticRunwway: OFF   windIndicator: OFF   QFE: OFF   pitchScaleMode: 5DEG
-//-----------------------------------------------------------
-// hudmode  Normal   flightpahse   App    xwind  1  dec  0
-// spdTape OFF  xWindSpdTape ON altTape: OFF xWindAltTape: ON  attitudeIndicator: ON   FMA: ON   headingTrk: ON   gndAcftRef: OFF  inAirAcftRef: ON
-//FPD: ON   FPV: ON   VS: ON   ra: ON   IlsGS: ON   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: ON   windIndicator: ON   QFE: ON   pitchScaleMode: FULL
-// hudmode  Normal   flightpahse   App    xwind  1  dec  1
-// spdTape OFF  xWindSpdTape ON altTape: OFF xWindAltTape: ON  attitudeIndicator: ON   FMA: ON   headingTrk: ON   gndAcftRef: OFF  inAirAcftRef: ON
-//FPD: ON   FPV: ON   VS: ON   ra: ON   IlsGS: ON   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: OFF   windIndicator: ON   QFE: ON   pitchScaleMode: FULL
-// hudmode  Normal   flightpahse   App    xwind  1  dec  2   ////same as // hudmode  Normal   flightpahse   App    xwind  0  dec  2         (no xwind mode in dec 2 xwind tapes are forced)
-// spdTape OFF  xWindSpdTape ON altTape: OFF xWindAltTape: ON  attitudeIndicator: OFF   FMA: ON   headingTrk: OFF   gndAcftRef: OFF  inAirAcftRef: OFF
-//FPD: ON   FPV: ON   VS: OFF   ra: ON   IlsGS: OFF   IlsLoc: OFF   IlsHorizonTrk: OFF   syntheticRunwway: OFF   windIndicator: OFF   QFE: OFF   pitchScaleMode: 5DEG
-
-//-----------------------------------------------------------
-//-----------------------------------------------------------
-
-// hudmode  Taxi     flightpahse  notApp  xwind  ANY  dec  0
-// spdTape ON  xWindSpdTape OFF altTape: ON xWindAltTape: OFF attitudeIndicator: OFF  FMA: ON  headingTrk: OFF   gndAcftRef: ON  inAirAcftRef: OFF
-//FPD: OFF  FPV: ON   VS: OFF   ra: OFF   IlsGS: OFF   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: OFF   windIndicator: OFF   QFE: ON   pitchScaleMode: ON
-// hudmode  Taxi     flightpahse  notApp  xwind  ANY  dec  1or2
-// spdTape OFF  xWindSpdTape OFF altTape: OFF xWindAltTape: OFF attitudeIndicator: OFF  FMA: OFF headingTrk: OFF   gndAcftRef: ON  inAirAcftRef: OFF
-//FPD: OFF   FPV: ON   VS: OFF   ra: OFF   IlsGS: OFF   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: OFF   windIndicator: OFF   QFE: OFF   pitchScaleMode: OFF
-
-//-----------------------------------------------------------
-//-----------------------------------------------------------
-
-// hudmode  takeoff  flightpahse  ANY  xwind  ANY  dec  ANY
-// spdTape ON  xWindSpdTape OFF altTape: ON xWindAltTape: OFF attitudeIndicator: OFF  FMA: ON  headingTrk: OFF   gndAcftRef: ON  inAirAcftRef: OFF
-//FPD: OFF  FPV: ON   VS: OFF   ra: OFF   IlsGS: OFF   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: OFF   windIndicator: OFF   QFE: ON   pitchScaleMode: ON
-
-//-----------------------------------------------------------
-//-----------------------------------------------------------
-
-// hudmode    RTO    flightpahse  ANY  xwind  ANY  dec  ANY
-// spdTape ON  xWindSpdTape OFF altTape: OFF xWindAltTape: OFF attitudeIndicator: OFF  FMA: ON  headingTrk: OFF   gndAcftRef: ON  inAirAcftRef: OFF
-//FPD: OFF  FPV: ON   VS: OFF   ra: OFF   IlsGS: OFF   IlsLoc: ON   IlsHorizonTrk: ON   syntheticRunwway: OFF   windIndicator: OFF   QFE: ON   pitchScaleMode: ON
-
 export class HudValueProvider implements Instrument {
   private flightPhase = 0;
   private declutterMode = 0;
   private crosswindMode = false;
 
   private elems: HudElems = {
-    spdTape: Subject.create<String>(''),
-    xWindSpdTape: Subject.create<String>(''),
-    altTape: Subject.create<String>(''),
-    xWindAltTape: Subject.create<String>(''),
-    attitudeIndicator: Subject.create<String>(''),
-    FMA: Subject.create<String>(''),
-    headingTrk: Subject.create<String>(''),
-    gndAcftRef: Subject.create<String>(''),
-    inAirAcftRef: Subject.create<String>(''),
-    flightPathDirector: Subject.create<String>(''),
-    flightPathVector: Subject.create<String>(''),
-    VSI: Subject.create<String>(''),
-    ra: Subject.create<String>(''),
-    IlsGS: Subject.create<String>(''),
-    IlsLoc: Subject.create<String>(''),
-    IlsHorizonTrk: Subject.create<String>(''),
-    syntheticRunwway: Subject.create<String>(''),
-    windIndicator: Subject.create<String>(''),
-    QFE: Subject.create<String>(''),
-    metricAlt: Subject.create<boolean>(false),
-    pitchScaleMode: Subject.create<number>(0),
-    hudFlightPhaseMode: Subject.create<number>(0),
-    cWndMode: Subject.create<boolean>(false),
-    decMode: Subject.create<number>(0),
+    spdTape: '',
+    xWindSpdTape: '',
+    altTape: '',
+    xWindAltTape: '',
+    attitudeIndicator: '',
+    FMA: '',
+    headingTrk: '',
+    gndAcftRef: '',
+    inAirAcftRef: '',
+    flightPathDirector: '',
+    flightPathVector: '',
+    VSI: '',
+    ra: '',
+    IlsGS: '',
+    IlsLoc: '',
+    IlsHorizonTrk: '',
+    syntheticRunwway: '',
+    windIndicator: '',
+    QFE: '',
+    metricAlt: true,
+    pitchScaleMode: -1,
+    hudFlightPhaseMode: 0,
+    cWndMode: true,
+    decMode: -1,
   };
   private logCase = '';
 
@@ -152,112 +94,112 @@ export class HudValueProvider implements Instrument {
         if (this.hudMode.get() === HudMode.TAXI) {
           // hudmode  Taxi     flightpahse  notApp  xwind  ANY  dec  0
           if (this.declutterMode === 0) {
-            this.elems.spdTape.set('block');
-            this.elems.xWindSpdTape.set('none');
-            this.elems.altTape.set('block');
-            this.elems.xWindAltTape.set('none');
-            this.elems.attitudeIndicator.set('none');
-            this.elems.FMA.set('block');
-            this.elems.headingTrk.set('none');
-            this.elems.gndAcftRef.set('block');
-            this.elems.inAirAcftRef.set('none');
-            this.elems.flightPathDirector.set('none');
-            this.elems.flightPathVector.set('block');
-            this.elems.VSI.set('none');
-            this.elems.ra.set('none');
-            this.elems.IlsGS.set('none');
-            this.elems.IlsLoc.set('block');
-            this.elems.IlsHorizonTrk.set('block');
-            this.elems.syntheticRunwway.set('none');
-            this.elems.windIndicator.set('none');
-            this.elems.QFE.set('block');
-            this.elems.metricAlt.set(true);
-            this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
-            this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-            this.elems.cWndMode.set(false);
-            this.elems.decMode.set(0);
+            this.elems.spdTape = 'block';
+            this.elems.xWindSpdTape = 'none';
+            this.elems.altTape = 'block';
+            this.elems.xWindAltTape = 'none';
+            this.elems.attitudeIndicator = 'none';
+            this.elems.FMA = 'block';
+            this.elems.headingTrk = 'none';
+            this.elems.gndAcftRef = 'block';
+            this.elems.inAirAcftRef = 'none';
+            this.elems.flightPathDirector = 'none';
+            this.elems.flightPathVector = 'block';
+            this.elems.VSI = 'none';
+            this.elems.ra = 'none';
+            this.elems.IlsGS = 'none';
+            this.elems.IlsLoc = 'block';
+            this.elems.IlsHorizonTrk = 'block';
+            this.elems.syntheticRunwway = 'none';
+            this.elems.windIndicator = 'none';
+            this.elems.QFE = 'block';
+            this.elems.metricAlt = true;
+            this.elems.pitchScaleMode = PitchscaleMode.FULL;
+            this.elems.hudFlightPhaseMode = this.hudMode.get();
+            this.elems.cWndMode = false;
+            this.elems.decMode = 0;
             this.logCase = ' A ';
           } else {
             // hudmode  Taxi     flightpahse  notApp  xwind  ANY  dec  1or2
-            this.elems.spdTape.set('none');
-            this.elems.xWindSpdTape.set('none');
-            this.elems.altTape.set('none');
-            this.elems.xWindAltTape.set('none');
-            this.elems.attitudeIndicator.set('none');
-            this.elems.FMA.set('none');
-            this.elems.headingTrk.set('none');
-            this.elems.gndAcftRef.set('block');
-            this.elems.inAirAcftRef.set('none');
-            this.elems.flightPathDirector.set('none');
-            this.elems.flightPathVector.set('block');
-            this.elems.VSI.set('none');
-            this.elems.ra.set('none');
-            this.elems.IlsGS.set('none');
-            this.elems.IlsLoc.set('block');
-            this.elems.IlsHorizonTrk.set('block');
-            this.elems.syntheticRunwway.set('none');
-            this.elems.windIndicator.set('none');
-            this.elems.QFE.set('none');
-            this.elems.metricAlt.set(false);
-            this.elems.pitchScaleMode.set(PitchscaleMode.OFF);
-            this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-            this.elems.cWndMode.set(false);
-            this.elems.decMode.set(2);
+            this.elems.spdTape = 'none';
+            this.elems.xWindSpdTape = 'none';
+            this.elems.altTape = 'none';
+            this.elems.xWindAltTape = 'none';
+            this.elems.attitudeIndicator = 'none';
+            this.elems.FMA = 'none';
+            this.elems.headingTrk = 'none';
+            this.elems.gndAcftRef = 'block';
+            this.elems.inAirAcftRef = 'none';
+            this.elems.flightPathDirector = 'none';
+            this.elems.flightPathVector = 'block';
+            this.elems.VSI = 'none';
+            this.elems.ra = 'none';
+            this.elems.IlsGS = 'none';
+            this.elems.IlsLoc = 'block';
+            this.elems.IlsHorizonTrk = 'block';
+            this.elems.syntheticRunwway = 'none';
+            this.elems.windIndicator = 'none';
+            this.elems.QFE = 'none';
+            this.elems.metricAlt = false;
+            this.elems.pitchScaleMode = PitchscaleMode.OFF;
+            this.elems.hudFlightPhaseMode = this.hudMode.get();
+            this.elems.cWndMode = false;
+            this.elems.decMode = 2;
             this.logCase = ' B ';
           }
         } else if (this.hudMode.get() === HudMode.TAKEOFF) {
           // hudmode  takeoff  flightpahse  ANY  xwind  ANY  dec  ANY
-          this.elems.spdTape.set('block');
-          this.elems.xWindSpdTape.set('none');
-          this.elems.altTape.set('block');
-          this.elems.xWindAltTape.set('none');
-          this.elems.attitudeIndicator.set('none');
-          this.elems.FMA.set('block');
-          this.elems.headingTrk.set('none');
-          this.elems.gndAcftRef.set('block');
-          this.elems.inAirAcftRef.set('none');
-          this.elems.flightPathDirector.set('none');
-          this.elems.flightPathVector.set('block');
-          this.elems.VSI.set('none');
-          this.elems.ra.set('none');
-          this.elems.IlsGS.set('none');
-          this.elems.IlsLoc.set('block');
-          this.elems.IlsHorizonTrk.set('block');
-          this.elems.syntheticRunwway.set('none');
-          this.elems.windIndicator.set('none');
-          this.elems.QFE.set('block');
-          this.elems.metricAlt.set(true);
-          this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
-          this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-          this.elems.cWndMode.set(false);
-          this.elems.decMode.set(0);
+          this.elems.spdTape = 'block';
+          this.elems.xWindSpdTape = 'none';
+          this.elems.altTape = 'block';
+          this.elems.xWindAltTape = 'none';
+          this.elems.attitudeIndicator = 'none';
+          this.elems.FMA = 'block';
+          this.elems.headingTrk = 'none';
+          this.elems.gndAcftRef = 'block';
+          this.elems.inAirAcftRef = 'none';
+          this.elems.flightPathDirector = 'none';
+          this.elems.flightPathVector = 'block';
+          this.elems.VSI = 'none';
+          this.elems.ra = 'none';
+          this.elems.IlsGS = 'none';
+          this.elems.IlsLoc = 'block';
+          this.elems.IlsHorizonTrk = 'block';
+          this.elems.syntheticRunwway = 'none';
+          this.elems.windIndicator = 'none';
+          this.elems.QFE = 'block';
+          this.elems.metricAlt = true;
+          this.elems.pitchScaleMode = PitchscaleMode.FULL;
+          this.elems.hudFlightPhaseMode = this.hudMode.get();
+          this.elems.cWndMode = false;
+          this.elems.decMode = 0;
           this.logCase = ' C ';
         } else if (this.hudMode.get() === HudMode.ROLLOUT_OR_RTO) {
           // hudmode    RTO    flightpahse  ANY  xwind  ANY  dec  ANY
-          this.elems.spdTape.set('block');
-          this.elems.xWindSpdTape.set('none');
-          this.elems.altTape.set('none');
-          this.elems.xWindAltTape.set('none');
-          this.elems.attitudeIndicator.set('none');
-          this.elems.FMA.set('block');
-          this.elems.headingTrk.set('none');
-          this.elems.gndAcftRef.set('block');
-          this.elems.inAirAcftRef.set('none');
-          this.elems.flightPathDirector.set('none');
-          this.elems.flightPathVector.set('block');
-          this.elems.VSI.set('none');
-          this.elems.ra.set('none');
-          this.elems.IlsGS.set('none');
-          this.elems.IlsLoc.set('block');
-          this.elems.IlsHorizonTrk.set('block');
-          this.elems.syntheticRunwway.set('none');
-          this.elems.windIndicator.set('none');
-          this.elems.QFE.set('block');
-          this.elems.metricAlt.set(true);
-          this.elems.pitchScaleMode.set(PitchscaleMode.OFF);
-          this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-          this.elems.cWndMode.set(false);
-          this.elems.decMode.set(0);
+          this.elems.spdTape = 'block';
+          this.elems.xWindSpdTape = 'none';
+          this.elems.altTape = 'none';
+          this.elems.xWindAltTape = 'none';
+          this.elems.attitudeIndicator = 'none';
+          this.elems.FMA = 'block';
+          this.elems.headingTrk = 'none';
+          this.elems.gndAcftRef = 'block';
+          this.elems.inAirAcftRef = 'none';
+          this.elems.flightPathDirector = 'none';
+          this.elems.flightPathVector = 'block';
+          this.elems.VSI = 'none';
+          this.elems.ra = 'none';
+          this.elems.IlsGS = 'none';
+          this.elems.IlsLoc = 'block';
+          this.elems.IlsHorizonTrk = 'block';
+          this.elems.syntheticRunwway = 'none';
+          this.elems.windIndicator = 'none';
+          this.elems.QFE = 'block';
+          this.elems.metricAlt = true;
+          this.elems.pitchScaleMode = PitchscaleMode.OFF;
+          this.elems.hudFlightPhaseMode = this.hudMode.get();
+          this.elems.cWndMode = false;
+          this.elems.decMode = 0;
           this.logCase = ' D ';
         } else {
           //HudMode Normal
@@ -265,255 +207,255 @@ export class HudValueProvider implements Instrument {
             if (this.declutterMode === 0) {
               if (this.crosswindMode === false) {
                 // flightPhase App dec 0 xwind 0
-                this.elems.spdTape.set('block');
-                this.elems.xWindSpdTape.set('none');
-                this.elems.altTape.set('block');
-                this.elems.xWindAltTape.set('none');
-                this.elems.attitudeIndicator.set('block');
-                this.elems.FMA.set('block');
-                this.elems.headingTrk.set('block');
-                this.elems.gndAcftRef.set('none');
-                this.elems.inAirAcftRef.set('block');
-                this.elems.flightPathDirector.set('block');
-                this.elems.flightPathVector.set('block');
-                this.elems.VSI.set('block');
-                this.elems.ra.set('block');
-                this.elems.IlsGS.set('block');
-                this.elems.IlsLoc.set('block');
-                this.elems.IlsHorizonTrk.set('block');
-                this.elems.syntheticRunwway.set('block');
-                this.elems.windIndicator.set('block');
-                this.elems.QFE.set('block');
-                this.elems.metricAlt.set(true);
-                this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
-                this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-                this.elems.cWndMode.set(false);
-                this.elems.decMode.set(0);
+                this.elems.spdTape = 'block';
+                this.elems.xWindSpdTape = 'none';
+                this.elems.altTape = 'block';
+                this.elems.xWindAltTape = 'none';
+                this.elems.attitudeIndicator = 'block';
+                this.elems.FMA = 'block';
+                this.elems.headingTrk = 'block';
+                this.elems.gndAcftRef = 'none';
+                this.elems.inAirAcftRef = 'block';
+                this.elems.flightPathDirector = 'block';
+                this.elems.flightPathVector = 'block';
+                this.elems.VSI = 'block';
+                this.elems.ra = 'block';
+                this.elems.IlsGS = 'block';
+                this.elems.IlsLoc = 'block';
+                this.elems.IlsHorizonTrk = 'block';
+                this.elems.syntheticRunwway = 'block';
+                this.elems.windIndicator = 'block';
+                this.elems.QFE = 'block';
+                this.elems.metricAlt = true;
+                this.elems.pitchScaleMode = PitchscaleMode.FULL;
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+                this.elems.cWndMode = false;
+                this.elems.decMode = 0;
                 this.logCase = ' E ';
               } else {
                 // flightPhase App dec 0 xwind 1
-                this.elems.spdTape.set('none');
-                this.elems.xWindSpdTape.set('block');
-                this.elems.altTape.set('none');
-                this.elems.xWindAltTape.set('block');
-                this.elems.attitudeIndicator.set('block');
-                this.elems.FMA.set('block');
-                this.elems.headingTrk.set('block');
-                this.elems.gndAcftRef.set('none');
-                this.elems.inAirAcftRef.set('block');
-                this.elems.flightPathDirector.set('block');
-                this.elems.flightPathVector.set('block');
-                this.elems.VSI.set('block');
-                this.elems.ra.set('block');
-                this.elems.IlsGS.set('block');
-                this.elems.IlsLoc.set('block');
-                this.elems.IlsHorizonTrk.set('block');
-                this.elems.syntheticRunwway.set('block');
-                this.elems.windIndicator.set('block');
-                this.elems.QFE.set('block');
-                this.elems.metricAlt.set(true);
-                this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
-                this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-                this.elems.cWndMode.set(true);
-                this.elems.decMode.set(0);
+                this.elems.spdTape = 'none';
+                this.elems.xWindSpdTape = 'block';
+                this.elems.altTape = 'none';
+                this.elems.xWindAltTape = 'block';
+                this.elems.attitudeIndicator = 'block';
+                this.elems.FMA = 'block';
+                this.elems.headingTrk = 'block';
+                this.elems.gndAcftRef = 'none';
+                this.elems.inAirAcftRef = 'block';
+                this.elems.flightPathDirector = 'block';
+                this.elems.flightPathVector = 'block';
+                this.elems.VSI = 'block';
+                this.elems.ra = 'block';
+                this.elems.IlsGS = 'block';
+                this.elems.IlsLoc = 'block';
+                this.elems.IlsHorizonTrk = 'block';
+                this.elems.syntheticRunwway = 'block';
+                this.elems.windIndicator = 'block';
+                this.elems.QFE = 'block';
+                this.elems.metricAlt = true;
+                this.elems.pitchScaleMode = PitchscaleMode.FULL;
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+                this.elems.cWndMode = true;
+                this.elems.decMode = 0;
                 this.logCase = ' F ';
               }
             } else if (this.declutterMode === 1) {
               if (this.crosswindMode === false) {
                 // flightPhase App dec 1 xwind 0
-                this.elems.spdTape.set('block');
-                this.elems.xWindSpdTape.set('none');
-                this.elems.altTape.set('block');
-                this.elems.xWindAltTape.set('none');
-                this.elems.attitudeIndicator.set('block');
-                this.elems.FMA.set('block');
-                this.elems.headingTrk.set('block');
-                this.elems.gndAcftRef.set('none');
-                this.elems.inAirAcftRef.set('block');
-                this.elems.flightPathDirector.set('block');
-                this.elems.flightPathVector.set('block');
-                this.elems.VSI.set('block');
-                this.elems.ra.set('block');
-                this.elems.IlsGS.set('block');
-                this.elems.IlsLoc.set('block');
-                this.elems.IlsHorizonTrk.set('block');
-                this.elems.syntheticRunwway.set('none');
-                this.elems.windIndicator.set('block');
-                this.elems.QFE.set('block');
-                this.elems.metricAlt.set(true);
-                this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
-                this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-                this.elems.cWndMode.set(false);
-                this.elems.decMode.set(1);
+                this.elems.spdTape = 'block';
+                this.elems.xWindSpdTape = 'none';
+                this.elems.altTape = 'block';
+                this.elems.xWindAltTape = 'none';
+                this.elems.attitudeIndicator = 'block';
+                this.elems.FMA = 'block';
+                this.elems.headingTrk = 'block';
+                this.elems.gndAcftRef = 'none';
+                this.elems.inAirAcftRef = 'block';
+                this.elems.flightPathDirector = 'block';
+                this.elems.flightPathVector = 'block';
+                this.elems.VSI = 'block';
+                this.elems.ra = 'block';
+                this.elems.IlsGS = 'block';
+                this.elems.IlsLoc = 'block';
+                this.elems.IlsHorizonTrk = 'block';
+                this.elems.syntheticRunwway = 'none';
+                this.elems.windIndicator = 'block';
+                this.elems.QFE = 'block';
+                this.elems.metricAlt = true;
+                this.elems.pitchScaleMode = PitchscaleMode.FULL;
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+                this.elems.cWndMode = false;
+                this.elems.decMode = 1;
                 this.logCase = ' G ';
               } else {
                 // flightPhase App dec 1 xwind 1
-                this.elems.spdTape.set('none');
-                this.elems.xWindSpdTape.set('block');
-                this.elems.altTape.set('none');
-                this.elems.xWindAltTape.set('block');
-                this.elems.attitudeIndicator.set('block');
-                this.elems.FMA.set('block');
-                this.elems.headingTrk.set('block');
-                this.elems.gndAcftRef.set('none');
-                this.elems.inAirAcftRef.set('block');
-                this.elems.flightPathDirector.set('block');
-                this.elems.flightPathVector.set('block');
-                this.elems.VSI.set('block');
-                this.elems.ra.set('block');
-                this.elems.IlsGS.set('block');
-                this.elems.IlsLoc.set('block');
-                this.elems.IlsHorizonTrk.set('block');
-                this.elems.syntheticRunwway.set('none');
-                this.elems.windIndicator.set('block');
-                this.elems.QFE.set('block');
-                this.elems.metricAlt.set(true);
-                this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
-                this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-                this.elems.cWndMode.set(true);
-                this.elems.decMode.set(1);
+                this.elems.spdTape = 'none';
+                this.elems.xWindSpdTape = 'block';
+                this.elems.altTape = 'none';
+                this.elems.xWindAltTape = 'block';
+                this.elems.attitudeIndicator = 'block';
+                this.elems.FMA = 'block';
+                this.elems.headingTrk = 'block';
+                this.elems.gndAcftRef = 'none';
+                this.elems.inAirAcftRef = 'block';
+                this.elems.flightPathDirector = 'block';
+                this.elems.flightPathVector = 'block';
+                this.elems.VSI = 'block';
+                this.elems.ra = 'block';
+                this.elems.IlsGS = 'block';
+                this.elems.IlsLoc = 'block';
+                this.elems.IlsHorizonTrk = 'block';
+                this.elems.syntheticRunwway = 'none';
+                this.elems.windIndicator = 'block';
+                this.elems.QFE = 'block';
+                this.elems.metricAlt = true;
+                this.elems.pitchScaleMode = PitchscaleMode.FULL;
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+                this.elems.cWndMode = true;
+                this.elems.decMode = 1;
                 this.logCase = ' H ';
               }
             } else {
               // flightPhase App dec 2 xwind 0
               // flightPhase App dec 2 xwind 1    no xwind mode in dec 2 xwind tapes are forced
-              this.elems.spdTape.set('none');
-              this.elems.xWindSpdTape.set('block');
-              this.elems.altTape.set('none');
-              this.elems.xWindAltTape.set('block');
-              this.elems.attitudeIndicator.set('none');
-              this.elems.FMA.set('block');
-              this.elems.headingTrk.set('none');
-              this.elems.gndAcftRef.set('none');
-              this.elems.inAirAcftRef.set('none');
-              this.elems.flightPathDirector.set('block');
-              this.elems.flightPathVector.set('block');
-              this.elems.VSI.set('none');
-              this.elems.ra.set('block');
-              this.elems.IlsGS.set('none');
-              this.elems.IlsLoc.set('none');
-              this.elems.IlsHorizonTrk.set('none');
-              this.elems.syntheticRunwway.set('none');
-              this.elems.windIndicator.set('none');
-              this.elems.QFE.set('none');
-              this.elems.metricAlt.set(false);
-              this.elems.pitchScaleMode.set(PitchscaleMode.FIVEDEG);
-              this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-              this.elems.cWndMode.set(true);
-              this.elems.decMode.set(2);
+              this.elems.spdTape = 'none';
+              this.elems.xWindSpdTape = 'block';
+              this.elems.altTape = 'none';
+              this.elems.xWindAltTape = 'block';
+              this.elems.attitudeIndicator = 'none';
+              this.elems.FMA = 'block';
+              this.elems.headingTrk = 'none';
+              this.elems.gndAcftRef = 'none';
+              this.elems.inAirAcftRef = 'none';
+              this.elems.flightPathDirector = 'block';
+              this.elems.flightPathVector = 'block';
+              this.elems.VSI = 'none';
+              this.elems.ra = 'block';
+              this.elems.IlsGS = 'none';
+              this.elems.IlsLoc = 'none';
+              this.elems.IlsHorizonTrk = 'none';
+              this.elems.syntheticRunwway = 'none';
+              this.elems.windIndicator = 'none';
+              this.elems.QFE = 'none';
+              this.elems.metricAlt = false;
+              this.elems.pitchScaleMode = PitchscaleMode.FIVEDEG;
+              this.elems.hudFlightPhaseMode = this.hudMode.get();
+              this.elems.cWndMode = true;
+              this.elems.decMode = 2;
               this.logCase = ' I ';
             }
           } else {
             if (this.declutterMode === 0) {
               if (this.crosswindMode === false) {
                 // flightPhase NOTApp dec 0 xwind 0
-                this.elems.spdTape.set('block');
-                this.elems.xWindSpdTape.set('none');
-                this.elems.altTape.set('block');
-                this.elems.xWindAltTape.set('none');
-                this.elems.attitudeIndicator.set('block');
-                this.elems.FMA.set('block');
-                this.elems.headingTrk.set('block');
-                this.elems.gndAcftRef.set('none');
-                this.elems.inAirAcftRef.set('block');
-                this.elems.flightPathDirector.set('block');
-                this.elems.flightPathVector.set('block');
-                this.elems.VSI.set('block');
-                this.elems.ra.set('block');
-                this.elems.IlsGS.set('block');
-                this.elems.IlsLoc.set('block');
-                this.elems.IlsHorizonTrk.set('block');
-                this.elems.syntheticRunwway.set('block');
-                this.elems.windIndicator.set('block');
-                this.elems.QFE.set('block');
-                this.elems.metricAlt.set(true);
-                this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
-                this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-                this.elems.cWndMode.set(false);
-                this.elems.decMode.set(0);
+                this.elems.spdTape = 'block';
+                this.elems.xWindSpdTape = 'none';
+                this.elems.altTape = 'block';
+                this.elems.xWindAltTape = 'none';
+                this.elems.attitudeIndicator = 'block';
+                this.elems.FMA = 'block';
+                this.elems.headingTrk = 'block';
+                this.elems.gndAcftRef = 'none';
+                this.elems.inAirAcftRef = 'block';
+                this.elems.flightPathDirector = 'block';
+                this.elems.flightPathVector = 'block';
+                this.elems.VSI = 'block';
+                this.elems.ra = 'block';
+                this.elems.IlsGS = 'block';
+                this.elems.IlsLoc = 'block';
+                this.elems.IlsHorizonTrk = 'block';
+                this.elems.syntheticRunwway = 'block';
+                this.elems.windIndicator = 'block';
+                this.elems.QFE = 'block';
+                this.elems.metricAlt = true;
+                this.elems.pitchScaleMode = PitchscaleMode.FULL;
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+                this.elems.cWndMode = false;
+                this.elems.decMode = 0;
                 this.logCase = ' J ';
               } else {
                 // flightPhase NOTApp dec 0 xwind 1
-                this.elems.spdTape.set('none');
-                this.elems.xWindSpdTape.set('block');
-                this.elems.altTape.set('none');
-                this.elems.xWindAltTape.set('block');
-                this.elems.attitudeIndicator.set('block');
-                this.elems.FMA.set('block');
-                this.elems.headingTrk.set('block');
-                this.elems.gndAcftRef.set('none');
-                this.elems.inAirAcftRef.set('block');
-                this.elems.flightPathDirector.set('block');
-                this.elems.flightPathVector.set('block');
-                this.elems.VSI.set('block');
-                this.elems.ra.set('block');
-                this.elems.IlsGS.set('block');
-                this.elems.IlsLoc.set('block');
-                this.elems.IlsHorizonTrk.set('block');
-                this.elems.syntheticRunwway.set('block');
-                this.elems.windIndicator.set('block');
-                this.elems.QFE.set('block');
-                this.elems.metricAlt.set(true);
-                this.elems.pitchScaleMode.set(PitchscaleMode.FULL);
-                this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-                this.elems.cWndMode.set(true);
-                this.elems.decMode.set(0);
+                this.elems.spdTape = 'none';
+                this.elems.xWindSpdTape = 'block';
+                this.elems.altTape = 'none';
+                this.elems.xWindAltTape = 'block';
+                this.elems.attitudeIndicator = 'block';
+                this.elems.FMA = 'block';
+                this.elems.headingTrk = 'block';
+                this.elems.gndAcftRef = 'none';
+                this.elems.inAirAcftRef = 'block';
+                this.elems.flightPathDirector = 'block';
+                this.elems.flightPathVector = 'block';
+                this.elems.VSI = 'block';
+                this.elems.ra = 'block';
+                this.elems.IlsGS = 'block';
+                this.elems.IlsLoc = 'block';
+                this.elems.IlsHorizonTrk = 'block';
+                this.elems.syntheticRunwway = 'block';
+                this.elems.windIndicator = 'block';
+                this.elems.QFE = 'block';
+                this.elems.metricAlt = true;
+                this.elems.pitchScaleMode = PitchscaleMode.FULL;
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+                this.elems.cWndMode = true;
+                this.elems.decMode = 0;
                 this.logCase = ' K ';
               }
             } else if (!(this.declutterMode === 0)) {
               if (this.crosswindMode === false) {
                 // flightPhase NOTApp dec !0 xwind 0
-                this.elems.spdTape.set('block');
-                this.elems.xWindSpdTape.set('none');
-                this.elems.altTape.set('block');
-                this.elems.xWindAltTape.set('none');
-                this.elems.attitudeIndicator.set('none');
-                this.elems.FMA.set('block');
-                this.elems.headingTrk.set('none');
-                this.elems.gndAcftRef.set('none');
-                this.elems.inAirAcftRef.set('none');
-                this.elems.flightPathDirector.set('block');
-                this.elems.flightPathVector.set('block');
-                this.elems.VSI.set('none');
-                this.elems.ra.set('block');
-                this.elems.IlsGS.set('none');
-                this.elems.IlsLoc.set('none');
-                this.elems.IlsHorizonTrk.set('none');
-                this.elems.syntheticRunwway.set('none');
-                this.elems.windIndicator.set('none');
-                this.elems.QFE.set('none');
-                this.elems.metricAlt.set(false);
-                this.elems.pitchScaleMode.set(PitchscaleMode.FIVEDEG);
-                this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-                this.elems.cWndMode.set(false);
-                this.elems.decMode.set(2);
+                this.elems.spdTape = 'block';
+                this.elems.xWindSpdTape = 'none';
+                this.elems.altTape = 'block';
+                this.elems.xWindAltTape = 'none';
+                this.elems.attitudeIndicator = 'none';
+                this.elems.FMA = 'block';
+                this.elems.headingTrk = 'none';
+                this.elems.gndAcftRef = 'none';
+                this.elems.inAirAcftRef = 'none';
+                this.elems.flightPathDirector = 'block';
+                this.elems.flightPathVector = 'block';
+                this.elems.VSI = 'none';
+                this.elems.ra = 'block';
+                this.elems.IlsGS = 'none';
+                this.elems.IlsLoc = 'none';
+                this.elems.IlsHorizonTrk = 'none';
+                this.elems.syntheticRunwway = 'none';
+                this.elems.windIndicator = 'none';
+                this.elems.QFE = 'none';
+                this.elems.metricAlt = false;
+                this.elems.pitchScaleMode = PitchscaleMode.FIVEDEG;
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+                this.elems.cWndMode = false;
+                this.elems.decMode = 2;
                 this.logCase = ' L ';
               } else {
                 // flightPhase NOTApp dec !0 xwind 1
-                this.elems.spdTape.set('none');
-                this.elems.xWindSpdTape.set('block');
-                this.elems.altTape.set('none');
-                this.elems.xWindAltTape.set('block');
-                this.elems.attitudeIndicator.set('none');
-                this.elems.FMA.set('block');
-                this.elems.headingTrk.set('none');
-                this.elems.gndAcftRef.set('none');
-                this.elems.inAirAcftRef.set('none');
-                this.elems.flightPathDirector.set('block');
-                this.elems.flightPathVector.set('block');
-                this.elems.VSI.set('none');
-                this.elems.ra.set('block');
-                this.elems.IlsGS.set('none');
-                this.elems.IlsLoc.set('none');
-                this.elems.IlsHorizonTrk.set('none');
-                this.elems.syntheticRunwway.set('none');
-                this.elems.windIndicator.set('none');
-                this.elems.QFE.set('none');
-                this.elems.metricAlt.set(false);
-                this.elems.pitchScaleMode.set(PitchscaleMode.FIVEDEG);
-                this.elems.hudFlightPhaseMode.set(this.hudMode.get());
-                this.elems.cWndMode.set(true);
-                this.elems.decMode.set(2);
+                this.elems.spdTape = 'none';
+                this.elems.xWindSpdTape = 'block';
+                this.elems.altTape = 'none';
+                this.elems.xWindAltTape = 'block';
+                this.elems.attitudeIndicator = 'none';
+                this.elems.FMA = 'block';
+                this.elems.headingTrk = 'none';
+                this.elems.gndAcftRef = 'none';
+                this.elems.inAirAcftRef = 'none';
+                this.elems.flightPathDirector = 'block';
+                this.elems.flightPathVector = 'block';
+                this.elems.VSI = 'none';
+                this.elems.ra = 'block';
+                this.elems.IlsGS = 'none';
+                this.elems.IlsLoc = 'none';
+                this.elems.IlsHorizonTrk = 'none';
+                this.elems.syntheticRunwway = 'none';
+                this.elems.windIndicator = 'none';
+                this.elems.QFE = 'none';
+                this.elems.metricAlt = false;
+                this.elems.pitchScaleMode = PitchscaleMode.FIVEDEG;
+                this.elems.hudFlightPhaseMode = this.hudMode.get();
+                this.elems.cWndMode = true;
+                this.elems.decMode = 2;
                 this.logCase = ' M ';
               }
             }
@@ -574,7 +516,6 @@ export class HudValueProvider implements Instrument {
       }
 
       this.setCrossWindMode(this.crosswindMode);
-      //console.log('setCrossWindMode: ' + this.elems.cWndMode.get(), this.elems.decMode.get());
     });
   }
 
@@ -599,75 +540,3 @@ export class HudValueProvider implements Instrument {
     // noop
   }
 }
-
-///// Backup
-
-// private spdTape = '';
-// private xWindSpdTape = '';
-// private altTape = '';
-// private xWindAltTape = '';
-// private attitudeIndicator = '';
-// private FMA = '';
-// private headingTrk = '';
-// private gndAcftRef = '';
-// private inAirAcftRef = '';
-// private flightPathDirector = '';
-// private flightPathVector = '';
-// private VS = '';
-// private ra = '';
-// private IlsGS = '';
-// private IlsLoc = '';
-// private IlsHorizonTrk = '';
-// private syntheticRunwway = '';
-// private windIndicator = '';
-// private QFE = '';
-// private pitchScaleModeMode.set(PitchscaleMode.FULL);
-
-// private spdTapeRef = FSComponent.createRef<SVGGElement>();
-// private xWindSpdTapeRef = FSComponent.createRef<SVGGElement>();
-// private altTapeRef = FSComponent.createRef<SVGGElement>();
-// private xWindAltTapeRef = FSComponent.createRef<SVGGElement>();
-// private altTapeMaskFillRef = FSComponent.createRef<SVGGElement>();
-// private windIndicatorRef = FSComponent.createRef<SVGGElement>();
-// private FMARef = FSComponent.createRef<SVGGElement>();
-// private VSRef = FSComponent.createRef<SVGGElement>();
-// private QFERef = FSComponent.createRef<SVGGElement>();
-// private pitchScaleModeRef = FSComponent.createRef<SVGGElement>();
-
-// sub.on('spdTape').handle((v) => {
-//   this.spdTape = v.get().toString();
-//   this.spdTapeRef.instance.style.display = `${this.spdTape}`;
-//   //console.log('qsdqsd   ' + this.spdTape);
-// });
-// sub.on('xWindSpdTape').handle((v) => {
-//   this.xWindSpdTape = v.get().toString();
-//   this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
-// });
-// sub.on('altTape').handle((v) => {
-//   this.altTape = v.get().toString();
-//   this.altTapeRef.instance.style.display = `${this.altTape}`;
-// });
-// sub.on('xWindAltTape').handle((v) => {
-//   this.xWindAltTape = v.get().toString();
-//   this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
-// });
-// sub.on('altTapeMaskFill').handle((v) => {
-//   this.altTapeMaskFill = v.get().toString();
-//   this.altTapeMaskFillRef.instance.style.display = `${this.altTapeMaskFill}`;
-// });
-// sub.on('windIndicator').handle((v) => {
-//   this.windIndicator = v.get().toString();
-//   this.windIndicatorRef.instance.style.display = `${this.windIndicator}`;
-// });
-// sub.on('FMA').handle((v) => {
-//   this.FMA = v.get().toString();
-//   this.FMARef.instance.style.display = `${this.FMA}`;
-// });
-// sub.on('VS').handle((v) => {
-//   this.VS = v.get().toString();
-//   this.VSRef.instance.style.display = `${this.VS}`;
-// });
-// sub.on('QFE').handle((v) => {
-//   this.QFE = v.get().toString();
-//   this.QFERef.instance.style.display = `${this.QFE}`;
-// });
