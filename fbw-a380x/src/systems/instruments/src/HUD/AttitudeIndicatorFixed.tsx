@@ -420,7 +420,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
     }
   }
   private setLocGroupPos() {
-    this.LSLocRef.instance.style.transform = `translate3d(433.5px, 130px, 0px)`;
+    this.LSLocRef.instance.style.transform = `translate3d(433.5px, 77px, 0px)`;
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);

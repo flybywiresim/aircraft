@@ -7,9 +7,9 @@ import {
   Subscribable,
   VNode,
   ConsumerSubject,
-  SubscribableMapFunctions,
   HEvent,
   NodeReference,
+  MappedSubject,
 } from '@microsoft/msfs-sdk';
 
 import { Arinc429ConsumerSubject, Arinc429WordData, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
@@ -486,8 +486,9 @@ class PitchScale extends DisplayComponent<{
   private sVisibilityDeclutterMode2 = Subject.create<String>('');
   private sVisibilitySwitch = Subject.create<String>('block');
 
-  private readonly lsVisible = ConsumerSubject.create(null, false);
-  private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
+  private sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
+  >();
   private needsUpdate = false;
 
   private threeDegLine = FSComponent.createRef<SVGGElement>();
@@ -499,6 +500,22 @@ class PitchScale extends DisplayComponent<{
   private threeDegTxtRef = FSComponent.createRef<SVGTextElement>();
   private threeDegTxtBgRef = FSComponent.createRef<SVGPathElement>();
 
+  private readonly ls1btn = ConsumerSubject.create(this.sub.on('ls1Button').whenChanged(), false);
+  private readonly ls2btn = ConsumerSubject.create(this.sub.on('ls2Button').whenChanged(), false);
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode2').whenChanged(), 0);
+  private readonly threeDegLineVis = MappedSubject.create(
+    ([ls1btn, ls2btn, decMode]) => {
+      if (ls1btn || ls2btn) {
+        console.log(decMode);
+        return decMode === 2 ? 'none' : 'block';
+      } else {
+        return 'none';
+      }
+    },
+    this.ls1btn,
+    this.ls2btn,
+    this.decMode,
+  );
   private data: LSPath = {
     roll: new Arinc429Word(0),
     pitch: new Arinc429Word(0),
@@ -521,18 +538,15 @@ class PitchScale extends DisplayComponent<{
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getArincSubscriber<
-      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
-    >();
 
-    sub.on('pitchScaleMode').handle((v) => {
+    this.sub.on('pitchScaleMode').handle((v) => {
       if (this.pitchScaleMode != v.get()) {
         this.pitchScaleMode = v.get();
         this.setPitchScale();
       }
     });
 
-    sub.on('decMode').handle((v) => {
+    this.sub.on('decMode').handle((v) => {
       if (this.declutterMode != v.get()) {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
         this.declutterMode = v.get();
@@ -540,39 +554,33 @@ class PitchScale extends DisplayComponent<{
       }
     });
 
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-        SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
-      }
-    });
-    this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-    sub
+    this.sub
       .on('activeVerticalMode')
       .whenChanged()
       .handle((activeVerticalMode) => {
         this.activeVerticalModeSub.set(activeVerticalMode);
       });
-    sub.on('selectedFpa').handle((fpa) => {
+    this.sub.on('selectedFpa').handle((fpa) => {
       this.selectedFpa.set(fpa);
       this.needsUpdate = true;
     });
-    sub.on('fpa').handle((fpa) => {
+    this.sub.on('fpa').handle((fpa) => {
       this.data.fpa = fpa;
       this.needsUpdate = true;
     });
-    sub.on('da').handle((da) => {
+    this.sub.on('da').handle((da) => {
       this.data.da = da;
       this.needsUpdate = true;
     });
-    sub.on('rollAr').handle((r) => {
+    this.sub.on('rollAr').handle((r) => {
       this.data.roll = r;
       this.needsUpdate = true;
     });
-    sub.on('pitchAr').handle((p) => {
+    this.sub.on('pitchAr').handle((p) => {
       this.data.pitch = p;
       this.needsUpdate = true;
     });
-    sub.on('realTime').handle((_t) => {
+    this.sub.on('realTime').handle((_t) => {
       if (this.needsUpdate) {
         this.needsUpdate = false;
         const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
@@ -611,9 +619,7 @@ class PitchScale extends DisplayComponent<{
       this.threeDegTxtBgRef.instance.classList.add('GreenFill3');
       this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
       this.threeDegTxtBgRef.instance.setAttribute('d', `m 800 ${512 + (3 / 5) * FIVE_DEG - 13.5} h 45 v 27 h -45 z `);
-    }
-
-    if (this.activeVerticalModeSub.get() === VerticalMode.FPA) {
+    } else if (this.activeVerticalModeSub.get() === VerticalMode.FPA) {
       this.threeDegPath.instance.setAttribute(
         'd',
         `M 565,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h -80  M 713,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h 80  `,
@@ -631,6 +637,11 @@ class PitchScale extends DisplayComponent<{
       this.threeDegTxtBgRef.instance.classList.remove('GreenFill3');
       this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG}`);
       this.threeDegTxtBgRef.instance.setAttribute('d', ``);
+    } else {
+      this.threeDegPath.instance.setAttribute(
+        'd',
+        `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
+      );
     }
 
     this.activeVerticalModeSub.get() != VerticalMode.FPA && this.activeVerticalModeSub.get() != VerticalMode.GS_TRACK
@@ -673,16 +684,8 @@ class PitchScale extends DisplayComponent<{
     }
 
     // //3° line
-    // class={{ HiddenElement: this.props.lsVisible }}
     result.push(
-      // threeDegRef={this.props.threeDegRef}
-
-      <g
-        id="ThreeDegreeLine"
-        ref={this.threeDegLine}
-        class={{ HiddenElement: this.lsHidden }}
-        display={this.sVisibilityDeclutterMode2}
-      >
+      <g id="ThreeDegreeLine" ref={this.threeDegLine} display={this.threeDegLineVis}>
         <path ref={this.threeDegPath} d="" />
         <g id="SlopeTxt">
           <path ref={this.threeDegTxtBgRef} d="m835 348.5 h45v27h-45z"></path>
