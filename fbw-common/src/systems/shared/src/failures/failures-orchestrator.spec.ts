@@ -14,12 +14,14 @@ vitest.mock('../GenericDataListenerSync', () => ({
 
 let sendRequestForFailures = undefined;
 
-global.RegisterViewListener = (name: string, callback?: any): ViewListener.ViewListener => {
-  callback({
-    on: (topic, requestFailuresCallback) => (sendRequestForFailures = requestFailuresCallback),
-  });
-  return undefined as any;
-};
+vitest.mock('../ViewListenerUtils', () => ({
+  ViewListenerUtils: {
+    getListener: () =>
+      Promise.resolve({
+        on: (topic, requestFailuresCallback) => (sendRequestForFailures = requestFailuresCallback),
+      }),
+  },
+}));
 
 // mock enough of COMM BUS to ensure the right calls are made for WASM interop
 const failuresUpdateReceiver = vitest.fn();
@@ -33,8 +35,8 @@ const failuresUpdateReceiver = vitest.fn();
 };
 
 describe('FailuresOrchestrator', () => {
-  test('stores configured failures', () => {
-    const o = orchestrator();
+  test('stores configured failures', async () => {
+    const o = await orchestrator();
 
     const allFailures = o.getAllFailures();
     expect(allFailures).toHaveLength(1);
@@ -46,13 +48,13 @@ describe('FailuresOrchestrator', () => {
   });
 
   describe('indicates a failure is', () => {
-    test('inactive when never activated', () => {
-      const o = orchestrator();
+    test('inactive when never activated', async () => {
+      const o = await orchestrator();
       expect(o.isActive(identifier)).toBe(false);
     });
 
     test('active when activated', async () => {
-      const o = orchestrator();
+      const o = await orchestrator();
 
       await activateFailure(o);
 
@@ -60,7 +62,7 @@ describe('FailuresOrchestrator', () => {
     });
 
     test('inactive when deactivated', async () => {
-      const o = orchestrator();
+      const o = await orchestrator();
       // First activate the failure to ensure we're not just observing
       // the lack of any change.
       await activateFailure(o);
@@ -73,7 +75,7 @@ describe('FailuresOrchestrator', () => {
 
   describe('sends failures over commbus', () => {
     test('sends failures when requested', async () => {
-      const o = orchestrator();
+      const o = await orchestrator();
 
       o.update();
 
@@ -87,7 +89,7 @@ describe('FailuresOrchestrator', () => {
     });
 
     test('sends failures when failures change', async () => {
-      const o = orchestrator();
+      const o = await orchestrator();
 
       o.update();
 
@@ -104,7 +106,7 @@ describe('FailuresOrchestrator', () => {
 
   describe('sends failures over generic data listener sync', () => {
     test('sends failures when requested', async () => {
-      const o = orchestrator();
+      const o = await orchestrator();
 
       o.update();
 
@@ -119,7 +121,7 @@ describe('FailuresOrchestrator', () => {
     });
 
     test('sends failures when failures change', async () => {
-      const o = orchestrator();
+      const o = await orchestrator();
 
       o.update();
 
@@ -139,8 +141,10 @@ describe('FailuresOrchestrator', () => {
 const identifier = 123;
 const name = 'test';
 
-function orchestrator() {
-  return new FailuresOrchestrator([[0, identifier, name]]);
+async function orchestrator() {
+  const orch = new FailuresOrchestrator([[0, identifier, name]]);
+  await flushPromises();
+  return orch;
 }
 
 function activateFailure(o: FailuresOrchestrator) {

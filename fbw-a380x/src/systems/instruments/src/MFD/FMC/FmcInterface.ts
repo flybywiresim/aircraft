@@ -157,8 +157,12 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** in kilograms */
   getExtraFuel(): number | null;
 
-  /** as flight level */
-  getRecMaxFlightLevel(): number | null;
+  /**
+   * Calculates the recommended maximum flight level.
+   * @param grossWeight The gross weight in kilograms. Defaults to current gross weight (if undefined).
+   * @returns The recommended maxium flight level (in hundreds of feet) if gross weight is valid, else null.
+   */
+  getRecMaxFlightLevel(grossWeight?: number): number | null;
 
   /** as flight level */
   getOptFlightLevel(): number | null;
