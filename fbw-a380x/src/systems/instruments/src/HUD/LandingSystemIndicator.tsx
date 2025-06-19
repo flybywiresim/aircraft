@@ -33,7 +33,6 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
 
   private ldevRef = FSComponent.createRef<SVGGElement>();
 
-  private vdevRef = FSComponent.createRef<SVGGElement>();
   private groupVis = false;
   private hudFlightPhaseMode = 0;
   private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
@@ -105,7 +104,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
             {/* ////TODO rnav use 3.0 scaling */}
             <LDevIndicator bus={this.props.bus} />
           </g>
-          <g id="VerticalDeviationGroup" ref={this.vdevRef} style="display: none">
+          <g id="VerticalDeviationGroup" style="display: none">
             <VDevIndicator bus={this.props.bus} />
           </g>
         </g>
@@ -370,7 +369,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
             d="m195.387 391.53 11.333 7.559 11.333 -7.559 -11.333 -7.559z"
           />
         </g>
-        <path id="LocalizerNeutralLine" class="Green Fill" d="m204.294 403.5v-24.191h4.536v24.191z" />
+        <path id="LocalizerNeutralLine" class="Green Fill" d="m 204 406.5v -30 h 5 v 30" />
       </g>
     );
   }
@@ -444,11 +443,10 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
   }
   private MoveGlideSlopeGroup() {
     if (this.crosswindMode == false) {
-      this.LSGsRef.instance.style.transform = `translate3d(625px, ${FIVE_DEG + 13 + calculateHorizonOffsetFromPitch(this.data.pitch.value)}px, 0px)`;
+      this.LSGsRef.instance.style.transform = `translate3d(665px, ${FIVE_DEG + 13 + calculateHorizonOffsetFromPitch(this.data.pitch.value)}px, 0px)`;
     } else {
-      this.LSGsRef.instance.style.transform = `translate3d(625px, 84px, 0px)`;
+      this.LSGsRef.instance.style.transform = `translate3d(665px, 84px, 0px)`;
     }
-    //DistanceSpacing
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -544,6 +542,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
   render(): VNode {
     return (
       <g id="GlideSlopeSymbolsGroup" ref={this.LSGsRef}>
+        <path id="GsGroupMask" d="m 314 149 h 30 v 184 h-30 z" class="BlackkFill" />
         <path class="NormalStroke Green" d="m332.13 151.755a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
         <path class="NormalStroke Green" d="m332.13 197.112a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
         <path class="NormalStroke Green" d="m332.13 287.826a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
@@ -568,7 +567,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: EventBus; instrument: 
             d="m329.1 231.129 -7.555 11.339 7.555 11.339 7.555 -11.339z"
           />
         </g>
-        <path ref={this.gsReferenceLine} class="Green Fill" d="m 317 243 h 24.191 v 4.536 h -24.191 z" />
+        <path ref={this.gsReferenceLine} class="Green Fill" d="m 314 243 h 30 v 5 h -30 z" />
       </g>
     );
   }
@@ -580,9 +579,34 @@ class VDevIndicator extends DisplayComponent<{ bus: EventBus }> {
   private VDevSymbolUpper = FSComponent.createRef<SVGPathElement>();
 
   private VDevSymbol = FSComponent.createRef<SVGPathElement>();
-
+  private VdevRef = FSComponent.createRef<SVGGElement>();
+  private pitch = 0;
+  private needsUpdate = false;
+  private crosswindMode = false;
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HudElems & ClockEvents>();
+    sub
+      .on('pitchAr')
+      .whenChanged()
+      .handle((p) => {
+        this.pitch = p.value;
+        this.needsUpdate = true;
+      });
+    sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((p) => {
+        this.crosswindMode = p;
+        this.needsUpdate = true;
+      });
+
+    sub.on('realTime').handle((_t) => {
+      if (this.needsUpdate) {
+        this.needsUpdate = false;
+        this.MoveGlideSlopeGroup();
+      }
+    });
 
     // TODO use correct simvar once RNAV is implemented
     const deviation = 0;
@@ -604,34 +628,45 @@ class VDevIndicator extends DisplayComponent<{ bus: EventBus }> {
     }
   }
 
+  private MoveGlideSlopeGroup() {
+    if (this.crosswindMode == false) {
+      this.VdevRef.instance.style.transform = `translate3d(665px, ${FIVE_DEG + 13 + calculateHorizonOffsetFromPitch(this.pitch)}px, 0px)`;
+    } else {
+      this.VdevRef.instance.style.transform = `translate3d(665px, 84px, 0px)`;
+    }
+    //DistanceSpacing
+  }
+
   render(): VNode {
     return (
-      <g id="VertDevSymbolsGroup" style="display: none">
-        <text class="FontSmall AlignRight Green" x="95.022" y="43.126">
+      <g id="VertDevSymbolsGroup" ref={this.VdevRef} style="display: none">
+        <text class="FontSmall AlignRight Green" x="285.06600000000003" y="129.378">
           V/DEV
         </text>
-        <path class="NormalStroke Green" d="m108.7 65.704h2.0147" />
-        <path class="NormalStroke Green" d="m108.7 50.585h2.0147" />
-        <path class="NormalStroke Green" d="m108.7 111.06h2.0147" />
-        <path class="NormalStroke Green" d="m108.7 95.942h2.0147" />
+        <path id="vDevGroupMask" d="m 314 149 h 30 v 184 h-30 z" class="BlackkFill" />
+        <path class="NormalStroke Green" d="m326.1 197.112h6.044" />
+        <path class="NormalStroke Green" d="m326.1 151.755h6.044" />
+        <path class="NormalStroke Green" d="m326.1 333.18h6.044" />
+        <path class="NormalStroke Green" d="m326.1 287.826h6.044" />
         <path
           id="VDevSymbolLower"
           ref={this.VDevSymbolLower}
           class="NormalStroke Green"
-          d="m107.19 111.06v2.0159h5.0368v-2.0159"
+          d="m321.57 333.18v6.048h15.11v-6.048"
         />
         <path
           id="VDevSymbolUpper"
           ref={this.VDevSymbolUpper}
           class="NormalStroke Green"
-          d="m107.19 50.585v-2.0159h5.0368v2.0159"
+          d="m321.57 151.755v-6.048h15.11v6.048"
         />
         <path
           id="VDevSymbol"
           ref={this.VDevSymbol}
           class="NormalStroke Green"
-          d="m112.22 78.807h-5.0368v4.0318h5.0368v-2.0159z"
+          d="m336.66 236.421h-15.11v12.095h15.11v-6.048z"
         />
+        <path class="Green Fill" d="m 314 243 h 30 v 5 h -30 z" />
       </g>
     );
   }
@@ -675,33 +710,33 @@ class LDevIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <g id="LatDeviationSymbolsGroup">
-        <text class="FontSmall AlignRight Green" x="30.888" y="122.639">
+      <g id="LatDeviationSymbolsGroup" transform="translate(433.5 400)">
+        <text class="FontSmall AlignRight Green" x="92.664" y="367.917">
           L/DEV
         </text>
-        <path class="NormalStroke Green" d="m38.686 129.51v2.0158" />
-        <path class="NormalStroke Green" d="m53.796 129.51v2.0158" />
-        <path class="NormalStroke Green" d="m84.017 129.51v2.0158" />
-        <path class="NormalStroke Green" d="m99.127 129.51v2.0158" />
+        <path class="NormalStroke Green" d="m116.058 388.53v6.047" />
+        <path class="NormalStroke Green" d="m161.388 388.53v6.047" />
+        <path class="NormalStroke Green" d="m252.051 388.53v6.047" />
+        <path class="NormalStroke Green" d="m297.381 388.53v6.047" />
         <path
           id="LDevSymbolLeft"
           ref={this.LDevSymbolLeft}
           class="NormalStroke Green"
-          d="m38.686 127.99h-2.0147v5.0397h2.0147"
+          d="m116.058 383.97h-6.044v15.119h6.044"
         />
         <path
           id="LDevSymbolRight"
           ref={this.LDevSymbolRight}
           class="NormalStroke Green"
-          d="m99.127 127.99h2.0147v5.0397h-2.0147"
+          d="m297.381 383.97h6.044v15.119h-6.044"
         />
         <path
           id="LDevSymbol"
           ref={this.LDevSymbol}
           class="NormalStroke Green"
-          d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z"
+          d="m200.676 383.97v15.119h12.088v-15.119h-6.044z"
         />
-        <path id="LDevNeutralLine" class="Green Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
+        <path id="LDevNeutralLine" class="Green Fill" d="m 204 406.5v -30 h 5 v 30" />
       </g>
     );
   }
