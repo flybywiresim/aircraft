@@ -494,7 +494,7 @@ export class CDUVerticalRevisionPage {
           inAlternate,
         );
       };
-      CDUStepAltsPage.ShowPage(mcdu);
+      CDUStepAltsPage.ShowPage(mcdu, forPlan);
     }; // STEP ALTS
     if (!confirmConstraint) {
       mcdu.onLeftInput[5] = () => {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { McduMessage } from '../messages/NXSystemMessages';
+import { McduMessage, TypeIIMessage } from '../messages/NXSystemMessages';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
 import {
@@ -94,6 +94,11 @@ interface LegacyFmsPageDrawingInterface {
   getDelayWindLoad(): number;
   setScratchpadText(value: string): void;
   setScratchpadUserData(value: string): void;
+  addMessageToQueue(
+    message: TypeIIMessage,
+    isResolvedOverride?: (arg0: any) => any,
+    onClearOverride?: (arg0: any) => any,
+  ): void;
   removeMessageFromQueue(value: string): void;
   activateMcduScratchpad(): void;
   isSubsystemRequesting(subsystem: 'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'): boolean;

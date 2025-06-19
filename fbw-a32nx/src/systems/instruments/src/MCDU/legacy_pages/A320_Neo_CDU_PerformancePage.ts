@@ -748,7 +748,7 @@ export class CDUPerformancePage {
         CDUPerformancePage.ShowCRZPage(mcdu, forPlan, false);
       };
       mcdu.onRightInput[4] = () => {
-        CDUStepAltsPage.ShowPage(mcdu);
+        CDUStepAltsPage.ShowPage(mcdu, forPlan);
       };
     }
 
