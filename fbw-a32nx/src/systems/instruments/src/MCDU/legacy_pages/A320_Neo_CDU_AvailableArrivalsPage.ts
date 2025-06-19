@@ -23,6 +23,7 @@ import {
   ApproachType,
   ApproachUtils,
   Arrival,
+  NXUnits,
   Runway,
   RunwayUtils,
 } from '@flybywiresim/fbw-sdk';
@@ -221,7 +222,7 @@ export class CDUAvailableArrivalsPage {
             rows[2 * i] = [
               `{${color}}${!isSelected ? '{' : '{sp}'}${ApproachUtils.shortApproachName(approachOrRunway)}{end}`,
               '',
-              `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`,
+              `{sp}{sp}${NXUnits.mToUser(runwayLength).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}[color]${color}`,
             ];
             rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
           }
@@ -262,9 +263,9 @@ export class CDUAvailableArrivalsPage {
           rows[2 * i] = [
             `{${color}}${!isSelected ? '{' : '{sp}'}${RunwayUtils.runwayString(approachOrRunway.ident)}{end}`,
             '',
-            `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`,
+            `{sp}{sp}${NXUnits.mToUser(runwayLength).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}[color]${color}`,
           ];
-          rows[2 * i + 1] = ['{sp}{sp}{sp}{sp}' + runwayCourse + '[color]cyan'];
+          rows[2 * i + 1] = ['{sp}{sp}{sp}' + runwayCourse + '[color]cyan'];
 
           mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
             // Clicking the already selected runway is not allowed
