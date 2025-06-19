@@ -314,6 +314,8 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 
   private autoBrkRef = FSComponent.createRef<SVGTextElement>();
 
+  private modeArmed = FSComponent.createRef<SVGPathElement>();
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -346,6 +348,9 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
             this.text.set('');
             break;
         }
+        this.text.get() === ''
+          ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
+          : this.modeArmed.instance.setAttribute('visibility', 'visible');
       });
 
     sub
@@ -374,9 +379,18 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <text ref={this.autoBrkRef} class={this.className} x="341" y="71.6" style="white-space: pre">
-        {this.text}
-      </text>
+      <g id="A2">
+        <path
+          ref={this.modeArmed}
+          visibility="hidden"
+          class="NormalStroke Green"
+          d="m263.9 39.2 h 160"
+          stroke-dasharray="10 8"
+        />
+        <text ref={this.autoBrkRef} class={this.className} x="341" y="71.6" style="white-space: pre">
+          {this.text}
+        </text>
+      </g>
     );
   }
 }
@@ -649,6 +663,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   private AB3Message = false;
 
+  private modeArmed = FSComponent.createRef<SVGPathElement>();
+
   private onUpdateAthrModeMessage(message: number) {
     let text: string = '';
     let className: string = '';
@@ -683,9 +699,11 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   private handleAutobrakeMode() {
     if (this.autobrakeMode === 6 && !this.AB3Message) {
+      this.modeArmed.instance.setAttribute('visibility', 'visible');
       this.textSub.set('BRK RTO');
       this.classSub.set('FontMediumSmaller MiddleAlign Green');
     } else {
+      this.modeArmed.instance.setAttribute('visibility', 'hidden');
       this.textSub.set('');
     }
   }
@@ -727,9 +745,18 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
   render(): VNode {
     return (
-      <text class={this.classSub} x="341" y="108">
-        {this.textSub}
-      </text>
+      <g id="A3">
+        <path
+          ref={this.modeArmed}
+          visibility="hidden"
+          class="NormalStroke Green"
+          d="m263.9 79.2 h 160"
+          stroke-dasharray="10 8"
+        />
+        <text class={this.classSub} x="341" y="108">
+          {this.textSub}
+        </text>
+      </g>
     );
   }
 }
@@ -1045,6 +1072,8 @@ class B2Cell extends DisplayComponent<CellProps> {
 
   private classSub = Subject.create('');
 
+  private modeArmed = FSComponent.createRef<SVGPathElement>();
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -1102,12 +1131,23 @@ class B2Cell extends DisplayComponent<CellProps> {
         this.text1Sub.set(text1);
         this.text2Sub.set(text2);
         this.classSub.set(`FontMediumSmaller MiddleAlign ${color1}`);
+
+        gsArmed || openClimbArmed || altArmed || altCstArmed || clbArmed || desArmed
+          ? this.modeArmed.instance.setAttribute('visibility', 'visible')
+          : this.modeArmed.instance.setAttribute('visibility', 'hidden');
       });
   }
 
   render(): VNode {
     return (
-      <g>
+      <g id="B2">
+        <path
+          ref={this.modeArmed}
+          visibility="hidden"
+          class="NormalStroke Green"
+          d="m433 39.2 h 140"
+          stroke-dasharray="10 8"
+        />
         <text class={this.classSub} style="white-space: pre" x="463.5" y="72">
           {this.text1Sub}
         </text>
@@ -1224,6 +1264,8 @@ class C2Cell extends DisplayComponent<CellProps> {
 
   private textSub = Subject.create('');
 
+  private modeArmed = FSComponent.createRef<SVGPathElement>();
+
   private getText() {
     const navArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.NAV);
     const locArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.LOC);
@@ -1244,6 +1286,9 @@ class C2Cell extends DisplayComponent<CellProps> {
       text = 'NAV';
     }
     this.textSub.set(text);
+    navArmed || locArmed
+      ? this.modeArmed.instance.setAttribute('visibility', 'visible')
+      : this.modeArmed.instance.setAttribute('visibility', 'hidden');
   }
 
   onAfterRender(node: VNode): void {
@@ -1262,9 +1307,18 @@ class C2Cell extends DisplayComponent<CellProps> {
 
   render(): VNode {
     return (
-      <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Green" x="650.5" y="68">
-        {this.textSub}
-      </text>
+      <g id="C2">
+        <path
+          ref={this.modeArmed}
+          visibility="hidden"
+          class="NormalStroke Green"
+          d="m583 39.2 h 138"
+          stroke-dasharray="10 8"
+        />
+        <text style="white-space: pre" class="FontMediumSmaller MiddleAlign Green" x="650.5" y="68">
+          {this.textSub}
+        </text>
+      </g>
     );
   }
 }
