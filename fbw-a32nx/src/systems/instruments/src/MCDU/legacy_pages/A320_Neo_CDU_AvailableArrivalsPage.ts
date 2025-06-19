@@ -203,7 +203,7 @@ export class CDUAvailableArrivalsPage {
 
           const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approachOrRunway.runwayIdent);
           if (runway) {
-            runwayLength = runway.length.toFixed(0);
+            runwayLength = NXUnits.mToUser(runway.length).toFixed(0);
             runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
             const finalLeg = approachOrRunway.legs[approachOrRunway.legs.length - 1];
@@ -222,7 +222,7 @@ export class CDUAvailableArrivalsPage {
             rows[2 * i] = [
               `{${color}}${!isSelected ? '{' : '{sp}'}${ApproachUtils.shortApproachName(approachOrRunway)}{end}`,
               '',
-              `{sp}{sp}${NXUnits.mToUser(runwayLength).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}[color]${color}`,
+              `{sp}{sp}${runwayLength.padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}[color]${color}`,
             ];
             rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
           }
@@ -251,7 +251,6 @@ export class CDUAvailableArrivalsPage {
             }
           };
         } else {
-          const runwayLength = approachOrRunway.length.toFixed(0);
           const runwayCourse = Utils.leadingZeros(Math.round(approachOrRunway.magneticBearing), 3);
 
           const isSelected =
@@ -263,7 +262,7 @@ export class CDUAvailableArrivalsPage {
           rows[2 * i] = [
             `{${color}}${!isSelected ? '{' : '{sp}'}${RunwayUtils.runwayString(approachOrRunway.ident)}{end}`,
             '',
-            `{sp}{sp}${NXUnits.mToUser(runwayLength).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}[color]${color}`,
+            `{sp}{sp}${NXUnits.mToUser(approachOrRunway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}[color]${color}`,
           ];
           rows[2 * i + 1] = ['{sp}{sp}{sp}' + runwayCourse + '[color]cyan'];
 
