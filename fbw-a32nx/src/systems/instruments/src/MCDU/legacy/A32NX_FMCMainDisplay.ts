@@ -5305,7 +5305,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             A32NX_FuelPred.computations.CORRECTIONS,
             true,
           );
-        if (20 < airDistance && airDistance < 200 && 100 < alternateCruiseLevel && alternateCruiseLevel < 290) {
+        if (20 < airDistance && airDistance < 200 && 100 <= alternateCruiseLevel && alternateCruiseLevel < 290) {
           computations.alternateFuel =
             (A32NX_FuelPred.computeNumbers(airDistance, alternateCruiseLevel, A32NX_FuelPred.computations.FUEL, true) +
               deviation) /
