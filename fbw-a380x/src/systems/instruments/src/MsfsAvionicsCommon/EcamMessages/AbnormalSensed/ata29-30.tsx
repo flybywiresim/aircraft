@@ -474,8 +474,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        // During taxi-in, if the FLAPS lever is set to 0 for more than one minute
-        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        name: 'FOR TAXI : FLAP LVR 1',
         sensed: false,
       },
       {
@@ -515,8 +514,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        // During taxi-in, if the FLAPS lever is set to 0 for more than one minute
-        name: 'FOR TAXI : FLAPS SELECT CONF 1+F',
+        name: 'FOR TAXI : FLAP LVR 1',
         sensed: false,
       },
       {

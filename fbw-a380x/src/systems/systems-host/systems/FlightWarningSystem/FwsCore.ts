@@ -972,8 +972,6 @@ export class FwsCore {
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
 
-  public readonly taxiInFlap0Check = new NXLogicConfirmNode(60, false);
-
   /* FUEL */
 
   public readonly engine1ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_1'), false);
@@ -3843,9 +3841,6 @@ export class FwsCore {
         !this.toConfigPulseNode.read() &&
         (phase3 || this.toConfigCheckedInPhase2Or3),
     );
-
-    // taxi in flap 0 one minute check
-    this.taxiInFlap0Check.write(this.slatFlapSelectionS0F0 && this.flightPhase.get() == 11, deltaTime);
 
     this.flapsMcduDisagree.set(
       (flapsMcduPos1Disagree || flapsMcduPos2Disagree || flapsMcduPos3Disagree) &&
