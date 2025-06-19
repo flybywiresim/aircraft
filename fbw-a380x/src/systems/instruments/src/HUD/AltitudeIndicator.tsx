@@ -997,18 +997,22 @@ class MetricAltIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     if (this.needsUpdate) {
       this.needsUpdate = false;
       const showMetricAlt = this.state.metricAltToggle;
-      if (!showMetricAlt && !this.metricAltHudVis) {
-        this.metricAlt.instance.style.display = 'none';
-      } else {
-        this.metricAlt.instance.style.display = 'inline';
-        const currentMetricAlt = Math.round((this.altitude.get().value * 0.3048) / 10) * 10;
-        this.metricAltText.instance.textContent = currentMetricAlt.toString();
+      if (showMetricAlt) {
+        if (this.metricAltHudVis) {
+          this.metricAlt.instance.style.display = 'inline';
+          const currentMetricAlt = Math.round((this.altitude.get().value * 0.3048) / 10) * 10;
+          this.metricAltText.instance.textContent = currentMetricAlt.toString();
 
-        const targetMetric =
-          Math.round(
-            ((this.state.altIsManaged ? this.state.targetAltManaged : this.state.targetAltSelected) * 0.3048) / 10,
-          ) * 10;
-        this.metricAltTargetText.instance.textContent = targetMetric.toString();
+          const targetMetric =
+            Math.round(
+              ((this.state.altIsManaged ? this.state.targetAltManaged : this.state.targetAltSelected) * 0.3048) / 10,
+            ) * 10;
+          this.metricAltTargetText.instance.textContent = targetMetric.toString();
+        } else {
+          this.metricAlt.instance.style.display = 'none';
+        }
+      } else {
+        this.metricAlt.instance.style.display = 'none';
       }
     }
   }
