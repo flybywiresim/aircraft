@@ -203,7 +203,7 @@ export class CDUAvailableArrivalsPage {
 
           const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approachOrRunway.runwayIdent);
           if (runway) {
-            runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
+            runwayLength = runway.length.toFixed(0);
             runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
             const finalLeg = approachOrRunway.legs[approachOrRunway.legs.length - 1];
@@ -251,7 +251,7 @@ export class CDUAvailableArrivalsPage {
             }
           };
         } else {
-          const runwayLength = approachOrRunway.length.toFixed(0); // TODO imperial length pin program
+          const runwayLength = approachOrRunway.length.toFixed(0);
           const runwayCourse = Utils.leadingZeros(Math.round(approachOrRunway.magneticBearing), 3);
 
           const isSelected =
