@@ -155,16 +155,16 @@ export class FmcAircraftInterface {
 
   private readonly destEfobBelowMinScratchPadMessage = Subject.create(false);
 
+  /* The following RA subs are paused during any FMS flightphase outside go around or approach as they are not needed outside those phases for the destination EFOB logic
+   */
   private readonly radioAltitudeA = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_1'),
     Arinc429Register.empty().rawWord,
   );
-
   private readonly radioAltitudeB = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_2'),
     Arinc429Register.empty().rawWord,
   );
-
   private readonly radioAltitudeC = Arinc429LocalVarConsumerSubject.create(
     this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_3'),
     Arinc429Register.empty().rawWord,
@@ -273,7 +273,7 @@ export class FmcAircraftInterface {
         }
       }),
       this.tdReached,
-      this.fmgc.data.pilotEntryminFuelBelowAltnPlusFinal.sub((v) => {
+      this.fmgc.data.pilotEntryMinFuelBelowAltnPlusFinal.sub((v) => {
         if (v) {
           this.fmc.addMessageToQueue(NXSystemMessages.checkMinFuelAtDest, undefined, undefined);
         } else {

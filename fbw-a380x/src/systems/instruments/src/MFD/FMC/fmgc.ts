@@ -147,7 +147,7 @@ export class FmgcData {
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly alternateFuelCalculated = Subject.create<number | null>(6_500); // FIX ME Hardcoded value. Derive from FMS predictions
+  public readonly alternateFuelCalculated = Subject.create<number | null>(6_500); // FIXME Hardcoded value. Derive from FMS predictions.
 
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -161,7 +161,7 @@ export class FmgcData {
   public readonly finalFuelWeightPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly finalFuelWeightCalculated = Subject.create<number | null>(4_650); // FIX ME
+  public readonly finalFuelWeightCalculated = Subject.create<number | null>(4_650); // FIXME Hardcoded value. Derive from configured final time based on hold at 1500ft with flaps 1.
 
   public readonly finalFuelWeight = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -198,7 +198,7 @@ export class FmgcData {
     (it) => it !== null,
   );
 
-  public readonly pilotEntryminFuelBelowAltnPlusFinal = MappedSubject.create(
+  public readonly pilotEntryMinFuelBelowAltnPlusFinal = MappedSubject.create(
     ([minFuel, altnFuel, finalFuel]) =>
       minFuel != null && altnFuel != null && finalFuel != null && minFuel < altnFuel + finalFuel,
     this.minimumFuelAtDestinationPilotEntry,
