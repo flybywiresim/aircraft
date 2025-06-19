@@ -1048,7 +1048,12 @@ export class CDUPerformancePage {
     let flpRetrCell = '---';
     let sltRetrCell = '---';
     let cleanCell = '---';
-    if (Number.isFinite(plan.performanceData.zeroFuelWeight) && mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
+    if (
+      isActivePlan &&
+      Number.isFinite(plan.performanceData.zeroFuelWeight) &&
+      mcdu.approachSpeeds &&
+      mcdu.approachSpeeds.valid
+    ) {
       vappCell = `{cyan}{small}${mcdu.approachSpeeds.vapp.toFixed(0)}{end}{end}`;
       vlsCell = `{green}${mcdu.approachSpeeds.vls.toFixed(0)}{end}`;
       flpRetrCell = `{green}${mcdu.approachSpeeds.f.toFixed(0)}{end}`;
@@ -1194,6 +1199,7 @@ export class CDUPerformancePage {
       }
     };
 
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
     const plan = mcdu.getFlightPlan(forPlan);
     const haveDestination = plan.destinationAirport !== undefined;
 
@@ -1234,7 +1240,7 @@ export class CDUPerformancePage {
     let flpRetrCell = '---';
     let sltRetrCell = '---';
     let cleanCell = '---';
-    if (Number.isFinite(plan.performanceData.zeroFuelWeight)) {
+    if (isActivePlan && Number.isFinite(plan.performanceData.zeroFuelWeight)) {
       if (Number.isFinite(mcdu.approachSpeeds.f)) {
         flpRetrCell = `{green}${mcdu.approachSpeeds.f.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
