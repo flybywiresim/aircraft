@@ -2453,6 +2453,8 @@ export class FwsAbnormalSensed {
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
         !this.fws.aircraftOnGround.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        this.fws.allPrimFailed.get(),
+        this.fws.allPrimFailed.get(),
         true,
       ],
       whichItemsChecked: () => [
@@ -2460,6 +2462,8 @@ export class FwsAbnormalSensed {
         this.fws.prim1OffThenOnMemoryNode.read(),
         this.fws.prim1OffThenOnMemoryNode.read(),
         this.fws.prim1PbOff.get(),
+        true,
+        true,
         true,
         true,
         true,
@@ -2484,6 +2488,8 @@ export class FwsAbnormalSensed {
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
         !this.fws.aircraftOnGround.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        this.fws.allPrimFailed.get(),
+        this.fws.allPrimFailed.get(),
         true,
       ],
       whichItemsChecked: () => [
@@ -2492,6 +2498,8 @@ export class FwsAbnormalSensed {
         this.fws.prim2OffThenOnMemoryNode.read(),
         this.fws.prim2PbOff.get(),
         !this.fws.prim2PbOff.get(),
+        true,
+        true,
         true,
         true,
         true,
@@ -2515,6 +2523,8 @@ export class FwsAbnormalSensed {
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
         !this.fws.aircraftOnGround.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
+        this.fws.allPrimFailed.get(),
+        this.fws.allPrimFailed.get(),
         true,
       ],
       whichItemsChecked: () => [
@@ -2522,6 +2532,8 @@ export class FwsAbnormalSensed {
         this.fws.prim3OffThenOnMemoryNode.read(),
         this.fws.prim3OffThenOnMemoryNode.read(),
         this.fws.prim3PbOff.get(),
+        true,
+        true,
         true,
         true,
         true,
