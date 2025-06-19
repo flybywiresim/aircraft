@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Importa Dati SimBrief",
       "TT": {
         "IncreaseFontSize": "Aumenta Dimensione Carattere",
         "ReduceFontSize": "Riduci Dimensione Carattere"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Dati",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO Aeroporto",
       "ApproachSpeed": "Velocità Avvicinamento",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "Cancella",
       "DropDownNo": "No",
       "DropDownYes": "Sì",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Completa dati da",
       "FlapsConfiguration": "Configurazione Flap",
+      "LandingWeight": "Landing Weight",
       "Low": "Low",
       "MaximumManual": "Maximum Manual",
       "Medium": "Medium",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Procedura Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
-      "RunwayAltitude": "Elevazione Pista",
-      "RunwayAltitudeUnit": "ft ASL",
+      "Runway": "Runway",
       "RunwayCondition": "Condizioni Pista",
       "RunwayConditions": {
         "Dry": "Asciutta (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Medio-Scarsa (2)",
         "Poor": "Scarsa (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Orientamento Pista",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "LDA Pista",
@@ -330,27 +333,24 @@
       "Title": "Atterraggio",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Peso",
-      "WindDirection": "Direzione Vento",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Magnitudo Vento",
-      "WindMagnitudeUnit": "kts"
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts o °/kts"
     },
     "SYNC": "SYNC",
     "Takeoff": {
-      "Airport": "Airport",
-      "AntiIce": "Anti-Ice",
-      "Calculate": "Calculate",
+      "Airport": "Aeroporto",
+      "AntiIce": "Antighiaccio",
+      "Calculate": "Calcola",
       "CentreOfGravity": "TOCG",
-      "Clear": "Clear",
-      "CoGPosition": "CG Position",
+      "Clear": "Cancella",
+      "CoGPosition": "Posizione CG",
       "CoGPositions": {
-        "Forward": "Forward (<27%)",
+        "Forward": "Avanti (<27%)",
         "Standard": "Standard"
       },
-      "Configuration": "Configuration",
+      "Configuration": "Configurazione",
       "CrosswindAboveLimitMessage": "Do you want to perform the computation with {actual_crosswind} knots?",
-      "CrosswindAboveLimitTitle": "Maximum Crosswind Is {max_crosswind} Knots",
+      "CrosswindAboveLimitTitle": "Vento al Traverso massimo é {max_crosswind} Nodi",
       "EnterManually": "Enter Manually",
       "EntryAngle": "Entry Angle",
       "EntryAngles": {
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -395,7 +393,9 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "Allinea ADIRS istantaneamente",
       "AutoBrightness": "Attiva/disattiva la Luminosità Automatica",
       "Brightness": "Imposta la luminosità del flyPad",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Completa l'imbarco istantaneamente",
       "OnScreenKeyboard": "Attiva/disattiva la tastiera su schermo",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +569,6 @@
     },
     "Title": "Controlli Rapidi"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Informazioni"
@@ -585,7 +585,7 @@
       "Select": "Select",
       "ThrustReductionHeight": "Altezza Riduzione Spinta (ft)",
       "Title": "Opzioni Aeromobile / Definisci Comportamenti",
-      "WeightUnit": "Unità Peso"
+      "WeightUnit": "Unità US"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Fonte ATIS/ATC",
@@ -644,18 +644,17 @@
       "PauseAtTodDistance": "Distanza Interruzione T/D (nm)",
       "PilotAvatar": "Mostra Avatar Pilota",
       "SeparateTillerFromRudderInputs": "Separa Tiller dagli Input del Timone",
-      "SyncEfis": "Sincronizza controlli EFIS tra Comandante e Primo Ufficiale",
+      "SyncEfis": "Sincronizza controlli EFIS e Audio tra Comandante e Primo Ufficiale",
       "Title": "Realismo"
     },
     "SimOptions": {
       "Active": "Attivo",
       "Auto": "Auto",
       "Both": "Sincronizzato",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibra",
-      "Captain": "Comandante",
-      "CockpitSeatUsedToControl": "Posto Cockpit Da Utilizzare",
       "ConesEnabled": "Coni di Sicurezza",
-      "Copilot": "Primo Ufficiale",
       "DefaultBarometerUnit": "Unità Barometro Predefinita",
       "DynamicRegistrationDecal": "Decalco Registrazione Dinamico",
       "EnableSimBridge": "Abilita Connessione SimBridge (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
@@ -698,6 +697,7 @@
         "SettingTitle": "Link all'account Navigraph",
         "SubscriptionStatus": {
           "None": "Nessuna",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph illimitato"
         },
@@ -736,6 +736,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Impostazioni",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Irrealistico",
     "flyPad": {
       "AutoBrightness": "Luminosità Automatica",
@@ -744,7 +747,6 @@
       "Blue": "Blu",
       "Brightness": "Luminosità",
       "Dark": "Scuro",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Lingua",
       "Light": "Chiaro",
       "Local": "Locale",
@@ -761,8 +763,6 @@
       "UtcAndLocal": "UTC e Locale"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Ago",
