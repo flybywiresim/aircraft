@@ -708,7 +708,7 @@ export class SpoilersIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
 }
 
 export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems>();
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems & ClockEvents>();
   private revGroupRef = FSComponent.createRef<SVGGElement>();
   private rev2Ref = FSComponent.createRef<SVGGElement>();
   private rev3Ref = FSComponent.createRef<SVGGElement>();
@@ -724,16 +724,20 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
 
   private readonly reverser2State = MappedSubject.create(
-    ([rev2, tla2, eng2State]) => {
-      if (rev2 === 1) {
-        if (eng2State === 1) {
-          if (tla2 > -7) {
-            return 1; // rev deployement in progress  display dash
-          } else if (tla2 <= -7) {
-            return 2; // rev on  display R
+    ([rev2, tla2, eng2State, hudMode]) => {
+      if (hudMode !== 0) {
+        if (rev2 === 1) {
+          if (eng2State === 1) {
+            if (tla2 > -7) {
+              return 1; // rev deployement in progress  display dash
+            } else if (tla2 <= -7) {
+              return 2; // rev on  display R
+            }
+          } else {
+            return 3; // not opperative  display cross
           }
         } else {
-          return 3; // not opperative  display cross
+          return 0; // show nothing
         }
       } else {
         return 0; // show nothing
@@ -745,16 +749,20 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
     this.hudMode,
   );
   private readonly reverser3State = MappedSubject.create(
-    ([rev3, tla3, eng3State]) => {
-      if (rev3 === 1) {
-        if (eng3State === 1) {
-          if (tla3 > -7) {
-            return 1; // rev deployement in progress  display dash
-          } else if (tla3 <= -7) {
-            return 2; // rev on  display R
+    ([rev3, tla3, eng3State, hudMode]) => {
+      if (hudMode !== 0) {
+        if (rev3 === 1) {
+          if (eng3State === 1) {
+            if (tla3 > -7) {
+              return 1; // rev deployement in progress  display dash
+            } else if (tla3 <= -7) {
+              return 2; // rev on  display R
+            }
+          } else {
+            return 3; // not opperative  display cross
           }
         } else {
-          return 3; // not opperative  display cross
+          return 0; // show nothing
         }
       } else {
         return 0; // show nothing
@@ -763,6 +771,7 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
     this.rev3,
     this.tla3,
     this.eng3State,
+    this.hudMode,
   );
 
   private setState() {
@@ -803,17 +812,14 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.sub
-      .on('hudFlightPhaseMode')
-      .whenChanged()
-      .handle((v) => {
-        if (v !== 0) {
-          this.revGroupRef.instance.style.display = 'block';
-          this.setState();
-        } else {
-          this.revGroupRef.instance.style.display = 'none';
-        }
-      });
+    this.sub.on('realTime').handle(() => {
+      if (this.reverser2State.get() !== 0 && this.reverser3State.get() !== 0) {
+        this.revGroupRef.instance.style.display = 'block';
+        this.setState();
+      } else {
+        this.revGroupRef.instance.style.display = 'none';
+      }
+    });
   }
   //>
   render(): VNode | null {
