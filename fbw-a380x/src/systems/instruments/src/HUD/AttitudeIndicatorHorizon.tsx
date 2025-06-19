@@ -30,6 +30,7 @@ import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HeadingOfftape } from './HeadingIndicator';
 import { SyntheticRunway } from './SyntheticRunway';
 import { VerticalMode } from '@shared/autopilot';
+import { FmgcFlightPhase } from '@shared/flightphase';
 const DisplayRange = 35;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
@@ -481,7 +482,6 @@ class PitchScale extends DisplayComponent<{
   filteredRadioAlt: Subscribable<number>;
 }> {
   private forcedFma = false;
-  private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
 
@@ -498,18 +498,22 @@ class PitchScale extends DisplayComponent<{
   private pitchScaleMode = PitchscaleMode.FULL;
   private activeVerticalModeSub = Subject.create(0);
   private selectedFpa = Subject.create(0);
-
+  private gsArmed = false;
   private threeDegPath = FSComponent.createRef<SVGPathElement>();
   private threeDegTxtRef = FSComponent.createRef<SVGTextElement>();
   private threeDegTxtBgRef = FSComponent.createRef<SVGPathElement>();
-
   private readonly ls1btn = ConsumerSubject.create(this.sub.on('ls1Button').whenChanged(), false);
   private readonly ls2btn = ConsumerSubject.create(this.sub.on('ls2Button').whenChanged(), false);
   private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
+  private readonly flightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase').whenChanged(), 0);
   private readonly threeDegLineVis = MappedSubject.create(
-    ([ls1btn, ls2btn, decMode]) => {
+    ([ls1btn, ls2btn, decMode, flightPhase]) => {
       if (ls1btn || ls2btn) {
-        return decMode === 2 ? 'none' : 'block';
+        if (flightPhase === FmgcFlightPhase.Approach) {
+          return 'block';
+        } else {
+          return decMode === 2 ? 'none' : 'block';
+        }
       } else {
         return 'none';
       }
@@ -517,6 +521,7 @@ class PitchScale extends DisplayComponent<{
     this.ls1btn,
     this.ls2btn,
     this.decMode,
+    this.flightPhase,
   );
   private data: LSPath = {
     roll: new Arinc429Word(0),
@@ -542,6 +547,12 @@ class PitchScale extends DisplayComponent<{
     super.onAfterRender(node);
 
     this.sub
+      .on('fmaVerticalArmed')
+      .whenChanged()
+      .handle((fmv) => {
+        ((fmv >> 4) & 1) === 1 ? (this.gsArmed = true) : (this.gsArmed = false);
+      });
+    this.sub
       .on('pitchScaleMode')
       .whenChanged()
       .handle((v) => {
@@ -553,7 +564,6 @@ class PitchScale extends DisplayComponent<{
       .on('decMode')
       .whenChanged()
       .handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
         this.declutterMode = value;
         this.setPitchScale();
       });
@@ -610,7 +620,12 @@ class PitchScale extends DisplayComponent<{
 
     const fpaTxt = this.selectedFpa.get() % 1 === 0 ? `${this.selectedFpa.get()}.0°` : `${this.selectedFpa.get()}°`;
 
-    if (this.activeVerticalModeSub.get() === VerticalMode.GS_TRACK) {
+    if (
+      this.activeVerticalModeSub.get() === VerticalMode.GS_TRACK ||
+      this.activeVerticalModeSub.get() === VerticalMode.GS_CPT ||
+      this.activeVerticalModeSub.get() === VerticalMode.LAND ||
+      this.gsArmed === true
+    ) {
       this.threeDegPath.instance.setAttribute(
         'd',
         `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
@@ -619,7 +634,7 @@ class PitchScale extends DisplayComponent<{
       this.threeDegTxtRef.instance.textContent = '-3.0°'; //TODO get the actual slope of the ILS
       this.threeDegTxtRef.instance.classList.remove('Green');
       this.threeDegTxtRef.instance.classList.add('InverseGreen');
-
+      this.threeDegTxtBgRef.instance.style.display = `block`;
       this.threeDegTxtBgRef.instance.classList.add('GreenFill3');
       this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
       this.threeDegTxtBgRef.instance.setAttribute('d', `m 800 ${512 + (3 / 5) * FIVE_DEG - 13.5} h 45 v 27 h -45 z `);
@@ -637,7 +652,7 @@ class PitchScale extends DisplayComponent<{
       this.threeDegTxtRef.instance.textContent = fpaTxt;
       this.threeDegTxtRef.instance.classList.remove('InverseGreen');
       this.threeDegTxtRef.instance.classList.add('Green');
-
+      this.threeDegTxtBgRef.instance.style.display = `none`;
       this.threeDegTxtBgRef.instance.classList.remove('GreenFill3');
       this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG}`);
       this.threeDegTxtBgRef.instance.setAttribute('d', ``);
@@ -646,11 +661,8 @@ class PitchScale extends DisplayComponent<{
         'd',
         `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
       );
+      this.threeDegTxtBgRef.instance.style.display = `none`;
     }
-
-    this.activeVerticalModeSub.get() != VerticalMode.FPA && this.activeVerticalModeSub.get() != VerticalMode.GS_TRACK
-      ? (this.threeDegTxtBgRef.instance.style.display = `none`)
-      : (this.threeDegTxtBgRef.instance.style.display = `block`);
   }
   render(): VNode {
     const result = [] as SVGTextElement[];
