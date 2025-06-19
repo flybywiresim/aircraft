@@ -218,7 +218,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
     const showMda =
       (this.radioAltitudeValid || this.qnhLandingAltValid || this.qfeLandingAltValid) &&
-      Math.abs(altDelta) <= 570 &&
+      Math.abs(altDelta) <= DisplayRange &&
       !this.mda.get().isFailureWarning() &&
       !this.mda.get().isNoComputedData();
 
@@ -228,7 +228,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
     }
 
     const offset = (altDelta * DistanceSpacing) / ValueSpacing;
-    this.path.set(`m 127.9276,${80.249604 - offset} h 5.80948 v 1.124908 h -5.80948 z`);
+    this.path.set(`m 577 ,${360 - offset} h 23 v 5 h -23z`);
     this.visibility.set('visible');
   }
 
@@ -241,7 +241,6 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
     );
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
-
     sub
       .on('chosenRa')
       .whenArinc429SsmChanged()
@@ -474,11 +473,7 @@ interface SelectedAltIndicatorProps {
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
-  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents>();
-
-  private readonly altitude = Arinc429ConsumerSubject.create(
-    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
-  );
+  private readonly sub = this.props.bus.getSubscriber<A380XFcuBusEvents & HUDSimvars & Arinc429Values>();
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
@@ -501,6 +496,8 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   private targetSymbolRef = FSComponent.createRef<SVGPathElement>();
 
   private altTapeTargetText = FSComponent.createRef<SVGTextElement>();
+
+  private minimumLowerText = FSComponent.createRef<SVGTextElement>();
 
   private targetAltitudeSelected = 0;
 
@@ -527,6 +524,30 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
   }
 
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+  private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa').whenChanged());
+  private readonly mda = ConsumerSubject.create(this.sub.on('mda').whenChanged(), 0);
+  private readonly dh = ConsumerSubject.create(this.sub.on('dh').whenChanged(), 0);
+
+  private readonly isMinLowerAltTxtVisible = MappedSubject.create(
+    ([mda, dh, altitude, ra]) => {
+      const mdaDiff = altitude.value - mda;
+      const dhDiff = ra.value - dh;
+      console.log(mdaDiff, dhDiff);
+      if (mda > 0) {
+        return mdaDiff < 0 ? 'block' : 'none';
+      } else if (dh > 0) {
+        return dhDiff < 0 ? 'block' : 'none';
+      } else {
+        return 'none';
+      }
+    },
+    this.mda,
+    this.dh,
+    this.altitude,
+    this.ra,
+  );
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -536,7 +557,14 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     );
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
-
+    sub
+      .on('fmgcFlightPhase')
+      .whenChanged()
+      .handle((value) => {
+        value === FmgcFlightPhase.Approach
+          ? this.targetSymbolRef.instance.setAttribute('stroke-dasharray', '3 6')
+          : this.targetSymbolRef.instance.setAttribute('stroke-dasharray', '');
+      });
     sub
       .on('activeVerticalMode')
       .whenChanged()
@@ -614,11 +642,13 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
   private handleCrosswinMode() {
     if (this.props.mode === WindMode.Normal) {
+      this.minimumLowerText.instance.setAttribute('y', '580');
       this.selectedAltLowerText.instance.setAttribute('y', '580');
       this.selectedAltLowerFLText.instance.setAttribute('y', '580');
       this.selectedAltUpperText.instance.setAttribute('y', '167');
       this.selectedAltUpperFLText.instance.setAttribute('y', '167');
     } else {
+      this.minimumLowerText.instance.setAttribute('y', '465');
       this.selectedAltLowerText.instance.setAttribute('y', '465');
       this.selectedAltLowerFLText.instance.setAttribute('y', '465');
       this.selectedAltUpperText.instance.setAttribute('y', '280');
@@ -650,6 +680,17 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   render(): VNode | null {
     return (
       <>
+        <text
+          id="MinimumLowerText"
+          ref={this.minimumLowerText}
+          display={this.isMinLowerAltTxtVisible}
+          class="FontMedium EndAlign Green"
+          x="634"
+          y="580"
+          style="white-space: pre"
+        >
+          MINIMUM
+        </text>
         <g id="SelectedAltLowerGroup" ref={this.selectedAltLowerGroupRef}>
           <text
             id="SelectedAltLowerText"
@@ -697,7 +738,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
           <path
             class="NormalStroke Green"
             ref={this.targetSymbolRef}
-            d="m550.713 375.982v29.384h-31.626v-38.426l9.035 -4.521m21.726 -13.562v-29.384h-30.762v38.426l9.035 4.521"
+            d="m550.713 375.982  v 29.384 h -31.626 v -38.426  l 9.035 -4.521 l -9.035 -4.521 v -38.426  h 31 v  29.384"
           />
           <text
             id="AltTapeTargetText"
