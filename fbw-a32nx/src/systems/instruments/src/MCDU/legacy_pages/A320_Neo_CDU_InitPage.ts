@@ -392,7 +392,7 @@ export class CDUInitPage {
       Column.right,
     );
     const zfwCgCell = new Column(
-      23,
+      22,
       isForPrimary ? '__._' : '[\xa0.]',
       isForPrimary ? Column.amber : Column.cyan,
       Column.right,
