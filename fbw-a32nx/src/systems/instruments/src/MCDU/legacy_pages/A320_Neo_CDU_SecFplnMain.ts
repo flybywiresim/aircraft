@@ -9,6 +9,7 @@ import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { CDUPerformancePage } from './A320_Neo_CDU_PerformancePage';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
+import { NXSystemMessages } from '../messages/NXSystemMessages';
 
 export class CDUSecFplnMain {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -21,6 +22,12 @@ export class CDUSecFplnMain {
       mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
       mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
     };
+
+    mcdu.SelfPtr = setTimeout(() => {
+      if (mcdu.page.Current === mcdu.page.SecFplnMain) {
+        CDUSecFplnMain.ShowPage(mcdu);
+      }
+    }, mcdu.PageTimeout.Medium);
 
     const hasSecondary = mcdu.flightPlanService.hasSecondary(1);
     let hasFromTo = false;
@@ -65,7 +72,15 @@ export class CDUSecFplnMain {
     if (canActivateOrSwapSec) {
       activateSecColumn.update('*ACTIVATE SEC');
 
-      mcdu.onLeftInput[3] = () => {
+      mcdu.onLeftInput[3] = (_, scratchpadCallback) => {
+        // We should not get here, because the button is not even shown, but the page might not have refreshed yet to reflect
+        // the new NAV status
+        if (!canActivateOrSwapSec) {
+          mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
+          scratchpadCallback();
+          return;
+        }
+
         mcdu.flightPlanService.secondaryActivate(1).then(() => {
           mcdu.onSecondaryActivated();
           CDUFlightPlanPage.ShowPage(mcdu);
@@ -109,7 +124,15 @@ export class CDUSecFplnMain {
     if (canActivateOrSwapSec) {
       secSwapActiveColumn.update('*SWAP ACTIVE   ');
 
-      mcdu.onLeftInput[5] = async () => {
+      mcdu.onLeftInput[5] = async (_, scratchpadCallback) => {
+        // We should not get here, because the button is not even shown, but the page might not have refreshed yet to reflect
+        // the new NAV status
+        if (!canActivateOrSwapSec) {
+          mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
+          scratchpadCallback();
+          return;
+        }
+
         await mcdu.flightPlanService.activeAndSecondarySwap(1);
         mcdu.onSecondaryActivated();
         CDUFlightPlanPage.ShowPage(mcdu);
