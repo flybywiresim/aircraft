@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "SimBrief Verilerini İçe Aktar",
       "TT": {
         "IncreaseFontSize": "Font boyutunu büyüt",
         "ReduceFontSize": "Font boyutunu küçült"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Veri",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Havaalanı ICAO",
       "ApproachSpeed": "Yaklaşma Hızı",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "Temizle",
       "DropDownNo": "Hayır",
       "DropDownYes": "Evet",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Verileri doldurun",
       "FlapsConfiguration": "Flap Konfigürasyonu",
+      "LandingWeight": "Landing Weight",
       "Low": "Alçak",
       "MaximumManual": "Maksimum Manuel",
       "Medium": "Orta",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Overweight Prosedürleri",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Pist İrtifası",
-      "RunwayAltitudeUnit": "ft ASL",
+      "Runway": "Runway",
       "RunwayCondition": "Pist Durumu",
       "RunwayConditions": {
         "Dry": "Kuru (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Orta-Kötü (2)",
         "Poor": "Kötü (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Pist Başı",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Pist LDA",
@@ -330,10 +333,7 @@
       "Title": "İniş",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Ağırlık",
-      "WindDirection": "Rüzgar yönü",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Rüzgar Hızı",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Eşitle",
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -396,6 +394,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "ADIRS'i anında hizalayın",
       "AutoBrightness": "Otomatik Parlaklığı Açma/Kapatma",
       "Brightness": "flyPad parlaklığını ayarla",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Uçağa binmeyi anında bitir",
       "OnScreenKeyboard": "Ekran Klavyesini Açma/Kapatma",
       "PauseAtTod": "Top of Descent Noktasını Hazırla",
@@ -567,8 +569,6 @@
     },
     "Title": "Hızlı Kontroller"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Hakkında"
@@ -652,11 +652,10 @@
       "Active": "Etkin",
       "Auto": "Otomatik",
       "Both": "Senkronize edilmiş",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibrasyon",
-      "Captain": "Kaptan",
-      "CockpitSeatUsedToControl": "Kontrol için kullanılacak kokpit koltuğu",
       "ConesEnabled": "Emniyet Konileri",
-      "Copilot": "Yardımcı Pilot",
       "DefaultBarometerUnit": "Varsayılan Barometre Birimi",
       "DynamicRegistrationDecal": "Dinamik Kayıt Çıkartması",
       "EnableSimBridge": "SimBridge Bağlantısını Etkinleştir (Başarılı bir bağlantı yoksa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
@@ -699,6 +698,7 @@
         "SettingTitle": "Navigraph Hesap Bağlantısı",
         "SubscriptionStatus": {
           "None": "Yok",
+          "Standard": "Navigraph Standard",
           "Unknown": "Bilinmeyen",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -737,6 +737,9 @@
       "TogaOnAxis": "TOGA Eksende"
     },
     "Title": "Ayarlar",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Gerçekçi Değil",
     "flyPad": {
       "AutoBrightness": "Otomatik Parlaklık",
@@ -745,7 +748,6 @@
       "Blue": "Mavi",
       "Brightness": "Parlaklık",
       "Dark": "Koyu",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Dil",
       "Light": "Açık",
       "Local": "Yerel",
@@ -762,8 +764,6 @@
       "UtcAndLocal": "UTC ve Yerel"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Otomatik Kabin Aydınlatması",
-  "Settings.SimOptions.CabinManualBrightness": "Kabin Aydınlatma Parlaklığı",
   "StatusBar": {
     "Apr": "Nis",
     "Aug": "Ağu",

@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "SimBrief adatok importálása",
       "TT": {
         "IncreaseFontSize": "Betűméret növelése",
         "ReduceFontSize": "Betűméret csökkentése"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Adatok",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Repülőtér ICAO-kódja",
       "ApproachSpeed": "Megközelítési sebesség",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "Törlés",
       "DropDownNo": "Nem",
       "DropDownYes": "Igen",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Adatok kitöltése innen",
       "FlapsConfiguration": "Fékszárny konfiguráció",
+      "LandingWeight": "Landing Weight",
       "Low": "Alacsony",
       "MaximumManual": "Maximális kézi",
       "Medium": "Közepes",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Túlsúlyos eljárás",
       "Qnh": "QNH",
       "ReverseThrust": "Sugárfordító",
-      "RunwayAltitude": "Futópálya magassága",
-      "RunwayAltitudeUnit": "ft AMSL",
+      "Runway": "Runway",
       "RunwayCondition": "Futópálya állapota",
       "RunwayConditions": {
         "Dry": "Száraz (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Közepesen gyenge (2)",
         "Poor": "Rossz (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Futópálya iránya",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Futópálya hossza",
@@ -330,10 +333,7 @@
       "Title": "Leszállás",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Súly",
-      "WindDirection": "Szélirány",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Szélerősség",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Szinkronizálás",
@@ -377,8 +377,6 @@
       "Packs": "Légkondicionáló berendezések",
       "Qnh": "QNH",
       "Runway": "Futópálya",
-      "RunwayBearing": "Futópálya iránya",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Futópálya állapota",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Száraz hó - 100 mm/4\"",
@@ -396,6 +394,8 @@
       },
       "RunwayElevation": "Futópálya magassága",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Futópálya lejtése",
@@ -556,6 +556,8 @@
       "AlignAdirs": "ADIRS azonnali kapcsolódás",
       "AutoBrightness": "Automatikus fényerő be/ki ",
       "Brightness": "flyPad fényerejének beállítása",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Beszállítás azonnali befejezése",
       "OnScreenKeyboard": "Kijelző billentyűzet be/ki",
       "PauseAtTod": "Süllyedés kezdeténél való szünetelés be- és kikapcsolása",
@@ -567,8 +569,6 @@
     },
     "Title": "Gyors beállítások"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Automatikus kabinvilágítás be/ki kapcsolása",
-  "QuickControls.TT.CabinLighting": "Kabin világítás beállítás",
   "Settings": {
     "About": {
       "Title": "Névjegy"
@@ -652,11 +652,10 @@
       "Active": "Aktív",
       "Auto": "Automatikus",
       "Both": "Szinkronizálva",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibrálás",
-      "Captain": "Kapitány",
-      "CockpitSeatUsedToControl": "Kabin ülés az irányításhoz",
       "ConesEnabled": "Biztonsági bóják",
-      "Copilot": "másodpilóta",
       "DefaultBarometerUnit": "Alap barométer mértékegység",
       "DynamicRegistrationDecal": "Dinamikus regisztrációs matrica",
       "EnableSimBridge": "SimBridge Csatlakozás engedélyezése (Automatikus kikapcsolás 5 perc után, ha nincs sikeres kapcsolat)",
@@ -699,6 +698,7 @@
         "SettingTitle": "Navigraph fiók link",
         "SubscriptionStatus": {
           "None": "Egyik sem",
+          "Standard": "Navigraph Standard",
           "Unknown": "Nem ismert",
           "Unlimited": "Navigraph Korlátlan "
         },
@@ -737,6 +737,9 @@
       "TogaOnAxis": "TOGA a tengelyen"
     },
     "Title": "Beállítások",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Nem realisztikus",
     "flyPad": {
       "AutoBrightness": "Auto. fényerő",
@@ -745,7 +748,6 @@
       "Blue": "Kék",
       "Brightness": "Fényerő",
       "Dark": "Sötét",
-      "DisablePushbackConflictWarning": "Pushback rendszer konfliktus figyelmeztetés kikapcsolása",
       "Language": "Nyelv",
       "Light": "Világos",
       "Local": "Helyi",
@@ -762,8 +764,6 @@
       "UtcAndLocal": "UTC és helyi"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Automatikus kabinvilágítás",
-  "Settings.SimOptions.CabinManualBrightness": "Kabinvilágítás fényereje",
   "StatusBar": {
     "Apr": "Ápr.",
     "Aug": "Aug.",

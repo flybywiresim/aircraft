@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Εισαγωγή Δεδομένων Simbrief",
       "TT": {
         "IncreaseFontSize": "Μεγέθυνση Μεγέθους Γραμματοσειράς",
         "ReduceFontSize": "Μείωση Μεγέθους Γραμματοσειράς"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Δεδομένα",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO Αεροδρομίου",
       "ApproachSpeed": "Ταχύτητα Προσέγγισης",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "Εκκαθάριση",
       "DropDownNo": "Όχι",
       "DropDownYes": "Ναι",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Συμπλήρωση δεδομένων από",
       "FlapsConfiguration": "Διαμόρφωση Πτερυγίων",
+      "LandingWeight": "Landing Weight",
       "Low": "Χαμηλή",
       "MaximumManual": "Μέγιστο Τεχνικό Εγχειρίδιο ",
       "Medium": "Μεσαίο",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Διαδικασία Υπερβολικού Βάρους",
       "Qnh": "QNH",
       "ReverseThrust": "Ανάστροφη Ώση",
-      "RunwayAltitude": "Υψόμετρο Διαδρόμου",
-      "RunwayAltitudeUnit": "Πόδια Άνωθεν Επιπέδου Θαλάσσης ",
+      "Runway": "Runway",
       "RunwayCondition": "Κατάσταση Διαδρόμου",
       "RunwayConditions": {
         "Dry": "Dry (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Πορεία Διαδρόμου",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "LDA Διαδρόμου",
@@ -330,10 +333,7 @@
       "Title": "Προσγείωση",
       "UnitFt": "Πόδια",
       "UnitMeter": "Μέτρα",
-      "Weight": "Βάρος",
-      "WindDirection": "Κατεύθυνση Ανέμου",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Μέγεθος Ανέμου",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Συγχρονισμός",
@@ -377,8 +377,6 @@
       "Packs": "Συστήματα Παροχής Αέρα",
       "Qnh": "QNH",
       "Runway": "Διάδρομος",
-      "RunwayBearing": "Πορεία διαδρόμου",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Κατάσταση διαδρόμου",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Ξηρό χιόνι - 100 χιλιοστά/4\"",
@@ -396,6 +394,8 @@
       },
       "RunwayElevation": "Υψόμετρο διαδρόμου",
       "RunwayElevationUnit": "πόδια",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "πόδια",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Κλίση διαδρόμου",
@@ -556,6 +556,8 @@
       "AlignAdirs": "Άμεση ευθυγράμμιση των ADIRS.",
       "AutoBrightness": "Ενεργοποίηση/Απενεργοποίηση της αυτόματης φωτεινότητας",
       "Brightness": "Ορισμός φωτεινότητας flyPad.",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Ολοκλήρωσε αμέσως την επιβίβαση.",
       "OnScreenKeyboard": "Ενεργοποίηση/Απενεργοποίηση πληκτρολογίου οθόνης",
       "PauseAtTod": "Όπλιση ή αφόπλιση παύσης στην κορυφή της κατάβασης",
@@ -567,8 +569,6 @@
     },
     "Title": "Γρήγοροι έλεγχοι"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Σχετικά"
@@ -652,11 +652,10 @@
       "Active": "Ενεργό",
       "Auto": "Αυτόματο",
       "Both": "Συγχρονισμένο",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Βαθμονόμηση",
-      "Captain": "Κυβερνήτης",
-      "CockpitSeatUsedToControl": "Κάθισμα πιλοτηρίου που χρησιμοποιείται για έλεγχο",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Συγκυβερνήτης",
       "DefaultBarometerUnit": "Προκαθορισμένη Βαρομετρική Μονάδα",
       "DynamicRegistrationDecal": "Δυναμική Χαλκομανία Εγγραφής",
       "EnableSimBridge": "Ενεργοποίηση σύνδεσης Simbridge (Αυτόματη απενεργοποίηση μετά απο 5 λεπτά σε περίπτωση μη επιτυχούς σύνδεσης)",
@@ -699,6 +698,7 @@
         "SettingTitle": "Σύνδεση Λογαριασμού Navigraph",
         "SubscriptionStatus": {
           "None": "Κανένα",
+          "Standard": "Navigraph Standard",
           "Unknown": "Άγνωστο",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -737,6 +737,9 @@
       "TogaOnAxis": "TOGA στον άξονα"
     },
     "Title": "Ρυθμίσεις",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Μη Ρεαλιστικό",
     "flyPad": {
       "AutoBrightness": "Αυτόματη Φωτεινότητα",
@@ -745,7 +748,6 @@
       "Blue": "Μπλέ",
       "Brightness": "Φωτεινότητα",
       "Dark": "Σκοτεινό",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Γλώσσα",
       "Light": "Φωτεινό",
       "Local": "Τοπική",
@@ -762,8 +764,6 @@
       "UtcAndLocal": "UTC και Τοπική"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Απρ",
     "Aug": "Αυγ",
