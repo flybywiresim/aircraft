@@ -2362,6 +2362,11 @@
         <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="Wiper_Base_l" />
         <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="Wiper_Base_l" />
 
+        <!-- F/CTL Priority ====================================================================================-->
+        <Sound WwiseData="true" WwiseEvent="dualinput" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="priorityleft" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="priorityright" NodeName="Wiper_Base_l" />
+
         <!-- New RA callouts ====================================================================================-->
         <Sound WwiseData="true" WwiseEvent="new_5" NodeName="Wiper_Base_l" />
         <Sound WwiseData="true" WwiseEvent="new_10" NodeName="Wiper_Base_l" />
