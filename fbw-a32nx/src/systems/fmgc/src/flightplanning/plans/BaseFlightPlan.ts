@@ -24,7 +24,13 @@ import {
   WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
-import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import {
+  FlightPlanElement,
+  FlightPlanLeg,
+  FlightPlanLegFlags,
+  isDiscontinuity,
+  isLeg,
+} from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/segments/DepartureSegment';
 import { ArrivalSegment } from '@fmgc/flightplanning/segments/ArrivalSegment';
 import { ApproachSegment } from '@fmgc/flightplanning/segments/ApproachSegment';
@@ -1242,6 +1248,28 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
+  // A -> B -> C -> D -> E -> F -> G -> H -> I -> J
+  // |__________|   |______________|    |_________|
+  //     DEP            ENROUTE             ARR
+
+  // Insert NEW DEST at  C
+
+  // A -> B -> C -> D -> E -> F -> G -> H -> I -> J
+  // |____|    |__________________________________|
+  //   DEP                     ENROUTE
+
+  // A -> B -> C -> D -> E -> F -> G -> H -> I -> J
+  // |__________|   |______________|    |_________|
+  //     DEP            ENROUTE             ARR
+
+  // Insert NEW DEST at  H
+
+  // A -> B -> C -> D -> E -> F -> G -> H -> I -> J
+  // |__________|   |___________________|    |____|
+  //     DEP            ENROUTE               ARR
+
+  // Insert NEW DEST at  H
+
   /**
    * NEW DEST revision. Changes the destination airport and removes all routing ahead of an index, with a discontinuity in between.
    *
@@ -1249,9 +1277,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param airportIdent the airport to use as the new destination
    */
   async newDest(index: number, airportIdent: string) {
-    this.redistributeLegsAt(index);
-
     const leg = this.legElementAt(index);
+
+    const segment = leg.segment;
+    this.redistributeLegsAt(segment.class === SegmentClass.Departure ? index + 1 : index);
+
     const legIndexInEnroute = this.enrouteSegment.allLegs.indexOf(leg);
 
     const legsToDelete = this.enrouteSegment.allLegs.length - (legIndexInEnroute + 1);
@@ -1266,7 +1296,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     this.enrouteSegment.allLegs.splice(legIndexInEnroute + 1, legsToDelete);
 
-    if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1].isDiscontinuity === false) {
+    if (!isDiscontinuity(this.enrouteSegment.allLegs[this.enrouteSegment.allLegs.length - 1])) {
       this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
     }
     this.enrouteSegment.strung = true;
