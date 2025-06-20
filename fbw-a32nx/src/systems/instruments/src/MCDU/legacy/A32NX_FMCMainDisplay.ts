@@ -4214,7 +4214,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * Called after Flaps or THS change
    */
   private tryCheckToData() {
-    if (isFinite(this.v1Speed) || isFinite(this.vRSpeed) || isFinite(this.v2Speed)) {
+    if (Number.isFinite(this.v1Speed) || Number.isFinite(this.vRSpeed) || Number.isFinite(this.v2Speed)) {
       this.addMessageToQueue(NXSystemMessages.checkToData);
     }
   }
