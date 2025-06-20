@@ -5251,12 +5251,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public runFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {
     const plan = this.getFlightPlan(forPlan);
-    if (!this.fuelComputationsCache.has(forPlan)) this.fuelComputationsCache.set(forPlan, new FuelPredComputations());
-
-    const computations = this.fuelComputationsCache.get(forPlan);
+    const computations = this.resetFuelPredComputation(forPlan);
 
     if (!CDUInitPage.fuelPredConditionsMet(this.mcdu, forPlan)) {
-      return computations.reset();
+      return computations;
     }
 
     const zfw = plan.performanceData.zeroFuelWeight;
@@ -5269,21 +5267,21 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       console.error('Cannot have both pilot entered final holding fuel and time');
     }
 
-    computations.finalHoldingFuel =
-      plan.performanceData.pilotFinalHoldingFuel !== null
-        ? plan.performanceData.pilotFinalHoldingFuel
-        : (plan.performanceData.finalHoldingTime / 60) * (finalHoldingFuelFlow / 1000);
-    computations.finalHoldingTime =
-      plan.performanceData.pilotFinalHoldingFuel !== null
-        ? (plan.performanceData.pilotFinalHoldingFuel * 1000) / (finalHoldingFuelFlow / 60)
-        : plan.performanceData.finalHoldingTime;
+    if (plan.performanceData.pilotFinalHoldingFuel === null) {
+      computations.finalHoldingFuel = (plan.performanceData.finalHoldingTime / 60) * (finalHoldingFuelFlow / 1000);
+    } else {
+      computations.finalHoldingTime = (plan.performanceData.pilotFinalHoldingFuel * 1000) / (finalHoldingFuelFlow / 60);
+    }
+
+    const finalHoldingFuel = plan.performanceData.pilotFinalHoldingFuel ?? computations.finalHoldingFuel;
 
     // Route alternate
 
-    if (plan.performanceData.pilotAlternateFuel !== null) {
-      computations.alternateFuel = plan.performanceData.pilotAlternateFuel;
-      computations.alternateTime = null;
-    } else if (plan.destinationAirport && plan.alternateDestinationAirport) {
+    if (
+      plan.destinationAirport &&
+      plan.alternateDestinationAirport &&
+      !Number.isFinite(plan.performanceData.pilotAlternateFuel)
+    ) {
       const distanceToAlt = Avionics.Utils.computeGreatCircleDistance(
         plan.destinationAirport.location,
         plan.alternateDestinationAirport.location,
@@ -5298,7 +5296,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(distanceToAlt), 0);
 
         const deviation =
-          (zfw + computations.finalHoldingFuel - A32NX_FuelPred.refWeight) *
+          (zfw + finalHoldingFuel - A32NX_FuelPred.refWeight) *
           A32NX_FuelPred.computeNumbers(
             airDistance,
             alternateCruiseLevel,
@@ -5320,6 +5318,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
     }
 
+    const alternateFuel = plan.performanceData.pilotAlternateFuel ?? computations.alternateFuel;
+
     // Route trip
     const groundDistance = this.getDistanceToDestination(forPlan) ?? -1;
     const airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, plan.performanceData.pilotTripWind ?? 0);
@@ -5332,7 +5332,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (20 <= airDistance && airDistance <= 3100 && 100 <= altToUse && altToUse <= 390) {
       const deviation =
-        (zfw + (computations.finalHoldingFuel ?? 0) + (computations.alternateFuel ?? 0) - A32NX_FuelPred.refWeight) *
+        (zfw + (finalHoldingFuel ?? 0) + (alternateFuel ?? 0) - A32NX_FuelPred.refWeight) *
         A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, false);
 
       computations.tripFuel =
@@ -5356,27 +5356,30 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         const fiveMinuteHoldingWeight = (5 * (finalHoldingFuelFlow / 60)) / 1000;
 
         computations.routeReserveFuel = Math.max(fivePercentWeight, fiveMinuteHoldingWeight);
-        computations.routeReserveFuelPercentage = plan.performanceData.routeReserveFuelPercentage;
       } else {
-        computations.routeReserveFuel = plan.performanceData.pilotRouteReserveFuel;
         computations.routeReserveFuelPercentage =
           (plan.performanceData.pilotRouteReserveFuel * 100) / computations.tripFuel;
       }
     }
 
+    const routeReserveFuel = computations.routeReserveFuel ?? plan.performanceData.pilotRouteReserveFuel;
+
     const fob = this.getFOB(forPlan);
 
     // Minimum destination fuel on board
-    computations.minimumDestinationFuel =
-      plan.performanceData.pilotMinimumDestinationFuelOnBoard ??
-      (computations.alternateFuel ?? 0) + computations.finalHoldingFuel;
+    if (plan.performanceData.pilotMinimumDestinationFuelOnBoard === null) {
+      computations.minimumDestinationFuel = (alternateFuel ?? 0) + (finalHoldingFuel ?? 0);
+    }
+
+    const minimumDestinationFuel =
+      plan.performanceData.pilotMinimumDestinationFuelOnBoard ?? computations.minimumDestinationFuel;
 
     // EFOB
     computations.destinationFuelOnBoard =
       fob !== undefined ? fob - computations.tripFuel - (!this.isFlying() ? plan.performanceData.taxiFuel : 0) : null;
     computations.alternateDestinationFuelOnBoard =
-      computations.destinationFuelOnBoard !== null && computations.alternateFuel !== null
-        ? computations.destinationFuelOnBoard - computations.alternateFuel
+      computations.destinationFuelOnBoard !== null && alternateFuel !== null
+        ? computations.destinationFuelOnBoard - alternateFuel
         : null;
 
     // TOW / LW
@@ -5393,8 +5396,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       computations.extraFuel =
         computations.destinationFuelOnBoard !== null
           ? computations.destinationFuelOnBoard -
-            (this.isFlying() ? 0 : computations.routeReserveFuel) -
-            computations.minimumDestinationFuel
+            (this.isFlying() ? 0 : routeReserveFuel ?? 0) -
+            (minimumDestinationFuel ?? 0)
           : null;
       computations.extraTime =
         computations.extraFuel !== null ? (computations.extraFuel * 1000) / (finalHoldingFuelFlow / 60) : null;
@@ -5403,6 +5406,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.updateAmberEfob();
 
     return computations;
+  }
+
+  public resetFuelPredComputation(forPlan: FlightPlanIndex): FuelPredComputations {
+    if (!this.fuelComputationsCache.has(forPlan)) this.fuelComputationsCache.set(forPlan, new FuelPredComputations());
+
+    const computations = this.fuelComputationsCache.get(forPlan);
+
+    return computations.reset();
   }
 
   public computeTakeoffWeight(forPlan: FlightPlanIndex): Readonly<FuelPredComputations> {

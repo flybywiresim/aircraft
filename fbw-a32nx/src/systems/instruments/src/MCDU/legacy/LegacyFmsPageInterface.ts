@@ -247,6 +247,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setUnconfirmedBlockFuel(value: number, forPlan: FlightPlanIndex): void;
   runFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
   getFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
+  resetFuelPredComputation(forPlan: FlightPlanIndex): FuelPredComputations;
   computeTakeoffWeight(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
   setV1Speed(speed: number, forPlan: FlightPlanIndex): void;
   setVrSpeed(speed: number, forPlan: FlightPlanIndex): void;
