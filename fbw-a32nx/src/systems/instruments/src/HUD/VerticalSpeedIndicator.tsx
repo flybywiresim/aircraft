@@ -15,9 +15,8 @@ import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { HudElemsValues, LagFilter } from './HUDUtils';
+import { HudElems, LagFilter } from './HUDUtils';
 import { AutoThrustMode } from '@shared/autopilot';
-import { getDisplayIndex } from './HUD';
 
 interface VerticalSpeedIndicatorProps {
   bus: ArincEventBus;
@@ -75,14 +74,13 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElemsValues>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
     sub
       .on('VSI')
       .whenChanged()
       .handle((v) => {
-        this.VS = v.get().toString();
+        this.VS = v;
         this.VSRef.instance.style.display = `${this.VS}`;
       });
     sub
@@ -105,7 +103,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       });
 
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -115,7 +113,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;

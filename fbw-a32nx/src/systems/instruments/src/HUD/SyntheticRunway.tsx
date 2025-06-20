@@ -13,8 +13,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
 
-import { getDisplayIndex } from './HUD';
-import { getSmallestAngle } from './HUDUtils';
+import { getSmallestAngle, HudElems } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
 
@@ -72,8 +71,7 @@ export class SyntheticRunway extends DisplayComponent<{
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems>();
 
     sub
       .on('baroMode')
@@ -87,7 +85,7 @@ export class SyntheticRunway extends DisplayComponent<{
     }, true);
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
 
       .handle((value) => {
         //console.log(this.filteredRadioAltitude + ' ' + this.sVisibility);

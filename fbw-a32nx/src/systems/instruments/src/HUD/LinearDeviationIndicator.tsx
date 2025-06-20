@@ -3,8 +3,7 @@ import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPub
 import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { AutoThrustMode } from '@shared/autopilot';
-import { HudElemsValues } from './HUDUtils';
-import { getDisplayIndex } from './HUD';
+import { HudElems } from './HUDUtils';
 
 type LinearDeviationIndicatorProps = {
   bus: EventBus;
@@ -49,14 +48,13 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HEvent & HUDSimvars & HudElemsValues>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HEvent & HUDSimvars & HudElems>();
 
     sub
       .on('altTape')
       .whenChanged()
       .handle((v) => {
-        this.altTape = v.get().toString();
+        this.altTape = v;
         this.linearDevRef.instance.style.display = `${this.altTape}`;
       });
     sub
@@ -78,13 +76,13 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         this.onGround = value;
       });
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
       });
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

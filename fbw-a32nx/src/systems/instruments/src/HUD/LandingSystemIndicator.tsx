@@ -27,7 +27,7 @@ import {
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { LagFilter } from './HUDUtils';
+import { HudElems, LagFilter } from './HUDUtils';
 import { calculateHorizonOffsetFromPitch } from './HUDUtils';
 
 const DistanceSpacing = (1024 / 28) * 5; //182.857
@@ -73,7 +73,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
     // FIXME clean this up.. should be handled by an IE in the XML
     sub.on('hEvent').handle((eventName) => {
@@ -111,7 +111,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
@@ -124,7 +124,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
       });
 
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -468,8 +468,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values & HudElems>();
 
     sub
       .on('fwcFlightPhase')
@@ -485,7 +484,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
@@ -665,11 +664,10 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent & HudElems>();
 
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

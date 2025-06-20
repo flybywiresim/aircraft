@@ -17,7 +17,7 @@ import {
 import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import { calculateHorizonOffsetFromPitch, LagFilter, getSmallestAngle } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, LagFilter, getSmallestAngle, HudElems } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
@@ -95,7 +95,7 @@ class HeadingBug extends DisplayComponent<{
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & Arinc429Values & HudElems>();
 
     this.heading.setConsumer(sub.on('heading').withArinc429Precision(2));
 
@@ -119,7 +119,7 @@ class HeadingBug extends DisplayComponent<{
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         value > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
@@ -313,11 +313,10 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
@@ -498,7 +497,7 @@ class PitchScale extends DisplayComponent<{
     super.onAfterRender(node);
     const isCaptainSide = getDisplayIndex() === 1;
     const sub = this.props.bus.getArincSubscriber<
-      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
+      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
     >();
 
     sub
@@ -568,7 +567,7 @@ class PitchScale extends DisplayComponent<{
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');

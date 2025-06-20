@@ -20,10 +20,9 @@ import {
 } from '@flybywiresim/fbw-sdk';
 
 import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
-import { getDisplayIndex } from './HUD';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll, HudElems } from './HUDUtils';
 
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from './shared/FgBusProvider';
@@ -65,10 +64,9 @@ export class FlightPathVector extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus & HudElems>();
 
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((d) => {
+    sub.on('cWndMode').handle((d) => {
       this.crosswindMode = d;
     });
     sub

@@ -8,11 +8,11 @@ import { LateralMode } from '@shared/autopilot';
 import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
 
-import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlightPathDirector } from './FlightPathDirector';
+import { HudElems } from './HUDUtils';
 
 const DistanceSpacing = (1024 / 28) * 5; //182.857
 const ValueSpacing = 5;
@@ -41,11 +41,10 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
@@ -311,9 +310,8 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
-    sub.on(isCaptainSide ? 'declutterModeL' : 'declutterModeR').handle((m) => {
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
+    sub.on('decMode').handle((m) => {
       this.declutterMode = m;
       this.handleFdState();
     });
@@ -452,8 +450,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
 
     sub
       .on('leftMainGearCompressed')
@@ -500,7 +497,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');

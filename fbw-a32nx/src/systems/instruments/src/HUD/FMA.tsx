@@ -20,9 +20,8 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
-import { HudElemsValues } from './HUDUtils';
+import { HudElems } from './HUDUtils';
 import { AutoThrustMode } from '@shared/autopilot';
-import { getDisplayIndex } from './HUD';
 
 /* eslint-disable no-constant-condition,no-dupe-else-if -- for keeping the FMA code while it's not active yet */
 
@@ -203,8 +202,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus & HudElemsValues>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus & HudElems>();
 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
@@ -213,7 +211,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     this.BC3Message.sub(() => this.handleFMABorders());
 
     sub.on('FMA').handle((v) => {
-      this.FMA = v.get().toString();
+      this.FMA = v;
       this.FMARef.instance.style.display = `${this.FMA}`;
     });
     sub
@@ -235,13 +233,13 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
         this.onGround = value;
       });
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
       });
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

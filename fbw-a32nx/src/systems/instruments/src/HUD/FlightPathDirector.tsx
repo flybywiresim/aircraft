@@ -7,7 +7,7 @@ import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 
-import { calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, HudElems } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
@@ -68,9 +68,9 @@ export class FlightPathDirector extends DisplayComponent<{
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus & HudElems>();
 
-    sub.on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR').handle((d) => {
+    sub.on('cWndMode').handle((d) => {
       this.crosswindMode = d;
     });
     sub
@@ -86,7 +86,7 @@ export class FlightPathDirector extends DisplayComponent<{
         }
       });
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');

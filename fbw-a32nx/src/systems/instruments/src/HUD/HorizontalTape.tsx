@@ -9,6 +9,7 @@ import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
+import { HudElems } from './HUDUtils';
 
 interface HorizontalTapeProps {
   displayRange: number;
@@ -144,7 +145,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents & HUDSimvars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents & HUDSimvars & HudElems>();
 
     this.props.yOffset?.sub((yOffset) => {
       this.yOffset = yOffset;
@@ -180,7 +181,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');

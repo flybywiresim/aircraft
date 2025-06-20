@@ -27,8 +27,7 @@ import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElemen
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { AutoThrustMode } from '@shared/autopilot';
-import { HudElemsValues } from './HUDUtils';
-import { getDisplayIndex } from './HUD';
+import { HudElems } from './HUDUtils';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -185,8 +184,8 @@ interface AltitudeIndicatorProps {
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
   private crosswindMode = false;
-  private xWindAltTape = Subject.create<String>('');
-  private altTape = Subject.create<String>('');
+  private xWindAltTape = '';
+  private altTape = '';
 
   private altIndicatorGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -207,17 +206,16 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & FcuBus & HudElemsValues>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & FcuBus & HudElems>();
 
     sub.on('altTape').handle((v) => {
-      this.altTape.set(v.get());
-      this.altTape.get() === 'none'
+      this.altTape = v;
+      this.altTape === 'none'
         ? (this.tapeRef.instance.style.display = 'none')
         : (this.tapeRef.instance.style.display = 'block');
     });
     sub.on('xWindAltTape').handle((v) => {
-      this.xWindAltTape.set(v.get());
+      this.xWindAltTape = v;
     });
     sub
       .on('AThrMode')
@@ -237,13 +235,13 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
         this.onGround = value;
       });
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
       });
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -336,20 +334,19 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus & HudElemsValues>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus & HudElems>();
     sub
       .on('altTape')
       .whenChanged()
       .handle((v) => {
-        this.altTape = v.get().toString();
+        this.altTape = v;
         this.altTapeRef.instance.style.display = `${this.altTape}`;
       });
     sub
       .on('xWindAltTape')
       .whenChanged()
       .handle((v) => {
-        this.xWindAltTape = v.get().toString();
+        this.xWindAltTape = v;
         this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
       });
     sub
@@ -371,13 +368,13 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
         this.onGround = value;
       });
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
       });
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -789,8 +786,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & FcuBus & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & FcuBus & Arinc429Values & HudElems>();
 
     sub
       .on('fcuEisDiscreteWord1')
@@ -836,13 +832,13 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.onGround = value;
       });
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
       });
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

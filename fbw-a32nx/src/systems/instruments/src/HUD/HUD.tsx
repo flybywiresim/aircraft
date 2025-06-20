@@ -41,7 +41,7 @@ import './style.scss';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { AutoThrustMode, VerticalMode } from '@shared/autopilot';
-import { HudElemsValues, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { HudElems, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
 
 export const getDisplayIndex = () => {
@@ -117,26 +117,26 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
     this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
     const sub = this.props.bus.getSubscriber<
-      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElemsValues
+      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
     >();
 
-    sub.on('spdTapeOrForcedOnLand').handle((v) => {
-      this.spdTapeOrForcedOnLand = v.get().toString();
+    sub.on('spdTape').handle((v) => {
+      this.spdTapeOrForcedOnLand = v;
       this.spdTapeOrForcedOnLandRef.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
       this.spdTapeOrForcedOnLandRef2.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
     });
     sub.on('xWindSpdTape').handle((v) => {
-      this.xWindSpdTape = v.get().toString();
+      this.xWindSpdTape = v;
       this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
       this.xWindSpdTapeRef2.instance.style.display = `${this.xWindSpdTape}`;
     });
     sub.on('altTape').handle((v) => {
-      this.altTape = v.get().toString();
+      this.altTape = v;
       this.altTapeRef.instance.style.display = `${this.altTape}`;
       this.altTapeRef2.instance.style.display = `${this.altTape}`;
     });
     sub.on('windIndicator').handle((v) => {
-      this.windIndicator = v.get().toString();
+      this.windIndicator = v;
       this.windIndicatorRef.instance.style.display = `${this.windIndicator}`;
     });
     sub.on('hEvent').handle((ev) => {
@@ -226,13 +226,13 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
       });
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
@@ -454,11 +454,10 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
     sub
-      .on(isCaptainSide ? 'crosswindModeL' : 'crosswindModeR')
+      .on('cWndMode')
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;

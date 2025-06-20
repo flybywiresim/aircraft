@@ -17,7 +17,7 @@ import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HorizontalTape } from './HorizontalTape';
-import { getSmallestAngle } from './HUDUtils';
+import { getSmallestAngle, HudElems } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { getDisplayIndex } from './HUD';
@@ -247,8 +247,7 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents>();
+    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents & HudElems>();
     this.groundTrack.setConsumer(sub.on('track').withArinc429Precision(3));
 
     sub
@@ -287,7 +286,7 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         value == 2 ? (this.bVis2 = false) : (this.bVis2 = true);
@@ -389,7 +388,7 @@ class QFUIndicator extends DisplayComponent<{
         this.qfuContainer.instance.classList.add('HiddenElement');
       }
     });
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElems>();
 
     sub
       .on('fwcFlightPhase')
@@ -417,7 +416,7 @@ class QFUIndicator extends DisplayComponent<{
       });
 
     sub
-      .on(isCaptainSide ? 'declutterModeL' : 'declutterModeR')
+      .on('decMode')
       .whenChanged()
       .handle((value) => {
         this.declutterMode = value;
