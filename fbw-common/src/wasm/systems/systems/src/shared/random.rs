@@ -15,28 +15,28 @@ mod wasm {
     pub fn random_number() -> u8 {
         // SAFETY: WASM is single-threaded, and we're not passing references to `RAND` around.
         RAND_INIT.call_once(|| unsafe {
-            RAND = MaybeUninit::new(SmallRng::from_entropy());
+            RAND = MaybeUninit::new(SmallRng::from_os_rng());
         });
 
         // SAFETY: `RAND` was initialized above.
-        unsafe { (*RAND.as_mut_ptr()).gen() }
+        unsafe { (*RAND.as_mut_ptr()).random() }
     }
 
     pub fn random_from_range(from: f64, to: f64) -> f64 {
         // SAFETY: WASM is single-threaded, and we're not passing references to `RAND` around.
         RAND_INIT.call_once(|| unsafe {
-            RAND = MaybeUninit::new(SmallRng::from_entropy());
+            RAND = MaybeUninit::new(SmallRng::from_os_rng());
         });
 
         // SAFETY: `RAND` was initialized above.
-        unsafe { (*RAND.as_mut_ptr()).gen_range(from..to) }
+        unsafe { (*RAND.as_mut_ptr()).random_range(from..to) }
     }
 
     // Generates a random number based on normal distribution
     pub fn random_from_normal_distribution(mean: f64, std_dev: f64) -> f64 {
         // SAFETY: WASM is single-threaded, and we're not passing references to `RAND` around.
         RAND_INIT.call_once(|| unsafe {
-            RAND = MaybeUninit::new(SmallRng::from_entropy());
+            RAND = MaybeUninit::new(SmallRng::from_os_rng());
         });
 
         let normal = Normal::new(mean, std_dev).unwrap();
@@ -61,11 +61,11 @@ mod not_wasm {
     use rand_distr::{Distribution, Normal};
 
     pub fn random_number() -> u8 {
-        rand::thread_rng().gen()
+        rand::rng().random()
     }
 
     pub fn random_from_range(from: f64, to: f64) -> f64 {
-        rand::thread_rng().gen_range(from..to)
+        rand::rng().random_range(from..to)
     }
 
     /// Random value from normal distribution. Output limited to -4 / +4 sigma
@@ -73,7 +73,7 @@ mod not_wasm {
         let normal = Normal::new(mean, std_dev).unwrap();
         let limit_offset = 4. * std_dev;
         normal
-            .sample(&mut rand::thread_rng())
+            .sample(&mut rand::rng())
             .max(mean - limit_offset)
             .min(mean + limit_offset)
     }

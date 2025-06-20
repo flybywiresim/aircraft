@@ -215,15 +215,15 @@ mod tests {
     #[case(LogicalCommunicationChannel::TestAndMaintenanceChannel)]
     #[case(LogicalCommunicationChannel::CanBaseFrameMigrationChannel)]
     fn ptp_message_getter_setter(#[case] expected_lcc: LogicalCommunicationChannel) {
-        let mut rng = rand::thread_rng();
-        let expected_value: f64 = rng.gen_range(0.0..10000.0);
-        let expected_client_fid: u8 = rng.gen_range(0..127);
-        let expected_smt: bool = rng.gen_range(0..1) != 0;
-        let expected_lcl: bool = rng.gen_range(0..1) != 0;
-        let expected_pvt: bool = rng.gen_range(0..1) != 0;
-        let expected_server_fid: u8 = rng.gen_range(0..127);
-        let expected_sid: u8 = rng.gen_range(0..127);
-        let expceted_rci: u8 = rng.gen_range(0..3);
+        let mut rng = rand::rng();
+        let expected_value: f64 = rng.random_range(0.0..10000.0);
+        let expected_client_fid: u8 = rng.random_range(0..127);
+        let expected_smt: bool = rng.random_range(0..1) != 0;
+        let expected_lcl: bool = rng.random_range(0..1) != 0;
+        let expected_pvt: bool = rng.random_range(0..1) != 0;
+        let expected_server_fid: u8 = rng.random_range(0..127);
+        let expected_sid: u8 = rng.random_range(0..127);
+        let expceted_rci: u8 = rng.random_range(0..3);
 
         let mut word = Arinc825Word::new(expected_value, expected_lcc);
         word.set_client_function_id(expected_client_fid);
@@ -258,13 +258,13 @@ mod tests {
     #[case(LogicalCommunicationChannel::TestAndMaintenanceChannel)]
     #[case(LogicalCommunicationChannel::CanBaseFrameMigrationChannel)]
     fn atm_message_getter_setter(#[case] expected_lcc: LogicalCommunicationChannel) {
-        let mut rng = rand::thread_rng();
-        let expected_value: f64 = rng.gen_range(0.0..10000.0);
-        let expected_source_fid: u8 = rng.gen_range(0..127);
-        let expected_lcl: bool = rng.gen_range(0..1) != 0;
-        let expected_pvt: bool = rng.gen_range(0..1) != 0;
-        let expected_doc: u16 = rng.gen_range(0..16383);
-        let expceted_rci: u8 = rng.gen_range(0..3);
+        let mut rng = rand::rng();
+        let expected_value: f64 = rng.random_range(0.0..10000.0);
+        let expected_source_fid: u8 = rng.random_range(0..127);
+        let expected_lcl: bool = rng.random_range(0..1) != 0;
+        let expected_pvt: bool = rng.random_range(0..1) != 0;
+        let expected_doc: u16 = rng.random_range(0..16383);
+        let expceted_rci: u8 = rng.random_range(0..3);
 
         let mut word = Arinc825Word::new(expected_value, expected_lcc);
         word.set_source_function_id(expected_source_fid);
@@ -295,15 +295,15 @@ mod tests {
     #[case(LogicalCommunicationChannel::TestAndMaintenanceChannel)]
     #[case(LogicalCommunicationChannel::CanBaseFrameMigrationChannel)]
     fn conversion_is_symmetric(#[case] expected_lcc: LogicalCommunicationChannel) {
-        let mut rng = rand::thread_rng();
-        let expected_value: f64 = rng.gen_range(0.0..10000.0);
-        let expected_client_fid: u8 = rng.gen_range(0..127);
-        let expected_smt: bool = rng.gen_range(0..1) != 0;
-        let expected_lcl: bool = rng.gen_range(0..1) != 0;
-        let expected_pvt: bool = rng.gen_range(0..1) != 0;
-        let expected_server_fid: u8 = rng.gen_range(0..127);
-        let expected_sid: u8 = rng.gen_range(0..127);
-        let expceted_rci: u8 = rng.gen_range(0..3);
+        let mut rng = rand::rng();
+        let expected_value: f64 = rng.random_range(0.0..10000.0);
+        let expected_client_fid: u8 = rng.random_range(0..127);
+        let expected_smt: bool = rng.random_range(0..1) != 0;
+        let expected_lcl: bool = rng.random_range(0..1) != 0;
+        let expected_pvt: bool = rng.random_range(0..1) != 0;
+        let expected_server_fid: u8 = rng.random_range(0..127);
+        let expected_sid: u8 = rng.random_range(0..127);
+        let expceted_rci: u8 = rng.random_range(0..3);
 
         let mut word = Arinc825Word::new(expected_value, expected_lcc);
         word.set_client_function_id(expected_client_fid);
