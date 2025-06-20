@@ -3503,14 +3503,14 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     2200050: {
-      // AP/FD Mode Reversion
+      // Altitude Alert
       flightPhaseInhib: [],
       simVarIsActive: this.altAlertCChord,
       auralWarning: this.altAlertCChord.map((active) => (active ? FwcAuralWarning.CChord : FwcAuralWarning.None)),
       whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
-      failure: 3,
+      failure: 0,
       sysPage: -1,
       side: 'LEFT',
     },
