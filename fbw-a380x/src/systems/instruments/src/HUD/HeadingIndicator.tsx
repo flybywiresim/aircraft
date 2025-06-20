@@ -7,13 +7,16 @@ import {
   Subscribable,
   VNode,
   ClockEvents,
+  ConsumerSubject,
+  MappedSubject,
 } from '@microsoft/msfs-sdk';
-import { FIVE_DEG, getSmallestAngle } from './HUDUtils';
+import { FIVE_DEG, getSmallestAngle, HudElems } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './HUD';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 const DisplayRange = 18;
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
@@ -164,33 +167,29 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   private heading = 0;
   private groundTrack = 0;
   private needsUpdate = false;
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents>();
-    sub.on('headingAr').handle((hdg) => {
-      this.needsUpdate = true;
-      this.heading = hdg.value;
-    });
-    sub.on('groundTrackAr').handle((groundTrack) => {
-      this.needsUpdate = true;
-      this.groundTrack = groundTrack.value;
-    });
-
-    sub.on('realTime').handle((_t) => {
-      if (this.needsUpdate) {
-        this.needsUpdate = false;
-        const offset = (getSmallestAngle(this.groundTrack, this.heading) * DistanceSpacing) / ValueSpacing;
-        this.trackIndicator.instance.style.display = 'inline';
-        this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
-      }
-    });
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & HudElems>();
+  private readonly hdg = Arinc429ConsumerSubject.create(this.sub.on('headingAr').whenChanged());
+  private readonly trk = Arinc429ConsumerSubject.create(this.sub.on('groundTrackAr').whenChanged());
+  private readonly headingTrk = ConsumerSubject.create(this.sub.on('headingTrk').whenChanged(), '');
+  private setPos(hdg: number, trk: number) {
+    const offset = (getSmallestAngle(hdg, trk) * DistanceSpacing) / ValueSpacing;
+    this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
   }
+  private readonly isHdgTrkVisible = MappedSubject.create(
+    ([hdg, trk, headingTrk]) => {
+      if (headingTrk === 'block') {
+        this.setPos(hdg.value, trk.value);
+      }
+      return headingTrk;
+    },
+    this.hdg,
+    this.trk,
+    this.headingTrk,
+  );
 
   render(): VNode {
     return (
-      <g ref={this.trackIndicator} id="ActualTrackIndicator">
+      <g ref={this.trackIndicator} id="ActualTrackIndicator" display={this.isHdgTrkVisible}>
         <path class="ThickOutline CornerRound" d="m640 512 -6 9 6 9 6 -9z" />
         <path class="ThickStroke Green CornerRound" d="m640 512 -6 9 6 9 6 -9z" />
       </g>

@@ -533,7 +533,6 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     ([mda, dh, altitude, ra]) => {
       const mdaDiff = altitude.value - mda;
       const dhDiff = ra.value - dh;
-      console.log(mdaDiff, dhDiff);
       if (mda > 0) {
         return mdaDiff < 0 ? 'block' : 'none';
       } else if (dh > 0) {

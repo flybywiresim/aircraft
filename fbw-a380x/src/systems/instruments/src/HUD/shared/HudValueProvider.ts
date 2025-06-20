@@ -411,7 +411,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.xWindAltTape = 'none';
                 this.elems.attitudeIndicator = 'none';
                 this.elems.FMA = 'block';
-                this.elems.headingTrk = 'none';
+                this.elems.headingTrk = 'block';
                 this.elems.gndAcftRef = 'none';
                 this.elems.inAirAcftRef = 'none';
                 this.elems.flightPathDirector = 'block';
@@ -438,7 +438,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.xWindAltTape = 'block';
                 this.elems.attitudeIndicator = 'none';
                 this.elems.FMA = 'block';
-                this.elems.headingTrk = 'none';
+                this.elems.headingTrk = 'block';
                 this.elems.gndAcftRef = 'none';
                 this.elems.inAirAcftRef = 'none';
                 this.elems.flightPathDirector = 'block';

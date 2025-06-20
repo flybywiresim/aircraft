@@ -6,6 +6,8 @@ import {
   Subscribable,
   VNode,
   ClockEvents,
+  ConsumerSubject,
+  MappedSubject,
 } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429ConsumerSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
@@ -13,7 +15,7 @@ import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FIVE_DEG, HudElems, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { FIVE_DEG, HudElems, HudMode, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { LateralMode } from '@shared/autopilot';
 interface AttitudeIndicatorFixedUpperProps {
   bus: EventBus;
@@ -138,11 +140,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
   private fdVisibilitySub = Subject.create('hidden');
   private inAirRef = FSComponent.createRef<SVGGElement>();
-  private gndRef = FSComponent.createRef<SVGGElement>();
-  private declutterMode = 0;
-  private onGround = true;
-  private visibilityAirSub = '';
-  private visibilityGroundSub = '';
   private lateralMode = 0;
 
   private fdActive = false;
@@ -152,35 +149,28 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
     }
     return true;
   }
+  private sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
+  private readonly inairAcftRef = ConsumerSubject.create(this.sub.on('inAirAcftRef').whenChanged(), '');
+  private readonly ngc = ConsumerSubject.create(this.sub.on('noseGearCompressed').whenChanged(), true);
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
+
+  private readonly isInAirRefVisible = MappedSubject.create(
+    ([inairAcftRef, ngc, hudMode]) => {
+      if (hudMode === HudMode.TAKEOFF || hudMode === HudMode.ROLLOUT_OR_RTO) {
+        return !ngc || inairAcftRef === 'block' ? 'block' : 'none';
+      } else {
+        return inairAcftRef;
+      }
+    },
+    this.inairAcftRef,
+    this.ngc,
+    this.hudMode,
+  );
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
-
-    sub
-      .on('inAirAcftRef')
-      .whenChanged()
-      .handle((v) => {
-        this.visibilityAirSub = v;
-        this.inAirRef.instance.style.display = `${this.visibilityAirSub}`;
-      });
-
-    sub
-      .on('gndAcftRef')
-      .whenChanged()
-      .handle((v) => {
-        this.visibilityGroundSub = v;
-        //todo
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-      });
-
-    sub.on('rollAr').handle((r) => {
+    this.sub.on('rollAr').handle((r) => {
       this.roll = r;
       if (!this.roll.isNormalOperation()) {
         this.visibilitySub.set('display:none');
@@ -195,7 +185,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
       }
     });
 
-    sub.on('pitchAr').handle((p) => {
+    this.sub.on('pitchAr').handle((p) => {
       this.pitch = p;
 
       if (!this.pitch.isNormalOperation()) {
@@ -245,7 +235,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
           </g>
 
           <g id="AircraftReferences">
-            <g id="AircraftReferenceInAir" class="SmallStroke Green" ref={this.inAirRef} display="none">
+            <g
+              id="AircraftReferenceInAir"
+              class="SmallStroke Green"
+              ref={this.inAirRef}
+              display={this.isInAirRefVisible}
+            >
               <path d="m 625,335  v -6 h -30" />
               <path d="m 637,332 h 6 v -6 h -6 z" />
               <path d="m 655, 335 v -6 h 30" />
