@@ -276,6 +276,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly arincTransitionLevel = new FmArinc429OutputWord('TRANS_LVL');
   /** contains fm messages (not yet implemented) and nodh bit */
   private readonly arincEisWord2 = new FmArinc429OutputWord('EIS_DISCRETE_WORD_2');
+  private readonly arincFlightNumber1 = new FmArinc429OutputWord('FLIGHT_NUMBER_1');
+  private readonly arincFlightNumber2 = new FmArinc429OutputWord('FLIGHT_NUMBER_2');
+  private readonly arincFlightNumber3 = new FmArinc429OutputWord('FLIGHT_NUMBER_3');
+  private readonly arincFlightNumber4 = new FmArinc429OutputWord('FLIGHT_NUMBER_4');
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   private readonly arincBusOutputs = [
@@ -296,6 +300,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.arincTransitionAltitude,
     this.arincTransitionLevel,
     this.arincEisWord2,
+    this.arincFlightNumber1,
+    this.arincFlightNumber2,
+    this.arincFlightNumber3,
+    this.arincFlightNumber4,
   ];
 
   private navDbIdent: DatabaseIdent | null = null;
@@ -453,6 +461,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
 
     this.navigationDatabaseService.activeDatabase.getDatabaseIdent().then((dbIdent) => (this.navDbIdent = dbIdent));
+
+    this.atsu?.init();
   }
 
   protected initVariables(resetTakeoffData = true) {
@@ -717,6 +727,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.efisSymbolsRight.update();
 
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
+
+    this.atsu?.onUpdate();
   }
 
   protected onFmPowerStateChanged(newState) {
@@ -2490,14 +2502,21 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async updateFlightNo(flightNo: string, callback = EmptyCallback.Boolean): Promise<void> {
     if (flightNo.length > 7) {
-      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      this.setScratchpadMessage(NXSystemMessages.formatError);
       return callback(false);
     }
 
     this.flightNumber = flightNo;
-    await SimVar.SetSimVarValue('ATC FLIGHT NUMBER', 'string', flightNo, 'FMC');
 
-    // FIXME move ATSU code to ATSU
+    this.arincFlightNumber1.setIso5Value(this.flightNumber.substring(0, 2), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber2.setIso5Value(this.flightNumber.substring(2, 4), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber3.setIso5Value(this.flightNumber.substring(4, 6), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber4.setIso5Value(this.flightNumber.substring(6, 7), Arinc429SignStatusMatrix.NormalOperation);
+
+    // Send to the sim for third party stuff.
+    SimVar.SetSimVarValue('ATC FLIGHT NUMBER', 'string', flightNo, 'FMC');
+
+    // FIXME move ATSU code to ATSU, and use the ARINC word above
     const code = await this.atsu.connectToNetworks(flightNo);
     if (code !== AtsuStatusCodes.Ok) {
       this.addNewAtsuMessage(code);
