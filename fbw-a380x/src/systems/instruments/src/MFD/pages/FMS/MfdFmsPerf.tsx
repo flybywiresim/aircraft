@@ -409,7 +409,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private destEta = Subject.create<string>('--:--');
 
-  private destEfob = Subject.create<string>('--.-');
+  private destEfob = Subject.create<string>('---.-');
 
   private readonly crzPreSelManagedGreenLine1 = MappedSubject.create(
     ([fp, pSpeed, pMach]) =>
@@ -1018,7 +1018,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             );
           }
           this.destEta.set(destEta);
-          this.destEfob.set(this.props.fmcService.master?.fmgc.getDestEFOB(true).toFixed(1) ?? '---.-');
+          this.destEfob.set(this.props.fmcService.master?.fmgc.getDestEFOB(true)?.toFixed(1) ?? '---.-');
 
           // Update DES speed table
           if (this.activeFlightPhase.get() < FmgcFlightPhase.Descent) {
@@ -2294,7 +2294,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <span class="mfd-label green bigger">{this.destAirportIdent}</span>
                   <span class="mfd-label green bigger">{this.destEta}</span>
                   <div class="mfd-label-value-container">
-                    <span class="mfd-value">{this.destEfob}</span>
+                    <span
+                      class={{
+                        'mfd-value': true,
+                        amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin,
+                      }}
+                    >
+                      {this.destEfob}
+                    </span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                   <div style="display: flex; flex-direction: row;">
@@ -2476,7 +2483,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <span class="mfd-label green bigger">{this.destAirportIdent}</span>
                   <span class="mfd-label green bigger">{this.destEta}</span>
                   <div class="mfd-label-value-container">
-                    <span class="mfd-value">{this.destEfob}</span>
+                    <span
+                      class={{
+                        'mfd-value': true,
+                        amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin,
+                      }}
+                    >
+                      {this.destEfob}
+                    </span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                   <div style="display: flex; flex-direction: row;">

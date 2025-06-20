@@ -66,15 +66,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly destEfob = Subject.create<string>('---.-');
 
-  private readonly destEfobBelowMin = Subject.create(false);
-
   private readonly altnIcao = Subject.create<string>('----');
 
   private readonly altnEta = Subject.create<string>('--:--');
 
-  private readonly altnEfob = Subject.create<string>('---.-');
-
-  private readonly altnEfobBelowMin = Subject.create(false);
+  private readonly altnEfob = Subject.create<number | null>(null);
+  private readonly altnEfobText = this.altnEfob.map((it) => (it ? it.toFixed(1) : '---.-'));
 
   private readonly extraFuelWeight = Subject.create<number | null>(null);
   private readonly extraFuelWeightText = this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
@@ -96,14 +93,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
     }
 
-    if (!this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered.get()) {
-      // Calculate final res fuel for 00:30 time
-      this.props.fmcService.master.fmgc.data.finalFuelWeightCalculated.set(4_650); // FIXME
-    }
-
-    // FIXME calculate altn fuel
-    this.props.fmcService.master.fmgc.data.alternateFuelCalculated.set(6_500); // FIXME
-
     this.updateDestAndAltnPredictions();
   }
 
@@ -122,21 +111,16 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       );
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
       this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
-      this.destEfobBelowMin.set(
-        destEfob * 1_000 < (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),
-      );
     }
 
     if (this.loadedFlightPlan.alternateDestinationAirport) {
       this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
       this.altnEta.set('--:--');
-      this.altnEfob.set('---.-');
-      this.altnEfobBelowMin.set(false);
+      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB());
     } else {
       this.altnIcao.set('NONE');
       this.altnEta.set('--:--');
-      this.altnEfob.set('---.-');
-      this.altnEfobBelowMin.set(false);
+      this.altnEfob.set(null);
     }
   }
 
@@ -210,6 +194,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.fuelOnBoardText,
       this.destinationAlternateTimeHeader,
       this.tripFuelWeightText,
+      this.altnEfobText,
       this.extraFuelWeightText,
       this.extraFuelTimeText,
       this.flightPhaseAtLeastTakeoff,
@@ -487,7 +472,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">{this.destIcao}</div>
                   <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">{this.destEta}</div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                    <span class={{ 'mfd-value': true, amber: this.destEfobBelowMin }}>{this.destEfob}</span>
+                    <span class={{ 'mfd-value': true, amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin }}>
+                      {this.destEfob}
+                    </span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                   <div class="mfd-label" style="text-align: center; align-self: center;">
@@ -500,7 +487,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     {this.altnEta}
                   </div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                    <span class={{ 'mfd-value': true, amber: this.altnEfobBelowMin }}>{this.altnEfob}</span>
+                    <span class={{ 'mfd-value': true }}>{this.altnEfob}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                 </div>

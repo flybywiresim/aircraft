@@ -64,6 +64,8 @@
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
 1. [EFB] Renamed "Weight Unit" pin program to "US Units" to reflect it's actual effect and real-world name - @tracernz (Mike)
 1. [A32NX/MCDU] Fix units on arrival airport runway lenghts - @Lucas-IQ21 (Lucas)
+1. [A380X/FWS] Added DEST EFOB & FMS SWTG memos - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added CHECK MIN FUEL AT DEST & DEST EFOB BELOW MIN message with associated amber EFOB color on MFD pages - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
