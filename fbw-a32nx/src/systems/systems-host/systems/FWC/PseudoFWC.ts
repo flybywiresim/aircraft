@@ -727,7 +727,11 @@ export class PseudoFWC {
   /** this will be true whenever the TO CONFIG TEST button is pressed, and stays on for a minimum of 1.5s */
   private readonly toConfigTestHeldMin1s5Pulse = Subject.create(false);
 
-  private toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
+  private readonly toConfigTestMemoryNode = new NXLogicMemoryNode();
+
+  private readonly toConfighalfSecondPulseNode = new NXLogicTriggeredMonostableNode(0.5);
+
+  private readonly toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
 
   private readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
@@ -2783,38 +2787,42 @@ export class PseudoFWC {
     }
 
     /* T.O. CONFIG CHECK */
+    // TODO Note that fuel tank low pressure and gravity feed warnings are not included
+    const systemStatus =
+      this.engine1Generator.get() &&
+      this.engine2Generator.get() &&
+      !this.greenLP.get() &&
+      !this.yellowLP.get() &&
+      !this.blueLP.get() &&
+      this.eng1pumpPBisAuto.get() &&
+      this.eng2pumpPBisAuto.get();
 
-    if (this.toMemo.get() && toConfigTest) {
-      // TODO Note that fuel tank low pressure and gravity feed warnings are not included
-      const systemStatus =
-        this.engine1Generator.get() &&
-        this.engine2Generator.get() &&
-        !this.greenLP.get() &&
-        !this.yellowLP.get() &&
-        !this.blueLP.get() &&
-        this.eng1pumpPBisAuto.get() &&
-        this.eng2pumpPBisAuto.get();
+    const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
+    const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
+    const cargofwdLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool');
+    const cargoaftLocked = SimVar.GetSimVarValue('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool');
+    const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
 
-      const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
-      const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
-      const cargofwdLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool');
-      const cargoaftLocked = SimVar.GetSimVarValue('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool');
-      const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
+    const speeds = !toSpeedsTooLow && !toV2VRV2Disagree && !fmToSpeedsNotInserted;
+    const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
+    const surfacesNotTo =
+      flapsNotInToPos ||
+      slatsNotInToPos ||
+      this.speedbrakesNotTo.get() ||
+      this.rudderTrimNotTo.get() ||
+      this.pitchTrimNotTo.get();
 
-      const speeds = !toSpeedsTooLow && !toV2VRV2Disagree && !fmToSpeedsNotInserted;
-      const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
-      const surfacesNotTo =
-        flapsNotInToPos ||
-        slatsNotInToPos ||
-        this.speedbrakesNotTo.get() ||
-        this.rudderTrimNotTo.get() ||
-        this.pitchTrimNotTo.get();
+    const toConfigSystemStatusNormal =
+      systemStatus && speeds && !brakesHot && doors && !this.flapsMcduDisagree.get() && !surfacesNotTo;
 
-      const toConfigNormal =
-        systemStatus && speeds && !brakesHot && doors && !this.flapsMcduDisagree.get() && !surfacesNotTo;
+    const toConfigPulseNormalConfNode = this.toConfigNormalConf.write(toConfigSystemStatusNormal, deltaTime);
 
-      this.toConfigNormal.set(this.toConfigNormalConf.write(toConfigNormal, deltaTime));
-    }
+    this.toConfigTestMemoryNode.write(
+      this.toConfighalfSecondPulseNode.write(toConfigTest, deltaTime) && (fwcFlightPhase === 2 || fwcFlightPhase === 9),
+      flightPhase6 || !toConfigPulseNormalConfNode,
+    );
+
+    this.toConfigNormal.set(this.toConfigTestMemoryNode.read() && toConfigPulseNormalConfNode);
 
     /* CLEAR AND RECALL */
     if (this.ecpClearPulseUp) {
