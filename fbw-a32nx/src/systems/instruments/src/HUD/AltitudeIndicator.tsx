@@ -17,18 +17,17 @@ import {
   Arinc429WordData,
   Arinc429RegisterSubject,
 } from '@flybywiresim/fbw-sdk';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
+import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
+import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
 
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
-import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { HudElems, WindMode, MdaMode } from './HUDUtils';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 let DisplayRange = 570;
 const ValueSpacing = 100;
@@ -126,7 +125,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & FcuBus>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & FcuBus>();
 
     sub
       .on('chosenRa')
@@ -192,9 +191,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
 
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
   private normalOps = false;
-  private readonly sub = this.props.bus.getSubscriber<
-    HUDSimvars & PFDSimvars & HEvent & Arinc429Values & FcuBus & HudElems
-  >();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & FcuBus & HudElems>();
   private readonly altTape = ConsumerSubject.create(this.sub.on('altTape').whenChanged(), '');
   private readonly xWindAltTape = ConsumerSubject.create(this.sub.on('xWindAltTape').whenChanged(), '');
   private readonly isTapeVisible = MappedSubject.create(
@@ -303,7 +300,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & FgBus & FcuBus & HudElems>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus & HudElems>();
     sub
       .on('altTape')
       .whenChanged()
@@ -512,7 +509,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
   private textSub = Subject.create('');
   private needsUpdate = false;
 
-  private sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & FcuBus & ClockEvents>();
+  private sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & FcuBus & ClockEvents>();
   private ra = 0;
 
   private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
@@ -810,7 +807,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & FcuBus & Arinc429Values & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & FcuBus & Arinc429Values & HudElems>();
     sub
       .on('QFE')
       .whenChanged()
@@ -1044,7 +1041,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getArincSubscriber<
-      HUDSimvars & PFDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus & HudElems
+      HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus & HudElems
     >();
 
     this.mda.sub(() => (this.needsUpdate = true));

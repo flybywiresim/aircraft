@@ -14,9 +14,8 @@ import {
 import { ArincEventBus, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
 
 import { getSmallestAngle, HudElems } from './HUDUtils';
-import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 export class SyntheticRunway extends DisplayComponent<{
   bus: ArincEventBus;
@@ -72,9 +71,7 @@ export class SyntheticRunway extends DisplayComponent<{
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<
-      HUDSimvars & PFDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems
-    >();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems>();
 
     sub
       .on('baroMode')

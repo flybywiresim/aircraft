@@ -13,10 +13,9 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
-import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, LagFilter } from './HUDUtils';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 interface VerticalSpeedIndicatorProps {
   bus: ArincEventBus;
@@ -73,7 +72,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
     sub
       .on('VSI')

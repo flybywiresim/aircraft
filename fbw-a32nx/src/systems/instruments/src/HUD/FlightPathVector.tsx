@@ -21,15 +21,14 @@ import {
   Arinc429RegisterSubject,
 } from '@flybywiresim/fbw-sdk';
 
-import { SimplaneValues } from './shared/SimplaneValueProvider';
-import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
+import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll, HudElems } from './HUDUtils';
 
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
+import { FgBus } from './shared/FgBusProvider';
 import { HudMode } from './HUDUtils';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 const DistanceSpacing = (1024 / 28) * 5;
 const ValueSpacing = 5;
 
@@ -61,9 +60,7 @@ export class FlightPathVector extends DisplayComponent<{
   };
   private needsUpdate = false;
 
-  private readonly sub = this.props.bus.getSubscriber<
-    HUDSimvars & PFDSimvars & Arinc429Values & ClockEvents & FcuBus & HudElems
-  >();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus & HudElems>();
   private readonly ap1Active = ConsumerSubject.create(this.sub.on('ap1Active').whenChanged(), false);
   private readonly ap2Active = ConsumerSubject.create(this.sub.on('ap2Active').whenChanged(), false);
   onAfterRender(node: VNode): void {
@@ -215,7 +212,7 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & PFDSimvars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars>();
 
     sub
       .on('leftMainGearCompressed')
@@ -316,9 +313,7 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
     super.onAfterRender(node);
     this.needsUpdate = true;
 
-    const sub = this.props.bus.getArincSubscriber<
-      HUDSimvars & PFDSimvars & SimplaneValues & ClockEvents & Arinc429Values
-    >();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
 
     sub
       .on('fwcFlightPhase')
@@ -479,7 +474,7 @@ class RadioAltAndDH extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
 
     sub.on('rollAr').handle((roll) => {
       this.roll = roll;
@@ -623,7 +618,7 @@ class FlareIndicator extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & FgBus>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & FgBus>();
 
     sub
       .on('fmgcDiscreteWord1')
@@ -653,7 +648,7 @@ class FlareIndicator extends DisplayComponent<{
   }
 }
 export class SpoilersIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & HudElems>();
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems>();
   private refElement = FSComponent.createRef<SVGGElement>();
   private leftSpoilers = FSComponent.createRef<SVGGElement>();
   private rightSpoliers = FSComponent.createRef<SVGGElement>();
@@ -682,7 +677,7 @@ export class SpoilersIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
 }
 
 export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & HudElems & ClockEvents>();
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems & ClockEvents>();
   private revGroupRef = FSComponent.createRef<SVGGElement>();
   private rev2Ref = FSComponent.createRef<SVGGElement>();
   private rev1Ref = FSComponent.createRef<SVGGElement>();

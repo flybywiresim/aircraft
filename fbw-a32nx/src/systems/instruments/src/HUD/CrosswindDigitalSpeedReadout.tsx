@@ -14,11 +14,10 @@ import {
   ClockEvents,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
-import { FcuBus } from '../PFD/shared/FcuBusProvider';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 const UnitDigits = (value: number) => {
   let text: string;
   if (value < 0) {
@@ -101,9 +100,7 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<
-      HUDSimvars & PFDSimvars & HEvent & Arinc429Values & ClockEvents & FgBus & FcuBus
-    >();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & FgBus & FcuBus>();
 
     // FIXME clean this up.. should be handled by an IE in the XML
 

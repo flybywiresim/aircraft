@@ -19,9 +19,8 @@ import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle, HudElems } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { getDisplayIndex } from './HUD';
-import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 const DisplayRange = 18;
 const DistanceSpacing = 182.857;
@@ -77,7 +76,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus; faile
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & PFDSimvars & Arinc429Values & HEvent>();
+    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & Arinc429Values & HEvent>();
 
     sub
       .on('heading')
@@ -146,7 +145,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars>();
 
     sub
       .on('selectedHeading')
@@ -248,7 +247,7 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & PFDSimvars & ClockEvents & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents & HudElems>();
     this.groundTrack.setConsumer(sub.on('track').withArinc429Precision(3));
 
     sub
@@ -389,7 +388,7 @@ class QFUIndicator extends DisplayComponent<{
         this.qfuContainer.instance.classList.add('HiddenElement');
       }
     });
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElems>();
 
     sub
       .on('fwcFlightPhase')
@@ -463,7 +462,7 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
       .handle((v) => this.trueRefActive.set(v));
     // FIXME this should be 127-11 from FWC
     this.props.bus
-      .getSubscriber<HUDSimvars & PFDSimvars>()
+      .getSubscriber<HUDSimvars>()
       .on('slatPosLeft')
       .withPrecision(0.25)
       .handle((v) => this.slatsExtended.set(v > 0.4));
