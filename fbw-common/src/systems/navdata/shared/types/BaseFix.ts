@@ -20,3 +20,7 @@ export type Fix = Airport | NdbNavaid | VhfNavaid | Waypoint;
 export function isFix(o: any): o is Fix {
   return typeof o === 'object' && 'location' in o && 'databaseId' in o;
 }
+
+export function isAirport(o: Fix): o is Airport {
+  return typeof o === 'object' && o.sectionCode === SectionCode.Airport;
+}
