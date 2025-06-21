@@ -639,10 +639,10 @@ declare global {
         let g_ViewListenersMgr: ViewListenerMgr;
     }
 
-    function RegisterViewListenerT<T>(name: string, callback: (() => void) | void, type: new() => T,
-                                      requiresSingleton?: boolean): T;
-    function RegisterViewListener(name: string, callback?: (listener: ViewListener.ViewListener) => void,
-                                  requiresSingleton?: boolean): ViewListener.ViewListener;
+    function RegisterViewListenerT<T extends ViewListener.ViewListener>(
+      name: string, callback: () => void, type: { new (name: string): T; }, requiresSingleton?: boolean
+    ): T;
+    function RegisterViewListener(name: string, callback?: () => void, requiresSingleton?: boolean): ViewListener.ViewListener;
 
     class Name_Z {
         static isValid(a: Name_Z | void): boolean;

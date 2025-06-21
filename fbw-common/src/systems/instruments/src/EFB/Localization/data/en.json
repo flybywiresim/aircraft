@@ -585,7 +585,7 @@
       "Select": "Select",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
-      "WeightUnit": "Weight Unit"
+      "WeightUnit": "US Units"
     },
     "AutomaticCallOuts": {
       "Title": "Automatic Call Outs",

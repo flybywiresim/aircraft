@@ -4,7 +4,7 @@
 import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
-  Arinc429OutputWord,
+  Arinc429LocalVarOutputWord,
   Arinc429SignStatusMatrix,
   Arinc429Word,
   DatabaseIdent,
@@ -65,6 +65,7 @@ import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
+import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -82,7 +83,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   );
   public readonly rpcServer = new FlightPlanRpcServer(this.bus, this.currFlightPlanService);
   public readonly currNavigationDatabaseService = NavigationDatabaseService;
-  public readonly navigationDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+  public readonly navigationDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
 
   private readonly flightPhaseUpdateThrottler = new UpdateThrottler(800);
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);
@@ -109,8 +110,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public averageWind = 0;
   public perfApprQNH = NaN;
   public perfApprTemp = NaN;
-  public perfApprWindHeading = NaN;
-  public perfApprWindSpeed = NaN;
+  public perfApprWindHeading: number | null = null;
+  public perfApprWindSpeed: number | null = null;
   public unconfirmedV1Speed = undefined;
   public unconfirmedVRSpeed = undefined;
   public unconfirmedV2Speed = undefined;
@@ -281,6 +282,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly arincTransitionLevel = new FmArinc429OutputWord('TRANS_LVL');
   /** contains fm messages (not yet implemented) and nodh bit */
   private readonly arincEisWord2 = new FmArinc429OutputWord('EIS_DISCRETE_WORD_2');
+  private readonly arincFlightNumber1 = new FmArinc429OutputWord('FLIGHT_NUMBER_1');
+  private readonly arincFlightNumber2 = new FmArinc429OutputWord('FLIGHT_NUMBER_2');
+  private readonly arincFlightNumber3 = new FmArinc429OutputWord('FLIGHT_NUMBER_3');
+  private readonly arincFlightNumber4 = new FmArinc429OutputWord('FLIGHT_NUMBER_4');
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   private readonly arincBusOutputs = [
@@ -301,6 +306,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.arincTransitionAltitude,
     this.arincTransitionLevel,
     this.arincEisWord2,
+    this.arincFlightNumber1,
+    this.arincFlightNumber2,
+    this.arincFlightNumber3,
+    this.arincFlightNumber4,
   ];
 
   private navDbIdent: DatabaseIdent | null = null;
@@ -458,6 +467,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
 
     this.navigationDatabaseService.activeDatabase.getDatabaseIdent().then((dbIdent) => (this.navDbIdent = dbIdent));
+
+    this.atsu?.init();
   }
 
   protected initVariables(resetTakeoffData = true) {
@@ -476,8 +487,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.averageWind = 0;
     this.perfApprQNH = NaN;
     this.perfApprTemp = NaN;
-    this.perfApprWindHeading = NaN;
-    this.perfApprWindSpeed = NaN;
+    this.perfApprWindHeading = null;
+    this.perfApprWindSpeed = null;
     this.unconfirmedV1Speed = undefined;
     this.unconfirmedVRSpeed = undefined;
     this.unconfirmedV2Speed = undefined;
@@ -722,6 +733,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.efisSymbolsRight.update();
 
     this.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
+
+    this.atsu?.onUpdate();
   }
 
   protected onFmPowerStateChanged(newState) {
@@ -1522,7 +1535,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       weight = this.zeroFuelWeight + Math.max(0, (vnavPrediction.estimatedFuelOnBoard * 0.4535934) / 1000);
     }
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
-    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+    if (this.perfApprWindSpeed !== null && this.perfApprWindHeading !== null) {
       this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3, this._towerHeadwind);
     } else {
       this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3);
@@ -2040,8 +2053,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return (
         isFinite(this.perfApprQNH) &&
         isFinite(this.perfApprTemp) &&
-        isFinite(this.perfApprWindHeading) &&
-        isFinite(this.perfApprWindSpeed)
+        this.perfApprWindHeading !== null &&
+        this.perfApprWindSpeed !== null
       );
     });
   }
@@ -2495,14 +2508,21 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async updateFlightNo(flightNo: string, callback = EmptyCallback.Boolean): Promise<void> {
     if (flightNo.length > 7) {
-      this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      this.setScratchpadMessage(NXSystemMessages.formatError);
       return callback(false);
     }
 
     this.flightNumber = flightNo;
-    await SimVar.SetSimVarValue('ATC FLIGHT NUMBER', 'string', flightNo, 'FMC');
 
-    // FIXME move ATSU code to ATSU
+    this.arincFlightNumber1.setIso5Value(this.flightNumber.substring(0, 2), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber2.setIso5Value(this.flightNumber.substring(2, 4), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber3.setIso5Value(this.flightNumber.substring(4, 6), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber4.setIso5Value(this.flightNumber.substring(6, 7), Arinc429SignStatusMatrix.NormalOperation);
+
+    // Send to the sim for third party stuff.
+    SimVar.SetSimVarValue('ATC FLIGHT NUMBER', 'string', flightNo, 'FMC');
+
+    // FIXME move ATSU code to ATSU, and use the ARINC word above
     const code = await this.atsu.connectToNetworks(flightNo);
     if (code !== AtsuStatusCodes.Ok) {
       this.addNewAtsuMessage(code);
@@ -3992,8 +4012,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setPerfApprWind(s: string): boolean {
     if (s === Keypad.clrValue) {
-      this.perfApprWindHeading = NaN;
-      this.perfApprWindSpeed = NaN;
+      this.perfApprWindHeading = null;
+      this.perfApprWindSpeed = null;
       return true;
     }
 
@@ -4049,7 +4069,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    */
   private getVAppGsMini() {
     let vAppTarget = this.getVApp();
-    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+    if (this.perfApprWindSpeed !== null && this.perfApprWindHeading !== null) {
       vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
     }
     return vAppTarget;
@@ -4400,7 +4420,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public updateTowerHeadwind() {
-    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+    if (this.perfApprWindHeading !== null && this.perfApprWindSpeed !== null) {
       const activePlan = this.flightPlanService.active;
 
       if (activePlan.destinationRunway) {
@@ -5109,12 +5129,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.winds;
   }
 
-  public getApproachWind() {
+  public getApproachWind(): FmcWindVector | null {
     const activePlan = this.currFlightPlanService.active;
     const destination = activePlan.destinationAirport;
 
-    if (!destination || !destination.location || !isFinite(this.perfApprWindHeading)) {
-      return { direction: 0, speed: 0 };
+    if (!destination || !destination.location || this.perfApprWindHeading === null || this.perfApprWindSpeed === null) {
+      return null;
     }
 
     const magVar = Facilities.getMagVar(destination.location.lat, destination.location.long);
@@ -5379,7 +5399,7 @@ const DefaultPerformanceData = Object.freeze({
 });
 
 /** Writes FM output words for both FMS. */
-class FmArinc429OutputWord extends Arinc429OutputWord {
+class FmArinc429OutputWord extends Arinc429LocalVarOutputWord {
   private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
 
   override async writeToSimVarIfDirty() {

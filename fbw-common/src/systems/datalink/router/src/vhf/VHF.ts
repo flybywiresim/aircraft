@@ -1436,11 +1436,12 @@ export class Vhf {
   public datalinkMode: DatalinkModeCode = DatalinkModeCode.None;
 
   private updatePresentPosition() {
+    // FIXME read ARINC data from appropriate system
     this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.presentPosition.Longitude = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
     this.presentPosition.Altitude = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
     this.presentPosition.AltitudeAboveGround = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
-    this.presentPosition.PressureAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
+    this.presentPosition.PressureAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE:4', 'feet');
   }
 
   // calculates the freespace path loss for a certain distance

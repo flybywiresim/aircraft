@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -217,6 +217,15 @@ export class FlightManagementComputer implements FmcInterface {
     this.fmgc.data.zeroFuelWeightCenterOfGravity,
   );
 
+  private readonly destDataEntered = MappedSubject.create(
+    ([qnh, temperature, wind]) => qnh !== null && temperature !== null && wind !== null,
+    this.fmgc.data.approachQnh,
+    this.fmgc.data.approachTemperature,
+    this.fmgc.data.approachWind,
+  );
+
+  private destDataCheckedInCruise = false;
+
   constructor(
     private instance: FmcIndex,
     private _operatingMode: FmcOperatingModes,
@@ -226,7 +235,7 @@ export class FlightManagementComputer implements FmcInterface {
   ) {
     this.#mfdReference = mfdReference;
 
-    const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
 
     this.#navigation = new Navigation(this.bus, this.flightPlanService);
@@ -313,6 +322,12 @@ export class FlightManagementComputer implements FmcInterface {
             this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
           } else {
             this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+          }
+        }),
+        this.destDataEntered,
+        this.destDataEntered.sub((v) => {
+          if (v) {
+            this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
           }
         }),
       );
@@ -467,8 +482,9 @@ export class FlightManagementComputer implements FmcInterface {
     return null;
   }
 
-  public getRecMaxFlightLevel(): number | null {
-    const gw = this.fmgc.getGrossWeightKg();
+  /** @inheritdoc */
+  public getRecMaxFlightLevel(grossWeight?: number): number | null {
+    const gw = grossWeight ?? this.fmgc.getGrossWeightKg();
     if (!gw) {
       return null;
     }
@@ -516,19 +532,11 @@ export class FlightManagementComputer implements FmcInterface {
 
     // Start the check routine for system health and status
     setInterval(() => {
-      if (
-        this.flightPhaseManager.phase === FmgcFlightPhase.Cruise &&
-        !this.destDataChecked &&
-        this.navigation.getPpos()
-      ) {
-        const dest = this.flightPlanService.active.destinationAirport;
-        const ppos = this.navigation.getPpos();
-        if (dest?.location && ppos) {
-          const distanceFromPpos = distanceTo(ppos, dest.location);
-          if (dest && distanceFromPpos < 180) {
-            this.destDataChecked = true;
-            this.checkDestData();
-          }
+      if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataCheckedInCruise) {
+        const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+        if (destPred && Number.isFinite(destPred.distanceFromAircraft) && destPred.distanceFromAircraft < 180) {
+          this.destDataCheckedInCruise = true;
+          this.checkDestData();
         }
       }
     }, 15000);
@@ -695,8 +703,6 @@ export class FlightManagementComputer implements FmcInterface {
     return this.dataManager?.getStoredWaypointsByIdent(ident) ?? [];
   }
 
-  private destDataChecked = false;
-
   /**
    * This method is called by the FlightPhaseManager after a flight phase change
    * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
@@ -712,7 +718,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     switch (nextPhase) {
       case FmgcFlightPhase.Takeoff: {
-        this.destDataChecked = false;
+        this.destDataCheckedInCruise = false;
 
         const plan = this.flightPlanService.active;
         const pd = this.fmgc.data;
@@ -754,7 +760,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Climb: {
-        this.destDataChecked = false;
+        this.destDataCheckedInCruise = false;
 
         /** Activate pre selected speed/mach */
         if (prevPhase === FmgcFlightPhase.Takeoff) {
@@ -785,6 +791,7 @@ export class FlightManagementComputer implements FmcInterface {
       }
 
       case FmgcFlightPhase.Cruise: {
+        this.destDataCheckedInCruise = false;
         SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
 
         const cruisePreSel = this.fmgc.data.cruisePreSelSpeed.get();
@@ -913,27 +920,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private checkDestData(): void {
-    const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-    if (
-      this.flightPhaseManager.phase >= FmgcFlightPhase.Descent ||
-      (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && destPred && destPred.distanceFromAircraft < 180)
-    ) {
-      if (
-        !Number.isFinite(this.fmgc.data.approachQnh.get()) ||
-        !Number.isFinite(this.fmgc.data.approachTemperature.get()) ||
-        !Number.isFinite(this.fmgc.data.approachWind.get()?.direction) ||
-        !Number.isFinite(this.fmgc.data.approachWind.get()?.speed)
-      ) {
-        this.addMessageToQueue(
-          NXSystemMessages.enterDestData,
-          () =>
-            Number.isFinite(this.fmgc.data.approachQnh.get()) &&
-            Number.isFinite(this.fmgc.data.approachTemperature.get()) &&
-            Number.isFinite(this.fmgc.data.approachWind.get()?.direction) &&
-            Number.isFinite(this.fmgc.data.approachWind.get()?.speed),
-          () => {},
-        );
-      }
+    if (!this.destDataEntered.get()) {
+      this.addMessageToQueue(NXSystemMessages.enterDestData);
     }
   }
 
