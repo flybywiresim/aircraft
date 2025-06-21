@@ -1443,7 +1443,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // Fallback gross weight set to 64.3T (MZFW), which is replaced by FMGW once input in FMS to avoid function returning undefined results.
     if (this.flightPhaseManager.phase >= FmgcFlightPhase.Approach || !Number.isFinite(weight)) {
       weight = this.getGrossWeight() ?? 64.3;
-    } else if (vnavPrediction && Number.isFinite(vnavPrediction.estimatedFuelOnBoard)) {
+    } else if (
+      Number.isFinite(plan.performanceData.zeroFuelWeight) &&
+      Number.isFinite(vnavPrediction?.estimatedFuelOnBoard)
+    ) {
       weight =
         plan.performanceData.zeroFuelWeight + Math.max(0, (vnavPrediction.estimatedFuelOnBoard * 0.4535934) / 1000);
     }
@@ -5435,6 +5438,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public onSecondaryActivated() {
+    // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
+    this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
+
     const phase = this.getFlightPhase();
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
