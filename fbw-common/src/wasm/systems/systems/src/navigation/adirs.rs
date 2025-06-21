@@ -1458,6 +1458,7 @@ struct InertialReference {
     body_velocity_filter: LowPassFilter<Vector2<f64>>,
     excess_motion: bool,
     quick_realign_remaining_available_time: Duration,
+    alignment_failed: bool,
 
     pitch: AdirsArinc429Data<Angle>,
     roll: AdirsArinc429Data<Angle>,
@@ -1534,6 +1535,7 @@ impl InertialReference {
     const QUICK_REALIGN_ALIGN_TIME: Duration = Duration::from_secs(180);
     const ALIGNMENT_VELOCITY_TIME_CONSTANT: Duration = Duration::from_millis(500);
     const MAX_ALIGNMENT_VELOCITY_FPS: f64 = 0.011;
+    const MAX_LATITUDE_FOR_ALIGNMENT: f64 = 82.;
 
     fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
@@ -1550,6 +1552,7 @@ impl InertialReference {
             body_velocity_filter: LowPassFilter::new(Self::ALIGNMENT_VELOCITY_TIME_CONSTANT),
             excess_motion: false,
             quick_realign_remaining_available_time: Duration::default(),
+            alignment_failed: false,
 
             pitch: AdirsArinc429Data::new_ir(context, number, Self::PITCH),
             roll: AdirsArinc429Data::new_ir(context, number, Self::ROLL),
@@ -1664,6 +1667,10 @@ impl InertialReference {
         );
     }
 
+    fn can_align(simulator_data: AdirsSimulatorData) -> bool {
+        simulator_data.latitude.abs().get::<degree>() <= Self::MAX_LATITUDE_FOR_ALIGNMENT
+    }
+
     fn update_remaining_align_duration(
         &mut self,
         context: &UpdateContext,
@@ -1701,7 +1708,13 @@ impl InertialReference {
             self.remaining_align_duration =
                 match overhead.mode_of(self.number) {
                     InertialReferenceMode::Navigation => match self.remaining_align_duration {
-                        Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
+                        Some(remaining) => {
+                            if Self::can_align(simulator_data) {
+                                Some(subtract_delta_from_duration(context, remaining))
+                            } else {
+                                Some(remaining)
+                            }
+                        }
                         None => Some(self.total_alignment_duration(
                             configured_align_time,
                             simulator_data.latitude,
@@ -1710,6 +1723,8 @@ impl InertialReference {
                     InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
                 };
         }
+
+        self.alignment_failed = self.is_aligning() && !Self::can_align(simulator_data);
 
         if self.is_fully_aligned()
             || overhead.mode_of(self.number) != InertialReferenceMode::Navigation
@@ -2054,7 +2069,9 @@ impl InertialReference {
 
         // TODO DC fault during DC operation last power up
 
-        // TODO align fault
+        if self.alignment_failed {
+            maint_word |= IrMaintFlags::ALIGN_FAULT;
+        }
 
         // TODO No IRS initial pos
 
@@ -3285,6 +3302,30 @@ mod tests {
             maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
             IrMaintFlags::NAV_MODE
         );
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(85.))]
+    #[case(Angle::new::<degree>(-85.))]
+    fn adirs_does_not_align_near_the_poles(#[case] polar_latitude: Angle) {
+        let mut test_bed = start_align_at_latitude(polar_latitude);
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(20 * 60)); // run for 20 minutes, enough for any alignment
+
+        assert!(!test_bed.is_aligned(1));
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(85.))]
+    #[case(Angle::new::<degree>(-85.))]
+    fn adirs_stays_aligned_near_the_poles(#[case] polar_latitude: Angle) {
+        let mut test_bed = all_adirus_aligned_test_bed_with()
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation)
+            .and()
+            .latitude_of(polar_latitude);
+        test_bed.run();
+
+        assert!(test_bed.is_aligned(1));
     }
 
     #[rstest]
