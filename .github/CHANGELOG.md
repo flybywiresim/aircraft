@@ -64,6 +64,11 @@
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
 1. [EFB] Renamed "Weight Unit" pin program to "US Units" to reflect it's actual effect and real-world name - @tracernz (Mike)
 1. [A32NX/MCDU] Fix units on arrival airport runway lenghts - @Lucas-IQ21 (Lucas)
+1. [ADIRU] Added excess motion and outside latitude limit (> 82° N/S) faults - @tracernz (Mike)
+1. [ADIRU] Added quick re-align function - @tracernz (Mike)
+1. [ADIRU] Changed the IRS alignment times to actual enhanced align times - @tracernz (Mike)
+1. [A32NX/FWC] Added IRS alignment related faults and improved accuracy of time to align logic - @tracernz (Mike)
+1. [A32NX/EWD] Added support for flashing text from FWC - @tracernz (Mike)
 
 ## 0.13.0
 
