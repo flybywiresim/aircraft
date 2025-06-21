@@ -27,7 +27,7 @@ use uom::si::{
     pressure::hectopascal,
     ratio::ratio,
     time::second,
-    velocity::{foot_per_minute, knot},
+    velocity::{foot_per_minute, foot_per_second, knot},
 };
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
@@ -1455,6 +1455,8 @@ struct InertialReference {
     remaining_attitude_initialisation_duration: Option<Duration>,
     wind_velocity: LowPassFilter<Vector2<f64>>,
     extreme_latitude: bool,
+    body_velocity_filter: LowPassFilter<Vector2<f64>>,
+    excess_motion: bool,
     quick_realign_remaining_available_time: Duration,
 
     pitch: AdirsArinc429Data<Angle>,
@@ -1530,6 +1532,8 @@ impl InertialReference {
     const WIND_VELOCITY_TIME_CONSTANT: Duration = Duration::from_millis(100);
     const QUICK_REALIGN_AVAILABLE_TIME: Duration = Duration::from_secs(5);
     const QUICK_REALIGN_ALIGN_TIME: Duration = Duration::from_secs(180);
+    const ALIGNMENT_VELOCITY_TIME_CONSTANT: Duration = Duration::from_millis(500);
+    const MAX_ALIGNMENT_VELOCITY_FPS: f64 = 0.011;
 
     fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
@@ -1543,6 +1547,8 @@ impl InertialReference {
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
             wind_velocity: LowPassFilter::new(Self::WIND_VELOCITY_TIME_CONSTANT),
             extreme_latitude: false,
+            body_velocity_filter: LowPassFilter::new(Self::ALIGNMENT_VELOCITY_TIME_CONSTANT),
+            excess_motion: false,
             quick_realign_remaining_available_time: Duration::default(),
 
             pitch: AdirsArinc429Data::new_ir(context, number, Self::PITCH),
@@ -1598,6 +1604,8 @@ impl InertialReference {
         simulator_data: AdirsSimulatorData,
     ) {
         self.is_on = overhead.ir_is_on(self.number);
+
+        self.update_body_velocity(context);
 
         self.update_fault_flash_duration(context, overhead);
         self.update_remaining_attitude_align_duration(
@@ -1682,6 +1690,14 @@ impl InertialReference {
         if let AlignTime::Instant = configured_align_time {
             self.remaining_align_duration = Some(Duration::from_secs_f64(0.));
         } else {
+            // If we exceeded the max alignment velocity, the alignment is restarted
+            if self.is_aligning()
+                && self.body_velocity_filter.output().max() > Self::MAX_ALIGNMENT_VELOCITY_FPS
+            {
+                self.remaining_align_duration = None;
+                self.excess_motion = true;
+            }
+
             self.remaining_align_duration =
                 match overhead.mode_of(self.number) {
                     InertialReferenceMode::Navigation => match self.remaining_align_duration {
@@ -1693,6 +1709,12 @@ impl InertialReference {
                     },
                     InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
                 };
+        }
+
+        if self.is_fully_aligned()
+            || overhead.mode_of(self.number) != InertialReferenceMode::Navigation
+        {
+            self.excess_motion = false;
         }
     }
 
@@ -1799,6 +1821,21 @@ impl InertialReference {
             },
             magnetic_heading_ssm,
         );
+    }
+
+    fn update_body_velocity(&mut self, context: &UpdateContext) {
+        let body_velocity = Vector2::new(
+            context
+                .local_velocity()
+                .lat_velocity()
+                .get::<foot_per_second>(),
+            context
+                .local_velocity()
+                .long_velocity()
+                .get::<foot_per_second>(),
+        );
+        self.body_velocity_filter
+            .update(context.delta(), body_velocity);
     }
 
     fn update_wind_velocity(
@@ -2021,7 +2058,9 @@ impl InertialReference {
 
         // TODO No IRS initial pos
 
-        // TODO excess motion during align
+        if self.excess_motion {
+            maint_word |= IrMaintFlags::EXCESS_MOTION_ERROR;
+        }
 
         // TODO ADR data not received or parity error
 
@@ -2411,6 +2450,11 @@ mod tests {
 
         fn body_yaw_rate_of(mut self, rate: AngularVelocity) -> Self {
             self.write_by_name(AdirsSimulatorData::BODY_ROTATION_RATE_Y, rate);
+            self
+        }
+
+        fn body_lateral_velocity_of(mut self, velocity: Velocity) -> Self {
+            self.write_by_name(UpdateContext::LOCAL_LATERAL_SPEED_KEY, velocity);
             self
         }
 
@@ -3240,6 +3284,21 @@ mod tests {
         assert_eq!(
             maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
             IrMaintFlags::NAV_MODE
+        );
+    }
+
+    #[rstest]
+    fn adirs_detects_excess_motion_during_alignment() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
         );
     }
 
