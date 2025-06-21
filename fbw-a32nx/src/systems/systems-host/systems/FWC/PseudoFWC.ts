@@ -499,6 +499,8 @@ export class PseudoFWC {
 
   public readonly modeReversionMtrig2 = new NXLogicTriggeredMonostableNode(3, true);
 
+  public readonly modeReversionConfNode1 = new NXLogicConfirmNode(0.3, true);
+
   public readonly modeReversion = Subject.create(false);
 
   // AP/FD Capability Change
@@ -522,6 +524,8 @@ export class PseudoFWC {
   public readonly fmgc2CapabilityChangeMtrig3 = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly fmgc2CapabilityChangeMtrig4 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly capabilityChangeConfNode1 = new NXLogicConfirmNode(0.3, true);
 
   public readonly capabilityChange = Subject.create(false);
 
@@ -1884,7 +1888,9 @@ export class PseudoFWC {
         this.fmgc2CapabilityChangeMtrig3.read()) ||
       this.fmgc2CapabilityChangeMtrig4.read();
 
-    this.capabilityChange.set(fmgc1CapabilityChange || fmgc2CapabilityChange);
+    // This confirm node simulates the default monitor confirm time.
+    this.capabilityChangeConfNode1.write(fmgc1CapabilityChange || fmgc2CapabilityChange, deltaTime);
+    this.capabilityChange.set(this.capabilityChangeConfNode1.read());
 
     // A/THR OFF VOLUNTARY
     const athrOffVoluntaryBelow50ft = this.radioHeight1.valueOr(2500) < 50 || this.radioHeight2.valueOr(2500) < 50;
@@ -2981,7 +2987,9 @@ export class PseudoFWC {
     this.modeReversionMtrig1.write(this.fmgc1DiscreteWord4.get().bitValueOr(28, false), deltaTime);
     this.modeReversionMtrig2.write(this.fmgc2DiscreteWord4.get().bitValueOr(28, false), deltaTime);
 
-    this.modeReversion.set(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read());
+    // This confirm node simulates the default monitor confirm time.
+    this.modeReversionConfNode1.write(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read(), deltaTime);
+    this.modeReversion.set(this.modeReversionConfNode1.read());
 
     /* SETTINGS */
 
