@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -12,9 +12,16 @@ import {
   ConsumerSubject,
   Subject,
   SubscribableUtils,
+  ClockEvents,
+  SimVarValueType,
 } from '@microsoft/msfs-sdk';
-import { ExtendedClockEvents } from './providers/ExtendedClockProvider';
-import { NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
+import { NXLogicTriggeredMonostableNode, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { GlobalDmcEvents } from './GlobalDmcEvents';
+
+interface FlashOneHertzEvents {
+  flash_one_hertz_clock: boolean;
+  flash_one_hertz_delta: number;
+}
 
 export interface FlashProps extends ComponentProps {
   bus: EventBus;
@@ -26,6 +33,37 @@ export interface FlashProps extends ComponentProps {
 }
 
 export class FlashOneHertz extends DisplayComponent<FlashProps> {
+  private static isClockSetup = false;
+
+  /** This needs to be called once per instrument to setup the clock source for all flashers. */
+  public static setupClock(bus: EventBus, isRightSide: boolean): void {
+    if (!FlashOneHertz.isClockSetup) {
+      FlashOneHertz.isClockSetup = true;
+
+      const publisher = bus.getPublisher<FlashOneHertzEvents>();
+      bus
+        .getSubscriber<GlobalDmcEvents>()
+        .on(isRightSide ? 'dmc_right_flash_1hz' : 'dmc_left_flash_1hz')
+        .handle((v) => publisher.pub('flash_one_hertz_clock', v, false, true));
+
+      let lastMonotonicTime = 0;
+      const monotonicSimTimeVar = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Number);
+      bus
+        .getSubscriber<ClockEvents>()
+        .on('simTime')
+        .handle(() => {
+          const monotonicTime = monotonicSimTimeVar.get() * 1000;
+          publisher.pub(
+            'flash_one_hertz_delta',
+            lastMonotonicTime > 0 ? monotonicTime - lastMonotonicTime : 0,
+            false,
+            false,
+          );
+          lastMonotonicTime = monotonicTime;
+        });
+    }
+  }
+
   private readonly oneHertzClock = ConsumerSubject.create(null, false);
 
   private readonly flashingMtrig = new NXLogicTriggeredMonostableNode(this.props.flashDuration, true);
@@ -51,11 +89,11 @@ export class FlashOneHertz extends DisplayComponent<FlashProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<ExtendedClockEvents>();
+    const sub = this.props.bus.getSubscriber<ClockEvents & FlashOneHertzEvents>();
 
-    this.oneHertzClock.setConsumer(sub.on('oneHertzClock'));
+    this.oneHertzClock.setConsumer(sub.on('flash_one_hertz_clock'));
 
-    sub.on('deltaTime').handle((dt) => {
+    sub.on('flash_one_hertz_delta').handle((dt) => {
       const visible = this.props.visible?.get() ?? true;
       const shouldFlash = this.props.flashing?.get() ?? true;
       this.flashingMtrigResult.set(

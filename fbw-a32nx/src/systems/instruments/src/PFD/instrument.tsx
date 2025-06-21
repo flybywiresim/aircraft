@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, IrBusPublisher } from '@flybywiresim/fbw-sdk';
 import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
 import { FcuBusProvider } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBusProvider } from 'instruments/src/PFD/shared/FgBusProvider';
 import { getDisplayIndex, PFDComponent } from './PFD';
@@ -19,6 +18,7 @@ import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
 import { A32NXFwcBusPublisher } from '@shared/publishers/A32NXFwcBusPublisher';
 import { PseudoDmc } from './PseudoDmc';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 import './style.scss';
 
@@ -59,8 +59,6 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly pseudoDmc = new PseudoDmc(this.bus, this);
 
-  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
-
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -85,7 +83,7 @@ class A32NX_PFD extends BaseInstrument {
     this.backplane.addPublisher('ElectricalSystem', this.elecSystemPublisher);
     this.backplane.addPublisher('FwcBus', this.fwcBusPublisher);
     this.backplane.addInstrument('PseudoDMC', this.pseudoDmc);
-    this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
+    this.backplane.addPublisher('IrBusPublisher', new IrBusPublisher(this.bus));
   }
 
   get templateID(): string {
@@ -102,6 +100,8 @@ class A32NX_PFD extends BaseInstrument {
 
   public connectedCallback(): void {
     super.connectedCallback();
+
+    FlashOneHertz.setupClock(this.bus, getDisplayIndex() !== 1);
 
     this.adirsValueProvider = new AdirsValueProvider(
       this.bus,
