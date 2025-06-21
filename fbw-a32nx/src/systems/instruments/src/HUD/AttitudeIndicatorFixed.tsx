@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, Subscribable, VNode, ClockEvents } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { LateralMode } from '@shared/autopilot';
 import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
@@ -12,9 +12,8 @@ import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlightPathDirector } from './FlightPathDirector';
-import { HudElems } from './HUDUtils';
-
-const DistanceSpacing = (1024 / 28) * 5; //182.857
+import { HudElems, LagFilter, FIVE_DEG } from './HUDUtils';
+const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
 interface AttitudeIndicatorFixedUpperProps {
@@ -243,7 +242,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         </text>
         <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
           <g style={this.fdVisibilitySub}>
-            <FDYawBar bus={this.props.bus} />
+            <FDYawBar bus={this.props.bus} instrument={this.props.instrument} />
           </g>
 
           <AircraftReference bus={this.props.bus} instrument={this.props.instrument} />
@@ -253,8 +252,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             filteredRadioAlt={this.props.filteredRadioAlt}
           />
           <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
-
-          <TailstrikeIndicator bus={this.props.bus} />
         </g>
       </>
     );
@@ -309,7 +306,7 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
   }
 }
 
-class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
+class FDYawBar extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
   private fdEngaged = false;
 
   private fcuEisDiscreteWord2 = new Arinc429Word(0);
@@ -401,6 +398,108 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus }> {
           class="SmallStroke Green"
           d="m 630, 405 h 20 L 640,420 Z"
         />
+        <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
+      </g>
+    );
+  }
+}
+
+class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private LSLocRef = FSComponent.createRef<SVGGElement>();
+  private lagFilter = new LagFilter(1.5);
+  private rightDiamond = FSComponent.createRef<SVGPathElement>();
+
+  private leftDiamond = FSComponent.createRef<SVGPathElement>();
+
+  private locDiamond = FSComponent.createRef<SVGPathElement>();
+
+  private diamondGroup = FSComponent.createRef<SVGGElement>();
+  private handleNavRadialError(radialError: number): void {
+    const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
+    const dots = deviation / 0.8;
+
+    if (dots > 2) {
+      this.rightDiamond.instance.classList.remove('HiddenElement');
+      this.leftDiamond.instance.classList.add('HiddenElement');
+      this.locDiamond.instance.classList.add('HiddenElement');
+    } else if (dots < -2) {
+      this.rightDiamond.instance.classList.add('HiddenElement');
+      this.leftDiamond.instance.classList.remove('HiddenElement');
+      this.locDiamond.instance.classList.add('HiddenElement');
+    } else {
+      this.locDiamond.instance.classList.remove('HiddenElement');
+      this.rightDiamond.instance.classList.add('HiddenElement');
+      this.leftDiamond.instance.classList.add('HiddenElement');
+      this.locDiamond.instance.style.transform = `translate3d(${(dots * 30.221) / 2}px, 0px, 0px)`;
+    }
+  }
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values & HudElems>();
+
+    sub
+      .on('hasLoc')
+      //.whenChanged()
+      .handle((hasLoc) => {
+        if (hasLoc) {
+          this.diamondGroup.instance.classList.remove('HiddenElement');
+          this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
+        } else {
+          this.diamondGroup.instance.classList.add('HiddenElement');
+          this.lagFilter.reset();
+          this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
+        }
+      });
+  }
+
+  render(): VNode {
+    return (
+      <g id="YawLocSymbolsGroup" transform="scale(2.5 2.5) translate(187 0)">
+        <g ref={this.LSLocRef}>
+          <path
+            class="NormalStroke Green"
+            d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z"
+          />
+          <path
+            class="NormalStroke Green"
+            d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
+          />
+          <path
+            class="NormalStroke Green"
+            d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z"
+          />
+          <path
+            class="NormalStroke Green"
+            d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
+          />
+          <g class="HiddenElement" ref={this.diamondGroup}>
+            <path
+              id="LocDiamondRight"
+              ref={this.rightDiamond}
+              class="NormalStroke Green HiddenElement"
+              d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198"
+            />
+            <path
+              id="LocDiamondLeft"
+              ref={this.leftDiamond}
+              class="NormalStroke Green HiddenElement"
+              d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198"
+            />
+            <path
+              id="LocDiamond"
+              ref={this.locDiamond}
+              class="NormalStroke Green HiddenElement"
+              d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
+            />
+          </g>
+          <path
+            id="LocalizerNeutralLine"
+            class="Green Fill"
+            d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z"
+          />
+        </g>
       </g>
     );
   }
@@ -518,117 +617,6 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
         {/* <g ref={this.gndRef} id="AircraftReferenceOnGround" class="SmallStroke Green">
           <path d="m 630, 405 h 20 L 640,420 Z" />
         </g> */}
-      </g>
-    );
-  }
-}
-
-class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private pl = FSComponent.createRef<SVGGElement>();
-  private ref1 = FSComponent.createRef<SVGPathElement>();
-  private ref2 = FSComponent.createRef<SVGPathElement>();
-  private onGround = true;
-  private leftGear = true;
-  private rightGear = true;
-  private pitch = 0;
-  private tailStrikePitchLimit = 11.7;
-  private ref = 0;
-  static ONEDEG = 36.514;
-  private lim = 330 + this.tailStrikePitchLimit * TailstrikeIndicator.ONEDEG;
-  private tailStrikeConditions = {
-    altitude: new Arinc429Word(0),
-    speed: 0,
-    pitch: 0,
-    flightPhase: 0,
-    GAtimer: 0,
-  };
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
-
-    sub.on('chosenRa').handle((ra) => {
-      this.tailStrikeConditions.altitude = ra;
-    });
-
-    sub
-      .on('fmgcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.tailStrikeConditions.flightPhase = fp;
-        if (fp === 6) {
-          this.tailStrikeConditions.GAtimer = 1;
-        }
-      });
-
-    sub
-      .on('speedAr')
-      .whenChanged()
-      .handle((speed) => {
-        this.tailStrikeConditions.speed = speed.value;
-        this.checkOnGround();
-      });
-
-    sub.on('pitchAr').handle((pitch) => {
-      if (pitch.isNormalOperation()) {
-        this.pitch = pitch.value;
-        this.ref =
-          330 +
-          pitch.value * TailstrikeIndicator.ONEDEG -
-          (pitch.value / 2 - this.tailStrikePitchLimit / 2) * TailstrikeIndicator.ONEDEG;
-        //check srs value
-        //console.log(this.ref + ' pitch: ' + this.pitch + 'limit: ' + this.tailStrikePitchLimit);
-
-        this.ref1.instance.setAttribute('d', `M 590 ${this.ref} l 40 0 `);
-        this.ref2.instance.setAttribute('d', `M 690 ${this.ref} l -40 0 `);
-        this.pl.instance.setAttribute(
-          'points',
-          ` 590,${this.lim} 640,${this.lim}  640, ${this.lim - 10}    640,${this.lim}   690, ${this.lim} `,
-        );
-      }
-    });
-
-    sub.on('leftMainGearCompressed').handle((v) => {
-      v ? (this.leftGear = true) : (this.leftGear = false);
-      this.checkOnGround();
-    });
-
-    sub.on('rightMainGearCompressed').handle((v) => {
-      v ? (this.rightGear = true) : (this.rightGear = false);
-      this.checkOnGround();
-    });
-  }
-
-  private checkOnGround() {
-    this.leftGear || this.rightGear ? (this.onGround = true) : (this.onGround = false);
-
-    if (this.onGround) {
-      if (this.pitch > this.tailStrikePitchLimit) {
-        this.pl.instance.style.display = 'none';
-        this.ref1.instance.style.display = 'none';
-        this.ref2.instance.style.display = 'none';
-      } else {
-        this.pl.instance.style.display = 'block';
-        this.ref1.instance.style.display = 'block';
-        this.ref2.instance.style.display = 'block';
-      }
-    } else {
-      this.pl.instance.style.display = 'none';
-      this.ref1.instance.style.display = 'none';
-      this.ref2.instance.style.display = 'none';
-    }
-  }
-
-  render(): VNode {
-    // FIXME: What is the tailstrike pitch limit with compressed main landing gear for A320? Assume 11.7 degrees now.
-    // FIXME: further fine tune.
-    return (
-      <g>
-        {/* <path ref={this.deb} class="WideStroke  debug" d="" /> */}
-
-        <polyline ref={this.pl} id="TailstrikeWarning" points="" class="WideStroke  Green" />
-        <path ref={this.ref1} class="WideStroke  Green" d="" />
-        <path ref={this.ref2} class="WideStroke  Green" d="" />
       </g>
     );
   }

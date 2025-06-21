@@ -12,6 +12,7 @@ import {
   Subscribable,
   VNode,
   HEvent,
+  EventBus,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
@@ -23,6 +24,7 @@ import {
   HudElems,
   PitchscaleMode,
   FIVE_DEG,
+  HudMode,
 } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -261,6 +263,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             yOffset={Subject.create(0)}
           />
           <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
+          <TailstrikeIndicator bus={this.props.bus} />
         </g>
 
         <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -625,14 +628,14 @@ class PitchScale extends DisplayComponent<{
         'd',
         `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
       );
-      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG + 6.5}`);
+      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG + 6}`);
       this.threeDegTxtRef.instance.textContent = '-3.0°'; //TODO get the actual slope of the ILS
       this.threeDegTxtRef.instance.classList.remove('Green');
       this.threeDegTxtRef.instance.classList.add('InverseGreen');
       this.threeDegTxtBgRef.instance.style.display = `block`;
       this.threeDegTxtBgRef.instance.classList.add('GreenFill');
       this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
-      this.threeDegTxtBgRef.instance.setAttribute('d', `m 794 ${512 + (3 / 5) * FIVE_DEG - 13.5} h 50 v 20 h -50 z `);
+      this.threeDegTxtBgRef.instance.setAttribute('d', `m 795.5 ${512 + (3 / 5) * FIVE_DEG - 10} h 55 v 20 h -55 z `);
     } else if (this.activeVerticalModeSub.get() === VerticalMode.FPA) {
       this.threeDegPath.instance.setAttribute(
         'd',
@@ -640,10 +643,7 @@ class PitchScale extends DisplayComponent<{
       );
       this.threeDegPath.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
 
-      this.threeDegTxtRef.instance.setAttribute(
-        'y',
-        `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG + 6.5}`,
-      );
+      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG + 6}`);
       this.threeDegTxtRef.instance.textContent = fpaTxt;
       this.threeDegTxtRef.instance.classList.remove('InverseGreen');
       this.threeDegTxtRef.instance.classList.add('Green');
@@ -738,6 +738,71 @@ class PitchScale extends DisplayComponent<{
       <g id="pitchScale" class="LargeStroke Green">
         {result}
       </g>
+    );
+  }
+}
+class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
+  private tailStrike = FSComponent.createRef<SVGPathElement>();
+  private hudMode = 0;
+  private needsUpdate = false;
+  private ra = 0;
+  private pitch = 0;
+
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    sub
+      .on('hudFlightPhaseMode')
+      .whenChanged()
+      .handle((value) => {
+        this.hudMode = value;
+        this.needsUpdate = true;
+      });
+
+    sub.on('pitchAr').handle((pitch) => {
+      this.pitch = pitch.value;
+      this.needsUpdate = true;
+    });
+    sub
+      .on('chosenRa')
+      .whenChanged()
+      .handle((ra) => {
+        this.ra = ra.value;
+        this.needsUpdate = true;
+      });
+
+    sub.on('realTime').onlyAfter(2).handle(this.hideShow.bind(this));
+  }
+
+  private hideShow(_time: number) {
+    if (this.needsUpdate) {
+      this.needsUpdate = false;
+
+      if (this.hudMode === HudMode.TAKEOFF || this.hudMode === HudMode.ROLLOUT_OR_RTO) {
+        this.tailStrike.instance.style.display = 'block';
+      } else if (this.hudMode === HudMode.NORMAL) {
+        if (this.pitch > 10 && this.ra < 50) {
+          this.tailStrike.instance.style.display = 'block';
+        } else {
+          this.tailStrike.instance.style.display = 'none';
+        }
+      } else {
+        setTimeout(() => {
+          this.tailStrike.instance.style.display = 'none';
+        }, 3000);
+      }
+    }
+  }
+
+  render(): VNode {
+    return (
+      <path
+        ref={this.tailStrike}
+        id="TailstrikeWarning"
+        d="m 658.88 40 h 14.684 l-33.564 40 -33.564 -40 h 14.684 l 18.88  22.5 z"
+        class="LargeStroke Green"
+      />
     );
   }
 }
