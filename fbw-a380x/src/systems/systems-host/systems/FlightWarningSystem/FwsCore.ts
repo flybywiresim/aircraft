@@ -63,6 +63,7 @@ import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarn
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -207,7 +208,7 @@ export class FwsCore {
   );
 
   // SD STATUS NORMAL
-  private readonly statusNormal = MappedSubject.create(
+  public readonly statusNormal = MappedSubject.create(
     ([limAll, limAppr, inopAll, inopAppr]) => !limAll && !limAppr && !inopAll && !inopAppr,
     this.ewdLimitationsAllPhasesLines[0],
     this.ewdLimitationsApprLdgLines[0],
@@ -1610,6 +1611,7 @@ export class FwsCore {
   public readonly normalChecklists = new FwsNormalChecklists(this);
   public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
   public readonly abnormalSensed = new FwsAbnormalSensed(this);
+  public readonly systemDisplayLogic = new FwsSystemDisplayLogic(this);
   public ewdAbnormal: EwdAbnormalDict;
 
   constructor(
@@ -4632,6 +4634,7 @@ export class FwsCore {
     this.normalChecklists.update();
     this.abnormalSensed.update();
     this.abnormalNonSensed.update();
+    this.systemDisplayLogic.update(deltaTime);
     this.updateRowRopWarnings();
 
     // Orchestrate display of normal or abnormal proc display
