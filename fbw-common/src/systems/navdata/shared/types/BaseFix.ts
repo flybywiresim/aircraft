@@ -1,7 +1,7 @@
 import { Coordinates } from 'msfs-geo';
 import { DatabaseItem } from './Common';
 import { VhfNavaid } from './VhfNavaid';
-import { AirportSubsectionCode, SectionCode } from './SectionCode';
+import { SectionCode } from './SectionCode';
 import { Waypoint, WaypointArea } from './Waypoint';
 import { NdbNavaid } from './NdbNavaid';
 import { Airport } from './Airport';
@@ -22,9 +22,5 @@ export function isFix(o: any): o is Fix {
 }
 
 export function isAirport(o: Fix): o is Airport {
-  return (
-    typeof o === 'object' &&
-    o.sectionCode === SectionCode.Airport &&
-    o.subSectionCode === AirportSubsectionCode.ReferencePoints
-  );
+  return typeof o === 'object' && o.sectionCode === SectionCode.Airport;
 }

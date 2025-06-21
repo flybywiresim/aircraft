@@ -26,7 +26,7 @@ export class CDULateralRevisionPage {
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
     leg,
-    legIndexFP,
+    legIndexFP: number,
     forPlan = FlightPlanIndex.Active,
     inAlternate = false,
   ) {
@@ -41,25 +41,21 @@ export class CDULateralRevisionPage {
     }
     /** @type {BaseFlightPlan} */
     const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
-
     const isPpos = leg === undefined || (legIndexFP === 0 && leg !== targetPlan.originLeg);
     const isFrom = legIndexFP === targetPlan.fromLegIndex && forPlan === FlightPlanIndex.Active && !inAlternate;
-    const legWaypoint = !isPpos ? mcdu.flightPlanService.active.legElementAt(legIndexFP).definition.waypoint : null;
-    const departure = mcdu.flightPlanService.active.originAirport;
-    const arrival = mcdu.flightPlanService.active.destinationAirport;
-    const currentWaypointAirportIdent = isAirport(legWaypoint) ? legWaypoint.airportIdent : null;
+    const legWaypoint = !isPpos ? leg.definition.waypoint : null;
+    const departure = targetPlan.originAirport;
+    const destination = targetPlan.destinationAirport;
     const isDeparture =
       legIndexFP === targetPlan.originLegIndex &&
       !isPpos &&
-      departure &&
-      currentWaypointAirportIdent &&
-      departure.airportIdent === currentWaypointAirportIdent;
+      isAirport(legWaypoint) &&
+      legWaypoint.airportIdent === departure?.airportIdent;
     const isDestination =
       legIndexFP === targetPlan.destinationLegIndex &&
       !isPpos &&
-      arrival &&
-      currentWaypointAirportIdent &&
-      arrival.airportIdent === currentWaypointAirportIdent;
+      isAirport(legWaypoint) &&
+      legWaypoint.airportIdent === destination?.airportIdent;
     const isWaypoint = !isDeparture && !isDestination && !isPpos;
     const isManual = leg && leg.isVectors();
 
