@@ -405,7 +405,6 @@ pub struct AirDataInertialReferenceSystem {
     remaining_alignment_time_id: VariableIdentifier,
     configured_align_time_id: VariableIdentifier,
     aircraft_preset_quick_mode_id: VariableIdentifier,
-    uses_gps_as_primary_id: VariableIdentifier,
 
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
@@ -413,13 +412,12 @@ pub struct AirDataInertialReferenceSystem {
     simulator_data: AdirsSimulatorData,
 }
 impl AirDataInertialReferenceSystem {
+    // TODO remove when A380X FWC is fixed
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
     // A32NX_AIRCRAFT_PRESET_QUICK_MODE LVar is set by the Aircraft Presets to allow expedited presets without
     // changing the general  alignment time setting
     const AIRCRAFT_PRESET_QUICK_MODE_KEY: &'static str = "AIRCRAFT_PRESET_QUICK_MODE";
-    // TODO this is an FMS thing, nothing to do with ADIRUs
-    const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
     pub fn new(
         context: &mut InitContext,
@@ -432,8 +430,6 @@ impl AirDataInertialReferenceSystem {
                 .get_identifier(Self::CONFIGURED_ALIGN_TIME_KEY.to_owned()),
             aircraft_preset_quick_mode_id: context
                 .get_identifier(Self::AIRCRAFT_PRESET_QUICK_MODE_KEY.to_owned()),
-            uses_gps_as_primary_id: context
-                .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
 
             adirus: [1, 2, 3]
                 .map(|n| AirDataInertialReferenceUnit::new(context, n, programming.clone())),
@@ -479,12 +475,6 @@ impl AirDataInertialReferenceSystem {
             .unwrap_or_else(|| Duration::from_secs(0))
     }
 
-    fn any_adiru_fully_aligned_with_ir_on(&self) -> bool {
-        self.adirus
-            .iter()
-            .any(|adiru| adiru.is_fully_aligned() && adiru.ir_is_on())
-    }
-
     fn ir_has_fault(&self, number: usize) -> bool {
         self.adirus[number - 1].ir_has_fault()
     }
@@ -507,10 +497,6 @@ impl SimulationElement for AirDataInertialReferenceSystem {
             &self.remaining_alignment_time_id,
             self.remaining_align_duration(),
         );
-        writer.write(
-            &self.uses_gps_as_primary_id,
-            self.any_adiru_fully_aligned_with_ir_on(),
-        )
     }
 }
 impl AdirsToAirCondInterface for AirDataInertialReferenceSystem {
@@ -633,10 +619,6 @@ impl AirDataInertialReferenceUnit {
 
     fn is_fully_aligned(&self) -> bool {
         self.ir.is_fully_aligned()
-    }
-
-    fn ir_is_on(&self) -> bool {
-        self.ir.is_on()
     }
 
     fn remaining_align_duration(&self) -> Option<Duration> {
@@ -2328,14 +2310,6 @@ mod tests {
             self
         }
 
-        fn wait_for_alignment_of(mut self, adiru_number: usize) -> Self {
-            while self.align_state(adiru_number) != AlignState::Aligned {
-                self.run();
-            }
-
-            self
-        }
-
         fn latitude_of(mut self, latitude: Angle) -> Self {
             self.write_by_name(AdirsSimulatorData::LATITUDE, latitude);
             self
@@ -2904,10 +2878,6 @@ mod tests {
                 adiru_number,
                 InertialReference::MAINT_WORD,
             ))
-        }
-
-        fn uses_gps_as_primary(&mut self) -> bool {
-            self.read_by_name(AirDataInertialReferenceSystem::USES_GPS_AS_PRIMARY_KEY)
         }
 
         fn assert_adr_data_valid(&mut self, valid: bool, adiru_number: usize) {
@@ -4766,41 +4736,6 @@ mod tests {
 
     mod gps {
         use super::*;
-
-        #[rstest]
-        #[case(1)]
-        #[case(2)]
-        #[case(3)]
-        fn uses_gps_as_primary_when_any_adiru_is_aligned(#[case] adiru_number: usize) {
-            // The GPSSU is for now assumed to always work. Thus, when any ADIRU is aligned
-            // GPS is used as the primary means of navigation.
-            let mut test_bed = test_bed_with()
-                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation)
-                .wait_for_alignment_of(adiru_number);
-
-            assert!(test_bed.uses_gps_as_primary());
-        }
-
-        #[test]
-        fn does_not_use_gps_as_primary_when_no_adiru_is_aligned() {
-            let mut test_bed = test_bed();
-            test_bed.run();
-
-            assert!(!test_bed.uses_gps_as_primary());
-        }
-
-        #[test]
-        fn does_not_use_gps_as_primary_when_adirus_aligned_with_ir_push_buttons_off() {
-            let mut test_bed = all_adirus_aligned_test_bed_with()
-                .ir_push_button_off(1)
-                .ir_push_button_off(2)
-                .and()
-                .ir_push_button_off(3);
-
-            test_bed.run();
-
-            assert!(!test_bed.uses_gps_as_primary());
-        }
 
         #[rstest]
         #[case(1)]
