@@ -64,9 +64,11 @@ interface EWDItem {
   simVarIsActive: Subscribable<boolean>;
   /** aural warning, defaults to simVarIsActive and SC for level 2 or CRC for level 3 if not provided */
   auralWarning?: Subscribable<FwcAuralWarning>;
-  whichCodeToReturn: () => any[];
+  /** Can be a code directly, or an array of indices in `codesToReturn`, with no meaning no code. */
+  whichCodeToReturn: () => (number | null)[] | string;
   codesToReturn: string[];
-  memoInhibit: () => boolean;
+  // FIXME remove... this is not an actual thing
+  memoInhibit?: () => boolean;
   failure: number;
   sysPage: number;
   side: string;
@@ -2930,10 +2932,14 @@ export class PseudoFWC {
 
         const newCode: string[] = [];
         if (!recallFailureKeys.includes(key)) {
-          const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
-
-          for (const e of codeIndex) {
-            newCode.push(value.codesToReturn[e]);
+          const codeToReturn = value.whichCodeToReturn();
+          if (typeof codeToReturn === 'string') {
+            newCode.push(codeToReturn);
+          } else {
+            const codeIndex = codeToReturn.filter((e) => e !== null);
+            codeIndex.forEach((e: number) => {
+              newCode.push(value.codesToReturn[e]);
+            });
           }
 
           if (value.sysPage > -1) {
@@ -3017,15 +3023,19 @@ export class PseudoFWC {
     for (const [, value] of Object.entries(this.ewdMessageMemos)) {
       if (
         value.simVarIsActive.get() &&
-        !value.memoInhibit() &&
+        !value.memoInhibit?.() &&
         !value.flightPhaseInhib.some((e) => e === flightPhase)
       ) {
         const newCode: string[] = [];
-
-        const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
-        codeIndex.forEach((e: number) => {
-          newCode.push(value.codesToReturn[e]);
-        });
+        const codeToReturn = value.whichCodeToReturn();
+        if (typeof codeToReturn === 'string') {
+          newCode.push(codeToReturn);
+        } else {
+          const codeIndex = codeToReturn.filter((e) => e !== null);
+          codeIndex.forEach((e: number) => {
+            newCode.push(value.codesToReturn[e]);
+          });
+        }
 
         if (value.side === 'LEFT' && !failLeft) {
           tempMemoArrayLeft = tempMemoArrayLeft.concat(newCode);
