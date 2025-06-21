@@ -5,13 +5,17 @@
 import { FMMessage, FMMessageTypes, ConfirmationNode, Trigger } from '@flybywiresim/fbw-sdk';
 
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
+import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
+import { NavigationEvents } from '../../navigation/Navigation';
 
 /**
  * Since this happens when the simvar goes to zero, we need to use some CONF nodes to make sure we do not count the initial
  * first-frame value, as the ADIRS module might not have run yet.
  */
 export class GpsPrimaryLost implements FMMessageSelector {
-  message: FMMessage = FMMessageTypes.GpsPrimaryLost;
+  public readonly message: FMMessage = FMMessageTypes.GpsPrimaryLost;
+
+  private readonly onGpsPrimary = ConsumerSubject.create(null, false);
 
   private confLost = new ConfirmationNode(1_000);
 
@@ -21,8 +25,12 @@ export class GpsPrimaryLost implements FMMessageSelector {
 
   private trigRegained = new Trigger(true);
 
+  constructor(readonly bus: EventBus) {
+    this.onGpsPrimary.setConsumer(bus.getSubscriber<NavigationEvents>().on('fms_nav_gps_primary'));
+  }
+
   process(deltaTime: number): FMMessageUpdate {
-    const lostNow = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool') === 0;
+    const lostNow = !this.onGpsPrimary.get();
 
     this.confLost.input = lostNow;
     this.confLost.update(deltaTime);
