@@ -3518,7 +3518,8 @@ export class PseudoFWC {
       whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
-      failure: 0,
+      failure: 0, // Should be 3, but then the master warn light would potentially illuminate. Needs proper
+      // monitor implementation.
       sysPage: -1,
       side: 'LEFT',
     },
@@ -3533,7 +3534,8 @@ export class PseudoFWC {
       whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
-      failure: 2,
+      failure: 0, // Should be 2, but then the master caution light would potentially illuminate. Needs proper
+      // monitor implementation.
       sysPage: -1,
       side: 'LEFT',
       cancel: false,
@@ -3549,7 +3551,8 @@ export class PseudoFWC {
       whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
-      failure: 2,
+      failure: 0, // Should be 2, but then the master caution light would potentially illuminate. Needs proper
+      // monitor implementation.
       sysPage: -1,
       side: 'LEFT',
       cancel: false,
