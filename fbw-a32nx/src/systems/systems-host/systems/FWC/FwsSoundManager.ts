@@ -65,7 +65,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     continuous: true,
   },
   tripleClick: {
-    localVarName: 'A32NX_FMA_TRIPLE_CLICK',
+    wwiseEventName: '3click',
     length: 0.62,
     priority: 3,
     type: FwsAuralWarningType.AuralWarning,
@@ -120,15 +120,8 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: true,
   },
-  cChordOnce: {
-    localVarName: 'A32NX_ALT_DEVIATION',
-    length: 1.0,
-    priority: 3,
-    type: FwsAuralWarningType.AuralWarning,
-    continuous: false,
-  },
   cChordCont: {
-    localVarName: 'A32NX_ALT_DEVIATION',
+    localVarName: 'A32NX_FWC_CCHORD',
     priority: 3,
     type: FwsAuralWarningType.AuralWarning,
     continuous: true,
@@ -271,6 +264,11 @@ export class FwsSoundManager {
     const sub = this.bus.getSubscriber<FwsSoundManagerControlEvents>();
     sub.on('enqueueSound').handle((s) => this.enqueueSound(s));
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
+  }
+
+  /** Get the current emitted sound, for example for the AP OFF logic computation. */
+  getCurrentSoundPlaying() {
+    return this.currentSoundPlaying;
   }
 
   /** Add sound to queue. Don't add if already playing */

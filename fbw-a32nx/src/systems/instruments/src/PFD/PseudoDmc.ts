@@ -20,16 +20,21 @@ import {
   Arinc429SignStatusMatrix,
   DmcSwitchingKnob,
 } from '@flybywiresim/fbw-sdk';
+import { SwitchingPanelVSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
 
 // In future this will move to the Systems instance in VCockpitLogic which will also handle the
 // display switching, and then it can be expanded a bit and become a DMC rather than the combined DMC bus.
 // For now it can live in each PFD, just to relay DMC L/R data as needed.
 export class PseudoDmc implements Instrument {
-  private readonly sub = this.bus.getSubscriber<A32NXElectricalSystemEvents & A32NXFcuBusEvents & Arinc429Values>();
+  private readonly sub = this.bus.getSubscriber<
+    A32NXElectricalSystemEvents & A32NXFcuBusEvents & Arinc429Values & SwitchingPanelVSimVars
+  >();
 
   private readonly dmcSwitchingState = Subject.create(DmcSwitchingKnob.Norm);
 
   private readonly fcuDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly adrSwitchingKnob = ConsumerSubject.create(this.sub.on('airKnob'), 0);
 
   private readonly mainElecSupply = ConsumerSubject.create(null, false);
   private readonly alternateElecSupply = ConsumerSubject.create(null, false);
@@ -45,6 +50,7 @@ export class PseudoDmc implements Instrument {
 
   private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
 
+  private readonly dmcDiscreteWord272 = Arinc429RegisterSubject.createEmpty();
   private readonly dmcDiscreteWord350 = Arinc429RegisterSubject.createEmpty();
   private readonly dmcAltitude = Arinc429RegisterSubject.createEmpty();
 
@@ -75,6 +81,20 @@ export class PseudoDmc implements Instrument {
         true,
       ),
       this.altitude.sub((v) => this.dmcAltitude.setWord(v.rawWord), true, true),
+      this.adrSwitchingKnob.sub(
+        (knobPosition) => {
+          if (this.isRightSide) {
+            this.dmcDiscreteWord272.setBitValue(13, knobPosition === 2);
+            this.dmcDiscreteWord272.setBitValue(14, knobPosition === 1 || knobPosition === 2);
+          } else {
+            this.dmcDiscreteWord272.setBitValue(13, knobPosition === 0 || knobPosition === 1);
+            this.dmcDiscreteWord272.setBitValue(14, knobPosition === 0);
+          }
+          this.dmcDiscreteWord272.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+        },
+        true,
+        true,
+      ),
     ];
 
     this.isAcPowered.sub((isPowered) => {
