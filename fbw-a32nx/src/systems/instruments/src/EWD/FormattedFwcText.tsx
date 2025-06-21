@@ -1,10 +1,19 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { GlobalDmcEvents } from '../MsfsAvionicsCommon/GlobalDmcEvents';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  Subscribable,
+  SubscribableMapFunctions,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 interface FormattedFwcTextProps {
+  bus: EventBus;
   message: Subscribable<string>;
   x: number;
   y: number;
@@ -13,6 +22,12 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
   private linesRef = FSComponent.createRef<SVGGElement>();
 
   private decorationRef = FSComponent.createRef<SVGGElement>();
+
+  // FIXME support ECAM on FO ND (DMC R)
+  private readonly flash1Hz = ConsumerSubject.create(
+    this.props.bus.getSubscriber<GlobalDmcEvents>().on('dmc_left_flash_1hz'),
+    false,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -29,7 +44,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
       let color = 'White';
       let underlined = false;
-      // const flashing = false; TODO
+      let flashing = false;
       let framed = false;
 
       let buffer = '';
@@ -41,7 +56,14 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
           if (buffer !== '') {
             // close current part
             spans.push(
-              <tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>
+              <tspan
+                key={buffer}
+                class={{
+                  [color]: true,
+                  EWDWarn: true,
+                  DimColor: flashing ? this.flash1Hz.map(SubscribableMapFunctions.identity()) : false,
+                }}
+              >
                 {buffer}
               </tspan>,
             );
@@ -84,7 +106,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 case 'm':
                   // Reset attribute
                   underlined = false;
-                  // flashing = false;
+                  flashing = false;
                   framed = false;
                   break;
                 case '4m':
@@ -93,7 +115,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                   break;
                 case ')m':
                   // Flashing attribute
-                  // flashing = true;
+                  flashing = true;
                   break;
                 case "'m":
                   // Characters which follow must be framed

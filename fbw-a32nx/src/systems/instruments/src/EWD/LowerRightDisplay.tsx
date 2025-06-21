@@ -104,6 +104,6 @@ export class LowerRightDisplay extends DisplayComponent<LowerRightDisplayProps> 
   }
 
   render(): VNode {
-    return <FormattedFwcText message={this.message} x={520} y={554} />;
+    return <FormattedFwcText bus={this.props.bus} message={this.message} x={520} y={554} />;
   }
 }
