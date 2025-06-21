@@ -443,12 +443,12 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
         display={this.sVisibility}
         class="SmallStroke Green CornerRound"
       >
-        <path d="M 640.18,154.11 l -10,21.89 h 20z" />
+        <path d="M 640.18 140 l -10,21.89 h 20z" />
         <path
           id="SideSlipIndicator"
           ref={this.slideSlip}
           class={this.classNameSub}
-          d="m 629,177.85 -8,16.15 38,0.07 -8,-16.22z"
+          d="m 629 164.85 -8,16.15 38,0.07 -8,-16.22z"
         />
         <text
           id="SIFailText"

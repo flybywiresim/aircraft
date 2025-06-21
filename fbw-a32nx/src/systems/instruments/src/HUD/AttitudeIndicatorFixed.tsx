@@ -22,113 +22,94 @@ interface AttitudeIndicatorFixedUpperProps {
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private onGround = true;
-  private sVisibility = Subject.create<String>('');
-  private radioAlt = -1;
-  private pitch: Arinc429WordData = Arinc429Register.empty();
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HudElems>();
+  private fullGroupVis = '';
+  private fullGroupRef = FSComponent.createRef<SVGGElement>();
+  private attitudeIndicatorRef = FSComponent.createRef<SVGGElement>();
+  private alternateLawRef = FSComponent.createRef<SVGGElement>();
+  private attitudeIndicator = '';
   private roll = new Arinc429Word(0);
-
-  private visibilitySub = Subject.create('hidden');
-
-  private attInfoGroup = FSComponent.createRef<SVGGElement>();
-  private rollProtSymbol = FSComponent.createRef<SVGGElement>();
-
-  private rollProtLostSymbol = FSComponent.createRef<SVGGElement>();
+  private pitch = new Arinc429Word(0);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
-
-    sub
-      .on('decMode')
+    this.sub
+      .on('attitudeIndicator')
       .whenChanged()
       .handle((value) => {
-        this.declutterMode = value;
-        if (this.onGround) {
-          this.sVisibility.set('none');
+        this.fullGroupVis = value;
+        this.fullGroupRef.instance.style.display = `${this.fullGroupVis}`;
+      });
+
+    this.sub
+      .on('attitudeIndicator')
+      .whenChanged()
+      .handle((v) => {
+        this.attitudeIndicator = v;
+        this.attitudeIndicatorRef.instance.style.display = `${this.attitudeIndicator}`;
+      });
+
+    this.sub
+      .on('rollAr')
+      .whenChanged()
+      .handle((roll) => {
+        this.roll = roll;
+        if (!this.roll.isNormalOperation()) {
+          this.attitudeIndicatorRef.instance.style.display = 'none';
+          this.alternateLawRef.instance.style.display = 'none';
         } else {
-          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+          this.attitudeIndicatorRef.instance.style.display = 'block';
+          Math.abs(roll.value) > 35 && Math.abs(roll.value) <= 71
+            ? (this.alternateLawRef.instance.style.display = 'block')
+            : (this.alternateLawRef.instance.style.display = 'none');
+        }
+        if (Math.abs(roll.value) > 71) {
+          this.attitudeIndicatorRef.instance.style.display = 'none';
+          this.alternateLawRef.instance.style.display = 'none';
         }
       });
 
-    sub
-      .on('leftMainGearCompressed')
+    this.sub
+      .on('pitchAr')
       .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-        if (this.onGround) {
-          this.sVisibility.set('none');
+      .handle((pitch) => {
+        this.pitch.value = pitch.value;
+        if (!this.pitch.isNormalOperation()) {
+          this.attitudeIndicatorRef.instance.style.display = 'none';
         } else {
-          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+          if (pitch.value > 39 || pitch.value < -25) {
+            this.attitudeIndicatorRef.instance.style.display = 'none';
+            this.alternateLawRef.instance.style.display = 'none';
+          } else {
+            this.attitudeIndicatorRef.instance.style.display = 'block';
+          }
         }
       });
-
-    sub
-      .on('radioAltitude1')
-      .whenChanged()
-      .handle((ra) => {
-        this.radioAlt = ra;
-      });
-
-    sub.on('rollAr').handle((roll) => {
-      this.roll = roll;
-      if (!this.roll.isNormalOperation() || this.radioAlt < 50) {
-        this.visibilitySub.set('hidden');
-      } else {
-        this.visibilitySub.set('visible');
-      }
-    });
-
-    sub.on('pitchAr').handle((pitch) => {
-      this.pitch = pitch;
-      if (!this.pitch.isNormalOperation() || this.radioAlt < 50) {
-        this.visibilitySub.set('hidden');
-      } else {
-        this.visibilitySub.set('visible');
-      }
-    });
-
-    sub.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
-      const isNormalLawActive = fcdcWord1.bitValue(11) && !fcdcWord1.isFailureWarning();
-
-      this.rollProtSymbol.instance.style.display = isNormalLawActive ? 'block' : 'none';
-
-      this.rollProtLostSymbol.instance.style.display = !isNormalLawActive ? 'block' : 'none';
-    });
   }
 
   render(): VNode {
     return (
-      // visibility={this.visibilitySub}
-      <g
-        id="AttitudeUpperInfoGroup"
-        ref={this.attInfoGroup}
-        display={this.sVisibility}
-        transform="scale(5 5) translate(59 -8)"
-      >
-        <g id="RollProtGroup" ref={this.rollProtSymbol} style="display: none" class="ScaledStrokeThin Green">
-          <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
-          <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
+      <g id="FullAttitudeUpperInfoGroup" ref={this.fullGroupRef}>
+        <g id="AttitudeUpperInfoGroup" ref={this.attitudeIndicatorRef}>
+          <g id="RollIndicatorFixed" class="LargeStroke  Green">
+            <path d="m 640,138.44282 12.21523,-20.20611 h -24.43047 zz" />
+            <path d="m 735.2  164 14.1,-24.5" />
+            <path d="m 705.1 150 7.7,-20.7" />
+            <path d="m 673 141.5 4,-22.2" />
+            <path d="m 544.8  164 -14.1,-24.5" />
+            <path d="m 574.9 150 -7.7,-20.7" />
+            <path d="m 607 141.5 -4,-22.2" />
+
+            <g id="alternateLawRollRef" ref={this.alternateLawRef}>
+              <path d="m 774.5 194.5 20,-20" />
+              <path d="m 813 249 19,-9" />
+              <path d="m 505.5 194.5 -20,-20" />
+              <path d="m 467 249 -19,-9" />
+              <path d="M 467.5 249.3 A 190 190 263 0 1  812.5 249.3 " />
+            </g>
+          </g>
         </g>
-        <g id="RollProtLost" ref={this.rollProtLostSymbol} style="display: none" class="ScaledStrokeThin Amber">
-          <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
-          <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
-        </g>
-        <g class="ScaledStrokeThin Green">
-          <path d="m98.45 51.5 5 -5" />
-          <path d="m39.45 51.5 -5 -5" />
-          <path d="m76.15 40 l .725 -4" />
-          <path d="m83.2 41.9 l 1.3 -3.75" />
-          <path d="m89.75 45 l 2 -3.5" />
-          <path d="m61.65 40 l -.725 -4" />
-          <path d="m54.65 41.9 l -1.3 -3.75" />
-          <path d="m48.15 45 l -2 -3.5" />
-        </g>
-        <path class="NormalStroke Green CornerRound" d="m68.906 38.650-2.5184-3.7000h5.0367l-2.5184 3.7000" />
       </g>
     );
   }
