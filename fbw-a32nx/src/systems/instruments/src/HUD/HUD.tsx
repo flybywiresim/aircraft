@@ -40,7 +40,6 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import './style.scss';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
-import { AutoThrustMode, VerticalMode } from '@shared/autopilot';
 import { HudElems, LagFilter, calculateHorizonOffsetFromPitch, Grid } from './HUDUtils';
 import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
 
@@ -71,19 +70,11 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
   private xWindAltTapeRef2 = FSComponent.createRef<SVGPathElement>();
   private windIndicatorRef = FSComponent.createRef<SVGGElement>();
 
-  private onLanding = false;
   private groundSpeed = 0;
   private onRollout = false;
   private onDecel = false;
   private landSpeed = false;
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private bitMask = 0;
-  private athMode = 0;
-  private onToPower = false;
   private onGround = true;
-  private crosswindMode = false;
-  private lgRightCompressed = false;
   private headingFailed = Subject.create(true);
 
   private displayBrightness = Subject.create(0);
@@ -186,80 +177,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         }
       }
     });
-
-    sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((value) => {
-        value == VerticalMode.ROLL_OUT ? (this.onRollout = true) : (this.onRollout = false);
-        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
-          this.onLanding = true;
-        } else {
-          this.onLanding = false;
-        }
-      });
-
-    sub
-      .on('autoBrakeDecel')
-      .whenChanged()
-      .handle((value) => {
-        this.onDecel = value;
-        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
-          this.onLanding = true;
-        } else {
-          this.onLanding = false;
-        }
-      });
-
-    sub
-      .on('groundSpeed')
-      .whenChanged()
-      .handle((value) => {
-        this.groundSpeed = value;
-        this.groundSpeed > 30 ? (this.landSpeed = true) : (this.landSpeed = false);
-        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
-          this.onLanding = true;
-        } else {
-          this.onLanding = false;
-        }
-      });
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-
-        if (this.onGround && this.landSpeed && (this.onDecel || this.onRollout)) {
-          this.onLanding = true;
-        } else {
-          this.onLanding = false;
-        }
-      });
-
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
-      });
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-      });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-      });
 
     sub
       .on(isCaptainSide ? 'hudPotentiometerCaptain' : 'hudPotentiometerFo')

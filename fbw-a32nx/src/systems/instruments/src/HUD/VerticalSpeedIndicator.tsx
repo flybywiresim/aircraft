@@ -16,7 +16,6 @@ import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, LagFilter } from './HUDUtils';
-import { AutoThrustMode } from '@shared/autopilot';
 
 interface VerticalSpeedIndicatorProps {
   bus: ArincEventBus;
@@ -42,7 +41,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
   private crosswindMode = false;
   private bitMask = 0;
   private athMode = 0;
-  private onToPower = false;
 
   private yOffsetSub = Subject.create(0);
 
@@ -82,17 +80,6 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       .handle((v) => {
         this.VS = v;
         this.VSRef.instance.style.display = `${this.VS}`;
-      });
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
       });
 
     sub

@@ -12,18 +12,25 @@ import {
   Subscribable,
   VNode,
   HEvent,
-  SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import { calculateHorizonOffsetFromPitch, LagFilter, getSmallestAngle, HudElems } from './HUDUtils';
+import {
+  calculateHorizonOffsetFromPitch,
+  LagFilter,
+  getSmallestAngle,
+  HudElems,
+  PitchscaleMode,
+  FIVE_DEG,
+} from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './HUD';
 import { HeadingOfftape } from './HeadingIndicator';
-
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { VerticalMode } from '@shared/autopilot';
 const DisplayRange = 35;
 const DistanceSpacing = 182.86;
 const ValueSpacing = 5;
@@ -469,23 +476,48 @@ class PitchScale extends DisplayComponent<{
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
 }> {
-  private fmgcFlightPhase = -1;
   private forcedFma = false;
-  private flightPhase = -1;
   private declutterMode = 0;
   private crosswindMode = false;
+
   private sVisibility = Subject.create<String>('');
   private sVisibilityDeclutterMode2 = Subject.create<String>('');
-  private sVisibilitySwitch = Subject.create<String>('');
+  private sVisibilitySwitch = Subject.create<String>('block');
 
-  private readonly lsVisible = ConsumerSubject.create(null, false);
-  private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
+  private sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
+  >();
   private needsUpdate = false;
 
   private threeDegLine = FSComponent.createRef<SVGGElement>();
-
-  private DeclutterSimVar = '';
-
+  private pitchScaleMode = PitchscaleMode.FULL;
+  private activeVerticalModeSub = Subject.create(0);
+  private selectedFpa = Subject.create(0);
+  private gsArmed = false;
+  private threeDegPath = FSComponent.createRef<SVGPathElement>();
+  private threeDegTxtRef = FSComponent.createRef<SVGTextElement>();
+  private threeDegTxtBgRef = FSComponent.createRef<SVGPathElement>();
+  private readonly ls1btn = ConsumerSubject.create(this.sub.on('ls1Button').whenChanged(), false);
+  private readonly ls2btn = ConsumerSubject.create(this.sub.on('ls2Button').whenChanged(), false);
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
+  private readonly flightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase').whenChanged(), 0);
+  private readonly threeDegLineVis = MappedSubject.create(
+    ([ls1btn, ls2btn, decMode, flightPhase]) => {
+      if (ls1btn || ls2btn) {
+        if (flightPhase === FmgcFlightPhase.Approach) {
+          return 'block';
+        } else {
+          return decMode === 2 ? 'none' : 'block';
+        }
+      } else {
+        return 'none';
+      }
+    },
+    this.ls1btn,
+    this.ls2btn,
+    this.decMode,
+    this.flightPhase,
+  );
   private data: LSPath = {
     roll: new Arinc429Word(0),
     pitch: new Arinc429Word(0),
@@ -493,123 +525,71 @@ class PitchScale extends DisplayComponent<{
     da: new Arinc429Word(0),
   };
 
+  private setPitchScale() {
+    if (this.pitchScaleMode === PitchscaleMode.OFF) {
+      this.sVisibility.set('none');
+      this.sVisibilityDeclutterMode2.set('none');
+    } else if (this.pitchScaleMode === PitchscaleMode.FULL) {
+      this.sVisibility.set('block');
+      this.sVisibilityDeclutterMode2.set('block');
+    } else {
+      this.sVisibility.set('none');
+      this.sVisibilityDeclutterMode2.set('block');
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<
-      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
-    >();
 
-    sub
-      .on('fmgcFlightPhase')
+    this.sub
+      .on('fmaVerticalArmed')
       .whenChanged()
-      .handle((fp) => {
-        isCaptainSide
-          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
-          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
-        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
-        this.fmgcFlightPhase = fp;
-        //force fma during climb and descent
-        if (fp == 1 || fp == 2 || fp == 4) {
-          this.forcedFma = true;
-          if (this.declutterMode == 2) {
-            this.sVisibility.set('block');
-            this.sVisibilityDeclutterMode2.set('block');
-          } else {
-            this.sVisibility.set('block');
-            this.sVisibilityDeclutterMode2.set('block');
-          }
-        } else {
-          this.forcedFma = false;
-        }
+      .handle((fmv) => {
+        ((fmv >> 4) & 1) === 1 ? (this.gsArmed = true) : (this.gsArmed = false);
+      });
+    this.sub
+      .on('pitchScaleMode')
+      .whenChanged()
+      .handle((v) => {
+        this.pitchScaleMode = v;
+        this.setPitchScale();
       });
 
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        isCaptainSide
-          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
-          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
-        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
-        this.flightPhase = fp;
-        //onGround
-        if (this.flightPhase <= 2 || this.flightPhase >= 9) {
-          if (this.declutterMode == 2) {
-            this.sVisibility.set('none');
-            this.sVisibilityDeclutterMode2.set('none');
-          }
-          if (this.declutterMode < 2) {
-            this.sVisibility.set('block');
-            this.sVisibilityDeclutterMode2.set('block');
-          }
-        }
-        //inFlight
-        if (this.flightPhase > 2 && this.flightPhase <= 9) {
-          if (this.forcedFma) {
-            if (this.declutterMode == 2) {
-              this.sVisibility.set('block');
-              this.sVisibilityDeclutterMode2.set('block');
-            } else {
-              this.sVisibility.set('block');
-              this.sVisibilityDeclutterMode2.set('block');
-            }
-          } else {
-            if (this.declutterMode == 2) {
-              this.sVisibility.set('none');
-              this.sVisibilityDeclutterMode2.set('block');
-            } else {
-              this.sVisibility.set('block');
-              this.sVisibilityDeclutterMode2.set('block');
-            }
-          }
-        }
-      });
-
-    sub
+    this.sub
       .on('decMode')
       .whenChanged()
       .handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
         this.declutterMode = value;
-        if (this.forcedFma) {
-          this.sVisibility.set('block');
-          this.sVisibilityDeclutterMode2.set('block');
-        } else {
-          if (this.declutterMode == 2) {
-            this.sVisibility.set('none');
-            this.sVisibilityDeclutterMode2.set('block');
-          } else {
-            this.sVisibility.set('block');
-            this.sVisibilityDeclutterMode2.set('block');
-          }
-        }
+        this.setPitchScale();
       });
 
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-        SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
-      }
+    this.sub
+      .on('activeVerticalMode')
+      .whenChanged()
+      .handle((activeVerticalMode) => {
+        this.activeVerticalModeSub.set(activeVerticalMode);
+      });
+    this.sub.on('selectedFpa').handle((fpa) => {
+      this.selectedFpa.set(fpa);
+      this.needsUpdate = true;
     });
-    this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-
-    sub.on('fpa').handle((fpa) => {
+    this.sub.on('fpa').handle((fpa) => {
       this.data.fpa = fpa;
       this.needsUpdate = true;
     });
-    sub.on('da').handle((da) => {
+    this.sub.on('da').handle((da) => {
       this.data.da = da;
       this.needsUpdate = true;
     });
-    sub.on('rollAr').handle((r) => {
+    this.sub.on('rollAr').handle((r) => {
       this.data.roll = r;
       this.needsUpdate = true;
     });
-    sub.on('pitchAr').handle((p) => {
+    this.sub.on('pitchAr').handle((p) => {
       this.data.pitch = p;
       this.needsUpdate = true;
     });
-    sub.on('realTime').handle((_t) => {
+    this.sub.on('realTime').handle((_t) => {
       if (this.needsUpdate) {
         this.needsUpdate = false;
         const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
@@ -632,46 +612,96 @@ class PitchScale extends DisplayComponent<{
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     this.threeDegLine.instance.style.transform = `translate3d(${xOffset}px, 0px, 0px)`;
+
+    const fpaTxt = this.selectedFpa.get() % 1 === 0 ? `${this.selectedFpa.get()}.0°` : `${this.selectedFpa.get()}°`;
+
+    if (
+      this.activeVerticalModeSub.get() === VerticalMode.GS_TRACK ||
+      this.activeVerticalModeSub.get() === VerticalMode.GS_CPT ||
+      this.activeVerticalModeSub.get() === VerticalMode.LAND ||
+      this.gsArmed === true
+    ) {
+      this.threeDegPath.instance.setAttribute(
+        'd',
+        `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
+      );
+      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG + 6.5}`);
+      this.threeDegTxtRef.instance.textContent = '-3.0°'; //TODO get the actual slope of the ILS
+      this.threeDegTxtRef.instance.classList.remove('Green');
+      this.threeDegTxtRef.instance.classList.add('InverseGreen');
+      this.threeDegTxtBgRef.instance.style.display = `block`;
+      this.threeDegTxtBgRef.instance.classList.add('GreenFill');
+      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
+      this.threeDegTxtBgRef.instance.setAttribute('d', `m 794 ${512 + (3 / 5) * FIVE_DEG - 13.5} h 50 v 20 h -50 z `);
+    } else if (this.activeVerticalModeSub.get() === VerticalMode.FPA) {
+      this.threeDegPath.instance.setAttribute(
+        'd',
+        `M 565,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h -80  M 713,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h 80  `,
+      );
+      this.threeDegPath.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
+
+      this.threeDegTxtRef.instance.setAttribute(
+        'y',
+        `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG + 6.5}`,
+      );
+      this.threeDegTxtRef.instance.textContent = fpaTxt;
+      this.threeDegTxtRef.instance.classList.remove('InverseGreen');
+      this.threeDegTxtRef.instance.classList.add('Green');
+      this.threeDegTxtBgRef.instance.style.display = `none`;
+      this.threeDegTxtBgRef.instance.classList.remove('GreenFill');
+      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG}`);
+      this.threeDegTxtBgRef.instance.setAttribute('d', ``);
+    } else {
+      this.threeDegPath.instance.setAttribute(
+        'd',
+        `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
+      );
+      this.threeDegTxtBgRef.instance.style.display = `none`;
+    }
   }
   render(): VNode {
     const result = [] as SVGTextElement[];
 
+    // positive pitch, right dotted lines
     for (let i = 1; i < 7; i++) {
-      result.push(<path d={`M 518.26,${512 - i * 182.857} h -71.1 v 11`} display={this.sVisibility} />);
-      result.push(<path d={`M 761.74,${512 - i * 182.857} h 71.1 v 11`} display={this.sVisibility} />);
+      result.push(<path d={`M 518.26,${512 - i * FIVE_DEG} h -71.1 v 11`} display={this.sVisibility} />);
+      result.push(<path d={`M 761.74,${512 - i * FIVE_DEG} h 71.1 v 11`} display={this.sVisibility} />);
     }
 
     for (let i = 1; i < 5; i++) {
       // negative pitch, right dotted lines
       i == 1 ? (this.sVisibilitySwitch = this.sVisibilityDeclutterMode2) : (this.sVisibilitySwitch = this.sVisibility);
       result.push(
-        <path class="ScaledStroke" d={`m 761.74,${512 + i * 182.857} h 12`} display={this.sVisibilitySwitch} />,
-        <path class="ScaledStroke" d={`m 781.44,${512 + i * 182.857} h 12`} display={this.sVisibilitySwitch} />,
-        <path class="ScaledStroke" d={`m 801.14,${512 + i * 182.857} h 12`} display={this.sVisibilitySwitch} />,
-        <path class="ScaledStroke" d={`m 820.84,${512 + i * 182.857} h 12 v -11 `} display={this.sVisibilitySwitch} />,
+        <path class="LargeStroke Green" d={`m 761.74,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path class="LargeStroke Green" d={`m 781.44,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path class="LargeStroke Green" d={`m 801.14,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path
+          class="LargeStroke Green"
+          d={`m 820.84,${512 + i * FIVE_DEG} h 12 v -11 `}
+          display={this.sVisibilitySwitch}
+        />,
       );
       // negative pitch, left dotted lines
       result.push(
-        <path class="ScaledStroke" d={`m 518.26,${512 + i * 182.857} h -12`} display={this.sVisibilitySwitch} />,
-        <path class="ScaledStroke" d={`m 498.56,${512 + i * 182.857} h -12`} display={this.sVisibilitySwitch} />,
-        <path class="ScaledStroke" d={`m 478.86,${512 + i * 182.857} h -12`} display={this.sVisibilitySwitch} />,
-        <path class="ScaledStroke" d={`m 459.16,${512 + i * 182.857} h -12 v -11`} display={this.sVisibilitySwitch} />,
+        <path class="LargeStroke Green" d={`m 518.26,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path class="LargeStroke Green" d={`m 498.56,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path class="LargeStroke Green" d={`m 478.86,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path
+          class="LargeStroke Green"
+          d={`m 459.16,${512 + i * FIVE_DEG} h -12 v -11`}
+          display={this.sVisibilitySwitch}
+        />,
       );
     }
 
     // //3° line
-    // class={{ HiddenElement: this.props.lsVisible }}
     result.push(
-      // threeDegRef={this.props.threeDegRef}
-
-      <g
-        id="ThreeDegreeLine"
-        ref={this.threeDegLine}
-        class={{ HiddenElement: this.lsHidden }}
-        display={this.sVisibilityDeclutterMode2}
-      >
-        <path d={`M 565,${512 + (3 / 5) * 182.857} h -80 `} />
-        <path d={`M 713,${512 + (3 / 5) * 182.857} h 80 `} />
+      <g id="ThreeDegreeLine" ref={this.threeDegLine} display={this.threeDegLineVis}>
+        <path ref={this.threeDegPath} d="" />
+        <g id="SlopeTxt">
+          <path ref={this.threeDegTxtBgRef} d=""></path>
+          <text x="822.5" ref={this.threeDegTxtRef} class="FontSmallest MiddleAlign InverseGreen"></text>
+        </g>
       </g>,
     );
 
@@ -687,7 +717,7 @@ class PitchScale extends DisplayComponent<{
         <text
           class="FontSmall Green Fill EndAlign"
           x="445"
-          y={512 - i * 182.857 + 8.35}
+          y={512 - i * FIVE_DEG + 8.35}
           display={this.sVisibilitySwitch}
         >
           {str}
@@ -697,14 +727,17 @@ class PitchScale extends DisplayComponent<{
         <text
           class="FontSmall Green Fill StartAlign"
           x="835"
-          y={512 - i * 182.857 + 8.35}
+          y={512 - i * FIVE_DEG + 8.35}
           display={this.sVisibilitySwitch}
         >
           {str}
         </text>,
       );
     }
-
-    return <g class="ScaledStroke">{result}</g>;
+    return (
+      <g id="pitchScale" class="LargeStroke Green">
+        {result}
+      </g>
+    );
   }
 }

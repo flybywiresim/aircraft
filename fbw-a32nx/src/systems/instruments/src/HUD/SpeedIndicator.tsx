@@ -24,7 +24,6 @@ import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
-import { AutoThrustMode } from '@shared/autopilot';
 import { WindMode, HudElems } from './HUDUtils';
 
 const ValueSpacing = 10;
@@ -261,17 +260,6 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
       this.xWindSpdTape = v;
       this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
     });
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
-      });
 
     sub
       .on('leftMainGearCompressed')
@@ -637,17 +625,6 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
       this.xWindSpdTape = v;
       this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
     });
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
-      });
 
     sub
       .on('decMode')

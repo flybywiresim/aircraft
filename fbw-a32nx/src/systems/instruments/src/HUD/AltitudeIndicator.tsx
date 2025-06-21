@@ -27,7 +27,6 @@ import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElemen
 
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
-import { AutoThrustMode } from '@shared/autopilot';
 import { HudElems, WindMode, MdaMode } from './HUDUtils';
 
 let DisplayRange = 570;
@@ -185,63 +184,31 @@ interface AltitudeIndicatorProps {
 
 export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> {
   private crosswindMode = false;
-  private xWindAltTape = '';
-  private altTape = '';
 
   private altIndicatorGroupRef = FSComponent.createRef<SVGGElement>();
 
   private subscribable = Subject.create<number>(0);
 
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private bitMask = 0;
-  private athMode = 0;
-  private onToPower = false;
-  private onPower = false;
-  private finalGnd = false;
-  private onGround = true;
-  private lgLeftCompressed = false;
-  private lgRightCompressed = false;
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
-
+  private normalOps = false;
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & FcuBus & HudElems>();
+  private readonly altTape = ConsumerSubject.create(this.sub.on('altTape').whenChanged(), '');
+  private readonly xWindAltTape = ConsumerSubject.create(this.sub.on('xWindAltTape').whenChanged(), '');
+  private readonly isTapeVisible = MappedSubject.create(
+    ([alt, xwndAlt]) => {
+      if (this.normalOps === true) {
+        return alt === 'block' || xwndAlt === 'block' ? 'block' : 'none';
+      } else {
+        return 'none';
+      }
+    },
+    this.altTape,
+    this.xWindAltTape,
+  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & FcuBus & HudElems>();
-
-    sub.on('altTape').handle((v) => {
-      this.altTape = v;
-      this.altTape === 'none'
-        ? (this.tapeRef.instance.style.display = 'block') ////none
-        : (this.tapeRef.instance.style.display = 'block');
-    });
-    sub.on('xWindAltTape').handle((v) => {
-      this.xWindAltTape = v;
-    });
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
-      });
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-      });
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-      });
-    sub
+    this.sub
       .on('cWndMode')
       .whenChanged()
       .handle((value) => {
@@ -262,9 +229,9 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
       .handle((a) => {
         if (a.isNormalOperation()) {
           this.subscribable.set(a.value);
-          this.tapeRef.instance.style.display = 'inline';
+          this.normalOps = true;
         } else {
-          this.tapeRef.instance.style.display = 'none';
+          this.normalOps = false;
         }
       });
   }
@@ -274,7 +241,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
       <g id="AltitudeTape" transform="scale(4.25 4.25) translate(131 38)" ref={this.altIndicatorGroupRef}>
         {/* <AltTapeBackground /> */}
         {/* <LandingElevationIndicator bus={this.props.bus} /> */}
-        <g ref={this.tapeRef}>
+        <g ref={this.tapeRef} display={this.isTapeVisible}>
           <VerticalTape
             displayRange={DisplayRange + 60}
             valueSpacing={ValueSpacing}
@@ -307,17 +274,6 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 
   private altTapeRef = FSComponent.createRef<SVGGElement>();
   private xWindAltTapeRef = FSComponent.createRef<SVGGElement>();
-
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private bitMask = 0;
-  private athMode = 0;
-  private onToPower = false;
-  private onPower = false;
-  private finalGnd = false;
-  private onGround = true;
-  private lgRightCompressed = false;
 
   private abnormal = FSComponent.createRef<SVGGElement>();
 
@@ -358,36 +314,6 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
       .handle((v) => {
         this.xWindAltTape = v;
         this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
-      });
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-      });
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-      });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
       });
 
     sub.on('altitudeAr').handle((altitude) => {
@@ -845,13 +771,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   private QFERef = FSComponent.createRef<SVGGElement>();
 
   private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private bitMask = 0;
-  private athMode = 0;
-  private onToPower = false;
-  private onPower = false;
-  private onGround = true;
 
   private pressure = 0;
 
@@ -889,7 +808,12 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & FcuBus & Arinc429Values & HudElems>();
-
+    sub
+      .on('QFE')
+      .whenChanged()
+      .handle((value) => {
+        this.QFERef.instance.style.display = `${value}`;
+      });
     sub
       .on('fcuEisDiscreteWord1')
       .whenChanged()
@@ -914,36 +838,6 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
       .whenChanged()
       .handle(() => {
         this.getText();
-      });
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-      });
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-      });
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
       });
 
     sub
@@ -1060,45 +954,47 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
   render(): VNode {
     return (
       <>
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={Infinity}
-          flashing={this.shouldFlash}
-          visible={this.stdVisible}
-        >
-          <g ref={this.stdGroup} id="STDAltimeterModeGroup" transform="translate(0 10)">
-            <path class="NormalStroke Green" d="m124 131.74h13v7.0556h-13z" />
-            <text class="FontMediumSmaller Green AlignLeft" x="125.75785" y="137.36">
-              STD
-            </text>
-          </g>
-        </FlashOneHertz>
-
-        <FlashOneHertz
-          bus={this.props.bus}
-          flashDuration={Infinity}
-          flashing={this.shouldFlash}
-          visible={this.altiSettingVisible}
-        >
-          <g id="AltimeterGroup" transform="translate(0 10)" ref={this.QFERef}>
-            <g id="QFEGroup">
-              <path
-                class={{
-                  NormalStroke: true,
-                  White: true,
-                  HiddenElement: this.qfeBorderHidden,
-                }}
-                d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
-              />
-              <text id="AltimeterModeText" class="FontMediumSmaller Green" x="118.23066" y="138.11342">
-                {this.mode}
-              </text>
-              <text id="AltimeterSettingText" class="FontMediumSmaller MiddleAlign Green" x="141.25583" y="138.09006">
-                {this.text}
+        <g id="QfeGroup" ref={this.QFERef}>
+          <FlashOneHertz
+            bus={this.props.bus}
+            flashDuration={Infinity}
+            flashing={this.shouldFlash}
+            visible={this.stdVisible}
+          >
+            <g ref={this.stdGroup} id="STDAltimeterModeGroup" transform="translate(0 10)">
+              <path class="NormalStroke Green" d="m124 131.74h13v7.0556h-13z" />
+              <text class="FontMediumSmaller Green AlignLeft" x="125.75785" y="137.36">
+                STD
               </text>
             </g>
-          </g>
-        </FlashOneHertz>
+          </FlashOneHertz>
+
+          <FlashOneHertz
+            bus={this.props.bus}
+            flashDuration={Infinity}
+            flashing={this.shouldFlash}
+            visible={this.altiSettingVisible}
+          >
+            <g id="AltimeterGroup" transform="translate(0 10)">
+              <g id="QFEGroup">
+                <path
+                  class={{
+                    NormalStroke: true,
+                    White: true,
+                    HiddenElement: this.qfeBorderHidden,
+                  }}
+                  d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
+                />
+                <text id="AltimeterModeText" class="FontMediumSmaller Green" x="118.23066" y="138.11342">
+                  {this.mode}
+                </text>
+                <text id="AltimeterSettingText" class="FontMediumSmaller MiddleAlign Green" x="141.25583" y="138.09006">
+                  {this.text}
+                </text>
+              </g>
+            </g>
+          </FlashOneHertz>
+        </g>
       </>
     );
   }

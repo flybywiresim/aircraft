@@ -21,7 +21,6 @@ import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElemen
 import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
 import { HudElems } from './HUDUtils';
-import { AutoThrustMode } from '@shared/autopilot';
 
 /* eslint-disable no-constant-condition,no-dupe-else-if -- for keeping the FMA code while it's not active yet */
 
@@ -214,17 +213,6 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
       this.FMA = v;
       this.FMARef.instance.style.display = `${this.FMA}`;
     });
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((value) => {
-        this.athMode = value;
-        this.athMode == AutoThrustMode.MAN_FLEX ||
-        this.athMode == AutoThrustMode.MAN_TOGA ||
-        this.athMode == AutoThrustMode.TOGA_LK
-          ? (this.onToPower = true)
-          : (this.onToPower = false);
-      });
 
     sub
       .on('leftMainGearCompressed')
