@@ -1455,6 +1455,7 @@ struct InertialReference {
     remaining_attitude_initialisation_duration: Option<Duration>,
     wind_velocity: LowPassFilter<Vector2<f64>>,
     extreme_latitude: bool,
+    quick_realign_remaining_available_time: Duration,
 
     pitch: AdirsArinc429Data<Angle>,
     roll: AdirsArinc429Data<Angle>,
@@ -1527,6 +1528,8 @@ impl InertialReference {
     const MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS: f64 = 50.;
 
     const WIND_VELOCITY_TIME_CONSTANT: Duration = Duration::from_millis(100);
+    const QUICK_REALIGN_AVAILABLE_TIME: Duration = Duration::from_secs(5);
+    const QUICK_REALIGN_ALIGN_TIME: Duration = Duration::from_secs(180);
 
     fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
@@ -1540,6 +1543,7 @@ impl InertialReference {
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
             wind_velocity: LowPassFilter::new(Self::WIND_VELOCITY_TIME_CONSTANT),
             extreme_latitude: false,
+            quick_realign_remaining_available_time: Duration::default(),
 
             pitch: AdirsArinc429Data::new_ir(context, number, Self::PITCH),
             roll: AdirsArinc429Data::new_ir(context, number, Self::ROLL),
@@ -1659,24 +1663,37 @@ impl InertialReference {
         configured_align_time: AlignTime,
         simulator_data: AdirsSimulatorData,
     ) {
+        // If the knob is moved out of NAV and back within 5 seconds while aligned, a quick re-alignment
+        // is performed. This just zeros the velocities etc.
+        if self.is_fully_aligned()
+            && overhead.mode_of(self.number) != InertialReferenceMode::Navigation
+        {
+            self.quick_realign_remaining_available_time = Self::QUICK_REALIGN_AVAILABLE_TIME;
+        } else if !self.quick_realign_remaining_available_time.is_zero() {
+            self.quick_realign_remaining_available_time = self
+                .quick_realign_remaining_available_time
+                .saturating_sub(context.delta());
+        }
+
         // If the  align time setting has been changed to instant during alignment,
         // then set remaining time to 0. This allows to implement a "Instant Align" button in the EFB
         // for users who want to align the ADIRS instantly but do not want to change the default
         // setting and restart the flight.
         if let AlignTime::Instant = configured_align_time {
             self.remaining_align_duration = Some(Duration::from_secs_f64(0.));
+        } else {
+            self.remaining_align_duration =
+                match overhead.mode_of(self.number) {
+                    InertialReferenceMode::Navigation => match self.remaining_align_duration {
+                        Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
+                        None => Some(self.total_alignment_duration(
+                            configured_align_time,
+                            simulator_data.latitude,
+                        )),
+                    },
+                    InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
+                };
         }
-
-        self.remaining_align_duration = match overhead.mode_of(self.number) {
-            InertialReferenceMode::Navigation => match self.remaining_align_duration {
-                Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
-                None => Some(Self::total_alignment_duration(
-                    configured_align_time,
-                    simulator_data.latitude,
-                )),
-            },
-            InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
-        };
     }
 
     fn update_latitude(&mut self, simulator_data: AdirsSimulatorData) {
@@ -2044,20 +2061,44 @@ impl InertialReference {
             && self.remaining_attitude_initialisation_duration.is_none()
     }
 
-    fn total_alignment_duration(configured_align_time: AlignTime, latitude: Angle) -> Duration {
+    fn total_alignment_duration_from_configuration(
+        configured_align_time: AlignTime,
+        latitude: Angle,
+    ) -> Duration {
+        let abs_lat = latitude.get::<degree>().abs();
         Duration::from_secs_f64(match configured_align_time {
-            AlignTime::Realistic => ((latitude.get::<degree>().powi(2)) * 0.095) + 310.,
+            AlignTime::Realistic => {
+                if abs_lat > 73. {
+                    1020.
+                } else if abs_lat > 60. {
+                    600.
+                } else {
+                    (300. / latitude.get::<radian>().cos()).abs()
+                }
+            }
             AlignTime::Instant => 0.,
             AlignTime::Fast => Self::FAST_ALIGNMENT_TIME_IN_SECS,
         })
     }
 
-    fn is_fully_aligned(&self) -> bool {
-        self.remaining_align_duration == Some(Duration::from_secs(0))
+    fn total_alignment_duration(
+        &mut self,
+        configured_align_time: AlignTime,
+        latitude: Angle,
+    ) -> Duration {
+        let mut alignment_duration =
+            Self::total_alignment_duration_from_configuration(configured_align_time, latitude);
+
+        if !self.quick_realign_remaining_available_time.is_zero() {
+            self.quick_realign_remaining_available_time = Duration::default();
+            alignment_duration = Self::QUICK_REALIGN_ALIGN_TIME.min(alignment_duration)
+        }
+
+        alignment_duration
     }
 
-    fn is_on(&self) -> bool {
-        self.is_on
+    fn is_fully_aligned(&self) -> bool {
+        self.remaining_align_duration == Some(Duration::from_secs(0))
     }
 
     fn is_aligning(&self) -> bool {
@@ -3097,6 +3138,13 @@ mod tests {
         all_adirus_aligned_test_bed()
     }
 
+    fn all_adirus_unaligned_test_bed_with() -> AdirsTestBed {
+        let mut bed = all_adirus_aligned_test_bed().all_mode_selectors_off();
+        // run long enough to bypass quick align
+        bed.run_with_delta(Duration::from_secs(10));
+        bed
+    }
+
     fn all_adirus_aligned_test_bed() -> AdirsTestBed {
         AdirsTestBed::new()
     }
@@ -3196,22 +3244,22 @@ mod tests {
     }
 
     #[rstest]
-    #[case(Angle::new::<degree>(90.))]
-    #[case(Angle::new::<degree>(-90.))]
+    #[case(Angle::new::<degree>(80.))]
+    #[case(Angle::new::<degree>(-80.))]
     fn adirs_aligns_quicker_near_equator_than_near_the_poles_when_configured_align_time_is_realistic(
         #[case] polar_latitude: Angle,
     ) {
-        let mut test_bed = align_at_latitude(Angle::new::<degree>(0.));
+        let mut test_bed = start_align_at_latitude(Angle::new::<degree>(0.));
         let equator_alignment_time = test_bed.remaining_alignment_time();
 
-        let mut test_bed = align_at_latitude(polar_latitude);
+        let mut test_bed = start_align_at_latitude(polar_latitude);
         let south_pole_alignment_time = test_bed.remaining_alignment_time();
 
         assert!(equator_alignment_time < south_pole_alignment_time);
     }
 
-    fn align_at_latitude(latitude: Angle) -> AdirsTestBed {
-        let mut test_bed = test_bed_with()
+    fn start_align_at_latitude(latitude: Angle) -> AdirsTestBed {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
             .align_time_configured_as(AlignTime::Realistic)
             .latitude_of(latitude)
             .and()
@@ -3219,6 +3267,30 @@ mod tests {
 
         test_bed.run();
         test_bed
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(0.))]
+    #[case(Angle::new::<degree>(63.))]
+    #[case(Angle::new::<degree>(-63.))]
+    fn adirs_aligns_quick_when_mode_selector_off_for_3_secs(#[case] latitude: Angle) {
+        // Create the conditions for a quick align (aligned, then less than 5 secs off)
+        let mut test_bed = all_adirus_aligned_test_bed_with()
+            .align_time_configured_as(AlignTime::Realistic)
+            .latitude_of(latitude)
+            .and()
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Off);
+        test_bed.run_with_delta(Duration::from_secs(2));
+
+        // Perform the quick align
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+
+        let alignment_time = test_bed.remaining_alignment_time();
+
+        assert!(alignment_time <= Duration::from_secs(180));
     }
 
     #[rstest]
