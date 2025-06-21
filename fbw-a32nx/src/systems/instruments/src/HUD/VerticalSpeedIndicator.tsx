@@ -95,7 +95,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       .handle((value) => {
         this.crosswindMode = value;
         value == true
-          ? this.VSRef.instance.setAttribute('transform', 'scale(5 5) translate(90 -37)')
+          ? this.VSRef.instance.setAttribute('transform', 'scale(5 5) translate(90 -15)')
           : this.VSRef.instance.setAttribute('transform', 'scale(5 5) translate(90 20)');
       });
 

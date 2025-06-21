@@ -11,8 +11,6 @@ import {
   MappedSubject,
   NodeReference,
   Subject,
-  Subscribable,
-  SubscribableMapFunctions,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -35,129 +33,87 @@ const ValueSpacing = 5;
 
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
-  private readonly lsVisible = ConsumerSubject.create(null, false);
-  private LSGroupVisibility = Subject.create('none');
-  private bVisible = 0;
-  private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
-  private flightPhase = -1;
-  private crosswindMode = false;
-  private declutterMode = 0;
-  private DeclutterSimVar = '';
+  private lsButtonPressedVisibility = false;
 
-  private readonly xtk = ConsumerSubject.create(null, 0);
+  private xtkValid = Subject.create(false);
 
-  // FIXME this seems like a dubious test...
-  private readonly xtkValid = this.xtk.map((v) => Math.abs(v) > 0);
+  private isDecluttered = Subject.create(false);
 
-  private readonly ldevRequest = ConsumerSubject.create(null, false);
+  private ldevRequest = false;
 
-  private readonly altitude2 = Arinc429RegisterSubject.createEmpty();
+  private lsGroupRef = FSComponent.createRef<SVGGElement>();
 
-  private readonly isGsReferenceLineHidden = MappedSubject.create(
-    ([lsVisible, altitude]) => !lsVisible && !altitude.isNormalOperation(),
-    this.lsVisible,
-    this.altitude2,
-  );
+  private deviationGroup = FSComponent.createRef<SVGGElement>();
 
-  private readonly isLDevHidden = MappedSubject.create(
-    ([request, xtkValid]) => !request || !xtkValid,
-    this.ldevRequest,
-    this.xtkValid,
-  );
+  private ldevRef = FSComponent.createRef<SVGGElement>();
 
-  private readonly isVDevHidden = Subject.create(true);
+  private groupVis = false;
+  private hudFlightPhaseMode = 0;
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
-  private isTrkFpaActive = false;
+  private readonly declutterModeL = ConsumerSubject.create(this.sub.on('declutterModeL'), 0);
+  private readonly declutterModeR = ConsumerSubject.create(this.sub.on('declutterModeR'), 0);
+  private readonly ls1Button = ConsumerSubject.create(this.sub.on('ls1Button'), false);
+  private readonly ls2Button = ConsumerSubject.create(this.sub.on('ls2Button'), false);
+  private gsVis = '';
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
-
-    // FIXME clean this up.. should be handled by an IE in the XML
-    sub.on('hEvent').handle((eventName) => {
-      if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-        SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
-      }
-    });
-
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-        //onGround
-        if (this.flightPhase <= 2 || this.flightPhase >= 9) {
-          if (this.declutterMode == 2) {
-            this.LSGroupVisibility.set('none');
-          }
-          if (this.declutterMode < 2) {
-            this.LSGroupVisibility.set('block');
-          }
-        }
-        //inFlight
-        if (this.flightPhase > 2 && this.flightPhase <= 8) {
-          isCaptainSide
-            ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
-            : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
-          this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
-          if (this.declutterMode == 2) {
-            this.LSGroupVisibility.set('none');
-          } else {
-            this.LSGroupVisibility.set('block');
-          }
-        }
-      });
-
-    sub
-      .on('decMode')
+    this.sub
+      .on('IlsGS')
       .whenChanged()
       .handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-        this.declutterMode = value;
-        if (this.declutterMode > 1) {
-          this.LSGroupVisibility.set('none');
-        } else {
-          this.LSGroupVisibility.set('block');
-        }
+        this.gsVis = value;
+        value === 'block' ? (this.groupVis = true) : (this.groupVis = false);
       });
-
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-      });
-
-    this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
-
-    sub.on('baroCorrectedAltitude').handle((altitude) => {
-      this.altitude2.setWord(altitude);
+    this.sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
+      value && this.groupVis
+        ? (this.lsGroupRef.instance.style.display = 'inline')
+        : (this.lsGroupRef.instance.style.display = 'none');
     });
 
-    this.ldevRequest.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight'));
+    this.sub
+      .on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight')
+      .whenChanged()
+      .handle((ldevRequest) => {
+        this.ldevRequest = ldevRequest;
+        this.updateLdevVisibility();
+      });
 
-    this.xtk.setConsumer(sub.on('xtk'));
+    this.sub
+      .on('xtk')
+      .whenChanged()
+      .handle((xtk) => {
+        this.xtkValid.set(Math.abs(xtk) > 0);
+      });
+
+    this.xtkValid.sub(() => {
+      this.updateLdevVisibility();
+    });
   }
 
+  updateLdevVisibility() {
+    this.ldevRef.instance.style.display = this.ldevRequest && this.xtkValid ? 'inline' : 'none';
+  }
   render(): VNode {
     return (
       <>
-        <g id="LSGroup" transform="scale(2.5 2.5) translate(185 51) ">
-          <g id="LSGroup" display={this.LSGroupVisibility}>
-            <LandingSystemInfo bus={this.props.bus} isVisible={this.lsVisible} />
-            <LocBcIndicator bus={this.props.bus} />
+        <g id="LSGroup" ref={this.lsGroupRef} transform="scale(2.5 2.5) translate(185 51) ">
+          <LandingSystemInfo bus={this.props.bus} />
+          <g id="LSGroup">
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
+            <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <MarkerBeaconIndicator bus={this.props.bus} />
+            <LocBcIndicator bus={this.props.bus} />
           </g>
-          <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
         </g>
-        <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
-          <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
+        <g id="DeviationGroup">
+          <g id="LateralDeviationGroup" ref={this.ldevRef}>
             <LDevIndicator bus={this.props.bus} />
           </g>
-          <g id="VerticalDeviationGroup" class={{ HiddenElement: this.isVDevHidden }}>
+          <g id="VerticalDeviationGroup">
             <VDevIndicator bus={this.props.bus} />
           </g>
         </g>
@@ -168,10 +124,10 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
 
 interface LandingSystemInfoProps {
   bus: ArincEventBus;
-  isVisible: Subscribable<boolean>;
 }
 
 class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
+  private lsInfoGroup = FSComponent.createRef<SVGGElement>();
   // source data
 
   private readonly lsAlive = ConsumerSubject.create(null, false);
@@ -289,14 +245,6 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
         this.dmeTextTrailing.pause();
       }
     }, true);
-
-    this.props.isVisible.sub((v) => {
-      if (v) {
-        this.resume();
-      } else {
-        this.pause();
-      }
-    });
   }
 
   public pause(): void {
@@ -313,11 +261,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
   render(): VNode {
     return (
-      <g
-        id="LSInfoGroup"
-        transform=" translate(-110 125)"
-        class={{ HiddenElement: this.props.isVisible.map((v) => !v) }}
-      >
+      <g id="LSInfoGroup" transform=" translate(-110 125)" ref={this.lsInfoGroup}>
         <text
           id="ILSIdent"
           class={{
@@ -740,7 +684,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
     if (this.crosswindMode == false) {
       this.LSGsRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + (3 * DistanceSpacing) / ValueSpacing) / 2.5}px, 0px)`;
     } else {
-      this.LSGsRef.instance.style.transform = `translate3d(110px, -44.5px, 0px)`;
+      this.LSGsRef.instance.style.transform = `translate3d(110px, 0px, 0px)`;
     }
     //DistanceSpacing
   }
@@ -854,7 +798,7 @@ class VDevIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   }
   render(): VNode {
     return (
-      <g id="VertDevSymbolsGroup" ref={this.VDevRef}>
+      <g id="VertDevSymbolsGroup" ref={this.VDevRef} display="none">
         <path
           transform="translate(-1 0)"
           class={{ Green: true, Fill: true }}
@@ -930,7 +874,7 @@ class LDevIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <g id="LatDeviationSymbolsGroup" transform="translate(0 120)">
+      <g id="LatDeviationSymbolsGroup" transform="translate(0 120)" display="none">
         <text class="FontMediumSmaller  AlignRight Green" x="31.578" y="125.392">
           L/DEV
         </text>

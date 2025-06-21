@@ -1384,7 +1384,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   private textSub = Subject.create('0');
 
   private decelActive = false;
-
+  private speedMarginsRef = FSComponent.createRef<SVGGElement>();
   private needsUpdate = true;
   private crosswindMode = false;
   private speedState: SpeedStateInfo = {
@@ -1580,10 +1580,12 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       this.xwindOffset = 0;
       this.upperBoundRef.instance.setAttribute('y', '36.670692');
       this.lowerBoundRef.instance.setAttribute('y', '128');
+      this.speedMarginsRef.instance.style.transform = `translate3d(0px, 0px, 0px)`;
     } else {
       this.xwindOffset = -68.5;
       this.upperBoundRef.instance.setAttribute('y', '-10.5');
       this.lowerBoundRef.instance.setAttribute('y', '38.5');
+      this.speedMarginsRef.instance.style.transform = `translate3d(0px, -68.5px, 0px)`;
     }
   }
 
@@ -1622,7 +1624,9 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
           style="transform: translate3d(0px, 0px, 0px)"
           d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512"
         />
-        <SpeedMargins bus={this.props.bus} />
+        <g ref={this.speedMarginsRef}>
+          <SpeedMargins bus={this.props.bus} />
+        </g>
       </>
     );
   }
