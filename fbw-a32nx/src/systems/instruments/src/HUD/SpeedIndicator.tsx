@@ -48,7 +48,7 @@ export class AirspeedIndicator extends DisplayComponent<{
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
-        this.crosswindMode ? (DisplayRange = DisplayRange = 21) : (DisplayRange = 42);
+        this.crosswindMode ? (DisplayRange = 21) : (DisplayRange = 42);
       });
   }
 
@@ -367,7 +367,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
 
         <g id="SpeedTapeElementsGroup" ref={this.speedTapeElements} transform="scale(4.25 4.25) translate(15 38)">
           {/* transform="translate( -120 -66.5)" */}
-          <g id="CrosswindSpeedTape" transform="translate( 0 -68)" ref={this.xWindSpdTapeRef}>
+          <g id="CrosswindSpeedTape" transform="translate( 0 -41.5)" ref={this.xWindSpdTapeRef}>
             <g id="CrosswindSpeedTapeTest">
               <path id="SpeedTapeOutlineRight" class="NormalStroke Green" d={this.pathSub} />
               <path id="SpeedTapeBelowForty" class="NormalStroke Green" d="m19.031 81 v20" />
@@ -726,7 +726,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
               <path id="SpeedTapeOutlineUpper" class="NormalStroke Red" d="m1.9058  -7.5 h21.859" />
               <path id="SpeedTapeOutlineLower" class="NormalStroke Red" d="m1.9058 33 h21.859" />
             </g> */}
-            <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 38)">
+            <g id="SpeedOfftapeGroup" ref={this.offTapeRef} transform="scale(4.25 4.25) translate(15 64.5)">
               <path id="SpeedTapeOutlineUpper" class="NormalStroke Green" d="m1.9058  -7.5 h21.859" />
               <SpeedTarget bus={this.props.bus} mode={WindMode.CrossWind} />
               <text
@@ -1396,7 +1396,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   private readonly spdSelFlagVisible = Subject.create(false);
 
   private lowerBoundRef = FSComponent.createRef<SVGTextElement>();
-  private upperBoundbGRef = FSComponent.createRef<SVGPathElement>();
+  private BoundBgRef = FSComponent.createRef<SVGPathElement>();
 
   private upperBoundRef = FSComponent.createRef<SVGTextElement>();
 
@@ -1409,7 +1409,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   private decelActive = false;
 
   private needsUpdate = true;
-
+  private crosswindMode = false;
   private speedState: SpeedStateInfo = {
     speed: new Arinc429Word(0),
     pfdTargetSpeed: new Arinc429Word(0),
@@ -1421,13 +1421,14 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     super.onAfterRender(node);
     this.needsUpdate = true;
     const sub = this.props.bus.getArincSubscriber<
-      HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & FgBus & FcuBus
+      HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & FgBus & FcuBus & HudElems
     >();
 
     sub
       .on('cWndMode')
       .whenChanged()
-      .handle(() => {
+      .handle((v) => {
+        this.crosswindMode = v;
         this.handleCrosswinMode();
       });
 
@@ -1493,7 +1494,12 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       const chosenTargetSpeedFailed = chosenTargetSpeed.isFailureWarning();
       const chosenTargetSpeedNcd = chosenTargetSpeed.isNoComputedData();
 
-      const inRange = this.handleVisibility(chosenTargetSpeed.value, chosenTargetSpeedFailed, chosenTargetSpeedNcd);
+      const inRange = this.handleVisibility(
+        chosenTargetSpeed.value,
+        chosenTargetSpeedFailed,
+        chosenTargetSpeedNcd,
+        isSpeedManaged,
+      );
 
       if (isSpeedManaged) {
         this.currentVisible.instance.classList.replace('Cyan', 'Magenta');
@@ -1520,7 +1526,12 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     }
   }
 
-  private handleVisibility(currentTargetSpeed: number, spdSelFail: boolean, spdSelNcd: boolean): boolean {
+  private handleVisibility(
+    currentTargetSpeed: number,
+    spdSelFail: boolean,
+    spdSelNcd: boolean,
+    isSpeedManaged: boolean,
+  ): boolean {
     let inRange = false;
 
     if (spdSelFail) {
@@ -1528,32 +1539,29 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
-      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.spdSelFlagVisible.set(true);
     } else if (spdSelNcd) {
       //no computed data
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
-      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.spdSelFlagVisible.set(false);
     } else if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
       this.lowerBoundRef.instance.style.visibility = 'visible';
       this.upperBoundRef.instance.style.visibility = 'hidden';
-      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.BoundBgRef.instance.style.transform = `translate3d(0px, ${this.xwindOffset + (DisplayRange / ValueSpacing) * DistanceSpacing + 3.5}px, 0px)`;
       this.spdSelFlagVisible.set(false);
       this.currentVisible = this.lowerBoundRef;
     } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
       this.upperBoundRef.instance.style.visibility = 'visible';
-      this.upperBoundbGRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
+      this.BoundBgRef.instance.style.transform = `translate3d(0px, ${this.xwindOffset - (DisplayRange / ValueSpacing) * DistanceSpacing - 3.5}px, 0px)`;
       this.spdSelFlagVisible.set(false);
       this.currentVisible = this.upperBoundRef;
     } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
       this.upperBoundRef.instance.style.visibility = 'hidden';
-      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'visible';
       this.spdSelFlagVisible.set(false);
@@ -1561,25 +1569,43 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       inRange = true;
     } else {
       this.upperBoundRef.instance.style.visibility = 'hidden';
-      this.upperBoundbGRef.instance.style.visibility = 'hidden';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.spdSelFlagVisible.set(false);
+    }
+
+    if (inRange) {
+      this.BoundBgRef.instance.style.visibility = 'hidden';
+    } else {
+      if (isSpeedManaged) {
+        this.BoundBgRef.instance.style.visibility = 'visible';
+        this.upperBoundRef.instance.classList.add('InverseGreen');
+        this.upperBoundRef.instance.classList.remove('Green');
+        this.lowerBoundRef.instance.classList.add('InverseGreen');
+        this.lowerBoundRef.instance.classList.remove('Green');
+      } else {
+        this.BoundBgRef.instance.style.visibility = 'hidden';
+        this.upperBoundRef.instance.classList.remove('InverseGreen');
+        this.upperBoundRef.instance.classList.add('Green');
+        this.lowerBoundRef.instance.classList.remove('InverseGreen');
+        this.lowerBoundRef.instance.classList.add('Green');
+      }
+    }
+
+    if (this.decelActive) {
+      this.BoundBgRef.instance.style.visibility = 'hidden';
     }
     return inRange;
   }
 
   private handleCrosswinMode() {
-    if (this.props.mode === WindMode.Normal) {
+    if (this.crosswindMode === false) {
       this.xwindOffset = 0;
-      this.upperBoundbGRef.instance.style.transform = 'transform: translate3d(0px, -100px, 0px)';
       this.upperBoundRef.instance.setAttribute('y', '36.670692');
-      this.lowerBoundRef.instance.setAttribute('y', '128.27917');
+      this.lowerBoundRef.instance.setAttribute('y', '128');
     } else {
-      //this.xwindOffset = -68.5;
       this.xwindOffset = -68.5;
-      this.upperBoundbGRef.instance.style.transform = 'translate3d(0px, -144.5px, 0px)';
-      this.upperBoundRef.instance.setAttribute('y', '-8');
+      this.upperBoundRef.instance.setAttribute('y', '-10.5');
       this.lowerBoundRef.instance.setAttribute('y', '38.5');
     }
   }
@@ -1588,11 +1614,11 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     return (
       <>
         <path
-          ref={this.upperBoundbGRef}
-          id="UpperSpeedTargetBackground"
+          ref={this.BoundBgRef}
+          id="SpeedTargetBackground"
           class="GreenFill"
-          style="transform: translate3d(0px, -100px, 0px)"
-          d="m 15.3 132.65 h 9 v 5 h -9z"
+          style=""
+          d="m 15 78.25 h 9 v 5 h -9z"
         ></path>
         <text
           ref={this.upperBoundRef}
@@ -1608,7 +1634,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
           id="SelectedSpeedLowerText"
           class="FontTiny EndAlign Green"
           x="24.078989"
-          y="128.27917"
+          y="128"
         >
           {this.textSub}
         </text>

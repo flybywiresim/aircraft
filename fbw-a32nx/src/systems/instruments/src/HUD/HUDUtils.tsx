@@ -3,6 +3,18 @@ import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import './style.scss';
 
+export const FIVE_DEG = 182.857;
+export const ONE_DEG = 36.5714;
+
+export const ALT_TAPE_XPOS = 131;
+export const ALT_TAPE_YPOS = 38;
+
+export const SPD_TAPE_XPOS = 60;
+export const SPD_TAPE_YPOS = 134;
+
+export const XWIND_FULL_OFFSET = -311;
+export const XWIND_TO_AIR_REF_OFFSET = -41.5; //-311
+
 export const calculateHorizonOffsetFromPitch = (pitch: number) => {
   const offset = (pitch * 1024) / 28;
   return offset;
@@ -171,24 +183,18 @@ export class Grid extends DisplayComponent<GridProps> {
 }
 
 // L:A32NX_FWC_FLIGHT_PHASE                         L:A32NX_FMGC_FLIGHT_PHASE
-// | 0      |                             |                 |       0    |   Preflight
-// | 1      | ELEC PWR                    | taxi            |       0    |
-// | 2      | ENG 1 STARTED               | taxi            |       0    |
-// | 3      | 2ND ENG TO PWR              | takeoff         |       0    |
-// | 4      | 80 kt                       | takeoff         |       0    |
-// | 5      | AtOrAboveV1                 | clb             |       0    |
-// | 6      | LiftOff                     |                 |       1    |    Takeoff
-// | 7      | AtOrAbove400Feet            |                 |       1    |
-// | 8      | AtOrAbove1500FeetTo800Feet  | rollout         |       1    |   TO pwr to clb
-// |        |                             |                 |       2    |   Climb
-// |        |                             |                 |       3    |   Cruise
-// |        |                             |                 |       4    |   Descent
-// |        |                             |                 |       5    |   Approach  (at IAF reached)
-// | 9      | AtOrBelow800Feet            | taxi            |       5    |
-// | 10     | TouchDown                   |                 |       6    |   Go Around       taxi
-// | 11     | AtOrBelowEightyKnots        |                 |       6    |   Go Around       taxi
-// | 12     | EnginesShutdown             |                 |       6    |   Go Around       taxi
-// | &gt; 1 | 5 MIN AFTER                 |                 |       7    |   Done  (auto brk off or 30kts)
+// | 0      |                  |                 |       0    |   Preflight
+// | 1      | ELEC PWR         | taxi            |       0    |
+// | 2      | ENG 1 STARTED    | taxi            |       0    |
+// | 3      | 1ST ENG TO PWR   | takeoff         |       1    |   Takeoff
+// | 4      | 80 kt            | takeoff         |       1    |
+// | 5      | LIFTOFF          | clb             |       1    |
+// | 6      | 1500ft (in clb)  |                 |       2    |   TO pwr to clmb  .Climb
+// | 7      | 800 ft (in desc) |                 |       3    |   Cruise
+// | 8      | TOUCHDOWN        | rollout         |       4    |   Descent
+// | 9      | 80 kt            | taxi            |       5    |   Approach  (at IAF reached)
+// | 10     | 2nd ENG SHUTDOWN |                 |       6    |   Go Around       taxi
+// | &gt; 1 | 5 MIN AFTER      |                 |       7    |   Done  (auto brk off or 30kts)
 
 export enum HudMode {
   NORMAL = 0,
@@ -233,4 +239,11 @@ export interface HudElems {
   hudFlightPhaseMode: number;
   cWndMode: boolean;
   decMode: number;
+}
+
+export enum MdaMode {
+  None = '',
+  NoDh = 'NO DH',
+  Radio = 'RADIO',
+  Baro = 'BARO',
 }

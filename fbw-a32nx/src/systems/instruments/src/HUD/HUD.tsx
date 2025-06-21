@@ -41,7 +41,7 @@ import './style.scss';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { AutoThrustMode, VerticalMode } from '@shared/autopilot';
-import { HudElems, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { HudElems, LagFilter, calculateHorizonOffsetFromPitch, Grid } from './HUDUtils';
 import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
 
 export const getDisplayIndex = () => {
@@ -56,16 +56,19 @@ interface HUDProps extends ComponentProps {
 }
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
-  private spdTapeOrForcedOnLand = '';
+  private spdTape = '';
   private xWindSpdTape = '';
   private altTape = '';
+  private xWindAltTape = '';
   private windIndicator = '';
-  private spdTapeOrForcedOnLandRef = FSComponent.createRef<SVGPathElement>();
+  private spdTapeRef = FSComponent.createRef<SVGPathElement>();
   private xWindSpdTapeRef = FSComponent.createRef<SVGPathElement>();
   private altTapeRef = FSComponent.createRef<SVGPathElement>();
-  private spdTapeOrForcedOnLandRef2 = FSComponent.createRef<SVGPathElement>();
+  private xWindAltTapeRef = FSComponent.createRef<SVGPathElement>();
+  private spdTapeRef2 = FSComponent.createRef<SVGPathElement>();
   private xWindSpdTapeRef2 = FSComponent.createRef<SVGPathElement>();
   private altTapeRef2 = FSComponent.createRef<SVGPathElement>();
+  private xWindAltTapeRef2 = FSComponent.createRef<SVGPathElement>();
   private windIndicatorRef = FSComponent.createRef<SVGGElement>();
 
   private onLanding = false;
@@ -120,25 +123,45 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
     >();
 
-    sub.on('spdTape').handle((v) => {
-      this.spdTapeOrForcedOnLand = v;
-      this.spdTapeOrForcedOnLandRef.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
-      this.spdTapeOrForcedOnLandRef2.instance.style.display = `${this.spdTapeOrForcedOnLand}`;
-    });
-    sub.on('xWindSpdTape').handle((v) => {
-      this.xWindSpdTape = v;
-      this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
-      this.xWindSpdTapeRef2.instance.style.display = `${this.xWindSpdTape}`;
-    });
-    sub.on('altTape').handle((v) => {
-      this.altTape = v;
-      this.altTapeRef.instance.style.display = `${this.altTape}`;
-      this.altTapeRef2.instance.style.display = `${this.altTape}`;
-    });
-    sub.on('windIndicator').handle((v) => {
-      this.windIndicator = v;
-      this.windIndicatorRef.instance.style.display = `${this.windIndicator}`;
-    });
+    sub
+      .on('spdTape')
+      .whenChanged()
+      .handle((v) => {
+        this.spdTape = v;
+        this.spdTapeRef.instance.style.display = `${this.spdTape}`;
+        this.spdTapeRef2.instance.style.display = `${this.spdTape}`;
+      });
+    sub
+      .on('xWindSpdTape')
+      .whenChanged()
+      .handle((v) => {
+        this.xWindSpdTape = v;
+        this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
+        this.xWindSpdTapeRef2.instance.style.display = `${this.xWindSpdTape}`;
+      });
+    sub
+      .on('altTape')
+      .whenChanged()
+      .handle((v) => {
+        this.altTape = v;
+        this.altTapeRef.instance.style.display = `${this.altTape}`;
+        this.altTapeRef2.instance.style.display = `${this.altTape}`;
+      });
+    sub
+      .on('xWindAltTape')
+      .whenChanged()
+      .handle((v) => {
+        this.xWindAltTape = v;
+        this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
+        this.xWindAltTapeRef2.instance.style.display = `${this.xWindAltTape}`;
+      });
+    sub
+      .on('windIndicator')
+      .whenChanged()
+      .handle((v) => {
+        this.windIndicator = v;
+        this.windIndicatorRef.instance.style.display = `${this.windIndicator}`;
+      });
     sub.on('hEvent').handle((ev) => {
       if (ev.startsWith('A320_Neo_HUD_L')) {
         let vL = SimVar.GetSimVarValue('L:A320_Neo_HUD_L_POS', 'number');
@@ -313,6 +336,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         normDmc={getDisplayIndex()}
       >
         <svg class="hud-svg" version="1.1" viewBox="0 0 1280 1024" xmlns="http://www.w3.org/2000/svg">
+          <Grid bus={this.props.bus} />
           <Horizon
             bus={this.props.bus}
             instrument={this.props.instrument}
@@ -327,30 +351,28 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           />
 
           <g id="TapesMasks">
-            <g id="AltTapeMask">
-              <path
-                ref={this.altTapeRef}
-                id="AltitudeTapeMask"
-                class="BlackFill"
-                d="m1045 322 h 114 v 365 h-114z"
-              ></path>
-            </g>
-            <g id="SpdTapeMask">
-              <path
-                ref={this.spdTapeOrForcedOnLandRef}
-                id="SpeedTapeMask"
-                class="BlackFill"
-                d="m70 322 h 98 v 365 h-98z"
-              ></path>
-            </g>
-            <g id="CrosswindSpdTapeMask">
-              <path
-                ref={this.xWindSpdTapeRef}
-                id="cwSpdTapeBg"
-                class="NormalStroke  BackgroundFill"
-                d="m71 128  h 94 v 172 h -94z"
-              />
-            </g>
+            <path
+              ref={this.altTapeRef}
+              id="AltitudeTapeMask"
+              class="BlackFill"
+              d="M 1039 320 v 380 h 113 v -380 z"
+            ></path>
+
+            <path
+              id="CwAltTapeMask"
+              ref={this.xWindAltTapeRef}
+              class="NormalStroke  BackgroundFill"
+              d="m1045 284 h 106 v 100 h -106 z"
+            />
+
+            <path ref={this.spdTapeRef} id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
+
+            <path
+              ref={this.xWindSpdTapeRef}
+              id="cwSpdTapeBg"
+              class="NormalStroke  BackgroundFill"
+              d="m71 242 h 94 v 172 h -94z"
+            />
           </g>
 
           <g id="WindIndicator" class="Wind" transform="translate(250 200) " ref={this.windIndicatorRef}>
@@ -364,25 +386,29 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           {/* mask2 speedtape draw limits | mask3 altTape draw limits */}
           <g id="TapesMasks2">
             <path
+              id="Mask2"
+              class="BackgroundFill"
+              ref={this.spdTapeRef2}
+              d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z"
+            />
+            <path
               id="Mask2Cw"
               class="BackgroundFill"
               ref={this.xWindSpdTapeRef2}
-              //d="M 60 0 H 208 V 1024 H 60 Z  M 61 130 v 172h 146 v -172 z"
-              d="M 60 0 H 208 V 1024 H 60 Z  M 61 130 v 172h 146 v -172 z"
-            />
-
-            <path
-              id="Mask2"
-              class="BackgroundFill"
-              ref={this.spdTapeOrForcedOnLandRef2}
-              d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z"
-              // d="M 60 0 H 208 V 1024 H 60 Z  M 61 274 v 364 h 146 v -364 z"
+              d="M 60 0 H 208 V 1024 H 60 Z  M 61 242 v 172h 146 v -172 z"
             />
             <path
               id="Mask3"
+              class="BackgroundFill"
               ref={this.altTapeRef2}
               d="M 1038 250 h 122 V 720 H 1038 Z  M 1039 323 v 364 h 120 v -364 z"
-              // d="M 1038 250 h 122 V 700 H 1038 Z  M 1039 274 v 364 h 120 v -364 z"
+            />
+
+            <path
+              id="Mask3Cw"
+              class="BackgroundFill"
+              ref={this.xWindAltTapeRef2}
+              d="M 1038 0 h 122 v 1024 h -122 Z  M 1039 284 v 90 h 120 v -90z"
             />
           </g>
 

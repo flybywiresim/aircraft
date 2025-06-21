@@ -165,7 +165,7 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
       //   change lvar when btns added to model.
       <g id="CrosswindAltReadoutGroup">
         <g>
-          <path id="cwTapeBg" class="NormalStroke  BackgroundFill" d="m117.75 70.337  h 22 v 21 h -22 z" />
+          <path id="cwTapeBg" class="NormalStroke  BackgroundFill" d="m118 76.5  h 22 v 9 h -22 z" />
           <svg x="117.754" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
             <Drum
               type="ten-thousands"
@@ -224,10 +224,6 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
           d="m132.61 81.669h4.7345m-4.7345-1.6933h4.7345"
         />
         <path id="CrosswindAltReadoutOutline" class="NormalStroke Green" d="m117.75 76.337 h 22 v 9 h -22 z" />
-        <path id="cwTape" class="NormalStroke  Green" d="m128.75 76.337  v -6 " />
-        <path id="cwTape" class="NormalStroke  Green" d="m128.75 85.337  v 6 " />
-        <path id="cwTape" class="NormalStroke  Green" d="m117.75 91.337  h 22 " />
-        <path id="cwTape" class="NormalStroke  Green" d="m117.75 70.337  h 22 " />
 
         <g id="CrosswindAltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>
           <text class="Green" x="121.51714" y="77.956947">

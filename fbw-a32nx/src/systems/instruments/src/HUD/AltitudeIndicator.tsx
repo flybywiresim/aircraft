@@ -7,6 +7,7 @@ import {
   Subscribable,
   VNode,
   HEvent,
+  MappedSubject,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -27,9 +28,9 @@ import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElemen
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { AutoThrustMode } from '@shared/autopilot';
-import { HudElems } from './HUDUtils';
+import { HudElems, WindMode, MdaMode } from './HUDUtils';
 
-const DisplayRange = 570;
+let DisplayRange = 570;
 const ValueSpacing = 100;
 const DistanceSpacing = 7.5;
 
@@ -211,7 +212,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     sub.on('altTape').handle((v) => {
       this.altTape = v;
       this.altTape === 'none'
-        ? (this.tapeRef.instance.style.display = 'none')
+        ? (this.tapeRef.instance.style.display = 'block') ////none
         : (this.tapeRef.instance.style.display = 'block');
     });
     sub.on('xWindAltTape').handle((v) => {
@@ -245,18 +246,27 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
       .whenChanged()
       .handle((value) => {
         this.crosswindMode = value;
+        if (this.crosswindMode) {
+          DisplayRange = 100;
+          this.tapeRef.instance.style.transform = `translate3d(0px, -41.5px, 0px)`;
+        } else {
+          DisplayRange = 570;
+          this.tapeRef.instance.style.transform = `translate3d(0px, 0px, 0px)`;
+        }
       });
 
     const pf = this.props.bus.getSubscriber<Arinc429Values>();
 
-    pf.on('altitudeAr').handle((a) => {
-      if (a.isNormalOperation()) {
-        this.subscribable.set(a.value);
-        this.tapeRef.instance.style.display = 'inline';
-      } else {
-        this.tapeRef.instance.style.display = 'none';
-      }
-    });
+    pf.on('altitudeAr')
+      .whenChanged()
+      .handle((a) => {
+        if (a.isNormalOperation()) {
+          this.subscribable.set(a.value);
+          this.tapeRef.instance.style.display = 'inline';
+        } else {
+          this.tapeRef.instance.style.display = 'none';
+        }
+      });
   }
 
   render(): VNode {
@@ -468,6 +478,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
               bus={this.props.bus}
               selectedAltitude={this.shownTargetAltitude}
               altitudeColor={this.targetAltitudeColor}
+              mode={WindMode.Normal}
             />
             <MetricAltIndicator
               bus={this.props.bus}
@@ -484,8 +495,24 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             <DigitalAltitudeReadout bus={this.props.bus} />
           </g>
 
-          <g id="CrosswindAltTape" transform="translate( 0 -68)" ref={this.xWindAltTapeRef}>
+          <g id="CrosswindAltTape" transform="translate( 0 -41.5)" ref={this.xWindAltTapeRef}>
+            <path id="cwTape" class="NormalStroke  Green" d="m128.75 76.337  v -6 " />
+            <path id="cwTape" class="NormalStroke  Green" d="m128.75 85.337  v 6 " />
+
+            <SelectedAltIndicator
+              bus={this.props.bus}
+              selectedAltitude={this.shownTargetAltitude}
+              altitudeColor={this.targetAltitudeColor}
+              mode={WindMode.CrossWind}
+            />
+            <MetricAltIndicator
+              bus={this.props.bus}
+              targetAlt={this.shownTargetAltitude}
+              altitudeColor={this.targetAltitudeColor}
+            />
             <CrosswindDigitalAltitudeReadout bus={this.props.bus} />
+            <path id="cwTape" class="NormalStroke  Green" d="m117.75 91.337  h 22 " />
+            <path id="cwTape" class="NormalStroke  Green" d="m117.75 70.337  h 22 " />
           </g>
           <AltimeterIndicator bus={this.props.bus} altitude={this.altitude} />
         </g>
@@ -519,6 +546,7 @@ interface SelectedAltIndicatorProps {
   bus: ArincEventBus;
   selectedAltitude: Subscribable<Arinc429Word>;
   altitudeColor: Subscribable<TargetAltitudeColor>;
+  mode: WindMode;
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
@@ -546,53 +574,100 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
   private altTapeTargetText = FSComponent.createRef<SVGTextElement>();
 
+  private minimumLowerText = FSComponent.createRef<SVGTextElement>();
+
   private altitude = new Arinc429Word(0);
 
   private shownTargetAltitude = new Arinc429Word(0);
-
+  private isMinLowerAltTxtVisible = '';
   private textSub = Subject.create('');
+  private needsUpdate = false;
 
-  private updateAltitudeColor(color: TargetAltitudeColor) {
-    this.selectedAltLowerFLText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
-    this.selectedAltLowerFLText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
-    this.selectedAltLowerFLText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
+  private sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & FcuBus & ClockEvents>();
+  private ra = 0;
 
-    this.selectedAltLowerText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
-    this.selectedAltLowerText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
-    this.selectedAltLowerText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
+  private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
+  private readonly mda = Arinc429RegisterSubject.createEmpty();
+  private readonly dh = Arinc429RegisterSubject.createEmpty();
+  private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
+  private readonly mdaDhMode = MappedSubject.create(
+    ([noDh, dh, mda]) => {
+      if (noDh) {
+        return MdaMode.NoDh;
+      }
 
-    this.selectedAltUpperFLText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
-    this.selectedAltUpperFLText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
-    this.selectedAltUpperFLText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
+      if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
+        return MdaMode.Radio;
+      }
 
-    this.selectedAltUpperText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
-    this.selectedAltUpperText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
-    this.selectedAltUpperText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
+      if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
+        return MdaMode.Baro;
+      }
 
-    this.altTapeTargetText.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
-    this.altTapeTargetText.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
-    this.altTapeTargetText.instance.classList.toggle('White', color === TargetAltitudeColor.White);
+      return MdaMode.None;
+    },
+    this.noDhSelected,
+    this.dh,
+    this.mda,
+  );
 
-    this.targetSymbolRef.instance.classList.toggle('Cyan', color === TargetAltitudeColor.Cyan);
-    this.targetSymbolRef.instance.classList.toggle('Magenta', color === TargetAltitudeColor.Magenta);
-    this.targetSymbolRef.instance.classList.toggle('White', color === TargetAltitudeColor.White);
-  }
-
+  private readonly mdaDhValue = MappedSubject.create(
+    ([mdaMode, dh, mda]) => {
+      switch (mdaMode) {
+        case MdaMode.Baro:
+          return Math.round(mda.value);
+        case MdaMode.Radio:
+          return Math.round(dh.value);
+        default:
+          return 0;
+      }
+    },
+    this.mdaDhMode,
+    this.dh,
+    this.mda,
+  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & FcuBus>();
+    this.sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
+    this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+    this.sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
+    this.sub
+      .on('chosenRa')
+      .whenChanged()
+      .handle((v) => {
+        this.needsUpdate = true;
+        this.ra = v.value;
+      });
 
-    sub
+    this.sub.on('realTime').handle((_t) => {
+      if (this.needsUpdate === true) {
+        this.needsUpdate = false;
+        this.mda.get().value;
+        const mdaDiff = this.altitude.value - this.mda.get().value;
+        const dhDiff = this.ra - this.dh.get().value;
+        if (this.mda.get().value > 0) {
+          mdaDiff < 0 ? (this.isMinLowerAltTxtVisible = 'block') : (this.isMinLowerAltTxtVisible = 'none');
+        } else if (this.dh.get().value > 0) {
+          dhDiff < 0 ? (this.isMinLowerAltTxtVisible = 'block') : (this.isMinLowerAltTxtVisible = 'none');
+        } else {
+          this.isMinLowerAltTxtVisible = 'none';
+        }
+        this.minimumLowerText.instance.style.display = this.isMinLowerAltTxtVisible;
+      }
+    });
+
+    this.sub
       .on('altitudeAr')
       .withArinc429Precision(2)
       .handle((a) => {
         this.altitude = a;
         this.handleAltitudeDisplay();
         this.getOffset();
+        this.handleCrosswinMode();
       });
 
-    sub
+    this.sub
       .on('fcuEisDiscreteWord2')
       .whenChanged()
       .handle((m) => {
@@ -609,10 +684,6 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
         this.setText();
       });
 
-    this.props.altitudeColor.sub((color) => {
-      this.updateAltitudeColor(color);
-    });
-
     this.props.selectedAltitude.sub((alt) => {
       this.shownTargetAltitude = alt;
       this.getOffset();
@@ -628,7 +699,9 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
       this.targetGroupRef.instance.style.display = 'none';
       this.selectedAltFailed.set(true);
     } else if (this.altitude.value - this.shownTargetAltitude.value > DisplayRange) {
-      this.selectedAltLowerGroupRef.instance.style.display = 'block';
+      this.isMinLowerAltTxtVisible === 'block'
+        ? (this.selectedAltLowerGroupRef.instance.style.display = 'none')
+        : (this.selectedAltLowerGroupRef.instance.style.display = 'block');
       this.selectedAltUpperGroupRef.instance.style.display = 'none';
       this.targetGroupRef.instance.style.display = 'none';
       this.selectedAltFailed.set(false);
@@ -665,9 +738,37 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     this.targetGroupRef.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
   }
 
+  private handleCrosswinMode() {
+    if (this.props.mode === WindMode.Normal) {
+      this.minimumLowerText.instance.setAttribute('x', '138');
+      this.minimumLowerText.instance.setAttribute('y', '128.70299');
+      this.selectedAltLowerText.instance.setAttribute('y', '128.70299');
+      this.selectedAltLowerFLText.instance.setAttribute('y', '128.71681');
+      this.selectedAltUpperText.instance.setAttribute('y', '37.250134');
+      this.selectedAltUpperFLText.instance.setAttribute('y', '37.125755');
+    } else {
+      this.minimumLowerText.instance.setAttribute('x', '141');
+      this.minimumLowerText.instance.setAttribute('y', '97');
+      this.selectedAltLowerText.instance.setAttribute('y', '97');
+      this.selectedAltLowerFLText.instance.setAttribute('y', '97');
+      this.selectedAltUpperText.instance.setAttribute('y', '69');
+      this.selectedAltUpperFLText.instance.setAttribute('y', '69');
+    }
+  }
+
   render(): VNode | null {
     return (
       <>
+        <text
+          id="MinimumLowerText"
+          ref={this.minimumLowerText}
+          class="FontMediumSmaller EndAlign Green"
+          x="138"
+          y="128.70299"
+          style="white-space: pre"
+        >
+          MINIMUM
+        </text>
         <g id="SelectedAltLowerGroup" ref={this.selectedAltLowerGroupRef}>
           <text
             id="SelectedAltLowerText"
@@ -717,6 +818,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             ref={this.targetSymbolRef}
             d="m122.79 83.831v6.5516h-7.0514v-8.5675l2.0147-1.0079m4.8441-3.0238v-6.5516h-6.8588v8.5675l2.0147 1.0079"
           />
+          <path id="targetAltTxtBg" d="m118 78 h 22 v 5 h-22 z" />
           <text
             id="AltTapeTargetText"
             ref={this.altTapeTargetText}
@@ -1018,14 +1120,15 @@ interface MetricAltIndicatorProps {
 class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
   private needsUpdate = false;
 
-  private metricAlt = FSComponent.createRef<SVGGElement>();
+  private metricAltRef = FSComponent.createRef<SVGGElement>();
 
   private metricAltText = FSComponent.createRef<SVGTextElement>();
 
   private metricAltTargetText = FSComponent.createRef<SVGTextElement>();
+  private metricAltTargetMText = FSComponent.createRef<SVGTextElement>();
 
   private readonly mda = Arinc429RegisterSubject.createEmpty();
-
+  private isVisible = false;
   // FIXME remove this weird pattern... the state of the component belongs directly to the component
   private state: MetricAltIndicatorState = {
     altitude: new Arinc429Word(0),
@@ -1041,9 +1144,30 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus>();
+    const sub = this.props.bus.getArincSubscriber<
+      HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus & HudElems
+    >();
 
     this.mda.sub(() => (this.needsUpdate = true));
+
+    sub.on('cWndMode').handle((value) => {
+      if (value) {
+        this.metricAltRef.instance.style.transform = 'translate3d(0px, 41.5px, 0px)';
+        this.metricAltTargetText.instance.setAttribute('x', '104');
+        this.metricAltTargetMText.instance.setAttribute('x', '114');
+        this.metricAltTargetText.instance.setAttribute('y', '27.5');
+        this.metricAltTargetMText.instance.setAttribute('y', '27.5');
+      } else {
+        this.metricAltRef.instance.style.transform = 'translate3d(0px, 0px, 0px)';
+        this.metricAltTargetText.instance.setAttribute('x', '94');
+        this.metricAltTargetMText.instance.setAttribute('x', '104');
+        this.metricAltTargetText.instance.setAttribute('y', '37.5');
+        this.metricAltTargetMText.instance.setAttribute('y', '37.5');
+      }
+    });
+    sub.on('metricAlt').handle((value) => {
+      this.isVisible = value;
+    });
 
     sub.on('altitudeAr').handle((a) => {
       this.state.altitude = a;
@@ -1105,36 +1229,40 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
         this.state.fcuDiscreteWord1.bitValueOr(20, false) &&
         !this.state.targetAlt.isFailureWarning() &&
         !this.state.targetAlt.isNoComputedData();
-      if (!showMetricAlt) {
-        this.metricAlt.instance.style.display = 'none';
-      } else {
-        this.metricAlt.instance.style.display = 'inline';
-        const currentMetricAlt = Math.round((this.state.altitude.value * 0.3048) / 10) * 10;
-        this.metricAltText.instance.textContent = currentMetricAlt.toString();
+      if (showMetricAlt) {
+        if (this.isVisible) {
+          this.metricAltRef.instance.style.display = 'inline';
+          const currentMetricAlt = Math.round((this.state.altitude.value * 0.3048) / 10) * 10;
+          this.metricAltText.instance.textContent = currentMetricAlt.toString();
 
-        const targetMetric = Math.round((this.state.targetAlt.value * 0.3048) / 10) * 10;
-        this.metricAltTargetText.instance.textContent = targetMetric.toString();
+          const targetMetric = Math.round((this.state.targetAlt.value * 0.3048) / 10) * 10;
+          this.metricAltTargetText.instance.textContent = targetMetric.toString();
 
-        this.updateAltitudeColor();
+          this.updateAltitudeColor();
 
-        if (
-          !this.mda.get().isNoComputedData() &&
-          !this.mda.get().isFailureWarning() &&
-          this.state.altitude.value < this.mda.get().value
-        ) {
-          this.metricAltText.instance.classList.replace('Green', 'Green');
+          if (
+            !this.mda.get().isNoComputedData() &&
+            !this.mda.get().isFailureWarning() &&
+            this.state.altitude.value < this.mda.get().value
+          ) {
+            this.metricAltText.instance.classList.replace('Green', 'Green');
+          } else {
+            this.metricAltText.instance.classList.replace('Green', 'Green');
+          }
         } else {
-          this.metricAltText.instance.classList.replace('Green', 'Green');
+          this.metricAltRef.instance.style.display = 'none';
         }
+      } else {
+        this.metricAltRef.instance.style.display = 'none';
       }
     }
   }
 
   render(): VNode {
     return (
-      <g id="MetricAltGroup" ref={this.metricAlt}>
-        <path class="NormalStroke Green" d="m116.56 140.22h29.213v7.0556h-29.213z" />
-        <text class="FontMediumSmaller Green MiddleAlign" x="142.03537" y="145.8689">
+      <g id="MetricAltGroup" ref={this.metricAltRef}>
+        <path class="NormalStroke Green" d="m116.56 133.22h29.213v7.0556h-29.213z" />
+        <text class="FontMediumSmaller Green MiddleAlign" x="142.03537" y="138.8689">
           M
         </text>
         <text
@@ -1142,7 +1270,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
           id="MetricAltText"
           class="FontMediumSmaller Green MiddleAlign"
           x="128.64708"
-          y="145.86191"
+          y="138.86191"
         >
           0
         </text>
@@ -1156,7 +1284,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
           >
             0
           </text>
-          <text class="FontMediumSmaller Green MiddleAlign" x="105.25774" y="37.872921">
+          <text ref={this.metricAltTargetMText} class="FontMediumSmaller Green MiddleAlign" x="105.25774" y="37.872921">
             M
           </text>
         </g>
