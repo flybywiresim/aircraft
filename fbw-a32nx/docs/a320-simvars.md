@@ -1886,11 +1886,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
        15 | ALIGN_1_MINUTES
        18 | COMPUTED_LATITUDE_MISCOMPARE
 
-- A32NX_ADIRS_USES_GPS_AS_PRIMARY
-    - Deprecated, this is an FM function, not ADIRU
-    - Bool
-    - Whether or not the GPS is used as the primary means of navigation/position determination.
-
 - A32NX_PUSH_TRUE_REF
     - Bool
     - True reference pushbutton status
