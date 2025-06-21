@@ -33,6 +33,7 @@ import {
   NXLogicMemoryNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
+  RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -192,6 +193,26 @@ export class PseudoFWC {
   private readonly fwcOut124 = Arinc429RegisterSubject.createEmpty();
 
   private readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
+
+  private readonly ir1InAttAlign = Subject.create(false);
+  private readonly ir2InAttAlign = Subject.create(false);
+  private readonly ir3InAttAlign = Subject.create(false);
+  private readonly irsInAttAlignMemo = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.ir1InAttAlign,
+    this.ir2InAttAlign,
+    this.ir3InAttAlign,
+  );
+  private readonly irsInAlignMemo1 = Subject.create(false);
+  private readonly irsInAlignMemo2 = Subject.create(false);
+  private alignTime = 0;
+  private oneIrsInAlign = false;
+  private navMode = false;
+
+  /* SDAC */
+  private readonly sdac00401Word = Arinc429Register.empty();
+  private readonly sdac00410Word = Arinc429Register.empty();
+  private readonly sdac00411Word = Arinc429Register.empty();
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -747,6 +768,34 @@ export class PseudoFWC {
   private readonly dmcLeftAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_dmc_altitude_left'));
   private readonly dmcRightAltitude = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_dmc_altitude_right'));
 
+  private readonly dmcLeftSelectedIrDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_discrete_word_271_left'),
+  );
+  private readonly dmcRightSelectedIrDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_discrete_word_271_right'),
+  );
+  private readonly dmcLeftIr1DiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_ir_1_discrete_word_left'),
+  );
+  private readonly dmcLeftIr3DiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_ir_3_discrete_word_left'),
+  );
+  private readonly dmcRightIr2DiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_ir_2_discrete_word_right'),
+  );
+  private readonly dmcLeftOnsideIrPitchAngleWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_ir_1_pitch_angle_left'),
+  );
+  private readonly dmcLeftBackupIrPitchAngleWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_ir_3_pitch_angle_left'),
+  );
+  private readonly dmcRightOnsideIrPitchAngleWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_dmc_ir_2_pitch_angle_right'),
+  );
+  private readonly irs1InAlignTrigger = new NXLogicTriggeredMonostableNode(10, true, true);
+  private readonly irs2InAlignTrigger = new NXLogicTriggeredMonostableNode(10, true, true);
+  private readonly irs3InAlignTrigger = new NXLogicTriggeredMonostableNode(10, true, true);
+
   /* 31 - ECP */
   private readonly ecpStatusButtonHardwired = ConsumerValue.create(this.sub.on('a32nx_ecp_discrete_out_sts'), false);
   private readonly ecpRecallButtonHardwired = ConsumerValue.create(this.sub.on('a32nx_ecp_discrete_out_rcl'), false);
@@ -832,15 +881,6 @@ export class PseudoFWC {
   public autoBrakeOffAuralTriggered = false;
 
   /* NAVIGATION */
-
-  private readonly adirsRemainingAlignTime = Subject.create(0);
-
-  private readonly adiru1State = Subject.create(0);
-
-  private readonly adiru2State = Subject.create(0);
-
-  private readonly adiru3State = Subject.create(0);
-
   private readonly adr1Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_1'));
 
   private readonly adr2Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_2'));
@@ -891,6 +931,12 @@ export class PseudoFWC {
     this.altiStdDiscrepancy,
   );
 
+  private irAlignProblem = false;
+  private readonly irNotAlignedWarning = Subject.create(false);
+  private readonly ir1NotAlignedPulse = new NXLogicPulseNode(true);
+  private readonly ir2NotAlignedPulse = new NXLogicPulseNode(true);
+  private readonly ir3NotAlignedPulse = new NXLogicPulseNode(true);
+
   /** ENGINE AND THROTTLE */
 
   private readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
@@ -937,6 +983,8 @@ export class PseudoFWC {
     ([n2]) => n2 >= (100 * 10630) / 16645,
     this.N2Eng2,
   );
+
+  private engine1Or2Running = false;
 
   private readonly engDualFault = Subject.create(false);
 
@@ -1259,70 +1307,6 @@ export class PseudoFWC {
     return array;
   }
 
-  private adirsMessage1(adirs, engineRunning) {
-    let rowChoice = 0;
-
-    switch (true) {
-      case Math.ceil(adirs / 60) >= 7 && !engineRunning:
-        rowChoice = 0;
-        break;
-      case Math.ceil(adirs / 60) >= 7 && engineRunning:
-        rowChoice = 1;
-        break;
-      case Math.ceil(adirs / 60) === 6 && !engineRunning:
-        rowChoice = 2;
-        break;
-      case Math.ceil(adirs / 60) === 6 && engineRunning:
-        rowChoice = 3;
-        break;
-      case Math.ceil(adirs / 60) === 5 && !engineRunning:
-        rowChoice = 4;
-        break;
-      case Math.ceil(adirs / 60) === 5 && engineRunning:
-        rowChoice = 5;
-        break;
-      case Math.ceil(adirs / 60) === 4 && !engineRunning:
-        rowChoice = 6;
-        break;
-      case Math.ceil(adirs / 60) === 4 && engineRunning:
-        rowChoice = 7;
-        break;
-      default:
-        break;
-    }
-
-    return rowChoice;
-  }
-
-  private adirsMessage2(adirs, engineRunning) {
-    let rowChoice = 0;
-
-    switch (true) {
-      case Math.ceil(adirs / 60) === 3 && !engineRunning:
-        rowChoice = 0;
-        break;
-      case Math.ceil(adirs / 60) === 3 && engineRunning:
-        rowChoice = 1;
-        break;
-      case Math.ceil(adirs / 60) === 2 && !engineRunning:
-        rowChoice = 2;
-        break;
-      case Math.ceil(adirs / 60) === 2 && engineRunning:
-        rowChoice = 3;
-        break;
-      case Math.ceil(adirs / 60) === 1 && !engineRunning:
-        rowChoice = 4;
-        break;
-      case Math.ceil(adirs / 60) === 1 && engineRunning:
-        rowChoice = 5;
-        break;
-      default:
-        break;
-    }
-
-    return rowChoice;
-  }
-
   private readonly ecpClear1Pulse = new NXLogicPulseNode(true);
   private readonly ecpClear2Pulse = new NXLogicPulseNode(true);
   private readonly ecpClearWirePulse = new NXLogicPulseNode(true);
@@ -1406,6 +1390,46 @@ export class PseudoFWC {
     this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
   }
 
+  private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE',
+    SimVarValueType.Bool,
+  );
+  private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE',
+    SimVarValueType.Bool,
+  );
+  private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE',
+    SimVarValueType.Bool,
+  );
+  private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE',
+    SimVarValueType.Bool,
+  );
+  private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE',
+    SimVarValueType.Bool,
+  );
+  private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE',
+    SimVarValueType.Bool,
+  );
+
+  private acquireSdac(): void {
+    this.sdac00401Word.set(0);
+    this.sdac00401Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00401Word.setBitValue(26, this.ir1AlignDiscreteVar.get());
+    this.sdac00401Word.setBitValue(28, this.ir1FaultDiscreteVar.get());
+    this.sdac00410Word.set(0);
+    this.sdac00410Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00410Word.setBitValue(26, this.ir2AlignDiscreteVar.get());
+    this.sdac00410Word.setBitValue(28, this.ir2FaultDiscreteVar.get());
+    this.sdac00411Word.set(0);
+    this.sdac00411Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00411Word.setBitValue(26, this.ir3AlignDiscreteVar.get());
+    this.sdac00411Word.setBitValue(28, this.ir3FaultDiscreteVar.get());
+  }
+
   /**
    * Periodic update
    */
@@ -1429,6 +1453,7 @@ export class PseudoFWC {
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
+    const flightPhase = this.fwcFlightPhase.get();
     this.flightPhase3PulseNode.write(this.fwcFlightPhase.get() === 3, deltaTime);
     // flight phase convenience vars
     this.flightPhase126.set([1, 2, 6].includes(this.fwcFlightPhase.get()));
@@ -1456,6 +1481,9 @@ export class PseudoFWC {
     this.showLandingInhibit.set(
       this.ldgInhibitTimer.write(this.flightPhase78.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime),
     );
+
+    /** SFAC acquisition */
+    this.acquireSdac();
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
 
@@ -1543,18 +1571,12 @@ export class PseudoFWC {
     const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
 
     /* ADIRS acquisition */
-
-    this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
-
     const adr1PressureAltitude = this.adr1PressureAlt.get();
     const adr2PressureAltitude = this.adr2PressureAlt.get();
     const adr3PressureAltitude = this.adr3PressureAlt.get();
     // TODO use GPS alt if ADRs not available
     const pressureAltitude =
       adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null);
-    this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
-    this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
-    this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
     const height1: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const height2: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
     this.height1Failed.set(height1.isFailureWarning());
@@ -1892,6 +1914,61 @@ export class PseudoFWC {
           (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
           (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
           (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
+    );
+    this.engine1Or2Running = this.engine1CoreAtOrAboveMinIdle.get() || this.engine2CoreAtOrAboveMinIdle.get();
+
+    // DMC/IR general logic
+    const dmcLeftIr1DiscreteWord = this.dmcLeftIr1DiscreteWord.get();
+    this.ir1InAttAlign.set(
+      dmcLeftIr1DiscreteWord.bitValue(12) && this.dmcLeftOnsideIrPitchAngleWord.get().isNoComputedData(),
+    );
+    const dmcRightIr2DiscreteWord = this.dmcRightIr2DiscreteWord.get();
+    this.ir2InAttAlign.set(
+      dmcRightIr2DiscreteWord.bitValue(12) && this.dmcRightOnsideIrPitchAngleWord.get().isNoComputedData(),
+    );
+    const dmcLeftIr3DiscreteWord = this.dmcLeftIr3DiscreteWord.get();
+    this.ir3InAttAlign.set(
+      dmcLeftIr3DiscreteWord.bitValue(12) && this.dmcLeftBackupIrPitchAngleWord.get().isNoComputedData(),
+    );
+
+    const dmcLeftSelectedIrDiscreteWord = this.dmcLeftSelectedIrDiscreteWord.get();
+    const dmcRightSelectedIrDiscreteWord = this.dmcRightSelectedIrDiscreteWord.get();
+    const leftAlignTime = dmcLeftSelectedIrDiscreteWord.isNoComputedData()
+      ? 0
+      : (dmcLeftSelectedIrDiscreteWord.value >> 25) & 0x7;
+    const rightAlignTime = dmcRightSelectedIrDiscreteWord.isNoComputedData()
+      ? 0
+      : (dmcRightSelectedIrDiscreteWord.value >> 25) & 0x7;
+    const leftNavMode = leftAlignTime === 0 && !dmcLeftSelectedIrDiscreteWord.isInvalid();
+    const rightNavMode = rightAlignTime === 0 && !dmcRightSelectedIrDiscreteWord.isInvalid();
+    this.alignTime = Math.max(leftAlignTime, rightAlignTime);
+    this.navMode = this.alignTime === 0 && (leftNavMode || rightNavMode);
+    const irs1InAlign = this.sdac00401Word.bitValue(26);
+    const irs2InAlign = this.sdac00410Word.bitValue(26);
+    const irs3InAlign = this.sdac00411Word.bitValue(26);
+    this.oneIrsInAlign =
+      irs1InAlign ||
+      this.irs1InAlignTrigger.write(irs1InAlign, deltaTime) ||
+      irs2InAlign ||
+      this.irs2InAlignTrigger.write(irs2InAlign, deltaTime) ||
+      irs3InAlign ||
+      this.irs3InAlignTrigger.write(irs3InAlign, deltaTime);
+    const leftInAlingSubmode =
+      dmcLeftSelectedIrDiscreteWord.bitValue(29) && !dmcLeftSelectedIrDiscreteWord.isNoComputedData();
+    const rightInAlingSubmode =
+      dmcRightSelectedIrDiscreteWord.bitValue(29) && !dmcRightSelectedIrDiscreteWord.isNoComputedData();
+    const configMemoComputed = this.toMemo.get() || this.ldgMemo.get();
+    this.irsInAlignMemo1.set(
+      (this.oneIrsInAlign || leftInAlingSubmode || rightInAlingSubmode) &&
+        (flightPhase === 1 || flightPhase === 2) &&
+        !configMemoComputed &&
+        this.alignTime >= 4,
+    );
+    this.irsInAlignMemo2.set(
+      (this.oneIrsInAlign || leftInAlingSubmode || rightInAlingSubmode) &&
+        (flightPhase === 1 || flightPhase === 2) &&
+        !configMemoComputed &&
+        ((this.alignTime >= 1 && this.alignTime <= 3) || this.navMode || this.oneIrsInAlign),
     );
 
     /* 22 - AUTOFLIGHT */
@@ -2758,6 +2835,30 @@ export class PseudoFWC {
     this.altiBaroDiscrepancy.set(!altiDiscrepancyInhibit && this.altiDiscrepancyConf1.read());
     this.altiStdDiscrepancy.set(!altiDiscrepancyInhibit && this.altiDiscrepancyConf2.read());
 
+    const ir1NotAligned =
+      (!this.sdac00401Word.bitValue(28) && dmcLeftIr1DiscreteWord.bitValue(21)) ||
+      dmcLeftIr1DiscreteWord.bitValue(23) ||
+      (dmcLeftIr1DiscreteWord.bitValue(22) && this.alignTime === 1);
+    const ir2NotAligned =
+      (!this.sdac00410Word.bitValue(28) && dmcRightIr2DiscreteWord.bitValue(21)) ||
+      dmcRightIr2DiscreteWord.bitValue(23) ||
+      (dmcRightIr2DiscreteWord.bitValue(22) && this.alignTime === 1);
+    const ir3NotAligned =
+      (!this.sdac00411Word.bitValue(28) && dmcLeftIr3DiscreteWord.bitValue(21)) ||
+      dmcLeftIr3DiscreteWord.bitValue(23) ||
+      (dmcLeftIr3DiscreteWord.bitValue(22) && this.alignTime === 1);
+    this.irAlignProblem = ir1NotAligned || ir2NotAligned || ir3NotAligned;
+    this.ir1NotAlignedPulse.write(ir1NotAligned, deltaTime);
+    this.ir2NotAlignedPulse.write(ir2NotAligned, deltaTime);
+    this.ir3NotAlignedPulse.write(ir3NotAligned, deltaTime);
+    this.irNotAlignedWarning.set(
+      this.irAlignProblem &&
+        !this.ir1NotAlignedPulse.read() &&
+        !this.ir2NotAlignedPulse.read() &&
+        !this.ir3NotAlignedPulse.read() &&
+        flightPhase !== 1,
+    );
+
     /* SETTINGS */
 
     this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
@@ -2855,7 +2956,6 @@ export class PseudoFWC {
       ),
     );
 
-    const flightPhase = this.fwcFlightPhase.get();
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
@@ -3305,6 +3405,56 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     // 34 - NAVIGATION & SURVEILLANCE
+    3400048: {
+      // IR NOT ALIGNED
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 10],
+      simVarIsActive: this.irNotAlignedWarning,
+      whichCodeToReturn: () => {
+        const positionDisagree =
+          this.dmcLeftIr1DiscreteWord.get().bitValue(21) ||
+          this.dmcRightIr2DiscreteWord.get().bitValue(21) ||
+          this.dmcLeftIr3DiscreteWord.get().bitValue(21);
+        const positionMissing =
+          (this.dmcLeftIr1DiscreteWord.get().bitValue(22) ||
+            this.dmcRightIr2DiscreteWord.get().bitValue(22) ||
+            this.dmcLeftIr3DiscreteWord.get().bitValue(22)) &&
+          this.alignTime === 1;
+        const ir1ExcessMotion = this.dmcLeftIr1DiscreteWord.get().bitValue(23);
+        const ir2ExcessMotion = this.dmcRightIr2DiscreteWord.get().bitValue(23);
+        const ir3ExcessMotion = this.dmcLeftIr3DiscreteWord.get().bitValue(23);
+        return [
+          0,
+          positionDisagree ? 1 : null,
+          positionMissing ? 2 : null,
+          positionDisagree || positionMissing ? 3 : null,
+          ir1ExcessMotion || ir2ExcessMotion || ir3ExcessMotion ? 4 : null,
+          ir1ExcessMotion && !ir2ExcessMotion && !ir3ExcessMotion ? 5 : null,
+          !ir1ExcessMotion && ir2ExcessMotion && !ir3ExcessMotion ? 6 : null,
+          !ir1ExcessMotion && !ir2ExcessMotion && ir3ExcessMotion ? 7 : null,
+          ir1ExcessMotion && ir2ExcessMotion && !ir3ExcessMotion ? 8 : null,
+          ir1ExcessMotion && !ir2ExcessMotion && ir3ExcessMotion ? 9 : null,
+          !ir1ExcessMotion && ir2ExcessMotion && ir3ExcessMotion ? 10 : null,
+          ir1ExcessMotion && ir2ExcessMotion && ir3ExcessMotion ? 11 : null,
+        ];
+      },
+      codesToReturn: [
+        '340004801',
+        '340004802',
+        '340004803',
+        '340004804',
+        '340004805',
+        '340004806',
+        '340004807',
+        '340004808',
+        '340004809',
+        '340004810',
+        '340004811',
+        '340004812',
+      ],
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
     3400100: {
       // BARO REF DISCREPANCY
       flightPhaseInhib: [3, 4, 8],
@@ -4806,82 +4956,130 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     '0000030': {
-      // IR IN ALIGN
-      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
-          const remainingTimeAbove240 = adirsRemainingAlignTime >= 240;
-          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
+      // IR IN ALIGN 1
+      flightPhaseInhib: [],
+      simVarIsActive: this.irsInAlignMemo1,
+      whichCodeToReturn: () => {
+        const greenSteady = !this.irAlignProblem && !this.engine1Or2Running;
+        const amberSteady = this.engine1Or2Running;
+        const greenFlashing = this.irAlignProblem && !this.engine1Or2Running;
 
-          return remainingTimeAbove240 && allInState1;
-        },
-        this.adirsRemainingAlignTime,
-        this.adiru1State,
-        this.adiru2State,
-        this.adiru3State,
-      ),
-      whichCodeToReturn: () => [
-        this.adirsMessage1(
-          this.adirsRemainingAlignTime.get(),
-          (this.engine1State.get() > 0 && this.engine1State.get() < 4) ||
-            (this.engine2State.get() > 0 && this.engine2State.get() < 4),
-        ),
-      ],
-      codesToReturn: [
-        '000003001',
-        '000003002',
-        '000003003',
-        '000003004',
-        '000003005',
-        '000003006',
-        '000003007',
-        '000003008',
-      ],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+        switch (true) {
+          case greenSteady && this.alignTime === 7:
+            return '000003001';
+          case greenFlashing && this.alignTime === 7:
+            return '000003002';
+          case amberSteady && this.alignTime === 7:
+            return '000003003';
+          case greenSteady && this.alignTime === 6:
+            return '000003004';
+          case greenFlashing && this.alignTime === 6:
+            return '000003005';
+          case amberSteady && this.alignTime === 6:
+            return '000003006';
+          case greenSteady && this.alignTime === 5:
+            return '000003007';
+          case greenFlashing && this.alignTime === 5:
+            return '000003008';
+          case amberSteady && this.alignTime === 5:
+            return '000003009';
+          case greenSteady && this.alignTime === 4:
+            return '000003010';
+          case greenFlashing && this.alignTime === 4:
+            return '000003011';
+          case amberSteady && this.alignTime === 4:
+            return '000003012';
+          default:
+            return [];
+        }
+      },
+      codesToReturn: [],
+      memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
     },
     '0000031': {
-      // IR IN ALIGN
-      flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State]) => {
-          const remainingTimeAbove0 = adirsRemainingAlignTime > 0;
-          const remainingTimeBelow240 = adirsRemainingAlignTime < 240;
-          const allInState1 = adiru1State === 1 && adiru2State === 1 && adiru3State === 1;
+      // IR IN ALIGN 2
+      flightPhaseInhib: [],
+      simVarIsActive: this.irsInAlignMemo2,
+      whichCodeToReturn: () => {
+        const greenSteady = !this.irAlignProblem && !this.engine1Or2Running;
+        const amberSteady = this.engine1Or2Running;
+        const greenFlashing = this.irAlignProblem && !this.engine1Or2Running;
 
-          return remainingTimeAbove0 && remainingTimeBelow240 && allInState1;
-        },
-        this.adirsRemainingAlignTime,
-        this.adiru1State,
-        this.adiru2State,
-        this.adiru3State,
-      ),
-      whichCodeToReturn: () => [
-        this.adirsMessage2(
-          this.adirsRemainingAlignTime.get(),
-          (this.engine1State.get() > 0 && this.engine1State.get() < 4) ||
-            (this.engine2State.get() > 0 && this.engine2State.get() < 4),
-        ),
-      ],
-      codesToReturn: [
-        '000003101',
-        '000003102',
-        '000003103',
-        '000003104',
-        '000003105',
-        '000003106',
-        '000003107',
-        '000003108',
-      ],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+        switch (true) {
+          case greenSteady && this.alignTime === 3:
+            return '000003101';
+          case greenFlashing && this.alignTime === 3:
+            return '000003102';
+          case amberSteady && this.alignTime === 3:
+            return '000003103';
+          case greenSteady && this.alignTime === 2:
+            return '000003104';
+          case greenFlashing && this.alignTime === 2:
+            return '000003105';
+          case amberSteady && this.alignTime === 2:
+            return '000003106';
+          case greenSteady && this.alignTime === 1:
+            return '000003107';
+          case greenFlashing && this.alignTime === 1:
+            return '000003108';
+          case amberSteady && this.alignTime === 1:
+            return '000003109';
+          case greenSteady && this.navMode && this.oneIrsInAlign:
+            return '000003110';
+          case greenFlashing && this.navMode && this.oneIrsInAlign:
+            return '000003111';
+          case amberSteady && this.navMode && this.oneIrsInAlign:
+            return '000003112';
+          case greenSteady && this.navMode && !this.oneIrsInAlign:
+            return '000003113';
+          default:
+            return [];
+        }
+      },
+      codesToReturn: [],
+      memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
     },
+    '0000027': {
+      // IRS IN ATT ALIGN
+      flightPhaseInhib: [],
+      simVarIsActive: this.irsInAttAlignMemo,
+      whichCodeToReturn: () => {
+        const ir1 = this.ir1InAttAlign.get();
+        const ir2 = this.ir2InAttAlign.get();
+        const ir3 = this.ir3InAttAlign.get();
+        switch (true) {
+          case ir1 && !ir2 && !ir3:
+            return '000002701';
+          case !ir1 && ir2 && !ir3:
+            return '000002702';
+          case !ir1 && !ir2 && ir3:
+            return '000002703';
+          case ir1 && ir2 && !ir3:
+            return '000002704';
+          case ir1 && !ir2 && ir3:
+            return '000002705';
+          case !ir1 && ir2 && ir3:
+            return '000002706';
+          case ir1 && ir2 && ir3:
+            return '000002707';
+          default:
+            return [];
+        }
+      },
+      codesToReturn: [],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'RIGHT',
+    },
     '0000055': {
-      // SPOILERS ARMED
+      // GND SPLRS ARMED
       flightPhaseInhib: [],
       simVarIsActive: this.spoilersArmed,
       whichCodeToReturn: () => [0],
