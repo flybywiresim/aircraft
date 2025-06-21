@@ -18,29 +18,44 @@ import {
   Arinc429LocalVarConsumerSubject,
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
+  Arinc429WordData,
   DmcSwitchingKnob,
+  IrBusEvents,
+  RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
+import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
+import { GlobalDmcEvents } from '../MsfsAvionicsCommon/GlobalDmcEvents';
 
 // In future this will move to the Systems instance in VCockpitLogic which will also handle the
 // display switching, and then it can be expanded a bit and become a DMC rather than the combined DMC bus.
 // For now it can live in each PFD, just to relay DMC L/R data as needed.
 export class PseudoDmc implements Instrument {
-  private readonly sub = this.bus.getSubscriber<A32NXElectricalSystemEvents & A32NXFcuBusEvents & Arinc429Values>();
+  private readonly sub = this.bus.getSubscriber<
+    A32NXElectricalSystemEvents & A32NXFcuBusEvents & AdirsSimVars & Arinc429Values & IrBusEvents
+  >();
+  private readonly publisher = this.bus.getPublisher<GlobalDmcEvents>();
+
+  private readonly monotonicSimTimeVar = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Number);
+  private currentTime = 0;
+  private mainPoweredOnTime = 0;
+  private alternatePoweredOnTime = 0;
+  private readonly flash1Hz = Subject.create(false);
 
   private readonly dmcSwitchingState = Subject.create(DmcSwitchingKnob.Norm);
+  private readonly isOnAlternateDmc = this.dmcSwitchingState.map(
+    (v) => v === (this.isRightSide ? DmcSwitchingKnob.Fo : DmcSwitchingKnob.Capt),
+  );
 
   private readonly fcuDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
   private readonly mainElecSupply = ConsumerSubject.create(null, false);
   private readonly alternateElecSupply = ConsumerSubject.create(null, false);
   private readonly isAcPowered = MappedSubject.create(
-    ([isMainSupplyPowered, isAlternateSupplyPowered, dmcSwitching]) =>
-      dmcSwitching === (this.isRightSide ? DmcSwitchingKnob.Fo : DmcSwitchingKnob.Capt)
-        ? isAlternateSupplyPowered
-        : isMainSupplyPowered,
+    ([isMainSupplyPowered, isAlternateSupplyPowered, isOnAlternateDmc]) =>
+      isOnAlternateDmc ? isAlternateSupplyPowered : isMainSupplyPowered,
     this.mainElecSupply,
     this.alternateElecSupply,
-    this.dmcSwitchingState,
+    this.isOnAlternateDmc,
   );
 
   private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
@@ -48,7 +63,30 @@ export class PseudoDmc implements Instrument {
   private readonly dmcDiscreteWord350 = Arinc429RegisterSubject.createEmpty();
   private readonly dmcAltitude = Arinc429RegisterSubject.createEmpty();
 
-  private readonly outputWords = [this.dmcDiscreteWord350, this.dmcAltitude];
+  private readonly selectedIrDiscreteWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('irMaintWordRaw'), 0);
+  private readonly dmcDiscreteWord271 = Arinc429RegisterSubject.createEmpty();
+  private readonly irDiscreteWordOnside = Arinc429LocalVarConsumerSubject.create(null, 0);
+  private readonly irDiscreteWordBackup = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_maint_word_3'), 0);
+  /** SDI 01 for DMC L, SDI 10 for DMC R */
+  private readonly dmcDiscreteWord313Onside = Arinc429RegisterSubject.createEmpty();
+  /** SDI 11 */
+  private readonly dmcDiscreteWord313Backup = Arinc429RegisterSubject.createEmpty();
+  private readonly irPitchAngleWordOnside = ConsumerSubject.create(null, 0);
+  private readonly irPitchAngleWordBackup = ConsumerSubject.create(this.sub.on('ir_pitch_3'), 0);
+  /** SDI 01 for DMC L, SDI 10 for DMC R */
+  private readonly dmcPitchAngleWord324Onside = Arinc429RegisterSubject.createEmpty();
+  /** SDI 11 */
+  private readonly dmcPitchAngleWord324Backup = Arinc429RegisterSubject.createEmpty();
+
+  private readonly outputWords = [
+    this.dmcDiscreteWord271,
+    this.dmcDiscreteWord313Backup,
+    this.dmcDiscreteWord313Onside,
+    this.dmcDiscreteWord350,
+    this.dmcAltitude,
+    this.dmcPitchAngleWord324Onside,
+    this.dmcPitchAngleWord324Backup,
+  ];
 
   /** Not valid until init is called! */
   private isRightSide = false;
@@ -75,6 +113,27 @@ export class PseudoDmc implements Instrument {
         true,
       ),
       this.altitude.sub((v) => this.dmcAltitude.setWord(v.rawWord), true, true),
+      this.selectedIrDiscreteWord.sub((v) => PseudoDmc.mapIrDiscreteToDmc(v, this.dmcDiscreteWord271), true, true),
+      this.irDiscreteWordOnside.sub(
+        (v) =>
+          this.dmcDiscreteWord313Onside.setValueSsm(
+            v.value << 10,
+            v.isInvalid() ? Arinc429SignStatusMatrix.NoComputedData : v.ssm,
+          ),
+        true,
+        true,
+      ),
+      this.irDiscreteWordBackup.sub(
+        (v) =>
+          this.dmcDiscreteWord313Backup.setValueSsm(
+            v.value << 10,
+            v.isInvalid() ? Arinc429SignStatusMatrix.NoComputedData : v.ssm,
+          ),
+        true,
+        true,
+      ),
+      this.irPitchAngleWordOnside.sub((v) => this.dmcPitchAngleWord324Onside.setWord(v), true, true),
+      this.irPitchAngleWordBackup.sub((v) => this.dmcPitchAngleWord324Backup.setWord(v), true, true),
     ];
 
     this.isAcPowered.sub((isPowered) => {
@@ -92,6 +151,22 @@ export class PseudoDmc implements Instrument {
       }
     }, true);
 
+    this.mainElecSupply.sub((v) => {
+      if (v) {
+        this.mainPoweredOnTime = this.currentTime;
+      } else {
+        this.mainPoweredOnTime = 0;
+      }
+    }, true);
+
+    this.alternateElecSupply.sub((v) => {
+      if (v) {
+        this.alternatePoweredOnTime = this.currentTime;
+      } else {
+        this.alternatePoweredOnTime = 0;
+      }
+    }, true);
+
     this.dmcDiscreteWord350.sub(
       (word) =>
         word.writeToSimVar(
@@ -104,6 +179,45 @@ export class PseudoDmc implements Instrument {
       true,
     );
 
+    this.dmcDiscreteWord271.sub(
+      (word) =>
+        word.writeToSimVar(
+          this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_271_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_271_LEFT',
+        ),
+      true,
+    );
+    this.dmcDiscreteWord313Onside.sub(
+      (word) =>
+        word.writeToSimVar(
+          this.isRightSide ? 'L:A32NX_DMC_IR_2_DISCRETE_WORD_RIGHT' : 'L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT',
+        ),
+      true,
+    );
+    this.dmcDiscreteWord313Backup.sub(
+      (word) =>
+        word.writeToSimVar(
+          this.isRightSide ? 'L:A32NX_DMC_IR_3_DISCRETE_WORD_RIGHT' : 'L:A32NX_DMC_IR_3_DISCRETE_WORD_LEFT',
+        ),
+      true,
+    );
+    this.dmcPitchAngleWord324Onside.sub(
+      (word) =>
+        word.writeToSimVar(
+          this.isRightSide ? 'L:A32NX_DMC_IR_2_PITCH_ANGLE_RIGHT' : 'L:A32NX_DMC_IR_1_PITCH_ANGLE_LEFT',
+        ),
+      true,
+    );
+    this.dmcPitchAngleWord324Backup.sub(
+      (word) =>
+        word.writeToSimVar(
+          this.isRightSide ? 'L:A32NX_DMC_IR_3_PITCH_ANGLE_RIGHT' : 'L:A32NX_DMC_IR_3_PITCH_ANGLE_LEFT',
+        ),
+      true,
+    );
+
+    const flash1HzTopic: keyof GlobalDmcEvents = this.isRightSide ? 'dmc_right_flash_1hz' : 'dmc_left_flash_1hz';
+    this.flash1Hz.sub((v) => this.publisher.pub(flash1HzTopic, v, true, true), true);
+
     this.mainElecSupply.setConsumer(
       this.sub.on(this.isRightSide ? 'a32nx_elec_ac_2_bus_is_powered' : 'a32nx_elec_ac_ess_bus_is_powered'),
     );
@@ -115,10 +229,33 @@ export class PseudoDmc implements Instrument {
     this.fcuDiscreteWord2.setConsumer(
       this.sub.on(this.isRightSide ? 'a32nx_fcu_eis_discrete_word_2_right' : 'a32nx_fcu_eis_discrete_word_2_left'),
     );
+
+    this.irDiscreteWordOnside.setConsumer(this.sub.on(this.isRightSide ? 'ir_maint_word_2' : 'ir_maint_word_1'));
+    this.irPitchAngleWordOnside.setConsumer(this.sub.on(this.isRightSide ? 'ir_pitch_2' : 'ir_pitch_1'));
   }
 
   /** @inheritdoc */
   public onUpdate(): void {
     this.dmcSwitchingState.set(SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', SimVarValueType.Enum));
+
+    this.currentTime = this.monotonicSimTimeVar.get() * 1000;
+    if (this.isAcPowered.get()) {
+      const powerOnTime = Math.max(
+        0,
+        this.currentTime - (this.isOnAlternateDmc.get() ? this.alternatePoweredOnTime : this.mainPoweredOnTime),
+      );
+      this.flash1Hz.set(powerOnTime % 1000 >= 500);
+    } else {
+      this.flash1Hz.set(false);
+    }
+  }
+
+  private static mapIrDiscreteToDmc(ir: Arinc429WordData, dmc: Arinc429RegisterSubject): void {
+    dmc.setBitValue(12, ir.bitValue(9));
+    dmc.setBitValue(26, ir.bitValue(16));
+    dmc.setBitValue(27, ir.bitValue(17));
+    dmc.setBitValue(28, ir.bitValue(18));
+    dmc.setBitValue(29, ir.bitValue(1));
+    dmc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
   }
 }
