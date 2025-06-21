@@ -13,7 +13,7 @@ import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXFictionalMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Airport } from '@flybywiresim/fbw-sdk';
+import { isAirport } from '@flybywiresim/fbw-sdk';
 
 export class CDULateralRevisionPage {
   /**
@@ -47,7 +47,7 @@ export class CDULateralRevisionPage {
     const legWaypoint = !isPpos ? mcdu.flightPlanService.active.legElementAt(legIndexFP).definition.waypoint : null;
     const departure = mcdu.flightPlanService.active.originAirport;
     const arrival = mcdu.flightPlanService.active.destinationAirport;
-    const currentWaypointAirportIdent = (legWaypoint as Airport)?.airportIdent;
+    const currentWaypointAirportIdent = isAirport(legWaypoint) ? legWaypoint.airportIdent : null;
     const isDeparture =
       legIndexFP === targetPlan.originLegIndex &&
       !isPpos &&
