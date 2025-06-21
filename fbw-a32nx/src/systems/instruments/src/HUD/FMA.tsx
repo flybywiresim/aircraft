@@ -15,12 +15,13 @@ import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register 
 
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
-import { Arinc429Values } from './shared/ArincValueProvider';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
 import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
 import { HudElems } from './HUDUtils';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 /* eslint-disable no-constant-condition,no-dupe-else-if -- for keeping the FMA code while it's not active yet */
 
@@ -201,7 +202,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus & HudElems>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & FgBus & FcuBus & HudElems>();
 
     this.props.isAttExcessive.sub((_a) => {
       this.handleFMABorders();
@@ -415,7 +416,7 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & FcuBus>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & FcuBus>();
 
     sub
       .on('autoBrakeMode')
@@ -675,7 +676,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FcuBus>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & FcuBus>();
 
     sub
       .on('flexTemp')
@@ -1227,7 +1228,7 @@ class B2Cell extends DisplayComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HUDSimvars & PFDSimvars>();
 
     sub
       .on('fmgcDiscreteWord3')
@@ -1283,7 +1284,7 @@ class B2Cell extends DisplayComponent<CellProps> {
 }
 
 class C1Cell extends ShowForSecondsComponent<CellProps> {
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
   private fmgcDiscreteWord1 = new Arinc429Word(0);
 
@@ -1868,7 +1869,7 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
 
     sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
     sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));

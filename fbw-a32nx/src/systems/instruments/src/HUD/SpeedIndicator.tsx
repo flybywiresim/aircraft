@@ -17,14 +17,15 @@ import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject 
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
-import { Arinc429Values } from './shared/ArincValueProvider';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 
 import { CrosswindDigitalSpeedReadout } from './CrosswindDigitalSpeedReadout';
 
-import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
+import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { WindMode, HudElems } from './HUDUtils';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -41,7 +42,9 @@ export class AirspeedIndicator extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<
+      EventBus & HUDSimvars & PFDSimvars & Arinc429Values & ClockEvents & HudElems
+    >();
     sub
       .on('cWndMode')
       .whenChanged()
@@ -72,7 +75,7 @@ class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const pf = this.props.bus.getSubscriber<HUDSimvars>();
+    const pf = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
     pf.on('v1')
       .whenChanged()
@@ -127,7 +130,7 @@ class VRBugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const pf = this.props.bus.getSubscriber<HUDSimvars>();
+    const pf = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
     pf.on('vr')
       .whenChanged()
@@ -250,7 +253,9 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<EventBus & HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<
+      EventBus & HUDSimvars & PFDSimvars & Arinc429Values & ClockEvents & HudElems
+    >();
 
     sub.on('spdTape').handle((v) => {
       this.spdTapeOrForcedOnLand = v;
@@ -508,7 +513,7 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
 
     sub
       .on('vMan')
@@ -615,7 +620,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & HudElems & Arinc429Values>();
 
     sub.on('spdTape').handle((v) => {
       this.spdTapeOrForcedOnLand = v;
@@ -803,7 +808,7 @@ class DecelMode extends DisplayComponent<{
   private yOffset = Subject.create(0);
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
 
     sub
       .on('autoBrakeMode')
@@ -993,7 +998,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & PFDSimvars & ClockEvents>();
 
     sub
       .on('vAlphaProt')
@@ -1077,7 +1082,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
 
     sub
       .on('speedAr')
@@ -1142,7 +1147,7 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
 
     sub
       .on('speedAr')
@@ -1207,7 +1212,7 @@ class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
 
     sub
       .on('speedAr')
@@ -1273,7 +1278,7 @@ class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
 
     sub
       .on('speedAr')
@@ -1321,7 +1326,7 @@ class V1Offtape extends DisplayComponent<{ bus: ArincEventBus }> {
   private v1Speed = 0;
 
   onAfterRender() {
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
     sub.on('speed').handle((s) => {
       const speed = new Arinc429Word(s);
@@ -1398,7 +1403,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
     super.onAfterRender(node);
     this.needsUpdate = true;
     const sub = this.props.bus.getArincSubscriber<
-      HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & FgBus & FcuBus & HudElems
+      HUDSimvars & PFDSimvars & SimplaneValues & ClockEvents & Arinc429Values & FgBus & FcuBus & HudElems
     >();
 
     sub
@@ -1735,7 +1740,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & PFDSimvars>();
 
     sub.on('machAr').handle((mach) => {
       if (!mach.isNormalOperation() && !this.onGround) {
@@ -1816,7 +1821,7 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & Arinc429Values>();
 
     sub
       .on('vMax')
@@ -1863,7 +1868,7 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
     sub
       .on('leftMainGearCompressed')

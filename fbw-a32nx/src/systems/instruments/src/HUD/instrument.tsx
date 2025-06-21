@@ -9,11 +9,11 @@ import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-c
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { ExtendedClockEventProvider } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
-import { FcuBusProvider } from 'instruments/src/HUD/shared/FcuBusProvider';
-import { FgBusProvider } from 'instruments/src/HUD/shared/FgBusProvider';
+import { FcuBusProvider } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FgBusProvider } from 'instruments/src/PFD/shared/FgBusProvider';
 import { getDisplayIndex, HUDComponent } from './HUD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
-import { ArincValueProvider } from './shared/ArincValueProvider';
+import { ArincValueProvider } from '../PFD/shared/ArincValueProvider';
 import { HUDSimvarPublisher, HUDSimvars, HUDSymbolsPublisher } from './shared/HUDSimvarPublisher';
 import { HudValueProvider } from './shared/HudValueProvider';
 

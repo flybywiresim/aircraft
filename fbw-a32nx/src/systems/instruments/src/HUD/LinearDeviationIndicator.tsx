@@ -9,9 +9,10 @@ import {
   MappedSubject,
 } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
-import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
+import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, ALT_TAPE_YPOS, ALT_TAPE_XPOS, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 let DisplayRange = 600;
 
@@ -57,7 +58,9 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   // TODO: Use ARINC value for this
   private flightPathAltitude: Feet = 0;
 
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HEvent & HUDSimvars & HudElems>();
+  private readonly sub = this.props.bus.getSubscriber<
+    Arinc429Values & FmsVars & HEvent & HUDSimvars & PFDSimvars & HudElems
+  >();
   private readonly altTape = ConsumerSubject.create(this.sub.on('altTape').whenChanged(), '');
   private readonly xwindAltTape = ConsumerSubject.create(this.sub.on('xWindAltTape').whenChanged(), '');
   private readonly isVisible = MappedSubject.create(

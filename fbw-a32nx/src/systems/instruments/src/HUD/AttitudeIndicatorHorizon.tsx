@@ -27,12 +27,13 @@ import {
   HudMode,
 } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { Arinc429Values } from './shared/ArincValueProvider';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './HUD';
 import { HeadingOfftape } from './HeadingIndicator';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { VerticalMode } from '@shared/autopilot';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 const DisplayRange = 35;
 const DistanceSpacing = 182.86;
 const ValueSpacing = 5;
@@ -104,7 +105,9 @@ class HeadingBug extends DisplayComponent<{
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & Arinc429Values & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<
+      DmcLogicEvents & HUDSimvars & PFDSimvars & Arinc429Values & HudElems
+    >();
 
     this.heading.setConsumer(sub.on('heading').withArinc429Precision(2));
 
@@ -197,7 +200,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     super.onAfterRender(node);
 
     const apfd = this.props.bus.getArincSubscriber<
-      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
+      Arinc429Values & DmcLogicEvents & HUDSimvars & PFDSimvars & ClockEvents & HEvent
     >();
 
     apfd.on('heading').handle((h) => {
@@ -323,7 +326,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & ClockEvents & HudElems>();
 
     sub
       .on('decMode')
@@ -488,7 +491,7 @@ class PitchScale extends DisplayComponent<{
   private sVisibilitySwitch = Subject.create<String>('block');
 
   private sub = this.props.bus.getArincSubscriber<
-    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
+    Arinc429Values & DmcLogicEvents & HUDSimvars & PFDSimvars & ClockEvents & HEvent & HudElems
   >();
   private needsUpdate = false;
 
@@ -751,7 +754,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & ClockEvents & HudElems>();
     sub
       .on('hudFlightPhaseMode')
       .whenChanged()

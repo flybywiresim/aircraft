@@ -15,9 +15,10 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
-import { Arinc429Values } from './shared/ArincValueProvider';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { FcuBus } from './shared/FcuBusProvider';
+import { FcuBus } from '../PFD/shared/FcuBusProvider';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 const TensDigits = (value: number) => {
   let text: string;
@@ -103,7 +104,9 @@ export class CrosswindDigitalAltitudeReadout extends DisplayComponent<CrosswindD
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & FcuBus>();
+    const sub = this.props.bus.getSubscriber<
+      HUDSimvars & PFDSimvars & HEvent & Arinc429Values & ClockEvents & FcuBus
+    >();
 
     // FIXME clean this up.. should be handled by an IE in the XML
 

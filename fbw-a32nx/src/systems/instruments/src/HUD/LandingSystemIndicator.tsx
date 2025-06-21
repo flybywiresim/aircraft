@@ -23,10 +23,11 @@ import {
 } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
-import { Arinc429Values } from './shared/ArincValueProvider';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, LagFilter } from './HUDUtils';
 import { calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 const DistanceSpacing = (1024 / 28) * 5; //182.857
 const ValueSpacing = 5;
@@ -49,7 +50,9 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
 
   private groupVis = false;
   private hudFlightPhaseMode = 0;
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
+  private readonly sub = this.props.bus.getSubscriber<
+    HUDSimvars & PFDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems
+  >();
 
   private readonly declutterModeL = ConsumerSubject.create(this.sub.on('declutterModeL'), 0);
   private readonly declutterModeR = ConsumerSubject.create(this.sub.on('declutterModeR'), 0);
@@ -196,7 +199,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
     this.lsAlive.setConsumer(sub.on('hasLoc'));
 
@@ -321,7 +324,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 }
 
 class LocBcIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
   private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
 
@@ -412,7 +415,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values & HudElems>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & ClockEvents & Arinc429Values & HudElems>();
 
     sub
       .on('fwcFlightPhase')
@@ -541,7 +544,7 @@ interface LSPath {
 }
 
 class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
   private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
 
@@ -608,7 +611,9 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent & HudElems>();
+    const sub = this.props.bus.getSubscriber<
+      Arinc429Values & HUDSimvars & PFDSimvars & ClockEvents & HEvent & HudElems
+    >();
 
     sub
       .on('cWndMode')
@@ -757,7 +762,7 @@ class VDevIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   };
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & PFDSimvars & ClockEvents & HEvent>();
 
     // TODO use correct simvar once RNAV is implemented
     const deviation = 0;
@@ -846,7 +851,7 @@ class LDevIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
     sub
       .on('xtk')
@@ -914,7 +919,7 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars>();
 
     const baseClass = 'FontLarge StartAlign';
 

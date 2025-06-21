@@ -5,14 +5,15 @@
 import { DisplayComponent, FSComponent, Subject, Subscribable, VNode, ClockEvents } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { LateralMode } from '@shared/autopilot';
-import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
+import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 
 import { FlightPathVector } from './FlightPathVector';
-import { Arinc429Values } from './shared/ArincValueProvider';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlightPathDirector } from './FlightPathDirector';
 import { HudElems, LagFilter, FIVE_DEG } from './HUDUtils';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
@@ -288,7 +289,7 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & HudElems>();
     sub.on('decMode').handle((m) => {
       this.declutterMode = m;
       this.handleFdState();
@@ -344,7 +345,7 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseIn
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & FgBus & FcuBus>();
 
     sub
       .on('leftMainGearCompressed')
@@ -437,7 +438,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values & HudElems>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & ClockEvents & Arinc429Values & HudElems>();
 
     sub
       .on('hasLoc')
@@ -530,7 +531,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & PFDSimvars & Arinc429Values & HudElems>();
 
     sub
       .on('leftMainGearCompressed')

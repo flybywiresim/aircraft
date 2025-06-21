@@ -22,7 +22,7 @@ import {
 
 import { A320Failure } from '@failures';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import { Arinc429Values } from './shared/ArincValueProvider';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import './style.scss';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
@@ -42,6 +42,7 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { HudElems, LagFilter, calculateHorizonOffsetFromPitch, Grid } from './HUDUtils';
 import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
@@ -111,7 +112,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
     this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
     const sub = this.props.bus.getSubscriber<
-      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
+      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & PFDSimvars & HEvent & HudElems
     >();
 
     sub

@@ -4,7 +4,9 @@ import { HUDSimvars } from './HUDSimvarPublisher';
 import { HudMode, PitchscaleMode, HudElems } from '../HUDUtils';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Arinc429ConsumerSubject, ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
-import { Arinc429Values } from './ArincValueProvider';
+import { Arinc429Values } from '../../PFD/shared/ArincValueProvider';
+import { HudArinc429Values } from './HudArincValueProvider';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 export class HudValueProvider implements Instrument {
   private flightPhase = 0;
@@ -41,7 +43,9 @@ export class HudValueProvider implements Instrument {
   private logCase = '';
   private isToga = false;
   private isFlx = false;
-  private readonly sub = this.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents>();
+  private readonly sub = this.bus.getArincSubscriber<
+    Arinc429Values & HudArinc429Values & HUDSimvars & PFDSimvars & ClockEvents
+  >();
 
   private readonly lmgc = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
   private readonly rmgc = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), true);

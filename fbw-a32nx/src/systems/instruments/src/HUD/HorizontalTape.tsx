@@ -6,10 +6,11 @@ import { DisplayComponent, FSComponent, NodeReference, VNode, Subscribable, Subj
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import { Arinc429Values } from './shared/ArincValueProvider';
+import { Arinc429Values } from '../PFD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
 import { HudElems } from './HUDUtils';
+import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 
 interface HorizontalTapeProps {
   displayRange: number;
@@ -145,7 +146,9 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     super.onAfterRender(node);
 
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents & HUDSimvars & HudElems>();
+    const sub = this.props.bus.getArincSubscriber<
+      Arinc429Values & DmcLogicEvents & HUDSimvars & PFDSimvars & HudElems
+    >();
 
     this.props.yOffset?.sub((yOffset) => {
       this.yOffset = yOffset;
