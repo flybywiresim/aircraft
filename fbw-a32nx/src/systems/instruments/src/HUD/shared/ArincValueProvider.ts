@@ -56,6 +56,7 @@ export interface Arinc429Values {
   fmTransLvlRaw: number;
   ecu1MaintenanceWord6: Arinc429Word;
   ecu2MaintenanceWord6: Arinc429Word;
+  fcuAtsFmaDiscreteWord: Arinc429Word;
 }
 export class ArincValueProvider implements Instrument {
   private roll = new Arinc429Word(0);
@@ -526,6 +527,10 @@ export class ArincValueProvider implements Instrument {
 
     subscriber.on('ecu2MaintenanceWord6Raw').handle((word) => {
       publisher.pub('ecu2MaintenanceWord6', new Arinc429Word(word));
+    });
+
+    subscriber.on('fcuAtsFmaDiscreteWordRaw').handle((word) => {
+      publisher.pub('fcuAtsFmaDiscreteWord', new Arinc429Word(word));
     });
   }
 
