@@ -286,7 +286,7 @@
   "Performance": {
     "Data": "Údaje",
     "Landing": {
-      "Airport": "Airport",
+      "Airport": "Letiště",
       "AirportIcao": "ICAO letiště",
       "ApproachSpeed": "Rychlost přiblížení",
       "ApproachSpeedUnit": "kts",
@@ -295,10 +295,10 @@
       "Clear": "Vymazat",
       "DropDownNo": "Ne",
       "DropDownYes": "Ano",
-      "EnterManually": "Enter Manually",
+      "EnterManually": "Zadejte ručně",
       "FillDataFrom": "Vyplnit data z",
       "FlapsConfiguration": "Konfigurace klapek",
-      "LandingWeight": "Landing Weight",
+      "LandingWeight": "Přistávací hmotnost",
       "Low": "Low",
       "MaximumManual": "Maximální manuální",
       "Medium": "Medium",
@@ -307,7 +307,7 @@
       "OverweightProcedure": "Overweight postup",
       "Qnh": "QNH",
       "ReverseThrust": "Zpětný tah",
-      "Runway": "Runway",
+      "Runway": "Dráha",
       "RunwayCondition": "Stav dráhy",
       "RunwayConditions": {
         "Dry": "Suchý (6)",
@@ -317,7 +317,7 @@
         "MediumPoor": "Střední-Špatný (2)",
         "Poor": "Špatný (1)"
       },
-      "RunwayElevation": "Runway Elevation",
+      "RunwayElevation": "Nadmořská výška dráhy",
       "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Směr dráhy",
       "RunwayHeadingUnit": "°",
@@ -333,8 +333,8 @@
       "Title": "Přistání",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Wind": "Wind",
-      "WindMagnitudeUnit": "kts"
+      "Wind": "Vítr",
+      "WindMagnitudeUnit": "kts nebo °/kts"
     },
     "SYNC": "SYNC",
     "Takeoff": {
@@ -393,8 +393,8 @@
         "Wet": "Mokrý"
       },
       "RunwayElevation": "Výška dráhy",
-      "RunwayElevationUnit": "ft",
-      "RunwayHeading": "Runway Heading",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Kurz dráhy",
       "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
@@ -556,8 +556,8 @@
       "AlignAdirs": "Okamžitě zarovnat ADIRS",
       "AutoBrightness": "Zapnutí/vypnutí automatického jasu",
       "Brightness": "Nastavení jasu flyPad",
-      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-      "CabinLighting": "Set Cabin Lighting",
+      "CabinAutoBrightness": "Zapnout/vypnout automatické osvětlení kabiny",
+      "CabinLighting": "Nastavit osvětlení kabiny",
       "FinishBoarding": "Okamžitě dokončit nástup (boarding)",
       "OnScreenKeyboard": "Zapnutí/vypnutí klávesnice na obrazovce",
       "PauseAtTod": "Aktivovat nebo deaktivovat pauzu na vrcholu sestupu",
@@ -585,7 +585,7 @@
       "Select": "Vybrat",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
-      "WeightUnit": "Jednotky hmotnosti"
+      "WeightUnit": "Americké jednotky"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Zdroj ATIS/ATC",
@@ -644,15 +644,15 @@
       "PauseAtTodDistance": "Vzdálenost zapauzování před T/D (nm)",
       "PilotAvatar": "Zobrazit avatar pilota",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
-      "SyncEfis": "Synchronizovat EFIS a ovládání zvuku mezi kapitánem a prvním důstojníkem",
+      "SyncEfis": "Synchronizovat EFIS a ovládací prvky zvuku mezi kapitánem a prvním důstojníkem",
       "Title": "Realismus"
     },
     "SimOptions": {
       "Active": "Aktivní",
       "Auto": "Auto.",
       "Both": "Synchronizováno",
-      "CabinAutoBrightness": "Auto Cabin Lighting",
-      "CabinManualBrightness": "Cabin Lighting Brightness",
+      "CabinAutoBrightness": "Automatické osvětlení kabiny",
+      "CabinManualBrightness": "Jas osvětlení kabiny",
       "Calibrate": "Kalibrovat",
       "ConesEnabled": "Výstražné kužely",
       "DefaultBarometerUnit": "Výchozí jednotky tlaku vzduchu",
@@ -737,7 +737,7 @@
     },
     "Title": "Nastavení",
     "Troubleshooting": {
-      "Title": "Troubleshooting"
+      "Title": "Řešení problémů"
     },
     "Unrealistic": "Nerealistické",
     "flyPad": {
