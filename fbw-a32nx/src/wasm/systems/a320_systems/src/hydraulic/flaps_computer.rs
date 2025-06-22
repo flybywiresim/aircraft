@@ -1,9 +1,10 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
+use systems::hydraulic::command_sensor_unit::FlapsHandle;
 use systems::shared::PositionPickoffUnit;
 
 use systems::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use std::panic;
@@ -30,38 +31,6 @@ impl From<u8> for FlapsConf {
             5 => FlapsConf::ConfFull,
             i => panic!("Cannot convert from {} to FlapsConf.", i),
         }
-    }
-}
-
-/// A struct to read the handle position
-struct FlapsHandle {
-    handle_position_id: VariableIdentifier,
-    position: u8,
-    previous_position: u8,
-}
-
-impl FlapsHandle {
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
-            position: 0,
-            previous_position: 0,
-        }
-    }
-
-    fn position(&self) -> u8 {
-        self.position
-    }
-
-    fn previous_position(&self) -> u8 {
-        self.previous_position
-    }
-}
-
-impl SimulationElement for FlapsHandle {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.previous_position = self.position;
-        self.position = reader.read(&self.handle_position_id);
     }
 }
 
@@ -383,7 +352,7 @@ mod tests {
     use std::time::Duration;
     use systems::simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
-        Aircraft,
+        Aircraft, Read, SimulatorReader,
     };
 
     use uom::si::{angular_velocity::degree_per_second, pressure::psi};
