@@ -65,8 +65,10 @@ use systems::{
 
 use std::fmt::Debug;
 
-mod flaps_computer;
-use flaps_computer::SlatFlapComplex;
+mod flaps_channel;
+mod sfcc;
+mod slats_channel;
+use sfcc::SlatFlapComplex;
 mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
 pub mod autobrakes;
