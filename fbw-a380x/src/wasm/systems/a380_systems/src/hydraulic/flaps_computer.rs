@@ -1,5 +1,5 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::hydraulic::command_sensor_unit::FlapsHandle;
+use systems::hydraulic::command_sensor_unit::{FlapsHandle, CSU};
 use systems::shared::{AdirsMeasurementOutputs, PositionPickoffUnit};
 
 use systems::simulation::{
@@ -21,21 +21,6 @@ enum FlapsConf {
     ConfFull,
 }
 
-impl From<u8> for FlapsConf {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => FlapsConf::Conf0,
-            1 => FlapsConf::Conf1,
-            2 => FlapsConf::Conf1F,
-            3 => FlapsConf::Conf2,
-            4 => FlapsConf::Conf2S,
-            5 => FlapsConf::Conf3,
-            6 => FlapsConf::ConfFull,
-            i => panic!("Cannot convert from {} to FlapsConf.", i),
-        }
-    }
-}
-
 struct SlatFlapControlComputer {
     flaps_conf_index_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
@@ -47,7 +32,7 @@ struct SlatFlapControlComputer {
     slats_demanded_angle: Angle,
     flaps_feedback_angle: Angle,
     slats_feedback_angle: Angle,
-    flaps_handle_position: u8,
+    flaps_handle_position: CSU,
     flaps_conf: FlapsConf,
     flap_load_relief_active: bool,
     cruise_baulk_active: bool,
@@ -88,7 +73,7 @@ impl SlatFlapControlComputer {
             slats_demanded_angle: Angle::new::<degree>(0.),
             flaps_feedback_angle: Angle::new::<degree>(0.),
             slats_feedback_angle: Angle::new::<degree>(0.),
-            flaps_handle_position: 0,
+            flaps_handle_position: CSU::Conf0,
             flaps_conf: FlapsConf::Conf0,
             flap_load_relief_active: false,
             cruise_baulk_active: false,
@@ -130,15 +115,19 @@ impl SlatFlapControlComputer {
         context: &UpdateContext,
         adirs: &impl AdirsMeasurementOutputs,
     ) -> FlapsConf {
-        match (flaps_handle.previous_position(), flaps_handle.position()) {
-            (0 | 1, 1)
+        // Ignored `CSU::OutOfDetent` and `CSU::Fault` positions due to simplified SFCC.
+        match (
+            flaps_handle.previous_position(),
+            flaps_handle.current_position(),
+        ) {
+            (CSU::Conf0 | CSU::Conf1, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     < Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS
                     || context.is_on_ground() =>
             {
                 FlapsConf::Conf1F
             }
-            (0 | 1, 1)
+            (CSU::Conf0 | CSU::Conf1, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     > Self::CRUISE_BAULK_AIRSPEED_THRESHOLD_KNOTS
                     // FIXME use ADRs
@@ -147,22 +136,22 @@ impl SlatFlapControlComputer {
             {
                 FlapsConf::Conf0
             }
-            (0, 1) => FlapsConf::Conf1,
-            (1, 1)
+            (CSU::Conf0, CSU::Conf1) => FlapsConf::Conf1,
+            (CSU::Conf1, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1
             }
-            (1, 1) => self.flaps_conf,
-            (_, 1)
+            (CSU::Conf1, CSU::Conf1) => self.flaps_conf,
+            (_, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1F
             }
-            (_, 1) => FlapsConf::Conf1,
-            (_, 0) if context.is_in_flight() && self.alpha_speed_lock_active => {
+            (_, CSU::Conf1) => FlapsConf::Conf1,
+            (_, CSU::Conf0) if context.is_in_flight() && self.alpha_speed_lock_active => {
                 if context.indicated_airspeed().get::<knot>()
                     > Self::ALPHA_SPEED_LOCK_OUT_AIRSPEED_THRESHOLD_KNOTS
                     || self
@@ -176,7 +165,10 @@ impl SlatFlapControlComputer {
                     self.flaps_conf
                 }
             }
-            (1..=4, 0)
+            (CSU::Conf1, CSU::Conf0)
+            | (CSU::Conf2, CSU::Conf0)
+            | (CSU::Conf3, CSU::Conf0)
+            | (CSU::ConfFull, CSU::Conf0)
                 if context.is_in_flight()
                     && (context.indicated_airspeed().get::<knot>()
                         < Self::ALPHA_SPEED_LOCK_IN_AIRSPEED_THRESHOLD_KNOTS
@@ -188,14 +180,14 @@ impl SlatFlapControlComputer {
             {
                 FlapsConf::Conf1F
             }
-            (_, 0) => FlapsConf::Conf0,
-            (1 | 2, 2)
+            (_, CSU::Conf0) => FlapsConf::Conf0,
+            (CSU::Conf1 | CSU::Conf2, CSU::Conf2)
                 if context.indicated_airspeed().get::<knot>()
                     > Self::FLRS_CONF2_TO_CONF1F_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1F
             }
-            (2, 2) if self.flaps_conf == FlapsConf::Conf1F => {
+            (CSU::Conf2, CSU::Conf2) if self.flaps_conf == FlapsConf::Conf1F => {
                 if context.indicated_airspeed().get::<knot>()
                     < Self::FLRS_CONF1F_TO_CONF2_AIRSPEED_THRESHOLD_KNOTS
                 {
@@ -204,13 +196,13 @@ impl SlatFlapControlComputer {
                     FlapsConf::Conf1F
                 }
             }
-            (2 | 3, 3)
+            (CSU::Conf2 | CSU::Conf3, CSU::Conf3)
                 if context.indicated_airspeed().get::<knot>()
                     > Self::FLRS_CONF3_TO_CONF2S_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf2S
             }
-            (3, 3) if self.flaps_conf == FlapsConf::Conf2S => {
+            (CSU::Conf3, CSU::Conf3) if self.flaps_conf == FlapsConf::Conf2S => {
                 if context.indicated_airspeed().get::<knot>()
                     < Self::FLRS_CONF2S_TO_CONF3_AIRSPEED_THRESHOLD_KNOTS
                 {
@@ -219,13 +211,13 @@ impl SlatFlapControlComputer {
                     FlapsConf::Conf2S
                 }
             }
-            (3 | 4, 4)
+            (CSU::Conf3 | CSU::ConfFull, CSU::ConfFull)
                 if context.indicated_airspeed().get::<knot>()
                     > Self::FLRS_CONFFULL_TO_CONF3_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf3
             }
-            (4, 4) if self.flaps_conf == FlapsConf::Conf3 => {
+            (CSU::ConfFull, CSU::ConfFull) if self.flaps_conf == FlapsConf::Conf3 => {
                 if context.indicated_airspeed().get::<knot>()
                     < Self::FLRS_CONF3_TO_CONFFULL_AIRSPEED_THRESHOLD_KNOTS
                 {
@@ -234,24 +226,26 @@ impl SlatFlapControlComputer {
                     FlapsConf::Conf3
                 }
             }
-            (from, 2) if from != 2 => FlapsConf::from(3),
-            (from, to) if from != to => FlapsConf::from(to + 2),
+            (from, CSU::Conf2) if from != CSU::Conf2 => FlapsConf::Conf2,
+            (from, CSU::Conf3) if from != CSU::Conf3 => FlapsConf::Conf3,
+            (from, CSU::ConfFull) if from != CSU::ConfFull => FlapsConf::ConfFull,
             (_, _) => self.flaps_conf,
         }
     }
 
     fn flap_load_relief_active(&self, flaps_handle: &FlapsHandle) -> bool {
-        flaps_handle.position() == 2 && self.flaps_conf != FlapsConf::Conf2
-            || flaps_handle.position() == 3 && self.flaps_conf != FlapsConf::Conf3
-            || flaps_handle.position() == 4 && self.flaps_conf != FlapsConf::ConfFull
+        flaps_handle.current_position() == CSU::Conf2 && self.flaps_conf != FlapsConf::Conf2
+            || flaps_handle.current_position() == CSU::Conf3 && self.flaps_conf != FlapsConf::Conf3
+            || flaps_handle.current_position() == CSU::ConfFull
+                && self.flaps_conf != FlapsConf::ConfFull
     }
 
     fn cruise_baulk_active(&self, flaps_handle: &FlapsHandle) -> bool {
-        flaps_handle.position() == 1 && self.flaps_conf == FlapsConf::Conf0
+        flaps_handle.current_position() == CSU::Conf1 && self.flaps_conf == FlapsConf::Conf0
     }
 
     fn alpha_speed_lock_active(&self, flaps_handle: &FlapsHandle) -> bool {
-        flaps_handle.position() == 0
+        flaps_handle.current_position() == CSU::Conf0
             && (self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F)
     }
 
@@ -274,7 +268,7 @@ impl SlatFlapControlComputer {
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
-        self.flaps_handle_position = flaps_handle.position();
+        self.flaps_handle_position = flaps_handle.current_position();
         self.flaps_conf = self.generate_configuration(flaps_handle, context, adirs);
         self.flap_load_relief_active = self.flap_load_relief_active(flaps_handle);
         self.cruise_baulk_active = self.cruise_baulk_active(flaps_handle);
@@ -295,11 +289,11 @@ impl SlatFlapControlComputer {
         word.set_bit(14, false);
         word.set_bit(15, false);
         word.set_bit(16, false);
-        word.set_bit(17, self.flaps_handle_position == 0);
-        word.set_bit(18, self.flaps_handle_position == 1);
-        word.set_bit(19, self.flaps_handle_position == 2);
-        word.set_bit(20, self.flaps_handle_position == 3);
-        word.set_bit(21, self.flaps_handle_position == 4);
+        word.set_bit(17, self.flaps_handle_position == CSU::Conf0);
+        word.set_bit(18, self.flaps_handle_position == CSU::Conf1);
+        word.set_bit(19, self.flaps_handle_position == CSU::Conf2);
+        word.set_bit(20, self.flaps_handle_position == CSU::Conf3);
+        word.set_bit(21, self.flaps_handle_position == CSU::ConfFull);
         word.set_bit(22, self.flap_load_relief_active);
         word.set_bit(23, false);
         word.set_bit(24, self.alpha_speed_lock_active);
