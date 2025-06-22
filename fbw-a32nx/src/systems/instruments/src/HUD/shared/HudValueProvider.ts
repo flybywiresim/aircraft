@@ -494,7 +494,7 @@ export class HudValueProvider implements Instrument {
 
     this.sub.on(isCaptainSide ? 'declutterModeL' : 'declutterModeR').handle((value) => {
       let side = '';
-      getDisplayIndex() === 1 ? (side = 'L:A380X_HUD_L_DECLUTTER_MODE') : (side = 'L:A380X_HUD_R_DECLUTTER_MODE');
+      getDisplayIndex() === 1 ? (side = 'L:A32NX_HUD_L_DECLUTTER_MODE') : (side = 'L:A32NX_HUD_R_DECLUTTER_MODE');
 
       if (this.flightPhase != FmgcFlightPhase.Approach) {
         if (!(value === 1)) {
