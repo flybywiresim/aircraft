@@ -358,6 +358,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint: WaypointFactory.fromLocation('T-P', location),
         magneticCourse,
+        length: 0,
       },
       'T-P',
       '',
