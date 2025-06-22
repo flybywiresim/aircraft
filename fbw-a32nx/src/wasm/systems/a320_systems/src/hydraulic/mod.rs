@@ -78,8 +78,10 @@ use systems::{
     },
 };
 
-mod flaps_computer;
-use flaps_computer::SlatFlapComplex;
+mod flaps_channel;
+mod sfcc;
+mod slats_channel;
+use sfcc::SlatFlapComplex;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
