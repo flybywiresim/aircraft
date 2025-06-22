@@ -42,7 +42,7 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
 import { HudElems, LagFilter, calculateHorizonOffsetFromPitch, Grid } from './HUDUtils';
 import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
-
+import { HudWarnings } from './HudWarnings';
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
   return url ? parseInt(url.substring(url.length - 1), 10) : 0;
@@ -358,6 +358,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <MachNumber bus={this.props.bus} />
           <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
           <DeclutterIndicator bus={this.props.bus} />
+          <HudWarnings bus={this.props.bus} instrument={this.props.instrument} />
         </svg>
       </DisplayUnit>
     );
@@ -505,10 +506,9 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
             F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
             F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
           ) {
-            this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
             this.extendedAlt.instance.setAttribute('d', ``);
           } else {
-            this.extendedAlt.instance.setAttribute('class', 'SmallStroke Red');
+            this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
             this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
           }
 
@@ -516,10 +516,9 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
             F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
             F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
           ) {
-            this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
             this.extendedSpd.instance.setAttribute('d', ``);
           } else {
-            this.extendedSpd.instance.setAttribute('class', 'SmallStroke Red');
+            this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
             this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
           }
           // console.log(
@@ -537,20 +536,21 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
         }
       });
 
-    sub.on('pitchAr').handle((pitch) => {
-      this.pitch = pitch.value;
-      if (pitch.isNormalOperation()) {
-        this.pitchGroupRef.instance.style.display = 'block';
-        this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 182.857}px, 0px)`;
-        const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - 182.857;
-        this.yOffset.set(yOffset);
-      }
-    });
+    sub
+      .on('pitchAr')
+      .whenChanged()
+      .handle((pitch) => {
+        this.pitch = pitch.value;
+        if (pitch.isNormalOperation()) {
+          this.pitchGroupRef.instance.style.display = 'block';
+          this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 182.857}px, 0px)`;
+          const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - 182.857;
+          this.yOffset.set(yOffset);
+        }
+      });
   }
 
   render(): VNode {
-    // FIXME: What is the tailstrike pitch limit with compressed main landing gear for A320? Assume 11.7 degrees now.
-    // FIXME: further fine tune.
     return (
       <g id="ExtendedHorizon">
         <path d="m 0 323 h 1280" class="red DEBUG" />
