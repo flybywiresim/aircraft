@@ -222,6 +222,7 @@ export class FmcAircraftInterface {
         this.fmc.addMessageToQueue(NXSystemMessages.navprimaryLost, undefined, undefined);
       }
     });
+  private readonly latDiscontinuityAhead = Subject.create(false);
 
   constructor(
     private bus: EventBus,
@@ -293,6 +294,13 @@ export class FmcAircraftInterface {
           0,
         ),
       ),
+      this.latDiscontinuityAhead.sub((v) => {
+        if (v) {
+          this.fmc.addMessageToQueue(NXSystemMessages.lateralDiscontinuityAhead, undefined, undefined);
+        } else {
+          this.fmc.removeMessageFromQueue(NXSystemMessages.lateralDiscontinuityAhead.text);
+        }
+      }),
     );
 
     const pub = this.bus.getPublisher<FmsData>();
@@ -2118,6 +2126,10 @@ export class FmcAircraftInterface {
     if (this.fmgc.data.engineOut.get() && this.fmgc.isAllEngineOn()) {
       this.fmgc.data.engineOut.set(false);
     }
+  }
+
+  checkLateralDiscontinuityAhead() {
+    this.latDiscontinuityAhead.set(this.fmc.guidanceController?.vnavDriver.shouldShowLatDiscontinuityAhead());
   }
 }
 
