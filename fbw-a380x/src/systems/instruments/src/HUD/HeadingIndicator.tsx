@@ -172,7 +172,7 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   private readonly trk = Arinc429ConsumerSubject.create(this.sub.on('groundTrackAr').whenChanged());
   private readonly headingTrk = ConsumerSubject.create(this.sub.on('headingTrk').whenChanged(), '');
   private setPos(hdg: number, trk: number) {
-    const offset = (getSmallestAngle(hdg, trk) * DistanceSpacing) / ValueSpacing;
+    const offset = -(getSmallestAngle(hdg, trk) * DistanceSpacing) / ValueSpacing;
     this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
   }
   private readonly isHdgTrkVisible = MappedSubject.create(
@@ -279,7 +279,7 @@ class QFUIndicator extends DisplayComponent<{
     return (
       <g ref={this.qfuContainer}>
         <g id="ILSCoursePointer" class="HiddenElement" ref={this.ilsCoursePointer}>
-          <path class="NormalStroke Green" d="m 630 505 h 20 m-10 -32.5 v 40" />
+          <path class="NormalStroke Green" d="m 620 505 h 20 m-10 -32.5 v 40" />
         </g>
       </g>
     );
