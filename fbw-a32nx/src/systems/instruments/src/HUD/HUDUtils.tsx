@@ -239,6 +239,7 @@ export interface HudElems {
   hudFlightPhaseMode: number;
   cWndMode: boolean;
   decMode: number;
+  gndSpeed: boolean;
 }
 
 export enum MdaMode {
