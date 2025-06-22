@@ -688,18 +688,18 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   private readonly eng1State = ConsumerSubject.create(this.sub.on('eng1State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
   private readonly rev1 = ConsumerSubject.create(this.sub.on('rev1').whenChanged(), 0);
   private readonly rev2 = ConsumerSubject.create(this.sub.on('rev2').whenChanged(), 0);
-  private readonly tla1 = ConsumerSubject.create(this.sub.on('tla1').whenChanged(), 0);
-  private readonly tla2 = ConsumerSubject.create(this.sub.on('tla2').whenChanged(), 0);
+  private readonly rev1Pos = ConsumerSubject.create(this.sub.on('rev1Pos').whenChanged(), 0);
+  private readonly rev2Pos = ConsumerSubject.create(this.sub.on('rev2Pos').whenChanged(), 0);
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
 
   private readonly reverser2State = MappedSubject.create(
-    ([rev2, tla2, eng2State, hudMode]) => {
+    ([rev2, rev2Pos, eng2State, hudMode]) => {
       if (hudMode !== 0) {
         if (rev2 === 1) {
           if (eng2State === 1) {
-            if (tla2 > -7) {
+            if (rev2Pos < 0.95) {
               return 1; // rev deployement in progress  display dash
-            } else if (tla2 <= -7) {
+            } else {
               return 2; // rev on  display R
             }
           } else {
@@ -713,18 +713,18 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
       }
     },
     this.rev2,
-    this.tla2,
+    this.rev2Pos,
     this.eng2State,
     this.hudMode,
   );
   private readonly reverser3State = MappedSubject.create(
-    ([rev1, tla1, eng1State, hudMode]) => {
+    ([rev1, rev1Pos, eng1State, hudMode]) => {
       if (hudMode !== 0) {
         if (rev1 === 1) {
           if (eng1State === 1) {
-            if (tla1 > -7) {
+            if (rev1Pos < 0.95) {
               return 1; // rev deployement in progress  display dash
-            } else if (tla1 <= -7) {
+            } else {
               return 2; // rev on  display R
             }
           } else {
@@ -738,22 +738,22 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
       }
     },
     this.rev1,
-    this.tla1,
+    this.rev1Pos,
     this.eng1State,
     this.hudMode,
   );
 
   private setState() {
     if (this.reverser2State.get() === 1) {
-      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z');
+      this.rev2Ref.instance.setAttribute('d', 'm 648.5 482 v -17 h 17 v 17 z');
       this.rev2Ref.instance.setAttribute('stroke-dasharray', '3 6');
       this.rev2TxtRef.instance.textContent = '';
     } else if (this.reverser2State.get() === 2) {
-      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z');
+      this.rev2Ref.instance.setAttribute('d', 'm 648.5 482 v -17 h 17 v 17 z');
       this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
       this.rev2TxtRef.instance.textContent = 'R';
     } else if (this.reverser2State.get() === 3) {
-      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+      this.rev2Ref.instance.setAttribute('d', 'm 648.5 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
       this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
       this.rev2TxtRef.instance.textContent = '';
     } else {
@@ -762,15 +762,15 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
     }
 
     if (this.reverser3State.get() === 1) {
-      this.rev1Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z');
+      this.rev1Ref.instance.setAttribute('d', 'm 614.5 482 v -17 h 17 v 17 z');
       this.rev1Ref.instance.setAttribute('stroke-dasharray', '3 6');
       this.rev1TxtRef.instance.textContent = '';
     } else if (this.reverser3State.get() === 2) {
-      this.rev1Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z');
+      this.rev1Ref.instance.setAttribute('d', 'm 614.5 482 v -17 h 17 v 17 z');
       this.rev1Ref.instance.setAttribute('stroke-dasharray', '');
       this.rev1TxtRef.instance.textContent = 'R';
     } else if (this.reverser3State.get() === 3) {
-      this.rev1Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+      this.rev1Ref.instance.setAttribute('d', 'm 614.5 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
       this.rev1Ref.instance.setAttribute('stroke-dasharray', '');
       this.rev1TxtRef.instance.textContent = '';
     } else {
@@ -794,12 +794,12 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   render(): VNode | null {
     return (
       <g id="ReverseIndicator" ref={this.revGroupRef}>
-        <path ref={this.rev2Ref} class="LargeStroke Green " d="" />
-        <text ref={this.rev2TxtRef} x="623.5" y="480 " class="FontSmallest MiddleAlign Green ">
+        <path ref={this.rev1Ref} class="LargeStroke Green " d="" />
+        <text ref={this.rev1TxtRef} x="623" y="479.25 " class="FontSmallest MiddleAlign Green ">
           R
         </text>
-        <path ref={this.rev1Ref} class="LargeStroke Green " d="" />
-        <text ref={this.rev1TxtRef} x="656.5" y="480 " class="FontSmallest MiddleAlign Green ">
+        <path ref={this.rev2Ref} class="LargeStroke Green " d="" />
+        <text ref={this.rev2TxtRef} x="657" y="479.25 " class="FontSmallest MiddleAlign Green ">
           R
         </text>
       </g>
