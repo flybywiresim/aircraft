@@ -5,6 +5,8 @@ import { HUDSyntheticRunway, GenericDataListenerSync } from '@flybywiresim/fbw-s
 export interface HUDSimvars {
   rev2: number;
   rev3: number;
+  rev2Pos: number;
+  rev3Pos: number;
   eng2State: number;
   eng3State: number;
   brakePedalInputLeft: number;
@@ -201,6 +203,8 @@ export enum HUDVars {
   eng3State = 'L:A32NX_ENGINE_STATE:3',
   rev2 = 'L:A32NX_AUTOTHRUST_REVERSE:2',
   rev3 = 'L:A32NX_AUTOTHRUST_REVERSE:3',
+  rev2Pos = 'L:A32NX_REVERSER_2_POSITION',
+  rev3Pos = 'L:A32NX_REVERSER_3_POSITION',
   brakePedalInputLeft = 'L:A32NX_LEFT_BRAKE_PEDAL_INPUT',
   brakePedalInputRight = 'L:A32NX_RIGHT_BRAKE_PEDAL_INPUT',
   throttle2Position = 'L:XMLVAR_Throttle2Position',
@@ -396,6 +400,8 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['eng3State', { name: HUDVars.eng3State, type: SimVarValueType.Number }],
     ['rev2', { name: HUDVars.rev2, type: SimVarValueType.Number }],
     ['rev3', { name: HUDVars.rev3, type: SimVarValueType.Number }],
+    ['rev2Pos', { name: HUDVars.rev2Pos, type: SimVarValueType.Number }],
+    ['rev3Pos', { name: HUDVars.rev3Pos, type: SimVarValueType.Number }],
     ['brakePedalInputLeft', { name: HUDVars.brakePedalInputLeft, type: SimVarValueType.Number }],
     ['brakePedalInputRight', { name: HUDVars.brakePedalInputRight, type: SimVarValueType.Number }],
     ['throttle2Position', { name: HUDVars.throttle2Position, type: SimVarValueType.Number }],

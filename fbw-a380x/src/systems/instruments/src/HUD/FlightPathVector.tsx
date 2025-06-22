@@ -719,18 +719,18 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   private readonly eng3State = ConsumerSubject.create(this.sub.on('eng3State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
   private readonly rev2 = ConsumerSubject.create(this.sub.on('rev2').whenChanged(), 0);
   private readonly rev3 = ConsumerSubject.create(this.sub.on('rev3').whenChanged(), 0);
-  private readonly tla2 = ConsumerSubject.create(this.sub.on('tla2').whenChanged(), 0);
-  private readonly tla3 = ConsumerSubject.create(this.sub.on('tla3').whenChanged(), 0);
+  private readonly rev2Pos = ConsumerSubject.create(this.sub.on('rev2Pos'), 0);
+  private readonly rev3Pos = ConsumerSubject.create(this.sub.on('rev3Pos'), 0);
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
 
   private readonly reverser2State = MappedSubject.create(
-    ([rev2, tla2, eng2State, hudMode]) => {
+    ([rev2, rev2Pos, eng2State, hudMode]) => {
       if (hudMode !== 0) {
         if (rev2 === 1) {
           if (eng2State === 1) {
-            if (tla2 > -7) {
+            if (rev2Pos < 0.95) {
               return 1; // rev deployement in progress  display dash
-            } else if (tla2 <= -7) {
+            } else {
               return 2; // rev on  display R
             }
           } else {
@@ -744,18 +744,18 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
       }
     },
     this.rev2,
-    this.tla2,
+    this.rev2Pos,
     this.eng2State,
     this.hudMode,
   );
   private readonly reverser3State = MappedSubject.create(
-    ([rev3, tla3, eng3State, hudMode]) => {
+    ([rev3, rev3Pos, eng3State, hudMode]) => {
       if (hudMode !== 0) {
         if (rev3 === 1) {
           if (eng3State === 1) {
-            if (tla3 > -7) {
+            if (rev3Pos < 0.95) {
               return 1; // rev deployement in progress  display dash
-            } else if (tla3 <= -7) {
+            } else {
               return 2; // rev on  display R
             }
           } else {
@@ -769,55 +769,65 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
       }
     },
     this.rev3,
-    this.tla3,
+    this.rev3Pos,
     this.eng3State,
     this.hudMode,
   );
 
-  private setState() {
-    if (this.reverser2State.get() === 1) {
-      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z');
-      this.rev2Ref.instance.setAttribute('stroke-dasharray', '3 6');
-      this.rev2TxtRef.instance.textContent = '';
-    } else if (this.reverser2State.get() === 2) {
-      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z');
-      this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
-      this.rev2TxtRef.instance.textContent = 'R';
-    } else if (this.reverser2State.get() === 3) {
-      this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
-      this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
-      this.rev2TxtRef.instance.textContent = '';
-    } else {
-      this.rev2Ref.instance.setAttribute('d', '');
-      this.rev2TxtRef.instance.textContent = '';
+  private setState(eng: number, state: any) {
+    if (eng === 2) {
+      if (state === 1) {
+        this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z');
+        this.rev2Ref.instance.setAttribute('stroke-dasharray', '3 6');
+        this.rev2TxtRef.instance.textContent = '';
+      } else if (state === 2) {
+        this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z');
+        this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
+        this.rev2TxtRef.instance.textContent = 'R';
+      } else if (state === 3) {
+        this.rev2Ref.instance.setAttribute('d', 'm 615 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+        this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
+        this.rev2TxtRef.instance.textContent = '';
+      } else {
+        this.rev2Ref.instance.setAttribute('d', '');
+        this.rev2TxtRef.instance.textContent = '';
+      }
     }
-
-    if (this.reverser3State.get() === 1) {
-      this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z');
-      this.rev3Ref.instance.setAttribute('stroke-dasharray', '3 6');
-      this.rev3TxtRef.instance.textContent = '';
-    } else if (this.reverser3State.get() === 2) {
-      this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z');
-      this.rev3Ref.instance.setAttribute('stroke-dasharray', '');
-      this.rev3TxtRef.instance.textContent = 'R';
-    } else if (this.reverser3State.get() === 3) {
-      this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
-      this.rev3Ref.instance.setAttribute('stroke-dasharray', '');
-      this.rev3TxtRef.instance.textContent = '';
-    } else {
-      this.rev3Ref.instance.setAttribute('d', '');
-      this.rev3TxtRef.instance.textContent = '';
+    if (eng === 3) {
+      if (state === 1) {
+        this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z');
+        this.rev3Ref.instance.setAttribute('stroke-dasharray', '3 6');
+        this.rev3TxtRef.instance.textContent = '';
+      } else if (state === 2) {
+        this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z');
+        this.rev3Ref.instance.setAttribute('stroke-dasharray', '');
+        this.rev3TxtRef.instance.textContent = 'R';
+      } else if (state === 3) {
+        this.rev3Ref.instance.setAttribute('d', 'm 648 482 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+        this.rev3Ref.instance.setAttribute('stroke-dasharray', '');
+        this.rev3TxtRef.instance.textContent = '';
+      } else {
+        this.rev3Ref.instance.setAttribute('d', '');
+        this.rev3TxtRef.instance.textContent = '';
+      }
     }
   }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
+    this.reverser2State.sub((state) => {
+      if (state !== 0) {
+        this.setState(2, state);
+      }
+    });
+    this.reverser3State.sub((state) => {
+      if (state !== 0) {
+        this.setState(3, state);
+      }
+    });
     this.sub.on('realTime').handle(() => {
-      if (this.reverser2State.get() !== 0 && this.reverser3State.get() !== 0) {
-        this.revGroupRef.instance.style.display = 'block';
-        this.setState();
-      } else {
-        this.revGroupRef.instance.style.display = 'none';
+      if (this.hudMode.get() !== 0) {
+        this.setState(2, this.reverser2State.get());
+        this.setState(3, this.reverser3State.get());
       }
     });
   }
