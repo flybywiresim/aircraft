@@ -314,7 +314,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public guidanceController?: GuidanceController;
   public navigation?: Navigation;
 
-  public tempCurve;
   public casToMachManualCrossoverCurve;
   public machToCasManualCrossoverCurve;
 
@@ -393,12 +392,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.efisSymbolsLeft.init();
     this.efisSymbolsRight.init();
     this.navigation.init();
-
-    this.tempCurve = new Avionics.Curve();
-    this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
-    this.tempCurve.add(-6.1 * 3.28084, 19.0);
-    this.tempCurve.add(0, 15.0);
-    this.tempCurve.add(110 * 3.28084, -56.5);
 
     // This is used to determine the Mach number corresponding to a CAS at the manual crossover altitude
     // The curve was calculated numerically and approximated using a few interpolated values
