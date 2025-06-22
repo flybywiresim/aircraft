@@ -65,6 +65,7 @@
 1. [EFB] Renamed "Weight Unit" pin program to "US Units" to reflect it's actual effect and real-world name - @tracernz (Mike)
 1. [A32NX/MCDU] Fix units on arrival airport runway lenghts - @Lucas-IQ21 (Lucas)
 1. [A32NX/FMS] Fix automatic cruise temperature calculation on INIT A page - @BlueberryKing (BlueberryKing)
+1. [FMS] Add lateral discontinuity ahead fms message - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
