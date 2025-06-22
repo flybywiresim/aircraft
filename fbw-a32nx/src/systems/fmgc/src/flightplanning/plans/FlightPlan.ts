@@ -670,9 +670,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   hasDiscontinuityLegNext(): boolean {
-    for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex - 1; i++) {
+    for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex; i++) {
       const nextLeg = this.maybeElementAt(i + 1);
-      if (nextLeg?.isDiscontinuity) {
+      // Handle case of end of flightplan or discont
+      if (!nextLeg || nextLeg.isDiscontinuity) {
         return true;
       }
     }
