@@ -25,7 +25,9 @@ use systems::{
         brake_circuit::{BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController},
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
-        flap_slat::{FlapSlatAssembly, SecondarySurface},
+        flap_slat::{
+            FlapSlatAssembly, SecondarySurface, SecondarySurfaceSide, SecondarySurfaceType,
+        },
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticActuatorType,
@@ -1062,17 +1064,23 @@ impl A380RudderFactory {
 
 struct A380FlapsFactory {}
 impl A380FlapsFactory {
-    fn a380_flaps_factory(context: &mut InitContext, side: &str) -> SecondarySurface {
+    fn a380_flaps_factory(
+        context: &mut InitContext,
+        side: SecondarySurfaceSide,
+    ) -> SecondarySurface {
         // 1 is most inboard. 3 is most outboard.
-        SecondarySurface::new(context, side, "FLAPS", 3)
+        SecondarySurface::new(context, side, SecondarySurfaceType::Flaps, 3)
     }
 }
 
 struct A380SlatsFactory {}
 impl A380SlatsFactory {
-    fn a380_slats_factory(context: &mut InitContext, side: &str) -> SecondarySurface {
+    fn a380_slats_factory(
+        context: &mut InitContext,
+        side: SecondarySurfaceSide,
+    ) -> SecondarySurface {
         // 1 is most inboard. 8 is most outboard.
-        SecondarySurface::new(context, side, "SLATS", 8)
+        SecondarySurface::new(context, side, SecondarySurfaceType::Slats, 8)
     }
 }
 
@@ -1769,10 +1777,12 @@ impl A380Hydraulic {
             Ratio::new::<ratio>(0.01),
         );
 
-        let left_flaps_factory = A380FlapsFactory::a380_flaps_factory(context, "LEFT");
-        let right_flaps_factory = A380FlapsFactory::a380_flaps_factory(context, "RIGHT");
-        let left_slats_factory = A380SlatsFactory::a380_slats_factory(context, "LEFT");
-        let right_slats_factory = A380SlatsFactory::a380_slats_factory(context, "RIGHT");
+        let left_flaps = A380FlapsFactory::a380_flaps_factory(context, SecondarySurfaceSide::Left);
+        let right_flaps =
+            A380FlapsFactory::a380_flaps_factory(context, SecondarySurfaceSide::Right);
+        let left_slats = A380SlatsFactory::a380_slats_factory(context, SecondarySurfaceSide::Left);
+        let right_slats =
+            A380SlatsFactory::a380_slats_factory(context, SecondarySurfaceSide::Right);
 
         A380Hydraulic {
             eha_backup_inhibit_logic: A380EhaInhibitPlaceholder::new(context),
@@ -1989,9 +1999,9 @@ impl A380Hydraulic {
 
             flap_system: FlapSlatAssembly::new(
                 context,
-                "FLAPS",
-                left_flaps_factory,
-                right_flaps_factory,
+                SecondarySurfaceType::Flaps,
+                left_flaps,
+                right_flaps,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.047),
                 Angle::new::<degree>(218.912),
@@ -2004,9 +2014,9 @@ impl A380Hydraulic {
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
-                "SLATS",
-                left_slats_factory,
-                right_slats_factory,
+                SecondarySurfaceType::Slats,
+                left_slats,
+                right_slats,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.08),
                 Angle::new::<degree>(284.66),
@@ -8148,7 +8158,7 @@ mod tests {
             }
 
             fn get_flaps_left_position_percent(&mut self) -> f64 {
-                let values: Vec<f64> = vec![
+                let values: &[f64] = &[
                     self.read_by_name("LEFT_FLAPS_1_POSITION_PERCENT"),
                     self.read_by_name("LEFT_FLAPS_2_POSITION_PERCENT"),
                     self.read_by_name("LEFT_FLAPS_3_POSITION_PERCENT"),
@@ -8157,7 +8167,7 @@ mod tests {
             }
 
             fn get_flaps_right_position_percent(&mut self) -> f64 {
-                let values: Vec<f64> = vec![
+                let values: &[f64] = &[
                     self.read_by_name("RIGHT_FLAPS_1_POSITION_PERCENT"),
                     self.read_by_name("RIGHT_FLAPS_2_POSITION_PERCENT"),
                     self.read_by_name("RIGHT_FLAPS_3_POSITION_PERCENT"),
@@ -8166,7 +8176,7 @@ mod tests {
             }
 
             fn get_slats_left_position_percent(&mut self) -> f64 {
-                let values: Vec<f64> = vec![
+                let values: &[f64] = &[
                     self.read_by_name("LEFT_SLATS_1_POSITION_PERCENT"),
                     self.read_by_name("LEFT_SLATS_2_POSITION_PERCENT"),
                     self.read_by_name("LEFT_SLATS_3_POSITION_PERCENT"),
@@ -8180,7 +8190,7 @@ mod tests {
             }
 
             fn get_slats_right_position_percent(&mut self) -> f64 {
-                let values: Vec<f64> = vec![
+                let values: &[f64] = &[
                     self.read_by_name("RIGHT_SLATS_1_POSITION_PERCENT"),
                     self.read_by_name("RIGHT_SLATS_2_POSITION_PERCENT"),
                     self.read_by_name("RIGHT_SLATS_3_POSITION_PERCENT"),

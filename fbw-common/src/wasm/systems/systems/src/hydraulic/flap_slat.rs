@@ -1,7 +1,6 @@
 use super::linear_actuator::Actuator;
-use crate::shared::AverageExt;
 use crate::shared::{
-    interpolation, low_pass_filter::LowPassFilter, PositionPickoffUnit, SectionPressure,
+    interpolation, low_pass_filter::LowPassFilter, AverageExt, PositionPickoffUnit, SectionPressure,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -19,6 +18,7 @@ use uom::si::{
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
+use std::fmt;
 use std::time::Duration;
 use uom::si::time::second;
 
@@ -123,6 +123,34 @@ impl Actuator for FlapSlatHydraulicMotor {
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum SecondarySurfaceSide {
+    Left,
+    Right,
+}
+impl fmt::Display for SecondarySurfaceSide {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            SecondarySurfaceSide::Left => write!(f, "LEFT"),
+            SecondarySurfaceSide::Right => write!(f, "RIGHT"),
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum SecondarySurfaceType {
+    Flaps,
+    Slats,
+}
+impl fmt::Display for SecondarySurfaceType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            SecondarySurfaceType::Flaps => write!(f, "FLAPS"),
+            SecondarySurfaceType::Slats => write!(f, "SLATS"),
+        }
+    }
+}
+
 pub struct SecondarySurface {
     surface_position_ids: Vec<VariableIdentifier>,
     surface_angle_ids: Vec<VariableIdentifier>,
@@ -134,36 +162,23 @@ pub struct SecondarySurface {
     surface_angles: Vec<Angle>,
 }
 impl SecondarySurface {
-    // side is LEFT|RIGHT
-    // surface is SLATS|FLAPS
     pub fn new(
         context: &mut InitContext,
-        side: &str,
-        surface: &str,
+        side: SecondarySurfaceSide,
+        surface: SecondarySurfaceType,
         number_of_surfaces: usize,
     ) -> Self {
-        let mut surface_position_ids = Vec::with_capacity(number_of_surfaces);
-        let mut surface_angle_ids = Vec::with_capacity(number_of_surfaces);
-        let mut surface_positions = Vec::with_capacity(number_of_surfaces);
-        let mut surface_angles = Vec::with_capacity(number_of_surfaces);
-
-        for p in 1..number_of_surfaces + 1 {
-            let surface_position_id =
-                context.get_identifier(format!("{}_{}_{}_POSITION_PERCENT", side, surface, p));
-            surface_position_ids.push(surface_position_id);
-
-            let surface_angle_id =
-                context.get_identifier(format!("{}_{}_{}_ANGLE", side, surface, p));
-            surface_angle_ids.push(surface_angle_id);
-
-            surface_positions.push(Ratio::default());
-            surface_angles.push(Angle::default());
-        }
-
+        let surface_position_ids = (1..number_of_surfaces + 1)
+            .map(|p| context.get_identifier(format!("{side}_{surface}_{p}_POSITION_PERCENT")))
+            .collect();
+        let surface_angle_ids = (1..number_of_surfaces + 1)
+            .map(|p| context.get_identifier(format!("{side}_{surface}_{p}_ANGLE")))
+            .collect();
+        let surface_positions = vec![Ratio::default(); number_of_surfaces];
+        let surface_angles = vec![Angle::default(); number_of_surfaces];
         let surface_position_overall_id =
-            context.get_identifier(format!("{}_{}_POSITION_PERCENT", side, surface));
-        let surface_angle_overall_id =
-            context.get_identifier(format!("{}_{}_ANGLE", side, surface));
+            context.get_identifier(format!("{side}_{surface}_POSITION_PERCENT"));
+        let surface_angle_overall_id = context.get_identifier(format!("{side}_{surface}_ANGLE"));
 
         Self {
             surface_position_ids,
@@ -176,27 +191,29 @@ impl SecondarySurface {
     }
 
     // No failures are considered. All surfaces have the same deflection.
-    fn update(&mut self, position: &Ratio, angle: &Angle) {
-        for idx in 0..self.surface_positions.len() {
-            self.surface_positions[idx] = *position;
-            self.surface_angles[idx] = *angle;
+    fn update(&mut self, position: Ratio, angle: Angle) {
+        for surface_position in &mut self.surface_positions {
+            *surface_position = position;
+        }
+        for surface_angle in &mut self.surface_angles {
+            *surface_angle = angle;
         }
     }
 }
 impl SimulationElement for SecondarySurface {
     fn write(&self, writer: &mut SimulatorWriter) {
-        for idx in 0..self.surface_positions.len() {
-            let id = self.surface_position_ids[idx];
-            let position = self.surface_positions[idx];
-            writer.write(&id, position.get::<percent>());
+        for (id, position) in self
+            .surface_position_ids
+            .iter()
+            .zip(&self.surface_positions)
+        {
+            writer.write(id, position.get::<percent>());
         }
         let position: Ratio = self.surface_positions.iter().average();
         writer.write(&self.surface_position_overall_id, position.get::<percent>());
 
-        for idx in 0..self.surface_angles.len() {
-            let id = self.surface_angle_ids[idx];
-            let position = self.surface_angles[idx];
-            writer.write(&id, position.get::<degree>());
+        for (id, position) in self.surface_angle_ids.iter().zip(&self.surface_angles) {
+            writer.write(id, position.get::<degree>());
         }
         let position: Angle = self.surface_angles.iter().average();
         writer.write(&self.surface_angle_overall_id, position.get::<degree>());
@@ -249,7 +266,7 @@ impl FlapSlatAssembly {
 
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: SecondarySurfaceType,
         left_surfaces: SecondarySurface,
         right_surfaces: SecondarySurface,
         motor_displacement: Volume,
@@ -263,13 +280,13 @@ impl FlapSlatAssembly {
         circuit_target_pressure: Pressure,
     ) -> Self {
         Self {
-            animation_left_id: context.get_identifier(format!("LEFT_{}_ANIMATION_POSITION", id)),
-            animation_right_id: context.get_identifier(format!("RIGHT_{}_ANIMATION_POSITION", id)),
+            animation_left_id: context.get_identifier(format!("LEFT_{id}_ANIMATION_POSITION",)),
+            animation_right_id: context.get_identifier(format!("RIGHT_{id}_ANIMATION_POSITION",)),
 
-            ippu_id: context.get_identifier(format!("{}_IPPU_ANGLE", id)),
-            fppu_id: context.get_identifier(format!("{}_FPPU_ANGLE", id)),
+            ippu_id: context.get_identifier(format!("{id}_IPPU_ANGLE",)),
+            fppu_id: context.get_identifier(format!("{id}_FPPU_ANGLE",)),
 
-            is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
+            is_moving_id: context.get_identifier(format!("IS_{id}_MOVING",)),
 
             left_surfaces,
             right_surfaces,
@@ -537,9 +554,9 @@ impl FlapSlatAssembly {
         let surface_position = self.flap_surface_angle();
 
         self.left_surfaces
-            .update(&self.left_position, &surface_position);
+            .update(self.left_position, surface_position);
         self.right_surfaces
-            .update(&self.right_position, &surface_position);
+            .update(self.right_position, surface_position);
     }
 
     fn is_approaching_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
@@ -646,15 +663,15 @@ impl PositionPickoffUnit for FlapSlatAssembly {
 mod tests {
     use super::*;
 
+    use ntest::assert_about_eq;
     use std::time::Duration;
     use uom::si::{angle::degree, pressure::psi};
     use uom::ConstZero;
 
     use crate::shared::update_iterator::MaxStepLoop;
 
-    use crate::simulation::test::ReadByName;
     use crate::simulation::{
-        test::{SimulationTestBed, TestBed},
+        test::{ReadByName, SimulationTestBed, TestBed},
         Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
     };
 
@@ -863,34 +880,34 @@ mod tests {
             });
 
             let position_percent: f64 = self.read_by_name("LEFT_FLAPS_1_POSITION_PERCENT");
-            assert_eq!(position_percent, expected_position_percent.get::<percent>());
+            assert_about_eq!(position_percent, expected_position_percent.get::<percent>());
 
             let position_percent: f64 = self.read_by_name("RIGHT_FLAPS_1_POSITION_PERCENT");
-            assert_eq!(position_percent, expected_position_percent.get::<percent>());
+            assert_about_eq!(position_percent, expected_position_percent.get::<percent>());
 
             let position_percent: f64 = self.read_by_name("LEFT_FLAPS_POSITION_PERCENT");
-            assert_eq!(position_percent, expected_position_percent.get::<percent>());
+            assert_about_eq!(position_percent, expected_position_percent.get::<percent>());
 
             let position_percent: f64 = self.read_by_name("RIGHT_FLAPS_POSITION_PERCENT");
-            assert_eq!(position_percent, expected_position_percent.get::<percent>());
+            assert_about_eq!(position_percent, expected_position_percent.get::<percent>());
 
             let flaps_angle: f64 = self.read_by_name("LEFT_FLAPS_1_ANGLE");
-            assert_eq!(flaps_angle, expected_position.get::<degree>());
+            assert_about_eq!(flaps_angle, expected_position.get::<degree>());
 
             let flaps_angle: f64 = self.read_by_name("RIGHT_FLAPS_1_ANGLE");
-            assert_eq!(flaps_angle, expected_position.get::<degree>());
+            assert_about_eq!(flaps_angle, expected_position.get::<degree>());
 
             let flaps_angle: f64 = self.read_by_name("LEFT_FLAPS_ANGLE");
-            assert_eq!(flaps_angle, expected_position.get::<degree>());
+            assert_about_eq!(flaps_angle, expected_position.get::<degree>());
 
             let flaps_angle: f64 = self.read_by_name("RIGHT_FLAPS_ANGLE");
-            assert_eq!(flaps_angle, expected_position.get::<degree>());
+            assert_about_eq!(flaps_angle, expected_position.get::<degree>());
 
             let fppu: f64 = self.read_by_name("FLAPS_FPPU_ANGLE");
-            assert_eq!(fppu, expected_ppu.get::<degree>());
+            assert_about_eq!(fppu, expected_ppu.get::<degree>());
 
             let ippu: f64 = self.read_by_name("FLAPS_IPPU_ANGLE");
-            assert_eq!(ippu, expected_ppu.get::<degree>());
+            assert_about_eq!(ippu, expected_ppu.get::<degree>());
         }
     }
     impl TestBed for FlapsTestBed {
@@ -934,11 +951,11 @@ mod tests {
     fn flap_slat_assembly_init() {
         let test_bed = test_bed();
 
-        assert!(test_bed.left_motor_speed() == AngularVelocity::ZERO);
-        assert!(test_bed.right_motor_speed() == AngularVelocity::ZERO);
-        assert!(test_bed.left_motor_flow() == VolumeRate::ZERO);
-        assert!(test_bed.right_motor_flow() == VolumeRate::ZERO);
-        assert!(test_bed.synchro_position() == Angle::ZERO);
+        assert_eq!(test_bed.left_motor_speed(), AngularVelocity::ZERO);
+        assert_eq!(test_bed.right_motor_speed(), AngularVelocity::ZERO);
+        assert_eq!(test_bed.left_motor_flow(), VolumeRate::ZERO);
+        assert_eq!(test_bed.right_motor_flow(), VolumeRate::ZERO);
+        assert_eq!(test_bed.synchro_position(), Angle::ZERO);
     }
 
     #[test]
@@ -966,8 +983,8 @@ mod tests {
     fn flap_slat_assembly_full_pressure() {
         let mut test_bed = test_bed();
 
-        assert!(test_bed.synchro_position() == Angle::ZERO);
-        assert!(test_bed.flap_slat_speed() == AngularVelocity::ZERO);
+        assert_eq!(test_bed.synchro_position(), Angle::ZERO);
+        assert_eq!(test_bed.flap_slat_speed(), AngularVelocity::ZERO);
 
         let flap_position_request = Angle::new::<degree>(20.);
         test_bed = test_bed
@@ -984,23 +1001,23 @@ mod tests {
 
         assert!(
             test_bed.left_motor_speed() >= AngularVelocity::new::<revolution_per_minute>(2000.)
-                && test_bed.left_motor_speed()
-                    <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
         assert!(
-            test_bed.right_motor_speed() >= AngularVelocity::new::<revolution_per_minute>(2000.)
-                && test_bed.right_motor_speed()
-                    <= AngularVelocity::new::<revolution_per_minute>(6000.)
+            test_bed.left_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
         assert!(
-            test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.)
-                && test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+            test_bed.right_motor_speed() >= AngularVelocity::new::<revolution_per_minute>(2000.)
         );
         assert!(
-            test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.)
-                && test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+            test_bed.right_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
+
+        assert!(test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
+        assert!(test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
+
+        assert!(test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
+        assert!(test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
     }
 
     #[test]
@@ -1014,31 +1031,31 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(20000));
 
-        assert!(test_bed.flap_slat_speed() == AngularVelocity::ZERO);
+        assert_eq!(test_bed.flap_slat_speed(), AngularVelocity::ZERO);
 
         // Now testing reverse movement parameters
         test_bed = test_bed.set_angle_request(Some(Angle::new::<degree>(-20.)));
         test_bed.run_with_delta(Duration::from_millis(1500));
 
         assert!(
-            test_bed.left_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(-2000.)
-                && test_bed.left_motor_speed()
-                    >= AngularVelocity::new::<revolution_per_minute>(-6000.)
+            test_bed.left_motor_speed() >= AngularVelocity::new::<revolution_per_minute>(-6000.)
         );
         assert!(
-            test_bed.right_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(-2000.)
-                && test_bed.right_motor_speed()
-                    >= AngularVelocity::new::<revolution_per_minute>(-6000.)
+            test_bed.left_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(-2000.)
         );
 
         assert!(
-            test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.)
-                && test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+            test_bed.right_motor_speed() >= AngularVelocity::new::<revolution_per_minute>(-6000.)
         );
         assert!(
-            test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.)
-                && test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.)
+            test_bed.right_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(-2000.)
         );
+
+        assert!(test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
+        assert!(test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
+
+        assert!(test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
+        assert!(test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
     }
 
     #[test]
@@ -1061,18 +1078,19 @@ mod tests {
                 <= AngularVelocity::new::<radian_per_second>(0.01)
         );
 
-        assert!(test_bed.left_motor_speed() == AngularVelocity::ZERO);
+        assert_eq!(test_bed.left_motor_speed(), AngularVelocity::ZERO);
+
         assert!(
             test_bed.right_motor_speed() >= AngularVelocity::new::<revolution_per_minute>(2000.)
-                && test_bed.right_motor_speed()
-                    <= AngularVelocity::new::<revolution_per_minute>(6000.)
+        );
+        assert!(
+            test_bed.right_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
-        assert!(test_bed.left_motor_flow() == VolumeRate::ZERO);
-        assert!(
-            test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.)
-                && test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.)
-        );
+        assert_eq!(test_bed.left_motor_flow(), VolumeRate::ZERO);
+
+        assert!(test_bed.right_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
+        assert!(test_bed.right_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
     }
 
     #[test]
@@ -1095,18 +1113,19 @@ mod tests {
                 <= AngularVelocity::new::<radian_per_second>(0.01)
         );
 
-        assert!(test_bed.right_motor_speed() == AngularVelocity::ZERO);
+        assert_eq!(test_bed.right_motor_speed(), AngularVelocity::ZERO);
+
         assert!(
             test_bed.left_motor_speed() >= AngularVelocity::new::<revolution_per_minute>(2000.)
-                && test_bed.left_motor_speed()
-                    <= AngularVelocity::new::<revolution_per_minute>(6000.)
+        );
+        assert!(
+            test_bed.left_motor_speed() <= AngularVelocity::new::<revolution_per_minute>(6000.)
         );
 
-        assert!(test_bed.right_motor_flow() == VolumeRate::ZERO);
-        assert!(
-            test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.)
-                && test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.)
-        );
+        assert_eq!(test_bed.right_motor_flow(), VolumeRate::ZERO);
+
+        assert!(test_bed.left_motor_flow() >= VolumeRate::new::<gallon_per_minute>(2.));
+        assert!(test_bed.left_motor_flow() <= VolumeRate::new::<gallon_per_minute>(8.));
     }
 
     #[test]
@@ -1122,7 +1141,7 @@ mod tests {
 
         let synchro_gear_angle_request = test_bed.flap_angle_to_fppu(flap_position_request);
 
-        assert!(test_bed.synchro_position() == synchro_gear_angle_request);
+        assert_eq!(test_bed.synchro_position(), synchro_gear_angle_request);
     }
 
     #[test]
@@ -1146,7 +1165,7 @@ mod tests {
             );
         }
 
-        assert!(test_bed.synchro_position() == test_bed.max_synchro_position());
+        assert_eq!(test_bed.synchro_position(), test_bed.max_synchro_position());
 
         let flap_position_request = Angle::new::<degree>(-8.);
         test_bed = test_bed.set_angle_request(Some(flap_position_request));
@@ -1164,7 +1183,7 @@ mod tests {
             );
         }
 
-        assert!(test_bed.synchro_position() == Angle::ZERO);
+        assert_eq!(test_bed.synchro_position(), Angle::ZERO);
     }
 
     #[test]
@@ -1186,7 +1205,7 @@ mod tests {
 
         test_bed = test_bed.run_waiting_for(Duration::from_millis(40000));
 
-        assert!(test_bed.synchro_position() == test_bed.max_synchro_position());
+        assert_eq!(test_bed.synchro_position(), test_bed.max_synchro_position());
     }
 
     #[test]
@@ -1286,12 +1305,22 @@ mod tests {
     }
 
     fn flap_system(context: &mut InitContext, max_speed: AngularVelocity) -> FlapSlatAssembly {
-        let left_flaps = SecondarySurface::new(context, "LEFT", "FLAPS", 1);
-        let right_flaps = SecondarySurface::new(context, "RIGHT", "FLAPS", 1);
+        let left_flaps = SecondarySurface::new(
+            context,
+            SecondarySurfaceSide::Left,
+            SecondarySurfaceType::Flaps,
+            1,
+        );
+        let right_flaps = SecondarySurface::new(
+            context,
+            SecondarySurfaceSide::Right,
+            SecondarySurfaceType::Flaps,
+            1,
+        );
 
         FlapSlatAssembly::new(
             context,
-            "FLAPS",
+            SecondarySurfaceType::Flaps,
             left_flaps,
             right_flaps,
             Volume::new::<cubic_inch>(0.32),

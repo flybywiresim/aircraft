@@ -31,7 +31,9 @@ use systems::{
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
-        flap_slat::{FlapSlatAssembly, SecondarySurface},
+        flap_slat::{
+            FlapSlatAssembly, SecondarySurface, SecondarySurfaceSide, SecondarySurfaceType,
+        },
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticPowered, HydraulicAssemblyController,
@@ -830,17 +832,23 @@ impl A320RudderFactory {
 
 struct A320FlapsFactory {}
 impl A320FlapsFactory {
-    fn a320_flaps_factory(context: &mut InitContext, side: &str) -> SecondarySurface {
+    fn a320_flaps_factory(
+        context: &mut InitContext,
+        side: SecondarySurfaceSide,
+    ) -> SecondarySurface {
         // 1 is inboard. 2 is outboard.
-        SecondarySurface::new(context, side, "FLAPS", 2)
+        SecondarySurface::new(context, side, SecondarySurfaceType::Flaps, 2)
     }
 }
 
 struct A320SlatsFactory {}
 impl A320SlatsFactory {
-    fn a320_slats_factory(context: &mut InitContext, side: &str) -> SecondarySurface {
+    fn a320_slats_factory(
+        context: &mut InitContext,
+        side: SecondarySurfaceSide,
+    ) -> SecondarySurface {
         // 1 is most inboard. 5 is most outboard.
-        SecondarySurface::new(context, side, "SLATS", 5)
+        SecondarySurface::new(context, side, SecondarySurfaceType::Slats, 5)
     }
 }
 
@@ -1615,10 +1623,12 @@ impl A320Hydraulic {
             Ratio::new::<ratio>(0.03),
         );
 
-        let left_flaps_factory = A320FlapsFactory::a320_flaps_factory(context, "LEFT");
-        let right_flaps_factory = A320FlapsFactory::a320_flaps_factory(context, "RIGHT");
-        let left_slats_factory = A320SlatsFactory::a320_slats_factory(context, "LEFT");
-        let right_slats_factory = A320SlatsFactory::a320_slats_factory(context, "RIGHT");
+        let left_flaps = A320FlapsFactory::a320_flaps_factory(context, SecondarySurfaceSide::Left);
+        let right_flaps =
+            A320FlapsFactory::a320_flaps_factory(context, SecondarySurfaceSide::Right);
+        let left_slats = A320SlatsFactory::a320_slats_factory(context, SecondarySurfaceSide::Left);
+        let right_slats =
+            A320SlatsFactory::a320_slats_factory(context, SecondarySurfaceSide::Right);
 
         A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
@@ -1753,9 +1763,9 @@ impl A320Hydraulic {
 
             flap_system: FlapSlatAssembly::new(
                 context,
-                "FLAPS",
-                left_flaps_factory,
-                right_flaps_factory,
+                SecondarySurfaceType::Flaps,
+                left_flaps,
+                right_flaps,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
                 Angle::new::<degree>(251.97),
@@ -1768,9 +1778,9 @@ impl A320Hydraulic {
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
-                "SLATS",
-                left_slats_factory,
-                right_slats_factory,
+                SecondarySurfaceType::Slats,
+                left_slats,
+                right_slats,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
                 Angle::new::<degree>(334.16),
@@ -7205,7 +7215,7 @@ mod tests {
             }
 
             fn get_flaps_left_position_percent(&mut self) -> f64 {
-                let values: Vec<f64> = vec![
+                let values: &[f64] = &[
                     self.read_by_name("LEFT_FLAPS_1_POSITION_PERCENT"),
                     self.read_by_name("LEFT_FLAPS_2_POSITION_PERCENT"),
                 ];
@@ -7213,7 +7223,7 @@ mod tests {
             }
 
             fn get_flaps_right_position_percent(&mut self) -> f64 {
-                let values: Vec<f64> = vec![
+                let values: &[f64] = &[
                     self.read_by_name("RIGHT_FLAPS_1_POSITION_PERCENT"),
                     self.read_by_name("RIGHT_FLAPS_2_POSITION_PERCENT"),
                 ];
@@ -7221,7 +7231,7 @@ mod tests {
             }
 
             fn get_slats_left_position_percent(&mut self) -> f64 {
-                let values: Vec<f64> = vec![
+                let values: &[f64] = &[
                     self.read_by_name("LEFT_SLATS_1_POSITION_PERCENT"),
                     self.read_by_name("LEFT_SLATS_2_POSITION_PERCENT"),
                     self.read_by_name("LEFT_SLATS_3_POSITION_PERCENT"),
@@ -7232,7 +7242,7 @@ mod tests {
             }
 
             fn get_slats_right_position_percent(&mut self) -> f64 {
-                let values: Vec<f64> = vec![
+                let values: &[f64] = &[
                     self.read_by_name("RIGHT_SLATS_1_POSITION_PERCENT"),
                     self.read_by_name("RIGHT_SLATS_2_POSITION_PERCENT"),
                     self.read_by_name("RIGHT_SLATS_3_POSITION_PERCENT"),
