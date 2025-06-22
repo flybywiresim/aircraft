@@ -13,6 +13,7 @@ import {
 import { SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanUtils } from './FlightPlanUtils';
 
 export enum FlightPlanIndex {
   Active,
@@ -183,6 +184,30 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
 
     if (notify) {
       this.sendEvent('flightPlanManager.deleteAll', undefined);
+    }
+  }
+
+  reset(notify = true) {
+    const activePlan = this.get(FlightPlanIndex.Active);
+    const activeToLeg = activePlan.activeLeg;
+
+    for (const plan of this.plans) {
+      if (!plan) {
+        continue;
+      }
+
+      // We only want to delete secondary plans if their active leg matches the active plan's active leg.
+      const shouldDeletePlan =
+        plan.index < FlightPlanIndex.FirstSecondary ||
+        (activeToLeg === undefined && plan.activeLeg === undefined) ||
+        (activeToLeg !== undefined &&
+          plan.activeLeg !== undefined &&
+          FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, plan.activeLeg) &&
+          activePlan.activeLegIndex === plan.activeLegIndex);
+
+      if (shouldDeletePlan) {
+        this.delete(plan.index, notify);
+      }
     }
   }
 

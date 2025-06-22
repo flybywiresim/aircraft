@@ -213,7 +213,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async reset(): Promise<void> {
-    this.flightPlanManager.deleteAll();
+    this.flightPlanManager.reset();
 
     this.createFlightPlans();
   }
