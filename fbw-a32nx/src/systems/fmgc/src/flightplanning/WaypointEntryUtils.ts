@@ -3,9 +3,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Fix, NdbNavaid, Runway, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, NdbNavaid, Runway, VhfNavaid } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { Coordinates } from 'msfs-geo';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
@@ -67,11 +66,11 @@ export class WaypointEntryUtils {
     }
 
     const airport = await NavigationDatabaseService.activeDatabase.searchAirport(place);
-    const waypoints = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
+    const waypoints: Fix[] = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
     const navaids = await NavigationDatabaseService.activeDatabase.searchAllNavaid(place);
 
     if (airport !== undefined) {
-      waypoints.push(WaypointFactory.fromAirport(airport));
+      waypoints.push(airport);
     }
 
     const storedWaypoints = fms.getStoredWaypointsByIdent(place).map((stored) => stored.waypoint);
@@ -79,7 +78,7 @@ export class WaypointEntryUtils {
 
     // Sometimes navaids also exist as waypoints/intersections in the navdata (when they live on airways)
     // In this case, we only want to return the actual VOR facility
-    const items = WaypointEntryUtils.mergeNavaidsWithWaypoints(navaids, waypoints);
+    const items = WaypointEntryUtils.mergeNavaidsWithFixes(navaids, waypoints);
 
     if (items.length === 0) {
       throw new FmsError(FmsErrorType.NotInDatabase);
@@ -94,7 +93,7 @@ export class WaypointEntryUtils {
     return ret;
   }
 
-  static mergeNavaidsWithWaypoints(navaids: (VhfNavaid | NdbNavaid)[], waypoints: Waypoint[]): Fix[] {
+  static mergeNavaidsWithFixes(navaids: (VhfNavaid | NdbNavaid)[], waypoints: Fix[]): Fix[] {
     const items: Fix[] = [...navaids];
 
     for (const wp of waypoints) {

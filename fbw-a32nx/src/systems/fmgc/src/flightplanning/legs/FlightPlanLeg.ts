@@ -422,7 +422,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         procedureIdent: '',
         type: LegType.IF,
         overfly: false,
-        waypoint: WaypointFactory.fromAirport(airport),
+        waypoint: airport,
         waypointDescriptor: WaypointDescriptor.Airport,
         magneticCourse: runway?.magneticBearing,
       },
