@@ -15,9 +15,15 @@ import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimV
 
 export type HUDSimvars = AdirsSimVars &
   SwitchingPanelVSimVars & {
+    brakePedalInputLeft: number;
+    brakePedalInputRight: number;
+    throttle1Position: number;
+    throttle2Position: number;
     spoilersCommanded: number;
     rev1: number;
     rev2: number;
+    rev1Pos: number;
+    rev2Pos: number;
     eng1State: number;
     eng2State: number;
     baroMode: number;
@@ -232,11 +238,17 @@ export type HUDSimvars = AdirsSimVars &
   };
 
 export enum HUDVars {
+  brakePedalInputLeft = 'L:A32NX_LEFT_BRAKE_PEDAL_INPUT',
+  brakePedalInputRight = 'L:A32NX_RIGHT_BRAKE_PEDAL_INPUT',
+  throttle1Position = 'L:XMLVAR_Throttle1Position',
+  throttle2Position = 'L:XMLVAR_Throttle2Position',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   eng1State = 'L:A32NX_ENGINE_STATE:1',
   eng2State = 'L:A32NX_ENGINE_STATE:2',
   rev1 = 'L:A32NX_AUTOTHRUST_REVERSE:1',
   rev2 = 'L:A32NX_AUTOTHRUST_REVERSE:2',
+  rev1Pos = 'L:A32NX_REVERSER_1_POSITION',
+  rev2Pos = 'L:A32NX_REVERSER_2_POSITION',
   baroMode = 'L:A32NX_FCU_EFIS_L_DISPLAY_BARO_VALUE_MODE',
   targetSpeedManaged = 'L:A32NX_SPEEDS_MANAGED_PFD',
   showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
@@ -455,11 +467,17 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
   private static simvars = new Map<keyof HUDSimvars, SimVarDefinition>([
     ...AdirsSimVarDefinitions,
     ...SwitchingPanelSimVarsDefinitions,
+    ['brakePedalInputLeft', { name: HUDVars.brakePedalInputLeft, type: SimVarValueType.Number }],
+    ['brakePedalInputRight', { name: HUDVars.brakePedalInputRight, type: SimVarValueType.Number }],
+    ['throttle1Position', { name: HUDVars.throttle1Position, type: SimVarValueType.Number }],
+    ['throttle2Position', { name: HUDVars.throttle2Position, type: SimVarValueType.Number }],
     ['spoilersCommanded', { name: HUDVars.spoilersCommanded, type: SimVarValueType.Number }],
     ['eng1State', { name: HUDVars.eng1State, type: SimVarValueType.Number }],
     ['eng2State', { name: HUDVars.eng2State, type: SimVarValueType.Number }],
     ['rev1', { name: HUDVars.rev1, type: SimVarValueType.Number }],
     ['rev2', { name: HUDVars.rev2, type: SimVarValueType.Number }],
+    ['rev1Pos', { name: HUDVars.rev1Pos, type: SimVarValueType.Number }],
+    ['rev2Pos', { name: HUDVars.rev2Pos, type: SimVarValueType.Number }],
     ['baroMode', { name: HUDVars.baroMode, type: SimVarValueType.Knots }],
     ['targetSpeedManaged', { name: HUDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
     ['showSelectedHeading', { name: HUDVars.showSelectedHeading, type: SimVarValueType.Number }],
