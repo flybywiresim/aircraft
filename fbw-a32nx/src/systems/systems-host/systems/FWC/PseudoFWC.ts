@@ -739,6 +739,8 @@ export class PseudoFWC {
 
   private readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
 
+  private readonly toConfigOrPhase3 = Subject.create(false);
+
   /** 31 - EIS */
   private readonly dmcLeftDiscreteWord = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a32nx_dmc_discrete_word_350_left'),
@@ -2825,6 +2827,8 @@ export class PseudoFWC {
 
     this.toConfigMemoNormal.set(this.toConfigTestMemoryNode.read() && toConfigNormal);
 
+    this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfighalfSecondTriggeredNode.read()));
+
     /* CLEAR AND RECALL */
     if (this.ecpClearPulseUp) {
       // delete the first failure
@@ -4487,12 +4491,7 @@ export class PseudoFWC {
     3200010: {
       // L/G-BRAKES OVHT
       flightPhaseInhib: [4, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([toConfigNormal, fwcFlightPhase, brakesHot]) => (toConfigNormal || fwcFlightPhase === 3) && brakesHot,
-        this.toConfigMemoNormal,
-        this.fwcFlightPhase,
-        this.brakesHot,
-      ),
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.toConfigOrPhase3, this.brakeFan),
       whichCodeToReturn: () => [
         0,
         !this.aircraftOnGround.get() ? 1 : null,
