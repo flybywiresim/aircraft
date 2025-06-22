@@ -406,7 +406,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
           procedureIdent: '',
           type: LegType.IF,
           overfly: false,
-          waypoint: WaypointFactory.fromRunway(runway),
+          waypoint: runway,
           waypointDescriptor: WaypointDescriptor.Runway,
           magneticCourse: runway?.magneticBearing,
         },

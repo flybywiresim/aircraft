@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Fix, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, NdbNavaid, Runway, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
@@ -108,9 +108,9 @@ export class WaypointEntryUtils {
 
   /**
    * Parse a runway string and return the location of the threshold
-   * Returns undefined if invalid format or not in database
+   * Throws an FmsError if the runway is not found in the database.
    */
-  static async parseRunway(place: string): Promise<Waypoint> {
+  static async parseRunway(place: string): Promise<Runway> {
     const rwy = place.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/);
 
     if (rwy !== null) {
@@ -118,13 +118,10 @@ export class WaypointEntryUtils {
 
       if (airport) {
         const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
+        const runway = runways.find((r) => r.ident === place);
 
-        for (let i = 0; i < runways.length; i++) {
-          const runway = runways[i];
-
-          if (runway.ident === place) {
-            return WaypointFactory.fromRunway(runway);
-          }
+        if (runway) {
+          return runway;
         }
       }
     }

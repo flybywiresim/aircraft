@@ -6,7 +6,6 @@
 import {
   Airport,
   EnrouteSubsectionCode,
-  Runway,
   SectionCode,
   Waypoint,
   WaypointArea,
@@ -52,17 +51,6 @@ export namespace WaypointFactory {
     const distanceTwo = distanceTo(locationA, two);
 
     return WaypointFactory.fromLocation(ident, distanceOne < distanceTwo ? one : two);
-  }
-
-  export function fromRunway(runway: Runway): Waypoint {
-    return {
-      ...runway,
-      sectionCode: SectionCode.Airport,
-      // FIXME should be AirportSubsectionCode.Runways
-      subSectionCode: AirportSubsectionCode.TerminalWaypoints,
-      location: runway.thresholdLocation,
-      area: WaypointArea.Terminal,
-    };
   }
 
   export function fromAirport(airport: Airport): Waypoint {
