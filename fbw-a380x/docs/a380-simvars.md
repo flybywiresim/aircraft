@@ -837,7 +837,12 @@
         - LEFT
         - RIGHT
     - Number
+<<<<<<< HEAD
         - From 1 (inboard) to 3
+=======
+        - From 1 (inboard) to 2 for A320
+        - From 1 (inboard) to 3 for A380
+>>>>>>> fd2c15603 (feat(hyd): refactored flaps/slats simvars)
 
 - A32NX_{side}_SLATS_{number}_POSITION_PERCENT
     - Percent
@@ -846,7 +851,12 @@
         - LEFT
         - RIGHT
     - Number
+<<<<<<< HEAD
         - From 1 (inboard) to 8
+=======
+        - From 1 (inboard) to 5 for A320
+        - From 1 (inboard) to 8 for A380
+>>>>>>> fd2c15603 (feat(hyd): refactored flaps/slats simvars)
 
 - A32NX_{side}_FLAPS_{number}_ANGLE
     - Degrees
@@ -855,7 +865,12 @@
         - LEFT
         - RIGHT
     - Number
+<<<<<<< HEAD
         - From 1 (inboard) to 3
+=======
+        - From 1 (inboard) to 2 for A320
+        - From 1 (inboard) to 3 for A380
+>>>>>>> fd2c15603 (feat(hyd): refactored flaps/slats simvars)
 
 - A32NX_{side}_SLATS_{number}_ANGLE
     - Degrees
@@ -864,7 +879,12 @@
         - LEFT
         - RIGHT
     - Number
+<<<<<<< HEAD
         - From 1 (inboard) to 8
+=======
+        - From 1 (inboard) to 5 for A320
+        - From 1 (inboard) to 8 for A380
+>>>>>>> fd2c15603 (feat(hyd): refactored flaps/slats simvars)
 
 - A32NX_FCDC_{number}_DISCRETE_WORD_1
     - Arinc429<Discrete>
