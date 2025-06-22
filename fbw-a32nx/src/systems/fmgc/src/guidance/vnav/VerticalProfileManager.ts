@@ -762,6 +762,14 @@ export class VerticalProfileManager {
 
     return this.flightPlanService.active?.hasTooSteepPathAhead();
   }
+
+  shouldShowLatDiscontinuityAhead(): boolean {
+    return (
+      this.fcuModes.isInNavMode() &&
+      this.flightPlanService.active?.hasDiscontinuityNext() &&
+      this.mcduProfile.checkpoints[this.flightPlanService.active.activeLegIndex + 1]?.secondsFromPresent < 30
+    );
+  }
 }
 
 class FcuModeObserver {
@@ -857,5 +865,9 @@ class FcuModeObserver {
     const { fcuVerticalMode } = this.observer.get();
 
     return this.VERT_SELECTED_MODES.includes(fcuVerticalMode);
+  }
+
+  public isInNavMode(): boolean {
+    return this.observer.get().fcuLateralMode === LateralMode.NAV;
   }
 }
