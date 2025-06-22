@@ -16,6 +16,7 @@ import { FmsFormatters } from '../legacy/FmsFormatters';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Wait } from '@microsoft/msfs-sdk';
+import { AeroMath } from '@microsoft/msfs-sdk';
 
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active) {
@@ -152,7 +153,7 @@ export class CDUInitPage {
             cruiseFlTempSeparator.updateAttributes(Column.cyan);
           } else {
             cruiseTemp.update(
-              CDUInitPage.formatTemperature(Math.round(mcdu.tempCurve.evaluate(planCruiseLevel))),
+              CDUInitPage.formatTemperature(Math.round(AeroMath.isaTemperature(planCruiseLevel * 100 * 0.3048))),
               Column.cyan,
               Column.small,
             );

@@ -280,7 +280,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   /** @deprecated */
   costIndex: number | undefined;
   cruiseLevel: number | undefined;
-  tempCurve: any; // we don't have the MSFS SDK typings for these curves
   casToMachManualCrossoverCurve: any;
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;
