@@ -669,7 +669,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     return false;
   }
 
-  hasDiscontinuityNext(): boolean {
+  hasDiscontinuityLegNext(): boolean {
     for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex - 1; i++) {
       const nextLeg = this.maybeElementAt(i + 1);
       if (nextLeg?.isDiscontinuity) {

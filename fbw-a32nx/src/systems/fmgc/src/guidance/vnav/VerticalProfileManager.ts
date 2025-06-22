@@ -766,8 +766,8 @@ export class VerticalProfileManager {
   shouldShowLatDiscontinuityAhead(): boolean {
     return (
       this.fcuModes.isInNavMode() &&
-      this.flightPlanService.active?.hasDiscontinuityNext() &&
-      this.mcduProfile.checkpoints[this.flightPlanService.active.activeLegIndex + 1]?.secondsFromPresent < 30
+      this.flightPlanService.active?.hasDiscontinuityLegNext() &&
+      this.mcduProfile.waypointPredictions.get(this.flightPlanService.activeLegIndex)?.secondsFromPresent < 30
     );
   }
 }
