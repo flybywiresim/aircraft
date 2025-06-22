@@ -37,6 +37,7 @@ export class HudValueProvider implements Instrument {
     hudFlightPhaseMode: 0,
     cWndMode: true,
     decMode: -1,
+    gndSpeed: false,
   };
   private logCase = '';
   private isToga = false;
@@ -110,6 +111,7 @@ export class HudValueProvider implements Instrument {
             this.elems.hudFlightPhaseMode = this.hudMode.get();
             this.elems.cWndMode = false;
             this.elems.decMode = 0;
+            this.elems.gndSpeed = true;
             this.logCase = ' A ';
           } else {
             // hudmode  Taxi     flightpahse  notApp  xwind  ANY  dec  1or2
@@ -137,6 +139,7 @@ export class HudValueProvider implements Instrument {
             this.elems.hudFlightPhaseMode = this.hudMode.get();
             this.elems.cWndMode = false;
             this.elems.decMode = 2;
+            this.elems.gndSpeed = true;
             this.logCase = ' B ';
           }
         } else if (this.hudMode.get() === HudMode.TAKEOFF) {
@@ -165,6 +168,7 @@ export class HudValueProvider implements Instrument {
           this.elems.hudFlightPhaseMode = this.hudMode.get();
           this.elems.cWndMode = false;
           this.elems.decMode = 0;
+          this.elems.gndSpeed = true;
           this.logCase = ' C ';
         } else if (this.hudMode.get() === HudMode.ROLLOUT_OR_RTO) {
           // hudmode    RTO    flightpahse  ANY  xwind  ANY  dec  ANY
@@ -192,6 +196,7 @@ export class HudValueProvider implements Instrument {
           this.elems.hudFlightPhaseMode = this.hudMode.get();
           this.elems.cWndMode = false;
           this.elems.decMode = 0;
+          this.elems.gndSpeed = true;
           this.logCase = ' D ';
         } else {
           //HudMode Normal
@@ -223,6 +228,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.hudFlightPhaseMode = this.hudMode.get();
                 this.elems.cWndMode = false;
                 this.elems.decMode = 0;
+                this.elems.gndSpeed = true;
                 this.logCase = ' E ';
               } else {
                 // flightPhase App dec 0 xwind 1
@@ -250,6 +256,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.hudFlightPhaseMode = this.hudMode.get();
                 this.elems.cWndMode = true;
                 this.elems.decMode = 0;
+                this.elems.gndSpeed = true;
                 this.logCase = ' F ';
               }
             } else if (this.declutterMode === 1) {
@@ -279,6 +286,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.hudFlightPhaseMode = this.hudMode.get();
                 this.elems.cWndMode = false;
                 this.elems.decMode = 1;
+                this.elems.gndSpeed = true;
                 this.logCase = ' G ';
               } else {
                 // flightPhase App dec 1 xwind 1
@@ -306,6 +314,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.hudFlightPhaseMode = this.hudMode.get();
                 this.elems.cWndMode = true;
                 this.elems.decMode = 1;
+                this.elems.gndSpeed = true;
                 this.logCase = ' H ';
               }
             } else {
@@ -335,6 +344,7 @@ export class HudValueProvider implements Instrument {
               this.elems.hudFlightPhaseMode = this.hudMode.get();
               this.elems.cWndMode = true;
               this.elems.decMode = 2;
+              this.elems.gndSpeed = false;
               this.logCase = ' I ';
             }
           } else {
@@ -365,6 +375,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.hudFlightPhaseMode = this.hudMode.get();
                 this.elems.cWndMode = false;
                 this.elems.decMode = 0;
+                this.elems.gndSpeed = false;
                 this.logCase = ' J ';
               } else {
                 // flightPhase NOTApp dec 0 xwind 1
@@ -392,6 +403,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.hudFlightPhaseMode = this.hudMode.get();
                 this.elems.cWndMode = true;
                 this.elems.decMode = 0;
+                this.elems.gndSpeed = false;
                 this.logCase = ' K ';
               }
             } else if (!(this.declutterMode === 0)) {
@@ -421,6 +433,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.hudFlightPhaseMode = this.hudMode.get();
                 this.elems.cWndMode = false;
                 this.elems.decMode = 2;
+                this.elems.gndSpeed = false;
                 this.logCase = ' L ';
               } else {
                 // flightPhase NOTApp dec !0 xwind 1
@@ -448,6 +461,7 @@ export class HudValueProvider implements Instrument {
                 this.elems.hudFlightPhaseMode = this.hudMode.get();
                 this.elems.cWndMode = true;
                 this.elems.decMode = 2;
+                this.elems.gndSpeed = false;
                 this.logCase = ' M ';
               }
             }
@@ -480,6 +494,7 @@ export class HudValueProvider implements Instrument {
         publisher.pub('QFE', this.elems.QFE, false, false);
         publisher.pub('metricAlt', this.elems.metricAlt, false, false);
         publisher.pub('pitchScaleMode', this.elems.pitchScaleMode, false, false);
+        publisher.pub('gndSpeed', this.elems.gndSpeed, false, false);
       });
 
     this.sub.on('fmgcFlightPhase').handle((fp) => {

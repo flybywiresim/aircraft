@@ -466,8 +466,8 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
             </text>
           </g>
 
-          <g ref={this.groundSpeedRef} id="SpeedIndicator" transform="translate(32 35) ">
-            <SpeedIndicator bus={this.props.bus} />
+          <g ref={this.groundSpeedRef} id="GroundSpeedIndicator" transform="translate(32 35) ">
+            <GroundSpeedIndicator bus={this.props.bus} />
           </g>
         </g>
       </>
@@ -1848,7 +1848,7 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 //GroundSpeed indicator
-class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
+class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
   private flightPhase = -1;
   private declutterMode = 0;
   private sVisibility = Subject.create('none');
@@ -1863,29 +1863,14 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
 
     sub
-      .on('leftMainGearCompressed')
+      .on('gndSpeed')
       .whenChanged()
       .handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
         //onDeparture
-        if (this.flightPhase <= 5) {
-          if (value) {
-            this.sVisibility.set('block');
-          } else {
-            this.sVisibility.set('none');
-          }
-        }
-        //onArrival
-        if (this.flightPhase >= 7) {
-          if (value) {
-            this.sVisibility.set('block');
-          } else {
-            this.sVisibility.set('none');
-          }
-        }
+        value === true ? this.sVisibility.set('block') : this.sVisibility.set('none');
       });
     sub
       .on('groundSpeed')
