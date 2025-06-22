@@ -667,4 +667,16 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     return false;
   }
+
+  hasDiscontinuityLegNext(): boolean {
+    for (let i = this.activeLegIndex; i < this.firstMissedApproachLegIndex; i++) {
+      const nextLeg = this.maybeElementAt(i + 1);
+      // Handle case of end of flightplan or discont
+      if (!nextLeg || nextLeg.isDiscontinuity) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }
