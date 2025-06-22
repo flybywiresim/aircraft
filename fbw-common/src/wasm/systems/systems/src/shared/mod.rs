@@ -11,7 +11,7 @@ use ntest::MaxDifference;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
-    angle::radian,
+    angle::{degree, radian},
     f64::*,
     length::meter,
     mass_rate::kilogram_per_second,
@@ -1022,6 +1022,23 @@ impl Average for Ratio {
     }
 }
 
+impl Average for Angle {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Angle>,
+    {
+        let mut sum = 0.0;
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v.get::<degree>();
+            count += 1;
+        }
+
+        Angle::new::<degree>(if count > 0 { sum / (count as f64) } else { 0. })
+    }
+}
+
 impl<'a> Average<&'a Pressure> for Pressure {
     fn average<I>(iter: I) -> Self
     where
@@ -1053,6 +1070,15 @@ impl<'a> Average<&'a Ratio> for Ratio {
     fn average<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a Ratio>,
+    {
+        iter.copied().average()
+    }
+}
+
+impl<'a> Average<&'a Angle> for Angle {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a Angle>,
     {
         iter.copied().average()
     }
