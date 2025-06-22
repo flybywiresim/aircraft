@@ -406,133 +406,136 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
         this.crosswindMode = value;
       });
 
-    sub.on('rollAr').handle((roll) => {
-      const radRoll = (roll.value / 180) * Math.PI;
+    sub
+      .on('rollAr')
+      .whenChanged()
+      .handle((roll) => {
+        const radRoll = (roll.value / 180) * Math.PI;
 
-      //frame of reference 1  air pitch   :F1
-      //frame 2  center: airHorizonHeadingBug x: hud horizon :F2
-      const D = calculateHorizonOffsetFromPitch(this.pitch);
+        //frame of reference 1  air pitch   :F1
+        //frame 2  center: airHorizonHeadingBug x: hud horizon :F2
+        const D = calculateHorizonOffsetFromPitch(this.pitch);
 
-      let rSign = 1;
+        let rSign = 1;
 
-      const xPos = -D * Math.sin(radRoll);
+        const xPos = -D * Math.sin(radRoll);
 
-      // xposition from frame2 to eval if extention should be drawn
-      if (this.crosswindMode == false) {
-        this.lowerBound = -6.143;
-        this.upperBound = 355;
-      } else {
-        this.upperBound = -27.143;
-        this.lowerBound = -199.143;
-      }
-
-      let Lalt = 0;
-      let Lspd = 0;
-
-      if (roll.value < 0) {
-        if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-          Lspd = 472;
-          Lalt = 400;
+        // y position from frame2 to eval if extention should be drawn
+        if (this.crosswindMode === false) {
+          this.lowerBound = -6.143;
+          this.upperBound = 355;
         } else {
-          Lalt = 494;
-          Lspd = 570;
+          this.lowerBound = -87;
+          this.upperBound = 87;
         }
-      } else {
-        if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-          Lalt = 400;
-          Lspd = 472;
-        } else {
-          Lalt = 494;
-          Lspd = 570;
-        }
-      }
-      const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
-      const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
 
-      if (roll.isNormalOperation()) {
-        this.spdRollDev = -(640 - 168) * Math.tan(radRoll);
-        this.altRollDev = Lalt * Math.tan(radRoll);
-        this.rollGroupRef.instance.style.display = 'block';
-        this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
+        let Lalt = 0;
+        let Lspd = 0;
 
         if (roll.value < 0) {
-          rSign = -1;
+          if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
+            Lspd = 472;
+            Lalt = 400;
+          } else {
+            Lalt = 494;
+            Lspd = 570;
+          }
         } else {
-          rSign = 1;
+          if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
+            Lalt = 400;
+            Lspd = 472;
+          } else {
+            Lalt = 494;
+            Lspd = 570;
+          }
         }
+        const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
+        const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
 
-        const ax = '640 ';
-        const ay = '512 ';
-        const bx = '0 ';
-        const by = (-D).toString();
-        const cx = (640 + xPos * Math.cos(radRoll * rSign)).toString();
-        const cy = (512 + xPos * Math.sin(radRoll)).toString();
+        if (roll.isNormalOperation()) {
+          this.spdRollDev = -(640 - 168) * Math.tan(radRoll);
+          this.altRollDev = Lalt * Math.tan(radRoll);
+          this.rollGroupRef.instance.style.display = 'block';
+          this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
 
-        const ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //acual eval point
-        const ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //acual eval point
+          if (roll.value < 0) {
+            rSign = -1;
+          } else {
+            rSign = 1;
+          }
 
-        const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
-        const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
+          const ax = '640 ';
+          const ay = '512 ';
+          const bx = '0 ';
+          const by = (-D).toString();
+          const cx = (640 + xPos * Math.cos(radRoll * rSign)).toString();
+          const cy = (512 + xPos * Math.sin(radRoll)).toString();
 
-        //vertial offset of eval point from horizon
-        let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
-        if (Number(ey) < 512) {
-          F1AltSideVertDev *= -1;
-        }
-        let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
-        if (Number(eys) < 512) {
-          F1SpdSideVertDev *= -1;
-        }
+          const ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //acual eval point
+          const ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //acual eval point
 
-        // debug eval point pos circles
-        this.xAltTop.set(xPosF.toString());
-        this.yAltTop.set((512).toString());
-        this.xSpdTop.set(xPosFspd.toString());
-        this.ySpdTop.set((512).toString());
-        // end debug
-        //debug draws : toggle .DEBUG to block in styles.scss to show
-        this.path.instance.setAttribute('d', `m ${ax} ${ay} l ${bx}  ${by} L ${cx}  ${cy}     z`);
-        this.path2.instance.setAttribute('d', `m ${ax} ${ay} L ${ex}  ${ey}  L ${xPosF} 512     z`);
-        this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
-        //end debug
+          const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
+          const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
 
-        const F1HorizonPitchOffset = D * Math.cos(radRoll);
+          //vertial offset of eval point from horizon
+          let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
+          if (Number(ey) < 512) {
+            F1AltSideVertDev *= -1;
+          }
+          let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
+          if (Number(eys) < 512) {
+            F1SpdSideVertDev *= -1;
+          }
 
-        if (
-          F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
-          F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
-        ) {
-          this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
-          this.extendedAlt.instance.setAttribute('d', ``);
+          // debug eval point pos circles
+          this.xAltTop.set(xPosF.toString());
+          this.yAltTop.set((512).toString());
+          this.xSpdTop.set(xPosFspd.toString());
+          this.ySpdTop.set((512).toString());
+          // end debug
+          //debug draws : toggle .DEBUG to block in styles.scss to show
+          this.path.instance.setAttribute('d', `m ${ax} ${ay} l ${bx}  ${by} L ${cx}  ${cy}     z`);
+          this.path2.instance.setAttribute('d', `m ${ax} ${ay} L ${ex}  ${ey}  L ${xPosF} 512     z`);
+          this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
+          //end debug
+
+          const F1HorizonPitchOffset = D * Math.cos(radRoll);
+
+          if (
+            F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
+            F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
+          ) {
+            this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
+            this.extendedAlt.instance.setAttribute('d', ``);
+          } else {
+            this.extendedAlt.instance.setAttribute('class', 'SmallStroke Red');
+            this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
+          }
+
+          if (
+            F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
+            F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
+          ) {
+            this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
+            this.extendedSpd.instance.setAttribute('d', ``);
+          } else {
+            this.extendedSpd.instance.setAttribute('class', 'SmallStroke Red');
+            this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
+          }
+          // console.log(
+          //     "\nD: "+D +
+          //     "\nD cos r: "+D*Math.cos(radRoll) +
+          //     "\nF1HorizonPitchOffset-F1SpdSideVertDev: "+t1 +
+          //     "\nyPos-F1SpdSideVertDev: "+t2 +
+          //     "\nyPos: "+yPos +
+          //     "\nF1HorizonPitchOffset: "+F1HorizonPitchOffset +
+          //     "\nyroll: "+roll.value +
+          //     "\nF1SpdSideVertDev: "+F1SpdSideVertDev
+          // );
         } else {
-          this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
-          this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
+          this.rollGroupRef.instance.style.display = 'none';
         }
-
-        if (
-          F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
-          F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
-        ) {
-          this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
-          this.extendedSpd.instance.setAttribute('d', ``);
-        } else {
-          this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
-          this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
-        }
-        // console.log(
-        //     "\nD: "+D +
-        //     "\nD cos r: "+D*Math.cos(radRoll) +
-        //     "\nF1HorizonPitchOffset-F1SpdSideVertDev: "+t1 +
-        //     "\nyPos-F1SpdSideVertDev: "+t2 +
-        //     "\nyPos: "+yPos +
-        //     "\nF1HorizonPitchOffset: "+F1HorizonPitchOffset +
-        //     "\nyroll: "+roll.value +
-        //     "\nF1SpdSideVertDev: "+F1SpdSideVertDev
-        // );
-      } else {
-        this.rollGroupRef.instance.style.display = 'none';
-      }
-    });
+      });
 
     sub.on('pitchAr').handle((pitch) => {
       this.pitch = pitch.value;
