@@ -41,6 +41,7 @@ pub mod command_sensor_unit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod flap_slat;
+pub mod hydraulic_motor;
 pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
