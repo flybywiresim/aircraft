@@ -1104,7 +1104,7 @@ class B2Cell extends DisplayComponent<CellProps> {
           text1 = gsArmed ? 'DES ' : '      DES';
         } else if (altCstArmed) {
           text1 = gsArmed ? 'ALT ' : '      ALT';
-          color1 = 'Magenta';
+          color1 = 'Green';
         } else if (altArmed) {
           text1 = gsArmed ? 'ALT ' : '      ALT';
         } else if (altCruiseArmed) {
