@@ -729,7 +729,7 @@ export class PseudoFWC {
 
   private readonly toConfigTestMemoryNode = new NXLogicMemoryNode();
 
-  private readonly toConfighalfSecondPulseNode = new NXLogicTriggeredMonostableNode(0.5);
+  private readonly toConfighalfSecondTriggeredNode = new NXLogicTriggeredMonostableNode(0.5);
 
   private readonly toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
 
@@ -1114,7 +1114,7 @@ export class PseudoFWC {
 
   private readonly tcasSensitivity = Subject.create(0);
 
-  private readonly toConfigNormal = Subject.create(false);
+  private readonly toConfigMemoNormal = Subject.create(false);
 
   private readonly wingAntiIce = Subject.create(false);
 
@@ -1165,7 +1165,7 @@ export class PseudoFWC {
       }
     });
 
-    this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
+    this.toConfigMemoNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
 
     this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
@@ -2815,14 +2815,15 @@ export class PseudoFWC {
     const toConfigSystemStatusNormal =
       systemStatus && speeds && !brakesHot && doors && !this.flapsMcduDisagree.get() && !surfacesNotTo;
 
-    const toConfigPulseNormalConfNode = this.toConfigNormalConf.write(toConfigSystemStatusNormal, deltaTime);
+    const toConfigNormal = this.toConfigNormalConf.write(toConfigSystemStatusNormal, deltaTime);
 
     this.toConfigTestMemoryNode.write(
-      this.toConfighalfSecondPulseNode.write(toConfigTest, deltaTime) && (fwcFlightPhase === 2 || fwcFlightPhase === 9),
-      flightPhase6 || !toConfigPulseNormalConfNode,
+      this.toConfighalfSecondTriggeredNode.write(this.toConfigPulseNode.read(), deltaTime) &&
+        (fwcFlightPhase === 2 || fwcFlightPhase === 9),
+      flightPhase6 || !toConfigNormal,
     );
 
-    this.toConfigNormal.set(this.toConfigTestMemoryNode.read() && toConfigPulseNormalConfNode);
+    this.toConfigMemoNormal.set(this.toConfigTestMemoryNode.read() && toConfigNormal);
 
     /* CLEAR AND RECALL */
     if (this.ecpClearPulseUp) {
@@ -4488,7 +4489,7 @@ export class PseudoFWC {
       flightPhaseInhib: [4, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
         ([toConfigNormal, fwcFlightPhase, brakesHot]) => (toConfigNormal || fwcFlightPhase === 3) && brakesHot,
-        this.toConfigNormal,
+        this.toConfigMemoNormal,
         this.fwcFlightPhase,
         this.brakesHot,
       ),
@@ -4718,7 +4719,7 @@ export class PseudoFWC {
         SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 5 : 4,
         this.spoilersArmed.get() ? 7 : 6,
         this.slatFlapSelectionS18F10 || this.slatFlapSelectionS22F15 || this.slatFlapSelectionS22F20 ? 9 : 8,
-        this.toConfigNormal.get() ? 11 : 10,
+        this.toConfigMemoNormal.get() ? 11 : 10,
       ],
       codesToReturn: [
         '000001001',
@@ -5126,7 +5127,7 @@ export class PseudoFWC {
       flightPhaseInhib: [1, 10],
       simVarIsActive: this.gpwsTerrOff,
       whichCodeToReturn: () => [
-        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigNormal.get() ? 1 : 0,
+        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigMemoNormal.get() ? 1 : 0,
       ],
       codesToReturn: ['000054501', '000054502'],
       memoInhibit: () => false,
