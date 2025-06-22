@@ -1615,10 +1615,17 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
   private upperMarginTransform = Subject.create('translate(0 0)');
 
   private lowerMarginTransform = Subject.create('translate(0 0)');
-
+  private xwindOffset = 0;
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & FmsVars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & FmsVars & HudElems>();
+
+    sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((value) => {
+        value === true ? (this.xwindOffset = XWIND_TO_AIR_REF_OFFSET) : (this.xwindOffset = 0);
+      });
 
     sub
       .on('showSpeedMargins')
@@ -1640,14 +1647,14 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
         <path
           id="UpperSpeedMargin"
           class="Fill Green"
-          d="m98.5 402.5h26.789v3.5h-26.789z"
+          d="m89 359.5 h 26 v 6 h -26z"
           visibility={this.upperSpeedMarginVisibility}
           transform={this.upperMarginTransform}
         />
         <path
           id="LowerSpeedMargin"
           class="Fill Green"
-          d="m98.5 402.5h26.789v3.5h-26.789z"
+          d="m89 359.5 h 26 v 6 h -26z"
           visibility={this.lowerSpeedMarginVisibility}
           transform={this.lowerMarginTransform}
         />
@@ -1671,7 +1678,8 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
       const isInRange = Math.abs(this.currentSpeed.get().value - speed) < DisplayRange;
       if (isInRange) {
         const offset = (
-          Math.round((100 * (this.currentSpeed.get().value - speed) * DistanceSpacing) / ValueSpacing) / 100
+          Math.round((100 * (this.currentSpeed.get().value - speed) * DistanceSpacing) / ValueSpacing) / 100 +
+          this.xwindOffset
         ).toFixed(2);
         transform.set(`translate(0 ${offset})`);
       }
