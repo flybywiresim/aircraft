@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Importér SimBrief data",
       "TT": {
         "IncreaseFontSize": "Forøg skriftstørrelsen",
         "ReduceFontSize": "Reducér skriftstørrelsen"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Data",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Lufthavn ICAO",
       "ApproachSpeed": "Approach hastighed",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "Ryd",
       "DropDownNo": "Nej",
       "DropDownYes": "Ja",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Udfyld data fra",
       "FlapsConfiguration": "Flaps konfiguration ",
+      "LandingWeight": "Landing Weight",
       "Low": "Lav",
       "MaximumManual": "Maksimum Manual",
       "Medium": "Mellem",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Overvægt Procedure",
       "Qnh": "QNH",
       "ReverseThrust": "Reversetrust",
-      "RunwayAltitude": "Højde Runway",
-      "RunwayAltitudeUnit": "ft ASL",
+      "Runway": "Runway",
       "RunwayCondition": "Landingsbane tilstand",
       "RunwayConditions": {
         "Dry": "Tør (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Medium-Dårlig (2)",
         "Poor": "Dårlig (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Baneretning",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Landingsbane LDA",
@@ -330,10 +333,7 @@
       "Title": "Landing ",
       "UnitFt": "ft",
       "UnitMeter": "M",
-      "Weight": "vægt",
-      "WindDirection": "Vindretning",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Vindhastighed",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Sync",
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -395,7 +393,9 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "Juster øjeblikkeligt ADIRS",
       "AutoBrightness": "Slå automatisk lysstyrke til/fra",
       "Brightness": "Indstil flyPad lysstyrke",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Afslut ombordstigning øjeblikkeligt",
       "OnScreenKeyboard": "Slå skærmtastatur til/fra",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +569,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Om"
@@ -651,11 +651,10 @@
       "Active": "Aktiv",
       "Auto": "Automatisk",
       "Both": "Synkroniseret",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibrering",
-      "Captain": "Kaptajn",
-      "CockpitSeatUsedToControl": "Cockpitsæde bruges til at styre",
       "ConesEnabled": "Sikkerhed kegler",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standard Barometer enhed",
       "DynamicRegistrationDecal": "Dynamisk registrerings mærke",
       "EnableSimBridge": "Aktiver SimBridge server forbindelse (Deaktiveres automatisk efter 5 minutter, hvis der ikke oprettes succesfuld forbindelse)",
@@ -698,6 +697,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -736,6 +736,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Indstillinger",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Urealistisk",
     "flyPad": {
       "AutoBrightness": "Automatisk lysstyrke",
@@ -744,7 +747,6 @@
       "Blue": "Blå",
       "Brightness": "Lysstyrke",
       "Dark": "Mørk",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Sprog",
       "Light": "Lys",
       "Local": "Lokal",
@@ -761,8 +763,6 @@
       "UtcAndLocal": "UTC og Lokal"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

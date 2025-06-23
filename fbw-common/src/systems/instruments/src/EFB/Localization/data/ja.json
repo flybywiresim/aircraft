@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "SimBriefデータのインポート",
       "TT": {
         "IncreaseFontSize": "文字サイズを大きくする",
         "ReduceFontSize": "文字サイズを小さくする"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "データ",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "空港のICAOコード",
       "ApproachSpeed": "進入速度",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "消去",
       "DropDownNo": "いいえ",
       "DropDownYes": "はい",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "データの読み込み元",
       "FlapsConfiguration": "フラップ設定",
+      "LandingWeight": "Landing Weight",
       "Low": "低",
       "MaximumManual": "最大手動",
       "Medium": "中",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "過積載の手順",
       "Qnh": "QNH",
       "ReverseThrust": "逆噴射の使用",
-      "RunwayAltitude": "滑走路の標高",
-      "RunwayAltitudeUnit": "ft(海抜高度)",
+      "Runway": "Runway",
       "RunwayCondition": "滑走路の状態",
       "RunwayConditions": {
         "Dry": "乾燥(6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "やや悪い(2)",
         "Poor": "悪い(1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "滑走路の方位",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "滑走路のLDA",
@@ -330,10 +333,7 @@
       "Title": "着陸",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "重量",
-      "WindDirection": "風向",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "風速",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "同期",
@@ -377,8 +377,6 @@
       "Packs": "空調",
       "Qnh": "QNH",
       "Runway": "滑走路",
-      "RunwayBearing": "滑走路の方位",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "滑走路の状態",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "乾いた雪 - 100 mm/4\"",
@@ -396,6 +394,8 @@
       },
       "RunwayElevation": "滑走路の標高",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "滑走路の勾配",
@@ -556,6 +556,8 @@
       "AlignAdirs": "直ちにADIRSの調整を完了する",
       "AutoBrightness": "明るさ自動調節 オン/オフ",
       "Brightness": "flyPadの明るさを設定",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "直ちに搭乗を完了する",
       "OnScreenKeyboard": "オンスクリーンキーボード オン/オフ",
       "PauseAtTod": "降下開始地点で一時停止を有効・無効",
@@ -567,8 +569,6 @@
     },
     "Title": "クイックコントロール"
   },
-  "QuickControls.TT.CabinAutoBrightness": "自動客室照明 オン/オフ",
-  "QuickControls.TT.CabinLighting": "客室照明の設定",
   "Settings": {
     "About": {
       "Title": "flyPadについて"
@@ -651,11 +651,10 @@
       "Active": "有効",
       "Auto": "自動",
       "Both": "両方",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "調整",
-      "Captain": "機長",
-      "CockpitSeatUsedToControl": "操縦に使用するコックピットシート",
       "ConesEnabled": "セーフティコーン",
-      "Copilot": "副操縦士",
       "DefaultBarometerUnit": "デフォルトの気圧計単位",
       "DynamicRegistrationDecal": "登録番号デカールの表示",
       "EnableSimBridge": "SimBridge接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
@@ -698,6 +697,7 @@
         "SettingTitle": "Navigraphアカウント連携",
         "SubscriptionStatus": {
           "None": "サブスクリプション無し",
+          "Standard": "Navigraph Standard",
           "Unknown": "不明",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -736,6 +736,9 @@
       "TogaOnAxis": "TOGAを軸に設定"
     },
     "Title": "設定",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "非現実的",
     "flyPad": {
       "AutoBrightness": "明るさ自動調節",
@@ -744,7 +747,6 @@
       "Blue": "ブルー",
       "Brightness": "明るさ",
       "Dark": "ダーク",
-      "DisablePushbackConflictWarning": "プッシュバックシステムのアドオン競合警告を無効にする",
       "Language": "言語",
       "Light": "ライト",
       "Local": "ローカル",
@@ -761,8 +763,6 @@
       "UtcAndLocal": "UTCとローカル"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "自動客室照明",
-  "Settings.SimOptions.CabinManualBrightness": "客室照明の明るさ",
   "StatusBar": {
     "Apr": "4月",
     "Aug": "8月",
