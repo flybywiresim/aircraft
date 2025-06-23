@@ -4494,7 +4494,7 @@ export class PseudoFWC {
     3200010: {
       // L/G-BRAKES OVHT
       flightPhaseInhib: [4, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.toConfigOrPhase3, this.brakeFan),
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.toConfigOrPhase3, this.brakesHot),
       whichCodeToReturn: () => [
         0,
         !this.aircraftOnGround.get() ? 1 : null,
