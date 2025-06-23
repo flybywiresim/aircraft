@@ -151,7 +151,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
           ref={this.targetIndicator}
           id="HeadingTargetIndicator"
           class="NormalStroke Green CornerRound"
-          d="m641 512 10 -25 h -22 l 10 25"
+          d="m641 512 10 -20 h -22 l 10 20"
         />
       </>
     );

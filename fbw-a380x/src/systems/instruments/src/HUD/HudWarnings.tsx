@@ -33,7 +33,7 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   //   The following precedence of messages is implemented right now (first line is most important message):
   //
   //   BANK BANK
-  //   STALL STALL
+  //   STALL STALL  // already in AttitudeIndicatorWarnings , remove
   //   MAX REVERSE
   //   MAX BRAKING
   //
