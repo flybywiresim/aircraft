@@ -7,6 +7,10 @@
   display: none;
 }
 
+.Transparent {
+  opacity: 0;
+}
+
 .ThickCyanLine {
   stroke: $display-cyan  !important;
   stroke-width: 6;

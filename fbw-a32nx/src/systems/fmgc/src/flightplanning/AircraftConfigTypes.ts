@@ -79,6 +79,11 @@ export interface LnavConfig {
    * The number of transitions to compute after the active leg (-1: no limit, compute all transitions)
    */
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: number;
+
+  /**
+   * Whether to emit the "end of VD marker" (A380X only) as a PWP
+   */
+  EMIT_END_OF_VD_MARKER: boolean;
 }
 
 export interface EngineModelParameters {
@@ -182,4 +187,7 @@ export interface FlightModelParameters {
 
 export interface FMSymbolsConfig {
   publishDepartureIdent: boolean;
+
+  /** whether to show RNP label on ND for RNP AR approaches */
+  showRnpArLabel: boolean;
 }

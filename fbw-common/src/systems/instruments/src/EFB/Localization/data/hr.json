@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Unesi SimBrief podatke",
       "TT": {
         "IncreaseFontSize": "Povećaj veličinu fonta",
         "ReduceFontSize": "Smanji veličinu fonta"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Podaci",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO zračne luke",
       "ApproachSpeed": "Approach Speed",
       "ApproachSpeedUnit": "čv",
@@ -295,8 +295,10 @@
       "Clear": "Čisto",
       "DropDownNo": "Ne",
       "DropDownYes": "Da",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Ispunite podatke iz",
       "FlapsConfiguration": "Flaps Configuration",
+      "LandingWeight": "Landing Weight",
       "Low": "Nisko",
       "MaximumManual": "Maximum Manual",
       "Medium": "Srednje",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Postupak za prekomjernu težinu",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Visina piste",
-      "RunwayAltitudeUnit": "ft ASL",
+      "Runway": "Runway",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Dry": "Dry (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Smjer piste",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Runway LDA",
@@ -330,10 +333,7 @@
       "Title": "Slijetanje",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Težina",
-      "WindDirection": "Smjer vjetra",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Jačina vjetra",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "čv"
     },
     "SYNC": "SYNC",
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -395,7 +393,9 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +569,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "About"
@@ -644,18 +644,17 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
-      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "SyncEfis": "Sync EFIS and Audio Controls Between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
       "Active": "Aktivno",
       "Auto": "Auto",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibrate",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Default Barometer Unit",
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
       "EnableSimBridge": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
@@ -667,6 +666,7 @@
       "Left": "Left",
       "LoadOnly": "Load Only",
       "None": "Niti jedan",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Isključena",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -697,6 +697,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -735,6 +736,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Settings",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Unrealistic",
     "flyPad": {
       "AutoBrightness": "Auto Brightness",
@@ -743,7 +747,6 @@
       "Blue": "Blue",
       "Brightness": "Brightness",
       "Dark": "Dark",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Language",
       "Light": "Light",
       "Local": "Local",
@@ -760,8 +763,6 @@
       "UtcAndLocal": "UTC and Local"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

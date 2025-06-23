@@ -16,6 +16,7 @@ import {
 } from './FsTypes';
 import { Waypoint } from '../../../shared';
 import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
+import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 
 export enum LoadType {
   Airport = 'A',
@@ -60,7 +61,7 @@ export class FacilityCache {
 
   private airwayFixCache = new Map<string, Waypoint[]>();
 
-  constructor() {
+  constructor(private readonly logError: ErrorLogger) {
     this.listener = RegisterViewListener('JS_LISTENER_FACILITY', EmptyCallback.Void, true);
 
     Coherent.on('SendAirport', this.receiveFacility.bind(this));
@@ -93,6 +94,10 @@ export class FacilityCache {
       const successfulIcaos = toFetch.filter((_, i) => results[i]);
       if (successfulIcaos.length === 0) {
         return fetched;
+      }
+      if (successfulIcaos.length !== toFetch.length) {
+        const unsuccessfulIcaos = toFetch.filter((_, i) => !results[i]);
+        this.logError(`[FacilityCache] Failed to fetch ${loadType}: ${unsuccessfulIcaos.join(', ')}`);
       }
 
       // there were at least some results...
@@ -136,6 +141,7 @@ export class FacilityCache {
 
     const result: boolean = await Coherent.call(LoadCall[loadType].slice(0, -1), icao);
     if (!result) {
+      this.logError(`[FacilityCache] Failed to fetch ${loadType}: ${icao}`);
       return undefined;
     }
 
