@@ -764,11 +764,16 @@ export class VerticalProfileManager {
   }
 
   shouldShowLatDiscontinuityAhead(): boolean {
-    return (
-      this.fcuModes.isInNavMode() &&
-      this.flightPlanService.active?.hasDiscontinuityLegNext() &&
-      this.mcduProfile.waypointPredictions.get(this.flightPlanService.activeLegIndex)?.secondsFromPresent < 30
-    );
+    if (!this.fcuModes.isInNavMode()) {
+      return false;
+    }
+
+    const legIndexBeforeDiscont = this.flightPlanService.active?.getFirstLegindexBeforeDiscontinuity();
+    if (legIndexBeforeDiscont !== undefined && legIndexBeforeDiscont !== null) {
+      return this.mcduProfile.waypointPredictions.get(legIndexBeforeDiscont)?.secondsFromPresent < 30;
+    }
+
+    return false;
   }
 }
 
