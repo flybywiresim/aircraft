@@ -73,6 +73,12 @@
             <Component  ID="HUD_BTNS">
                 <!-- CPT BTNS -->
                 <Component ID="Hud_Panel_Left" >
+                    <!-- HUD DECALS BACKLIGHTING -->
+                    <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                        <NODE_ID>LIGHTS_HUD</NODE_ID>
+                        <POTENTIOMETER>84</POTENTIOMETER>
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+                    </UseTemplate>
                     <!-- CPT HUD BRIGHTNESS -->
                     <UseTemplate Name="FBW_Stepless_Potentiometer">
                         <NODE_ID>KNOB_HUD_L_BRIGHTNESS</NODE_ID>
@@ -143,13 +149,12 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>HUD_L_TEX</NODE_ID>
                     <POTENTIOMETER>71</POTENTIOMETER>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Number)</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Number) 2 *</EMISSIVE_CODE>
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>HUD_R_TEX</NODE_ID>
                     <POTENTIOMETER>72</POTENTIOMETER>
-                        <!--  test -->
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Number) 12 *</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Number) 2 *</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
