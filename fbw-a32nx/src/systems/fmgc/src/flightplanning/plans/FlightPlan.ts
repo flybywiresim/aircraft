@@ -670,10 +670,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   /**
-   * Gets the index of the first leg located before a discontinuity
+   * Gets the index of the last leg located before a discontinuity
    * @returns null if no discontinuity exists, the leg index before the discontinuity otherwise
    */
-  getFirstLegindexBeforeDiscontinuity(): number | null {
+  getLastLegindexBeforeDiscontinuity(): number | null {
     for (let i = this.activeLegIndex; i < this.allLegs.length; i++) {
       const nextLeg = this.maybeElementAt(i + 1);
       // Handle case of end of flightplan or discont

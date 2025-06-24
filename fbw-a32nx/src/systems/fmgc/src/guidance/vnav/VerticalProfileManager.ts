@@ -768,14 +768,14 @@ export class VerticalProfileManager {
       return false;
     }
 
-    const legIndexBeforeDiscont = this.flightPlanService.active?.getFirstLegindexBeforeDiscontinuity();
-    if (legIndexBeforeDiscont !== undefined && legIndexBeforeDiscont !== null) {
-      const vnavPrediction = this.mcduProfile?.waypointPredictions.get(legIndexBeforeDiscont);
+    const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegindexBeforeDiscontinuity();
+    if (lastLegIndexBeforeDiscontinuity !== undefined && lastLegIndexBeforeDiscontinuity !== null) {
+      const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
       if (vnavPrediction) {
         return vnavPrediction.secondsFromPresent < 30;
       } else {
         // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
-        if (legIndexBeforeDiscont === this.flightPlanService.active.activeLegIndex) {
+        if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
           return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
         }
       }
