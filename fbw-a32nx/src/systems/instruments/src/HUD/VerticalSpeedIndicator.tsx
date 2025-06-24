@@ -10,6 +10,8 @@ import {
   Subject,
   Subscribable,
   VNode,
+  Subscription,
+  ConsumerSubject,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
@@ -33,14 +35,10 @@ interface TcasState {
 }
 
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
-  private VS = '';
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
+
   private VSRef = FSComponent.createRef<SVGGElement>();
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private onGround = true;
-  private crosswindMode = false;
-  private bitMask = 0;
-  private athMode = 0;
 
   private yOffsetSub = Subject.create(0);
 
@@ -69,132 +67,134 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     tcasGreenZoneH: 0,
   };
 
+  private readonly VSI = ConsumerSubject.create(this.sub.on('VSI').whenChanged(), '');
+  private readonly cWndMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.VSI, this.cWndMode);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
-
-    sub
-      .on('VSI')
-      .whenChanged()
-      .handle((v) => {
-        this.VS = v;
-        this.VSRef.instance.style.display = `${this.VS}`;
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-      });
-
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-        value == true
+    this.subscriptions.push(
+      this.cWndMode.sub((mode) => {
+        mode
           ? this.VSRef.instance.setAttribute('transform', 'scale(5 5) translate(90 -15)')
           : this.VSRef.instance.setAttribute('transform', 'scale(5 5) translate(90 20)');
-      });
+      }),
+    );
 
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('tcasState')
+        .whenChanged()
+        .handle((s) => {
+          this.tcasState.tcasState = s;
+          this.needsUpdate = true;
+        }),
+    );
 
-    sub
-      .on('tcasState')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasState = s;
-        this.needsUpdate = true;
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('tcasCorrective')
+        .whenChanged()
+        .handle((s) => {
+          this.tcasState.isTcasCorrective = s;
+          this.needsUpdate = true;
+        }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('tcasRedZoneL')
+        .whenChanged()
+        .handle((s) => {
+          this.tcasState.tcasRedZoneL = s;
+          this.needsUpdate = true;
+        }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('tcasRedZoneH')
+        .whenChanged()
+        .handle((s) => {
+          this.tcasState.tcasRedZoneH = s;
+          this.needsUpdate = true;
+        }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('tcasGreenZoneL')
+        .whenChanged()
+        .handle((s) => {
+          this.tcasState.tcasGreenZoneL = s;
+          this.needsUpdate = true;
+        }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('tcasGreenZoneH')
+        .whenChanged()
+        .handle((s) => {
+          this.tcasState.tcasGreenZoneH = s;
+          this.needsUpdate = true;
+        }),
+    );
 
-    sub
-      .on('tcasCorrective')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.isTcasCorrective = s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tcasRedZoneL')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasRedZoneL = s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tcasRedZoneH')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasRedZoneH = s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tcasGreenZoneL')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasGreenZoneL = s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('tcasGreenZoneH')
-      .whenChanged()
-      .handle((s) => {
-        this.tcasState.tcasGreenZoneH = s;
-        this.needsUpdate = true;
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('vs')
+        .withArinc429Precision(3)
+        .handle((vs) => {
+          const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
-    sub
-      .on('vs')
-      .withArinc429Precision(3)
-      .handle((vs) => {
-        const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
+          const absVSpeed = Math.abs(filteredVS);
 
-        const absVSpeed = Math.abs(filteredVS);
+          if (!vs.isNormalOperation()) {
+            this.vsFailed.instance.style.visibility = 'visible';
+            this.vsNormal.instance.style.visibility = 'hidden';
+          } else {
+            this.vsFailed.instance.style.visibility = 'hidden';
+            this.vsNormal.instance.style.visibility = 'visible';
+          }
 
-        if (!vs.isNormalOperation()) {
-          this.vsFailed.instance.style.visibility = 'visible';
-          this.vsNormal.instance.style.visibility = 'hidden';
-        } else {
-          this.vsFailed.instance.style.visibility = 'hidden';
-          this.vsNormal.instance.style.visibility = 'visible';
-        }
+          const sign = Math.sign(filteredVS);
 
-        const sign = Math.sign(filteredVS);
+          if (absVSpeed < 1000) {
+            this.yOffsetSub.set((filteredVS / 1000) * -27.22);
+          } else if (absVSpeed < 2000) {
+            this.yOffsetSub.set(((filteredVS - sign * 1000) / 1000) * -10.1 - sign * 27.22);
+          } else if (absVSpeed < 6000) {
+            this.yOffsetSub.set(((filteredVS - sign * 2000) / 4000) * -10.1 - sign * 37.32);
+          } else {
+            this.yOffsetSub.set(sign * -47.37);
+          }
 
-        if (absVSpeed < 1000) {
-          this.yOffsetSub.set((filteredVS / 1000) * -27.22);
-        } else if (absVSpeed < 2000) {
-          this.yOffsetSub.set(((filteredVS - sign * 1000) / 1000) * -10.1 - sign * 27.22);
-        } else if (absVSpeed < 6000) {
-          this.yOffsetSub.set(((filteredVS - sign * 2000) / 4000) * -10.1 - sign * 37.32);
-        } else {
-          this.yOffsetSub.set(sign * -47.37);
-        }
+          if (Math.abs(vs.value) < 20) {
+            this.VSRef.instance.style.display = 'none';
+          }
+        }),
+    );
 
-        if (Math.abs(vs.value) < 20) {
-          this.VSRef.instance.style.display = 'none';
-        }
-      });
-
-    sub.on('chosenRa').handle((ra) => {
-      this.radioAlt = ra;
-    });
+    this.subscriptions.push(
+      this.sub.on('chosenRa').handle((ra) => {
+        this.radioAlt = ra;
+      }),
+    );
 
     this.props.filteredRadioAltitude.sub((filteredRadioAltitude) => {
       this.filteredRadioAltitude = filteredRadioAltitude;
     });
   }
 
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
-      <g id="VerticalSpeedIndicator" ref={this.VSRef} transform="scale(5 5) translate(90 20)">
+      <g id="VerticalSpeedIndicator" display={this.VSI} transform="scale(5 5) translate(90 20)">
         {/* <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" /> */}
 
         <g id="VSpeedFailText" ref={this.vsFailed}>

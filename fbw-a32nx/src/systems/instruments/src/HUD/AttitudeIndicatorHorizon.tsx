@@ -13,19 +13,12 @@ import {
   VNode,
   HEvent,
   EventBus,
+  Subscription,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
-import {
-  calculateHorizonOffsetFromPitch,
-  LagFilter,
-  getSmallestAngle,
-  HudElems,
-  PitchscaleMode,
-  FIVE_DEG,
-  HudMode,
-} from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, LagFilter, HudElems, PitchscaleMode, FIVE_DEG, HudMode } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
@@ -44,132 +37,16 @@ interface LSPath {
   da: Arinc429WordData;
 }
 
-// FIXME check HDG/TRACK mode is engaged? yOffset?
 class HeadingBug extends DisplayComponent<{
   bus: ArincEventBus;
   isCaptainSide: boolean;
   yOffset: Subscribable<number>;
 }> {
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private sVisibility = Subject.create<String>('');
-  private sGndHeadingBugVisibility = Subject.create('block');
-  private sAirHeadingBugVisibility = Subject.create('none');
-
-  private isActive = false;
-
-  private selectedHeading = Subject.create(0);
-
-  private heading = Arinc429ConsumerSubject.create(null);
-
-  private attitude = Arinc429ConsumerSubject.create(null);
-
-  private fdActive = ConsumerSubject.create(null, true);
-
-  private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
-
-  private DeclutterSimVar = '';
-
-  private readonly visibilitySub = MappedSubject.create(
-    ([heading, attitude, fdActive, selectedHeading]) => {
-      const headingDelta = getSmallestAngle(selectedHeading, heading.value);
-      const inRange = Math.abs(headingDelta) <= DisplayRange / 2;
-      return !fdActive && attitude.isNormalOperation() && heading.isNormalOperation() && inRange;
-    },
-    this.heading,
-    this.attitude,
-    this.fdActive,
-    this.selectedHeading,
-  );
-
-  private readonly headingBugSubject = MappedSubject.create(
-    ([heading, selectedHeading, visible]) => {
-      if (visible) {
-        const headingDelta = getSmallestAngle(selectedHeading, heading.value);
-
-        const offset = (headingDelta * DistanceSpacing) / ValueSpacing;
-
-        return `transform: translate3d(${offset}px, 0px, 0px)`;
-      }
-      return '';
-    },
-    this.heading,
-    this.selectedHeading,
-    this.props.yOffset,
-    this.visibilitySub,
-  );
-
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & Arinc429Values & HudElems>();
-
-    this.heading.setConsumer(sub.on('heading').withArinc429Precision(2));
-
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        isCaptainSide
-          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
-          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
-        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
-        this.flightPhase = fp;
-        //onGround
-        if (this.flightPhase <= 2 || this.flightPhase >= 9) {
-          this.sVisibility.set('block');
-        }
-        //inFlight
-        if (this.flightPhase > 2 && this.flightPhase <= 8) {
-          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
-        }
-      });
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        value > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
-      });
-    sub
-      .on('selectedHeading')
-      .whenChanged()
-      .handle((s) => {
-        this.selectedHeading.set(s);
-      });
-
-    this.attitude.setConsumer(sub.on('pitchAr'));
-    this.fdActive.setConsumer(sub.on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active').whenChanged());
-
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-        if (fp < 5 || fp >= 9) {
-          this.sGndHeadingBugVisibility.set('block');
-          this.sAirHeadingBugVisibility.set('none');
-        }
-        if (fp > 4 && fp < 9) {
-          this.sAirHeadingBugVisibility.set('block');
-          this.sGndHeadingBugVisibility.set('none');
-        }
-      });
   }
-
   render(): VNode {
-    return (
-      <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" style={this.headingBugSubject} display={this.sVisibility}>
-        <path
-          id="airHorizonHeadingBug"
-          class="ThickStroke Green"
-          d="m 640,500  l 0 24"
-          display={this.sAirHeadingBugVisibility}
-        />
-      </g>
-    );
+    return <path id="airHorizonReference" class="ThickStroke Green" d="m 640,500  l 0 24" />;
   }
 }
 
@@ -181,6 +58,10 @@ interface HorizonProps {
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
+  >();
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
   private rollGroupRef = FSComponent.createRef<SVGGElement>();
@@ -196,48 +77,60 @@ export class Horizon extends DisplayComponent<HorizonProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const apfd = this.props.bus.getArincSubscriber<
-      Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent
-    >();
+    this.subscriptions.push(
+      this.sub.on('heading').handle((h) => {
+        this.headingFailed.set(!h.isNormalOperation());
+      }),
+    );
 
-    apfd.on('heading').handle((h) => {
-      this.headingFailed.set(!h.isNormalOperation());
-    });
+    this.subscriptions.push(
+      this.sub
+        .on('pitchAr')
+        .withArinc429Precision(3)
+        .handle((pitch) => {
+          if (pitch.isNormalOperation()) {
+            this.pitchGroupRef.instance.style.display = 'block';
 
-    apfd
-      .on('pitchAr')
-      .withArinc429Precision(3)
-      .handle((pitch) => {
-        if (pitch.isNormalOperation()) {
-          this.pitchGroupRef.instance.style.display = 'block';
+            this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 182.857}px, 0px)`;
+          } else {
+            this.pitchGroupRef.instance.style.display = 'none';
+          }
+          const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
+          this.yOffset.set(yOffset);
+        }),
+    );
 
-          this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 182.857}px, 0px)`;
-        } else {
-          this.pitchGroupRef.instance.style.display = 'none';
-        }
-        const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
-        this.yOffset.set(yOffset);
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('rollAr')
+        .withArinc429Precision(2)
+        .handle((roll) => {
+          if (roll.isNormalOperation()) {
+            this.rollGroupRef.instance.style.display = 'block';
 
-    apfd
-      .on('rollAr')
-      .withArinc429Precision(2)
-      .handle((roll) => {
-        if (roll.isNormalOperation()) {
-          this.rollGroupRef.instance.style.display = 'block';
+            this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
+          } else {
+            this.rollGroupRef.instance.style.display = 'none';
+          }
+        }),
+    );
 
-          this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
-        } else {
-          this.rollGroupRef.instance.style.display = 'none';
-        }
-      });
+    this.subscriptions.push(
+      this.sub.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
+        const isNormalLawActive = fcdcWord1.bitValue(11) && !fcdcWord1.isFailureWarning();
 
-    apfd.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
-      const isNormalLawActive = fcdcWord1.bitValue(11) && !fcdcWord1.isFailureWarning();
+        this.pitchProtActiveVisibility.set(isNormalLawActive ? 'visible' : 'hidden');
+        this.pitchProtLostVisibility.set(!isNormalLawActive ? 'visible' : 'hidden');
+      }),
+    );
+  }
 
-      this.pitchProtActiveVisibility.set(isNormalLawActive ? 'visible' : 'hidden');
-      this.pitchProtLostVisibility.set(!isNormalLawActive ? 'visible' : 'hidden');
-    });
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {
@@ -479,6 +372,8 @@ class PitchScale extends DisplayComponent<{
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
 }> {
+  private readonly subscriptions: Subscription[] = [];
+
   private forcedFma = false;
   private declutterMode = 0;
   private crosswindMode = false;
@@ -487,7 +382,7 @@ class PitchScale extends DisplayComponent<{
   private sVisibilityDeclutterMode2 = Subject.create<String>('');
   private sVisibilitySwitch = Subject.create<String>('block');
 
-  private sub = this.props.bus.getArincSubscriber<
+  private readonly sub = this.props.bus.getArincSubscriber<
     Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HEvent & HudElems
   >();
   private needsUpdate = false;
@@ -543,67 +438,88 @@ class PitchScale extends DisplayComponent<{
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.ls1btn, this.ls2btn, this.decMode, this.flightPhase, this.threeDegLineVis);
 
-    this.sub
-      .on('fmaVerticalArmed')
-      .whenChanged()
-      .handle((fmv) => {
-        ((fmv >> 4) & 1) === 1 ? (this.gsArmed = true) : (this.gsArmed = false);
-      });
-    this.sub
-      .on('pitchScaleMode')
-      .whenChanged()
-      .handle((v) => {
-        this.pitchScaleMode = v;
-        this.setPitchScale();
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('fmaVerticalArmed')
+        .whenChanged()
+        .handle((fmv) => {
+          ((fmv >> 4) & 1) === 1 ? (this.gsArmed = true) : (this.gsArmed = false);
+        }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('pitchScaleMode')
+        .whenChanged()
+        .handle((v) => {
+          this.pitchScaleMode = v;
+          this.setPitchScale();
+        }),
+    );
 
-    this.sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-        this.setPitchScale();
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('decMode')
+        .whenChanged()
+        .handle((value) => {
+          this.declutterMode = value;
+          this.setPitchScale();
+        }),
+    );
 
-    this.sub
-      .on('activeVerticalMode')
-      .whenChanged()
-      .handle((activeVerticalMode) => {
-        this.activeVerticalModeSub.set(activeVerticalMode);
-      });
-    this.sub.on('selectedFpa').handle((fpa) => {
-      this.selectedFpa.set(fpa);
-      this.needsUpdate = true;
-    });
-    this.sub.on('fpa').handle((fpa) => {
-      this.data.fpa = fpa;
-      this.needsUpdate = true;
-    });
-    this.sub.on('da').handle((da) => {
-      this.data.da = da;
-      this.needsUpdate = true;
-    });
-    this.sub.on('rollAr').handle((r) => {
-      this.data.roll = r;
-      this.needsUpdate = true;
-    });
-    this.sub.on('pitchAr').handle((p) => {
-      this.data.pitch = p;
-      this.needsUpdate = true;
-    });
-    this.sub.on('realTime').handle((_t) => {
-      if (this.needsUpdate) {
-        this.needsUpdate = false;
-        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
-        if (daAndFpaValid) {
-          // this.threeDegRef.instance.classList.remove('HiddenElement');
-          this.MoveThreeDegreeMark();
-        } else {
-          // this.threeDegRef.instance.classList.add('HiddenElement');
+    this.subscriptions.push(
+      this.sub
+        .on('activeVerticalMode')
+        .whenChanged()
+        .handle((activeVerticalMode) => {
+          this.activeVerticalModeSub.set(activeVerticalMode);
+        }),
+    );
+    this.subscriptions.push(
+      this.sub.on('selectedFpa').handle((fpa) => {
+        this.selectedFpa.set(fpa);
+        this.needsUpdate = true;
+      }),
+    );
+    this.subscriptions.push(
+      this.sub.on('fpa').handle((fpa) => {
+        this.data.fpa = fpa;
+        this.needsUpdate = true;
+      }),
+    );
+    this.subscriptions.push(
+      this.sub.on('da').handle((da) => {
+        this.data.da = da;
+        this.needsUpdate = true;
+      }),
+    );
+    this.subscriptions.push(
+      this.sub.on('rollAr').handle((r) => {
+        this.data.roll = r;
+        this.needsUpdate = true;
+      }),
+    );
+    this.subscriptions.push(
+      this.sub.on('pitchAr').handle((p) => {
+        this.data.pitch = p;
+        this.needsUpdate = true;
+      }),
+    );
+    this.subscriptions.push(
+      this.sub.on('realTime').handle((_t) => {
+        if (this.needsUpdate) {
+          this.needsUpdate = false;
+          const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+          if (daAndFpaValid) {
+            // this.threeDegRef.instance.classList.remove('HiddenElement');
+            this.MoveThreeDegreeMark();
+          } else {
+            // this.threeDegRef.instance.classList.add('HiddenElement');
+          }
         }
-      }
-    });
+      }),
+    );
   }
 
   private MoveThreeDegreeMark() {
@@ -659,6 +575,15 @@ class PitchScale extends DisplayComponent<{
       this.threeDegTxtBgRef.instance.style.display = `none`;
     }
   }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     const result = [] as SVGTextElement[];
 
@@ -742,6 +667,8 @@ class PitchScale extends DisplayComponent<{
   }
 }
 class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
   private tailStrike = FSComponent.createRef<SVGPathElement>();
   private hudMode = 0;
   private needsUpdate = false;
@@ -751,28 +678,33 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
-    sub
-      .on('hudFlightPhaseMode')
-      .whenChanged()
-      .handle((value) => {
-        this.hudMode = value;
-        this.needsUpdate = true;
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('hudFlightPhaseMode')
+        .whenChanged()
+        .handle((value) => {
+          this.hudMode = value;
+          this.needsUpdate = true;
+        }),
+    );
 
-    sub.on('pitchAr').handle((pitch) => {
-      this.pitch = pitch.value;
-      this.needsUpdate = true;
-    });
-    sub
-      .on('chosenRa')
-      .whenChanged()
-      .handle((ra) => {
-        this.ra = ra.value;
+    this.subscriptions.push(
+      this.sub.on('pitchAr').handle((pitch) => {
+        this.pitch = pitch.value;
         this.needsUpdate = true;
-      });
+      }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('chosenRa')
+        .whenChanged()
+        .handle((ra) => {
+          this.ra = ra.value;
+          this.needsUpdate = true;
+        }),
+    );
 
-    sub.on('realTime').onlyAfter(2).handle(this.hideShow.bind(this));
+    this.subscriptions.push(this.sub.on('realTime').onlyAfter(2).handle(this.hideShow.bind(this)));
   }
 
   private hideShow(_time: number) {
@@ -793,6 +725,14 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
         }, 3000);
       }
     }
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {

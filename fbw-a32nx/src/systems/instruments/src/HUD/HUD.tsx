@@ -11,6 +11,8 @@ import {
   VNode,
   Subscribable,
   HEvent,
+  ConsumerSubject,
+  Subscription,
 } from '@microsoft/msfs-sdk';
 import {
   ArincEventBus,
@@ -18,6 +20,7 @@ import {
   Arinc429Word,
   Arinc429WordData,
   FailuresConsumer,
+  Arinc429ConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 
 import { A320Failure } from '@failures';
@@ -55,20 +58,10 @@ interface HUDProps extends ComponentProps {
 }
 
 export class HUDComponent extends DisplayComponent<HUDProps> {
-  private spdTape = '';
-  private xWindSpdTape = '';
-  private altTape = '';
-  private xWindAltTape = '';
-  private windIndicator = '';
-  private spdTapeRef = FSComponent.createRef<SVGPathElement>();
-  private xWindSpdTapeRef = FSComponent.createRef<SVGPathElement>();
-  private altTapeRef = FSComponent.createRef<SVGPathElement>();
-  private xWindAltTapeRef = FSComponent.createRef<SVGPathElement>();
-  private spdTapeRef2 = FSComponent.createRef<SVGPathElement>();
-  private xWindSpdTapeRef2 = FSComponent.createRef<SVGPathElement>();
-  private altTapeRef2 = FSComponent.createRef<SVGPathElement>();
-  private xWindAltTapeRef2 = FSComponent.createRef<SVGPathElement>();
-  private windIndicatorRef = FSComponent.createRef<SVGGElement>();
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<
+    Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
+  >();
 
   private groundSpeed = 0;
   private onRollout = false;
@@ -77,12 +70,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
   private onGround = true;
   private headingFailed = Subject.create(true);
 
-  private displayBrightness = Subject.create(0);
-  private lastBrightnessValue = Subject.create(0);
-
   private displayFailed = Subject.create(false);
-
-  private displayPowered = Subject.create(false);
 
   private isAttExcessive = Subject.create(false);
 
@@ -97,150 +85,125 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
   private radioAltitudeFilter = new LagFilter(5);
 
   private failuresConsumer;
+  private readonly isCaptainSide = getDisplayIndex() === 1;
 
   constructor(props: HUDProps) {
     super(props);
     this.failuresConsumer = new FailuresConsumer();
   }
 
+  private hudPos = 0;
+  private brightness = Subject.create(1);
+
+  private readonly displayPowered = ConsumerSubject.create(this.sub.on(this.isCaptainSide ? 'elec' : 'elecFo'), true);
+  private readonly spdTape = ConsumerSubject.create(this.sub.on('spdTape').whenChanged(), '');
+  private readonly xWindSpdTape = ConsumerSubject.create(this.sub.on('xWindSpdTape').whenChanged(), '');
+  private readonly altTape = ConsumerSubject.create(this.sub.on('altTape').whenChanged(), '');
+  private readonly xWindAltTape = ConsumerSubject.create(this.sub.on('xWindAltTape').whenChanged(), '');
+  private readonly windIndicator = ConsumerSubject.create(this.sub.on('windIndicator').whenChanged(), '');
+  private readonly potentiometerPos = ConsumerSubject.create(
+    this.sub.on(this.isCaptainSide ? 'hudPotentiometerCaptain' : 'hudPotentiometerFo').whenChanged(),
+    0,
+  );
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(
+      this.displayPowered,
+      this.spdTape,
+      this.xWindSpdTape,
+      this.altTape,
+      this.xWindAltTape,
+      this.windIndicator,
+      this.potentiometerPos,
+    );
 
-    const isCaptainSide = getDisplayIndex() === 1;
+    this.failuresConsumer.register(this.isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
-    this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
+    this.subscriptions.push(
+      this.sub.on('hEvent').handle((ev) => {
+        if (ev === (this.isCaptainSide ? 'A320_Neo_HUD_L_POS' : 'A320_Neo_HUD_R_POS')) {
+          this.hudPos === 0 ? (this.hudPos = 1) : (this.hudPos = 0);
+          SimVar.SetSimVarValue(`L:${ev}`, 'number', this.hudPos);
 
-    const sub = this.props.bus.getSubscriber<
-      Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
-    >();
-
-    sub
-      .on('spdTape')
-      .whenChanged()
-      .handle((v) => {
-        this.spdTape = v;
-        this.spdTapeRef.instance.style.display = `${this.spdTape}`;
-        this.spdTapeRef2.instance.style.display = `${this.spdTape}`;
-      });
-    sub
-      .on('xWindSpdTape')
-      .whenChanged()
-      .handle((v) => {
-        this.xWindSpdTape = v;
-        this.xWindSpdTapeRef.instance.style.display = `${this.xWindSpdTape}`;
-        this.xWindSpdTapeRef2.instance.style.display = `${this.xWindSpdTape}`;
-      });
-    sub
-      .on('altTape')
-      .whenChanged()
-      .handle((v) => {
-        this.altTape = v;
-        this.altTapeRef.instance.style.display = `${this.altTape}`;
-        this.altTapeRef2.instance.style.display = `${this.altTape}`;
-      });
-    sub
-      .on('xWindAltTape')
-      .whenChanged()
-      .handle((v) => {
-        this.xWindAltTape = v;
-        this.xWindAltTapeRef.instance.style.display = `${this.xWindAltTape}`;
-        this.xWindAltTapeRef2.instance.style.display = `${this.xWindAltTape}`;
-      });
-    sub
-      .on('windIndicator')
-      .whenChanged()
-      .handle((v) => {
-        this.windIndicator = v;
-        this.windIndicatorRef.instance.style.display = `${this.windIndicator}`;
-      });
-    sub.on('hEvent').handle((ev) => {
-      if (ev.startsWith('A320_Neo_HUD_L')) {
-        let vL = SimVar.GetSimVarValue('L:A320_Neo_HUD_L_POS', 'number');
-        vL == 0 ? (vL = 1) : (vL = 0);
-        SimVar.SetSimVarValue('L:A320_Neo_HUD_L_POS', 'number', vL);
-        this.displayBrightness.set(0);
-        if (vL == 0) {
-          setTimeout(() => {
-            this.displayBrightness.set(this.lastBrightnessValue.get());
-          }, 1250);
+          if (this.hudPos === 0) {
+            setTimeout(() => {
+              this.brightness.set(this.potentiometerPos.get());
+            }, 1250);
+          } else {
+            this.brightness.set(0);
+          }
         }
-      }
-      if (ev.startsWith('A320_Neo_HUD_R')) {
-        let vR = SimVar.GetSimVarValue('L:A320_Neo_HUD_R_POS', 'number');
-        vR == 0 ? (vR = 1) : (vR = 0);
-        SimVar.SetSimVarValue('L:A320_Neo_HUD_R_POS', 'number', vR);
-        this.displayBrightness.set(0);
-        if (vR == 0) {
-          setTimeout(() => {
-            this.displayBrightness.set(this.lastBrightnessValue.get());
-          }, 1250);
-        }
-      }
-    });
+      }),
+    );
 
-    sub
-      .on(isCaptainSide ? 'hudPotentiometerCaptain' : 'hudPotentiometerFo')
-      .whenChanged()
-      .handle((value) => {
-        this.displayBrightness.set(value);
-        if (value != 0) {
-          this.lastBrightnessValue.set(value);
-        }
-      });
+    this.subscriptions.push(
+      this.sub.on('heading').handle((h) => {
+        this.headingFailed.set(!h.isNormalOperation());
+      }),
+    );
 
-    sub
-      .on(isCaptainSide ? 'elec' : 'elecFo')
-      .whenChanged()
-      .handle((value) => {
-        this.displayPowered.set(value);
-      });
+    this.subscriptions.push(
+      this.sub.on('rollAr').handle((r) => {
+        this.roll = r;
+      }),
+    );
 
-    sub.on('heading').handle((h) => {
-      this.headingFailed.set(!h.isNormalOperation());
-    });
+    this.subscriptions.push(
+      this.sub.on('pitchAr').handle((p) => {
+        this.pitch = p;
+      }),
+    );
 
-    sub.on('rollAr').handle((r) => {
-      this.roll = r;
-    });
+    this.subscriptions.push(
+      this.sub
+        .on('realTime')
+        .atFrequency(1)
+        .handle((_t) => {
+          //console.log(this.hudPos, this.potentiometerPos.get());
+          this.failuresConsumer.update();
+          this.displayFailed.set(
+            this.failuresConsumer.isActive(
+              this.isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay,
+            ),
+          );
+          if (
+            !this.isAttExcessive.get() &&
+            ((this.pitch.isNormalOperation() && (this.pitch.value > 25 || this.pitch.value < -13)) ||
+              (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45))
+          ) {
+            this.isAttExcessive.set(true);
+          } else if (
+            this.isAttExcessive.get() &&
+            this.pitch.isNormalOperation() &&
+            this.pitch.value < 22 &&
+            this.pitch.value > -10 &&
+            this.roll.isNormalOperation() &&
+            Math.abs(this.roll.value) < 40
+          ) {
+            this.isAttExcessive.set(false);
+          }
+        }),
+    );
 
-    sub.on('pitchAr').handle((p) => {
-      this.pitch = p;
-    });
-
-    sub
-      .on('realTime')
-      .atFrequency(1)
-      .handle((_t) => {
-        this.failuresConsumer.update();
-        this.displayFailed.set(
-          this.failuresConsumer.isActive(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay),
+    this.subscriptions.push(
+      this.sub.on('chosenRa').handle((ra) => {
+        this.ownRadioAltitude = ra;
+        const filteredRadioAltitude = this.radioAltitudeFilter.step(
+          this.ownRadioAltitude.value,
+          this.props.instrument.deltaTime / 1000,
         );
-        if (
-          !this.isAttExcessive.get() &&
-          ((this.pitch.isNormalOperation() && (this.pitch.value > 25 || this.pitch.value < -13)) ||
-            (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45))
-        ) {
-          this.isAttExcessive.set(true);
-        } else if (
-          this.isAttExcessive.get() &&
-          this.pitch.isNormalOperation() &&
-          this.pitch.value < 22 &&
-          this.pitch.value > -10 &&
-          this.roll.isNormalOperation() &&
-          Math.abs(this.roll.value) < 40
-        ) {
-          this.isAttExcessive.set(false);
-        }
-      });
+        this.filteredRadioAltitude.set(filteredRadioAltitude);
+      }),
+    );
+  }
 
-    sub.on('chosenRa').handle((ra) => {
-      this.ownRadioAltitude = ra;
-      const filteredRadioAltitude = this.radioAltitudeFilter.step(
-        this.ownRadioAltitude.value,
-        this.props.instrument.deltaTime / 1000,
-      );
-      this.filteredRadioAltitude.set(filteredRadioAltitude);
-    });
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {
@@ -249,7 +212,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         failed={this.displayFailed}
         bus={this.props.bus}
         powered={this.displayPowered}
-        brightness={this.displayBrightness}
+        brightness={this.brightness}
         normDmc={getDisplayIndex()}
       >
         <svg class="hud-svg" version="1.1" viewBox="0 0 1280 1024" xmlns="http://www.w3.org/2000/svg">
@@ -269,7 +232,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
           <g id="TapesMasks">
             <path
-              ref={this.altTapeRef}
+              display={this.altTape}
               id="AltitudeTapeMask"
               class="BlackFill"
               d="M 1039 320 v 380 h 113 v -380 z"
@@ -277,22 +240,22 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
             <path
               id="CwAltTapeMask"
-              ref={this.xWindAltTapeRef}
+              display={this.xWindAltTape}
               class="NormalStroke  BackgroundFill"
               d="m1045 284 h 106 v 100 h -106 z"
             />
 
-            <path ref={this.spdTapeRef} id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
+            <path display={this.spdTape} id="SpeedTapeMask" class="BlackFill" d="m70 322 h 98 v 365 h-98z"></path>
 
             <path
-              ref={this.xWindSpdTapeRef}
+              display={this.xWindSpdTape}
               id="cwSpdTapeBg"
               class="NormalStroke  BackgroundFill"
               d="m71 242 h 94 v 172 h -94z"
             />
           </g>
 
-          <g id="WindIndicator" class="Wind" transform="translate(250 200) " ref={this.windIndicatorRef}>
+          <g id="WindIndicator" class="Wind" transform="translate(250 200) " display={this.windIndicator}>
             <WindIndicator bus={this.props.bus} />
           </g>
 
@@ -305,26 +268,26 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             <path
               id="Mask2"
               class="BackgroundFill"
-              ref={this.spdTapeRef2}
+              display={this.spdTape}
               d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z"
             />
             <path
               id="Mask2Cw"
               class="BackgroundFill"
-              ref={this.xWindSpdTapeRef2}
+              display={this.xWindSpdTape}
               d="M 60 0 H 208 V 1024 H 60 Z  M 61 242 v 172h 146 v -172 z"
             />
             <path
               id="Mask3"
               class="BackgroundFill"
-              ref={this.altTapeRef2}
+              display={this.altTape}
               d="M 1038 250 h 122 V 720 H 1038 Z  M 1039 323 v 364 h 120 v -364 z"
             />
 
             <path
               id="Mask3Cw"
               class="BackgroundFill"
-              ref={this.xWindAltTapeRef2}
+              display={this.xWindAltTape}
               d="M 1038 0 h 122 v 1024 h -122 Z  M 1039 284 v 90 h 120 v -90z"
             />
           </g>
@@ -372,6 +335,9 @@ interface ExtendedHorizonProps {
 }
 
 class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
+
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
   private rollGroupRef = FSComponent.createRef<SVGGElement>();
   private path = FSComponent.createRef<SVGPathElement>();
@@ -380,7 +346,8 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
   private extendedAlt = FSComponent.createRef<SVGPathElement>();
   private extendedSpd = FSComponent.createRef<SVGPathElement>();
 
-  private pitch = 0;
+  private pitch: Arinc429WordData = Arinc429Register.empty();
+  private roll = 0;
   private yOffset = Subject.create(0);
 
   private xAltTop = Subject.create<String>('');
@@ -391,163 +358,161 @@ class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
 
   private spdRollDev = 0;
   private altRollDev = 0;
-  private crosswindMode = false;
   private upperBound = 0;
   private lowerBound = 0;
 
+  private readonly cWndMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
+  private readonly pitchAr = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
+  private readonly rollAr = Arinc429ConsumerSubject.create(this.sub.on('rollAr').whenChanged());
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.cWndMode, this.pitchAr, this.rollAr);
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
+    this.pitchAr.sub((pitch) => {
+      this.pitch = pitch;
+      if (this.pitchAr.get().isNormalOperation()) {
+        this.pitchGroupRef.instance.style.display = 'block';
+        this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(this.pitch.value) - 182.857}px, 0px)`;
+        const yOffset = calculateHorizonOffsetFromPitch(this.pitch.value) - 182.857;
+        this.yOffset.set(yOffset);
+      }
+    });
 
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-      });
+    this.rollAr.sub(() => {
+      this.roll = this.rollAr.get().value;
+      const radRoll = (this.roll / 180) * Math.PI;
 
-    sub
-      .on('rollAr')
-      .whenChanged()
-      .handle((roll) => {
-        const radRoll = (roll.value / 180) * Math.PI;
+      //frame of reference 1  air pitch   :F1
+      //frame 2  center: airHorizonHeadingBug x: hud horizon :F2
+      const D = calculateHorizonOffsetFromPitch(this.pitch.value);
 
-        //frame of reference 1  air pitch   :F1
-        //frame 2  center: airHorizonHeadingBug x: hud horizon :F2
-        const D = calculateHorizonOffsetFromPitch(this.pitch);
+      let rSign = 1;
 
-        let rSign = 1;
+      const xPos = -D * Math.sin(radRoll);
 
-        const xPos = -D * Math.sin(radRoll);
+      // y position from frame2 to eval if extention should be drawn
+      if (this.cWndMode.get() === false) {
+        this.lowerBound = -6.143;
+        this.upperBound = 355;
+      } else {
+        this.lowerBound = -87;
+        this.upperBound = 87;
+      }
 
-        // y position from frame2 to eval if extention should be drawn
-        if (this.crosswindMode === false) {
-          this.lowerBound = -6.143;
-          this.upperBound = 355;
+      let Lalt = 0;
+      let Lspd = 0;
+
+      if (this.roll < 0) {
+        if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
+          Lspd = 472;
+          Lalt = 400;
         } else {
-          this.lowerBound = -87;
-          this.upperBound = 87;
+          Lalt = 494;
+          Lspd = 570;
         }
-
-        let Lalt = 0;
-        let Lspd = 0;
-
-        if (roll.value < 0) {
-          if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-            Lspd = 472;
-            Lalt = 400;
-          } else {
-            Lalt = 494;
-            Lspd = 570;
-          }
+      } else {
+        if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
+          Lalt = 400;
+          Lspd = 472;
         } else {
-          if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-            Lalt = 400;
-            Lspd = 472;
-          } else {
-            Lalt = 494;
-            Lspd = 570;
-          }
+          Lalt = 494;
+          Lspd = 570;
         }
-        const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
-        const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
+      }
+      const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
+      const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
 
-        if (roll.isNormalOperation()) {
-          this.spdRollDev = -(640 - 168) * Math.tan(radRoll);
-          this.altRollDev = Lalt * Math.tan(radRoll);
-          this.rollGroupRef.instance.style.display = 'block';
-          this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 640 329.143)`);
+      if (this.rollAr.get().isNormalOperation()) {
+        this.spdRollDev = -(640 - 168) * Math.tan(radRoll);
+        this.altRollDev = Lalt * Math.tan(radRoll);
+        this.rollGroupRef.instance.style.display = 'block';
+        this.rollGroupRef.instance.setAttribute('transform', `rotate(${-this.roll} 640 329.143)`);
 
-          if (roll.value < 0) {
-            rSign = -1;
-          } else {
-            rSign = 1;
-          }
-
-          const ax = '640 ';
-          const ay = '512 ';
-          const bx = '0 ';
-          const by = (-D).toString();
-          const cx = (640 + xPos * Math.cos(radRoll * rSign)).toString();
-          const cy = (512 + xPos * Math.sin(radRoll)).toString();
-
-          const ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //acual eval point
-          const ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //acual eval point
-
-          const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
-          const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
-
-          //vertial offset of eval point from horizon
-          let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
-          if (Number(ey) < 512) {
-            F1AltSideVertDev *= -1;
-          }
-          let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
-          if (Number(eys) < 512) {
-            F1SpdSideVertDev *= -1;
-          }
-
-          // debug eval point pos circles
-          this.xAltTop.set(xPosF.toString());
-          this.yAltTop.set((512).toString());
-          this.xSpdTop.set(xPosFspd.toString());
-          this.ySpdTop.set((512).toString());
-          // end debug
-          //debug draws : toggle .DEBUG to block in styles.scss to show
-          this.path.instance.setAttribute('d', `m ${ax} ${ay} l ${bx}  ${by} L ${cx}  ${cy}     z`);
-          this.path2.instance.setAttribute('d', `m ${ax} ${ay} L ${ex}  ${ey}  L ${xPosF} 512     z`);
-          this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
-          //end debug
-
-          const F1HorizonPitchOffset = D * Math.cos(radRoll);
-
-          if (
-            F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
-            F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
-          ) {
-            this.extendedAlt.instance.setAttribute('d', ``);
-          } else {
-            this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
-            this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
-          }
-
-          if (
-            F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
-            F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
-          ) {
-            this.extendedSpd.instance.setAttribute('d', ``);
-          } else {
-            this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
-            this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
-          }
-          // console.log(
-          //     "\nD: "+D +
-          //     "\nD cos r: "+D*Math.cos(radRoll) +
-          //     "\nF1HorizonPitchOffset-F1SpdSideVertDev: "+t1 +
-          //     "\nyPos-F1SpdSideVertDev: "+t2 +
-          //     "\nyPos: "+yPos +
-          //     "\nF1HorizonPitchOffset: "+F1HorizonPitchOffset +
-          //     "\nyroll: "+roll.value +
-          //     "\nF1SpdSideVertDev: "+F1SpdSideVertDev
-          // );
+        if (this.roll < 0) {
+          rSign = -1;
         } else {
-          this.rollGroupRef.instance.style.display = 'none';
+          rSign = 1;
         }
-      });
 
-    sub
-      .on('pitchAr')
-      .whenChanged()
-      .handle((pitch) => {
-        this.pitch = pitch.value;
-        if (pitch.isNormalOperation()) {
-          this.pitchGroupRef.instance.style.display = 'block';
-          this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 182.857}px, 0px)`;
-          const yOffset = calculateHorizonOffsetFromPitch(pitch.value) - 182.857;
-          this.yOffset.set(yOffset);
+        const ax = '640 ';
+        const ay = '512 ';
+        const bx = '0 ';
+        const by = (-D).toString();
+        const cx = (640 + xPos * Math.cos(radRoll * rSign)).toString();
+        const cy = (512 + xPos * Math.sin(radRoll)).toString();
+
+        const ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //acual eval point
+        const ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //acual eval point
+
+        const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
+        const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
+
+        //vertial offset of eval point from horizon
+        let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
+        if (Number(ey) < 512) {
+          F1AltSideVertDev *= -1;
         }
-      });
+        let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
+        if (Number(eys) < 512) {
+          F1SpdSideVertDev *= -1;
+        }
+
+        // debug eval point pos circles
+        this.xAltTop.set(xPosF.toString());
+        this.yAltTop.set((512).toString());
+        this.xSpdTop.set(xPosFspd.toString());
+        this.ySpdTop.set((512).toString());
+        // end debug
+        //debug draws : toggle .DEBUG to block in styles.scss to show
+        this.path.instance.setAttribute('d', `m ${ax} ${ay} l ${bx}  ${by} L ${cx}  ${cy}     z`);
+        this.path2.instance.setAttribute('d', `m ${ax} ${ay} L ${ex}  ${ey}  L ${xPosF} 512     z`);
+        this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
+        //end debug
+
+        const F1HorizonPitchOffset = D * Math.cos(radRoll);
+
+        if (
+          F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
+          F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
+        ) {
+          this.extendedAlt.instance.setAttribute('d', ``);
+        } else {
+          this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
+          this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
+        }
+
+        if (
+          F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
+          F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
+        ) {
+          this.extendedSpd.instance.setAttribute('d', ``);
+        } else {
+          this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
+          this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
+        }
+        // console.log(
+        //     "\nD: "+D +
+        //     "\nD cos r: "+D*Math.cos(radRoll) +
+        //     "\nF1HorizonPitchOffset-F1SpdSideVertDev: "+t1 +
+        //     "\nyPos-F1SpdSideVertDev: "+t2 +
+        //     "\nyPos: "+yPos +
+        //     "\nF1HorizonPitchOffset: "+F1HorizonPitchOffset +
+        //     "\nyroll: "+roll.value +
+        //     "\nF1SpdSideVertDev: "+F1SpdSideVertDev
+        // );
+      } else {
+        this.rollGroupRef.instance.style.display = 'none';
+      }
+    });
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {

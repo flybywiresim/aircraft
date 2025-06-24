@@ -2,7 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  DisplayComponent,
+  FSComponent,
+  Subject,
+  Subscribable,
+  VNode,
+  Subscription,
+  ConsumerSubject,
+} from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
@@ -31,9 +40,12 @@ export class FlightPathDirector extends DisplayComponent<{
   bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
 }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<
+    HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus & HudElems
+  >();
   private flightPhase = -1;
   private declutterMode = 0;
-  private crosswindMode;
   private fdCueOffRange;
   private sVisibility = Subject.create<String>('');
 
@@ -64,112 +76,115 @@ export class FlightPathDirector extends DisplayComponent<{
 
   private readonly shouldFlash = Subject.create(false);
 
+  private readonly flightPathDirector = ConsumerSubject.create(this.sub.on('flightPathDirector').whenChanged(), '');
+  private readonly crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
+    this.subscriptions.push(this.flightPathDirector, this.crosswindMode);
     const isCaptainSide = getDisplayIndex() === 1;
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & FcuBus & FgBus & HudElems>();
 
-    sub.on('cWndMode').handle((d) => {
-      this.crosswindMode = d;
-    });
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-        if (fp < 5 || fp >= 9) {
-          this.sVisibility.set('none');
+    this.subscriptions.push(
+      this.sub
+        .on(isCaptainSide ? 'fd1Active' : 'fd2Active')
+        .whenChanged()
+        .handle((fd) => {
+          this.data.fdEngaged = fd;
+          this.needsUpdate = true;
+        }),
+    );
+
+    this.subscriptions.push(
+      this.sub
+        .on('fcuDiscreteWord1')
+        .whenChanged()
+        .handle((a) => {
+          this.fcuDiscreteWord1 = a;
+          this.needsUpdate = true;
+        }),
+    );
+
+    this.subscriptions.push(
+      this.sub
+        .on('fcuEisDiscreteWord2')
+        .whenChanged()
+        .handle((tr) => {
+          this.data.fdOff = tr.bitValueOr(23, false);
+          this.needsUpdate = true;
+        }),
+    );
+
+    this.subscriptions.push(
+      this.sub
+        .on('fmgcDiscreteWord2')
+        .whenChanged()
+        .handle((tr) => {
+          this.fmgcDiscreteWord2 = tr;
+
+          this.handleFpdFlashing();
+        }),
+    );
+
+    this.subscriptions.push(
+      this.sub
+        .on('fmgcDiscreteWord5')
+        .whenChanged()
+        .handle((tr) => {
+          this.fmgcDiscreteWord5 = tr;
+
+          this.handleFpdFlashing();
+        }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('fpa').handle((fpa) => {
+        this.data.fpa = fpa;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('da').handle((da) => {
+        this.data.da = da;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('rollFdCommand').handle((fdp) => {
+        this.data.rollFdCommand = fdp;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('pitchFdCommand').handle((fdr) => {
+        this.data.pitchFdCommand = fdr;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('rollAr').handle((r) => {
+        this.data.roll = r;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('pitchAr').handle((p) => {
+        this.data.pitch = p;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('realTime').handle((_t) => {
+        this.handlePath();
+        if (this.needsUpdate && this.isVisible.get()) {
+          this.moveBird();
         }
-        if (fp > 4 && fp < 9) {
-          this.sVisibility.set('block');
-        }
-      });
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-        this.declutterMode = value;
-      });
-    sub
-      .on(isCaptainSide ? 'fd1Active' : 'fd2Active')
-      .whenChanged()
-      .handle((fd) => {
-        this.data.fdEngaged = fd;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('fcuDiscreteWord1')
-      .whenChanged()
-      .handle((a) => {
-        this.fcuDiscreteWord1 = a;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('fcuEisDiscreteWord2')
-      .whenChanged()
-      .handle((tr) => {
-        this.data.fdOff = tr.bitValueOr(23, false);
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('fmgcDiscreteWord2')
-      .whenChanged()
-      .handle((tr) => {
-        this.fmgcDiscreteWord2 = tr;
-
-        this.handleFpdFlashing();
-      });
-
-    sub
-      .on('fmgcDiscreteWord5')
-      .whenChanged()
-      .handle((tr) => {
-        this.fmgcDiscreteWord5 = tr;
-
-        this.handleFpdFlashing();
-      });
-
-    sub.on('fpa').handle((fpa) => {
-      this.data.fpa = fpa;
-      this.needsUpdate = true;
-    });
-
-    sub.on('da').handle((da) => {
-      this.data.da = da;
-      this.needsUpdate = true;
-    });
-
-    sub.on('rollFdCommand').handle((fdp) => {
-      this.data.rollFdCommand = fdp;
-      this.needsUpdate = true;
-    });
-
-    sub.on('pitchFdCommand').handle((fdr) => {
-      this.data.pitchFdCommand = fdr;
-      this.needsUpdate = true;
-    });
-
-    sub.on('rollAr').handle((r) => {
-      this.data.roll = r;
-      this.needsUpdate = true;
-    });
-
-    sub.on('pitchAr').handle((p) => {
-      this.data.pitch = p;
-      this.needsUpdate = true;
-    });
-
-    sub.on('realTime').handle((_t) => {
-      this.handlePath();
-      if (this.needsUpdate && this.isVisible.get()) {
-        this.moveBird();
-      }
-    });
+      }),
+    );
 
     this.props.isAttExcessive.sub((_a) => {
       this.needsUpdate = true;
@@ -239,23 +254,10 @@ export class FlightPathDirector extends DisplayComponent<{
       const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
 
       const xOffset = xOffsetFpv + FDRollOrderLim * 13;
-      const yOffset = yOffsetFpv + FDPitchOrderLim * (182.86 / 5);
-
-      // console.log(
-      //   'initial fdr: ' +
-      //     FDRollOrder +
-      //     '  new:  ' +
-      //     FDRollOrder2 +
-      //     '  xOffset: ' +
-      //     xOffset +
-      //     '  testOffset: ' +
-      //     testOffset +
-      //     '  FDRollOrderLim: ' +
-      //     FDRollOrderLim,
-      // );
+      const yOffset = yOffsetFpv + FDPitchOrderLim * 13 + rollSin * (xOffset - xOffsetFpv);
 
       //set lateral limit for fdCue
-      if (this.crosswindMode == 0) {
+      if (this.crosswindMode.get() === false) {
         if (xOffset < -428 || xOffset > 360) {
           this.fdCueOffRange = true;
         } else {
@@ -279,18 +281,6 @@ export class FlightPathDirector extends DisplayComponent<{
       } else {
         this.birdPathCircle.instance.setAttribute('stroke-dasharray', '');
       }
-
-      // console.log(
-      //   'FDPitchOrderLim ' +
-      //     FDPitchOrderLim +
-      //     'FDRollOrderLim ' +
-      //     FDRollOrderLim +
-      //     'xOffsetLim ' +
-      //     xOffsetLim +
-      //     'yOffset ' +
-      //     yOffset,
-      //   'xOffsetFpv ' + xOffsetFpv + 'yOffsetFpv ' + yOffsetFpv,
-      // );
     }
     this.needsUpdate = false;
   }
@@ -300,6 +290,14 @@ export class FlightPathDirector extends DisplayComponent<{
     const fdPitchBarFlashing = this.fmgcDiscreteWord5.bitValueOr(24, false);
 
     this.shouldFlash.set(fdRollBarFlashing || fdPitchBarFlashing);
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {

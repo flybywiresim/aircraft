@@ -3,17 +3,24 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  Subject,
   ClockEvents,
   DisplayComponent,
   FSComponent,
   Subscribable,
   VNode,
   NodeReference,
+  ConsumerSubject,
+  Subscription,
+  MappedSubject,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  HUDSyntheticRunway,
+  Arinc429ConsumerSubject,
+  Arinc429RegisterSubject,
+} from '@flybywiresim/fbw-sdk';
 
-import { getSmallestAngle, HudElems } from './HUDUtils';
+import { getSmallestAngle, HudElems, MdaMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
 
@@ -21,116 +28,169 @@ export class SyntheticRunway extends DisplayComponent<{
   bus: ArincEventBus;
   filteredRadioAlt: Subscribable<number>;
 }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<
+    HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems
+  >();
   private filteredRadioAltitude = 0;
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private sVisibility = Subject.create<String>('');
   private data: HUDSyntheticRunway;
-  private validData = false;
   private alt: number;
   private logOnce = 0;
-  private belowMda = true; //set true for debug | false for prod
-  private altitude = 0;
   private lat: number;
   private long: number;
   private heading: number;
-  private MdaOrDh: number;
-  private mda: number;
-  private dh: number;
-  private nMda = 0;
-  private aMda = 0;
-  private landingElevation = 0;
-  private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
   private prevRwyHdg;
-  // private centerlineGroupRef = FSComponent.createRef<SVGGElement>();
-
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
 
-  private updateIndication(): void {
-    const altDelta = this.mda;
-    const altDeltaDh = this.dh;
+  /** bit 29 is NO DH selection */
+  private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
 
-    altDelta > altDeltaDh ? (this.MdaOrDh = altDelta) : (this.MdaOrDh = altDeltaDh);
-    if (this.filteredRadioAltitude < 10) {
-      this.sVisibility.set('none');
-    }
-    // console.log(
-    //   'altDelta' +
-    //     this.mda +
-    //     ' altDeltaDh' +
-    //     this.dh +
-    //     ' mdaOrDh: ' +
-    //     this.MdaOrDh +
-    //     ' this.belowMda: ' +
-    //     this.belowMda +
-    //     ' this.filteredRadioAltitude: ' +
-    //     this.filteredRadioAltitude,
-    // );
-  }
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+  private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa').whenChanged());
+  private readonly syntheticRunwway = ConsumerSubject.create(this.sub.on('syntheticRunwway').whenChanged(), '');
+  private readonly mda = Arinc429RegisterSubject.createEmpty();
+  private readonly dh = Arinc429RegisterSubject.createEmpty();
+  private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
+
+  private readonly mdaDhMode = MappedSubject.create(
+    ([noDh, dh, mda]) => {
+      if (noDh) {
+        return MdaMode.NoDh;
+      }
+
+      if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
+        return MdaMode.Radio;
+      }
+
+      if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
+        return MdaMode.Baro;
+      }
+
+      return MdaMode.None;
+    },
+    this.noDhSelected,
+    this.dh,
+    this.mda,
+  );
+
+  private readonly mdaDhValue = MappedSubject.create(
+    ([mdaMode, dh, mda]) => {
+      switch (mdaMode) {
+        case MdaMode.Baro:
+          return mda.value;
+        case MdaMode.Radio:
+          return dh.value;
+        default:
+          return 0;
+      }
+    },
+    this.mdaDhMode,
+    this.dh,
+    this.mda,
+  );
+
+  private readonly visToggle = MappedSubject.create(
+    ([mda, dh, mdaDhMode, altitude, ra, syntheticRunwway]) => {
+      let diff;
+      const minAlt = this.mdaDhValue.get();
+      if (syntheticRunwway === 'block') {
+        switch (mdaDhMode) {
+          case MdaMode.Baro:
+            diff = altitude.value - mda.value;
+
+            break;
+          case MdaMode.Radio:
+            diff = ra.value - dh.value;
+            break;
+          case MdaMode.NoDh:
+            diff = ra.value;
+            break;
+          default:
+            diff = 0;
+            break;
+        }
+
+        if (mdaDhMode === MdaMode.Baro) {
+          return diff < -50 ? 'none' : 'block';
+        }
+
+        if (mdaDhMode === MdaMode.Radio) {
+          if (minAlt > 50) {
+            return diff < -50 ? 'none' : 'block';
+          } else if (minAlt > 25 && minAlt <= 50) {
+            return diff < -25 ? 'none' : 'block';
+          } else if (minAlt <= 25) {
+            return diff <= 0 ? 'none' : 'block';
+          }
+        }
+
+        if (mdaDhMode === MdaMode.NoDh || mdaDhMode === MdaMode.None) {
+          return diff > 10 ? 'none' : 'block';
+        }
+      } else {
+        return 'none';
+      }
+    },
+    this.mda,
+    this.dh,
+    this.mdaDhMode,
+    this.altitude,
+    this.ra,
+    this.syntheticRunwway,
+  );
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems>();
+    this.subscriptions.push(this.altitude, this.ra, this.syntheticRunwway, this.noDhSelected);
 
-    sub
-      .on('baroMode')
-      .whenChanged()
-      .handle(() => {
-        this.updateIndication();
-      });
+    this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+    this.sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
 
     this.props.filteredRadioAlt.sub((fra) => {
       this.filteredRadioAltitude = fra;
     }, true);
 
-    sub
-      .on('decMode')
-
-      .handle((value) => {
-        //console.log(this.filteredRadioAltitude + ' ' + this.sVisibility);
-        if (this.filteredRadioAltitude < 10) {
-          this.sVisibility.set('none');
-        } else {
-          value > 0 ? this.sVisibility.set('none') : this.sVisibility.set('block');
+    this.subscriptions.push(
+      this.sub.on('symbol').handle((data) => {
+        this.data = data;
+        if (this.data === undefined) {
+          console.log('symbol data not loaded');
         }
-      });
+      }),
+    );
 
-    sub.on('symbol').handle((data) => {
-      this.data = data;
-      if (this.data === undefined) {
-        console.log('symbol data not loaded');
-      }
-    });
+    this.subscriptions.push(
+      this.sub
+        .on('realTime')
+        .atFrequency(4)
+        .handle((_t) => {
+          if (this.visToggle.get() === 'block') {
+            this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+            this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+            this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-    sub
-      .on('realTime')
-      .atFrequency(4)
-      .handle((_t) => {
-        this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
-        this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-        this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-        this.mda = SimVar.GetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
-        this.dh = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
-
-        if (this.data !== undefined) {
-          if (this.prevRwyHdg !== this.data.direction) {
-            this.prevRwyHdg = this.data.direction;
-            this.logOnce = 0;
-            //console.log("defined data");
+            if (this.data !== undefined) {
+              if (this.prevRwyHdg !== this.data.direction) {
+                this.prevRwyHdg = this.data.direction;
+                this.logOnce = 0;
+                //console.log("defined data");
+              }
+              this.updateSyntheticRunway();
+            } else {
+              console.log('undefined data...');
+            }
           }
-          this.updateSyntheticRunway();
-        } else {
-          console.log('undefined data...');
-        }
-        this.updateIndication();
-      });
+        }),
+    );
 
-    sub.on('trueHeading').handle((h) => {
-      if (h.isNormalOperation()) {
-        this.heading = h.value;
-      }
-    });
+    this.subscriptions.push(
+      this.sub.on('trueHeading').handle((h) => {
+        if (h.isNormalOperation()) {
+          this.heading = h.value;
+        }
+      }),
+    );
   }
 
   // 	Phiφ is latitude, Lambdaλ is longitude, θ is the bearing (clockwise from north), δ is the angular distance d/R; d being the distance travelled, R the earth’s radius
@@ -322,6 +382,14 @@ export class SyntheticRunway extends DisplayComponent<{
     return Math.abs(delta[0]) <= 35 && Math.abs(delta[1]) <= 28;
   }
 
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     const res: SVGPathElement[] = [];
     for (let i = 0; i < 4; i++) {
@@ -336,7 +404,7 @@ export class SyntheticRunway extends DisplayComponent<{
     }
 
     return (
-      <g id="SyntheticRunway" display={this.sVisibility}>
+      <g id="SyntheticRunway" display={this.visToggle}>
         {res}
       </g>
     );

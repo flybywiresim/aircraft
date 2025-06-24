@@ -2,8 +2,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subject, Subscribable, VNode, ClockEvents } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import {
+  DisplayComponent,
+  FSComponent,
+  Subject,
+  Subscribable,
+  VNode,
+  ClockEvents,
+  Subscription,
+  ConsumerSubject,
+} from '@microsoft/msfs-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 import { LateralMode } from '@shared/autopilot';
 import { FgBus } from 'instruments/src/HUD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/HUD/shared/FcuBusProvider';
@@ -21,76 +30,66 @@ interface AttitudeIndicatorFixedUpperProps {
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
+  private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HudElems>();
-  private fullGroupVis = '';
   private fullGroupRef = FSComponent.createRef<SVGGElement>();
   private attitudeIndicatorRef = FSComponent.createRef<SVGGElement>();
   private alternateLawRef = FSComponent.createRef<SVGGElement>();
-  private attitudeIndicator = '';
   private roll = new Arinc429Word(0);
   private pitch = new Arinc429Word(0);
 
+  private readonly fullGroupVis = ConsumerSubject.create(this.sub.on('attitudeIndicator').whenChanged(), '');
+  private readonly attitudeIndicator = ConsumerSubject.create(this.sub.on('attitudeIndicator').whenChanged(), '');
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.fullGroupVis, this.attitudeIndicator);
 
-    this.sub
-      .on('attitudeIndicator')
-      .whenChanged()
-      .handle((value) => {
-        this.fullGroupVis = value;
-        this.fullGroupRef.instance.style.display = `${this.fullGroupVis}`;
-      });
-
-    this.sub
-      .on('attitudeIndicator')
-      .whenChanged()
-      .handle((v) => {
-        this.attitudeIndicator = v;
-        this.attitudeIndicatorRef.instance.style.display = `${this.attitudeIndicator}`;
-      });
-
-    this.sub
-      .on('rollAr')
-      .whenChanged()
-      .handle((roll) => {
-        this.roll = roll;
-        if (!this.roll.isNormalOperation()) {
-          this.attitudeIndicatorRef.instance.style.display = 'none';
-          this.alternateLawRef.instance.style.display = 'none';
-        } else {
-          this.attitudeIndicatorRef.instance.style.display = 'block';
-          Math.abs(roll.value) > 35 && Math.abs(roll.value) <= 71
-            ? (this.alternateLawRef.instance.style.display = 'block')
-            : (this.alternateLawRef.instance.style.display = 'none');
-        }
-        if (Math.abs(roll.value) > 71) {
-          this.attitudeIndicatorRef.instance.style.display = 'none';
-          this.alternateLawRef.instance.style.display = 'none';
-        }
-      });
-
-    this.sub
-      .on('pitchAr')
-      .whenChanged()
-      .handle((pitch) => {
-        this.pitch.value = pitch.value;
-        if (!this.pitch.isNormalOperation()) {
-          this.attitudeIndicatorRef.instance.style.display = 'none';
-        } else {
-          if (pitch.value > 39 || pitch.value < -25) {
+    this.subscriptions.push(
+      this.sub
+        .on('rollAr')
+        .whenChanged()
+        .handle((roll) => {
+          this.roll = roll;
+          if (!this.roll.isNormalOperation()) {
             this.attitudeIndicatorRef.instance.style.display = 'none';
             this.alternateLawRef.instance.style.display = 'none';
           } else {
             this.attitudeIndicatorRef.instance.style.display = 'block';
+            Math.abs(roll.value) > 35 && Math.abs(roll.value) <= 71
+              ? (this.alternateLawRef.instance.style.display = 'block')
+              : (this.alternateLawRef.instance.style.display = 'none');
           }
-        }
-      });
+          if (Math.abs(roll.value) > 71) {
+            this.attitudeIndicatorRef.instance.style.display = 'none';
+            this.alternateLawRef.instance.style.display = 'none';
+          }
+        }),
+    );
+
+    this.subscriptions.push(
+      this.sub
+        .on('pitchAr')
+        .whenChanged()
+        .handle((pitch) => {
+          this.pitch.value = pitch.value;
+          if (!this.pitch.isNormalOperation()) {
+            this.attitudeIndicatorRef.instance.style.display = 'none';
+          } else {
+            if (pitch.value > 39 || pitch.value < -25) {
+              this.attitudeIndicatorRef.instance.style.display = 'none';
+              this.alternateLawRef.instance.style.display = 'none';
+            } else {
+              this.attitudeIndicatorRef.instance.style.display = 'block';
+            }
+          }
+        }),
+    );
   }
 
   render(): VNode {
     return (
-      <g id="FullAttitudeUpperInfoGroup" ref={this.fullGroupRef}>
-        <g id="AttitudeUpperInfoGroup" ref={this.attitudeIndicatorRef}>
+      <g id="FullAttitudeUpperInfoGroup" ref={this.fullGroupRef} display={this.fullGroupVis}>
+        <g id="AttitudeUpperInfoGroup" ref={this.attitudeIndicatorRef} display={this.attitudeIndicator}>
           <g id="RollIndicatorFixed" class="LargeStroke  Green">
             <path d="m 640,138.44282 12.21523,-20.20611 h -24.43047 zz" />
             <path d="m 735.2  164 14.1,-24.5" />
@@ -160,10 +159,9 @@ interface AttitudeIndicatorFixedCenterProps {
 }
 
 export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndicatorFixedCenterProps> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values>();
   private onRwy = false;
-  private roll = new Arinc429Word(0);
-
-  private pitch: Arinc429WordData = Arinc429Register.empty();
 
   private visibilitySub = Subject.create('hidden');
 
@@ -173,17 +171,14 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
   private fdVisibilitySub = Subject.create('hidden');
 
+  private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr'));
+  private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<Arinc429Values>();
-
-    sub
-      .on('rollAr')
-      .whenChanged()
-      .handle((r) => {
-        this.roll = r;
-        if (!this.roll.isNormalOperation()) {
+    this.subscriptions.push(this.roll, this.pitch);
+    this.subscriptions.push(
+      this.roll.sub((roll) => {
+        if (!roll.isNormalOperation()) {
           this.visibilitySub.set('display:none');
           this.failureVis.set('display:block');
           this.attFlagVisible.set(true);
@@ -196,15 +191,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             this.fdVisibilitySub.set('display:inline');
           }
         }
-      });
+      }),
+    );
 
-    sub
-      .on('pitchAr')
-      .whenChanged()
-      .handle((p) => {
-        this.pitch = p;
-
-        if (!this.pitch.isNormalOperation()) {
+    this.subscriptions.push(
+      this.pitch.sub((pitch) => {
+        if (!pitch.isNormalOperation()) {
           this.visibilitySub.set('display:none');
           this.failureVis.set('display:block');
           this.attFlagVisible.set(true);
@@ -217,15 +209,24 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             this.fdVisibilitySub.set('display:inline');
           }
         }
-      });
+      }),
+    );
 
     this.props.isAttExcessive.sub((a) => {
       if (a) {
         this.fdVisibilitySub.set('display:none');
-      } else if (this.roll.isNormalOperation() && this.pitch.isNormalOperation()) {
+      } else if (this.roll.get().isNormalOperation() && this.pitch.get().isNormalOperation()) {
         this.fdVisibilitySub.set('display:inline');
       }
     });
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {
@@ -263,36 +264,46 @@ interface DeclutterIndicatorProps {
 }
 
 export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps> {
-  private declutterMode;
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
 
   private textSub = Subject.create('');
 
   private declutterModeRef = FSComponent.createRef<SVGPathElement>();
 
-  private handleFdState() {
+  private handleFdState(decMode: number) {
     let text: string;
-    if (this.declutterMode == 0) {
+    if (decMode == 0) {
       text = 'N';
       this.declutterModeRef.instance.style.visibility = 'visible';
-    } else if (this.declutterMode == 1) {
+    } else if (decMode == 1) {
       text = 'D';
       this.declutterModeRef.instance.style.visibility = 'visible';
-    } else if (this.declutterMode == 2) {
+    } else if (decMode == 2) {
       this.declutterModeRef.instance.style.visibility = 'hidden';
 
       text = '';
     }
     this.textSub.set(text);
   }
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.decMode);
+    this.subscriptions.push(
+      this.decMode.sub((decMode) => {
+        this.handleFdState(decMode);
+      }),
+    );
+  }
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-    sub.on('decMode').handle((m) => {
-      this.declutterMode = m;
-      this.handleFdState();
-    });
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {
@@ -307,6 +318,8 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
 }
 
 class FDYawBar extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus>();
   private fdEngaged = false;
 
   private fcuEisDiscreteWord2 = new Arinc429Word(0);
@@ -320,6 +333,7 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseIn
   private pitch = 0;
   private lmgc = true;
   private rmgc = true;
+
   private handleFdState() {
     const fdOff = this.fcuEisDiscreteWord2.bitValueOr(23, false);
     const showFd = this.fdEngaged && !fdOff;
@@ -344,48 +358,66 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseIn
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FgBus & FcuBus>();
+    this.subscriptions.push(
+      this.sub
+        .on('leftMainGearCompressed')
+        .whenChanged()
+        .handle((v) => {
+          this.lmgc = v;
+        }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('rightMainGearCompressed')
+        .whenChanged()
+        .handle((v) => {
+          this.rmgc = v;
+        }),
+    );
 
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((v) => {
-        this.lmgc = v;
-      });
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((v) => {
-        this.rmgc = v;
-      });
-
-    sub.on('yawFdCommand').handle((fy) => {
-      this.fdYawCommand = fy;
-
-      this.handleFdState();
-    });
-
-    sub
-      .on('fdEngaged')
-      .whenChanged()
-      .handle((fd) => {
-        this.fdEngaged = fd;
+    this.subscriptions.push(
+      this.sub.on('yawFdCommand').handle((fy) => {
+        this.fdYawCommand = fy;
 
         this.handleFdState();
-      });
+      }),
+    );
 
-    sub
-      .on('fcuEisDiscreteWord2')
-      .whenChanged()
-      .handle((tr) => {
-        this.fcuEisDiscreteWord2 = tr;
+    this.subscriptions.push(
+      this.sub
+        .on('fdEngaged')
+        .whenChanged()
+        .handle((fd) => {
+          this.fdEngaged = fd;
 
+          this.handleFdState();
+        }),
+    );
+
+    this.subscriptions.push(
+      this.sub
+        .on('fcuEisDiscreteWord2')
+        .whenChanged()
+        .handle((tr) => {
+          this.fcuEisDiscreteWord2 = tr;
+
+          this.handleFdState();
+        }),
+    );
+    this.subscriptions.push(
+      this.sub.on('pitchAr').handle((p) => {
+        this.pitch = p.value;
         this.handleFdState();
-      });
-    sub.on('pitchAr').handle((p) => {
-      this.pitch = p.value;
-      this.handleFdState();
-    });
+      }),
+    );
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {
@@ -405,6 +437,8 @@ class FDYawBar extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseIn
 }
 
 class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values & HudElems>();
   private LSLocRef = FSComponent.createRef<SVGGElement>();
   private lagFilter = new LagFilter(1.5);
   private rightDiamond = FSComponent.createRef<SVGPathElement>();
@@ -437,21 +471,29 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & ClockEvents & Arinc429Values & HudElems>();
+    this.subscriptions.push(
+      this.sub
+        .on('hasLoc')
+        //.whenChanged()
+        .handle((hasLoc) => {
+          if (hasLoc) {
+            this.diamondGroup.instance.classList.remove('HiddenElement');
+            this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
+          } else {
+            this.diamondGroup.instance.classList.add('HiddenElement');
+            this.lagFilter.reset();
+            this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
+          }
+        }),
+    );
+  }
 
-    sub
-      .on('hasLoc')
-      //.whenChanged()
-      .handle((hasLoc) => {
-        if (hasLoc) {
-          this.diamondGroup.instance.classList.remove('HiddenElement');
-          this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
-        } else {
-          this.diamondGroup.instance.classList.add('HiddenElement');
-          this.lagFilter.reset();
-          this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
-        }
-      });
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {
@@ -506,6 +548,8 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
 }
 
 class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
   private onRwy = false;
   private declutterMode = 0;
   private flightPhase = 0;
@@ -530,80 +574,98 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & HudElems>();
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.onGround = value;
-      });
-    sub
-      .on('hasLoc')
-      .whenChanged()
-      .handle((hasLoc) => {
-        this.hasLoc = hasLoc;
-      });
-    sub
-      .on('navRadialError')
-      .whenChanged()
-      .handle((value) => {
-        if (this.onGround) {
-          if (this.hasLoc) {
-            if (this.isActive()) {
-              Math.abs(value) < 2 ? this.visibilityGroundSub.set('block') : this.visibilityGroundSub.set('none');
+    this.subscriptions.push(
+      this.sub
+        .on('leftMainGearCompressed')
+        .whenChanged()
+        .handle((value) => {
+          this.onGround = value;
+        }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('hasLoc')
+        .whenChanged()
+        .handle((hasLoc) => {
+          this.hasLoc = hasLoc;
+        }),
+    );
+    this.subscriptions.push(
+      this.sub
+        .on('navRadialError')
+        .whenChanged()
+        .handle((value) => {
+          if (this.onGround) {
+            if (this.hasLoc) {
+              if (this.isActive()) {
+                Math.abs(value) < 2 ? this.visibilityGroundSub.set('block') : this.visibilityGroundSub.set('none');
+              }
             }
           }
-        }
-      });
+        }),
+    );
 
-    sub
-      .on('fmgc1RollFdCommandRaw')
-      .whenChanged()
-      .handle((lm) => {
-        this.lateralMode = lm;
-        if (this.onGround) {
-          if (this.isActive()) {
-            this.visibilityGroundSub.set('block');
-            this.visibilityAirSub.set('none');
+    this.subscriptions.push(
+      this.sub
+        .on('fmgc1RollFdCommandRaw')
+        .whenChanged()
+        .handle((lm) => {
+          this.lateralMode = lm;
+          if (this.onGround) {
+            if (this.isActive()) {
+              this.visibilityGroundSub.set('block');
+              this.visibilityAirSub.set('none');
+            } else {
+              this.visibilityGroundSub.set('none');
+              this.visibilityAirSub.set('none');
+            }
           } else {
             this.visibilityGroundSub.set('none');
-            this.visibilityAirSub.set('none');
+            this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
           }
-        } else {
-          this.visibilityGroundSub.set('none');
-          this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
-        }
-      });
+        }),
+    );
 
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
-        this.declutterMode = value;
-        if (this.onGround) {
-          if (this.isActive()) {
-            this.visibilityGroundSub.set('block');
-            this.visibilityAirSub.set('none');
+    this.subscriptions.push(
+      this.sub
+        .on('decMode')
+        .whenChanged()
+        .handle((value) => {
+          this.flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Number');
+          this.declutterMode = value;
+          if (this.onGround) {
+            if (this.isActive()) {
+              this.visibilityGroundSub.set('block');
+              this.visibilityAirSub.set('none');
+            } else {
+              this.visibilityGroundSub.set('none');
+              this.visibilityAirSub.set('none');
+            }
           } else {
             this.visibilityGroundSub.set('none');
-            this.visibilityAirSub.set('none');
+            this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
           }
-        } else {
-          this.visibilityGroundSub.set('none');
-          this.declutterMode == 2 ? this.visibilityAirSub.set('none') : this.visibilityAirSub.set('block');
-        }
-      });
+        }),
+    );
 
-    sub
-      .on('pitchAr')
-      .whenChanged()
-      .handle((pitch) => {
-        if (pitch.isNormalOperation()) {
-          this.pitch = pitch.value;
-        }
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('pitchAr')
+        .whenChanged()
+        .handle((pitch) => {
+          if (pitch.isNormalOperation()) {
+            this.pitch = pitch.value;
+          }
+        }),
+    );
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
   }
 
   render(): VNode {

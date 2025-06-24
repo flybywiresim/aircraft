@@ -7,6 +7,7 @@ import {
   HEvent,
   ConsumerSubject,
   MappedSubject,
+  Subscription,
 } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
@@ -20,16 +21,8 @@ type LinearDeviationIndicatorProps = {
 };
 
 export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIndicatorProps> {
+  private readonly subscriptions: Subscription[] = [];
   private linearDevRef = FSComponent.createRef<SVGGElement>();
-
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private athMode = 0;
-  private onToPower = false;
-  private onGround = true;
-
-  private lgRightCompressed = false;
 
   private shouldShowLinearDeviation = false;
 
@@ -57,9 +50,25 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   // TODO: Use ARINC value for this
   private flightPathAltitude: Feet = 0;
 
+  private setPos() {
+    if (this.crosswindMode.get()) {
+      DisplayRange = 100;
+      this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
+      this.upperLinearDevTextRef.instance.setAttribute('y', `74`);
+      this.lowerLinearDevTextRef.instance.setAttribute('y', `91`);
+    } else {
+      DisplayRange = 600;
+      this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
+      this.upperLinearDevTextRef.instance.setAttribute('y', '42.5');
+      this.lowerLinearDevTextRef.instance.setAttribute('y', '123');
+    }
+  }
+
   private readonly sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars & HEvent & HUDSimvars & HudElems>();
   private readonly altTape = ConsumerSubject.create(this.sub.on('altTape').whenChanged(), '');
   private readonly xwindAltTape = ConsumerSubject.create(this.sub.on('xWindAltTape').whenChanged(), '');
+  private readonly crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
+
   private readonly isVisible = MappedSubject.create(
     ([altTape, xwindAltTape]) => {
       if (altTape === 'block' || xwindAltTape === 'block') {
@@ -74,96 +83,101 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.altTape, this.xwindAltTape);
 
-    this.sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-        if (this.crosswindMode) {
-          DisplayRange = 100;
-          this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
-          this.upperLinearDevTextRef.instance.setAttribute('y', `74`);
-          this.lowerLinearDevTextRef.instance.setAttribute('y', `91`);
-        } else {
-          DisplayRange = 600;
-          this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
-          this.upperLinearDevTextRef.instance.setAttribute('y', '42.5');
-          this.lowerLinearDevTextRef.instance.setAttribute('y', '123');
+    this.subscriptions.push(
+      this.crosswindMode.sub(() => {
+        this.setPos();
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('altitudeAr').handle((alt) => {
+        if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
+          this.upperLinearDeviationReadoutVisibility.set('hidden');
+          this.lowerLinearDeviationReadoutVisibility.set('hidden');
+          this.linearDeviationDotLowerHalfVisibility.set('hidden');
+          this.linearDeviationDotUpperHalfVisibility.set('hidden');
+          this.linearDeviationDotVisibility.set('hidden');
+
+          return;
         }
-      });
 
-    this.sub.on('altitudeAr').handle((alt) => {
-      if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
-        this.upperLinearDeviationReadoutVisibility.set('hidden');
-        this.lowerLinearDeviationReadoutVisibility.set('hidden');
-        this.linearDeviationDotLowerHalfVisibility.set('hidden');
-        this.linearDeviationDotUpperHalfVisibility.set('hidden');
-        this.linearDeviationDotVisibility.set('hidden');
+        const deviation = alt.value - this.flightPathAltitude;
+        const pixelOffset = this.pixelOffsetFromDeviation(Math.max(Math.min(deviation, DisplayRange), -DisplayRange));
 
-        return;
-      }
+        this.componentTransform.set(`translate(0 ${pixelOffset})`);
 
-      const deviation = alt.value - this.flightPathAltitude;
-      const pixelOffset = this.pixelOffsetFromDeviation(Math.max(Math.min(deviation, DisplayRange), -DisplayRange));
+        const linearDeviationReadoutText = Math.min(99, Math.round(Math.abs(deviation) / 100))
+          .toFixed(0)
+          .padStart(2, '0');
 
-      this.componentTransform.set(`translate(0 ${pixelOffset})`);
+        if (this.upperLinearDeviationReadoutVisibility.get() === 'visible') {
+          this.upperLinearDeviationReadoutText.set(linearDeviationReadoutText);
+        }
 
-      const linearDeviationReadoutText = Math.min(99, Math.round(Math.abs(deviation) / 100))
-        .toFixed(0)
-        .padStart(2, '0');
+        if (this.lowerLinearDeviationReadoutVisibility.get() === 'visible') {
+          this.lowerLinearDeviationReadoutText.set(linearDeviationReadoutText);
+        }
 
-      if (this.upperLinearDeviationReadoutVisibility.get() === 'visible') {
-        this.upperLinearDeviationReadoutText.set(linearDeviationReadoutText);
-      }
+        if (deviation > DisplayRange + 40) {
+          this.lowerLinearDeviationReadoutVisibility.set('visible');
+          this.linearDeviationDotLowerHalfVisibility.set('visible');
 
-      if (this.lowerLinearDeviationReadoutVisibility.get() === 'visible') {
-        this.lowerLinearDeviationReadoutText.set(linearDeviationReadoutText);
-      }
+          this.upperLinearDeviationReadoutVisibility.set('hidden');
+          this.linearDeviationDotUpperHalfVisibility.set('hidden');
 
-      if (deviation > DisplayRange + 40) {
-        this.lowerLinearDeviationReadoutVisibility.set('visible');
-        this.linearDeviationDotLowerHalfVisibility.set('visible');
+          this.linearDeviationDotVisibility.set('hidden');
+        } else if (deviation > -DisplayRange && deviation < DisplayRange) {
+          this.lowerLinearDeviationReadoutVisibility.set('hidden');
+          this.linearDeviationDotLowerHalfVisibility.set('hidden');
 
-        this.upperLinearDeviationReadoutVisibility.set('hidden');
-        this.linearDeviationDotUpperHalfVisibility.set('hidden');
+          this.upperLinearDeviationReadoutVisibility.set('hidden');
+          this.linearDeviationDotUpperHalfVisibility.set('hidden');
 
-        this.linearDeviationDotVisibility.set('hidden');
-      } else if (deviation > -DisplayRange && deviation < DisplayRange) {
-        this.lowerLinearDeviationReadoutVisibility.set('hidden');
-        this.linearDeviationDotLowerHalfVisibility.set('hidden');
+          this.linearDeviationDotVisibility.set('visible');
+        } else if (deviation < -DisplayRange - 40) {
+          this.lowerLinearDeviationReadoutVisibility.set('hidden');
+          this.linearDeviationDotLowerHalfVisibility.set('hidden');
 
-        this.upperLinearDeviationReadoutVisibility.set('hidden');
-        this.linearDeviationDotUpperHalfVisibility.set('hidden');
+          this.upperLinearDeviationReadoutVisibility.set('visible');
+          this.linearDeviationDotUpperHalfVisibility.set('visible');
 
-        this.linearDeviationDotVisibility.set('visible');
-      } else if (deviation < -DisplayRange - 40) {
-        this.lowerLinearDeviationReadoutVisibility.set('hidden');
-        this.linearDeviationDotLowerHalfVisibility.set('hidden');
+          this.linearDeviationDotVisibility.set('hidden');
+        }
+      }),
+    );
 
-        this.upperLinearDeviationReadoutVisibility.set('visible');
-        this.linearDeviationDotUpperHalfVisibility.set('visible');
+    this.subscriptions.push(
+      this.sub
+        .on('linearDeviationActive')
+        .whenChanged()
+        .handle((isActive) => (this.shouldShowLinearDeviation = isActive)),
+    );
 
-        this.linearDeviationDotVisibility.set('hidden');
-      }
-    });
+    this.subscriptions.push(
+      this.sub
+        .on('verticalProfileLatched')
+        .whenChanged()
+        .handle((s) => this.latchSymbolVisibility.set(s ? 'visible' : 'hidden')),
+    );
 
-    this.sub
-      .on('linearDeviationActive')
-      .whenChanged()
-      .handle((isActive) => (this.shouldShowLinearDeviation = isActive));
+    this.subscriptions.push(
+      this.sub
+        .on('targetAltitude')
+        .atFrequency(1000 / 60)
+        .handle((targetAltitude) => {
+          this.flightPathAltitude = targetAltitude;
+        }),
+    );
+  }
 
-    this.sub
-      .on('verticalProfileLatched')
-      .whenChanged()
-      .handle((s) => this.latchSymbolVisibility.set(s ? 'visible' : 'hidden'));
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
 
-    this.sub
-      .on('targetAltitude')
-      .atFrequency(1000 / 60)
-      .handle((targetAltitude) => {
-        this.flightPathAltitude = targetAltitude;
-      });
+    super.destroy();
   }
 
   render(): VNode {
@@ -215,6 +229,6 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   }
 
   private pixelOffsetFromDeviation(deviation: number) {
-    return this.crosswindMode ? (deviation * 8.5) / DisplayRange : (deviation * 40.5) / DisplayRange;
+    return this.crosswindMode.get() ? (deviation * 8.5) / DisplayRange : (deviation * 40.5) / DisplayRange;
   }
 }

@@ -1,4 +1,11 @@
-import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  VNode,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, HudMode } from './HUDUtils';
@@ -10,6 +17,7 @@ interface HudWarningsProps {
 }
 
 export class HudWarnings extends DisplayComponent<HudWarningsProps> {
+  private readonly subscriptions: Subscription[] = [];
   private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
   private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & Arinc429Values>();
   private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr').whenChanged());
@@ -28,6 +36,20 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(
+      this.roll,
+      this.vStallWarn,
+      this.airSpeed,
+      this.hudmode,
+      this.fcdc1DiscreteWord1,
+      this.fcdc2DiscreteWord1,
+      this.hudMode,
+      this.autoBrakeMode,
+      this.brakePedalInputLeft,
+      this.brakePedalInputRight,
+      this.throttle2Position,
+      this.throttle1Position,
+    );
   }
 
   //   The following precedence of messages is implemented right now (first line is most important message):
@@ -37,6 +59,14 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   //   MAX REVERSE
   //   MAX BRAKING
   //
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
 
   render(): VNode {
     return (

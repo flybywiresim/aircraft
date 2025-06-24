@@ -12,6 +12,7 @@ import {
   Subject,
   Subscribable,
   VNode,
+  Subscription,
 } from '@microsoft/msfs-sdk';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
@@ -216,14 +217,10 @@ interface GroundTrackBugProps {
 }
 
 class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private bVisibility = true;
-  private bVis2 = true;
-  private sTotalVis = Subject.create('none');
-  private sVisibility = Subject.create('none');
-  private groundTrack = Arinc429ConsumerSubject.create(null);
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents & HudElems>();
+  private readonly groundTrack = Arinc429ConsumerSubject.create(null);
+  private readonly headingTrk = ConsumerSubject.create(this.sub.on('headingTrk'), '');
 
   private isVisibleSub = MappedSubject.create(
     ([groundTrack, heading]) => {
@@ -234,6 +231,12 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     this.groundTrack,
     this.props.heading,
   );
+
+  private isDisplayed = MappedSubject.create(([headingTrk]) => {
+    const bHeadingTrk = headingTrk === 'block' ? true : false;
+    // TODO should also be hidden if heading is invalid
+    return this.isVisibleSub && bHeadingTrk ? 'block' : 'none';
+  }, this.headingTrk);
 
   private transformSub = MappedSubject.create(
     ([groundTrack, heading]) => {
@@ -247,55 +250,22 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents & HudElems>();
-    this.groundTrack.setConsumer(sub.on('track').withArinc429Precision(3));
+    this.subscriptions.push(this.groundTrack, this.headingTrk);
 
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        this.bVisibility = !value;
-        this.bVis2 = true;
-      });
+    this.groundTrack.setConsumer(this.sub.on('track').withArinc429Precision(3));
+  }
 
-    sub
-      .on('realTime')
-      .atFrequency(2)
-      .handle((_t) => {
-        this.bVis2 && this.bVisibility && this.isVisibleSub.get()
-          ? this.sTotalVis.set('block')
-          : this.sTotalVis.set('none');
-        // console.log(
-        //     "sTotalVis: " + this.sTotalVis.get()+
-        //     "  bVisibility: " + this.bVisibility+
-        //     "  isVisibleSub: " + this.isVisibleSub.get()
-        // )
-      });
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
 
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-        if (fp < 5 || fp >= 9) {
-          this.sVisibility.set('none');
-        }
-        if (fp > 4 && fp < 9) {
-          this.declutterMode == 2 ? this.sVisibility.set('none') : this.sVisibility.set('block');
-        }
-      });
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        value == 2 ? (this.bVis2 = false) : (this.bVis2 = true);
-      });
+    super.destroy();
   }
 
   render(): VNode {
     return (
-      <g style={{ transform: this.transformSub }} id="ActualTrackIndicator" display={this.sTotalVis}>
+      <g style={{ transform: this.transformSub }} id="ActualTrackIndicator" display={this.isDisplayed}>
         <path class="ThickOutline CornerRound" d="m68.906 145.75   -6 9 6 9 6 -9z" />
         <path class="ThickStroke Green CornerRound" d="m68.906 145.75   -6 9 6 9 6 -9z" />
       </g>
@@ -309,6 +279,9 @@ class QFUIndicator extends DisplayComponent<{
   heading: Subscribable<number>;
   lsPressed: Subscribable<boolean>;
 }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElems>();
+
   private flightPhase = -1;
   private declutterMode = 0;
   private sVisibility = Subject.create<String>('none');
@@ -327,10 +300,11 @@ class QFUIndicator extends DisplayComponent<{
 
   private DeclutterSimVar = '';
 
+  private readonly IlsHorizonTrk = ConsumerSubject.create(this.sub.on('IlsHorizonTrk').whenChanged(), '');
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.IlsHorizonTrk);
 
-    const isCaptainSide = getDisplayIndex() === 1;
     this.props.heading.sub((h) => {
       this.heading = h;
 
@@ -388,49 +362,11 @@ class QFUIndicator extends DisplayComponent<{
         this.qfuContainer.instance.classList.add('HiddenElement');
       }
     });
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElems>();
-
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        isCaptainSide
-          ? (this.DeclutterSimVar = 'L:A32NX_HUD_L_DECLUTTER_MODE')
-          : (this.DeclutterSimVar = 'L:A32NX_HUD_R_DECLUTTER_MODE');
-        this.declutterMode = SimVar.GetSimVarValue(this.DeclutterSimVar, 'Number');
-        this.flightPhase = fp;
-        if (this.flightPhase <= 2 || this.flightPhase >= 9) {
-          if (this.declutterMode == 0) {
-            this.sVisibility.set('block');
-          } else {
-            this.sVisibility.set('none');
-          }
-        }
-        if (this.flightPhase > 2 && this.flightPhase <= 8) {
-          if (this.declutterMode == 2) {
-            this.sVisibility.set('none');
-          } else {
-            this.sVisibility.set('block');
-          }
-        }
-      });
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-        if (this.declutterMode == 2) {
-          this.sVisibility.set('none');
-        } else {
-          this.sVisibility.set('block');
-        }
-      });
   }
 
   render(): VNode {
     return (
-      <g ref={this.qfuContainer} display={this.sVisibility}>
+      <g ref={this.qfuContainer} display={this.IlsHorizonTrk}>
         <g id="ILSCoursePointer" ref={this.ilsCoursePointer}>
           <path class="ThickOutline" d="m58.9 135 h 20 m -10 -22 v30" />
           <path class="ThickStroke Green" d="m58.9 135 h 20 m -10 -22 v30" />

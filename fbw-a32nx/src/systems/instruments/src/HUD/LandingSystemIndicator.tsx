@@ -33,74 +33,74 @@ const ValueSpacing = 5;
 
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
-  private lsButtonPressedVisibility = false;
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
   private xtkValid = Subject.create(false);
 
-  private isDecluttered = Subject.create(false);
-
   private ldevRequest = false;
-
-  private lsGroupRef = FSComponent.createRef<SVGGElement>();
-
-  private deviationGroup = FSComponent.createRef<SVGGElement>();
 
   private ldevRef = FSComponent.createRef<SVGGElement>();
 
   private groupVis = false;
   private hudFlightPhaseMode = 0;
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & HudElems>();
 
-  private readonly declutterModeL = ConsumerSubject.create(this.sub.on('declutterModeL'), 0);
-  private readonly declutterModeR = ConsumerSubject.create(this.sub.on('declutterModeR'), 0);
   private readonly ls1Button = ConsumerSubject.create(this.sub.on('ls1Button'), false);
   private readonly ls2Button = ConsumerSubject.create(this.sub.on('ls2Button'), false);
-  private gsVis = '';
+  private readonly isLsGrpVisible = MappedSubject.create(
+    ([ls1Btn, ls2Btn]) => {
+      return ls1Btn === true || ls2Btn === true ? 'block' : 'none';
+    },
+    this.ls1Button,
+    this.ls2Button,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.ls1Button, this.ls2Button, this.isLsGrpVisible);
 
-    const isCaptainSide = getDisplayIndex() === 1;
-    this.sub
-      .on('IlsGS')
-      .whenChanged()
-      .handle((value) => {
-        this.gsVis = value;
-        value === 'block' ? (this.groupVis = true) : (this.groupVis = false);
-      });
-    this.sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
-      value && this.groupVis
-        ? (this.lsGroupRef.instance.style.display = 'inline')
-        : (this.lsGroupRef.instance.style.display = 'none');
-    });
+    this.subscriptions.push(
+      this.sub
+        .on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight')
+        .whenChanged()
+        .handle((ldevRequest) => {
+          this.ldevRequest = ldevRequest;
+          this.updateLdevVisibility();
+        }),
+    );
 
-    this.sub
-      .on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight')
-      .whenChanged()
-      .handle((ldevRequest) => {
-        this.ldevRequest = ldevRequest;
+    this.subscriptions.push(
+      this.sub
+        .on('xtk')
+        .whenChanged()
+        .handle((xtk) => {
+          this.xtkValid.set(Math.abs(xtk) > 0);
+        }),
+    );
+
+    this.subscriptions.push(
+      this.xtkValid.sub(() => {
         this.updateLdevVisibility();
-      });
-
-    this.sub
-      .on('xtk')
-      .whenChanged()
-      .handle((xtk) => {
-        this.xtkValid.set(Math.abs(xtk) > 0);
-      });
-
-    this.xtkValid.sub(() => {
-      this.updateLdevVisibility();
-    });
+      }),
+    );
   }
 
   updateLdevVisibility() {
     this.ldevRef.instance.style.display = this.ldevRequest && this.xtkValid ? 'inline' : 'none';
   }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <>
-        <g id="LSGroup" ref={this.lsGroupRef} transform="scale(2.5 2.5) translate(185 51) ">
+        <g id="LSGroup" display={this.isLsGrpVisible} transform="scale(2.5 2.5) translate(185 51) ">
           <LandingSystemInfo bus={this.props.bus} />
           <g id="LSGroup">
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -142,6 +142,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
   private readonly fm1NavDiscrete = Arinc429RegisterSubject.createEmpty();
 
+  private readonly infoGrpVis = ConsumerSubject.create(null, '');
   // derived subjects
 
   private readonly lsIdentText = Subject.create('');
@@ -196,7 +197,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
 
     this.lsAlive.setConsumer(sub.on('hasLoc'));
 
@@ -207,6 +208,8 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
     this.dmeAlive.setConsumer(sub.on('hasDme'));
 
     this.dmeDistance.setConsumer(sub.on('dme'));
+
+    this.infoGrpVis.setConsumer(sub.on('IlsGS'));
 
     this.pausable.push(
       sub
@@ -234,7 +237,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
       } else {
         this.lsIdentPipe.resume(true);
       }
-    });
+    }, true);
 
     this.isDmeAvailable.sub((available) => {
       if (available) {
@@ -261,7 +264,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
   render(): VNode {
     return (
-      <g id="LSInfoGroup" transform=" translate(-110 125)" ref={this.lsInfoGroup}>
+      <g id="LSInfoGroup" transform=" translate(-110 125)" ref={this.lsInfoGroup} display={this.infoGrpVis}>
         <text
           id="ILSIdent"
           class={{
@@ -541,8 +544,8 @@ interface LSPath {
 }
 
 class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
-
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent & HudElems>();
   private readonly backbeam = ConsumerSubject.create(this.sub.on('fm1Backbeam'), false);
 
   // FIXME hook up when MMR ready
@@ -555,6 +558,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   );
 
   private readonly hasGlideSlope = ConsumerSubject.create(this.sub.on('hasGlideslope'), false);
+  private readonly crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
 
   private readonly noGlideSlope = MappedSubject.create(
     ([isHidden, hasGlideSlope]) => isHidden || !hasGlideSlope,
@@ -565,8 +569,6 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   private LSGsRef = new NodeReference<SVGGElement>();
 
   private needsUpdate = false;
-
-  private crosswindMode = false;
 
   private data: LSPath = {
     roll: new Arinc429Word(0),
@@ -607,87 +609,111 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.hasGlideSlope, this.crosswindMode);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent & HudElems>();
+    this.subscriptions.push(
+      this.sub
+        .on('hasGlideslope')
+        .whenChanged()
+        .handle((hasGlideSlope) => {
+          if (hasGlideSlope) {
+            this.diamondGroup.instance.classList.remove('HiddenElement');
+          } else {
+            this.diamondGroup.instance.classList.add('HiddenElement');
+            this.lagFilter.reset();
+          }
+        }),
+    );
 
-    sub
-      .on('cWndMode')
-      .whenChanged()
-      .handle((value) => {
-        this.crosswindMode = value;
-      });
-
-    sub
-      .on('hasGlideslope')
-      .whenChanged()
-      .handle((hasGlideSlope) => {
-        if (hasGlideSlope) {
-          this.diamondGroup.instance.classList.remove('HiddenElement');
-        } else {
-          this.diamondGroup.instance.classList.add('HiddenElement');
+    this.subscriptions.push(
+      this.noGlideSlope.sub((noGlideSlope) => {
+        if (noGlideSlope) {
           this.lagFilter.reset();
         }
-      });
+      }),
+    );
 
-    this.noGlideSlope.sub((noGlideSlope) => {
-      if (noGlideSlope) {
-        this.lagFilter.reset();
-      }
-    });
-
-    this.sub.on('glideSlopeError').handle((gs) => {
-      if (!this.noGlideSlope.get()) {
-        this.handleGlideSlopeError(gs);
-      }
-    });
-
-    sub.on('fpa').handle((fpa) => {
-      this.data.fpa = fpa;
-      this.needsUpdate = true;
-    });
-    sub.on('da').handle((da) => {
-      this.data.da = da;
-      this.needsUpdate = true;
-    });
-    sub.on('rollAr').handle((r) => {
-      this.data.roll = r;
-      this.needsUpdate = true;
-    });
-    sub.on('pitchAr').handle((p) => {
-      this.data.pitch = p;
-      this.needsUpdate = true;
-    });
-    sub.on('realTime').handle((_t) => {
-      if (this.needsUpdate) {
-        this.needsUpdate = false;
-        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
-        if (daAndFpaValid) {
-          // this.threeDegRef.instance.classList.remove('HiddenElement');
-          this.MoveGlideSlopeGroup();
-        } else {
-          // this.threeDegRef.instance.classList.add('HiddenElement');
+    this.subscriptions.push(
+      this.sub.on('glideSlopeError').handle((gs) => {
+        if (!this.noGlideSlope.get()) {
+          this.handleGlideSlopeError(gs);
         }
-      }
-    });
-    sub
-      .on('ls1Button')
-      .whenChanged()
-      .handle((value) => {
-        if (value) {
-          this.LSGsRef.instance.style.visibility = 'visible';
-        } else {
-          this.LSGsRef.instance.style.visibility = 'hidden';
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('fpa').handle((fpa) => {
+        this.data.fpa = fpa;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('da').handle((da) => {
+        this.data.da = da;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('rollAr').handle((r) => {
+        this.data.roll = r;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('pitchAr').handle((p) => {
+        this.data.pitch = p;
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('realTime').handle((_t) => {
+        if (this.needsUpdate) {
+          this.needsUpdate = false;
+          const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+          if (daAndFpaValid) {
+            // this.threeDegRef.instance.classList.remove('HiddenElement');
+            this.MoveGlideSlopeGroup();
+          } else {
+            // this.threeDegRef.instance.classList.add('HiddenElement');
+          }
         }
-      });
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub
+        .on('ls1Button')
+        .whenChanged()
+        .handle((value) => {
+          if (value) {
+            this.LSGsRef.instance.style.visibility = 'visible';
+          } else {
+            this.LSGsRef.instance.style.visibility = 'hidden';
+          }
+        }),
+    );
   }
   private MoveGlideSlopeGroup() {
-    if (this.crosswindMode == false) {
+    if (this.crosswindMode.get() == false) {
       this.LSGsRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + (3 * DistanceSpacing) / ValueSpacing) / 2.5}px, 0px)`;
     } else {
       this.LSGsRef.instance.style.transform = `translate3d(110px, 0px, 0px)`;
     }
     //DistanceSpacing
   }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <g id="GlideSlopeSymbolsGroup" ref={this.LSGsRef}>
