@@ -20,10 +20,6 @@ export class LateralDiscontinuityAhead implements FMMessageSelector {
   }
 
   process(_: number): FMMessageUpdate {
-    if (!this.guidanceController.vnavDriver.mcduProfile?.isReadyToDisplay) {
-      return FMMessageUpdate.NO_ACTION;
-    }
-
     const newState = this.guidanceController.vnavDriver.shouldShowLatDiscontinuityAhead();
 
     if (newState !== this.lastState) {
