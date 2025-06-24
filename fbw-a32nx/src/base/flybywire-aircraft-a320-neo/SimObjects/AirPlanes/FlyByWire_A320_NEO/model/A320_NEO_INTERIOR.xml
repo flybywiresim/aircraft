@@ -28,7 +28,7 @@
         <Component ID="Hud_Panel_Left" >
             <!-- placeholder for hud panel decals -->
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                <NODE_ID>HUD_PANEL_INTEG</NODE_ID>
+                <NODE_ID>LIGHTS_HUD</NODE_ID>
                 <SIMVAR_INDEX>2</SIMVAR_INDEX>
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
