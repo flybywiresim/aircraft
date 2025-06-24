@@ -194,7 +194,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   render(): VNode {
     return (
-      <g id="VerticalSpeedIndicator" display={this.VSI} transform="scale(5 5) translate(90 20)">
+      <g id="VerticalSpeedIndicator" ref={this.VSRef} display={this.VSI} transform="scale(5 5) translate(90 20)">
         {/* <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" /> */}
 
         <g id="VSpeedFailText" ref={this.vsFailed}>
