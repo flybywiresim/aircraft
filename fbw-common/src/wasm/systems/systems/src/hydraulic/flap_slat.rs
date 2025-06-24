@@ -186,7 +186,6 @@ impl FlapSlatAssembly {
         right_surfaces: SecondarySurface,
         motor_displacement: Volume,
         full_pressure_max_speed: AngularVelocity,
-        max_synchro_gear_position: Angle,
         synchro_gear_ratio: Ratio,
         gearbox_ratio: Ratio,
         surface_gear_ratio: Ratio,
@@ -206,7 +205,9 @@ impl FlapSlatAssembly {
             left_surfaces,
             right_surfaces,
             surface_control_arm_position: Angle::ZERO,
-            max_synchro_gear_position,
+            max_synchro_gear_position: Angle::new::<degree>(
+                synchro_gear_breakpoints.last().unwrap().clone(),
+            ),
             speed: AngularVelocity::ZERO,
             current_max_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT,
@@ -322,6 +323,16 @@ impl FlapSlatAssembly {
         self.surface_control_arm_position = self
             .surface_control_arm_position
             .clamp(Angle::ZERO, max_surface_angle);
+
+        println!(
+            "Max Synchro angle {:.2} | synchro {:.2} | surface arm {:.2} | max surface arm {:.2} | speed {:.3}",
+            self.max_synchro_gear_position.get::<degree>(),
+            self.position_feedback().get::<degree>(),
+            self.surface_control_arm_position.get::<degree>(),
+            self.synchro_angle_to_surface_angle(self.max_synchro_gear_position)
+                .get::<degree>(),
+            self.speed.get::<radian_per_second>()
+        );
 
         if limited_surface_control_arm_position != self.surface_control_arm_position {
             self.speed = AngularVelocity::ZERO;
@@ -1382,7 +1393,7 @@ mod tests {
             right_flaps,
             Volume::new::<cubic_inch>(0.32),
             max_speed,
-            Angle::new::<degree>(251.97),
+            // Angle::new::<degree>(251.97),
             Ratio::new::<ratio>(140.),
             Ratio::new::<ratio>(16.632),
             Ratio::new::<ratio>(314.98),
