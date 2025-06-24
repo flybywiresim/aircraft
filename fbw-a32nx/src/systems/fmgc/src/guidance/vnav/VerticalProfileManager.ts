@@ -770,9 +770,16 @@ export class VerticalProfileManager {
 
     const legIndexBeforeDiscont = this.flightPlanService.active?.getFirstLegindexBeforeDiscontinuity();
     if (legIndexBeforeDiscont !== undefined && legIndexBeforeDiscont !== null) {
-      return this.mcduProfile.waypointPredictions.get(legIndexBeforeDiscont)?.secondsFromPresent < 30;
+      const vnavPrediction = this.mcduProfile?.waypointPredictions.get(legIndexBeforeDiscont);
+      if (vnavPrediction) {
+        return vnavPrediction.secondsFromPresent < 30;
+      } else {
+        // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
+        if (legIndexBeforeDiscont === this.flightPlanService.active.activeLegIndex) {
+          return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
+        }
+      }
     }
-
     return false;
   }
 }
