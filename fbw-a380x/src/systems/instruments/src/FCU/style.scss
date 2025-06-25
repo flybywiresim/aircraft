@@ -31,6 +31,7 @@
 #Electricity {
   width: 100%;
   height: 100%;
+  /* FIXME this transform messes up the positioning of everything */
   transform: scale(0.5) translate(-50%, -50%);
 }
 
@@ -127,10 +128,11 @@ text.Label.Visible {
 
 #FCU_CONTENT #Mainframe #LargeScreen {
   width: 100%;
-  height: 16%;
+  height: 32%;
   display: block;
   position: absolute;
   background-color: $display-colour-background;
+  top:8%;
 }
 
 #FCU_CONTENT #Mainframe #LargeScreen #Speed {
@@ -176,20 +178,28 @@ text.Label.Visible {
   position: absolute;
 }
 
-#FCU_CONTENT #Mainframe #SmallScreen {
+.baro-screen {
   width: 27%;
-  height: 17%;
+  height: 34%;
   display: block;
   position: absolute;
-  top: 16%;
+  top: 72%;
   background-color: $display-colour-background;
 }
 
-#FCU_CONTENT #Mainframe #SmallScreen #Selected,
-#FCU_CONTENT #Mainframe #SmallScreen #Standard {
+.baro-screen #Selected,
+.baro-screen #Standard {
   width: 100%;
   height: 100%;
   top: 0;
+}
+
+#baro-screen-1 {
+  left: 120%;
+}
+
+#baro-screen-2 {
+  left: 160%;
 }
 
 .NdData {
