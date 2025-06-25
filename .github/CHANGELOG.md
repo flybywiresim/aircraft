@@ -9,6 +9,7 @@
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
 1. [A380X/MFD] Visual update to reflect later avionics batches (overlapping tab selectors) - @flogross89 (floridude)
+1. [A380X/OANS] Fixed BTV message and chrono not appearing on OANS - @Jonny23787 (Jonathan)
 1. [A380X/APU] Fix too low APU BLEED pressure during engine starts (fix by BBK) - @flogross89 (floridude)
 1. [A380X/SD] Fix BLEED indications for APU BLEED and cross bleeds; Add HP GND air supply triangle - @flogross89 (floridude)
 1. [A380X/ELEC] Fix electrical distribution for ground servicing mode - @Gurgel100 (Pascal)
@@ -21,6 +22,7 @@
 1. [A380X/SD] Add video page with 'NOT AVAIL' text - @dzoeteman (Deniz)
 1. [A380X/PFD] Inhibit rudder trim indication in the air - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Add FLAPS LEVER NOT ZERO ECAM message - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Add RETURN button to DATA/AIRPORT page - @Jonny23787 (Jonathan)
 1. [A380X/ECAM] Improve ALL PRIMARY CABIN FANS FAULT - @Jonny23787 (Jonathan)
 1. [A380X/FCU] Reduce FCU texture size from 5120 to 2560 - @heclak (Heclak)
 1. [A380X/MFD] Fix VERT DEV not updating in APPR page during descend phase - @heclak (Heclak)
@@ -61,6 +63,22 @@
 1. [A32NX/SD] Add flashing for AUTO BRK element - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
 1. [A32NX/FMS] Change GA PERF speeds to match APPR PERF speeds - @Jonny23787 (Jonathan)
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
+1. [EFB] Renamed "Weight Unit" pin program to "US Units" to reflect it's actual effect and real-world name - @tracernz (Mike)
+1. [A32NX/MCDU] Fix units on arrival airport runway lenghts - @Lucas-IQ21 (Lucas)
+1. [A32NX/FMS] Fix automatic cruise temperature calculation on INIT A page - @BlueberryKing (BlueberryKing)
+1. [A380X/MODEL] Fixed RMP 1 keypad backlighting - @heclak (Heclak)
+1. [A380X/MODEL] Fixed animations and emissives of some ECAM buttons - @heclak (Heclak)
+1. [A380X/MODEL] Overhead maintenance panel backlighting is no longer controlled by integrated lighting - @heclak (Heclak)
+1. [A380X/MODEL] Tweaked EFB positioning - @heclak (Heclak)
+1. [A380X] Fixed FO EFB and OIT display not working - @heclak (Heclak)
+1. [A380X/MODEL] Improved CPT and FO tray clickspot and animation - @heclak (Heclak)
+1. [A380X] Fixed glareshield sidestick priority annuciators not showing in light test - @heclak (Heclak)
+1. [A380X] Fixed GND HF DATALINK switch stuck in ON state - @heclak (Heclak)
+1. [A380X/MODEL] Fixed CPT MFD DU knob animation not aligned to panel decal - @heclak (Heclak)
+1. [A380X/MODEL] Fixed protuding mesh under right wing when spoilers are moved or wing is flexing - @heclak (Heclak)
+1. [A380X/MODEL] Removed unwanted mesh in front of main landing gear - @heclak (Heclak)
+1. [A380X] Sidestick pushbuttons on CPT and FO sidesticks are made clickable - @heclak (Heclak)
+1. [A380X/MODEL] Fixed black textures on side windshield windows - @heclak (Heclak)
 
 ## 0.13.0
 
