@@ -6,7 +6,6 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
-  SubscribableMapFunctions,
   VNode,
   NodeReference,
   ClockEvents,
@@ -20,8 +19,9 @@ import {
   ArincEventBus,
   Arinc429RegisterSubject,
   NXDataStore,
+  Arinc429LocalVarConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
-import { calculateHorizonOffsetFromPitch, HudElems, HudMode } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, HudElems, HudMode, LagFilter, RateLimiter } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
@@ -41,6 +41,7 @@ interface FlightPathVectorData {
 // FIXME should get smaller when FD is on
 export class FlightPathVector extends DisplayComponent<{
   bus: ArincEventBus;
+  instrument: BaseInstrument;
   isAttExcessive: Subscribable<boolean>;
   filteredRadioAlt: Subscribable<number>;
 }> {
@@ -51,12 +52,6 @@ export class FlightPathVector extends DisplayComponent<{
   private crosswindMode = false;
   private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
 
-  private refElement = FSComponent.createRef<SVGGElement>();
-  private readonly isVelocityVectorActive = ConsumerSubject.create(
-    this.sub.on(getDisplayIndex() === 2 ? 'fcuRightVelocityVectorOn' : 'fcuLeftVelocityVectorOn'),
-    false,
-  );
-
   private readonly data: FlightPathVectorData = {
     roll: Arinc429ConsumerSubject.create(this.sub.on('rollAr')),
     pitch: Arinc429ConsumerSubject.create(this.sub.on('pitchAr')),
@@ -66,26 +61,17 @@ export class FlightPathVector extends DisplayComponent<{
 
   private readonly ap1Active = ConsumerSubject.create(this.sub.on('ap1Active').whenChanged(), false);
   private readonly ap2Active = ConsumerSubject.create(this.sub.on('ap2Active').whenChanged(), false);
+  private readonly fpv = ConsumerSubject.create(this.sub.on('flightPathVector').whenChanged(), '');
 
-  private readonly isRequested = MappedSubject.create(SubscribableMapFunctions.or(), this.isVelocityVectorActive);
-
-  private readonly isDaAndFpaValid = MappedSubject.create(
-    ([da, fpa]) => da.isNormalOperation() && fpa.isNormalOperation(),
-    this.data.da,
-    this.data.fpa,
-  );
   private readonly isRollAndPitchValid = MappedSubject.create(
     ([roll, pitch]) => roll.isNormalOperation() && pitch.isNormalOperation(),
     this.data.roll,
     this.data.pitch,
   );
 
-  private readonly isBirdHidden = false;
-
-  private readonly isFailureFlagHidden = MappedSubject.create(
-    ([isRequested, isDaAndFpaValid, isRollAndPitchValid]) => !isRequested || isDaAndFpaValid || !isRollAndPitchValid,
-    this.isRequested,
-    this.isDaAndFpaValid,
+  private readonly isFpvVisible = MappedSubject.create(
+    ([fpv, isRollAndPitchValid]) => fpv === 'block' && isRollAndPitchValid,
+    this.fpv,
     this.isRollAndPitchValid,
   );
 
@@ -98,7 +84,7 @@ export class FlightPathVector extends DisplayComponent<{
     const moveBirdSub = MappedSubject.create(this.data.roll, this.data.pitch, this.data.fpa, this.data.da).sub(
       this.moveBird.bind(this),
       true,
-      true,
+      false,
     );
 
     moveBirdSub.resume(true);
@@ -114,7 +100,9 @@ export class FlightPathVector extends DisplayComponent<{
 
   private moveBird() {
     const hudXwindFpvType = parseInt(NXDataStore.get('HUD_FPV_TYPE', '0'));
-    hudXwindFpvType === 0 ? this.useLockedFreeFpv() : this.useSingleFpv();
+    if (this.isFpvVisible.get()) {
+      hudXwindFpvType === 0 ? this.useLockedFreeFpv() : this.useSingleFpv();
+    }
   }
   private useLockedFreeFpv() {
     let birdOffRange = false;
@@ -245,7 +233,7 @@ export class FlightPathVector extends DisplayComponent<{
 
             <path ref={this.birdLockedPath} class="NormalStroke Green" d="m 590 502 v 20  m 100 0 v -20" />
           </g>
-          <SpeedChevrons bus={this.props.bus} />
+          <SpeedChevrons bus={this.props.bus} instrument={this.props.instrument} />
 
           <DeltaSpeed bus={this.props.bus} />
           <RadioAltAndDH
@@ -262,80 +250,115 @@ export class FlightPathVector extends DisplayComponent<{
   }
 }
 
-export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
+export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HudElems>();
   private refElement = FSComponent.createRef<SVGGElement>();
   private leftChevron = FSComponent.createRef<SVGGElement>();
   private rightChevron = FSComponent.createRef<SVGGElement>();
   private inRange = true;
-  private onGround = true;
   private merged = false;
-  private onTakeoff = true;
   private vCTrend = new Arinc429Word(0);
+
+  private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
+  private readonly hudmode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0);
+
+  private previousAirspeed = 0;
+  private thresholdSpeed = 35;
+  private lagFilter = new LagFilter(1.6);
+
+  private airspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
+
+  private setOffset() {
+    let trend;
+    if (Math.abs(this.groundSpeed.get().value) < Math.abs(this.thresholdSpeed)) {
+      trend = this.getAccel();
+    } else if (this.vCTrend.value > this.getAccel()) {
+      trend = this.vCTrend.value;
+    } else {
+      trend = this.vCTrend.value;
+    }
+    if (this.vCTrend.isNormalOperation()) {
+      this.refElement.instance.style.visibility = 'visible';
+      const offset = (-trend * 28) / 5;
+      let UsedOffset = offset;
+      if (this.merged == false) {
+        if (this.hudmode.get() === HudMode.TAKEOFF || this.hudmode.get() === HudMode.TAXI) {
+          offset <= -FIVE_DEG ? (this.inRange = false) : (this.inRange = true);
+          UsedOffset = Math.max((-trend * 28) / 5, -FIVE_DEG);
+          if (UsedOffset === offset) {
+            UsedOffset = (-trend * 28) / 5;
+            if (this.hudmode.get() !== HudMode.NORMAL) {
+              this.merged = true;
+              this.inRange = true;
+            }
+          }
+        } else {
+          UsedOffset = (-trend * 28) / 5;
+        }
+      }
+
+      if (this.merged == false) {
+        if (this.inRange) {
+          this.leftChevron.instance.setAttribute('stroke-dasharray', '');
+          this.rightChevron.instance.setAttribute('stroke-dasharray', '');
+        } else {
+          this.leftChevron.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
+          this.rightChevron.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
+        }
+      } else {
+        this.leftChevron.instance.setAttribute('stroke-dasharray', '');
+        this.rightChevron.instance.setAttribute('stroke-dasharray', '');
+      }
+
+      this.refElement.instance.style.transform = `translate3d(0px, ${UsedOffset}px, 0px)`;
+    } else {
+      this.refElement.instance.style.visibility = 'hidden';
+    }
+  }
+
+  private getAccel() {
+    const { deltaTime } = this.props.instrument;
+    const clamped = Math.min(this.groundSpeed.get().value, this.thresholdSpeed + 20);
+    const airspeedAcc = ((clamped - this.previousAirspeed) / deltaTime) * 1000;
+    this.previousAirspeed = clamped;
+
+    let filteredAirspeedAcc = this.lagFilter.step(airspeedAcc, deltaTime / 1000);
+    filteredAirspeedAcc = this.airspeedAccRateLimiter.step(filteredAirspeedAcc, deltaTime / 1000);
+
+    const targetSpeed = filteredAirspeedAcc * 10;
+    const offset = (targetSpeed * DistanceSpacing) / ValueSpacing / 30;
+    return offset;
+  }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & ClockEvents>();
+    this.subscriptions.push(this.groundSpeed, this.hudmode);
 
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        value ? (this.onGround = true) : (this.onGround = false);
-      });
+    this.subscriptions.push(
+      this.groundSpeed.sub(() => {
+        this.setOffset();
+      }),
+    );
 
-    sub
-      .on('fmgcFlightPhase')
-      .whenChanged()
-      .handle((value) => {
-        value == 1 ? (this.onTakeoff = true) : (this.onTakeoff = false);
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('vCTrend')
+        .withArinc429Precision(2)
+        .whenChanged()
+        .handle((word) => {
+          this.vCTrend = word;
+        }),
+    );
+  }
 
-    sub
-      .on('vCTrend')
-      .withArinc429Precision(2)
-      .whenChanged()
-      .handle((word) => {
-        this.vCTrend = word;
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
 
-        if (this.vCTrend.isNormalOperation()) {
-          this.refElement.instance.style.visibility = 'visible';
-          const offset = (-this.vCTrend.value * 28) / 5;
-          let UsedOffset = offset;
-          if (this.merged == false) {
-            if (this.onTakeoff) {
-              offset <= -FIVE_DEG ? (this.inRange = false) : (this.inRange = true);
-              UsedOffset = Math.max((-this.vCTrend.value * 28) / 5, -FIVE_DEG);
-              if (UsedOffset === offset) {
-                UsedOffset = (-this.vCTrend.value * 28) / 5;
-                if (this.onGround == false) {
-                  this.merged = true;
-                  this.inRange = true;
-                }
-              }
-            } else {
-              UsedOffset = (-this.vCTrend.value * 28) / 5;
-            }
-          }
-
-          if (this.merged == false) {
-            if (this.inRange) {
-              this.leftChevron.instance.setAttribute('stroke-dasharray', '');
-              this.rightChevron.instance.setAttribute('stroke-dasharray', '');
-            } else {
-              this.leftChevron.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
-              this.rightChevron.instance.setAttribute('stroke-dasharray', '2 3.5 2 3.5 2 3 2 3');
-            }
-          } else {
-            this.leftChevron.instance.setAttribute('stroke-dasharray', '');
-            this.rightChevron.instance.setAttribute('stroke-dasharray', '');
-          }
-
-          this.refElement.instance.style.transform = `translate3d(0px, ${UsedOffset}px, 0px)`;
-        } else {
-          this.refElement.instance.style.visibility = 'hidden';
-        }
-      });
+    super.destroy();
   }
 
   render(): VNode | null {

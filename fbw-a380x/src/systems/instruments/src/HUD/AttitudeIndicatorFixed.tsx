@@ -225,6 +225,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
           <FlightPathVector
             bus={this.props.bus}
+            instrument={this.props.instrument}
             isAttExcessive={this.props.isAttExcessive}
             filteredRadioAlt={this.props.filteredRadioAlt}
           />
