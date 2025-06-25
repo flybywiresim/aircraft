@@ -78,6 +78,8 @@
 1. [A380X/MODEL] Removed unwanted mesh in front of main landing gear - @heclak (Heclak)
 1. [A380X] Sidestick pushbuttons on CPT and FO sidesticks are made clickable - @heclak (Heclak)
 1. [A380X/MODEL] Fixed black textures on side windshield windows - @heclak (Heclak)
+1. [ATSU] Improved Hoppie ACARS connection protocol - @heclak (Heclak)
+1. [ATSU] Fixed a case where "no active atc" is returned but station is online - @heclak (Heclak)
 
 ## 0.13.0
 
