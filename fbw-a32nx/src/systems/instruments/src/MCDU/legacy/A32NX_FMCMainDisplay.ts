@@ -5479,6 +5479,25 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return 100;
   }
 
+  public goToFuelPredPage(forPlan: FlightPlanIndex) {
+    const plan = this.getFlightPlan(forPlan);
+
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
+    const isCopiedFromActive = BitFlags.isAll(plan.flags, FlightPlanFlags.CopiedFromActive);
+
+    if (this.isAnEngineOn()) {
+      if (isActivePlan) {
+        CDUFuelPredPage.ShowPage(this.mcdu);
+      } else if (isCopiedFromActive) {
+        this.setScratchpadMessage(NXSystemMessages.notAllowed);
+      } else {
+        CDUInitPage.ShowPage2(this.mcdu, forPlan);
+      }
+    } else {
+      CDUInitPage.ShowPage2(this.mcdu, forPlan);
+    }
+  }
+
   // ---------------------------
   // CDUMainDisplay Types
   // ---------------------------

@@ -19,6 +19,7 @@ import {
   DefaultPerformanceData,
   FlightPlanPerformanceData,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanFlags } from './plans/FlightPlanFlags';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -110,6 +111,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       FlightPlanIndex.FirstSecondary + (index - 1),
       CopyOptions.CopyPredictions | CopyOptions.ActiveToSec | CopyOptions.BeforeEngineStart,
     );
+
+    this.secondary(index).flags |= FlightPlanFlags.CopiedFromActive;
   }
 
   async secondaryDelete(index: number) {

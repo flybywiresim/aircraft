@@ -23,6 +23,7 @@ import { BaseFlightPlan, SerializedFlightPlan } from './BaseFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
+import { FlightPlanFlags } from './FlightPlanFlags';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -52,6 +53,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * Shown as the "flight number" in the MCDU, but it's really the callsign
    */
   flightNumber: string | undefined = undefined;
+
+  /**
+   * Possible flags for this flight plan. See {@link FlightPlanFlags} for a list of flags.
+   */
+  flags: number = FlightPlanFlags.None;
 
   constructor(index: number, bus: EventBus, performanceDataInit: P) {
     super(index, bus);
