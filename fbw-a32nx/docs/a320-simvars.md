@@ -3984,7 +3984,7 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
    - Same as `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`.
 
 - `L:A32NX_DMC_IR_3_DISCRETE_WORD_RIGHT`
-   - Left DMC IRS 3 discrete word. Raw ARINC word.
+   - Right DMC IRS 3 discrete word. Raw ARINC word.
    - Same as `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`.
 
 - `L:A32NX_DMC_DISCRETE_WORD_350_LEFT`
