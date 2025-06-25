@@ -184,15 +184,15 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         }
 
         const sign = Math.sign(filteredVS);
-
+        const multiplier = this.crosswindMode ? 0.5 : 1;
         if (absVSpeed < 1000) {
-          this.yOffsetSub.set((filteredVS / 1000) * -136.1);
+          this.yOffsetSub.set((filteredVS / 1000) * -136.1 * multiplier);
         } else if (absVSpeed < 2000) {
-          this.yOffsetSub.set(((filteredVS - sign * 1000) / 1000) * -50.5 - sign * 136.1);
+          this.yOffsetSub.set(((filteredVS - sign * 1000) / 1000) * -50.5 - sign * 136.1 * multiplier);
         } else if (absVSpeed < 6000) {
-          this.yOffsetSub.set(((filteredVS - sign * 2000) / 4000) * -50.5 - sign * 186.6);
+          this.yOffsetSub.set(((filteredVS - sign * 2000) / 4000) * -50.5 - sign * 186.6 * multiplier);
         } else {
-          this.yOffsetSub.set(sign * -237);
+          this.yOffsetSub.set(sign * -237 * multiplier);
         }
       });
 
