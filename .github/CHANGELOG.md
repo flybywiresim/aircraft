@@ -78,6 +78,7 @@
 1. [A380X/MODEL] Removed unwanted mesh in front of main landing gear - @heclak (Heclak)
 1. [A380X] Sidestick pushbuttons on CPT and FO sidesticks are made clickable - @heclak (Heclak)
 1. [A380X/MODEL] Fixed black textures on side windshield windows - @heclak (Heclak)
+1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
