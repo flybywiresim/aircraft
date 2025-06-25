@@ -15,6 +15,7 @@ export class CDUSecFplnMain {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.activeSystem = 'FMGC';
+    mcdu.page.Current = mcdu.page.SecFplnMain;
 
     mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
     mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
