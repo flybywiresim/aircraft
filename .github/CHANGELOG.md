@@ -80,6 +80,7 @@
 1. [A380X/MODEL] Fixed black textures on side windshield windows - @heclak (Heclak)
 1. [ATSU] Improved Hoppie ACARS connection protocol - @heclak (Heclak)
 1. [ATSU] Fixed a case where "no active atc" is returned but station is online - @heclak (Heclak)
+1. [A32NX/FMS] Implement ability to create, modify, activate and swap a secondary flight plan - @Benjozork (Benjamin Dupont), @BlueberyKing (BlueberryKing)
 
 ## 0.13.0
 
