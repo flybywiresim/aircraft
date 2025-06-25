@@ -9,22 +9,39 @@ import { arcDistanceToGo, arcGuidance } from '@fmgc/guidance/lnav/CommonGeometry
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
-import { Fix, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
+import { Fix, isMsfs2024, MathUtils, TurnDirection, VhfNavaid } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
+import { A32NX_Util } from '@shared/A32NX_Util';
 
 export class AFLeg extends XFLeg {
   predictedPath: PathVector[] = [];
 
+  private readonly boundaryRadialTrue = this.recommendedNavaid.trueReferenced
+    ? this.boundaryRadial
+    : A32NX_Util.magneticToTrue(this.boundaryRadial, this.recommendedNavaid.stationDeclination);
+  private readonly terminationRadialTrue = this.recommendedNavaid.trueReferenced
+    ? this.theta
+    : A32NX_Util.magneticToTrue(this.theta, this.recommendedNavaid.stationDeclination);
+
+  public readonly centre =
+    isMsfs2024() && this.recommendedNavaid.dmeLocation
+      ? this.recommendedNavaid.dmeLocation
+      : AFLeg.dmeLocationFallback(this.fix, this.terminationRadialTrue, this.rho);
+  public readonly radius = distanceTo(this.centre, this.fix.location);
+
   constructor(
-    fix: Fix,
-    private navaid: Coordinates,
-    private rho: NauticalMiles,
+    public readonly fix: Fix,
+    private readonly recommendedNavaid: VhfNavaid,
+    /** Rho, in nautical miles. */
+    public rho: NauticalMiles,
+    /** Theta in degrees magnetic (unless true referenced). */
     private theta: NauticalMiles,
-    public boundaryRadial: NauticalMiles,
+    /** Course in degrees magnetic (unless true referenced). */
+    public boundaryRadial: number,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
@@ -32,28 +49,16 @@ export class AFLeg extends XFLeg {
 
     this.segment = segment;
 
-    this.centre = navaid;
-    this.radius = distanceTo(navaid, this.fix.location);
-    this.terminationRadial = this.theta;
-    this.bearing = MathUtils.normalise360(bearingTo(this.centre, this.fix.location) + 90 * this.turnDirectionSign);
-    this.arcStartPoint = placeBearingDistance(this.centre, this.boundaryRadial, this.radius);
-    this.arcEndPoint = placeBearingDistance(this.centre, this.terminationRadial, this.radius);
+    this.arcStartPoint = placeBearingDistance(this.centre, this.boundaryRadialTrue, this.radius);
+    this.arcEndPoint = placeBearingDistance(this.centre, this.terminationRadialTrue, this.radius);
 
-    this.inboundCourse = this.boundaryRadial + 90 * this.turnDirectionSign;
-    this.outboundCourse = this.terminationRadial + 90 * this.turnDirectionSign;
+    this.inboundCourse = this.boundaryRadialTrue + 90 * this.turnDirectionSign;
+    this.outboundCourse = this.terminationRadialTrue + 90 * this.turnDirectionSign;
   }
-
-  readonly centre: Coordinates | undefined;
-
-  private readonly terminationRadial: DegreesTrue | undefined;
-
-  private readonly bearing: DegreesTrue | undefined;
 
   readonly arcStartPoint: Coordinates | undefined;
 
   readonly arcEndPoint: Coordinates | undefined;
-
-  readonly radius: NauticalMiles | undefined;
 
   private sweepAngle: Degrees | undefined;
 
@@ -62,6 +67,13 @@ export class AFLeg extends XFLeg {
   inboundCourse: DegreesTrue | undefined;
 
   outboundCourse: DegreesTrue | undefined;
+
+  /**
+   * Fallback to estimate the DME location for MSFS2020 which does not have the DME location in it's facility data.
+   */
+  private static dmeLocationFallback(fix: Fix, thetaTrue: number, rho: number): Coordinates {
+    return placeBearingDistance(fix.location, MathUtils.normalise360(thetaTrue + 180), rho);
+  }
 
   getPathStartPoint(): Coordinates | undefined {
     return this.inboundGuidable instanceof DmeArcTransition

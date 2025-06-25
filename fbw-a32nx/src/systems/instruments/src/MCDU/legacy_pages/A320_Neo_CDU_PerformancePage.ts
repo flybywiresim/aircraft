@@ -924,11 +924,11 @@ export class CDUPerformancePage {
       }
     };
     let magWindHeadingCell = '[\xa0]';
-    if (isFinite(mcdu.perfApprWindHeading)) {
+    if (mcdu.perfApprWindHeading !== null) {
       magWindHeadingCell = ('' + mcdu.perfApprWindHeading.toFixed(0)).padStart(3, '0');
     }
     let magWindSpeedCell = '[\xa0]';
-    if (isFinite(mcdu.perfApprWindSpeed)) {
+    if (mcdu.perfApprWindSpeed !== null) {
       magWindSpeedCell = mcdu.perfApprWindSpeed.toFixed(0).padStart(3, '0');
     }
     mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
@@ -1153,15 +1153,15 @@ export class CDUPerformancePage {
     if (isFinite(mcdu.zeroFuelWeight)) {
       const flapSpeed = mcdu.computedVfs;
       if (isFinite(flapSpeed)) {
-        flpRetrCell = `{green}${flapSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
+        flpRetrCell = `{green}${mcdu.approachSpeeds.f.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
       const slatSpeed = mcdu.computedVss;
       if (isFinite(slatSpeed)) {
-        sltRetrCell = `{green}${slatSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
+        sltRetrCell = `{green}${mcdu.approachSpeeds.s.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
       const cleanSpeed = mcdu.computedVgd;
       if (isFinite(cleanSpeed)) {
-        cleanCell = `{green}${cleanSpeed.toFixed(0).padEnd(3, '\xa0')}{end}`;
+        cleanCell = `{green}${mcdu.approachSpeeds.gd.toFixed(0).padEnd(3, '\xa0')}{end}`;
       }
     }
 

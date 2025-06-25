@@ -63,7 +63,7 @@ impl From<f64> for Arinc429Word<u32> {
 impl From<Arinc429Word<u32>> for f64 {
     fn from(value: Arinc429Word<u32>) -> f64 {
         let status: u64 = value.ssm.into();
-        let int_value: u64 = ((value.value as f32).to_bits() as u64) | status << 32;
+        let int_value: u64 = ((value.value as f32).to_bits() as u64) | (status << 32);
 
         int_value as f64
     }
@@ -79,7 +79,7 @@ impl From<f64> for Arinc429Word<f64> {
 impl From<Arinc429Word<f64>> for f64 {
     fn from(value: Arinc429Word<f64>) -> f64 {
         let status: u64 = value.ssm.into();
-        let int_value: u64 = ((value.value as f32).to_bits() as u64) | status << 32;
+        let int_value: u64 = ((value.value as f32).to_bits() as u64) | (status << 32);
 
         int_value as f64
     }
@@ -125,7 +125,7 @@ pub(crate) fn from_arinc429(simvar: f64) -> (f64, SignStatus) {
 
 pub(crate) fn to_arinc429(value: f64, ssm: SignStatus) -> f64 {
     let status: u64 = ssm.into();
-    let int_value: u64 = ((value as f32).to_bits() as u64) | status << 32;
+    let int_value: u64 = ((value as f32).to_bits() as u64) | (status << 32);
 
     int_value as f64
 }
