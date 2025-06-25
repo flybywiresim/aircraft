@@ -4921,7 +4921,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public getTripWind() {
     // FIXME convert vnav to use +ve for tailwind, -ve for headwind, it's the other way around at the moment
-    return -(this.flightPlanService.active?.performanceData?.pilotTripWind ?? 0);
+    return -(this.flightPlanService.active?.performanceData.pilotTripWind.get() ?? 0);
   }
 
   /** @deprecated This API is not suitable and needs replaced with a proper wind manager. */
