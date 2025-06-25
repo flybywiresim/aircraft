@@ -141,7 +141,7 @@ export class HoppieConnector {
       return AtsuStatusCodes.ComFailed;
     }
 
-    if (text !== `ok {${station}}`) {
+    if (text.includes(station) !== true) {
       return AtsuStatusCodes.NoAtc;
     }
 
