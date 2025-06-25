@@ -21,8 +21,8 @@ export class CDUProgressPage {
     const flightNo = plan.flightNumber ?? '';
     const flMax = mcdu.getMaxFlCorrected();
     const flOpt =
-      plan.performanceData.zeroFuelWeightCenterOfGravity !== null &&
-      plan.performanceData.blockFuel !== null &&
+      plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null &&
+      plan.performanceData.blockFuel.get() !== null &&
       (mcdu.isAllEngineOn() || mcdu.isOnGround())
         ? '{green}FL' + (Math.floor(flMax / 5) * 5).toString() + '{end}'
         : '-----';

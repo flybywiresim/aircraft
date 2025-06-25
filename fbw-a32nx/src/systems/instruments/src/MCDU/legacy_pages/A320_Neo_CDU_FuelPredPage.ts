@@ -96,8 +96,11 @@ export class CDUFuelPredPage {
     let extraCellColor = '[color]white';
     let extraTimeColor = '{white}';
 
-    if (plan.performanceData.zeroFuelWeight !== null && plan.performanceData.zeroFuelWeightCenterOfGravity !== null) {
-      zfwCell = NXUnits.kgToUser(plan.performanceData.zeroFuelWeight).toFixed(1);
+    if (
+      plan.performanceData.zeroFuelWeight.get() !== null &&
+      plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null
+    ) {
+      zfwCell = NXUnits.kgToUser(plan.performanceData.zeroFuelWeight.get()).toFixed(1);
       zfwColor = '[color]cyan';
 
       zfwCgCell = getZfwcg().toFixed(1);
@@ -126,17 +129,17 @@ export class CDUFuelPredPage {
     if (CDUInitPage.fuelPredConditionsMet(mcdu, FlightPlanIndex.Active)) {
       const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
-      if (Number.isFinite(plan.performanceData.pilotFinalHoldingFuel)) {
-        finalFuelCell = `{cyan}${NXUnits.kgToUser(plan.performanceData.pilotFinalHoldingFuel).toFixed(1).padStart(5, '\xa0')}{end}`;
+      if (Number.isFinite(plan.performanceData.pilotFinalHoldingFuel.get())) {
+        finalFuelCell = `{cyan}${NXUnits.kgToUser(plan.performanceData.pilotFinalHoldingFuel.get()).toFixed(1).padStart(5, '\xa0')}{end}`;
       } else if (Number.isFinite(predictions.finalHoldingFuel)) {
         finalFuelCell = `{cyan}{small}${NXUnits.kgToUser(predictions.finalHoldingFuel).toFixed(1).padStart(5, '\xa0')}{end}`;
       }
 
       if (
-        Number.isFinite(plan.performanceData.finalHoldingTime) &&
-        !Number.isFinite(plan.performanceData.pilotFinalHoldingFuel)
+        Number.isFinite(plan.performanceData.finalHoldingTime.get()) &&
+        !Number.isFinite(plan.performanceData.pilotFinalHoldingFuel.get())
       ) {
-        finalTimeCell = `/${FmsFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime)}`;
+        finalTimeCell = `/${FmsFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime.get())}`;
         finalColor = '[color]cyan';
       } else if (Number.isFinite(predictions.finalHoldingTime)) {
         finalTimeCell = '{small}/' + FmsFormatters.minutesTohhmm(predictions.finalHoldingTime) + '{end}';
@@ -152,8 +155,8 @@ export class CDUFuelPredPage {
       };
 
       if (alternate) {
-        if (Number.isFinite(plan.performanceData.pilotAlternateFuel)) {
-          altFuelCell = `${NXUnits.kgToUser(plan.performanceData.pilotAlternateFuel).toFixed(1).padStart(5, '\xa0')}`;
+        if (Number.isFinite(plan.performanceData.pilotAlternateFuel.get())) {
+          altFuelCell = `${NXUnits.kgToUser(plan.performanceData.pilotAlternateFuel.get()).toFixed(1).padStart(5, '\xa0')}`;
           altFuelColor = '[color]cyan';
         } else if (Number.isFinite(predictions.alternateFuel)) {
           altFuelCell = `{small}${NXUnits.kgToUser(predictions.alternateFuel).toFixed(1).padStart(5, '\xa0')}{end}`;
@@ -219,21 +222,21 @@ export class CDUFuelPredPage {
       if (Number.isFinite(predictions.routeReserveFuel)) {
         rteRsvWeightCell = `{small}${NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1).padStart(5, '\xa0')}{end}`;
         rteRSvCellColor = isFlying ? '[color]green' : '[color]cyan';
-      } else if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel)) {
-        rteRsvWeightCell = `${NXUnits.kgToUser(plan.performanceData.pilotRouteReserveFuel).toFixed(1).padStart(5, '\xa0')}`;
+      } else if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())) {
+        rteRsvWeightCell = `${NXUnits.kgToUser(plan.performanceData.pilotRouteReserveFuel.get()).toFixed(1).padStart(5, '\xa0')}`;
         rteRSvCellColor = isFlying ? '[color]green' : '[color]cyan';
       }
 
-      const routeReserveFuelPercentage = Number.isFinite(plan.performanceData.pilotRouteReserveFuel)
+      const routeReserveFuelPercentage = Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())
         ? predictions.routeReserveFuelPercentage
-        : plan.performanceData.routeReserveFuelPercentage;
+        : plan.performanceData.routeReserveFuelPercentage.get();
 
       if (Number.isFinite(routeReserveFuelPercentage)) {
         // TODO thresholds should come from AMI
         const routeReserveOutOfRange = routeReserveFuelPercentage < 0 || routeReserveFuelPercentage > 15;
 
         if (!routeReserveOutOfRange) {
-          if (isFlying || Number.isFinite(plan.performanceData.pilotRouteReserveFuel)) {
+          if (isFlying || Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())) {
             rteRsvPercentCell = `{small}/${routeReserveFuelPercentage.toFixed(1)}{end}`;
           } else {
             rteRsvPercentCell = `/${routeReserveFuelPercentage.toFixed(1)}`;
@@ -251,9 +254,9 @@ export class CDUFuelPredPage {
         }
       };
 
-      if (Number.isFinite(plan.performanceData.pilotMinimumDestinationFuelOnBoard)) {
+      if (Number.isFinite(plan.performanceData.pilotMinimumDestinationFuelOnBoard.get())) {
         minDestFobCell =
-          '{sp}{sp}' + NXUnits.kgToUser(plan.performanceData.pilotMinimumDestinationFuelOnBoard).toFixed(1);
+          '{sp}{sp}' + NXUnits.kgToUser(plan.performanceData.pilotMinimumDestinationFuelOnBoard.get()).toFixed(1);
         minDestFobCellColor = '[color]cyan';
       } else if (Number.isFinite(predictions.minimumDestinationFuel)) {
         minDestFobCell = '{sp}{sp}{small}' + NXUnits.kgToUser(predictions.minimumDestinationFuel).toFixed(1) + '{end}';
@@ -281,12 +284,12 @@ export class CDUFuelPredPage {
       }
 
       // Currently not updating as there's no simvar to retrieve this.
-      if (plan.performanceData.zeroFuelWeight !== null) {
-        zfwCell = NXUnits.kgToUser(plan.performanceData.zeroFuelWeight).toFixed(1);
+      if (plan.performanceData.zeroFuelWeight.get() !== null) {
+        zfwCell = NXUnits.kgToUser(plan.performanceData.zeroFuelWeight.get()).toFixed(1);
         zfwColor = '[color]cyan';
       }
-      if (plan.performanceData.zeroFuelWeightCenterOfGravity !== null) {
-        zfwCgCell = plan.performanceData.zeroFuelWeightCenterOfGravity.toFixed(1);
+      if (plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null) {
+        zfwCgCell = plan.performanceData.zeroFuelWeightCenterOfGravity.get().toFixed(1);
       }
     }
 

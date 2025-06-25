@@ -33,7 +33,7 @@ export class CDUStepAltsPage {
 
     const isFlying =
       mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff && mcdu.flightPhaseManager.phase < FmgcFlightPhase.Done;
-    const transitionAltitude = plan.performanceData.transitionAltitude;
+    const transitionAltitude = plan.performanceData.transitionAltitude.get();
 
     const predictions =
       isActivePlan &&
@@ -44,7 +44,7 @@ export class CDUStepAltsPage {
 
     mcdu.setTemplate([
       [
-        `${!isActivePlan ? 'SEC ' : ''}STEP ALTS {small}FROM{end} {green}FL${plan.performanceData.cruiseFlightLevel ?? ''}{end}`,
+        `${!isActivePlan ? 'SEC ' : ''}STEP ALTS {small}FROM{end} {green}FL${plan.performanceData.cruiseFlightLevel.get() ?? ''}{end}`,
       ],
       ['\xa0ALT\xa0/\xa0WPT', 'DIST\xa0TIME'],
       CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 0, predictions, isFlying, transitionAltitude),
@@ -212,7 +212,7 @@ export class CDUStepAltsPage {
       mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
       scratchpadCallback();
       return;
-    } else if (!this.checkStepInsertionRules(stepLegs, legIndex, alt, plan.performanceData.cruiseFlightLevel)) {
+    } else if (!this.checkStepInsertionRules(stepLegs, legIndex, alt, plan.performanceData.cruiseFlightLevel.get())) {
       // Step too small or step descent after step climb
       mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
       scratchpadCallback();
@@ -287,7 +287,7 @@ export class CDUStepAltsPage {
           stepLegs,
           clickedStep.waypointIndex,
           clickedStep.toAltitude,
-          plan.performanceData.cruiseFlightLevel,
+          plan.performanceData.cruiseFlightLevel.get(),
         )
       ) {
         // Step too small or step descent after step climb

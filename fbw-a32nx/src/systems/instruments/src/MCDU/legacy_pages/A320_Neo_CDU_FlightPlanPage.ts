@@ -391,10 +391,10 @@ export class CDUFlightPlanPage {
 
         if (targetPlan.index !== FlightPlanIndex.Temporary && wp.type !== 'HM') {
           if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-            speedConstraint = Number.isFinite(targetPlan.performanceData.v1)
-              ? `{big}${Math.round(targetPlan.performanceData.v1)}{end}`
+            speedConstraint = Number.isFinite(targetPlan.performanceData.v1.get())
+              ? `{big}${Math.round(targetPlan.performanceData.v1.get())}{end}`
               : Speed.NoPrediction;
-            spdColor = Number.isFinite(targetPlan.performanceData.v1) ? color : 'white';
+            spdColor = Number.isFinite(targetPlan.performanceData.v1.get()) ? color : 'white';
           } else if (isFromLeg) {
             speedConstraint = Speed.Empty;
           } else if (verticalWaypoint && verticalWaypoint.speed) {
@@ -1320,10 +1320,10 @@ function formatAltitudeOrLevel(mcdu: LegacyFmsPageInterface, alt: number, useTra
 
   let isFl = false;
   if (useTransAlt) {
-    const transAlt = activePlan.performanceData.transitionAltitude;
+    const transAlt = activePlan.performanceData.transitionAltitude.get();
     isFl = transAlt !== null && alt > transAlt;
   } else {
-    const transLevel = activePlan.performanceData.transitionLevel;
+    const transLevel = activePlan.performanceData.transitionLevel.get();
     isFl = transLevel !== null && alt >= transLevel * 100;
   }
 

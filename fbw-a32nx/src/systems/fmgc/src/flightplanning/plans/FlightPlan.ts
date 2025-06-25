@@ -5,7 +5,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { BitFlags, EventBus, MagVar } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, MagVar, MutableSubscribable } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -61,11 +61,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   destroy() {
     super.destroy();
 
+    this.performanceData.destroy();
     this.alternateFlightPlan.destroy();
   }
 
   clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan<P> {
-    const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone());
+    const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone(options));
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan, options);
@@ -570,6 +571,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     return newPlan;
   }
 
+  // FIXME types
   /**
    * Sets a performance data parameter
    *
@@ -577,10 +579,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   setPerformanceData<k extends keyof (P & FlightPlanPerformanceDataProperties) & string>(
     key: k,
-    value: P[k] | null,
+    value: any,
     notify = true,
   ) {
-    this.performanceData[key] = value;
+    (this.performanceData[key] as MutableSubscribable<typeof value>).set(value);
 
     if (notify) {
       this.sendPerfEvent(
@@ -600,19 +602,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
     if (
       Number.isFinite(lowestClimbConstraint) &&
-      this.performanceData.thrustReductionAltitude !== null &&
-      this.performanceData.thrustReductionAltitude > lowestClimbConstraint
+      this.performanceData.thrustReductionAltitude.get() !== null &&
+      this.performanceData.thrustReductionAltitude.get() > lowestClimbConstraint
     ) {
       this.setPerformanceData(
         'defaultThrustReductionAltitude',
-        this.performanceData.defaultThrustReductionAltitude !== null
-          ? Math.min(this.performanceData.defaultThrustReductionAltitude, lowestClimbConstraint)
+        this.performanceData.defaultThrustReductionAltitude.get() !== null
+          ? Math.min(this.performanceData.defaultThrustReductionAltitude.get(), lowestClimbConstraint)
           : null,
       );
       this.setPerformanceData(
         'pilotThrustReductionAltitude',
-        this.performanceData.pilotThrustReductionAltitude !== null
-          ? Math.min(this.performanceData.pilotThrustReductionAltitude, lowestClimbConstraint)
+        this.performanceData.pilotThrustReductionAltitude.get() !== null
+          ? Math.min(this.performanceData.pilotThrustReductionAltitude.get(), lowestClimbConstraint)
           : null,
       );
 
@@ -630,19 +632,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
     if (
       Number.isFinite(lowestClimbConstraint) &&
-      this.performanceData.accelerationAltitude !== null &&
-      this.performanceData.accelerationAltitude > lowestClimbConstraint
+      this.performanceData.accelerationAltitude.get() !== null &&
+      this.performanceData.accelerationAltitude.get() > lowestClimbConstraint
     ) {
       this.setPerformanceData(
         'defaultAccelerationAltitude',
-        this.performanceData.defaultAccelerationAltitude !== null
-          ? Math.min(this.performanceData.defaultAccelerationAltitude, lowestClimbConstraint)
+        this.performanceData.defaultAccelerationAltitude.get() !== null
+          ? Math.min(this.performanceData.defaultAccelerationAltitude.get(), lowestClimbConstraint)
           : null,
       );
       this.setPerformanceData(
         'pilotAccelerationAltitude',
-        this.performanceData.pilotAccelerationAltitude !== null
-          ? Math.min(this.performanceData.pilotAccelerationAltitude, lowestClimbConstraint)
+        this.performanceData.pilotAccelerationAltitude.get() !== null
+          ? Math.min(this.performanceData.pilotAccelerationAltitude.get(), lowestClimbConstraint)
           : null,
       );
 

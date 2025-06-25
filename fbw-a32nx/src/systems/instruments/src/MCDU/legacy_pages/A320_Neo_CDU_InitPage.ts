@@ -120,7 +120,7 @@ export class CDUInitPage {
         [costIndexAction, costIndexText, costIndexColor] = new CDU_SingleValueField(
           mcdu,
           'int',
-          plan.performanceData.costIndex,
+          plan.performanceData.costIndex.get(),
           {
             clearable: true,
             emptyValue: isForPrimary ? '___[color]amber' : '[\xa0][color]cyan',
@@ -140,8 +140,8 @@ export class CDUInitPage {
         cruiseTemp.update(isForPrimary ? '|___°' : '|[\xa0]°', isForPrimary ? Column.amber : Column.cyan);
         cruiseFlTempSeparator.updateAttributes(isForPrimary ? Column.amber : Column.cyan);
 
-        const planCruiseLevel = plan.performanceData.cruiseFlightLevel;
-        const planCruiseTemp = plan.performanceData.cruiseTemperature;
+        const planCruiseLevel = plan.performanceData.cruiseFlightLevel.get();
+        const planCruiseTemp = plan.performanceData.cruiseTemperature.get();
 
         //This is done so pilot enters a FL first, rather than using the computed one
         // TODO differentiate for SEC
@@ -208,10 +208,13 @@ export class CDUInitPage {
       });
     };
 
-    const planTropo = plan.performanceData.tropopause;
+    const planTropo = plan.performanceData.tropopause.get();
 
     if (planTropo) {
-      tropo.update(planTropo.toString(), plan.performanceData.tropopauseIsPilotEntered ? Column.big : Column.small);
+      tropo.update(
+        planTropo.toString(),
+        plan.performanceData.tropopauseIsPilotEntered.get() ? Column.big : Column.small,
+      );
     }
 
     mcdu.onRightInput[4] = (value, scratchpadCallback) => {
@@ -291,13 +294,13 @@ export class CDUInitPage {
 
     const groundTemp = new Column(23, '---°', Column.right);
 
-    const planGroundTemp = plan.performanceData.groundTemperature;
+    const planGroundTemp = plan.performanceData.groundTemperature.get();
 
     if (planGroundTemp !== null) {
       groundTemp.update(
         CDUInitPage.formatTemperature(planGroundTemp),
         Column.cyan,
-        plan.performanceData.groundTemperatureIsPilotEntered ? Column.big : Column.small,
+        plan.performanceData.groundTemperatureIsPilotEntered.get() ? Column.big : Column.small,
       );
     }
 
@@ -360,8 +363,8 @@ export class CDUInitPage {
     return (
       (Number.isFinite(mcdu.getFOB(forPlan)) || mcdu.isFuelPlanningInProgress(forPlan)) &&
       plan?.legCount > 0 &&
-      plan.performanceData.zeroFuelWeight !== null &&
-      plan.performanceData.zeroFuelWeightCenterOfGravity !== null
+      plan.performanceData.zeroFuelWeight.get() !== null &&
+      plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null
     );
   }
   static ShowPage2(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
@@ -398,9 +401,12 @@ export class CDUInitPage {
     );
     const zfwCgCellDivider = new Column(18, '|', isForPrimary ? Column.amber : Column.cyan, Column.right);
 
-    if (plan.performanceData.zeroFuelWeight !== null && plan.performanceData.zeroFuelWeightCenterOfGravity !== null) {
-      zfwCell.update(NXUnits.kgToUser(plan.performanceData.zeroFuelWeight).toFixed(1), Column.cyan);
-      zfwCgCell.update(plan.performanceData.zeroFuelWeightCenterOfGravity.toFixed(1), Column.cyan);
+    if (
+      plan.performanceData.zeroFuelWeight.get() !== null &&
+      plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null
+    ) {
+      zfwCell.update(NXUnits.kgToUser(plan.performanceData.zeroFuelWeight.get()).toFixed(1), Column.cyan);
+      zfwCgCell.update(plan.performanceData.zeroFuelWeightCenterOfGravity.get().toFixed(1), Column.cyan);
       zfwCgCellDivider.updateAttributes(Column.cyan);
     }
     mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
@@ -443,9 +449,9 @@ export class CDUInitPage {
       Column.right,
     );
 
-    if (plan.performanceData.blockFuel !== null) {
-      if (Number.isFinite(plan.performanceData.blockFuel)) {
-        blockFuel.update(NXUnits.kgToUser(plan.performanceData.blockFuel).toFixed(1), Column.cyan);
+    if (plan.performanceData.blockFuel.get() !== null) {
+      if (Number.isFinite(plan.performanceData.blockFuel.get())) {
+        blockFuel.update(NXUnits.kgToUser(plan.performanceData.blockFuel.get()).toFixed(1), Column.cyan);
       }
     } else if (mcdu.isFuelPlanningInProgress(forPlan) && Number.isFinite(mcdu.getUnconfirmedBlockFuel(forPlan))) {
       blockFuel.update(NXUnits.kgToUser(mcdu.getUnconfirmedBlockFuel(forPlan)).toFixed(1), Column.cyan);
@@ -462,7 +468,7 @@ export class CDUInitPage {
     const fuelPlanTopTitle = new Column(23, '', Column.amber, Column.right);
     const fuelPlanBottomTitle = new Column(23, '', Column.amber, Column.right);
 
-    if (plan.performanceData.zeroFuelWeight !== null && plan.performanceData.blockFuel === null) {
+    if (plan.performanceData.zeroFuelWeight.get() !== null && plan.performanceData.blockFuel.get() === null) {
       if (mcdu.isFuelPlanningInProgress(forPlan)) {
         fuelPlanTopTitle.update('BLOCK ', Column.green);
         fuelPlanBottomTitle.update('CONFIRM', Column.green);
@@ -484,9 +490,9 @@ export class CDUInitPage {
 
     const taxiFuelCell = new Column(
       0,
-      NXUnits.kgToUser(plan.performanceData.taxiFuel).toFixed(1),
+      NXUnits.kgToUser(plan.performanceData.taxiFuel.get()).toFixed(1),
       Column.cyan,
-      plan.performanceData.taxiFuelIsPilotEntered ? Column.big : Column.small,
+      plan.performanceData.taxiFuelIsPilotEntered.get() ? Column.big : Column.small,
     );
 
     mcdu.onLeftInput[0] = async (value: string, scratchpadCallback: () => void) => {
@@ -535,15 +541,15 @@ export class CDUInitPage {
     const tripWindAvgCell = new Column(21, '---');
 
     if (plan.originAirport && plan.destinationAirport) {
-      const isTripWindPilotEntered = plan.performanceData.pilotTripWind !== null;
+      const isTripWindPilotEntered = plan.performanceData.pilotTripWind.get() !== null;
 
       tripWindDirCell.update(
-        CDUInitPage.formatWindDirection(plan.performanceData.pilotTripWind ?? 0),
+        CDUInitPage.formatWindDirection(plan.performanceData.pilotTripWind.get() ?? 0),
         Column.cyan,
         Column.small,
       );
       tripWindAvgCell.update(
-        CDUInitPage.formatWindComponent(plan.performanceData.pilotTripWind ?? 0),
+        CDUInitPage.formatWindComponent(plan.performanceData.pilotTripWind.get() ?? 0),
         Column.cyan,
         isTripWindPilotEntered ? Column.big : Column.small,
       );
@@ -563,13 +569,16 @@ export class CDUInitPage {
         mcdu.isFlying() ? Column.green : Column.cyan,
         Column.small,
       );
-    } else if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel)) {
-      rteRsvWeightCell.update(NXUnits.kgToUser(plan.performanceData.pilotRouteReserveFuel).toFixed(1), Column.cyan);
+    } else if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())) {
+      rteRsvWeightCell.update(
+        NXUnits.kgToUser(plan.performanceData.pilotRouteReserveFuel.get()).toFixed(1),
+        Column.cyan,
+      );
     }
 
-    const routeReserveFuelPercentage = Number.isFinite(plan.performanceData.pilotRouteReserveFuel)
+    const routeReserveFuelPercentage = Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())
       ? predictions.routeReserveFuelPercentage
-      : plan.performanceData.routeReserveFuelPercentage;
+      : plan.performanceData.routeReserveFuelPercentage.get();
 
     if (Number.isFinite(routeReserveFuelPercentage)) {
       // TODO thresholds should come from AMI
@@ -579,23 +588,27 @@ export class CDUInitPage {
         rteRsvPercentCell.update(routeReserveFuelPercentage.toFixed(1), Column.cyan);
         rteRsvCellDivider.updateAttributes(Column.cyan);
 
-        if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel)) {
+        if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())) {
           rteRsvPercentCell.updateAttributes(Column.small);
           rteRsvCellDivider.updateAttributes(Column.small);
         }
       }
     }
 
-    if (Number.isFinite(plan.performanceData.pilotFinalHoldingFuel)) {
-      finalWeightCell.update(NXUnits.kgToUser(plan.performanceData.pilotFinalHoldingFuel).toFixed(1), Column.cyan);
+    if (Number.isFinite(plan.performanceData.pilotFinalHoldingFuel.get())) {
+      finalWeightCell.update(
+        NXUnits.kgToUser(plan.performanceData.pilotFinalHoldingFuel.get()).toFixed(1),
+        Column.cyan,
+      );
     } else if (Number.isFinite(predictions.finalHoldingFuel)) {
       finalWeightCell.update(NXUnits.kgToUser(predictions.finalHoldingFuel).toFixed(1), Column.cyan, Column.small);
     }
     const isRouteFinalEntered =
-      plan.performanceData.pilotFinalHoldingFuel !== null || plan.performanceData.isFinalHoldingTimePilotEntered;
+      plan.performanceData.pilotFinalHoldingFuel.get() !== null ||
+      plan.performanceData.isFinalHoldingTimePilotEntered.get();
 
-    if (plan.performanceData.pilotFinalHoldingTime !== null || !isRouteFinalEntered) {
-      finalTimeCell.update(FmsFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime), Column.cyan);
+    if (plan.performanceData.pilotFinalHoldingTime.get() !== null || !isRouteFinalEntered) {
+      finalTimeCell.update(FmsFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime.get()), Column.cyan);
       finalCellDivider.updateAttributes(Column.cyan);
     } else if (Number.isFinite(predictions.finalHoldingTime)) {
       finalTimeCell.update(FmsFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan, Column.small);
@@ -623,9 +636,9 @@ export class CDUInitPage {
         towCell.update(NXUnits.kgToUser(predictions.takeoffWeight).toFixed(1), Column.green, Column.small);
       }
 
-      if (Number.isFinite(plan.performanceData.pilotAlternateFuel)) {
+      if (Number.isFinite(plan.performanceData.pilotAlternateFuel.get())) {
         altnWeightCell.update(
-          NXUnits.kgToUser(plan.performanceData.pilotAlternateFuel).toFixed(1),
+          NXUnits.kgToUser(plan.performanceData.pilotAlternateFuel.get()).toFixed(1),
           Column.cyan,
           Column.big,
         );
@@ -657,9 +670,9 @@ export class CDUInitPage {
         towLwCellDivider.updateAttributes(Column.green, Column.small);
       }
 
-      if (Number.isFinite(plan.performanceData.pilotMinimumDestinationFuelOnBoard)) {
+      if (Number.isFinite(plan.performanceData.pilotMinimumDestinationFuelOnBoard.get())) {
         minDestFob.update(
-          NXUnits.kgToUser(plan.performanceData.pilotMinimumDestinationFuelOnBoard).toFixed(1),
+          NXUnits.kgToUser(plan.performanceData.pilotMinimumDestinationFuelOnBoard.get()).toFixed(1),
           Column.cyan,
         );
       } else if (Number.isFinite(predictions.minimumDestinationFuel)) {

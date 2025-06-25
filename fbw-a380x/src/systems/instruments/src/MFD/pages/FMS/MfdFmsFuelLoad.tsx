@@ -92,8 +92,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       return;
     }
 
-    if (this.loadedFlightPlan.performanceData.costIndex) {
-      this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
+    if (this.loadedFlightPlan.performanceData.costIndex.get()) {
+      this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex.get());
     }
 
     if (!this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered.get()) {
@@ -120,7 +120,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.destEta.set(
         getEtaFromUtcOrPresent(destPred?.secondsFromPresent, this.activeFlightPhase.get() == FmgcFlightPhase.Preflight),
       );
-      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
+      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB();
       this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
       this.destEfobBelowMin.set(
         destEfob * 1_000 < (this.props.fmcService.master.fmgc.data.minimumFuelAtDestination.get() ?? 0),

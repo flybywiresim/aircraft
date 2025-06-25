@@ -69,31 +69,31 @@ export class CDUVerticalRevisionPage {
           mcdu.flightPhaseManager.phase < FmgcFlightPhase.GoAround));
 
     const climbSpeedLimitSpeed = inAlternate
-      ? performanceData.alternateClimbSpeedLimitSpeed
-      : performanceData.climbSpeedLimitSpeed;
+      ? performanceData.alternateClimbSpeedLimitSpeed.get()
+      : performanceData.climbSpeedLimitSpeed.get();
     const climbSpeedLimitAltitude = inAlternate
-      ? performanceData.alternateClimbSpeedLimitAltitude
-      : performanceData.climbSpeedLimitAltitude;
+      ? performanceData.alternateClimbSpeedLimitAltitude.get()
+      : performanceData.climbSpeedLimitAltitude.get();
     const isClimbSpeedLimitPilotEntered = inAlternate
-      ? performanceData.isAlternateClimbSpeedLimitPilotEntered
-      : performanceData.isClimbSpeedLimitPilotEntered;
+      ? performanceData.isAlternateClimbSpeedLimitPilotEntered.get()
+      : performanceData.isClimbSpeedLimitPilotEntered.get();
 
     const descentSpeedLimitSpeed = inAlternate
-      ? performanceData.alternateDescentSpeedLimitSpeed
-      : performanceData.descentSpeedLimitSpeed;
+      ? performanceData.alternateDescentSpeedLimitSpeed.get()
+      : performanceData.descentSpeedLimitSpeed.get();
     const descentSpeedLimitAltitude = inAlternate
-      ? performanceData.alternateDescentSpeedLimitAltitude
-      : performanceData.descentSpeedLimitAltitude;
+      ? performanceData.alternateDescentSpeedLimitAltitude.get()
+      : performanceData.descentSpeedLimitAltitude.get();
     const isDescentSpeedLimitPilotEntered = inAlternate
-      ? performanceData.isAlternateDescentSpeedLimitPilotEntered
-      : performanceData.isDescentSpeedLimitPilotEntered;
+      ? performanceData.isAlternateDescentSpeedLimitPilotEntered.get()
+      : performanceData.isDescentSpeedLimitPilotEntered.get();
 
     let speedLimitTitle = '';
     let speedLimitCell = '';
     if (showDesSpeedLim) {
       speedLimitTitle = '\xa0DES SPD LIM';
       if (descentSpeedLimitSpeed !== null) {
-        speedLimitCell = `{magenta}{${isDescentSpeedLimitPilotEntered ? 'big' : 'small'}}${descentSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(descentSpeedLimitAltitude, performanceData.transitionLevel * 100)}{end}{end}`;
+        speedLimitCell = `{magenta}{${isDescentSpeedLimitPilotEntered ? 'big' : 'small'}}${descentSpeedLimitSpeed.toFixed(0).padStart(3, '0')}/${this.formatFl(descentSpeedLimitAltitude, performanceData.transitionLevel.get() * 100)}{end}{end}`;
       } else {
         speedLimitCell = '{cyan}*[ ]/[   ]{end}';
       }
@@ -111,7 +111,7 @@ export class CDUVerticalRevisionPage {
       : undefined;
     const transAltLevel =
       constraintType === WaypointConstraintType.DES
-        ? performanceData.transitionLevel * 100
+        ? performanceData.transitionLevel.get() * 100
         : performanceData.transitionAltitude;
     const altitudeConstraint = this.formatAltConstraint(waypoint.altitudeConstraint, transAltLevel);
     const canHaveAltConstraint = !isDestination && !waypoint.isXA();
@@ -142,11 +142,11 @@ export class CDUVerticalRevisionPage {
       const distanceToDest = mcdu.getDistanceToDestination();
       const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
       l4Title = '\xa0QNH';
-      if (Number.isFinite(mainTargetPlan.performanceData.approachQnh)) {
-        if (mainTargetPlan.performanceData.approachQnh < 500) {
-          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.toFixed(2)}{end}`;
+      if (Number.isFinite(mainTargetPlan.performanceData.approachQnh.get())) {
+        if (mainTargetPlan.performanceData.approachQnh.get() < 500) {
+          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.get().toFixed(2)}{end}`;
         } else {
-          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.toFixed(0)}{end}`;
+          l4Cell = `{cyan}${mainTargetPlan.performanceData.approachQnh.get().toFixed(0)}{end}`;
         }
       } else if (closeToDest) {
         l4Cell = '{amber}____{end}';

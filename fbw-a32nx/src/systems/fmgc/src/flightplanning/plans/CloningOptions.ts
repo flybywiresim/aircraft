@@ -6,4 +6,6 @@ export enum CopyOptions {
   Default = 0,
   IncludeFixInfos = 1 << 0,
   CopyPredictions = 1 << 1,
+  ActiveToSec = 1 << 2,
+  BeforeEngineStart = 1 << 3,
 }

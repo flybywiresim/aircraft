@@ -111,8 +111,8 @@ export class VerticalProfileComputationParametersObserver {
         this.fmgc.getThrustReductionAltitude() ?? DefaultVerticalProfileParameters.thrustReductionAltitude,
       originTransitionAltitude: this.fmgc.getOriginTransitionAltitude(),
       // We do it this way because the cruise altitude is cleared in the MCDU once you start the descent
-      cruiseAltitude: this.flightPlanService.active.performanceData.cruiseFlightLevel
-        ? this.flightPlanService.active.performanceData.cruiseFlightLevel * 100
+      cruiseAltitude: this.flightPlanService.active.performanceData.cruiseFlightLevel.get()
+        ? this.flightPlanService.active.performanceData.cruiseFlightLevel.get() * 100
         : this.parameters?.cruiseAltitude,
       climbSpeedLimit: this.fmgc.getClimbSpeedLimit(),
       descentSpeedLimit: this.fmgc.getDescentSpeedLimit(),

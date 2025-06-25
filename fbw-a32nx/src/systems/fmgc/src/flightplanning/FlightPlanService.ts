@@ -108,7 +108,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.copy(
       FlightPlanIndex.Active,
       FlightPlanIndex.FirstSecondary + (index - 1),
-      CopyOptions.CopyPredictions,
+      CopyOptions.CopyPredictions | CopyOptions.ActiveToSec | CopyOptions.BeforeEngineStart,
     );
   }
 
@@ -760,7 +760,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.setFlightNumber(flightNumber);
   }
 
-  async setPerformanceData<k extends keyof P & string>(key: k, value: P[k], planIndex = FlightPlanIndex.Active) {
+  // FIXME types
+  async setPerformanceData<k extends keyof P & string>(key: k, value: any, planIndex = FlightPlanIndex.Active) {
     const plan = this.flightPlanManager.get(planIndex);
 
     plan.setPerformanceData(key, value);
