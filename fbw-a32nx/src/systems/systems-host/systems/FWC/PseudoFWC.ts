@@ -1600,7 +1600,7 @@ export class PseudoFWC {
       this.ldgInhibitTimer.write(this.flightPhase78.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime),
     );
 
-    /** SFAC acquisition */
+    /** SDAC acquisition */
     this.acquireSdac();
 
     this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
