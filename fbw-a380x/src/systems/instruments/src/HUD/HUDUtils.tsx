@@ -261,3 +261,10 @@ export interface HudElems {
   cWndMode: boolean;
   decMode: number;
 }
+
+export enum MdaMode {
+  None = '',
+  NoDh = 'NO DH',
+  Radio = 'RADIO',
+  Baro = 'BARO',
+}

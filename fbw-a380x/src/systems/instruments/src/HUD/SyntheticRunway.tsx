@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  Subject,
   ClockEvents,
   DisplayComponent,
   FSComponent,
@@ -12,9 +11,15 @@ import {
   NodeReference,
   MappedSubject,
   ConsumerSubject,
+  Subscription,
 } from '@microsoft/msfs-sdk';
-import { Arinc429ConsumerSubject, ArincEventBus, HUDSyntheticRunway } from '@flybywiresim/fbw-sdk';
-import { getSmallestAngle, HudElems } from './HUDUtils';
+import {
+  Arinc429ConsumerSubject,
+  ArincEventBus,
+  HUDSyntheticRunway,
+  Arinc429RegisterSubject,
+} from '@flybywiresim/fbw-sdk';
+import { getSmallestAngle, HudElems, MdaMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
 
@@ -22,54 +27,110 @@ export class SyntheticRunway extends DisplayComponent<{
   bus: ArincEventBus;
   filteredRadioAlt: Subscribable<number>;
 }> {
-  private flightPhase = -1;
-  private crosswindMode = false;
-  private sVisibility = Subject.create<String>('');
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<
+    HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems
+  >();
+
   private data: HUDSyntheticRunway;
-  private validData = false;
   private alt: number;
   private logOnce = 0;
-  private belowMda = true; //set true for debug | false for prod
   private lat: number;
   private long: number;
   private heading: number;
-  private MdaOrDh: number;
-  private nMda = 0;
-  private aMda = 0;
-  private landingElevation = 0;
-  private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
   private prevRwyHdg;
-  // private centerlineGroupRef = FSComponent.createRef<SVGGElement>();
 
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
 
-  private sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems>();
+  private JKCoords: LatLongAlt[] = [];
+  private centerLineCoords: LatLongAlt[] = [];
+  private threshHeighAbvGnd = 1020 * Math.tan((3 / 180) * Math.PI);
+  private data2;
+  private isDefined = false;
+  /** bit 29 is NO DH selection */
+  private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
 
   private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
   private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa').whenChanged());
-  private readonly mda = ConsumerSubject.create(this.sub.on('mda').whenChanged(), 0);
-  private readonly dh = ConsumerSubject.create(this.sub.on('dh').whenChanged(), 0);
-  private readonly declutterMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
+  private readonly syntheticRunwway = ConsumerSubject.create(this.sub.on('syntheticRunwway').whenChanged(), '');
+  private readonly mda = Arinc429RegisterSubject.createEmpty();
+  private readonly dh = Arinc429RegisterSubject.createEmpty();
+  private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
+
+  private readonly mdaDhMode = MappedSubject.create(
+    ([noDh, dh, mda]) => {
+      if (noDh) {
+        return MdaMode.NoDh;
+      }
+
+      if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
+        return MdaMode.Radio;
+      }
+
+      if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
+        return MdaMode.Baro;
+      }
+
+      return MdaMode.None;
+    },
+    this.noDhSelected,
+    this.dh,
+    this.mda,
+  );
+
+  private readonly mdaDhValue = MappedSubject.create(
+    ([mdaMode, dh, mda]) => {
+      switch (mdaMode) {
+        case MdaMode.Baro:
+          return mda.value;
+        case MdaMode.Radio:
+          return dh.value;
+        default:
+          return 0;
+      }
+    },
+    this.mdaDhMode,
+    this.dh,
+    this.mda,
+  );
 
   private readonly visToggle = MappedSubject.create(
-    ([mda, dh, altitude, ra, declutterMode]) => {
-      const mdaDiff = altitude.value - mda;
-      const dhDiff = ra.value - dh;
+    ([mda, dh, mdaDhMode, altitude, ra, syntheticRunwway]) => {
+      let diff;
+      const minAlt = this.mdaDhValue.get();
+      if (syntheticRunwway === 'block' && this.isDefined === true) {
+        switch (mdaDhMode) {
+          case MdaMode.Baro:
+            diff = altitude.value - mda.value;
 
-      if (declutterMode === 0) {
-        if (mda > 50 || dh > 50) {
-          if (mda > 0) {
-            return mdaDiff < -50 ? 'none' : 'block';
-          } else if (dh > 0) {
-            return dhDiff < -50 ? 'none' : 'block';
+            break;
+          case MdaMode.Radio:
+            diff = ra.value - dh.value;
+            break;
+          case MdaMode.NoDh:
+            diff = ra.value;
+            break;
+          default:
+            diff = 0;
+            break;
+        }
+        if (mdaDhMode === MdaMode.Baro) {
+          return diff < -50 ? 'none' : 'block';
+        }
+
+        if (mdaDhMode === MdaMode.Radio) {
+          if (minAlt > 50) {
+            return diff < -50 ? 'none' : 'block';
+          } else if (minAlt > 25 && minAlt <= 50) {
+            return diff < -25 ? 'none' : 'block';
+          } else if (minAlt <= 25) {
+            return diff <= 0 ? 'none' : 'block';
           }
-        } else if (dh > 25 && dh <= 50) {
-          return dhDiff < -25 ? 'none' : 'block';
-        } else if (dh <= 25) {
-          return dhDiff <= 0 ? 'none' : 'block';
-        } else {
-          return 'block';
+        }
+
+        if (mdaDhMode === MdaMode.NoDh || mdaDhMode === MdaMode.None) {
+          return diff > 10 ? 'none' : 'block';
         }
       } else {
         return 'none';
@@ -77,53 +138,63 @@ export class SyntheticRunway extends DisplayComponent<{
     },
     this.mda,
     this.dh,
+    this.mdaDhMode,
     this.altitude,
     this.ra,
-    this.declutterMode,
+    this.syntheticRunwway,
   );
-
-  private updateIndication(): void {
-    this.sVisibility.set(this.visToggle.get());
-  }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.subscriptions.push(this.altitude, this.ra, this.syntheticRunwway, this.noDhSelected);
 
-    this.sub
-      .on('symbol')
-      .whenChanged()
-      .handle((data) => {
-        this.data = data;
-        if (this.data === undefined) {
-          console.log('symbol data not loaded');
-        }
-      });
+    this.subscriptions.push(this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda)));
+    this.subscriptions.push(this.sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh)));
+    this.subscriptions.push(
+      this.sub
+        .on('symbol')
+        .whenChanged()
+        .handle((data) => {
+          this.data = data;
+          if (this.data === undefined) {
+            console.log('symbol data not loaded');
+          }
+        }),
+    );
 
-    this.sub
-      .on('headingAr')
-      .whenChanged()
-      .handle((h) => {
-        this.heading = this.magneticToTrue(h.value);
-      });
+    this.subscriptions.push(
+      this.sub
+        .on('headingAr')
+        .whenChanged()
+        .handle((h) => {
+          this.heading = this.magneticToTrue(h.value);
+        }),
+    );
 
-    this.sub.on('realTime').handle(this.onFrameUpdate.bind(this));
+    this.subscriptions.push(this.sub.on('realTime').handle(this.onFrameUpdate.bind(this)));
   }
 
   private onFrameUpdate(_realTime: number): void {
-    this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
-    this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-    this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+    this.data === undefined ? (this.isDefined = false) : (this.isDefined = true);
+    if (this.visToggle.get() === 'block') {
+      this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+      this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+      this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-    if (this.data !== undefined) {
-      if (this.prevRwyHdg !== this.data.direction) {
-        this.prevRwyHdg = this.data.direction;
-        this.logOnce = 0;
-        //console.log("defined data");
+      if (this.data !== undefined) {
+        if (this.logOnce === 0) {
+          this.data2 = JSON.parse(JSON.stringify(this.data));
+          this.initRwyPoints();
+        }
+        if (this.prevRwyHdg !== this.data.direction) {
+          this.prevRwyHdg = this.data.direction;
+          this.logOnce = 0;
+          //console.log("defined data");
+        }
+        this.updateSyntheticRunway();
+      } else {
+        this.logOnce == 0;
+        console.log('undefined data...');
       }
-      this.updateSyntheticRunway();
-      this.updateIndication();
-    } else {
-      this.logOnce == 0;
-      console.log('undefined data...');
     }
   }
 
@@ -161,40 +232,39 @@ export class SyntheticRunway extends DisplayComponent<{
 
   //aiming point 311 meters (1020ft) from threshold
   // https://www.faa.gov/documentLibrary/media/Advisory_Circular/150-5340-1M-Chg-1-Airport-Markings.pdf
-  private threshHeighAbvGnd = 1020 * Math.tan((3 / 180) * Math.PI);
 
-  updateSyntheticRunway() {
-    const data2 = JSON.parse(JSON.stringify(this.data));
-    //if anyone has a better way to pass this.data by value I want to knwow
+  //if anyone has a better way to pass this.data by value I want to knwow
+
+  private initRwyPoints() {
     //console.log('update...');
-    const JKCoords: LatLongAlt[] = [];
-    const centerLineCoords: LatLongAlt[] = [];
 
-    JKCoords[0] = data2.cornerCoordinates[0];
-    JKCoords[1] = data2.cornerCoordinates[1];
-    JKCoords[2] = data2.cornerCoordinates[2];
-    JKCoords[3] = data2.cornerCoordinates[3];
+    this.JKCoords[0] = this.data2.cornerCoordinates[0];
+    this.JKCoords[1] = this.data2.cornerCoordinates[1];
+    this.JKCoords[2] = this.data2.cornerCoordinates[2];
+    this.JKCoords[3] = this.data2.cornerCoordinates[3];
 
-    centerLineCoords[0] = data2.centerlineCoordinates[0];
-    centerLineCoords[1] = data2.centerlineCoordinates[1];
-    centerLineCoords[2] = data2.centerlineCoordinates[2];
-    centerLineCoords[3] = data2.centerlineCoordinates[3];
-    centerLineCoords[4] = data2.centerlineCoordinates[4];
+    this.centerLineCoords[0] = this.data2.centerlineCoordinates[0];
+    this.centerLineCoords[1] = this.data2.centerlineCoordinates[1];
+    this.centerLineCoords[2] = this.data2.centerlineCoordinates[2];
+    this.centerLineCoords[3] = this.data2.centerlineCoordinates[3];
+    this.centerLineCoords[4] = this.data2.centerlineCoordinates[4];
 
-    JKCoords[0].alt = JKCoords[0].alt - this.threshHeighAbvGnd;
-    JKCoords[1].alt = JKCoords[1].alt - this.threshHeighAbvGnd;
-    JKCoords[2].alt = JKCoords[2].alt - this.threshHeighAbvGnd;
-    JKCoords[3].alt = JKCoords[3].alt - this.threshHeighAbvGnd;
+    this.JKCoords[0].alt = this.JKCoords[0].alt - this.threshHeighAbvGnd;
+    this.JKCoords[1].alt = this.JKCoords[1].alt - this.threshHeighAbvGnd;
+    this.JKCoords[2].alt = this.JKCoords[2].alt - this.threshHeighAbvGnd;
+    this.JKCoords[3].alt = this.JKCoords[3].alt - this.threshHeighAbvGnd;
 
     // //extended centerline   //1852: nautical miles to meters
 
-    centerLineCoords[0].alt = centerLineCoords[0].alt - this.threshHeighAbvGnd;
-    centerLineCoords[1].alt = centerLineCoords[1].alt - this.threshHeighAbvGnd;
-    centerLineCoords[2].alt = centerLineCoords[2].alt - this.threshHeighAbvGnd;
-    centerLineCoords[3].alt = centerLineCoords[3].alt - this.threshHeighAbvGnd;
-    centerLineCoords[4].alt = centerLineCoords[4].alt - this.threshHeighAbvGnd;
+    this.centerLineCoords[0].alt = this.centerLineCoords[0].alt - this.threshHeighAbvGnd;
+    this.centerLineCoords[1].alt = this.centerLineCoords[1].alt - this.threshHeighAbvGnd;
+    this.centerLineCoords[2].alt = this.centerLineCoords[2].alt - this.threshHeighAbvGnd;
+    this.centerLineCoords[3].alt = this.centerLineCoords[3].alt - this.threshHeighAbvGnd;
+    this.centerLineCoords[4].alt = this.centerLineCoords[4].alt - this.threshHeighAbvGnd;
+  }
 
-    if (this.logOnce == 0) {
+  updateSyntheticRunway() {
+    if (this.logOnce === 0) {
       this.logOnce += 1;
 
       console.log(
@@ -218,40 +288,40 @@ export class SyntheticRunway extends DisplayComponent<{
 
         'threshold crossing height: ' + this.data.thresholdCrossingHeight,
 
-        '\np1 lat: ' + JKCoords[0].lat,
-        'p1 long: ' + JKCoords[0].long,
-        'p1 alt: ' + JKCoords[0].alt,
+        '\np1 lat: ' + this.JKCoords[0].lat,
+        'p1 long: ' + this.JKCoords[0].long,
+        'p1 alt: ' + this.JKCoords[0].alt,
 
-        'p2 lat: ' + JKCoords[1].lat,
-        'p2 lon: ' + JKCoords[1].long,
-        'p2 alt: ' + JKCoords[1].alt,
+        'p2 lat: ' + this.JKCoords[1].lat,
+        'p2 lon: ' + this.JKCoords[1].long,
+        'p2 alt: ' + this.JKCoords[1].alt,
 
-        'p3 lat: ' + JKCoords[2].lat,
-        'p3 lon: ' + JKCoords[2].long,
-        'p3 alt: ' + JKCoords[2].alt,
+        'p3 lat: ' + this.JKCoords[2].lat,
+        'p3 lon: ' + this.JKCoords[2].long,
+        'p3 alt: ' + this.JKCoords[2].alt,
 
-        'p4 lat: ' + JKCoords[3].lat,
-        'p4 lon: ' + JKCoords[3].long,
-        'p4 alt: ' + JKCoords[3].alt,
+        'p4 lat: ' + this.JKCoords[3].lat,
+        'p4 lon: ' + this.JKCoords[3].long,
+        'p4 alt: ' + this.JKCoords[3].alt,
 
-        'p5 lat: ' + centerLineCoords[0].lat,
-        'p5 lon: ' + centerLineCoords[0].long,
-        'p5 alt: ' + centerLineCoords[0].alt,
+        'p5 lat: ' + this.centerLineCoords[0].lat,
+        'p5 lon: ' + this.centerLineCoords[0].long,
+        'p5 alt: ' + this.centerLineCoords[0].alt,
 
-        'p6 lat: ' + centerLineCoords[1].lat,
-        'p6 lon: ' + centerLineCoords[1].long,
-        'p6 alt: ' + centerLineCoords[1].alt,
+        'p6 lat: ' + this.centerLineCoords[1].lat,
+        'p6 lon: ' + this.centerLineCoords[1].long,
+        'p6 alt: ' + this.centerLineCoords[1].alt,
       );
     }
 
-    if (JKCoords.length) {
+    if (this.JKCoords.length === 4) {
       for (let i = 0; i < 4; i++) {
-        this.pathRefs[i].instance.setAttribute('d', this.drawPath(JKCoords[i], JKCoords[(i + 1) % 4]));
+        this.pathRefs[i].instance.setAttribute('d', this.drawPath(this.JKCoords[i], this.JKCoords[(i + 1) % 4]));
       }
       for (let i = 0; i < 4; i++) {
         this.centerlinePathRefs[i].instance.setAttribute(
           'd',
-          this.drawPath(centerLineCoords[i], centerLineCoords[i + 1]),
+          this.drawPath(this.centerLineCoords[i], this.centerLineCoords[i + 1]),
         );
       }
     }
@@ -312,6 +382,14 @@ export class SyntheticRunway extends DisplayComponent<{
     return Math.abs(delta[0]) <= 35 && Math.abs(delta[1]) <= 28;
   }
 
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     const res: SVGPathElement[] = [];
     for (let i = 0; i < 4; i++) {
@@ -326,7 +404,7 @@ export class SyntheticRunway extends DisplayComponent<{
     }
 
     return (
-      <g id="SyntheticRunway" display={this.sVisibility}>
+      <g id="SyntheticRunway" display={this.visToggle}>
         {res}
       </g>
     );
