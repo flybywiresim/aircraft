@@ -156,9 +156,12 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
         if (vfe.isNormalOperation()) {
           const offset = (-vfe.value * DistanceSpacing) / ValueSpacing;
           this.vfeNext.instance.classList.remove('HiddenElement');
+          this.vfeNextXwnd.instance.classList.remove('HiddenElement');
           this.vfeNext.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+          this.vfeNextXwnd.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
         } else {
           this.vfeNext.instance.classList.add('HiddenElement');
+          this.vfeNextXwnd.instance.classList.add('HiddenElement');
         }
       });
 
@@ -245,7 +248,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
                     id="VFeNextMarker"
                     ref={this.vfeNextXwnd}
                     class="ThickStroke Green"
-                    d="m87 407.7h-14.354m0 -7.04h14.354"
+                    d="m87 365 h-14.354m0 -7.04h14.354"
                   />
                   <VProtBug bus={this.props.bus} />
                 </VerticalTape>
@@ -255,9 +258,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
                 <g ref={this.showBarsRef}>
                   <VLsBar bus={this.props.bus} />
                 </g>
-                <g transform="translate(0 -110)">
-                  <VAlphaLimBar bus={this.props.bus} />
-                </g>
+                <VAlphaLimBar bus={this.props.bus} />
                 <SpeedTrendArrow
                   airspeed={this.speedSub}
                   instrument={this.props.instrument}
@@ -291,7 +292,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
                 id="VFeNextMarker"
                 ref={this.vfeNext}
                 class="ThickStroke Green"
-                d="m87 407.7h-14.354m0 -7.04h14.354"
+                d="m87 365 h-14.354m0 -7.04h14.354"
               />
               <VProtBug bus={this.props.bus} />
             </VerticalTape>
@@ -504,7 +505,7 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
         ref={this.VAprotIndicator}
         class="BarGreen"
         // eslint-disable-next-line max-len
-        d="m85.354 762.001v-6.329h13.102v6.329zm13.102 -13.11v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -45.657h13.102v6.329h-13.102zm13.102 19.439v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -26.219v-6.329h13.102v6.329zm13.102 0v6.78m0 -19.89v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -45.657h13.102v6.329h-13.102zm13.102 19.439v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -26.219v-6.329h13.102v6.329zm13.102 0v6.78m0 -19.89v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -45.657h13.102v6.329h-13.102zm13.102 19.439v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -26.219v-6.329h13.102v6.329zm13.102 0v6.78m0 -19.89v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -45.657h13.102v6.329h-13.102zm13.102 19.439v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -26.219v-6.329h13.102v6.329zm13.102 0v6.78m0 -19.89v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm8.857 -19.439h4.246v6.329h-13.102v-6.329z"
+        d="m87 762.001v-6.329h13.102v6.329zm13.102 -13.11v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -45.657h13.102v6.329h-13.102zm13.102 19.439v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -26.219v-6.329h13.102v6.329zm13.102 0v6.78m0 -19.89v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -45.657h13.102v6.329h-13.102zm13.102 19.439v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -26.219v-6.329h13.102v6.329zm13.102 0v6.78m0 -19.89v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -45.657h13.102v6.329h-13.102zm13.102 19.439v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -26.219v-6.329h13.102v6.329zm13.102 0v6.78m0 -19.89v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -45.657h13.102v6.329h-13.102zm13.102 19.439v6.78m-13.102 6.329v-6.329h13.102v6.329zm13.102 -26.219v6.78m-13.102 6.329v-6.329h13.102v6.329zm0 -26.219v-6.329h13.102v6.329zm13.102 0v6.78m0 -19.89v6.78m0 -19.89v6.78m-13.102 6.329v-6.329h13.102v6.329zm8.857 -19.439h4.246v6.329h-13.102v-6.329z"
       />
     );
   }
@@ -1115,7 +1116,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
           DistanceSpacing) /
         ValueSpacing;
 
-      this.vlsPath.set(`m 87 ${VLsPos}h 10 v${offset}`);
+      this.vlsPath.set(`m 86 ${VLsPos}h 10 v${offset + 1}`);
     } else {
       this.vlsVisbility.set('hidden');
     }
@@ -1201,7 +1202,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
       const delta = this.airSpeed.value - DisplayRange - this.vAlphaLim.value;
       const offset = (delta * DistanceSpacing) / ValueSpacing;
 
-      this.VAlimIndicator.instance.setAttribute('d', `m 87 617.8 h 17.125 v ${offset} h -17.125 z`);
+      this.VAlimIndicator.instance.setAttribute('d', `m 87 556 h 16 v ${offset} h -16 z`);
     }
   }
 

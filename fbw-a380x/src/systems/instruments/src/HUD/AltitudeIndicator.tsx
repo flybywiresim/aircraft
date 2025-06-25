@@ -526,16 +526,16 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
   private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
   private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa').whenChanged());
-  private readonly mda = ConsumerSubject.create(this.sub.on('mda').whenChanged(), 0);
-  private readonly dh = ConsumerSubject.create(this.sub.on('dh').whenChanged(), 0);
+  private readonly mda = Arinc429RegisterSubject.createEmpty();
+  private readonly dh = Arinc429RegisterSubject.createEmpty();
 
   private readonly isMinLowerAltTxtVisible = MappedSubject.create(
     ([mda, dh, altitude, ra]) => {
-      const mdaDiff = altitude.value - mda;
-      const dhDiff = ra.value - dh;
-      if (mda > 0) {
+      const mdaDiff = altitude.value - mda.value;
+      const dhDiff = ra.value - dh.value;
+      if (mda.value > 0) {
         return mdaDiff < 0 ? 'block' : 'none';
-      } else if (dh > 0) {
+      } else if (dh.value > 0) {
         return dhDiff < 0 ? 'block' : 'none';
       } else {
         return 'none';
@@ -556,6 +556,10 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     );
 
     const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & SimplaneValues>();
+
+    this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+    this.sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
+
     sub
       .on('fmgcFlightPhase')
       .whenChanged()
@@ -616,7 +620,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
       this.handleAltitudeDisplay();
       this.setText();
-    });
+    }, true);
   }
 
   private updateTargetAltitude(targetAltitude: number, isManaged: boolean, constraint: number) {
