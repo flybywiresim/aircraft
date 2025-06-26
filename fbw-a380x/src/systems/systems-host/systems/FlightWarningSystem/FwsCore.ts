@@ -64,6 +64,9 @@ import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarn
 import { A380Failure } from '@failures';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
+import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
+import { FwsInformation } from './FwsInformation';
+import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -83,6 +86,17 @@ export enum FwcAuralWarning {
   SingleChime,
   Crc,
   CavalryCharge,
+}
+
+export interface FwsSuppressableItem {
+  /** INOP SYS line is active */
+  simVarIsActive: Subscribable<boolean>;
+  /** This line won't be shown if the following line(s) are active */
+  notActiveWhenItemActive?: string[];
+}
+
+export interface FwsSuppressableItemDict {
+  [key: string]: FwsSuppressableItem;
 }
 
 export class FwsCore {
@@ -1650,8 +1664,12 @@ export class FwsCore {
   public readonly normalChecklists = new FwsNormalChecklists(this);
   public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
   public readonly abnormalSensed = new FwsAbnormalSensed(this);
+  public readonly inopSys = new FwsInopSys(this);
+  public readonly information = new FwsInformation(this);
+  public readonly limitations = new FwsLimitations(this);
   public readonly systemDisplayLogic = new FwsSystemDisplayLogic(this);
   public ewdAbnormal: EwdAbnormalDict;
+  public allSuppressableItems: FwsSuppressableItemDict;
 
   constructor(
     public readonly fwsNumber: 1 | 2,
@@ -1664,6 +1682,14 @@ export class FwsCore {
       {},
       this.abnormalSensed.ewdAbnormalSensed,
       this.abnormalNonSensed.ewdAbnormalNonSensed,
+    );
+    this.allSuppressableItems = Object.assign(
+      {},
+      this.abnormalSensed.ewdAbnormalSensed,
+      this.abnormalNonSensed.ewdAbnormalNonSensed,
+      this.inopSys,
+      this.information,
+      this.limitations,
     );
 
     this.subs.push(
@@ -4223,23 +4249,28 @@ export class FwsCore {
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
 
-    const faultIsActiveConsideringFaultSuppression = (fault: EwdAbnormalItem) => {
+    const itemIsActiveConsideringFaultSuppression = (item: FwsSuppressableItem) => {
+      if (!item.simVarIsActive.get()) {
+        // Return early if not even this item is active
+        return false;
+      }
+
       // Skip if other fault overrides this one
-      const shouldBeSuppressed = fault.notActiveWhenFaults.some((val) => {
-        if (val && this.ewdAbnormal[val]) {
-          const otherFault = this.ewdAbnormal[val] as EwdAbnormalItem;
+      const shouldBeSuppressed = item.notActiveWhenItemActive.some((val) => {
+        if (val && this.allSuppressableItems[val]) {
+          const otherFault = this.allSuppressableItems[val] as FwsSuppressableItem;
           if (otherFault.simVarIsActive.get()) {
             return true;
           }
           return false;
         }
       });
-      return fault.simVarIsActive.get() && !shouldBeSuppressed;
+      return item.simVarIsActive.get() && !shouldBeSuppressed;
     };
 
     // Update memos and failures list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdAbnormal)) {
-      if (!faultIsActiveConsideringFaultSuppression(value)) {
+      if (!itemIsActiveConsideringFaultSuppression(value)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
@@ -4263,7 +4294,7 @@ export class FwsCore {
         continue;
       }
 
-      if (faultIsActiveConsideringFaultSuppression(value)) {
+      if (itemIsActiveConsideringFaultSuppression(value)) {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
@@ -4576,6 +4607,35 @@ export class FwsCore {
     const orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, memoOrderRight).sort(
       (a, b) => this.messagePriority(EcamMemos[a]) - this.messagePriority(EcamMemos[b]),
     );
+
+    // INOP SYS
+    for (const [key, value] of Object.entries(this.inopSys.inopSys)) {
+      if (itemIsActiveConsideringFaultSuppression(value)) {
+        if (value.phase === FwsInopSysPhases.AllPhases && !stsInopAllPhasesKeys.includes(key)) {
+          stsInopAllPhasesKeys.push(key);
+        } else if (value.phase === FwsInopSysPhases.ApprLdg && !stsInopApprLdgKeys.includes(key)) {
+          stsInopApprLdgKeys.push(key);
+        }
+      }
+    }
+
+    // INFO
+    for (const [key, value] of Object.entries(this.information.info)) {
+      if (itemIsActiveConsideringFaultSuppression(value) && !stsInfoKeys.includes(key)) {
+        stsInfoKeys.push(key);
+      }
+    }
+
+    // LIMITATIONS
+    for (const [key, value] of Object.entries(this.limitations.limitations)) {
+      if (itemIsActiveConsideringFaultSuppression(value)) {
+        if (value.phase === FwsLimitationsPhases.AllPhases && !ewdLimitationsAllPhasesKeys.includes(key)) {
+          ewdLimitationsAllPhasesKeys.push(key);
+        } else if (value.phase === FwsLimitationsPhases.ApprLdg && !ewdLimitationsApprLdgKeys.includes(key)) {
+          ewdLimitationsApprLdgKeys.push(key);
+        }
+      }
+    }
 
     // Reset master caution light if appropriate
     if (allFailureKeys.filter((key) => this.ewdAbnormal[key].failure === 2).length === 0) {

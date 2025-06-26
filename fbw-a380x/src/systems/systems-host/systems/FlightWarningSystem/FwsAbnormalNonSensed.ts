@@ -145,7 +145,7 @@ export class FwsAbnormalNonSensed {
       // SMOKE / FUMES
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(260900097)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true, true, true, true, true],
       whichItemsChecked: () => [
         false,

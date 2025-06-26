@@ -3,21 +3,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamLimitations } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { Subscribable } from '@microsoft/msfs-sdk';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwsCore, FwsSuppressableItem } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
-enum FwsLimitationsPhases {
+export enum FwsLimitationsPhases {
   AllPhases,
   ApprLdg,
 }
 
-interface FwsLimitationsItem {
-  /** LIMITATIONS line is active */
-  simVarIsActive: Subscribable<boolean>;
-  /** This line won't be shown if the following line(s) are active */
-  notActiveWhenItemActive?: (keyof typeof EcamLimitations)[];
+export interface FwsLimitationsItem extends FwsSuppressableItem {
   /** Relevant phase shown on SD/EWD: ALL PHASES or APPR & LDG */
   phase: FwsLimitationsPhases;
+  /** Shown on PFD */
+  pfd: boolean;
 }
 
 export interface FwsLimitationsDict {

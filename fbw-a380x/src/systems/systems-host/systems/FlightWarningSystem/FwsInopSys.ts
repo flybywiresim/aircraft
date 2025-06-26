@@ -3,19 +3,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamInopSys } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { MappedSubject, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
+import { FwsCore, FwsSuppressableItem } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
-enum FwsInopSysPhases {
+export enum FwsInopSysPhases {
   AllPhases,
   ApprLdg,
 }
 
-interface FwsInopSysItem {
-  /** INOP SYS line is active */
-  simVarIsActive: Subscribable<boolean>;
-  /** This line won't be shown if the following line(s) are active */
-  notActiveWhenItemActive?: (keyof typeof EcamInopSys)[];
+export interface FwsInopSysItem extends FwsSuppressableItem {
   /** Relevant phase shown on SD/EWD: ALL PHASES or APPR & LDG */
   phase: FwsInopSysPhases;
   /** Only to be shown under REDUND LOSS on MORE page */
