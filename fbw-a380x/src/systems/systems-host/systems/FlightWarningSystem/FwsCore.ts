@@ -459,9 +459,7 @@ export class FwsCore {
 
   public readonly excessResidualDiffPressure = Subject.create(false);
 
-  public readonly phase10TriggeredMemory = new NXLogicMemoryNode(false);
-
-  public readonly phase10For90sConfirm = new NXLogicConfirmNode(90, false);
+  public readonly phase10For90sConfirm = new NXLogicConfirmNode(90);
 
   public readonly inhibitedByDoors = Subject.create(false);
 
@@ -3255,8 +3253,7 @@ export class FwsCore {
     this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
 
     const diffPressureAbovePoint072 = this.diffPressure.valueOr(0) > 0.072;
-    this.phase10TriggeredMemory.write(this.flightPhase.get() === 10, this.flightPhase.get() < 10);
-    this.phase10For90sConfirm.write(this.phase10TriggeredMemory.read(), deltaTime);
+    this.phase10For90sConfirm.write(this.flightPhase.get() >= 10, deltaTime);
 
     this.excessResidualDiffPressure.set(
       diffPressureAbovePoint072 && ((this.aircraftOnGround.get() && engNotRunning) || this.phase10For90sConfirm.read()),
