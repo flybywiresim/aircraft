@@ -303,7 +303,13 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
   211800023: {
     title: '\x1b<4m\x1b4mCOND\x1bm ALL PRIMARY CABIN FANS FAULT  ',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'AIR FLOW',
+        sensed: true,
+        labelNotCompleted: 'HI',
+      },
+    ],
   },
   211800024: {
     title: '\x1b<4m\x1b4mCOND\x1bm BULK CARGO DUCT OVHT  ',

@@ -4,7 +4,6 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
-import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 
 import './style.scss';
 
@@ -38,25 +37,23 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
 
   render(): VNode | null {
     return (
-      <CdsDisplayUnit bus={this.props.bus} displayUnitId={DisplayUnitID.Sd}>
-        <div ref={this.topRef} class="atc-mailbox-top-layout">
-          <div class="atc-mailbox-left-layout">
-            <Button label="RECALL" onClick={() => {}} buttonStyle="height: 50px;"></Button>
-          </div>
-          <div class="atc-mailbox-center-layout">
-            <div class="atc-mailbox-center-top"></div>
-            <div class="atc-mailbox-center-bottom">
-              <div class="atc-mailbox-cb-1" />
-              <div class="atc-mailbox-cb-2" />
-            </div>
-          </div>
-          <div class="atc-mailbox-right-layout">
-            <Button label="CLOSE" onClick={() => {}} buttonStyle="height: 50px; justify-content: flex-end;"></Button>
-            <Button label="PRINT" onClick={() => {}} buttonStyle="height: 50px; justify-content: flex-end;"></Button>
-          </div>
-          <MouseCursor side={Subject.create('CAPT')} ref={this.mouseCursorRef} />
+      <div ref={this.topRef} class="atc-mailbox-top-layout">
+        <div class="atc-mailbox-left-layout">
+          <Button label="RECALL" onClick={() => {}} buttonStyle="height: 50px;"></Button>
         </div>
-      </CdsDisplayUnit>
+        <div class="atc-mailbox-center-layout">
+          <div class="atc-mailbox-center-top"></div>
+          <div class="atc-mailbox-center-bottom">
+            <div class="atc-mailbox-cb-1" />
+            <div class="atc-mailbox-cb-2" />
+          </div>
+        </div>
+        <div class="atc-mailbox-right-layout">
+          <Button label="CLOSE" onClick={() => {}} buttonStyle="height: 50px; justify-content: flex-end;"></Button>
+          <Button label="PRINT" onClick={() => {}} buttonStyle="height: 50px; justify-content: flex-end;"></Button>
+        </div>
+        <MouseCursor side={Subject.create('CAPT')} ref={this.mouseCursorRef} />
+      </div>
     );
   }
 }

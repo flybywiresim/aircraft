@@ -9,6 +9,7 @@ import {
   Arinc429Word,
   Arinc429WordData,
   Arinc429RegisterSubject,
+  Arinc429ConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 
@@ -426,6 +427,10 @@ class RadioAltAndDH extends DisplayComponent<{
   filteredRadioAltitude: Subscribable<number>;
   attExcessive: Subscribable<boolean>;
 }> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private daRaGroup = FSComponent.createRef<SVGGElement>();
 
   private roll = new Arinc429Word(0);
@@ -441,8 +446,6 @@ class RadioAltAndDH extends DisplayComponent<{
   private transLvlAr = Arinc429Register.empty();
 
   private fmgcFlightPhase = 0;
-
-  private altitude = new Arinc429Word(0);
 
   private readonly attDhTextVisible = Subject.create(false);
 
@@ -484,10 +487,6 @@ class RadioAltAndDH extends DisplayComponent<{
         this.fmgcFlightPhase = fp;
       });
 
-    sub.on('altitudeAr').handle((a) => {
-      this.altitude = a;
-    });
-
     sub.on('chosenRa').handle((ra) => {
       if (!this.props.attExcessive.get()) {
         this.radioAltitude = ra;
@@ -499,8 +498,8 @@ class RadioAltAndDH extends DisplayComponent<{
         const chosenTransalt = useTransAltVsLvl ? this.transAltAr : this.transLvlAr;
         const belowTransitionAltitude =
           chosenTransalt.isNormalOperation() &&
-          !this.altitude.isNoComputedData() &&
-          this.altitude.value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
+          !this.altitude.get().isNoComputedData() &&
+          this.altitude.get().value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
         let size = 'FontLarge';
         const dh = this.dh.get();
         const DHValid = dh.value >= 0 && !dh.isNoComputedData() && !dh.isFailureWarning();
