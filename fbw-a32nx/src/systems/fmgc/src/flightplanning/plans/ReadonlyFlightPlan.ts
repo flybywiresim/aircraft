@@ -13,6 +13,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 
 export interface ReadonlyFlightPlan {
   get index(): number;
@@ -53,6 +54,10 @@ export interface ReadonlyFlightPlan {
 
   maybeElementAt(index: number): ReadonlyFlightPlanElement | undefined;
 
+  get allLegs(): readonly ReadonlyFlightPlanElement[];
+
+  get pendingAirways(): ReadonlyPendingAirways;
+
   get originAirport(): Airport | undefined;
 
   get originRunway(): Runway | undefined;
@@ -85,6 +90,4 @@ export interface ReadonlyFlightPlan {
   autoConstraintTypeForLegIndex(index: number): WaypointConstraintType;
 
   glideslopeIntercept(): number | undefined;
-
-  allLegs: readonly ReadonlyFlightPlanElement[];
 }
