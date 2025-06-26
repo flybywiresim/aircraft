@@ -584,6 +584,13 @@ export class FwsCore {
 
   public readonly rmp3Fault = Subject.create(false);
 
+  public readonly allRmpFault = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.rmp1Fault,
+    this.rmp2Fault,
+    this.rmp3Fault,
+  );
+
   public readonly rmp1Off = Subject.create(false);
 
   public readonly rmp2Off = Subject.create(false);
@@ -1313,6 +1320,10 @@ export class FwsCore {
 
   public btvExitMissedPulseNode = new NXLogicPulseNode();
 
+  public readonly btvLost = Subject.create(false); // FIXME add
+
+  public readonly rowRopLost = Subject.create(false); // FIXME add
+
   /* NAVIGATION */
 
   public readonly adirsRemainingAlignTime = Subject.create(0);
@@ -1385,6 +1396,15 @@ export class FwsCore {
 
   public readonly height3Failed = Subject.create(false);
 
+  public readonly ilsCat3Inop = MappedSubject.create(
+    ([ra1, ra2, ra3]) => [ra1, ra2, ra3].filter((ra) => ra).length >= 2,
+    this.height1Failed,
+    this.height2Failed,
+    this.height3Failed,
+  );
+
+  public readonly ilsCat3DualInop = this.height2Failed;
+
   private adr3OverspeedWarning = new NXLogicMemoryNode(false, false);
 
   public readonly overspeedVmo = Subject.create(false);
@@ -1419,6 +1439,7 @@ export class FwsCore {
 
   public readonly gpws1Failed = Subject.create(false);
   public readonly gpws2Failed = Subject.create(false);
+  public readonly allGpwsFailed = Subject.create(false);
 
   public readonly xpdrAltReportingRequest = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true); // fixme signal should come from XPDR?
 
@@ -3899,6 +3920,7 @@ export class FwsCore {
     this.gpwsSysOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
     this.gpws1Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_1_FAILED', 'Bool'));
     this.gpws2Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_2_FAILED', 'Bool'));
+    this.allGpwsFailed.set(this.gpws1Failed.get() && this.gpws2Failed.get());
 
     // fix me check for fault condition when implemented
     const transponder1State = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'Enum');

@@ -20,5 +20,10 @@ export interface FwsInfoDict {
 export class FwsInformation {
   constructor(private fws: FwsCore) {}
   /** INFO shown on SD */
-  ewdInfo: FwsInfoDict = {};
+  info: FwsInfoDict = {
+    220200005: {
+      // LAND 3 SINGLE ONLY
+      simVarIsActive: this.fws.ilsCat3DualInop,
+    },
+  };
 }

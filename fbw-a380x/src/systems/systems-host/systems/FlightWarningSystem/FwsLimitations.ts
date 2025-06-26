@@ -27,5 +27,5 @@ export interface FwsLimitationsDict {
 export class FwsLimitations {
   constructor(private fws: FwsCore) {}
   /** LIMITATIONS shown on SD */
-  ewdLimitations: FwsLimitationsDict = {};
+  limitations: FwsLimitationsDict = {};
 }
