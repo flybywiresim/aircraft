@@ -4634,6 +4634,10 @@ export class FwsCore {
         } else if (value.phase === FwsLimitationsPhases.ApprLdg && !ewdLimitationsApprLdgKeys.includes(key)) {
           ewdLimitationsApprLdgKeys.push(key);
         }
+
+        if (value.pfd && !pfdLimitationsKeys.includes(key)) {
+          pfdLimitationsKeys.push(key);
+        }
       }
     }
 
