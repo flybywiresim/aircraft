@@ -3,12 +3,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Fix, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, NdbNavaid, Runway, VhfNavaid } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { Coordinates } from 'msfs-geo';
-import { DataInterface } from '@fmgc/flightplanning/interface/DataInterface';
+import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 
 export class WaypointEntryUtils {
@@ -22,7 +21,7 @@ export class WaypointEntryUtils {
    * @returns a waypoint, or `undefined` if the operation is cancelled
    */
   static async getOrCreateWaypoint(
-    fms: DataInterface & DisplayInterface,
+    fms: FmsDataInterface & FmsDisplayInterface,
     place: string,
     stored: boolean,
     ident?: string,
@@ -44,26 +43,34 @@ export class WaypointEntryUtils {
 
       return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored, ident).waypoint;
     } else if (WaypointEntryUtils.isPlaceFormat(place)) {
-      return WaypointEntryUtils.parsePlace(fms, place).then((fix) => fix ?? fms.createNewWaypoint(place));
+      return WaypointEntryUtils.parsePlace(fms, place).catch((e) => {
+        if (e instanceof FmsError && e.type === FmsErrorType.NotInDatabase) {
+          fms.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+          return fms.createNewWaypoint(place);
+        }
+        throw e;
+      });
     }
 
     throw new FmsError(FmsErrorType.FormatError);
   }
 
   /**
-   * Parse a place string into a position
+   * Parse a place string into a position.
+   * @throws an FmsError if no facility is found.
+   * @returns The fix, after de-duplicating if necessary.
    */
-  static async parsePlace(fms: DisplayInterface & DataInterface, place: string): Promise<Fix> {
+  static async parsePlace(fms: FmsDisplayInterface & FmsDataInterface, place: string): Promise<Fix> {
     if (WaypointEntryUtils.isRunwayFormat(place)) {
       return WaypointEntryUtils.parseRunway(place);
     }
 
     const airport = await NavigationDatabaseService.activeDatabase.searchAirport(place);
-    const waypoints = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
+    const waypoints: Fix[] = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
     const navaids = await NavigationDatabaseService.activeDatabase.searchAllNavaid(place);
 
     if (airport !== undefined) {
-      waypoints.push(WaypointFactory.fromAirport(airport));
+      waypoints.push(airport);
     }
 
     const storedWaypoints = fms.getStoredWaypointsByIdent(place).map((stored) => stored.waypoint);
@@ -71,12 +78,22 @@ export class WaypointEntryUtils {
 
     // Sometimes navaids also exist as waypoints/intersections in the navdata (when they live on airways)
     // In this case, we only want to return the actual VOR facility
-    const items = WaypointEntryUtils.mergeNavaidsWithWaypoints(navaids, waypoints);
+    const items = WaypointEntryUtils.mergeNavaidsWithFixes(navaids, waypoints);
 
-    return fms.deduplicateFacilities(items);
+    if (items.length === 0) {
+      throw new FmsError(FmsErrorType.NotInDatabase);
+    }
+
+    const ret = fms.deduplicateFacilities(items);
+
+    if (ret === undefined) {
+      throw new FmsError(FmsErrorType.NotInDatabase);
+    }
+
+    return ret;
   }
 
-  static mergeNavaidsWithWaypoints(navaids: (VhfNavaid | NdbNavaid)[], waypoints: Waypoint[]): Fix[] {
+  static mergeNavaidsWithFixes(navaids: (VhfNavaid | NdbNavaid)[], waypoints: Fix[]): Fix[] {
     const items: Fix[] = [...navaids];
 
     for (const wp of waypoints) {
@@ -90,9 +107,9 @@ export class WaypointEntryUtils {
 
   /**
    * Parse a runway string and return the location of the threshold
-   * Returns undefined if invalid format or not in database
+   * Throws an FmsError if the runway is not found in the database.
    */
-  static async parseRunway(place: string): Promise<Waypoint> {
+  static async parseRunway(place: string): Promise<Runway> {
     const rwy = place.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/);
 
     if (rwy !== null) {
@@ -100,13 +117,10 @@ export class WaypointEntryUtils {
 
       if (airport) {
         const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
+        const runway = runways.find((r) => r.ident === place);
 
-        for (let i = 0; i < runways.length; i++) {
-          const runway = runways[i];
-
-          if (runway.ident === place) {
-            return WaypointFactory.fromRunway(runway);
-          }
+        if (runway) {
+          return runway;
         }
       }
     }
@@ -157,7 +171,7 @@ export class WaypointEntryUtils {
    *
    * @returns place and magnetic bearing
    */
-  static async parsePbx(fms: DisplayInterface & DataInterface, str: string): Promise<[Fix, number, Fix, number]> {
+  static async parsePbx(fms: FmsDisplayInterface & FmsDataInterface, str: string): Promise<[Fix, number, Fix, number]> {
     const pbx = str.match(/^([^\-/]+)-([0-9]{1,3})\/([^\-/]+)-([0-9]{1,3})$/);
 
     if (pbx === null) {
@@ -183,7 +197,7 @@ export class WaypointEntryUtils {
    * @param {string} s
    */
   static async parsePbd(
-    fms: DataInterface & DisplayInterface,
+    fms: FmsDataInterface & FmsDisplayInterface,
     s: string,
   ): Promise<[wp: Fix, trueBearing: number, dist: number]> {
     const [place, brg, dist] = WaypointEntryUtils.splitPbd(s);

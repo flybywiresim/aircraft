@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Uvoz podatkov iz SimBrief-a",
       "TT": {
         "IncreaseFontSize": "Povečaj velikost pisave",
         "ReduceFontSize": "Zmanjšaj velikosti pisave"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Podatki",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO letališča",
       "ApproachSpeed": "Hitrost prileta",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "Počisti",
       "DropDownNo": "Ne",
       "DropDownYes": "Da",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Izpolnite podatke iz",
       "FlapsConfiguration": "Konfiguracija zakrilc",
+      "LandingWeight": "Landing Weight",
       "Low": "Nizko",
       "MaximumManual": "Ročni maksimum",
       "Medium": "Srednje",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Postopek ob prekomerni teži",
       "Qnh": "QNH",
       "ReverseThrust": "Vzvratni potisk",
-      "RunwayAltitude": "Višina steze",
-      "RunwayAltitudeUnit": "ft ASL",
+      "Runway": "Runway",
       "RunwayCondition": "Stanje steze",
       "RunwayConditions": {
         "Dry": "Suho (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Srednje-slabše (2)",
         "Poor": "Slabo (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Smer steze",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "LDA steze",
@@ -330,10 +333,7 @@
       "Title": "Pristanek",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Teža",
-      "WindDirection": "Smer vetra",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Moč vetra",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Sinhroniziraj",
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -395,7 +393,9 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "Takoj uskladi ADIRS",
       "AutoBrightness": "Vklop/izklop samodejne svetlosti",
       "Brightness": "Nastavi svetlost flyPada",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Takoj končaj vkrcanje",
       "OnScreenKeyboard": "Vklop/izklop zaslonske tipkovnice",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +569,6 @@
     },
     "Title": "Hitri nadzor"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Vizitka"
@@ -631,6 +631,7 @@
     "Real": "Resnično",
     "Realism": {
       "AdirsAlignTime": "ADIRS čas uskladitve",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Samodejno izpolni kontrolne sezname",
       "BoardingTime": "Čas vkrcanja",
       "DmcSelfTestTime": "DMC samopreizkusni čas",
@@ -650,11 +651,10 @@
       "Active": "Aktivno",
       "Auto": "Samodejno",
       "Both": "Sinhronizirano",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibracija",
-      "Captain": "Kapitan",
-      "CockpitSeatUsedToControl": "Sedež v pilotski kabini uporabljen za nadzor",
       "ConesEnabled": "Varnostni stožci",
-      "Copilot": "Kopilot",
       "DefaultBarometerUnit": "Privzeta barometrična enota",
       "DynamicRegistrationDecal": "Dinamična registrska nalepka",
       "EnableSimBridge": "Omogoči SimBridge povezavo (Samodejno de-aktivira po 5 minutah, če ni uspešne povezave)",
@@ -666,6 +666,7 @@
       "Left": "Left",
       "LoadOnly": "Naloži samo",
       "None": "Brez",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Izklopljeno",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -696,6 +697,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -734,6 +736,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Nastavitve",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Nerealistično",
     "flyPad": {
       "AutoBrightness": "Samodejna svetlost",
@@ -742,7 +747,6 @@
       "Blue": "Modro",
       "Brightness": "Svetlost",
       "Dark": "Temno",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Jezik",
       "Light": "Svetlo",
       "Local": "Lokalni čas",
@@ -759,8 +763,6 @@
       "UtcAndLocal": "UTC in lokalni čas"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Avg",

@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -11,7 +16,8 @@ import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvion
 //    1 for normal checklists,
 //    2 for infos,
 //    3 for INOP SYS,
-//    4 for limitations (not populated yet here),
+//    4 for limitations,
+//    7 for deferred procedures,
 //    8 for ABN sensed procedures,
 //    9 for ABN non-sensed procedures
 
@@ -36,14 +42,12 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -81,14 +85,12 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 3 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -115,32 +117,27 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'WXR & TAWS',
         sensed: true,
         labelNotCompleted: 'SYS 1',
-        level: 1,
       },
       {
         name: 'XDPR & TCAS',
         sensed: true,
         labelNotCompleted: 'SYS 1',
-        level: 1,
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: true,
         style: ChecklistLineStyle.Cyan,
-        level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -167,32 +164,27 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'WXR & TAWS',
         sensed: true,
         labelNotCompleted: 'SYS 2',
-        level: 1,
       },
       {
         name: 'XDPR & TCAS',
         sensed: true,
         labelNotCompleted: 'SYS 2',
-        level: 1,
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: true,
         style: ChecklistLineStyle.Cyan,
-        level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 1 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -219,32 +211,27 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
         name: 'WXR & TAWS',
         sensed: true,
         labelNotCompleted: 'SYS 1',
-        level: 1,
       },
       {
         name: 'XDPR & TCAS',
         sensed: true,
         labelNotCompleted: 'SYS 1',
-        level: 1,
       },
       {
         name: 'GA THR : TOGA ONLY', // If soft GA is lost
         sensed: true,
         style: ChecklistLineStyle.Cyan,
-        level: 1,
       },
       {
         name: 'BEFORE LAST ENG SHUTDOWN:', // After landing
         sensed: true,
         style: ChecklistLineStyle.Green,
-        level: 1,
       },
       {
         name: 'IR 3 MODE SEL',
         sensed: true,
         style: ChecklistLineStyle.Green,
         labelNotCompleted: 'OFF',
-        level: 1,
       },
     ],
   },
@@ -804,6 +791,184 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   341800037: {
     title: '\x1b<4m\x1b4mSURV\x1bm XPDR STBY',
     sensed: true,
+    items: [],
+  },
+  341800020: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TERR SYS 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+    ],
+  },
+  341800021: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TERR SYS 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+    ],
+  },
+  341800022: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TERR SYS 1+2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '[MFD SURV] TERR SYS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  341800023: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TAWS 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+    ],
+  },
+  341800024: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TAWS 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+    ],
+  },
+  341800025: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TAWS 1+2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '[MFD SURV] TERR SYS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: '[MFD SURV] GPWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  341800026: {
+    title: '\x1b<4m\x1b4mSURV\x1bm GPWS 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+    ],
+  },
+  341800027: {
+    title: '\x1b<4m\x1b4mSURV\x1bm GPWS 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+    ],
+  },
+  341800028: {
+    title: '\x1b<4m\x1b4mSURV\x1bm GPWS 1+2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '[MFD SURV] GPWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  340900001: {
+    title: '\x1b<4m\x1b4mNAV\x1bm IR ALIGNMENT IN ATT MODE',
+    sensed: false,
+    items: [], // TODO
+  },
+  340900002: {
+    title: '\x1b<4m\x1b4mNAV\x1bm FLUCTUATING VERTICAL SPEED',
+    sensed: false,
+    items: [], // TODO
+  },
+  340900003: {
+    title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION',
+    sensed: false,
+    items: [], // TODO
+  },
+};
+
+export const EcamDeferredProcAta34: { [n: number]: DeferredProcedure } = {
+  340700001: {
+    fromAbnormalProcs: ['340800008'],
+    title: '\x1b<4mLDG ELEVN',
+    type: DeferredProcedureType.AT_TOP_OF_DESCENT,
     items: [],
   },
 };

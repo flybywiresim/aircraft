@@ -2,7 +2,6 @@ const HOURS_TO_MINUTES: u64 = 60;
 const MINUTES_TO_SECONDS: u64 = 60;
 
 use std::time::Duration;
-use std::usize;
 
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
@@ -1369,7 +1368,7 @@ fn detailed_test_with_multiple_stops() {
     assert_eq!(test_bed.pax_num(A320Pax::A.into()), 15);
     assert_eq!(test_bed.pax_num(A320Pax::B.into()), 14);
     assert_eq!(test_bed.pax_num(A320Pax::C.into()), 32);
-    assert_eq!(test_bed.pax_num(A320Pax::D.into()), 34);
+    assert_eq!(test_bed.pax_num(A320Pax::D.into()), 30);
 
     let five_minutes_in_seconds = 5 * MINUTES_TO_SECONDS;
 

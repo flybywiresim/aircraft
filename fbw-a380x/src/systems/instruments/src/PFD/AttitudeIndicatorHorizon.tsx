@@ -8,7 +8,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429Register, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429Register, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import {
   calculateHorizonOffsetFromPitch,
   calculateVerticalOffsetFromRoll,
@@ -109,18 +109,22 @@ interface HorizonProps {
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+
   private pitchGroupRef = FSComponent.createRef<SVGGElement>();
 
   private rollGroupRef = FSComponent.createRef<SVGGElement>();
 
   private yOffset = Subject.create(0);
 
+  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
+
+  private readonly isNormalLawActive = this.fcdcDiscreteWord1.map((dw) => dw.bitValue(11) && !dw.isFailureWarning());
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const apfd = this.props.bus.getArincSubscriber<Arinc429Values>();
-
-    apfd
+    this.sub
       .on('pitchAr')
       .withArinc429Precision(3)
       .handle((pitch) => {
@@ -137,7 +141,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         this.yOffset.set(yOffset);
       });
 
-    apfd
+    this.sub
       .on('rollAr')
       .withArinc429Precision(2)
       .handle((roll) => {
@@ -189,19 +193,35 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             <path d="m47.906-19.177h42h0" />
           </g>
 
-          <g id="PitchProtUpper" class="NormalStroke Green">
+          <g
+            id="PitchProtUpper"
+            class="NormalStroke Green"
+            style={{ display: this.isNormalLawActive.map((nl) => (nl ? 'inherit' : 'none')) }}
+          >
             <path d="m51.506 31.523h4m-4-1.4h4" />
             <path d="m86.306 31.523h-4m4-1.4h-4" />
           </g>
-          <g id="PitchProtLostUpper" style="display: none" class="NormalStroke Amber">
+          <g
+            id="PitchProtLostUpper"
+            class="NormalStroke Amber"
+            style={{ display: this.isNormalLawActive.map((nl) => (!nl ? 'inherit' : 'none')) }}
+          >
             <path d="m52.699 30.116 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
             <path d="m85.114 31.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
           </g>
-          <g id="PitchProtLower" class="NormalStroke Green">
+          <g
+            id="PitchProtLower"
+            class="NormalStroke Green"
+            style={{ display: this.isNormalLawActive.map((nl) => (nl ? 'inherit' : 'none')) }}
+          >
             <path d="m59.946 104.52h4m-4-1.4h4" />
             <path d="m77.867 104.52h-4m4-1.4h-4" />
           </g>
-          <g id="PitchProtLostLower" style="display: none" class="NormalStroke Amber">
+          <g
+            id="PitchProtLostLower"
+            class="NormalStroke Amber"
+            style={{ display: this.isNormalLawActive.map((nl) => (!nl ? 'inherit' : 'none')) }}
+          >
             <path d="m61.199 103.12 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
             <path d="m76.614 104.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
           </g>
@@ -437,6 +457,10 @@ class RadioAltAndDH extends DisplayComponent<{
   filteredRadioAltitude: Subscribable<number>;
   attExcessive: Subscribable<boolean>;
 }> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private daRaGroup = FSComponent.createRef<SVGGElement>();
 
   private roll = new Arinc429Word(0);
@@ -452,8 +476,6 @@ class RadioAltAndDH extends DisplayComponent<{
   private transLvlAr = Arinc429Register.empty();
 
   private fmgcFlightPhase = 0;
-
-  private altitude = new Arinc429Word(0);
 
   private attDhText = FSComponent.createRef<SVGTextElement>();
 
@@ -500,10 +522,6 @@ class RadioAltAndDH extends DisplayComponent<{
         this.fmgcFlightPhase = fp;
       });
 
-    sub.on('altitudeAr').handle((a) => {
-      this.altitude = a;
-    });
-
     sub.on('chosenRa').handle((ra) => {
       if (!this.props.attExcessive.get()) {
         this.radioAltitude = ra;
@@ -515,8 +533,8 @@ class RadioAltAndDH extends DisplayComponent<{
         const chosenTransalt = useTransAltVsLvl ? this.transAltAr : this.transLvlAr;
         const belowTransitionAltitude =
           chosenTransalt.isNormalOperation() &&
-          !this.altitude.isNoComputedData() &&
-          this.altitude.value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
+          !this.altitude.get().isNoComputedData() &&
+          this.altitude.get().value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
         let size = 'FontLarge';
         const DHValid = this.dh >= 0;
 

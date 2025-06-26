@@ -14,7 +14,7 @@ interface MsfsRadioNavigationBaseEvents {
 
 type IndexedTopics = null;
 
-type MsfsAutopilotAssitanceIndexedEvents = {
+type MsfsRadioNavigationIndexedEvents = {
   [P in keyof Pick<
     MsfsRadioNavigationBaseEvents,
     IndexedTopics
@@ -25,7 +25,7 @@ type MsfsAutopilotAssitanceIndexedEvents = {
  * Events for simvars listed on https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_RadioNavigation_Variables.htm.
  * Event names are the same as the simvar names, with msfs_ prefix, and index as suffix for indexed simvars.
  */
-export interface MsfsRadioNavigationEvents extends MsfsRadioNavigationBaseEvents, MsfsAutopilotAssitanceIndexedEvents {}
+export interface MsfsRadioNavigationEvents extends MsfsRadioNavigationBaseEvents, MsfsRadioNavigationIndexedEvents {}
 
 /**
  * Publisher for simvars listed on https://docs.flightsimulator.com/html/Programming_Tools/SimVars/Aircraft_SimVars/Aircraft_RadioNavigation_Variables.htm.

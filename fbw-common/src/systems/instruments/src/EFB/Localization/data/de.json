@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "SimBrief-Daten importieren",
       "TT": {
         "IncreaseFontSize": "Schrift vergrößern",
         "ReduceFontSize": "Schrift verkleinern"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Daten",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Flughafen ICAO",
       "ApproachSpeed": "Anfluggeschwindigkeit",
       "ApproachSpeedUnit": "kn",
@@ -295,8 +295,10 @@
       "Clear": "Löschen",
       "DropDownNo": "Nein",
       "DropDownYes": "Ja",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Ausfüllen von",
       "FlapsConfiguration": "Landeklappenkonfiguration",
+      "LandingWeight": "Landing Weight",
       "Low": "Low",
       "MaximumManual": "Maximum Manuell",
       "Medium": "Medium",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Übergewichtsverfahren",
       "Qnh": "QNH",
       "ReverseThrust": "Schubumkehr",
-      "RunwayAltitude": "Landebahnhöhenlage",
-      "RunwayAltitudeUnit": "Fuß über Meeresspiegel",
+      "Runway": "Runway",
       "RunwayCondition": "Zustand der Landebahn",
       "RunwayConditions": {
         "Dry": "Trocken (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Mittel-Schlecht (2)",
         "Poor": "Schlecht (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Landebahnrichtung",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Verfügbare Landebahnlänge",
@@ -330,10 +333,7 @@
       "Title": "Landung",
       "UnitFt": "Fuß",
       "UnitMeter": "m",
-      "Weight": "Gewicht",
-      "WindDirection": "Windrichtung",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Windstärke",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kn"
     },
     "SYNC": "SYNC",
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -395,7 +393,9 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "ADIRS sofort ausrichten",
       "AutoBrightness": "Automatische Helligkeit ein-/ausschalten",
       "Brightness": "Stellen Sie die flyPad-Helligkeit ein",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Boarding sofort abschließen",
       "OnScreenKeyboard": "Bildschirmtastatur ein-/ausschalten",
       "PauseAtTod": "Aktivieren oder de-aktivieren des Pausierens vor dem Sinkflug",
@@ -567,8 +569,6 @@
     },
     "Title": "Schnelleinstellungen"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Über"
@@ -631,6 +631,7 @@
     "Real": "Real",
     "Realism": {
       "AdirsAlignTime": "ADIRS Ausrichtungszeit",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Checklisten automatisch ausfüllen",
       "BoardingTime": "Boarding-Dauer",
       "DmcSelfTestTime": "DMC-Selbsttestdauer",
@@ -650,11 +651,10 @@
       "Active": "Aktiv",
       "Auto": "Auto",
       "Both": "Synchronisiert",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibrieren",
-      "Captain": "Kapitän",
-      "CockpitSeatUsedToControl": "Zur Steuerung verwendete Cockpitseite",
       "ConesEnabled": "Sicherheitskegel",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standard Barometer-Einheit",
       "DynamicRegistrationDecal": "Flugzeugkennzeichen dynamisch darstellen",
       "EnableSimBridge": "SimBridge Serververbindung aktivieren (Wird nach 5 Minuten automatisch deaktiviert, wenn keine Verbindung zustande kommt)",
@@ -666,6 +666,7 @@
       "Left": "Left",
       "LoadOnly": "Einmaliges Laden",
       "None": "Aus",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Aus",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -696,6 +697,7 @@
         "SettingTitle": "Navigraph-Kontolink",
         "SubscriptionStatus": {
           "None": "Keine Navigraph Subscription",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unbekannt",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -734,6 +736,9 @@
       "TogaOnAxis": "TO/GA auf Achsenbereich"
     },
     "Title": "Einstellungen",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Unrealistisch",
     "flyPad": {
       "AutoBrightness": "Automatische Helligkeit",
@@ -742,7 +747,6 @@
       "Blue": "Blau",
       "Brightness": "Helligkeit",
       "Dark": "Dunkel",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Sprache",
       "Light": "Hell",
       "Local": "Lokal",
@@ -759,8 +763,6 @@
       "UtcAndLocal": "UTC und Lokal"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

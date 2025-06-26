@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint, SpeedConstraint } from '@flybywiresim/fbw-sdk';
 
 export enum FlapConf {
   CLEAN = 0,

@@ -17,6 +17,7 @@ interface SimpleInputProps {
   min?: number;
   max?: number;
   number?: boolean;
+  wind?: boolean;
   uppercase?: boolean;
   padding?: number;
   decimalPrecision?: number;
@@ -69,6 +70,18 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
     if (props.number) {
       originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
+    }
+
+    if (props.wind) {
+      originalValue = originalValue.toUpperCase();
+      const regex = /^(?:H|HD|TL|T|[-+])?\d{0,2}(?:\/\d{2})?$|^\d{1,5}$|^\d{3}\/\d{0,2}$/;
+      if (
+        !regex.test(originalValue) ||
+        (!isNaN(Number(originalValue.slice(0, 3))) && Number(originalValue.slice(0, 3)) > 360)
+      ) {
+        originalValue = displayValue;
+      }
+      originalValue = originalValue.replace(/^(\d{3})(\d{2}).*$/, '$1/$2');
     }
 
     if (props.uppercase) {

@@ -12,7 +12,7 @@ use crate::{
 };
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CpiomId {
     B1,
     B2,

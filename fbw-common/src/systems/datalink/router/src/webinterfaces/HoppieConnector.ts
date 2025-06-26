@@ -43,13 +43,13 @@ export class HoppieConnector {
     const body = {
       logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
       from: 'FBWA32NX',
-      to: 'ALL-CALLSIGNS',
+      to: 'SERVER',
       type: 'ping',
       packet: '',
     };
 
     Hoppie.sendRequest(body).then((resp) => {
-      if (resp.response !== 'error {illegal logon code}') {
+      if (resp.response !== 'error {invalid logon code}') {
         SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
         console.log('Activated Hoppie ID');
       } else {
@@ -90,7 +90,7 @@ export class HoppieConnector {
     const body = {
       logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
       from: station,
-      to: 'ALL-CALLSIGNS',
+      to: 'SERVER',
       type: 'ping',
       packet: station,
     };
@@ -99,9 +99,11 @@ export class HoppieConnector {
     if (text === 'error {callsign already in use}') {
       return AtsuStatusCodes.CallsignInUse;
     }
+
     if (text.includes('error')) {
       return AtsuStatusCodes.ProxyError;
     }
+
     if (text.startsWith('ok') !== true) {
       return AtsuStatusCodes.ComFailed;
     }
@@ -121,19 +123,25 @@ export class HoppieConnector {
     const body = {
       logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
       from: HoppieConnector.flightNumber,
-      to: 'ALL-CALLSIGNS',
+      to: 'SERVER', // Not needed as Hoppie ignores this field usually
       type: 'ping',
       packet: station,
     };
     const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
+    if (text === 'error {callsign already in use}') {
+      return AtsuStatusCodes.CallsignInUse;
+    }
+
     if (text.includes('error')) {
       return AtsuStatusCodes.ProxyError;
     }
+
     if (text.startsWith('ok') !== true) {
       return AtsuStatusCodes.ComFailed;
     }
-    if (text !== `ok {${station}}`) {
+
+    if (text.includes(station) !== true) {
       return AtsuStatusCodes.NoAtc;
     }
 
@@ -155,6 +163,10 @@ export class HoppieConnector {
     const text = await Hoppie.sendRequest(body)
       .then((resp) => resp.response)
       .catch(() => 'proxy');
+
+    if (text === 'error {callsign already in use}') {
+      return AtsuStatusCodes.CallsignInUse;
+    }
 
     if (text === 'proxy') {
       return AtsuStatusCodes.ProxyError;
@@ -321,6 +333,10 @@ export class HoppieConnector {
       const text = await Hoppie.sendRequest(body)
         .then((resp) => resp.response)
         .catch(() => 'proxy');
+
+      if (text === 'error {callsign already in use}') {
+        return [AtsuStatusCodes.CallsignInUse, retval];
+      }
 
       // proxy error during request
       if (text === 'proxy') {

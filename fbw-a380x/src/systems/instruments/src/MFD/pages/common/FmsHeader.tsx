@@ -1,18 +1,18 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
+import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 
 /*
  * Complete header for the FMS system
  */
 export class FmsHeader extends AbstractHeader {
-  private activeIsSelected = Subject.create(false);
+  private readonly activeIsSelected = Subject.create(false);
 
-  private positionIsSelected = Subject.create(false);
+  private readonly positionIsSelected = Subject.create(false);
 
-  private secIndexIsSelected = Subject.create(false);
+  private readonly secIndexIsSelected = Subject.create(false);
 
-  private dataIsSelected = Subject.create(false);
+  private readonly dataIsSelected = Subject.create(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -87,11 +87,10 @@ export class FmsHeader extends AbstractHeader {
             label="DATA"
             menuItems={[
               { label: 'STATUS', action: () => this.props.uiService.navigateTo('fms/data/status') },
-              { label: 'DEBUG', action: () => this.props.uiService.navigateTo('fms/data/debug') },
               { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint'), disabled: true },
               { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid'), disabled: true },
               { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route'), disabled: true },
-              { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport'), disabled: true },
+              { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport') },
               { label: 'PRINTER', action: () => this.props.uiService.navigateTo('fms/data/printer'), disabled: true },
             ]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorData`}

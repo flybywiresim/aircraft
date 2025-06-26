@@ -360,12 +360,17 @@
                 <POTENTIOMETER>87</POTENTIOMETER>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
-                <NODE_ID>SCREEN_AUTOPILOT</NODE_ID>
-                <POTENTIOMETER>87</POTENTIOMETER>
-                <!-- ref FBW-22-06 C/B 5LF -->
-                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
-            </UseTemplate>
+            <Component ID="SCREEN_AUTOPILOT" Node="SCREEN_AUTOPILOT">
+                <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+                    <!-- ref FBW-22-06 C/B 5LF -->
+                    <EMISSIVE_CODE>
+                        (L:A32NX_AMBIENT_BRIGHTNESS) * 0.05 * 0.01 max
+                        (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) if{
+                            (A:LIGHT POTENTIOMETER:87, percent over 100) max
+                        }
+                    </EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
             <CameraTitle>PA</CameraTitle>
 
             <!-- CPT CONSOLE/FLOOR LT -->
@@ -1152,6 +1157,7 @@
                     <UseTemplate Name="FBW_ISIS_Knob_Template">
                         <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
                         <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
+                        <ALTIMETER_INDEX>3</ALTIMETER_INDEX>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -2188,6 +2194,7 @@
                     <NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS1</NODE_ID>
                     <PART_ID>OVHD_FUEL_LTKPUMPS1</PART_ID>
                     <ID>2</ID>
+                    <FUEL_LINE>7</FUEL_LINE>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2203,6 +2210,7 @@
                     <NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS2</NODE_ID>
                     <PART_ID>OVHD_FUEL_LTKPUMPS2</PART_ID>
                     <ID>5</ID>
+                    <FUEL_LINE>9</FUEL_LINE>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2248,6 +2256,7 @@
                     <NODE_ID>PUSH_OVHD_FUEL_RTKPUMPS1</NODE_ID>
                     <PART_ID>OVHD_FUEL_RTKPUMPS1</PART_ID>
                     <ID>3</ID>
+                    <FUEL_LINE>8</FUEL_LINE>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2265,6 +2274,7 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
                     <ID>6</ID>
+                    <FUEL_LINE>10</FUEL_LINE>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -4407,7 +4417,7 @@
             </UseTemplate>
         </Component>
 
-        <Component ID="Airbus_EICAS">
+        <Component ID="ECAM_LOWER_ECP">
             <DefaultTemplateParameters>
                 <!-- disable lock mode blue highlight -->
                 <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
@@ -4418,11 +4428,7 @@
                 <NODE_ID>DYN_SCREEN</NODE_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_ECAM_PAGE_SELECTION_Template">
-                <POTENTIOMETER>85</POTENTIOMETER>
-                <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
+            <UseTemplate Name="FBW_A32NX_ECP_Template"/>
 
             <CameraTitle>ECAM</CameraTitle>
         </Component>

@@ -1,22 +1,22 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
+import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 
 /*
  * Complete header for the ATCCOM system
  */
 export class AtccomHeader extends AbstractHeader {
-  private connectIsSelected = Subject.create(false);
+  private readonly connectIsSelected = Subject.create(false);
 
-  private requestIsSelected = Subject.create(false);
+  private readonly requestIsSelected = Subject.create(false);
 
-  private reportModifyIsSelected = Subject.create(false);
+  private readonly reportModifyIsSelected = Subject.create(false);
 
-  private msgRecordIsSelected = Subject.create(false);
+  private readonly msgRecordIsSelected = Subject.create(false);
 
-  private atisIsSelected = Subject.create(false);
+  private readonly atisIsSelected = Subject.create(false);
 
-  private emerIsSelected = Subject.create(false);
+  private readonly emerIsSelected = Subject.create(false);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -27,7 +27,7 @@ export class AtccomHeader extends AbstractHeader {
         this.requestIsSelected.set(val.category === 'request');
         this.reportModifyIsSelected.set(val.category === 'report-modify');
         this.msgRecordIsSelected.set(val.category === 'msg-record');
-        this.atisIsSelected.set(val.category === 'atis');
+        this.atisIsSelected.set(val.category === 'd-atis');
         this.emerIsSelected.set(val.category === 'emer');
       }, true),
     );
@@ -77,8 +77,8 @@ export class AtccomHeader extends AbstractHeader {
           />
           <PageSelectorDropdownMenu
             isActive={this.atisIsSelected}
-            label="ATIS"
-            menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/atis') }]}
+            label="D-ATIS"
+            menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/d-atis/list') }]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorAtis`}
             containerStyle="flex: 1"
           />

@@ -74,7 +74,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
-    .with_failures(vec![
+    .with_failures([
         (21_000, FailureType::RapidDecompression),
         (21_001, FailureType::CabinFan(1)),
         (21_002, FailureType::CabinFan(2)),
@@ -444,7 +444,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 2)?
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 3)?
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 4)?
-    .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
     .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 2)?
@@ -458,6 +457,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
     .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 141)?
+    .provides_aircraft_variable_range("FUELSYSTEM PUMP ACTIVE", "Bool", 1..21)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
@@ -579,17 +579,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
 
         for i in 1..=4 {
             builder.copy(
-                Variable::aircraft("BLEED AIR ENGINE", "Bool", i),
-                Variable::aspect(&format!("OVHD_PNEU_ENG_{i}_BLEED_PB_IS_AUTO")),
-            );
-
-            builder.copy(
-                Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", i),
+                Variable::named(&format!("EXT_PWR_AVAIL:{i}")),
                 Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_AVAILABLE")),
-            );
-            builder.copy(
-                Variable::aircraft("EXTERNAL POWER ON", "Bool", i),
-                Variable::aspect(&format!("OVHD_ELEC_EXT_PWR_{i}_PB_IS_ON")),
             );
 
             builder.copy(

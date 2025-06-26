@@ -71,6 +71,9 @@ base_fcu_bus Fcu::getBusOutputs() {
     return {};
   }
 
+  Arinc429Utils::setBit(modelOutputs.bus_outputs.fcu_discrete_word_2, 24, monitoringHealthy[0]);
+  Arinc429Utils::setBit(modelOutputs.bus_outputs.fcu_discrete_word_2, 25, monitoringHealthy[1]);
+
   return modelOutputs.bus_outputs;
 }
 

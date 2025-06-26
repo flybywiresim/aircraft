@@ -8,6 +8,9 @@
   - [Air Conditioning Pressurisation Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
   - [Flight Management System ATA 22](#flight-management-system-ata-22)
+  - [Communications ATA 23](#communications-ata-23)
+    - [Placeholder Types](#placeholder-types)
+    - [Local Vars](#local-vars)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
@@ -105,7 +108,7 @@
     - Number
     - The position of the battery display knob from left to right
     - ESS=0, APU=1, OFF=2, BAT1=3, BAT2=4
-    - Mapped to battery voltage indexes: {bat_index} = ESS=4 | APU=3 | OFF=0 | BAT1=1 | BAT2=2
+    - Mapped to battery voltage indexes: {bat_index} = ESS=3 | APU=4 | OFF=0 | BAT1=1 | BAT2=2
         - A32NX_ELEC_BAT_{bat_index}_POTENTIAL is used to get the voltage
 
 - A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE
@@ -321,7 +324,7 @@
         - B4
 
 - A32NX_PRESS_CABIN_ALTITUDE_TARGET_{cpiom_id}
-    - Feet
+    - Arinc429Word<Feet>
     - Target cabin altitude as calculated by the pressurization system or manually selected on the overhead panel
     - (cpiom_id)
         - B1
@@ -461,6 +464,55 @@
     - FMS used
     - Position (0-2)
     - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
+
+## Communications ATA 23
+
+### Placeholder Types
+
+- `{rmp_index}` 1, 2, or 3
+- `{vhf_index}` 1, 2, or 3
+
+### Local Vars
+
+- `L:A380X_RMP_{rmp_index}_STATE`
+    - Enum
+    - Indicates the state of the RMP.
+    -   | State      | Number |
+        |------------|--------|
+        | OffFailed  | 0      |
+        | OffStandby | 1      |
+        | On         | 2      |
+        | OnFailed   | 3      |
+
+- `L:FBW_RMP_FREQUENCY_ACTIVE_{vhf_index}`
+  - Frequency BCD32 (can be read with MHz or any other frequency unit)
+  - Read only!
+  - Contains the active frequency value synced amongst the RMPs for this VHF radio. 0 when invalid. This will contain the actual frequency even in other modes.
+
+- `L:FBW_RMP_FREQUENCY_STANDBY_{vhf_index}`
+  - Frequency BCD32 (can be read with MHz or any other frequency unit)
+  - Read only!
+  - Contains the standby frequency value synced amongst the RMPs for this VHF radio. 0 when invalid. This will contain the actual frequency even in other modes.
+
+- `L:FBW_RMP_MODE_ACTIVE_{vhf_index}`
+    - Enum
+    - Read only!
+    - Indicates the active frequency mode synced amongst the RMPs for this VHF radio.
+    -   | State      | Number |
+        |------------|--------|
+        | Frequency  | 0      |
+        | Data       | 1      |
+        | Emergency  | 2      |
+
+- `L:FBW_RMP_MODE_STANDBY_{vhf_index}`
+    - Enum
+    - Read only!
+    - Indicates the standby frequency mode synced amongst the RMPs for this VHF radio.
+    -   | State      | Number |
+        |------------|--------|
+        | Frequency  | 0      |
+        | Data       | 1      |
+        | Emergency  | 2      |
 
 ## Electrical ATA 24
 
@@ -776,8 +828,31 @@
     - Bool
     - True when the overhead fire test pushbutton is pressed
 
+## Flight Controls (ATA 27)
 
-## Flaps / Slats (ATA 27)
+- A32NX_FCDC_{number}_DISCRETE_WORD_1
+    - Arinc429<Discrete>
+    - | Bit |                Description               |
+      |:---:|:----------------------------------------:|
+      | 11  | Pitch Normal Law Active                  |
+      | 12  | Pitch Alternate Law 1 Active             |
+      | 13  | Pitch Alternate Law 2 Active             |
+      | 14  | Pitch Alternate Law 1A Active            |
+      | 15  | Pitch Direct Law Active                  |
+      | 16  | Roll Normal Law Active                   |
+      | 17  | Roll Direct Law Active                   |
+      | 18  |                                          |
+      | 19  | ELAC 1 Pitch Fault                       |
+      | 20  | ELAC 1 Roll Fault                        |
+      | 21  | ELAC 2 Pitch Fault                       |
+      | 22  | ELAC 2 Roll Fault                        |
+      | 23  | ELAC 1 Fault                             |
+      | 24  | ELAC 2 Fault                             |
+      | 25  | SEC 1 Fault                              |
+      | 26  | SEC 2 Fault                              |
+      | 27  |                                          |
+      | 28  | FCDC Opposite Fault                      |
+      | 29  | SEC 3 Fault                              |
 
 - A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
     - Slat/Flap actual position discrete word of the SFCC bus output
@@ -964,7 +1039,8 @@
 
 - A380X_EFIS_{side}_BARO_PRESELECTED
     - Number (hPa or inHg)
-    - Pre-selected QNH when in STD mode
+    - Pre-selected QNH when in STD mode, or 0 when not displayed.
+    - Not for FBW systems use!
     - {side} = L or R
 
 ## Bleed Air ATA 36
@@ -1085,3 +1161,9 @@
     |-------|-------------|
     | 0     | Left Seat   |
     | 1     | Right Seat  |
+
+- `L:A32NX_EXT_PWR_AVAIL:{number}`
+  - Bool
+  - If ground power is avail or not
+  - {number}
+        - 1 - 4

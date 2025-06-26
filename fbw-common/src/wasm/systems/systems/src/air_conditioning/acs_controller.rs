@@ -30,7 +30,7 @@ use uom::si::{
     velocity::knot,
 };
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum AcscId {
     Acsc1(Channel),
     Acsc2(Channel),
@@ -1025,9 +1025,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
             context,
             pneumatic
                 .pack_flow_valve_inlet_pressure(self.id + 1)
-                .map_or(false, |p| {
-                    p.get::<psi>() < Self::PACK_INLET_PRESSURE_MIN_PSIG
-                }),
+                .is_some_and(|p| p.get::<psi>() < Self::PACK_INLET_PRESSURE_MIN_PSIG),
         );
     }
 
@@ -2564,7 +2562,7 @@ mod acs_controller_tests {
                 test_bed: SimulationTestBed::new(TestAircraft::new),
             };
             test_bed.command_ground_speed(Velocity::new::<knot>(0.));
-            test_bed.set_indicated_altitude(Length::new::<foot>(0.));
+            test_bed.set_pressure_altitude(Length::default());
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             test_bed.command_pax_quantity(0);
             test_bed.command_pack_flow_selector_position(1.);

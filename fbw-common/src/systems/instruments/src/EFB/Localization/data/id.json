@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Impor Data SimBrief",
       "TT": {
         "IncreaseFontSize": "Perbesar Ukuran Font",
         "ReduceFontSize": "Perkecil Ukuran Font"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "Data",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO Bandara",
       "ApproachSpeed": "Kecepatan Approach",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "Kosongkan",
       "DropDownNo": "Tidak",
       "DropDownYes": "Iya",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Masukkan data dari",
       "FlapsConfiguration": "Konfigurasi Flaps",
+      "LandingWeight": "Landing Weight",
       "Low": "Rendah",
       "MaximumManual": "Manual Maksimum",
       "Medium": "Sedang",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "Prosedur Muatan Berlebih",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Ketinggian Landasan",
-      "RunwayAltitudeUnit": "ft ASL",
+      "Runway": "Runway",
       "RunwayCondition": "Kondisi Landasan",
       "RunwayConditions": {
         "Dry": "Kering (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "Sedang-Buruk (2)",
         "Poor": "Buruk (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Arah Landasan",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "LDA Landasan",
@@ -330,10 +333,7 @@
       "Title": "Mendarat",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Berat",
-      "WindDirection": "Arah Angin",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Kekuatan Angin",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Sinkronkan",
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -395,7 +393,9 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "Sejajarkan ADIRS secara Instan",
       "AutoBrightness": "Menyalakan/Mematikan Kecerahan Otomatis",
       "Brightness": "Atur Kecerahan flyPad",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Selesaikan Boarding secara Instan",
       "OnScreenKeyboard": "Menyalakan/Mematikan Keyboard Dalam Layar",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +569,6 @@
     },
     "Title": "Kontrol Cepat"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Tentang"
@@ -631,6 +631,7 @@
     "Real": "Realisme",
     "Realism": {
       "AdirsAlignTime": "Waktu Penghidupan ADIRS",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Ceklis Otomatis Terisi",
       "BoardingTime": "Waktu Boarding",
       "DmcSelfTestTime": "Waktu Pencobaan Mandiri DMC",
@@ -650,11 +651,10 @@
       "Active": "Aktif",
       "Auto": "Otomatis",
       "Both": "Tersinkron",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibrasi",
-      "Captain": "Kapten",
-      "CockpitSeatUsedToControl": "Kursi Kokpit yang Digunakan untuk Mengontrol",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Kopilot",
       "DefaultBarometerUnit": "Standar Satuan Barometer",
       "DynamicRegistrationDecal": "Nomor Registrasi Pesawat",
       "EnableSimBridge": "Aktifkan Koneksi SimBridge (Akan putus otomatis setelah 5 menit jika koneksi tidak berhasil)",
@@ -666,6 +666,7 @@
       "Left": "Left",
       "LoadOnly": "Hanya Muat Saja",
       "None": "Tidak ada",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Mati",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -696,6 +697,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -734,6 +736,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Pengaturan",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Tidak Realistis",
     "flyPad": {
       "AutoBrightness": "Kecerahan Otomatis",
@@ -742,7 +747,6 @@
       "Blue": "Biru",
       "Brightness": "Kecerahan",
       "Dark": "Gelap",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Bahasa",
       "Light": "Terang",
       "Local": "Lokal",
@@ -759,8 +763,6 @@
       "UtcAndLocal": "UTC dan Lokal"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Agu",

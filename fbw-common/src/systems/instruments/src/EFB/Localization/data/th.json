@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "นำเข้าข้อมูล SimBrief",
       "TT": {
         "IncreaseFontSize": "เพิ่มขนาดตัวอักษร",
         "ReduceFontSize": "ลดขนาดตัวอักษร"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "ข้อมูล",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "สนามบิน ICAO",
       "ApproachSpeed": "ความเร็ว Approach",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +295,10 @@
       "Clear": "ล้าง",
       "DropDownNo": "ไม่",
       "DropDownYes": "ใช่",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "กรอกข้อมูลจาก",
       "FlapsConfiguration": "การตั้งค่า Flaps",
+      "LandingWeight": "Landing Weight",
       "Low": "ต่ำ",
       "MaximumManual": "ด้วยตัวเองสูงสุด",
       "Medium": "ปานกลาง",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "ขั้นตอนการลงจอดแบบน้ำหนักเกิน",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "ความสูงรันเวย์",
-      "RunwayAltitudeUnit": "ft ASL",
+      "Runway": "Runway",
       "RunwayCondition": "สภาพรันเวย์",
       "RunwayConditions": {
         "Dry": "แห้ง (6)",
@@ -316,6 +317,8 @@
         "MediumPoor": "ปานกลาง-แย่ (2)",
         "Poor": "แย่ (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": " ทิศทางรันเวย์",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "ระยะที่ลงจอดได้ บนรันเวย์",
@@ -330,10 +333,7 @@
       "Title": "ลงจอด",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "น้ำหนัก",
-      "WindDirection": "ทิศทางลม",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "ขนาดลม",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "ซิงค์",
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -395,7 +393,9 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "จัดตำแหน่ง ADIRS ทันที",
       "AutoBrightness": "เปิด/ปิด การปรับแสงอัตโนมัติ",
       "Brightness": "ปรับความสว่างของ flyPad",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "เสร็จสิ้นการขึ้นเครื่องทันที",
       "OnScreenKeyboard": "เปิด/ปิดแป้นพิมพ์บนหน้าจอ",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +569,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "เกี่ยวกับ"
@@ -631,6 +631,7 @@
     "Real": "จริง",
     "Realism": {
       "AdirsAlignTime": "ADIRS Align Time",
+      "AutoStepClimb": "Automatic Step Climb",
       "AutofillChecklists": "Checklists ป้อนอัตโนมัติ",
       "BoardingTime": "เวลาขึ้นเครื่อง",
       "DmcSelfTestTime": "เวลา DMC Self Test",
@@ -650,11 +651,10 @@
       "Active": "ใช้งานอยู่",
       "Auto": "อัตโนมัติ",
       "Both": "ซิงโครไนซ์",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibrate",
-      "Captain": "กัปตัน",
-      "CockpitSeatUsedToControl": "ที่นั่งนักบินที่ใช้ในการควบคุม",
       "ConesEnabled": "กรวยนิรภัย",
-      "Copilot": "นักบินผู้ช่วย",
       "DefaultBarometerUnit": "หน่วย Barometer เริ่มต้น",
       "DynamicRegistrationDecal": "ทะเบียนเครื่องบินแบบไดนามิก",
       "EnableSimBridge": "เปิดใช้งานการเชื่อมต่อ SimBridge (ปิดการทำงานหลังจาก 5 นาทีโดยอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
@@ -666,6 +666,7 @@
       "Left": "Left",
       "LoadOnly": "โหลดเท่านั้น",
       "None": "ไม่มี",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "ปิด",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -696,6 +697,7 @@
         "SettingTitle": "ลิงก์บัญชี Navigraph",
         "SubscriptionStatus": {
           "None": "ไม่มี",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -734,6 +736,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "การตั้งค่า",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "ไม่สมจริง",
     "flyPad": {
       "AutoBrightness": "ปรับความสว่างอัตโนมัติ",
@@ -742,7 +747,6 @@
       "Blue": "ฟ้า",
       "Brightness": "ความสว่าง",
       "Dark": "มืด",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "ภาษา",
       "Light": "สว่าง",
       "Local": "ท้องถิ่น",
@@ -759,8 +763,6 @@
       "UtcAndLocal": "UTC และท้องถิ่น"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "เม.ย.",
     "Aug": "ส.ค.",

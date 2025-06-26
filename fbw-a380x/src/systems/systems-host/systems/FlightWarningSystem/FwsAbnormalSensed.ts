@@ -2,20 +2,22 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  AbnormalProcedure,
-  EcamAbnormalSensedProcedures,
-  isChecklistAction,
-} from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { EcamAbnormalProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
+  SimVarValueType,
   Subject,
   Subscribable,
   SubscribableMapEventType,
   SubscribableMapFunctions,
+  Subscription,
 } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
-import { FwsEwdAbnormalSensedEntry, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import {
+  ProcedureLinesGenerator,
+  ProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
+import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 export interface EwdAbnormalItem {
@@ -38,9 +40,11 @@ export interface EwdAbnormalItem {
   sysPage: SdPages;
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
-  /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for ALL PHASES */
+  /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for ALL PHASES.
+   * Ideally they're not triggered from faults but rather taken from the system's health status */
   inopSysAllPhases?: () => string[];
-  /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for APPR&LDG */
+  /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for APPR&LDG.
+   * Ideally they're not triggered from faults but rather taken from the system's health status */
   inopSysApprLdg?: () => string[];
   /** Optional for now: Message IDs of INFO to be displayed on STS page */
   info?: () => string[];
@@ -55,172 +59,201 @@ export interface EwdAbnormalItem {
 }
 
 export interface EwdAbnormalDict {
-  [key: keyof typeof EcamAbnormalSensedProcedures]: EwdAbnormalItem;
+  [key: keyof typeof EcamAbnormalProcedures]: EwdAbnormalItem;
 }
+
+/**
+ * Sorts abnormal procedures by decreasing priority, for display on the EWD. Show secondary failures last
+ * @param idA first procedure ID
+ * @param idB second procedure ID
+ * @returns comparison result, i.e. relative priority of procedures A and B
+ */
 
 export class FwsAbnormalSensed {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
-  public readonly showAbnormalSensed = Subject.create(false);
+  private subs: Subscription[] = [];
+
+  public readonly abnormalShown = Subject.create(false);
+
+  public readonly showAbnormalSensedRequested = Subject.create(false);
+
+  /** ID of active abnormal procedure */
+  public readonly activeProcedureId = Subject.create<string | null>(null);
 
   /** Marked with cyan box */
-  public readonly selectedLine = Subject.create(1);
+  public readonly selectedItemIndex = Subject.create(1);
 
   /** For overflowing checklists */
   public readonly showFromLine = Subject.create(0);
 
-  constructor(private fws: FwsCore) {
-    this.showAbnormalSensed.sub((v) => this.pub.pub('fws_show_abn_sensed', v, true), true);
-    this.fws.activeAbnormalSensedList.sub(
-      (
-        map: ReadonlyMap<string, FwsEwdAbnormalSensedEntry>,
-        _type: SubscribableMapEventType,
-        _key: string,
-        _value: FwsEwdAbnormalSensedEntry,
-      ) => {
-        const flattened: FwsEwdAbnormalSensedEntry[] = [];
-        map.forEach((val, key) =>
-          flattened.push({
-            id: key,
-            itemsChecked: val.itemsChecked,
-            itemsActive: val.itemsActive,
-            itemsToShow: val.itemsToShow,
-          }),
-        );
-        this.pub.pub('fws_abn_sensed_procedures', flattened, true);
-        SimVar.SetSimVarValue('L:A32NX_EWD_DEBUG_ABNORMAL', 'string', flattened[0] ? flattened[0].id : '');
+  private procedures: ProcedureLinesGenerator[] = [];
 
-        console.log('%c------- ABN SENSED PROCEDURES -------', 'font-family:monospace; font-weight: bold');
-        // Debug output for ABN sensed procedures
-        this.fws.activeAbnormalSensedList.get().forEach((val, key) => {
-          const proc = EcamAbnormalSensedProcedures[key] as AbnormalProcedure;
-          console.log('%c' + proc.title, 'font-family:monospace; font-weight: bold');
-          proc.items.forEach((it, itemIdx) => {
-            if (val.itemsToShow[itemIdx]) {
-              const cpl = isChecklistAction(it)
-                ? val.itemsChecked[itemIdx]
-                  ? it.labelNotCompleted
-                  : ` .......... ${it.labelNotCompleted}`
-                : '';
-              console.log(
-                `%c${'  '.repeat(it.level ?? 0)} ${val.itemsChecked[itemIdx] ? 'X' : 'O'} ${it.name} ${cpl} ${it.style ? `(${it.style})` : ''}`,
-                'font-family:monospace; font-weight: bold',
-              );
+  private activeProcedure: ProcedureLinesGenerator;
+
+  static compareAbnormalProceduresByPriority(
+    idA: string,
+    idB: string,
+    failureLevelA: number,
+    failureLevelB: number,
+    nonSensedA: boolean,
+    nonSensedB: boolean,
+  ) {
+    // 9998: Secondary failures at the end; non-sensed procedures at the top
+    const bPriority = idB.substring(0, 4) === '9998' ? 0 : nonSensedB ? 4 : failureLevelB;
+    const aPriority = idA.substring(0, 4) === '9998' ? 0 : nonSensedA ? 4 : failureLevelA;
+
+    // Sort desceding, from highest failure level to lowest
+    return bPriority - aPriority;
+  }
+
+  constructor(private fws: FwsCore) {
+    this.subs.push(
+      this.fws.presentedAbnormalProceduresList.sub(
+        (
+          map: ReadonlyMap<string, ChecklistState>,
+          type: SubscribableMapEventType,
+          key: string,
+          value: ChecklistState,
+        ) => {
+          const flattened: ChecklistState[] = [];
+          map.forEach((val, key) =>
+            flattened.push({
+              id: key,
+              procedureActivated: val.procedureActivated,
+              procedureCompleted: val.procedureCompleted,
+              itemsChecked: val.itemsChecked,
+              itemsActive: val.itemsActive,
+              itemsToShow: val.itemsToShow,
+            }),
+          );
+          // Sort by decreasing importance
+          const sortedAbnormalsFlattened = flattened.sort((a, b) => {
+            return FwsAbnormalSensed.compareAbnormalProceduresByPriority(
+              a.id,
+              b.id,
+              this.fws.ewdAbnormal[a.id].failure,
+              this.fws.ewdAbnormal[b.id].failure,
+              !EcamAbnormalProcedures[a.id].sensed,
+              !EcamAbnormalProcedures[b.id].sensed,
+            );
+          });
+
+          if (type === SubscribableMapEventType.Added) {
+            const procGen = new ProcedureLinesGenerator(
+              value.id,
+              this.activeProcedureId.map((id) => value.id === id),
+              ProcedureType.Abnormal,
+              value,
+              (newState) => this.fws.presentedAbnormalProceduresList.setValue(value.id, newState),
+              this.clearActiveProcedure.bind(this),
+              () => {},
+              this.fws.aircraftOnGround.get() ? undefined : EcamAbnormalProcedures[value.id].recommendation,
+            );
+            this.procedures.push(procGen);
+          } else if (type === SubscribableMapEventType.Changed) {
+            const procGenIndex = this.procedures.findIndex((v) => v.procedureId === key);
+            if (procGenIndex !== -1) {
+              this.procedures[procGenIndex].checklistState = value;
+            }
+          } else if (type === SubscribableMapEventType.Deleted) {
+            const procGenIndex = this.procedures.findIndex((v) => v.procedureId === key);
+            this.procedures.splice(procGenIndex, 1);
+          }
+
+          sortedAbnormalsFlattened.forEach((val) => {
+            if (val.id === this.activeProcedureId.get()) {
+              const procGenIndex = this.procedures.findIndex((v) => v.procedureId === val.id);
+              if (procGenIndex !== -1) {
+                this.activeProcedure = this.procedures[procGenIndex];
+                this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
+              }
             }
           });
-        });
-        console.log('%c------- END -------', 'font-family:monospace; font-weight: bold');
-      },
-      true,
+
+          this.activeProcedureId.set(sortedAbnormalsFlattened.length > 0 ? sortedAbnormalsFlattened[0].id : null);
+          this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
+        },
+      ),
     );
-    this.selectedLine.sub((line) => this.pub.pub('fws_active_line', line, true), true);
-    this.showFromLine.sub((line) => this.pub.pub('fws_show_from_line', line, true), true);
+
+    this.subs.push(
+      this.abnormalShown.sub((shown) => {
+        if (shown) {
+          this.activeProcedure.selectFirst();
+        }
+      }),
+    );
+
+    this.subs.push(
+      this.activeProcedureId.sub((id) => {
+        if (id) {
+          this.procedures.forEach((val) => {
+            if (val.procedureId === id) {
+              this.activeProcedure = val;
+              this.activeProcedure.selectedItemIndex.pipe(this.selectedItemIndex);
+            }
+          });
+          this.activeProcedure.selectFirst();
+        }
+      }),
+    );
+
+    this.subs.push(this.selectedItemIndex.sub(() => this.scrollToSelectedLine()));
+
+    this.publishInitialState();
+  }
+
+  publishInitialState() {
+    this.pub.pub('fws_abn_sensed_procedures', [], true);
   }
 
   getAbnormalProceduresKeysSorted() {
-    return Object.keys(EcamAbnormalSensedProcedures).map((v) => v);
+    return Array.from(this.fws.presentedAbnormalProceduresList.get().keys());
   }
 
-  moveUp() {
-    /* const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
-    const selectable = EcamNormalProcedures[this.checklistId.get()].items
-      .map((item, index) => (item.sensed === false ? index : null))
-      .filter((v) => v !== null);
-
-    if (this.selectedLine.get() == numItems + 1) {
-      // RESET
-      this.selectedLine.set(this.selectedLine.get() - 1);
-    } else {
-      if (selectable.length === 0) {
-        return;
+  public clearActiveProcedure(newState?: ChecklistState) {
+    const numFailures = this.fws.presentedFailures.length;
+    if (numFailures === 1) {
+      if (!this.fws.ecamStsNormal.get()) {
+        // Call STS page on SD
+        SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
       }
-      const previousElement = () => {
-        for (let i = selectable.length - 1; i >= 0; i--) {
-          if (selectable[i] < this.selectedLine.get()) {
-            return selectable[i];
-          }
-        }
-        return -1;
-      };
-      const pEl = previousElement();
 
-      if (pEl >= 0) {
-        this.selectedLine.set(Math.max(pEl, 0));
-      }
+      // If there are deferred procedures, open ECL menu
+      this.fws.normalChecklists.openIfDeferredApplicable();
     }
-    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));*/
-  }
+    this.fws.presentedFailures.splice(this.fws.presentedFailures.indexOf(this.activeProcedureId.get()), 1);
 
-  moveDown() {
-    /* if (this.checklistId.get() === 0) {
-      this.selectedLine.set(
-        Math.min(this.selectedLine.get() + 1, this.getAbnormalProceduresKeysSorted().length - 1, WD_NUM_LINES - 1),
-      );
-    } else {
-      const numItems = EcamNormalProcedures[this.checklistId.get()].items.length;
-      const selectable = EcamNormalProcedures[this.checklistId.get()].items
-        .map((item, index) => (item.sensed === false ? index : null))
-        .filter((v) => v !== null);
-      if (this.selectedLine.get() >= selectable[selectable.length - 1] || selectable.length == 0) {
-        // Last element before C/L complete
-        this.selectedLine.set(Math.max(numItems, Math.min(this.selectedLine.get() + 1, numItems + 1)));
-      } else {
-        this.selectedLine.set(
-          Math.min(
-            selectable.find((v) => v > this.selectedLine.get()),
-            numItems - 1,
-          ),
-        );
-      }
+    // Delete procedure completely if not-sensed procedure is de-activated
+    if (
+      newState?.procedureActivated === false &&
+      EcamAbnormalProcedures[this.activeProcedureId.get()]?.sensed === false
+    ) {
+      this.fws.activeAbnormalNonSensedKeys.delete(parseInt(this.activeProcedureId.get()));
+      this.fws.allCurrentFailures.splice(this.fws.allCurrentFailures.indexOf(this.activeProcedureId.get()), 1);
     }
-    this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));*/
+
+    this.fws.recallFailures = this.fws.allCurrentFailures.filter((item) => !this.fws.presentedFailures.includes(item));
   }
 
-  checkCurrentItem() {
-    /* const cl = this.checklistState.getValue(this.checklistId.get());
-    const clState: ChecklistState = {
-      id: cl.id,
-      checklistCompleted: cl.checklistCompleted,
-      itemsCompleted: [...cl.itemsCompleted],
-    };
-    if (this.selectedLine.get() < clState.itemsCompleted.length) {
-      clState.itemsCompleted[this.selectedLine.get()] = !clState.itemsCompleted[this.selectedLine.get()];
-      this.checklistState.setValue(this.checklistId.get(), clState);
-    } else if (this.selectedLine.get() === clState.itemsCompleted.length) {
-      // C/L complete
-      clState.checklistCompleted = true;
-      const proc = EcamNormalProcedures[this.checklistId.get()];
-      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : true));
-      this.checklistState.setValue(this.checklistId.get(), clState);
-      this.showChecklist.set(false);
-    } else if (this.selectedLine.get() === clState.itemsCompleted.length + 1) {
-      // RESET
-      clState.checklistCompleted = false;
-      const proc = EcamNormalProcedures[this.checklistId.get()];
-      clState.itemsCompleted = clState.itemsCompleted.map((val, index) => (proc.items[index].sensed ? val : false));
+  private scrollToSelectedLine() {
+    this.showFromLine.set(Math.max(0, this.activeProcedure.numLinesUntilSelected() - WD_NUM_LINES + 2));
+  }
 
-      // Reset all following checklists
-      const fromId = this.getAbnormalProceduresKeysSorted().findIndex((v) => v === this.checklistId.get());
-      const ids = this.getAbnormalProceduresKeysSorted();
+  private checkIfStsAutoDisplay() {
+    const approachCondition =
+      this.fws.presentedAbnormalProceduresList.get().size === 0 &&
+      this.fws.flightPhase.get() === 8 &&
+      this.fws.adrPressureAltitude.get() < 20_000 &&
+      !this.fws.ecamStsNormal.get();
+    const triggerAutoDisplay =
+      this.fws.approachAutoDisplayQnhSetPulseNode.read() || this.fws.approachAutoDisplaySlatsExtendedPulseNode.read();
 
-      if (fromId !== -1) {
-        for (let id = fromId + 1; id < ids.length; id++) {
-          const idFollowing = ids[id];
-          const clFollowing = this.checklistState.getValue(idFollowing);
-          const procFollowing = EcamNormalProcedures[idFollowing];
-          const clStateFollowing: ChecklistState = {
-            id: idFollowing,
-            checklistCompleted: false,
-            itemsCompleted: [...clFollowing.itemsCompleted].map((val, index) =>
-              procFollowing.items[index].sensed ? val : false,
-            ),
-          };
-          this.checklistState.setValue(idFollowing, clStateFollowing);
-        }
-      }
-      this.checklistState.setValue(this.checklistId.get(), clState);
-      this.selectFirst();
-    }*/
+    if (approachCondition && triggerAutoDisplay) {
+      // Call STS page on SD
+      SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
+    }
   }
 
   /**
@@ -228,45 +261,56 @@ export class FwsAbnormalSensed {
    * This block deals mostly with the pilot interaction through the ECAM CP and transmission to the CDS/EWD
    */
   update() {
-    if (this.fws.activeAbnormalSensedList.get().size > 0) {
-      this.showAbnormalSensed.set(true);
-      this.fws.normalChecklists.showChecklist.set(false);
-
-      // Update selected line: CLEAR of first procedure
-      const firstKey = this.fws.activeAbnormalSensedList.get().keys().next().value;
-      const numItems = this.fws.activeAbnormalSensedList
-        .getValue(firstKey)
-        .itemsToShow.filter((v) => v === true).length;
-      this.selectedLine.set(numItems + 1);
+    if (this.fws.presentedAbnormalProceduresList.get().size > 0) {
+      this.showAbnormalSensedRequested.set(true);
     } else {
-      this.showAbnormalSensed.set(false);
+      this.showAbnormalSensedRequested.set(false);
     }
 
-    /*if (this.fws.clDownPulseNode.read()) {
-      if (!this.showAbnormalSensed.get()) {
-        return;
-      }
-      this.moveDown();
+    this.checkIfStsAutoDisplay();
+
+    if (!this.abnormalShown.get()) {
+      return;
+    }
+
+    if (this.fws.clDownPulseNode.read()) {
+      this.activeProcedure.moveDown(true);
     }
 
     if (this.fws.clUpPulseNode.read()) {
-      if (!this.showAbnormalSensed.get()) {
-        return;
-      }
-      this.moveUp();
-    }*/
+      this.activeProcedure.moveUp();
+    }
 
     if (this.fws.clCheckPulseNode.read()) {
-      if (!this.showAbnormalSensed.get()) {
-        return;
+      this.activeProcedure.checkSelected();
+    }
+
+    // Auto-move-down if currently marked item was sensed as completed
+    const ids = this.getAbnormalProceduresKeysSorted();
+
+    for (let id = 0; id < ids.length; id++) {
+      const procId = ids[id];
+
+      if (!this.fws.ewdAbnormal[procId] || !this.fws.abnormalUpdatedItems.has(procId)) {
+        continue;
       }
 
-      // Only CLEAR implemented atm
-      this.fws.presentedFailures.splice(0, 1);
-      this.fws.recallFailures = this.fws.allCurrentFailures.filter(
-        (item) => !this.fws.presentedFailures.includes(item),
-      );
+      if (procId === this.activeProcedureId.get()) {
+        const changedEntries = this.fws.abnormalUpdatedItems.get(procId);
+        const sii = this.activeProcedure.selectedItemIndex.get();
+        if (changedEntries && changedEntries.includes(sii) && this.activeProcedure.checklistState.itemsChecked[sii]) {
+          this.activeProcedure.moveDown(false);
+        }
+      }
     }
+  }
+
+  reset() {
+    this.showAbnormalSensedRequested.set(false);
+  }
+
+  destroy() {
+    this.subs.forEach((s) => s.destroy());
   }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
@@ -461,8 +505,8 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.allCabinFansFault,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [],
-      whichItemsChecked: () => [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [this.fws.flowSelectorKnob.get() === 3],
       failure: 2,
       sysPage: SdPages.Cond,
       info: () => ['210200001'],
@@ -685,6 +729,61 @@ export class FwsAbnormalSensed {
       info: () => ['210200003'],
       inopSysAllPhases: () => ['210300023'],
     },
+    211800051: {
+      // APU BLEED FAULT due to outside envelope
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.apuBleedPbOnOver22500ft,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [false, false, false, false, true, this.fws.adrPressureAltitude.get() > 22_500],
+      whichItemsChecked: () => [false, false, false, false, !this.fws.apuBleedPbOn.get(), false],
+      failure: 2,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300006'],
+    },
+    211800052: {
+      // ENG 1 BLEED OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.eng1BleedAbnormalOff,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300002'],
+    },
+    211800053: {
+      // ENG 2 BLEED OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.eng2BleedAbnormalOff,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300003'],
+    },
+    211800054: {
+      // ENG 3 BLEED OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.eng3BleedAbnormalOff,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300004'],
+    },
+    211800055: {
+      // ENG 4 BLEED OFF
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.eng4BleedAbnormalOff,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Bleed,
+      inopSysAllPhases: () => ['260300005'],
+    },
     211800042: {
       // TEMP CTL REDUNDANCY LOST
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
@@ -878,7 +977,7 @@ export class FwsAbnormalSensed {
       ],
       whichItemsChecked: () => [
         false, // Crew oxy masks
-        false, // Crew advice
+        false, // Crew advise
         false, // Descent initiate
         false, // Emer descent
         false, // Emer descent announce
@@ -1456,7 +1555,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 10],
       simVarIsActive: this.fws.autoThrustOffInvoluntary,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true],
+      whichItemsToShow: () => [false],
       whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
       failure: 2,
       sysPage: -1,
@@ -1508,7 +1607,7 @@ export class FwsAbnormalSensed {
         this.fws.fmcAFault.get() && this.fws.fmcBFault.get(),
         this.fws.fmcAFault.get() && !this.fws.fmcBFault.get() && !this.fws.fmcCFault.get(),
         true,
-      ], // simplified, update when improved FMS swtchg logic
+      ],
       whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 0],
       failure: 2,
       sysPage: -1,
@@ -1524,7 +1623,7 @@ export class FwsAbnormalSensed {
         this.fws.fmcBFault.get() && this.fws.fmcCFault.get(),
         this.fws.fmcBFault.get() && !this.fws.fmcAFault.get() && !this.fws.fmcCFault.get(),
         true,
-      ], // simplified, update when improved FMS swtchg logic
+      ],
       whichItemsChecked: () => [true, true, true, this.fws.fmsSwitchingKnob.get() === 2],
       failure: 2,
       sysPage: -1,
@@ -1535,13 +1634,13 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 6, 7, 10],
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.fms1Fault, this.fws.fms2Fault),
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true, true, true, true, true], // simplified, update when improved FMS swtchg logic
+      whichItemsToShow: () => [true, true, true, true, true],
       whichItemsChecked: () => [
         true,
         this.fws.fmsSwitchingKnob.get() === 1,
         false,
         false,
-        !this.fws.gpwsFlapModeOff.get(),
+        this.fws.gpwsFlapModeOff.get(),
       ],
       failure: 2,
       sysPage: -1,
@@ -1550,8 +1649,28 @@ export class FwsAbnormalSensed {
     },
     221800007: {
       // TO SPEEDS NOT INSERTED
-      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
       simVarIsActive: this.fws.toSpeedsNotInsertedWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+    },
+    221800008: {
+      // TO SPEEDS TOO LOW
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.toSpeedsTooLowWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: -1,
+    },
+    221800009: {
+      // TO V1/VR/V2 DISAGREE
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.toV2VRV2DisagreeWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -1836,7 +1955,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng1.get(),
-        false,
+        this.fws.parkBrake.get(),
         this.fws.parkBrake.get(),
         false,
         false,
@@ -1887,7 +2006,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng2.get(),
-        false,
+        this.fws.parkBrake.get(),
         this.fws.parkBrake.get(),
         false,
         false,
@@ -1938,7 +2057,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng3.get(),
-        false,
+        this.fws.parkBrake.get(),
         this.fws.parkBrake.get(),
         false,
         false,
@@ -1989,7 +2108,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng4.get(),
-        false,
+        this.fws.parkBrake.get(),
         this.fws.parkBrake.get(),
         false,
         false,
@@ -2294,7 +2413,153 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Fctl,
       inopSysAllPhases: () => [],
     },
+    271800008: {
+      // ALTN LAW
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.altnLawCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [this.fws.altn1ALawCondition.get()],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: SdPages.None,
+      limitationsAllPhases: () => [this.fws.altn1ALawCondition.get() ? '270400002' : ''],
+      limitationsPfd: () => [this.fws.altn1ALawCondition.get() ? '270400002' : ''],
+      inopSysAllPhases: () => [
+        '340300013',
+        this.fws.altn2LawConfirmNodeOutput.get() ? '220300007' : '',
+        this.fws.altn2LawConfirmNodeOutput.get() ? '220300024' : '',
+      ],
+      inopSysApprLdg: () => ['220300026'],
+      info: () => ['340200002', '220200010'],
+    },
+    271800009: {
+      // DIRECT LAW
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.directLawCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, this.fws.allPrimFailed.get(), this.fws.allPrimAndSecFailed.get()],
+      whichItemsChecked: () => [false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.None,
+      inopSysAllPhases: () => ['290100008', '220300007', '220300024'],
+      inopSysApprLdg: () => ['220300026'],
+      limitationsAllPhases: () => ['240400002', '240400004'],
+      limitationsPfd: () => ['240400002', '240400004'],
+      info: () => ['340200004', this.fws.allPrimAndSecFailed.get() ? '270200002' : '', '220200010'],
+    },
+    271800058: {
+      // SEC 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.sec1FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [this.fws.flightPhase1112MoreThanOneMin.get(), true, true, true, true],
+      whichItemsChecked: () => [
+        true,
+        this.fws.sec1OffThenOnMemoryNode.read(),
+        this.fws.sec1OffThenOnMemoryNode.read(),
+        !SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysAllPhases: () => [
+        '270300001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get()
+          ? '290100011'
+          : '290100001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec3Healthy.get() ? '270300004' : null,
+        '320300007',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220300026' : null,
+      ],
+      info: () => [
+        '270200001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220200010' : null,
+      ],
+      redundLoss: () => ['270300005'],
+    },
+    271800059: {
+      // SEC 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.sec2FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [this.fws.flightPhase1112MoreThanOneMin.get(), true, true, true, false, true],
+      whichItemsChecked: () => [
+        true,
+        this.fws.sec2OffThenOnMemoryNode.read(),
+        this.fws.sec2OffThenOnMemoryNode.read(),
+        !SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        true,
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysAllPhases: () => [
+        '270300001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get()
+          ? '290100011'
+          : '290100001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec3Healthy.get() ? '270300004' : null,
+        '320300007',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220300026' : null,
+      ],
+      info: () => [
+        '270200001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220200010' : null,
+      ],
+      redundLoss: () => [],
+    },
+    271800060: {
+      // SEC 3 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.sec3FaultCondition,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [this.fws.flightPhase1112MoreThanOneMin.get(), true, true, true, true],
+      whichItemsChecked: () => [
+        true,
+        this.fws.sec3OffThenOnMemoryNode.read(),
+        this.fws.sec3OffThenOnMemoryNode.read(),
+        !SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
+        true,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+      limitationsApprLdg: () => ['800400002'],
+      inopSysAllPhases: () => [
+        '270300001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get()
+          ? '290100011'
+          : '290100001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec3Healthy.get() ? '270300004' : null,
+        '320300007',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220300026' : null,
+      ],
+      info: () => [
+        '270200001',
+        !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get() ? '220200010' : null,
+      ],
+      redundLoss: () => ['270300006'],
+    },
 
+    271800062: {
+      // SINGLE RUDDER FAULT
+      flightPhaseInhib: [4, 5, 6],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.or(),
+        this.fws.lowerRudderFault,
+        this.fws.upperRudderFault,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, false],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+      limitationsAllPhases: () => ['800400001'],
+      inopSysAllPhases: () => ['290100008', this.fws.lowerRudderFault.get() ? '270300009' : '270300008'],
+      inopSysApprLdg: () => ['220300026'],
+      info: () => ['340200002', '220200011', '220200010'],
+    },
     272800001: {
       // SLAT NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
@@ -2317,6 +2582,17 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [],
       failure: 3,
       sysPage: SdPages.Fctl,
+      inopSysAllPhases: () => [],
+    },
+    272800003: {
+      // FLAPS LEVER NOT ZERO
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.flapsLeverNotZero,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      sysPage: SdPages.None,
       inopSysAllPhases: () => [],
     },
     272800028: {
@@ -2489,7 +2765,7 @@ export class FwsAbnormalSensed {
     },
     281800076: {
       // NO ZFW OR ZFWCG DATA
-      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 11, 12],
       simVarIsActive: this.fws.fmsZfwOrZfwCgNotSet,
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [false],
@@ -2768,9 +3044,11 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, false, false, false, false, false, false, false],
       failure: 2,
       limitationsPfd: () => ['320400001'],
-      limitationsAllPhases: () => [!this.fws.prim3Healthy ? '800400001' : ''],
+      limitationsAllPhases: () => [!this.fws.prim3Healthy ? '800400001' : null],
       limitationsApprLdg: () => ['320400001', '290400001', '290400002', '320400002', '320400003', '800400002'],
-      info: () => ['800200001', '800200002', '220200005'],
+      info: () => ['800200001', '270200001', '220200005'],
+      inopSysAllPhases: () => ['290100001', '320300023', '290300021'],
+      inopSysApprLdg: () => ['290100003', '290100006', '320300007', '320300020'],
       notActiveWhenFaults: ['290800039'],
       sysPage: SdPages.Hyd,
     },
@@ -2787,9 +3065,11 @@ export class FwsAbnormalSensed {
       ],
       whichItemsChecked: () => [false, false, false, false, false],
       failure: 2,
-      limitationsAllPhases: () => [!this.fws.prim2Healthy ? '800400001' : ''],
+      limitationsAllPhases: () => [!this.fws.prim2Healthy ? '800400001' : null],
       limitationsApprLdg: () => ['800400002'],
       info: () => ['800400003', '800200004', '800200004', '220200005'],
+      inopSysAllPhases: () => ['290100001', '320300023', '290300022'],
+      inopSysApprLdg: () => ['290100004', '320300007', '320300024'],
       notActiveWhenFaults: ['290800039'],
       sysPage: SdPages.Hyd,
     },
@@ -2844,6 +3124,17 @@ export class FwsAbnormalSensed {
         '800400003',
       ],
       info: () => ['340200002', '800200001', '320200001', '800200004', '800200005'],
+      inopSysAllPhases: () => [
+        '290100007',
+        '290100008',
+        '290100009',
+        '290100010',
+        '290100011',
+        '320300013',
+        '290300021',
+        '290300022',
+      ],
+      inopSysApprLdg: () => ['290100012', '290100006', '320300007', '320300008', '320300014', '320300020', '220300026'],
       notActiveWhenFaults: [],
       sysPage: SdPages.Hyd,
     },
@@ -2856,6 +3147,57 @@ export class FwsAbnormalSensed {
       notActiveWhenFaults: [],
       failure: -1,
       sysPage: -1,
+    },
+    // 31 Display/Recording
+    314800006: {
+      // AUDIO FUNCTION LOST
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
+      simVarIsActive: this.fws.audioFunctionLost,
+      whichItemsToShow: () => [true, true, true, true],
+      whichItemsChecked: () => [true, true, true, true],
+      notActiveWhenFaults: ['314800004'],
+      failure: -1,
+      sysPage: -1,
+      inopSysApprLdg: () => ['220300026', '320300007', '320300022'],
+      info: () => ['220200010'],
+    },
+    314800007: {
+      // ECP FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.fwsEcpFailed,
+      whichItemsToShow: () => [true, true, true],
+      whichItemsChecked: () => [true, true, true],
+      notActiveWhenFaults: [],
+      failure: 1,
+      sysPage: -1,
+    },
+    314800008: {
+      // FWS 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.fws1Failed,
+        this.fws.dcESSBusPowered,
+      ),
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: ['314800002', '314800003', '314800004'],
+      failure: 1,
+      sysPage: -1,
+      info: () => ['220200005'],
+      redundLoss: () => ['310300002'],
+    },
+    314800009: {
+      // FWS 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.fws2Failed, this.fws.dc2BusPowered),
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      notActiveWhenFaults: ['314800002', '314800003', '314800004'],
+      failure: 1,
+      sysPage: -1,
+      info: () => ['220200005'],
+      redundLoss: () => ['310300003'],
     },
     // 32 Landing Gear & Brakes
     320800008: {
@@ -2872,7 +3214,7 @@ export class FwsAbnormalSensed {
       info: () => [
         '320200002',
         '320200003',
-        this.fws.oneEngineRunning.get() ? '800200003' : '',
+        this.fws.oneEngineRunning.get() ? '800200003' : null,
         '800200005',
         '220200005',
       ],
@@ -3497,6 +3839,210 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
+    },
+    341800020: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: this.fws.terrSys1Failed,
+      notActiveWhenFaults: ['341800022'],
+      whichItemsToShow: () => [
+        !this.fws.terrSys2Failed.get(),
+        this.fws.terrSys2Failed.get(),
+        this.fws.terrSys2Failed.get(),
+      ],
+      whichItemsChecked: () => [this.fws.tawsWxrSelected.get() === 2, false, false],
+      inopSysAllPhases: () => ['340300039'],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800021: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: this.fws.terrSys2Failed,
+      notActiveWhenFaults: ['341800022'],
+      whichItemsToShow: () => [
+        !this.fws.terrSys1Failed.get(),
+        this.fws.terrSys1Failed.get(),
+        this.fws.terrSys1Failed.get(),
+      ],
+      whichItemsChecked: () => [this.fws.tawsWxrSelected.get() === 1, false, false],
+      inopSysAllPhases: () => ['340300040'],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800022: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.terrSys1Failed,
+        this.fws.terrSys2Failed,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [this.fws.gpwsTerrOff.get()],
+      inopSysAllPhases: () => ['340300044'],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800023: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: this.fws.taws1Failed,
+      notActiveWhenFaults: ['341800025'],
+      whichItemsToShow: () => [
+        this.fws.tawsWxrSelected.get() === 1 && !this.fws.taws2Failed.get(),
+        this.fws.taws2Failed.get(),
+      ],
+      whichItemsChecked: () => [this.fws.tawsWxrSelected.get() === 2, false],
+      inopSysAllPhases: () => ['340300046'],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800024: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: this.fws.taws2Failed,
+      notActiveWhenFaults: ['341800025'],
+      whichItemsToShow: () => [
+        this.fws.tawsWxrSelected.get() === 2 && !this.fws.taws1Failed.get(),
+        this.fws.taws1Failed.get(),
+      ],
+      whichItemsChecked: () => [this.fws.tawsWxrSelected.get() === 1, false],
+      inopSysAllPhases: () => ['340300047'],
+      failure: 2,
+      sysPage: -1,
+    },
+    341800025: {
+      flightPhaseInhib: [3, 4, 5, 6, 7, 10],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.taws1Failed, this.fws.taws2Failed),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [this.fws.gpwsTerrOff.get(), this.fws.gpwsSysOff.get()],
+      inopSysAllPhases: () => ['340300048'],
+      failure: 2,
+      sysPage: -1,
+    },
+    // SECONDARY FAILURES
+    999800001: {
+      // *F/CTL
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.or(),
+        this.fws.greenAbnormLoPressure,
+        this.fws.yellowAbnormLoPressure,
+        this.fws.greenYellowAbnormLoPressure,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    999800002: {
+      // *FUEL
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.or()),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Fuel,
+    },
+    999800003: {
+      // *WHEEL
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.or(),
+        this.fws.greenAbnormLoPressure,
+        this.fws.yellowAbnormLoPressure,
+        this.fws.greenYellowAbnormLoPressure,
+      ),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Wheel,
+    },
+    999800004: {
+      // *ELEC
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.or()),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.ElecAc,
+    },
+    999800005: {
+      // *ELEC
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.or()),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.ElecDc,
+    },
+    999800006: {
+      // *BLEED
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.or()),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Bleed,
+    },
+    999800007: {
+      // *HYD
+      flightPhaseInhib: [],
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.or()),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Hyd,
+    },
+  };
+
+  public ewdDeferredProcs: EwdAbnormalDict = {
+    210700001: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [this.fws.pack1On.get(), this.fws.pack2On.get()],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+    210700002: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [this.fws.ramAirOn.get(), this.fws.cabinAirExtractOn.get()],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+    221700001: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [this.fws.manCabinAltMode.get(), false],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+    320700001: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true],
+      whichItemsChecked: () => [
+        false,
+        SimVar.GetSimVarValue('L:A32NX_GEAR_LEVER_POSITION_REQUEST', SimVarValueType.Number) === 0,
+        SimVar.GetSimVarValue('L:A32NX_LG_GRVTY_SWITCH_POS', SimVarValueType.Number) === 2,
+        this.fws.isAllGearDownlocked,
+        SimVar.GetSimVarValue('L:A32NX_GEAR_LEVER_POSITION_REQUEST', SimVarValueType.Number) === 1,
+      ],
+      failure: 0,
+      sysPage: SdPages.None,
     },
   };
 }
