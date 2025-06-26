@@ -173,6 +173,7 @@
 1. [A380X/SD] Add brake temperature color change to amber when brakes are hot - @heclak (Heclak)
 1. [A380X/FCU] Fix display of values on FCU during light test - @heclak (Heclak)
 1. [A380X/FMS] Fix VLS computation error for CONF 1, might have lead to FMS crashes during climb out - @flogross89 (floridude)
+1. [A32NX/PFD] Fix Radio DH not displaying correctly when Baro DA is already entered - @MrJigs7 (MrJigs)
 1. [A380X/PFD] Fix PFD DU / ND DU brightness knobs - @MichelZ
 1. [A380X/FCU] Add correct QFE label using the baro preselect display - @heclak (Heclak)
 1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)
