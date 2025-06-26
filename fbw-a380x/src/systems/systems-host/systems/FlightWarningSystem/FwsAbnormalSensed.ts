@@ -2447,6 +2447,18 @@ export class FwsAbnormalSensed {
       limitationsPfd: () => ['240400002', '240400004'],
       info: () => ['340200004', this.fws.allPrimAndSecFailed.get() ? '270200002' : '', '220200010'],
     },
+    271800017: {
+      // GND SPLRs NOT ARMED
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
+      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      sysPage: SdPages.Fctl,
+      inopSysAllPhases: () => [],
+    },
     271800058: {
       // SEC 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
@@ -2560,6 +2572,30 @@ export class FwsAbnormalSensed {
       inopSysApprLdg: () => ['220300026'],
       info: () => ['340200002', '220200011', '220200010'],
     },
+    271800020: {
+      // SPEED BRAKES POS/LEVER DISAGREE
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
+      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      sysPage: SdPages.Fctl,
+      inopSysAllPhases: () => [],
+    },
+    271800021: {
+      // SPEED BRAKES STILL EXTENDED
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
+      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      sysPage: SdPages.Fctl,
+      inopSysAllPhases: () => [],
+    },
     272800001: {
       // SLAT NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
@@ -2632,6 +2668,30 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, false, false, false, false, false, false],
       failure: 3,
       sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
+    271800070: {
+      // LOAD ANALYSIS REQUIRED
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
+      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      sysPage: SdPages.Fctl,
+      inopSysAllPhases: () => [],
+    },
+    271800071: {
+      // TAIL STRIKE
+      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
+      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 3,
+      sysPage: SdPages.Fctl,
       inopSysAllPhases: () => [],
     },
     // 29 FUEL
