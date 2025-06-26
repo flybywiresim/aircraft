@@ -55,6 +55,42 @@ struct TrimTankMapping {
     trim_tank_targets: TrimTankTables,
 }
 
+#[derive(Deserialize)]
+struct WingTankStages {
+    a: f64,
+    b: f64,
+    c: f64,
+    d: f64,
+    e: f64,
+    f: f64,
+    g: f64,
+    h: f64,
+}
+
+#[derive(Deserialize)]
+struct WingTankLimits {
+    feed_a: f64,
+    feed_c: f64,
+    outer_feed_e: f64,
+    inner_feed_e: f64,
+    outer_tank_b: f64,
+    outer_tank_h: f64,
+    inner_tank_d: f64,
+    inner_tank_g: f64,
+    mid_tank_f: f64,
+    outer_feed_tank_size: f64,
+    inner_feed_tank_size: f64,
+    outer_tank_tank_size: f64,
+    mid_tank_tank_size: f64,
+    inner_tank_tank_size: f64,
+}
+
+#[derive(Deserialize)]
+struct WingTankValues {
+    stages: WingTankStages,
+    limits: WingTankLimits,
+}
+
 pub struct RefuelPanelInput {
     total_desired_fuel_id: VariableIdentifier,
     total_desired_fuel_input: Mass,
@@ -228,9 +264,12 @@ impl SimulationElement for IntegratedRefuelPanel {
 }
 
 const TRIM_TANK_TOML: &str = include_str!("./trim_tank_targets.toml");
+const WING_TANK_TOML: &str = include_str!("./wing_tank_values.toml");
 pub struct RefuelApplication {
     refuel_driver: RefuelDriver,
     trim_tank_map: TrimTankMapping,
+    wing_tank_values: WingTankValues,
+    // TODO: Refactor to replace calculate_auto_refuel with LUT similar to trim tank .toml
 }
 impl RefuelApplication {
     pub fn new(_context: &mut InitContext, _powered_by: ElectricalBusType) -> Self {
@@ -238,6 +277,8 @@ impl RefuelApplication {
             refuel_driver: RefuelDriver::new(),
             trim_tank_map: toml::from_str(TRIM_TANK_TOML)
                 .expect("Failed to parse trim tank TOML file"),
+            wing_tank_values: toml::from_str(WING_TANK_TOML)
+                .expect("Failed to parse wing tank TOML file"),
         }
     }
 
@@ -351,24 +392,26 @@ impl RefuelApplication {
         Mass::default()
     }
 
+    // TODO: Refactor to replace calculate_auto_refuel with LUT similar to trim tank .toml
     pub fn calculate_auto_refuel(
         &mut self,
         total_desired_fuel: Mass,
         zero_fuel_weight: Mass,
         zero_fuel_weight_cg_percent_mac: f64,
     ) -> HashMap<A380FuelTankType, Mass> {
-        // Note: Does not account for unusable fuel, or non-fixed H-ARM
+        // Note: Does not account for non-fixed H-ARM
 
         // TODO FIXME: If no input is provided from the MFD, The default values are ZFW = 300 000 kg (661 386 lb), and ZFCG = 36.5 %RC.
 
-        let a = Mass::new::<kilogram>(18000.);
-        let b = Mass::new::<kilogram>(26000.);
-        let c = Mass::new::<kilogram>(36000.);
-        let d = Mass::new::<kilogram>(47000.);
-        let e = Mass::new::<kilogram>(103788.);
-        let f = Mass::new::<kilogram>(158042.);
-        let g = Mass::new::<kilogram>(215702.);
-        let h = Mass::new::<kilogram>(223028.);
+        let a = Mass::new::<kilogram>(self.wing_tank_values.stages.a);
+        let b = Mass::new::<kilogram>(self.wing_tank_values.stages.b);
+        let c = Mass::new::<kilogram>(self.wing_tank_values.stages.c);
+        let d = Mass::new::<kilogram>(self.wing_tank_values.stages.d);
+        let e = Mass::new::<kilogram>(self.wing_tank_values.stages.e);
+        let f = Mass::new::<kilogram>(self.wing_tank_values.stages.f);
+        let g = Mass::new::<kilogram>(self.wing_tank_values.stages.g);
+        let h = Mass::new::<kilogram>(self.wing_tank_values.stages.h);
+        // + 36727 KG to max
 
         let trim_fuel = self.calculate_trim_fuel(
             total_desired_fuel,
@@ -378,11 +421,17 @@ impl RefuelApplication {
 
         let wing_fuel = total_desired_fuel - trim_fuel;
 
-        let feed_a = Mass::new::<kilogram>(4500.);
-        let feed_c = Mass::new::<kilogram>(7000.);
-        let outer_feed_e = Mass::new::<kilogram>(20558.);
-        let inner_feed_e = Mass::new::<kilogram>(21836.);
+        let feed_a = Mass::new::<kilogram>(self.wing_tank_values.limits.feed_a);
+        let feed_c = Mass::new::<kilogram>(self.wing_tank_values.limits.feed_c);
+        let outer_feed_e = Mass::new::<kilogram>(self.wing_tank_values.limits.outer_feed_e);
+        let inner_feed_e = Mass::new::<kilogram>(self.wing_tank_values.limits.inner_feed_e);
         let total_feed_e = outer_feed_e * 2. + inner_feed_e * 2.;
+
+        let total_wing_tank_size = 2. * self.wing_tank_values.limits.outer_feed_tank_size
+            + 2. * self.wing_tank_values.limits.inner_feed_tank_size
+            + 2. * self.wing_tank_values.limits.outer_tank_tank_size
+            + 2. * self.wing_tank_values.limits.mid_tank_tank_size
+            + 2. * self.wing_tank_values.limits.inner_tank_tank_size;
 
         let outer_feed = match wing_fuel {
             x if x <= a => wing_fuel / 4.,
@@ -391,7 +440,11 @@ impl RefuelApplication {
             x if x <= d => feed_c,
             x if x <= e => feed_c + (wing_fuel - d) * (outer_feed_e / total_feed_e),
             x if x <= h => outer_feed_e,
-            _ => outer_feed_e + (wing_fuel - h) / 10.,
+            _ => {
+                outer_feed_e
+                    + (wing_fuel - h) * self.wing_tank_values.limits.outer_feed_tank_size
+                        / total_wing_tank_size
+            }
         };
 
         let inner_feed = match wing_fuel {
@@ -401,22 +454,30 @@ impl RefuelApplication {
             x if x <= d => feed_c,
             x if x <= e => feed_c + (wing_fuel - d) * (inner_feed_e / total_feed_e),
             x if x <= h => inner_feed_e,
-            _ => inner_feed_e + (wing_fuel - h) / 10.,
+            _ => {
+                inner_feed_e
+                    + (wing_fuel - h) * self.wing_tank_values.limits.inner_feed_tank_size
+                        / total_wing_tank_size
+            }
         };
 
-        let outer_tank_b = Mass::new::<kilogram>(4000.);
-        let outer_tank_h = Mass::new::<kilogram>(7693.);
+        let outer_tank_b = Mass::new::<kilogram>(self.wing_tank_values.limits.outer_tank_b);
+        let outer_tank_h = Mass::new::<kilogram>(self.wing_tank_values.limits.outer_tank_h);
 
         let outer_tank = match wing_fuel {
             x if x <= a => Mass::default(),
             x if x <= b => (wing_fuel - a) / 2.,
             x if x <= g => outer_tank_b,
             x if x <= h => outer_tank_b + (wing_fuel - g) / 2.,
-            _ => outer_tank_h + (wing_fuel - h) / 10.,
+            _ => {
+                outer_tank_h
+                    + (wing_fuel - h) * self.wing_tank_values.limits.outer_tank_tank_size
+                        / total_wing_tank_size
+            }
         };
 
-        let inner_tank_d = Mass::new::<kilogram>(5500.);
-        let inner_tank_g = Mass::new::<kilogram>(34300.);
+        let inner_tank_d = Mass::new::<kilogram>(self.wing_tank_values.limits.inner_tank_d);
+        let inner_tank_g = Mass::new::<kilogram>(self.wing_tank_values.limits.inner_tank_g);
 
         let inner_tank = match wing_fuel {
             x if x <= c => Mass::default(),
@@ -424,16 +485,24 @@ impl RefuelApplication {
             x if x <= f => inner_tank_d,
             x if x <= g => inner_tank_d + (wing_fuel - f) / 2.,
             x if x <= h => inner_tank_g,
-            _ => inner_tank_g + (wing_fuel - h) / 10.,
+            _ => {
+                inner_tank_g
+                    + (wing_fuel - h) * self.wing_tank_values.limits.inner_tank_tank_size
+                        / total_wing_tank_size
+            }
         };
 
-        let mid_tank_f = Mass::new::<kilogram>(27127.);
+        let mid_tank_f = Mass::new::<kilogram>(self.wing_tank_values.limits.mid_tank_f);
 
         let mid_tank = match wing_fuel {
             x if x <= e => Mass::default(),
             x if x <= f => (wing_fuel - e) / 2.,
             x if x <= h => mid_tank_f,
-            _ => mid_tank_f + (wing_fuel - h) / 10.,
+            _ => {
+                mid_tank_f
+                    + (wing_fuel - h) * self.wing_tank_values.limits.mid_tank_tank_size
+                        / total_wing_tank_size
+            }
         };
 
         [
