@@ -23,6 +23,8 @@
       "A380X.LOADING.TIPS.A380_009": "The engine's 116 inch (2.95 m) diameter fan blades suck in over one and a quarter tons of air every second",
       "A380X.TOOLTIPS.BAT_SELECTOR_ACTION": "Select the battery voltage to display",
       "A380X.TOOLTIPS.BAT_SELECTOR_TITLE": "Battery Voltage Selector",
+      "A380X.TOOLTIPS.DOORS_ARM_DISARM": "Arm or disarm slides for passenger door",
+      "A380X.TOOLTIPS.DOORS_OPEN_CLOSE": "Open or close passenger door",
       "A380X.TOOLTIPS.RMP_ADK_ACTION": "Activate/dial line %d",
       "A380X.TOOLTIPS.RMP_ADK_TITLE": "Activation/Dialing Key %d",
       "A380X.TOOLTIPS.RMP_BLANK2_ACTION": "N/A",
