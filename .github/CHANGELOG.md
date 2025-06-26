@@ -42,6 +42,7 @@
 1. [A32NX/ECP] Implemented realistic simulation of the ECAM control panel - @tracernz (Mike)
 1. [A32NX] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
 1. [A380X] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
+1. [EFB] Split jetway and pax stairs button in MSFS2024 to fix jetways not connecting in MSFS2024 - @heclak (Heclak)
 
 ## 0.13.0
 

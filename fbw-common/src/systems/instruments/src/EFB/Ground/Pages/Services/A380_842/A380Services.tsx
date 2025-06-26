@@ -3,7 +3,7 @@
 
 /* eslint-disable no-console */
 import React, { FC, useEffect, useRef } from 'react';
-import { GPUControlEvents, useSimVar } from '@flybywiresim/fbw-sdk';
+import { GPUControlEvents, isMsfs2024, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ArchiveFill, DoorClosedFill, HandbagFill, PersonPlusFill, PlugFill, Truck } from 'react-bootstrap-icons';
 import { ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
 import {
@@ -140,6 +140,10 @@ export const A380Services: React.FC = () => {
   const toggleMain2LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 3);
   const toggleMain4RightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 10);
   const toggleUpper1LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 11);
+  const toggleJetBridgeAndStairs = () => {
+    SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
+    SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
+  };
   const toggleJetBridge = () => SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
   const toggleStairs = () => SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
   const toggleFrontCargoDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 17);
@@ -321,7 +325,11 @@ export const A380Services: React.FC = () => {
           setBoarding1DoorButtonState,
           main1LeftDoorOpen,
         );
-        toggleJetBridge();
+        if (!isMsfs2024()) {
+          toggleJetBridgeAndStairs();
+        } else {
+          toggleJetBridge();
+        }
         break;
       case ServiceButton.Stairs:
         handleComplexService(
@@ -587,14 +595,16 @@ export const A380Services: React.FC = () => {
           <PersonPlusFill size={36} />
         </GroundServiceButton>
 
-        {/* PASSENGER STAIRS */}
-        <GroundServiceButton
-          name={t('Ground.Services.Stairs')}
-          state={stairsButtonState}
-          onClick={() => handleButtonClick(ServiceButton.Stairs)}
-        >
-          <PersonPlusFill size={36} />
-        </GroundServiceButton>
+        {/* PASSENGER STAIRS (ONLY SHOWN IN 2024) */}
+        {isMsfs2024() && (
+          <GroundServiceButton
+            name={t('Ground.Services.Stairs')}
+            state={stairsButtonState}
+            onClick={() => handleButtonClick(ServiceButton.Stairs)}
+          >
+            <PersonPlusFill size={36} />
+          </GroundServiceButton>
+        )}
 
         {/* FUEL TRUCK */}
         <GroundServiceButton
