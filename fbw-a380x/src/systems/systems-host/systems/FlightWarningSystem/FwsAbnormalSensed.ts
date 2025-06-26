@@ -2131,11 +2131,7 @@ export class FwsAbnormalSensed {
     260800013: {
       // ENG 1 FIRE DET FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.and(),
-        this.fws.eng1LoopAFault,
-        this.fws.eng1LoopBFault,
-      ),
+      simVarIsActive: this.fws.eng1FireDetFault,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -2146,11 +2142,7 @@ export class FwsAbnormalSensed {
     260800014: {
       // ENG 2 FIRE DET FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.and(),
-        this.fws.eng2LoopAFault,
-        this.fws.eng2LoopBFault,
-      ),
+      simVarIsActive: this.fws.eng2FireDetFault,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -2161,11 +2153,7 @@ export class FwsAbnormalSensed {
     260800015: {
       // ENG 3 FIRE DET FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.and(),
-        this.fws.eng3LoopAFault,
-        this.fws.eng3LoopBFault,
-      ),
+      simVarIsActive: this.fws.eng3FireDetFault,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -2176,11 +2164,7 @@ export class FwsAbnormalSensed {
     260800016: {
       // ENG 4 FIRE DET FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.and(),
-        this.fws.eng4LoopAFault,
-        this.fws.eng4LoopBFault,
-      ),
+      simVarIsActive: this.fws.eng4FireDetFault,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],

@@ -669,25 +669,43 @@ export class FwsCore {
 
   public readonly apuLoopBFault = Subject.create(false);
 
+  public readonly apuFireDetConfNode = new NXLogicConfirmNode(5);
+  public readonly apuFireDetFault = Subject.create(false);
+
   public readonly eng1LoopAFault = Subject.create(false);
 
   public readonly eng1LoopBFault = Subject.create(false);
+
+  public readonly eng1FireDetConfNode = new NXLogicConfirmNode(5);
+  public readonly eng1FireDetFault = Subject.create(false);
 
   public readonly eng2LoopAFault = Subject.create(false);
 
   public readonly eng2LoopBFault = Subject.create(false);
 
+  public readonly eng2FireDetConfNode = new NXLogicConfirmNode(5);
+  public readonly eng2FireDetFault = Subject.create(false);
+
   public readonly eng3LoopAFault = Subject.create(false);
 
   public readonly eng3LoopBFault = Subject.create(false);
+
+  public readonly eng3FireDetConfNode = new NXLogicConfirmNode(5);
+  public readonly eng3FireDetFault = Subject.create(false);
 
   public readonly eng4LoopAFault = Subject.create(false);
 
   public readonly eng4LoopBFault = Subject.create(false);
 
+  public readonly eng4FireDetConfNode = new NXLogicConfirmNode(5);
+  public readonly eng4FireDetFault = Subject.create(false);
+
   public readonly mlgLoopAFault = Subject.create(false);
 
   public readonly mlgLoopBFault = Subject.create(false);
+
+  public readonly mlgFireDetConfNode = new NXLogicConfirmNode(5);
+  public readonly mlgFireDetFault = Subject.create(false);
 
   public readonly evacCommand = Subject.create(false);
 
@@ -3988,6 +4006,21 @@ export class FwsCore {
     this.eng4LoopBFault.set(this.fduDiscreteWord.bitValueOr(25, false));
     this.mlgLoopAFault.set(this.fduDiscreteWord.bitValueOr(28, false));
     this.mlgLoopBFault.set(this.fduDiscreteWord.bitValueOr(29, false));
+
+    this.eng1FireDetConfNode.write(this.eng1LoopAFault.get() && this.eng1LoopBFault.get(), deltaTime);
+    this.eng1FireDetFault.set(this.eng1FireDetConfNode.read());
+    this.eng2FireDetConfNode.write(this.eng2LoopAFault.get() && this.eng2LoopBFault.get(), deltaTime);
+    this.eng2FireDetFault.set(this.eng2FireDetConfNode.read());
+    this.eng3FireDetConfNode.write(this.eng3LoopAFault.get() && this.eng3LoopBFault.get(), deltaTime);
+    this.eng3FireDetFault.set(this.eng3FireDetConfNode.read());
+    this.eng4FireDetConfNode.write(this.eng4LoopAFault.get() && this.eng4LoopBFault.get(), deltaTime);
+    this.eng4FireDetFault.set(this.eng4FireDetConfNode.read());
+
+    this.mlgFireDetConfNode.write(this.mlgLoopAFault.get() && this.mlgLoopBFault.get(), deltaTime);
+    this.mlgFireDetFault.set(this.mlgFireDetConfNode.read());
+
+    this.apuFireDetConfNode.write(this.apuLoopAFault.get() && this.apuLoopBFault.get(), deltaTime);
+    this.apuFireDetFault.set(this.apuFireDetConfNode.read());
 
     this.apuAgentDischarged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_APU_1_IS_DISCHARGED', 'bool'));
     this.eng1Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_1_IS_DISCHARGED', 'bool'));
