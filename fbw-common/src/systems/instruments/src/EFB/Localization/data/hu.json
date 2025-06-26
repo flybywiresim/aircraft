@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Betűméret növelése",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Betűméret csökkentése"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Még nem importált SimBrief adatokat"
     },
     "Overview": {
@@ -308,6 +311,8 @@
       "Qnh": "QNH",
       "ReverseThrust": "Sugárfordító",
       "Runway": "Runway",
+      "RunwayAltitude": "Futópálya magassága",
+      "RunwayAltitudeUnit": "ft AMSL",
       "RunwayCondition": "Futópálya állapota",
       "RunwayConditions": {
         "Dry": "Száraz (6)",
@@ -333,7 +338,11 @@
       "Title": "Leszállás",
       "UnitFt": "ft",
       "UnitMeter": "m",
+      "Weight": "Súly",
       "Wind": "Wind",
+      "WindDirection": "Szélirány",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Szélerősség",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Szinkronizálás",
@@ -377,6 +386,8 @@
       "Packs": "Légkondicionáló berendezések",
       "Qnh": "QNH",
       "Runway": "Futópálya",
+      "RunwayBearing": "Futópálya iránya",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Futópálya állapota",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Száraz hó - 100 mm/4\"",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "SimBrief felhasználói azonsító felülírása",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Kérlek ellenőrizd, hogy megfelelően adtad-e meg a SimBrief felhasználóneved vagy azonosítód.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "SimBrief azonosító használata a csatlakoztatott Navigraph fiók helyett"
       },

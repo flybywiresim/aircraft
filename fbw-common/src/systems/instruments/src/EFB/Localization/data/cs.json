@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Zvětšit písmo",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Zmenšit písmo"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Dosud jste neimportovali žádná SimBrief data."
     },
     "Overview": {
@@ -308,6 +311,8 @@
       "Qnh": "QNH",
       "ReverseThrust": "Zpětný tah",
       "Runway": "Dráha",
+      "RunwayAltitude": "Nadmořská výška dráhy",
+      "RunwayAltitudeUnit": "ft ASL (stopy nad mořem)",
       "RunwayCondition": "Stav dráhy",
       "RunwayConditions": {
         "Dry": "Suchý (6)",
@@ -333,7 +338,11 @@
       "Title": "Přistání",
       "UnitFt": "ft",
       "UnitMeter": "m",
+      "Weight": "Hmotnost",
       "Wind": "Vítr",
+      "WindDirection": "Směr větru",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Rychlost větru",
       "WindMagnitudeUnit": "kts nebo °/kts"
     },
     "SYNC": "SYNC",
@@ -377,6 +386,8 @@
       "Packs": "Packy",
       "Qnh": "QNH",
       "Runway": "Dráha",
+      "RunwayBearing": "Směr dráhy",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Stav dráhy",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Suchý sníh - 100 mm/4\"",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Přepsat uživatelské ID SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Zkontrolujte prosím, zda jste správně zadali své SimBrief uživatelské jméno nebo ID pilota.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternativní SimBrief uživatelské ID, které se použije místo propojeného účtu Navigraph"
       },
