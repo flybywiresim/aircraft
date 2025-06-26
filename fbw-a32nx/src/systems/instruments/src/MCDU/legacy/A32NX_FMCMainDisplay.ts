@@ -427,7 +427,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this._checkWeightSettable = true;
     this._gwInitDisplayed = 0;
     /* CPDLC Fields */
-    this.tropo = undefined;
     this._destDataChecked = false;
     this._towerHeadwind = 0;
     this._EfobBelowMinClr = false;
