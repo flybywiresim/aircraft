@@ -904,9 +904,9 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.transLvlAr.isNormalOperation() &&
         100 * this.transLvlAr.value > this.props.altitude.get()
       ) {
-        this.QFERef.instance.classList.add('BlinkInfinite');
+        this.stdGroup.instance.classList.add('BlinkInfinite');
       } else {
-        this.QFERef.instance.classList.remove('BlinkInfinite');
+        this.stdGroup.instance.classList.remove('BlinkInfinite');
       }
     } else if (
       this.fmgcFlightPhase <= FmgcFlightPhase.Cruise &&

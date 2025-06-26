@@ -12,7 +12,8 @@ import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 import { ONE_DEG, ALT_TAPE_XPOS, ALT_TAPE_YPOS, HudElems, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
 
 let DisplayRange = 600;
-
+const ValueSpacing = 100;
+const DistanceSpacing = 33.3;
 type LinearDeviationIndicatorProps = {
   bus: EventBus;
 };
@@ -74,7 +75,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
       .handle((value) => {
         this.crosswindMode = value;
         if (this.crosswindMode) {
-          DisplayRange = 200;
+          DisplayRange = 250;
           this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
           this.upperLinearDevTextRef.instance.setAttribute('y', `303`);
           this.lowerLinearDevTextRef.instance.setAttribute('y', `440`);
@@ -114,7 +115,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         this.lowerLinearDeviationReadoutText.set(linearDeviationReadoutText);
       }
 
-      if (deviation > DisplayRange + 40) {
+      if (deviation > DisplayRange - 60) {
         this.lowerLinearDeviationReadoutVisibility.set('visible');
         this.linearDeviationDotLowerHalfVisibility.set('visible');
 
@@ -122,7 +123,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         this.linearDeviationDotUpperHalfVisibility.set('hidden');
 
         this.linearDeviationDotVisibility.set('hidden');
-      } else if (deviation > -DisplayRange && deviation < DisplayRange) {
+      } else if (deviation > -(DisplayRange - 100) && deviation < DisplayRange - 100) {
         this.lowerLinearDeviationReadoutVisibility.set('hidden');
         this.linearDeviationDotLowerHalfVisibility.set('hidden');
 
@@ -130,7 +131,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
         this.linearDeviationDotUpperHalfVisibility.set('hidden');
 
         this.linearDeviationDotVisibility.set('visible');
-      } else if (deviation < -(DisplayRange + 40)) {
+      } else if (deviation < -DisplayRange + 60) {
         this.lowerLinearDeviationReadoutVisibility.set('hidden');
         this.linearDeviationDotLowerHalfVisibility.set('hidden');
 
@@ -206,10 +207,17 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   }
 
   private pixelOffsetFromDeviation(deviation: number) {
+    const sign = Math.sign(deviation);
     if (this.crosswindMode) {
-      return (deviation * 69) / DisplayRange;
+      return (
+        sign *
+        Math.min((Math.abs(deviation) * 120) / DisplayRange, ((DisplayRange - 50) / ValueSpacing) * DistanceSpacing)
+      );
     } else {
-      return (deviation * 185) / DisplayRange;
+      return (
+        sign *
+        Math.min((Math.abs(deviation) * 220) / DisplayRange, ((DisplayRange - 50) / ValueSpacing) * DistanceSpacing)
+      );
     }
   }
 }

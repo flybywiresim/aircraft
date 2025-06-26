@@ -381,17 +381,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrum
 }
 
 class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
-  private flightPhase = -1;
-  private fmgcFlightPhase = -1;
-  private declutterMode = 0;
-  private onGround = true;
-  private LsState = false;
   private LSLocRef = FSComponent.createRef<SVGGElement>();
-  private LSLocGroupVerticalOffset = 0;
-  private locVis = '';
-  private locVisBool = false;
-  private hudFlightPhaseMode = 0;
-  private lsBtnState = false;
   private lagFilter = new LagFilter(1.5);
 
   private rightDiamond = FSComponent.createRef<SVGPathElement>();
@@ -421,62 +411,11 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
       this.locDiamond.instance.style.transform = `translate3d(${(dots * 90.6) / 2}px, 0px, 0px)`;
     }
   }
-  private setLocGroupPos() {
-    this.LSLocRef.instance.style.transform = `translate3d(433.5px, 77px, 0px)`;
-  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & ClockEvents & HudElems>();
-
-    sub
-      .on('hudFlightPhaseMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.hudFlightPhaseMode = mode;
-        mode === 0 ? (this.onGround = false) : (this.onGround = true);
-        this.setLocGroupPos();
-      });
-
-    const isCaptainSide = getDisplayIndex() === 1;
-    sub.on(isCaptainSide ? 'ls1Button' : 'ls2Button').handle((value) => {
-      this.lsBtnState = value;
-    });
-
-    sub
-      .on('IlsLoc')
-      .whenChanged()
-      .handle((value) => {
-        this.locVis = value;
-        this.locVis === 'block' ? (this.locVisBool = true) : (this.locVisBool = false);
-        if (this.hudFlightPhaseMode === 0) {
-          this.lsBtnState && this.locVisBool
-            ? (this.LSLocRef.instance.style.display = `block`)
-            : (this.LSLocRef.instance.style.display = `none`);
-        } else {
-          this.LSLocRef.instance.style.display = `${this.locVis}`;
-        }
-      });
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-      });
-    sub
-      .on('fmgcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.fmgcFlightPhase = fp;
-      });
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((value) => {
-        this.declutterMode = value;
-        this.setLocGroupPos();
-      });
 
     sub
       .on('hasLoc')
@@ -491,15 +430,11 @@ class LocalizerIndicator extends DisplayComponent<{ bus: EventBus; instrument: B
           this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
         }
       });
-    sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').handle((value) => {
-      this.LsState = value;
-      this.setLocGroupPos();
-    });
   }
 
   render(): VNode {
     return (
-      <g ref={this.LSLocRef} id="YawRefBackCourseLocalizer">
+      <g ref={this.LSLocRef} id="YawRefBackCourseLocalizer" transform={`translate(433.5 77)`}>
         <path class="NormalStroke Green" d="m164.412 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
         <path class="NormalStroke Green" d="m119.079 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
         <path class="NormalStroke Green" d="m255.072 391.53a3.022 3.024 0 1 0 -6.044 0 3.022 3.024 0 1 0 6.044 0z" />
