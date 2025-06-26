@@ -83,6 +83,7 @@
 1. [ATSU] Fixed a case where "no active atc" is returned but station is online - @heclak (Heclak)
 1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
 1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
+1. [EFB/SIMBRIEF] Added loadsheet navigation - @ItzARz (ARz)
 
 ## 0.13.0
 
@@ -153,7 +154,6 @@
 1. [A380X/MFD] Various Fuel & Load Fixes - @BravoMike99 (bruno_pt99)
 1. [MISC] Replaced brake temperature simulation with physics based model of brakes - @Gurgel100 (Pascal)
 1. [A32NX/MCDU] Suppress TMPY FPLN when no modifications made in airways page - @robertxing2004 (robeet)
-1. [EFB/SIMBRIEF] Added loadsheet navigation - @ItzARz (ARz)
 1. [A380X/FWS] No "auto brake off" callout when double pressing A/THR instinctive disconnect - @flogross89 (floridude)
 1. [A380X/FWS] Improve landing capability downgrade triple click logic (#9008) - @flogross89 (floridude)
 1. [A32NX/FWS] Add "auto brake off" callout, improve AP/ATHR disconnect aural alert logic - @flogross89 (floridude)
