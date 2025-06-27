@@ -105,12 +105,11 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
   }
 
-  async secondaryCopyFromActive(index: number) {
-    this.flightPlanManager.copy(
-      FlightPlanIndex.Active,
-      FlightPlanIndex.FirstSecondary + (index - 1),
-      CopyOptions.CopyPredictions | CopyOptions.ActiveToSec | CopyOptions.BeforeEngineStart,
-    );
+  async secondaryCopyFromActive(index: number, isBeforeEngineStart: boolean) {
+    const options =
+      CopyOptions.CopyPredictions | CopyOptions.ActiveToSec | (isBeforeEngineStart ? CopyOptions.BeforeEngineStart : 0);
+
+    this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.FirstSecondary + (index - 1), options);
 
     this.secondary(index).flags |= FlightPlanFlags.CopiedFromActive;
   }
@@ -131,12 +130,28 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
   }
 
-  async secondaryActivate(index: number) {
+  async secondaryActivate(index: number, isBeforeEngineStart: boolean) {
+    const oldZfw = this.active?.performanceData.zeroFuelWeight.get() ?? null;
+    const oldZfwCg = this.active?.performanceData.zeroFuelWeightCenterOfGravity.get() ?? null;
+
     this.flightPlanManager.copy(FlightPlanIndex.FirstSecondary + index - 1, FlightPlanIndex.Active);
+
+    if (!isBeforeEngineStart) {
+      this.setPerformanceData('zeroFuelWeight', oldZfw, FlightPlanIndex.Active);
+      this.setPerformanceData('zeroFuelWeightCenterOfGravity', oldZfwCg, FlightPlanIndex.Active);
+    }
   }
 
-  async activeAndSecondarySwap(secIndex: number): Promise<void> {
+  async activeAndSecondarySwap(secIndex: number, isBeforeEngineStart: boolean): Promise<void> {
+    const oldZfw = this.active?.performanceData.zeroFuelWeight.get() ?? null;
+    const oldZfwCg = this.active?.performanceData.zeroFuelWeightCenterOfGravity.get() ?? null;
+
     this.flightPlanManager.swap(FlightPlanIndex.FirstSecondary + secIndex - 1, FlightPlanIndex.Active);
+
+    if (!isBeforeEngineStart) {
+      this.setPerformanceData('zeroFuelWeight', oldZfw, FlightPlanIndex.Active);
+      this.setPerformanceData('zeroFuelWeightCenterOfGravity', oldZfwCg, FlightPlanIndex.Active);
+    }
   }
 
   async temporaryInsert(): Promise<void> {
@@ -764,7 +779,11 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   // FIXME types
-  async setPerformanceData<k extends keyof P & string>(key: k, value: any, planIndex = FlightPlanIndex.Active) {
+  async setPerformanceData<k extends keyof (P & FlightPlanPerformanceData) & string>(
+    key: k,
+    value: any,
+    planIndex = FlightPlanIndex.Active,
+  ) {
     const plan = this.flightPlanManager.get(planIndex);
 
     plan.setPerformanceData(key, value);

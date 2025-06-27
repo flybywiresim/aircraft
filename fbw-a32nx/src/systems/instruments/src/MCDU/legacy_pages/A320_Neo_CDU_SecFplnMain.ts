@@ -9,7 +9,7 @@ import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { CDUPerformancePage } from './A320_Neo_CDU_PerformancePage';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
-import { NXSystemMessages } from '../messages/NXSystemMessages';
+import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 
 export class CDUSecFplnMain {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -73,7 +73,7 @@ export class CDUSecFplnMain {
     if (canActivateOrSwapSec) {
       activateSecColumn.update('*ACTIVATE SEC');
 
-      mcdu.onLeftInput[3] = (_, scratchpadCallback) => {
+      mcdu.onLeftInput[3] = async (_, scratchpadCallback) => {
         // We should not get here, because the button is not even shown, but the page might not have refreshed yet to reflect
         // the new NAV status
         if (!canActivateOrSwapSec) {
@@ -82,31 +82,36 @@ export class CDUSecFplnMain {
           return;
         }
 
-        mcdu.flightPlanService.secondaryActivate(1).then(() => {
-          mcdu.onSecondaryActivated();
+        try {
+          await mcdu.activateSecondaryPlan(1);
+
           CDUFlightPlanPage.ShowPage(mcdu);
-        });
+        } catch (error) {
+          console.error(error);
+          mcdu.logTroubleshootingError(error);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        }
       };
     }
 
     // <COPY ACTIVE
-    mcdu.onLeftInput[0] = () => {
-      mcdu.flightPlanService.secondaryCopyFromActive(1);
+    mcdu.onLeftInput[0] = async () => {
+      await mcdu.flightPlanService.secondaryCopyFromActive(1, !mcdu.isAnEngineOn());
       CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
     };
 
     // INIT>
-    mcdu.onRightInput[0] = () => {
+    mcdu.onRightInput[0] = async () => {
       if (!hasSecondary) {
-        mcdu.flightPlanService.secondaryInit(1);
+        await mcdu.flightPlanService.secondaryInit(1);
       }
       CDUInitPage.ShowPage1(mcdu, FlightPlanIndex.FirstSecondary);
     };
 
     // <SEC F-PLN
-    mcdu.onLeftInput[1] = () => {
+    mcdu.onLeftInput[1] = async () => {
       if (!hasSecondary) {
-        mcdu.flightPlanService.secondaryInit(1);
+        await mcdu.flightPlanService.secondaryInit(1);
       }
       CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
     };
@@ -134,9 +139,16 @@ export class CDUSecFplnMain {
           return;
         }
 
-        await mcdu.flightPlanService.activeAndSecondarySwap(1);
-        mcdu.onSecondaryActivated();
-        CDUFlightPlanPage.ShowPage(mcdu);
+        try {
+          await mcdu.swapActiveAndSecondaryPlan(1);
+
+          CDUFlightPlanPage.ShowPage(mcdu);
+        } catch (error) {
+          console.error(error);
+          mcdu.logTroubleshootingError(error);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+          return;
+        }
       };
     }
 

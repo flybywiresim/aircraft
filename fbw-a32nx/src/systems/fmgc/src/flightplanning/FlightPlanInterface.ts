@@ -54,15 +54,15 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    *
    * @param index the 1-indexed index of the secondary flight plan
    */
-  secondaryCopyFromActive(index: number): Promise<void>;
+  secondaryCopyFromActive(index: number, isBeforeEngineStart: boolean): Promise<void>;
 
   secondaryDelete(index: number): Promise<void>;
 
   secondaryReset(index: number): Promise<void>;
 
-  secondaryActivate(index: number): Promise<void>;
+  secondaryActivate(index: number, isBeforeEngineStart: boolean): Promise<void>;
 
-  activeAndSecondarySwap(secIndex: number): Promise<void>;
+  activeAndSecondarySwap(secIndex: number, isBeforeEngineStart: boolean): Promise<void>;
 
   temporaryInsert(): Promise<void>;
 
@@ -367,7 +367,8 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   setFlightNumber(flightNumber: string, planIndex: number): Promise<void>;
 
-  setPerformanceData<T extends keyof P & string>(key: T, value: P[T], planIndex: number): Promise<void>;
+  // FIXME types
+  setPerformanceData<T extends keyof P & string>(key: T, value: any, planIndex: number): Promise<void>;
 
   stringMissedApproach(onConstraintsDeleted?: (map: FlightPlanLeg) => void, planIndex?: number): Promise<void>;
 }

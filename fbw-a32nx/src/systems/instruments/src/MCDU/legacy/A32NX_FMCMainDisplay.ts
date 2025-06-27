@@ -5442,7 +5442,23 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return computations;
   }
 
-  public onSecondaryActivated() {
+  public async swapActiveAndSecondaryPlan(index: number) {
+    const zfwDiff = this.computeZfwDiffToSecondary(index);
+
+    await this.flightPlanService.activeAndSecondarySwap(index, !this.isAnEngineOn());
+
+    this.onSecondaryActivated(zfwDiff);
+  }
+
+  public async activateSecondaryPlan(index: number) {
+    const zfwDiff = this.computeZfwDiffToSecondary(index);
+
+    await this.flightPlanService.secondaryActivate(index, !this.isAnEngineOn());
+
+    this.onSecondaryActivated(zfwDiff);
+  }
+
+  private onSecondaryActivated(zfwDiff: number | null) {
     // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
     this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
 
@@ -5451,6 +5467,26 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
       this.tryCheckToData();
     }
+
+    if (zfwDiff !== null && zfwDiff > 5) {
+      const hasChangedStorage = { value: false };
+      const sub = this.flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
+        hasChangedStorage.value = true;
+        sub.destroy();
+      });
+
+      this.addMessageToQueue(NXSystemMessages.checkWeight, () => hasChangedStorage.value);
+    }
+  }
+
+  private computeZfwDiffToSecondary(secIndex: number): number | null {
+    const activePlan = this.flightPlanService.active;
+    const secondaryPlan = this.flightPlanService.secondary(secIndex);
+
+    const activeZfw = activePlan.performanceData.zeroFuelWeight.get();
+    const secondaryZfw = secondaryPlan.performanceData.zeroFuelWeight.get();
+
+    return activeZfw !== null && secondaryZfw !== null ? Math.abs(activeZfw - secondaryZfw) : null;
   }
 
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
