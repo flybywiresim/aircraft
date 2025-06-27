@@ -266,38 +266,24 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instru
   private previousAirspeed = 0;
   private thresholdSpeed = 35;
   private lagFilter = new LagFilter(1.6);
-
   private airspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
 
   private setOffset() {
-    let trend;
-    if (Math.abs(this.groundSpeed.get().value) < Math.abs(this.thresholdSpeed)) {
-      trend = this.getAccel();
-    } else if (this.vCTrend.value > this.getAccel()) {
-      trend = this.vCTrend.value;
-    } else {
-      trend = this.vCTrend.value;
-    }
+    const sign =
+      Math.abs(this.getAccel()) > Math.abs(this.vCTrend.value)
+        ? Math.sign(this.getAccel())
+        : Math.sign(this.vCTrend.value);
+    const trend = sign * Math.max(Math.abs(this.getAccel()), Math.abs(this.vCTrend.value));
     if (this.vCTrend.isNormalOperation()) {
       this.refElement.instance.style.visibility = 'visible';
       const offset = (-trend * 28) / 5;
-      let UsedOffset = offset;
-      if (this.merged == false) {
-        if (this.hudmode.get() === HudMode.TAKEOFF || this.hudmode.get() === HudMode.TAXI) {
-          offset <= -FIVE_DEG ? (this.inRange = false) : (this.inRange = true);
-          UsedOffset = Math.max((-trend * 28) / 5, -FIVE_DEG);
-          if (UsedOffset === offset) {
-            UsedOffset = (-trend * 28) / 5;
-            if (this.hudmode.get() !== HudMode.NORMAL) {
-              this.merged = true;
-              this.inRange = true;
-            }
-          }
-        } else {
-          UsedOffset = (-trend * 28) / 5;
-        }
+      const UsedOffset = Math.max(offset, -FIVE_DEG);
+      offset <= -FIVE_DEG ? (this.inRange = false) : (this.inRange = true);
+      if (UsedOffset === offset) {
+        this.merged = true;
+      } else {
+        this.merged = false;
       }
-
       if (this.merged == false) {
         if (this.inRange) {
           this.leftChevron.instance.setAttribute('stroke-dasharray', '');
@@ -319,7 +305,7 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instru
 
   private getAccel() {
     const { deltaTime } = this.props.instrument;
-    const clamped = Math.min(this.groundSpeed.get().value, this.thresholdSpeed + 20);
+    const clamped = Math.min(this.groundSpeed.get().value, this.thresholdSpeed + 100);
     const airspeedAcc = ((clamped - this.previousAirspeed) / deltaTime) * 1000;
     this.previousAirspeed = clamped;
 
