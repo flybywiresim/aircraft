@@ -64,6 +64,7 @@
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
 1. [EFB] Renamed "Weight Unit" pin program to "US Units" to reflect it's actual effect and real-world name - @tracernz (Mike)
 1. [A32NX/MCDU] Fix units on arrival airport runway lenghts - @Lucas-IQ21 (Lucas)
+1. [A32NX/A380X] Handle the MASTER_CAUTION_ACKNOWLEDGE and MASTER_WARNING_ACKNOWLEDGE key events - @tracernz (Mike)
 1. [A32NX/FMS] Fix automatic cruise temperature calculation on INIT A page - @BlueberryKing (BlueberryKing)
 1. [A380X/MODEL] Fixed RMP 1 keypad backlighting - @heclak (Heclak)
 1. [A380X/MODEL] Fixed animations and emissives of some ECAM buttons - @heclak (Heclak)
@@ -80,6 +81,8 @@
 1. [A380X/MODEL] Fixed black textures on side windshield windows - @heclak (Heclak)
 1. [ATSU] Improved Hoppie ACARS connection protocol - @heclak (Heclak)
 1. [ATSU] Fixed a case where "no active atc" is returned but station is online - @heclak (Heclak)
+1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
+1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
 1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
 1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 
@@ -172,6 +175,7 @@
 1. [A380X/SD] Add brake temperature color change to amber when brakes are hot - @heclak (Heclak)
 1. [A380X/FCU] Fix display of values on FCU during light test - @heclak (Heclak)
 1. [A380X/FMS] Fix VLS computation error for CONF 1, might have lead to FMS crashes during climb out - @flogross89 (floridude)
+1. [A32NX/PFD] Fix Radio DH not displaying correctly when Baro DA is already entered - @MrJigs7 (MrJigs)
 1. [A380X/PFD] Fix PFD DU / ND DU brightness knobs - @MichelZ
 1. [A380X/FCU] Add correct QFE label using the baro preselect display - @heclak (Heclak)
 1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)
