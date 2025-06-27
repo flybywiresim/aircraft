@@ -2449,14 +2449,13 @@ export class FwsAbnormalSensed {
     },
     271800017: {
       // GND SPLRs NOT ARMED
-      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
-      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
-      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.groundSpoilerNotArmedWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 3,
-      sysPage: SdPages.Fctl,
+      failure: 2,
+      sysPage: -1,
       inopSysAllPhases: () => [],
     },
     271800058: {
@@ -2572,28 +2571,26 @@ export class FwsAbnormalSensed {
       inopSysApprLdg: () => ['220300026'],
       info: () => ['340200002', '220200011', '220200010'],
     },
-    271800020: {
+    271800064: {
       // SPEED BRAKES POS/LEVER DISAGREE
-      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
-      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
-      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.speedBrakePosLeverDisagree,
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [],
-      whichItemsChecked: () => [],
-      failure: 3,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [true],
+      failure: 2,
       sysPage: SdPages.Fctl,
       inopSysAllPhases: () => [],
     },
-    271800021: {
+    271800065: {
       // SPEED BRAKES STILL EXTENDED
-      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
-      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
-      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.speedBrakeStillOutWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 3,
-      sysPage: SdPages.Fctl,
+      failure: 2,
+      sysPage: -1,
       inopSysAllPhases: () => [],
     },
     272800001: {
@@ -2672,26 +2669,24 @@ export class FwsAbnormalSensed {
     },
     271800070: {
       // LOAD ANALYSIS REQUIRED
-      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
-      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
-      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.loadAnalysysRequired,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 3,
-      sysPage: SdPages.Fctl,
+      failure: 1,
+      sysPage: -1,
       inopSysAllPhases: () => [],
     },
     271800071: {
       // TAIL STRIKE
-      flightPhaseInhib: [5, 6, 7, 8, 9, 10],
-      auralWarning: this.fws.speedbrakesConfigAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 9, 10, 12],
       simVarIsActive: this.fws.speedbrakesConfigWarning,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 3,
-      sysPage: SdPages.Fctl,
+      failure: 2,
+      sysPage: -1,
       inopSysAllPhases: () => [],
     },
     // 29 FUEL
