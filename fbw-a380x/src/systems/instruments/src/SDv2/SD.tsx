@@ -20,6 +20,7 @@ import { SdPages } from '@shared/EcamSystemPages';
 import './style.scss';
 import '../index.scss';
 import { CruisePage } from './Pages/Cruise/CruisePage';
+import { VideoPage } from './Pages/Video/VideoPage';
 import { SDSimvars } from './SDSimvarPublisher';
 
 export interface SDProps {
@@ -66,11 +67,11 @@ export class SD extends DestroyableComponent<SDProps> {
     null, // CB
     <CruisePage ref={this.pageRef[SdPages.Crz]} bus={this.props.bus} visible={this.pageVisible[SdPages.Crz]} />,
     null, // STATUS
-    null, // TODO video page
+    <VideoPage ref={this.pageRef[SdPages.Video]} bus={this.props.bus} visible={this.pageVisible[SdPages.Video]} />,
   ];
 
   // Once a page is ported, add its enum value here
-  private readonly indicesToShowInV2 = [SdPages.Crz];
+  private readonly indicesToShowInV2 = [SdPages.Crz, SdPages.Video];
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);

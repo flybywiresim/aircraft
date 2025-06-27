@@ -27,7 +27,7 @@ export class VideoPage extends DestroyableComponent<SdPageProps> {
         <PageTitle x={6} y={29}>
           VIDEO
         </PageTitle>
-        <text x={384} y={343} className="F26 Amber MiddleAlign">
+        <text x={384} y={343} class="F26 Amber MiddleAlign">
           NOT AVAIL
         </text>
       </svg>

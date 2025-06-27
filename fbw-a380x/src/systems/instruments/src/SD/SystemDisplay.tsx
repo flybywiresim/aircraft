@@ -17,7 +17,6 @@ import { DoorPage } from './Pages/Doors/DoorPage';
 import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
 import { WheelPage } from './Pages/Wheel/WheelPage';
 import { FctlPage } from './Pages/Fctl/FctlPage';
-import { VideoPage } from './Pages/Video/VideoPage';
 import { StatusPage } from './Pages/Status/StatusPage';
 
 import '../index.scss';
@@ -41,7 +40,7 @@ export const SystemDisplay = () => {
     12: <CbPage />,
     13: <></>,
     14: <StatusPage />,
-    15: <VideoPage />,
+    15: <></>,
   };
 
   const [pageToShow, _setPageToShow] = useSimVar('L:A32NX_ECAM_SD_PAGE_TO_SHOW', 'number');
