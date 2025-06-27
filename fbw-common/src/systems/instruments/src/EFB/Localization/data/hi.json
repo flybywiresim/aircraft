@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "फ़ॉन्ट आकार बढ़ाएॅं",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "फ़ॉन्ट का आकार घटाएँ"
       },
       "Title": "ओएफपी",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "आपने अभी तक कोई SimBrief डेटा आयात नहीं किया है।"
     },
     "Overview": {
@@ -308,6 +311,8 @@
       "Qnh": "क्यू. एन. एच",
       "ReverseThrust": "रिवर्स थ्रस्ट",
       "Runway": "Runway",
+      "RunwayAltitude": "रनवे की ऊंचाई",
+      "RunwayAltitudeUnit": "फुट एएसएल",
       "RunwayCondition": "रनवे दशा",
       "RunwayConditions": {
         "Dry": "सूखा (6)",
@@ -333,7 +338,11 @@
       "Title": "लैंडिंग",
       "UnitFt": "फुट",
       "UnitMeter": "मीटर",
+      "Weight": "भार",
       "Wind": "Wind",
+      "WindDirection": "हवा की दिशा",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "पवन परिमाण",
       "WindMagnitudeUnit": "नॉट्स"
     },
     "SYNC": "समकालीन करें",
@@ -377,6 +386,8 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -393,7 +404,7 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft AMSL",
+      "RunwayElevationUnit": "ft",
       "RunwayHeading": "Runway Heading",
       "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
