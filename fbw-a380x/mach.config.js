@@ -34,9 +34,10 @@ module.exports = {
     msfsAvionicsInstrument('FCU', 'FcuBaseInstrument.ts'),
     msfsAvionicsInstrument('MFD'),
     msfsAvionicsInstrument('ND'),
+    msfsAvionicsInstrument('OIT'),
     msfsAvionicsInstrument('PFD'),
     msfsAvionicsInstrument('RMP'),
-    msfsAvionicsInstrument('OIT'),
+    msfsAvionicsInstrument('SDv2'),
 
     reactInstrument('BAT'),
     reactInstrument('EFB', ['/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html']),

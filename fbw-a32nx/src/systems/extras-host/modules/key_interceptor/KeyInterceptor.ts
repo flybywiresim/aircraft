@@ -1,65 +1,16 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
-import { NotificationManager, NotificationType, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { KeyInterceptDefinitions, KeyInterceptor, NotificationType, PopUpDialog } from '@flybywiresim/fbw-sdk';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
-/**
- * This class is used to intercept the key events for the engine auto start and engine auto shutdown.
- *
- * Additional key events can be added in the registerIntercepts() method.
- */
-export class KeyInterceptor {
-  private eventBus: EventBus;
-
-  private keyInterceptManager: KeyEventManager;
-
-  private dialogVisible = false;
-
-  constructor(
-    private readonly bus: EventBus,
-    private readonly notification: NotificationManager,
-  ) {
-    this.eventBus = bus;
-    KeyEventManager.getManager(this.eventBus).then((manager) => {
-      this.keyInterceptManager = manager;
-      this.registerIntercepts();
-    });
-    console.log('KeyInterceptor: Created');
-  }
-
-  public connectedCallback(): void {
-    // empty
-  }
-
-  public startPublish(): void {
-    console.log('KeyInterceptor: startPublish()');
-  }
-
-  public update(): void {
-    // empty
-  }
-
-  private registerIntercepts() {
-    this.keyInterceptManager.interceptKey('ENGINE_AUTO_START', false);
-    this.keyInterceptManager.interceptKey('ENGINE_AUTO_SHUTDOWN', false);
-
-    const subscriber = this.eventBus.getSubscriber<KeyEvents>();
-    subscriber.on('key_intercept').handle((keyData) => {
-      switch (keyData.key) {
-        case 'ENGINE_AUTO_START':
-          console.log('KeyInterceptor: ENGINE_AUTO_START');
-          this.engineAutoStartAction();
-          break;
-        case 'ENGINE_AUTO_SHUTDOWN':
-          console.log('KeyInterceptor: ENGINE_AUTO_SHUTDOWN');
-          this.engineAutoStopAction();
-          break;
-        default:
-          break;
-      }
-    });
+export class A32NXKeyInterceptor extends KeyInterceptor {
+  protected override getExtraIntercepts(): KeyInterceptDefinitions {
+    return [
+      // --- ENGINE events ---
+      ['ENGINE_AUTO_START', { handler: this.engineAutoStartAction.bind(this), log: true }],
+      ['ENGINE_AUTO_SHUTDOWN', { handler: this.engineAutoStopAction.bind(this), log: true }],
+    ];
   }
 
   private engineAutoStartAction() {

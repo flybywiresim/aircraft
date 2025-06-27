@@ -92,7 +92,6 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "从 SimBrief 导入数据",
       "TT": {
         "IncreaseFontSize": "增大字号",
         "ReduceFontSize": "减小字号"
@@ -287,6 +286,7 @@
   "Performance": {
     "Data": "数据",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "机场 ICAO",
       "ApproachSpeed": "进近速度",
       "ApproachSpeedUnit": "节 (kts)",
@@ -295,8 +295,10 @@
       "Clear": "清空",
       "DropDownNo": "否",
       "DropDownYes": "是",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "填充数据来源于",
       "FlapsConfiguration": "襟翼配置",
+      "LandingWeight": "Landing Weight",
       "Low": "低刹力",
       "MaximumManual": "最高性能手动降落",
       "Medium": "中刹力",
@@ -305,8 +307,7 @@
       "OverweightProcedure": "超重程序",
       "Qnh": "海平面气压",
       "ReverseThrust": "反推",
-      "RunwayAltitude": "跑道海拔",
-      "RunwayAltitudeUnit": "海拔高度 (英尺/ft)",
+      "Runway": "Runway",
       "RunwayCondition": "跑道状况",
       "RunwayConditions": {
         "Dry": "干（6）",
@@ -316,6 +317,8 @@
         "MediumPoor": "中等至差（2）",
         "Poor": "差（1）"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "跑道航向",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "跑道可用着陆长度",
@@ -330,10 +333,7 @@
       "Title": "着陆",
       "UnitFt": "英尺 (ft)",
       "UnitMeter": "米 (m)",
-      "Weight": "重量",
-      "WindDirection": "风向",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "风级",
+      "Wind": "Wind",
       "WindMagnitudeUnit": "节 (kts)"
     },
     "SYNC": "同步",
@@ -377,8 +377,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -395,7 +393,9 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +556,8 @@
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +569,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "相关"
@@ -644,18 +644,17 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "将舵柄与脚舵输入分开",
-      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "SyncEfis": "Sync EFIS and Audio Controls Between Captain and FO",
       "Title": "仿真度"
     },
     "SimOptions": {
       "Active": "启用",
       "Auto": "自动",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "校准",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "安全锥",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "默认气压单位",
       "DynamicRegistrationDecal": "动态注册号喷涂",
       "EnableSimBridge": "启用 MCDU 服务器 (5 分钟之内无连接将自动停用)",
@@ -698,6 +697,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -736,6 +736,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "设置",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "不真实",
     "flyPad": {
       "AutoBrightness": "自动调节亮度",
@@ -744,7 +747,6 @@
       "Blue": "蓝色",
       "Brightness": "亮度",
       "Dark": "深色",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "语言 (Language)",
       "Light": "浅色",
       "Local": "本地",
@@ -761,8 +763,6 @@
       "UtcAndLocal": "世界标准时间 (UTC) 与本地时间"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "四月",
     "Aug": "八月",
