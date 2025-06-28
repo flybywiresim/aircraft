@@ -830,13 +830,19 @@ export class PseudoFWC {
   /** this will be true whenever the TO CONFIG TEST button is pressed, and stays on for a minimum of 1.5s */
   private readonly toConfigTestHeldMin1s5Pulse = Subject.create(false);
 
-  private toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
+  private readonly toConfigTestMemoryNode = new NXLogicMemoryNode();
+
+  private readonly toConfighalfSecondTriggeredNode = new NXLogicTriggeredMonostableNode(0.5);
+
+  private readonly toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
 
   private readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
   private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
   private readonly flightPhaseInhibitOverrideNode = new NXLogicMemoryNode(false);
+
+  private readonly toConfigOrPhase3 = Subject.create(false);
 
   /** 31 - EIS */
   private readonly dmcLeftDiscreteWord6 = Arinc429LocalVarConsumerSubject.create(
@@ -1209,7 +1215,7 @@ export class PseudoFWC {
   private readonly noSmokingSwitchPosition = Subject.create(0);
 
   private readonly predWSOn = Subject.create(false);
-  private readonly predWsToConfTest = new NXLogicMemoryNode(true);
+  private readonly toConfigTestPhase2MemoryNode = new NXLogicMemoryNode(true);
 
   private readonly seatBelt = Subject.create(0);
 
@@ -1219,7 +1225,7 @@ export class PseudoFWC {
 
   private readonly tcasSensitivity = Subject.create(0);
 
-  private readonly toConfigNormal = Subject.create(false);
+  private readonly toConfigMemoNormal = Subject.create(false);
 
   private readonly wingAntiIce = Subject.create(false);
 
@@ -1270,7 +1276,7 @@ export class PseudoFWC {
       }
     });
 
-    this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
+    this.toConfigMemoNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
 
     this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
@@ -1678,7 +1684,7 @@ export class PseudoFWC {
 
     this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
     this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN_RUNNING', 'bool'));
-    this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool'));
+    this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'Bool') > 0);
     // FIX ME ldg lt extended signal should come from SDAC
     const leftLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_2_POSITION', 'number');
     const rightLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_3_POSITION', 'number');
@@ -2282,7 +2288,10 @@ export class PseudoFWC {
     this.gpwsFlapMode.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool'));
     this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
     this.predWSOn.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_Position', 'Bool'));
-    this.predWsToConfTest.write(toConfigTest && this.fwcFlightPhase.get() === 2, this.fwcFlightPhase.get() !== 2);
+    this.toConfigTestPhase2MemoryNode.write(
+      toConfigTest && this.fwcFlightPhase.get() === 2,
+      this.fwcFlightPhase.get() !== 2,
+    );
     this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
     this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
@@ -2465,9 +2474,9 @@ export class PseudoFWC {
 
     this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
     this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
-    this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
+    this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_IPPU_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
-    this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
+    this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_SLATS_IPPU_ANGLE', 'degrees'));
 
     // FIXME these should be split between the two systems and the two sides
     const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD');
@@ -3017,38 +3026,44 @@ export class PseudoFWC {
     }
 
     /* T.O. CONFIG CHECK */
+    // TODO Note that fuel tank low pressure and gravity feed warnings are not included
+    const systemStatus =
+      this.engine1Generator.get() &&
+      this.engine2Generator.get() &&
+      !this.greenLP.get() &&
+      !this.yellowLP.get() &&
+      !this.blueLP.get() &&
+      this.eng1pumpPBisAuto.get() &&
+      this.eng2pumpPBisAuto.get();
 
-    if (this.toMemo.get() && toConfigTest) {
-      // TODO Note that fuel tank low pressure and gravity feed warnings are not included
-      const systemStatus =
-        this.engine1Generator.get() &&
-        this.engine2Generator.get() &&
-        !this.greenLP.get() &&
-        !this.yellowLP.get() &&
-        !this.blueLP.get() &&
-        this.eng1pumpPBisAuto.get() &&
-        this.eng2pumpPBisAuto.get();
+    const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
+    const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
+    const cargofwdLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool');
+    const cargoaftLocked = SimVar.GetSimVarValue('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool');
 
-      const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
-      const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
-      const cargofwdLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool');
-      const cargoaftLocked = SimVar.GetSimVarValue('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool');
-      const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
+    const speeds = !toSpeedsTooLow && !toV2VRV2Disagree && !fmToSpeedsNotInserted;
+    const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
+    const surfacesNotTo =
+      flapsNotInToPos ||
+      slatsNotInToPos ||
+      this.speedbrakesNotTo.get() ||
+      this.rudderTrimNotTo.get() ||
+      this.pitchTrimNotTo.get();
 
-      const speeds = !toSpeedsTooLow && !toV2VRV2Disagree && !fmToSpeedsNotInserted;
-      const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
-      const surfacesNotTo =
-        flapsNotInToPos ||
-        slatsNotInToPos ||
-        this.speedbrakesNotTo.get() ||
-        this.rudderTrimNotTo.get() ||
-        this.pitchTrimNotTo.get();
+    const toConfigSystemStatusNormal =
+      systemStatus && speeds && !this.brakesHot.get() && doors && !this.flapsMcduDisagree.get() && !surfacesNotTo;
 
-      const toConfigNormal =
-        systemStatus && speeds && !brakesHot && doors && !this.flapsMcduDisagree.get() && !surfacesNotTo;
+    const toConfigNormal = this.toConfigNormalConf.write(toConfigSystemStatusNormal, deltaTime);
 
-      this.toConfigNormal.set(this.toConfigNormalConf.write(toConfigNormal, deltaTime));
-    }
+    this.toConfigTestMemoryNode.write(
+      this.toConfighalfSecondTriggeredNode.write(this.toConfigPulseNode.read(), deltaTime) &&
+        (fwcFlightPhase === 2 || fwcFlightPhase === 9),
+      flightPhase6 || !toConfigNormal,
+    );
+
+    this.toConfigMemoNormal.set(this.toConfigTestMemoryNode.read() && toConfigNormal);
+
+    this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfighalfSecondTriggeredNode.read()));
 
     /* CLEAR AND RECALL */
     if (this.ecpClearPulseUp) {
@@ -4807,12 +4822,7 @@ export class PseudoFWC {
     3200010: {
       // L/G-BRAKES OVHT
       flightPhaseInhib: [4, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([toConfigNormal, fwcFlightPhase, brakesHot]) => (toConfigNormal || fwcFlightPhase === 3) && brakesHot,
-        this.toConfigNormal,
-        this.fwcFlightPhase,
-        this.brakesHot,
-      ),
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.toConfigOrPhase3, this.brakesHot),
       whichCodeToReturn: () => [
         0,
         !this.aircraftOnGround.get() ? 1 : null,
@@ -5039,7 +5049,7 @@ export class PseudoFWC {
         SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 5 : 4,
         this.spoilersArmed.get() ? 7 : 6,
         this.slatFlapSelectionS18F10 || this.slatFlapSelectionS22F15 || this.slatFlapSelectionS22F20 ? 9 : 8,
-        this.toConfigNormal.get() ? 11 : 10,
+        this.toConfigMemoNormal.get() ? 11 : 10,
       ],
       codesToReturn: [
         '000001001',
@@ -5434,7 +5444,7 @@ export class PseudoFWC {
         this.fwcFlightPhase,
       ),
       whichCodeToReturn: () => [
-        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.predWsToConfTest.read() ? 1 : 0,
+        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigTestPhase2MemoryNode.read() ? 1 : 0,
       ],
       codesToReturn: ['000054001', '000054002'],
       memoInhibit: () => false,
@@ -5447,7 +5457,7 @@ export class PseudoFWC {
       flightPhaseInhib: [1, 10],
       simVarIsActive: this.gpwsTerrOff,
       whichCodeToReturn: () => [
-        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigNormal.get() ? 1 : 0,
+        [3, 4, 5, 7, 8, 9].includes(this.fwcFlightPhase.get()) || this.toConfigTestPhase2MemoryNode.read() ? 1 : 0,
       ],
       codesToReturn: ['000054501', '000054502'],
       memoInhibit: () => false,
