@@ -46,6 +46,7 @@ export interface SimbriefData {
   aircraftReg: string;
   aircraftIcao: string;
   route: string;
+  ofpLayout: string;
   loadsheet: string;
   costInd: string;
 }
@@ -123,6 +124,7 @@ export const initialState: {
     taxiOutTime: 0,
     schedIn: '',
     schedOut: '',
+    ofpLayout: '',
     loadsheet: '',
     costInd: '',
   },
@@ -226,6 +228,7 @@ export async function fetchSimbriefDataAction(
     taxiOutTime: returnedSimbriefData.times.taxiOut,
     schedOut: returnedSimbriefData.times.schedOut,
     schedIn: returnedSimbriefData.times.schedIn,
+    ofpLayout: returnedSimbriefData.ofpLayout,
     loadsheet: returnedSimbriefData.text,
     costInd: returnedSimbriefData.costIndex,
   });

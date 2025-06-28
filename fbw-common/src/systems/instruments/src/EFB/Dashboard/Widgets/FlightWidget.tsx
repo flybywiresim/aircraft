@@ -39,6 +39,8 @@ export const FlightWidget = () => {
   const simbriefDataPending = useAppSelector((state) => state.simbrief.simbriefDataPending);
   const aircraftIcao = useAppSelector((state) => state.simbrief.data.aircraftIcao);
 
+  const [, setCurrentLoadsheetSection] = usePersistentProperty('LOADSHEET_ACTIVE_SECTION', 'All');
+
   const navigraphAuthInfo = useNavigraphAuthInfo();
 
   const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
@@ -115,6 +117,7 @@ export const FlightWidget = () => {
         dispatch(setFuelImported(false));
         dispatch(setPayloadImported(false));
         dispatch(setToastPresented(false));
+        setCurrentLoadsheetSection('All');
         history.push('/ground/fuel');
         history.push('/ground/payload');
         history.push('/dashboard');

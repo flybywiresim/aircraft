@@ -94,10 +94,13 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Increase Font Size",
-        "ReduceFontSize": "Reduce Font Size"
+        "ReduceFontSize": "Reduce Font Size",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
+        "NextLoadsheetSection": "Next loadsheet section"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data.",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief."
     },
     "Overview": {
       "ActualGW": "Actual GW",
@@ -709,6 +712,7 @@
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "Title": "3rd Party Options"
     },
     "ThrottleConfig": {

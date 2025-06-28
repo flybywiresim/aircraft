@@ -24,6 +24,7 @@ export interface ISimbriefData {
   times: ITimes;
   weather: IWeather;
   files: Files;
+  ofpLayout: string;
   text: string;
 }
 
@@ -245,5 +246,6 @@ export const EmptyISimbriefData = {
     avgWindDir: 0,
     avgWindSpeed: 0,
   },
+  ofpLayout: '',
   text: '',
 };

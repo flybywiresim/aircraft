@@ -8,6 +8,7 @@ interface ScrollableContainerProps {
   className?: string;
   innerClassName?: string;
   initialScroll?: number;
+  triggerScrollReset?: any;
   onScroll?: (scrollTop: number) => void;
   onScrollStop?: (scrollTop: number) => void;
   nonRigid?: boolean;
@@ -24,6 +25,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
   onScroll,
   onScrollStop,
   initialScroll = 0,
+  triggerScrollReset,
   innerClassName,
   nonRigid,
 }) => {
@@ -67,6 +69,12 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
       containerRef.current.scrollTop = initialScroll;
     }
   }, []);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+  }, [triggerScrollReset]);
 
   const timeout = useRef<ReturnType<typeof setTimeout>>();
 
