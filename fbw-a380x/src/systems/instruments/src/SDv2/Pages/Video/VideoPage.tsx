@@ -1,4 +1,5 @@
 import '../../../index.scss';
+
 import { FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
 
