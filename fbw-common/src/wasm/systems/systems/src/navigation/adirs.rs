@@ -2155,7 +2155,7 @@ impl InertialReference {
     }
 
     fn is_fully_aligned(&self) -> bool {
-        self.remaining_align_duration == Some(Duration::from_secs(0))
+        self.remaining_align_duration == Some(Duration::ZERO)
     }
 
     fn is_aligning(&self) -> bool {
