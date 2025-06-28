@@ -1,9 +1,9 @@
+import '../../../index.scss';
 import { FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
 
 import { PageTitle } from '../Generic/PageTitle';
 
-import '../../../index.scss';
 import { SdPageProps } from '../../SD';
 
 export class VideoPage extends DestroyableComponent<SdPageProps> {
