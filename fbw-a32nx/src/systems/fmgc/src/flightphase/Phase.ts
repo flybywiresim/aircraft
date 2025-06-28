@@ -1,14 +1,13 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Arinc429Word, ConfirmationNode, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, ConfirmationNode, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { Accessible } from '@microsoft/msfs-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import {
   FmgcFlightPhase,
   getAutopilotVerticalMode,
-  isAllEngineOn,
   isAnEngineOn,
   isOnGround,
   conditionTakeOff,
@@ -43,24 +42,34 @@ export class PreFlightPhase extends Phase {
 export class TakeOffPhase extends Phase {
   accelerationAltitudeMsl: number;
 
-  accelerationAltitudeMslEo: number;
-
   init() {
     this.nextPhase = FmgcFlightPhase.Climb;
     SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', false);
 
-    const accAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_ACC_ALT');
+    const accAlt = Arinc429Register.empty().setFromSimVar('L:A32NX_FM1_ACC_ALT');
     this.accelerationAltitudeMsl = accAlt.valueOr(
-      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
-    );
-    const eoAccAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_EO_ACC_ALT');
-    this.accelerationAltitudeMslEo = eoAccAlt.valueOr(
       SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
     );
   }
 
   shouldActivateNextPhase(_deltaTime) {
-    return Simplane.getAltitude() > (isAllEngineOn() ? this.accelerationAltitudeMsl : this.accelerationAltitudeMslEo);
+    //FIXME add Speed > Gdot if EO mode active
+    const aboveAccelHeight = Simplane.getAltitude() > this.accelerationAltitudeMsl;
+    if (aboveAccelHeight) {
+      return true;
+    }
+    const verticalMode = getAutopilotVerticalMode();
+
+    return (
+      verticalMode === VerticalMode.VS ||
+      verticalMode === VerticalMode.FPA ||
+      verticalMode === VerticalMode.ALT ||
+      verticalMode === VerticalMode.ALT_CPT ||
+      verticalMode === VerticalMode.ALT_CST ||
+      verticalMode === VerticalMode.ALT_CST_CPT ||
+      verticalMode === VerticalMode.OP_CLB ||
+      verticalMode === VerticalMode.CLB
+    );
   }
 }
 
