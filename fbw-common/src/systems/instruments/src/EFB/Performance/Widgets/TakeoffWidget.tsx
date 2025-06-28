@@ -20,7 +20,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
-import { getAirportMagVar, getRunways } from '../Data/Runways';
+import { getAirportMagVar, getRunways, Runway } from '../Data/Runways';
 import { t } from '../../Localization/translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
@@ -286,10 +286,9 @@ export const TakeoffWidget = () => {
     }
   };
 
-  const clearAirportRunways = () => {
+  const clearTakeoffRunway = () => {
     dispatch(
       setTakeoffValues({
-        availableRunways: [],
         selectedRunwayIndex: -1,
         runwayBearing: undefined,
         runwayLength: undefined,
@@ -299,19 +298,23 @@ export const TakeoffWidget = () => {
     );
   };
 
-  const handleICAOChange = (icao: string) => {
-    dispatch(clearTakeoffValues());
+  const clearAirportRunways = () => {
+    clearTakeoffRunway();
+    dispatch(
+      setTakeoffValues({
+        availableRunways: [],
+      }),
+    );
+  };
 
+  // split out from handlers to avoid races between icao and runways changes
+  const updateIcaoAndRunways = (icao: string | undefined, runwayIdent: string | undefined) => {
     dispatch(setTakeoffValues({ icao }));
     if (isValidIcao(icao)) {
       getRunways(icao)
         .then((runways) => {
-          dispatch(setTakeoffValues({ availableRunways: runways }));
-          if (runways.length > 0) {
-            handleRunwayChange(0);
-          } else {
-            handleRunwayChange(-1);
-          }
+          const runwayIndex = runwayIdent !== undefined ? runways.findIndex((r) => r.ident === runwayIdent) : undefined;
+          updateRunways(runwayIndex, runways);
         })
         .catch(() => {
           clearAirportRunways();
@@ -321,10 +324,15 @@ export const TakeoffWidget = () => {
     }
   };
 
-  const handleRunwayChange = (runwayIndex: number | undefined): void => {
-    clearResult();
+  const updateRunways = (runwayIndex: number, runways: Runway[] | undefined) => {
+    let newRunway = undefined;
+    if (runways !== undefined) {
+      dispatch(setTakeoffValues({ availableRunways: runways }));
+      newRunway = runwayIndex !== undefined && runwayIndex >= 0 ? runways[runwayIndex] : undefined;
+    } else {
+      newRunway = runwayIndex !== undefined && runwayIndex >= 0 ? availableRunways[runwayIndex] : undefined;
+    }
 
-    const newRunway = runwayIndex !== undefined && runwayIndex >= 0 ? availableRunways[runwayIndex] : undefined;
     if (newRunway !== undefined) {
       const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
       dispatch(
@@ -337,16 +345,18 @@ export const TakeoffWidget = () => {
         }),
       );
     } else {
-      dispatch(
-        setTakeoffValues({
-          selectedRunwayIndex: -1,
-          runwayBearing: undefined,
-          runwayLength: undefined,
-          runwaySlope: undefined,
-          elevation: undefined,
-        }),
-      );
+      clearTakeoffRunway();
     }
+  };
+
+  const handleIcaoChange = (icao: string) => {
+    dispatch(clearTakeoffValues());
+    updateIcaoAndRunways(icao, undefined);
+  };
+
+  const handleRunwayChange = (runwayIndex: number | undefined): void => {
+    clearResult();
+    updateRunways(runwayIndex, undefined);
   };
 
   const handleWeightChange = (value: string): void => {
@@ -556,36 +566,21 @@ export const TakeoffWidget = () => {
       return;
     }
     try {
-      const runways = await getRunways(ofpDepartingAirport);
+      updateIcaoAndRunways(ofpDepartingAirport, ofpDepartingRunway);
       const magvar = await getAirportMagVar(ofpDepartingAirport);
+      const windDirection = Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
+      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
 
-      const runwayIndex = runways.findIndex((r) => r.ident === ofpDepartingRunway);
-      if (runwayIndex >= 0) {
-        const newRunway = runways[runwayIndex];
-        const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
-        const windDirection = Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
-        const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
-
-        dispatch(
-          setTakeoffValues({
-            icao: ofpDepartingAirport,
-            availableRunways: runways,
-            selectedRunwayIndex: runwayIndex,
-            runwayBearing: newRunway.magneticBearing,
-            runwayLength: newRunway.length,
-            runwaySlope,
-            elevation: newRunway.elevation,
-            weight: weightKgs,
-            windDirection,
-            windMagnitude: parsedMetar.wind.speed_kts,
-            windEntry,
-            oat: parsedMetar.temperature.celsius,
-            qnh: parsedMetar.barometer.mb,
-          }),
-        );
-      } else {
-        throw new Error('Failed to import OFP');
-      }
+      dispatch(
+        setTakeoffValues({
+          weight: weightKgs,
+          windDirection,
+          windMagnitude: parsedMetar.wind.speed_kts,
+          windEntry,
+          oat: parsedMetar.temperature.celsius,
+          qnh: parsedMetar.barometer.mb,
+        }),
+      );
     } catch (e) {
       toast.error(e);
     }
@@ -671,7 +666,7 @@ export const TakeoffWidget = () => {
                     className="w-24 text-center uppercase"
                     value={icao}
                     placeholder="ICAO"
-                    onChange={handleICAOChange}
+                    onChange={handleIcaoChange}
                     maxLength={4}
                   />
                 </Label>
