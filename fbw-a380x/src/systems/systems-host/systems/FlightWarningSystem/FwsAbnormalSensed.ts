@@ -2598,7 +2598,7 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Fctl,
       limitationsApprLdg: () => ['800400002'],
       inopSysAllPhases: () => [
-        '270300001',
+        '270300002',
         !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get()
           ? '290100011'
           : '290100001',
@@ -2629,7 +2629,7 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Fctl,
       limitationsApprLdg: () => ['800400002'],
       inopSysAllPhases: () => [
-        '270300001',
+        '270300003',
         !this.fws.sec1Healthy.get() && !this.fws.sec2Healthy.get() && !this.fws.sec3Healthy.get()
           ? '290100011'
           : '290100001',
