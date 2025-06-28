@@ -251,6 +251,7 @@ class SystemsHost extends BaseInstrument {
 
     this.allFwsFailed.sub((a) => {
       if (a && this.fwsCore !== undefined) {
+        // Warning: Potential memory leak, if not all subscriptions are collected and cleaned up properly
         this.fwsCore.destroy();
         this.fwsCore = undefined;
         FwsCore.sendFailureWarning(this.bus);
@@ -259,16 +260,12 @@ class SystemsHost extends BaseInstrument {
       }
     }, true);
 
-    MappedSubject.create(
-      ([failed, startup]) => !failed && startup,
-      this.fws1Failed,
-      this.fwsCore?.startupCompleted,
-    ).sub((avail) => SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, avail), true);
-    MappedSubject.create(
-      ([failed, startup]) => !failed && startup,
-      this.fws2Failed,
-      this.fwsCore?.startupCompleted,
-    ).sub((avail) => SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, avail), true);
+    this.fws1Failed.sub((failed) => {
+      SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, !failed && this.fwsCore?.startupCompleted);
+    }, true);
+    this.fws2Failed.sub((failed) => {
+      SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, !failed && this.fwsCore?.startupCompleted);
+    }, true);
 
     this.fwsEcpFailed.sub((v) => SimVar.SetSimVarValue('L:A32NX_FWS_ECP_FAILED', SimVarValueType.Bool, v), true);
   }

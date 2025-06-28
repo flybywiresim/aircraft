@@ -1643,6 +1643,9 @@ export class FwsCore {
       this.startupCompleted.sub((v) => {
         if (v) {
           this.init();
+
+          this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+
           this.normalChecklists.reset(null);
           this.abnormalNonSensed.reset();
           this.activeDeferredProceduresList.clear();
