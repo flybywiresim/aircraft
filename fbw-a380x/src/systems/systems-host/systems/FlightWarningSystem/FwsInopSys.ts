@@ -268,6 +268,22 @@ export class FwsInopSys {
       notActiveWhenItemActive: ['270300004'],
       redudancyLoss: true,
     },
+    // FIXME uncomment when Bruno's PR is merged
+    /*270300010: {
+      // PRIM 1
+      simVarIsActive: this.fws.prim1FaultCondition,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    270300011: {
+      // PRIM 2
+      simVarIsActive: this.fws.prim2FaultCondition,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    270300012: {
+      // PRIM 3
+      simVarIsActive: this.fws.prim3FaultCondition,
+      phase: FwsInopSysPhases.AllPhases,
+    },*/
     290100001: {
       // PART SPLRs
       simVarIsActive: this.partSplrs,
