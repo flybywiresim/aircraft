@@ -487,7 +487,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     {this.altnEta}
                   </div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                    <span class={{ 'mfd-value': true }}>{this.altnEfob}</span>
+                    <span class="mfd-value">{this.altnEfobText}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                 </div>
