@@ -148,6 +148,9 @@ class SystemsHost extends BaseInstrument {
   private readonly fws1Failed = Subject.create(false);
   private readonly fws2Failed = Subject.create(false);
 
+  private readonly fws1Healthy = Subject.create(false);
+  private readonly fws2Healthy = Subject.create(false);
+
   private readonly fwsEcpFailed = Subject.create(false);
 
   private readonly allFwsFailed = MappedSubject.create(
@@ -260,11 +263,11 @@ class SystemsHost extends BaseInstrument {
       }
     }, true);
 
-    this.fws1Failed.sub((failed) => {
-      SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, !failed && this.fwsCore?.startupCompleted);
+    this.fws1Healthy.sub((healthy) => {
+      SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, healthy);
     }, true);
-    this.fws2Failed.sub((failed) => {
-      SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, !failed && this.fwsCore?.startupCompleted);
+    this.fws2Healthy.sub((healthy) => {
+      SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, healthy);
     }, true);
 
     this.fwsEcpFailed.sub((v) => SimVar.SetSimVarValue('L:A32NX_FWS_ECP_FAILED', SimVarValueType.Bool, v), true);
@@ -313,6 +316,9 @@ class SystemsHost extends BaseInstrument {
     this.fws2Failed.set(
       this.failuresConsumer.isActive(A380Failure.Fws2) || this.fws2ResetPbStatus.get() || !this.fws2Powered.get(),
     );
+
+    this.fws1Healthy.set(!this.fws1Failed.get() && this.fws1Powered.get() && this.fwsCore?.startupCompleted.get());
+    this.fws2Healthy.set(!this.fws2Failed.get() && this.fws2Powered.get() && this.fwsCore?.startupCompleted.get());
 
     const ecpNotReachable =
       !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
