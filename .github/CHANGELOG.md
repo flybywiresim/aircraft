@@ -88,6 +88,7 @@
 1. [ATSU] Fixed a case where "no active atc" is returned but station is online - @heclak (Heclak)
 1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
 1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
+1. [A32NX/FWS] Improve altitude alert logic, add PFD indications, improve AP OFF warning logic - @lukecologne (luke)
 
 ## 0.13.0
 
