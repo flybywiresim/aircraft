@@ -477,7 +477,6 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
     if (this.needsUpdate) {
       this.needsUpdate = false;
 
-      // FIX ME indicatior should disappear 3 seconds after takeoff and 4 seconds after go aroud initaition. Use better logic without FM flight phase?
       if (
         ((this.tailStrikeConditions.tla1 >= 35 ||
           this.tailStrikeConditions.tla2 >= 35 ||
