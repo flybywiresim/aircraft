@@ -340,7 +340,13 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
     leftGearCompressed: true,
     rightGearCompressed: true,
     approachPhase: false,
+    goAroundPhase: false,
   };
+
+  private takeoffTimer: number | null = null;
+  private goAroundTimer: number | null = null;
+  private takeoffTimerActive = false;
+  private goAroundTimerActive = false;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -373,9 +379,59 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
       .whenChanged()
       .handle((fp) => {
         this.tailStrikeConditions.approachPhase = fp === 5;
+        this.tailStrikeConditions.goAroundPhase = fp === 6;
+        if (fp === 6) {
+          if (!this.goAroundTimerActive && this.goAroundTimer === null) {
+            this.goAroundTimerActive = true;
+            this.goAroundTimer = setTimeout(() => {
+              this.goAroundTimerActive = false;
+              this.goAroundTimer = null;
+            }, 4000) as unknown as number;
+          }
+        } else {
+          this.goAroundTimerActive = false;
+          if (this.goAroundTimer !== null) {
+            clearTimeout(this.goAroundTimer);
+            this.goAroundTimer = null;
+          }
+        }
         this.needsUpdate = true;
       });
 
+    const handleGearCompression = () => {
+      if (!this.tailStrikeConditions.leftGearCompressed && !this.tailStrikeConditions.rightGearCompressed) {
+        if (!this.takeoffTimerActive && this.takeoffTimer === null) {
+          this.takeoffTimerActive = true;
+          this.takeoffTimer = setTimeout(() => {
+            this.takeoffTimerActive = false;
+            this.takeoffTimer = null;
+          }, 3000) as unknown as number;
+        }
+      } else {
+        this.takeoffTimerActive = false;
+        if (this.takeoffTimer !== null) {
+          clearTimeout(this.takeoffTimer);
+          this.takeoffTimer = null;
+        }
+      }
+      this.needsUpdate = true;
+    };
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((lg) => {
+        this.tailStrikeConditions.leftGearCompressed = lg;
+        handleGearCompression();
+      });
+
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((rg) => {
+        this.tailStrikeConditions.rightGearCompressed = rg;
+        handleGearCompression();
+      });
     sub
       .on('tla1')
       .whenChanged()
@@ -431,7 +487,9 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
           this.tailStrikeConditions.rightGearCompressed) ||
         (this.tailStrikeConditions.approachPhase &&
           this.tailStrikeConditions.altitude.value < 400 &&
-          this.tailStrikeConditions.speed > 50)
+          this.tailStrikeConditions.speed > 50) ||
+        this.goAroundTimerActive ||
+        this.takeoffTimerActive
       ) {
         this.tailStrike.instance.style.display = 'inline';
       } else {
