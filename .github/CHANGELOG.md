@@ -1,9 +1,14 @@
 # Changelog
 
+<!-- The changelog is used to record user-visible changes since the previous stable release. -->
+<!-- For example a fix for a bug that was only in the dev version, and not the stable, would not be recorded here. -->
+<!-- Code refactoring and similar changes with no user-visible effects would also not be recorded here. -->
+<!-- The text should focus on changes the user would see, rather than code changes that are not visible. -->
 <!-- ⚠⚠ Please follow the format provided ⚠⚠ -->
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+<!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
 ## 0.14.0
 
