@@ -2449,9 +2449,9 @@ export class FwsAbnormalSensed {
         true,
         true,
         this.fws.twoPrimsFailed.get(),
-        !this.fws.aircraftOnGround.get() &&
+        this.fws.fuelConsumptIncreasePreCondition.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
-        !this.fws.aircraftOnGround.get() &&
+        this.fws.fmsPredUnreliablePreCondition.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
         this.fws.allPrimFailed.get(),
         this.fws.allPrimFailed.get(),
@@ -2484,9 +2484,9 @@ export class FwsAbnormalSensed {
         this.fws.dcEhaPowered.get(),
         !this.fws.dcEhaPowered.get(),
         this.fws.twoPrimsFailed.get(),
-        !this.fws.aircraftOnGround.get() &&
+        this.fws.fuelConsumptIncreasePreCondition.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
-        !this.fws.aircraftOnGround.get() &&
+        this.fws.fmsPredUnreliablePreCondition.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
         this.fws.allPrimFailed.get(),
         this.fws.allPrimFailed.get(),
@@ -2519,9 +2519,9 @@ export class FwsAbnormalSensed {
         true,
         true,
         this.fws.twoPrimsFailed.get(),
-        !this.fws.aircraftOnGround.get() &&
+        this.fws.fuelConsumptIncreasePreCondition.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
-        !this.fws.aircraftOnGround.get() &&
+        this.fws.fmsPredUnreliablePreCondition.get() &&
           (this.fws.primTwoAndThreeFailed.get() || this.fws.prim2FailedBeforeTakeoff.read()),
         this.fws.allPrimFailed.get(),
         this.fws.allPrimFailed.get(),

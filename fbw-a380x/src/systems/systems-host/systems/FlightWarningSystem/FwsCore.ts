@@ -1672,6 +1672,14 @@ export class FwsCore {
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
 
+  public readonly fmsPredUnreliablePreCondition = this.aircraftOnGround.map(SubscribableMapFunctions.not());
+
+  public readonly fuelConsumptIncreasePreCondition = MappedSubject.create(
+    ([onGround, engRunning]) => !onGround && engRunning,
+    this.aircraftOnGround,
+    this.oneEngineRunning,
+  );
+
   private static pushKeyUnique(val: () => string[] | undefined, pushTo: string[]) {
     if (val) {
       // Push only unique keys
@@ -1890,6 +1898,8 @@ export class FwsCore {
       this.engine2AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
+      this.fmsPredUnreliablePreCondition,
+      this.fuelConsumptIncreasePreCondition,
     );
   }
 
