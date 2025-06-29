@@ -17,7 +17,8 @@ pub enum CSU {
     ConfFull,
     OutOfDetent,
     Fault,
-    Misadjust,
+    Misadjust, // This is triggered when flaps lever moves from 0 to 4 or viceversa
+               // with no intermediate steps. Not implemented because it can impact the simulation.
 }
 impl CSU {
     pub fn is_valid(value: CSU) -> bool {
@@ -72,7 +73,7 @@ pub struct CSUMonitor {
     previous_switch_pattern: (SwitchPattern, SwitchPattern),
     previous_detent: CSU,
 
-    last_valid_detent: (SwitchPattern, SwitchPattern),
+    last_valid_switch_pattern: (SwitchPattern, SwitchPattern),
     time_since_last_valid_detent: Duration,
 }
 impl CSUMonitor {
@@ -83,7 +84,7 @@ impl CSUMonitor {
             current_detent: CSU::Conf0,
             previous_switch_pattern: (0b11000, 0b11000),
             previous_detent: CSU::Conf0,
-            last_valid_detent: (0b11000, 0b11000),
+            last_valid_switch_pattern: (0b11000, 0b11000),
             time_since_last_valid_detent: Duration::ZERO,
         }
     }
@@ -93,24 +94,14 @@ impl CSUMonitor {
     }
 
     fn get_csu_configuration(&self) -> CSU {
-        let current_config = CSU::get_csu_configuration(
-            self.current_switch_pattern.0,
-            self.current_switch_pattern.1,
-        );
-        let previous_config = CSU::get_csu_configuration(
-            self.previous_switch_pattern.0,
-            self.previous_switch_pattern.1,
-        );
-
-        match (current_config, previous_config) {
-            (CSU::Conf0, CSU::ConfFull) => CSU::Misadjust,
-            (CSU::ConfFull, CSU::Conf0) => CSU::Misadjust,
-            (a, _) => a,
-        }
+        CSU::get_csu_configuration(self.current_switch_pattern.0, self.current_switch_pattern.1)
     }
 
-    pub fn last_valid_detent(&self) -> CSU {
-        CSU::get_csu_configuration(self.last_valid_detent.0, self.last_valid_detent.1)
+    pub fn get_last_valid_detent(&self) -> CSU {
+        CSU::get_csu_configuration(
+            self.last_valid_switch_pattern.0,
+            self.last_valid_switch_pattern.1,
+        )
     }
 
     pub fn time_since_last_valid_detent(&self) -> Duration {
@@ -153,7 +144,7 @@ impl SimulationElement for CSUMonitor {
         self.current_detent = self.get_csu_configuration();
 
         if CSU::is_valid(self.current_detent) {
-            self.last_valid_detent = new_switch_pattern;
+            self.last_valid_switch_pattern = new_switch_pattern;
             self.time_since_last_valid_detent = Duration::ZERO;
         }
     }
@@ -232,7 +223,7 @@ mod tests {
         }
 
         fn get_csu_last_valid_position(&self) -> CSU {
-            self.query(|a| a.csu_monitor.last_valid_detent())
+            self.query(|a| a.csu_monitor.get_last_valid_detent())
         }
 
         fn get_csu_time_since_last_valid_position(&self) -> Duration {
@@ -341,35 +332,5 @@ mod tests {
                 .as_millis()
                 <= 100
         );
-    }
-
-    #[test]
-    fn flaps_test_csu_misadjust() {
-        let mut test_bed = test_bed_with().run_one_tick();
-
-        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf0);
-        assert_eq!(test_bed.get_csu_previous_position(), CSU::Conf0);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf0);
-
-        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_csu_current_position(), CSU::Misadjust);
-        assert_eq!(test_bed.get_csu_previous_position(), CSU::Conf0);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf0);
-
-        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_csu_current_position(), CSU::Misadjust);
-        assert_eq!(test_bed.get_csu_previous_position(), CSU::Misadjust);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf0);
-
-        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf1);
-        assert_eq!(test_bed.get_csu_previous_position(), CSU::Misadjust);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf1);
-
-        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf2);
-        assert_eq!(test_bed.get_csu_previous_position(), CSU::Conf1);
-        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf2);
     }
 }
