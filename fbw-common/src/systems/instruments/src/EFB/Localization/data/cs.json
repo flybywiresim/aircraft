@@ -343,7 +343,7 @@
       "WindDirection": "Směr větru",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Rychlost větru",
-      "WindMagnitudeUnit": "kts nebo °/kts"
+      "WindMagnitudeUnit": "kts"
     },
     "SYNC": "SYNC",
     "Takeoff": {
@@ -404,7 +404,7 @@
         "Wet": "Mokrý"
       },
       "RunwayElevation": "Výška dráhy",
-      "RunwayElevationUnit": "ft AMSL",
+      "RunwayElevationUnit": "ft",
       "RunwayHeading": "Kurz dráhy",
       "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
