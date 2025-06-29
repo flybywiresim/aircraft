@@ -92,7 +92,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
             <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
             <MarkerBeaconIndicator bus={this.props.bus} />
-            <LsTitle bus={this.props.bus} />
+            {/* <LsTitle bus={this.props.bus} /> */}
           </g>
         </g>
 
@@ -782,45 +782,45 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
   }
 }
 
-class LsTitle extends DisplayComponent<{ bus: EventBus }> {
-  private readonly lsTitle = FSComponent.createRef<SVGTextElement>();
+// class LsTitle extends DisplayComponent<{ bus: EventBus }> {
+//   private readonly lsTitle = FSComponent.createRef<SVGTextElement>();
 
-  private readonly hasLoc = ConsumerSubject.create(null, false);
+//   private readonly hasLoc = ConsumerSubject.create(null, false);
 
-  private readonly lsButton = ConsumerSubject.create(null, false);
+//   private readonly lsButton = ConsumerSubject.create(null, false);
 
-  private readonly ilsTitleShown = MappedSubject.create(
-    ([hasLoc, lsButton]) => hasLoc && lsButton,
-    this.hasLoc,
-    this.lsButton,
-  );
+//   private readonly ilsTitleShown = MappedSubject.create(
+//     ([hasLoc, lsButton]) => hasLoc && lsButton,
+//     this.hasLoc,
+//     this.lsButton,
+//   );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
+//   onAfterRender(node: VNode): void {
+//     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
+//     const sub = this.props.bus.getSubscriber<HUDSimvars>();
 
-    this.hasLoc.setConsumer(sub.on('hasLoc').whenChanged());
-    this.lsButton.setConsumer(sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button').whenChanged());
+//     this.hasLoc.setConsumer(sub.on('hasLoc').whenChanged());
+//     this.lsButton.setConsumer(sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button').whenChanged());
 
-    // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-    this.ilsTitleShown.sub((it) => {
-      if (it) {
-        this.lsTitle.instance.style.display = 'inline';
-      } else {
-        this.lsTitle.instance.style.display = 'none';
-      }
-    });
-  }
+//     // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
+//     this.ilsTitleShown.sub((it) => {
+//       if (it) {
+//         this.lsTitle.instance.style.display = 'inline';
+//       } else {
+//         this.lsTitle.instance.style.display = 'none';
+//       }
+//     });
+//   }
 
-  render(): VNode {
-    return (
-      <text class="FontMedium Green MiddleAlign" ref={this.lsTitle} x="905" y="800">
-        ILS
-      </text>
-    );
-  }
-}
+//   render(): VNode {
+//     return (
+//       <text class="FontMedium Green MiddleAlign" ref={this.lsTitle} x="905" y="800">
+//         ILS
+//       </text>
+//     );
+//   }
+// }
 
 class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
   private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();

@@ -3,6 +3,8 @@ import { UpdatableSimVarPublisher } from '../../MsfsAvionicsCommon/UpdatableSimV
 import { HUDSyntheticRunway, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 export interface HUDSimvars {
+  hudLPos: number;
+  hudRPos: number;
   rev2: number;
   rev3: number;
   rev2Pos: number;
@@ -199,6 +201,8 @@ export interface HUDSimvars {
 }
 
 export enum HUDVars {
+  hudLPos = 'L:A320_Neo_HUD_L_POS',
+  hudRPos = 'L:A320_Neo_HUD_R_POS',
   eng2State = 'L:A32NX_ENGINE_STATE:2',
   eng3State = 'L:A32NX_ENGINE_STATE:3',
   rev2 = 'L:A32NX_AUTOTHRUST_REVERSE:2',
@@ -396,6 +400,8 @@ export enum HUDVars {
 /** A publisher to poll and publish nav/com simvars. */
 export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
   private static simvars = new Map<keyof HUDSimvars, SimVarDefinition>([
+    ['hudLPos', { name: HUDVars.hudLPos, type: SimVarValueType.Number }],
+    ['hudRPos', { name: HUDVars.hudRPos, type: SimVarValueType.Number }],
     ['eng2State', { name: HUDVars.eng2State, type: SimVarValueType.Number }],
     ['eng3State', { name: HUDVars.eng3State, type: SimVarValueType.Number }],
     ['rev2', { name: HUDVars.rev2, type: SimVarValueType.Number }],
