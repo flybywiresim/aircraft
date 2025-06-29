@@ -1,5 +1,5 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::hydraulic::command_sensor_unit::{FlapsHandle, CSU};
+use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::shared::{AdirsMeasurementOutputs, PositionPickoffUnit};
 
 use systems::simulation::{
@@ -111,14 +111,14 @@ impl SlatFlapControlComputer {
 
     fn generate_configuration(
         &self,
-        flaps_handle: &FlapsHandle,
+        csu_monitor: &CSUMonitor,
         context: &UpdateContext,
         adirs: &impl AdirsMeasurementOutputs,
     ) -> FlapsConf {
         // Ignored `CSU::OutOfDetent` and `CSU::Fault` positions due to simplified SFCC.
         match (
-            flaps_handle.previous_position(),
-            flaps_handle.current_position(),
+            csu_monitor.get_previous_detent(),
+            csu_monitor.get_current_detent(),
         ) {
             (CSU::Conf0 | CSU::Conf1, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
@@ -233,19 +233,20 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn flap_load_relief_active(&self, flaps_handle: &FlapsHandle) -> bool {
-        flaps_handle.current_position() == CSU::Conf2 && self.flaps_conf != FlapsConf::Conf2
-            || flaps_handle.current_position() == CSU::Conf3 && self.flaps_conf != FlapsConf::Conf3
-            || flaps_handle.current_position() == CSU::ConfFull
+    fn flap_load_relief_active(&self, flaps_handle: &CSUMonitor) -> bool {
+        flaps_handle.get_current_detent() == CSU::Conf2 && self.flaps_conf != FlapsConf::Conf2
+            || flaps_handle.get_current_detent() == CSU::Conf3
+                && self.flaps_conf != FlapsConf::Conf3
+            || flaps_handle.get_current_detent() == CSU::ConfFull
                 && self.flaps_conf != FlapsConf::ConfFull
     }
 
-    fn cruise_baulk_active(&self, flaps_handle: &FlapsHandle) -> bool {
-        flaps_handle.current_position() == CSU::Conf1 && self.flaps_conf == FlapsConf::Conf0
+    fn cruise_baulk_active(&self, flaps_handle: &CSUMonitor) -> bool {
+        flaps_handle.get_current_detent() == CSU::Conf1 && self.flaps_conf == FlapsConf::Conf0
     }
 
-    fn alpha_speed_lock_active(&self, flaps_handle: &FlapsHandle) -> bool {
-        flaps_handle.current_position() == CSU::Conf0
+    fn alpha_speed_lock_active(&self, flaps_handle: &CSUMonitor) -> bool {
+        flaps_handle.get_current_detent() == CSU::Conf0
             && (self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F)
     }
 
@@ -264,11 +265,11 @@ impl SlatFlapControlComputer {
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsMeasurementOutputs,
-        flaps_handle: &FlapsHandle,
+        flaps_handle: &CSUMonitor,
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
-        self.flaps_handle_position = flaps_handle.current_position();
+        self.flaps_handle_position = flaps_handle.get_current_detent();
         self.flaps_conf = self.generate_configuration(flaps_handle, context, adirs);
         self.flap_load_relief_active = self.flap_load_relief_active(flaps_handle);
         self.cruise_baulk_active = self.cruise_baulk_active(flaps_handle);
@@ -446,14 +447,14 @@ impl SimulationElement for SlatFlapControlComputer {
 
 pub struct SlatFlapComplex {
     sfcc: SlatFlapControlComputer,
-    flaps_handle: FlapsHandle,
+    csu_monitor: CSUMonitor,
 }
 
 impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: SlatFlapControlComputer::new(context),
-            flaps_handle: FlapsHandle::new(context),
+            csu_monitor: CSUMonitor::new(context),
         }
     }
 
@@ -467,7 +468,7 @@ impl SlatFlapComplex {
         self.sfcc.update(
             context,
             adirs,
-            &self.flaps_handle,
+            &self.csu_monitor,
             flaps_feedback,
             slats_feedback,
         );
@@ -483,7 +484,7 @@ impl SlatFlapComplex {
 }
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.flaps_handle.accept(visitor);
+        self.csu_monitor.accept(visitor);
         self.sfcc.accept(visitor);
         visitor.visit(self);
     }
