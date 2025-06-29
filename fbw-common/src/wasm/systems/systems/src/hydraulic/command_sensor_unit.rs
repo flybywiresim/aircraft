@@ -4,8 +4,10 @@ use crate::simulation::{
     InitContext, Read, SimulationElement, SimulatorReader, UpdateContext, VariableIdentifier,
 };
 
-// There is one more state called Misadjust. It happens when the position detected
-// goes from 0 to FULL (or viceversa) with no intermediate steps
+// This type is used to represent the position of a 5bit switch. Therefore, the
+// value must always be <= 11111.
+type SwitchPattern = u8;
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum CSU {
     Conf0 = 0,
@@ -13,8 +15,9 @@ pub enum CSU {
     Conf2,
     Conf3,
     ConfFull,
-    OutOfDetent, // Between detents
-    Fault,       // Anything not matching the above
+    OutOfDetent,
+    Fault,
+    Misadjust,
 }
 impl CSU {
     pub fn is_valid(value: CSU) -> bool {
@@ -23,95 +26,136 @@ impl CSU {
             CSU::Conf0 | CSU::Conf1 | CSU::Conf2 | CSU::Conf3 | CSU::ConfFull
         )
     }
-}
-impl From<u8> for CSU {
-    // `value` is the flaps lever position from MSFS.
-    fn from(value: u8) -> Self {
-        // Because MSFS doesn't simulate out of detent positions, this match statement always returns a valid digit.
-        // For Rust completeness, any other case is marked as `0b00000` to return `CSU::Fault`.
-        let u8_to_switch = match value {
-            0 => 0b11000,
-            1 => 0b01100,
-            2 => 0b00110,
-            3 => 0b00011,
-            4 => 0b10001,
-            _ => 0b00000,
-        };
 
-        // Gray code!
-        match u8_to_switch {
-            0b11000 => CSU::Conf0,
-            0b01000 => CSU::OutOfDetent,
-            0b01100 => CSU::Conf1,
-            0b00100 => CSU::OutOfDetent,
-            0b00110 => CSU::Conf2,
-            0b00010 => CSU::OutOfDetent,
-            0b00011 => CSU::Conf3,
-            0b00001 => CSU::OutOfDetent,
-            0b10001 => CSU::ConfFull,
+    // The CSU is made of two parallel switches: this is why there is `switch_pattern_1` and
+    // `switch_pattern_2`.
+    pub fn get_csu_configuration(
+        switch_pattern_1: SwitchPattern,
+        switch_pattern_2: SwitchPattern,
+    ) -> CSU {
+        match (switch_pattern_1, switch_pattern_2) {
+            (0b11000, 0b11000) => CSU::Conf0,
+            (0b11000, 0b01000) => CSU::OutOfDetent,
+            (0b01000, 0b01000) => CSU::OutOfDetent,
+            (0b01000, 0b01100) => CSU::OutOfDetent,
+            (0b01000, 0b11000) => CSU::OutOfDetent,
+            (0b01100, 0b01000) => CSU::OutOfDetent,
+            (0b01100, 0b01100) => CSU::Conf1,
+            (0b01100, 0b00100) => CSU::OutOfDetent,
+            (0b00100, 0b00100) => CSU::OutOfDetent,
+            (0b00100, 0b00110) => CSU::OutOfDetent,
+            (0b00100, 0b01100) => CSU::OutOfDetent,
+            (0b00110, 0b00100) => CSU::OutOfDetent,
+            (0b00110, 0b00110) => CSU::Conf2,
+            (0b00110, 0b00010) => CSU::OutOfDetent,
+            (0b00010, 0b00010) => CSU::OutOfDetent,
+            (0b00010, 0b00011) => CSU::OutOfDetent,
+            (0b00010, 0b00110) => CSU::OutOfDetent,
+            (0b00011, 0b00010) => CSU::OutOfDetent,
+            (0b00011, 0b00011) => CSU::Conf3,
+            (0b00011, 0b00001) => CSU::OutOfDetent,
+            (0b00001, 0b00001) => CSU::OutOfDetent,
+            (0b00001, 0b10001) => CSU::OutOfDetent,
+            (0b10001, 0b00001) => CSU::OutOfDetent,
+            (0b00001, 0b00011) => CSU::OutOfDetent,
+            (0b10001, 0b10001) => CSU::ConfFull,
             _ => CSU::Fault,
         }
     }
 }
 
-/// A struct to read the handle position
-pub struct FlapsHandle {
+pub struct CSUMonitor {
     handle_position_id: VariableIdentifier,
 
-    current_position: CSU,
-    previous_position: CSU,
+    current_switch_pattern: (SwitchPattern, SwitchPattern),
+    current_detent: CSU,
+    previous_switch_pattern: (SwitchPattern, SwitchPattern),
+    previous_detent: CSU,
 
-    last_valid_position: CSU,
-    time_since_last_valid_position: Duration,
+    last_valid_detent: (SwitchPattern, SwitchPattern),
+    time_since_last_valid_detent: Duration,
 }
-
-impl FlapsHandle {
+impl CSUMonitor {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
-            current_position: CSU::Conf0,
-            previous_position: CSU::Conf0,
-            last_valid_position: CSU::Conf0,
-            time_since_last_valid_position: Duration::ZERO,
+            current_switch_pattern: (0b11000, 0b11000),
+            current_detent: CSU::Conf0,
+            previous_switch_pattern: (0b11000, 0b11000),
+            previous_detent: CSU::Conf0,
+            last_valid_detent: (0b11000, 0b11000),
+            time_since_last_valid_detent: Duration::ZERO,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.time_since_last_valid_position += context.delta();
+        self.time_since_last_valid_detent += context.delta();
     }
 
-    pub fn last_valid_position(&self) -> CSU {
-        self.last_valid_position
+    fn get_csu_configuration(&self) -> CSU {
+        let current_config = CSU::get_csu_configuration(
+            self.current_switch_pattern.0,
+            self.current_switch_pattern.1,
+        );
+        let previous_config = CSU::get_csu_configuration(
+            self.previous_switch_pattern.0,
+            self.previous_switch_pattern.1,
+        );
+
+        match (current_config, previous_config) {
+            (CSU::Conf0, CSU::ConfFull) => CSU::Misadjust,
+            (CSU::ConfFull, CSU::Conf0) => CSU::Misadjust,
+            (a, _) => a,
+        }
     }
 
-    pub fn time_since_last_valid_position(&self) -> Duration {
-        self.time_since_last_valid_position
+    pub fn last_valid_detent(&self) -> CSU {
+        CSU::get_csu_configuration(self.last_valid_detent.0, self.last_valid_detent.1)
     }
 
-    pub fn current_position(&self) -> CSU {
-        self.current_position
+    pub fn time_since_last_valid_detent(&self) -> Duration {
+        self.time_since_last_valid_detent
     }
 
-    pub fn previous_position(&self) -> CSU {
-        self.previous_position
+    pub fn get_current_detent(&self) -> CSU {
+        self.current_detent
+    }
+
+    pub fn get_previous_detent(&self) -> CSU {
+        self.previous_detent
     }
 }
-
-// Currently the FLAPS_HANDLE_INDEX backend doesn't support `OutOfDetent` position
-// because it's mapped between 0 to 4. Changing the mapping of FLAPS_HANDLE_INDEX
-// has significant repercussions over all the systems which read it. However, for
-// completeness of the CSU enum, I included the `OutOfDetent` position for future
-// use and complete SFCC implementation.
-impl SimulationElement for FlapsHandle {
+impl SimulationElement for CSUMonitor {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.previous_position = self.current_position;
-
-        let new_position = CSU::from(Read::<u8>::read(reader, &self.handle_position_id));
-        if CSU::is_valid(new_position) {
-            self.last_valid_position = new_position;
-            self.time_since_last_valid_position = Duration::ZERO;
+        // The MSFS flap handle only delivers valid positions.
+        // TODO: it could possible to take into account `CSU::OutOfBounds` positions
+        // when using an axis binded to a flap lever or interfacing with a hardware CSU.
+        //
+        // The output is a tuple with identical values to simulate two parallel switches as per
+        // the real plane.
+        fn to_switch_pattern(value: u8) -> (SwitchPattern, SwitchPattern) {
+            match value {
+                0 => (0b11000, 0b11000),
+                1 => (0b01100, 0b01100),
+                2 => (0b00110, 0b00110),
+                3 => (0b00011, 0b00011),
+                4 => (0b10001, 0b10001),
+                _ => (0b00000, 0b00000), // Setting a value that leads to `CSU::Fault` to complete all
+                                         // the alternatives of the match statement.
+            }
         }
-        self.current_position = new_position;
+
+        self.previous_switch_pattern = self.current_switch_pattern;
+        self.previous_detent = self.current_detent;
+
+        let new_switch_pattern = to_switch_pattern(Read::read(reader, &self.handle_position_id));
+        self.current_switch_pattern = new_switch_pattern;
+        self.current_detent = self.get_csu_configuration();
+
+        if CSU::is_valid(self.current_detent) {
+            self.last_valid_detent = new_switch_pattern;
+            self.time_since_last_valid_detent = Duration::ZERO;
+        }
     }
 }
 
@@ -126,26 +170,26 @@ mod tests {
     use std::time::Duration;
 
     struct TestAircraft {
-        flaps_handle: FlapsHandle,
+        csu_monitor: CSUMonitor,
     }
 
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                flaps_handle: FlapsHandle::new(context),
+                csu_monitor: CSUMonitor::new(context),
             }
         }
     }
 
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.flaps_handle.update(context);
+            self.csu_monitor.update(context);
         }
     }
 
     impl SimulationElement for TestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.flaps_handle.accept(visitor);
+            self.csu_monitor.accept(visitor);
             visitor.visit(self);
         }
     }
@@ -180,19 +224,19 @@ mod tests {
         }
 
         fn get_csu_current_position(&self) -> CSU {
-            self.query(|a| a.flaps_handle.current_position())
+            self.query(|a| a.csu_monitor.get_current_detent())
         }
 
         fn get_csu_previous_position(&self) -> CSU {
-            self.query(|a| a.flaps_handle.previous_position())
+            self.query(|a| a.csu_monitor.get_previous_detent())
         }
 
         fn get_csu_last_valid_position(&self) -> CSU {
-            self.query(|a| a.flaps_handle.last_valid_position())
+            self.query(|a| a.csu_monitor.last_valid_detent())
         }
 
         fn get_csu_time_since_last_valid_position(&self) -> Duration {
-            self.query(|a| a.flaps_handle.time_since_last_valid_position())
+            self.query(|a| a.csu_monitor.time_since_last_valid_detent())
         }
     }
 
@@ -225,6 +269,7 @@ mod tests {
         assert!(CSU::is_valid(CSU::ConfFull));
         assert!(!CSU::is_valid(CSU::OutOfDetent));
         assert!(!CSU::is_valid(CSU::Fault));
+        assert!(!CSU::is_valid(CSU::Misadjust));
     }
 
     #[test]
@@ -296,5 +341,35 @@ mod tests {
                 .as_millis()
                 <= 100
         );
+    }
+
+    #[test]
+    fn flaps_test_csu_misadjust() {
+        let mut test_bed = test_bed_with().run_one_tick();
+
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf0);
+        assert_eq!(test_bed.get_csu_previous_position(), CSU::Conf0);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf0);
+
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Misadjust);
+        assert_eq!(test_bed.get_csu_previous_position(), CSU::Conf0);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf0);
+
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Misadjust);
+        assert_eq!(test_bed.get_csu_previous_position(), CSU::Misadjust);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf0);
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf1);
+        assert_eq!(test_bed.get_csu_previous_position(), CSU::Misadjust);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf1);
+
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf2);
+        assert_eq!(test_bed.get_csu_previous_position(), CSU::Conf1);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf2);
     }
 }

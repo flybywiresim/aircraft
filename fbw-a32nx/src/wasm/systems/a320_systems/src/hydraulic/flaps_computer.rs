@@ -1,5 +1,5 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::hydraulic::command_sensor_unit::{FlapsHandle, CSU};
+use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::shared::PositionPickoffUnit;
 
 use systems::simulation::{
@@ -85,13 +85,13 @@ impl SlatFlapControlComputer {
 
     fn generate_configuration(
         &self,
-        flaps_handle: &FlapsHandle,
+        csu_monitor: &CSUMonitor,
         context: &UpdateContext,
     ) -> FlapsConf {
         // Ignored `CSU::OutOfDetent` and `CSU::Fault` positions due to simplified SFCC.
         match (
-            flaps_handle.previous_position(),
-            flaps_handle.current_position(),
+            csu_monitor.get_previous_detent(),
+            csu_monitor.get_current_detent(),
         ) {
             (CSU::Conf0, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
@@ -129,7 +129,7 @@ impl SlatFlapControlComputer {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_handle: &FlapsHandle,
+        flaps_handle: &CSUMonitor,
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
@@ -301,14 +301,14 @@ impl SimulationElement for SlatFlapControlComputer {
 
 pub struct SlatFlapComplex {
     sfcc: SlatFlapControlComputer,
-    flaps_handle: FlapsHandle,
+    csu_monitor: CSUMonitor,
 }
 
 impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: SlatFlapControlComputer::new(context),
-            flaps_handle: FlapsHandle::new(context),
+            csu_monitor: CSUMonitor::new(context),
         }
     }
 
@@ -319,7 +319,7 @@ impl SlatFlapComplex {
         slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.sfcc
-            .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+            .update(context, &self.csu_monitor, flaps_feedback, slats_feedback);
     }
 
     pub fn flap_demand(&self) -> Option<Angle> {
@@ -332,7 +332,7 @@ impl SlatFlapComplex {
 }
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.flaps_handle.accept(visitor);
+        self.csu_monitor.accept(visitor);
         self.sfcc.accept(visitor);
         visitor.visit(self);
     }
