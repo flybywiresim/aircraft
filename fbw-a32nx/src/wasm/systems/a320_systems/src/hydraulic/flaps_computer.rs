@@ -1,9 +1,10 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
+use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::shared::PositionPickoffUnit;
 
 use systems::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use std::panic;
@@ -17,52 +18,6 @@ enum FlapsConf {
     Conf2,
     Conf3,
     ConfFull,
-}
-
-impl From<u8> for FlapsConf {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => FlapsConf::Conf0,
-            1 => FlapsConf::Conf1,
-            2 => FlapsConf::Conf1F,
-            3 => FlapsConf::Conf2,
-            4 => FlapsConf::Conf3,
-            5 => FlapsConf::ConfFull,
-            i => panic!("Cannot convert from {} to FlapsConf.", i),
-        }
-    }
-}
-
-/// A struct to read the handle position
-struct FlapsHandle {
-    handle_position_id: VariableIdentifier,
-    position: u8,
-    previous_position: u8,
-}
-
-impl FlapsHandle {
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
-            position: 0,
-            previous_position: 0,
-        }
-    }
-
-    fn position(&self) -> u8 {
-        self.position
-    }
-
-    fn previous_position(&self) -> u8 {
-        self.previous_position
-    }
-}
-
-impl SimulationElement for FlapsHandle {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.previous_position = self.position;
-        self.position = reader.read(&self.handle_position_id);
-    }
 }
 
 struct SlatFlapControlComputer {
@@ -130,33 +85,39 @@ impl SlatFlapControlComputer {
 
     fn generate_configuration(
         &self,
-        flaps_handle: &FlapsHandle,
+        csu_monitor: &CSUMonitor,
         context: &UpdateContext,
     ) -> FlapsConf {
-        match (flaps_handle.previous_position(), flaps_handle.position()) {
-            (0, 1)
+        // Ignored `CSU::OutOfDetent` and `CSU::Fault` positions due to simplified SFCC.
+        match (
+            csu_monitor.get_previous_detent(),
+            csu_monitor.get_current_detent(),
+        ) {
+            (CSU::Conf0, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1F
             }
-            (0, 1) => FlapsConf::Conf1,
-            (1, 1)
+            (CSU::Conf0, CSU::Conf1) => FlapsConf::Conf1,
+            (CSU::Conf1, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1
             }
-            (1, 1) => self.flaps_conf,
-            (_, 1)
+            (CSU::Conf1, CSU::Conf1) => self.flaps_conf,
+            (_, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1F
             }
-            (_, 1) => FlapsConf::Conf1,
-            (_, 0) => FlapsConf::Conf0,
-            (from, to) if from != to => FlapsConf::from(to + 1),
+            (_, CSU::Conf1) => FlapsConf::Conf1,
+            (_, CSU::Conf0) => FlapsConf::Conf0,
+            (from, CSU::Conf2) if from != CSU::Conf2 => FlapsConf::Conf2,
+            (from, CSU::Conf3) if from != CSU::Conf3 => FlapsConf::Conf3,
+            (from, CSU::ConfFull) if from != CSU::ConfFull => FlapsConf::ConfFull,
             (_, _) => self.flaps_conf,
         }
     }
@@ -168,7 +129,7 @@ impl SlatFlapControlComputer {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_handle: &FlapsHandle,
+        flaps_handle: &CSUMonitor,
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
@@ -340,14 +301,14 @@ impl SimulationElement for SlatFlapControlComputer {
 
 pub struct SlatFlapComplex {
     sfcc: SlatFlapControlComputer,
-    flaps_handle: FlapsHandle,
+    csu_monitor: CSUMonitor,
 }
 
 impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: SlatFlapControlComputer::new(context),
-            flaps_handle: FlapsHandle::new(context),
+            csu_monitor: CSUMonitor::new(context),
         }
     }
 
@@ -358,7 +319,7 @@ impl SlatFlapComplex {
         slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.sfcc
-            .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+            .update(context, &self.csu_monitor, flaps_feedback, slats_feedback);
     }
 
     pub fn flap_demand(&self) -> Option<Angle> {
@@ -371,7 +332,7 @@ impl SlatFlapComplex {
 }
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.flaps_handle.accept(visitor);
+        self.csu_monitor.accept(visitor);
         self.sfcc.accept(visitor);
         visitor.visit(self);
     }
@@ -383,7 +344,7 @@ mod tests {
     use std::time::Duration;
     use systems::simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
-        Aircraft,
+        Aircraft, Read, SimulatorReader,
     };
 
     use uom::si::{angular_velocity::degree_per_second, pressure::psi};
