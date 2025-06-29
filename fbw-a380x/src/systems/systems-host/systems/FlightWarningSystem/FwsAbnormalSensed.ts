@@ -42,15 +42,25 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
   /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for APPR&LDG.
    * Ideally they're not triggered from faults but rather taken from the system's health status */
   inopSysApprLdg?: () => string[];
-  /** Optional for now: Message IDs of INFO to be displayed on STS page */
+  /**
+   * @deprecated Use FwsInformation instead to display INFOs on STS page
+   */
   info?: () => string[];
-  /** Optional for now: Message IDs of REDUND LOSS systems to be displayed on STS page */
+  /**
+   * @deprecated Use FwsInopSys instead to display REDUND LOSSes on STS page
+   */
   redundLoss?: () => string[];
-  /** Optional for now: Message IDs of LIMITATIONS to be displayed on the EWD for ALL PHASES */
+  /**
+   * @deprecated Use FwsLimitations instead to display LIMITATIONS on STS page
+   */
   limitationsAllPhases?: () => string[];
-  /** Optional for now: Message IDs of LIMITATIONS to be displayed on the EWD for APPR&LDG */
+  /**
+   * @deprecated Use FwsLimitations instead to display LIMITATIONS on STS page
+   */
   limitationsApprLdg?: () => string[];
-  /** Optional for now: Message IDs of LIMITATIONS to be displayed on the PFD lower area */
+  /**
+   * @deprecated Use FwsLimitations instead to display LIMITATIONS on STS page
+   */
   limitationsPfd?: () => string[];
 }
 
