@@ -42,12 +42,14 @@ export class PreFlightPhase extends Phase {
 export class TakeOffPhase extends Phase {
   accelerationAltitudeMsl: number;
 
+  readonly fmAccelerationAltitude = Arinc429Register.empty();
+
   init() {
     this.nextPhase = FmgcFlightPhase.Climb;
     SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', false);
 
-    const accAlt = Arinc429Register.empty().setFromSimVar('L:A32NX_FM1_ACC_ALT');
-    this.accelerationAltitudeMsl = accAlt.valueOr(
+    this.fmAccelerationAltitude.setFromSimVar('L:A32NX_FM1_ACC_ALT');
+    this.accelerationAltitudeMsl = this.fmAccelerationAltitude.valueOr(
       SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
     );
   }
