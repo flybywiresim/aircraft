@@ -109,6 +109,11 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
   private readonly powered = Subject.create(false);
 
+  private readonly isHudDisplay =
+    this.props.displayUnitId === DisplayUnitID.CaptHud || this.props.displayUnitId === DisplayUnitID.FoHud
+      ? true
+      : false;
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -170,6 +175,22 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
     }
     */
 
+  public setHudBrightness(potentiometer: number) {
+    const pos =
+      getDisplayIndex() === 8
+        ? SimVar.GetSimVarValue('L:A320_Neo_HUD_L_POS', 'number')
+        : SimVar.GetSimVarValue('L:A320_Neo_HUD_R_POS', 'number');
+    if (pos !== 0) {
+      setTimeout(() => {
+        this.brightness.set(0);
+      }, 10);
+    } else {
+      setTimeout(() => {
+        this.brightness.set(potentiometer);
+      }, 1250);
+    }
+  }
+
   public update() {
     const potentiometer = SimVar.GetSimVarValue(
       `LIGHT POTENTIOMETER:${DisplayUnitToPotentiometer[this.props.displayUnitId]}`,
@@ -184,7 +205,11 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
       'Bool',
     );
 
-    this.brightness.set(potentiometer);
+    if (!this.isHudDisplay) {
+      this.brightness.set(potentiometer);
+    } else {
+      this.setHudBrightness(potentiometer);
+    }
     this.powered.set(poweredByBus1 || poweredByBus2);
   }
 
