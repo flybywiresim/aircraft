@@ -1140,7 +1140,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'CABIN CREW',
-        sensed: false, //TODO revert to true once CALLS panel is implemented
+        sensed: false,
         labelNotCompleted: 'ALERT',
       },
       {
