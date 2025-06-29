@@ -4493,12 +4493,12 @@ export class FwsCore {
         allFailureKeys.push(key);
 
         // Add keys for STS page
-        /*FwsCore.pushKeyUnique(value.info, stsInfoKeys); // TODO enable again
+        FwsCore.pushKeyUnique(value.info, stsInfoKeys); // TODO enable again
         FwsCore.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys);
         FwsCore.pushKeyUnique(value.inopSysApprLdg, stsInopApprLdgKeys);
         FwsCore.pushKeyUnique(value.limitationsAllPhases, ewdLimitationsAllPhasesKeys);
         FwsCore.pushKeyUnique(value.limitationsApprLdg, ewdLimitationsApprLdgKeys);
-        FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys);*/
+        FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys);
 
         // Push LAND ASAP or LAND ANSA to limitations
         FwsCore.pushKeyUnique(() => {
