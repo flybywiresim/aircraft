@@ -1,9 +1,14 @@
 # Changelog
 
+<!-- The changelog is used to record user-visible changes since the previous stable release. -->
+<!-- For example a fix for a bug that was only in the dev version, and not the stable, would not be recorded here. -->
+<!-- Code refactoring and similar changes with no user-visible effects would also not be recorded here. -->
+<!-- The text should focus on changes the user would see, rather than code changes that are not visible. -->
 <!-- ⚠⚠ Please follow the format provided ⚠⚠ -->
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+<!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
 ## 0.14.0
 
@@ -30,6 +35,7 @@
 1. [FMS] Fix pseudo waypoint transmission for F/O side when EFIS range different from CAPT side - @flogross89 (floridude)
 1. [A380X/SURV] Enable SURV system switching via MFD SURV page; Add ECAM faults for TERR/GPWS - @flogross89 (floridude)
 1. [A380X/MFD] MFD F-PLN page data display improvements when no predictions or flightplan available - @BravoMike99 (bruno_pt99)
+1. [A380X/PFD] Fix FMA to update current AUTO BRK selection during RTO and rollout - @Jonny23787 (Jonathan)
 1. [FMS] Use proper DME location for AF, CD, FD legs on MSFS2024 and add MSFS2020 fallback to improve AF legs - @tracernz (Mike)
 1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
 1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
@@ -83,6 +89,7 @@
 1. [ATSU] Fixed a case where "no active atc" is returned but station is online - @heclak (Heclak)
 1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
 1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
+1. [A32NX/FWS] Improve altitude alert logic, add PFD indications, improve AP OFF warning logic - @lukecologne (luke)
 1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
 1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 
