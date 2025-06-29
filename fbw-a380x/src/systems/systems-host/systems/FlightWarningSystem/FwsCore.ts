@@ -1687,9 +1687,9 @@ export class FwsCore {
       {},
       this.abnormalSensed.ewdAbnormalSensed,
       this.abnormalNonSensed.ewdAbnormalNonSensed,
-      this.inopSys,
-      this.information,
-      this.limitations,
+      this.inopSys.inopSys,
+      this.information.info,
+      this.limitations.limitations,
     );
 
     this.subs.push(
@@ -4256,16 +4256,17 @@ export class FwsCore {
       }
 
       // Skip if other fault overrides this one
-      const shouldBeSuppressed = item.notActiveWhenItemActive.some((val) => {
-        if (val && this.allSuppressableItems[val]) {
-          const otherFault = this.allSuppressableItems[val] as FwsSuppressableItem;
-          if (otherFault.simVarIsActive.get()) {
-            return true;
+      const shouldBeSuppressed =
+        item.notActiveWhenItemActive?.some((val) => {
+          if (val && this.allSuppressableItems[val]) {
+            const otherFault = this.allSuppressableItems[val] as FwsSuppressableItem;
+            if (otherFault.simVarIsActive.get()) {
+              return true;
+            }
+            return false;
           }
-          return false;
-        }
-      });
-      return item.simVarIsActive.get() && !shouldBeSuppressed;
+        }) ?? false;
+      return !shouldBeSuppressed;
     };
 
     // Update memos and failures list in case failure has been resolved
@@ -4424,12 +4425,12 @@ export class FwsCore {
         allFailureKeys.push(key);
 
         // Add keys for STS page
-        FwsCore.pushKeyUnique(value.info, stsInfoKeys);
+        /*FwsCore.pushKeyUnique(value.info, stsInfoKeys); // TODO enable again
         FwsCore.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys);
         FwsCore.pushKeyUnique(value.inopSysApprLdg, stsInopApprLdgKeys);
         FwsCore.pushKeyUnique(value.limitationsAllPhases, ewdLimitationsAllPhasesKeys);
         FwsCore.pushKeyUnique(value.limitationsApprLdg, ewdLimitationsApprLdgKeys);
-        FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys);
+        FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys);*/
 
         // Push LAND ASAP or LAND ANSA to limitations
         FwsCore.pushKeyUnique(() => {
