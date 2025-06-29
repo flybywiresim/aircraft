@@ -485,7 +485,7 @@ export interface FlightPlanPerformanceData {
   destroy(): void;
 }
 
-export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone' | 'destroy' | 'pipe'>;
+export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone' | 'destroy'>;
 
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
 

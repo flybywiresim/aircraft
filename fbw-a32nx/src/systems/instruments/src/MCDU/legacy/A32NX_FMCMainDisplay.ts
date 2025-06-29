@@ -51,7 +51,7 @@ import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
-import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
@@ -73,6 +73,7 @@ import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';
+import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -83,6 +84,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public readonly navDatabaseBackend = NavigationDatabaseBackend.Msfs;
   public readonly currFlightPhaseManager = new FlightPhaseManager(this.bus);
   public readonly currFlightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData());
+  private readonly observableFlightPlanManager = new ObservableFlightPlanManager(this.bus, this.currFlightPlanService);
   public readonly rpcServer = new FlightPlanRpcServer(this.bus, this.currFlightPlanService);
   public readonly currNavigationDatabaseService = NavigationDatabaseService;
   public readonly navigationDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
@@ -94,6 +96,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private readonly _apCooldown = 500;
   private lastFlightPlanVersion = 0;
   private readonly _messageQueue = new A32NX_MessageQueue(this.mcdu);
+  private subscriptions: Subscription[] = [];
 
   public _deltaTime = 0;
 
@@ -389,6 +392,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.flightPhaseManager.init();
     this.flightPhaseManager.addOnPhaseChanged(this.onFlightPhaseChanged.bind(this));
 
+    this.observableFlightPlanManager.activePlan.sub(async (_) => await this.onActiveFlightPlanChanged(), true);
+
     // Start the check routine for system health and status
     setInterval(() => {
       if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this._destDataChecked) {
@@ -525,9 +530,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
     SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
-    SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-    SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
-
     SimVar.SetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet', this.constraintAlt);
     SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'Bool', 0);
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
@@ -538,6 +540,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
+
+    this.connectPerfDataToSimvars();
 
     if (resetTakeoffData) {
       // FMGC Message Queue
@@ -1998,7 +2002,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (!this.isOnGround() && gwMismatch && this._checkWeightSettable && gs > 180) {
       this.addMessageToQueue(NXSystemMessages.checkWeight);
       this._checkWeightSettable = false;
-    } else if (!gwMismatch) {
+    } else if (!gwMismatch && !this._checkWeightSettable) {
       this.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
       this._checkWeightSettable = true;
     }
@@ -2174,9 +2178,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this.atsu.resetAtisAutoUpdate();
 
-    return this.flightPlanService.newCityPair(from, to, undefined, forPlan).then(() => {
-      this.setGroundTempFromOrigin(forPlan);
-    });
+    await this.flightPlanService.newCityPair(from, to, undefined, forPlan);
   }
 
   // only used by trySetRouteAlternateFuel
@@ -2290,22 +2292,32 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     await this.flightPlanService.setFlightNumber(flightNo, forPlan);
 
     if (forPlan === FlightPlanIndex.Active) {
-      this.arincFlightNumber1.setIso5Value(flightNo.substring(0, 2), Arinc429SignStatusMatrix.NormalOperation);
-      this.arincFlightNumber2.setIso5Value(flightNo.substring(2, 4), Arinc429SignStatusMatrix.NormalOperation);
-      this.arincFlightNumber3.setIso5Value(flightNo.substring(4, 6), Arinc429SignStatusMatrix.NormalOperation);
-      this.arincFlightNumber4.setIso5Value(flightNo.substring(6, 7), Arinc429SignStatusMatrix.NormalOperation);
-
-      // Send to the sim for third party stuff.
-      SimVar.SetSimVarValue('ATC FLIGHT NUMBER', 'string', flightNo, 'FMC');
-
-      // FIXME move ATSU code to ATSU, and use the ARINC word above
-      const code = await this.atsu.connectToNetworks(flightNo);
-      if (code !== AtsuStatusCodes.Ok) {
-        this.addNewAtsuMessage(code);
-      }
+      await this.onActiveFlightNumberChanged(flightNo);
     }
 
     return callback(true);
+  }
+
+  /**
+   * This updates the Arinc429 words for the flight number and set the flight number in the sim for third party stuff.
+   * To be called after the flight number of the active flight plan has changed.
+   * FIXME should probably just be a subscription handler for the flight number subject once we have that
+   * @param flightNumber The flight number to set
+   */
+  private async onActiveFlightNumberChanged(flightNumber: string) {
+    this.arincFlightNumber1.setIso5Value(flightNumber.substring(0, 2), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber2.setIso5Value(flightNumber.substring(2, 4), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber3.setIso5Value(flightNumber.substring(4, 6), Arinc429SignStatusMatrix.NormalOperation);
+    this.arincFlightNumber4.setIso5Value(flightNumber.substring(6, 7), Arinc429SignStatusMatrix.NormalOperation);
+
+    // Send to the sim for third party stuff.
+    SimVar.SetSimVarValue('ATC FLIGHT NUMBER', 'string', flightNumber, 'FMC');
+
+    // FIXME move ATSU code to ATSU, and use the ARINC word above
+    const code = await this.atsu.connectToNetworks(flightNumber);
+    if (code !== AtsuStatusCodes.Ok) {
+      this.addNewAtsuMessage(code);
+    }
   }
 
   public async updateCoRoute(coRouteNum, callback = EmptyCallback.Boolean) {
@@ -2335,7 +2347,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
                 this.coRoute as any,
               );
               await this.flightPlanService.uplinkInsert();
-              this.setGroundTempFromOrigin(FlightPlanIndex.Active);
 
               this.coRoute['routeNumber'] = coRouteNum;
             } else {
@@ -2600,14 +2611,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  public insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
+  public async insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
     if (this.flightPlanService.hasTemporary) {
       const oldCostIndex = this.costIndex;
       const oldDestination = this.currFlightPlanService.active.destinationAirport
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
       const oldCruiseLevel = this.cruiseLevel;
-      this.flightPlanService.temporaryInsert();
+      await this.flightPlanService.temporaryInsert();
       this.checkCostIndex(oldCostIndex);
       // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
       if (oldDestination !== undefined) {
@@ -2618,7 +2629,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
       SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
 
-      this.guidanceController.vnavDriver.invalidateFlightPlanProfile();
       callback();
     }
   }
@@ -2760,7 +2770,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setV1Speed(speed: number | null, forPlan: FlightPlanIndex) {
     this.flightPlanService.setPerformanceData('v1', speed, forPlan);
-    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', speed ? speed : NaN);
   }
 
   private get vRSpeed() {
@@ -2769,7 +2778,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setVrSpeed(speed: number, forPlan: FlightPlanIndex) {
     this.flightPlanService.setPerformanceData('vr', speed, forPlan);
-    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', speed ? speed : NaN);
   }
 
   private get v2Speed() {
@@ -2778,7 +2786,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setV2Speed(speed: number, forPlan: FlightPlanIndex) {
     this.flightPlanService.setPerformanceData('v2', speed, forPlan);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', speed ? speed : NaN);
   }
 
   public trySetV1Speed(s: string, forPlan: FlightPlanIndex): boolean {
@@ -3200,9 +3207,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public setPerfTOFlexTemp(s: string, forPlan: FlightPlanIndex): boolean {
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('flexTakeoffTemperature', null, forPlan);
-      // In future we probably want a better way of checking this, as 0 is
-      // in the valid flex temperature range (-99 to 99).
-      SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0);
       return true;
     }
     let value = parseInt(s);
@@ -3221,7 +3225,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       value = 0.1;
     }
     this.flightPlanService.setPerformanceData('flexTakeoffTemperature', value, forPlan);
-    SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', value);
     return true;
   }
 
@@ -3718,7 +3721,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (HPA_REGEX.test(s)) {
       if (value >= 745 && value <= 1050) {
         this.flightPlanService.setPerformanceData('approachQnh', value, forPlan);
-        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', value);
         return true;
       } else {
         this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3727,11 +3729,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     } else if (INHG_REGEX.test(s)) {
       if (value >= 2200 && value <= 3100) {
         this.flightPlanService.setPerformanceData('approachQnh', value / 100, forPlan);
-        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', (value / 100) * 33.8639);
         return true;
       } else if (value >= 22.0 && value <= 31.0) {
         this.flightPlanService.setPerformanceData('approachQnh', value, forPlan);
-        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', value * 33.8639);
         return true;
       } else {
         this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3867,7 +3867,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public setPerfApprMDA(s: string, forPlan: FlightPlanIndex): boolean {
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('approachBaroMinimum', null, forPlan);
-      SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
       return true;
     } else if (s.match(/^[0-9]{1,5}$/) !== null) {
       const value = parseInt(s);
@@ -3887,7 +3886,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
       if (value >= limitLo && value <= limitHi) {
         this.flightPlanService.setPerformanceData('approachBaroMinimum', value, forPlan);
-        SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', value);
         return true;
       }
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3906,13 +3904,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (s === 'NO' || s === 'NO DH' || s === 'NODH') {
       this.flightPlanService.setPerformanceData('approachRadioMinimum', 'NO DH', forPlan);
-      SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
       return true;
     } else if (s.match(/^[0-9]{1,5}$/) !== null) {
       const value = parseInt(s);
       if (value >= 0 && value <= 5000) {
         this.flightPlanService.setPerformanceData('approachRadioMinimum', value, forPlan);
-        SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', value);
         return true;
       } else {
         this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3926,7 +3922,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setPerfApprFlaps3(s: boolean, forPlan: FlightPlanIndex) {
     this.flightPlanService.setPerformanceData('approachFlapsThreeSelected', s, forPlan);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', s);
   }
 
   /** @param icao ID of the navaid to de-select */
@@ -4025,12 +4020,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       plan.setPerformanceData('takeoffFlaps', flaps);
 
       if (forPlan === FlightPlanIndex.Active) {
-        SimVar.SetSimVarValue(
-          'L:A32NX_TO_CONFIG_FLAPS',
-          'number',
-          plan.performanceData.takeoffFlaps.get() !== null ? plan.performanceData.takeoffFlaps.get() : -1,
-        );
-
         this.arincDiscreteWord2.setBitValue(13, plan.performanceData.takeoffFlaps.get() === 0);
         this.arincDiscreteWord2.setBitValue(14, plan.performanceData.takeoffFlaps.get() === 1);
         this.arincDiscreteWord2.setBitValue(15, plan.performanceData.takeoffFlaps.get() === 2);
@@ -4377,20 +4366,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       .then(
         (inUseByFlightPlan) => inUseByFlightPlan || (this._progBrgDist && this._progBrgDist.icao === wpt.databaseId),
       );
-  }
-
-  public setGroundTempFromOrigin(forPlan: number) {
-    const origin = this.flightPlanService.get(forPlan).originAirport;
-
-    if (!origin) {
-      return;
-    }
-
-    this.flightPlanService.setPerformanceData(
-      'defaultGroundTemperature',
-      A32NX_Util.getIsaTemp(origin.location.alt),
-      forPlan,
-    );
   }
 
   public trySetGroundTemp(scratchpadValue: string, forPlan: number) {
@@ -5447,7 +5422,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     await this.flightPlanService.activeAndSecondarySwap(index, !this.isAnEngineOn());
 
-    this.onSecondaryActivated(zfwDiff);
+    await this.onSecondaryActivated(zfwDiff);
   }
 
   public async activateSecondaryPlan(index: number) {
@@ -5455,13 +5430,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     await this.flightPlanService.secondaryActivate(index, !this.isAnEngineOn());
 
-    this.onSecondaryActivated(zfwDiff);
+    await this.onSecondaryActivated(zfwDiff);
   }
 
-  private onSecondaryActivated(zfwDiff: number | null) {
-    // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
-    this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
-
+  private async onSecondaryActivated(zfwDiff: number | null) {
     const phase = this.getFlightPhase();
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
@@ -5469,14 +5441,83 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (zfwDiff !== null && zfwDiff > 5) {
-      const hasChangedStorage = { value: false };
+      this.addMessageToQueue(NXSystemMessages.checkWeight);
       const sub = this.flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
-        hasChangedStorage.value = true;
+        this.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
         sub.destroy();
       });
-
-      this.addMessageToQueue(NXSystemMessages.checkWeight, () => hasChangedStorage.value);
     }
+  }
+
+  /**
+   * Called when the active flight plan changes, e.g. when a secondary flight plan is activated.
+   */
+  private async onActiveFlightPlanChanged(): Promise<void> {
+    console.log('[FMS] Active flight plan changed');
+    // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
+    this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
+
+    if (this.flightPlanService.hasActive && this.flightPlanService.active.flightNumber !== undefined) {
+      await this.onActiveFlightNumberChanged(this.flightPlanService.active.flightNumber);
+    }
+    this.connectPerfDataToSimvars();
+  }
+
+  private connectPerfDataToSimvars() {
+    this.subscriptions.forEach((s) => s.destroy());
+    this.subscriptions.length = 0;
+
+    if (!this.flightPlanService.hasActive) {
+      return;
+    }
+
+    const activePlan = this.flightPlanService.active;
+
+    this.subscriptions.push(
+      activePlan.performanceData.v1.sub((v1) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', v1 ?? 0), true),
+    );
+    this.subscriptions.push(
+      activePlan.performanceData.vr.sub((vr) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', vr ?? 0), true),
+    );
+    this.subscriptions.push(
+      activePlan.performanceData.v2.sub((v2) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', v2 ?? 0), true),
+    );
+    // FIXME In future we probably want a better way of checking this, as 0 is in the valid flex temperature range (-99 to 99).
+    this.subscriptions.push(
+      activePlan.performanceData.flexTakeoffTemperature.sub(
+        (flex) => SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', flex ?? 0),
+        true,
+      ),
+    );
+    this.subscriptions.push(
+      activePlan.performanceData.takeoffFlaps.sub((flaps) =>
+        SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_FLAPS', 'number', flaps ?? -1),
+      ),
+    );
+    this.subscriptions.push(
+      activePlan.performanceData.approachQnh.sub(
+        (qnh) => SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnh ?? 0),
+        true,
+      ),
+    );
+    this.subscriptions.push(
+      activePlan.performanceData.approachBaroMinimum.sub(
+        (baro) => SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', baro ?? 0),
+        true,
+      ),
+    );
+    this.subscriptions.push(
+      activePlan.performanceData.approachRadioMinimum.sub(
+        (radio) => SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', radio ?? -1),
+        true,
+      ),
+    );
+    this.subscriptions.push(
+      activePlan.performanceData.approachFlapsThreeSelected.sub(
+        (flaps3) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', flaps3),
+        true,
+      ),
+    );
   }
 
   private computeZfwDiffToSecondary(secIndex: number): number | null {

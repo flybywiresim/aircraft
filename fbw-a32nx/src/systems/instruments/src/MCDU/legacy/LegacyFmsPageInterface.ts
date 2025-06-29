@@ -134,13 +134,12 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getFlightPlan(index: FlightPlanIndex): ReturnType<FlightPlanInterface['get']>;
   getAlternateFlightPlan(index: FlightPlanIndex): ReturnType<FlightPlanInterface['get']>['alternateFlightPlan'];
   eraseTemporaryFlightPlan(callback?: typeof EmptyCallback.Void): void;
-  insertTemporaryFlightPlan(callback?: typeof EmptyCallback.Void): void;
+  insertTemporaryFlightPlan(callback?: typeof EmptyCallback.Void): Promise<void>;
   updateConstraints(): void;
   setScratchpadMessage(message: McduMessage): void;
   logTroubleshootingError(msg: any): void;
   updateTowerHeadwind(): void;
   onToRwyChanged(): void;
-  setGroundTempFromOrigin(forPlan: FlightPlanIndex): void;
   directToWaypoint(waypoint: Fix): Promise<void>;
   directToLeg(legIndex: number): Promise<void>;
   toggleWaypointOverfly(index, fpIndex, forAlternate, callback?: typeof EmptyCallback.Void): void;

@@ -133,25 +133,39 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   async secondaryActivate(index: number, isBeforeEngineStart: boolean) {
     const oldZfw = this.active?.performanceData.zeroFuelWeight.get() ?? null;
     const oldZfwCg = this.active?.performanceData.zeroFuelWeightCenterOfGravity.get() ?? null;
+    const fixInfos = this.active?.fixInfos.map((it) => it?.clone()) ?? [];
 
     this.flightPlanManager.copy(FlightPlanIndex.FirstSecondary + index - 1, FlightPlanIndex.Active);
 
+    // The ZFW/ZFWCG are actually not copied to the active plan if we activate after engine start. We only show the
+    // CHECK WEIGHT scratchpad message if the weights differ by more than 5 tonnes.
     if (!isBeforeEngineStart) {
       this.setPerformanceData('zeroFuelWeight', oldZfw, FlightPlanIndex.Active);
       this.setPerformanceData('zeroFuelWeightCenterOfGravity', oldZfwCg, FlightPlanIndex.Active);
     }
+
+    // FIX INFOs are preserved when activating secondary
+    // FIXME they should probabably not be part of the flight plan at all since you can only set them for the active plan
+    this.active.fixInfos = fixInfos;
   }
 
   async activeAndSecondarySwap(secIndex: number, isBeforeEngineStart: boolean): Promise<void> {
     const oldZfw = this.active?.performanceData.zeroFuelWeight.get() ?? null;
     const oldZfwCg = this.active?.performanceData.zeroFuelWeightCenterOfGravity.get() ?? null;
+    const fixInfos = this.active?.fixInfos.map((it) => it?.clone()) ?? [];
 
     this.flightPlanManager.swap(FlightPlanIndex.FirstSecondary + secIndex - 1, FlightPlanIndex.Active);
 
+    // The ZFW/ZFWCG are actually not copied to the active plan if we activate after engine start. We only show the
+    // CHECK WEIGHT scratchpad message if the weights differ by more than 5 tonnes.
     if (!isBeforeEngineStart) {
       this.setPerformanceData('zeroFuelWeight', oldZfw, FlightPlanIndex.Active);
       this.setPerformanceData('zeroFuelWeightCenterOfGravity', oldZfwCg, FlightPlanIndex.Active);
     }
+
+    // FIX INFOs are preserved when swapping active and secondary
+    // FIXME they should probabably not be part of the flight plan at all since you can only set them for the active plan
+    this.active.fixInfos = fixInfos;
   }
 
   async temporaryInsert(): Promise<void> {

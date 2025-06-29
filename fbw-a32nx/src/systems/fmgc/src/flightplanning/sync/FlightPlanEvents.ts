@@ -68,7 +68,9 @@ export interface FlightPlanFlightNumberEditEvent extends FlightPlanEditSyncEvent
 }
 
 export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceData> = {
-  [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;
+  [k in keyof Omit<P, 'clone' | 'destroy'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<
+    P[k]
+  >;
 };
 
 /**

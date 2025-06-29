@@ -261,11 +261,6 @@ export class CDUInitPage {
 
                 mcdu.flightPlanService.uplinkInsert(forPlan);
 
-                const plan = mcdu.getFlightPlan(forPlan);
-
-                mcdu.updateFlightNo(plan.flightNumber, forPlan);
-                mcdu.setGroundTempFromOrigin(forPlan);
-
                 if (mcdu.page.Current === mcdu.page.InitPageA) {
                   CDUInitPage.ShowPage1(mcdu, forPlan);
                 }

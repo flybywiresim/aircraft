@@ -201,7 +201,6 @@ export class CDUAvailableFlightPlanPage {
             selectedRoute,
           );
           await mcdu.flightPlanService.uplinkInsert();
-          mcdu.setGroundTempFromOrigin(FlightPlanIndex.Active);
 
           CDUInitPage.ShowPage1(mcdu, forPlan);
         }, 0 /* No delay because it takes long enough without artificial delay */);

@@ -5,7 +5,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { BitFlags, EventBus, MagVar, MutableSubscribable } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -491,6 +491,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       plan.setPerformanceData(
         'defaultEngineOutAccelerationAltitude',
         referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+      );
+      plan.setPerformanceData(
+        'defaultGroundTemperature',
+        Math.round(AeroMath.isaTemperature(referenceAltitude * 0.3048)),
       );
     } else {
       plan.setPerformanceData('defaultThrustReductionAltitude', null);
