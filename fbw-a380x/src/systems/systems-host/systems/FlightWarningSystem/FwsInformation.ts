@@ -15,9 +15,17 @@ export class FwsInformation {
   constructor(private fws: FwsCore) {}
   /** INFO shown on SD */
   info: FwsInfoDict = {
+    220200004: {
+      // LAND 2 ONLY
+      simVarIsActive: this.fws.land2Only,
+    },
     220200005: {
       // LAND 3 SINGLE ONLY
-      simVarIsActive: this.fws.ilsCat3DualInop,
+      simVarIsActive: this.fws.land3SingleOnly,
+    },
+    220200010: {
+      // LAND 1 ONLY
+      simVarIsActive: this.fws.appr1Only,
     },
   };
 }

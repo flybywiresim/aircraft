@@ -41,17 +41,6 @@ export class FwsInopSys {
   constructor(private fws: FwsCore) {}
   /** INOP SYS shown on SD */
   inopSys: FwsInopSysDict = {
-    220300002: {
-      // LAND 3
-      simVarIsActive: this.fws.ilsCat3Inop,
-      phase: FwsInopSysPhases.ApprLdg,
-    },
-    220300008: {
-      // LAND 3 DUAL
-      simVarIsActive: this.fws.ilsCat3DualInop,
-      phase: FwsInopSysPhases.ApprLdg,
-      notActiveWhenItemActive: ['220300002'],
-    },
     221300001: {
       // FMC-A
       simVarIsActive: this.fws.fmcAFault,

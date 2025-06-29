@@ -14,6 +14,7 @@ import {
 type BasePseudoFwcSimvars = {
   engine_master: number;
   engine_state: number;
+  fma_lateral_mode: number;
 
   // auto THS trim simvars
   // FIXME delete when auto THS trim implemented in PRIMs
@@ -41,6 +42,9 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
     const simvars: [keyof PseudoFwcSimvars, SimVarPublisherEntry<any>][] = [
       ['engine_master', { name: 'A:FUELSYSTEM VALVE SWITCH:#index#', type: SimVarValueType.Bool, indexed: true }],
       ['engine_state', { name: 'L:A32NX_ENGINE_STATE:#index#', type: SimVarValueType.Number, indexed: true }],
+      ['fma_lateral_mode', { name: 'L:A32NX_FMA_LATERAL_MODE', type: SimVarValueType.Number }],
+
+      // auto THS trim simvars
       ['left_blg_compressed', { name: 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', type: SimVarValueType.Bool }],
       ['right_blg_compressed', { name: 'L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', type: SimVarValueType.Bool }],
       ['flaps_handle', { name: 'L:A32NX_FLAPS_HANDLE_INDEX', type: SimVarValueType.Number }],

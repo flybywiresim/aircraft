@@ -2589,11 +2589,7 @@ export class FwsAbnormalSensed {
     271800062: {
       // SINGLE RUDDER FAULT
       flightPhaseInhib: [4, 5, 6],
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.or(),
-        this.fws.lowerRudderFault,
-        this.fws.upperRudderFault,
-      ),
+      simVarIsActive: this.fws.singleRudderFaultCondition,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, false],
@@ -3254,7 +3250,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Wheel,
       limitationsApprLdg: () => ['800400002'],
-      inopSysAllPhases: () => ['320300001', '320300002', '220300008'],
+      inopSysAllPhases: () => ['320300001', '320300002'],
       info: () => [
         '320200002',
         '320200003',
@@ -3347,7 +3343,6 @@ export class FwsAbnormalSensed {
         this.fws.airKnob.get() === 0 ? '' : '340300011',
         this.fws.airKnob.get() === 0 ? '' : '340300001',
       ],
-      inopSysApprLdg: () => ['220300008'],
       info: () => ['220200005'],
     },
     340800002: {
@@ -3367,7 +3362,6 @@ export class FwsAbnormalSensed {
         this.fws.airKnob.get() === 2 ? '' : '340300012',
         this.fws.airKnob.get() === 2 ? '' : '340300002',
       ],
-      inopSysApprLdg: () => ['220300008'],
       info: () => ['220200005'],
     },
     340800003: {
@@ -3385,7 +3379,6 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['340300006'],
-      inopSysApprLdg: () => ['220300008'],
       info: () => ['220200005'],
     },
     340800004: {
@@ -3416,7 +3409,7 @@ export class FwsAbnormalSensed {
         this.fws.airKnob.get() === 0 ? '340300012' : '340300029',
         this.fws.airKnob.get() === 0 ? '340300002' : '340300003',
       ],
-      inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
+      inopSysApprLdg: () => ['320300007', '320300022', '220300010', '220300025'],
       info: () => ['340200002', '340200003'],
       limitationsApprLdg: () => ['240400001'],
     },
@@ -3448,7 +3441,7 @@ export class FwsAbnormalSensed {
         '340300011',
         '340300001',
       ],
-      inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
+      inopSysApprLdg: () => ['320300007', '320300022', '220300010', '220300025'],
       info: () => ['340200002', '340200003'],
       limitationsApprLdg: () => ['240400001'],
     },
@@ -3480,7 +3473,7 @@ export class FwsAbnormalSensed {
         '340300012',
         '340300002',
       ],
-      inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300025'],
+      inopSysApprLdg: () => ['320300007', '320300022', '220300010', '220300025'],
       info: () => ['340200002', '340200003'],
       limitationsApprLdg: () => ['240400001'],
     },
@@ -3514,7 +3507,7 @@ export class FwsAbnormalSensed {
         '340300029',
         '340300003',
       ],
-      inopSysApprLdg: () => ['320300007', '320300022', '220300009', '220300010', '220300021', '220300025'],
+      inopSysApprLdg: () => ['320300007', '320300022', '220300010', '220300021', '220300025'],
       info: () => ['340200002', '340200003', '340200007'],
       limitationsAllPhases: () => ['240400002', '240400003', '240400004', '300400001'],
       limitationsApprLdg: () => ['240400001'],
@@ -3738,7 +3731,6 @@ export class FwsAbnormalSensed {
       failure: 1,
       sysPage: -1,
       inopSysAllPhases: () => [],
-      inopSysApprLdg: () => ['220300008'],
       redundLoss: () => ['340300023'],
       info: () => ['220200005'],
     },
@@ -3776,7 +3768,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
-      inopSysApprLdg: () => ['340300025', '220300002'],
+      inopSysApprLdg: () => ['340300025'],
       info: () => ['220200004'],
     },
     340800060: {
@@ -3795,7 +3787,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
-      inopSysApprLdg: () => ['340300026', '220300002'],
+      inopSysApprLdg: () => ['340300026'],
       info: () => ['220200004'],
     },
     340800061: {
@@ -3814,7 +3806,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
-      inopSysApprLdg: () => ['340300027', '220300002'],
+      inopSysApprLdg: () => ['340300027'],
       info: () => ['220200004'],
     },
     340800062: {
@@ -3835,7 +3827,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => ['340300029', '340300003', '341300003'],
-      inopSysApprLdg: () => ['320300007', '320300022', '340300028', '310300001', '220300009', '220300010', '220300021'],
+      inopSysApprLdg: () => ['320300007', '320300022', '340300028', '310300001', '220300010', '220300021'],
       info: () => ['220200007', '220200008', '220200009'],
     },
     // SURVEILLANCE

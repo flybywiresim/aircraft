@@ -36,7 +36,7 @@ import {
   NXLogicTriggeredMonostableNode,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
-import { VerticalMode } from '@shared/autopilot';
+import { VerticalMode, LateralMode } from '@shared/autopilot';
 import { VhfComManagerDataEvents } from '@flybywiresim/rmp';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {
@@ -815,6 +815,13 @@ export class FwsCore {
   public readonly sec3OffThenOnPulseNode = new NXLogicPulseNode(true);
   public readonly sec3OffThenOnMemoryNode = new NXLogicMemoryNode();
 
+  public readonly allSecFaultCondition = MappedSubject.create(
+    (secs) => secs.every((sec) => sec === true),
+    this.sec1FaultCondition,
+    this.sec2FaultCondition,
+    this.sec3FaultCondition,
+  );
+
   public readonly prim1Healthy = Subject.create(false);
   public readonly prim2Healthy = Subject.create(false);
   public readonly prim3Healthy = Subject.create(false);
@@ -906,6 +913,12 @@ export class FwsCore {
 
   public readonly lowerRudderFault = Subject.create(false);
   public readonly upperRudderFault = Subject.create(false);
+
+  public readonly singleRudderFaultCondition = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.lowerRudderFault,
+    this.upperRudderFault,
+  );
 
   public readonly flapsLeverNotZero = Subject.create(false);
 
@@ -1400,9 +1413,18 @@ export class FwsCore {
   private readonly ir3UsedLeft = Subject.create(false);
   private readonly ir3UsedRight = Subject.create(false);
 
+  public readonly twoIrFault = MappedSubject.create(
+    (irf) => irf.filter((v) => v === true).length >= 2,
+    this.ir1Fault,
+    this.ir2Fault,
+    this.ir3Fault,
+  );
+
   public readonly irExcessMotion = Subject.create(false);
 
   public readonly extremeLatitudeAlert = Subject.create(false);
+
+  public readonly fmaLateralMode = ConsumerSubject.create(this.sub.on('fma_lateral_mode'), LateralMode.NONE);
 
   public readonly height1Failed = Subject.create(false);
 
@@ -1410,14 +1432,60 @@ export class FwsCore {
 
   public readonly height3Failed = Subject.create(false);
 
-  public readonly ilsCat3Inop = MappedSubject.create(
-    ([ra1, ra2, ra3]) => [ra1, ra2, ra3].filter((ra) => ra).length >= 2,
+  // FIXME All these LAND X INOPs should maybe come from the FCDC in the future,
+  // at least the fail-op/fail-passive status
+  public readonly land3Inop = MappedSubject.create(
+    ([ra1, ra2, ra3, latMode, fp]) =>
+      [ra1, ra2, ra3].filter((ra) => ra).length >= 2 && !(latMode !== LateralMode.NAV && fp === 1),
     this.height1Failed,
     this.height2Failed,
     this.height3Failed,
+    this.fmaLateralMode,
+    this.flightPhase,
   );
 
-  public readonly ilsCat3DualInop = this.height2Failed;
+  public readonly land3DualInop = this.height2Failed;
+
+  public readonly land2Inop = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.altnLawCondition,
+    this.directLawCondition,
+    this.allSecFaultCondition,
+    this.singleRudderFaultCondition,
+    this.audioFunctionLost,
+    this.twoIrFault,
+  );
+
+  public readonly land3SingleOnly = MappedSubject.create(
+    ([fp, land3DualInop, land3Inop, land2Inop]) => fp !== 1 && fp !== 10 && land3DualInop && !land3Inop && !land2Inop,
+    this.flightPhase,
+    this.land3DualInop,
+    this.land3Inop,
+    this.land2Inop,
+  );
+
+  // FIXME add !FADEC_OFF
+  public readonly land2Only = MappedSubject.create(
+    ([fp, land3Inop, land2Inop]) => fp !== 1 && fp !== 10 && !land2Inop && land3Inop,
+    this.flightPhase,
+    this.land3Inop,
+    this.land2Inop,
+    this.adr1Faulty,
+    this.adr2Faulty,
+    this.adr3Faulty,
+  );
+
+  // Missing: ILS1+2 INOP, LS1+2 INOP,
+  public readonly appr1Only = MappedSubject.create(
+    ([land2Inop, fp, a1f, a2f, a3f, latMode]) =>
+      land2Inop && fp !== 10 && a1f && a2f && a3f && !(latMode !== LateralMode.NAV && fp === 1),
+    this.land2Inop,
+    this.flightPhase,
+    this.adr1Faulty,
+    this.adr2Faulty,
+    this.adr3Faulty,
+    this.fmaLateralMode,
+  );
 
   private adr3OverspeedWarning = new NXLogicMemoryNode(false, false);
 
