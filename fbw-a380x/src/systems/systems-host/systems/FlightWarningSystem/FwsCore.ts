@@ -67,6 +67,7 @@ import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
 import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
 import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
+import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -101,7 +102,13 @@ export interface FwsSuppressableItemDict {
 
 export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
-    PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents & FuelSystemEvents & KeyEvents & MsfsFlightModelEvents
+    PseudoFwcSimvars &
+      StallWarningEvents &
+      MfdSurvEvents &
+      FuelSystemEvents &
+      KeyEvents &
+      MsfsFlightModelEvents &
+      FGVars
   >();
 
   private subs: Subscription[] = [];
@@ -1424,7 +1431,7 @@ export class FwsCore {
 
   public readonly extremeLatitudeAlert = Subject.create(false);
 
-  public readonly fmaLateralMode = ConsumerSubject.create(this.sub.on('fma_lateral_mode'), LateralMode.NONE);
+  public readonly fmaLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode'), LateralMode.NONE);
 
   public readonly height1Failed = Subject.create(false);
 
@@ -1432,7 +1439,7 @@ export class FwsCore {
 
   public readonly height3Failed = Subject.create(false);
 
-  // FIXME All these LAND X INOPs should maybe come from the FCDC in the future,
+  // FIXME All these LAND X INOPs should maybe come from the PRIMs in the future,
   // at least the fail-op/fail-passive status
   public readonly land3Inop = MappedSubject.create(
     ([ra1, ra2, ra3, latMode, fp]) =>
