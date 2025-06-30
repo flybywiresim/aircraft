@@ -371,9 +371,9 @@ export class FwsCore {
 
   public readonly pack2On = Subject.create(false);
 
-  public readonly pack1Off = Subject.create(false);
+  public readonly pack1OffConfirmTime = Subject.create(false);
 
-  public readonly pack2Off = Subject.create(false);
+  public readonly pack2OffConfirmTime = Subject.create(false);
 
   public readonly pack1And2Fault = Subject.create(false);
 
@@ -2660,7 +2660,7 @@ export class FwsCore {
     this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
-    const parkBrakeSet = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
+    const parkBrakeSet = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Number') === 1;
     this.parkBrakeSet.set(parkBrakeSet);
     this.lgParkBrkOn.set(this.parkBrake2sConfNode.write(parkBrakeSet, deltaTime));
     this.configParkBrakeOn.set(
@@ -3197,8 +3197,8 @@ export class FwsCore {
     this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
     this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
 
-    this.pack1Off.set(!this.pack1On.get() && this.phase8ConfirmationNode60.read());
-    this.pack2Off.set(!this.pack2On.get() && this.phase8ConfirmationNode60.read());
+    this.pack1OffConfirmTime.set(!this.pack1On.get() && this.phase8ConfirmationNode60.read());
+    this.pack2OffConfirmTime.set(!this.pack2On.get() && this.phase8ConfirmationNode60.read());
 
     // TODO: Add fault when on ground, with one engine running and one door open
     // TODO: Add pack overheat

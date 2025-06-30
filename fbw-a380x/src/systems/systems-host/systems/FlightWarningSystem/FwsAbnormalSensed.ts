@@ -437,7 +437,7 @@ export class FwsAbnormalSensed {
     211800011: {
       // PACK 1 OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: this.fws.pack1Off,
+      simVarIsActive: this.fws.pack1OffConfirmTime,
       notActiveWhenFaults: ['211800009', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -448,7 +448,7 @@ export class FwsAbnormalSensed {
     211800012: {
       // PACK 2 OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: this.fws.pack2Off,
+      simVarIsActive: this.fws.pack2OffConfirmTime,
       notActiveWhenFaults: ['211800010', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],

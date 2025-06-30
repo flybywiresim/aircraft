@@ -606,7 +606,6 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
       { name: 'RESET NOT SUCCESSFUL :', condition: true, sensed: false },
       { name: 'FOR CONTINUED FLT : CONSIDER AP USE', sensed: false, level: 1 },
       { name: 'RESET SUCCESSFUL :', condition: true, sensed: false },
-      { name: 'CONFIRM RESET SUCCESSFUL', sensed: false, style: ChecklistLineStyle.White, level: 1 },
     ],
   },
   270900003: {
