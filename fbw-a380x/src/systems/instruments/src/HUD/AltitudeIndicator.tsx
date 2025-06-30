@@ -27,7 +27,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 import { getDisplayIndex } from './HUD';
 import { ALT_TAPE_XPOS, ALT_TAPE_YPOS, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
-import { HudElems, WindMode } from './HUDUtils';
+import { HudElems, WindMode, MdaMode } from './HUDUtils';
 import { CrosswindDigitalAltitudeReadout } from './CrosswindDigitalAltitudeReadout';
 
 let DisplayRange = 600;
@@ -524,27 +524,69 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
   }
 
+  private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudMode').whenChanged(), 0);
   private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
   private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa').whenChanged());
   private readonly mda = Arinc429RegisterSubject.createEmpty();
   private readonly dh = Arinc429RegisterSubject.createEmpty();
+  private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
+
+  private readonly mdaDhMode = MappedSubject.create(
+    ([noDh, dh, mda]) => {
+      if (noDh) {
+        return MdaMode.NoDh;
+      }
+
+      if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
+        return MdaMode.Radio;
+      }
+
+      if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
+        return MdaMode.Baro;
+      }
+
+      return MdaMode.None;
+    },
+    this.noDhSelected,
+    this.dh,
+    this.mda,
+  );
 
   private readonly isMinLowerAltTxtVisible = MappedSubject.create(
-    ([mda, dh, altitude, ra]) => {
-      const mdaDiff = altitude.value - mda.value;
-      const dhDiff = ra.value - dh.value;
-      if (mda.value > 0) {
-        return mdaDiff < 0 ? 'block' : 'none';
-      } else if (dh.value > 0) {
-        return dhDiff < 0 ? 'block' : 'none';
+    ([mda, dh, mdaDhMode, altitude, ra, hudMode]) => {
+      let diff;
+      if (hudMode === 0) {
+        switch (mdaDhMode) {
+          case MdaMode.Baro:
+            diff = altitude.value - mda.value;
+            break;
+          case MdaMode.Radio:
+            diff = ra.value - dh.value;
+            break;
+          case MdaMode.NoDh:
+            diff = ra.value;
+            break;
+          default:
+            diff = 0;
+            break;
+        }
+
+        if (mdaDhMode === MdaMode.NoDh || mdaDhMode === MdaMode.None) {
+          return 'none';
+        } else {
+          return diff <= 0 ? 'block' : 'none';
+        }
       } else {
         return 'none';
       }
     },
     this.mda,
     this.dh,
+    this.mdaDhMode,
     this.altitude,
     this.ra,
+    this.hudMode,
   );
 
   onAfterRender(node: VNode): void {
