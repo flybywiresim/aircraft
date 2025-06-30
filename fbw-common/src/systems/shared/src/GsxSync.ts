@@ -240,7 +240,7 @@ abstract class GsxSync implements Instrument {
         // jetway and gpu both not connected
       } else if (
         jetwayState >= GsxServiceStates.CALLABLE &&
-        jetwayState <= GsxServiceStates.REQUESTED &&
+        jetwayState <= GsxServiceStates.BYPASSED &&
         gpuState !== GsxServiceStates.ACTIVE
       ) {
         action = PowerAction.DISCONNECT;
@@ -248,7 +248,7 @@ abstract class GsxSync implements Instrument {
       // external is not available - check if connect is needed
     } else if (
       //jetway or gpu connected
-      (jetwayState === GsxServiceStates.ACTIVE || gpuState === GsxServiceStates.ACTIVE) &&
+      (jetwayState >= GsxServiceStates.REQUESTED || gpuState === GsxServiceStates.ACTIVE) &&
       departureState < GsxServiceStates.REQUESTED
     ) {
       action = PowerAction.CONNECT;
@@ -373,7 +373,7 @@ export class GsxSyncA380X extends GsxSync {
   }
 
   protected onCargoDeboardCompleted(percent: number): void {
-    this.startCargoTimer(percent, DELAY_CARGO_CLOSE / 2);
+    this.startCargoTimer(percent, DELAY_CARGO_CLOSE);
   }
 
   protected startCargoTimer(percent: number, delay: number): void {
