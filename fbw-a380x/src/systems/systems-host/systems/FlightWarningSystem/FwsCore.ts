@@ -2732,9 +2732,9 @@ export class FwsCore {
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
     this.radioHeight3.setFromSimVar('L:A32NX_RA_3_RADIO_ALTITUDE');
-    this.height1Failed.set(this.radioHeight1.isFailureWarning() || this.radioHeight1.isNoComputedData());
-    this.height2Failed.set(this.radioHeight2.isFailureWarning() || this.radioHeight2.isNoComputedData());
-    this.height3Failed.set(this.radioHeight3.isFailureWarning() || this.radioHeight3.isNoComputedData());
+    this.height1Failed.set(this.radioHeight1.isFailureWarning());
+    this.height2Failed.set(this.radioHeight2.isFailureWarning());
+    this.height3Failed.set(this.radioHeight3.isFailureWarning());
     // overspeed
     const adr3MaxCas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_MAX_AIRSPEED');
 
