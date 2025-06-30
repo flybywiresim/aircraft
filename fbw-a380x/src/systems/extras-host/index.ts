@@ -14,9 +14,10 @@ import {
   GroundSupportPublisher,
   BaroUnitSelector,
   TelexCheck,
+  PilotSeatPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
-import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
+import { A380XKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
@@ -75,7 +76,7 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly versionCheck: VersionCheck;
 
-  private readonly keyInterceptor: KeyInterceptor;
+  private readonly keyInterceptor: A380XKeyInterceptor;
 
   private readonly aircraftSync: AircraftSync;
 
@@ -113,7 +114,7 @@ class ExtrasHost extends BaseInstrument {
     this.notificationManager = new NotificationManager(this.bus);
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
-    this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
+    this.keyInterceptor = new A380XKeyInterceptor(this.bus, this.notificationManager);
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
@@ -122,6 +123,7 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
+    this.backplane.addPublisher('PilotSeatPublisher', new PilotSeatPublisher(this.bus));
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
