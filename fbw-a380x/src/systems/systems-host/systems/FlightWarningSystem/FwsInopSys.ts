@@ -240,7 +240,11 @@ export class FwsInopSys {
     },
     270300004: {
       // RUDDER TRIM
-      simVarIsActive: this.fws.sec3FaultCondition,
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.sec1FaultCondition,
+        this.fws.sec3FaultCondition,
+      ),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300005: {
