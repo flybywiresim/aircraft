@@ -10,6 +10,8 @@ import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { CDUPerformancePage } from './A320_Neo_CDU_PerformancePage';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 
 export class CDUSecFplnMain {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -52,22 +54,7 @@ export class CDUSecFplnMain {
     const activateSecColumn = new Column(0, '', Column.amber);
 
     const activePlan = mcdu.flightPlanService.active;
-
-    let canActivateOrSwapSec = false;
-    if (hasFromTo) {
-      const secPlan = mcdu.flightPlanService.secondary(1);
-
-      const activeToLeg = activePlan.activeLeg;
-      const secToLeg = secPlan.activeLeg;
-
-      canActivateOrSwapSec =
-        !mcdu.navModeEngaged() ||
-        (activeToLeg === undefined && secToLeg === undefined) ||
-        (activeToLeg !== undefined &&
-          secToLeg !== undefined &&
-          FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
-          activePlan.activeLegIndex === secPlan.activeLegIndex);
-    }
+    const canActivateOrSwapSec = this.canActivateOrSwapSecondary(mcdu, activePlan);
 
     // *ACTIVATE SEC
     if (canActivateOrSwapSec) {
@@ -76,7 +63,7 @@ export class CDUSecFplnMain {
       mcdu.onLeftInput[3] = async (_, scratchpadCallback) => {
         // We should not get here, because the button is not even shown, but the page might not have refreshed yet to reflect
         // the new NAV status
-        if (!canActivateOrSwapSec) {
+        if (!this.canActivateOrSwapSecondary(mcdu, activePlan)) {
           mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
           scratchpadCallback();
           return;
@@ -133,7 +120,7 @@ export class CDUSecFplnMain {
       mcdu.onLeftInput[5] = async (_, scratchpadCallback) => {
         // We should not get here, because the button is not even shown, but the page might not have refreshed yet to reflect
         // the new NAV status
-        if (!canActivateOrSwapSec) {
+        if (!this.canActivateOrSwapSecondary(mcdu, activePlan)) {
           mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
           scratchpadCallback();
           return;
@@ -168,6 +155,33 @@ export class CDUSecFplnMain {
         [],
         [secSwapActiveColumn],
       ]),
+    );
+  }
+
+  static canActivateOrSwapSecondary(
+    mcdu: LegacyFmsPageInterface,
+    activePlan: FlightPlan<FlightPlanPerformanceData>,
+  ): boolean {
+    if (!mcdu.flightPlanService.hasSecondary(1)) {
+      return false;
+    }
+
+    const secPlan = mcdu.flightPlanService.secondary(1);
+
+    if (!secPlan.originAirport || !secPlan.destinationAirport) {
+      return false;
+    }
+
+    const activeToLeg = activePlan.activeLeg;
+    const secToLeg = secPlan.activeLeg;
+
+    return (
+      !mcdu.navModeEngaged() ||
+      (activeToLeg === undefined && secToLeg === undefined) ||
+      (activeToLeg !== undefined &&
+        secToLeg !== undefined &&
+        FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
+        activePlan.activeLegIndex === secPlan.activeLegIndex)
     );
   }
 }
