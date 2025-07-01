@@ -219,7 +219,7 @@ export class CDUFuelPredPage {
         }
       }
 
-      if (Number.isFinite(predictions.routeReserveFuel)) {
+      if (isFlying || Number.isFinite(predictions.routeReserveFuel)) {
         rteRsvWeightCell = `{small}${NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1).padStart(5, '\xa0')}{end}`;
         rteRSvCellColor = isFlying ? '[color]green' : '[color]cyan';
       } else if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())) {
@@ -227,9 +227,10 @@ export class CDUFuelPredPage {
         rteRSvCellColor = isFlying ? '[color]green' : '[color]cyan';
       }
 
-      const routeReserveFuelPercentage = Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())
-        ? predictions.routeReserveFuelPercentage
-        : plan.performanceData.routeReserveFuelPercentage.get();
+      const routeReserveFuelPercentage =
+        isFlying || Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())
+          ? predictions.routeReserveFuelPercentage
+          : plan.performanceData.routeReserveFuelPercentage.get();
 
       if (Number.isFinite(routeReserveFuelPercentage)) {
         // TODO thresholds should come from AMI
