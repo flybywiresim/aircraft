@@ -53,8 +53,8 @@ import { EgpwcBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/
 import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AesuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { A380Failure } from '@failures';
-import { AutoThsTrimmer } from './systems/AutoThsTrimmer';
-import { EfisTawsBridge } from './systems/EfisTawsBridge';
+import { AutoThsTrimmer } from './AutoThsTrimmer';
+import { EfisTawsBridge } from './EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 CpiomAvailableSimvarPublisher;
