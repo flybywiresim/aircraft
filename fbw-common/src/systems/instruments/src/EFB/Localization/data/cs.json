@@ -596,7 +596,7 @@
       "Select": "Vybrat",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
-      "WeightUnit": "Americké jednotky"
+      "WeightUnit": "Jednotky hmotnosti"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Zdroj ATIS/ATC",
