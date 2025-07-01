@@ -15,11 +15,11 @@ import {
   SimVarValueType,
   Subject,
 } from '@microsoft/msfs-sdk';
-import { LegacyGpws } from 'systems-host/systems/LegacyGpws';
-import { LegacyFuel } from 'systems-host/systems/LegacyFuel';
-import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
-import { LegacyTcasComputer } from 'systems-host/systems/tcas/components/LegacyTcasComputer';
-import { VhfRadio } from 'systems-host/systems/Communications/VhfRadio';
+import { LegacyGpws } from 'systems-host/Misc/LegacyGpws';
+import { LegacyFuel } from 'systems-host/Misc/LegacyFuel';
+import { LegacySoundManager } from 'systems-host/Misc/LegacySoundManager';
+import { LegacyTcasComputer } from 'systems-host/Misc/tcas/components/LegacyTcasComputer';
+import { VhfRadio } from 'systems-host/Misc/Communications/VhfRadio';
 import {
   IrBusPublisher,
   ArincEventBus,
@@ -31,15 +31,15 @@ import {
   VhfComIndices,
   SwitchingPanelPublisher,
 } from '@flybywiresim/fbw-sdk';
-import { AudioManagementUnit } from 'systems-host/systems/Communications/AudioManagementUnit';
-import { RmpAmuBusPublisher } from 'systems-host/systems/Communications/RmpAmuBusPublisher';
-import { Transponder } from 'systems-host/systems/Communications/Transponder';
-import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/systems/powersupply';
-import { SimAudioManager } from 'systems-host/systems/Communications/SimAudioManager';
-import { AtsuSystem } from 'systems-host/systems/atsu';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { AudioManagementUnit } from 'systems-host/Misc/Communications/AudioManagementUnit';
+import { RmpAmuBusPublisher } from 'systems-host/Misc/Communications/RmpAmuBusPublisher';
+import { Transponder } from 'systems-host/Misc/Communications/Transponder';
+import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/Misc/powersupply';
+import { SimAudioManager } from 'systems-host/Misc/Communications/SimAudioManager';
+import { AtsuSystem } from 'systems-host/Misc/atsu';
+import { FwsCore } from 'systems-host/Misc/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
-import { BrakeToVacateDistanceUpdater } from 'systems-host/systems/BrakeToVacateDistanceUpdater';
+import { BrakeToVacateDistanceUpdater } from 'systems-host/Misc/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {
   ResetPanelSimvarPublisher,
@@ -58,7 +58,7 @@ import { EfisTawsBridge } from './systems/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 CpiomAvailableSimvarPublisher;
-import { AircraftNetworkServerUnit } from 'systems-host/systems/InformationSystems/AircraftNetworkServerUnit';
+import { AircraftNetworkServerUnit } from 'systems-host/Misc/InformationSystems/AircraftNetworkServerUnit';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();

@@ -18,7 +18,7 @@ import {
   ProcedureType,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwcAuralWarning, FwsCore } from 'systems-host/Misc/FlightWarningSystem/FwsCore';
 
 export interface EwdAbnormalItem {
   flightPhaseInhib: number[];
