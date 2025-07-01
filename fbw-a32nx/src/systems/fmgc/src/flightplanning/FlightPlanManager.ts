@@ -188,8 +188,8 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   }
 
   reset(notify = true) {
-    const activePlan = this.get(FlightPlanIndex.Active);
-    const activeToLeg = activePlan.activeLeg;
+    const activePlan = this.has(FlightPlanIndex.Active) ? this.get(FlightPlanIndex.Active) : undefined;
+    const activeToLeg = activePlan?.activeLeg;
 
     for (const plan of this.plans) {
       if (!plan) {
@@ -199,6 +199,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       // We only want to delete secondary plans if their active leg matches the active plan's active leg.
       const shouldDeletePlan =
         plan.index < FlightPlanIndex.FirstSecondary ||
+        activePlan === undefined ||
         (activeToLeg === undefined && plan.activeLeg === undefined) ||
         (activeToLeg !== undefined &&
           plan.activeLeg !== undefined &&
