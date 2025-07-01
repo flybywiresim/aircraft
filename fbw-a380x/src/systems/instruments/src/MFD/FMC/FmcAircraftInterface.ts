@@ -1258,7 +1258,7 @@ export class FmcAircraftInterface {
     /** in kg */
     const estLdgWeight = this.tryEstimateLandingWeight();
     let ldgWeight = estLdgWeight;
-    const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + this.fmc.fmgc.getFOB() * 1_000;
+    const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + (this.fmc.fmgc.getFOB() ?? 0) * 1_000;
     const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
     if (this.flightPhase.get() >= FmgcFlightPhase.Approach || estLdgWeight === null) {
@@ -1371,7 +1371,7 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw ?? 0);
 
     if (this.fmc.enginesWereStarted.get() && this.flightPhase.get() !== FmgcFlightPhase.Done) {
-      this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB() * 1_000);
+      this.fmc.fmgc.data.blockFuel.set(this.fmc.fmgc.getFOB()! * 1_000);
     }
   }
 

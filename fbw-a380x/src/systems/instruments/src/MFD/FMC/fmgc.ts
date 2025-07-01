@@ -143,11 +143,13 @@ export class FmgcData {
   /** in kg. null if not set. */
   public readonly jettisonGrossWeight = Subject.create<number | null>(null);
 
+  public readonly alternateExists = Subject.create(false);
+
   /** in kg. null if not set. */
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly alternateFuelCalculated = Subject.create<number | null>(6_500); // FIXME Hardcoded value. Derive from FMS predictions.
+  public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : null)); // FIXME Hardcoded value. Derive from FMS predictions.
 
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -366,13 +368,13 @@ export class FmgcDataService implements Fmgc {
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
     const zfw = this.data.zeroFuelWeight.get();
-    const fob = this.getFOB() * 1_000; // getFOB returns tons
+    const fob = this.getFOB();
 
-    if (zfw == null || fob === undefined) {
+    if (zfw == null || fob === null) {
       return null;
     }
 
-    return (zfw + fob) / 1_000;
+    return (zfw + fob * 1000) / 1_000;
   }
 
   /** in kilograms */
@@ -385,15 +387,15 @@ export class FmgcDataService implements Fmgc {
    *
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
-  getFOB(): number {
-    let fob = this.data.blockFuel.get() ?? 0;
+  getFOB(): number | null {
+    let fob = this.data.blockFuel.get();
     if (this.isAnEngineOn()) {
       fob =
         SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') *
         SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
     }
 
-    return fob / 1_000; // Needs to be returned in tonnes
+    return fob !== null ? fob / 1_000 : null; // Needs to be returned in tonnes
   }
 
   /** in knots */

@@ -84,14 +84,14 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly flightPhaseAtLeastTakeoff = this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff);
   private readonly flightPhaseAtLeastDescent = this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent);
 
+  private readonly alternateFuelDisabled = Subject.create(true);
+
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
       return;
     }
 
-    if (this.loadedFlightPlan.performanceData.costIndex) {
-      this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
-    }
+    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
 
     this.updateDestAndAltnPredictions();
   }
@@ -138,6 +138,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             return;
           }
 
+          this.alternateFuelDisabled.set(!this.props.fmcService.master.fmgc.data.alternateExists.get());
           this.landingWeight.set(this.props.fmcService.master.getLandingWeight());
           this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight());
 
@@ -403,6 +404,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   dataHandlerDuringValidation={async (v) =>
                     this.props.fmcService.master?.fmgc.data.alternateFuelPilotEntry.set(v)
                   }
+                  disabled={this.alternateFuelDisabled}
                   enteredByPilot={this.props.fmcService.master.fmgc.data.alternateFuelIsPilotEntered}
                   readonlyValue={this.props.fmcService.master.fmgc.data.alternateFuel}
                   alignText="flex-end"
