@@ -15,7 +15,7 @@ import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/au
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { Arinc429ConsumerSubject, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429Word, Arinc429WordData, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -45,7 +45,7 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
   };
 }
 
-export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribable<boolean> }> {
+export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscribable<boolean> }> {
   private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
   private activeLateralMode: number = 0;
@@ -74,7 +74,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private readonly radioHeight = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
-  private readonly altitude = ConsumerSubject.create(this.sub.on('altitudeAr'), Arinc429Word.empty());
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
   private readonly landingElevation = ConsumerSubject.create(this.sub.on('landingElevation'), Arinc429Word.empty());
 
@@ -577,7 +579,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         this.displayModeChangedPath();
         break;
       case 12:
-        text = '<text  class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+        text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
         this.displayModeChangedPath();
         break;
       case 13:
@@ -660,8 +662,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     sub
       .on('autoBrakeActive')
       .whenChanged()
-      .handle((am) => {
-        this.autoBrakeActive = am;
+      .handle((a) => {
+        this.autoBrakeActive = a;
         this.setText();
       });
 
@@ -670,6 +672,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((a) => {
         this.autoBrakeMode = a;
+        this.setText();
       });
   }
 
@@ -700,6 +703,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   private autobrakeMode = 0;
 
   private AB3Message = false;
+
+  private autoBrakeActive = false;
 
   private onUpdateAthrModeMessage(message: number) {
     let text: string = '';
@@ -734,7 +739,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   }
 
   private handleAutobrakeMode() {
-    if (this.autobrakeMode === 6 && !this.AB3Message) {
+    if (this.autobrakeMode === 6 && !this.AB3Message && !this.autoBrakeActive) {
       this.textSub.set('BRK RTO');
       this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
     } else {
@@ -771,9 +776,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       .on('autoBrakeActive')
       .whenChanged()
       .handle((a) => {
-        if (a) {
-          this.classSub.set('HiddenElement');
-        }
+        this.autoBrakeActive = a;
+        this.handleAutobrakeMode();
       });
   }
 

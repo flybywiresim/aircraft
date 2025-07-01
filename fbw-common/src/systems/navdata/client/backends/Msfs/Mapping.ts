@@ -27,7 +27,6 @@ import {
   ProcedureLeg,
   ProcedureTransition,
   SpeedDescriptor,
-  TerminalWaypoint,
   TurnDirection,
   VhfNavaid,
   VhfNavaidType,
@@ -81,6 +80,7 @@ import {
   NavaidSubsectionCode,
   SectionCode,
 } from '../../../shared/types/SectionCode';
+import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 
 type FacilityType<T> = T extends JS_FacilityIntersection
   ? Waypoint
@@ -90,7 +90,9 @@ type FacilityType<T> = T extends JS_FacilityIntersection
       ? VhfNavaid
       : T extends JS_FacilityAirport
         ? Airport
-        : never;
+        : T extends JS_Runway
+          ? Runway
+          : never;
 
 export class MsfsMapping {
   private static readonly letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -100,6 +102,7 @@ export class MsfsMapping {
   // eslint-disable-next-line no-useless-constructor
   constructor(
     private cache: FacilityCache,
+    private readonly logError: ErrorLogger,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -749,7 +752,7 @@ export class MsfsMapping {
 
             return ret;
           } catch (e) {
-            console.error(`Error mapping approach ${msAirport.icao} ${approach.name}`, e);
+            this.logError(`[MsfsMapping] Error mapping approach ${msAirport.icao} ${approach.name}: ${String(e)}`);
           }
           return null;
         })
@@ -785,7 +788,7 @@ export class MsfsMapping {
           };
           return ret;
         } catch (e) {
-          console.error(`Error mapping arrival ${msAirport.icao} ${arrival.name}`, e);
+          this.logError(`[MsfsMapping] Error mapping arrival ${msAirport.icao} ${arrival.name}: ${String(e)}`);
         }
         return null;
       })
@@ -832,7 +835,7 @@ export class MsfsMapping {
           };
           return ret;
         } catch (e) {
-          console.error(`Error mapping departure ${msAirport.icao} ${departure.name}`, e);
+          this.logError(`[MsfsMapping] Error mapping departure ${msAirport.icao} ${departure.name}: ${String(e)}`);
         }
         return null;
       })
@@ -1203,26 +1206,12 @@ export class MsfsMapping {
     }
   }
 
-  private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): TerminalWaypoint | undefined {
+  private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): Runway | undefined {
     const airportIdent = FacilityCache.ident(airport.icao);
     const runwayIdent = `${airportIdent}${icao.substring(9).trim()}`;
     const runways = this.mapAirportRunwaysPartial(airport);
 
-    for (const runway of runways) {
-      if (runway.ident === runwayIdent) {
-        return {
-          sectionCode: SectionCode.Airport,
-          subSectionCode: AirportSubsectionCode.Runways,
-          databaseId: icao,
-          icaoCode: icao.substring(1, 3),
-          ident: runwayIdent,
-          location: runway.thresholdLocation,
-          area: WaypointArea.Terminal,
-          airportIdent,
-        };
-      }
-    }
-    return undefined;
+    return runways.find((r) => r.ident === runwayIdent);
   }
 
   private mapApproachName(approach: JS_Approach): string {

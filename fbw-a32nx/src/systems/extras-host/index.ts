@@ -18,14 +18,16 @@ import {
   MsfsMiscPublisher,
   NotificationManager,
   PilotSeatManager,
+  PilotSeatPublisher,
   TelexCheck,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { FlightPlanAsoboSync } from 'extras-host/modules/flightplan_sync/FlightPlanAsoboSync';
-import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
+import { A32NXKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
+import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -81,7 +83,7 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly versionCheck: VersionCheck;
 
-  private readonly keyInterceptor: KeyInterceptor;
+  private readonly keyInterceptor: A32NXKeyInterceptor;
 
   private readonly flightPlanAsoboSync: FlightPlanAsoboSync;
 
@@ -123,7 +125,7 @@ class ExtrasHost extends BaseInstrument {
     this.notificationManager = new NotificationManager(this.bus);
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
-    this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
+    this.keyInterceptor = new A32NXKeyInterceptor(this.bus, this.notificationManager);
     this.flightPlanAsoboSync = new FlightPlanAsoboSync(this.bus);
 
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
@@ -134,6 +136,8 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
+    this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
+    this.backplane.addPublisher('PilotSeatPublisher', new PilotSeatPublisher(this.bus));
 
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
@@ -160,7 +164,6 @@ class ExtrasHost extends BaseInstrument {
 
     this.pushbuttonCheck.connectedCallback();
     this.versionCheck.connectedCallback();
-    this.keyInterceptor.connectedCallback();
     this.flightPlanAsoboSync.connectedCallback();
     this.aircraftSync.connectedCallback();
 
@@ -191,7 +194,6 @@ class ExtrasHost extends BaseInstrument {
     }
 
     this.versionCheck.update();
-    this.keyInterceptor.update();
     this.aircraftSync.update();
 
     this.backplane.onUpdate();
