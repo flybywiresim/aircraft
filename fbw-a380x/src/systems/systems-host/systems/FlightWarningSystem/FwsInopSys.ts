@@ -41,7 +41,11 @@ export class FwsInopSys {
     this.fws.yellowAbnormLoPressure,
   );
 
-  constructor(private fws: FwsCore) {}
+  constructor(private fws: FwsCore) {
+    this.subscriptions.push(this.partSplrs);
+    this.subscriptions.push(this.mostSplrs);
+  }
+
   /** INOP SYS shown on SD */
   inopSys: FwsInopSysDict = {
     221300001: {
