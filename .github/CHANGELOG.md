@@ -90,6 +90,7 @@
 1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
 1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
 1. [A32NX/FWS] Improve altitude alert logic, add PFD indications, improve AP OFF warning logic - @lukecologne (luke)
+1. [A380X/FMS] Add TL indication for tailwind on APPR PERF - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
