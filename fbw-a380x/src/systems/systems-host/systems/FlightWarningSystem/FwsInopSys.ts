@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamInopSys } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { MappedSubject, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
+import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
+import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/systems/FlightWarningSystem/FwsCore';
 
 export enum FwsInopSysPhases {
@@ -23,6 +24,8 @@ export interface FwsInopSysDict {
 }
 
 export class FwsInopSys {
+  public readonly subscriptions: Subscription[] = [];
+
   public readonly partSplrs = MappedSubject.create(
     SubscribableMapFunctions.or(),
     this.fws.greenAbnormLoPressure,
@@ -565,4 +568,15 @@ export class FwsInopSys {
       phase: FwsInopSysPhases.AllPhases,
     },
   };
+
+  public destroy(): void {
+    this.subscriptions.forEach((sub) => sub.destroy());
+
+    for (const key in this.inopSys) {
+      const element = this.inopSys[key];
+      if (isSubscription(element.simVarIsActive)) {
+        element.simVarIsActive.destroy();
+      }
+    }
+  }
 }

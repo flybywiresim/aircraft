@@ -4979,6 +4979,10 @@ export class FwsCore {
     this.abnormalNonSensed.destroy();
     this.abnormalSensed.destroy();
     this.normalChecklists.destroy();
+    this.information.destroy();
+    this.limitations.destroy();
+    this.inopSys.destroy();
+    this.memos.destroy();
     this.subs.forEach((s) => s.destroy());
   }
 }

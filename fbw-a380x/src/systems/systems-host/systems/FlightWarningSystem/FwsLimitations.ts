@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { Subscription } from '@microsoft/msfs-sdk';
 import { EcamLimitations } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export enum FwsLimitationsPhases {
   AllPhases,
@@ -22,7 +24,20 @@ export interface FwsLimitationsDict {
 }
 
 export class FwsLimitations {
+  public readonly subscriptions: Subscription[] = [];
+
   constructor(private fws: FwsCore) {}
   /** LIMITATIONS shown on SD */
   limitations: FwsLimitationsDict = {};
+
+  public destroy(): void {
+    this.subscriptions.forEach((sub) => sub.destroy());
+
+    for (const key in this.limitations) {
+      const element = this.limitations[key];
+      if (isSubscription(element.simVarIsActive)) {
+        element.simVarIsActive.destroy();
+      }
+    }
+  }
 }

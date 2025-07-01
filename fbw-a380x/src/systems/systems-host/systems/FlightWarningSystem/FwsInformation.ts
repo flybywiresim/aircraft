@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { Subscription } from '@microsoft/msfs-sdk';
 import { EcamInfos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export interface FwsInfoItem extends FwsSuppressableItem {}
 
@@ -12,6 +14,8 @@ export interface FwsInfoDict {
 }
 
 export class FwsInformation {
+  public readonly subscriptions: Subscription[] = [];
+
   constructor(private fws: FwsCore) {}
   /** INFO shown on SD */
   info: FwsInfoDict = {
@@ -24,8 +28,20 @@ export class FwsInformation {
       simVarIsActive: this.fws.land3SingleOnly,
     },
     220200010: {
-      // LAND 1 ONLY
+      // APPR 1 ONLY
       simVarIsActive: this.fws.appr1Only,
     },
   };
+
+  public destroy(): void {
+    this.subscriptions.forEach((sub) => sub.destroy());
+
+    for (const key in this.info) {
+      const element = this.info[key];
+
+      if (isSubscription(element.simVarIsActive)) {
+        element.simVarIsActive.destroy();
+      }
+    }
+  }
 }

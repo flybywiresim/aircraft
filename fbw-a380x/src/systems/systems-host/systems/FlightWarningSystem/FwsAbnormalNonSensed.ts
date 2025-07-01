@@ -8,11 +8,12 @@ import { EcamAbNormalSensedSubMenuVector, WD_NUM_LINES } from 'instruments/src/M
 import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
 import { EwdAbnormalDict } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
 import { SdPages } from '@shared/EcamSystemPages';
+import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export class FwsAbnormalNonSensed {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
-  private subs: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
 
   public readonly abnProcShown = Subject.create(false);
 
@@ -30,7 +31,7 @@ export class FwsAbnormalNonSensed {
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
   constructor(private fws: FwsCore) {
-    this.subs.push(
+    this.subscriptions.push(
       this.checklistId.sub((id) => {
         this.pub.pub('fws_abn_non_sensed_id', id, true);
         if (id > 10) {
@@ -137,7 +138,18 @@ export class FwsAbnormalNonSensed {
   }
 
   destroy() {
-    this.subs.forEach((s) => s.destroy());
+    this.subscriptions.forEach((s) => s.destroy());
+
+    for (const key in this.ewdAbnormalNonSensed) {
+      const element = this.ewdAbnormalNonSensed[key];
+      if (isSubscription(element.simVarIsActive)) {
+        element.simVarIsActive.destroy();
+      }
+
+      if (isSubscription(element.auralWarning)) {
+        element.auralWarning.destroy();
+      }
+    }
   }
 
   public ewdAbnormalNonSensed: EwdAbnormalDict = {

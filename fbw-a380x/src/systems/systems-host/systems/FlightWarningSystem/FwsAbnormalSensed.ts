@@ -13,6 +13,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
+import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import {
   ProcedureLinesGenerator,
   ProcedureType,
@@ -78,7 +79,7 @@ export interface EwdAbnormalDict {
 export class FwsAbnormalSensed {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
-  private subs: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
 
   public readonly abnormalShown = Subject.create(false);
 
@@ -114,7 +115,7 @@ export class FwsAbnormalSensed {
   }
 
   constructor(private fws: FwsCore) {
-    this.subs.push(
+    this.subscriptions.push(
       this.fws.presentedAbnormalProceduresList.sub(
         (
           map: ReadonlyMap<string, ChecklistState>,
@@ -183,7 +184,7 @@ export class FwsAbnormalSensed {
       ),
     );
 
-    this.subs.push(
+    this.subscriptions.push(
       this.abnormalShown.sub((shown) => {
         if (shown) {
           this.activeProcedure.selectFirst();
@@ -191,7 +192,7 @@ export class FwsAbnormalSensed {
       }),
     );
 
-    this.subs.push(
+    this.subscriptions.push(
       this.activeProcedureId.sub((id) => {
         if (id) {
           this.procedures.forEach((val) => {
@@ -205,7 +206,7 @@ export class FwsAbnormalSensed {
       }),
     );
 
-    this.subs.push(this.selectedItemIndex.sub(() => this.scrollToSelectedLine()));
+    this.subscriptions.push(this.selectedItemIndex.sub(() => this.scrollToSelectedLine()));
 
     this.publishInitialState();
   }
@@ -316,7 +317,29 @@ export class FwsAbnormalSensed {
   }
 
   destroy() {
-    this.subs.forEach((s) => s.destroy());
+    this.subscriptions.forEach((s) => s.destroy());
+
+    for (const key in this.ewdAbnormalSensed) {
+      const element = this.ewdAbnormalSensed[key];
+      if (isSubscription(element.simVarIsActive)) {
+        element.simVarIsActive.destroy();
+      }
+
+      if (isSubscription(element.auralWarning)) {
+        element.auralWarning.destroy();
+      }
+    }
+
+    for (const key in this.ewdDeferredProcs) {
+      const element = this.ewdDeferredProcs[key];
+      if (isSubscription(element.simVarIsActive)) {
+        element.simVarIsActive.destroy();
+      }
+
+      if (isSubscription(element.auralWarning)) {
+        element.auralWarning.destroy();
+      }
+    }
   }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
