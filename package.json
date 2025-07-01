@@ -12,6 +12,7 @@
     "build:cpp-wasm-cmake-debug": "scripts/build-cmake.sh --debug",
     "build:cpp-wasm-cmake-debug-clean": "scripts/build-cmake.sh --debug --clean",
     "build:cpp-wasm-cmake-test": "cd fbw-common/src/wasm/cpp-msfs-framework/test && ./test-cpp.sh",
+
     "====== A320 =============================================================": "========================================================",
     "build-a32nx:copy-base-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo fbw-a32nx/out/)",
     "build-a32nx:copy-base-lock-highlight-package": "mkdir -p fbw-a32nx/out/flybywire-aircraft-a320-neo-lock-highlight && (rsync -a fbw-a32nx/src/base/flybywire-aircraft-a320-neo-lock-highlight fbw-a32nx/out/ || cp -a -u fbw-a32nx/src/base/flybywire-aircraft-a320-neo-lock-highlight fbw-a32nx/out/)",
@@ -62,6 +63,9 @@
     "build-a380x:terronnd": "cd fbw-common/src/wasm/terronnd && ./build.sh --a380x && wasm-opt -O1 --signext-lowering -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm /external/fbw-common/src/wasm/terronnd/out/terronnd_A380X.wasm",
     "build-a380x:metadata": "node scripts/metadata.js fbw-a380x/out/flybywire-aircraft-a380-842 a380x",
     "build-a380x:manifest": "node scripts/build_a380x.js flybywire-aircraft-a380-842",
+    "====== LVar Provider ====================================================": "========================================================",
+    "build-arinc429-lvar-bridge:copy-base-files": "mkdir -p fbw-arinc429-lvar-bridge/out/flybywire-arinc429-lvar-bridge && (rsync -a fbw-arinc429-lvar-bridge/src/base/flybywire-arinc429-lvar-bridge fbw-arinc429-lvar-bridge/out/ || cp -a -u fbw-arinc429-lvar-bridge/src/base/flybywire-arinc429-lvar-bridge fbw-arinc429-lvar-bridge/out/)",
+    "build-arinc429-lvar-bridge:manifest": "node scripts/build_arinc429-lvar-bridge.js",
     "====== INGAMEPANELS CHECKLIST FIX =======================================": "========================================================",
     "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
     "build-ingamepanels-checklist-fix:copy-base-files": "npm run build-ingamepanels-checklist-fix:copy-base-package",
