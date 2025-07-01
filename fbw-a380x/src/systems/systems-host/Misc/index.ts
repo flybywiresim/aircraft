@@ -11,9 +11,6 @@ import {
   MappedSubject,
   SubscribableMapFunctions,
   WeightBalanceSimvarPublisher,
-  StallWarningPublisher,
-  SimVarValueType,
-  Subject,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/Misc/LegacyGpws';
 import { LegacyFuel } from 'systems-host/Misc/LegacyFuel';
@@ -25,7 +22,6 @@ import {
   ArincEventBus,
   BtvSimvarPublisher,
   FailuresConsumer,
-  MsfsFlightModelPublisher,
   MsfsMiscPublisher,
   PilotSeatPublisher,
   VhfComIndices,
@@ -37,10 +33,8 @@ import { Transponder } from 'systems-host/Misc/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/Misc/powersupply';
 import { SimAudioManager } from 'systems-host/Misc/Communications/SimAudioManager';
 import { AtsuSystem } from 'systems-host/Misc/atsu';
-import { FwsCore } from 'systems-host/Misc/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/Misc/BrakeToVacateDistanceUpdater';
-import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {
   ResetPanelSimvarPublisher,
   ResetPanelSimvars,
@@ -52,15 +46,12 @@ import {
 import { EgpwcBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AesuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
-import { A380Failure } from '@failures';
 import { AutoThsTrimmer } from './AutoThsTrimmer';
 import { EfisTawsBridge } from './EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
-
-CpiomAvailableSimvarPublisher;
 import { AircraftNetworkServerUnit } from 'systems-host/Misc/InformationSystems/AircraftNetworkServerUnit';
 
-class SystemsHost extends BaseInstrument {
+class MiscSystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
   private readonly sub = this.bus.getSubscriber<PowerSupplyBusTypes & ResetPanelSimvars & CpiomAvailableSimvars>();
@@ -119,15 +110,9 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
-  private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
-
-  private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
-
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
-
-  private readonly interactivePointsPublisher = new MsfsFlightModelPublisher(this.bus);
 
   private readonly fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus, 'L'); // FIXME figure out side dependency
   private readonly egpwcPublisher = new EgpwcBusPublisher(this.bus, 'L');
@@ -138,31 +123,6 @@ class SystemsHost extends BaseInstrument {
   private readonly switchingPanelPublisher = new SwitchingPanelPublisher(this.bus);
 
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
-
-  private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
-  private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
-
-  private readonly fws1Powered = ConsumerSubject.create(this.sub.on('cpiomC1Avail'), true);
-  private readonly fws2Powered = ConsumerSubject.create(this.sub.on('cpiomC2Avail'), true);
-
-  private readonly fws1Failed = Subject.create(false);
-  private readonly fws2Failed = Subject.create(false);
-
-  private readonly fwsEcpFailed = Subject.create(false);
-
-  private readonly fwsAvailable = MappedSubject.create(
-    ([failed1, failed2]) => !(failed1 && failed2),
-    this.fws1Failed,
-    this.fws2Failed,
-  );
-
-  private fwsCore: FwsCore | undefined = new FwsCore(
-    1,
-    this.bus,
-    this.failuresConsumer,
-    this.fws1Failed,
-    this.fws2Failed,
-  );
 
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
@@ -210,11 +170,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('BtvPublisher', this.btvPublisher);
     this.backplane.addPublisher('Weightpublisher', this.weightAndBalancePublisher);
     this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
-    this.backplane.addPublisher('StallWarning', this.stallWarningPublisher);
-    this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
-    this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
     this.backplane.addPublisher('FmsSymbolsPublisher', this.fmsSymbolsPublisher);
     this.backplane.addPublisher('EgpwcPublisher', this.egpwcPublisher);
     this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
@@ -231,7 +188,6 @@ class SystemsHost extends BaseInstrument {
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
-    this.fwsCore?.init();
 
     this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
@@ -246,28 +202,12 @@ class SystemsHost extends BaseInstrument {
 
         this.soundManager?.update(dt);
         this.gpws?.update(dt);
-        this.fwsCore?.update(dt);
         this.autoThsTrimmer.autoTrim();
       });
-
-    this.fwsAvailable.sub((a) => {
-      if (!a && this.fwsCore !== undefined) {
-        this.fwsCore.destroy();
-        this.fwsCore = undefined;
-        FwsCore.sendFailureWarning(this.bus);
-      } else if (a && this.fwsCore === undefined) {
-        this.fwsCore = new FwsCore(1, this.bus, this.failuresConsumer, this.fws1Failed, this.fws2Failed);
-        this.fwsCore.init();
-      }
-    }, true);
-    this.fws1Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, !f), true);
-    this.fws2Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, !f), true);
-
-    this.fwsEcpFailed.sub((v) => SimVar.SetSimVarValue('L:A32NX_FWS_ECP_FAILED', SimVarValueType.Bool, v), true);
   }
 
   get templateID(): string {
-    return 'A380X_SYSTEMSHOST';
+    return 'A380X_SYSTEMSHOST_MISC';
   }
 
   public getDeltaTime() {
@@ -290,12 +230,6 @@ class SystemsHost extends BaseInstrument {
       true,
     );
 
-    this.failuresConsumer.register(A380Failure.Fws1);
-    this.failuresConsumer.register(A380Failure.Fws2);
-    this.failuresConsumer.register(A380Failure.Fws1AudioFunction);
-    this.failuresConsumer.register(A380Failure.Fws2AudioFunction);
-    this.failuresConsumer.register(A380Failure.FwsEcp);
-
     this.backplane.init();
   }
 
@@ -303,21 +237,6 @@ class SystemsHost extends BaseInstrument {
     super.Update();
 
     this.failuresConsumer.update();
-    this.fws1Failed.set(
-      this.failuresConsumer.isActive(A380Failure.Fws1) || this.fws1ResetPbStatus.get() || !this.fws1Powered.get(),
-    );
-    this.fws2Failed.set(
-      this.failuresConsumer.isActive(A380Failure.Fws2) || this.fws2ResetPbStatus.get() || !this.fws2Powered.get(),
-    );
-
-    const ecpNotReachable =
-      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
-      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_13_REACHABLE', SimVarValueType.Bool) &&
-      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_4_REACHABLE', SimVarValueType.Bool) &&
-      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_14_REACHABLE', SimVarValueType.Bool);
-    this.fwsEcpFailed.set(
-      this.failuresConsumer.isActive(A380Failure.FwsEcp) || !this.dcEssBusPowered.get() || ecpNotReachable,
-    );
 
     if (this.gameState !== 3) {
       const gamestate = this.getGameState();
@@ -331,4 +250,4 @@ class SystemsHost extends BaseInstrument {
   }
 }
 
-registerInstrument('systems-host', SystemsHost);
+registerInstrument('systems-host-misc', MiscSystemsHost);

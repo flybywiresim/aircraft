@@ -6,7 +6,7 @@ import {
   NXLogicMemoryNode,
   NXLogicTriggeredMonostableNode,
 } from '@flybywiresim/fbw-sdk';
-import { FwsCore } from 'systems-host/Misc/FlightWarningSystem/FwsCore';
+import { FwsCore } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsCore';
 
 export enum FwcFlightPhase {
   ElecPwr = 1,
