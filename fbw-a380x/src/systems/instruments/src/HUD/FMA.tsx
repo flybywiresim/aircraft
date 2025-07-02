@@ -700,8 +700,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     sub
       .on('autoBrakeActive')
       .whenChanged()
-      .handle((am) => {
-        this.autoBrakeActive = am;
+      .handle((a) => {
+        this.autoBrakeActive = a;
         this.setText();
       });
 
@@ -710,6 +710,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((a) => {
         this.autoBrakeMode = a;
+        this.setText();
       });
   }
 
@@ -742,6 +743,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   private autobrakeMode = 0;
 
   private AB3Message = false;
+
+  private autoBrakeActive = false;
 
   private modeArmed = FSComponent.createRef<SVGPathElement>();
 
@@ -778,7 +781,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   }
 
   private handleAutobrakeMode() {
-    if (this.autobrakeMode === 6 && !this.AB3Message) {
+    if (this.autobrakeMode === 6 && !this.AB3Message && !this.autoBrakeActive) {
       if (this.decMode !== 2) {
         this.modeArmed.instance.setAttribute('visibility', 'visible');
       }
@@ -826,9 +829,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       .on('autoBrakeActive')
       .whenChanged()
       .handle((a) => {
-        if (a) {
-          this.classSub.set('HiddenElement');
-        }
+        this.autoBrakeActive = a;
+        this.handleAutobrakeMode();
       });
   }
 
