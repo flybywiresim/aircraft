@@ -4057,7 +4057,7 @@ export class FwsCore {
     this.apuFireAgent1Discharge10SecondsClockActive.set(this.apuFireDetected.get() && this.fireButtonAPU.get());
     this.fireEng1Agent1InFlight10SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
-        this.fireButtonEng1.get() &&
+        !this.engine1Master.get() &&
         this.eng1FireDetected.get() &&
         !this.eng1Agent1Discharged.get(),
     );
@@ -4070,7 +4070,7 @@ export class FwsCore {
     );
     this.fireEng2Agent1InFlight10SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
-        this.fireButtonEng2.get() &&
+        !this.engine2Master.get() &&
         this.eng2FireDetected.get() &&
         !this.eng2Agent1Discharged.get(),
     );
@@ -4083,7 +4083,7 @@ export class FwsCore {
     );
     this.fireEng3Agent1InFlight10SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
-        this.fireButtonEng3.get() &&
+        !this.engine3Master.get() &&
         this.eng3FireDetected.get() &&
         !this.eng3Agent1Discharged.get(),
     );
@@ -4097,7 +4097,7 @@ export class FwsCore {
 
     this.fireEng4Agent1InFlight10SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
-        this.fireButtonEng4.get() &&
+        !this.engine4Master.get() &&
         this.eng4FireDetected.get() &&
         !this.eng4Agent1Discharged.get(),
     );
