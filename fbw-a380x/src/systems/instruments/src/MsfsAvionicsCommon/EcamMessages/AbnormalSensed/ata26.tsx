@@ -131,9 +131,9 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        // When timer elapsed, this should change to 'AGENT 1...DISCH'
-        name: 'AGENT 1 AFTER 10 S',
+        name: 'AGENT 1',
         sensed: true,
+        time: 10,
         labelNotCompleted: 'DISCH',
       },
       {
@@ -142,10 +142,10 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'NOTIFY',
       },
       {
-        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-        name: 'STILL FIRE AFTER 30 S :',
+        name: 'STILL FIRE',
         sensed: false,
         condition: true,
+        time: 30,
       },
       {
         name: 'AGENT 2',
@@ -176,8 +176,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        // When timer elapsed, this should change to 'AGENT 1...DISCH'
-        name: 'AGENT 1 AFTER 10 S',
+        name: 'AGENT 1',
+        time: 10,
         sensed: true,
         labelNotCompleted: 'DISCH',
       },
@@ -187,10 +187,10 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'NOTIFY',
       },
       {
-        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-        name: 'STILL FIRE AFTER 30 S :',
+        name: 'STILL FIRE',
         sensed: false,
         condition: true,
+        time: 30,
       },
       {
         name: 'AGENT 2',
@@ -221,9 +221,9 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        // When timer elapsed, this should change to 'AGENT 1...DISCH'
-        name: 'AGENT 1 AFTER 10 S',
+        name: 'AGENT 1',
         sensed: true,
+        time: 10,
         labelNotCompleted: 'DISCH',
       },
       {
@@ -232,9 +232,9 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'NOTIFY',
       },
       {
-        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-        name: 'STILL FIRE AFTER 30 S :',
+        name: 'STILL FIRE',
         sensed: false,
+        time: 30,
         condition: true,
       },
       {

@@ -651,31 +651,47 @@ export class FwsCore {
   public readonly apuAgentDischarged = Subject.create(false);
 
   private readonly fireEng1Agent1InFlight10SecondsDischClock = Subject.create(false);
-
-  public readonly fireEng1Agent1DischargeTimeStamp = this.fireEng1Agent1InFlight10SecondsDischClock.map((v) =>
+  public readonly fireEng1Agent1Discharge10sTimeStamp = this.fireEng1Agent1InFlight10SecondsDischClock.map((v) =>
     v ? Date.now() : null,
   );
-
   private readonly eng1FireInFlightFire30SecondsDischClock = Subject.create(false);
-
-  public readonly fireEng1Active30sTimeStamp = this.eng1FireInFlightFire30SecondsDischClock.map((v) =>
+  public readonly fireEng1Agent2Discharge30sTimeStamp = this.eng1FireInFlightFire30SecondsDischClock.map((v) =>
     v ? Date.now() : null,
   );
-
   public readonly eng1Agent1Discharged = Subject.create(false);
-
   public readonly eng1Agent2Discharged = Subject.create(false);
 
+  private readonly fireEng2Agent1InFlight10SecondsDischClock = Subject.create(false);
+  public readonly fireEng2Agent1Discharge10sTimeStamp = this.fireEng2Agent1InFlight10SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
+  private readonly eng2FireInFlightFire30SecondsDischClock = Subject.create(false);
+  public readonly fireEng2Agent2Discharge30sTimeStamp = this.eng2FireInFlightFire30SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
   public readonly eng2Agent1Discharged = Subject.create(false);
-
   public readonly eng2Agent2Discharged = Subject.create(false);
 
+  private readonly fireEng3Agent1InFlight10SecondsDischClock = Subject.create(false);
+  public readonly fireEng3Agent1Discharge10sTimeStamp = this.fireEng3Agent1InFlight10SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
+  private readonly eng3FireInFlightFire30SecondsDischClock = Subject.create(false);
+  public readonly fireEng3Agent2Discharge30sTimeStamp = this.eng3FireInFlightFire30SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
   public readonly eng3Agent1Discharged = Subject.create(false);
-
   public readonly eng3Agent2Discharged = Subject.create(false);
 
+  private readonly fireEng4Agent1InFlight10SecondsDischClock = Subject.create(false);
+  public readonly fireEng4Agent1Discharge10sTimeStamp = this.fireEng4Agent1InFlight10SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
+  private readonly eng4FireInFlightFire30SecondsDischClock = Subject.create(false);
+  public readonly fireEng4Agent2Discharge30sTimeStamp = this.eng4FireInFlightFire30SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
   public readonly eng4Agent1Discharged = Subject.create(false);
-
   public readonly eng4Agent2Discharged = Subject.create(false);
 
   public readonly apuLoopAFault = Subject.create(false);
@@ -4037,6 +4053,7 @@ export class FwsCore {
     this.eng3FireDetectedAural.set(this.eng3FireDetected.get() && !this.fireButtonEng3.get());
     this.eng4FireDetectedAural.set(this.eng4FireDetected.get() && !this.fireButtonEng4.get());
 
+    // FIRE Timers
     this.apuFireAgent1Discharge10SecondsClockActive.set(this.apuFireDetected.get() && this.fireButtonAPU.get());
     this.fireEng1Agent1InFlight10SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
@@ -4044,13 +4061,52 @@ export class FwsCore {
         this.eng1FireDetected.get() &&
         !this.eng1Agent1Discharged.get(),
     );
-
     this.eng1FireInFlightFire30SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
         this.fireButtonEng1.get() &&
         this.eng1FireDetected.get() &&
         this.eng1Agent1Discharged.get() &&
         !this.eng1Agent2Discharged.get(),
+    );
+    this.fireEng2Agent1InFlight10SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng2.get() &&
+        this.eng2FireDetected.get() &&
+        !this.eng2Agent1Discharged.get(),
+    );
+    this.eng2FireInFlightFire30SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng2.get() &&
+        this.eng2FireDetected.get() &&
+        this.eng2Agent1Discharged.get() &&
+        !this.eng2Agent2Discharged.get(),
+    );
+    this.fireEng3Agent1InFlight10SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng3.get() &&
+        this.eng3FireDetected.get() &&
+        !this.eng3Agent1Discharged.get(),
+    );
+    this.eng3FireInFlightFire30SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng3.get() &&
+        this.eng3FireDetected.get() &&
+        this.eng3Agent1Discharged.get() &&
+        !this.eng3Agent2Discharged.get(),
+    );
+
+    this.fireEng4Agent1InFlight10SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng4.get() &&
+        this.eng4FireDetected.get() &&
+        !this.eng4Agent1Discharged.get(),
+    );
+    this.eng4FireInFlightFire30SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng4.get() &&
+        this.eng4FireDetected.get() &&
+        this.eng4Agent1Discharged.get() &&
+        !this.eng4Agent2Discharged.get(),
     );
 
     this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));

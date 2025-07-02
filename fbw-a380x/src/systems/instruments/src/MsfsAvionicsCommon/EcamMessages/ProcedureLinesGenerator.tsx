@@ -592,7 +592,7 @@ export class ProcedureLinesGenerator {
       const timestampArray = checklistState.itemsTimeStamp;
       if (timestampArray) {
         const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
-        let seconds;
+        let seconds: number;
         if (Number.isFinite(startTimeStamp)) {
           const diffSeconds = Math.round(Date.now() - startTimeStamp) / 1000;
           if (diffSeconds < item.time) {
