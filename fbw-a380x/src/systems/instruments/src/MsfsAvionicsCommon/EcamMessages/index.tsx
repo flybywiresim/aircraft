@@ -595,6 +595,7 @@ interface AbstractChecklistItem {
   /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   style?: ChecklistLineStyle;
 
+  /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
   time?: number;
 }
 

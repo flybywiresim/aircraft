@@ -97,8 +97,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'NOTIFY',
       },
       {
-        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
         name: 'STILL FIRE',
+        time: 30,
         sensed: false,
         condition: true,
       },

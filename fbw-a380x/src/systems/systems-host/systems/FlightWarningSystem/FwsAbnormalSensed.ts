@@ -126,6 +126,7 @@ export class FwsAbnormalSensed {
               itemsChecked: val.itemsChecked,
               itemsActive: val.itemsActive,
               itemsToShow: val.itemsToShow,
+              itemsTimeStamp: val.itemsTimeStamp,
             }),
           );
           // Sort by decreasing importance

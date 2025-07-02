@@ -442,11 +442,11 @@ export class ProcedureLinesGenerator {
           } else if (itemComplete && item.labelNotCompleted) {
             text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
           } else if (!itemComplete && item.labelNotCompleted) {
-            text += this.appendTimedLineDataToChecklist(item, this.checklistState, itemIndex);
+            text += this.getTimedItemLineText(item, this.checklistState, itemIndex);
             // Pad to 39 characters max
             const paddingNeeded = Math.max(
               0,
-              39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 1 + 2),
+              39 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2),
             );
 
             text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
@@ -459,7 +459,7 @@ export class ProcedureLinesGenerator {
             text += itemComplete
               ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
               : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}` +
-                this.appendTimedLineDataToChecklist(item, this.checklistState, itemIndex);
+                this.getTimedItemLineText(item, this.checklistState, itemIndex);
             text += item.name;
           }
         }
@@ -583,7 +583,7 @@ export class ProcedureLinesGenerator {
     return lineData;
   }
 
-  private appendTimedLineDataToChecklist(
+  private getTimedItemLineText(
     item: ChecklistCondition | ChecklistAction,
     checklistState: ChecklistState,
     itemIndex: number,
@@ -593,10 +593,12 @@ export class ProcedureLinesGenerator {
       if (timestampArray) {
         const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
         let seconds;
-        if (startTimeStamp !== undefined) {
+        if (Number.isFinite(startTimeStamp)) {
           const diffSeconds = Math.round(Date.now() - startTimeStamp) / 1000;
           if (diffSeconds < item.time) {
-            seconds = diffSeconds;
+            seconds = item.time - diffSeconds;
+          } else {
+            return '';
           }
         } else {
           seconds = item.time;
