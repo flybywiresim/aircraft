@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -34,6 +34,7 @@ export interface EwdAbnormalItem {
   whichItemsChecked: () => boolean[];
   /** Returns a boolean vector (same length as number of items). Optional, defaults to true. If true, item is shown as activated */
   whichItemsActive?: () => boolean[];
+  whichItemsTimer?: () => number[];
   /** 3 = master warning, 2 = master caution */
   failure: number;
   /** Index of ECAM page to be displayed on SD */
@@ -1781,6 +1782,7 @@ export class FwsAbnormalSensed {
         this.fws.apuAgentDischarged.get(),
         this.fws.apuMasterSwitch.get() === 0,
       ],
+      whichItemsTimer: () => [undefined, this.fws.apuFireAgentStartTimer.get(), undefined],
       failure: 3,
       sysPage: SdPages.Apu,
     },
@@ -1843,6 +1845,16 @@ export class FwsAbnormalSensed {
         false,
         false,
         this.fws.eng1Agent2Discharged.get(),
+      ],
+      whichItemsTimer: () => [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        this.fws.fireEng1Agent1DischargeTimeStamp.get(),
+        undefined,
+        this.fws.fireEng1Active30sTimeStamp.get(),
       ],
       failure: 3,
       sysPage: SdPages.Eng,

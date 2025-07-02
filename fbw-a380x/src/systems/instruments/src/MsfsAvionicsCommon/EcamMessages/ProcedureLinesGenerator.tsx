@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
@@ -427,6 +427,7 @@ export class ProcedureLinesGenerator {
 
         let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
         let text = item.level ? '\xa0'.repeat(item.level) : '';
+        const itemComplete = this.checklistState.itemsChecked[itemIndex];
         if (isChecklistAction(item)) {
           text += clStyle !== ChecklistLineStyle.SubHeadline ? '-' : '';
           text += item.name;
@@ -436,11 +437,12 @@ export class ProcedureLinesGenerator {
           ) {
             clStyle = ChecklistLineStyle.ChecklistItemInactive;
           }
-          if (this.checklistState.itemsChecked[itemIndex] && item.labelCompleted) {
+          if (itemComplete && item.labelCompleted) {
             text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
-          } else if (this.checklistState.itemsChecked[itemIndex] && item.labelNotCompleted) {
+          } else if (itemComplete && item.labelNotCompleted) {
             text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
-          } else if (!this.checklistState.itemsChecked[itemIndex] && item.labelNotCompleted) {
+          } else if (!itemComplete && item.labelNotCompleted) {
+            text += this.appendTimedLineDataToChecklist(item, this.checklistState, itemIndex);
             // Pad to 39 characters max
             const paddingNeeded = Math.max(
               0,
@@ -454,12 +456,12 @@ export class ProcedureLinesGenerator {
           if (item.name.substring(0, 4) === 'WHEN') {
             text += `.${item.name}`;
           } else {
-            text += this.checklistState.itemsChecked[itemIndex]
+            text += itemComplete
               ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
-              : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
+              : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}` +
+                this.appendTimedLineDataToChecklist(item, this.checklistState, itemIndex);
+            text += item.name;
           }
-        } else {
-          text += item.name;
         }
 
         lineData.push({
@@ -579,5 +581,33 @@ export class ProcedureLinesGenerator {
     });
 
     return lineData;
+  }
+
+  private appendTimedLineDataToChecklist(
+    item: ChecklistCondition | ChecklistAction,
+    checklistState: ChecklistState,
+    itemIndex: number,
+  ): string {
+    if (item.time !== undefined) {
+      const timestampArray = checklistState.itemsTimeStamp;
+      if (timestampArray) {
+        const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
+        let seconds;
+        if (startTimeStamp !== undefined) {
+          const diffSeconds = Math.round(Date.now() - startTimeStamp) / 1000;
+          if (diffSeconds < item.time) {
+            seconds = diffSeconds;
+          }
+        } else {
+          seconds = item.time;
+        }
+        return `AFTER ${seconds} S`;
+      } else {
+        console.warn(
+          `Timestamp collection missing found on a timed item ${item.name} of checklist ${checklistState.id}`,
+        );
+      }
+    }
+    return '';
   }
 }

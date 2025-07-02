@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2024 FlyByWire Simulations
+﻿// Copyright (c) 2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -9,6 +9,7 @@ export interface ChecklistState {
   itemsChecked: boolean[];
   itemsToShow: boolean[];
   itemsActive: boolean[];
+  itemsTimeStamp?: number[];
 }
 
 export type AbnormalNonSensedCategory = null | 'ENG' | 'F/CTL' | 'L/G' | 'NAV' | 'FUEL' | 'MISCELLANEOUS';

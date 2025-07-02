@@ -28,7 +28,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        name: 'APU AGENT AFTER 10 S',
+        name: 'APU AGENT',
+        time: 30,
         sensed: true,
         labelNotCompleted: 'DISCH',
       },
@@ -85,8 +86,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        // When timer elapsed, this should change to 'AGENT 1...DISCH'
-        name: 'AGENT 1 AFTER 10 S',
+        name: 'AGENT 1',
+        time: 30,
         sensed: true,
         labelNotCompleted: 'DISCH',
       },
@@ -97,7 +98,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-        name: 'STILL FIRE AFTER 30 S :',
+        name: 'STILL FIRE',
         sensed: false,
         condition: true,
       },

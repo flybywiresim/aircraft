@@ -594,7 +594,10 @@ interface AbstractChecklistItem {
   level?: number;
   /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   style?: ChecklistLineStyle;
+
+  time?: number;
 }
+
 export interface ChecklistAction extends AbstractChecklistItem {
   /** Label at the end of the line if action is not completed. */
   labelNotCompleted: string;

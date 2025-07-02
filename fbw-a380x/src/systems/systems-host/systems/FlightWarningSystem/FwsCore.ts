@@ -30,6 +30,7 @@ import {
   FailuresConsumer,
   FrequencyMode,
   MsfsFlightModelEvents,
+  NXLogicClockNode,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicPulseNode,
@@ -649,6 +650,16 @@ export class FwsCore {
 
   public readonly apuAgentDischarged = Subject.create(false);
 
+  private readonly fireEng1Agent1DischClock = Subject.create(false);
+
+  public readonly fireEng1Agent1DischargeTimeStamp = this.fireEng1Agent1DischClock.map((v) => (v ? Date.now() : null));
+
+  private readonly eng1FireInFlightFire30SecondsClock = Subject.create(false);
+
+  public readonly fireEng1Active30sTimeStamp = this.eng1FireInFlightFire30SecondsClock.map((v) =>
+    v ? Date.now() : null,
+  );
+
   public readonly eng1Agent1Discharged = Subject.create(false);
 
   public readonly eng1Agent2Discharged = Subject.create(false);
@@ -708,6 +719,10 @@ export class FwsCore {
   public readonly allFireButtons = Subject.create(false);
 
   public readonly fireTestPb = Subject.create(false);
+
+  public readonly apuFireAgentDischClockNode = Subject.create(false);
+
+  public readonly apuFireAgentStartTimer = this.apuFireAgentDischClockNode.map((v) => (v ? Date.now() : null));
 
   /* 27 - FLIGHT CONTROLS */
 
@@ -1468,8 +1483,9 @@ export class FwsCore {
   public readonly HPNEng2 = Subject.create(0);
   public readonly HPNEng3 = Subject.create(0);
   public readonly HPNEng4 = Subject.create(0);
-
   public readonly N1IdleEng = Subject.create(0);
+
+  public readonly engine1DischargeTimer = new NXLogicClockNode(10, 0);
 
   // FIXME ECU should provide this in a discrete word
   public readonly engine1AboveIdle = MappedSubject.create(
@@ -4011,12 +4027,27 @@ export class FwsCore {
         this.fireButtonEng4.get() &&
         this.fireButtonAPU.get(),
     );
-
     this.apuFireDetectedAural.set(this.apuFireDetected.get() && !this.fireButtonAPU.get());
     this.eng1FireDetectedAural.set(this.eng1FireDetected.get() && !this.fireButtonEng1.get());
     this.eng2FireDetectedAural.set(this.eng2FireDetected.get() && !this.fireButtonEng2.get());
     this.eng3FireDetectedAural.set(this.eng3FireDetected.get() && !this.fireButtonEng3.get());
     this.eng4FireDetectedAural.set(this.eng4FireDetected.get() && !this.fireButtonEng4.get());
+
+    this.apuFireAgentDischClockNode.set(this.apuFireDetectedAural.get());
+    this.fireEng1Agent1DischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng1.get() &&
+        this.eng1FireDetected.get() &&
+        !this.eng1Agent1Discharged.get(),
+    );
+
+    this.eng1FireInFlightFire30SecondsClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng1.get() &&
+        this.eng1FireDetected.get() &&
+        this.eng1Agent1Discharged.get() &&
+        !this.eng1Agent2Discharged.get(),
+    );
 
     this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
 
@@ -4212,6 +4243,7 @@ export class FwsCore {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
+        const itemsTimer = value.whichItemsTimer ? value.whichItemsTimer() : undefined;
         ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
 
         if (newWarning) {
@@ -4256,6 +4288,7 @@ export class FwsCore {
             itemsActive: itemsActive,
             itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
+            itemsTimeStamp: itemsTimer,
           });
 
           for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
@@ -4298,7 +4331,8 @@ export class FwsCore {
             if (
               prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
               prevEl.itemsActive[idx] !== itemsActive[idx] ||
-              (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
+              (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
+              (item.time !== undefined && prevEl.itemsTimeStamp[idx] !== itemsTimer[idx])
             ) {
               this.abnormalUpdatedItems.get(key).push(idx);
             }
@@ -4312,6 +4346,9 @@ export class FwsCore {
               itemsChecked: fusedChecked,
               itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
               itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
+              itemsTimeStamp: prevEl.itemsTimeStamp
+                ? [...prevEl.itemsTimeStamp].map((_, index) => itemsTimer[index])
+                : undefined,
             });
           }
         }
