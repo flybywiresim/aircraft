@@ -90,6 +90,7 @@
 1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
 1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
 1. [A32NX/FWS] Improve altitude alert logic, add PFD indications, improve AP OFF warning logic - @lukecologne (luke)
+1. [A380X/FMS] Add TL indication for tailwind on APPR PERF - @Jonny23787 (Jonathan)
 1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
 1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 
