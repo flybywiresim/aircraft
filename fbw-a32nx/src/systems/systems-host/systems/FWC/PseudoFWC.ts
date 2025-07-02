@@ -40,7 +40,7 @@ import { A32NXAdrBusEvents } from '../../../shared/src/publishers/A32NXAdrBusPub
 import { A32NXDisplayManagementEvents } from '../../../shared/src/publishers/A32NXDisplayManagementPublisher';
 import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32NXElectricalSystemPublisher';
 import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
-import { FwsSoundManager } from 'systems-host/Misc/FWC/FwsSoundManager';
+import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
 
