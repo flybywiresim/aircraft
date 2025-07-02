@@ -16,7 +16,7 @@ import {
   Subject,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from 'systems-host/Misc/LegacyGpws';
-import { LegacyFuel } from 'systems-host/Misc/LegacyFuel';
+import { LegacyFuel } from 'systems-host/CPIOM_F/LegacyFuel';
 import { LegacySoundManager } from 'systems-host/Misc/LegacySoundManager';
 import { LegacyTcasComputer } from 'systems-host/Misc/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from 'systems-host/Misc/Communications/VhfRadio';
