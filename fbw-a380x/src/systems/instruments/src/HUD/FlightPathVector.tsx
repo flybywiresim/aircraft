@@ -28,6 +28,7 @@ import { getDisplayIndex } from './HUD';
 import { FIVE_DEG, calculateVerticalOffsetFromRoll } from './HUDUtils';
 import { SimplaneValues } from './shared/SimplaneValueProvide';
 import { VerticalMode } from '@shared/autopilot';
+import { FmgcFlightPhase } from '@shared/flightphase';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
@@ -365,17 +366,13 @@ interface SpeedStateInfo {
 }
 
 class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
-  private flightPhase = -1;
-  private declutterMode = 0;
-  private crosswindMode = false;
-  private sVisibility = Subject.create<String>('');
-  private outOfRange = Subject.create<String>('');
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<
+    HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & HudElems
+  >();
   private speedRefs: NodeReference<SVGPathElement>[] = [];
   private speedGroupRef = FSComponent.createRef<SVGGElement>();
-  private currentTargetSpeed = 0;
   private needsUpdate = true;
-  private inFlight = false;
-  private hudMode = -1;
   private speedState: SpeedStateInfo = {
     targetSpeed: 100,
     managedTargetSpeed: 100,
@@ -383,81 +380,49 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
     speed: new Arinc429Word(0),
   };
 
+  private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase').whenChanged(), 0);
+  private readonly isSelectedSpeed = ConsumerSubject.create(this.sub.on('isSelectedSpeed').whenChanged(), false);
+  private readonly targetSpeedManaged = ConsumerSubject.create(this.sub.on('targetSpeedManaged').whenChanged(), 0);
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
+
+  private readonly chosenTargetSpeed = MappedSubject.create(
+    ([fmgcFlightPhase, isSelectedSpeed, targetManagedSpeed]) => {
+      if (fmgcFlightPhase === FmgcFlightPhase.Descent && !isSelectedSpeed) {
+        return targetManagedSpeed;
+      } else {
+        return Simplane.getAutoPilotAirspeedHoldValue();
+      }
+    },
+    this.fmgcFlightPhase,
+    this.isSelectedSpeed,
+    this.targetSpeedManaged,
+  );
+  private readonly isVisible = MappedSubject.create(([hudMode]) => {
+    return hudMode === 0 ? true : false;
+  }, this.hudMode);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.needsUpdate = true;
+    this.subscriptions.push(this.fmgcFlightPhase, this.isSelectedSpeed, this.targetSpeedManaged, this.hudMode);
 
-    const sub = this.props.bus.getArincSubscriber<
-      HUDSimvars & SimplaneValues & ClockEvents & Arinc429Values & HudElems
-    >();
+    this.subscriptions.push(
+      this.sub
+        .on('speedAr')
+        .withArinc429Precision(2)
+        .handle((s) => {
+          this.speedState.speed = s;
+          this.needsUpdate = true;
+        }),
+    );
 
-    sub
-      .on('fwcFlightPhase')
-      .whenChanged()
-      .handle((fp) => {
-        this.flightPhase = fp;
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((value) => {
-        if (value) {
-          this.sVisibility.set('none');
-        } else {
-          this.sVisibility.set('block');
-        }
-      });
-
-    sub
-      .on('isSelectedSpeed')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.isSpeedManaged = !s;
-        this.needsUpdate = true;
-      });
-    sub
-      .on('targetSpeedManaged')
-      .whenChanged()
-      .handle((s) => {
-        this.speedState.managedTargetSpeed = s;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => {
-        this.speedState.speed = s;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('hudFlightPhaseMode')
-      .whenChanged()
-      .handle((v) => {
-        this.hudMode = v;
-        v === 0 ? (this.inFlight = true) : (this.inFlight = false);
-      });
-    sub.on('realTime').handle(this.onFrameUpdate.bind(this));
-  }
-
-  private setVisible(refNum: boolean) {
-    if (refNum) {
-      this.speedGroupRef.instance.style.display = 'block';
-    } else {
-      this.speedGroupRef.instance.style.display = 'none';
-    }
+    this.subscriptions.push(this.sub.on('realTime').handle(this.onFrameUpdate.bind(this)));
   }
 
   private onFrameUpdate(_realTime: number): void {
     if (this.needsUpdate === true) {
       this.needsUpdate = false;
-
-      this.setVisible(this.inFlight);
-      const chosenTargetSpeed = Simplane.getAutoPilotAirspeedHoldValue();
-
-      const deltaSpeed = this.speedState.speed.value - chosenTargetSpeed;
+      const deltaSpeed = this.speedState.speed.value - this.chosenTargetSpeed.get();
       const sign = Math.sign(deltaSpeed);
       const deltaSpeedDraw = Math.abs(deltaSpeed) >= 15 ? sign * 15 : deltaSpeed;
       this.speedRefs[0].instance.setAttribute('d', `m 596,512 v ${-deltaSpeedDraw * 5} h 9 v ${deltaSpeedDraw * 5}`);
@@ -474,13 +439,21 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
     }
   }
 
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     for (let i = 0; i < 8; i++) {
       this.speedRefs.push(FSComponent.createRef<SVGPathElement>());
     }
     return (
       <>
-        <g ref={this.speedGroupRef} id="DeltaSpeedGroup">
+        <g ref={this.speedGroupRef} id="DeltaSpeedGroup" display={this.isVisible.map((v) => (v ? 'block' : 'none'))}>
           <g class="NormalStroke CornerRound Green">
             <path ref={this.speedRefs[7]} d="m 599 582 h 3" />
             <path ref={this.speedRefs[6]} d="m 599 572 h 3" />
