@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Tăng cỡ phông chữ",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Giảm cỡ phông chữ"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Bạn chưa nhập bất kỳ dữ liệu SimBrief nào."
     },
     "Overview": {
@@ -308,6 +311,8 @@
       "Qnh": "QNH",
       "ReverseThrust": "Lực đẩy ngược",
       "Runway": "Runway",
+      "RunwayAltitude": "Độ cao đường băng",
+      "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Điều kiện đường băng",
       "RunwayConditions": {
         "Dry": "Khô (6)",
@@ -333,7 +338,11 @@
       "Title": "Hạ cánh",
       "UnitFt": "ft",
       "UnitMeter": "m",
+      "Weight": "Trọng lượng",
       "Wind": "Wind",
+      "WindDirection": "Hướng gió",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Cường độ gió",
       "WindMagnitudeUnit": "kt"
     },
     "SYNC": "Đồng bộ hóa",
@@ -377,6 +386,8 @@
       "Packs": "Gói điều hòa",
       "Qnh": "QNH",
       "Runway": "Đường băng",
+      "RunwayBearing": "Vòng đường băng",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Tình trạng đường băng",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Tuyết khô - 100 mm/4\"",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Ghi đè ID SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Vui lòng kiểm tra xem bạn đã nhập đúng tên người dùng SimBrief hoặc ID của mình chưa.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "ID SimBrief để sử dụng thay cho tải khoản Navigraph đã được liên kết"
       },

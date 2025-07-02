@@ -484,9 +484,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprIdent = Subject.create<string>('');
 
-  private apprHeadwind = Subject.create<string>('');
+  private readonly towerHeadwind = Subject.create<number | null>(null);
 
   private apprCrosswind = Subject.create<string>('');
+
+  private windDirectionLabel = this.towerHeadwind.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'));
+
+  private windSpeedDisplay = this.towerHeadwind.map((v) =>
+    v === null ? '---' : Math.abs(v).toFixed(0).padStart(3, '0'),
+  );
 
   private apprSelectedFlapsIndex = Subject.create<number | null>(1);
 
@@ -1063,11 +1069,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               apprWind.direction,
               this.loadedFlightPlan.destinationRunway.magneticBearing,
             );
-            if (towerHeadwind < 0) {
-              this.apprHeadwind.set(`-${Math.abs(towerHeadwind).toFixed(0).padStart(2, '0')}`);
-            } else {
-              this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
-            }
+            this.towerHeadwind.set(towerHeadwind);
+
             const towerCrosswind = A380SpeedsUtils.getHeadwind(
               apprWind.speed,
               apprWind.direction,
@@ -1075,10 +1078,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             );
             this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
           } else {
-            this.apprHeadwind.set('---');
+            this.towerHeadwind.set(null);
             this.apprCrosswind.set('---');
           }
         }),
+      this.windDirectionLabel,
+      this.windSpeedDisplay,
     );
 
     // Update VERT DEV on APPR page. Possible optimization to only sub during descent phase
@@ -2547,8 +2552,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
                         <div class="mfd-label-value-container" style="padding: 15px;">
-                          <span class="mfd-label mfd-spacing-right">HD</span>
-                          <span class="mfd-value">{this.apprHeadwind}</span>
+                          <span class="mfd-label mfd-spacing-right">{this.windDirectionLabel}</span>
+                          <span class="mfd-value">{this.windSpeedDisplay}</span>
                           <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                         </div>
                         <div class="mfd-label-value-container" style="padding: 15px;">
