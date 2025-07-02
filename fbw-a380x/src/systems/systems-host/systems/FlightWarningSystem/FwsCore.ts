@@ -650,13 +650,15 @@ export class FwsCore {
 
   public readonly apuAgentDischarged = Subject.create(false);
 
-  private readonly fireEng1Agent1DischClock = Subject.create(false);
+  private readonly fireEng1Agent1InFlight10SecondsDischClock = Subject.create(false);
 
-  public readonly fireEng1Agent1DischargeTimeStamp = this.fireEng1Agent1DischClock.map((v) => (v ? Date.now() : null));
+  public readonly fireEng1Agent1DischargeTimeStamp = this.fireEng1Agent1InFlight10SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
 
-  private readonly eng1FireInFlightFire30SecondsClock = Subject.create(false);
+  private readonly eng1FireInFlightFire30SecondsDischClock = Subject.create(false);
 
-  public readonly fireEng1Active30sTimeStamp = this.eng1FireInFlightFire30SecondsClock.map((v) =>
+  public readonly fireEng1Active30sTimeStamp = this.eng1FireInFlightFire30SecondsDischClock.map((v) =>
     v ? Date.now() : null,
   );
 
@@ -720,9 +722,11 @@ export class FwsCore {
 
   public readonly fireTestPb = Subject.create(false);
 
-  public readonly apuFireAgentDischClockNode = Subject.create(false);
+  public readonly apuFireAgent1Discharge10SecondsClockActive = Subject.create(false);
 
-  public readonly apuFireAgentStartTimer = this.apuFireAgentDischClockNode.map((v) => (v ? Date.now() : null));
+  public readonly apuFireAgent1Discharge10SecondsTimestamp = this.apuFireAgent1Discharge10SecondsClockActive.map((v) =>
+    v ? Date.now() : null,
+  );
 
   /* 27 - FLIGHT CONTROLS */
 
@@ -4033,15 +4037,15 @@ export class FwsCore {
     this.eng3FireDetectedAural.set(this.eng3FireDetected.get() && !this.fireButtonEng3.get());
     this.eng4FireDetectedAural.set(this.eng4FireDetected.get() && !this.fireButtonEng4.get());
 
-    this.apuFireAgentDischClockNode.set(this.apuFireDetectedAural.get());
-    this.fireEng1Agent1DischClock.set(
+    this.apuFireAgent1Discharge10SecondsClockActive.set(this.apuFireDetected.get() && this.fireButtonAPU.get());
+    this.fireEng1Agent1InFlight10SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
         this.fireButtonEng1.get() &&
         this.eng1FireDetected.get() &&
         !this.eng1Agent1Discharged.get(),
     );
 
-    this.eng1FireInFlightFire30SecondsClock.set(
+    this.eng1FireInFlightFire30SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
         this.fireButtonEng1.get() &&
         this.eng1FireDetected.get() &&

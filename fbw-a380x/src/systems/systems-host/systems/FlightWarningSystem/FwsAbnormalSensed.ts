@@ -1782,7 +1782,7 @@ export class FwsAbnormalSensed {
         this.fws.apuAgentDischarged.get(),
         this.fws.apuMasterSwitch.get() === 0,
       ],
-      whichItemsTimer: () => [undefined, this.fws.apuFireAgentStartTimer.get(), undefined],
+      whichItemsTimer: () => [undefined, this.fws.apuFireAgent1Discharge10SecondsTimestamp.get(), undefined],
       failure: 3,
       sysPage: SdPages.Apu,
     },
