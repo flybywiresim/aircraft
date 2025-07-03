@@ -10,7 +10,7 @@ export default new TaskOfTasks('all', [
         new TaskOfTasks(
             'preparation',
             [
-                new ExecTask('copy-base-files', 'npm run build-a32nx:copy-base-files'),
+                new ExecTask('copy-base-files', ['npm run build-a32nx:copy-base-files', 'npm run build-a32nx:copy-large-files']),
                 new TaskOfTasks(
                     'localization',
                     [
