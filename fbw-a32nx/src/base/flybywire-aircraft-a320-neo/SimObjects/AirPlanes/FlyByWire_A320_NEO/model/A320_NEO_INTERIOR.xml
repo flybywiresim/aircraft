@@ -23,8 +23,28 @@
         <Include ModelBehaviorFile="A32NX\LockHighlight.xml"/>
 
         <!-- HUD -->
-            <!-- CPT BTNS -->
+        <Component ID="Hud_Dome_Lights" >
+            <!-- CPT DOME LT -->
+            <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
+                <NODE_ID>HUD_L_PROJ_FLOOD_LIGHT</NODE_ID>
+                <POTENTIOMETER>7</POTENTIOMETER>
+                <FAILURE>1</FAILURE>
+                <SIMVAR_INDEX>1</SIMVAR_INDEX>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
 
+            <!-- F/O DOME LT -->
+            <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
+                <NODE_ID>HUD_R_PROJ_FLOOD_LIGHT</NODE_ID>
+                <POTENTIOMETER>7</POTENTIOMETER>
+                <FAILURE>1</FAILURE>
+                <SIMVAR_INDEX>2</SIMVAR_INDEX>
+                <NO_SIMVAR_LIGHT/>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+            <!-- CPT BTNS -->
         <Component ID="Hud_Panel_Left" >
             <!-- placeholder for hud panel decals -->
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
