@@ -31,8 +31,7 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus; index: 1 | 2
   private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
   private readonly isVisible = MappedSubject.create(
     ([activeVerticalModeSub, fmgcFlightPhase]) => {
-      return fmgcFlightPhase === FmgcFlightPhase.Approach &&
-        (activeVerticalModeSub === VerticalMode.FPA || activeVerticalModeSub === VerticalMode.LAND)
+      return fmgcFlightPhase === FmgcFlightPhase.Approach && activeVerticalModeSub === VerticalMode.FPA
         ? 'block'
         : 'none';
     },
