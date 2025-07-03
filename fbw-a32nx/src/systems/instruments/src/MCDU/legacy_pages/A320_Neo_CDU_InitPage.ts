@@ -15,8 +15,9 @@ import { LegacyFmsPageInterface, SimbriefOfpState } from '../legacy/LegacyFmsPag
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Wait } from '@microsoft/msfs-sdk';
+import { BitFlags, Wait } from '@microsoft/msfs-sdk';
 import { AeroMath } from '@microsoft/msfs-sdk';
+import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active) {
@@ -315,7 +316,18 @@ export class CDUInitPage {
 
     mcdu.onLeftInput[2] = flightNoAction;
 
-    mcdu.setArrows(false, false, true, true);
+    const isActivePlan = forPlan === FlightPlanIndex.Active;
+    const isCopiedFromActive = BitFlags.isAll(plan.flags, FlightPlanFlags.CopiedFromActive);
+
+    const canSwitchPage = !mcdu.isAnEngineOn() || isActivePlan || !isCopiedFromActive;
+
+    mcdu.setArrows(false, false, canSwitchPage, canSwitchPage);
+    mcdu.onPrevPage = () => {
+      mcdu.goToFuelPredPage(forPlan);
+    };
+    mcdu.onNextPage = () => {
+      mcdu.goToFuelPredPage(forPlan);
+    };
 
     mcdu.setTemplate(
       FormatTemplate([
@@ -334,13 +346,6 @@ export class CDUInitPage {
         [cruiseFl, cruiseFlTempSeparator, cruiseTemp, groundTemp],
       ]),
     );
-
-    mcdu.onPrevPage = () => {
-      mcdu.goToFuelPredPage(forPlan);
-    };
-    mcdu.onNextPage = () => {
-      mcdu.goToFuelPredPage(forPlan);
-    };
 
     mcdu.onRightInput[3] = () => {
       CDUWindPage.Return = () => {
