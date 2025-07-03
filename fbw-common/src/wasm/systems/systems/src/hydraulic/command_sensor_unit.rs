@@ -22,15 +22,14 @@ pub enum CSU {
                // in case of event `FLAPS_DOWN` followed by `FLAPS_UP` or viceversa.
 }
 impl CSU {
-    pub fn is_valid(&self) -> bool {
+    fn is_valid(&self) -> bool {
         matches!(
             self,
             CSU::Conf0 | CSU::Conf1 | CSU::Conf2 | CSU::Conf3 | CSU::ConfFull
         )
     }
 
-    // The CSU is made of two parallel switches: this is why there is `switch_pattern_1` and
-    // `switch_pattern_2`.
+    // The CSU is made of two parallel 5-bit switches: this is why there is a tuple.
     pub fn get_csu_configuration(switch_pattern: (SwitchPattern, SwitchPattern)) -> CSU {
         match switch_pattern {
             (0b11000, 0b11000) => CSU::Conf0,

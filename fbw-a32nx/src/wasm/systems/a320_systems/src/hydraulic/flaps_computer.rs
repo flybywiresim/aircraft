@@ -143,27 +143,27 @@ impl SlatFlapControlComputer {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_handle: &CSUMonitor,
+        csu_monitor: &CSUMonitor,
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
-        self.flaps_conf = self.generate_configuration(flaps_handle, context);
+        self.flaps_conf = self.generate_configuration(csu_monitor, context);
 
         self.flaps_demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf);
         self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
 
-        self.fap_update(flaps_handle);
+        self.fap_update(csu_monitor);
     }
 
-    fn fap_update(&mut self, flaps_handle: &FlapsHandle) {
+    fn fap_update(&mut self, csu_monitor: &CSUMonitor) {
         let fppu_angle = self.flaps_feedback_angle.get::<degree>();
 
         self.fap[0] = fppu_angle > 247.8 && fppu_angle < 254.0;
         self.fap[1] = fppu_angle > 114.6 && fppu_angle < 254.0;
         self.fap[2] = fppu_angle > 163.7 && fppu_angle < 254.0;
-        self.fap[3] = flaps_handle.position == 0;
+        self.fap[3] = csu_monitor.get_current_detent() == CSU::Conf0;
         self.fap[4] = fppu_angle > 163.7 && fppu_angle < 254.0;
         self.fap[5] = fppu_angle > 247.8 && fppu_angle < 254.0;
         self.fap[6] = fppu_angle > 114.6 && fppu_angle < 254.0;

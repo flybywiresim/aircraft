@@ -465,6 +465,7 @@ impl SlatFlapComplex {
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
+        self.csu_monitor.update(context);
         self.sfcc.update(
             context,
             adirs,
