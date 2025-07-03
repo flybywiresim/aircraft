@@ -216,11 +216,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get firstMissedApproachLegIndex() {
-    return this.allLegs.length - this.missedApproachSegment.allLegs.length;
+    return this.allLegs.length - this.missedApproachSegment.legCount;
   }
 
   get firstApproachLegIndex() {
-    return this.firstMissedApproachLegIndex - this.approachSegment.allLegs.length;
+    return this.firstMissedApproachLegIndex - this.approachSegment.legCount;
   }
 
   activeLegIndex = 1;
@@ -2312,8 +2312,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       }
     }
 
-    if (this.enrouteSegment.allLegs[0]?.isDiscontinuity === false) {
-      // Insert disco otherwise
+    this.incrementVersion();
+
+    // Insert disco after departure segment if there is no disco already
+    if (this.allLegs[lastDepartureLegIndexInPlan + 1]?.isDiscontinuity === false) {
       this.enrouteSegment.allLegs.unshift({ isDiscontinuity: true });
       this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, lastDepartureSegment);
     }
@@ -2378,7 +2380,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     );
   }
 
-  private findLastDepartureLeg(): [FlightPlanSegment, number, number] {
+  findLastDepartureLeg(): [FlightPlanSegment, number, number] {
     for (let segment = this.previousSegment(this.enrouteSegment); segment; segment = this.previousSegment(segment)) {
       const lastLegIndex = segment.lastLegIndex;
       if (lastLegIndex < 0) {
@@ -2393,7 +2395,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return [undefined, -1, -1];
   }
 
-  private findFirstArrivalLeg(): [FlightPlanSegment, number, number] {
+  findFirstArrivalLeg(): [FlightPlanSegment, number, number] {
     for (let segment = this.nextSegment(this.enrouteSegment); segment; segment = this.nextSegment(segment)) {
       if (segment.legCount < 0) {
         continue;
@@ -2683,6 +2685,18 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   protected hasLegAt(index: number): boolean {
     return isLeg(this.maybeElementAt(index));
+  }
+
+  /**
+   * Finds the index of the final approach fix
+   * @returns The leg index, or -1 if not found.
+   */
+  getFinalApproachCourseFixIndex(): number {
+    return this.allLegs.findIndex(
+      (el) =>
+        el.isDiscontinuity === false &&
+        el.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix,
+    );
   }
 }
 
