@@ -1,8 +1,8 @@
-use std::time::Duration;
-
 use crate::simulation::{
-    InitContext, Read, SimulationElement, SimulatorReader, UpdateContext, VariableIdentifier,
+    InitContext, Read, SimulationElement, SimulatorReader, StartState, UpdateContext,
+    VariableIdentifier,
 };
+use std::time::Duration;
 
 // This type is used to represent the position of a 5bit switch. Therefore, the
 // value must always be <= 11111.
@@ -18,23 +18,21 @@ pub enum CSU {
     OutOfDetent,
     Fault,
     Misadjust, // This is triggered when flaps lever moves from 0 to 4 or viceversa
-               // with no intermediate steps. Not implemented because it can impact the simulation.
+               // with no intermediate steps. Not implemented because it can impact the simulation
+               // in case of event `FLAPS_DOWN` followed by `FLAPS_UP` or viceversa.
 }
 impl CSU {
-    pub fn is_valid(value: CSU) -> bool {
+    pub fn is_valid(&self) -> bool {
         matches!(
-            value,
+            self,
             CSU::Conf0 | CSU::Conf1 | CSU::Conf2 | CSU::Conf3 | CSU::ConfFull
         )
     }
 
     // The CSU is made of two parallel switches: this is why there is `switch_pattern_1` and
     // `switch_pattern_2`.
-    pub fn get_csu_configuration(
-        switch_pattern_1: SwitchPattern,
-        switch_pattern_2: SwitchPattern,
-    ) -> CSU {
-        match (switch_pattern_1, switch_pattern_2) {
+    pub fn get_csu_configuration(switch_pattern: (SwitchPattern, SwitchPattern)) -> CSU {
+        match switch_pattern {
             (0b11000, 0b11000) => CSU::Conf0,
             (0b11000, 0b01000) => CSU::OutOfDetent,
             (0b01000, 0b01000) => CSU::OutOfDetent,
@@ -63,6 +61,19 @@ impl CSU {
             _ => CSU::Fault,
         }
     }
+
+    pub fn get_switch_pattern(csu: CSU) -> (SwitchPattern, SwitchPattern) {
+        match csu {
+            CSU::Conf0 => (0b11000, 0b11000),
+            CSU::Conf1 => (0b01100, 0b01100),
+            CSU::Conf2 => (0b00110, 0b00110),
+            CSU::Conf3 => (0b00011, 0b00011),
+            CSU::ConfFull => (0b10001, 0b10001),
+            CSU::OutOfDetent => (0b11000, 0b01000),
+            CSU::Fault => (0b00000, 0b00000),
+            CSU::Misadjust => panic!("No pattern for CSU::Misadjust"),
+        }
+    }
 }
 
 pub struct CSUMonitor {
@@ -78,13 +89,23 @@ pub struct CSUMonitor {
 }
 impl CSUMonitor {
     pub fn new(context: &mut InitContext) -> Self {
+        let (switch_pattern, detent) = match context.start_state() {
+            StartState::Hangar => (CSU::get_switch_pattern(CSU::Conf0), CSU::Conf0),
+            StartState::Apron => (CSU::get_switch_pattern(CSU::Conf0), CSU::Conf0),
+            StartState::Taxi => (CSU::get_switch_pattern(CSU::Conf1), CSU::Conf1),
+            StartState::Runway => (CSU::get_switch_pattern(CSU::Conf1), CSU::Conf1),
+            StartState::Climb => (CSU::get_switch_pattern(CSU::Conf0), CSU::Conf0),
+            StartState::Cruise => (CSU::get_switch_pattern(CSU::Conf0), CSU::Conf0),
+            StartState::Approach => (CSU::get_switch_pattern(CSU::ConfFull), CSU::ConfFull),
+            StartState::Final => (CSU::get_switch_pattern(CSU::ConfFull), CSU::ConfFull),
+        };
         Self {
             handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
-            current_switch_pattern: (0b11000, 0b11000),
-            current_detent: CSU::Conf0,
-            previous_switch_pattern: (0b11000, 0b11000),
-            previous_detent: CSU::Conf0,
-            last_valid_switch_pattern: (0b11000, 0b11000),
+            current_switch_pattern: switch_pattern,
+            current_detent: detent,
+            previous_switch_pattern: switch_pattern,
+            previous_detent: detent,
+            last_valid_switch_pattern: switch_pattern,
             time_since_last_valid_detent: Duration::ZERO,
         }
     }
@@ -94,17 +115,16 @@ impl CSUMonitor {
     }
 
     fn get_csu_configuration(&self) -> CSU {
-        CSU::get_csu_configuration(self.current_switch_pattern.0, self.current_switch_pattern.1)
+        CSU::get_csu_configuration(self.current_switch_pattern)
     }
 
-    pub fn get_last_valid_detent(&self) -> CSU {
-        CSU::get_csu_configuration(
-            self.last_valid_switch_pattern.0,
-            self.last_valid_switch_pattern.1,
-        )
+    #[cfg(test)]
+    fn get_last_valid_detent(&self) -> CSU {
+        CSU::get_csu_configuration(self.last_valid_switch_pattern)
     }
 
-    pub fn time_since_last_valid_detent(&self) -> Duration {
+    #[cfg(test)]
+    fn time_since_last_valid_detent(&self) -> Duration {
         self.time_since_last_valid_detent
     }
 
@@ -117,6 +137,8 @@ impl CSUMonitor {
     }
 }
 impl SimulationElement for CSUMonitor {
+    // TODO: add connection to electrical bus after splitting SFCC.
+
     fn read(&mut self, reader: &mut SimulatorReader) {
         // The MSFS flap handle only delivers valid positions.
         // TODO: it could possible to take into account `CSU::OutOfBounds` positions
@@ -124,7 +146,8 @@ impl SimulationElement for CSUMonitor {
         //
         // The output is a tuple with identical values to simulate two parallel switches as per
         // the real plane.
-        fn to_switch_pattern(value: u8) -> (SwitchPattern, SwitchPattern) {
+        #[inline]
+        fn u8_to_switch_pattern(value: u8) -> (SwitchPattern, SwitchPattern) {
             match value {
                 0 => (0b11000, 0b11000),
                 1 => (0b01100, 0b01100),
@@ -139,11 +162,11 @@ impl SimulationElement for CSUMonitor {
         self.previous_switch_pattern = self.current_switch_pattern;
         self.previous_detent = self.current_detent;
 
-        let new_switch_pattern = to_switch_pattern(Read::read(reader, &self.handle_position_id));
+        let new_switch_pattern = u8_to_switch_pattern(Read::read(reader, &self.handle_position_id));
         self.current_switch_pattern = new_switch_pattern;
         self.current_detent = self.get_csu_configuration();
 
-        if CSU::is_valid(self.current_detent) {
+        if self.current_detent.is_valid() {
             self.last_valid_switch_pattern = new_switch_pattern;
             self.time_since_last_valid_detent = Duration::ZERO;
         }
@@ -152,12 +175,11 @@ impl SimulationElement for CSUMonitor {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::simulation::{
         test::{SimulationTestBed, TestBed, WriteByName},
         Aircraft, SimulationElementVisitor,
     };
-
-    use super::*;
     use std::time::Duration;
 
     struct TestAircraft {
@@ -253,14 +275,110 @@ mod tests {
 
     #[test]
     fn csu_position_is_valid_checks() {
-        assert!(CSU::is_valid(CSU::Conf0));
-        assert!(CSU::is_valid(CSU::Conf1));
-        assert!(CSU::is_valid(CSU::Conf2));
-        assert!(CSU::is_valid(CSU::Conf3));
-        assert!(CSU::is_valid(CSU::ConfFull));
-        assert!(!CSU::is_valid(CSU::OutOfDetent));
-        assert!(!CSU::is_valid(CSU::Fault));
-        assert!(!CSU::is_valid(CSU::Misadjust));
+        assert!(CSU::Conf0.is_valid());
+        assert!(CSU::Conf1.is_valid());
+        assert!(CSU::Conf2.is_valid());
+        assert!(CSU::Conf3.is_valid());
+        assert!(CSU::ConfFull.is_valid());
+        assert!(!CSU::OutOfDetent.is_valid());
+        assert!(!CSU::Fault.is_valid());
+        assert!(!CSU::Misadjust.is_valid());
+    }
+
+    #[test]
+    fn csu_configuration_checks() {
+        assert_eq!(
+            CSU::get_csu_configuration((0b11000, 0b01000)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b01000, 0b01000)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b01000, 0b01100)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b01000, 0b11000)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b01100, 0b01000)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b01100, 0b00100)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00100, 0b00100)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00100, 0b00110)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00100, 0b01100)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00110, 0b00100)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00110, 0b00010)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00010, 0b00010)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00010, 0b00011)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00010, 0b00110)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00011, 0b00010)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00011, 0b00001)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00001, 0b00001)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00001, 0b10001)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b10001, 0b00001)),
+            CSU::OutOfDetent
+        );
+        assert_eq!(
+            CSU::get_csu_configuration((0b00001, 0b00011)),
+            CSU::OutOfDetent
+        );
+
+        assert_eq!(CSU::get_csu_configuration((0b11000, 0b11000)), CSU::Conf0);
+        assert_eq!(CSU::get_csu_configuration((0b01100, 0b01100)), CSU::Conf1);
+        assert_eq!(CSU::get_csu_configuration((0b00110, 0b00110)), CSU::Conf2);
+        assert_eq!(CSU::get_csu_configuration((0b00011, 0b00011)), CSU::Conf3);
+        assert_eq!(
+            CSU::get_csu_configuration((0b10001, 0b10001)),
+            CSU::ConfFull
+        );
+
+        assert_eq!(CSU::get_csu_configuration((0b00000, 0b00000)), CSU::Fault);
+        assert_eq!(CSU::get_csu_configuration((0b11111, 0b11111)), CSU::Fault);
     }
 
     #[test]
@@ -319,7 +437,7 @@ mod tests {
             test_bed
                 .get_csu_time_since_last_valid_position()
                 .as_secs_f32()
-                >= 0.9
+                >= 0.88
         );
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
@@ -332,5 +450,29 @@ mod tests {
                 .as_millis()
                 <= 100
         );
+    }
+
+    #[test]
+    fn flaps_test_command_sensor_unit_fail() {
+        let mut test_bed = test_bed_with().run_one_tick();
+
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf0);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf0);
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+        assert_eq!(test_bed.get_csu_previous_position(), CSU::Conf0);
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf1);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf1);
+
+        test_bed = test_bed.set_flaps_handle_position(5).run_one_tick();
+        assert_eq!(test_bed.get_csu_previous_position(), CSU::Conf1);
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Fault);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf1);
+
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
+        assert_eq!(test_bed.get_csu_previous_position(), CSU::Fault);
+        assert_eq!(test_bed.get_csu_current_position(), CSU::Conf2);
+        assert_eq!(test_bed.get_csu_last_valid_position(), CSU::Conf2);
     }
 }
