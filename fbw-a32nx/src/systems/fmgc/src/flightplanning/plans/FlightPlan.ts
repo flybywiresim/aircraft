@@ -326,17 +326,17 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
     this.setPerformanceData('costIndex', 0);
-    this.setPerformanceData('climbSpeedLimitSpeed', this.performanceData.alternateClimbSpeedLimitSpeed);
-    this.setPerformanceData('climbSpeedLimitAltitude', this.performanceData.alternateClimbSpeedLimitAltitude);
+    this.setPerformanceData('climbSpeedLimitSpeed', this.performanceData.alternateClimbSpeedLimitSpeed.get());
+    this.setPerformanceData('climbSpeedLimitAltitude', this.performanceData.alternateClimbSpeedLimitAltitude.get());
     this.setPerformanceData(
       'isClimbSpeedLimitPilotEntered',
-      this.performanceData.isAlternateClimbSpeedLimitPilotEntered,
+      this.performanceData.isAlternateClimbSpeedLimitPilotEntered.get(),
     );
-    this.setPerformanceData('descentSpeedLimitSpeed', this.performanceData.alternateDescentSpeedLimitSpeed);
-    this.setPerformanceData('descentSpeedLimitAltitude', this.performanceData.alternateDescentSpeedLimitAltitude);
+    this.setPerformanceData('descentSpeedLimitSpeed', this.performanceData.alternateDescentSpeedLimitSpeed.get());
+    this.setPerformanceData('descentSpeedLimitAltitude', this.performanceData.alternateDescentSpeedLimitAltitude.get());
     this.setPerformanceData(
       'isDescentSpeedLimitPilotEntered',
-      this.performanceData.isAlternateDescentSpeedLimitPilotEntered,
+      this.performanceData.isAlternateDescentSpeedLimitPilotEntered.get(),
     );
 
     this.deleteAlternateFlightPlan();
@@ -593,6 +593,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     notify = true,
   ) {
     (this.performanceData[key] as MutableSubscribable<typeof value>).set(value);
+
+    if (this.performanceData.hasSubscription(key)) {
+      console.log('[FMS/FPS] Setting performance data for a linked property, destroying subscriptions');
+      this.performanceData.destroy();
+    }
 
     if (notify) {
       this.sendPerfEvent(

@@ -483,16 +483,20 @@ export interface FlightPlanPerformanceData {
   clone(options?: CopyOptions): this;
 
   destroy(): void;
+
+  hasSubscription(key: string): boolean;
 }
 
-export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone' | 'destroy'>;
+export type FlightPlanPerformanceDataProperties = {
+  [K in keyof FlightPlanPerformanceData as FlightPlanPerformanceData[K] extends MutableSubscribable<any>
+    ? K
+    : never]: FlightPlanPerformanceData[K] extends MutableSubscribable<infer T> ? MutableSubscribable<T> : never;
+};
 
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
 
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
-  private isCopying: boolean = false;
-
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Map<keyof FlightPlanPerformanceDataProperties & string, Subscription> = new Map();
 
   public clone(options: CopyOptions = CopyOptions.Default): this {
     const cloned = new A320FlightPlanPerformanceData();
@@ -582,47 +586,55 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
 
     if (BitFlags.isAll(options, CopyOptions.ActiveToSec)) {
-      this.pipe(this.cruiseFlightLevel, cloned.cruiseFlightLevel);
-      this.pipe(this.cruiseTemperature, cloned.cruiseTemperature);
-      this.pipe(this.pilotTropopause, cloned.pilotTropopause);
-      this.pipe(this.costIndex, cloned.costIndex);
-      this.pipe(this.pilotRouteReserveFuel, cloned.pilotRouteReserveFuel);
-      this.pipe(this.pilotRouteReserveFuelPercentage, cloned.pilotRouteReserveFuelPercentage);
-      this.pipe(this.pilotFinalHoldingFuel, cloned.pilotFinalHoldingFuel);
-      this.pipe(this.pilotFinalHoldingTime, cloned.pilotFinalHoldingTime);
+      cloned.pipe('cruiseFlightLevel', this.cruiseFlightLevel, cloned.cruiseFlightLevel);
+      cloned.pipe('cruiseTemperature', this.cruiseTemperature, cloned.cruiseTemperature);
+      cloned.pipe('pilotTropopause', this.pilotTropopause, cloned.pilotTropopause);
+      cloned.pipe('costIndex', this.costIndex, cloned.costIndex);
+      cloned.pipe('pilotRouteReserveFuel', this.pilotRouteReserveFuel, cloned.pilotRouteReserveFuel);
+      cloned.pipe(
+        'pilotRouteReserveFuelPercentage',
+        this.pilotRouteReserveFuelPercentage,
+        cloned.pilotRouteReserveFuelPercentage,
+      );
+      cloned.pipe('pilotFinalHoldingFuel', this.pilotFinalHoldingFuel, cloned.pilotFinalHoldingFuel);
+      cloned.pipe('pilotFinalHoldingTime', this.pilotFinalHoldingTime, cloned.pilotFinalHoldingTime);
 
       if (BitFlags.isAll(options, CopyOptions.BeforeEngineStart)) {
-        this.pipe(this.zeroFuelWeight, cloned.zeroFuelWeight);
-        this.pipe(this.zeroFuelWeightCenterOfGravity, cloned.zeroFuelWeightCenterOfGravity);
-        this.pipe(this.pilotMinimumDestinationFuelOnBoard, cloned.pilotMinimumDestinationFuelOnBoard);
-        this.pipe(this.blockFuel, cloned.blockFuel);
+        cloned.pipe('zeroFuelWeight', this.zeroFuelWeight, cloned.zeroFuelWeight);
+        cloned.pipe(
+          'zeroFuelWeightCenterOfGravity',
+          this.zeroFuelWeightCenterOfGravity,
+          cloned.zeroFuelWeightCenterOfGravity,
+        );
+        cloned.pipe(
+          'pilotMinimumDestinationFuelOnBoard',
+          this.pilotMinimumDestinationFuelOnBoard,
+          cloned.pilotMinimumDestinationFuelOnBoard,
+        );
+        cloned.pipe('blockFuel', this.blockFuel, cloned.blockFuel);
       }
     }
 
     return cloned as this;
   }
 
-  private pipe<T>(from: MutableSubscribable<T>, to: MutableSubscribable<T>): void {
-    const pipe = from.pipe(to, (value) => {
-      this.isCopying = true;
-      return value;
-    });
-
-    const sub = to.sub((_) => {
-      if (this.isCopying) {
-        this.isCopying = false;
-      } else {
-        pipe.destroy();
-        sub.destroy();
-      }
-    });
-
-    this.subscriptions.push(pipe, sub);
+  private pipe<T>(
+    key: keyof FlightPlanPerformanceDataProperties & string,
+    from: MutableSubscribable<T>,
+    to: MutableSubscribable<T>,
+  ): void {
+    // Just in case we've somehow already linked this key to something, we destory the subscription first.
+    this.subscriptions.get(key)?.destroy();
+    this.subscriptions.set(key, from.pipe(to));
   }
 
   public destroy(): void {
     this.subscriptions.forEach((sub) => sub.destroy());
-    this.subscriptions.length = 0;
+    this.subscriptions.clear();
+  }
+
+  public hasSubscription(key: keyof FlightPlanPerformanceDataProperties & string): boolean {
+    return this.subscriptions.has(key);
   }
 
   readonly cruiseFlightLevel: Subject<number | null> = Subject.create(null);
