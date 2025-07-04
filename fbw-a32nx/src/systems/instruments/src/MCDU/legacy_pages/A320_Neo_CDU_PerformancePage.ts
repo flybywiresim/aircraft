@@ -10,6 +10,8 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '../../../../fmgc/src/flightplanning/FlightPlanManager';
+import { BitFlags } from '@microsoft/msfs-sdk';
+import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 
 export class CDUPerformancePage {
   private static _timer: number | undefined = undefined;
@@ -68,13 +70,11 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const targetPlan = mcdu.getFlightPlan(forPlan);
+    const isCopyOfActivePlan = BitFlags.isAll(targetPlan.flags, FlightPlanFlags.CopiedFromActive);
 
+    const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Takeoff;
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC\xa0' : '\xa0\xa0\xa0\xa0';
-    let titleColor = 'white';
-
-    if (mcdu.flightPhaseManager.phase === FmgcFlightPhase.Takeoff) {
-      titleColor = 'green';
-    }
+    const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
 
     // check if we even have an airport
     const hasOrigin = !!targetPlan.originAirport;
@@ -98,7 +98,7 @@ export class CDUPerformancePage {
     let v1Check = '{small}\xa0\xa0\xa0{end}';
     let vRCheck = '{small}\xa0\xa0\xa0{end}';
     let v2Check = '{small}\xa0\xa0\xa0{end}';
-    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
+    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || (!isActivePlan && !isCopyOfActivePlan)) {
       v1 = isActivePlan ? '{amber}___{end}' : '{cyan}[\xa0]{end}';
 
       if (isActivePlan && mcdu.unconfirmedV1Speed) {
@@ -232,7 +232,7 @@ export class CDUPerformancePage {
 
     // thrust reduction / acceleration altitude
     const altitudeColour = hasOrigin
-      ? mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff
+      ? mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff && (isActivePlan || isCopyOfActivePlan)
         ? 'green'
         : 'cyan'
       : 'white';
@@ -306,7 +306,7 @@ export class CDUPerformancePage {
           ? `UP${Math.abs(targetPlan.performanceData.trimmableHorizontalStabilizer.get()).toFixed(1)}`
           : `DN${Math.abs(targetPlan.performanceData.trimmableHorizontalStabilizer.get()).toFixed(1)}`
         : '';
-    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
+    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || (!isActivePlan && !isCopyOfActivePlan)) {
       const flaps =
         targetPlan.performanceData.takeoffFlaps.get() !== null ? targetPlan.performanceData.takeoffFlaps.get() : '[]';
       const ths = formattedThs ? formattedThs : '[\xa0\xa0\xa0]';
@@ -327,7 +327,7 @@ export class CDUPerformancePage {
 
     // flex takeoff temperature
     let flexTakeOffTempCell = '[\xa0\xa0]°[color]cyan';
-    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
+    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || (!isActivePlan && !isCopyOfActivePlan)) {
       if (Number.isFinite(targetPlan.performanceData.flexTakeoffTemperature.get())) {
         if (mcdu._toFlexChecked) {
           flexTakeOffTempCell = `${targetPlan.performanceData.flexTakeoffTemperature.get().toFixed(0)}°[color]cyan`;
@@ -432,13 +432,14 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const targetPlan = mcdu.getFlightPlan(forPlan);
+    const isCopyOfActivePlan = BitFlags.isAll(targetPlan.flags, FlightPlanFlags.CopiedFromActive);
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
     const showManagedSpeed = hasFromToPair && targetPlan.performanceData.costIndex.get() !== null;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Climb;
     const isTakeoffOrClimbActive = isPhaseActive || mcdu.flightPhaseManager.phase === FmgcFlightPhase.Takeoff;
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
-    const titleColor = isPhaseActive ? 'green' : 'white';
+    const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
     const preselectedClimbSpeed = targetPlan.performanceData.preselectedClimbSpeed.get();
     const isSelected =
       (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) || (!isPhaseActive && preselectedClimbSpeed !== null);
@@ -578,10 +579,14 @@ export class CDUPerformancePage {
           CDUPerformancePage.ShowCLBPage(mcdu, forPlan, true);
         };
       }
-    } else {
+    } else if (!isCopyOfActivePlan || !isPhaseActive) {
       mcdu.onLeftInput[5] = () => {
         CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
       };
+    } else {
+      // Don't allow going back to TO page for SEC plan that is a copy of active plan
+      bottomRowLabels[0] = '';
+      bottomRowCells[0] = '';
     }
 
     mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
@@ -632,11 +637,12 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const targetPlan = mcdu.getFlightPlan(forPlan);
+    const isCopyOfActivePlan = BitFlags.isAll(targetPlan.flags, FlightPlanFlags.CopiedFromActive);
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Cruise;
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
-    const titleColor = isPhaseActive ? 'green' : 'white';
+    const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
     const preselectedCruiseSpeed = targetPlan.performanceData.preselectedCruiseSpeed.get();
     const isSelected =
       (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) || (!isPhaseActive && preselectedCruiseSpeed !== null);
@@ -733,9 +739,16 @@ export class CDUPerformancePage {
           scratchpadCallback();
         }
       };
-      mcdu.onLeftInput[5] = () => {
-        CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
-      };
+
+      if (!isCopyOfActivePlan || !isPhaseActive) {
+        mcdu.onLeftInput[5] = () => {
+          CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
+        };
+      } else {
+        // Don't allow going back to CLB page for SEC plan that is a copy of active plan if CRZ is active
+        bottomRowLabels[0] = '';
+        bottomRowCells[0] = '';
+      }
     }
     if (canClickManagedSpeed) {
       mcdu.onLeftInput[2] = (_, scratchpadCallback) => {
@@ -805,11 +818,12 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const targetPlan = mcdu.getFlightPlan(forPlan);
+    const isCopyOfActivePlan = BitFlags.isAll(targetPlan.flags, FlightPlanFlags.CopiedFromActive);
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Descent;
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
-    const titleColor = isPhaseActive ? 'green' : 'white';
+    const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
     const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
     const isSelected = isPhaseActive && Simplane.getAutoPilotAirspeedSelected();
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
@@ -905,10 +919,14 @@ export class CDUPerformancePage {
           CDUPerformancePage.ShowDESPage(mcdu, forPlan, true);
         };
       }
-    } else {
+    } else if (!isCopyOfActivePlan || !isPhaseActive) {
       mcdu.onLeftInput[5] = () => {
         CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
       };
+    } else {
+      // Don't allow going back to CRZ page for SEC plan that is a copy of active plan
+      bottomRowLabels[0] = '';
+      bottomRowCells[0] = '';
     }
 
     // Can only modify cost index until the phase is active
@@ -962,6 +980,9 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const plan = mcdu.getFlightPlan(forPlan);
+    const isCopyOfActivePlan = BitFlags.isAll(plan.flags, FlightPlanFlags.CopiedFromActive);
+
+    const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Approach;
 
     CDUPerformancePage._timer = 0;
     CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
@@ -1128,12 +1149,11 @@ export class CDUPerformancePage {
     const bottomRowCells = ['<PHASE', 'PHASE>'];
 
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
+    const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
 
-    let titleColor = 'white';
-    if (mcdu.flightPhaseManager.phase === FmgcFlightPhase.Approach) {
+    if (isPhaseActive && (isActivePlan || isCopyOfActivePlan)) {
       bottomRowLabels[0] = '';
       bottomRowCells[0] = '';
-      titleColor = 'green';
     } else {
       if (mcdu.flightPhaseManager.phase === FmgcFlightPhase.GoAround) {
         mcdu.leftInputDelay[5] = () => {
@@ -1214,10 +1234,12 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const plan = mcdu.getFlightPlan(forPlan);
+    const isCopyOfActivePlan = BitFlags.isAll(plan.flags, FlightPlanFlags.CopiedFromActive);
     const haveDestination = plan.destinationAirport !== undefined;
 
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
-    const titleColor = mcdu.flightPhaseManager.phase === FmgcFlightPhase.GoAround ? 'green' : 'white';
+    const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.GoAround;
+    const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
     const altitudeColour = haveDestination
       ? mcdu.flightPhaseManager.phase >= FmgcFlightPhase.GoAround
         ? 'green'
@@ -1273,27 +1295,29 @@ export class CDUPerformancePage {
       '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0',
       '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0',
     ];
-    if (mcdu.flightPhaseManager.phase === FmgcFlightPhase.GoAround) {
-      if (confirmAppr) {
-        bottomRowLabels[0] = '\xa0{amber}CONFIRM{amber}\xa0\xa0\xa0\xa0';
-        bottomRowCells[0] = '{amber}*APPR\xa0PHASE{end}\xa0';
-        mcdu.leftInputDelay[5] = () => {
-          return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[5] = async () => {
-          if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
-            CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
-          }
-        };
-      } else {
-        bottomRowLabels[0] = '\xa0{cyan}ACTIVATE{end}\xa0\xa0\xa0';
-        bottomRowCells[0] = '{cyan}{APPR\xa0PHASE{end}\xa0';
-        mcdu.leftInputDelay[5] = () => {
-          return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[5] = () => {
-          CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan, true);
-        };
+    if (isPhaseActive && (isActivePlan || isCopyOfActivePlan)) {
+      if (isActivePlan) {
+        if (confirmAppr) {
+          bottomRowLabels[0] = '\xa0{amber}CONFIRM{amber}\xa0\xa0\xa0\xa0';
+          bottomRowCells[0] = '{amber}*APPR\xa0PHASE{end}\xa0';
+          mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+          };
+          mcdu.onLeftInput[5] = async () => {
+            if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
+              CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
+            }
+          };
+        } else {
+          bottomRowLabels[0] = '\xa0{cyan}ACTIVATE{end}\xa0\xa0\xa0';
+          bottomRowCells[0] = '{cyan}{APPR\xa0PHASE{end}\xa0';
+          mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+          };
+          mcdu.onLeftInput[5] = () => {
+            CDUPerformancePage.ShowGOAROUNDPage(mcdu, forPlan, true);
+          };
+        }
       }
       bottomRowLabels[1] = '\xa0\xa0\xa0\xa0\xa0\xa0\xa0{white}NEXT{end}\xa0';
       bottomRowCells[1] = '\xa0\xa0\xa0\xa0\xa0\xa0{white}PHASE>{end}';
