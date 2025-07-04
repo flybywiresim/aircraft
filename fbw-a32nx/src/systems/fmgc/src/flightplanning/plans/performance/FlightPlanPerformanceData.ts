@@ -867,8 +867,10 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    * Returns pilot entered missed apch engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
   readonly missedEngineOutAccelerationAltitude = MappedSubject.create(
-    ([pilotMissedEngineOutAccelerationAltitude, defaultMissedEngineOutAccelerationAltitude]) =>
-      pilotMissedEngineOutAccelerationAltitude ?? defaultMissedEngineOutAccelerationAltitude,
+    ([pilotMissedEngineOutAccelerationAltitude, defaultMissedEngineOutAccelerationAltitude]) => {
+      const rawAlt = pilotMissedEngineOutAccelerationAltitude ?? defaultMissedEngineOutAccelerationAltitude;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
     this.pilotMissedEngineOutAccelerationAltitude,
     this.defaultMissedEngineOutAccelerationAltitude,
   );
