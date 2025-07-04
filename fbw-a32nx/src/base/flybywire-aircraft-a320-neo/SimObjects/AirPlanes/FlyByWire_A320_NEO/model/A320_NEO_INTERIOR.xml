@@ -3896,6 +3896,43 @@
                         <HOLD_SIMVAR>L:A32NX_APU_AUTOEXITING_RESET</HOLD_SIMVAR>
                         <TOOLTIPID>Reset APU autoexiting (Inop.)</TOOLTIPID>
                     </UseTemplate>
+
+                    <!-- Emergency Locator Transmitter -->
+                    <Component ID="ELT">
+                        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                            <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
+                            <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</EMISSIVE_CODE>
+                            <FAILURE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</FAILURE>
+                        </UseTemplate>
+                    </Component>
+
+                    <Component ID="CKPT_DOOR_CONT">
+                        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                            <NODE_ID>PUSH_OVHD_CKPTDOOR_TOP</NODE_ID>
+                            <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</EMISSIVE_CODE>
+                            <FAILURE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</FAILURE>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                            <NODE_ID>PUSH_OVHD_CKPTDOOR_MID</NODE_ID>
+                            <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</EMISSIVE_CODE>
+                            <FAILURE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</FAILURE>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                            <NODE_ID>PUSH_OVHD_CKPTDOOR_BOT</NODE_ID>
+                            <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</EMISSIVE_CODE>
+                            <FAILURE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</FAILURE>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                            <NODE_ID>PUSH_OVHD_CKPTDOOR_CHAN1</NODE_ID>
+                            <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</EMISSIVE_CODE>
+                            <FAILURE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</FAILURE>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                            <NODE_ID>PUSH_OVHD_CKPTDOOR_CHAN2</NODE_ID>
+                            <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 ==</EMISSIVE_CODE>
+                            <FAILURE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</FAILURE>
+                        </UseTemplate>
+                    </Component>
                 </Component>
 
                 <!-- CABIN PRESS -->
