@@ -10,7 +10,29 @@ export default new TaskOfTasks('all', [
         new TaskOfTasks(
             'preparation',
             [
-                new ExecTask('copy-base-files', ['npm run build-a32nx:copy-base-files', 'npm run build-a32nx:copy-large-files']),
+                new TaskOfTasks(
+                    'ci-build',
+                    [
+                        new ExecTask('copy-base-files', [
+                            'npm run build-a32nx:link-base-files',
+                            'npm run unchunkLargeFiles',
+                            'npm run build-a32nx:link-large-files',
+                        ]),
+                    ],
+                    false,
+                ),
+                new TaskOfTasks(
+                    'local-build',
+                    [
+                        new ExecTask('copy-base-files', [
+                            'npm run build-a32nx:copy-base-files',
+                            'npm run unchunkLargeFiles',
+                            'npm run build-a32nx:copy-large-files',
+                            'npm run chunkLargeFiles',
+                        ]),
+                    ],
+                    false,
+                ),
                 new TaskOfTasks(
                     'localization',
                     [
