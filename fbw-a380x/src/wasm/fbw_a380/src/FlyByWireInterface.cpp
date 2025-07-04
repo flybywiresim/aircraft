@@ -460,7 +460,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlapsHandleIndex = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
 
   flapsHandleIndexFlapConf = std::make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
-  flapsPosition = std::make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
+  flapsPosition = std::make_unique<LocalVariable>("A32NX_FLAPS_IPPU_ANGLE");
 
   idSpoilersArmed = std::make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = std::make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");

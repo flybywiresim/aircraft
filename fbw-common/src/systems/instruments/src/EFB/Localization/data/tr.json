@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Font boyutunu büyüt",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Font boyutunu küçült"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Henüz herhangi bir SimBrief verisini içe aktarmadınız."
     },
     "Overview": {
@@ -308,6 +311,8 @@
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
       "Runway": "Runway",
+      "RunwayAltitude": "Pist İrtifası",
+      "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Pist Durumu",
       "RunwayConditions": {
         "Dry": "Kuru (6)",
@@ -333,7 +338,11 @@
       "Title": "İniş",
       "UnitFt": "ft",
       "UnitMeter": "m",
+      "Weight": "Ağırlık",
       "Wind": "Wind",
+      "WindDirection": "Rüzgar yönü",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Rüzgar Hızı",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Eşitle",
@@ -377,6 +386,8 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "SimBrief Kullanıcı Kimliğini geçersiz kıl",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Lütfen SimBrief kullanıcı adınızı veya pilot ID'nizi doğru girdiğinizden emin olun.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Bağlı Navigraph Hesabı yerine kullanılacak alternatif SimBrief kullanıcı kimliği"
       },
