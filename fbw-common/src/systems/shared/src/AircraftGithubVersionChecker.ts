@@ -181,7 +181,7 @@ export class AircraftGithubVersionChecker {
   public static async getEdition(aircraft: string): Promise<FbwBuildEdition> {
     try {
       const buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
-      const versionInfo = AircraftGithubVersionChecker.getVersionInfo(buildInfo.version);
+      const versionInfo = AircraftGithubVersionChecker.getVersionInfo(aircraft, buildInfo.version);
       switch (KnowBranchNames[versionInfo.branch]) {
         case KnowBranchNames.rel:
           return FbwBuildEdition.Stable;
