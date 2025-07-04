@@ -3,10 +3,10 @@
 
 import { MapSubject, SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwcAuralWarning, FwsCore } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsCore';
 import { EcamAbNormalSensedSubMenuVector, WD_NUM_LINES } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
-import { EwdAbnormalDict } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
+import { EwdAbnormalDict } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsAbnormalSensed';
 import { SdPages } from '@shared/EcamSystemPages';
 
 export class FwsAbnormalNonSensed {

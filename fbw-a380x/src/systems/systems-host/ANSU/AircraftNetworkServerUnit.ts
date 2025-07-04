@@ -4,7 +4,7 @@
 import { EventBus, Instrument, SimVarValueType, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
-import { AtsuSystem } from 'systems-host/systems/atsu';
+import { AtsuSystem } from 'systems-host/CPIOM_D/atsu';
 
 type AnsuIndex = 1 | 2;
 

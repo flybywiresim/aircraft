@@ -3,7 +3,7 @@ import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
 import { Router } from '@datalink/router';
 import { EventBus, EventSubscriber, Instrument } from '@microsoft/msfs-sdk';
-import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
+import { PowerSupplyBusTypes } from 'systems-host/Misc/powersupply';
 
 export class AtsuSystem implements Instrument {
   private readonly simVarHandling: SimVarHandling;
