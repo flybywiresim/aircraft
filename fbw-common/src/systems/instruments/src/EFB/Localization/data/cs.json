@@ -94,8 +94,8 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Zvětšit písmo",
-        "NextLoadsheetSection": "Next loadsheet section",
-        "PreviousLoadsheetSection": "Previous loadsheet section",
+        "NextLoadsheetSection": "Další část loadsheetu",
+        "PreviousLoadsheetSection": "Předchozí část loadsheetu",
         "ReduceFontSize": "Zmenšit písmo"
       },
       "Title": "OFP",
