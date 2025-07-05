@@ -90,6 +90,9 @@
       {
         "gltf": "./glass/glass.gltf",
         "bin": "./glass/glass.bin"
+      },
+      {
+        "gltf": "./sound_nodes/sound_nodes_interior.gltf"
       }
     ],
     "modifications": [
