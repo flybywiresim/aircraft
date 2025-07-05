@@ -609,6 +609,8 @@ class PitchScale extends DisplayComponent<{
   }
 
   private MoveThreeDegreeMark() {
+    // FIXME slope data from the FMS only available or updated when navaid page is displayed. Using sim data instead
+    const lsSlope = parseInt(SimVar.GetSimVarValue('NAV RAW GLIDE SLOPE:3', 'degrees'));
     const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
       calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
@@ -628,22 +630,24 @@ class PitchScale extends DisplayComponent<{
     ) {
       this.threeDegPath.instance.setAttribute(
         'd',
-        `M 565,${512 + (3 / 5) * FIVE_DEG} h -80  M 713,${512 + (3 / 5) * FIVE_DEG} h 80  `,
+        `M 565,${512 + (lsSlope / 5) * FIVE_DEG} h -80  M 713,${512 + (lsSlope / 5) * FIVE_DEG} h 80  `,
       );
-      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG + 6.5}`);
-      this.threeDegTxtRef.instance.textContent = '-3.0°'; //TODO get the actual slope of the ILS
+      this.threeDegTxtRef.instance.setAttribute('y', `${512 + (lsSlope / 5) * FIVE_DEG + 6.5}`);
+      this.threeDegTxtRef.instance.textContent = `-${lsSlope}.0°`;
       this.threeDegTxtRef.instance.classList.remove('Green');
       this.threeDegTxtRef.instance.classList.add('InverseGreen');
       this.threeDegTxtBgRef.instance.style.display = `block`;
       this.threeDegTxtBgRef.instance.classList.add('GreenFill3');
-      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
-      this.threeDegTxtBgRef.instance.setAttribute('d', `m 800 ${512 + (3 / 5) * FIVE_DEG - 13.5} h 45 v 27 h -45 z `);
+      this.threeDegTxtBgRef.instance.setAttribute('y', `${512 + (lsSlope / 5) * FIVE_DEG}`);
+      this.threeDegTxtBgRef.instance.setAttribute(
+        'd',
+        `m 800 ${512 + (lsSlope / 5) * FIVE_DEG - 13.5} h 45 v 27 h -45 z `,
+      );
     } else if (this.activeVerticalModeSub.get() === VerticalMode.FPA) {
       this.threeDegPath.instance.setAttribute(
         'd',
         `M 565,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h -80  M 713,${512 + (Math.abs(this.selectedFpa.get()) / 5) * FIVE_DEG} h 80  `,
       );
-      this.threeDegPath.instance.setAttribute('y', `${512 + (3 / 5) * FIVE_DEG}`);
 
       this.threeDegTxtRef.instance.setAttribute(
         'y',
