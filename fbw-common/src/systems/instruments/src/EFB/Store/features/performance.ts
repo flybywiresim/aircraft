@@ -113,7 +113,7 @@ export const initialState: TPerformanceState = {
     availableRunways: [],
     selectedRunwayIndex: -1,
     antiIce: TakeoffAntiIceSetting.Off,
-    packs: false,
+    packs: true,
     takeoffCg: TakeoffCoGPositions.Standard,
     forceToga: false,
     config: 1,
