@@ -157,6 +157,9 @@ export class SyntheticRunway extends DisplayComponent<{
           this.data = data;
           if (this.data === undefined) {
             console.log('symbol data not loaded');
+          } else {
+            this.data2 = JSON.parse(JSON.stringify(this.data));
+            this.initRwyPoints();
           }
         }),
     );
@@ -181,10 +184,6 @@ export class SyntheticRunway extends DisplayComponent<{
       this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
       if (this.data !== undefined) {
-        if (this.logOnce === 0) {
-          this.data2 = JSON.parse(JSON.stringify(this.data));
-          this.initRwyPoints();
-        }
         if (this.prevRwyHdg !== this.data.direction) {
           this.prevRwyHdg = this.data.direction;
           this.logOnce = 0;
