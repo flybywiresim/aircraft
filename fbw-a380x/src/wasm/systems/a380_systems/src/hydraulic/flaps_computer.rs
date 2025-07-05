@@ -1,5 +1,5 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::shared::{AdirsMeasurementOutputs, FeedbackPositionPickoffUnit};
+use systems::shared::{AdirsMeasurementOutputs, PositionPickoffUnit};
 
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -69,8 +69,6 @@ impl SimulationElement for FlapsHandle {
 
 struct SlatFlapControlComputer {
     flaps_conf_index_id: VariableIdentifier,
-    slats_fppu_angle_id: VariableIdentifier,
-    flaps_fppu_angle_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
     slat_flap_actual_position_word_id: VariableIdentifier,
     slat_actual_position_word_id: VariableIdentifier,
@@ -108,8 +106,6 @@ impl SlatFlapControlComputer {
     fn new(context: &mut InitContext) -> Self {
         Self {
             flaps_conf_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
-            slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
-            flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
             slat_flap_system_status_word_id: context
                 .get_identifier("SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD".to_owned()),
             slat_flap_actual_position_word_id: context
@@ -306,8 +302,8 @@ impl SlatFlapControlComputer {
         context: &UpdateContext,
         adirs: &impl AdirsMeasurementOutputs,
         flaps_handle: &FlapsHandle,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.flaps_handle_position = flaps_handle.position();
         self.flaps_conf = self.generate_configuration(flaps_handle, context, adirs);
@@ -466,9 +462,6 @@ impl SimulationElement for SlatFlapControlComputer {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.flaps_conf_index_id, self.flaps_conf as u8);
 
-        writer.write(&self.slats_fppu_angle_id, self.slats_feedback_angle);
-        writer.write(&self.flaps_fppu_angle_id, self.flaps_feedback_angle);
-
         writer.write(
             &self.slat_flap_system_status_word_id,
             self.slat_flap_system_status_word(),
@@ -505,8 +498,8 @@ impl SlatFlapComplex {
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsMeasurementOutputs,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.sfcc.update(
             context,
@@ -554,7 +547,7 @@ mod tests {
         right_position_angle_id: VariableIdentifier,
         surface_type: String,
     }
-    impl FeedbackPositionPickoffUnit for SlatFlapGear {
+    impl PositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
             self.current_angle
         }

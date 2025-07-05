@@ -70,6 +70,26 @@ interface A32NXDisplayManagementBaseEvents {
    */
   a32nx_dmc_ir_3_discrete_word_right: number;
   /**
+   * The right DMC discrete word. Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * |     | ADIRU used for ADR                |
+   * |     | ADR1 ADR2 ADR3                    |
+   * | 13  | 1    0    1                       |
+   * | 14  | 0    1    1                       |
+   */
+  a32nx_dmc_discrete_word_272_left: number;
+  /**
+   * The right DMC discrete word. Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * |     | ADIRU used for ADR                |
+   * |     | ADR1 ADR2 ADR3                    |
+   * | 13  | 1    0    1                       |
+   * | 14  | 0    1    1                       |
+   */
+  a32nx_dmc_discrete_word_272_right: number;
+  /**
    * The left DMC discrete word. Raw ARINC word.
    * | Bit |            Description            |
    * |:---:|:---------------------------------:|
@@ -150,6 +170,11 @@ export class A32NXDisplayManagementPublisher extends SimVarPublisher<A32NXDispla
       [
         'a32nx_dmc_ir_3_discrete_word_right',
         { name: 'L:A32NX_DMC_IR_3_DISCRETE_WORD_RIGHT', type: SimVarValueType.Enum },
+      ],
+      ['a32nx_dmc_discrete_word_272_left', { name: 'L:A32NX_DMC_DISCRETE_WORD_272_LEFT', type: SimVarValueType.Enum }],
+      [
+        'a32nx_dmc_discrete_word_272_right',
+        { name: 'L:A32NX_DMC_DISCRETE_WORD_272_RIGHT', type: SimVarValueType.Enum },
       ],
       ['a32nx_dmc_discrete_word_350_left', { name: 'L:A32NX_DMC_DISCRETE_WORD_350_LEFT', type: SimVarValueType.Enum }],
       [

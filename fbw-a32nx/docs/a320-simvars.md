@@ -1120,6 +1120,24 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_{side}_FLAPS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the flaps out of 40 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 2
+
+- A32NX_{side}_SLATS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the slats out of 27 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 5
+
 - A32NX_LEFT_FLAPS_POSITION_PERCENT
     - Percent
     - Indicates the angle of the left flaps out of 40 degrees
@@ -1136,6 +1154,24 @@
     - Percent
     - Indicates the angle of the right slats out of 27 degrees
 
+- A32NX_{side}_FLAPS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the flaps
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 2
+
+- A32NX_{side}_SLATS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the slats
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 5
+
 - A32NX_LEFT_FLAPS_ANGLE
     - Degrees
     - The actual angle of the left flaps
@@ -1151,6 +1187,22 @@
 - A32NX_RIGHT_SLATS_ANGLE
     - Degrees
     - The actual angle of the right slats
+
+- A32NX_FLAPS_IPPU_ANGLE
+    - Degrees
+    - The angle of the flaps IPPU synchro
+
+- A32NX_FLAPS_FPPU_ANGLE
+    - Degrees
+    - The angle of the flaps FPPU synchro
+
+- A32NX_SLATS_IPPU_ANGLE
+    - Degrees
+    - The angle of the slats IPPU synchro
+
+- A32NX_SLATS_FPPU_ANGLE
+    - Degrees
+    - The angle of the slats FPPU synchro
 
 - A32NX_IS_FLAPS_MOVING
     - Boolean

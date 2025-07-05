@@ -1418,6 +1418,7 @@ impl From<f64> for AlignTime {
 
 bitflags! {
     #[derive(Default)]
+    #[cfg_attr(test, derive(Debug, PartialEq))]
     struct IrMaintFlags: u32 {
         const ALIGNMENT_NOT_READY = 0b0000000000000000001;
         const REV_ATT_MODE = 0b0000000000000000010;

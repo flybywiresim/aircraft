@@ -114,8 +114,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   private BC3MessageActive = MappedSubject.create(([BC3Message]) => BC3Message[0] !== null, this.BC3Message);
 
   private A3Message = MappedSubject.create(
-    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message]) =>
-      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message),
+    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode]) =>
+      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode),
     this.fcuAtsFmaDiscreteWord,
     this.ecu1MaintenanceWord6,
     this.ecu2MaintenanceWord6,
@@ -696,7 +696,6 @@ const getA3Message = (
   ecu1MaintenanceWord6: Arinc429Register,
   ecu2MaintenanceWord6: Arinc429Register,
   autobrakeMode: number,
-  AB3Message: boolean,
 ) => {
   const clbDemand = fcuAtsFmaDiscreteWord.bitValueOr(22, false);
   const mctDemand = fcuAtsFmaDiscreteWord.bitValueOr(23, false);
@@ -725,7 +724,7 @@ const getA3Message = (
   } else if (assymThrust) {
     text = 'LVR ASYM';
     className = 'Amber';
-  } else if (autobrakeMode === 3 && !AB3Message) {
+  } else if (autobrakeMode === 3) {
     text = 'BRK MAX';
     className = 'FontMediumSmaller MiddleAlign Cyan';
   } else {
@@ -1765,6 +1764,10 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     this.dh,
     this.mda,
   );
+  private readonly DhModexPos = MappedSubject.create(
+    ([noDhSelected]) => (noDhSelected ? 118.38384 : 103.47),
+    this.noDhSelected,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -1782,17 +1785,19 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
         ref={this.textRef}
         class={{
           FontSmallest: this.noDhSelected.map(SubscribableMapFunctions.not()),
+          StartAlign: this.noDhSelected.map(SubscribableMapFunctions.not()),
           FontMedium: this.noDhSelected,
-          MiddleAlign: true,
+          MiddleAlign: this.noDhSelected,
           White: true,
         }}
-        x="118.38384"
-        y="21.104172"
+        x={this.DhModexPos}
+        y="20.75"
       >
         <tspan>{this.mdaDhMode}</tspan>
         <tspan
-          class={{ Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
-          style="white-space: pre"
+          class={{ EndAlign: true, Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
+          x="133.425"
+          y="20.75"
         >
           {this.mdaDhValueText}
         </tspan>

@@ -270,8 +270,8 @@ void FlyByWireInterface::loadConfiguration() {
   std::vector<std::pair<double, double>> mappingTable3d;
   mappingTable3d.emplace_back(-20.0, 0.0);
   mappingTable3d.emplace_back(0.0, 0.0);
-  mappingTable3d.emplace_back(25.0, 54.0);
-  mappingTable3d.emplace_back(35.0, 71.0);
+  mappingTable3d.emplace_back(25.0, 55.0);
+  mappingTable3d.emplace_back(35.0, 78.0);
   mappingTable3d.emplace_back(45.0, 100.0);
   idThrottlePositionLookupTable3d.initialize(mappingTable3d, 0, 100);
 }
@@ -460,7 +460,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlapsHandleIndex = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
 
   flapsHandleIndexFlapConf = std::make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
-  flapsPosition = std::make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
+  flapsPosition = std::make_unique<LocalVariable>("A32NX_FLAPS_IPPU_ANGLE");
 
   idSpoilersArmed = std::make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = std::make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
