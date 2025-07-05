@@ -90,7 +90,6 @@
 1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
 1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
 1. [A32NX/FWS] Improve altitude alert logic, add PFD indications, improve AP OFF warning logic - @lukecologne (luke)
-1. [A32NX/EFB] Change default value of "Packs" to OFF in Takeoff Performance Calculator - @becas22 (Bernardo)
 
 ## 0.13.0
 
