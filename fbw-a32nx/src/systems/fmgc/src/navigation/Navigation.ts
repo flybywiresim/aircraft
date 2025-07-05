@@ -69,7 +69,7 @@ export class Navigation implements NavigationProvider {
   currentPerformance: number | undefined;
 
   private readonly _accuracyHigh = Subject.create(false);
-  public readonly accuracyHigh = this._accuracyHigh as Subscribable<boolean>;
+  public readonly accuracyHigh: Subscribable<boolean> = this._accuracyHigh;
 
   ppos: Coordinates = { lat: 0, long: 0 };
 
