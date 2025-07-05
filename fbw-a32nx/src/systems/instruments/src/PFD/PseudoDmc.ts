@@ -25,7 +25,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { GlobalDmcEvents } from '../MsfsAvionicsCommon/GlobalDmcEvents';
-import { SwitchingPanelVSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
+import { SwitchingPanelVSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 
 // In future this will move to the Systems instance in VCockpitLogic which will also handle the
 // display switching, and then it can be expanded a bit and become a DMC rather than the combined DMC bus.
