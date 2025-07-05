@@ -59,7 +59,7 @@ class A32NX_PFD extends BaseInstrument {
 
   private readonly pseudoDmc = new PseudoDmc(this.bus, this);
 
-  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
+  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus, this.pseudoDmc.isAcPowered);
 
   /**
    * "mainmenu" = 0

@@ -8,6 +8,7 @@ import {
   MappedSubject,
   SimVarValueType,
   Subject,
+  Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32NXElectricalSystemPublisher';
@@ -21,10 +22,8 @@ import {
   Arinc429WordData,
   DmcSwitchingKnob,
   IrBusEvents,
-  RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
-import { GlobalDmcEvents } from '../MsfsAvionicsCommon/GlobalDmcEvents';
 import { SwitchingPanelVSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 
 // In future this will move to the Systems instance in VCockpitLogic which will also handle the
@@ -39,13 +38,6 @@ export class PseudoDmc implements Instrument {
       IrBusEvents &
       SwitchingPanelVSimVars
   >();
-  private readonly publisher = this.bus.getPublisher<GlobalDmcEvents>();
-
-  private readonly monotonicSimTimeVar = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Number);
-  private currentTime = 0;
-  private mainPoweredOnTime = 0;
-  private alternatePoweredOnTime = 0;
-  private readonly flash1Hz = Subject.create(false);
 
   private readonly dmcSwitchingState = Subject.create(DmcSwitchingKnob.Norm);
   private readonly isOnAlternateDmc = this.dmcSwitchingState.map(
@@ -58,13 +50,14 @@ export class PseudoDmc implements Instrument {
 
   private readonly mainElecSupply = ConsumerSubject.create(null, false);
   private readonly alternateElecSupply = ConsumerSubject.create(null, false);
-  private readonly isAcPowered = MappedSubject.create(
+  private readonly _isAcPowered = MappedSubject.create(
     ([isMainSupplyPowered, isAlternateSupplyPowered, isOnAlternateDmc]) =>
       isOnAlternateDmc ? isAlternateSupplyPowered : isMainSupplyPowered,
     this.mainElecSupply,
     this.alternateElecSupply,
     this.isOnAlternateDmc,
   );
+  public readonly isAcPowered: Subscribable<boolean> = this._isAcPowered;
 
   private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
 
@@ -159,7 +152,7 @@ export class PseudoDmc implements Instrument {
       ),
     ];
 
-    this.isAcPowered.sub((isPowered) => {
+    this._isAcPowered.sub((isPowered) => {
       if (isPowered) {
         for (const sub of outputSubs) {
           sub.resume(true);
@@ -171,22 +164,6 @@ export class PseudoDmc implements Instrument {
         for (const word of this.outputWords) {
           word.setValueSsm(0, Arinc429SignStatusMatrix.FailureWarning);
         }
-      }
-    }, true);
-
-    this.mainElecSupply.sub((v) => {
-      if (v) {
-        this.mainPoweredOnTime = this.currentTime;
-      } else {
-        this.mainPoweredOnTime = 0;
-      }
-    }, true);
-
-    this.alternateElecSupply.sub((v) => {
-      if (v) {
-        this.alternatePoweredOnTime = this.currentTime;
-      } else {
-        this.alternatePoweredOnTime = 0;
       }
     }, true);
 
@@ -238,9 +215,6 @@ export class PseudoDmc implements Instrument {
       true,
     );
 
-    const flash1HzTopic: keyof GlobalDmcEvents = this.isRightSide ? 'dmc_right_flash_1hz' : 'dmc_left_flash_1hz';
-    this.flash1Hz.sub((v) => this.publisher.pub(flash1HzTopic, v, true, true), true);
-
     this.mainElecSupply.setConsumer(
       this.sub.on(this.isRightSide ? 'a32nx_elec_ac_2_bus_is_powered' : 'a32nx_elec_ac_ess_bus_is_powered'),
     );
@@ -260,17 +234,6 @@ export class PseudoDmc implements Instrument {
   /** @inheritdoc */
   public onUpdate(): void {
     this.dmcSwitchingState.set(SimVar.GetSimVarValue('L:A32NX_EIS_DMC_SWITCHING_KNOB', SimVarValueType.Enum));
-
-    this.currentTime = this.monotonicSimTimeVar.get() * 1000;
-    if (this.isAcPowered.get()) {
-      const powerOnTime = Math.max(
-        0,
-        this.currentTime - (this.isOnAlternateDmc.get() ? this.alternatePoweredOnTime : this.mainPoweredOnTime),
-      );
-      this.flash1Hz.set(powerOnTime % 1000 >= 500);
-    } else {
-      this.flash1Hz.set(false);
-    }
   }
 
   private static mapIrDiscreteToDmc(ir: Arinc429WordData, dmc: Arinc429RegisterSubject): void {

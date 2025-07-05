@@ -1,7 +1,6 @@
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { GlobalDmcEvents } from '../MsfsAvionicsCommon/GlobalDmcEvents';
 import {
   ConsumerSubject,
   DisplayComponent,
@@ -11,6 +10,7 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { ExtendedClockEvents } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
 
 type Destroyable = { destroy: () => void };
 
@@ -25,9 +25,8 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
   private decorationRef = FSComponent.createRef<SVGGElement>();
 
-  // FIXME support ECAM on FO ND (DMC R)
   private readonly flash1Hz = ConsumerSubject.create(
-    this.props.bus.getSubscriber<GlobalDmcEvents>().on('dmc_left_flash_1hz'),
+    this.props.bus.getSubscriber<ExtendedClockEvents>().on('ext_clock_one_hertz'),
     false,
   );
 
