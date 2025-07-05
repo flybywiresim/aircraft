@@ -5,19 +5,25 @@
 import { FMMessage, FMMessageTypes } from '@flybywiresim/fbw-sdk';
 
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
+import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
+import { NavigationEvents } from '../../navigation/Navigation';
 
 export class GpsPrimary implements FMMessageSelector {
-  message: FMMessage = FMMessageTypes.GpsPrimary;
+  public readonly message: FMMessage = FMMessageTypes.GpsPrimary;
 
-  private lastState = false;
+  private readonly onGpsPrimary = ConsumerSubject.create(null, false);
+  private stateChanged = false;
+
+  constructor(readonly bus: EventBus) {
+    this.onGpsPrimary.sub(() => (this.stateChanged = true));
+    this.onGpsPrimary.setConsumer(bus.getSubscriber<NavigationEvents>().on('fms_nav_gps_primary'));
+  }
 
   process(_: number): FMMessageUpdate {
-    const newState = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool') === 1;
+    if (this.stateChanged) {
+      this.stateChanged = false;
 
-    if (newState !== this.lastState) {
-      this.lastState = newState;
-
-      return newState ? FMMessageUpdate.SEND : FMMessageUpdate.RECALL;
+      return this.onGpsPrimary.get() ? FMMessageUpdate.SEND : FMMessageUpdate.RECALL;
     }
 
     return FMMessageUpdate.NO_ACTION;
