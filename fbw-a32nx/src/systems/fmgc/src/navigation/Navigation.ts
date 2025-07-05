@@ -122,7 +122,7 @@ export class Navigation implements NavigationProvider {
     (_, i) => `L:A32NX_ADIRS_IR_${i + 1}_MAINT_WORD`,
   );
 
-  private isGpIrsAvailable = false;
+  private isGpirsAvailable = false;
   private readonly gpsPrimary = Subject.create(false);
 
   private readonly navaidSelectionManager: NavaidSelectionManager;
@@ -206,7 +206,7 @@ export class Navigation implements NavigationProvider {
   private updateCurrentPerformance(): void {
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
-    if (this.isGpIrsAvailable) {
+    if (this.isGpirsAvailable) {
       // FIXME fake it until we make it :D
       const estimate = 0.03 + Math.random() * 0.02 + gs * 0.00015;
       // basic IIR filter
@@ -217,7 +217,7 @@ export class Navigation implements NavigationProvider {
     } else {
       this._accuracyHigh.set(false);
     }
-    this.gpsPrimary.set(this.isGpIrsAvailable && this.accuracyHigh.get());
+    this.gpsPrimary.set(this.isGpirsAvailable && this.accuracyHigh.get());
   }
 
   private updateRadioHeight(): void {
@@ -241,7 +241,7 @@ export class Navigation implements NavigationProvider {
   }
 
   private updateAttHdgPosData(): void {
-    this.isGpIrsAvailable = false;
+    this.isGpirsAvailable = false;
     for (const simVar of Navigation.irDiscreteWordVars) {
       Navigation.arincWordCache.setFromSimVar(simVar);
       // Check if in NAV mode and aligned
@@ -250,7 +250,7 @@ export class Navigation implements NavigationProvider {
         Navigation.arincWordCache.bitValue(3) &&
         !Navigation.arincWordCache.bitValue(1)
       ) {
-        this.isGpIrsAvailable = true;
+        this.isGpirsAvailable = true;
         break;
       }
     }
