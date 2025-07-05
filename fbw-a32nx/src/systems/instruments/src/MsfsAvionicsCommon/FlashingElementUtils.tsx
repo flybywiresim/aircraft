@@ -53,9 +53,9 @@ export class FlashOneHertz extends DisplayComponent<FlashProps> {
 
     const sub = this.props.bus.getSubscriber<ExtendedClockEvents>();
 
-    this.oneHertzClock.setConsumer(sub.on('oneHertzClock'));
+    this.oneHertzClock.setConsumer(sub.on('ext_clock_one_hertz'));
 
-    sub.on('deltaTime').handle((dt) => {
+    sub.on('ext_clock_delta_time').handle((dt) => {
       const visible = this.props.visible?.get() ?? true;
       const shouldFlash = this.props.flashing?.get() ?? true;
       this.flashingMtrigResult.set(
