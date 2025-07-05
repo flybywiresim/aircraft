@@ -12,6 +12,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
+type Destroyable = { destroy: () => void };
+
 interface FormattedFwcTextProps {
   bus: EventBus;
   message: Subscribable<string>;
@@ -29,12 +31,28 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
     false,
   );
 
+  private readonly textSubs: Destroyable[] = [];
+
+  private addTextSub<T extends Destroyable>(sub: T): T {
+    this.textSubs.push(sub);
+    return sub;
+  }
+
+  private destroyTextSubs(): void {
+    for (let i = 0; i < this.textSubs.length; i++) {
+      this.textSubs[i].destroy();
+    }
+    this.textSubs.length = 0;
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.props.message.sub((message) => {
       const LINE_SPACING = 30;
       const LETTER_WIDTH = 16;
+
+      this.destroyTextSubs();
 
       this.linesRef.instance.innerHTML = '';
       this.decorationRef.instance.innerHTML = '';
@@ -61,7 +79,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 class={{
                   [color]: true,
                   EWDWarn: true,
-                  DimColor: flashing ? this.flash1Hz.map(SubscribableMapFunctions.identity()) : false,
+                  DimColor: flashing ? this.addTextSub(this.flash1Hz.map(SubscribableMapFunctions.identity())) : false,
                 }}
               >
                 {buffer}
