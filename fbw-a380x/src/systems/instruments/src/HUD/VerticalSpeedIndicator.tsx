@@ -158,13 +158,16 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
         const absVSpeed = Math.abs(filteredVS);
-
-        if (!vs.isNormalOperation()) {
-          this.vsFailed.instance.style.visibility = 'visible';
-          this.vsNormal.instance.style.visibility = 'hidden';
+        if (absVSpeed > 50) {
+          if (!vs.isNormalOperation()) {
+            this.vsFailed.instance.style.visibility = 'visible';
+            this.vsNormal.instance.style.visibility = 'hidden';
+          } else {
+            this.vsFailed.instance.style.visibility = 'hidden';
+            this.vsNormal.instance.style.visibility = 'visible';
+          }
         } else {
-          this.vsFailed.instance.style.visibility = 'hidden';
-          this.vsNormal.instance.style.visibility = 'visible';
+          this.vsNormal.instance.style.visibility = 'hidden';
         }
 
         const radioAltitudeValid = !this.radioAlt.isNoComputedData() && !this.radioAlt.isFailureWarning();

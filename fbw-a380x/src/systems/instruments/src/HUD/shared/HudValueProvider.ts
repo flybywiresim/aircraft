@@ -160,7 +160,7 @@ export class HudValueProvider implements Instrument {
           this.elems.inAirAcftRef = 'none';
           this.elems.flightPathDirector = 'none';
           this.elems.flightPathVector = 'block';
-          this.elems.VSI = 'none';
+          this.elems.VSI = 'block';
           this.elems.ra = 'none';
           this.elems.IlsGS = 'none';
           this.elems.IlsLoc = 'block';
