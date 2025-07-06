@@ -634,7 +634,7 @@
 
             <Component ID="Printer">
                 <UseTemplate Name="FBW_Airbus_PRINTER">
-                    <NODE_ID>Print</NODE_ID>
+                    <NODE_ID>PAPER_PRINTER</NODE_ID>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
