@@ -36,8 +36,8 @@ import { RmpAmuBusPublisher } from 'systems-host/Misc/Communications/RmpAmuBusPu
 import { Transponder } from 'systems-host/Misc/Communications/Transponder';
 import { PowerSupplyBusTypes, PowerSupplyBusses } from 'systems-host/Misc/powersupply';
 import { SimAudioManager } from 'systems-host/Misc/Communications/SimAudioManager';
-import { AtsuSystem } from 'systems-host/CPIOM_D/atsu';
-import { FwsCore } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsCore';
+import { AtsuSystem } from 'systems-host/CpiomD/atsu';
+import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/PseudoPRIM/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
@@ -58,7 +58,7 @@ import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { A380Failure } from '@failures';
 
 CpiomAvailableSimvarPublisher;
-import { AircraftNetworkServerUnit } from 'systems-host/ANSU/AircraftNetworkServerUnit';
+import { AircraftNetworkServerUnit } from 'systems-host/Ansu/AircraftNetworkServerUnit';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();

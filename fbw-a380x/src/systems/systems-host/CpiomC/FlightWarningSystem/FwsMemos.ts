@@ -4,7 +4,7 @@
 
 import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
-import { FwsCore } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsCore';
+import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
 interface EwdMemoItem {
   flightPhaseInhib: number[];

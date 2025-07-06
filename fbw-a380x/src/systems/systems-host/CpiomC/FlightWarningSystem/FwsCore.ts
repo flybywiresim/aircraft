@@ -49,18 +49,18 @@ import {
 import { ProcedureLinesGenerator } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwsMemos } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsMemos';
-import { FwsNormalChecklists } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsNormalChecklists';
+import { FwsMemos } from 'systems-host/CpiomC/FlightWarningSystem/FwsMemos';
+import { FwsNormalChecklists } from 'systems-host/CpiomC/FlightWarningSystem/FwsNormalChecklists';
 import {
   EwdAbnormalDict,
   EwdAbnormalItem,
   FwsAbnormalSensed,
-} from 'systems-host/CPIOM_C/FlightWarningSystem/FwsAbnormalSensed';
-import { FwsAbnormalNonSensed } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsAbnormalNonSensed';
+} from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalSensed';
+import { FwsAbnormalNonSensed } from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalNonSensed';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/PerformanceConstants';
-import { FwsAuralVolume, FwsSoundManager } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsSoundManager';
-import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsFlightPhases';
+import { FwsAuralVolume, FwsSoundManager } from 'systems-host/CpiomC/FlightWarningSystem/FwsSoundManager';
+import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/CpiomC/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';

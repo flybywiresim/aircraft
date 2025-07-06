@@ -3,7 +3,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacySoundManager, soundList } from 'systems-host/Misc/LegacySoundManager';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../shared/src/AutoCallOuts';
 import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
-import { FwsSoundManagerControlEvents } from 'systems-host/CPIOM_C/FlightWarningSystem/FwsSoundManager';
+import { FwsSoundManagerControlEvents } from 'systems-host/CpiomC/FlightWarningSystem/FwsSoundManager';
 
 type ModesType = {
   current: number;
