@@ -28,7 +28,6 @@ import { getDisplayIndex } from './HUD';
 import { FIVE_DEG, calculateVerticalOffsetFromRoll } from './HUDUtils';
 import { SimplaneValues } from './shared/SimplaneValueProvide';
 import { VerticalMode } from '@shared/autopilot';
-import { FmgcFlightPhase } from '@shared/flightphase';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
@@ -383,17 +382,14 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase').whenChanged(), 0);
   private readonly isSelectedSpeed = ConsumerSubject.create(this.sub.on('isSelectedSpeed').whenChanged(), false);
   private readonly targetSpeedManaged = ConsumerSubject.create(this.sub.on('targetSpeedManaged').whenChanged(), 0);
+  private readonly targetSpeedSelected = ConsumerSubject.create(this.sub.on('holdValue').whenChanged(), 0);
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
 
   private readonly chosenTargetSpeed = MappedSubject.create(
-    ([fmgcFlightPhase, isSelectedSpeed, targetManagedSpeed]) => {
-      if (fmgcFlightPhase === FmgcFlightPhase.Descent && !isSelectedSpeed) {
-        return targetManagedSpeed;
-      } else {
-        return Simplane.getAutoPilotAirspeedHoldValue();
-      }
+    ([targetSpeedSelected, isSelectedSpeed, targetManagedSpeed]) => {
+      return isSelectedSpeed ? targetSpeedSelected : targetManagedSpeed;
     },
-    this.fmgcFlightPhase,
+    this.targetSpeedSelected,
     this.isSelectedSpeed,
     this.targetSpeedManaged,
   );
