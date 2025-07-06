@@ -335,7 +335,20 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
   private autoBrkRef = FSComponent.createRef<SVGTextElement>();
 
   private modeArmed = FSComponent.createRef<SVGPathElement>();
-
+  private handleDecMode() {
+    if (this.text.get() === '') {
+      this.modeArmed.instance.setAttribute('visibility', 'hidden');
+      this.autoBrkRef.instance.style.visibility = 'hidden';
+    } else {
+      if (this.decMode !== 2) {
+        this.modeArmed.instance.setAttribute('visibility', 'visible');
+        this.autoBrkRef.instance.style.visibility = 'visible';
+      } else {
+        this.modeArmed.instance.setAttribute('visibility', 'hidden');
+        this.autoBrkRef.instance.style.visibility = 'hidden';
+      }
+    }
+  }
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -346,17 +359,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        if (this.text.get() === '') {
-          this.modeArmed.instance.setAttribute('visibility', 'hidden');
-        } else {
-          if (this.decMode !== 2) {
-            this.modeArmed.instance.setAttribute('visibility', 'visible');
-            this.autoBrkRef.instance.style.visibility = 'visible';
-          } else {
-            this.modeArmed.instance.setAttribute('visibility', 'hidden');
-            this.autoBrkRef.instance.style.visibility = 'hidden';
-          }
-        }
+        this.handleDecMode();
       });
 
     sub
@@ -419,7 +422,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
         if (athrMode > 0 && athrMode <= 6) {
           this.autoBrkRef.instance.style.visibility = 'hidden';
         } else {
-          this.autoBrkRef.instance.style.visibility = 'visible';
+          this.handleDecMode();
         }
       });
   }
@@ -679,6 +682,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
+        this.isShown = false;
         this.handleDeclutterMode(false, this.decMode, this.cellRef);
       });
     sub
@@ -1069,6 +1073,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
+        this.getText();
+        this.isShown = false;
+        this.displayModeChangedPath();
         this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
       });
     sub
@@ -1321,7 +1328,14 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        const isShown = this.updateText();
+        if (isShown) {
+          this.displayModeChangedPath();
+          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        } else {
+          this.displayModeChangedPath(true);
+          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+        }
       });
     sub
       .on('activeLateralMode')
@@ -1550,7 +1564,7 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        this.setText();
       });
     sub
       .on('activeVerticalMode')
@@ -1785,17 +1799,9 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   private handleDeclutterModeLocal(decMode, textRef, textRef2) {
     if (decMode === 2) {
       if (!this.isShown) {
-        clearTimeout(this.delay);
         textRef.instance.style.visibility = 'hidden';
         textRef2.instance.style.visibility = 'hidden';
-      } else {
         clearTimeout(this.delay);
-        textRef.instance.style.visibility = 'visible';
-        textRef2.instance.style.visibility = 'visible';
-        this.delay = setTimeout(() => {
-          textRef.instance.style.visibility = 'hidden';
-          textRef2.instance.style.visibility = 'hidden';
-        }, 9000) as unknown as number;
       }
       this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
     } else {
@@ -1814,6 +1820,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
+        this.isShown = false;
         this.handleDeclutterModeLocal(this.decMode, this.cellTextRef, this.cellTextRef2);
       });
 
@@ -1902,11 +1909,7 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
 
   private handleDeclutterModeLocal(decMode, textRef) {
     if (decMode === 2) {
-      clearTimeout(this.timeout);
-      textRef.instance.style.visibility = 'visible';
-      this.timeout = setTimeout(() => {
-        textRef.instance.style.visibility = 'hidden';
-      }, 9000) as unknown as number;
+      textRef.instance.style.visibility = 'hidden';
     } else {
       textRef.instance.style.visibility = 'visible';
     }
@@ -2008,6 +2011,8 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
+        this.isShown = false;
+        this.displayModeChangedPath();
         this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
       });
 
@@ -2073,9 +2078,13 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
     if (!this.ap1Active && !this.ap2Active && !this.fd1Active && !this.fd2Active) {
       this.isShown = false;
       this.textSub.set('');
+      this.displayModeChangedPath(true);
+      this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
     } else {
       const text = `${this.fd1Active ? '1' : '-'}FD${this.fd2Active ? '2' : '-'}`;
       this.textSub.set(text);
+      this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
     }
   }
 
@@ -2089,6 +2098,7 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
+        this.isShown = false;
         this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
       });
 
@@ -2166,7 +2176,7 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
   private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
   private decMode = 0;
-
+  private className = '';
   private classSub = Subject.create('');
 
   constructor(props: CellProps) {
@@ -2190,6 +2200,17 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
     return className;
   }
 
+  private setText() {
+    this.classSub.set(`FontMedium MiddleAlign ${this.className}`);
+    if (this.className !== 'HiddenElement') {
+      this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+    } else {
+      this.displayModeChangedPath(true);
+      this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -2200,22 +2221,16 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        this.isShown = false;
+        this.setText();
       });
 
     sub
       .on('athrStatus')
       .whenChanged()
       .handle((a) => {
-        const className = this.getClass(a);
-        this.classSub.set(`FontMedium MiddleAlign ${className}`);
-        if (className !== 'HiddenElement') {
-          this.displayModeChangedPath();
-          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
-        } else {
-          this.displayModeChangedPath(true);
-          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
-        }
+        this.className = this.getClass(a);
+        this.setText();
       });
   }
 
