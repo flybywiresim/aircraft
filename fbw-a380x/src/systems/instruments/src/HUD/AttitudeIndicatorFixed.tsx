@@ -8,6 +8,7 @@ import {
   ClockEvents,
   ConsumerSubject,
   MappedSubject,
+  Subscription,
 } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429ConsumerSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
@@ -235,6 +236,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             <FDYawBar bus={this.props.bus} instrument={this.props.instrument} />
           </g>
 
+          <ReverserIndicator bus={this.props.bus} />
           <g id="AircraftReferences">
             <g
               id="AircraftReferenceInAir"
@@ -510,6 +512,160 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
       <g ref={this.declutterModeRef} id="DeclutterModeIndicator">
         <text class="FontMedium  MiddleAlign Green" x="1000" y="900">
           {this.textSub}
+        </text>
+      </g>
+    );
+  }
+}
+
+export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems & ClockEvents>();
+  private revGroupRef = FSComponent.createRef<SVGGElement>();
+  private rev2Ref = FSComponent.createRef<SVGGElement>();
+  private rev3Ref = FSComponent.createRef<SVGGElement>();
+  private rev2TxtRef = FSComponent.createRef<SVGTextElement>();
+  private rev3TxtRef = FSComponent.createRef<SVGTextElement>();
+  private text: string;
+  private readonly eng2State = ConsumerSubject.create(this.sub.on('eng2State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
+  private readonly eng3State = ConsumerSubject.create(this.sub.on('eng3State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
+  private readonly rev2 = ConsumerSubject.create(this.sub.on('rev2').whenChanged(), 0);
+  private readonly rev3 = ConsumerSubject.create(this.sub.on('rev3').whenChanged(), 0);
+  private readonly rev2Pos = ConsumerSubject.create(this.sub.on('rev2Pos'), 0);
+  private readonly rev3Pos = ConsumerSubject.create(this.sub.on('rev3Pos'), 0);
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
+
+  private readonly reverser2State = MappedSubject.create(
+    ([rev2, rev2Pos, eng2State, hudMode]) => {
+      if (hudMode === HudMode.ROLLOUT_OR_RTO) {
+        if (rev2 === 1) {
+          if (eng2State === 1) {
+            if (rev2Pos < 0.95) {
+              return 1; // rev deployement in progress  display dash
+            } else {
+              return 2; // rev on  display R
+            }
+          } else {
+            return 3; // not opperative  display cross
+          }
+        } else {
+          return 0; // show nothing
+        }
+      } else {
+        return 0; // show nothing
+      }
+    },
+    this.rev2,
+    this.rev2Pos,
+    this.eng2State,
+    this.hudMode,
+  );
+  private readonly reverser3State = MappedSubject.create(
+    ([rev3, rev3Pos, eng3State, hudMode]) => {
+      if (hudMode === HudMode.ROLLOUT_OR_RTO || hudMode === HudMode.TAXI) {
+        if (rev3 === 1) {
+          if (eng3State === 1) {
+            if (rev3Pos < 0.95) {
+              return 1; // rev deployement in progress  display dash
+            } else {
+              return 2; // rev on  display R
+            }
+          } else {
+            return 3; // not opperative  display cross
+          }
+        } else {
+          return 0; // show nothing
+        }
+      } else {
+        return 0; // show nothing
+      }
+    },
+    this.rev3,
+    this.rev3Pos,
+    this.eng3State,
+    this.hudMode,
+  );
+
+  private setState(eng: number, state: any) {
+    if (eng === 2) {
+      if (state === 1) {
+        this.rev2Ref.instance.setAttribute('d', 'm 615 290 v -17 h 17 v 17 z');
+        this.rev2Ref.instance.setAttribute('stroke-dasharray', '3 6');
+        this.rev2TxtRef.instance.textContent = '';
+      } else if (state === 2) {
+        this.rev2Ref.instance.setAttribute('d', 'm 615 290 v -17 h 17 v 17 z');
+        this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
+        this.rev2TxtRef.instance.textContent = 'R';
+      } else if (state === 3) {
+        this.rev2Ref.instance.setAttribute('d', 'm 615 290 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+        this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
+        this.rev2TxtRef.instance.textContent = '';
+      } else {
+        this.rev2Ref.instance.setAttribute('d', '');
+        this.rev2TxtRef.instance.textContent = '';
+      }
+    }
+    if (eng === 3) {
+      if (state === 1) {
+        this.rev3Ref.instance.setAttribute('d', 'm 648 290 v -17 h 17 v 17 z');
+        this.rev3Ref.instance.setAttribute('stroke-dasharray', '3 6');
+        this.rev3TxtRef.instance.textContent = '';
+      } else if (state === 2) {
+        this.rev3Ref.instance.setAttribute('d', 'm 648 290 v -17 h 17 v 17 z');
+        this.rev3Ref.instance.setAttribute('stroke-dasharray', '');
+        this.rev3TxtRef.instance.textContent = 'R';
+      } else if (state === 3) {
+        this.rev3Ref.instance.setAttribute('d', 'm 648 290 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+        this.rev3Ref.instance.setAttribute('stroke-dasharray', '');
+        this.rev3TxtRef.instance.textContent = '';
+      } else {
+        this.rev3Ref.instance.setAttribute('d', '');
+        this.rev3TxtRef.instance.textContent = '';
+      }
+    }
+  }
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+    this.subscriptions.push(
+      this.eng2State,
+      this.eng3State,
+      this.rev2,
+      this.rev3,
+      this.rev2Pos,
+      this.rev3Pos,
+      this.hudMode,
+    );
+
+    this.subscriptions.push(
+      this.reverser2State.sub((state) => {
+        this.setState(2, state);
+      }),
+    );
+    this.subscriptions.push(
+      this.reverser3State.sub((state) => {
+        this.setState(3, state);
+      }),
+    );
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
+  render(): VNode | null {
+    return (
+      <g id="ReverseIndicator" ref={this.revGroupRef}>
+        <path ref={this.rev2Ref} class="NormalStroke Green " d="" />
+        <text ref={this.rev2TxtRef} x="623.5" y="288 " class="FontForAnts MiddleAlign Green ">
+          {this.text}
+        </text>
+        <path ref={this.rev3Ref} class="NormalStroke Green " d="" />
+        <text ref={this.rev3TxtRef} x="656.5" y="288 " class="FontForAnts MiddleAlign Green ">
+          {this.text}
         </text>
       </g>
     );
