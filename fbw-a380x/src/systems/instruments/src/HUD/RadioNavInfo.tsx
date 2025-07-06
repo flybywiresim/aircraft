@@ -21,22 +21,30 @@ import { GenericFcuEvents } from '../../../../../../fbw-common/src/systems/instr
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { VerticalMode } from '@shared/autopilot';
+import { HudElems, HudMode } from './HUDUtils';
 
 export class RadioNavInfo extends DisplayComponent<{ bus: EventBus; index: 1 | 2 }> {
-  private readonly sub = this.props.bus.getSubscriber<GenericFcuEvents & HUDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<GenericFcuEvents & HUDSimvars & HudElems>();
   private readonly isVor = Subject.create(true);
 
   private readonly isAdf = Subject.create(true);
   private readonly activeVerticalModeSub = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
   private readonly fmgcFlightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0);
   private readonly isVisible = MappedSubject.create(
-    ([activeVerticalModeSub, fmgcFlightPhase]) => {
-      return fmgcFlightPhase === FmgcFlightPhase.Approach && activeVerticalModeSub === VerticalMode.FPA
-        ? 'block'
-        : 'none';
+    ([activeVerticalModeSub, fmgcFlightPhase, hudMode]) => {
+      if (hudMode === HudMode.NORMAL) {
+        return fmgcFlightPhase === FmgcFlightPhase.Approach &&
+          (activeVerticalModeSub === VerticalMode.NONE || activeVerticalModeSub === VerticalMode.FPA)
+          ? 'block'
+          : 'none';
+      } else {
+        return 'none';
+      }
     },
     this.activeVerticalModeSub,
     this.fmgcFlightPhase,
+    this.hudMode,
   );
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
