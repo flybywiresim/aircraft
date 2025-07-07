@@ -10,31 +10,31 @@ export class CDUEquitimePointPage {
 
     const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
 
-    const airport1IdentColumn = new Column(0, '[    ]', Column.cyan, Column.big);
-    const airport1BrgColumn = new Column(9, '---', Column.white, Column.big);
-    const airport1DistColumn = new Column(18, '----', Column.white, Column.big, Column.right);
-    const airport1UtcColumn = new Column(20, '----', Column.white, Column.big);
+    const ref1IdentColumn = new Column(0, '[    ]', Column.cyan, Column.big);
+    const ref1BrgColumn = new Column(9, '---', Column.white, Column.big);
+    const ref1DistColumn = new Column(18, '----', Column.white, Column.big, Column.right);
+    const ref1UtcColumn = new Column(20, '----', Column.white, Column.big);
 
-    const trueWindAirport1LabelColumn = new Column(0, '', Column.white, Column.small);
-    const etpToAirport1LabelColumn = new Column(10, '', Column.white, Column.small);
+    const trueWindRef1LabelColumn = new Column(0, '', Column.white, Column.small);
+    const etpToRef1LabelColumn = new Column(10, '', Column.white, Column.small);
 
-    const trueWindAirport1Column = new Column(0, '', Column.cyan, Column.big);
-    const etpToAirport1BrgColumn = new Column(9, '', Column.green, Column.small);
-    const etpToAirport1DistColumn = new Column(18, '', Column.green, Column.small, Column.right);
-    const etpToAirport1UtcColumn = new Column(20, '', Column.green, Column.small);
+    const trueWindRef1Column = new Column(0, '', Column.cyan, Column.big);
+    const etpToRef1BrgColumn = new Column(9, '', Column.green, Column.small);
+    const etpToRef1DistColumn = new Column(18, '', Column.green, Column.small, Column.right);
+    const etpToRef1UtcColumn = new Column(20, '', Column.green, Column.small);
 
-    const airport2IdentColumn = new Column(0, '[    ]', Column.cyan, Column.big);
-    const airport2BrgColumn = new Column(9, '---', Column.white, Column.big);
-    const airport2DistColumn = new Column(18, '----', Column.white, Column.big, Column.right);
-    const airport2UtcColumn = new Column(20, '----', Column.white, Column.big);
+    const ref2IdentColumn = new Column(0, '[    ]', Column.cyan, Column.big);
+    const ref2BrgColumn = new Column(9, '---', Column.white, Column.big);
+    const ref2DistColumn = new Column(18, '----', Column.white, Column.big, Column.right);
+    const ref2UtcColumn = new Column(20, '----', Column.white, Column.big);
 
-    const trueWindAirport2LabelColumn = new Column(0, '', Column.white, Column.small);
-    const etpToAirport2LabelColumn = new Column(10, '', Column.white, Column.small);
+    const trueWindRef2LabelColumn = new Column(0, '', Column.white, Column.small);
+    const etpToRef2LabelColumn = new Column(10, '', Column.white, Column.small);
 
-    const trueWindAirport2Column = new Column(0, '', Column.cyan, Column.big);
-    const etpToAirport2BrgColumn = new Column(9, '', Column.green, Column.small);
-    const etpToAirport2DistColumn = new Column(18, '', Column.green, Column.small, Column.right);
-    const etpToAirport2UtcColumn = new Column(20, '', Column.green, Column.small);
+    const trueWindRef2Column = new Column(0, '', Column.cyan, Column.big);
+    const etpToRef2BrgColumn = new Column(9, '', Column.green, Column.small);
+    const etpToRef2DistColumn = new Column(18, '', Column.green, Column.small, Column.right);
+    const etpToRef2UtcColumn = new Column(20, '', Column.green, Column.small);
 
     const etpLocationLabelColumn = new Column(11, '', Column.white, Column.small);
 
@@ -51,34 +51,34 @@ export class CDUEquitimePointPage {
     };
 
     if (showDetail) {
-      const airport1Ident = 'CYYR';
-      const airport2Ident = 'KBGR';
+      const ref1Ident = 'CYYR';
+      const ref2Ident = 'KBGR';
 
-      airport1IdentColumn.update(airport1Ident, Column.cyan);
-      airport1BrgColumn.update('305°T', Column.green);
-      airport1DistColumn.update('336', Column.green);
-      airport1UtcColumn.update('1936', Column.green);
+      ref1IdentColumn.update(ref1Ident, Column.cyan);
+      ref1BrgColumn.update('305°T', Column.green);
+      ref1DistColumn.update('336', Column.green);
+      ref1UtcColumn.update('1936', Column.green);
 
-      trueWindAirport1LabelColumn.update('TRU WIND');
-      etpToAirport1LabelColumn.update(`ETP TO ${airport1Ident}`);
+      trueWindRef1LabelColumn.update('TRU WIND');
+      etpToRef1LabelColumn.update(`ETP TO ${ref1Ident}`);
 
-      trueWindAirport1Column.update('190°/048');
-      etpToAirport1BrgColumn.update('010°T', Column.green);
-      etpToAirport1DistColumn.update('367', Column.green);
-      etpToAirport1UtcColumn.update('1839', Column.green);
+      trueWindRef1Column.update('190°/048');
+      etpToRef1BrgColumn.update('010°T', Column.green);
+      etpToRef1DistColumn.update('367', Column.green);
+      etpToRef1UtcColumn.update('1839', Column.green);
 
-      airport2IdentColumn.update(airport2Ident, Column.cyan);
-      airport2BrgColumn.update('249°T', Column.green);
-      airport2DistColumn.update('729', Column.green);
-      airport2UtcColumn.update('1834', Column.green);
+      ref2IdentColumn.update(ref2Ident, Column.cyan);
+      ref2BrgColumn.update('249°T', Column.green);
+      ref2DistColumn.update('729', Column.green);
+      ref2UtcColumn.update('1834', Column.green);
 
-      trueWindAirport2LabelColumn.update('TRU WIND');
-      etpToAirport2LabelColumn.update(`ETP TO ${airport2Ident}`);
+      trueWindRef2LabelColumn.update('TRU WIND');
+      etpToRef2LabelColumn.update(`ETP TO ${ref2Ident}`);
 
-      trueWindAirport2Column.update('[ ]°/[ ]');
-      etpToAirport2BrgColumn.update('244°T', Column.green);
-      etpToAirport2DistColumn.update('317', Column.green);
-      etpToAirport2UtcColumn.update('1839', Column.green);
+      trueWindRef2Column.update('[ ]°/[ ]');
+      etpToRef2BrgColumn.update('244°T', Column.green);
+      etpToRef2DistColumn.update('317', Column.green);
+      etpToRef2UtcColumn.update('1839', Column.green);
 
       etpLocationLabelColumn.update('ETP LOCATION');
       etpLocationLegColumn.update('CONAY');
@@ -100,13 +100,13 @@ export class CDUEquitimePointPage {
           new Column(18, 'DIST', Column.white, Column.small, Column.right),
           new Column(20, 'UTC', Column.white, Column.small),
         ],
-        [airport1IdentColumn, airport1BrgColumn, airport1DistColumn, airport1UtcColumn],
-        [trueWindAirport1LabelColumn, etpToAirport1LabelColumn],
-        [trueWindAirport1Column, etpToAirport1BrgColumn, etpToAirport1DistColumn, etpToAirport1UtcColumn],
+        [ref1IdentColumn, ref1BrgColumn, ref1DistColumn, ref1UtcColumn],
+        [trueWindRef1LabelColumn, etpToRef1LabelColumn],
+        [trueWindRef1Column, etpToRef1BrgColumn, etpToRef1DistColumn, etpToRef1UtcColumn],
         [],
-        [airport2IdentColumn, airport2BrgColumn, airport2DistColumn, airport2UtcColumn],
-        [trueWindAirport2LabelColumn, etpToAirport2LabelColumn],
-        [trueWindAirport2Column, etpToAirport2BrgColumn, etpToAirport2DistColumn, etpToAirport2UtcColumn],
+        [ref2IdentColumn, ref2BrgColumn, ref2DistColumn, ref2UtcColumn],
+        [trueWindRef2LabelColumn, etpToRef2LabelColumn],
+        [trueWindRef2Column, etpToRef2BrgColumn, etpToRef2DistColumn, etpToRef2UtcColumn],
         [etpLocationLabelColumn],
         [etpLocationLegColumn, etpLocationLegDistanceColumn],
         [acToLabelColumn, new Column(15, 'DIST'), new Column(20, 'UTC')],
