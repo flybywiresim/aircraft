@@ -499,7 +499,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
 
   render(): VNode {
     return (
-      <g id="YawLocSymbolsGroup" transform="scale(2.5 2.5) translate(187 0)">
+      <g id="YawLocSymbolsGroup" transform="scale(2.5 2.5) translate(187 65)">
         <g ref={this.LSLocRef}>
           <path
             class="NormalStroke Green"
