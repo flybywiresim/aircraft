@@ -15,7 +15,13 @@ import {
   Subscription,
   ConsumerSubject,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429WordData,
+  Arinc429RegisterSubject,
+  Arinc429ConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -78,51 +84,44 @@ export class AirspeedIndicator extends DisplayComponent<{
 }
 
 class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly subscriptions: Subscription[] = [];
+  private sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
   private offsetSub = Subject.create('translate3d(0px, 0px, 0px)');
 
-  private visibilitySub = Subject.create('hidden');
+  private readonly speedAr = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+  private readonly flightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+  private readonly v1Speed = ConsumerSubject.create(this.sub.on('v1'), 0);
 
-  private flightPhase = 0;
-
-  private v1Speed = 0;
+  private readonly isV1BugVisible = MappedSubject.create(
+    ([speed, flightPhase, v1Spd]) => {
+      this.getV1Offset();
+      return flightPhase <= 4 && v1Spd !== 0 && Math.abs(speed.value - v1Spd) < DisplayRange ? 'visible' : 'hidden';
+    },
+    this.speedAr,
+    this.flightPhase,
+    this.v1Speed,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const pf = this.props.bus.getSubscriber<HUDSimvars>();
-
-    pf.on('v1')
-      .whenChanged()
-      .handle((g) => {
-        this.v1Speed = g;
-        this.getV1Offset();
-        this.getV1Visibility();
-      });
-
-    pf.on('fwcFlightPhase')
-      .whenChanged()
-      .handle((g) => {
-        this.flightPhase = g;
-        this.getV1Visibility();
-      });
+    this.subscriptions.push(this.speedAr, this.flightPhase, this.v1Speed);
   }
 
   private getV1Offset() {
-    const offset = (-this.v1Speed * DistanceSpacing) / ValueSpacing;
+    const offset = (-this.v1Speed.get() * DistanceSpacing) / ValueSpacing;
     this.offsetSub.set(`transform:translate3d(0px, ${offset}px, 0px)`);
   }
 
-  private getV1Visibility() {
-    if (this.flightPhase <= 4 && this.v1Speed !== 0) {
-      this.visibilitySub.set('visible');
-    } else {
-      this.visibilitySub.set('hidden');
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
     }
+    super.destroy();
   }
 
   render(): VNode {
     return (
-      <g id="V1BugGroup" style={this.offsetSub} visibility={this.visibilitySub}>
+      <g id="V1BugGroup" style={this.offsetSub} visibility={this.isV1BugVisible}>
         <path class="ScaledStroke Green" d="m16.613 80.82h5.4899" />
         <text class="FontMediumSmaller MiddleAlign Green" x="26.205544" y="82.96">
           1
@@ -133,52 +132,44 @@ class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 class VRBugElement extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly subscriptions: Subscription[] = [];
+  private sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
   private offsetSub = Subject.create('');
 
-  private visibilitySub = Subject.create('hidden');
+  private readonly speedAr = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+  private readonly flightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+  private readonly vrSpeed = ConsumerSubject.create(this.sub.on('vr'), 0);
 
-  private flightPhase = 0;
-
-  private vrSpeed = 0;
-
+  private readonly isVrBugVisible = MappedSubject.create(
+    ([speed, flightPhase, vrSpeed]) => {
+      this.getVrOffset();
+      return flightPhase <= 4 && vrSpeed !== 0 && Math.abs(speed.value - vrSpeed) < DisplayRange ? 'visible' : 'hidden';
+    },
+    this.speedAr,
+    this.flightPhase,
+    this.vrSpeed,
+  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const pf = this.props.bus.getSubscriber<HUDSimvars>();
-
-    pf.on('vr')
-      .whenChanged()
-      .handle((g) => {
-        this.vrSpeed = g;
-        this.getVrOffset();
-        this.getVrVisibility();
-      });
-
-    pf.on('fwcFlightPhase')
-      .whenChanged()
-      .handle((g) => {
-        this.flightPhase = g;
-        this.getVrVisibility();
-      });
+    this.subscriptions.push(this.speedAr, this.flightPhase, this.vrSpeed);
   }
 
   private getVrOffset() {
-    const offset = (-this.vrSpeed * DistanceSpacing) / ValueSpacing;
+    const offset = (-this.vrSpeed.get() * DistanceSpacing) / ValueSpacing;
     this.offsetSub.set(`translate(0 ${offset})`);
   }
 
-  private getVrVisibility() {
-    if (this.flightPhase <= 4 && this.vrSpeed !== 0) {
-      this.visibilitySub.set('visible');
-    } else {
-      this.visibilitySub.set('hidden');
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
     }
+    super.destroy();
   }
 
   render(): VNode {
     return (
       <path
-        visibility={this.visibilitySub}
+        visibility={this.isVrBugVisible}
         transform={this.offsetSub}
         id="RotateSpeedMarker"
         class="ScaledStroke Green"
@@ -391,6 +382,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
                 displayRange={21 + 3}
                 distanceSpacing={DistanceSpacing}
                 type="speed"
+                bus={this.props.bus}
               >
                 <V1BugElement bus={this.props.bus} />
                 <VRBugElement bus={this.props.bus} />
@@ -437,6 +429,7 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
               displayRange={42 + 3}
               distanceSpacing={DistanceSpacing}
               type="speed"
+              bus={this.props.bus}
             >
               <V1BugElement bus={this.props.bus} />
               <VRBugElement bus={this.props.bus} />
@@ -1861,6 +1854,7 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
   private fcdcWord1 = new Arinc429Word(0);
 
   private Vmax = new Arinc429Word(0);
+  private currentSpeed = new Arinc429Word(0);
 
   private handleVProtBugDisplay() {
     const showVProt = this.Vmax.value > 240 && this.Vmax.isNormalOperation();
@@ -1868,7 +1862,7 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
 
     const isNormalLawActive = this.fcdcWord1.bitValue(11) && !this.fcdcWord1.isFailureWarning();
 
-    if (showVProt && isNormalLawActive) {
+    if (showVProt && isNormalLawActive && Math.abs(this.currentSpeed.value - this.Vmax.value) < DisplayRange) {
       this.vProtBug.instance.style.display = 'block';
       this.vProtBug.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
     } else {
@@ -1878,7 +1872,7 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
 
     sub
       .on('vMax')
@@ -1897,6 +1891,10 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
 
         this.handleVProtBugDisplay();
       });
+    sub
+      .on('speedAr')
+      .withArinc429Precision(2)
+      .handle((s) => (this.currentSpeed = s));
   }
 
   render(): VNode {

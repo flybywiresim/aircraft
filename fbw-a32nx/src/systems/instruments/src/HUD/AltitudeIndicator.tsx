@@ -200,15 +200,16 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
   private subscribable = Subject.create<number>(0);
 
   private tapeRef = FSComponent.createRef<HTMLDivElement>();
-  private normalOps = false;
   private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & FcuBus & HudElems>();
 
+  private readonly altitudeAr = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
   private readonly cWndMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
   private readonly altTape = ConsumerSubject.create(this.sub.on('altTape').whenChanged(), '');
   private readonly xWindAltTape = ConsumerSubject.create(this.sub.on('xWindAltTape').whenChanged(), '');
   private readonly isTapeVisible = MappedSubject.create(
-    ([alt, xwndAlt]) => {
-      if (this.normalOps === true) {
+    ([alt, xwndAlt, altitudeAr]) => {
+      if (altitudeAr.isNormalOperation()) {
+        this.subscribable.set(altitudeAr.value);
         return alt === 'block' || xwndAlt === 'block' ? 'block' : 'none';
       } else {
         return 'none';
@@ -216,6 +217,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     },
     this.altTape,
     this.xWindAltTape,
+    this.altitudeAr,
   );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -231,19 +233,6 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
         this.tapeRef.instance.style.transform = `translate3d(0px, 0px, 0px)`;
       }
     });
-    this.subscriptions.push(
-      this.sub
-        .on('altitudeAr')
-        .whenChanged()
-        .handle((a) => {
-          if (a.isNormalOperation()) {
-            this.subscribable.set(a.value);
-            this.normalOps = true;
-          } else {
-            this.normalOps = false;
-          }
-        }),
-    );
   }
 
   destroy(): void {
@@ -267,6 +256,7 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
             upperLimit={50000}
             tapeValue={this.subscribable}
             type="altitude"
+            bus={this.props.bus}
           />
         </g>
       </g>

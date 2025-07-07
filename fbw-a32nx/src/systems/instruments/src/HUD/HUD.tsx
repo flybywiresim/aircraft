@@ -286,7 +286,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               id="Mask3Cw"
               class="BackgroundFill"
               display={this.xWindAltTape}
-              d="M 1038 0 h 122 v 1024 h -122 Z  M 1039 284 v 90 h 120 v -90z"
+              d="M 1038 250 h 122 v 160h -122 Z  M 1039 284 v 90 h 120 v -90z"
             />
           </g>
 

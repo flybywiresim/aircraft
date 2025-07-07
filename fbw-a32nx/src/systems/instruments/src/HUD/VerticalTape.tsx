@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, NodeReference, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { HudElems } from './HUDUtils';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 interface VerticalTapeProps {
   displayRange: number;
@@ -12,13 +14,14 @@ interface VerticalTapeProps {
   lowerLimit: number;
   upperLimit: number;
   type: 'altitude' | 'speed';
+  bus: ArincEventBus;
 }
 
 export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
   private refElement = FSComponent.createRef<SVGGElement>();
-
+  private readonly sub = this.props.bus.getArincSubscriber<HudElems>();
   private tickRefs: NodeReference<SVGGElement>[] = [];
-
+  private crosswindMode = false;
   private buildSpeedGraduationPoints(): NodeReference<SVGGElement>[] {
     const numTicks = Math.round((this.props.displayRange * 2) / this.props.valueSpacing);
 
@@ -106,6 +109,12 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.sub
+      .on('cWndMode')
+      .whenChanged()
+      .handle((value) => {
+        this.crosswindMode = value;
+      });
 
     this.props.tapeValue.sub((newValue) => {
       const multiplier = 100;
@@ -122,7 +131,6 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
       if (lowestValue < currentValueAtPrecision - this.props.displayRange) {
         lowestValue += this.props.valueSpacing;
       }
-
       for (let i = 0; i < this.tickRefs.length; i++) {
         const elementValue = lowestValue + i * this.props.valueSpacing;
         if (elementValue <= (this.props.upperLimit ?? Infinity)) {
@@ -145,6 +153,9 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                   this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
                   this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
                 }
+              } else {
+                this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
+                this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
               }
             } else if (this.props.type === 'altitude') {
               if (elementValue % 500 === 0) {
@@ -152,6 +163,17 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                 this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
               } else {
                 this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
+              }
+
+              if (this.crosswindMode) {
+                if (Math.abs(currentValueAtPrecision - elementValue) > 200) {
+                  this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
+                  this.tickRefs[i].instance.getElementsByTagName('path')[1].classList.add('HiddenElement');
+                  this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.add('HiddenElement');
+                }
+              } else {
+                this.tickRefs[i].instance.getElementsByTagName('path')[1].classList.remove('HiddenElement');
+                this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
               }
             }
 
@@ -161,7 +183,6 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
           }
         }
       }
-
       this.refElement.instance.style.transform = `translate3d(0px, ${(clampedValue * this.props.distanceSpacing) / this.props.valueSpacing}px, 0px)`;
     }, true);
   }
