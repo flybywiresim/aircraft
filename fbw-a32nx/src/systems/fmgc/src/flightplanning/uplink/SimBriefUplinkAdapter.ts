@@ -154,9 +154,6 @@ export class SimBriefUplinkAdapter {
       pilotTropopause: Number.isFinite(tropopause) ? tropopause : undefined,
     });
 
-    // used by FlightPhaseManager
-    SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
-
     plan.setFlightNumber(route.callsign);
 
     let insertHead = -1;

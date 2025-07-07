@@ -19,6 +19,7 @@ export class CDUProgressPage {
     const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
 
     const flightNo = plan.flightNumber ?? '';
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
     const flMax = mcdu.getMaxFlCorrected();
     const flOpt =
       plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null &&
@@ -33,21 +34,21 @@ export class CDUProgressPage {
     switch (mcdu.flightPhaseManager.phase) {
       case FmgcFlightPhase.Preflight:
       case FmgcFlightPhase.Takeoff: {
-        if (mcdu.cruiseLevel) {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+        if (cruiseLevel) {
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }
       case FmgcFlightPhase.Climb: {
         const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue('feet') / 100);
         const altCtn = Math.round(mcdu.constraintAlt / 100);
-        if (!mcdu.cruiseLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
+        if (!cruiseLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
           flCrz =
             'FL' +
             (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, '0') : alt.toFixed(0).padStart(3, '0')) +
             '[color]cyan';
         } else {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }
@@ -56,8 +57,8 @@ export class CDUProgressPage {
         // We can get here by taking off without FROM/TO entered, and climbing to the FCU altitude (which will then be used as cruise altitude)
         // to enter the cruise phase. We then enter a new FROM/TO which resets the cruise altitude, but I don't know if it puts us in the CLB phase
         // or keeps us in CRZ.
-        if (mcdu.cruiseLevel) {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+        if (cruiseLevel) {
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }

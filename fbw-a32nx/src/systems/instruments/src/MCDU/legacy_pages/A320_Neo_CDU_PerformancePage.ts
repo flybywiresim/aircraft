@@ -455,12 +455,15 @@ export class CDUPerformancePage {
     // Predictions to altitude
     const vnavDriver = mcdu.guidanceController.vnavDriver;
 
-    const cruiseAltitude = mcdu.cruiseLevel * 100;
+    const cruiseLevel = targetPlan.performanceData.cruiseFlightLevel.get();
+    const cruiseAltitude = cruiseLevel !== null ? cruiseLevel * 100 : null;
     const fcuAltitude = SimVar.GetSimVarValue('AUTOPILOT ALTITUDE LOCK VAR:3', 'feet');
     const altitudeToPredict =
       mcdu.perfClbPredToAltitudePilot !== undefined
         ? mcdu.perfClbPredToAltitudePilot
-        : Math.min(cruiseAltitude, fcuAltitude);
+        : cruiseAltitude !== null
+          ? Math.min(cruiseAltitude, fcuAltitude)
+          : fcuAltitude;
 
     const shouldShowPredTo = isActivePlan && isTakeoffOrClimbActive;
     const shouldShowExpedite = isActivePlan && isPhaseActive;
@@ -526,6 +529,7 @@ export class CDUPerformancePage {
       isPhaseActive,
       isSelected,
       targetPlan.performanceData.preselectedClimbSpeed.get(),
+      targetPlan.performanceData.cruiseFlightLevel.get(),
     );
 
     if (hasFromToPair) {
@@ -550,7 +554,7 @@ export class CDUPerformancePage {
 
     if (shouldShowPredTo) {
       mcdu.onRightInput[1] = (value, scratchpadCallback) => {
-        if (mcdu.trySetPerfClbPredToAltitude(value)) {
+        if (mcdu.trySetPerfClbPredToAltitude(value, cruiseLevel)) {
           CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         } else {
           scratchpadCallback();
@@ -703,8 +707,9 @@ export class CDUPerformancePage {
 
     const desCabinRateCell = shouldShowCabinRate ? '{small}-350{end}' : '';
 
+    const cruiseLevel = targetPlan.performanceData.cruiseFlightLevel.get();
     const shouldShowStepAltsOption =
-      mcdu.cruiseLevel &&
+      cruiseLevel &&
       (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Descent ||
         mcdu.flightPhaseManager.phase > FmgcFlightPhase.GoAround);
 
@@ -1359,6 +1364,7 @@ export class CDUPerformancePage {
     mcdu: LegacyFmsPageInterface,
     isPhaseActive: boolean,
     isSelected: boolean,
+    cruiseLevel: number | null,
     preSel?: number,
   ) {
     if (!isPhaseActive) {
@@ -1379,7 +1385,7 @@ export class CDUPerformancePage {
       const manualCrossoverAltitude = mcdu.computeManualCrossoverAltitude(machAtManualCrossoverAlt);
       const shouldShowMach =
         aircraftAltitude < manualCrossoverAltitude &&
-        (!mcdu.cruiseLevel || manualCrossoverAltitude < mcdu.cruiseLevel * 100);
+        (cruiseLevel === null || manualCrossoverAltitude < cruiseLevel * 100);
 
       return [
         'SELECTED',

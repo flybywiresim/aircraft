@@ -193,16 +193,17 @@ export class CDUAirportsMonitor {
     const fobT = mcdu.getFOB(FlightPlanIndex.Active);
     const fobLb = UnitType.POUND.convertFrom(fobT ?? 0, UnitType.TONNE);
     const sat = mcdu.navigation?.getStaticAirTemperature() ?? null;
+    const cruiseLevel = mcdu.flightPlanService.active?.performanceData.cruiseFlightLevel.get() ?? null;
 
     const doCruisePreds =
       mcdu.flightPhaseManager.phase === FmgcFlightPhase.Cruise &&
-      mcdu.cruiseLevel !== null &&
+      cruiseLevel !== null &&
       isFinite(mcdu.zeroFuelWeight) &&
       fobT !== undefined &&
       zfwLb > 0 &&
       sat !== null;
 
-    const isaDev = doCruisePreds ? sat - mcdu.getIsaTemp(mcdu.cruiseLevel * 100) : 0;
+    const isaDev = doCruisePreds ? sat - mcdu.getIsaTemp(cruiseLevel * 100) : 0;
 
     for (const rowData of this.airportRows) {
       if (ppos && rowData.airport) {
@@ -210,7 +211,7 @@ export class CDUAirportsMonitor {
         rowData.distance = distanceTo(ppos, rowData.airport.location);
 
         if (doCruisePreds) {
-          const desAlt = mcdu.cruiseLevel * 100 - (rowData.airport.location.alt ?? 0);
+          const desAlt = cruiseLevel * 100 - (rowData.airport.location.alt ?? 0);
           const desFuelCoef = 0.412;
           const desBurn = (desFuelCoef * desAlt) / 41000;
           const desDistCoef = 123;
@@ -223,7 +224,7 @@ export class CDUAirportsMonitor {
           const cruiseDist = Math.max(0, rowData.distance - desDist);
           const cruisePerf = Predictions.levelFlightStep(
             A320AircraftConfig,
-            mcdu.cruiseLevel * 100,
+            cruiseLevel * 100,
             cruiseDist,
             cruiseCas,
             cruiseMach,

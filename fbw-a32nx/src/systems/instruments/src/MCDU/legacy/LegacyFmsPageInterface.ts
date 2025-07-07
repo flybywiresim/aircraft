@@ -216,7 +216,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getNavModeSpeedConstraint(): number;
   trySetPreSelectedClimbSpeed(s: string, forPlan: FlightPlanIndex): boolean;
   tryUpdateCostIndex(costIndex: string, forPlan: FlightPlanIndex): boolean;
-  trySetPerfClbPredToAltitude(value: string): boolean;
+  trySetPerfClbPredToAltitude(value: string, cruiseLevel: number | null): boolean;
   trySetPreSelectedCruiseSpeed(s: string, forPlan: FlightPlanIndex): boolean;
   trySetPerfDesPredToAltitude(value: string): boolean;
   trySetManagedDescentSpeed(value: string, forPlan: FlightPlanIndex): boolean;
@@ -280,7 +280,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   simbrief: any;
   /** @deprecated */
   costIndex: number | undefined;
-  cruiseLevel: number | undefined;
   casToMachManualCrossoverCurve: any;
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;

@@ -50,7 +50,6 @@ export interface Fmgc {
   getAccelerationAltitude(): Feet;
   getThrustReductionAltitude(): Feet;
   getOriginTransitionAltitude(): Feet | undefined;
-  getCruiseAltitude(): Feet;
   getFlightPhase(): FmgcFlightPhase;
   getManagedCruiseSpeed(): Knots;
   getManagedCruiseSpeedMach(): Mach;

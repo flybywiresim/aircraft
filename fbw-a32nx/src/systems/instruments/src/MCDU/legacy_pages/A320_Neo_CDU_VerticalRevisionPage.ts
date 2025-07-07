@@ -185,7 +185,7 @@ export class CDUVerticalRevisionPage {
       [r4Title, r4Cell] = this.formatAltErrorTitleAndValue(waypoint, verticalWaypoint);
 
       if (
-        mcdu.cruiseLevel &&
+        performanceData.cruiseFlightLevel.get() &&
         (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Descent ||
           mcdu.flightPhaseManager.phase > FmgcFlightPhase.GoAround)
       ) {
@@ -478,7 +478,7 @@ export class CDUVerticalRevisionPage {
       CDUWindPage.ShowPage(mcdu);
     }; // WIND
     mcdu.onRightInput[4] = () => {
-      if (!mcdu.cruiseLevel) {
+      if (!performanceData.cruiseFlightLevel.get()) {
         return;
       }
       CDUStepAltsPage.Return = () => {
