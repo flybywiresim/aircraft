@@ -329,6 +329,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord3[2];
+  std::unique_ptr<LocalVariable> idLgciuDiscreteWord4[2];
 
   // SFCC inputs
   std::unique_ptr<LocalVariable> idSfccSlatFlapComponentStatusWord;
