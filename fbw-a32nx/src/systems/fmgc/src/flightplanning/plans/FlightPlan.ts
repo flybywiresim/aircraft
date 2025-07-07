@@ -72,7 +72,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan<P> {
-    const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone(options));
+    const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone());
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan, options);

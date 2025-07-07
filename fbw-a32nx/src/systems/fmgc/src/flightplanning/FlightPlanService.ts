@@ -106,12 +106,18 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async secondaryCopyFromActive(index: number, isBeforeEngineStart: boolean) {
-    const options =
-      CopyOptions.CopyPredictions | CopyOptions.ActiveToSec | (isBeforeEngineStart ? CopyOptions.BeforeEngineStart : 0);
+    this.flightPlanManager.copy(
+      FlightPlanIndex.Active,
+      FlightPlanIndex.FirstSecondary + (index - 1),
+      CopyOptions.CopyPredictions,
+    );
 
-    this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.FirstSecondary + (index - 1), options);
+    const active = this.active;
+    const sec = this.secondary(index);
 
-    this.secondary(index).flags |= FlightPlanFlags.CopiedFromActive;
+    active.performanceData.pipeTo(sec.performanceData, isBeforeEngineStart);
+
+    sec.flags |= FlightPlanFlags.CopiedFromActive;
   }
 
   async secondaryDelete(index: number) {

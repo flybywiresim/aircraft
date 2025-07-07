@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { BitFlags, MappedSubject, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
-import { CopyOptions } from '../CloningOptions';
+import { MappedSubject, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 export interface FlightPlanPerformanceData {
   /**
@@ -480,11 +479,13 @@ export interface FlightPlanPerformanceData {
    */
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
 
-  clone(options?: CopyOptions): this;
+  clone(): this;
 
   destroy(): void;
 
   hasSubscription(key: string): boolean;
+
+  pipeTo(other: FlightPlanPerformanceData, isBeforeEngineStart: boolean): void;
 }
 
 export type FlightPlanPerformanceDataProperties = {
@@ -498,7 +499,7 @@ export type FlightPlanPerformanceDataProperties = {
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
   private readonly subscriptions: Map<keyof FlightPlanPerformanceDataProperties & string, Subscription> = new Map();
 
-  public clone(options: CopyOptions = CopyOptions.Default): this {
+  public clone(): this {
     const cloned = new A320FlightPlanPerformanceData();
 
     cloned.v1.set(this.v1.get());
@@ -585,37 +586,37 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
 
-    if (BitFlags.isAll(options, CopyOptions.ActiveToSec)) {
-      cloned.pipe('cruiseFlightLevel', this.cruiseFlightLevel, cloned.cruiseFlightLevel);
-      cloned.pipe('cruiseTemperature', this.cruiseTemperature, cloned.cruiseTemperature);
-      cloned.pipe('pilotTropopause', this.pilotTropopause, cloned.pilotTropopause);
-      cloned.pipe('costIndex', this.costIndex, cloned.costIndex);
-      cloned.pipe('pilotRouteReserveFuel', this.pilotRouteReserveFuel, cloned.pilotRouteReserveFuel);
-      cloned.pipe(
-        'pilotRouteReserveFuelPercentage',
-        this.pilotRouteReserveFuelPercentage,
-        cloned.pilotRouteReserveFuelPercentage,
-      );
-      cloned.pipe('pilotFinalHoldingFuel', this.pilotFinalHoldingFuel, cloned.pilotFinalHoldingFuel);
-      cloned.pipe('pilotFinalHoldingTime', this.pilotFinalHoldingTime, cloned.pilotFinalHoldingTime);
-
-      if (BitFlags.isAll(options, CopyOptions.BeforeEngineStart)) {
-        cloned.pipe('zeroFuelWeight', this.zeroFuelWeight, cloned.zeroFuelWeight);
-        cloned.pipe(
-          'zeroFuelWeightCenterOfGravity',
-          this.zeroFuelWeightCenterOfGravity,
-          cloned.zeroFuelWeightCenterOfGravity,
-        );
-        cloned.pipe(
-          'pilotMinimumDestinationFuelOnBoard',
-          this.pilotMinimumDestinationFuelOnBoard,
-          cloned.pilotMinimumDestinationFuelOnBoard,
-        );
-        cloned.pipe('blockFuel', this.blockFuel, cloned.blockFuel);
-      }
-    }
-
     return cloned as this;
+  }
+
+  pipeTo(other: A320FlightPlanPerformanceData, isBeforeEngineStart: boolean): void {
+    other.pipe('cruiseFlightLevel', this.cruiseFlightLevel, other.cruiseFlightLevel);
+    other.pipe('cruiseTemperature', this.cruiseTemperature, other.cruiseTemperature);
+    other.pipe('pilotTropopause', this.pilotTropopause, other.pilotTropopause);
+    other.pipe('costIndex', this.costIndex, other.costIndex);
+    other.pipe('pilotRouteReserveFuel', this.pilotRouteReserveFuel, other.pilotRouteReserveFuel);
+    other.pipe(
+      'pilotRouteReserveFuelPercentage',
+      this.pilotRouteReserveFuelPercentage,
+      other.pilotRouteReserveFuelPercentage,
+    );
+    other.pipe('pilotFinalHoldingFuel', this.pilotFinalHoldingFuel, other.pilotFinalHoldingFuel);
+    other.pipe('pilotFinalHoldingTime', this.pilotFinalHoldingTime, other.pilotFinalHoldingTime);
+
+    if (isBeforeEngineStart) {
+      other.pipe('zeroFuelWeight', this.zeroFuelWeight, other.zeroFuelWeight);
+      other.pipe(
+        'zeroFuelWeightCenterOfGravity',
+        this.zeroFuelWeightCenterOfGravity,
+        other.zeroFuelWeightCenterOfGravity,
+      );
+      other.pipe(
+        'pilotMinimumDestinationFuelOnBoard',
+        this.pilotMinimumDestinationFuelOnBoard,
+        other.pilotMinimumDestinationFuelOnBoard,
+      );
+      other.pipe('blockFuel', this.blockFuel, other.blockFuel);
+    }
   }
 
   private pipe<T>(
