@@ -11,6 +11,7 @@ import {
   ClockEvents,
   Subscription,
   ConsumerSubject,
+  MappedSubject,
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 import { LateralMode } from '@shared/autopilot';
@@ -676,9 +677,158 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
           <path d="m 637,332 h 6 v -6 h -6 z" />
           <path d="m 655, 335 v -6 h 30" />
         </g>
-        {/* <g ref={this.gndRef} id="AircraftReferenceOnGround" class="SmallStroke Green">
-          <path d="m 630, 405 h 20 L 640,420 Z" />
-        </g> */}
+        <ReverserIndicator bus={this.props.bus} />
+      </g>
+    );
+  }
+}
+
+export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & HudElems & ClockEvents>();
+  private revGroupRef = FSComponent.createRef<SVGGElement>();
+  private rev2Ref = FSComponent.createRef<SVGGElement>();
+  private rev1Ref = FSComponent.createRef<SVGGElement>();
+  private rev2TxtRef = FSComponent.createRef<SVGTextElement>();
+  private rev1TxtRef = FSComponent.createRef<SVGTextElement>();
+
+  private readonly eng2State = ConsumerSubject.create(this.sub.on('eng2State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
+  private readonly eng1State = ConsumerSubject.create(this.sub.on('eng1State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
+  private readonly rev1 = ConsumerSubject.create(this.sub.on('rev1').whenChanged(), 0);
+  private readonly rev2 = ConsumerSubject.create(this.sub.on('rev2').whenChanged(), 0);
+  private readonly rev1Pos = ConsumerSubject.create(this.sub.on('rev1Pos').whenChanged(), 0);
+  private readonly rev2Pos = ConsumerSubject.create(this.sub.on('rev2Pos').whenChanged(), 0);
+  private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
+
+  private readonly reverser2State = MappedSubject.create(
+    ([rev2, rev2Pos, eng2State, hudMode]) => {
+      if (hudMode !== 0) {
+        if (rev2 === 1) {
+          if (eng2State === 1) {
+            if (rev2Pos < 0.95) {
+              return 1; // rev deployement in progress  display dash
+            } else {
+              return 2; // rev on  display R
+            }
+          } else {
+            return 3; // not opperative  display cross
+          }
+        } else {
+          return 0; // show nothing
+        }
+      } else {
+        return 0; // show nothing
+      }
+    },
+    this.rev2,
+    this.rev2Pos,
+    this.eng2State,
+    this.hudMode,
+  );
+  private readonly reverser3State = MappedSubject.create(
+    ([rev1, rev1Pos, eng1State, hudMode]) => {
+      if (hudMode !== 0) {
+        if (rev1 === 1) {
+          if (eng1State === 1) {
+            if (rev1Pos < 0.95) {
+              return 1; // rev deployement in progress  display dash
+            } else {
+              return 2; // rev on  display R
+            }
+          } else {
+            return 3; // not opperative  display cross
+          }
+        } else {
+          return 0; // show nothing
+        }
+      } else {
+        return 0; // show nothing
+      }
+    },
+    this.rev1,
+    this.rev1Pos,
+    this.eng1State,
+    this.hudMode,
+  );
+
+  private setState() {
+    if (this.reverser2State.get() === 1) {
+      this.rev2Ref.instance.setAttribute('d', 'm 648.5 290 v -17 h 17 v 17 z');
+      this.rev2Ref.instance.setAttribute('stroke-dasharray', '3 6');
+      this.rev2TxtRef.instance.textContent = '';
+    } else if (this.reverser2State.get() === 2) {
+      this.rev2Ref.instance.setAttribute('d', 'm 648.5 290 v -17 h 17 v 17 z');
+      this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
+      this.rev2TxtRef.instance.textContent = 'R';
+    } else if (this.reverser2State.get() === 3) {
+      this.rev2Ref.instance.setAttribute('d', 'm 648.5 290 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+      this.rev2Ref.instance.setAttribute('stroke-dasharray', '');
+      this.rev2TxtRef.instance.textContent = '';
+    } else {
+      this.rev2Ref.instance.setAttribute('d', '');
+      this.rev2TxtRef.instance.textContent = '';
+    }
+
+    if (this.reverser3State.get() === 1) {
+      this.rev1Ref.instance.setAttribute('d', 'm 614.5 290 v -17 h 17 v 17 z');
+      this.rev1Ref.instance.setAttribute('stroke-dasharray', '3 6');
+      this.rev1TxtRef.instance.textContent = '';
+    } else if (this.reverser3State.get() === 2) {
+      this.rev1Ref.instance.setAttribute('d', 'm 614.5 290 v -17 h 17 v 17 z');
+      this.rev1Ref.instance.setAttribute('stroke-dasharray', '');
+      this.rev1TxtRef.instance.textContent = 'R';
+    } else if (this.reverser3State.get() === 3) {
+      this.rev1Ref.instance.setAttribute('d', 'm 614.5 290 v -17 h 17 v 17 z  m 0 0 l 17 -17   m -17 0 l 17 17 ');
+      this.rev1Ref.instance.setAttribute('stroke-dasharray', '');
+      this.rev1TxtRef.instance.textContent = '';
+    } else {
+      this.rev1Ref.instance.setAttribute('d', '');
+      this.rev1TxtRef.instance.textContent = '';
+    }
+  }
+  onAfterRender(node: VNode): void {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.eng2State,
+      this.eng1State,
+      this.rev1,
+      this.rev2,
+      this.rev1Pos,
+      this.rev2Pos,
+      this.hudMode,
+      this.reverser2State,
+      this.reverser3State,
+    );
+    this.sub.on('realTime').handle(() => {
+      if (this.reverser2State.get() !== 0 && this.reverser3State.get() !== 0) {
+        this.revGroupRef.instance.style.display = 'block';
+        this.setState();
+      } else {
+        this.revGroupRef.instance.style.display = 'none';
+      }
+    });
+  }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
+  render(): VNode | null {
+    return (
+      <g id="ReverseIndicator" ref={this.revGroupRef}>
+        <path ref={this.rev1Ref} class="LargeStroke Green " d="" />
+        <text ref={this.rev1TxtRef} x="623" y="288.25 " class="FontSmallest MiddleAlign Green ">
+          R
+        </text>
+        <path ref={this.rev2Ref} class="LargeStroke Green " d="" />
+        <text ref={this.rev2TxtRef} x="657" y="288.25 " class="FontSmallest MiddleAlign Green ">
+          R
+        </text>
       </g>
     );
   }
