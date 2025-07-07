@@ -4001,9 +4001,9 @@ export class FwsCore {
     /* 49 - APU */
     this.apuMachLimitExceeded.set(
       this.apuMachLimitExceededMemory.write(
-        this.machSelectedFromAdr.get() > 0.5,
+        this.apuAvail.get() === 1 && this.machSelectedFromAdr.get() > 0.5,
         this.machSelectedFromAdr.get() < 0.45,
-      ) && this.apuAvail.get() === 1,
+      ),
     );
 
     this.apuFault.set((this.apuEmerShutdown.get() || this.apuAutoShutdown.get()) && !this.apuFireDetected.get());
