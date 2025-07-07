@@ -136,6 +136,16 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
               if (elementValue % 20 === 0) {
                 text = Math.abs(elementValue).toString().padStart(3, '0');
               }
+
+              if (newValue < 80) {
+                if (elementValue > newValue + this.props.displayRange) {
+                  this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
+                  this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.add('HiddenElement');
+                } else {
+                  this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
+                  this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
+                }
+              }
             } else if (this.props.type === 'altitude') {
               if (elementValue % 500 === 0) {
                 text = (Math.abs(elementValue) / 100).toString().padStart(3, '0');

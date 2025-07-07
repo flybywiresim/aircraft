@@ -9,7 +9,6 @@ import {
   FSComponent,
   Subject,
   VNode,
-  Subscribable,
   HEvent,
   ConsumerSubject,
   Subscription,
@@ -20,7 +19,6 @@ import {
   Arinc429Word,
   Arinc429WordData,
   FailuresConsumer,
-  Arinc429ConsumerSubject,
 } from '@flybywiresim/fbw-sdk';
 
 import { A320Failure } from '@failures';
@@ -43,9 +41,9 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import './style.scss';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { WindIndicator } from '../../../../../../fbw-common/src/systems/instruments/src/ND/shared/WindIndicator';
-import { HudElems, LagFilter, calculateHorizonOffsetFromPitch, Grid } from './HUDUtils';
-import { SyntheticRunway } from 'instruments/src/HUD/SyntheticRunway';
+import { HudElems, LagFilter, Grid } from './HUDUtils';
 import { HudWarnings } from './HudWarnings';
+import { SyntheticRunway } from './SyntheticRunway';
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a32nx-hud')[0].getAttribute('url');
   return url ? parseInt(url.substring(url.length - 1), 10) : 0;
@@ -223,7 +221,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
           />
-
+          <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.filteredRadioAltitude} />
           <path
             id="PitchScaleMask"
             class="BackgroundFill"
@@ -269,13 +267,13 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               id="Mask2"
               class="BackgroundFill"
               display={this.spdTape}
-              d="M 60 0 H 208 V 1024 H 60 Z  M 61 323 v 364 h 146 v -364 z"
+              d="M 60 290 H 190 V 720 H 60 Z  M 61 323 v 364 h 128 v -364 z"
             />
             <path
               id="Mask2Cw"
               class="BackgroundFill"
               display={this.xWindSpdTape}
-              d="M 60 0 H 208 V 1024 H 60 Z  M 61 242 v 172h 146 v -172 z"
+              d="M 60 210 H 190 V 450 H 60 Z  M 61 242 v 172h 128 v -172 z"
             />
             <path
               id="Mask3"
@@ -299,12 +297,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             instrument={this.props.instrument}
           />
 
-          <ExtendedHorizon
-            bus={this.props.bus}
-            instrument={this.props.instrument}
-            filteredRadioAlt={this.filteredRadioAltitude}
-          />
-
           <AirspeedIndicatorOfftape bus={this.props.bus} />
           <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
           <AttitudeIndicatorFixedUpper bus={this.props.bus} />
@@ -324,224 +316,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <HudWarnings bus={this.props.bus} instrument={this.props.instrument} />
         </svg>
       </DisplayUnit>
-    );
-  }
-}
-
-interface ExtendedHorizonProps {
-  bus: ArincEventBus;
-  instrument: BaseInstrument;
-  filteredRadioAlt: Subscribable<number>;
-}
-
-class ExtendedHorizon extends DisplayComponent<ExtendedHorizonProps> {
-  private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & HUDSimvars & HudElems>();
-
-  private pitchGroupRef = FSComponent.createRef<SVGGElement>();
-  private rollGroupRef = FSComponent.createRef<SVGGElement>();
-  private path = FSComponent.createRef<SVGPathElement>();
-  private path2 = FSComponent.createRef<SVGPathElement>();
-  private path3 = FSComponent.createRef<SVGPathElement>();
-  private extendedAlt = FSComponent.createRef<SVGPathElement>();
-  private extendedSpd = FSComponent.createRef<SVGPathElement>();
-
-  private pitch: Arinc429WordData = Arinc429Register.empty();
-  private roll = 0;
-  private yOffset = Subject.create(0);
-
-  private xAltTop = Subject.create<String>('');
-  private yAltTop = Subject.create<String>('');
-
-  private xSpdTop = Subject.create<String>('');
-  private ySpdTop = Subject.create<String>('');
-
-  private spdRollDev = 0;
-  private altRollDev = 0;
-  private upperBound = 0;
-  private lowerBound = 0;
-
-  private readonly cWndMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
-  private readonly pitchAr = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
-  private readonly rollAr = Arinc429ConsumerSubject.create(this.sub.on('rollAr').whenChanged());
-
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
-    this.subscriptions.push(this.cWndMode, this.pitchAr, this.rollAr);
-
-    this.pitchAr.sub((pitch) => {
-      this.pitch = pitch;
-      if (this.pitchAr.get().isNormalOperation()) {
-        this.pitchGroupRef.instance.style.display = 'block';
-        this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(this.pitch.value) - 182.857}px, 0px)`;
-        const yOffset = calculateHorizonOffsetFromPitch(this.pitch.value) - 182.857;
-        this.yOffset.set(yOffset);
-      }
-    });
-
-    this.rollAr.sub(() => {
-      this.roll = this.rollAr.get().value;
-      const radRoll = (this.roll / 180) * Math.PI;
-
-      //frame of reference 1  air pitch   :F1
-      //frame 2  center: airHorizonHeadingBug x: hud horizon :F2
-      const D = calculateHorizonOffsetFromPitch(this.pitch.value);
-
-      let rSign = 1;
-
-      const xPos = -D * Math.sin(radRoll);
-
-      // y position from frame2 to eval if extention should be drawn
-      if (this.cWndMode.get() === false) {
-        this.lowerBound = -6.143;
-        this.upperBound = 355;
-      } else {
-        this.lowerBound = -87;
-        this.upperBound = 87;
-      }
-
-      let Lalt = 0;
-      let Lspd = 0;
-
-      if (this.roll < 0) {
-        if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-          Lspd = 472;
-          Lalt = 400;
-        } else {
-          Lalt = 494;
-          Lspd = 570;
-        }
-      } else {
-        if (D * Math.cos(radRoll) > this.lowerBound && D * Math.cos(radRoll) < this.upperBound) {
-          Lalt = 400;
-          Lspd = 472;
-        } else {
-          Lalt = 494;
-          Lspd = 570;
-        }
-      }
-      const xPosF = 640 + (Lalt + xPos) / Math.cos(radRoll);
-      const xPosFspd = 640 - (Lspd - xPos) / Math.cos(radRoll);
-
-      if (this.rollAr.get().isNormalOperation()) {
-        this.spdRollDev = -(640 - 168) * Math.tan(radRoll);
-        this.altRollDev = Lalt * Math.tan(radRoll);
-        this.rollGroupRef.instance.style.display = 'block';
-        this.rollGroupRef.instance.setAttribute('transform', `rotate(${-this.roll} 640 329.143)`);
-
-        if (this.roll < 0) {
-          rSign = -1;
-        } else {
-          rSign = 1;
-        }
-
-        const ax = '640 ';
-        const ay = '512 ';
-        const bx = '0 ';
-        const by = (-D).toString();
-        const cx = (640 + xPos * Math.cos(radRoll * rSign)).toString();
-        const cy = (512 + xPos * Math.sin(radRoll)).toString();
-
-        const ex = (640 + (Lalt + xPos) * Math.cos(-radRoll)).toString(); //acual eval point
-        const ey = (512 + (Lalt + xPos) * Math.sin(radRoll)).toString(); //acual eval point
-
-        const exs = (640 - (Lspd - xPos) * Math.cos(-radRoll)).toString();
-        const eys = (512 + (Lspd - xPos) * Math.sin(-radRoll)).toString();
-
-        //vertial offset of eval point from horizon
-        let F1AltSideVertDev = Math.sqrt((Number(ex) - xPosF) ** 2 + (Number(ey) - 512) ** 2);
-        if (Number(ey) < 512) {
-          F1AltSideVertDev *= -1;
-        }
-        let F1SpdSideVertDev = Math.sqrt((Number(exs) - xPosFspd) ** 2 + (Number(eys) - 512) ** 2);
-        if (Number(eys) < 512) {
-          F1SpdSideVertDev *= -1;
-        }
-
-        // debug eval point pos circles
-        this.xAltTop.set(xPosF.toString());
-        this.yAltTop.set((512).toString());
-        this.xSpdTop.set(xPosFspd.toString());
-        this.ySpdTop.set((512).toString());
-        // end debug
-        //debug draws : toggle .DEBUG to block in styles.scss to show
-        this.path.instance.setAttribute('d', `m ${ax} ${ay} l ${bx}  ${by} L ${cx}  ${cy}     z`);
-        this.path2.instance.setAttribute('d', `m ${ax} ${ay} L ${ex}  ${ey}  L ${xPosF} 512     z`);
-        this.path3.instance.setAttribute('d', `m ${ax} ${ay} L ${exs}  ${eys}  L ${xPosFspd} 512     z`);
-        //end debug
-
-        const F1HorizonPitchOffset = D * Math.cos(radRoll);
-
-        if (
-          F1HorizonPitchOffset - F1AltSideVertDev > this.lowerBound &&
-          F1HorizonPitchOffset - F1AltSideVertDev < this.upperBound
-        ) {
-          this.extendedAlt.instance.setAttribute('d', ``);
-        } else {
-          this.extendedAlt.instance.setAttribute('class', 'SmallStroke Green');
-          this.extendedAlt.instance.setAttribute('d', `m 640 512 h 1000 `);
-        }
-
-        if (
-          F1HorizonPitchOffset - F1SpdSideVertDev > this.lowerBound &&
-          F1HorizonPitchOffset - F1SpdSideVertDev < this.upperBound
-        ) {
-          this.extendedSpd.instance.setAttribute('d', ``);
-        } else {
-          this.extendedSpd.instance.setAttribute('class', 'SmallStroke Green');
-          this.extendedSpd.instance.setAttribute('d', `m 640 512 h -1000 `);
-        }
-        // console.log(
-        //     "\nD: "+D +
-        //     "\nD cos r: "+D*Math.cos(radRoll) +
-        //     "\nF1HorizonPitchOffset-F1SpdSideVertDev: "+t1 +
-        //     "\nyPos-F1SpdSideVertDev: "+t2 +
-        //     "\nyPos: "+yPos +
-        //     "\nF1HorizonPitchOffset: "+F1HorizonPitchOffset +
-        //     "\nyroll: "+roll.value +
-        //     "\nF1SpdSideVertDev: "+F1SpdSideVertDev
-        // );
-      } else {
-        this.rollGroupRef.instance.style.display = 'none';
-      }
-    });
-  }
-
-  destroy(): void {
-    for (const s of this.subscriptions) {
-      s.destroy();
-    }
-
-    super.destroy();
-  }
-
-  render(): VNode {
-    return (
-      <g id="ExtendedHorizon">
-        <path d="m 0 323 h 1280" class="red DEBUG" />
-        <path d="m 0 688 h 1280" class="red DEBUG" />
-        <path d="m 0 302 h 1280" class="blue DEBUG" />
-        <path d="m 0 130 h 1280" class="blue DEBUG" />
-        <path d="m 0 216 h 1280" class="blue DEBUG" />
-
-        <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
-          <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">
-            <SyntheticRunway bus={this.props.bus} filteredRadioAlt={this.props.filteredRadioAlt} />
-
-            <path ref={this.extendedAlt} id="extendedAlt" d="" class="SmallStroke Green" />
-            <path ref={this.extendedSpd} id="extendedSpd" d="" class="SmallStroke Green" />
-
-            {/* debug  */}
-            <circle cx={this.xAltTop} cy={this.yAltTop} r="5" class="blue DEBUG" display="block" />
-            <circle cx={this.xSpdTop} cy={this.ySpdTop} r="5" class="blue DEBUG" display="block" />
-            <circle cx="640" cy="512" r="5" class="blue DEBUG" display="block" />
-            <path ref={this.path} d="" class="yellow  DEBUG" />
-            <path ref={this.path2} d="" class="yellow DEBUG" />
-            <path ref={this.path3} d="" class="yellow DEBUG" />
-            {/* debug  */}
-          </g>
-        </g>
-      </g>
     );
   }
 }
