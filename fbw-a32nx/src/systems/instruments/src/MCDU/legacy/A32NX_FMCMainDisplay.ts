@@ -5402,7 +5402,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * Called when the active flight plan changes, e.g. when a secondary flight plan is activated.
    */
   private async onActiveFlightPlanChanged(): Promise<void> {
-    console.log('[FMS] Active flight plan changed');
     // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
     this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
 
