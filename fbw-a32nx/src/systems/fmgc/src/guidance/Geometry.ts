@@ -32,6 +32,7 @@ import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flig
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { BitFlags } from '@microsoft/msfs-sdk';
+import { VnavConfig } from './vnav/VnavConfig';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
   return !(
@@ -721,6 +722,104 @@ export class Geometry {
       leg.calculated.cumulativeDistanceToEndWithTransitions =
         cumulativeDistanceWithTransitions - leg.calculated.cumulativeDistanceWithTransitions;
     }
+  }
+
+  public pointFromEndOfPath(
+    activeLegIndex: number,
+    wptCount: number,
+    distanceFromEnd: NauticalMiles,
+    debugString?: string,
+  ): [lla: Coordinates, distanceFromLegTermination: number, legIndex: number] | undefined {
+    if (!distanceFromEnd || distanceFromEnd < 0) {
+      if (VnavConfig.DEBUG_PROFILE) {
+        console.warn('[FMS/PWP](pointFromEndOfPath) distanceFromEnd was negative or undefined');
+      }
+
+      return undefined;
+    }
+
+    if (VnavConfig.DEBUG_PROFILE) {
+      console.log(`[FMS/PWP] Starting placement of PWP '${debugString}': dist: ${distanceFromEnd.toFixed(2)}nm`);
+    }
+
+    for (let i = activeLegIndex - 1; i < wptCount; i++) {
+      const geometryLeg = this.legs.get(i);
+
+      if (!geometryLeg || geometryLeg.isNull || !geometryLeg.calculated) {
+        continue;
+      }
+
+      const accumulator = geometryLeg.calculated.cumulativeDistanceToEndWithTransitions;
+
+      if (accumulator < distanceFromEnd) {
+        const inboundTrans = this.transitions.get(i - 1);
+        const outboundTrans = this.transitions.get(i);
+
+        const [inboundTransLength, legPartLength, outboundTransLength] = Geometry.completeLegPathLengths(
+          geometryLeg,
+          inboundTrans,
+          outboundTrans,
+        );
+        const totalLegPathLength = inboundTransLength + legPartLength + outboundTransLength;
+
+        const distanceFromEndOfLeg = Math.min(distanceFromEnd - accumulator, totalLegPathLength);
+
+        let lla: Coordinates | undefined;
+        if (distanceFromEndOfLeg < outboundTransLength) {
+          // Point is in outbound transition segment
+          const distanceBeforeTerminator = outboundTransLength + distanceFromEndOfLeg;
+
+          if (VnavConfig.DEBUG_PROFILE) {
+            console.log(
+              `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
+            );
+          }
+
+          lla = outboundTrans.getPseudoWaypointLocation(distanceBeforeTerminator);
+        } else if (
+          distanceFromEndOfLeg >= outboundTransLength &&
+          distanceFromEndOfLeg <= outboundTransLength + legPartLength
+        ) {
+          // Point is in leg segment
+          const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength;
+
+          if (VnavConfig.DEBUG_PROFILE) {
+            console.log(
+              `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} leg segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
+            );
+          }
+
+          lla = geometryLeg.getPseudoWaypointLocation(distanceBeforeTerminator);
+        } else {
+          // Point is in inbound transition segment or in the discontinuity before this leg
+          const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength - legPartLength;
+
+          if (VnavConfig.DEBUG_PROFILE) {
+            console.log(
+              `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} inbound segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
+            );
+          }
+
+          lla = inboundTrans.getPseudoWaypointLocation(distanceBeforeTerminator);
+        }
+
+        if (lla) {
+          return [lla, distanceFromEndOfLeg, i];
+        }
+
+        if (VnavConfig.DEBUG_PROFILE) {
+          console.error(`[FMS/PseudoWaypoints] Tried to place PWP ${debugString} on ${geometryLeg.repr}, but failed`);
+        }
+
+        return undefined;
+      }
+    }
+
+    if (DEBUG) {
+      console.error(`[FMS/PseudoWaypoints] ${distanceFromEnd.toFixed(2)}nm is larger than the total lateral path.`);
+    }
+
+    return undefined;
   }
 
   /**

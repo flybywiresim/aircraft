@@ -1,9 +1,16 @@
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FormatTemplate, Column } from '../legacy/A320_Neo_CDU_Format';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FmsFormatters } from '../legacy/FmsFormatters';
+import { Vec2Math } from '@microsoft/msfs-sdk';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
+import { CDUWindPage } from './A320_Neo_CDU_WindPage';
+import { NXSystemMessages } from '../messages/NXSystemMessages';
 
 export class CDUEquitimePointPage {
-  static ShowPage(mcdu: LegacyFmsPageInterface, showDetail = false) {
+  static ShowPage(mcdu: LegacyFmsPageInterface) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.EquitimePointPage;
     mcdu.activeSystem = 'FMGC';
@@ -46,43 +53,133 @@ export class CDUEquitimePointPage {
     const acToDistColumn = new Column(18, '----', Column.white, Column.right, Column.big);
     const acToUtcColumn = new Column(20, '----', Column.white, Column.big);
 
-    mcdu.onLeftInput[0] = () => {
-      CDUEquitimePointPage.ShowPage(mcdu, !showDetail);
-    };
+    const etpService = mcdu.equitimePoint;
+    const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
-    if (showDetail) {
-      const ref1Ident = 'CYYR';
-      const ref2Ident = 'KBGR';
+    if (etpService.referenceFix1 !== undefined) {
+      const ref1Ident = etpService.referenceFix1.ident;
 
-      ref1IdentColumn.update(ref1Ident, Column.cyan);
-      ref1BrgColumn.update('305°T', Column.green);
-      ref1DistColumn.update('336', Column.green);
-      ref1UtcColumn.update('1936', Column.green);
+      ref1IdentColumn.update(
+        ref1Ident,
+        Column.cyan,
+        etpService.isReferenceFix1PilotEntered ? Column.big : Column.small,
+      );
+      ref1BrgColumn.update(`${etpService.pposBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°T`, Column.green);
+      ref1DistColumn.update(etpService.pposDistanceToReferenceFix1.toFixed(0), Column.green);
+      ref1UtcColumn.update(
+        FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix1 * 3600),
+        Column.green,
+      );
 
       trueWindRef1LabelColumn.update('TRU WIND');
       etpToRef1LabelColumn.update(`ETP TO ${ref1Ident}`);
 
-      trueWindRef1Column.update('190°/048');
-      etpToRef1BrgColumn.update('010°T', Column.green);
-      etpToRef1DistColumn.update('367', Column.green);
-      etpToRef1UtcColumn.update('1839', Column.green);
+      trueWindRef1Column.update(
+        etpService.isWindToReferenceFix1PilotEntered
+          ? `${MathUtils.normalise360(Vec2Math.theta(etpService.windToReferenceFix1) * MathUtils.RADIANS_TO_DEGREES)
+              .toFixed(0)
+              .padStart(3, '0')}°/${Vec2Math.abs(etpService.windToReferenceFix1).toFixed(0).padStart(3, '0')}`
+          : '000°/000',
+        etpService.isWindToReferenceFix1PilotEntered ? Column.big : Column.small,
+      );
+      etpToRef1BrgColumn.update(`${etpService.etpBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°T`, Column.green);
+      etpToRef1DistColumn.update(etpService.etpDistanceToReferenceFix1.toFixed(0), Column.green);
+      etpToRef1UtcColumn.update(
+        FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix1 * 3600),
+        Column.green,
+      );
 
-      ref2IdentColumn.update(ref2Ident, Column.cyan);
-      ref2BrgColumn.update('249°T', Column.green);
-      ref2DistColumn.update('729', Column.green);
-      ref2UtcColumn.update('1834', Column.green);
+      // Update wind 1
+      mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+        if (value === Keypad.clrValue) {
+          etpService.pilotEnteredWindToReferenceFix1 = undefined;
+          CDUEquitimePointPage.ShowPage(mcdu);
+          return;
+        }
+
+        const wind = CDUWindPage.ParseWind(value);
+        if (!wind) {
+          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+          scratchpadCallback();
+          return;
+        }
+
+        etpService.pilotEnteredWindToReferenceFix1 = Vec2Math.setFromPolar(
+          wind.speed,
+          wind.direction * MathUtils.DEGREES_TO_RADIANS,
+          Vec2Math.create(),
+        );
+
+        CDUEquitimePointPage.ShowPage(mcdu);
+      };
+    }
+
+    if (etpService.referenceFix2 !== undefined) {
+      const ref2Ident = etpService.referenceFix2.ident;
+
+      ref2IdentColumn.update(
+        ref2Ident,
+        Column.cyan,
+        etpService.isReferenceFix2PilotEntered ? Column.big : Column.small,
+      );
+      ref2BrgColumn.update(`${etpService.pposBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°T`, Column.green);
+      ref2DistColumn.update(etpService.pposDistanceToReferenceFix2.toFixed(0), Column.green);
+      ref2UtcColumn.update(
+        FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix2 * 3600),
+        Column.green,
+      );
 
       trueWindRef2LabelColumn.update('TRU WIND');
       etpToRef2LabelColumn.update(`ETP TO ${ref2Ident}`);
 
-      trueWindRef2Column.update('[ ]°/[ ]');
-      etpToRef2BrgColumn.update('244°T', Column.green);
-      etpToRef2DistColumn.update('317', Column.green);
-      etpToRef2UtcColumn.update('1839', Column.green);
+      trueWindRef2Column.update(
+        etpService.isWindToReferenceFix2PilotEntered
+          ? `${MathUtils.normalise360(Vec2Math.theta(etpService.windToReferenceFix2) * MathUtils.RADIANS_TO_DEGREES)
+              .toFixed(0)
+              .padStart(3, '0')}°/${Vec2Math.abs(etpService.windToReferenceFix2).toFixed(0).padStart(3, '0')}`
+          : '000°/000',
+        etpService.isWindToReferenceFix2PilotEntered ? Column.big : Column.small,
+      );
+
+      etpToRef2BrgColumn.update(`${etpService.etpBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°T`, Column.green);
+      etpToRef2DistColumn.update(etpService.etpDistanceToReferenceFix2.toFixed(0), Column.green);
+      etpToRef2UtcColumn.update(
+        FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix2 * 3600),
+        Column.green,
+      );
+
+      // Update wind 2
+      mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
+        if (value === Keypad.clrValue) {
+          etpService.pilotEnteredWindToReferenceFix2 = undefined;
+          CDUEquitimePointPage.ShowPage(mcdu);
+          return;
+        }
+
+        const wind = CDUWindPage.ParseWind(value);
+        if (!wind) {
+          mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+          scratchpadCallback();
+          return;
+        }
+
+        etpService.pilotEnteredWindToReferenceFix2 = Vec2Math.setFromPolar(
+          wind.speed,
+          wind.direction * MathUtils.DEGREES_TO_RADIANS,
+          Vec2Math.create(),
+        );
+
+        CDUEquitimePointPage.ShowPage(mcdu);
+      };
+    }
+
+    if (etpService?.isComputed()) {
+      const etp = etpService.get();
+      const legIdent = plan.legElementAt(etp[2])?.ident;
 
       etpLocationLabelColumn.update('ETP LOCATION');
-      etpLocationLegColumn.update('CONAY');
-      etpLocationLegDistanceColumn.update('/ -87.7');
+      etpLocationLegColumn.update(legIdent ?? '-----', legIdent ? Column.green : Column.white);
+      etpLocationLegDistanceColumn.update(`/${(-etp[1]).toFixed(1).padStart(5, ' ')}`, Column.green);
 
       acToLabelColumn.update('A/C TO');
 
@@ -90,6 +187,50 @@ export class CDUEquitimePointPage {
       acToDistColumn.update('412', Column.green);
       acToUtcColumn.update('1744', Column.green);
     }
+
+    // Reference 1
+    mcdu.onLeftInput[0] = async (value) => {
+      if (value === Keypad.clrValue) {
+        etpService.pilotEnteredReferenceFix1 = undefined;
+        CDUEquitimePointPage.ShowPage(mcdu);
+        return;
+      }
+
+      try {
+        etpService.pilotEnteredReferenceFix1 = await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false);
+
+        CDUEquitimePointPage.ShowPage(mcdu);
+      } catch (err) {
+        // Rethrow if error is not an FMS message to display
+        if (err.type === undefined) {
+          throw err;
+        }
+
+        mcdu.showFmsErrorMessage(err.type);
+      }
+    };
+
+    // Reference 2
+    mcdu.onLeftInput[2] = async (value) => {
+      if (value === Keypad.clrValue) {
+        etpService.pilotEnteredReferenceFix2 = undefined;
+        CDUEquitimePointPage.ShowPage(mcdu);
+        return;
+      }
+
+      try {
+        etpService.pilotEnteredReferenceFix2 = await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false);
+
+        CDUEquitimePointPage.ShowPage(mcdu);
+      } catch (err) {
+        // Rethrow if error is not an FMS message to display
+        if (err.type === undefined) {
+          throw err;
+        }
+
+        mcdu.showFmsErrorMessage(err.type);
+      }
+    };
 
     mcdu.setTemplate(
       FormatTemplate([

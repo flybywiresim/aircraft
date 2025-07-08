@@ -31,6 +31,7 @@ import { FuelPredictions } from '@fmgc/flightplanning/fuel/FuelPredictions';
 import { WindEntry } from '@fmgc/flightplanning/data/wind';
 import { Accessible } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
+import { EquitimePoint } from '@fmgc/EquitimePoint';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
@@ -240,6 +241,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   guidanceController?: GuidanceController;
   dataManager?: DataManager;
   navigation?: Navigation;
+  equitimePoint?: EquitimePoint;
   holdDecelReached: boolean;
   holdIndex: number;
   holdSpeedTarget?: number;
