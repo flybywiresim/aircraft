@@ -1909,6 +1909,8 @@ class VProtBug extends DisplayComponent<{ bus: ArincEventBus }> {
 
 //GroundSpeed indicator
 class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
   private flightPhase = -1;
   private declutterMode = 0;
   private sVisibility = Subject.create('none');
@@ -1920,19 +1922,16 @@ class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly trueAirSpeedRegister = Arinc429RegisterSubject.createEmpty();
 
+  private readonly gndSpeed = ConsumerSubject.create(this.sub.on('gndSpeed'), false);
+  private readonly isVisible = MappedSubject.create(([gndSpeed]) => {
+    return gndSpeed ? 'block' : 'none';
+  }, this.gndSpeed);
+
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
+    this.subscriptions.push(this.gndSpeed);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    sub
-      .on('gndSpeed')
-      .whenChanged()
-      .handle((value) => {
-        //onDeparture
-        value === true ? this.sVisibility.set('block') : this.sVisibility.set('none');
-      });
-    sub
+    this.sub
       .on('groundSpeed')
       .atFrequency(2)
       .handle((value) => this.groundSpeedRegister.setWord(value));
@@ -1942,7 +1941,7 @@ class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
       element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
 
-      data.value <= 40
+      data.value <= 250
         ? (this.groundSpeedRef.instance.style.display = 'block')
         : (this.groundSpeedRef.instance.style.display = 'none');
     }, true);
@@ -1950,7 +1949,7 @@ class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode | null {
     return (
-      <g id="GndSpdGroup" display={this.sVisibility}>
+      <g id="GndSpdGroup" display={this.isVisible}>
         <Layer x={2} y={25}>
           <text ref={this.groundSpeedRef} x={0} y={0} class="Green FontMediumSmaller">
             GS

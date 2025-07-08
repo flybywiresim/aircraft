@@ -88,7 +88,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
     this.subscriptions.push(
       this.crosswindMode.sub(() => {
         this.setPos();
-      }),
+      }, true),
     );
 
     this.subscriptions.push(

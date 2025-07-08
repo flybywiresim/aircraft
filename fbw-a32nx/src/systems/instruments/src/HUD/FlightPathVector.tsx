@@ -601,7 +601,7 @@ class RadioAltAndDH extends DisplayComponent<{
           x="0"
           y="0"
           class="FontMedium Amber MiddleAlign Blink9Seconds TextOutline"
-          transform="translate(640 600)"
+          transform="translate(640 580)"
         >
           DH
         </text>

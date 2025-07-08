@@ -279,7 +279,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               id="Mask3"
               class="BackgroundFill"
               display={this.altTape}
-              d="M 1038 250 h 122 V 720 H 1038 Z  M 1039 323 v 364 h 120 v -364 z"
+              d="M 1038 280 h 122 V 720 H 1038 Z  M 1039 323 v 364 h 120 v -364 z"
             />
 
             <path

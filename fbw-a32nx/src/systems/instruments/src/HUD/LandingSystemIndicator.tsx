@@ -221,7 +221,6 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
     );
 
     this.isLsFreqHidden.sub((hidden) => {
-      console.log('isLsFreqHidden', hidden, this.lsFrequency.get());
       if (hidden) {
         this.freqTextLeading.pause();
         this.freqTextTrailing.pause();
@@ -264,7 +263,7 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
   render(): VNode {
     return (
-      <g id="LSInfoGroup" transform=" translate(-110 125)" ref={this.lsInfoGroup} display={this.infoGrpVis}>
+      <g id="LSInfoGroup" transform=" translate(-140 125)" ref={this.lsInfoGroup} display={this.infoGrpVis}>
         <text
           id="ILSIdent"
           class={{
@@ -965,7 +964,7 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <text id="ILSMarkerText" class={this.classNames} x="98.339211" y="125.12898">
+      <text id="ILSMarkerText" class={this.classNames} x="110" y="252.5">
         {this.markerText}
       </text>
     );
