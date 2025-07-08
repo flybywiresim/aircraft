@@ -56,7 +56,7 @@ export enum FlightPlanLegFlags {
   DirectToTurningPoint = 1 << 0,
   PendingDirectToTurningPoint = 1 << 1,
   Origin = 1 << 2,
-  CopiedWithPredictions = 1 << 2,
+  CopiedWithPredictions = 1 << 3,
 }
 
 export interface LegCalculations {
