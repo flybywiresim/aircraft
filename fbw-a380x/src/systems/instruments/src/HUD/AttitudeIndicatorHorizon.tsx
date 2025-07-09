@@ -610,7 +610,8 @@ class PitchScale extends DisplayComponent<{
 
   private MoveThreeDegreeMark() {
     // FIXME slope data from the FMS only available or updated when navaid page is displayed. Using sim data instead
-    const lsSlope = parseInt(SimVar.GetSimVarValue('NAV RAW GLIDE SLOPE:3', 'degrees'));
+    let lsSlope = parseInt(SimVar.GetSimVarValue('NAV RAW GLIDE SLOPE:3', 'degrees'));
+    lsSlope === 0 ? (lsSlope = 3) : (lsSlope = parseInt(SimVar.GetSimVarValue('NAV RAW GLIDE SLOPE:3', 'degrees')));
     const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
       calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);

@@ -385,11 +385,7 @@ class Drum extends DisplayComponent<DrumProperties> {
 
     this.props.position.sub((p) => {
       this.position = p;
-      if (this.props.type === 'unit') {
-        this.getOffset(p);
-      } else {
-        this.getOffset(p);
-      }
+      this.getOffset(p);
     }, true);
     this.props.value.sub((p) => {
       this.value = p;
