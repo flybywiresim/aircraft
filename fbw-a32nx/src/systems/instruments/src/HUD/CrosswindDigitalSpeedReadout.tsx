@@ -321,8 +321,14 @@ class Drum extends DisplayComponent<DrumProperties> {
   }
 
   private getOffset(position: number) {
+    //// smooth drum
     //this.gRef.instance.style.transform = `translate3d(0px, ${(position * this.props.distanceSpacing) / this.props.valueSpacing}px, 0px)`;
-    this.gRef.instance.style.transform = `translate3d(0px, ${Math.round((position * this.props.distanceSpacing) / this.props.valueSpacing / 10) * 10}px, 0px)`;
+
+    //// snap on digit
+    this.gRef.instance.style.transform = `translate3d(0px, ${
+      (position * this.props.distanceSpacing) / this.props.valueSpacing -
+      (((position * this.props.distanceSpacing) / this.props.valueSpacing) % this.props.distanceSpacing)
+    }px, 0px)`;
   }
 
   private updateValue() {
