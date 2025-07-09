@@ -155,12 +155,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
       context.fillStyle = color;
       this.paintPath(context, x, y, END_OF_VD_PATH, rotate);
     } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpEtp) {
-      const green = '#0f0';
-
-      context.strokeStyle = green;
-      this.paintPath(context, x, y, ETP_PATH);
-
-      PaintUtils.paintText(isColorLayer, context, x + 13, y + 18, symbol.ident, green);
+      this.paintEtp(context, x, y, symbol.ident, isColorLayer);
     }
   }
 
@@ -190,6 +185,19 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
     context.ellipse(x, y, 8, 8, 0, 0, Math.PI * 2);
     context.fill();
     context.closePath();
+  }
+
+  private paintEtp(context: CanvasRenderingContext2D, x: number, y: number, ident: string, isColorLayer: boolean) {
+    const green = '#0f0';
+    context.strokeStyle = isColorLayer ? green : '#000';
+    context.fillStyle = 'none';
+
+    context.beginPath();
+    context.ellipse(x, y, 14, 14, 0, 0, Math.PI * 2);
+    context.stroke();
+    context.closePath();
+
+    PaintUtils.paintText(isColorLayer, context, x + 21, y + 15, ident, green);
   }
 }
 
