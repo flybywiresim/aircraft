@@ -103,6 +103,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FG] Fixed managed speed target not constrained by characteristic speeds outside of approach phase - @lukecologne (luke)
 1. [A32NX/FG] Fixed ATHR being constrainted by "F" speed when landing in CONF 3 - @lukecologne (luke)
 1. [A32NX/FG] Target the lower speed margin when underspeeding or on geometric path in DES mode - @lukecologne (luke)
+1. [A32NX/FMS] Implement computation and display of equitime point - @BlueberryKing (BlueberryKing)
 
 ## 2024.1.0
 
