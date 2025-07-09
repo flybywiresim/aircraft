@@ -153,8 +153,12 @@ export class CDUInitPage {
             cruiseTemp.update(CDUInitPage.formatTemperature(planCruiseTemp), Column.cyan);
             cruiseFlTempSeparator.updateAttributes(Column.cyan);
           } else {
+            const planTropo = plan.performanceData.tropopause.get();
+
             cruiseTemp.update(
-              CDUInitPage.formatTemperature(Math.round(AeroMath.isaTemperature(planCruiseLevel * 100 * 0.3048))),
+              CDUInitPage.formatTemperature(
+                Math.round(AeroMath.isaTemperature(Math.min(planCruiseLevel * 100, planTropo ?? 36090) * 0.3048)),
+              ),
               Column.cyan,
               Column.small,
             );
