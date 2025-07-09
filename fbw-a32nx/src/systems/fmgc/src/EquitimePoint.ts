@@ -1,31 +1,41 @@
 import { Fix, MathUtils } from '@flybywiresim/fbw-sdk';
-import { AeroMath, EventBus, UnitType, Vec2Math } from '@microsoft/msfs-sdk';
+import { AeroMath, ConsumerValue, EventBus, UnitType, Vec2Math, Wait } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from './flightplanning/FlightPlanInterface';
 import { Navigation } from './navigation/Navigation';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { Geometry } from './guidance/Geometry';
 import { FlightPlanIndex } from './flightplanning/FlightPlanManager';
+import { FlightPhaseManagerEvents } from './flightphase/FlightPhaseManager';
+import { FmgcFlightPhase } from '@shared/flightphase';
+
+export interface EquitimePointInterface {
+  etpTimeToRef1: number;
+  etpTimeToRef2: number;
+  pposTimeToRef1: number;
+  pposTimeToRef2: number;
+  etp: ReturnType<Geometry['pointFromEndOfPath']>;
+}
 
 export class EquitimePoint {
-  public pilotEnteredReferenceFix1: Fix | undefined = undefined;
-
-  public pilotEnteredReferenceFix2: Fix | undefined = undefined;
-
-  public pilotEnteredWindToReferenceFix1: Float64Array | undefined = undefined;
-
-  public pilotEnteredWindToReferenceFix2: Float64Array | undefined = undefined;
-
   private static readonly DefaultWind = Vec2Math.create(0, 0);
 
-  private etpTimeToRef1: number | undefined = undefined;
+  private static readonly AbsoluteToleranceSeconds = 10;
 
-  private etpTimeToRef2: number | undefined = undefined;
+  private geometry: Geometry | undefined = undefined;
 
-  private pposTimeToRef1: number | undefined = undefined;
+  private inhibitAutoRecompute = false;
 
-  private pposTimeToRef2: number | undefined = undefined;
+  private pilotEnteredReferenceFix1: Fix | undefined;
+  private pilotEnteredReferenceFix2: Fix | undefined;
+  private pilotEnteredWindToReferenceFix1: Float64Array | undefined;
+  private pilotEnteredWindToReferenceFix2: Float64Array | undefined;
 
-  private etp: ReturnType<Geometry['pointFromEndOfPath']> | undefined = undefined;
+  private result: Partial<EquitimePointInterface> = {};
+
+  private readonly flightPhase = ConsumerValue.create(
+    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
+    FmgcFlightPhase.Preflight,
+  );
 
   constructor(
     private readonly bus: EventBus,
@@ -34,7 +44,124 @@ export class EquitimePoint {
   ) {}
 
   acceptMultipleLegGeometry(geometry: Geometry): void {
-    this.updateEtp(geometry);
+    this.geometry = geometry;
+
+    if (!this.inhibitAutoRecompute) {
+      this.updateEtp();
+    }
+  }
+
+  private updateEtp() {
+    this.reset();
+
+    const ref1 = this.referenceFix1;
+    const ref2 = this.referenceFix2;
+
+    const ppos = this.navigation.getPpos();
+    const plan = this.flightPlanService.get(FlightPlanIndex.Active);
+
+    if (!ref1 || !ref2 || !ppos || !plan || !this.geometry) {
+      return undefined;
+    }
+
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel;
+    // TODO consider CI and speed limit
+    const tas = UnitType.MPS.convertTo(
+      Math.min(
+        AeroMath.casToTasIsa(
+          UnitType.KNOT.convertTo(290, UnitType.MPS),
+          UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER),
+        ),
+        AeroMath.machToTasIsa(0.78, UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER)),
+      ),
+      UnitType.KNOT,
+    );
+
+    // Time to reference waypoints is only computed in cruise phase
+    if (this.flightPhase.get() === FmgcFlightPhase.Cruise) {
+      this.result.pposTimeToRef1 = EquitimePoint.timeTo(ppos, ref1.location, this.windToReferenceFix1, tas);
+      this.result.pposTimeToRef2 = EquitimePoint.timeTo(ppos, ref2.location, this.windToReferenceFix2, tas);
+    }
+
+    let numIterations = 0;
+    let etpAlongTrackDistanceGuess = MathUtils.clamp(
+      distanceTo(ref1.location, ref2.location) / 2,
+      0,
+      this.geometry.legs.get(plan.activeLegIndex - 1)?.calculated?.cumulativeDistanceToEndWithTransitions ?? Infinity,
+    );
+
+    do {
+      this.result.etp = this.geometry.pointFromEndOfPath(
+        plan.activeLegIndex,
+        plan.firstMissedApproachLegIndex,
+        etpAlongTrackDistanceGuess,
+        'ETP',
+      );
+
+      if (!this.result.etp) {
+        this.reset();
+        return undefined;
+      }
+
+      const [etpLla, _] = this.result.etp;
+
+      this.result.etpTimeToRef1 = EquitimePoint.timeTo(etpLla, ref1.location, this.windToReferenceFix1, tas);
+      this.result.etpTimeToRef2 = EquitimePoint.timeTo(etpLla, ref2.location, this.windToReferenceFix2, tas);
+
+      etpAlongTrackDistanceGuess -= ((this.result.etpTimeToRef2 - this.result.etpTimeToRef1) * tas) / 2;
+    } while (
+      numIterations++ < 10 &&
+      3600 * Math.abs(this.result.etpTimeToRef2 - this.result.etpTimeToRef1) > EquitimePoint.AbsoluteToleranceSeconds
+    );
+
+    if (numIterations >= 10) {
+      this.reset();
+      return undefined;
+    }
+  }
+
+  private reset(): void {
+    this.result.etp = undefined;
+    this.result.pposTimeToRef1 = undefined;
+    this.result.pposTimeToRef2 = undefined;
+    this.result.etpTimeToRef1 = undefined;
+    this.result.etpTimeToRef2 = undefined;
+  }
+
+  async resetAndRecompute() {
+    this.reset();
+    this.inhibitAutoRecompute = true;
+    await Wait.awaitDelay(2000);
+    this.updateEtp();
+    this.inhibitAutoRecompute = false;
+  }
+
+  isComputed(): boolean {
+    return this.result.etp !== undefined;
+  }
+
+  get(): ReturnType<Geometry['pointFromEndOfPath']> | undefined {
+    return this.result.etp;
+  }
+
+  setPilotEnteredReferenceFix1(fix: Fix | undefined): void {
+    this.pilotEnteredReferenceFix1 = fix;
+    this.reset();
+  }
+
+  setPilotEnteredReferenceFix2(fix: Fix | undefined): void {
+    this.pilotEnteredReferenceFix2 = fix;
+    this.reset();
+  }
+
+  setPilotEnteredWindToReferenceFix1(windVector: Float64Array | undefined): void {
+    this.pilotEnteredWindToReferenceFix1 = windVector;
+    this.reset();
+  }
+
+  setPilotEnteredWindToReferenceFix2(windVector: Float64Array | undefined): void {
+    this.pilotEnteredWindToReferenceFix2 = windVector;
+    this.reset();
   }
 
   get referenceFix1(): Fix | undefined {
@@ -94,51 +221,51 @@ export class EquitimePoint {
   }
 
   get pposTimeToReferenceFix1(): number | undefined {
-    return this.pposTimeToRef1;
+    return this.result.pposTimeToRef1;
   }
 
   get pposTimeToReferenceFix2(): number | undefined {
-    return this.pposTimeToRef2;
+    return this.result.pposTimeToRef2;
   }
 
   get etpBearingToReferenceFix1(): number | undefined {
-    if (!this.etp || !this.referenceFix1) {
+    if (!this.result.etp || !this.referenceFix1) {
       return undefined;
     }
 
-    return bearingTo(this.etp[0], this.referenceFix1.location);
+    return bearingTo(this.result.etp[0], this.referenceFix1.location);
   }
 
   get etpBearingToReferenceFix2(): number | undefined {
-    if (!this.etp || !this.referenceFix2) {
+    if (!this.result.etp || !this.referenceFix2) {
       return undefined;
     }
 
-    return bearingTo(this.etp[0], this.referenceFix2.location);
+    return bearingTo(this.result.etp[0], this.referenceFix2.location);
   }
 
   get etpDistanceToReferenceFix1(): number | undefined {
-    if (!this.etp || !this.referenceFix1) {
+    if (!this.result.etp || !this.referenceFix1) {
       return undefined;
     }
 
-    return distanceTo(this.etp[0], this.referenceFix1.location);
+    return distanceTo(this.result.etp[0], this.referenceFix1.location);
   }
 
   get etpDistanceToReferenceFix2(): number | undefined {
-    if (!this.etp || !this.referenceFix2) {
+    if (!this.result.etp || !this.referenceFix2) {
       return undefined;
     }
 
-    return distanceTo(this.etp[0], this.referenceFix2.location);
+    return distanceTo(this.result.etp[0], this.referenceFix2.location);
   }
 
   get etpTimeToReferenceFix1(): number | undefined {
-    return this.etpTimeToRef1;
+    return this.result.etpTimeToRef1;
   }
 
   get etpTimeToReferenceFix2(): number | undefined {
-    return this.etpTimeToRef2;
+    return this.result.etpTimeToRef2;
   }
 
   get windToReferenceFix1(): Float64Array {
@@ -157,81 +284,6 @@ export class EquitimePoint {
     return this.pilotEnteredWindToReferenceFix2 !== undefined;
   }
 
-  isComputed(): boolean {
-    return this.etp !== undefined;
-  }
-
-  get(): ReturnType<Geometry['pointFromEndOfPath']> | undefined {
-    return this.etp;
-  }
-
-  private updateEtp(geometry: Geometry) {
-    const ref1 = this.referenceFix1;
-    const ref2 = this.referenceFix2;
-
-    const ppos = this.navigation.getPpos();
-    const plan = this.flightPlanService.get(FlightPlanIndex.Active);
-
-    if (!ref1 || !ref2 || !ppos || !plan) {
-      return undefined;
-    }
-
-    const cruiseLevel = plan.performanceData.cruiseFlightLevel;
-    // TODO consider CI and speed limit
-    const tas = UnitType.MPS.convertTo(
-      Math.min(
-        AeroMath.casToTasIsa(
-          UnitType.KNOT.convertTo(290, UnitType.MPS),
-          UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER),
-        ),
-        AeroMath.machToTasIsa(0.78, UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER)),
-      ),
-      UnitType.KNOT,
-    );
-
-    this.pposTimeToRef1 = EquitimePoint.timeTo(ppos, ref1.location, this.windToReferenceFix1, tas);
-    this.pposTimeToRef2 = EquitimePoint.timeTo(ppos, ref2.location, this.windToReferenceFix2, tas);
-
-    this.etpTimeToRef1 = this.pposTimeToRef1;
-    this.etpTimeToRef2 = this.pposTimeToRef2;
-
-    if (this.etpTimeToRef1 > this.etpTimeToRef2) {
-      // We are already past the ETP
-      this.etp = undefined;
-    }
-
-    let etpAlongTrackDistanceGuess = distanceTo(ref1.location, ref2.location) / 2;
-    this.etp = geometry.pointFromEndOfPath(
-      plan.activeLegIndex,
-      plan.firstMissedApproachLegIndex,
-      etpAlongTrackDistanceGuess,
-      'ETP',
-    );
-    let iterations = 0;
-
-    while (Math.abs(this.etpTimeToRef2 - this.etpTimeToRef1) > 1 / 60 && iterations++ < 10) {
-      etpAlongTrackDistanceGuess -= ((this.etpTimeToRef2 - this.etpTimeToRef1) * tas) / 2;
-
-      this.etp = geometry.pointFromEndOfPath(
-        plan.activeLegIndex,
-        plan.firstMissedApproachLegIndex,
-        etpAlongTrackDistanceGuess,
-        'ETP',
-      );
-
-      if (!this.etp) break;
-
-      const [etpLla, _] = this.etp;
-
-      this.etpTimeToRef1 = EquitimePoint.timeTo(etpLla, ref1.location, this.windToReferenceFix1, tas);
-      this.etpTimeToRef2 = EquitimePoint.timeTo(etpLla, ref2.location, this.windToReferenceFix2, tas);
-    }
-
-    if (iterations >= 10) {
-      this.etp = undefined;
-    }
-  }
-
   /**
    * Computes the time to fly from one coordinate to another, taking into account the wind and true airspeed.
    * @param from the starting coordinates
@@ -240,7 +292,7 @@ export class EquitimePoint {
    * @param tas the true airspeed in knots
    * @returns the time in hours to fly from `from` to `to`
    */
-  public static timeTo(from: Coordinates, to: Coordinates, wind: Float64Array | undefined, tas: number): number {
+  private static timeTo(from: Coordinates, to: Coordinates, wind: Float64Array | undefined, tas: number): number {
     const distance = distanceTo(from, to);
     const bearing = bearingTo(from, to);
 
