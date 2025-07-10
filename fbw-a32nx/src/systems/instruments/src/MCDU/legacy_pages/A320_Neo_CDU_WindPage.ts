@@ -55,12 +55,12 @@ export class CDUWindPage {
 
     const plan = mcdu.getFlightPlan(forPlan);
 
-    const doesClbWindUplinkExist =
-      plan.pendingWindUplink.isWindUplinkReadyToInsert() && plan.pendingWindUplink.climbWinds !== undefined;
+    const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
+    const doesClbWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.climbWinds !== undefined;
     const isWindUplinkInProgress = plan.pendingWindUplink.isWindUplinkInProgress();
 
     let requestButton = 'UPLINK*[color]cyan';
-    if (!doesClbWindUplinkExist) {
+    if (!doesWindUplinkExist) {
       requestButton = isWindUplinkInProgress ? 'REQUEST [color]amber' : 'REQUEST*[color]amber';
     }
 
@@ -72,7 +72,7 @@ export class CDUWindPage {
       ['CLIMB WIND'],
       ['TRU WIND/ALT', allowHistoryWindAccess ? 'HISTORY\xa0[color]inop' : ''],
       ['', allowHistoryWindAccess ? 'WIND>[color]inop' : ''],
-      ['', doesClbWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
+      ['', doesWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
       ['', ''],
       ['', ''],
@@ -201,12 +201,12 @@ export class CDUWindPage {
 
     const plan = mcdu.getFlightPlan(forPlan);
 
-    const doesCrzWindUplinkExist =
-      plan.pendingWindUplink.isWindUplinkReadyToInsert() && plan.pendingWindUplink.cruiseWinds !== undefined;
+    const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
+    const doesCrzWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.cruiseWinds !== undefined;
     const isWindUplinkInProgress = plan.pendingWindUplink.isWindUplinkInProgress();
 
     let requestButton = 'UPLINK*[color]cyan';
-    if (!doesCrzWindUplinkExist) {
+    if (!doesWindUplinkExist) {
       requestButton = isWindUplinkInProgress ? 'REQUEST [color]amber' : 'REQUEST*[color]amber';
     }
 
@@ -222,7 +222,7 @@ export class CDUWindPage {
       ['CRZ WIND'],
       ['', '', `AT {green}{big}${(leg.ident ?? '').padEnd(7, '\xa0')}{end}{end}`],
       ['', ''],
-      ['TRU WIND/ALT', doesCrzWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
+      ['TRU WIND/ALT', doesWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
       ['', ''],
       ['', ''],
@@ -406,12 +406,12 @@ export class CDUWindPage {
 
     const plan = mcdu.getFlightPlan(forPlan);
 
-    const doesDesWindUplinkExist =
-      plan.pendingWindUplink.isWindUplinkReadyToInsert() && plan.pendingWindUplink.descentWinds !== undefined;
+    const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
+    const doesDesWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.descentWinds !== undefined;
     const isWindUplinkInProgress = plan.pendingWindUplink.isWindUplinkInProgress();
 
     let requestButton = 'UPLINK*[color]cyan';
-    if (!doesDesWindUplinkExist) {
+    if (!doesWindUplinkExist) {
       requestButton = isWindUplinkInProgress ? 'REQUEST [color]amber' : 'REQUEST*[color]amber';
     }
 
@@ -426,7 +426,7 @@ export class CDUWindPage {
       ['DESCENT WIND'],
       ['TRU WIND/ALT', ''],
       ['', ''],
-      ['', doesDesWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
+      ['', doesWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
       ['', ''],
       ['', ''],
