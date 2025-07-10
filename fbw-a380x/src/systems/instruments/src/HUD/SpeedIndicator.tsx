@@ -587,8 +587,8 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
           <path class="Fill Green" d={this.shortTermPath} />
         </g>
         <g id="GreenDotSpeedMarker" ref={this.greenDotBug} style="transform:translate3d(0px, 0px,0px)">
-          <path class="ThickOutline" d="m101.45 361.5 a 6.296 6.3 0 1 0 -12.592 0 6.296 6.3 0 1 0 12.592 0z" />
-          <path class="ThickStroke Green" d="m101.45 361.5 a6.296 6.3 0 1 0 -12.592 0 6.296 6.3 0 1 0 12.592 0z" />
+          <path class="ThickOutline" d="m93.5 361.5 a6.296 6.3 0 1 0 -12.592 0 6.296 6.3 0 1 0 12.592 0z" />
+          <path class="ThickStroke Green" d="m93.5 361.5 a6.296 6.3 0 1 0 -12.592 0 6.296 6.3 0 1 0 12.592 0z" />
         </g>
         <g id="FlapsSlatsBug" ref={this.flapsBug} style="transform: translate3d(0px, 0px,0px)">
           <path class="NormalStroke Green" d="m87 361.5  h19.14" />
@@ -1813,8 +1813,8 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
   render(): VNode {
     return (
       <g id="SpeedProtSymbol" ref={this.vProtBug} style="display: none">
-        <path class="NormalOutline" d="m69.97 406.445h15.11m-15.11 -5.04h15.11" />
-        <path class="NormalStroke Green" d="m69.97 406.445h15.11m-15.11 -5.04h15.11" />
+        <path class="NormalOutline" d="m60 365 h 15 m-15.11 -5 h 15" />
+        <path class="NormalStroke Green" d="m60 365 h 15 m-15.11 -5 h 15" />
       </g>
     );
   }
