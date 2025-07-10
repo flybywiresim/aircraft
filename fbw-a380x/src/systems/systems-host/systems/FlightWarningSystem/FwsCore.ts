@@ -4229,7 +4229,7 @@ export class FwsCore {
       }
 
       if (faultIsActiveConsideringFaultSuppression(value)) {
-        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
+        const itemsChecked = value.whichItemsChecked().map((v, i) => (!proc.items[i]?.sensed ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
         ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
