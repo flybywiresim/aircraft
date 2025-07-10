@@ -71,12 +71,14 @@ struct SlatFlapControlComputer {
     slat_flap_actual_position_word_id: VariableIdentifier,
     slat_actual_position_word_id: VariableIdentifier,
     flap_actual_position_word_id: VariableIdentifier,
+    fap_ids: [VariableIdentifier; 7],
 
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
     flaps_feedback_angle: Angle,
     slats_feedback_angle: Angle,
     flaps_conf: FlapsConf,
+    fap: [bool; 7],
 }
 
 impl SlatFlapControlComputer {
@@ -95,12 +97,24 @@ impl SlatFlapControlComputer {
                 .get_identifier("SFCC_SLAT_ACTUAL_POSITION_WORD".to_owned()),
             flap_actual_position_word_id: context
                 .get_identifier("SFCC_FLAP_ACTUAL_POSITION_WORD".to_owned()),
+            fap_ids: [
+                context.get_identifier("SFCC_FAP_1".to_owned()),
+                context.get_identifier("SFCC_FAP_2".to_owned()),
+                context.get_identifier("SFCC_FAP_3".to_owned()),
+                context.get_identifier("SFCC_FAP_4".to_owned()),
+                context.get_identifier("SFCC_FAP_5".to_owned()),
+                context.get_identifier("SFCC_FAP_6".to_owned()),
+                context.get_identifier("SFCC_FAP_7".to_owned()),
+            ],
 
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),
             flaps_feedback_angle: Angle::new::<degree>(0.),
             slats_feedback_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
+
+            // Set to false to match power-off state
+            fap: [true; 7],
         }
     }
 
@@ -178,6 +192,20 @@ impl SlatFlapControlComputer {
         self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
+
+        self.fap_update(flaps_handle);
+    }
+
+    fn fap_update(&mut self, flaps_handle: &FlapsHandle) {
+        let fppu_angle = self.flaps_feedback_angle.get::<degree>();
+
+        self.fap[0] = fppu_angle > 247.8 && fppu_angle < 254.0;
+        self.fap[1] = fppu_angle > 114.6 && fppu_angle < 254.0;
+        self.fap[2] = fppu_angle > 163.7 && fppu_angle < 254.0;
+        self.fap[3] = flaps_handle.position == 0;
+        self.fap[4] = fppu_angle > 163.7 && fppu_angle < 254.0;
+        self.fap[5] = fppu_angle > 247.8 && fppu_angle < 254.0;
+        self.fap[6] = fppu_angle > 114.6 && fppu_angle < 254.0;
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
@@ -317,6 +345,10 @@ impl SlatFlapLane for SlatFlapControlComputer {
 
 impl SimulationElement for SlatFlapControlComputer {
     fn write(&self, writer: &mut SimulatorWriter) {
+        for (id, fap) in self.fap_ids.iter().zip(self.fap) {
+            writer.write(id, fap);
+        }
+
         writer.write(&self.flaps_conf_index_id, self.flaps_conf as u8);
 
         writer.write(
@@ -602,6 +634,34 @@ mod tests {
             self.read_by_name("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD")
         }
 
+        fn read_sfcc_fap_1_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_1")
+        }
+
+        fn read_sfcc_fap_2_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_2")
+        }
+
+        fn read_sfcc_fap_3_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_3")
+        }
+
+        fn read_sfcc_fap_4_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_4")
+        }
+
+        fn read_sfcc_fap_5_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_5")
+        }
+
+        fn read_sfcc_fap_6_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_6")
+        }
+
+        fn read_sfcc_fap_7_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_7")
+        }
+
         fn set_indicated_airspeed(mut self, indicated_airspeed: f64) -> Self {
             self.write_by_name("AIRSPEED INDICATED", indicated_airspeed);
             self
@@ -650,6 +710,34 @@ mod tests {
 
         fn get_slats_fppu_feedback(&self) -> f64 {
             self.query(|a| a.slat_gear.angle().get::<degree>())
+        }
+
+        fn get_fap_1(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[0])
+        }
+
+        fn get_fap_2(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[1])
+        }
+
+        fn get_fap_3(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[2])
+        }
+
+        fn get_fap_4(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[3])
+        }
+
+        fn get_fap_5(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[4])
+        }
+
+        fn get_fap_6(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[5])
+        }
+
+        fn get_fap_7(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[6])
         }
 
         fn test_flap_conf(
@@ -701,6 +789,121 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
 
         assert!(test_bed.contains_variable_with_name("FLAPS_CONF_INDEX"));
+
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_1"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_2"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_3"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_4"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_5"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_6"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_7"));
+    }
+
+    #[test]
+    fn sfcc_faps() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_yellow_hyd_pressure()
+            .set_blue_hyd_pressure()
+            .set_indicated_airspeed(0.)
+            .set_flaps_handle_position(0)
+            .run_one_tick();
+
+        assert!(!test_bed.get_fap_1());
+        assert!(!test_bed.get_fap_2());
+        assert!(!test_bed.get_fap_3());
+        assert!(test_bed.get_fap_4());
+        assert!(!test_bed.get_fap_5());
+        assert!(!test_bed.get_fap_6());
+        assert!(!test_bed.get_fap_7());
+
+        assert!(!test_bed.read_sfcc_fap_1_word());
+        assert!(!test_bed.read_sfcc_fap_2_word());
+        assert!(!test_bed.read_sfcc_fap_3_word());
+        assert!(test_bed.read_sfcc_fap_4_word());
+        assert!(!test_bed.read_sfcc_fap_5_word());
+        assert!(!test_bed.read_sfcc_fap_6_word());
+        assert!(!test_bed.read_sfcc_fap_7_word());
+
+        test_bed = test_bed
+            .set_flaps_handle_position(1)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_fap_1());
+        assert!(test_bed.get_fap_2());
+        assert!(!test_bed.get_fap_3());
+        assert!(!test_bed.get_fap_4());
+        assert!(!test_bed.get_fap_5());
+        assert!(!test_bed.get_fap_6());
+        assert!(test_bed.get_fap_7());
+
+        assert!(!test_bed.read_sfcc_fap_1_word());
+        assert!(test_bed.read_sfcc_fap_2_word());
+        assert!(!test_bed.read_sfcc_fap_3_word());
+        assert!(!test_bed.read_sfcc_fap_4_word());
+        assert!(!test_bed.read_sfcc_fap_5_word());
+        assert!(!test_bed.read_sfcc_fap_6_word());
+        assert!(test_bed.read_sfcc_fap_7_word());
+
+        test_bed = test_bed
+            .set_flaps_handle_position(2)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_fap_1());
+        assert!(test_bed.get_fap_2());
+        assert!(!test_bed.get_fap_3());
+        assert!(!test_bed.get_fap_4());
+        assert!(!test_bed.get_fap_5());
+        assert!(!test_bed.get_fap_6());
+        assert!(test_bed.get_fap_7());
+
+        assert!(!test_bed.read_sfcc_fap_1_word());
+        assert!(test_bed.read_sfcc_fap_2_word());
+        assert!(!test_bed.read_sfcc_fap_3_word());
+        assert!(!test_bed.read_sfcc_fap_4_word());
+        assert!(!test_bed.read_sfcc_fap_5_word());
+        assert!(!test_bed.read_sfcc_fap_6_word());
+        assert!(test_bed.read_sfcc_fap_7_word());
+
+        test_bed = test_bed
+            .set_flaps_handle_position(3)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_fap_1());
+        assert!(test_bed.get_fap_2());
+        assert!(test_bed.get_fap_3());
+        assert!(!test_bed.get_fap_4());
+        assert!(test_bed.get_fap_5());
+        assert!(!test_bed.get_fap_6());
+        assert!(test_bed.get_fap_7());
+
+        assert!(!test_bed.read_sfcc_fap_1_word());
+        assert!(test_bed.read_sfcc_fap_2_word());
+        assert!(test_bed.read_sfcc_fap_3_word());
+        assert!(!test_bed.read_sfcc_fap_4_word());
+        assert!(test_bed.read_sfcc_fap_5_word());
+        assert!(!test_bed.read_sfcc_fap_6_word());
+        assert!(test_bed.read_sfcc_fap_7_word());
+
+        test_bed = test_bed
+            .set_flaps_handle_position(4)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(test_bed.get_fap_1());
+        assert!(test_bed.get_fap_2());
+        assert!(test_bed.get_fap_3());
+        assert!(!test_bed.get_fap_4());
+        assert!(test_bed.get_fap_5());
+        assert!(test_bed.get_fap_6());
+        assert!(test_bed.get_fap_7());
+
+        assert!(test_bed.read_sfcc_fap_1_word());
+        assert!(test_bed.read_sfcc_fap_2_word());
+        assert!(test_bed.read_sfcc_fap_3_word());
+        assert!(!test_bed.read_sfcc_fap_4_word());
+        assert!(test_bed.read_sfcc_fap_5_word());
+        assert!(test_bed.read_sfcc_fap_6_word());
+        assert!(test_bed.read_sfcc_fap_7_word());
     }
 
     #[test]
