@@ -63,23 +63,23 @@
   stroke-width: 0.37px;
 }
 
-.ThickStroke {
-  stroke-width: 0.64mm;
-  stroke-linecap: round;
-}
-
 .SmallStroke {
-  stroke-width: 0.4mm;
+  stroke-width: 0.3mm;
   stroke-linecap: round;
 }
 
 .NormalStroke {
-  stroke-width: 0.1mm;
+  stroke-width: 0.5mm;   //// .16
+  stroke-linecap: round;
+}
+
+.ThickStroke {
+  stroke-width: 0.6mm;
   stroke-linecap: round;
 }
 
 .HugeStroke {
-  stroke-width: 0.8mm;
+  stroke-width: 0.7mm;
   stroke-linecap: round;
 }
 
@@ -127,35 +127,39 @@
 }
 
 .FontLargest {
-  font-size: 22.2px;
+  font-size: 30px;
 }
 
 .FontLarge {
-  font-size: 6.5px;
+  font-size: 28px;
+}
+
+.FontNormal {
+  font-size: 26px;
 }
 
 .FontMedium {
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .FontMediumSmaller {
-  font-size: 5.4px;
+  font-size: 22px;
 }
 
 .FontMediumSmallest {
-  font-size: 4.5px;
+  font-size: 20px;
 }
 
 .FontSmall {
-  font-size: 16.7px;
+  font-size: 18px;
 }
 
 .FontSmallest {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .FontTiny {
-  font-size: 4px;
+  font-size: 14px;
 }
 
 .StartAlign {
@@ -296,7 +300,7 @@ text.Red {
 .ReadoutBackgroundFill {
   fill: $display-background;
   stroke: $display-green;
-  stroke-width: .1mm;
+  stroke-width: .2mm;
   fill-rule: evenodd;
 }
 .ModeChangedPath {

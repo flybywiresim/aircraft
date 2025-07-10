@@ -16,7 +16,7 @@ import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 
-import { calculateHorizonOffsetFromPitch, HudElems } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, HudElems, FIVE_DEG } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
@@ -274,7 +274,7 @@ export class FlightPathDirector extends DisplayComponent<{
         xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
       }
 
-      this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - 182.86}px, 0px)`;
+      this.birdPathCircle.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
 
       if (this.fdCueOffRange) {
         this.birdPathCircle.instance.setAttribute('stroke-dasharray', '3 6');
@@ -318,7 +318,7 @@ export class FlightPathDirector extends DisplayComponent<{
                 S 649 517,      649 512
                 S 645 503,      640 503
                 S 631 507,      631 512 Z"
-                class="SmallStroke Green"
+                class="NormalStroke Green"
                 stroke-dasharray="3 6"
               />
             </g>

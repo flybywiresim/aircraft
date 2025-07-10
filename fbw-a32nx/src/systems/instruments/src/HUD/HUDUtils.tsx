@@ -13,7 +13,7 @@ export const SPD_TAPE_XPOS = 60;
 export const SPD_TAPE_YPOS = 134;
 
 export const XWIND_FULL_OFFSET = -311;
-export const XWIND_TO_AIR_REF_OFFSET = -41.5; //-311
+export const XWIND_TO_AIR_REF_OFFSET = -181.5; //-311
 
 export const calculateHorizonOffsetFromPitch = (pitch: number) => {
   const offset = (pitch * 1024) / 28;
@@ -162,17 +162,18 @@ export class Grid extends DisplayComponent<GridProps> {
     }
     return (
       <g id="Grid & Refs">
-        <g display="none" transform="translate(0 139)">
-          <path class="NormalStroke Red" d="m 111 -139 v 1024" />
-          <path class="NormalStroke Red" d="m 209 -139 v 1024" />
-          <path class="NormalStroke Red" d="m 0 71.5 h 1280" />
-          <path class="NormalStroke Red" d="m 0 -20 h 1280" />
-          <path class="NormalStroke Red" d="m 0 162 h 1280" />
+        <g display="none" transform="translate(0 0)" class="NormalStroke Cyan">
+          <path class="NormalStroke Red" d="m 70 0 v 1024" />
+          <path class="NormalStroke Red" d="m 165 0 v 1024" />
 
-          <path class="NormalStroke Red" d="m 640 ,0 v 1024" />
-          <path class="NormalStroke Red" d="m 0 190 h 1280" />
-          <path class="NormalStroke Red" d="m 0 573 h 1280" />
-          <path class="NormalStroke Red" d="m 0 381.5 h 1280" />
+          <path class="NormalStroke Red" d="m 0 241 h 1280" />
+          <path class="NormalStroke Red" d="m 0 417 h 1280" />
+
+          <path class="NormalStroke Red" d="m 640 0 v 1024" />
+
+          <path class="NormalStroke Red" d="m 0 329 h 1280" />
+          <path class="NormalStroke Red" d="m 0 691 h 1280" />
+          <path class="NormalStroke Red" d="m 0 510.5 h 1280" />
         </g>
         <g id="Grid" display="none">
           {res}

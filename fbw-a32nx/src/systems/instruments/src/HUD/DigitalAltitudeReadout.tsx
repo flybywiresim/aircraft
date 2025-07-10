@@ -158,7 +158,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     return (
       <g id="AltReadoutGroup">
         <g>
-          <svg x="117.754" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+          <svg x="500" y="324.4" width="57.375" height="38.12505" viewBox="0 0 57.375 38.12505">
             <Drum
               type="ten-thousands"
               position={this.tenThousandsPosition}
@@ -167,7 +167,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
               showZero={Subject.create(false)}
               getText={TenThousandsDigit}
               valueSpacing={1}
-              distanceSpacing={7}
+              distanceSpacing={30}
               displayRange={1}
               amount={2}
             />
@@ -179,7 +179,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
               showZero={this.showThousandsZeroSub}
               getText={ThousandsDigit}
               valueSpacing={1}
-              distanceSpacing={7}
+              distanceSpacing={30}
               displayRange={1}
               amount={2}
             />
@@ -190,12 +190,12 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
               color={this.color}
               getText={HundredsDigit}
               valueSpacing={1}
-              distanceSpacing={7}
+              distanceSpacing={30}
               displayRange={1}
               amount={10}
             />
           </svg>
-          <svg x="130.85" y="73.6664" width="8.8647" height="14.313" viewBox="0 0 8.8647 14.313">
+          <svg x="556" y="313" width="37.674975" height="60.83025" viewBox="0 0 37.674975 60.83025">
             <Drum
               type="tens"
               amount={4}
@@ -204,7 +204,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
               color={this.color}
               getText={TensDigits}
               valueSpacing={20}
-              distanceSpacing={4.7}
+              distanceSpacing={20}
               displayRange={40}
             />
           </svg>
@@ -213,22 +213,22 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
           id="AltReadoutReducedAccurMarks"
           class="NormalStroke Green"
           style="display: none"
-          d="m132.61 81.669h4.7345m-4.7345-1.6933h4.7345"
+          d="m563.593 347.093h20.122m-20.122 -7.197h20.122"
         />
         <path
           id="AltReadoutOutline"
           class="NormalStroke Green"
-          d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096"
+          d="m500.438 324.432h55.658v-11.352h37.675v60.83h-37.675v-11.352h-55.658"
         />
 
-        <g id="AltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>
-          <text class="Green" x="121.51714" y="77.956947">
+        <g id="AltNegativeText" class="FontLargest EndAlign" visibility={this.isNegativeSub}>
+          <text class="Green" x="516.447845" y="331.31702475">
             N
           </text>
-          <text class="Green" x="121.7" y="83.251389">
+          <text class="Green" x="517.225" y="353.81840325">
             E
           </text>
-          <text class="Green" x="121.63675" y="88.486031">
+          <text class="Green" x="516.9561875" y="376">
             G
           </text>
         </g>
@@ -271,9 +271,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontLarge MiddleAlign ${this.color}`}
-            x="11.631"
-            y="7.1"
+            class={`FontLargest MiddleAlign ${this.color}`}
+            x="49.43175"
+            y="30.175"
           />,
         );
       } else if (this.props.type === 'thousands') {
@@ -281,9 +281,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontLarge MiddleAlign ${this.color}`}
-            x="7.18"
-            y="7.1"
+            class={`FontLargest MiddleAlign ${this.color}`}
+            x="30.515"
+            y="30.175"
           />,
         );
       } else if (this.props.type === 'ten-thousands') {
@@ -291,9 +291,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontLarge MiddleAlign ${this.color}`}
-            x="2.498"
-            y="7.1"
+            class={`FontLargest MiddleAlign ${this.color}`}
+            x="10.6165"
+            y="30.175"
           />,
         );
       } else if (this.props.type === 'tens') {
@@ -301,9 +301,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontMediumSmaller MiddleAlign ${this.color}`}
-            x="4.5894"
-            y="8.9133"
+            class={`FontSmall MiddleAlign ${this.color}`}
+            x="19.5"
+            y="37.9"
           />,
         );
       }

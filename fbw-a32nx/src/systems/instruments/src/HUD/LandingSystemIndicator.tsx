@@ -26,9 +26,9 @@ import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, LagFilter } from './HUDUtils';
-import { calculateHorizonOffsetFromPitch } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, FIVE_DEG } from './HUDUtils';
 
-const DistanceSpacing = (1024 / 28) * 5; //182.857
+const DistanceSpacing = FIVE_DEG; // (1024 /28) * 5 182.857
 const ValueSpacing = 5;
 
 // FIXME true ref
@@ -47,12 +47,14 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
 
   private readonly ls1Button = ConsumerSubject.create(this.sub.on('ls1Button'), false);
   private readonly ls2Button = ConsumerSubject.create(this.sub.on('ls2Button'), false);
+  private readonly lsGrp = ConsumerSubject.create(this.sub.on('IlsLoc'), '');
   private readonly isLsGrpVisible = MappedSubject.create(
-    ([ls1Btn, ls2Btn]) => {
-      return ls1Btn === true || ls2Btn === true ? 'block' : 'none';
+    ([ls1Btn, ls2Btn, lsGrp]) => {
+      return lsGrp === 'block' ? (ls1Btn === true || ls2Btn === true ? 'block' : 'none') : 'none';
     },
     this.ls1Button,
     this.ls2Button,
+    this.lsGrp,
   );
 
   onAfterRender(node: VNode): void {
@@ -100,7 +102,7 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instru
   render(): VNode {
     return (
       <>
-        <g id="LSGroup" display={this.isLsGrpVisible} transform="scale(2.5 2.5) translate(185 51) ">
+        <g id="LSGroup" display={this.isLsGrpVisible} transform="translate(620 240) ">
           <LandingSystemInfo bus={this.props.bus} />
           <g id="LSGroup">
             <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -263,17 +265,17 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
 
   render(): VNode {
     return (
-      <g id="LSInfoGroup" transform=" translate(-140 125)" ref={this.lsInfoGroup} display={this.infoGrpVis}>
+      <g id="LSInfoGroup" transform="  translate(-540 175)" ref={this.lsInfoGroup} display={this.infoGrpVis}>
         <text
           id="ILSIdent"
           class={{
             Green: true,
-            FontLarge: true,
+            FontMediumSmallest: true,
             AlignLeft: true,
             HiddenElement: this.isLsIdentHidden,
           }}
-          x="1.184"
-          y="145.11522"
+          x="2.96"
+          y="360"
         >
           {this.lsIdentText}
         </text>
@@ -281,12 +283,12 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
           id="ILSFreqLeading"
           class={{
             Green: true,
-            FontLarge: true,
+            FontMediumSmallest: true,
             AlignLeft: true,
             HiddenElement: this.isLsFreqHidden,
           }}
-          x="1.3610243"
-          y="151.11575"
+          x="3.4"
+          y="378"
         >
           {this.freqTextLeading}
         </text>
@@ -294,26 +296,26 @@ class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
           id="ILSFreqTrailing"
           class={{
             Green: true,
-            FontMediumSmaller: true,
+            FontSmall: true,
             AlignLeft: true,
             HiddenElement: this.isLsFreqHidden,
           }}
-          x="12.964463"
-          y="151.24084"
+          x="40"
+          y="378"
         >
           {this.freqTextTrailing}
         </text>
 
         <g id="ILSDistGroup" class={{ HiddenElement: this.isDmeAvailable.map((v) => !v) }}>
-          <text class="Green AlignLeft" x="1.3685881" y="157.26602">
-            <tspan id="ILSDistLeading" class="FontLarge StartAlign">
+          <text class="Green AlignLeft" x="3.42147025" y="396">
+            <tspan id="ILSDistLeading" class="FontMediumSmallest StartAlign">
               {this.dmeTextLeading}
             </tspan>
-            <tspan id="ILSDistTrailing" class="FontMediumSmaller StartAlign">
+            <tspan id="ILSDistTrailing" class="FontSmall StartAlign">
               {this.dmeTextTrailing}
             </tspan>
           </text>
-          <text class="Green FontMediumSmaller AlignLeft" x="17.159119" y="157.22606">
+          <text class="Green FontSmall AlignLeft" x="55" y="396">
             NM
           </text>
         </g>
@@ -340,7 +342,7 @@ class LocBcIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <g id="LocBcIndicator">
-        <text class="FontMediumSmaller AlignLeft Magenta" x="38.410" y="126.45">
+        <text class="FontMediumSmaller AlignLeft Magenta" x="96" y="316.125">
           {this.text}
         </text>
       </g>
@@ -391,22 +393,22 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
     if (this.LsState) {
       if (this.onGround) {
         this.LSLocRef.instance.style.visibility = 'visible';
-        this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+        this.LSLocRef.instance.style.transform = `translate3d(-152px, 60px, 0px)`;
       } else {
         if (this.declutterMode == 2) {
           this.LSLocRef.instance.style.visibility = 'hidden';
         } else {
           this.LSLocRef.instance.style.visibility = 'visible';
         }
-        this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+        this.LSLocRef.instance.style.transform = `translate3d(-152px, 120px, 0px)`;
       }
     } else {
       if (this.onGround) {
         this.LSLocRef.instance.style.visibility = 'visible';
-        this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+        this.LSLocRef.instance.style.transform = `translate3d(-152px, 60px, 0px)`;
       } else {
         this.LSLocRef.instance.style.visibility = 'hidden';
-        this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+        this.LSLocRef.instance.style.transform = `translate3d(-152px, 120px, 0px)`;
       }
     }
   }
@@ -443,10 +445,10 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
       .handle((value) => {
         this.onGround = value;
         if (value) {
-          this.LSLocRef.instance.style.transform = `translate3d(0px, 60px, 0px)`;
+          this.LSLocRef.instance.style.transform = `translate3d(-152px, 60px, 0px)`;
           this.LSLocRef.instance.style.visibility = 'visible';
         } else {
-          this.LSLocRef.instance.style.transform = `translate3d(0px, 120px, 0px)`;
+          this.LSLocRef.instance.style.transform = `translate3d(-152px, 120px, 0px)`;
           this.LSLocRef.instance.style.visibility = 'hidden';
         }
       });
@@ -493,43 +495,31 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
   render(): VNode {
     return (
       <g ref={this.LSLocRef} id="LocalizerSymbolsGroup">
-        <path
-          class="NormalStroke Green"
-          d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke Green"
-          d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke Green"
-          d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke Green"
-          d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
+        <path class="NormalStroke Green" d="m137.01 326.275a2.518 2.52 0 1 0 -5.037 0 2.518 2.52 0 1 0 5.037 0z" />
+        <path class="NormalStroke Green" d="m99.232 326.275a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
+        <path class="NormalStroke Green" d="m212.56 326.275a2.518 2.52 0 1 0 -5.037 0 2.518 2.52 0 1 0 5.037 0z" />
+        <path class="NormalStroke Green" d="m250.325 326.275a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
         <g class="HiddenElement" ref={this.diamondGroup}>
           <path
             id="LocDiamondRight"
             ref={this.rightDiamond}
             class="NormalStroke Green HiddenElement"
-            d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198"
+            d="m247.817 332.575 9.444 -6.3 -9.444 -6.3"
           />
           <path
             id="LocDiamondLeft"
             ref={this.leftDiamond}
             class="NormalStroke Green HiddenElement"
-            d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198"
+            d="m96.715 332.575 -9.444 -6.3 9.444 -6.3"
           />
           <path
             id="LocDiamond"
             ref={this.locDiamond}
             class="NormalStroke Green HiddenElement"
-            d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
+            d="m162.823 326.275 9.444 6.3 9.444 -6.3 -9.444 -6.3z"
           />
         </g>
-        <path id="LocalizerNeutralLine" class="Green Fill" d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z" />
+        <path id="LocalizerNeutralLine" class="Green Fill" d="m170.351 334.228v-15.886h3.829v15.886z" />
       </g>
     );
   }
@@ -716,41 +706,29 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   render(): VNode {
     return (
       <g id="GlideSlopeSymbolsGroup" ref={this.LSGsRef}>
-        <path class={{ Green: true, Fill: true }} d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z" />
-        <path
-          class="NormalStroke Green"
-          d="m110.71 50.585a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke Green"
-          d="m110.71 65.704a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke Green"
-          d="m110.71 95.942a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
-        <path
-          class="NormalStroke Green"
-          d="m110.71 111.06a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-        />
+        <path class={{ Green: true, Fill: true }} d="m287.122 200.167v3.78h-21.082v-3.78z" />
+        <path class="NormalStroke Green" d="m276.775 126.463a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
+        <path class="NormalStroke Green" d="m276.775 164.26a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
+        <path class="NormalStroke Green" d="m276.775 239.855a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
+        <path class="NormalStroke Green" d="m276.775 277.65a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
         <g class="HideGSDiamond" ref={this.diamondGroup}>
           <path
             id="GlideSlopeDiamondLower"
             ref={this.upperDiamond}
             class="NormalStroke Green HiddenElement"
-            d="m107.19 111.06 2.5184 3.7798 2.5184-3.7798"
+            d="m267.975 277.65 6.296 9.45 6.296 -9.45"
           />
           <path
             id="GlideSlopeDiamondUpper"
             ref={this.lowerDiamond}
             class="NormalStroke Green HiddenElement"
-            d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798"
+            d="m267.975 126.463 6.296 -9.45 6.296 9.45"
           />
           <path
             id="GlideSlopeDiamond"
             ref={this.glideSlopeDiamond}
             class="NormalStroke Green HiddenElement"
-            d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z"
+            d="m274.25 192.608 -6.296 9.45 6.296 9.45 6.296 -9.45z"
           />
         </g>
       </g>
@@ -964,7 +942,7 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <text id="ILSMarkerText" class={this.classNames} x="110" y="252.5">
+      <text id="ILSMarkerText" class={this.classNames} x="275" y="631.25">
         {this.markerText}
       </text>
     );

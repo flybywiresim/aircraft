@@ -27,7 +27,7 @@ import { HeadingOfftape } from './HeadingIndicator';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { VerticalMode } from '@shared/autopilot';
 const DisplayRange = 35;
-const DistanceSpacing = 182.86;
+const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
 interface LSPath {
@@ -91,7 +91,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           if (pitch.isNormalOperation()) {
             this.pitchGroupRef.instance.style.display = 'block';
 
-            this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - 182.857}px, 0px)`;
+            this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value) - FIVE_DEG}px, 0px)`;
           } else {
             this.pitchGroupRef.instance.style.display = 'none';
           }
@@ -136,7 +136,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
   render(): VNode {
     return (
       <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
-        <g id="PitchGroup" ref={this.pitchGroupRef} class="ScaledStroke Green">
+        <g id="PitchGroup" ref={this.pitchGroupRef} class="NormalStroke Green">
           <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
           <PitchScale
             bus={this.props.bus}
@@ -145,7 +145,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
           />
 
           {/* horizon */}
-          <path id="HorizonLine" d="m -100 512 h 1480" class="SmallStroke Green" />
+          <path id="HorizonLine" d="m -100 512 h 1480" class="NormalStroke Green" />
 
           <HorizontalTape
             type="headingTape"
@@ -344,7 +344,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
         id="RollTriangleGroup"
         ref={this.rollTriangle}
         display={this.sVisibility}
-        class="SmallStroke Green CornerRound"
+        class="NormalStroke Green CornerRound"
       >
         <path d="M 640.18 140 l -10,21.89 h 20z" />
         <path
@@ -597,22 +597,22 @@ class PitchScale extends DisplayComponent<{
       // negative pitch, right dotted lines
       i == 1 ? (this.sVisibilitySwitch = this.sVisibilityDeclutterMode2) : (this.sVisibilitySwitch = this.sVisibility);
       result.push(
-        <path class="LargeStroke Green" d={`m 761.74,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
-        <path class="LargeStroke Green" d={`m 781.44,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
-        <path class="LargeStroke Green" d={`m 801.14,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 761.74,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 781.44,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 801.14,${512 + i * FIVE_DEG} h 12`} display={this.sVisibilitySwitch} />,
         <path
-          class="LargeStroke Green"
+          class="NormalStroke Green"
           d={`m 820.84,${512 + i * FIVE_DEG} h 12 v -11 `}
           display={this.sVisibilitySwitch}
         />,
       );
       // negative pitch, left dotted lines
       result.push(
-        <path class="LargeStroke Green" d={`m 518.26,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
-        <path class="LargeStroke Green" d={`m 498.56,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
-        <path class="LargeStroke Green" d={`m 478.86,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 518.26,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 498.56,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
+        <path class="NormalStroke Green" d={`m 478.86,${512 + i * FIVE_DEG} h -12`} display={this.sVisibilitySwitch} />,
         <path
-          class="LargeStroke Green"
+          class="NormalStroke Green"
           d={`m 459.16,${512 + i * FIVE_DEG} h -12 v -11`}
           display={this.sVisibilitySwitch}
         />,
@@ -639,28 +639,18 @@ class PitchScale extends DisplayComponent<{
       const value: number = i * 5;
       const str: string = value.toString();
       result.push(
-        <text
-          class="FontSmall Green Fill EndAlign"
-          x="445"
-          y={512 - i * FIVE_DEG + 8.35}
-          display={this.sVisibilitySwitch}
-        >
+        <text class="FontSmall Green EndAlign" x="445" y={512 - i * FIVE_DEG + 8.35} display={this.sVisibilitySwitch}>
           {str}
         </text>,
       );
       result.push(
-        <text
-          class="FontSmall Green Fill StartAlign"
-          x="835"
-          y={512 - i * FIVE_DEG + 8.35}
-          display={this.sVisibilitySwitch}
-        >
+        <text class="FontSmall Green StartAlign" x="835" y={512 - i * FIVE_DEG + 8.35} display={this.sVisibilitySwitch}>
           {str}
         </text>,
       );
     }
     return (
-      <g id="pitchScale" class="LargeStroke Green">
+      <g id="pitchScale" class="NormalStroke Green">
         {result}
       </g>
     );

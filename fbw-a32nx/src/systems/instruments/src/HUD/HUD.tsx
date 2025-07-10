@@ -214,7 +214,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
         normDmc={getDisplayIndex()}
       >
         <svg class="hud-svg" version="1.1" viewBox="0 0 1280 1024" xmlns="http://www.w3.org/2000/svg">
-          <Grid bus={this.props.bus} />
           <Horizon
             bus={this.props.bus}
             instrument={this.props.instrument}
@@ -267,26 +266,26 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
               id="Mask2"
               class="BackgroundFill"
               display={this.spdTape}
-              d="M 60 290 H 190 V 720 H 60 Z  M 61 323 v 364 h 128 v -364 z"
+              d="M 60 290 H 190 V 720 H 60 Z  M 61 329 v 363 h 128 v -363 z"
             />
             <path
               id="Mask2Cw"
               class="BackgroundFill"
               display={this.xWindSpdTape}
-              d="M 60 210 H 190 V 450 H 60 Z  M 61 242 v 172h 128 v -172 z"
+              d="M 60 210 H 190 V 450 H 60 Z  M 61 241 v 176 h 128 v -176 z"
             />
             <path
               id="Mask3"
               class="BackgroundFill"
               display={this.altTape}
-              d="M 1038 280 h 122 V 720 H 1038 Z  M 1039 323 v 364 h 120 v -364 z"
+              d="M 1038 280 h 122 V 720 H 1038 Z  M 1039 329 v 363 h 120 v -363 z"
             />
 
             <path
               id="Mask3Cw"
               class="BackgroundFill"
               display={this.xWindAltTape}
-              d="M 1038 250 h 122 v 160h -122 Z  M 1039 284 v 90 h 120 v -90z"
+              d="M 1038 250 h 122 v 160h -122 Z  M 1039 283 v 90 h 120 v -90z"
             />
           </g>
 
@@ -314,6 +313,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
           <DeclutterIndicator bus={this.props.bus} />
           <HudWarnings bus={this.props.bus} instrument={this.props.instrument} />
+          <Grid bus={this.props.bus} />
         </svg>
       </DisplayUnit>
     );

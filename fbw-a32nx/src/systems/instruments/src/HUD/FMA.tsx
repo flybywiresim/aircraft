@@ -298,14 +298,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   render(): VNode {
     return (
-      <g ref={this.FMARef} id="FMA" transform="scale(5 5) translate(40 0)">
-        {/* <g class="NormalStroke Grey">
-          <path d={this.firstBorderSub} />
-          <path d={this.secondBorderSub} />
-          <path d="m102.52 0.33732v20.864" />
-          <path d="m133.72 0.33732v20.864" />
-        </g> */}
-
+      <g ref={this.FMARef} id="FMA" transform="translate(200 0)">
         <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
         <Row3
@@ -471,8 +464,8 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode {
     return (
       <g id="A2Cell">
-        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 3.2 8 h 28" stroke-dasharray="1 1.8" />
-        <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653" style="white-space: pre">
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m16 40h140" stroke-dasharray="5 9" />
+        <text ref={this.autoBrkRef} class={this.className} x="83.9" y="68.75" style="white-space: pre">
           {this.text}
         </text>
       </g>
@@ -535,17 +528,17 @@ function getA1A2CellText(
     isShown = false;
     isTwoLine = true;
     text = `
-                                <path class="NormalStroke Green" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMediumSmaller MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMediumSmaller MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
+                                <path class="NormalStroke Green" d="m125.57 9.072v67.53h-84.76v-67.53z" />
+                                <text class="FontMediumSmaller MiddleAlign White" x="85" y="32.64">MAN</text>
+                                <text class="FontMediumSmaller MiddleAlign White" x="84.34" y="68.75">TOGA</text>
                             `;
   } else if (false) {
     isShown = false;
     isTwoLine = true;
     text = `<g>
-                                <path class="NormalStroke Green" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
-                                <text class="FontMediumSmaller MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMediumSmaller MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
+                                <path class="NormalStroke Green" d="m157.605 9.072v67.53h-151.085v-67.53z" />
+                                <text class="FontMediumSmaller MiddleAlign White" x="85" y="32.64">MAN</text>
+                                <text class="FontMediumSmaller MiddleAlign White" x="84.34" y="68.75">GA SOFT</text>
                             </g>`;
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(13, false)) {
     isShown = false;
@@ -553,10 +546,10 @@ function getA1A2CellText(
     const FlexTemp = Math.round(flexTemp);
     const FlexText = FlexTemp >= 0 ? `+${FlexTemp}` : FlexTemp.toString();
     text = `<g>
-                                <path class="NormalStroke Green" d="m30.521 1.8143v13.506h-27.217v-13.506z" />
-                                <text class="FontMediumSmaller MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMediumSmaller MiddleAlign White" x="9.669141" y="14.351689">FLX</text>
-                                <text class="FontMediumSmaller MiddleAlign Cyan" x="24.099141" y="14.351689">
+                                <path class="NormalStroke Green" d="m152.605 9.072v67.53h-136.085v-67.53z" />
+                                <text class="FontMediumSmaller MiddleAlign White" x="85" y="32.64">MAN</text>
+                                <text class="FontMediumSmaller MiddleAlign White" x="48.35" y="68.75">FLX</text>
+                                <text class="FontMediumSmaller MiddleAlign Cyan" x="120" y="68.75">
                                ${FlexText}
                                 </text>
                             </g>`;
@@ -564,56 +557,56 @@ function getA1A2CellText(
     isShown = false;
     isTwoLine = true;
     text = `<g>
-                                <path class="NormalStroke Green" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMediumSmaller MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMediumSmaller MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
+                                <path class="NormalStroke Green" d="m125.57 9.072v67.53h-84.76v-67.53z" />
+                                <text class="FontMediumSmaller MiddleAlign White" x="85" y="32.64">MAN</text>
+                                <text class="FontMediumSmaller MiddleAlign White" x="84.34" y="68.75">DTO</text>
                             </g>`;
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(12, false) && atEngaged && !atActive) {
     isShown = false;
     isTwoLine = true;
     text = `<g>
-                                <path class="NormalStroke Green" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMediumSmaller MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMediumSmaller MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
+                                <path class="NormalStroke Green" d="m125.57 9.072v67.53h-84.76v-67.53z" />
+                                <text class="FontMediumSmaller MiddleAlign White" x="85" y="32.64">MAN</text>
+                                <text class="FontMediumSmaller MiddleAlign White" x="84.34" y="68.75">MCT</text>
                             </g>`;
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(15, false) && atEngaged && !atActive) {
     isShown = false;
     isTwoLine = true;
     text = `<g>
-                                <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMediumSmaller MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
-                                <text class="FontMediumSmaller MiddleAlign White" x="16.869141" y="14.351689">THR</text>
+                                <path class="NormalStroke Amber" d="m125.57 9.072v67.53h-84.76v-67.53z" />
+                                <text class="FontMediumSmaller MiddleAlign White" x="85" y="32.64">MAN</text>
+                                <text class="FontMediumSmaller MiddleAlign White" x="84.34" y="68.75">THR</text>
                             </g>`;
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(17, false)) {
     isShown = false;
     amberFlashingBox = true;
-    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>';
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">A.FLOOR</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(18, false)) {
     isShown = false;
     amberFlashingBox = true;
-    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>';
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">TOGA LK</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(19, false)) {
-    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">SPEED</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(20, false)) {
-    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">MACH</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(12, false) && atEngaged && atActive) {
-    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">THR MCT</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(14, false)) {
-    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">THR CLB</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(15, false) && atEngaged && atActive) {
-    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">THR LVR</text>';
   } else if (fcuAtsFmaDiscreteWord.bitValueOr(16, false)) {
-    text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+    text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">THR IDLE</text>';
   } else if (autoBrakeActive) {
     switch (autoBrakeMode) {
       case 1:
-        text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
+        text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">BRK LO</text>';
         break;
       case 2:
-        text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
+        text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">BRK MED</text>';
         break;
       case 3:
-        text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
+        text = '<text class="FontMediumSmaller MiddleAlign Green" x="83.9" y="32.64">BRK MAX</text>';
         break;
       default:
         text = '';
@@ -724,11 +717,11 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
           ref={this.modeChangedPathRef}
           visibility="hidden"
           class="NormalStroke Green"
-          d="m3.3 1.8143h27.127v6.0476h-27.127z"
+          d="m16.5 9.072h135.635v30.238h-135.635z"
         />
         <g ref={this.cellRef} />
         <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} visible={this.amberFlashingBox}>
-          <path class="NormalStroke Amber" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+          <path class="NormalStroke Amber" d="m3.528 9.072h154.635v30.238h-154.635z" />
         </FlashOneHertz>
       </g>
     );
@@ -815,17 +808,11 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   render(): VNode {
     return (
       <g id="A3Cell">
-        {/* <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 20 16.4 h 30" stroke-dasharray="1 1.8" /> */}
-        <path
-          id="dash"
-          display={this.isArmed}
-          class="NormalStroke Green"
-          d="m 3.2 16.4 h 28"
-          stroke-dasharray="1 1.8"
-        />
+        {/* <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 20 16.4 h 30" stroke-dasharray="5 9" /> */}
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 16 82 h 140" stroke-dasharray="5 9" />
 
         <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} flashing={this.shouldFlash}>
-          <text class={this.classSub} x="16.989958" y="21.641243">
+          <text class={this.classSub} x="85" y="105.25">
             {this.textSub}
           </text>
         </FlashOneHertz>
@@ -886,11 +873,11 @@ class AB3Cell extends DisplayComponent<{ AB3Message: Subscribable<string[]> }> {
   render(): VNode {
     return (
       <g id="AB3Cell">
-        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 20 16.4 h 30" stroke-dasharray="1 1.8" />
-        <text class="FontMediumSmaller  MiddleAlign Green" style="white-space: pre" x={this.textXPosSub} y="21.656223">
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m100 82h150" stroke-dasharray="5 9" />
+        <text class="FontMediumSmaller  MiddleAlign Green" style="white-space: pre" x={this.textXPosSub} y="18.65">
           {this.textSub}
         </text>
-        <text class="FontMediumSmaller  MiddleAlign Green" x="52.934673" y="21.656223">
+        <text class="FontMediumSmaller  MiddleAlign Green" x="264.65" y="105.25">
           {this.text2Sub}
         </text>
       </g>
@@ -1053,7 +1040,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
     const bigBoxDisplayed = tcasMode && this.fmgcDiscreteWord7.bitValueOr(18, false);
     const boxPathString =
-      tcasMode && bigBoxDisplayed ? 'm35.756 1.8143h27.918v13.506h-27.918z' : 'm35.756 1.8143h27.918v6.0476h-27.918z';
+      tcasMode && bigBoxDisplayed ? 'm178.78 9.072h139.59v67.53h-139.59z' : 'm178.78 9.072h139.59v30.238h-139.59z';
 
     this.boxPathStringSub.set(boxPathString);
 
@@ -1146,19 +1133,19 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         <path ref={this.modeChangedPathRef} class={this.boxClassSub} visibility="hidden" d={this.boxPathStringSub} />
 
         <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} visible={this.inSpeedProtection}>
-          <path class="NormalStroke Green" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
+          <path class="NormalStroke Green" d="m178.78 9.072h139.59v30.238h-139.59z" />
         </FlashOneHertz>
 
         <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.inModeReversion}>
-          <path class="NormalStroke Green" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
+          <path class="NormalStroke Green" d="m178.78 9.072h139.59v30.238h-139.59z" />
         </FlashOneHertz>
 
         <text
           ref={this.fmaTextRef}
           style="white-space: pre"
           class={this.activeVerticalModeClassSub}
-          x="49.921795"
-          y="7.1040988"
+          x="249.5"
+          y="32.64"
         >
           <tspan>{this.verticalText}</tspan>
           <FlashOneHertz
@@ -1268,13 +1255,13 @@ class B2Cell extends DisplayComponent<CellProps> {
           id="dash"
           display={this.fmaVerticalArmed}
           class="NormalStroke Green"
-          d="m 35.7 8 h 30"
-          stroke-dasharray="1 2"
+          d="m178.5 40h150"
+          stroke-dasharray="5 10"
         />
-        <text class={this.classSub} style="white-space: pre" x="40.777474" y="13.629653">
+        <text class={this.classSub} style="white-space: pre" x="203.8" y="65">
           {this.text1Sub}
         </text>
-        <text class="FontMediumSmaller Smaller MiddleAlign Green" x="56.19803" y="13.629653">
+        <text class="FontMediumSmaller Smaller MiddleAlign Green" x="281" y="65">
           {this.text2Sub}
         </text>
       </g>
@@ -1396,9 +1383,9 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
           ref={this.modeChangedPathRef}
           class="NormalStroke Green"
           visibility="hidden"
-          d="m99.87 1.8143v6.0476h-31.025l1e-6 -6.0476z"
+          d="m499.35 9.072 v 30.238 h-155.125 v -30.238 z"
         />
-        <text class="FontMediumSmaller  MiddleAlign Green" x="84.856567" y="6.9873109">
+        <text class="FontMediumSmaller  MiddleAlign Green" x="424" y="32.64">
           {this.textSub}
         </text>
       </g>
@@ -1467,8 +1454,8 @@ class C2Cell extends DisplayComponent<CellProps> {
   render(): VNode {
     return (
       <g id="C2Cell">
-        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 70 8 h 30" stroke-dasharray="1 2" />
-        <text class="FontMediumSmaller MiddleAlign Green" x="84.234184" y="13.629653">
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m350 40 h 150" stroke-dasharray="5 10" />
+        <text class="FontMediumSmaller MiddleAlign Green" x="421" y="65">
           {this.textSub}
         </text>
       </g>
@@ -1561,9 +1548,9 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
           ref={this.modeChangedPathRef}
           class="NormalStroke Green"
           visibility="hidden"
-          d="m50.178 1.8143h35.174v6.0476h-35.174z"
+          d="m250.89 9.072h175.87v30.238h-175.87z"
         />
-        <text class="FontMediumSmaller  MiddleAlign Green" x="67.9795" y="6.8893085">
+        <text class="FontMediumSmaller  MiddleAlign Green" x="340" y="32.64">
           {this.textSub}
         </text>
       </g>
@@ -1696,9 +1683,7 @@ class BC3Cell extends DisplayComponent<{ BC3Message: Subscribable<string[]> } & 
   }
 
   render(): VNode {
-    return (
-      <text ref={this.bc3Cell} class={this.normalClassNames} x="68.087875" y="21.627102" style="white-space: pre" />
-    );
+    return <text ref={this.bc3Cell} class={this.normalClassNames} x="340" y="105" style="white-space: pre" />;
   }
 }
 
@@ -1763,9 +1748,9 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
       this.text2Sub.set(text2);
 
       if (text2 !== '') {
-        this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v13.506h-27.994z');
+        this.modeChangedPathRef.instance.setAttribute('d', 'm520.5 9.05 h 140 v 67.53 h -140 z');
       } else {
-        this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v6.0476h-27.994z');
+        this.modeChangedPathRef.instance.setAttribute('d', 'm520.5 9.05 h 140 v 30.2386 h -140 z');
       }
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
@@ -1797,10 +1782,10 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   render(): VNode {
     return (
       <g id="D1D2Cell">
-        <text class="FontMediumSmaller MiddleAlign White" x="118.45866" y="7.125926">
+        <text class="FontMediumSmaller MiddleAlign White" x="592" y="32.64">
           {this.text1Sub}
         </text>
-        <text class="FontMediumSmaller MiddleAlign White" x="118.39752" y="14.289783">
+        <text class="FontMediumSmaller MiddleAlign White" x="592" y="68.75">
           {this.text2Sub}
         </text>
         <path ref={this.modeChangedPathRef} class="NormalStroke Green" visibility="hidden" />
@@ -1884,8 +1869,8 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
           MiddleAlign: true,
           Green: true,
         }}
-        x="118.38384"
-        y="21.5"
+        x="592"
+        y="104.5"
       >
         <tspan>{this.mdaDhMode}</tspan>
         <tspan
@@ -1968,9 +1953,9 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
           ref={this.modeChangedPathRef}
           visibility="hidden"
           class="NormalStroke Green"
-          d="m156.13 1.8143v6.0476h-20.81v-6.0476z"
+          d="m780.65 9.05 v30.2386h-104.05v-30.2386z"
         />
-        <text class="FontMediumSmaller  MiddleAlign Green" x="145.61546" y="6.9559975">
+        <text class="FontMediumSmaller  MiddleAlign Green" x="728.05 " y="32.64">
           {this.textSub}
         </text>
       </g>
@@ -2078,11 +2063,11 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
       <g id="E2Cell">
         <path
           ref={this.modeChangedPathRef}
-          d="m156.13 9.0715v6.0476h-20.81v-6.0476z"
+          d="m780.65 45 v30.2386h-104.05v-30.2386z"
           visibility="hidden"
           class="NormalStroke Green"
         />
-        <text class="FontMediumSmaller  MiddleAlign Green" x="145.95045" style="word-spacing: -1.9844px" y="14.417698">
+        <text class="FontMediumSmaller  MiddleAlign Green" x="729.75" style="word-spacing: -10px" y="69">
           {this.textSub}
         </text>
       </g>
@@ -2139,7 +2124,7 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
           this.displayModeChangedPath(true);
         }
 
-        this.posSub.set(!atActive ? 21.253048 : 21.753487);
+        this.posSub.set(!atActive ? 103.25 : 105.75);
         this.classSub.set(className);
       });
   }
@@ -2147,20 +2132,14 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
   render(): VNode {
     return (
       <g id="E3Cell">
-        <path
-          id="dash"
-          display={this.isArmed}
-          class="NormalStroke Green"
-          d="m 135.5 16.4 h 21"
-          stroke-dasharray="1 1.8"
-        />
+        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m 677.5 82 h 105" stroke-dasharray="5 9" />
         <path
           ref={this.modeChangedPathRef}
           class="NormalStroke Green"
           visibility="hidden"
-          d="m135.32 16.329h20.81v6.0476h-20.81z"
+          d="m676.6 81.645 h104.05v30.2386h-104.05z"
         />
-        <text class={this.classSub} x="145.75578" y={this.posSub}>
+        <text class={this.classSub} x="728.7" y={this.posSub}>
           A/THR
         </text>
       </g>

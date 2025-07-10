@@ -51,8 +51,8 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
           const tickRef = FSComponent.createRef<SVGGElement>();
           graduationPoints.push(
             <g ref={tickRef} style={`transform: translate3d(0px, ${offset}px, 0px)`} id="spdVerticalTape">
-              <path class="NormalStroke Green" d="m19.031 80.818h-2.8206" />
-              <text class="FontMediumSmaller MiddleAlign Green" x="8.0348943" y="82.936722">
+              <path class="NormalStroke Green" d="m80.882 343.476h-11.988" />
+              <text class="FontMedium MiddleAlign Green" x="34" y="352.75">
                 {text}
               </text>
             </g>,
@@ -93,9 +93,9 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
 
           graduationPoints.push(
             <g ref={tickRef} style={`transform: translate3d(0px, ${offset}px, 0px`}>
-              <path class="NormalStroke Green HiddenElement" d="m115.79 81.889 1.3316-1.0783-1.3316-1.0783" />
-              <path class="NormalStroke Green" d="m130.85 80.819h-2.0147" />
-              <text class="FontMediumSmaller MiddleAlign Green" x="123.28826" y="82.64006">
+              <path class="NormalStroke Green HiddenElement" d="m492.108 348.028 5.659 -4.583 -5.659 -4.583" />
+              <path class="NormalStroke Green" d="m556.112 343.481h-8.562" />
+              <text class="FontMedium MiddleAlign Green" x="524" y="351">
                 {text}
               </text>
             </g>,

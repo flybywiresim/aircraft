@@ -164,14 +164,14 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
   render(): VNode {
     return (
       //   change lvar when btns added to model.
-      <g id="CrosswindSpeedReadoutGroup" transform="translate(-125 -.5)">
+      <g id="CrosswindSpeedReadoutGroup" transform="translate(-125 245)">
         <path
           id="CrosswindSpeedReadoutOutline"
           class="NormalStroke Green ReadoutBackgroundFill"
-          d="m125.5 77.5 h 13 v 7 h -13 z"
+          d="m  130   83 h 55.25 v 30 h -55.25z"
         />
         <g>
-          <svg x="117" y="76.5" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+          <svg x="117" y="76.5" width="57.375" height="38.125" viewBox="0 0 57.375 38.125">
             <Drum
               type="hundreds"
               position={this.hundredsPosition}
@@ -179,12 +179,12 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
               color={this.color}
               getText={HundredsDigit}
               valueSpacing={1}
-              distanceSpacing={10}
+              distanceSpacing={42.5}
               displayRange={1}
               amount={10}
             />
           </svg>
-          <svg x="128.5" y="76.5" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+          <svg x="128.5" y="76.5" width="57.375" height="38.125" viewBox="0 0 57.375 38.125">
             <Drum
               type="tens"
               position={this.tensPosition}
@@ -192,12 +192,12 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
               color={this.color}
               getText={TensDigits}
               valueSpacing={1}
-              distanceSpacing={10}
+              distanceSpacing={42.5}
               displayRange={1}
               amount={10}
             />
           </svg>
-          <svg x="132.5" y="76.5" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+          <svg x="132.5" y="76.5" width="57.375" height="38.125" viewBox="0 0 57.375 38.125">
             <Drum
               type="unit"
               position={this.unitsValue}
@@ -205,7 +205,7 @@ export class CrosswindDigitalSpeedReadout extends DisplayComponent<CrosswindDigi
               color={this.color}
               getText={UnitDigits}
               valueSpacing={1}
-              distanceSpacing={10}
+              distanceSpacing={42.5}
               displayRange={1}
               amount={10}
             />
@@ -267,9 +267,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontLarge MiddleAlign ${this.color}`}
-            x="11.631"
-            y="7.1"
+            class={`FontNormal MiddleAlign ${this.color}`}
+            x="24"
+            y="30.175"
           />,
         );
       } else if (this.props.type === 'thousands') {
@@ -277,9 +277,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontLarge MiddleAlign ${this.color}`}
-            x="7.18"
-            y="7.1"
+            class={`FontNormal MiddleAlign ${this.color}`}
+            x="30.6"
+            y="30.175"
           />,
         );
       } else if (this.props.type === 'ten-thousands') {
@@ -287,9 +287,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontLarge MiddleAlign ${this.color}`}
-            x="2.498"
-            y="7.1"
+            class={`FontNormal MiddleAlign ${this.color}`}
+            x="10.6"
+            y="30.175"
           />,
         );
       } else if (this.props.type === 'tens') {
@@ -297,9 +297,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontLarge MiddleAlign ${this.color}`}
-            x="4"
-            y="7.1"
+            class={`FontNormal MiddleAlign ${this.color}`}
+            x="30"
+            y="30.175"
           />,
         );
       } else if (this.props.type === 'unit') {
@@ -307,9 +307,9 @@ class Drum extends DisplayComponent<DrumProperties> {
           <text
             ref={digitRef}
             style="transform: rotate3d(0px, 0px, 0px)"
-            class={`FontLarge MiddleAlign ${this.color}`}
-            x="4"
-            y="7.1"
+            class={`FontNormal MiddleAlign ${this.color}`}
+            x="44"
+            y="30.175"
           />,
         );
       }

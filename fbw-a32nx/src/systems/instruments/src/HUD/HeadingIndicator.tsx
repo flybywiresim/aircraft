@@ -18,13 +18,13 @@ import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HorizontalTape } from './HorizontalTape';
-import { getSmallestAngle, HudElems } from './HUDUtils';
+import { getSmallestAngle, HudElems, FIVE_DEG } from './HUDUtils';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { getDisplayIndex } from './HUD';
 
 const DisplayRange = 18;
-const DistanceSpacing = 182.857;
+const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
 interface HeadingTapeProps {

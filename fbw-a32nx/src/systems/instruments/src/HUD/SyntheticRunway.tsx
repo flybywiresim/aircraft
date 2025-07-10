@@ -431,18 +431,18 @@ export class SyntheticRunway extends DisplayComponent<{
     const res: SVGPathElement[] = [];
     for (let i = 0; i < 4; i++) {
       const pathRef = FSComponent.createRef<SVGTextElement>();
-      res.push(<path class="SmallStroke Green" ref={pathRef} d="" />);
+      res.push(<path class="NormalStroke Green" ref={pathRef} d="" />);
       this.pathRefs.push(pathRef);
     }
     for (let i = 0; i < 4; i++) {
       const centerlineRef = FSComponent.createRef<SVGTextElement>();
-      res.push(<path class="SmallStroke Green" ref={centerlineRef} d="" />);
+      res.push(<path class="NormalStroke Green" ref={centerlineRef} d="" />);
       this.centerlinePathRefs.push(centerlineRef);
     }
 
     return (
       <g id="ARollGroup" ref={this.rollGroupRef} style="display:none">
-        <g id="APitchGroup" ref={this.pitchGroupRef} class="ScaledStroke">
+        <g id="APitchGroup" ref={this.pitchGroupRef} class="NormalStroke">
           <g id="SyntheticRunway" display={this.visToggle}>
             {res}
           </g>

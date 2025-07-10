@@ -499,49 +499,33 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
 
   render(): VNode {
     return (
-      <g id="YawLocSymbolsGroup" transform="scale(2.5 2.5) translate(187 65)">
-        <g ref={this.LSLocRef}>
-          <path
-            class="NormalStroke Green"
-            d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z"
-          />
-          <path
-            class="NormalStroke Green"
-            d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-          />
-          <path
-            class="NormalStroke Green"
-            d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z"
-          />
-          <path
-            class="NormalStroke Green"
-            d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z"
-          />
+      <g id="YawLocSymbolsGroup" transform="translate(467.5 105)">
+        <g ref={this.LSLocRef} id="LocalizerSymbolsGroup">
+          <path class="NormalStroke Green" d="m137.01 326.275a2.518 2.52 0 1 0 -5.037 0 2.518 2.52 0 1 0 5.037 0z" />
+          <path class="NormalStroke Green" d="m99.232 326.275a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
+          <path class="NormalStroke Green" d="m212.56 326.275a2.518 2.52 0 1 0 -5.037 0 2.518 2.52 0 1 0 5.037 0z" />
+          <path class="NormalStroke Green" d="m250.325 326.275a2.519 2.52 0 1 0 -5.037 0 2.519 2.52 0 1 0 5.037 0z" />
           <g class="HiddenElement" ref={this.diamondGroup}>
             <path
               id="LocDiamondRight"
               ref={this.rightDiamond}
               class="NormalStroke Green HiddenElement"
-              d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198"
+              d="m247.817 332.575 9.444 -6.3 -9.444 -6.3"
             />
             <path
               id="LocDiamondLeft"
               ref={this.leftDiamond}
               class="NormalStroke Green HiddenElement"
-              d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198"
+              d="m96.715 332.575 -9.444 -6.3 9.444 -6.3"
             />
             <path
               id="LocDiamond"
               ref={this.locDiamond}
               class="NormalStroke Green HiddenElement"
-              d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
+              d="m162.823 326.275 9.444 6.3 9.444 -6.3 -9.444 -6.3z"
             />
           </g>
-          <path
-            id="LocalizerNeutralLine"
-            class="Green Fill"
-            d="m 68.14059,133.69116 v -6.35451 h 1.531629 v 6.35451 z"
-          />
+          <path id="LocalizerNeutralLine" class="Green Fill" d="m170.351 334.228v-15.886h3.829v15.886z" />
         </g>
       </g>
     );
@@ -672,7 +656,7 @@ class AircraftReference extends DisplayComponent<{ bus: ArincEventBus; instrumen
   render(): VNode {
     return (
       <g id="AircraftReferences">
-        <g id="AircraftReferenceInAir" class="SmallStroke Green" display={this.visibilityAirSub}>
+        <g id="AircraftReferenceInAir" class="NormalStroke Green" display={this.visibilityAirSub}>
           <path d="m 625,335  v -6 h -30" />
           <path d="m 637,332 h 6 v -6 h -6 z" />
           <path d="m 655, 335 v -6 h 30" />

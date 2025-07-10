@@ -26,7 +26,7 @@ import {
 import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll, HudElems } from './HUDUtils';
+import { calculateHorizonOffsetFromPitch, calculateVerticalOffsetFromRoll, HudElems, FIVE_DEG } from './HUDUtils';
 
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from './shared/FgBusProvider';
@@ -167,7 +167,7 @@ export class FlightPathVector extends DisplayComponent<{
       xOffsetLim = Math.max(Math.min(xOffset, 540), -540);
     }
 
-    this.bird.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - 182.86}px, 0px)`;
+    this.bird.instance.style.transform = `translate3d(${xOffsetLim}px, ${yOffset - FIVE_DEG}px, 0px)`;
 
     if (this.birdOffRange) {
       this.birdPath.instance.setAttribute('stroke-dasharray', '3 6');
@@ -199,7 +199,7 @@ export class FlightPathVector extends DisplayComponent<{
       <>
         <g ref={this.bird} id="bird">
           <g id="FlightPathVector">
-            <path ref={this.birdPath} d="" class="SmallStroke Green" stroke-dasharray="3 6" />
+            <path ref={this.birdPath} d="" class="NormalStroke Green" stroke-dasharray="3 6" />
           </g>
           <SpeedChevrons bus={this.props.bus} />
 
@@ -238,8 +238,8 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
       let UsedOffset = offset;
       if (this.merged == false) {
         if (this.onTakeoff) {
-          offset <= -182.857 ? (this.inRange = false) : (this.inRange = true);
-          UsedOffset = Math.max((-this.vCTrend.get().value * 28) / 5, -182.857);
+          offset <= -FIVE_DEG ? (this.inRange = false) : (this.inRange = true);
+          UsedOffset = Math.max((-this.vCTrend.get().value * 28) / 5, -FIVE_DEG);
           if (UsedOffset === offset) {
             UsedOffset = (-this.vCTrend.get().value * 28) / 5;
             if (this.onGround == false) {
@@ -293,8 +293,8 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
   render(): VNode | null {
     return (
       <g id="SpeedChevrons" ref={this.refElement}>
-        <path ref={this.leftChevron} class="SmallStroke Green" d="m 574,500 12,12 -12,12" />
-        <path ref={this.rightChevron} class="SmallStroke Green" d="m 706,500 -12,12 12,12" />
+        <path ref={this.leftChevron} class="NormalStroke Green" d="m 574,500 12,12 -12,12" />
+        <path ref={this.rightChevron} class="NormalStroke Green" d="m 706,500 -12,12 12,12" />
       </g>
     );
   }
@@ -434,20 +434,20 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
     return (
       <>
         <g id="DeltaSpeedGroup" display={this.sVisibility}>
-          <g ref={this.speedRefs[0]} transform={this.outOfRange} class="ScaledStroke CornerRound Green" stroke="red">
-            <path class="ScaledStroke CornerRound Green" d="m 595,602 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,592 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,582 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,572 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,562 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,552 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,542 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,532 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,522 h 11" stroke="green" />
-            <path class="ScaledStroke CornerRound Green" d="m 595,512 h 11" stroke="green" />
+          <g ref={this.speedRefs[0]} transform={this.outOfRange} class="NormalStroke CornerRound Green" stroke="red">
+            <path class="NormalStroke CornerRound Green" d="m 595,602 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,592 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,582 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,572 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,562 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,552 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,542 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,532 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,522 h 11" stroke="green" />
+            <path class="NormalStroke CornerRound Green" d="m 595,512 h 11" stroke="green" />
           </g>
 
-          <path ref={this.speedRefs[1]} d="" class="ScaledStroke CornerRound Green GreenFill2" stroke="red" />
+          <path ref={this.speedRefs[1]} d="" class="NormalStroke CornerRound Green GreenFill2" stroke="red" />
         </g>
       </>
     );
@@ -654,10 +654,10 @@ class FlareIndicator extends DisplayComponent<{
   render(): VNode {
     return (
       <g ref={this.flareGroup} id="FlareArrows" display={this.sVisibility}>
-        <path class="SmallStroke Green" d="m 615,512 v -32" />
-        <path class="SmallStroke Green" d="m 609,496 l 6 -16  l 6 16" />
-        <path class="SmallStroke Green" d="m 665,512 v -32" />
-        <path class="SmallStroke Green" d="m 659,496 l 6 -16  l 6 16" />
+        <path class="NormalStroke Green" d="m 615,512 v -32" />
+        <path class="NormalStroke Green" d="m 609,496 l 6 -16  l 6 16" />
+        <path class="NormalStroke Green" d="m 665,512 v -32" />
+        <path class="NormalStroke Green" d="m 659,496 l 6 -16  l 6 16" />
       </g>
     );
   }

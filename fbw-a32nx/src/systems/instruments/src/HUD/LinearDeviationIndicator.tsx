@@ -12,9 +12,9 @@ import {
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/HUD/shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { HudElems, ALT_TAPE_YPOS, ALT_TAPE_XPOS, XWIND_TO_AIR_REF_OFFSET } from './HUDUtils';
+import { HudElems, ALT_TAPE_YPOS, ALT_TAPE_XPOS, FIVE_DEG } from './HUDUtils';
 
-let DisplayRange = 600;
+let DisplayRange = 500;
 
 type LinearDeviationIndicatorProps = {
   bus: EventBus;
@@ -53,14 +53,14 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   private setPos() {
     if (this.crosswindMode.get()) {
       DisplayRange = 100;
-      this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS + XWIND_TO_AIR_REF_OFFSET}px, 0px)`;
-      this.upperLinearDevTextRef.instance.setAttribute('y', `74`);
-      this.lowerLinearDevTextRef.instance.setAttribute('y', `91`);
+      this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS - FIVE_DEG}px, 0px)`;
+      this.upperLinearDevTextRef.instance.setAttribute('y', `315`);
+      this.lowerLinearDevTextRef.instance.setAttribute('y', `390`);
     } else {
-      DisplayRange = 600;
+      DisplayRange = 500;
       this.linearDevRef.instance.style.transform = `translate3d(${ALT_TAPE_XPOS}px, ${ALT_TAPE_YPOS}px, 0px)`;
-      this.upperLinearDevTextRef.instance.setAttribute('y', '42.5');
-      this.lowerLinearDevTextRef.instance.setAttribute('y', '123');
+      this.upperLinearDevTextRef.instance.setAttribute('y', '175');
+      this.lowerLinearDevTextRef.instance.setAttribute('y', '525');
     }
   }
 
@@ -68,7 +68,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   private readonly altTape = ConsumerSubject.create(this.sub.on('altTape').whenChanged(), '');
   private readonly xwindAltTape = ConsumerSubject.create(this.sub.on('xWindAltTape').whenChanged(), '');
   private readonly crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
-
+  private c = 0;
   private readonly isVisible = MappedSubject.create(
     ([altTape, xwindAltTape]) => {
       if (altTape === 'block' || xwindAltTape === 'block') {
@@ -120,7 +120,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
           this.lowerLinearDeviationReadoutText.set(linearDeviationReadoutText);
         }
 
-        if (deviation > DisplayRange + 40) {
+        if (deviation > DisplayRange + 6) {
           this.lowerLinearDeviationReadoutVisibility.set('visible');
           this.linearDeviationDotLowerHalfVisibility.set('visible');
 
@@ -136,7 +136,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
           this.linearDeviationDotUpperHalfVisibility.set('hidden');
 
           this.linearDeviationDotVisibility.set('visible');
-        } else if (deviation < -DisplayRange - 40) {
+        } else if (deviation < -DisplayRange - 6) {
           this.lowerLinearDeviationReadoutVisibility.set('hidden');
           this.linearDeviationDotLowerHalfVisibility.set('hidden');
 
@@ -182,14 +182,14 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
   render(): VNode {
     return (
-      <g id="LinearDeviationIndicator" transform="scale(4.25 4.25) ">
+      <g id="LinearDeviationIndicator" transform="translate(425 128)">
         <g ref={this.linearDevRef} display={this.isVisible}>
           <text
             visibility={this.upperLinearDeviationReadoutVisibility}
-            x="108"
+            x="470"
             y="42.5"
             ref={this.upperLinearDevTextRef}
-            class="FontMediumSmaller  Green"
+            class="FontSmall Green"
           >
             {this.upperLinearDeviationReadoutText}
           </text>
@@ -197,29 +197,29 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
             <path
               id="EntireDot"
               visibility={this.linearDeviationDotVisibility}
-              d="m119.26 80.796a1.511 1.5119 0 1 0-3.022 0 1.511 1.5119 0 1 0 3.022 0z"
+              d="m506.855 343.383a6.422 6.426 0 1 0 -12.843 0 6.422 6.426 0 1 0 12.843 0z"
               class="Fill Green"
             />
             <path
               id="DotUpperHalf"
               visibility={this.linearDeviationDotUpperHalfVisibility}
-              d="m116.24 80.796c4.9e-4 -0.83466 0.67686-1.511 1.511-1.511 0.83418 0 1.5105 0.67635 1.511 1.511h-1.511z"
+              d="m494.02 343.383c0 -3.547 2.877 -6.422 6.422 -6.422 3.545 0 6.42 2.874 6.422 6.422h-6.422z"
               class="Fill Green"
             />
             <path
               id="DotLowerHalf"
               visibility={this.linearDeviationDotLowerHalfVisibility}
-              d="m116.24 80.796c4.9e-4 0.83465 0.67686 1.511 1.511 1.511 0.83418 0 1.5105-0.67636 1.511-1.511h-1.511z"
+              d="m494.02 343.383c0 3.547 2.877 6.422 6.422 6.422 3.545 0 6.42 -2.875 6.422 -6.422h-6.422z"
               class="Fill Green"
             />
-            <path visibility={this.latchSymbolVisibility} d="m 119 78.3 h -3 v 5 h 3" class="Magenta" />
+            <path visibility={this.latchSymbolVisibility} d="m505.75 332.775h-12.75v21.25h12.75" class="Magenta" />
           </g>
           <text
             visibility={this.lowerLinearDeviationReadoutVisibility}
-            x="108"
+            x="470"
             y="123"
             ref={this.lowerLinearDevTextRef}
-            class="FontMediumSmaller  Green"
+            class="FontSmall  Green"
           >
             {this.lowerLinearDeviationReadoutText}
           </text>
@@ -229,6 +229,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
   }
 
   private pixelOffsetFromDeviation(deviation: number) {
-    return this.crosswindMode.get() ? (deviation * 8.5) / DisplayRange : (deviation * 40.5) / DisplayRange;
+    const L = this.crosswindMode.get() ? 36 : 175;
+    return (deviation * L) / DisplayRange;
   }
 }

@@ -101,7 +101,7 @@ export class HudValueProvider implements Instrument {
             this.elems.VSI = 'none';
             this.elems.ra = 'none';
             this.elems.IlsGS = 'none';
-            this.elems.IlsLoc = 'block';
+            this.elems.IlsLoc = 'none';
             this.elems.IlsHorizonTrk = 'block';
             this.elems.syntheticRunwway = 'none';
             this.elems.windIndicator = 'none';
@@ -129,7 +129,7 @@ export class HudValueProvider implements Instrument {
             this.elems.VSI = 'none';
             this.elems.ra = 'none';
             this.elems.IlsGS = 'none';
-            this.elems.IlsLoc = 'block';
+            this.elems.IlsLoc = 'none';
             this.elems.IlsHorizonTrk = 'block';
             this.elems.syntheticRunwway = 'none';
             this.elems.windIndicator = 'none';
@@ -158,7 +158,7 @@ export class HudValueProvider implements Instrument {
           this.elems.VSI = 'none';
           this.elems.ra = 'none';
           this.elems.IlsGS = 'none';
-          this.elems.IlsLoc = 'block';
+          this.elems.IlsLoc = 'none';
           this.elems.IlsHorizonTrk = 'block';
           this.elems.syntheticRunwway = 'none';
           this.elems.windIndicator = 'none';
@@ -186,7 +186,7 @@ export class HudValueProvider implements Instrument {
           this.elems.VSI = 'none';
           this.elems.ra = 'none';
           this.elems.IlsGS = 'none';
-          this.elems.IlsLoc = 'block';
+          this.elems.IlsLoc = 'none';
           this.elems.IlsHorizonTrk = 'block';
           this.elems.syntheticRunwway = 'none';
           this.elems.windIndicator = 'none';
