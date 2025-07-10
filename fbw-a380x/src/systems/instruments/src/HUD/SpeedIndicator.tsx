@@ -1699,6 +1699,8 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
 
   private showMach = false;
 
+  private decMode = 0;
+
   private onGround = false;
 
   private leftMainGearCompressed = true;
@@ -1708,8 +1710,13 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars>();
-
+    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & HudElems>();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((value) => {
+        this.decMode = value;
+      });
     sub.on('machAr').handle((mach) => {
       if (!mach.isNormalOperation() && !this.onGround) {
         this.machTextSub.set('');
@@ -1718,11 +1725,15 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
       }
       this.failedRef.instance.style.display = 'none';
       const machPermille = Math.round(mach.valueOr(0) * 1000);
-      if (this.showMach && machPermille < 450) {
+      if (this.decMode !== 2) {
+        if (this.showMach && machPermille < 450) {
+          this.showMach = false;
+          this.machTextSub.set('');
+        } else if (!this.showMach && machPermille > 500) {
+          this.showMach = true;
+        }
+      } else {
         this.showMach = false;
-        this.machTextSub.set('');
-      } else if (!this.showMach && machPermille > 500) {
-        this.showMach = true;
       }
       if (this.showMach) {
         this.machTextSub.set(`.${machPermille}`);
