@@ -337,7 +337,7 @@ export class FwsAbnormalNonSensed {
         false,
         false,
         false,
-        this.fws.evacCommand.get(),
+        !this.fws.evacCommand.get(),
         this.fws.allBatteriesOff.get(),
         false,
         false,
