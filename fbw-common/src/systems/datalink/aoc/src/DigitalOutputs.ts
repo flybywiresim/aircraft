@@ -178,7 +178,7 @@ export class DigitalOutputs {
   ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
     return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
       const requestId = this.requestId++;
-      this.publisher.pub('routerRequestWinds', { requestId, ...request }, this.synchronizedRouter, false);
+      this.publisher.pub('routerRequestWinds', { ...request, requestId }, this.synchronizedRouter, false);
       this.requestSentCallbacks.push((id: number) => {
         if (id === requestId) sentCallback();
         return id === requestId;

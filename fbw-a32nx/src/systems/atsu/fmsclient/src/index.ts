@@ -356,7 +356,7 @@ export class FmsClient implements Instrument {
   ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
     return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
       const requestId = this.requestId++;
-      this.publisher.pub('aocRequestWinds', { requestId, ...request }, true, false);
+      this.publisher.pub('aocRequestWinds', { ...request, requestId }, true, false);
       sentCallback();
 
       this.windsResponseCallbacks.push((response: [AtsuStatusCodes, WindUplinkMessage | null], id: number) => {
