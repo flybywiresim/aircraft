@@ -148,10 +148,13 @@ class SystemsHost extends BaseInstrument {
   private readonly fws1Failed = Subject.create(false);
   private readonly fws2Failed = Subject.create(false);
 
+  private readonly fws1Healthy = Subject.create(false);
+  private readonly fws2Healthy = Subject.create(false);
+
   private readonly fwsEcpFailed = Subject.create(false);
 
-  private readonly fwsAvailable = MappedSubject.create(
-    ([failed1, failed2]) => !(failed1 && failed2),
+  private readonly allFwsFailed = MappedSubject.create(
+    ([failed1, failed2]) => failed1 && failed2,
     this.fws1Failed,
     this.fws2Failed,
   );
@@ -231,7 +234,6 @@ class SystemsHost extends BaseInstrument {
     this.soundManager = new LegacySoundManager();
     this.gpws = new LegacyGpws(this.bus, this.soundManager);
     this.gpws.init();
-    this.fwsCore?.init();
 
     this.backplane.addInstrument('TcasComputer', new LegacyTcasComputer(this.bus, this.soundManager));
 
@@ -250,18 +252,23 @@ class SystemsHost extends BaseInstrument {
         this.autoThsTrimmer.autoTrim();
       });
 
-    this.fwsAvailable.sub((a) => {
-      if (!a && this.fwsCore !== undefined) {
+    this.allFwsFailed.sub((a) => {
+      if (a && this.fwsCore !== undefined) {
+        // Warning: Potential memory leak, if not all subscriptions are collected and cleaned up properly
         this.fwsCore.destroy();
         this.fwsCore = undefined;
         FwsCore.sendFailureWarning(this.bus);
-      } else if (a && this.fwsCore === undefined) {
+      } else if (!a && this.fwsCore === undefined) {
         this.fwsCore = new FwsCore(1, this.bus, this.failuresConsumer, this.fws1Failed, this.fws2Failed);
-        this.fwsCore.init();
       }
     }, true);
-    this.fws1Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, !f), true);
-    this.fws2Failed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, !f), true);
+
+    this.fws1Healthy.sub((healthy) => {
+      SimVar.SetSimVarValue('L:A32NX_FWS1_IS_HEALTHY', SimVarValueType.Bool, healthy);
+    }, true);
+    this.fws2Healthy.sub((healthy) => {
+      SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, healthy);
+    }, true);
 
     this.fwsEcpFailed.sub((v) => SimVar.SetSimVarValue('L:A32NX_FWS_ECP_FAILED', SimVarValueType.Bool, v), true);
   }
@@ -309,6 +316,9 @@ class SystemsHost extends BaseInstrument {
     this.fws2Failed.set(
       this.failuresConsumer.isActive(A380Failure.Fws2) || this.fws2ResetPbStatus.get() || !this.fws2Powered.get(),
     );
+
+    this.fws1Healthy.set(!this.fws1Failed.get() && this.fws1Powered.get() && this.fwsCore?.startupCompleted.get());
+    this.fws2Healthy.set(!this.fws2Failed.get() && this.fws2Powered.get() && this.fwsCore?.startupCompleted.get());
 
     const ecpNotReachable =
       !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&
