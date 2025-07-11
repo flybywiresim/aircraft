@@ -1932,6 +1932,8 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
       .on('mda')
       .whenChanged()
       .handle((mda) => {
+        const fontSize = 'FontSmallest';
+        this.classNameSub.set(`${fontSize} MiddleAlign Green`);
         if (mda !== 0) {
           const MDAText = Math.round(mda).toString().padStart(6, ' ');
 
@@ -1945,7 +1947,7 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
       .on('dh')
       .whenChanged()
       .handle((dh) => {
-        let fontSize = 'FontMedium';
+        let fontSize = 'FontSmallest';
 
         if (dh !== -1 && dh !== -2) {
           const DHText = Math.round(dh).toString().padStart(4, ' ');
@@ -1964,7 +1966,7 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
   }
 
   render(): VNode {
-    return <text ref={this.textRef} class={this.classNameSub} x="800" y="105" />;
+    return <text ref={this.textRef} class={this.classNameSub} x="800" y="107" />;
   }
 }
 
@@ -2078,13 +2080,9 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
     if (!this.ap1Active && !this.ap2Active && !this.fd1Active && !this.fd2Active) {
       this.isShown = false;
       this.textSub.set('');
-      this.displayModeChangedPath(true);
-      this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
     } else {
       const text = `${this.fd1Active ? '1' : '-'}FD${this.fd2Active ? '2' : '-'}`;
       this.textSub.set(text);
-      this.displayModeChangedPath();
-      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
     }
   }
 
@@ -2098,8 +2096,14 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        this.isShown = false;
-        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        if (this.decMode !== 2) {
+          this.displayModeChangedPath();
+          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        } else {
+          this.isShown = false;
+          this.displayModeChangedPath(true);
+          this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+        }
       });
 
     sub
