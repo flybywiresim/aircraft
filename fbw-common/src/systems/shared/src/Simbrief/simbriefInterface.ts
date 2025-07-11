@@ -133,7 +133,6 @@ interface IAlternate {
   transLevel: number;
   averageWindDirection: number;
   averageWindSpeed: number;
-  cruiseAltitude: number;
 }
 
 interface ITimes {

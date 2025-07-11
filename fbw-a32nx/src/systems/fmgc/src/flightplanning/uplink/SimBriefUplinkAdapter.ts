@@ -6,7 +6,7 @@
 
 /* eslint-disable no-await-in-loop */
 
-import { Airway, Fix, ISimbriefData, simbriefDataParser } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix, ISimbriefData } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates, distanceTo } from 'msfs-geo';
 
@@ -16,7 +16,6 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDataba
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FmsErrorType } from '@fmgc/FmsError';
-// FIXME rogue import from EFB
 import { FmsDataInterface } from '../interface/FmsDataInterface';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -489,25 +488,8 @@ export class SimBriefUplinkAdapter {
   }
 
   static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {
-    let url = `${SIMBRIEF_API_URL}`;
-    if (userID) {
-      url += `&userid=${userID}`;
-    } else {
-      url += `&username=${username}`;
-    }
-
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
-      }
-      const body = await response.json();
-      // SimBrief can return an error with an ok HTTP status code.
-      // In that case, the fetch.status starts with "Error:"
-      if (typeof body.fetch?.status === 'string' && body.fetch.status.startsWith('Error:')) {
-        throw new Error(`SimBrief: ${body.fetch.status}`);
-      }
-      return simbriefDataParser(body);
+      return getSimbriefData(username, userID);
     } catch (e) {
       console.error('SimBrief OFP download failed');
       throw e;
