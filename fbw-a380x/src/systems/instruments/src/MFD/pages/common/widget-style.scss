@@ -31,6 +31,10 @@
   font-size: 20px;
 }
 
+.mfd-label-unit.bigger {
+  font-size: 24px;
+}
+
 .mfd-value {
   color: $display-green;
   font-size: 25px;
@@ -250,6 +254,10 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+}
+
+.mfd-spacing-right-small {
+  margin-right: 10px;
 }
 
 .mfd-spacing-right {
