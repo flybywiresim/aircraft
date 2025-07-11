@@ -775,6 +775,21 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.setPerformanceData('climbWindEntries', []);
   }
 
+  async deleteDescentWindEntries(): Promise<void> {
+    this.setPerformanceData('descentWindEntries', []);
+  }
+
+  private deleteAllCruiseWindEntries(): void {
+    for (let i = 0; i < this.allLegs.length; i++) {
+      if (this.hasLegAt(i)) {
+        const leg = this.legElementAt(i);
+
+        leg.cruiseWindEntries.length = 0;
+        this.syncCruiseWindChange(i);
+      }
+    }
+  }
+
   async setAlternateWind(entry: WindVector | null): Promise<void> {
     this.setPerformanceData('alternateWind', entry);
   }
@@ -797,12 +812,16 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     if (this.pendingWindUplink.climbWinds) {
+      await this.deleteClimbWindEntries();
+
       for (const wind of this.pendingWindUplink.climbWinds) {
         await this.setClimbWindEntry(wind.altitude, wind, maxNumClimbWindEntries);
       }
     }
 
     if (this.pendingWindUplink.cruiseWinds) {
+      this.deleteAllCruiseWindEntries();
+
       for (const fix of this.pendingWindUplink.cruiseWinds) {
         const legIndex =
           fix.type === 'waypoint'
@@ -820,6 +839,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     if (this.pendingWindUplink.descentWinds) {
+      await this.deleteDescentWindEntries();
+
       for (const wind of this.pendingWindUplink.descentWinds) {
         await this.setDescentWindEntry(wind.altitude, wind, maxNumDescentWindEntries);
       }
