@@ -1009,9 +1009,13 @@ export class FlightManagementComputer implements FmcInterface {
 
         const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
         if (destPred) {
-          this.acInterface.updateMinimums(destPred.distanceFromAircraft);
+          this.acInterface.updateDestinationPredictions(destPred);
+        } else {
+          this.acInterface.resetDestinationPredictions();
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
+      } else {
+        this.acInterface.resetDestinationPredictions();
       }
       this.checkZfwParams();
       this.updateMessageQueue();
