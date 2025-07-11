@@ -13,6 +13,7 @@ export * from './FbwAircraftSentryClient';
 export * from './FmMessages';
 export * from './GenericDataListenerSync';
 export * from './MathUtils';
+export * from './Vec2Utils';
 export * from './MsfsDetect';
 export * from './ObjectUtils';
 export * from './PathVector';

@@ -81,7 +81,7 @@ export interface UplinkedCruiseWindSet {
   fixes: UplinkedCruiseWindEntry[];
 }
 
-interface UplinkedWindEntry {
+export interface UplinkedWindEntry {
   trueDegrees: number;
   magnitude: number;
 }

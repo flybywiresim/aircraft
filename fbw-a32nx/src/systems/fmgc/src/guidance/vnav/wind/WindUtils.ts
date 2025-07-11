@@ -1,6 +1,6 @@
 import { Vec2Math } from '@microsoft/msfs-sdk';
 import { WindEntry, WindVector } from '../../../flightplanning/data/wind';
-import { Common } from '../common';
+import { Vec2Utils } from '@flybywiresim/fbw-sdk';
 
 export class WindUtils {
   /**
@@ -25,34 +25,9 @@ export class WindUtils {
         const upper = entries[i + 1].altitude > entries[i].altitude ? entries[i + 1] : entries[i];
 
         if (lower.altitude <= altitude) {
-          return this.interpolateVectors(altitude, lower.altitude, upper.altitude, lower.vector, upper.vector, result);
+          return Vec2Utils.interpolate(altitude, lower.altitude, upper.altitude, lower.vector, upper.vector, result);
         }
       }
     }
-  }
-
-  /**
-   * Interpolate between two wind vectors
-   * @param x the value to interpolate between x0 and x1
-   * @param x0 the lower bound of the interpolation
-   * @param x1 the upper bound of the interpolation
-   * @param v0 wind vector at x0
-   * @param v1 wind vector at x1
-   * @param result wind vector to write the result to
-   * @returns
-   */
-  static interpolateVectors(
-    x: number,
-    x0: number,
-    x1: number,
-    v0: WindVector,
-    v1: WindVector,
-    result: WindVector,
-  ): WindVector {
-    return Vec2Math.set(
-      Common.interpolate(x, x0, x1, v0[0], v1[0]),
-      Common.interpolate(x, x0, x1, v0[1], v1[1]),
-      result,
-    );
   }
 }

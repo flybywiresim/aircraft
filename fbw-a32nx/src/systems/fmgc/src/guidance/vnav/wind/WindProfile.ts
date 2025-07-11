@@ -9,7 +9,7 @@ import { PropagatedWindEntry, TailwindComponent, WindVector } from '../../../fli
 import { Common } from '../common';
 import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
 import { FlightPlanService } from '../../../flightplanning/FlightPlanService';
-import { Arinc429Register, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, MathUtils, Vec2Utils } from '@flybywiresim/fbw-sdk';
 import { ProfilePhase } from '../profile/NavGeometryProfile';
 import { FlightPlanTrackProfile } from './FlightPlanTrackProfile';
 import { WindMeasurement, WindObserver } from './WindObserver';
@@ -130,7 +130,7 @@ export class WindProfile implements WindInterface {
       const lowestAltitude = descentWindEntries[descentWindEntries.length - 1].altitude;
 
       if (altitude < lowestAltitude) {
-        return WindUtils.interpolateVectors(
+        return Vec2Utils.interpolate(
           altitude,
           destinationAlt,
           lowestAltitude,
@@ -183,7 +183,7 @@ export class WindProfile implements WindInterface {
     );
 
     // Blend the measurement at the current altitude with the forecast at the current altitude
-    const predictionAtCurrentAlt = WindUtils.interpolateVectors(
+    const predictionAtCurrentAlt = Vec2Utils.interpolate(
       MathUtils.clamp(Math.abs(distanceFromAircraft), 0, WindConfig.MaxCruiseWindBlendDistance),
       0,
       WindConfig.MaxCruiseWindBlendDistance,
@@ -193,7 +193,7 @@ export class WindProfile implements WindInterface {
     );
 
     // Blend the prediction at the current altitude with the forecast at the target altitude
-    return WindUtils.interpolateVectors(
+    return Vec2Utils.interpolate(
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
@@ -241,7 +241,7 @@ export class WindProfile implements WindInterface {
 
       const prevLeg = this.plan.legElementAt(prevLegIndex);
 
-      return WindUtils.interpolateVectors(
+      return Vec2Utils.interpolate(
         distanceFromStart,
         prevLeg.calculated.cumulativeDistanceWithTransitions,
         leg.calculated.cumulativeDistanceWithTransitions,
@@ -318,7 +318,7 @@ export class WindProfile implements WindInterface {
       return Vec2Math.copy(forecast, result);
     }
 
-    return WindUtils.interpolateVectors(
+    return Vec2Utils.interpolate(
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
@@ -440,7 +440,7 @@ export class ConstantWindProfile implements WindInterface {
       const lowestAltitude = descentWindEntries[descentWindEntries.length - 1].altitude;
 
       if (altitude < lowestAltitude) {
-        WindUtils.interpolateVectors(
+        Vec2Utils.interpolate(
           altitude,
           destinationAlt,
           lowestAltitude,
@@ -487,7 +487,7 @@ export class ConstantWindProfile implements WindInterface {
       return Vec2Math.copy(forecast, result);
     }
 
-    return WindUtils.interpolateVectors(
+    return Vec2Utils.interpolate(
       MathUtils.clamp(Math.abs(altitude - measurement.altitude), 0, WindConfig.MaxWindBlendAltitude),
       0,
       WindConfig.MaxWindBlendAltitude,
