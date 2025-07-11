@@ -1,7 +1,7 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { getSimBriefOfp, ISimbriefData, MathUtils } from '@flybywiresim/fbw-sdk';
+import { getSimBriefOfp, ISimbriefData, MathUtils, Vec2Utils } from '@flybywiresim/fbw-sdk';
 import {
   AtsuStatusCodes,
   UplinkedCruiseWindEntry,
@@ -12,6 +12,13 @@ import {
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export class SimBriefConnector {
+  private static readonly WindUplinkCache: WindUplinkMessage = {
+    climbWinds: [],
+    cruiseWinds: [],
+    descentWinds: [],
+    alternateWind: null,
+  };
+
   public static async receiveSimBriefWinds(
     request: WindRequestMessage,
   ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
@@ -25,268 +32,285 @@ export class SimBriefConnector {
     }
   }
 
-  private static parseSimBriefWinds(simbriefJson: ISimbriefData, request: WindRequestMessage): WindUplinkMessage {
-    {
-      const alternate = Array.isArray(simbriefJson.alternate) ? simbriefJson.alternate[0] : simbriefJson.alternate;
-      const navlog = simbriefJson.navlog ?? [];
+  private static resetCache(): void {
+    SimBriefConnector.WindUplinkCache.climbWinds.length = 0;
+    SimBriefConnector.WindUplinkCache.cruiseWinds.length = 0;
+    SimBriefConnector.WindUplinkCache.descentWinds.length = 0;
+    SimBriefConnector.WindUplinkCache.alternateWind = null;
+  }
 
-      const result: WindUplinkMessage = {
-        climbWinds: [],
-        cruiseWinds: [],
-        descentWinds: [],
-        alternateWind: null,
+  private static parseSimBriefWinds(simbriefJson: ISimbriefData, request: WindRequestMessage): WindUplinkMessage {
+    const alternate = simbriefJson.alternate;
+    const navlog = simbriefJson.navlog ?? [];
+
+    this.resetCache();
+
+    this.parseClimbWinds(navlog, this.WindUplinkCache);
+    this.parseCruiseWinds(navlog, request, this.WindUplinkCache);
+    this.parseDescentWinds(navlog, this.WindUplinkCache);
+    this.parseAlternateWinds(alternate, this.WindUplinkCache);
+
+    return this.WindUplinkCache;
+  }
+
+  private static parseClimbWinds(navlog: ISimbriefData['navlog'], result: WindUplinkMessage): void {
+    const clbWpts = navlog.filter((val) => val.stage === 'CLB');
+    let lastAltitude = 0;
+
+    // iterate through each clbWpt grabbing the wind data
+    clbWpts.forEach((clbWpt, wptIdx) => {
+      const wptAltitude = parseInt(clbWpt.altitude_feet, 10);
+
+      if (wptIdx == 0) {
+        let altIdx = 0;
+        // we need to backfill from altitude 0 to below wptAltitude in windData
+        while (lastAltitude < wptAltitude) {
+          const altitude = parseInt(clbWpt.wind_data.level[altIdx].altitude);
+          const magnitude = parseInt(clbWpt.wind_data.level[altIdx].wind_spd);
+          const trueDegrees = parseInt(clbWpt.wind_data.level[altIdx].wind_dir);
+
+          result.climbWinds.push({
+            trueDegrees,
+            magnitude,
+            flightLevel: Math.round(altitude / 100),
+          });
+
+          lastAltitude = altitude;
+          altIdx++;
+        }
+      }
+      // Now we add the closest wind data to the altitude of the clbWpt
+      clbWpt.wind_data.level.forEach((wind, levelIdx) => {
+        const altitude = parseInt(wind.altitude);
+
+        let deltaPrevLevel = 0;
+        let deltaThisLevel = 0;
+        // Look backwards for the closest level
+        if (levelIdx > 0 && levelIdx < clbWpt.wind_data.level.length - 1) {
+          deltaPrevLevel = Math.abs(wptAltitude - parseInt(clbWpt.wind_data.level[levelIdx - 1].altitude));
+          deltaThisLevel = Math.abs(wptAltitude - altitude);
+        }
+
+        // Check that altitude isn't backtracking
+        if (altitude > lastAltitude && lastAltitude <= wptAltitude) {
+          const idx = deltaPrevLevel > deltaThisLevel ? levelIdx : levelIdx - 1;
+
+          const idxAltitude = parseInt(clbWpt.wind_data.level[idx].altitude);
+          const trueDegrees = parseInt(clbWpt.wind_data.level[idx].wind_dir);
+          const magnitude = parseInt(clbWpt.wind_data.level[idx].wind_spd);
+
+          // Check again that we didn't backtrack
+          if (idxAltitude > lastAltitude) {
+            result.climbWinds.push({
+              trueDegrees,
+              magnitude,
+              flightLevel: Math.round(idxAltitude / 100),
+            });
+            lastAltitude = idxAltitude;
+          }
+        }
+      });
+    });
+
+    result.climbWinds.sort((a, b) => b.flightLevel - a.flightLevel);
+  }
+
+  private static parseCruiseWinds(
+    navlog: ISimbriefData['navlog'],
+    request: WindRequestMessage,
+    result: WindUplinkMessage,
+  ): void {
+    if (request.cruiseWinds === undefined || request.cruiseWinds.flightLevels.length === 0) {
+      return;
+    }
+
+    const cruiseWaypoints = navlog.filter(
+      (wpt) =>
+        wpt.ident !== 'TOC' &&
+        wpt.ident !== 'TOD' &&
+        request.cruiseWinds.waypoints.some((reqWpt) => {
+          return (
+            (wpt.type === 'wpt' && typeof reqWpt === 'string' && reqWpt === wpt.ident) ||
+            (wpt.type === 'ltlg' &&
+              typeof reqWpt !== 'string' &&
+              MathUtils.isAboutEqual(reqWpt.lat, parseFloat(wpt.pos_lat)) &&
+              MathUtils.isAboutEqual(reqWpt.long, parseFloat(wpt.pos_long)))
+          );
+        }),
+    );
+
+    // Go through all the requested flight levels
+    for (const reqLevel of request.cruiseWinds.flightLevels) {
+      const responseSet: UplinkedCruiseWindSet = {
+        flightLevel: reqLevel,
+        fixes: [],
       };
 
-      // CLB
-      {
-        const clbWpts = navlog.filter((val) => val.stage === 'CLB');
-        let lastAltitude = 0;
+      // Go through requested waypoints
+      for (const fix of cruiseWaypoints) {
+        if ((fix.wind_data?.level?.length ?? 0) === 0) {
+          continue;
+        }
 
-        // iterate through each clbWpt grabbing the wind data
-        clbWpts.forEach((clbWpt, wptIdx) => {
-          const wptAltitude = parseInt(clbWpt.altitude_feet, 10);
-
-          if (wptIdx == 0) {
-            let altIdx = 0;
-            // we need to backfill from altitude 0 to below wptAltitude in windData
-            while (lastAltitude < wptAltitude) {
-              const altitude = parseInt(clbWpt.wind_data.level[altIdx].altitude);
-              const magnitude = parseInt(clbWpt.wind_data.level[altIdx].wind_spd);
-              const trueDegrees = parseInt(clbWpt.wind_data.level[altIdx].wind_dir);
-
-              result.climbWinds.push({
-                trueDegrees,
-                magnitude,
-                flightLevel: Math.round(altitude / 100),
-              });
-
-              lastAltitude = altitude;
-              altIdx++;
-            }
-          }
-          // Now we add the closest wind data to the altitude of the clbWpt
-          clbWpt.wind_data.level.forEach((wind, levelIdx) => {
-            const altitude = parseInt(wind.altitude);
-
-            let deltaPrevLevel = 0;
-            let deltaThisLevel = 0;
-            // Look backwards for the closest level
-            if (levelIdx > 0 && levelIdx < clbWpt.wind_data.level.length - 1) {
-              deltaPrevLevel = Math.abs(wptAltitude - parseInt(clbWpt.wind_data.level[levelIdx - 1].altitude));
-              deltaThisLevel = Math.abs(wptAltitude - altitude);
-            }
-
-            // Check that altitude isn't backtracking
-            if (altitude > lastAltitude && lastAltitude <= wptAltitude) {
-              const idx = deltaPrevLevel > deltaThisLevel ? levelIdx : levelIdx - 1;
-
-              const idxAltitude = parseInt(clbWpt.wind_data.level[idx].altitude);
-              const trueDegrees = parseInt(clbWpt.wind_data.level[idx].wind_dir);
-              const magnitude = parseInt(clbWpt.wind_data.level[idx].wind_spd);
-
-              // Check again that we didn't backtrack
-              if (idxAltitude > lastAltitude) {
-                result.climbWinds.push({
-                  trueDegrees,
-                  magnitude,
-                  flightLevel: Math.round(idxAltitude / 100),
-                });
-                lastAltitude = idxAltitude;
+        const responseFix: UplinkedCruiseWindEntry =
+          fix.type === 'ltlg'
+            ? {
+                type: 'latlon',
+                lat: parseFloat(fix.pos_lat),
+                long: parseFloat(fix.pos_long),
+                flightLevel: reqLevel,
+                trueDegrees: 0,
+                magnitude: 0,
               }
-            }
-          });
-        });
-      }
+            : {
+                type: 'waypoint',
+                fixIdent: fix.ident,
+                flightLevel: reqLevel,
+                trueDegrees: 0,
+                magnitude: 0,
+              };
 
-      // CRZ
-      {
-        const cruiseWaypoints = navlog.filter(
-          (wpt) =>
-            wpt.ident !== 'TOC' &&
-            wpt.ident !== 'TOD' &&
-            request.cruiseWinds.waypoints.some((reqWpt) => {
-              return (
-                (wpt.type === 'waypoint' && typeof reqWpt === 'string' && reqWpt === wpt.ident) ||
-                (wpt.type === 'ltlg' &&
-                  typeof reqWpt !== 'string' &&
-                  MathUtils.isAboutEqual(reqWpt.lat, parseFloat(wpt.pos_lat)) &&
-                  MathUtils.isAboutEqual(reqWpt.long, parseFloat(wpt.pos_long)))
-              );
-            }),
-        );
+        const lowestLevel = Math.round(parseInt(fix.wind_data.level[0].altitude) / 100);
+        const highestLevel = Math.round(parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].altitude) / 100);
 
-        // Go through all the requested flight levels
-        for (const reqLevel of request.cruiseWinds.flightLevels) {
-          const responseSet: UplinkedCruiseWindSet = {
-            flightLevel: reqLevel,
-            fixes: [],
-          };
+        if (reqLevel <= lowestLevel) {
+          responseFix.trueDegrees = parseInt(fix.wind_data.level[0].wind_dir);
+          responseFix.magnitude = parseInt(fix.wind_data.level[0].wind_spd);
+          responseFix.temperature = parseInt(fix.wind_data.level[0].oat);
+        } else if (reqLevel >= highestLevel) {
+          responseFix.trueDegrees = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].wind_dir);
+          responseFix.magnitude = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].wind_spd);
+          responseFix.temperature = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].oat);
+        }
 
-          // Go through requested waypoints
-          for (const fix of cruiseWaypoints) {
-            if ((fix.wind_data?.level?.length ?? 0) === 0) {
-              continue;
-            }
+        // Interpolate at requested level
+        for (let i = 0; i < fix.wind_data.level.length - 1; i++) {
+          const lowerWindAlt = parseInt(fix.wind_data.level[i].altitude, 10);
+          const lowerWindSpd = parseInt(fix.wind_data.level[i].wind_spd, 10);
+          const lowerWindDir = parseInt(fix.wind_data.level[i].altitude, 10);
+          const lowerLevelOat = parseInt(fix.wind_data.level[i].oat, 10);
 
-            const responseFix: UplinkedCruiseWindEntry =
-              fix.type === 'ltlg'
-                ? {
-                    type: 'latlon',
-                    lat: parseFloat(fix.pos_lat),
-                    long: parseFloat(fix.pos_long),
-                    flightLevel: reqLevel,
-                    trueDegrees: 0,
-                    magnitude: 0,
-                  }
-                : {
-                    type: 'waypoint',
-                    fixIdent: fix.ident,
-                    flightLevel: reqLevel,
-                    trueDegrees: 0,
-                    magnitude: 0,
-                  };
+          const upperWindAlt = parseInt(fix.wind_data.level[i + 1].altitude, 10);
+          const upperWindSpd = parseInt(fix.wind_data.level[i + 1].wind_spd, 10);
+          const upperWindDir = parseInt(fix.wind_data.level[i + 1].altitude, 10);
+          const upperLevelOat = parseInt(fix.wind_data.level[i + 1].oat, 10);
 
-            const lowestLevel = Math.round(parseInt(fix.wind_data.level[0].altitude) / 100);
-            const highestLevel = Math.round(
-              parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].altitude) / 100,
+          const lowerLevel = Math.round(lowerWindAlt / 100);
+          const upperLevel = Math.round(upperWindAlt / 100);
+
+          if (reqLevel >= lowerLevel && reqLevel <= upperLevel) {
+            const vec1 = Vec2Math.setFromPolar(
+              lowerWindSpd,
+              lowerWindDir * MathUtils.DEGREES_TO_RADIANS,
+              Vec2Math.create(),
+            );
+            const vec2 = Vec2Math.setFromPolar(
+              upperWindSpd,
+              upperWindDir * MathUtils.DEGREES_TO_RADIANS,
+              Vec2Math.create(),
             );
 
-            if (reqLevel <= lowestLevel) {
-              responseFix.trueDegrees = parseInt(fix.wind_data.level[0].wind_dir);
-              responseFix.magnitude = parseInt(fix.wind_data.level[0].wind_spd);
-              responseFix.temperature = parseInt(fix.wind_data.level[0].oat);
-            } else if (reqLevel >= highestLevel) {
-              responseFix.trueDegrees = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].wind_dir);
-              responseFix.magnitude = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].wind_spd);
-              responseFix.temperature = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].oat);
-            }
+            const interpolatedVector = Vec2Utils.interpolate(
+              reqLevel,
+              lowerLevel,
+              upperLevel,
+              vec1,
+              vec2,
+              Vec2Math.create(),
+            );
 
-            // Interpolate at requested level
-            for (let i = 0; i < fix.wind_data.level.length - 1; i++) {
-              const lower_wind_alt = parseInt(fix.wind_data.level[i].altitude, 10);
-              const lower_wind_spd = parseInt(fix.wind_data.level[i].wind_spd, 10);
-              const lower_wind_dir = parseInt(fix.wind_data.level[i].altitude, 10);
+            responseFix.trueDegrees = Math.round(
+              MathUtils.normalise360(Vec2Math.theta(interpolatedVector) * MathUtils.RADIANS_TO_DEGREES),
+            );
+            responseFix.magnitude = Math.round(Vec2Math.abs(interpolatedVector));
 
-              const upper_wind_alt = parseInt(fix.wind_data.level[i + 1].altitude, 10);
-              const upper_wind_spd = parseInt(fix.wind_data.level[i + 1].wind_spd, 10);
-              const upper_wind_dir = parseInt(fix.wind_data.level[i + 1].altitude, 10);
+            responseFix.temperature = MathUtils.interpolate(
+              reqLevel,
+              lowerLevel,
+              upperLevel,
+              lowerLevelOat,
+              upperLevelOat,
+            );
 
-              const lowerLevel = Math.round(lower_wind_alt / 100);
-              const upperLevel = Math.round(parseInt(fix.wind_data.level[i + 1].altitude) / 100);
-
-              if (reqLevel >= lowerLevel && reqLevel <= upperLevel) {
-                const ratio = (reqLevel - lowerLevel) / (upperLevel - lowerLevel);
-
-                const vec1 = Vec2Math.setFromPolar(
-                  lower_wind_spd,
-                  lower_wind_dir * MathUtils.DEGREES_TO_RADIANS,
-                  Vec2Math.create(),
-                );
-                const vec2 = Vec2Math.setFromPolar(
-                  upper_wind_spd,
-                  upper_wind_dir * MathUtils.DEGREES_TO_RADIANS,
-                  Vec2Math.create(),
-                );
-
-                const interpolatedVector = Vec2Math.set(
-                  vec1[0] * (1 - ratio) + vec2[0] * ratio,
-                  vec1[1] * (1 - ratio) + vec2[1] * ratio,
-                  Vec2Math.create(),
-                );
-
-                responseFix.trueDegrees = Math.round(
-                  MathUtils.normalise360(Vec2Math.theta(interpolatedVector) * MathUtils.RADIANS_TO_DEGREES),
-                );
-                responseFix.magnitude = Math.round(Vec2Math.abs(interpolatedVector));
-
-                responseFix.temperature = Math.round(
-                  parseInt(fix.wind_data.level[i].oat) * (1 - ratio) + parseInt(fix.wind_data.level[i + 1].oat) * ratio,
-                );
-                break;
-              }
-            }
-
-            responseSet.fixes.push(responseFix);
+            break;
           }
-
-          result.cruiseWinds.push(responseSet);
         }
+
+        responseSet.fixes.push(responseFix);
       }
 
-      // DES
-      {
-        let lastAltitude = 45000;
-        navlog.forEach((desWpt, wptIdx) => {
-          // TOD is marked as cruise stage, but we want it's topmost wind data
-          if (desWpt.ident !== 'TOD' && desWpt.stage !== 'DSC') {
-            return;
-          }
+      result.cruiseWinds.push(responseSet);
+    }
+  }
 
-          const wptAltitude = parseInt(desWpt.altitude_feet, 10);
+  private static parseDescentWinds(navlog: ISimbriefData['navlog'], result: WindUplinkMessage): void {
+    let lastAltitude = 45000;
+    navlog.forEach((desWpt, wptIdx) => {
+      // TOD is marked as cruise stage, but we want it's topmost wind data
+      if (desWpt.ident !== 'TOD' && desWpt.stage !== 'DSC') {
+        return;
+      }
 
-          if (wptIdx == 0) {
-            let altIdx = desWpt.wind_data.level.length - 1;
-            // we need to backfill from crz altitude to above next clbWpt.altitude_feet in windData
-            while (lastAltitude > wptAltitude) {
-              const altitude = parseInt(desWpt.wind_data.level[altIdx].altitude);
-              const magnitude = parseInt(desWpt.wind_data.level[altIdx].wind_spd);
-              const trueDegrees = parseInt(desWpt.wind_data.level[altIdx].wind_dir);
+      const wptAltitude = parseInt(desWpt.altitude_feet, 10);
 
-              result.descentWinds.push({
-                trueDegrees,
-                magnitude,
-                flightLevel: Math.round(altitude / 100),
-              });
-              lastAltitude = altitude;
-              altIdx--;
-            }
-          }
-          // Now we add the closest wind data to the altitude of the desWpt
-          desWpt.wind_data.level.reverse().forEach((wind, levelIdx) => {
-            const altitude = parseInt(wind.altitude);
+      if (wptIdx == 0) {
+        let altIdx = desWpt.wind_data.level.length - 1;
+        // we need to backfill from crz altitude to above next clbWpt.altitude_feet in windData
+        while (lastAltitude > wptAltitude) {
+          const altitude = parseInt(desWpt.wind_data.level[altIdx].altitude);
+          const magnitude = parseInt(desWpt.wind_data.level[altIdx].wind_spd);
+          const trueDegrees = parseInt(desWpt.wind_data.level[altIdx].wind_dir);
 
-            let deltaNextLevel = 0;
-            let deltaThisLevel = 0;
-            // Look forwards for the closest level
-            if (levelIdx < desWpt.wind_data.level.length - 2) {
-              deltaNextLevel = Math.abs(wptAltitude - parseInt(desWpt.wind_data.level[levelIdx + 1].altitude));
-              deltaThisLevel = Math.abs(wptAltitude - altitude);
-            }
-
-            // Check that altitude isn't backtracking
-            if (altitude >= lastAltitude && lastAltitude > wptAltitude) {
-              const idx = deltaNextLevel > deltaThisLevel ? levelIdx : levelIdx + 1;
-
-              const idxAltitude = parseInt(desWpt.wind_data.level[idx].altitude);
-              const trueDegrees = parseInt(desWpt.wind_data.level[idx].wind_dir);
-              const magnitude = parseInt(desWpt.wind_data.level[idx].wind_spd);
-
-              // Check again that we didn't backtrack
-              if (idxAltitude < lastAltitude) {
-                result.descentWinds.push({
-                  trueDegrees,
-                  magnitude,
-                  flightLevel: Math.round(idxAltitude / 100),
-                });
-                lastAltitude = idxAltitude;
-              }
-            }
+          result.descentWinds.push({
+            trueDegrees,
+            magnitude,
+            flightLevel: Math.round(altitude / 100),
           });
-        });
-      }
-
-      // ALTN
-      {
-        if (alternate) {
-          result.alternateWind = {
-            flightLevel: Math.round(parseInt(alternate.cruise_altitude, 10) / 100),
-            trueDegrees: parseInt(alternate.avg_wind_dir, 10),
-            magnitude: parseInt(alternate.avg_wind_spd, 10),
-          };
+          lastAltitude = altitude;
+          altIdx--;
         }
       }
+      // Now we add the closest wind data to the altitude of the desWpt
+      desWpt.wind_data.level.reverse().forEach((wind, levelIdx) => {
+        const altitude = parseInt(wind.altitude);
 
-      return result;
+        let deltaNextLevel = 0;
+        let deltaThisLevel = 0;
+        // Look forwards for the closest level
+        if (levelIdx < desWpt.wind_data.level.length - 2) {
+          deltaNextLevel = Math.abs(wptAltitude - parseInt(desWpt.wind_data.level[levelIdx + 1].altitude));
+          deltaThisLevel = Math.abs(wptAltitude - altitude);
+        }
+
+        // Check that altitude isn't backtracking
+        if (altitude >= lastAltitude && lastAltitude > wptAltitude) {
+          const idx = deltaNextLevel > deltaThisLevel ? levelIdx : levelIdx + 1;
+
+          const idxAltitude = parseInt(desWpt.wind_data.level[idx].altitude);
+          const trueDegrees = parseInt(desWpt.wind_data.level[idx].wind_dir);
+          const magnitude = parseInt(desWpt.wind_data.level[idx].wind_spd);
+
+          // Check again that we didn't backtrack
+          if (idxAltitude < lastAltitude) {
+            result.descentWinds.push({
+              trueDegrees,
+              magnitude,
+              flightLevel: Math.round(idxAltitude / 100),
+            });
+            lastAltitude = idxAltitude;
+          }
+        }
+      });
+    });
+  }
+
+  private static parseAlternateWinds(alternate: ISimbriefData['alternate'], result: WindUplinkMessage): void {
+    if (alternate) {
+      result.alternateWind = {
+        flightLevel: Math.round(alternate.cruiseAltitude / 100),
+        trueDegrees: alternate.averageWindDirection,
+        magnitude: alternate.averageWindSpeed,
+      };
     }
   }
 }
