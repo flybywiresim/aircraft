@@ -171,27 +171,29 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   private readonly hdg = Arinc429ConsumerSubject.create(this.sub.on('headingAr').whenChanged());
   private readonly trk = Arinc429ConsumerSubject.create(this.sub.on('groundTrackAr').whenChanged());
   private readonly headingTrk = ConsumerSubject.create(this.sub.on('headingTrk').whenChanged(), '');
+  private readonly fpa = Arinc429ConsumerSubject.create(this.sub.on('fpa').whenChanged());
   private setPos(hdg: number, trk: number) {
     const offset = -(getSmallestAngle(hdg, trk) * DistanceSpacing) / ValueSpacing;
     this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
   }
   private readonly isHdgTrkVisible = MappedSubject.create(
-    ([hdg, trk, headingTrk]) => {
+    ([hdg, trk, headingTrk, fpa]) => {
       if (headingTrk === 'block') {
         this.setPos(hdg.value, trk.value);
       }
-      return headingTrk;
+      return fpa.value > -1.5 && fpa.value < 0.5 ? 'none' : headingTrk;
     },
     this.hdg,
     this.trk,
     this.headingTrk,
+    this.fpa,
   );
 
   render(): VNode {
     return (
       <g ref={this.trackIndicator} id="ActualTrackIndicator" display={this.isHdgTrkVisible}>
-        <path class="ThickOutline CornerRound" d="m640 512 -6 9 6 9 6 -9z" />
-        <path class="ThickStroke Green CornerRound" d="m640 512 -6 9 6 9 6 -9z" />
+        <path class="NormalOutline CornerRound" d="m640 512 -6 9 6 9 6 -9z" />
+        <path class="NormalStroke Green CornerRound" d="m640 512 -6 9 6 9 6 -9z" />
       </g>
     );
   }

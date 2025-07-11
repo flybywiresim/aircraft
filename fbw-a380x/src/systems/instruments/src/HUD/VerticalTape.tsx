@@ -88,7 +88,6 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
 
           graduationPoints.push(
             <g ref={tickRef} transform={`translate(0 ${offset}`}>
-              <path class="NormalStroke Green HiddenElement" d="m519.318 367.272 5.972 -4.837 -5.972 -4.837" />
               <path class="NormalStroke Green" d="m586.862 362.473h-9.035" />
               <text class="FontMedium MiddleAlign Green" x="552.9478461" y="370.6406691">
                 {text}
@@ -112,13 +111,11 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
       if (this.props.type === 'altitude') {
         if (this.crosswindMode) {
           for (let i = 0; i < this.tickRefs.length - 1; i++) {
-            this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
             this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.add('HiddenElement');
           }
         } else {
           for (let i = 0; i < this.tickRefs.length - 1; i++) {
             if ((parseInt(this.tickRefs[i].instance.textContent) * 100) % 500 === 0) {
-              this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
               this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
             }
           }
@@ -158,9 +155,6 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
             } else if (this.props.type === 'altitude') {
               if (elementValue % 500 === 0) {
                 text = (Math.abs(elementValue) / 100).toString().padStart(3, '0');
-                this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
-              } else {
-                this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
               }
             }
 

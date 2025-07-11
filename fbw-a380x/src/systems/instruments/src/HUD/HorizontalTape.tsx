@@ -25,7 +25,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
       labels: [] as SVGTextElement[],
     };
 
-    const tickLength = 4;
+    const tickLength = 5;
     let textRef = FSComponent.createRef<SVGTextElement>();
 
     result.ticks.push(<path class="NormalStroke Green" d={`m640 512 v${tickLength}`} transform="translate(0 0)" />);
@@ -33,13 +33,13 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     result.labels.push(
       <text
         id="HeadingLabel"
-        class="Green MiddleAlign FontSmallest"
+        class="Green MiddleAlign FontTiny"
         ref={textRef}
         x="640"
-        y="540"
+        y="545"
         transform={`translate(${0} 0)`}
       >
-        360
+        0
       </text>,
     );
     this.tickNumberRefs.push(textRef);
@@ -61,10 +61,10 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
         result.labels.unshift(
           <text
             id="HeadingLabel"
-            class={`Green MiddleAlign FontSmallest`}
+            class={`Green MiddleAlign FontTiny`}
             ref={textRef}
             x="640"
-            y="540"
+            y="545"
             transform={`translate(${-dX} 0)`}
           >
             {headingOffset}
@@ -75,10 +75,10 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
         result.labels.push(
           <text
             id="HeadingLabel"
-            class={`Green MiddleAlign FontSmallest`}
+            class={`Green MiddleAlign FontTiny`}
             ref={textRef}
             x="640"
-            y="540"
+            y="545"
             transform={`translate(${dX} 0)`}
           >
             {360 - headingOffset}

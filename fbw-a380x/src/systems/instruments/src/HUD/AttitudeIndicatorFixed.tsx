@@ -286,7 +286,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrum
     if (this.isActive()) {
       this.yawRef.instance.style.visibility = 'visible';
       this.GroundYawRef.instance.style.visibility = 'visible';
-      this.yawRef.instance.style.transform = `translate3d(${offset}px, 410px, 0px)`;
+      this.yawRef.instance.style.transform = `translate3d(${offset}px, 395px, 0px)`;
     }
   }
 
@@ -375,7 +375,7 @@ class FDYawBar extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrum
           class="NormalStroke Green"
           d="m 640 0 v 40 h 8.059 v -40 l -4.03 -6.854 z"
         />
-        <path ref={this.GroundYawRef} id="GroundYawRef" class="NormalStroke Green" d="m 640 400  l 10 -17.3 h -20  z" />
+        <path ref={this.GroundYawRef} id="GroundYawRef" class="NormalStroke Green" d="m 640 385  l 10 -17.3 h -20  z" />
         <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
       </g>
     );

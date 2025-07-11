@@ -1833,8 +1833,7 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
 
 //GroundSpeed indicator
 interface GroundSpeedIndicatorData {
-  readonly lmgc: Subscribable<boolean>;
-  readonly fwcFlightPhase: Subscribable<number>;
+  readonly hudMode: Subscribable<number>;
 }
 
 class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
@@ -1849,24 +1848,19 @@ class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private readonly trueAirSpeedRegister = Arinc429RegisterSubject.createEmpty();
 
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
 
   private readonly data: GroundSpeedIndicatorData = {
-    lmgc: ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true),
-    fwcFlightPhase: ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0),
+    hudMode: ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0),
   };
 
-  private readonly gsVisibility = MappedSubject.create(
-    ([lmgc, fwcFlightPhase]) => {
-      if ((lmgc && fwcFlightPhase < 5) || (lmgc && fwcFlightPhase >= 10)) {
-        return 'block';
-      } else {
-        return 'none';
-      }
-    },
-    this.data.lmgc,
-    this.data.fwcFlightPhase,
-  );
+  private readonly gsVisibility = MappedSubject.create(([hudMode]) => {
+    if (hudMode !== 0) {
+      return 'block';
+    } else {
+      return 'none';
+    }
+  }, this.data.hudMode);
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -1879,7 +1873,7 @@ class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
       element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
 
-      data.value < 100
+      data.value < 250
         ? (this.groundSpeedRef.instance.style.display = 'block')
         : (this.groundSpeedRef.instance.style.display = 'none');
     }, true);
@@ -1892,7 +1886,7 @@ class GroundSpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
           <text ref={this.groundSpeedRef} x={20} y={0} class="Green FontMediumSmaller">
             GS
           </text>
-          <text ref={this.groundSpeedRef} x={90} y={0} class="Green FontMediumSmaller EndAlign" />
+          <text ref={this.groundSpeedRef} x={100} y={0} class="Green FontMediumSmaller EndAlign" />
         </Layer>
       </g>
     );
