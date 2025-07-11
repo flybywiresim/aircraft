@@ -1682,6 +1682,8 @@ class D3Cell extends DisplayComponent<{ bus: EventBus }> {
       .on('mda')
       .whenChanged()
       .handle((mda) => {
+        const fontSize = 'FontSmallest';
+        this.classNameSub.set(`${fontSize} MiddleAlign White`);
         if (mda !== 0) {
           const MDAText = Math.round(mda).toString().padStart(6, ' ');
 
