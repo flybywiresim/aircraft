@@ -8,6 +8,7 @@ import {
   FreetextMessage,
   WeatherMessage,
   WindUplinkMessage,
+  WindRequestMessage,
 } from '../../../common/src';
 
 export interface AocFmsMessages {
@@ -35,5 +36,5 @@ export interface FmsAocMessages {
   aocRegisterFreetextMessages: FreetextMessage[];
   aocMessageRead: number;
   aocRemoveMessage: number;
-  aocRequestWinds: { requestId: number };
+  aocRequestWinds: WindRequestMessage & { requestId: number };
 }

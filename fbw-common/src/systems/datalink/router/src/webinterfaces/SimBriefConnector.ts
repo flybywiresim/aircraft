@@ -1,13 +1,22 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { AtsuStatusCodes, WindUplinkMessage } from '../../../common/src';
+import { MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import {
+  AtsuStatusCodes,
+  UplinkedCruiseWindEntry,
+  UplinkedCruiseWindSet,
+  WindRequestMessage,
+  WindUplinkMessage,
+} from '../../../common/src';
+import { Vec2Math } from '@microsoft/msfs-sdk';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
 export class SimBriefConnector {
-  public static async receiveSimBriefWinds(): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+  public static async receiveSimBriefWinds(
+    request: WindRequestMessage,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
     const navigraphUsername = NXDataStore.get('NAVIGRAPH_USERNAME', '');
     const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
@@ -33,14 +42,14 @@ export class SimBriefConnector {
       if (typeof body.fetch?.status === 'string' && body.fetch.status.startsWith('Error:')) {
         throw new Error(`SimBrief: ${body.fetch.status}`);
       }
-      return [AtsuStatusCodes.Ok, SimBriefConnector.parseSimBriefWinds(body)];
+      return [AtsuStatusCodes.Ok, SimBriefConnector.parseSimBriefWinds(body, request)];
     } catch (e) {
       console.error('SimBrief OFP download failed');
       throw e;
     }
   }
 
-  private static parseSimBriefWinds(simbriefJson: any): WindUplinkMessage {
+  private static parseSimBriefWinds(simbriefJson: any, request: WindRequestMessage): WindUplinkMessage {
     {
       const alternate = Array.isArray(simbriefJson.alternate) ? simbriefJson.alternate[0] : simbriefJson.alternate;
       const navlog = simbriefJson.navlog.fix ?? [];
@@ -70,7 +79,7 @@ export class SimBriefConnector {
               result.climbWinds.push({
                 trueDegrees,
                 magnitude,
-                altitude,
+                flightLevel: Math.round(altitude / 100),
               });
 
               lastAltitude = altitude;
@@ -102,7 +111,7 @@ export class SimBriefConnector {
                 result.climbWinds.push({
                   trueDegrees,
                   magnitude,
-                  altitude: idxAltitude,
+                  flightLevel: Math.round(idxAltitude / 100),
                 });
                 lastAltitude = idxAltitude;
               }
@@ -113,37 +122,108 @@ export class SimBriefConnector {
 
       // CRZ
       {
-        for (const fix of navlog) {
-          if (
-            fix.stage !== 'CRZ' ||
-            fix.ident === 'TOC' ||
-            fix.ident === 'TOD' ||
-            fix.type === 'apt' ||
-            fix.is_sid_star === '1'
-          ) {
-            continue;
+        const cruiseWaypoints = navlog.filter(
+          (wpt) =>
+            wpt.ident !== 'TOC' &&
+            wpt.ident !== 'TOD' &&
+            request.cruiseWinds.waypoints.some((reqWpt) => {
+              return (
+                (wpt.type === 'waypoint' && typeof reqWpt === 'string' && reqWpt === wpt.ident) ||
+                (wpt.type === 'ltlg' &&
+                  typeof reqWpt !== 'string' &&
+                  MathUtils.isAboutEqual(reqWpt.lat, parseFloat(wpt.pos_lat)) &&
+                  MathUtils.isAboutEqual(reqWpt.long, parseFloat(wpt.pos_long)))
+              );
+            }),
+        );
+
+        // Go through all the requested flight levels
+        for (const reqLevel of request.cruiseWinds.flightLevels) {
+          const responseSet: UplinkedCruiseWindSet = {
+            flightLevel: reqLevel,
+            fixes: [],
+          };
+
+          // Go through requested waypoints
+          for (const fix of cruiseWaypoints) {
+            if ((fix.wind_data?.level?.length ?? 0) === 0) {
+              continue;
+            }
+
+            const responseFix: UplinkedCruiseWindEntry =
+              fix.type === 'ltlg'
+                ? {
+                    type: 'latlon',
+                    lat: parseFloat(fix.pos_lat),
+                    long: parseFloat(fix.pos_long),
+                    flightLevel: reqLevel,
+                    trueDegrees: 0,
+                    magnitude: 0,
+                  }
+                : {
+                    type: 'waypoint',
+                    fixIdent: fix.ident,
+                    flightLevel: reqLevel,
+                    trueDegrees: 0,
+                    magnitude: 0,
+                  };
+
+            const lowestLevel = Math.round(parseInt(fix.wind_data.level[0].altitude) / 100);
+            const highestLevel = Math.round(
+              parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].altitude) / 100,
+            );
+
+            if (reqLevel <= lowestLevel) {
+              responseFix.trueDegrees = parseInt(fix.wind_data.level[0].wind_dir);
+              responseFix.magnitude = parseInt(fix.wind_data.level[0].wind_spd);
+              responseFix.temperature = parseInt(fix.wind_data.level[0].oat);
+            } else if (reqLevel >= highestLevel) {
+              responseFix.trueDegrees = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].wind_dir);
+              responseFix.magnitude = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].wind_spd);
+              responseFix.temperature = parseInt(fix.wind_data.level[fix.wind_data.level.length - 1].oat);
+            }
+
+            // Interpolate at requested level
+            for (let i = 0; i < fix.wind_data.level.length - 1; i++) {
+              const lowerLevel = Math.round(parseInt(fix.wind_data.level[i].altitude) / 100);
+              const upperLevel = Math.round(parseInt(fix.wind_data.level[i + 1].altitude) / 100);
+
+              if (reqLevel >= lowerLevel && reqLevel <= upperLevel) {
+                const ratio = (reqLevel - lowerLevel) / (upperLevel - lowerLevel);
+
+                const vec1 = Vec2Math.setFromPolar(
+                  fix.wind_data.level[i].wind_spd,
+                  fix.wind_data.level[i].wind_dir * MathUtils.DEGREES_TO_RADIANS,
+                  Vec2Math.create(),
+                );
+                const vec2 = Vec2Math.setFromPolar(
+                  fix.wind_data.level[i + 1].wind_spd,
+                  fix.wind_data.level[i + 1].wind_dir * MathUtils.DEGREES_TO_RADIANS,
+                  Vec2Math.create(),
+                );
+
+                const interpolatedVector = Vec2Math.set(
+                  vec1[0] * (1 - ratio) + vec2[0] * ratio,
+                  vec1[1] * (1 - ratio) + vec2[1] * ratio,
+                  Vec2Math.create(),
+                );
+
+                responseFix.trueDegrees = Math.round(
+                  MathUtils.normalise360(Vec2Math.theta(interpolatedVector) * MathUtils.RADIANS_TO_DEGREES),
+                );
+                responseFix.magnitude = Math.round(Vec2Math.abs(interpolatedVector));
+
+                responseFix.temperature = Math.round(
+                  parseInt(fix.wind_data.level[i].oat) * (1 - ratio) + parseInt(fix.wind_data.level[i + 1].oat) * ratio,
+                );
+                break;
+              }
+            }
+
+            responseSet.fixes.push(responseFix);
           }
 
-          for (const val of fix.wind_data.level) {
-            if (fix.type === 'ltlg') {
-              result.cruiseWinds.push({
-                type: 'latlon',
-                lat: parseFloat(fix.pos_lat),
-                long: parseFloat(fix.pos_long),
-                trueDegrees: parseInt(val.wind_dir),
-                magnitude: parseInt(val.wind_spd),
-                altitude: Math.round(parseInt(val.altitude) / 100) * 100,
-              });
-            } else {
-              result.cruiseWinds.push({
-                type: 'waypoint',
-                fixIdent: fix.ident,
-                trueDegrees: parseInt(val.wind_dir),
-                magnitude: parseInt(val.wind_spd),
-                altitude: Math.round(parseInt(val.altitude) / 100) * 100,
-              });
-            }
-          }
+          result.cruiseWinds.push(responseSet);
         }
       }
 
@@ -167,7 +247,7 @@ export class SimBriefConnector {
               result.descentWinds.push({
                 trueDegrees,
                 magnitude,
-                altitude,
+                flightLevel: Math.round(altitude / 100),
               });
               lastAltitude = altitude;
               altIdx--;
@@ -198,7 +278,7 @@ export class SimBriefConnector {
                 result.descentWinds.push({
                   trueDegrees,
                   magnitude,
-                  altitude: idxAltitude,
+                  flightLevel: Math.round(idxAltitude / 100),
                 });
                 lastAltitude = idxAltitude;
               }
@@ -211,7 +291,7 @@ export class SimBriefConnector {
       {
         if (alternate) {
           result.alternateWind = {
-            altitude: Math.round(parseInt(alternate.cruise_altitude, 10) / 100) * 100,
+            flightLevel: Math.round(parseInt(alternate.cruise_altitude, 10) / 100),
             trueDegrees: parseInt(alternate.avg_wind_dir, 10),
             magnitude: parseInt(alternate.avg_wind_spd, 10),
           };

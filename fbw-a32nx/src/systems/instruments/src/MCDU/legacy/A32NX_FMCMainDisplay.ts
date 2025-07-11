@@ -52,7 +52,13 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CompanyRoute } from '@simbridge/index';
 import { Keypad } from './A320_Neo_CDU_Keypad';
 import { FmsClient } from '@atsu/fmsclient';
-import { AtsuStatusCodes } from '@datalink/common';
+import {
+  AtsuStatusCodes,
+  CruiseWindRequest,
+  formatWindDownlinkMessage,
+  formatWindUplinkMessage,
+  WindRequestMessage,
+} from '@datalink/common';
 import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
@@ -83,6 +89,9 @@ import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
 import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputations';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindUplinkParser';
+import { isLeg, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -5574,32 +5583,43 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (!plan.pendingWindUplink.isWindUplinkReadyToInsert() && !plan.pendingWindUplink.isWindUplinkInProgress()) {
       plan.pendingWindUplink.onUplinkRequested();
 
-      const [status, uplink] = await this.atsu.receiveWindUplink(sentCallback);
+      const payload = this.formatWindRequest(forPlan);
+      console.log(`[FMS] Downlink wind request: ${formatWindDownlinkMessage(payload)}`);
 
-      if (status !== AtsuStatusCodes.Ok) {
-        plan.pendingWindUplink.onUplinkAborted();
-        this.addMessageToQueue(NXSystemMessages.invalidWindTempUplk);
-        return;
-      }
+      try {
+        const [status, uplink] = await this.atsu.receiveWindUplink(payload, sentCallback);
 
-      const shouldInsertDirectly = !this.isAnEngineOn() && !plan.hasWindEntries();
-
-      PendingWindUplinkParser.setFromUplink(uplink, plan);
-
-      this.addMessageToQueue(
-        NXSystemMessages.windTempDataUplk,
-        () => !plan.pendingWindUplink.isWindUplinkReadyToInsert(),
-      );
-
-      if (!shouldInsertDirectly) {
-        if (this.flightPlanService.hasTemporary || this.page.Current === this.page.DirectToPage) {
-          this.addMessageToQueue(
-            NXSystemMessages.windUplinkPending,
-            () => !plan.pendingWindUplink.isWindUplinkReadyToInsert(),
-          );
+        if (status !== AtsuStatusCodes.Ok) {
+          plan.pendingWindUplink.onUplinkAborted();
+          this.addMessageToQueue(NXSystemMessages.invalidWindTempUplk);
+          return;
         }
 
-        return;
+        console.log(`[FMS] Uplinked winds: ${formatWindUplinkMessage(uplink)}`);
+
+        const shouldInsertDirectly = !this.isAnEngineOn() && !plan.hasWindEntries();
+
+        PendingWindUplinkParser.setFromUplink(uplink, plan);
+
+        this.addMessageToQueue(
+          NXSystemMessages.windTempDataUplk,
+          () => !plan.pendingWindUplink.isWindUplinkReadyToInsert(),
+        );
+
+        if (!shouldInsertDirectly) {
+          if (this.flightPlanService.hasTemporary || this.page.Current === this.page.DirectToPage) {
+            this.addMessageToQueue(
+              NXSystemMessages.windUplinkPending,
+              () => !plan.pendingWindUplink.isWindUplinkReadyToInsert(),
+            );
+          }
+
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+        plan.pendingWindUplink.onUplinkAborted();
+        this.addMessageToQueue(NXSystemMessages.invalidWindTempUplk);
       }
     }
 
@@ -5616,6 +5636,84 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     await this.flightPlanService.insertWindUplink(forPlan);
   }
 
+  private formatWindRequest(forPlan: FlightPlanIndex): WindRequestMessage {
+    const plan = this.getFlightPlan(forPlan);
+    if (!plan) {
+      return {};
+    }
+
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel;
+    const phase = this.flightPhaseManager.phase;
+
+    const shouldRequestClimbWinds =
+      phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done || phase === FmgcFlightPhase.Takeoff;
+    const shouldRequestCruiseWinds =
+      shouldRequestClimbWinds || phase === FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Cruise;
+    const shouldRequestDescentWinds = plan.destinationAirport !== undefined;
+
+    const finalCruiseLevel = plan.allLegs.reduce(
+      (acc, leg) => (isLeg(leg) && leg.cruiseStep !== undefined ? Math.round(leg.cruiseStep.toAltitude / 100) : acc),
+      cruiseLevel,
+    );
+
+    const legPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+    const cruiseLegs = plan.allLegs.filter((leg, i) => {
+      if (!isLeg(leg) || !leg.isXF()) {
+        return false;
+      }
+
+      const legPrediction = legPredictions?.get(i);
+      return legPrediction !== undefined
+        ? legPrediction.profilePhase === ProfilePhase.Cruise
+        : leg.segment.class === SegmentClass.Enroute;
+    }) as FlightPlanLeg[];
+
+    let cruiseWinds: CruiseWindRequest | undefined = undefined;
+    if (shouldRequestCruiseWinds && cruiseLegs.length > 0) {
+      const propagatedWinds = this.flightPlanService.propagateWindsAt(0, [], forPlan);
+      const flightLevels = propagatedWinds.map((wind) => Math.round(wind.altitude / 100));
+
+      if (flightLevels.length === 0) {
+        if (cruiseLevel !== null) {
+          flightLevels.push(cruiseLevel);
+        }
+
+        plan.allLegs.forEach((leg) => {
+          if (isLeg(leg) && leg.cruiseStep !== undefined) {
+            const cruiseStep = Math.round(leg.cruiseStep.toAltitude / 100);
+
+            if (flightLevels.length < 4 && cruiseStep !== cruiseLevel && !flightLevels.includes(cruiseStep)) {
+              flightLevels.push(cruiseStep);
+            }
+          }
+        });
+      }
+
+      cruiseWinds = {
+        flightLevels,
+        waypoints: cruiseLegs.map((leg) => {
+          const isStoredWaypoint = this.dataManager.getStoredWaypointsByIdent(leg.ident).length > 0;
+
+          return isStoredWaypoint ? leg.definition.waypoint.location : leg.ident;
+        }),
+      };
+    }
+
+    let alternateWind = undefined;
+    if (plan.destinationAirport !== undefined && plan.alternateDestinationAirport !== undefined) {
+      alternateWind = {
+        destinationIcao: plan.destinationAirport.ident,
+        alternateIcao: plan.alternateDestinationAirport.ident,
+      };
+    }
+
+    return {
+      climbWindLevel: shouldRequestClimbWinds ? cruiseLevel : undefined,
+      cruiseWinds,
+      descentWindLevel: shouldRequestDescentWinds ? finalCruiseLevel ?? null : undefined,
+      alternateWind,
+    };
+  }
   // ---------------------------
   // CDUMainDisplay Types
   // ---------------------------

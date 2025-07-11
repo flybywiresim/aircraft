@@ -12,6 +12,7 @@ import {
   FreetextMessage,
   SimVarSources,
   WeatherMessage,
+  WindRequestMessage,
   WindUplinkMessage,
 } from '../../common/src';
 import { AocFmsMessages } from './databus/FmsBus';
@@ -171,10 +172,13 @@ export class DigitalOutputs {
     SimVar.SetSimVarValue(SimVarSources.companyMessageCount, 'number', count);
   }
 
-  public requestWinds(sentCallback: () => void): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+  public requestWinds(
+    request: WindRequestMessage,
+    sentCallback: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
     return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
       const requestId = this.requestId++;
-      this.publisher.pub('routerRequestWinds', { requestId }, this.synchronizedRouter, false);
+      this.publisher.pub('routerRequestWinds', { requestId, ...request }, this.synchronizedRouter, false);
       this.requestSentCallbacks.push((id: number) => {
         if (id === requestId) sentCallback();
         return id === requestId;

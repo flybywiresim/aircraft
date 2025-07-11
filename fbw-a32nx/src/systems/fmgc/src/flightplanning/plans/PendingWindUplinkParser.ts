@@ -21,21 +21,21 @@ export class PendingWindUplinkParser {
     // 1. Check if we have uplinked entries for existing levels
     // 2. For the remaining number of entries, spread them across the climb profile
 
-    const windData = uplinkedLevels.filter((w) => existingEntries.some((e) => e.altitude === w.altitude));
-    const chosenLevels = new Set(windData.map((w) => w.altitude));
+    const windData = uplinkedLevels.filter((w) => existingEntries.some((e) => e.altitude === w.flightLevel));
+    const chosenLevels = new Set(windData.map((w) => w.flightLevel));
 
     // Sort ascending
-    uplinkedLevels.sort((a, b) => a.altitude - b.altitude);
+    uplinkedLevels.sort((a, b) => a.flightLevel - b.flightLevel);
 
     // Find the lowest level above the cruise flight level, or the highest level if none are above
     const highestLevel = uplinkedLevels.reduce(
-      (acc, level) => (acc === undefined || acc.altitude < cruiseAltitude ? level : acc),
+      (acc, level) => (acc === undefined || acc.flightLevel * 100 < cruiseAltitude ? level : acc),
       undefined,
     );
 
     // Find the lowest level below 10,000 feet, or the lowest level if none are below
     const lowestLevel = uplinkedLevels.reduce(
-      (acc, level) => (acc === undefined || level.altitude < 10_000 ? level : acc),
+      (acc, level) => (acc === undefined || level.flightLevel * 100 < 10_000 ? level : acc),
       undefined,
     );
 
@@ -43,7 +43,7 @@ export class PendingWindUplinkParser {
 
     for (let i = 0; i < numWindEntriesLeft; i++) {
       const optimalLevel =
-        lowestLevel.altitude + ((i + 1) / maxNumEntries) * (highestLevel.altitude - lowestLevel.altitude);
+        lowestLevel.flightLevel + ((i + 1) / maxNumEntries) * (highestLevel.flightLevel - lowestLevel.flightLevel);
 
       // Find the closest wind level to the optimal level
       const closestWindLevel = uplinkedLevels.reduce((prev, curr) => {
@@ -53,15 +53,15 @@ export class PendingWindUplinkParser {
           return prev;
         }
 
-        const prevDiff = Math.abs(prev.altitude - optimalLevel);
-        const currDiff = Math.abs(curr.altitude - optimalLevel);
+        const prevDiff = Math.abs(prev.flightLevel - optimalLevel);
+        const currDiff = Math.abs(curr.flightLevel - optimalLevel);
 
         return currDiff < prevDiff ? curr : prev;
       });
 
-      if (!chosenLevels.has(closestWindLevel.altitude)) {
+      if (!chosenLevels.has(closestWindLevel.flightLevel)) {
         windData.push(closestWindLevel);
-        chosenLevels.add(closestWindLevel.altitude);
+        chosenLevels.add(closestWindLevel.flightLevel);
       }
     }
 
@@ -82,7 +82,7 @@ export class PendingWindUplinkParser {
             wind.trueDegrees * MathUtils.DEGREES_TO_RADIANS,
             Vec2Math.create(),
           ),
-          altitude: wind.altitude,
+          altitude: wind.flightLevel * 100,
         }))
         .sort((a, b) => a.altitude - b.altitude);
     } else {
@@ -96,45 +96,47 @@ export class PendingWindUplinkParser {
       plan.pendingWindUplink.cruiseWinds = [];
 
       for (const uplinkedEntry of uplink.cruiseWinds) {
-        if (!levels.has(uplinkedEntry.altitude) && levels.size >= maxNumCruiseWindLevels) {
+        if (!levels.has(uplinkedEntry.flightLevel) && levels.size >= maxNumCruiseWindLevels) {
           continue;
         }
 
-        const pendingEntry = {
-          altitude: uplinkedEntry.altitude,
-          vector: Vec2Math.setFromPolar(
-            uplinkedEntry.magnitude,
-            uplinkedEntry.trueDegrees * MathUtils.DEGREES_TO_RADIANS,
-            Vec2Math.create(),
-          ),
-        };
+        for (const windAtFix of uplinkedEntry.fixes) {
+          const pendingEntry = {
+            altitude: uplinkedEntry.flightLevel * 100,
+            vector: Vec2Math.setFromPolar(
+              windAtFix.magnitude,
+              windAtFix.trueDegrees * MathUtils.DEGREES_TO_RADIANS,
+              Vec2Math.create(),
+            ),
+          };
 
-        const existingFixWinds = plan.pendingWindUplink.cruiseWinds?.find(
-          (w) =>
-            (w.type === 'waypoint' && uplinkedEntry.type === 'waypoint' && w.fixIdent === uplinkedEntry.fixIdent) ||
-            (w.type === 'latlon' &&
-              uplinkedEntry.type === 'latlon' &&
-              MathUtils.isAboutEqual(w.lat, uplinkedEntry.lat) &&
-              MathUtils.isAboutEqual(w.long, uplinkedEntry.long)),
-        );
-        if (existingFixWinds) {
-          existingFixWinds.levels.push(pendingEntry);
-        } else if (uplinkedEntry.type === 'waypoint') {
-          plan.pendingWindUplink.cruiseWinds.push({
-            type: 'waypoint',
-            fixIdent: uplinkedEntry.fixIdent,
-            levels: [pendingEntry],
-          });
-        } else if (uplinkedEntry.type === 'latlon') {
-          plan.pendingWindUplink.cruiseWinds.push({
-            type: 'latlon',
-            lat: uplinkedEntry.lat,
-            long: uplinkedEntry.long,
-            levels: [pendingEntry],
-          });
+          const existingFixWinds = plan.pendingWindUplink.cruiseWinds?.find(
+            (w) =>
+              (w.type === 'waypoint' && windAtFix.type === 'waypoint' && w.fixIdent === windAtFix.fixIdent) ||
+              (w.type === 'latlon' &&
+                windAtFix.type === 'latlon' &&
+                MathUtils.isAboutEqual(w.lat, windAtFix.lat) &&
+                MathUtils.isAboutEqual(w.long, windAtFix.long)),
+          );
+          if (existingFixWinds) {
+            existingFixWinds.levels.push(pendingEntry);
+          } else if (windAtFix.type === 'waypoint') {
+            plan.pendingWindUplink.cruiseWinds.push({
+              type: 'waypoint',
+              fixIdent: windAtFix.fixIdent,
+              levels: [pendingEntry],
+            });
+          } else if (windAtFix.type === 'latlon') {
+            plan.pendingWindUplink.cruiseWinds.push({
+              type: 'latlon',
+              lat: windAtFix.lat,
+              long: windAtFix.long,
+              levels: [pendingEntry],
+            });
+          }
         }
 
-        levels.add(uplinkedEntry.altitude);
+        levels.add(uplinkedEntry.flightLevel);
       }
 
       for (const cruiseFix of plan.pendingWindUplink.cruiseWinds) {
@@ -157,7 +159,7 @@ export class PendingWindUplinkParser {
             wind.trueDegrees * MathUtils.DEGREES_TO_RADIANS,
             Vec2Math.create(),
           ),
-          altitude: wind.altitude,
+          altitude: wind.flightLevel * 100,
         }))
         .sort((a, b) => b.altitude - a.altitude);
     } else {
@@ -166,7 +168,7 @@ export class PendingWindUplinkParser {
 
     if (uplink.alternateWind) {
       plan.pendingWindUplink.alternateWind = {
-        altitude: uplink.alternateWind.altitude,
+        altitude: uplink.alternateWind.flightLevel * 100,
         vector: Vec2Math.setFromPolar(
           uplink.alternateWind.magnitude,
           uplink.alternateWind.trueDegrees * MathUtils.DEGREES_TO_RADIANS,

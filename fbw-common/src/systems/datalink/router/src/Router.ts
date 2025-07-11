@@ -18,6 +18,7 @@ import {
   WeatherMessage,
   FreetextMessage,
   WindUplinkMessage,
+  WindRequestMessage,
 } from '../../common/src';
 import { MsfsConnector } from './msfs/MsfsConnector';
 import { Vdl } from './vhf/VDL';
@@ -130,7 +131,9 @@ export class Router {
     this.digitalInputs.addDataCallback('requestWeather', async (icaos, metar, requestSent) =>
       this.receiveWeather(metar, icaos, requestSent),
     );
-    this.digitalInputs.addDataCallback('requestWinds', (requestSent) => this.receiveWinds(requestSent));
+    this.digitalInputs.addDataCallback('requestWinds', (request, requestSent) =>
+      this.receiveWinds(request, requestSent),
+    );
   }
 
   public initialize(): void {
@@ -391,13 +394,16 @@ export class Router {
     return DatalinkStatusCode.NotInstalled;
   }
 
-  private async receiveWinds(requestSent: () => void): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+  private async receiveWinds(
+    request: WindRequestMessage,
+    requestSent: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
     if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
       return [AtsuStatusCodes.ComFailed, null];
     }
 
     requestSent();
 
-    return SimBriefConnector.receiveSimBriefWinds();
+    return SimBriefConnector.receiveSimBriefWinds(request);
   }
 }

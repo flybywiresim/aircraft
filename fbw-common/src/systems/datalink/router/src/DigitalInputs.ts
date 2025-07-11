@@ -16,6 +16,7 @@ import {
   RmpDataBusTypes,
   Conversion,
   WindUplinkMessage,
+  WindRequestMessage,
 } from '../../common/src';
 import { AtcAocRouterMessages, FmsRouterMessages } from './databus';
 import { AtsuFlightPhase } from '../../common/src/types/AtsuFlightPhase';
@@ -34,7 +35,10 @@ export type RouterDigitalInputCallbacks = {
   connect: (callsign: string) => Promise<AtsuStatusCodes>;
   disconnect: () => Promise<AtsuStatusCodes>;
   stationAvailable: (callsign: string) => Promise<AtsuStatusCodes>;
-  requestWinds: (sentCallback: () => void) => Promise<[AtsuStatusCodes, WindUplinkMessage | null]>;
+  requestWinds: (
+    request: WindRequestMessage,
+    sentCallback: () => void,
+  ) => Promise<[AtsuStatusCodes, WindUplinkMessage | null]>;
 };
 
 export class DigitalInputs {
@@ -300,7 +304,7 @@ export class DigitalInputs {
       if (this.callbacks.requestWinds !== null) {
         const synchronized = this.synchronizedAoc || this.synchronizedAtc;
         this.callbacks
-          .requestWinds(() => this.publisher.pub('routerRequestSent', request.requestId, synchronized, false))
+          .requestWinds(request, () => this.publisher.pub('routerRequestSent', request.requestId, synchronized, false))
           .then((response) => {
             this.publisher.pub('routerReceivedWinds', { requestId: request.requestId, response }, synchronized, false);
           });
