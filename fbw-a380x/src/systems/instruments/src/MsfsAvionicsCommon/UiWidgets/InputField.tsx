@@ -134,6 +134,10 @@ export class InputField<
       if (this.props.mandatory?.get()) {
         this.textInputRef.getOrDefault()?.classList.remove('mandatory');
       }
+    } else {
+      if (this.props.mandatory?.get()) {
+        this.textInputRef.getOrDefault()?.classList.add('mandatory');
+      }
     }
     this.updateDisplayElement();
   }

@@ -536,48 +536,48 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       (this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent,
     );
 
-    if (pd.costIndex !== null && pd.costIndex !== undefined) {
+    if (pd.costIndex !== undefined) {
       this.costIndex.set(pd.costIndex);
     }
 
-    if (fm.takeoffShift) {
+    if (fm.takeoffShift !== undefined) {
       this.toShift.set(fm.takeoffShift.get());
     }
 
-    if (pd.v1) {
+    if (pd.v1 !== undefined) {
       this.toV1.set(pd.v1);
     }
 
-    if (pd.vr) {
+    if (pd.vr !== undefined) {
       this.toVR.set(pd.vr);
     }
 
-    if (pd.v2) {
+    if (pd.v2 !== undefined) {
       this.toV2.set(pd.v2);
     }
 
-    if (fm.takeoffPowerSetting) {
+    if (fm.takeoffPowerSetting !== undefined) {
       this.toSelectedThrustSettingIndex.set(fm.takeoffPowerSetting.get());
       this.showToThrustSettings(fm.takeoffPowerSetting.get());
     }
 
-    if (fm.takeoffFlexTemp) {
+    if (fm.takeoffFlexTemp !== undefined) {
       this.toFlexTemp.set(fm.takeoffFlexTemp.get());
     }
 
-    if (fm.takeoffDeratedSetting) {
+    if (fm.takeoffDeratedSetting !== undefined) {
       this.toSelectedDeratedIndex.set(fm.takeoffDeratedSetting.get());
     }
 
-    if (fm.takeoffFlapsSetting) {
+    if (fm.takeoffFlapsSetting !== undefined) {
       this.toSelectedFlapsIndex.set(fm.takeoffFlapsSetting.get() - 1);
     }
 
-    if (fm.takeoffPacks) {
+    if (fm.takeoffPacks !== undefined) {
       this.toSelectedPacksIndex.set(fm.takeoffPacks.get());
     }
 
-    if (fm.takeoffAntiIce) {
+    if (fm.takeoffAntiIce !== undefined) {
       this.toSelectedAntiIceIndex.set(fm.takeoffAntiIce.get());
     }
 
@@ -585,7 +585,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered);
     }
 
-    if (pd.thrustReductionAltitude) {
+    if (pd.thrustReductionAltitude !== undefined) {
       this.thrRedAlt.set(pd.thrustReductionAltitude);
     }
 
@@ -593,7 +593,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.accelRedAltIsPilotEntered.set(pd.accelerationAltitudeIsPilotEntered);
     }
 
-    if (pd.accelerationAltitude) {
+    if (pd.accelerationAltitude !== undefined) {
       this.accelAlt.set(pd.accelerationAltitude);
     }
 
@@ -601,7 +601,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.showNoiseFields(fm.noiseEnabled.get());
     }
 
-    if (fm.noiseEndAltitude) {
+    if (fm.noiseEndAltitude !== undefined) {
       this.noiseEndAlt.set(fm.noiseEndAltitude.get());
     }
 
@@ -609,7 +609,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.transAltIsPilotEntered.set(!pd.transitionAltitudeIsFromDatabase);
     }
 
-    if (pd.transitionAltitude) {
+    if (pd.transitionAltitude !== undefined) {
       this.transAlt.set(pd.transitionAltitude);
     }
 
@@ -617,7 +617,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.eoAccelAltIsPilotEntered.set(pd.engineOutAccelerationAltitudeIsPilotEntered);
     }
 
-    if (pd.engineOutAccelerationAltitude) {
+    if (pd.engineOutAccelerationAltitude !== undefined) {
       this.eoAccelAlt.set(pd.engineOutAccelerationAltitude);
     }
 
@@ -625,7 +625,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered);
     }
 
-    if (pd.pilotThrustReductionAltitude) {
+    if (pd.pilotThrustReductionAltitude !== undefined) {
       this.thrRedAlt.set(pd.pilotThrustReductionAltitude);
     }
 
@@ -653,7 +653,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.precisionApproachSelected.set(precisionApproach);
 
-    if (fm.approachFlapConfig) {
+    if (fm.approachFlapConfig !== undefined) {
       this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() === 3 ? 0 : 1);
     }
 
@@ -669,7 +669,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.missedEngineOutAccelAltIsPilotEntered.set(pd.missedEngineOutAccelerationAltitudeIsPilotEntered);
     }
 
-    if (pd.missedEngineOutAccelerationAltitude) {
+    if (pd.missedEngineOutAccelerationAltitude !== undefined) {
       this.missedEngineOutAccelAlt.set(pd.missedEngineOutAccelerationAltitude);
     }
 
@@ -677,7 +677,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.missedThrRedAlt.set(pd.missedThrustReductionAltitude);
     }
 
-    if (pd.missedAccelerationAltitude) {
+    if (pd.missedAccelerationAltitude !== undefined) {
       this.missedAccelAlt.set(pd.missedAccelerationAltitude);
     }
 
@@ -685,7 +685,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.transFlIsPilotEntered.set(!pd.transitionLevelIsFromDatabase);
     }
 
-    if (pd.transitionLevel) {
+    if (pd.transitionLevel !== undefined) {
       this.transFl.set(pd.transitionLevel);
     }
 
