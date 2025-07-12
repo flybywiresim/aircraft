@@ -14,12 +14,11 @@ import {
 } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
 
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FgBus } from './shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
-import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 /* eslint-disable no-constant-condition,no-dupe-else-if -- for keeping the FMA code while it's not active yet */
 
@@ -998,7 +997,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus & ExtendedClockEvents>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus>();
 
     sub
       .on('fmgcDiscreteWord1')
