@@ -15,7 +15,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDU_Field } from './A320_Neo_CDU_Field';
 import { AtsuStatusCodes } from '@datalink/common';
 import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
-import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 import { LegacyFmsPageInterface, LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
 import { LegacyAtsuPageInterface } from './LegacyAtsuPageInterface';
 
@@ -1618,14 +1617,6 @@ export class A320_Neo_CDU_MainDisplay
   }
 
   /* END OF WEBSOCKET */
-
-  public goToFuelPredPage() {
-    if (this.isAnEngineOn()) {
-      CDUFuelPredPage.ShowPage(this);
-    } else {
-      CDUInitPage.ShowPage2(this);
-    }
-  }
 
   public logTroubleshootingError(msg: any) {
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);

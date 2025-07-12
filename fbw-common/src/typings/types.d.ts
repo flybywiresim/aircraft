@@ -4,14 +4,15 @@ import {
     SelectedNavaidType as SelectedNavaidType_,
     SelectedNavaidMode as SelectedNavaidMode_,
     A320FlightPlanPerformanceData as A320FlightPlanPerformanceData_,
+    FlightPlanUtils as FlightPlanUtils_,
 } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { NavigationDatabase as Database, NavigationDatabaseBackend as DatabaseBackend } from '../../../fbw-a32nx/src/systems/fmgc/src/NavigationDatabase'
 import { FlightPlanIndex as Index } from '../../../fbw-a32nx/src/systems/fmgc/src';
 import { FlightPhaseManager as FlightPhaseManager_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { WaypointFactory as WaypointFactory_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { WaypointEntryUtils as WaypointEntryUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { CoRouteUplinkAdapter as CoRouteUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { SimBriefUplinkAdapter as SimBriefUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
-import { ApproachUtils as ApproachUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 
 declare global {
     type NauticalMiles = number;
@@ -88,9 +89,13 @@ declare global {
 
         const FlightPhaseManager: typeof FlightPhaseManager_
 
+        const FlightPlanUtils: typeof FlightPlanUtils_
+
         const WaypointFactory: typeof WaypointFactory_
 
         const WaypointEntryUtils: typeof WaypointEntryUtils_
+
+        const CoRouteUplinkAdapter: typeof CoRouteUplinkAdapter_
 
         const SimBriefUplinkAdapter: typeof SimBriefUplinkAdapter_
     }
