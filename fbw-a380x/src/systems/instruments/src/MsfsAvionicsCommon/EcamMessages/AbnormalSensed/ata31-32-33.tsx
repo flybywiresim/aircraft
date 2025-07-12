@@ -1204,34 +1204,37 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   320900001: {
-    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH ABNORM NOSE L/G',
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH ABNORM NOSE L/G (WIP)',
     sensed: false,
     items: [], // TODO
   },
   320900002: {
-    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM L/Gs ON SAME SIDE',
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM L/Gs ON SAME SIDE (WIP)',
     sensed: false,
     items: [], // TODO
   },
   320900003: {
-    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 1 ABNORM WING OR BODY L/G',
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 1 ABNORM WING OR BODY L/G (WIP)',
     sensed: false,
     items: [], // TODO
   },
   320900004: {
-    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM BODY L/Gs',
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM BODY L/Gs (WIP)',
     sensed: false,
     items: [], // TODO
   },
   320900005: {
-    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM WING L/Gs',
+    title: '\x1b<4m\x1b4mL/G\x1bm LDG WITH 2 ABNORM WING L/Gs (WIP)',
     sensed: false,
     items: [], // TODO
   },
   320900006: {
     title: '\x1b<4m\x1b4mWHEEL\x1bm TIRE DAMAGE SUSPECTED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'TAXI WITH CARE', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
 };
 

@@ -25,6 +25,10 @@ struct FcdcDiscreteInputs {
   bool primHealthy[3];
 };
 
+struct FcdcAnalogInputs {
+  double spoilersLeverPos;
+};
+
 struct FcdcBusInputs {
   base_prim_out_bus prims[3];
 };
@@ -52,6 +56,8 @@ class Fcdc {
   FcdcBus update(double deltaTime, bool faultActive, bool isPowered);
 
   FcdcDiscreteInputs discreteInputs;
+
+  FcdcAnalogInputs analogInputs;
 
   FcdcBusInputs busInputs;
 

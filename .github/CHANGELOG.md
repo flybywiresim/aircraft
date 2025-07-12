@@ -92,6 +92,7 @@
 1. [A32NX/FWS] Improve altitude alert logic, add PFD indications, improve AP OFF warning logic - @lukecologne (luke)
 1. [A380X/FMS] Add TL indication for tailwind on APPR PERF - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Consider pilot-entered tropopause for automatic cruise temperature calculation - @BlueberryKing (BlueberryKing)
+1. [FMS] Make sure radials of CR/VR legs use the station declination as magvar - @BlueberryKing (BlueberryKing)
 1. [ADIRU] Added excess motion and outside latitude limit (> 82° N/S) faults - @tracernz (Mike)
 1. [ADIRU] Added quick re-align function - @tracernz (Mike)
 1. [ADIRU] Changed the IRS alignment times to actual enhanced align times - @tracernz (Mike)
