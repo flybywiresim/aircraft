@@ -1162,52 +1162,52 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'AUTO CTL SYS 1+2+3+4 FAULT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Amber,
       },
       {
         name: 'CAB PRESS IN BACKUP MODE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'CAB PRESS MAN MODES : DO NOT USE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'IN DES : CAB ALT REGULATED TO 7000 FT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'BELOW 7000 FT : CAB ALT = ACFT ALT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'BELOW 7000 FT : AVOID HI DES V/S',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'CABIN ALT REGULATED TO 7500FT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'CAB PRESS MAN MODES : DO NOT USE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Headline,
       },
       {
         name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'BELOW 7500 FT : AVOID HI DES V/S',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
       },
       {
@@ -1351,7 +1351,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'MAX FL : 100/MEA',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
         level: 1,
       },
@@ -1375,7 +1375,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'BEFORE OPENING ANY CABIN DOOR :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
