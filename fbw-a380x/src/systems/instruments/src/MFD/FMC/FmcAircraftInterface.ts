@@ -189,6 +189,8 @@ export class FmcAircraftInterface {
       ),
     );
 
+    this.subs.push(this.tdReached);
+
     this.subs.push(
       this.fmc.fmgc.data.zeroFuelWeight.sub((zfw) => {
         this.arincZeroFuelWeight.setBnrValue(
@@ -1218,6 +1220,7 @@ export class FmcAircraftInterface {
       this.fmgc.getV2Speed(),
       this.fmgc.getDestinationElevation(),
       towerHeadwind,
+      true, // ignore VLS spoiler increase as it's only for display purposes
     );
     this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
     this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
