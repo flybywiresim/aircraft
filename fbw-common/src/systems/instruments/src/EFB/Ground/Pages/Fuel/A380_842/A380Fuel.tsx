@@ -5,7 +5,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
-import { useSimVar, usePersistentNumberProperty, usePersistentProperty, Units } from '@flybywiresim/fbw-sdk';
+import {
+  useSimVar,
+  usePersistentNumberProperty,
+  usePersistentProperty,
+  Units,
+  GsxServiceStates,
+} from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
 import {
   Card,
@@ -31,7 +37,7 @@ interface ValueSimbriefInputProps {
   unit: string;
   showSimbriefButton: boolean;
   onClickSync: () => void;
-  disabled?: boolean;
+  isInputEnabled: boolean;
 }
 
 const ValueSimbriefInput: React.FC<ValueSimbriefInputProps> = ({
@@ -42,19 +48,20 @@ const ValueSimbriefInput: React.FC<ValueSimbriefInputProps> = ({
   unit,
   showSimbriefButton,
   onClickSync,
-  disabled,
+  isInputEnabled,
 }) => (
   <div className="relative w-52">
     <div className="flex flex-row">
       <div className="relative">
         <SimpleInput
-          className={`${showSimbriefButton && 'rounded-r-none'} my-2 w-full font-mono ${disabled ? 'cursor-not-allowed text-theme-body placeholder:text-theme-body' : ''}`}
+          className={`${isInputEnabled && 'rounded-r-none'} my-2 w-full font-mono ${!isInputEnabled ? 'cursor-not-allowed text-theme-body placeholder:text-theme-body' : ''}`}
           fontSizeClassName="text-2xl"
           number
           min={min}
           max={max}
           value={value.toFixed(0)}
           onBlur={onBlur}
+          disabled={!isInputEnabled}
         />
         <div className="absolute right-3 top-0 flex h-full items-center font-mono text-2xl text-gray-400">{unit}</div>
       </div>
@@ -106,11 +113,18 @@ const ValueUnitDisplay: React.FC<NumberUnitDisplayProps> = ({ value, padTo, unit
   );
 };
 
+enum RefuelRate {
+  REAL = '0',
+  FAST = '1',
+  INSTANT = '2',
+}
+
 interface FuelProps {
   simbriefDataLoaded: boolean;
   simbriefPlanRamp: number;
   simbriefUnits: string;
   massUnitForDisplay: string;
+  convertUnit: number;
   isOnGround: boolean;
 }
 export const A380Fuel: React.FC<FuelProps> = ({
@@ -118,10 +132,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
   simbriefPlanRamp,
   simbriefUnits,
   massUnitForDisplay,
+  convertUnit,
   isOnGround,
 }) => {
   const TOTAL_FUEL_GALLONS = 85471.7; // 323545.6 litres
   const FUEL_GALLONS_TO_KG = 3.039075693483925; // Check: MSFS fuel density is currently always fixed, if this changes this will need to read from the var.
+  const FAST_SPEED_FACTOR = 5.0;
+  const FUELRATE_TOTAL_GAL_SEC = 16.0;
   const TOTAL_MAX_FUEL_KG = TOTAL_FUEL_GALLONS * FUEL_GALLONS_TO_KG;
   const TOTAL_UI_MAX_FUEL_KG = 220000.0; // Temporarily while we are using WV003, so the slider will not set a value that is far above current MTOW. OFP and manual entry not affected.
 
@@ -154,12 +171,10 @@ export const A380Fuel: React.FC<FuelProps> = ({
   const [fuelDesiredKg, setFuelDesiredKg] = useSimVar('L:A32NX_FUEL_DESIRED', 'Kilograms', 2_000);
   const [refuelStartedByUser, setRefuelStartedByUser] = useSimVar('L:A32NX_REFUEL_STARTED_BY_USR', 'Bool', 2_000);
 
-  // Simbrief
-  const [showSimbriefButton, setShowSimbriefButton] = useState(false);
-
   // GSX
   const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
   const [gsxFuelHoseConnected] = useSimVar('L:FSDT_GSX_FUELHOSE_CONNECTED', 'Number');
+  const [gsxRefuelState] = useSimVar('L:FSDT_GSX_REFUELING_STATE', 'Number');
 
   const dispatch = useAppDispatch();
   const fuelImported = useAppSelector((state) => state.simbrief.fuelImported);
@@ -171,48 +186,28 @@ export const A380Fuel: React.FC<FuelProps> = ({
     }
   }, []);
 
-  useEffect(() => {
-    // GSX
-    if (gsxFuelSyncEnabled === 1) {
-      /*
-            TODO: Uncomment?
-            if (boardingStarted) {
-                setShowSimbriefButton(false);
-                return;
-            }
-            */
-      setShowSimbriefButton(simbriefDataLoaded);
-      return;
-    }
-    // EFB
-    if (Math.abs(Math.round(fuelDesiredKg) - roundUpNearest100(simbriefPlanRamp)) < 10) {
-      setShowSimbriefButton(false);
-      return;
-    }
-    setShowSimbriefButton(simbriefDataLoaded);
-  }, [fuelDesiredKg, simbriefDataLoaded, gsxFuelSyncEnabled]);
+  const showSimbriefButton = useCallback(() => {
+    return simbriefDataLoaded && !(isDesiredEqualTo(getSimbriefPlanRamp()) || refuelStartedByUser);
+  }, [simbriefDataLoaded, simbriefPlanRamp, fuelDesiredKg, refuelStartedByUser]);
+
+  const gsxRefuelActive = () =>
+    gsxRefuelState === GsxServiceStates.REQUESTED || gsxRefuelState === GsxServiceStates.ACTIVE;
+
+  const gsxRefuelCallable = () => gsxRefuelState === GsxServiceStates.CALLABLE;
 
   const canRefuel = useCallback(
     () => !(eng1Running || eng2Running || eng3Running || eng4Running || !isOnGround),
     [eng1Running, eng2Running, eng3Running, eng4Running, isOnGround],
   );
 
-  const airplaneCanRefuel = useCallback(() => {
-    if (refuelRate !== '2') {
-      if (!canRefuel()) {
-        setRefuelRate('2');
+  const isRefuelStartable = useCallback(() => {
+    if (canRefuel()) {
+      if (gsxFuelSyncEnabled === 1) {
+        return gsxFuelHoseConnected === 1 || refuelRate === RefuelRate.INSTANT;
       }
+      return true;
     }
-
-    if (gsxFuelSyncEnabled === 1) {
-      if (gsxFuelHoseConnected === 1) {
-        return true;
-      }
-
-      // In-flight refueling with GSX Sync enabled
-      return (eng1Running || eng2Running || eng3Running || eng4Running || !isOnGround) && refuelRate === '2';
-    }
-    return true;
+    return !canRefuel() && refuelRate === RefuelRate.INSTANT;
   }, [
     eng1Running,
     eng2Running,
@@ -223,6 +218,14 @@ export const A380Fuel: React.FC<FuelProps> = ({
     gsxFuelSyncEnabled,
     gsxFuelHoseConnected,
   ]);
+
+  const isFuelEqualTo = (fuel: number, targetFuel: number): boolean => {
+    return Math.abs(fuel - targetFuel) < 10;
+  };
+
+  const isDesiredEqualTo = (targetFuel: number): boolean => {
+    return isFuelEqualTo(fuelDesiredKg, targetFuel);
+  };
 
   const updateDesiredFuel = (newDesiredFuelKg: number) => {
     if (newDesiredFuelKg > TOTAL_MAX_FUEL_KG) {
@@ -240,81 +243,112 @@ export const A380Fuel: React.FC<FuelProps> = ({
     updateDesiredFuel(fuel);
   };
 
-  /*
-    TODO: Uncomment, refactor for new variable naming, and add 380 specific fueling estimate logic
-    const calculateEta = () => {
-        if (round(totalTarget) === totalFuelWeightKg || refuelRate === '2') { // instant
-            return ' 0';
-        }
-        let estimatedTimeSeconds = 0;
-        const totalWingFuel = TOTAL_FUEL_GALLONS - CENTER_TANK_GALLONS;
-        const differentialFuelWings = Math.abs(currentWingFuel() - targetWingFuel());
-        const differentialFuelCenter = Math.abs(centerTarget - centerCurrent);
-        estimatedTimeSeconds += (differentialFuelWings / totalWingFuel) * wingTotalRefuelTimeSeconds;
-        estimatedTimeSeconds += (differentialFuelCenter / CENTER_TANK_GALLONS) * CenterTotalRefuelTimeSeconds;
-        if (refuelRate === '1') { // fast
-            estimatedTimeSeconds /= 5;
-        }
-        if (estimatedTimeSeconds < 35) {
-            return ' 0.5';
-        }
-        return ` ${Math.round(estimatedTimeSeconds / 60)}`;
-    };
-     */
+  const convertToGallon = (curr: number) => curr * (1 / convertUnit) * (1 / FUEL_GALLONS_TO_KG);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSimbriefFuelSync = () => {
-    let fuelToLoad = -1;
-    if (simbriefUnits === 'kgs') {
-      fuelToLoad = roundUpNearest100(simbriefPlanRamp);
-    } else {
-      fuelToLoad = roundUpNearest100(Units.poundToKilogram(simbriefPlanRamp));
+  const calculateEta = () => {
+    if (isDesiredEqualTo(totalFuelWeightKg) || refuelRate === RefuelRate.INSTANT) {
+      return ' 0';
     }
 
-    updateDesiredFuel(fuelToLoad);
+    const differentialFuel = Math.abs(convertToGallon(totalFuelWeightKg) - convertToGallon(fuelDesiredKg));
+    const factor = refuelRate === RefuelRate.FAST ? FAST_SPEED_FACTOR : 1.0;
+    const estimatedTimeSeconds = differentialFuel / (FUELRATE_TOTAL_GAL_SEC * factor);
+
+    if (estimatedTimeSeconds < 35) {
+      return ' 0.5';
+    }
+    return ` ${Math.round(estimatedTimeSeconds / 60.0)}`;
+  };
+
+  const getSimbriefPlanRamp = () => {
+    if (simbriefUnits === 'kgs') {
+      return roundUpNearest100(simbriefPlanRamp);
+    } else {
+      return roundUpNearest100(Units.poundToKilogram(simbriefPlanRamp));
+    }
+  };
+
+  const handleSimbriefFuelSync = () => {
+    updateDesiredFuel(getSimbriefPlanRamp());
   };
 
   const roundUpNearest100 = (plannedFuel: number) => Math.ceil(plannedFuel / 100) * 100;
 
-  const switchRefuelState = useCallback(() => {
-    if (airplaneCanRefuel()) {
+  const switchRefuelState = () => {
+    if (refuelStartedByUser || isRefuelStartable()) {
       setRefuelStartedByUser(!refuelStartedByUser);
     }
-  }, [refuelStartedByUser]);
+  };
 
-  const formatRefuelStatusLabel = () => {
-    if (airplaneCanRefuel()) {
-      if (round(fuelDesiredKg) === totalFuelWeightKg) {
-        return `(${t('Ground.Fuel.Completed')})`;
-      }
+  const formatRefuelStatusLabel = useCallback(() => {
+    if (canRefuel()) {
       if (refuelStartedByUser) {
         return fuelDesiredKg > totalFuelWeightKg
           ? `(${t('Ground.Fuel.Refueling')}...)`
           : `(${t('Ground.Fuel.Defueling')}...)`;
       }
+
+      if (isDesiredEqualTo(totalFuelWeightKg)) {
+        return `(${t('Ground.Fuel.Completed')})`;
+      }
+
+      if (gsxFuelSyncEnabled === 1) {
+        if (gsxRefuelActive()) {
+          return `(${t('Ground.Fuel.GSXFuelRequested')})`;
+        }
+        if (gsxRefuelCallable() && refuelRate !== RefuelRate.INSTANT) {
+          return `(${t('Ground.Fuel.GSXFuelSyncEnabled')})`;
+        }
+      }
+
       return `(${t('Ground.Fuel.ReadyToStart')})`;
     }
-    if (refuelStartedByUser) {
-      setRefuelStartedByUser(false);
-    }
-    return gsxFuelSyncEnabled === 1 ? `(${t('Ground.Fuel.GSXFuelSyncEnabled')})` : `(${t('Ground.Fuel.Unavailable')})`;
-  };
+
+    return `(${t('Ground.Fuel.Unavailable')})`;
+  }, [fuelDesiredKg, totalFuelWeightKg, refuelStartedByUser, gsxFuelSyncEnabled, gsxRefuelState, refuelRate]);
 
   const formatRefuelStatusClass = useCallback(() => {
-    if (airplaneCanRefuel()) {
-      if (round(fuelDesiredKg) === totalFuelWeightKg || !refuelStartedByUser) {
-        if (refuelStartedByUser) {
-          setRefuelStartedByUser(false);
-        }
+    if (refuelStartedByUser) {
+      return fuelDesiredKg > totalFuelWeightKg ? 'text-green-500' : 'text-yellow-500';
+    }
+
+    if (canRefuel()) {
+      if (isDesiredEqualTo(totalFuelWeightKg) || !refuelStartedByUser) {
         return 'text-theme-highlight';
       }
-      return fuelDesiredKg > totalFuelWeightKg ? 'text-green-500' : 'text-yellow-500';
     }
     return 'text-theme-accent';
   }, [fuelDesiredKg, totalFuelWeightKg, refuelStartedByUser]);
 
   return (
     <div className="relative flex flex-col justify-center">
+      <Card
+        className="absolute top-0 flex self-center"
+        childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}
+      >
+        <table className="table-fixed">
+          <tbody>
+            <tr>
+              <td className="text-md whitespace-nowrap px-2 font-medium">Total</td>
+              <td className="text-md whitespace-nowrap px-2 font-medium">
+                <ProgressBar
+                  height="10px"
+                  width="80px"
+                  displayBar={false}
+                  completedBarBegin={100}
+                  isLabelVisible={false}
+                  bgcolor="var(--color-highlight)"
+                  completed={(totalFuelWeightKg / TOTAL_MAX_FUEL_KG) * 100}
+                />
+              </td>
+              <td className="text-md my-2 whitespace-nowrap px-2 font-mono font-medium">
+                <ValueUnitDisplay value={Units.kilogramToUser(totalFuelWeightKg)} padTo={6} unit={massUnitForDisplay} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </Card>
+
       <div className="relative flex h-content-section-reduced w-full flex-row justify-between">
         <Card
           className="absolute left-0 top-6 flex w-fit"
@@ -599,13 +633,11 @@ export const A380Fuel: React.FC<FuelProps> = ({
                 <h2 className="font-medium">{t('Ground.Fuel.Refuel')}</h2>
                 <p className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</p>
               </div>
-              {/*
-                            // TODO: Implement
-                                <p>{`${t('Ground.Fuel.EstimatedDuration')}: 0`}</p>
-                            */}
+              <p>{`${t('Ground.Fuel.EstimatedDuration')}: ${calculateEta()}`}</p>
             </div>
             <div className="flex flex-row items-center space-x-32">
               <Slider
+                disabled={refuelStartedByUser}
                 style={{ width: '28rem' }}
                 value={(fuelDesiredKg / TOTAL_UI_MAX_FUEL_KG) * 100}
                 onChange={updateDesiredFuelPercent}
@@ -621,29 +653,34 @@ export const A380Fuel: React.FC<FuelProps> = ({
                     }
                   }}
                   unit={massUnitForDisplay}
-                  showSimbriefButton={showSimbriefButton}
+                  showSimbriefButton={showSimbriefButton()}
                   onClickSync={handleSimbriefFuelSync}
-                  disabled={gsxFuelSyncEnabled === 1}
+                  isInputEnabled={!refuelStartedByUser}
                 />
               </div>
             </div>
           </div>
-          <div
-            className={`flex w-48 items-center justify-center ${formatRefuelStatusClass()} bg-current`}
-            onClick={() => switchRefuelState()}
-          >
-            <div className={`${airplaneCanRefuel() ? 'text-white' : 'text-theme-unselected'}`}>
-              <PlayFill size={50} className={refuelStartedByUser ? 'hidden' : ''} />
-              <StopCircleFill size={50} className={refuelStartedByUser ? '' : 'hidden'} />
+          {(!gsxFuelSyncEnabled || (refuelRate === RefuelRate.INSTANT && !gsxRefuelActive())) && (
+            <div
+              className={`flex w-48 items-center justify-center ${formatRefuelStatusClass()} bg-current`}
+              onClick={() => switchRefuelState()}
+            >
+              <div className={`${canRefuel() ? 'text-white' : 'text-theme-unselected'}`}>
+                <PlayFill size={50} className={refuelStartedByUser ? 'hidden' : ''} />
+                <StopCircleFill size={50} className={refuelStartedByUser ? '' : 'hidden'} />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
       <div className="absolute bottom-0 right-6 flex flex-col items-center justify-center space-y-2 overflow-x-hidden rounded-2xl border border-theme-accent px-6 py-3">
         <h2 className="flex font-medium">{t('Ground.Fuel.RefuelTime')}</h2>
         <SelectGroup>
-          <SelectItem selected={canRefuel() ? refuelRate === '2' : !canRefuel()} onSelect={() => setRefuelRate('2')}>
+          <SelectItem
+            selected={canRefuel() ? refuelRate === RefuelRate.INSTANT : !canRefuel()}
+            onSelect={() => setRefuelRate(RefuelRate.INSTANT)}
+          >
             {t('Settings.Instant')}
           </SelectItem>
 
@@ -654,8 +691,8 @@ export const A380Fuel: React.FC<FuelProps> = ({
               <SelectItem
                 className={`${!canRefuel() && 'opacity-20'}`}
                 disabled={!canRefuel()}
-                selected={refuelRate === '1'}
-                onSelect={() => setRefuelRate('1')}
+                selected={refuelRate === RefuelRate.FAST}
+                onSelect={() => setRefuelRate(RefuelRate.FAST)}
               >
                 {t('Settings.Fast')}
               </SelectItem>
@@ -668,8 +705,8 @@ export const A380Fuel: React.FC<FuelProps> = ({
               <SelectItem
                 className={`${!canRefuel() && 'opacity-20'}`}
                 disabled={!canRefuel()}
-                selected={refuelRate === '0'}
-                onSelect={() => setRefuelRate('0')}
+                selected={refuelRate === RefuelRate.REAL}
+                onSelect={() => setRefuelRate(RefuelRate.REAL)}
               >
                 {t('Settings.Real')}
               </SelectItem>
