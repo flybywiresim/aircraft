@@ -2085,19 +2085,19 @@ export class PseudoFWC {
       this.irs2InAlignTrigger.write(irs2InAlign, deltaTime) ||
       irs3InAlign ||
       this.irs3InAlignTrigger.write(irs3InAlign, deltaTime);
-    const leftInAlingSubmode =
+    const leftInAlignSubmode =
       dmcLeftSelectedIrDiscreteWord.bitValue(29) && !dmcLeftSelectedIrDiscreteWord.isNoComputedData();
-    const rightInAlingSubmode =
+    const rightInAlignSubmode =
       dmcRightSelectedIrDiscreteWord.bitValue(29) && !dmcRightSelectedIrDiscreteWord.isNoComputedData();
     const configMemoComputed = this.toMemo.get() || this.ldgMemo.get();
     this.irsInAlignMemo1.set(
-      (this.oneIrsInAlign || leftInAlingSubmode || rightInAlingSubmode) &&
+      (this.oneIrsInAlign || leftInAlignSubmode || rightInAlignSubmode) &&
         (flightPhase === 1 || flightPhase === 2) &&
         !configMemoComputed &&
         this.alignTime >= 4,
     );
     this.irsInAlignMemo2.set(
-      (this.oneIrsInAlign || leftInAlingSubmode || rightInAlingSubmode) &&
+      (this.oneIrsInAlign || leftInAlignSubmode || rightInAlignSubmode) &&
         (flightPhase === 1 || flightPhase === 2) &&
         !configMemoComputed &&
         ((this.alignTime >= 1 && this.alignTime <= 3) || this.navMode || this.oneIrsInAlign),

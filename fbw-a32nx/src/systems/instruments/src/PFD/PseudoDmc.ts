@@ -119,7 +119,7 @@ export class PseudoDmc implements Instrument {
       this.irDiscreteWordOnside.sub(
         (v) =>
           this.dmcDiscreteWord313Onside.setValueSsm(
-            v.value << 10,
+            v.value << 10, // The rust words use a different bit numbering convention to JS/C++
             v.isInvalid() ? Arinc429SignStatusMatrix.NoComputedData : v.ssm,
           ),
         true,
@@ -128,7 +128,7 @@ export class PseudoDmc implements Instrument {
       this.irDiscreteWordBackup.sub(
         (v) =>
           this.dmcDiscreteWord313Backup.setValueSsm(
-            v.value << 10,
+            v.value << 10, // The rust words use a different bit numbering convention to JS/C++
             v.isInvalid() ? Arinc429SignStatusMatrix.NoComputedData : v.ssm,
           ),
         true,
