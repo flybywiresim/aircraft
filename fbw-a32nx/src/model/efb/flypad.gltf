@@ -510,7 +510,7 @@
                 "metallicRoughnessTexture": { "index": 2 }
             }
         },
-        { "name": "$EFB" },
+        { "name": "EFB" },
         {
             "name": "flypad-opaque",
             "normalTexture": { "index": 2 },
