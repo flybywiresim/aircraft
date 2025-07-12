@@ -199,8 +199,9 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              if (v === 'DCT' && !this.props.isFirstLine) {
-                this.viaFieldDisabled.set(true);
+              if (v === 'DCT') {
+                this.viaFieldDisabled.set(!this.props.isFirstLine);
+                this.toFieldDisabled.set(false);
                 return true;
               }
 
@@ -241,10 +242,10 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
 
               if (this.viaField.get() === null) {
                 this.viaField.set('DCT');
-                this.viaFieldDisabled.set(true);
               }
 
               let chosenFix: Fix | undefined = undefined;
+              const isDct = this.viaField.get() === 'DCT';
 
               if (this.viaField.get() !== 'DCT') {
                 try {
@@ -256,6 +257,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                   return false;
                 }
               } else {
+                this.viaFieldDisabled.set(true);
                 const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(v);
                 if (fixes.length === 0) {
                   this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
@@ -267,6 +269,8 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                   if (dedup !== undefined) {
                     chosenFix = dedup;
                   }
+                } else {
+                  chosenFix = fixes[0];
                 }
               }
 
@@ -274,7 +278,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              const success = this.props.pendingAirways.thenTo(chosenFix);
+              const success = this.props.pendingAirways.thenTo(chosenFix, isDct);
               if (success) {
                 this.toFieldDisabled.set(true);
                 this.props.nextLineCallback(chosenFix);
