@@ -1831,7 +1831,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1839,7 +1839,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsRight[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1847,7 +1847,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.pfdMemoSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1855,7 +1855,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInfoSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1863,7 +1863,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInopAllPhasesSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1871,7 +1871,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1879,7 +1879,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.pfdLimitationsSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1887,7 +1887,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdLimitationsAllPhasesSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1895,7 +1895,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
