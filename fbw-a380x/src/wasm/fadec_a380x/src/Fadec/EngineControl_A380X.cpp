@@ -215,11 +215,10 @@ void EngineControl_A380X::initializeEngineControlData() {
     simData.fuelTrimPre->set(fuelConfiguration.getFuelTrimGallons() * weightLbsPerGallon);
 
     // set fuel levels from configuration to the sim
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne   = fuelConfiguration.getFuelFeedOneGallons();
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo   = fuelConfiguration.getFuelFeedTwoGallons();
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree = fuelConfiguration.getFuelFeedThreeGallons();
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour  = fuelConfiguration.getFuelFeedFourGallons();
-    simData.fuelFeedTankDataPtr->writeDataToSim();
+    simData.fuelTankDataPtr->data().fuelSystemFeedOne    = fuelConfiguration.getFuelFeedOneGallons();
+    simData.fuelTankDataPtr->data().fuelSystemFeedTwo    = fuelConfiguration.getFuelFeedTwoGallons();
+    simData.fuelTankDataPtr->data().fuelSystemFeedThree  = fuelConfiguration.getFuelFeedThreeGallons();
+    simData.fuelTankDataPtr->data().fuelSystemFeedFour   = fuelConfiguration.getFuelFeedFourGallons();
     simData.fuelTankDataPtr->data().fuelSystemLeftOuter  = fuelConfiguration.getFuelLeftOuterGallons();
     simData.fuelTankDataPtr->data().fuelSystemLeftMid    = fuelConfiguration.getFuelLeftMidGallons();
     simData.fuelTankDataPtr->data().fuelSystemLeftInner  = fuelConfiguration.getFuelLeftInnerGallons();
@@ -232,14 +231,14 @@ void EngineControl_A380X::initializeEngineControlData() {
   // on a non C/D spawn, set fuel levels from the sim
   else {
     simData.fuelLeftOuterPre->set(simData.fuelTankDataPtr->data().fuelSystemLeftOuter * weightLbsPerGallon);
-    simData.fuelFeedOnePre->set(simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne * weightLbsPerGallon);
+    simData.fuelFeedOnePre->set(simData.fuelTankDataPtr->data().fuelSystemFeedOne * weightLbsPerGallon);
     simData.fuelLeftMidPre->set(simData.fuelTankDataPtr->data().fuelSystemLeftMid * weightLbsPerGallon);
     simData.fuelLeftInnerPre->set(simData.fuelTankDataPtr->data().fuelSystemLeftInner * weightLbsPerGallon);
-    simData.fuelFeedTwoPre->set(simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo * weightLbsPerGallon);
-    simData.fuelFeedThreePre->set(simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree * weightLbsPerGallon);
+    simData.fuelFeedTwoPre->set(simData.fuelTankDataPtr->data().fuelSystemFeedTwo * weightLbsPerGallon);
+    simData.fuelFeedThreePre->set(simData.fuelTankDataPtr->data().fuelSystemFeedThree * weightLbsPerGallon);
     simData.fuelRightInnerPre->set(simData.fuelTankDataPtr->data().fuelSystemRightInner * weightLbsPerGallon);
     simData.fuelRightMidPre->set(simData.fuelTankDataPtr->data().fuelSystemRightMid * weightLbsPerGallon);
-    simData.fuelFeedFourPre->set(simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour * weightLbsPerGallon);
+    simData.fuelFeedFourPre->set(simData.fuelTankDataPtr->data().fuelSystemFeedFour * weightLbsPerGallon);
     simData.fuelRightOuterPre->set(simData.fuelTankDataPtr->data().fuelSystemRightOuter * weightLbsPerGallon);
     simData.fuelTrimPre->set(simData.fuelTankDataPtr->data().fuelSystemTrim * weightLbsPerGallon);
   }
@@ -620,14 +619,14 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
   const double extraThreeQty = simData.fuelExtraTankDataPtr->data().fuelSystemExtraThree * weightLbsPerGallon;  // Pounds
   const double extraFourQty  = simData.fuelExtraTankDataPtr->data().fuelSystemExtraFour * weightLbsPerGallon;   // Pounds
   const double leftOuterQty  = simData.fuelTankDataPtr->data().fuelSystemLeftOuter * weightLbsPerGallon;        // Pounds
-  const double feedOneQty    = simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne * weightLbsPerGallon;      // Pounds
+  const double feedOneQty    = simData.fuelTankDataPtr->data().fuelSystemFeedOne * weightLbsPerGallon;          // Pounds
   const double leftMidQty    = simData.fuelTankDataPtr->data().fuelSystemLeftMid * weightLbsPerGallon;          // Pounds
   const double leftInnerQty  = simData.fuelTankDataPtr->data().fuelSystemLeftInner * weightLbsPerGallon;        // Pounds
-  const double feedTwoQty    = simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo * weightLbsPerGallon;      // Pounds
-  const double feedThreeQty  = simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree * weightLbsPerGallon;    // Pounds
+  const double feedTwoQty    = simData.fuelTankDataPtr->data().fuelSystemFeedTwo * weightLbsPerGallon;          // Pounds
+  const double feedThreeQty  = simData.fuelTankDataPtr->data().fuelSystemFeedThree * weightLbsPerGallon;        // Pounds
   const double rightInnerQty = simData.fuelTankDataPtr->data().fuelSystemRightInner * weightLbsPerGallon;       // Pounds
   const double rightMidQty   = simData.fuelTankDataPtr->data().fuelSystemRightMid * weightLbsPerGallon;         // Pounds
-  const double feedFourQty   = simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour * weightLbsPerGallon;     // Pounds
+  const double feedFourQty   = simData.fuelTankDataPtr->data().fuelSystemFeedFour * weightLbsPerGallon;         // Pounds
   const double rightOuterQty = simData.fuelTankDataPtr->data().fuelSystemRightOuter * weightLbsPerGallon;       // Pounds
   const double trimQty       = simData.fuelTankDataPtr->data().fuelSystemTrim * weightLbsPerGallon;             // Pounds
 
@@ -761,11 +760,10 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
     simData.fuelRightOuterPre->set(fuelRightOuterPre);  // Pounds
     simData.fuelTrimPre->set(fuelTrimPre);              // Pounds
 
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne   = fuelFeedOnePre / weightLbsPerGallon;
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo   = fuelFeedTwoPre / weightLbsPerGallon;
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree = fuelFeedThreePre / weightLbsPerGallon;
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour  = fuelFeedFourPre / weightLbsPerGallon;
-    simData.fuelFeedTankDataPtr->writeDataToSim();
+    simData.fuelTankDataPtr->data().fuelSystemFeedOne   = fuelFeedOnePre / weightLbsPerGallon;
+    simData.fuelTankDataPtr->data().fuelSystemFeedTwo   = fuelFeedTwoPre / weightLbsPerGallon;
+    simData.fuelTankDataPtr->data().fuelSystemFeedThree = fuelFeedThreePre / weightLbsPerGallon;
+    simData.fuelTankDataPtr->data().fuelSystemFeedFour  = fuelFeedFourPre / weightLbsPerGallon;
 
     simData.fuelTankDataPtr->data().fuelSystemLeftOuter  = fuelLeftOuterPre / weightLbsPerGallon;
     simData.fuelTankDataPtr->data().fuelSystemLeftMid    = fuelLeftMidPre / weightLbsPerGallon;
@@ -884,14 +882,14 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
        engine4State == OFF || engine4State == SHUTTING)    // 4
   ) {
     fuelConfiguration.setFuelLeftOuterGallons(simData.fuelTankDataPtr->data().fuelSystemLeftOuter);
-    fuelConfiguration.setFuelFeedOneGallons(simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne);
+    fuelConfiguration.setFuelFeedOneGallons(simData.fuelTankDataPtr->data().fuelSystemFeedOne);
     fuelConfiguration.setFuelLeftMidGallons(simData.fuelTankDataPtr->data().fuelSystemLeftMid);
     fuelConfiguration.setFuelLeftInnerGallons(simData.fuelTankDataPtr->data().fuelSystemLeftInner);
-    fuelConfiguration.setFuelFeedTwoGallons(simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo);
-    fuelConfiguration.setFuelFeedThreeGallons(simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree);
+    fuelConfiguration.setFuelFeedTwoGallons(simData.fuelTankDataPtr->data().fuelSystemFeedTwo);
+    fuelConfiguration.setFuelFeedThreeGallons(simData.fuelTankDataPtr->data().fuelSystemFeedThree);
     fuelConfiguration.setFuelRightInnerGallons(simData.fuelTankDataPtr->data().fuelSystemRightInner);
     fuelConfiguration.setFuelRightMidGallons(simData.fuelTankDataPtr->data().fuelSystemRightMid);
-    fuelConfiguration.setFuelFeedFourGallons(simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour);
+    fuelConfiguration.setFuelFeedFourGallons(simData.fuelTankDataPtr->data().fuelSystemFeedFour);
     fuelConfiguration.setFuelRightOuterGallons(simData.fuelTankDataPtr->data().fuelSystemRightOuter);
     fuelConfiguration.setFuelTrimGallons(simData.fuelTankDataPtr->data().fuelSystemTrim);
     fuelConfiguration.saveConfigurationToIni();
