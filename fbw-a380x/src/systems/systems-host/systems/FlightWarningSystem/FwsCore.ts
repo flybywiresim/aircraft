@@ -1759,18 +1759,20 @@ export class FwsCore {
       this.registerKeyEvents();
     });
 
-    this.sub.on('key_intercept').handle((keyData) => {
-      switch (keyData.key) {
-        case 'A32NX.AUTO_THROTTLE_DISCONNECT':
-          this.autoThrottleInstinctiveDisconnect();
-          break;
-        case 'A32NX.FCU_AP_DISCONNECT_PUSH':
-        case 'A32NX.AUTOPILOT_DISENGAGE':
-        case 'AUTOPILOT_OFF':
-          this.autoPilotInstinctiveDisconnect();
-          break;
-      }
-    });
+    this.subs.push(
+      this.sub.on('key_intercept').handle((keyData) => {
+        switch (keyData.key) {
+          case 'A32NX.AUTO_THROTTLE_DISCONNECT':
+            this.autoThrottleInstinctiveDisconnect();
+            break;
+          case 'A32NX.FCU_AP_DISCONNECT_PUSH':
+          case 'A32NX.AUTOPILOT_DISENGAGE':
+          case 'AUTOPILOT_OFF':
+            this.autoPilotInstinctiveDisconnect();
+            break;
+        }
+      }),
+    );
 
     this.subs.push(
       this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal)),
