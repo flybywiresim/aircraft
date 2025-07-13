@@ -51,6 +51,21 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
 
   // Fuel Feed Tank Data in one Data Definition as they are read and updated together
+  struct FuelExtraTankData {
+    FLOAT64 fuelSystemExtraOne;    // in Gallons
+    FLOAT64 fuelSystemExtraTwo;    // in Gallons
+    FLOAT64 fuelSystemExtraThree;  // in Gallons
+    FLOAT64 fuelSystemExtraFour;   // in Gallons
+  };
+  DataDefinitionVector fuelExtraTankDataDef = {
+      {"FUELSYSTEM TANK QUANTITY", 12, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 13, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 14, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 15, UNITS.Gallons}, //
+  };
+  DataDefinitionVariablePtr<FuelExtraTankData> fuelExtraTankDataPtr;  // in Gallons
+
+  // Fuel Feed Tank Data in one Data Definition as they are read and updated together
   struct FuelFeedTankData {
     FLOAT64 fuelSystemFeedOne;    // in Gallons
     FLOAT64 fuelSystemFeedTwo;    // in Gallons
@@ -260,6 +275,9 @@ class FadecSimData_A380X {
 
   void initDataDefinitions(DataManager* dm) {
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef, NO_AUTO_UPDATE);
+
+    fuelExtraTankDataPtr = dm->make_datadefinition_var<FuelExtraTankData>("FUEL EXTRA TANK DATA", fuelExtraTankDataDef);
+    fuelExtraTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     fuelFeedTankDataPtr = dm->make_datadefinition_var<FuelFeedTankData>("FUEL FEED TANK DATA", fuelFeedTankDataDef);
     fuelFeedTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);

@@ -615,17 +615,21 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
   double fuelRightOuterPre = simData.fuelRightOuterPre->get();  // Pounds
   double fuelTrimPre       = simData.fuelTrimPre->get();        // Pounds
 
-  const double leftOuterQty  = simData.fuelTankDataPtr->data().fuelSystemLeftOuter * weightLbsPerGallon;      // Pounds
-  const double feedOneQty    = simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne * weightLbsPerGallon;    // Pounds
-  const double leftMidQty    = simData.fuelTankDataPtr->data().fuelSystemLeftMid * weightLbsPerGallon;        // Pounds
-  const double leftInnerQty  = simData.fuelTankDataPtr->data().fuelSystemLeftInner * weightLbsPerGallon;      // Pounds
-  const double feedTwoQty    = simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo * weightLbsPerGallon;    // Pounds
-  const double feedThreeQty  = simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree * weightLbsPerGallon;  // Pounds
-  const double rightInnerQty = simData.fuelTankDataPtr->data().fuelSystemRightInner * weightLbsPerGallon;     // Pounds
-  const double rightMidQty   = simData.fuelTankDataPtr->data().fuelSystemRightMid * weightLbsPerGallon;       // Pounds
-  const double feedFourQty   = simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour * weightLbsPerGallon;   // Pounds
-  const double rightOuterQty = simData.fuelTankDataPtr->data().fuelSystemRightOuter * weightLbsPerGallon;     // Pounds
-  const double trimQty       = simData.fuelTankDataPtr->data().fuelSystemTrim * weightLbsPerGallon;           // Pounds
+  const double extraOneQty   = simData.fuelExtraTankDataPtr->data().fuelSystemExtraOne * weightLbsPerGallon;    // Pounds
+  const double extraTwoQty   = simData.fuelExtraTankDataPtr->data().fuelSystemExtraTwo * weightLbsPerGallon;    // Pounds
+  const double extraThreeQty = simData.fuelExtraTankDataPtr->data().fuelSystemExtraThree * weightLbsPerGallon;  // Pounds
+  const double extraFourQty  = simData.fuelExtraTankDataPtr->data().fuelSystemExtraFour * weightLbsPerGallon;   // Pounds
+  const double leftOuterQty  = simData.fuelTankDataPtr->data().fuelSystemLeftOuter * weightLbsPerGallon;        // Pounds
+  const double feedOneQty    = simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne * weightLbsPerGallon;      // Pounds
+  const double leftMidQty    = simData.fuelTankDataPtr->data().fuelSystemLeftMid * weightLbsPerGallon;          // Pounds
+  const double leftInnerQty  = simData.fuelTankDataPtr->data().fuelSystemLeftInner * weightLbsPerGallon;        // Pounds
+  const double feedTwoQty    = simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo * weightLbsPerGallon;      // Pounds
+  const double feedThreeQty  = simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree * weightLbsPerGallon;    // Pounds
+  const double rightInnerQty = simData.fuelTankDataPtr->data().fuelSystemRightInner * weightLbsPerGallon;       // Pounds
+  const double rightMidQty   = simData.fuelTankDataPtr->data().fuelSystemRightMid * weightLbsPerGallon;         // Pounds
+  const double feedFourQty   = simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour * weightLbsPerGallon;     // Pounds
+  const double rightOuterQty = simData.fuelTankDataPtr->data().fuelSystemRightOuter * weightLbsPerGallon;       // Pounds
+  const double trimQty       = simData.fuelTankDataPtr->data().fuelSystemTrim * weightLbsPerGallon;             // Pounds
 
   const double fuelTotalActual = leftOuterQty + feedOneQty + leftMidQty + leftInnerQty + feedTwoQty + feedThreeQty + rightInnerQty +
                                  rightMidQty + feedFourQty + rightOuterQty + trimQty;  // Pounds
@@ -815,32 +819,30 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
     // Initialize arrays to avoid code duplication when looping over engines
     const double* engineFF[4]       = {&engine1FF, &engine2FF, &engine3FF, &engine4FF};
     const double* enginePreFF[4]    = {&engine1PreFF, &engine2PreFF, &engine3PreFF, &engine4PreFF};
-    double*       fuelFeedPre[4]    = {&fuelFeedOnePre, &fuelFeedTwoPre, &fuelFeedThreePre, &fuelFeedFourPre};
+    const double* fuelExtraQty[4]   = {&extraOneQty, &extraTwoQty, &extraThreeQty, &extraFourQty};
     double*       fuelBurn[4]       = {&fuelBurn1, &fuelBurn2, &fuelBurn3, &fuelBurn4};
     double*       fuelUsedEngine[4] = {&fuelUsedEngine1, &fuelUsedEngine2, &fuelUsedEngine3, &fuelUsedEngine4};
 
     // Loop over engines
     for (int i = 0; i < 4; i++) {
       // Engines fuel burn routine
-      if (*fuelFeedPre[i] > 0) {
+      if (*fuelExtraQty[i] > 0) {
         // Cycle Fuel Burn
         if (aircraftDevelopmentStateVar != 2) {
           fuelFlowRateChange   = (*engineFF[i] - *enginePreFF[i]) / deltaTimeHours;
           previousFuelFlowRate = *enginePreFF[i];
-          *fuelBurn[i]         = (fuelFlowRateChange * std::pow(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours);  // KG
+          *fuelBurn[i]         = std::min((fuelFlowRateChange * std::pow(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours),
+                                          *fuelExtraQty[i]);  // KG, limits fuelburn to remaining tank qty
         }
         // Fuel Used Accumulators
         *fuelUsedEngine[i] += *fuelBurn[i];
-      } else {
-        fuelBurn[i]    = 0;
-        fuelFeedPre[i] = 0;
       }
     }
 
-    const double fuelFeedOne   = std::max(feedOneQty - (fuelBurn1 * Fadec::KGS_TO_LBS), 0.0);    // Pounds
-    const double fuelFeedTwo   = std::max(feedTwoQty - (fuelBurn2 * Fadec::KGS_TO_LBS), 0.0);    // Pounds
-    const double fuelFeedThree = std::max(feedThreeQty - (fuelBurn3 * Fadec::KGS_TO_LBS), 0.0);  // Pounds
-    const double fuelFeedFour  = std::max(feedFourQty - (fuelBurn4 * Fadec::KGS_TO_LBS), 0.0);   // Pounds
+    const double fuelExtraOne   = std::max(extraOneQty - (fuelBurn1 * Fadec::KGS_TO_LBS), 0.0);    // Pounds
+    const double fuelExtraTwo   = std::max(extraTwoQty - (fuelBurn2 * Fadec::KGS_TO_LBS), 0.0);    // Pounds
+    const double fuelExtraThree = std::max(extraThreeQty - (fuelBurn3 * Fadec::KGS_TO_LBS), 0.0);  // Pounds
+    const double fuelExtraFour  = std::max(extraFourQty - (fuelBurn4 * Fadec::KGS_TO_LBS), 0.0);   // Pounds
 
     // Setting new pre-cycle conditions
     simData.enginePreFF[E1]->set(engine1FF);
@@ -853,10 +855,10 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
     simData.engineFuelUsed[E3]->set(fuelUsedEngine3);
     simData.engineFuelUsed[E4]->set(fuelUsedEngine4);
 
-    simData.fuelFeedOnePre->set(fuelFeedOne);
-    simData.fuelFeedTwoPre->set(fuelFeedTwo);
-    simData.fuelFeedThreePre->set(fuelFeedThree);
-    simData.fuelFeedFourPre->set(fuelFeedFour);
+    simData.fuelFeedOnePre->set(feedOneQty);
+    simData.fuelFeedTwoPre->set(feedTwoQty);
+    simData.fuelFeedThreePre->set(feedThreeQty);
+    simData.fuelFeedFourPre->set(feedFourQty);
 
     simData.fuelLeftOuterPre->set(leftOuterQty);
     simData.fuelLeftMidPre->set(leftMidQty);
@@ -866,11 +868,11 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
     simData.fuelRightOuterPre->set(rightOuterQty);
     simData.fuelTrimPre->set(trimQty);
 
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedOne   = (fuelFeedOne / weightLbsPerGallon);
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedTwo   = (fuelFeedTwo / weightLbsPerGallon);
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedThree = (fuelFeedThree / weightLbsPerGallon);
-    simData.fuelFeedTankDataPtr->data().fuelSystemFeedFour  = (fuelFeedFour / weightLbsPerGallon);
-    simData.fuelFeedTankDataPtr->writeDataToSim();
+    simData.fuelExtraTankDataPtr->data().fuelSystemExtraOne   = (fuelExtraOne / weightLbsPerGallon);
+    simData.fuelExtraTankDataPtr->data().fuelSystemExtraTwo   = (fuelExtraTwo / weightLbsPerGallon);
+    simData.fuelExtraTankDataPtr->data().fuelSystemExtraThree = (fuelExtraThree / weightLbsPerGallon);
+    simData.fuelExtraTankDataPtr->data().fuelSystemExtraFour  = (fuelExtraFour / weightLbsPerGallon);
+    simData.fuelExtraTankDataPtr->writeDataToSim();
   }
 
   // Will save the current fuel quantities if on the ground AND engines being shutdown
