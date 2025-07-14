@@ -257,7 +257,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.cleanUpAfterDiscontinuity(turnEndLegIndexInPlan + 1);
     }
 
-    this.removeForcedTurnAt(turnEndLegIndexInPlan + 1);
+    if (!this.requiresTurnDirectionAt(turnEndLegIndexInPlan + 1)) {
+      this.removeForcedTurnAt(turnEndLegIndexInPlan + 1);
+    }
+    this.setActiveLegIndex(turnEndLegIndexInPlan);
     this.setActiveLegIndex(turnEndLegIndexInPlan);
   }
 

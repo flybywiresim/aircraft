@@ -63,7 +63,7 @@ impl From<f64> for Arinc429Word<u32> {
 impl From<Arinc429Word<u32>> for f64 {
     fn from(value: Arinc429Word<u32>) -> f64 {
         let status: u64 = value.ssm.into();
-        let int_value: u64 = ((value.value as f32).to_bits() as u64) | status << 32;
+        let int_value: u64 = ((value.value as f32).to_bits() as u64) | (status << 32);
 
         int_value as f64
     }
@@ -79,7 +79,7 @@ impl From<f64> for Arinc429Word<f64> {
 impl From<Arinc429Word<f64>> for f64 {
     fn from(value: Arinc429Word<f64>) -> f64 {
         let status: u64 = value.ssm.into();
-        let int_value: u64 = ((value.value as f32).to_bits() as u64) | status << 32;
+        let int_value: u64 = ((value.value as f32).to_bits() as u64) | (status << 32);
 
         int_value as f64
     }
@@ -125,7 +125,7 @@ pub(crate) fn from_arinc429(simvar: f64) -> (f64, SignStatus) {
 
 pub(crate) fn to_arinc429(value: f64, ssm: SignStatus) -> f64 {
     let status: u64 = ssm.into();
-    let int_value: u64 = ((value as f32).to_bits() as u64) | status << 32;
+    let int_value: u64 = ((value as f32).to_bits() as u64) | (status << 32);
 
     int_value as f64
 }
@@ -142,8 +142,8 @@ mod tests {
     #[case(SignStatus::NoComputedData)]
     #[case(SignStatus::NormalOperation)]
     fn conversion_is_symmetric(#[case] expected_ssm: SignStatus) {
-        let mut rng = rand::thread_rng();
-        let expected_value: f64 = rng.gen_range(0.0..10000.0);
+        let mut rng = rand::rng();
+        let expected_value: f64 = rng.random_range(0.0..10000.0);
 
         let word = Arinc429Word::new(expected_value, expected_ssm);
 
@@ -164,14 +164,14 @@ mod tests {
     #[case(SignStatus::NoComputedData)]
     #[case(SignStatus::NormalOperation)]
     fn bit_conversion_is_symmetric(#[case] expected_ssm: SignStatus) {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         let mut word = Arinc429Word::new(0, expected_ssm);
 
         let mut expected_values: [bool; 30] = [false; 30];
 
         for (i, item) in expected_values.iter_mut().enumerate().take(29).skip(11) {
-            *item = rng.gen();
+            *item = rng.random();
             word.set_bit(i as u8, *item);
         }
 

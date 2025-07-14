@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -55,14 +60,41 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   271800008: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm ALTERNATE LAW (PROT LOST)',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm ALTN LAW (PROT LOST)',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'MAX SPEED: 310 KT',
+        style: ChecklistLineStyle.Cyan,
+        sensed: false,
+      },
+    ],
   },
   271800009: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm DIRECT LAW',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'MAX SPEED: 310/.86',
+        style: ChecklistLineStyle.Cyan,
+        sensed: false,
+      },
+      {
+        name: 'MANEUVER WITH CARE',
+        style: ChecklistLineStyle.Cyan,
+        sensed: false,
+      },
+      {
+        name: 'AFS CTL PNL KNOB AVAIL FOR BUG SETTING',
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+      {
+        name: 'F/CTL BKUP CTL ACTIVE',
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+    ],
   },
   271800010: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm DOUBLE ELEVATOR FAULT',
@@ -269,11 +301,6 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
-  271800051: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED',
-    sensed: true,
-    items: [],
-  },
   271800052: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL SENSOR FAULT',
     sensed: true,
@@ -296,11 +323,6 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   },
   271800056: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM FAULT',
-    sensed: true,
-    items: [],
-  },
-  271800057: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNWAY',
     sensed: true,
     items: [],
   },
@@ -346,7 +368,18 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   271800062: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SINGLE RUDDER FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        style: ChecklistLineStyle.Cyan,
+        sensed: false,
+      },
+      {
+        name: 'FMS PRED UNRELIABLE WITHOUT ACCURATE FMS PENALTY INSERTION',
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+    ],
   },
   271800063: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SPD BRKs FAULT',
@@ -431,7 +464,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   272800003: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm FLAPS LEVER NOT ZERO',
+    title: '\x1b<2m\x1b4mF/CTL\x1bm FLAPS LEVER NOT ZERO',
     sensed: true,
     items: [],
   },
@@ -500,16 +533,6 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
-  272800017: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
-    sensed: true,
-    items: [],
-  },
-  272800018: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
-    sensed: true,
-    items: [],
-  },
   272800019: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT CTL 1 FAULT',
     sensed: true,
@@ -563,26 +586,108 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   270900001: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER PEDAL JAMMED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'AP : KEEP ON', sensed: false },
+      { name: 'MINIMIZE XWIND FOR LANDING', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'AUTOLAND : RECOMMENDED', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'AUTO BRK : DO NOT USE', sensed: false },
+      { name: 'FOR LDG:USE DIFF BRAKING AS RQRD', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'REVERSER:SYMMETRIC USE ONLY', sensed: false },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   270900002: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm RUDDER TRIM RUNAWAY',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'USE RUDDER WITH CARE', sensed: false },
+      { name: 'USE RUDDER PEDALS TO CENTER RUDDER', sensed: false },
+      { name: 'RUDDER TRIM', labelNotCompleted: 'RESET', sensed: false },
+      { name: 'RESET NOT SUCCESSFUL :', condition: true, sensed: false },
+      { name: 'FOR CONTINUED FLT : CONSIDER AP USE', sensed: false, level: 1 },
+      { name: 'RESET SUCCESSFUL :', condition: true, sensed: false },
+    ],
   },
   270900003: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES LEVER JAMMED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'FOR AUTO-RETRACTION:THR LVRS TOGA', sensed: false },
+      { name: 'EXPECT AP/FD GA MODE ENGAGEMENT', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'GND SPLRs WILL EXTEND AT REV SELECTION', sensed: false, style: ChecklistLineStyle.Green },
+      { name: 'FOR LDG:KEEP GND SPLRs ARMED', sensed: false, style: ChecklistLineStyle.Green },
+    ],
   },
   270900004: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH FLAPS LEVER JAMMED',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'FLAPS LEVER', labelNotCompleted: 'FORCE ONE STEP DOWN', sensed: false },
+      { name: 'FOR LDG : FLAP LVR 3', sensed: false },
+      { name: '[MFD SURV] TAWS FLAP MODE', labelNotCompleted: 'OFF', sensed: true },
+      { name: 'NO AUTOLAND', sensed: false },
+      { name: 'FOR GA : KEEP S/F CONF', sensed: false },
+      { name: 'FUEL CONSUMPT INCRSD', sensed: false },
+      {
+        name: 'FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      { name: 'LDG PERF AFFECTED', sensed: false },
+    ],
   },
   270900005: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'FLAPS LEVER JAMMED :', condition: true, sensed: false },
+      { name: 'LDG WITH FLAP LVR JAMMED PROC', labelNotCompleted: 'APPLY', sensed: false, level: 1 },
+      { name: 'FLAPS LEVER NOT JAMMED :', condition: true, sensed: false },
+      { name: '[MFD SURV] TAWS FLAP MODE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'USE SELECTED SPEED', sensed: false, level: 1 },
+      { name: 'NO AUTOLAND', sensed: false, level: 1 },
+      { name: 'FOR GA : KEEP S/F CONF', sensed: false, level: 1 },
+      { name: 'LDG PERF AFFECTED', sensed: false },
+      { name: 'FOR APPROACH', sensed: true, style: ChecklistLineStyle.CenteredSubHeadline, level: 1 },
+      { name: 'FLAP LVR', labelNotCompleted: 'CONF 1', sensed: true, level: 1 },
+      { name: 'TRGT SPEED', labelNotCompleted: 'VLS', sensed: false, level: 1 },
+      { name: 'AT 500 FT AGL', sensed: true, style: ChecklistLineStyle.CenteredSubHeadline, level: 1 },
+      { name: 'A/THR', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'SPEED', labelNotCompleted: 'REDUCE TO VAPP', sensed: false, level: 1 },
+    ],
+  },
+};
+
+export const EcamDeferredProcAta27: { [n: number]: DeferredProcedure } = {
+  270700001: {
+    fromAbnormalProcs: ['270900002'],
+    title: 'RUDDER TRIM RUNAWAY',
+    type: DeferredProcedureType.FOR_APPROACH,
+    items: [
+      {
+        name: 'AUTOLAND : RECOMMENDED',
+        sensed: false,
+      },
+      {
+        name: 'MANUAL LANDING ANTICIPATED :',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'HOLD RUDDER PEDALS BEFORE AP OFF',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'KEEP RUDDER PEDALS CENTERED',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'USE PEDALS AS RQRD FOR DECRAB & LDG',
+        sensed: false,
+        level: 1,
+      },
+    ],
   },
 };

@@ -56,8 +56,6 @@
             <NODE_ID>PUSH_GLARESHIELD_CS_SIDESTICK</NODE_ID>
             <TOOLTIPID>SIDESTICK PRIORITY (INOP.)</TOOLTIPID>
             <!-- FIXME korry should be split in two, and each half connected to correct CPIOM + power supply  -->
-            <DISABLE_SEQ1/>
-            <DISABLE_SEQ2/>
         </UseTemplate>
 
         <!-- FO side -->

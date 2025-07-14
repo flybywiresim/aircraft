@@ -48,11 +48,15 @@ export class MfdFmsFplnFixInfo extends FmsPage {
 
   destroy() {
     super.destroy();
-
-    this.flightPlan.destroy();
   }
 
-  render(): VNode {
+  public onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    this.subs.push(this.flightPlanManager, this.flightPlan);
+  }
+
+  public render(): VNode {
     return (
       <>
         {super.render()}

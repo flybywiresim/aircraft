@@ -110,18 +110,27 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
 
     const areActiveVectorsTransmitted = this.areActiveVectorsTransmitted.get();
 
-    const shouldShowLine =
-      (lateralMode === LateralMode.HDG ||
-        lateralMode === LateralMode.TRACK ||
-        lateralMode === LateralMode.GA_TRACK ||
-        lateralMode === LateralMode.RWY_TRACK) &&
-      (!isArmed(lateralArmed, ArmedLateralMode.NAV) || !areActiveVectorsTransmitted);
+    const shouldShowLine = TrackLine.shouldShowTrackLine(lateralMode, lateralArmed, areActiveVectorsTransmitted);
 
     if (wrongNDMode || headingInvalid || trackInvalid || !shouldShowLine) {
       this.visibility.set('hidden');
     } else {
       this.visibility.set('inherit');
     }
+  }
+
+  public static shouldShowTrackLine(
+    lateralMode: LateralMode,
+    lateralArmed: number,
+    areActiveVectorsTransmitted: boolean,
+  ) {
+    return (
+      (lateralMode === LateralMode.HDG ||
+        lateralMode === LateralMode.TRACK ||
+        lateralMode === LateralMode.GA_TRACK ||
+        lateralMode === LateralMode.RWY_TRACK) &&
+      (!isArmed(lateralArmed, ArmedLateralMode.NAV) || !areActiveVectorsTransmitted)
+    );
   }
 
   render(): VNode | null {

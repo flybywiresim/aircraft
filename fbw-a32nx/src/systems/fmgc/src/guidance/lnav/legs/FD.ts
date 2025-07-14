@@ -1,15 +1,14 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022, 2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo, firstSmallCircleIntersection } from 'msfs-geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { LegMetadata } from './index';
 import { courseToFixDistanceToGo, fixToFixGuidance } from '../CommonGeometry';
 import { FXLeg } from '@fmgc/guidance/lnav/legs/FX';
@@ -23,11 +22,14 @@ export class FDLeg extends FXLeg {
 
   intercept: Coordinates;
 
+  // FIXME remove this fallback when MSFS2020 is dropped
+  private readonly dmeLocation = this.navaid.dmeLocation ?? this.navaid.location;
+
   constructor(
     private readonly course: DegreesTrue,
     private readonly dmeDistance: NauticalMiles,
     public readonly fix: Fix,
-    private readonly navaid: Fix,
+    private readonly navaid: VhfNavaid,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
@@ -42,12 +44,7 @@ export class FDLeg extends FXLeg {
 
     this.predictedPath.length = 0;
 
-    const intersect = firstSmallCircleIntersection(
-      this.navaid.location,
-      this.dmeDistance,
-      this.fix.location,
-      this.course,
-    );
+    const intersect = firstSmallCircleIntersection(this.dmeLocation, this.dmeDistance, this.fix.location, this.course);
 
     this.intercept = intersect;
 
@@ -80,7 +77,7 @@ export class FDLeg extends FXLeg {
   }
 
   getPathStartPoint(): Coordinates | undefined {
-    if (this.inboundGuidable instanceof FixedRadiusTransition && this.inboundGuidable.isComputed) {
+    if (this.inboundGuidable && this.inboundGuidable.isComputed) {
       return this.inboundGuidable.getPathEndPoint();
     }
 

@@ -357,7 +357,11 @@ export class FwsNormalChecklists {
   }
 
   navigateToParent() {
-    this.navigateToChecklist(0);
+    if (this.checklistId.get() === 0) {
+      this.showChecklistRequested.set(false);
+    } else {
+      this.navigateToChecklist(0);
+    }
   }
 
   private scrollToSelectedLine() {
@@ -521,7 +525,7 @@ export class FwsNormalChecklists {
       whichItemsChecked: () => [null, null, SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool)],
     },
     1000003: {
-      whichItemsChecked: () => [null, !this.fws.pitchTrimNotTo.get(), this.fws.rudderTrimPosition.get() < 0.35],
+      whichItemsChecked: () => [null, null, this.fws.rudderTrimPosition.get() < 0.35],
     },
     1000004: {
       whichItemsChecked: () => [
@@ -537,7 +541,7 @@ export class FwsNormalChecklists {
       ],
     },
     1000005: {
-      whichItemsChecked: () => [null, null, null],
+      whichItemsChecked: () => [null, null],
     },
     1000006: {
       whichItemsChecked: () => [null, null, null, null],

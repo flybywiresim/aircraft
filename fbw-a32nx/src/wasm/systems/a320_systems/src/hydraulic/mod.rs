@@ -31,7 +31,9 @@ use systems::{
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
-        flap_slat::FlapSlatAssembly,
+        flap_slat::{
+            FlapSlatAssembly, SecondarySurface, SecondarySurfaceSide, SecondarySurfaceType,
+        },
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticPowered, HydraulicAssemblyController,
@@ -828,6 +830,28 @@ impl A320RudderFactory {
     }
 }
 
+struct A320FlapsFactory {}
+impl A320FlapsFactory {
+    fn a320_flaps_factory(
+        context: &mut InitContext,
+        side: SecondarySurfaceSide,
+    ) -> SecondarySurface {
+        // 1 is inboard. 2 is outboard.
+        SecondarySurface::new(context, side, SecondarySurfaceType::Flaps, 2)
+    }
+}
+
+struct A320SlatsFactory {}
+impl A320SlatsFactory {
+    fn a320_slats_factory(
+        context: &mut InitContext,
+        side: SecondarySurfaceSide,
+    ) -> SecondarySurface {
+        // 1 is most inboard. 5 is most outboard.
+        SecondarySurface::new(context, side, SecondarySurfaceType::Slats, 5)
+    }
+}
+
 struct A320GearDoorFactory {}
 impl A320GearDoorFactory {
     fn a320_nose_gear_door_aerodynamics() -> AerodynamicModel {
@@ -1394,8 +1418,7 @@ impl A320PowerTransferUnitCharacteristics {
                     Self::WORN_EFFICIENCY_MEAN,
                     Self::WORN_EFFICIENCY_STD_DEV,
                 )
-                .max(Self::EFFICIENCY_MIN_ALLOWED)
-                .min(Self::EFFICIENCY_MAX),
+                .clamp(Self::EFFICIENCY_MIN_ALLOWED, Self::EFFICIENCY_MAX),
             )
         } else {
             Ratio::new::<ratio>(
@@ -1403,8 +1426,7 @@ impl A320PowerTransferUnitCharacteristics {
                     Self::NOMINAL_EFFICIENCY_MEAN,
                     Self::NOMINAL_EFFICIENCY_STD_DEV,
                 )
-                .max(Self::EFFICIENCY_MIN_ALLOWED)
-                .min(Self::EFFICIENCY_MAX),
+                .clamp(Self::EFFICIENCY_MIN_ALLOWED, Self::EFFICIENCY_MAX),
             )
         }
     }
@@ -1416,8 +1438,10 @@ impl A320PowerTransferUnitCharacteristics {
                     Self::WORN_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,
                     Self::WORN_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI,
                 )
-                .min(Self::WORN_MAX_DEACTIVATION_DELTA_PRESSURE_PSI)
-                .max(Self::WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI),
+                .clamp(
+                    Self::WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI,
+                    Self::WORN_MAX_DEACTIVATION_DELTA_PRESSURE_PSI,
+                ),
             )
         } else {
             Pressure::new::<psi>(
@@ -1425,8 +1449,10 @@ impl A320PowerTransferUnitCharacteristics {
                     Self::NOMINAL_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,
                     Self::NOMINAL_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI,
                 )
-                .min(Self::NOMINAL_MAX_DEACTIVATION_DELTA_PRESSURE_PSI)
-                .max(Self::NOMINAL_MIN_DEACTIVATION_DELTA_PRESSURE_PSI),
+                .clamp(
+                    Self::NOMINAL_MIN_DEACTIVATION_DELTA_PRESSURE_PSI,
+                    Self::NOMINAL_MAX_DEACTIVATION_DELTA_PRESSURE_PSI,
+                ),
             )
         }
     }
@@ -1597,6 +1623,13 @@ impl A320Hydraulic {
             Ratio::new::<ratio>(0.03),
         );
 
+        let left_flaps = A320FlapsFactory::a320_flaps_factory(context, SecondarySurfaceSide::Left);
+        let right_flaps =
+            A320FlapsFactory::a320_flaps_factory(context, SecondarySurfaceSide::Right);
+        let left_slats = A320SlatsFactory::a320_slats_factory(context, SecondarySurfaceSide::Left);
+        let right_slats =
+            A320SlatsFactory::a320_slats_factory(context, SecondarySurfaceSide::Right);
+
         A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
@@ -1730,7 +1763,9 @@ impl A320Hydraulic {
 
             flap_system: FlapSlatAssembly::new(
                 context,
-                "FLAPS",
+                SecondarySurfaceType::Flaps,
+                left_flaps,
+                right_flaps,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
                 Angle::new::<degree>(251.97),
@@ -1743,7 +1778,9 @@ impl A320Hydraulic {
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
-                "SLATS",
+                SecondarySurfaceType::Slats,
+                left_slats,
+                right_slats,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
                 Angle::new::<degree>(334.16),
@@ -4096,14 +4133,14 @@ impl A320BrakingForce {
         let left_force_altn = 50. * altn_brakes.left_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.left_braking_force = left_force_norm + left_force_altn;
-        self.left_braking_force = self.left_braking_force.max(0.).min(1.);
+        self.left_braking_force = self.left_braking_force.clamp(0., 1.);
 
         let right_force_norm = 50. * norm_brakes.right_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         let right_force_altn = 50. * altn_brakes.right_brake_pressure().get::<psi>().sqrt()
             / Self::REFERENCE_PRESSURE_FOR_MAX_FORCE;
         self.right_braking_force = right_force_norm + right_force_altn;
-        self.right_braking_force = self.right_braking_force.max(0.).min(1.);
+        self.right_braking_force = self.right_braking_force.clamp(0., 1.);
 
         self.correct_with_flaps_state(context);
 
@@ -4900,11 +4937,7 @@ impl ElevatorSystemHydraulicController {
     }
 
     fn elevator_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
-        Ratio::new::<ratio>(
-            (-surface_angle.get::<degree>() / 47. + 17. / 47.)
-                .min(1.)
-                .max(0.),
-        )
+        Ratio::new::<ratio>((-surface_angle.get::<degree>() / 47. + 17. / 47.).clamp(0., 1.))
     }
 }
 impl SimulationElement for ElevatorSystemHydraulicController {
@@ -5676,7 +5709,7 @@ impl SpoilerController {
     }
 
     fn spoiler_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
-        Ratio::new::<ratio>((surface_angle.get::<degree>() / 50.).min(1.).max(0.))
+        Ratio::new::<ratio>((surface_angle.get::<degree>() / 50.).clamp(0., 1.))
     }
 }
 impl HydraulicAssemblyController for SpoilerController {
@@ -6928,7 +6961,7 @@ mod tests {
             }
 
             fn on_the_ground(mut self) -> Self {
-                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_pressure_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(5.));
 
@@ -6936,7 +6969,7 @@ mod tests {
             }
 
             fn on_the_ground_after_touchdown(mut self) -> Self {
-                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_pressure_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(100.));
                 self
@@ -6953,7 +6986,7 @@ mod tests {
             }
 
             fn rotates_on_runway(mut self) -> Self {
-                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_pressure_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(false);
                 self.set_indicated_airspeed(Velocity::new::<knot>(135.));
                 self.write_by_name(
@@ -6970,7 +7003,7 @@ mod tests {
 
             fn in_flight(mut self) -> Self {
                 self.set_on_ground(false);
-                self.set_indicated_altitude(Length::new::<foot>(2500.));
+                self.set_pressure_altitude(Length::new::<foot>(2500.));
                 self.set_indicated_airspeed(Velocity::new::<knot>(180.));
                 self.set_true_airspeed(Velocity::new::<knot>(180.));
                 self.set_ambient_air_density(MassDensity::new::<kilogram_per_cubic_meter>(1.22));
@@ -7182,19 +7215,41 @@ mod tests {
             }
 
             fn get_flaps_left_position_percent(&mut self) -> f64 {
-                self.read_by_name("LEFT_FLAPS_POSITION_PERCENT")
+                let values: &[f64] = &[
+                    self.read_by_name("LEFT_FLAPS_1_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_FLAPS_2_POSITION_PERCENT"),
+                ];
+                values.iter().sum::<f64>() / (values.len() as f64)
             }
 
             fn get_flaps_right_position_percent(&mut self) -> f64 {
-                self.read_by_name("RIGHT_FLAPS_POSITION_PERCENT")
+                let values: &[f64] = &[
+                    self.read_by_name("RIGHT_FLAPS_1_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_FLAPS_2_POSITION_PERCENT"),
+                ];
+                values.iter().sum::<f64>() / (values.len() as f64)
             }
 
             fn get_slats_left_position_percent(&mut self) -> f64 {
-                self.read_by_name("LEFT_SLATS_POSITION_PERCENT")
+                let values: &[f64] = &[
+                    self.read_by_name("LEFT_SLATS_1_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_2_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_3_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_4_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_5_POSITION_PERCENT"),
+                ];
+                values.iter().sum::<f64>() / (values.len() as f64)
             }
 
             fn get_slats_right_position_percent(&mut self) -> f64 {
-                self.read_by_name("RIGHT_SLATS_POSITION_PERCENT")
+                let values: &[f64] = &[
+                    self.read_by_name("RIGHT_SLATS_1_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_2_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_3_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_4_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_5_POSITION_PERCENT"),
+                ];
+                values.iter().sum::<f64>() / (values.len() as f64)
             }
 
             fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> Ratio {
@@ -7605,6 +7660,55 @@ mod tests {
 
         fn test_bed_in_flight_with() -> A320HydraulicsTestBed {
             test_bed_in_flight()
+        }
+
+        #[test]
+        fn flaps_simvars() {
+            let test_bed = test_bed_on_ground_with().run_one_tick();
+
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_4_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_5_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_4_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_5_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_1_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_2_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_3_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_4_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_5_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_ANGLE"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_1_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_2_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_3_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_4_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_5_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_ANGLE"));
+
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_1_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_2_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_1_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_2_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
         }
 
         #[test]

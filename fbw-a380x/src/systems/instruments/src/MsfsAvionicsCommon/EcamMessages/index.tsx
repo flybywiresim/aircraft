@@ -9,7 +9,10 @@ import {
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
 import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
 import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
-import { EcamAbnormalSensedAta27 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
+import {
+  EcamAbnormalSensedAta27,
+  EcamDeferredProcAta27,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
 import { EcamAbnormalSensedAta28 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata28';
 import { EcamAbnormalSensedAta2930 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata29-30';
 import {
@@ -46,10 +49,10 @@ export const EcamMemos: { [n: string]: string } = {
   '000001007': '   \x1b<3m-GND SPLRs ARM',
   '000001008': '   \x1b<5m-FLAPS ........T.O',
   '000001009': '   \x1b<3m-FLAPS : T.O',
-  '000001010': '   \x1b<5m-AUTO BRAKE ...RTO',
-  '000001011': '   \x1b<3m-AUTO BRAKE RTO',
+  '000001010': '   \x1b<5m-AUTO BRK .....RTO',
+  '000001011': '   \x1b<3m-AUTO BRK RTO',
   '000001012': '   \x1b<5m-T.O CONFIG ..TEST',
-  '000001013': '   \x1b<3m-T.O CONFIG NORMAL',
+  '000001013': '   \x1b<3m-T.O CONFIG NORM',
   '000002001': ' \x1b<7m\x1b4mLDG\x1bm',
   '000002002': '   \x1b<5m-SEAT BELTS ....ON',
   '000002003': '   \x1b<3m-SEAT BELTS ON',
@@ -189,12 +192,18 @@ export const EcamInfos: { [n: string]: string } = {
   220200008: '\x1b<3mLOC MODE AVAIL ONLY',
   220200009: '\x1b<3mWHEN L/G DOWN AND AP OFF: USE MAN PITCH TRIM',
   220200010: '\x1b<3mCAT 1 ONLY',
+  220200011: '\x1b<3mFMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
+  220200012: '\x1b<3mMINIMIZE XWIND FOR LANDING',
+  220200013: '\x1b<3mAUTOLAND : RECOMMENDED',
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
-  270200001: '\x1bON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
+  270200001: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
+  270200002: '\x1bGND SPLRs WILL EXTEND AT REV SELECTION',
+  270200003: '\x1bF/CTL BKUP CTL ACTIVE',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
   320200002: '\x1b<3mBRK PRESS AUTO LIMITED ON ALL L/Gs',
   320200003: '\x1b<3mDELAY BRAKING UNTIL NLG TOUCHDOWN',
+  320200004: '\x1b<3mFOR LDG:USE DIFF BRAKING AS RQRD',
   340200002: '\x1b<3mALTN LAW : PROT LOST',
   340200003: '\x1b<3mFLS LIMITED TO F-APP + RAW',
   340200004: '\x1b<3mDIRECT LAW : PROT LOST',
@@ -202,7 +211,7 @@ export const EcamInfos: { [n: string]: string } = {
   340200006: '\x1b<3mFPV / VV AVAIL',
   340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
-  800200001: '\x1b<3mFMS PRED UNRELIABLE',
+  800200001: '\x1b<3mFMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
   800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
   800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
@@ -225,12 +234,17 @@ export const EcamLimitations: { [n: string]: string } = {
   260400001: '\x1b<5mAPU BLEED DO NOT USE',
   260400002: '\x1b<5mMAX SPEED : 250/.55',
   270400001: '\x1b<5mFOR LDG : FLAP LVR 3',
+  270400002: '\x1b<5mMAX SPEED: 310 KT', // for altn law
+  270400003: '\x1b<5mUSE RUDDER WITH CARE',
+  270400004: '\x1b<5mFOR LDG : FLAP LVR 1',
   290400001: '\x1b<5mSLATS SLOW',
   290400002: '\x1b<5mFLAPS SLOW',
   300400001: '\x1b<5mAVOID ICING CONDs',
   320400001: '\x1b<5mMAX SPEED : 220 KT', // for lg extension
   320400002: '\x1b<5mL/G GRVTY EXTN ONLY',
   320400003: '\x1b<5mSTEER ENDUR LIMITED',
+  320400004: '\x1b<5mAUTO BRK:DO NOT USE',
+  700400001: '\x1b<5mREV : SYM USE ONLY',
   800400001: '\x1b<5mFUEL CONSUMPT INCRSD',
   800400002: '\x1b<5mLDG DIST AFFECTED',
   800400003: '\x1b<5mLDG PERF AFFECTED',
@@ -453,6 +467,9 @@ export const EcamInopSys: { [n: string]: string } = {
   270300004: '\x1b<4mRUDDER TRIM',
   270300005: '\x1b<4mRUDDER TRIM 1',
   270300006: '\x1b<4mRUDDER TRIM 2',
+  270300007: '\x1b<4mF/CTL REDUNDANCY',
+  270300008: '\x1b<4mUPPR RUDDER',
+  270300009: '\x1b<4mLWR RUDDER',
   290100001: '\x1b<4mPART SPLRs',
   290100003: '\x1b<4mFLAPS SYS 1',
   290100004: '\x1b<4mFLAPS SYS 2',
@@ -555,6 +572,9 @@ export const EcamInopSys: { [n: string]: string } = {
   341300001: '\x1b<4mPRED W/S 1',
   341300002: '\x1b<4mPRED W/S 2',
   341300003: '\x1b<4mPRED W/S 1+2',
+  340300046: '\x1b<4mTAWS SYS 1',
+  340300047: '\x1b<4mTAWS SYS 2',
+  340300048: '\x1b<4mTAWS SYS 1+2',
 };
 
 export enum ChecklistLineStyle {
@@ -565,9 +585,9 @@ export enum ChecklistLineStyle {
   White = 'White',
   Headline = 'Headline',
   SubHeadline = 'SubHeadline',
+  CenteredSubHeadline = 'CenteredSubHeadline',
   SeparationLine = 'SeparationLine',
   ChecklistItem = 'ChecklistItem',
-  ChecklistItemInactive = 'ChecklistItemInactive',
   CompletedChecklist = 'CompletedChecklist',
   CompletedDeferredProcedure = 'CompletedDeferredProcedure',
   DeferredProcedure = 'DeferredProcedure',
@@ -607,6 +627,10 @@ export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistActio
   return (c as ChecklistAction)?.labelNotCompleted !== undefined;
 }
 
+export function isChecklistHeadline(c: AbstractChecklistItem) {
+  return [ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline].includes(c.style);
+}
+
 export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
   return (c as ChecklistCondition)?.condition !== undefined;
 }
@@ -632,16 +656,9 @@ export interface NormalProcedure {
   /** Title of the checklist, e.g. "BEFORE START".  */
   title: string;
   /** An array of possible checklist items.. */
-  items: ChecklistAction[];
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
   /** Checklist is only activated by request, deactivated per default */
   onlyActivatedByRequest?: boolean;
-}
-
-export interface AbnormalNonSensedProcedure {
-  /** Title of the checklist, e.g. "BEFORE START".  */
-  title: string;
-  /** An array of possible checklist items.. */
-  items: ChecklistAction[];
 }
 
 export enum DeferredProcedureType {
@@ -692,6 +709,7 @@ export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
   ...EcamDeferredProcAta212223,
+  ...EcamDeferredProcAta27,
   ...EcamDeferredProcAta313233,
 };
 
@@ -707,6 +725,7 @@ export interface WdLineData {
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
   originalItemIndex?: number;
+  inactive?: boolean;
 }
 
 export enum WdSpecialLine {

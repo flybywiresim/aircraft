@@ -5,14 +5,6 @@
 /* eslint-disable no-underscore-dangle */
 
 import {
-  FacilitySearchType,
-  NearestAirportSearchSession,
-  NearestIntersectionSearchSession,
-  NearestSearchResults,
-  NearestSearchSession,
-  NearestVorSearchSession,
-} from '@microsoft/msfs-sdk';
-import {
   IcaoSearchFilter,
   JS_Facility,
   JS_FacilityAirport,
@@ -20,21 +12,11 @@ import {
   JS_FacilityNDB,
   JS_FacilityVOR,
   JS_Leg,
+  JSAirportRequestFlags,
 } from './FsTypes';
-import { Airport, NdbNavaid, VhfNavaid, Waypoint } from '../../../shared';
+import { Waypoint } from '../../../shared';
 import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
-
-// @microsoft/msfs-sdk does not export this, so we declare it
-declare class CoherentNearestSearchSession implements NearestSearchSession<string, string> {
-  public searchNearest(
-    lat: number,
-    lon: number,
-    radius: number,
-    maxItems: number,
-  ): Promise<NearestSearchResults<string, string>>;
-
-  public onSearchCompleted(results: NearestSearchResults<string, string>): void;
-}
+import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 
 export enum LoadType {
   Airport = 'A',
@@ -68,50 +50,10 @@ export type SearchedFacilityTypeMap = {
   [IcaoSearchFilter.Vors]: JS_FacilityVOR[];
   [IcaoSearchFilter.None]: (JS_FacilityAirport | JS_FacilityIntersection | JS_FacilityNDB | JS_FacilityVOR)[];
 };
-
-export type SupportedFacilitySearchType =
-  | FacilitySearchType.Airport
-  | FacilitySearchType.Intersection
-  | FacilitySearchType.Vor
-  | FacilitySearchType.Ndb;
-
-type FacilitySearchTypeToSessionClass = {
-  [FacilitySearchType.Airport]: NearestAirportSearchSession;
-  [FacilitySearchType.Intersection]: NearestIntersectionSearchSession;
-  [FacilitySearchType.Vor]: NearestVorSearchSession;
-  [FacilitySearchType.Ndb]: CoherentNearestSearchSession;
-};
-
-export type FacilitySearchTypeToDatabaseItem = {
-  [FacilitySearchType.Airport]: Airport;
-  [FacilitySearchType.Intersection]: Waypoint;
-  [FacilitySearchType.Vor]: VhfNavaid;
-  [FacilitySearchType.Ndb]: NdbNavaid;
-};
-
 export class FacilityCache {
-  public static readonly FACILITY_SEARCH_TYPE_TO_SESSION_CLASS: Record<
-    SupportedFacilitySearchType,
-    new (sessionID: number) => CoherentNearestSearchSession
-  > = {
-    [FacilitySearchType.Airport]: NearestAirportSearchSession,
-    [FacilitySearchType.Intersection]: NearestIntersectionSearchSession,
-    [FacilitySearchType.Vor]: NearestVorSearchSession,
-    [FacilitySearchType.Ndb]: NearestIntersectionSearchSession,
-  };
-
-  public static readonly FACILITY_SEARCH_TYPE_TO_LOAD_TYPE: Record<SupportedFacilitySearchType, LoadType> = {
-    [FacilitySearchType.Airport]: LoadType.Airport,
-    [FacilitySearchType.Intersection]: LoadType.Intersection,
-    [FacilitySearchType.Vor]: LoadType.Vor,
-    [FacilitySearchType.Ndb]: LoadType.Ndb,
-  };
-
   private static cacheSize = 1000;
 
   private listener; // TODO type
-
-  private searchSessions = new Map<number, NearestSearchSession<any, any>>([]);
 
   private facilityCache = new Map<string, JS_Facility>();
 
@@ -119,28 +61,13 @@ export class FacilityCache {
 
   private airwayFixCache = new Map<string, Waypoint[]>();
 
-  constructor() {
-    this.listener = RegisterViewListener('JS_LISTENER_FACILITY');
+  constructor(private readonly logError: ErrorLogger) {
+    this.listener = RegisterViewListener('JS_LISTENER_FACILITY', EmptyCallback.Void, true);
 
     Coherent.on('SendAirport', this.receiveFacility.bind(this));
     Coherent.on('SendIntersection', this.receiveFacility.bind(this));
     Coherent.on('SendNdb', this.receiveFacility.bind(this));
     Coherent.on('SendVor', this.receiveFacility.bind(this));
-    Coherent.on('NearestSearchCompleted', this.receiveNearestSearchResults.bind(this));
-  }
-
-  public async startNearestSearchSession<T extends SupportedFacilitySearchType>(
-    type: T,
-  ): Promise<FacilitySearchTypeToSessionClass[T]> {
-    return new Promise((resolve) => {
-      Coherent.call('START_NEAREST_SEARCH_SESSION', type).then((sessionId: number) => {
-        const _sessionClass = FacilityCache.FACILITY_SEARCH_TYPE_TO_SESSION_CLASS[type];
-        const session = new _sessionClass(sessionId) as any;
-
-        this.searchSessions.set(sessionId, session);
-        resolve(session);
-      });
-    });
   }
 
   public async getFacilities<T extends LoadType>(
@@ -167,6 +94,10 @@ export class FacilityCache {
       const successfulIcaos = toFetch.filter((_, i) => results[i]);
       if (successfulIcaos.length === 0) {
         return fetched;
+      }
+      if (successfulIcaos.length !== toFetch.length) {
+        const unsuccessfulIcaos = toFetch.filter((_, i) => !results[i]);
+        this.logError(`[FacilityCache] Failed to fetch ${loadType}: ${unsuccessfulIcaos.join(', ')}`);
       }
 
       // there were at least some results...
@@ -210,6 +141,7 @@ export class FacilityCache {
 
     const result: boolean = await Coherent.call(LoadCall[loadType].slice(0, -1), icao);
     if (!result) {
+      this.logError(`[FacilityCache] Failed to fetch ${loadType}: ${icao}`);
       return undefined;
     }
 
@@ -322,22 +254,20 @@ export class FacilityCache {
       this.addToAirwayCache(facility as any as JS_FacilityIntersection);
     }
 
-    if (!isMsfs2024() && loadType === LoadType.Airport) {
-      FacilityCache.fixupAirportRegions(facility as JS_FacilityAirport);
+    if (loadType === LoadType.Airport) {
+      const dataFlags = (facility as JS_FacilityAirport).loadedDataFlags;
+      if (dataFlags !== undefined && (dataFlags & JSAirportRequestFlags.All) !== JSAirportRequestFlags.All) {
+        // ignore minimal airports
+        return;
+      }
+
+      if (!isMsfs2024() && loadType === LoadType.Airport) {
+        FacilityCache.fixupAirportRegions(facility as JS_FacilityAirport);
+      }
     }
 
     const key = FacilityCache.key(facility.icao, loadType);
     this.insert(key, facility);
-  }
-
-  private receiveNearestSearchResults(results: NearestSearchResults<any, any>): void {
-    const session = this.searchSessions.get(results.sessionId);
-
-    if (!session) {
-      return;
-    }
-
-    (session as CoherentNearestSearchSession).onSearchCompleted(results);
   }
 
   static validFacilityIcao(icao: string, type?: 'A' | 'N' | 'V' | 'W'): boolean {

@@ -15,7 +15,7 @@ import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/au
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, Arinc429Word, Arinc429WordData, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -45,7 +45,7 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
   };
 }
 
-export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subscribable<boolean> }> {
+export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscribable<boolean> }> {
   private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
   private activeLateralMode: number = 0;
@@ -74,7 +74,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
 
   private readonly radioHeight = ConsumerSubject.create(this.sub.on('chosenRa'), Arinc429Word.empty());
 
-  private readonly altitude = ConsumerSubject.create(this.sub.on('altitudeAr'), Arinc429Word.empty());
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
   private readonly landingElevation = ConsumerSubject.create(this.sub.on('landingElevation'), Arinc429Word.empty());
 
@@ -89,6 +91,10 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
   private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), null);
 
   private readonly approachCapability = ConsumerSubject.create(this.sub.on('approachCapability'), 0);
+
+  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
+
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
 
@@ -149,6 +155,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
         this.props.isAttExcessive.get(),
         this.armedVerticalModeSub.get(),
         this.setHoldSpeed,
+        this.fcdcDiscreteWord1.get(),
+        this.fwcFlightPhase.get(),
         this.trkFpaDeselected.get(),
         this.tcasRaInhibited.get(),
         this.tdReached,
@@ -194,6 +202,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus; isAttExcessive: Subsc
     this.disconnectApForLdg.sub(() => this.handleFMABorders());
 
     this.btvExitMissed.sub(() => this.handleFMABorders());
+
+    this.fcdcDiscreteWord1.sub(() => this.handleFMABorders());
+    this.fwcFlightPhase.sub(() => this.handleFMABorders());
 
     this.unrestrictedClimbDescent.sub(() => {
       this.handleFMABorders();
@@ -568,7 +579,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         this.displayModeChangedPath();
         break;
       case 12:
-        text = '<text  class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+        text = '<text class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
         this.displayModeChangedPath();
         break;
       case 13:
@@ -651,8 +662,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     sub
       .on('autoBrakeActive')
       .whenChanged()
-      .handle((am) => {
-        this.autoBrakeActive = am;
+      .handle((a) => {
+        this.autoBrakeActive = a;
         this.setText();
       });
 
@@ -661,6 +672,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((a) => {
         this.autoBrakeMode = a;
+        this.setText();
       });
   }
 
@@ -691,6 +703,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   private autobrakeMode = 0;
 
   private AB3Message = false;
+
+  private autoBrakeActive = false;
 
   private onUpdateAthrModeMessage(message: number) {
     let text: string = '';
@@ -725,7 +739,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   }
 
   private handleAutobrakeMode() {
-    if (this.autobrakeMode === 6 && !this.AB3Message) {
+    if (this.autobrakeMode === 6 && !this.AB3Message && !this.autoBrakeActive) {
       this.textSub.set('BRK RTO');
       this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
     } else {
@@ -762,9 +776,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
       .on('autoBrakeActive')
       .whenChanged()
       .handle((a) => {
-        if (a) {
-          this.classSub.set('HiddenElement');
-        }
+        this.autoBrakeActive = a;
+        this.handleAutobrakeMode();
       });
   }
 
@@ -1384,6 +1397,8 @@ const getBC3Message = (
   isAttExcessive: boolean,
   armedVerticalMode: number,
   setHoldSpeed: boolean,
+  fcdcWord1: Arinc429WordData,
+  fwcFlightPhase: number,
   trkFpaDeselectedTCAS: boolean,
   tcasRaInhibited: boolean,
   tdReached: boolean,
@@ -1391,6 +1406,8 @@ const getBC3Message = (
   unrestrictedClimbDescent: number,
   exitMissed: boolean,
 ) => {
+  const flightPhaseForWarning =
+    fwcFlightPhase >= 2 && fwcFlightPhase <= 11 && !(fwcFlightPhase >= 4 && fwcFlightPhase <= 7);
   const armedVerticalBitmask = armedVerticalMode;
   const TCASArmed = (armedVerticalBitmask >> 6) & 1;
 
@@ -1398,7 +1415,7 @@ const getBC3Message = (
   let className: string;
 
   // All currently unused message are set to false
-  if (false) {
+  if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
     text = 'USE MAN PITCH TRIM';
     className = 'PulseAmber9Seconds Amber';
   } else if (false) {
@@ -1470,11 +1487,17 @@ class BC3Cell extends DisplayComponent<{
 
   private tdReached = false;
 
+  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
+
+  private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
   private fillBC3Cell() {
     const [text, className] = getBC3Message(
       this.props.isAttExcessive.get(),
       this.armedVerticalMode,
       this.setHoldSpeed,
+      this.fcdcDiscreteWord1.get(),
+      this.fwcFlightPhase.get(),
       this.trkFpaDeselected,
       this.tcasRaInhibited,
       this.tdReached,
@@ -1492,6 +1515,9 @@ class BC3Cell extends DisplayComponent<{
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.fcdcDiscreteWord1.sub(() => this.fillBC3Cell());
+    this.fwcFlightPhase.sub(() => this.fillBC3Cell());
 
     this.props.isAttExcessive.sub(() => {
       this.fillBC3Cell();

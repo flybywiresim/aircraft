@@ -1,9 +1,10 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
-use systems::shared::FeedbackPositionPickoffUnit;
+use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
+use systems::shared::PositionPickoffUnit;
 
 use systems::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use std::panic;
@@ -19,66 +20,20 @@ enum FlapsConf {
     ConfFull,
 }
 
-impl From<u8> for FlapsConf {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => FlapsConf::Conf0,
-            1 => FlapsConf::Conf1,
-            2 => FlapsConf::Conf1F,
-            3 => FlapsConf::Conf2,
-            4 => FlapsConf::Conf3,
-            5 => FlapsConf::ConfFull,
-            i => panic!("Cannot convert from {} to FlapsConf.", i),
-        }
-    }
-}
-
-/// A struct to read the handle position
-struct FlapsHandle {
-    handle_position_id: VariableIdentifier,
-    position: u8,
-    previous_position: u8,
-}
-
-impl FlapsHandle {
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
-            position: 0,
-            previous_position: 0,
-        }
-    }
-
-    fn position(&self) -> u8 {
-        self.position
-    }
-
-    fn previous_position(&self) -> u8 {
-        self.previous_position
-    }
-}
-
-impl SimulationElement for FlapsHandle {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.previous_position = self.position;
-        self.position = reader.read(&self.handle_position_id);
-    }
-}
-
 struct SlatFlapControlComputer {
     flaps_conf_index_id: VariableIdentifier,
-    slats_fppu_angle_id: VariableIdentifier,
-    flaps_fppu_angle_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
     slat_flap_actual_position_word_id: VariableIdentifier,
     slat_actual_position_word_id: VariableIdentifier,
     flap_actual_position_word_id: VariableIdentifier,
+    fap_ids: [VariableIdentifier; 7],
 
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
     flaps_feedback_angle: Angle,
     slats_feedback_angle: Angle,
     flaps_conf: FlapsConf,
+    fap: [bool; 7],
 }
 
 impl SlatFlapControlComputer {
@@ -89,8 +44,6 @@ impl SlatFlapControlComputer {
     fn new(context: &mut InitContext) -> Self {
         Self {
             flaps_conf_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
-            slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
-            flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
             slat_flap_system_status_word_id: context
                 .get_identifier("SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD".to_owned()),
             slat_flap_actual_position_word_id: context
@@ -99,12 +52,24 @@ impl SlatFlapControlComputer {
                 .get_identifier("SFCC_SLAT_ACTUAL_POSITION_WORD".to_owned()),
             flap_actual_position_word_id: context
                 .get_identifier("SFCC_FLAP_ACTUAL_POSITION_WORD".to_owned()),
+            fap_ids: [
+                context.get_identifier("SFCC_FAP_1".to_owned()),
+                context.get_identifier("SFCC_FAP_2".to_owned()),
+                context.get_identifier("SFCC_FAP_3".to_owned()),
+                context.get_identifier("SFCC_FAP_4".to_owned()),
+                context.get_identifier("SFCC_FAP_5".to_owned()),
+                context.get_identifier("SFCC_FAP_6".to_owned()),
+                context.get_identifier("SFCC_FAP_7".to_owned()),
+            ],
 
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),
             flaps_feedback_angle: Angle::new::<degree>(0.),
             slats_feedback_angle: Angle::new::<degree>(0.),
             flaps_conf: FlapsConf::Conf0,
+
+            // Set to false to match power-off state
+            fap: [true; 7],
         }
     }
 
@@ -134,33 +99,39 @@ impl SlatFlapControlComputer {
 
     fn generate_configuration(
         &self,
-        flaps_handle: &FlapsHandle,
+        csu_monitor: &CSUMonitor,
         context: &UpdateContext,
     ) -> FlapsConf {
-        match (flaps_handle.previous_position(), flaps_handle.position()) {
-            (0, 1)
+        // Ignored `CSU::OutOfDetent` and `CSU::Fault` positions due to simplified SFCC.
+        match (
+            csu_monitor.get_previous_detent(),
+            csu_monitor.get_current_detent(),
+        ) {
+            (CSU::Conf0, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     <= Self::HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1F
             }
-            (0, 1) => FlapsConf::Conf1,
-            (1, 1)
+            (CSU::Conf0, CSU::Conf1) => FlapsConf::Conf1,
+            (CSU::Conf1, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     > Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1
             }
-            (1, 1) => self.flaps_conf,
-            (_, 1)
+            (CSU::Conf1, CSU::Conf1) => self.flaps_conf,
+            (_, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
                     <= Self::CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS =>
             {
                 FlapsConf::Conf1F
             }
-            (_, 1) => FlapsConf::Conf1,
-            (_, 0) => FlapsConf::Conf0,
-            (from, to) if from != to => FlapsConf::from(to + 1),
+            (_, CSU::Conf1) => FlapsConf::Conf1,
+            (_, CSU::Conf0) => FlapsConf::Conf0,
+            (from, CSU::Conf2) if from != CSU::Conf2 => FlapsConf::Conf2,
+            (from, CSU::Conf3) if from != CSU::Conf3 => FlapsConf::Conf3,
+            (from, CSU::ConfFull) if from != CSU::ConfFull => FlapsConf::ConfFull,
             (_, _) => self.flaps_conf,
         }
     }
@@ -172,16 +143,30 @@ impl SlatFlapControlComputer {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_handle: &FlapsHandle,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        csu_monitor: &CSUMonitor,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
-        self.flaps_conf = self.generate_configuration(flaps_handle, context);
+        self.flaps_conf = self.generate_configuration(csu_monitor, context);
 
         self.flaps_demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf);
         self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
+
+        self.fap_update(csu_monitor);
+    }
+
+    fn fap_update(&mut self, csu_monitor: &CSUMonitor) {
+        let fppu_angle = self.flaps_feedback_angle.get::<degree>();
+
+        self.fap[0] = fppu_angle > 247.8 && fppu_angle < 254.0;
+        self.fap[1] = fppu_angle > 114.6 && fppu_angle < 254.0;
+        self.fap[2] = fppu_angle > 163.7 && fppu_angle < 254.0;
+        self.fap[3] = csu_monitor.get_current_detent() == CSU::Conf0;
+        self.fap[4] = fppu_angle > 163.7 && fppu_angle < 254.0;
+        self.fap[5] = fppu_angle > 247.8 && fppu_angle < 254.0;
+        self.fap[6] = fppu_angle > 114.6 && fppu_angle < 254.0;
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
@@ -321,10 +306,11 @@ impl SlatFlapLane for SlatFlapControlComputer {
 
 impl SimulationElement for SlatFlapControlComputer {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.flaps_conf_index_id, self.flaps_conf as u8);
+        for (id, fap) in self.fap_ids.iter().zip(self.fap) {
+            writer.write(id, fap);
+        }
 
-        writer.write(&self.slats_fppu_angle_id, self.slats_feedback_angle);
-        writer.write(&self.flaps_fppu_angle_id, self.flaps_feedback_angle);
+        writer.write(&self.flaps_conf_index_id, self.flaps_conf as u8);
 
         writer.write(
             &self.slat_flap_system_status_word_id,
@@ -347,25 +333,26 @@ impl SimulationElement for SlatFlapControlComputer {
 
 pub struct SlatFlapComplex {
     sfcc: SlatFlapControlComputer,
-    flaps_handle: FlapsHandle,
+    csu_monitor: CSUMonitor,
 }
 
 impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: SlatFlapControlComputer::new(context),
-            flaps_handle: FlapsHandle::new(context),
+            csu_monitor: CSUMonitor::new(context),
         }
     }
 
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
+        self.csu_monitor.update(context);
         self.sfcc
-            .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+            .update(context, &self.csu_monitor, flaps_feedback, slats_feedback);
     }
 
     pub fn flap_demand(&self) -> Option<Angle> {
@@ -378,7 +365,7 @@ impl SlatFlapComplex {
 }
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.flaps_handle.accept(visitor);
+        self.csu_monitor.accept(visitor);
         self.sfcc.accept(visitor);
         visitor.visit(self);
     }
@@ -390,7 +377,7 @@ mod tests {
     use std::time::Duration;
     use systems::simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
-        Aircraft,
+        Aircraft, Read, SimulatorReader,
     };
 
     use uom::si::{angular_velocity::degree_per_second, pressure::psi};
@@ -405,7 +392,7 @@ mod tests {
         right_position_angle_id: VariableIdentifier,
         surface_type: String,
     }
-    impl FeedbackPositionPickoffUnit for SlatFlapGear {
+    impl PositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
             self.current_angle
         }
@@ -609,6 +596,34 @@ mod tests {
             self.read_by_name("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD")
         }
 
+        fn read_sfcc_fap_1_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_1")
+        }
+
+        fn read_sfcc_fap_2_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_2")
+        }
+
+        fn read_sfcc_fap_3_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_3")
+        }
+
+        fn read_sfcc_fap_4_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_4")
+        }
+
+        fn read_sfcc_fap_5_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_5")
+        }
+
+        fn read_sfcc_fap_6_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_6")
+        }
+
+        fn read_sfcc_fap_7_word(&mut self) -> bool {
+            self.read_by_name("SFCC_FAP_7")
+        }
+
         fn set_indicated_airspeed(mut self, indicated_airspeed: f64) -> Self {
             self.write_by_name("AIRSPEED INDICATED", indicated_airspeed);
             self
@@ -657,6 +672,34 @@ mod tests {
 
         fn get_slats_fppu_feedback(&self) -> f64 {
             self.query(|a| a.slat_gear.angle().get::<degree>())
+        }
+
+        fn get_fap_1(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[0])
+        }
+
+        fn get_fap_2(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[1])
+        }
+
+        fn get_fap_3(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[2])
+        }
+
+        fn get_fap_4(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[3])
+        }
+
+        fn get_fap_5(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[4])
+        }
+
+        fn get_fap_6(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[5])
+        }
+
+        fn get_fap_7(&self) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc.fap[6])
         }
 
         fn test_flap_conf(
@@ -708,6 +751,121 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
 
         assert!(test_bed.contains_variable_with_name("FLAPS_CONF_INDEX"));
+
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_1"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_2"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_3"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_4"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_5"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_6"));
+        assert!(test_bed.contains_variable_with_name("SFCC_FAP_7"));
+    }
+
+    #[test]
+    fn sfcc_faps() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_yellow_hyd_pressure()
+            .set_blue_hyd_pressure()
+            .set_indicated_airspeed(0.)
+            .set_flaps_handle_position(0)
+            .run_one_tick();
+
+        assert!(!test_bed.get_fap_1());
+        assert!(!test_bed.get_fap_2());
+        assert!(!test_bed.get_fap_3());
+        assert!(test_bed.get_fap_4());
+        assert!(!test_bed.get_fap_5());
+        assert!(!test_bed.get_fap_6());
+        assert!(!test_bed.get_fap_7());
+
+        assert!(!test_bed.read_sfcc_fap_1_word());
+        assert!(!test_bed.read_sfcc_fap_2_word());
+        assert!(!test_bed.read_sfcc_fap_3_word());
+        assert!(test_bed.read_sfcc_fap_4_word());
+        assert!(!test_bed.read_sfcc_fap_5_word());
+        assert!(!test_bed.read_sfcc_fap_6_word());
+        assert!(!test_bed.read_sfcc_fap_7_word());
+
+        test_bed = test_bed
+            .set_flaps_handle_position(1)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_fap_1());
+        assert!(test_bed.get_fap_2());
+        assert!(!test_bed.get_fap_3());
+        assert!(!test_bed.get_fap_4());
+        assert!(!test_bed.get_fap_5());
+        assert!(!test_bed.get_fap_6());
+        assert!(test_bed.get_fap_7());
+
+        assert!(!test_bed.read_sfcc_fap_1_word());
+        assert!(test_bed.read_sfcc_fap_2_word());
+        assert!(!test_bed.read_sfcc_fap_3_word());
+        assert!(!test_bed.read_sfcc_fap_4_word());
+        assert!(!test_bed.read_sfcc_fap_5_word());
+        assert!(!test_bed.read_sfcc_fap_6_word());
+        assert!(test_bed.read_sfcc_fap_7_word());
+
+        test_bed = test_bed
+            .set_flaps_handle_position(2)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_fap_1());
+        assert!(test_bed.get_fap_2());
+        assert!(!test_bed.get_fap_3());
+        assert!(!test_bed.get_fap_4());
+        assert!(!test_bed.get_fap_5());
+        assert!(!test_bed.get_fap_6());
+        assert!(test_bed.get_fap_7());
+
+        assert!(!test_bed.read_sfcc_fap_1_word());
+        assert!(test_bed.read_sfcc_fap_2_word());
+        assert!(!test_bed.read_sfcc_fap_3_word());
+        assert!(!test_bed.read_sfcc_fap_4_word());
+        assert!(!test_bed.read_sfcc_fap_5_word());
+        assert!(!test_bed.read_sfcc_fap_6_word());
+        assert!(test_bed.read_sfcc_fap_7_word());
+
+        test_bed = test_bed
+            .set_flaps_handle_position(3)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_fap_1());
+        assert!(test_bed.get_fap_2());
+        assert!(test_bed.get_fap_3());
+        assert!(!test_bed.get_fap_4());
+        assert!(test_bed.get_fap_5());
+        assert!(!test_bed.get_fap_6());
+        assert!(test_bed.get_fap_7());
+
+        assert!(!test_bed.read_sfcc_fap_1_word());
+        assert!(test_bed.read_sfcc_fap_2_word());
+        assert!(test_bed.read_sfcc_fap_3_word());
+        assert!(!test_bed.read_sfcc_fap_4_word());
+        assert!(test_bed.read_sfcc_fap_5_word());
+        assert!(!test_bed.read_sfcc_fap_6_word());
+        assert!(test_bed.read_sfcc_fap_7_word());
+
+        test_bed = test_bed
+            .set_flaps_handle_position(4)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(test_bed.get_fap_1());
+        assert!(test_bed.get_fap_2());
+        assert!(test_bed.get_fap_3());
+        assert!(!test_bed.get_fap_4());
+        assert!(test_bed.get_fap_5());
+        assert!(test_bed.get_fap_6());
+        assert!(test_bed.get_fap_7());
+
+        assert!(test_bed.read_sfcc_fap_1_word());
+        assert!(test_bed.read_sfcc_fap_2_word());
+        assert!(test_bed.read_sfcc_fap_3_word());
+        assert!(!test_bed.read_sfcc_fap_4_word());
+        assert!(test_bed.read_sfcc_fap_5_word());
+        assert!(test_bed.read_sfcc_fap_6_word());
+        assert!(test_bed.read_sfcc_fap_7_word());
     }
 
     #[test]

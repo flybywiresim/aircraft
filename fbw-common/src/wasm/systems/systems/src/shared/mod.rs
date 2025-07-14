@@ -11,7 +11,7 @@ use ntest::MaxDifference;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
-    angle::radian,
+    angle::{degree, radian},
     f64::*,
     length::meter,
     mass_rate::kilogram_per_second,
@@ -90,7 +90,7 @@ pub trait AngularSpeedSensor {
     fn speed(&self) -> AngularVelocity;
 }
 
-pub trait FeedbackPositionPickoffUnit {
+pub trait PositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
@@ -150,14 +150,14 @@ pub trait ReverserPosition {
     fn reverser_position(&self) -> Ratio;
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 #[repr(usize)]
 pub enum LgciuId {
     Lgciu1 = 0,
     Lgciu2 = 1,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProximityDetectorId {
     UplockGearNose1,
     UplockGearNose2,
@@ -186,7 +186,7 @@ pub enum ProximityDetectorId {
     DownlockDoorRight2,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum GearActuatorId {
     GearNose,
     GearDoorNose,
@@ -276,7 +276,7 @@ pub trait SectionPressure {
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum HydraulicColor {
     Green,
     Blue,
@@ -292,7 +292,7 @@ impl Display for HydraulicColor {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AirbusEngineDrivenPumpId {
     Edp1a,
     Edp1b,
@@ -322,7 +322,7 @@ impl Display for AirbusEngineDrivenPumpId {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AirbusElectricPumpId {
     GreenA,
     GreenB,
@@ -389,6 +389,11 @@ pub enum ElectricalBusType {
     /// As sub buses represent such a small area, their state is not exported towards
     /// the simulator.
     Sub(&'static str),
+
+    /// A virtual bus is a bus which exists to help to provide a more realistic simulation
+    /// but doesn't exist in the real plane.
+    /// It's used for example to simulate that a device is powered by multiple powersources.
+    Virtual(&'static str),
 }
 impl Display for ElectricalBusType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -407,6 +412,7 @@ impl Display for ElectricalBusType {
             ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
             ElectricalBusType::DirectCurrentNamed(name) => write!(f, "{}", name),
             ElectricalBusType::Sub(name) => write!(f, "SUB_{}", name),
+            ElectricalBusType::Virtual(name) => write!(f, "VIRTUAL_{name}"),
         }
     }
 }
@@ -1016,6 +1022,23 @@ impl Average for Ratio {
     }
 }
 
+impl Average for Angle {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Angle>,
+    {
+        let mut sum = 0.0;
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v.get::<degree>();
+            count += 1;
+        }
+
+        Angle::new::<degree>(if count > 0 { sum / (count as f64) } else { 0. })
+    }
+}
+
 impl<'a> Average<&'a Pressure> for Pressure {
     fn average<I>(iter: I) -> Self
     where
@@ -1052,6 +1075,15 @@ impl<'a> Average<&'a Ratio> for Ratio {
     }
 }
 
+impl<'a> Average<&'a Angle> for Angle {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a Angle>,
+    {
+        iter.copied().average()
+    }
+}
+
 pub trait Resolution {
     fn resolution(self, resolution: f64) -> f64;
 }
@@ -1062,7 +1094,7 @@ impl Resolution for f64 {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub enum FireDetectionZone {
     Engine(usize),
     Apu,
@@ -1079,7 +1111,7 @@ impl Display for FireDetectionZone {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 pub enum FireDetectionLoopID {
     A,
     B,

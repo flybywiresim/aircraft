@@ -232,7 +232,15 @@ export class FmgcData {
 
   public readonly approachSpeed = Subject.create<Knots | null>(null);
 
-  public readonly approachWind = Subject.create<FmcWindVector | null>(null);
+  public readonly approachWindDirection = Subject.create<number | null>(null);
+
+  public readonly approachWindSpeed = Subject.create<number | null>(null);
+
+  public readonly approachWind: MappedSubject<number[], FmcWindVector | null> = MappedSubject.create(
+    ([direction, speed]) => (direction !== null && speed !== null ? { direction: direction, speed: speed } : null),
+    this.approachWindDirection,
+    this.approachWindSpeed,
+  );
 
   public readonly approachQnh = Subject.create<number | null>(null);
 
@@ -288,15 +296,11 @@ export class FmgcData {
 
   public readonly climbPreSelSpeed = Subject.create<Knots | null>(null);
 
-  public readonly climbSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
-
   public readonly cruisePreSelMach = Subject.create<number | null>(null);
 
   public readonly cruisePreSelSpeed = Subject.create<Knots | null>(null);
 
   public readonly descentPreSelSpeed = Subject.create<Knots | null>(null);
-
-  public readonly descentSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
   /** in feet/min. null if not set. */
   public readonly descentCabinRate = Subject.create<number>(-350);
@@ -478,12 +482,34 @@ export class FmgcDataService implements Fmgc {
     return this.data.cruisePreSelMach.get() ?? 0.85;
   }
 
-  getClimbSpeedLimit(): SpeedLimit {
-    return { speed: 250, underAltitude: 10_000 };
+  getClimbSpeedLimit(): SpeedLimit | null {
+    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+      return null;
+    }
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.climbSpeedLimitSpeed;
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.climbSpeedLimitAltitude;
+    if (speedLimitSpeed && speedLimitAltitude) {
+      return {
+        speed: speedLimitSpeed,
+        underAltitude: speedLimitAltitude,
+      };
+    }
+    return null;
   }
 
-  getDescentSpeedLimit(): SpeedLimit {
-    return { speed: 250, underAltitude: 10_000 };
+  getDescentSpeedLimit(): SpeedLimit | null {
+    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+      return null;
+    }
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.descentSpeedLimitSpeed;
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.descentSpeedLimitAltitude;
+    if (speedLimitSpeed && speedLimitAltitude) {
+      return {
+        speed: speedLimitSpeed,
+        underAltitude: speedLimitAltitude,
+      };
+    }
+    return null;
   }
 
   /** in knots */
@@ -565,8 +591,8 @@ export class FmgcDataService implements Fmgc {
     };
   }
 
-  getApproachWind(): FmcWindVector {
-    return this.data.approachWind.get() ?? { direction: 0, speed: 0 };
+  getApproachWind(): FmcWindVector | null {
+    return this.data.approachWind.get();
   }
 
   /** in hPa */

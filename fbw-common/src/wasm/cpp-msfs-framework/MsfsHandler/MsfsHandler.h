@@ -61,6 +61,11 @@ class MsfsHandler {
   bool isInitialized = false;
 
   /**
+   * Flag to indicate if the simconnect connection is established.
+   */
+  bool simConnectInitialized = false;
+
+  /**
    * This struct is used to define the data definition for the base sim data.
    */
   struct BaseSimData {
