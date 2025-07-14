@@ -208,13 +208,27 @@ export class Geometry {
     tas: Knots,
     gs: Knots,
   ) {
-    const prevLeg = this.legs.get(index - 1);
+    const prevPrevLeg = this.legs.get(index - 2);
+    let prevLeg = this.legs.get(index - 1);
     const leg = this.legs.get(index);
     const nextLeg = this.legs.get(index + 1);
     const nextNextLeg = this.legs.get(index + 2);
 
+    // If we have a CI-IF-xF sequence, `prevLeg` of the TF leg should be the CI leg, not the IF leg.
+    if (isCiIfXfSequence(prevPrevLeg, prevLeg, leg)) {
+      prevLeg = prevPrevLeg;
+    }
+
     const inboundTransition = this.transitions.get(index - 1);
-    const outboundTransition = this.transitions.get(index);
+
+    // If we have a CI-IF-xF sequence,
+    // - the outbound transition of the CI leg should be the inbound transition of the TF leg, and
+    // - the outbound transition of the IF leg should be `undefined`
+    const outboundTransition = isCiIfXfSequence(leg, nextLeg, nextNextLeg)
+      ? this.transitions.get(index + 1)
+      : isCiIfXfSequence(prevLeg, leg, nextLeg)
+        ? undefined
+        : this.transitions.get(index);
 
     const legPredictedTas = Geometry.getLegPredictedTas(leg, tas);
     const legPredictedGs = Geometry.getLegPredictedGs(leg, gs);
@@ -305,19 +319,17 @@ export class Geometry {
 
     // Compute leg and outbound if previous leg isn't null (we already computed 1 leg forward the previous iteration)
     if (!(prevLeg && prevLeg.isNull)) {
+      // If we have a CI-IF-xF sequence, the CI leg's outbound transition should have CI leg and the TF leg as neighboring guidables.
       const shouldSkipNextLeg = isCiIfXfSequence(leg, nextLeg, nextNextLeg);
-      const chosenOutboundTransition = shouldSkipNextLeg
-        ? TransitionPicker.forLegs(leg, nextNextLeg)
-        : outboundTransition;
       const chosenNextLeg = shouldSkipNextLeg ? nextNextLeg : nextLeg;
 
-      leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition ?? chosenNextLeg);
+      leg.setNeighboringGuidables(inboundTransition ?? prevLeg, outboundTransition ?? chosenNextLeg);
       leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
 
-      if (chosenOutboundTransition && chosenNextLeg) {
-        chosenOutboundTransition.setNeighboringGuidables(leg, chosenNextLeg);
-        chosenOutboundTransition.setNeighboringLegs(leg, chosenNextLeg);
-        chosenOutboundTransition.recomputeWithParameters(
+      if (outboundTransition && chosenNextLeg) {
+        outboundTransition.setNeighboringGuidables(leg, chosenNextLeg);
+        outboundTransition.setNeighboringLegs(leg, chosenNextLeg);
+        outboundTransition.recomputeWithParameters(
           activeLegIdx === index + 1,
           legPredictedTas,
           legPredictedGs,
@@ -326,7 +338,7 @@ export class Geometry {
         );
 
         // Since the outbound transition can have TAD, we recompute the leg again to make sure the end point is at the right place for this cycle
-        leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition);
+        leg.setNeighboringGuidables(inboundTransition ?? prevLeg, outboundTransition);
         leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
       }
     }
