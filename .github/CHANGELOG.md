@@ -93,6 +93,7 @@
 1. [A380X/FMS] Add TL indication for tailwind on APPR PERF - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Consider pilot-entered tropopause for automatic cruise temperature calculation - @BlueberryKing (BlueberryKing)
 1. [FMS] Make sure radials of CR/VR legs use the station declination as magvar - @BlueberryKing (BlueberryKing)
+1. [A32NX/FWS] Implement BAT 1(2) OFF ECAM warning - @BlueberryKing (BlueberryKing)
 1. [A32NX/FMS] Implement ability to create, modify, activate and swap a secondary flight plan - @Benjozork (Benjamin Dupont), @BlueberyKing (BlueberryKing)
 
 ## 0.13.0

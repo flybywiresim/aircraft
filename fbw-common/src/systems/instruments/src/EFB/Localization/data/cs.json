@@ -94,8 +94,8 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Zvětšit písmo",
-        "NextLoadsheetSection": "Next loadsheet section",
-        "PreviousLoadsheetSection": "Previous loadsheet section",
+        "NextLoadsheetSection": "Další část loadsheetu",
+        "PreviousLoadsheetSection": "Předchozí část loadsheetu",
         "ReduceFontSize": "Zmenšit písmo"
       },
       "Title": "OFP",
@@ -596,7 +596,7 @@
       "Select": "Vybrat",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
-      "WeightUnit": "Americké jednotky"
+      "WeightUnit": "Jednotky hmotnosti"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Zdroj ATIS/ATC",

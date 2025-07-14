@@ -3570,6 +3570,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Flap FPPU angle ranges from 0° to 360°
 
+- A32NX_SFCC_FAP_{num}
+    - Flap actual position discrete output
+    - {num} is from 1 to 7
+
 ## Flight Controls (ATA 27)
 
 - A32NX_FLIGHT_CONTROLS_TRACKING_MODE
