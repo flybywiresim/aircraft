@@ -30,7 +30,7 @@ export interface AbstractOitPageProps extends ComponentProps {
   oit: OIT;
 }
 
-export type OisOperationMode = 'nss' | 'flt-ops';
+export type OisOperationMode = 'nss-avncs' | 'flt-ops';
 
 export interface OitProps {
   readonly bus: EventBus;

@@ -171,8 +171,8 @@ class SystemsHost extends BaseInstrument {
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
   // For now, pass ATSU to the ANSUs. In our target architecture, there should be no ATSU
-  private readonly nssAnsu1 = new AircraftNetworkServerUnit(this.bus, 1, 'nss', this.failuresConsumer, this.atsu);
-  private readonly nssAnsu2 = new AircraftNetworkServerUnit(this.bus, 2, 'nss', this.failuresConsumer, this.atsu);
+  private readonly nssAnsu1 = new AircraftNetworkServerUnit(this.bus, 1, 'nss-avncs', this.failuresConsumer, this.atsu);
+  private readonly nssAnsu2 = new AircraftNetworkServerUnit(this.bus, 2, 'nss-avncs', this.failuresConsumer, this.atsu);
   private readonly fltOpsAnsu1 = new AircraftNetworkServerUnit(
     this.bus,
     1,

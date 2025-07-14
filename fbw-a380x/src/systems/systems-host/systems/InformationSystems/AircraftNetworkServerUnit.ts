@@ -8,7 +8,7 @@ import { AtsuSystem } from 'systems-host/systems/atsu';
 
 type AnsuIndex = 1 | 2;
 
-type AnsuType = 'nss' | 'flt-ops';
+type AnsuType = 'nss-avncs' | 'flt-ops';
 
 export class AircraftNetworkServerUnit implements Instrument {
   private readonly subscriptions: Subscription[] = [];
@@ -24,7 +24,7 @@ export class AircraftNetworkServerUnit implements Instrument {
 
   private readonly _isHealthy = Subject.create(false);
   public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
-  private readonly isHealthySimVar = `L:A32NX_${this.type === 'nss' ? 'NSS' : 'FLTOPS'}_ANSU_${this.index.toFixed(0)}_IS_HEALTHY`;
+  private readonly isHealthySimVar = `L:A32NX_${this.type === 'nss-avncs' ? 'NSS' : 'FLTOPS'}_ANSU_${this.index.toFixed(0)}_IS_HEALTHY`;
 
   constructor(
     private readonly bus: EventBus,
@@ -47,7 +47,7 @@ export class AircraftNetworkServerUnit implements Instrument {
   onUpdate(): void {
     const failed = this.failuresConsumer.isActive(this.failureKey);
 
-    if (this.type === 'nss') {
+    if (this.type === 'nss-avncs') {
       if (this.index === 1) {
         this.powered.set(
           SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', SimVarValueType.Bool) ||

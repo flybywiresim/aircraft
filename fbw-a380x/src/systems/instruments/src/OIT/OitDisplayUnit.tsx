@@ -131,7 +131,7 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
 
   public readonly failed = MappedSubject.create(
     ([opMode, state, nssFail, fltOpsFail]) =>
-      state === DisplayUnitState.On && ((opMode === 'nss' && nssFail) || (opMode === 'flt-ops' && fltOpsFail)),
+      state === DisplayUnitState.On && ((opMode === 'nss-avncs' && nssFail) || (opMode === 'flt-ops' && fltOpsFail)),
     this.props.nssOrFltOps,
     this.state,
     this.allNssAnsuFailed,
