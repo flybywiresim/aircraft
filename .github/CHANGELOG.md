@@ -139,6 +139,7 @@
 1. [A380X/OIS] Fix OOOI times logic, automatically power laptop for runway spawns - @flogross89 (floridude)
 1. [A380X/MFD] Changed colors of TCAS modes to match correct colors in A380 FCOM - @fwillard (Finn)
 1. [MODEL] Inverted behavior of FADEC GND PWR PB - @Maximilian-Reuter (\_chaoz_)
+1. [FMS] Fixed pseudo waypoints symbols being offset after a direct to - @BlueberryKing (BlueberryKing)
 
 ## 0.13.0
 
