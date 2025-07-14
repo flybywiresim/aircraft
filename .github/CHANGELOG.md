@@ -97,6 +97,7 @@
 1. [A380X] Fixed pink textures in 2024 SU3 caused by invalid texture size - @heclak (Heclak)
 1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
 1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
+1. [FMS] Fixed pseudo waypoints symbols being offset after a direct to - @BlueberryKing (BlueberryKing)
 
 ## 0.13.0
 
