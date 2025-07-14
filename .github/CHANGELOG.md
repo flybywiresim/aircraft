@@ -155,6 +155,7 @@
 1. [A380X] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
 1. [A32NX] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
 1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
+1. [FMS] Fixed pseudo waypoints symbols being offset after a direct to - @BlueberryKing (BlueberryKing)
 
 ## 0.13.0
 
