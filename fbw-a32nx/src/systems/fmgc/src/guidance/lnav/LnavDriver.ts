@@ -573,12 +573,6 @@ export class LnavDriver implements GuidanceComponent {
       const turnRadius = trueAirspeed ** 2 / Math.tan(bankAngle * MathUtils.DEGREES_TO_RADIANS) / HpathLaw.G;
 
       if (this.lastTAE * this.lastXTE > 0) {
-        if (Math.abs(this.lastXTE) >= Math.abs(2 * turnRadius)) {
-          console.log(
-            `[FMGC/Guidance] Capture disengaged while flying away ${Math.abs(this.lastXTE)} >= ${Math.abs(2 * turnRadius)}`,
-          );
-        }
-
         return Math.abs(this.lastXTE) < Math.abs(2 * turnRadius);
       } else {
         const unsaturatedTrackAngleError = MathUtils.clamp(
@@ -600,15 +594,6 @@ export class LnavDriver implements GuidanceComponent {
           (nominalRollAngle / HpathLaw.K2 - unsaturatedTrackAngleError * legGs) / HpathLaw.K1;
         const optimalCaptureZone = Math.abs(saturatedCaptureZone - unsaturatedCaptureZone);
         const minCaptureZone = (LnavDriver.MinimumTrackAngleError * legGs) / HpathLaw.K1;
-
-        if (Math.abs(this.lastXTE) >= Math.max(minCaptureZone, optimalCaptureZone)) {
-          console.log(
-            `[FMGC/Guidance] Capture disengaged while flying towards the path ${Math.abs(this.lastXTE)} >= ${Math.max(
-              minCaptureZone,
-              optimalCaptureZone,
-            )}`,
-          );
-        }
 
         return Math.abs(this.lastXTE) < Math.max(minCaptureZone, optimalCaptureZone);
       }
