@@ -357,7 +357,11 @@ export class FwsNormalChecklists {
   }
 
   navigateToParent() {
-    this.navigateToChecklist(0);
+    if (this.checklistId.get() === 0) {
+      this.showChecklistRequested.set(false);
+    } else {
+      this.navigateToChecklist(0);
+    }
   }
 
   private scrollToSelectedLine() {
