@@ -1,6 +1,5 @@
 use crate::simulation::{
-    InitContext, Read, SimulationElement, SimulatorReader, StartState, UpdateContext,
-    VariableIdentifier,
+    InitContext, Read, SimulationElement, SimulatorReader, UpdateContext, VariableIdentifier,
 };
 use std::time::Duration;
 
@@ -60,19 +59,6 @@ impl CSU {
             _ => CSU::Fault,
         }
     }
-
-    pub fn get_switch_pattern(csu: CSU) -> (SwitchPattern, SwitchPattern) {
-        match csu {
-            CSU::Conf0 => (0b11000, 0b11000),
-            CSU::Conf1 => (0b01100, 0b01100),
-            CSU::Conf2 => (0b00110, 0b00110),
-            CSU::Conf3 => (0b00011, 0b00011),
-            CSU::ConfFull => (0b10001, 0b10001),
-            CSU::OutOfDetent => (0b11000, 0b01000),
-            CSU::Fault => (0b00000, 0b00000),
-            CSU::Misadjust => panic!("No pattern for CSU::Misadjust"),
-        }
-    }
 }
 
 pub struct CSUMonitor {
@@ -88,16 +74,8 @@ pub struct CSUMonitor {
 }
 impl CSUMonitor {
     pub fn new(context: &mut InitContext) -> Self {
-        let (switch_pattern, detent) = match context.start_state() {
-            StartState::Hangar => (CSU::get_switch_pattern(CSU::Conf0), CSU::Conf0),
-            StartState::Apron => (CSU::get_switch_pattern(CSU::Conf0), CSU::Conf0),
-            StartState::Taxi => (CSU::get_switch_pattern(CSU::Conf1), CSU::Conf1),
-            StartState::Runway => (CSU::get_switch_pattern(CSU::Conf1), CSU::Conf1),
-            StartState::Climb => (CSU::get_switch_pattern(CSU::Conf0), CSU::Conf0),
-            StartState::Cruise => (CSU::get_switch_pattern(CSU::Conf0), CSU::Conf0),
-            StartState::Approach => (CSU::get_switch_pattern(CSU::ConfFull), CSU::ConfFull),
-            StartState::Final => (CSU::get_switch_pattern(CSU::ConfFull), CSU::ConfFull),
-        };
+        let switch_pattern = (0b11000, 0b11000);
+        let detent = CSU::Conf0;
         Self {
             handle_position_id: context.get_identifier("FLAPS_HANDLE_INDEX".to_owned()),
             current_switch_pattern: switch_pattern,
