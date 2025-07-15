@@ -23,6 +23,7 @@ import './oit-display-unit.scss';
 import { OitSimvars } from './OitSimvarPublisher';
 import { A380Failure } from '@failures';
 import { OisOperationMode } from './OIT';
+import { OisLaptop } from './OisLaptop';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -53,6 +54,7 @@ interface DisplayUnitProps {
   readonly displayUnitId: OitDisplayUnitID;
   readonly failuresConsumer: FailuresConsumer;
   readonly nssOrFltOps: Subscribable<OisOperationMode>;
+  readonly laptop: OisLaptop;
   readonly test?: Subscribable<number>;
 }
 

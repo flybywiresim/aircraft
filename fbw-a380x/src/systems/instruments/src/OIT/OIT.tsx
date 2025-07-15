@@ -142,6 +142,7 @@ export class OIT extends DisplayComponent<OitProps> {
         displayUnitId={this.props.captOrFo === 'CAPT' ? OitDisplayUnitID.CaptOit : OitDisplayUnitID.FoOit}
         failuresConsumer={this.props.failuresConsumer}
         nssOrFltOps={this.operationMode}
+        laptop={this.laptop}
       >
         <div ref={this.topRef} class="oit-main">
           <OitHeader uiService={this.uiService} oit={this} />

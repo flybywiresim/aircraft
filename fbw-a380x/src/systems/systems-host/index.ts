@@ -171,15 +171,14 @@ class SystemsHost extends BaseInstrument {
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
   // For now, pass ATSU to the ANSUs. In our target architecture, there should be no ATSU
-  private readonly nssAnsu1 = new AircraftNetworkServerUnit(this.bus, 1, 'nss-avncs', this.failuresConsumer, this.atsu);
-  private readonly nssAnsu2 = new AircraftNetworkServerUnit(this.bus, 2, 'nss-avncs', this.failuresConsumer, this.atsu);
-  private readonly fltOpsAnsu1 = new AircraftNetworkServerUnit(
+  private readonly avncsAnsu = new AircraftNetworkServerUnit(
     this.bus,
     1,
-    'flt-ops',
+    'nss-avncs',
     this.failuresConsumer,
     this.atsu,
   );
+  private readonly fltOpsAnsu = new AircraftNetworkServerUnit(this.bus, 1, 'flt-ops', this.failuresConsumer, this.atsu);
 
   // FIXME delete this when PRIM gets the THS auto trim
   private readonly autoThsTrimmer = new AutoThsTrimmer(this.bus, this);
@@ -225,9 +224,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
-    this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
-    this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
-    this.backplane.addInstrument('fltOpsAnsu1', this.fltOpsAnsu1, true);
+    this.backplane.addInstrument('nssAnsu', this.avncsAnsu, true);
+    this.backplane.addInstrument('fltOpsAnsu', this.fltOpsAnsu, true);
     this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);

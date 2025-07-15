@@ -1,10 +1,19 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Instrument, SimVarValueType, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  EventBus,
+  Instrument,
+  SimVarValueType,
+  Subject,
+  Subscribable,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { AtsuSystem } from 'systems-host/systems/atsu';
+import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 
 type AnsuIndex = 1 | 2;
 
@@ -12,6 +21,8 @@ type AnsuType = 'nss-avncs' | 'flt-ops';
 
 export class AircraftNetworkServerUnit implements Instrument {
   private readonly subscriptions: Subscription[] = [];
+
+  private readonly sub = this.bus.getSubscriber<ResetPanelSimvars>();
 
   private readonly failureKey =
     this.type === 'flt-ops' && this.index === 1
@@ -26,9 +37,14 @@ export class AircraftNetworkServerUnit implements Instrument {
   public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
   private readonly isHealthySimVar = `L:A32NX_${this.type === 'nss-avncs' ? 'NSS' : 'FLTOPS'}_ANSU_${this.index.toFixed(0)}_IS_HEALTHY`;
 
+  private readonly resetPbStatus = ConsumerSubject.create(
+    this.sub.on(this.type === 'flt-ops' ? 'a380x_reset_panel_nss_flt_ops' : 'a380x_reset_panel_nss_avncs'),
+    false,
+  );
+
   constructor(
     private readonly bus: EventBus,
-    private readonly index: AnsuIndex,
+    private readonly index: AnsuIndex, // use only one ANSU index per type for now
     private readonly type: AnsuType,
     private readonly failuresConsumer: FailuresConsumer,
     private readonly atsu: AtsuSystem,
@@ -67,7 +83,19 @@ export class AircraftNetworkServerUnit implements Instrument {
       );
     }
 
-    this._isHealthy.set(!failed && this.powered.get());
+    this._isHealthy.set(!failed && this.powered.get() && !this.resetPbStatus.get());
+
+    if (this.resetPbStatus.get()) {
+      this.reset();
+    }
+
+    if (!this._isHealthy.get()) {
+      return;
+    }
+  }
+
+  reset(): void {
+    // Called when reset panel p/b is pulled out
   }
 
   destroy() {

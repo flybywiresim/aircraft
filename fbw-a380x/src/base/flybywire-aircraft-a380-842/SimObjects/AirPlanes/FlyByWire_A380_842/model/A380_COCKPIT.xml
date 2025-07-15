@@ -4805,6 +4805,12 @@
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <NAME>AESU2</NAME>
                     </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>NSS_AVNCS</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>NSS_FLT_OPS</NAME>
+                    </UseTemplate>
                 </Component>
             </Component>
 
