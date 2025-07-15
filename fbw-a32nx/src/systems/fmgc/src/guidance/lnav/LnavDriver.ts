@@ -24,7 +24,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
-import { FlightPlanLeg, isDiscontinuity } from '../../flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLeg, isLeg } from '../../flightplanning/legs/FlightPlanLeg';
 
 /**
  * Represents the current turn state of the LNAV driver
@@ -539,6 +539,12 @@ export class LnavDriver implements GuidanceComponent {
     return leg.isVx() || (leg.isCx() && leg.type !== LegType.CF);
   }
 
+  private cannotCaptureLegType(el: FlightPlanLeg): boolean {
+    // FIXME We probably should not prevent capture of IF legs like this. Instead, we should not even generate any guidance parameters
+    // for IF legs, and then the capture condition will not be met.
+    return el.type === LegType.IF;
+  }
+
   private isNavModeEngaged(): boolean {
     // TODO use correct FM
     return this.register
@@ -556,7 +562,7 @@ export class LnavDriver implements GuidanceComponent {
     const geometry = this.guidanceController.activeGeometry;
     const activeLeg = plan.activeLeg;
 
-    if (!activeLeg || isDiscontinuity(activeLeg) || this.isNavCaptureInhibited) {
+    if (!isLeg(activeLeg) || this.cannotCaptureLegType(activeLeg) || this.isNavCaptureInhibited) {
       return false;
     } else if (this.canAlwaysCaptureLeg(activeLeg)) {
       return true;
