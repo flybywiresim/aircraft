@@ -1328,7 +1328,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'DIFF PRESS > 9.6 PSI :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -1357,7 +1357,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'WHEN DIFF PR < 2 PSI & FL < 100 / MEA :',
-        sensed: true,
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -1375,8 +1375,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'BEFORE OPENING ANY CABIN DOOR :',
-        sensed: false,
-        condition: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+        sensed: true,
       },
       {
         name: 'PACK 1',
