@@ -426,13 +426,7 @@ export class ProcedureLinesGenerator {
         const itemComplete = this.checklistState.itemsChecked[itemIndex];
         let isCondition = false;
         if (isChecklistAction(item)) {
-          text = ProcedureLinesGenerator.getChecklistActionText(
-            item,
-            clStyle,
-            itemIndex,
-            itemComplete,
-            this.checklistState,
-          );
+          text = ProcedureLinesGenerator.getChecklistActionText(item, itemIndex, itemComplete, this.checklistState);
           if (
             (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
             clStyle === ChecklistLineStyle.ChecklistItem
@@ -443,6 +437,11 @@ export class ProcedureLinesGenerator {
           isCondition = true;
           clStyle = ChecklistLineStyle.ChecklistCondition;
           text = ProcedureLinesGenerator.getChecklistConditionText(item, itemIndex, itemComplete, this.checklistState);
+        } else if (isChecklistHeadline(item)) {
+          text += clStyle === ChecklistLineStyle.CenteredSubHeadline ? '.' : '';
+          text += item.name;
+        } else {
+          text += `\xa0${item.name}`;
         }
 
         lineData.push({
@@ -571,13 +570,12 @@ export class ProcedureLinesGenerator {
 
   public static getChecklistActionText(
     item: ChecklistAction,
-    style: ChecklistLineStyle | undefined,
     itemIndex: number,
     itemComplete: boolean,
     checklistState: ChecklistState,
   ) {
     let text = item.level ? '\xa0'.repeat(item.level) : '';
-    text += style == undefined || style !== ChecklistLineStyle.SubHeadline ? '-' : '';
+    text += '-';
     text += item.name;
     if (itemComplete && item.labelCompleted) {
       text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;

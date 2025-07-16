@@ -595,6 +595,7 @@ export enum ChecklistLineStyle {
   LandAsap = 'LandAsap',
   LandAnsa = 'LandAnsa',
   ChecklistCondition = 'ChecklistCondition',
+  ChecklistItemInactive = 'ChecklistItemInactive',
 }
 
 interface AbstractChecklistItem {

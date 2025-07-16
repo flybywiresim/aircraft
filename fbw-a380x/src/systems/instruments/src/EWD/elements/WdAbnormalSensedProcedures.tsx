@@ -101,7 +101,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
             if (it.time !== undefined) {
               let newText: string | null = null;
               if (isChecklistAction(it)) {
-                newText = ProcedureLinesGenerator.getChecklistActionText(it, it.style, idx, p.itemsChecked[idx], p);
+                newText = ProcedureLinesGenerator.getChecklistActionText(it, idx, p.itemsChecked[idx], p);
               } else if (isChecklistCondition(it)) {
                 newText = ProcedureLinesGenerator.getChecklistConditionText(it, idx, p.itemsChecked[idx], p);
               }
