@@ -36,6 +36,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmsMfdVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMfdPublisher';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -83,6 +84,8 @@ export class FmcAircraftInterface {
 
   public arincZeroFuelWeightCg = FmArinc429OutputWord.emptyFm('ZERO_FUEL_WEIGHT_CG');
 
+  public arincRemainingFlightTime = FmArinc429OutputWord.emptyFm('REMAINING_FLIGHT_TIME');
+
   /** contains fm messages (not yet implemented) and nodh bit */
   public arincEisWord2 = FmArinc429OutputWord.emptyFm('EIS_DISCRETE_WORD_2');
 
@@ -106,6 +109,7 @@ export class FmcAircraftInterface {
     this.arincTransitionLevel,
     this.arincZeroFuelWeight,
     this.arincZeroFuelWeightCg,
+    this.arincRemainingFlightTime,
     this.arincEisWord2,
   ];
 
@@ -611,6 +615,23 @@ export class FmcAircraftInterface {
         this.syncer.sendEvent('A380X_EFIS_HUD_SYMBOLS', HUDSymbol);
       }
     }
+  }
+
+  updateDestinationPredictions(destPred?: VerticalWaypointPrediction) {
+    if (destPred != null) {
+      this.updateMinimums(destPred.distanceFromAircraft);
+    }
+
+    this.arincRemainingFlightTime.setBnrValue(
+      destPred?.secondsFromPresent ?? 0,
+      destPred == null ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NormalOperation,
+      17,
+      131072,
+    );
+  }
+
+  resetDestinationPredictions() {
+    this.updateDestinationPredictions();
   }
 
   updateMinimums(distanceToDestination: number) {
