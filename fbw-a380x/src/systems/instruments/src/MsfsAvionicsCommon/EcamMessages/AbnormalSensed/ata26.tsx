@@ -82,7 +82,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'APU BLEED : DO NOT USE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
       },
       {
@@ -99,7 +99,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       {
         name: 'STILL FIRE',
         time: 30,
-        sensed: false,
+        sensed: true,
         condition: true,
       },
       {
@@ -143,7 +143,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'STILL FIRE',
-        sensed: false,
+        sensed: true,
         condition: true,
         time: 30,
       },
@@ -188,7 +188,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'STILL FIRE',
-        sensed: false,
+        sensed: true,
         condition: true,
         time: 30,
       },
@@ -233,7 +233,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'STILL FIRE',
-        sensed: false,
+        sensed: true,
         time: 30,
         condition: true,
       },
