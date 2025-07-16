@@ -53,6 +53,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
           <AirwayLine
             fmc={this.props.fmcService.master}
             mfd={this.props.mfd}
+            tmpyActive={this.tmpyActive}
             pendingAirways={this.loadedFlightPlan.pendingAirways}
             fromFix={fromFix}
             isFirstLine={false}
@@ -87,6 +88,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
         <AirwayLine
           fmc={this.props.fmcService.master}
           mfd={this.props.mfd}
+          tmpyActive={this.tmpyActive}
           pendingAirways={this.loadedFlightPlan.pendingAirways}
           fromFix={revWpt}
           isFirstLine
@@ -170,6 +172,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
 interface AirwayLineProps extends ComponentProps {
   fmc: FmcInterface;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
+  tmpyActive: Subject<boolean>;
   pendingAirways: PendingAirways;
   fromFix: Fix;
   isFirstLine: boolean;
@@ -224,6 +227,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             value={this.viaField}
             disabled={this.viaFieldDisabled}
             alignText="center"
+            tmpyActive={this.props.tmpyActive}
             errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
@@ -291,6 +295,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             value={this.toField}
             disabled={this.toFieldDisabled}
             alignText="center"
+            tmpyActive={this.props.tmpyActive}
             errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
