@@ -13,6 +13,7 @@ import {
   EcamDeferredProcedures,
   isChecklistAction,
   isChecklistCondition,
+  isChecklistHeadline,
   NormalProcedure,
   WdLineData,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
@@ -76,6 +77,7 @@ export class ProcedureLinesGenerator {
     ChecklistLineStyle.OmissionDots,
     ChecklistLineStyle.SeparationLine,
     ChecklistLineStyle.SubHeadline,
+    ChecklistLineStyle.CenteredSubHeadline,
   ];
 
   static conditionalActiveItems(
@@ -90,10 +92,12 @@ export class ProcedureLinesGenerator {
           // Look for parent condition(s)
           let active = true;
           for (let recI = i; recI >= 0; recI--) {
-            active =
-              (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI])
-                ? active && itemsChecked[recI]
-                : active;
+            const isParentCondition = (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI]);
+            active = isParentCondition ? active && itemsChecked[recI] : active;
+
+            if (isParentCondition) {
+              break;
+            }
           }
           itemsActive[i] = active;
         }
@@ -229,7 +233,7 @@ export class ProcedureLinesGenerator {
       } else if (sii > HIGHEST_SPECIAL_INDEX) {
         this.selectedItemIndex.set(
           Math.min(
-            selectable.find((v) => v > this.selectedItemIndex.get()) ?? selectable[selectable.length - 1],
+            selectable.find((v) => v > sii) ?? selectable[selectable.length - 1],
             selectable[selectable.length - 1],
           ),
         );
@@ -246,7 +250,8 @@ export class ProcedureLinesGenerator {
       itemsChecked: [...this.checklistState.itemsChecked],
       itemsActive: [...this.checklistState.itemsActive],
     };
-    const lastItemIndex = this.getActualShownItems()[this.getActualShownItems().length - 1];
+    const shownItemsNoSpecial = this.getActualShownItems().filter((v) => !isNaN(v) && v > HIGHEST_SPECIAL_INDEX);
+    const lastItemIndex = shownItemsNoSpecial[shownItemsNoSpecial.length - 1];
     if (
       this.selectedItemIndex.get() >= 0 &&
       this.selectedItemIndex.get() <= lastItemIndex &&
@@ -322,21 +327,7 @@ export class ProcedureLinesGenerator {
   }
 
   private getActualShownItems() {
-    const lines = [...this.checklistState.itemsToShow]
-      .map((value, index) => (value ? index : null))
-      .filter((v) => v !== null);
-    this.procedure.items.forEach((v, i) => {
-      if (isChecklistCondition(v) && !v.sensed) {
-        // CONFIRM line
-        lines.splice(i, 0, lines[i]);
-        lines[i] = NaN;
-      }
-    });
-    if (this.recommendation) {
-      lines.splice(0, 0, NaN);
-    }
-
-    return lines;
+    return this.toLineData().map((ld) => ld.originalItemIndex ?? NaN);
   }
 
   /**
@@ -426,7 +417,12 @@ export class ProcedureLinesGenerator {
         }
 
         let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
-        let text = item.level ? '\xa0'.repeat(item.level) : '';
+        let inactive = false;
+        let text = item.level && item.style !== ChecklistLineStyle.CenteredSubHeadline ? '\xa0'.repeat(item.level) : '';
+        if (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) {
+          inactive = true;
+        }
+
         const itemComplete = this.checklistState.itemsChecked[itemIndex];
         let isCondition = false;
         if (isChecklistAction(item)) {
@@ -460,12 +456,14 @@ export class ProcedureLinesGenerator {
           firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           originalItemIndex: isCondition ? undefined : itemIndex,
+          inactive: inactive,
           procedureItemIndex: itemIndex,
         });
 
         if (isCondition && !item.sensed && !item.time) {
-          // Insert CONFIRM <condition>
-          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
+          // Insert CONFIRM <condition>, remove trailing colon
+          const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
+          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${itemName.substring(0, 2) === 'IF' ? itemName.substring(2) : itemName}`;
           lineData.push({
             abnormalProcedure: isAbnormalOrDeferred,
             activeProcedure: this.procedureIsActive.get(),
@@ -476,6 +474,7 @@ export class ProcedureLinesGenerator {
             firstLine: !this.procedureIsActive.get() && isAbnormal,
             lastLine: !this.procedureIsActive.get() && isAbnormal,
             originalItemIndex: itemIndex,
+            inactive: inactive,
           });
         }
       });
@@ -525,6 +524,7 @@ export class ProcedureLinesGenerator {
             firstLine: false,
             lastLine: false,
             originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_RECALL,
+            inactive: !this.checklistState.procedureActivated,
           });
         } else {
           lineData.push({
@@ -532,12 +532,11 @@ export class ProcedureLinesGenerator {
             sensed: false,
             checked: this.checklistState.procedureCompleted ?? false,
             text: `${'\xa0'.repeat(17)}DEFERRED PROC COMPLETE`,
-            style: this.checklistState.procedureActivated
-              ? ChecklistLineStyle.ChecklistItem
-              : ChecklistLineStyle.ChecklistItemInactive,
+            style: ChecklistLineStyle.ChecklistItem,
             firstLine: false,
             lastLine: false,
             originalItemIndex: SPECIAL_INDEX_DEFERRED_PROC_COMPLETE,
+            inactive: !this.checklistState.procedureActivated,
           });
         }
       }

@@ -42,21 +42,22 @@ export interface EwdAbnormalItem {
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
   /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for ALL PHASES.
-   * Ideally they're not triggered from faults but rather taken from the system's health status */
-  inopSysAllPhases?: () => string[];
+   * Ideally they're not triggered from faults but rather taken from the system's health status.
+   * checked allows access to the status of all items */
+  inopSysAllPhases?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for APPR&LDG.
    * Ideally they're not triggered from faults but rather taken from the system's health status */
-  inopSysApprLdg?: () => string[];
+  inopSysApprLdg?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of INFO to be displayed on STS page */
-  info?: () => string[];
+  info?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of REDUND LOSS systems to be displayed on STS page */
-  redundLoss?: () => string[];
+  redundLoss?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of LIMITATIONS to be displayed on the EWD for ALL PHASES */
-  limitationsAllPhases?: () => string[];
+  limitationsAllPhases?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of LIMITATIONS to be displayed on the EWD for APPR&LDG */
-  limitationsApprLdg?: () => string[];
+  limitationsApprLdg?: (checked?: boolean[]) => string[];
   /** Optional for now: Message IDs of LIMITATIONS to be displayed on the PFD lower area */
-  limitationsPfd?: () => string[];
+  limitationsPfd?: (checked?: boolean[]) => string[];
 }
 
 export interface EwdAbnormalDict {
@@ -438,7 +439,7 @@ export class FwsAbnormalSensed {
     211800011: {
       // PACK 1 OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: this.fws.pack1Off,
+      simVarIsActive: this.fws.pack1OffConfirmTime,
       notActiveWhenFaults: ['211800009', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -449,7 +450,7 @@ export class FwsAbnormalSensed {
     211800012: {
       // PACK 2 OFF
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: this.fws.pack2Off,
+      simVarIsActive: this.fws.pack2OffConfirmTime,
       notActiveWhenFaults: ['211800010', '211800021'],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -1642,7 +1643,7 @@ export class FwsAbnormalSensed {
         this.fws.fmsSwitchingKnob.get() === 1,
         false,
         false,
-        this.fws.gpwsFlapModeOff.get(),
+        this.fws.tawsFlapModeOff.get(),
       ],
       failure: 2,
       sysPage: -1,
@@ -1992,8 +1993,8 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng1.get(),
-        this.fws.parkBrake.get(),
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         !this.fws.engine1ValueSwitch.get(),
@@ -2043,8 +2044,8 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng2.get(),
-        this.fws.parkBrake.get(),
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         !this.fws.engine2ValueSwitch.get(),
@@ -2094,8 +2095,8 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng3.get(),
-        this.fws.parkBrake.get(),
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         !this.fws.engine3ValueSwitch.get(),
@@ -2145,8 +2146,8 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.allThrottleIdle.get() && !this.fws.fireButtonEng4.get(),
-        this.fws.parkBrake.get(),
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         !this.fws.engine4ValueSwitch.get(),
@@ -2347,7 +2348,7 @@ export class FwsAbnormalSensed {
         false,
         this.fws.allThrottleIdle.get(),
         false,
-        this.fws.parkBrake.get(),
+        this.fws.parkBrakeSet.get(),
         false,
         false,
         this.fws.allEngineSwitchOff.get(),
@@ -3136,7 +3137,7 @@ export class FwsAbnormalSensed {
           !this.fws.eng3BPumpAuto.get() &&
           !this.fws.eng4APumpAuto.get() &&
           !this.fws.eng4BPumpAuto.get(),
-        this.fws.gpwsFlapModeOff.get(),
+        this.fws.tawsFlapModeOff.get(),
         false,
         false,
         false,
@@ -3279,7 +3280,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
       simVarIsActive: this.fws.lgParkBrkOn,
       whichItemsToShow: () => [true],
-      whichItemsChecked: () => [!this.fws.parkBrake.get()],
+      whichItemsChecked: () => [!this.fws.parkBrakeSet.get()],
       notActiveWhenFaults: [],
       failure: 2,
       sysPage: -1,
@@ -3914,7 +3915,7 @@ export class FwsAbnormalSensed {
       ),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true],
-      whichItemsChecked: () => [this.fws.gpwsTerrOff.get()],
+      whichItemsChecked: () => [this.fws.tawsTerrOff.get()],
       inopSysAllPhases: () => ['340300044'],
       failure: 2,
       sysPage: -1,
@@ -3950,7 +3951,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.taws1Failed, this.fws.taws2Failed),
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
-      whichItemsChecked: () => [this.fws.gpwsTerrOff.get(), this.fws.gpwsSysOff.get()],
+      whichItemsChecked: () => [this.fws.tawsTerrOff.get(), this.fws.tawsGpwsOff.get()],
       inopSysAllPhases: () => ['340300048'],
       failure: 2,
       sysPage: -1,
@@ -4063,6 +4064,15 @@ export class FwsAbnormalSensed {
       notActiveWhenFaults: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [this.fws.manCabinAltMode.get(), false],
+      failure: 0,
+      sysPage: SdPages.None,
+    },
+    270700001: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [true, true, true, true, true],
+      whichItemsChecked: () => [false, false, false, false, false],
       failure: 0,
       sysPage: SdPages.None,
     },
