@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 export const WD_NUM_LINES = 17;
@@ -709,6 +709,7 @@ export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {
+  procedureId?: string;
   activeProcedure: boolean;
   sensed: boolean; // Line is selectable if false
   checked: boolean;
@@ -719,6 +720,7 @@ export interface WdLineData {
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
   originalItemIndex?: number;
+  procedureItemIndex?: number;
 }
 
 export enum WdSpecialLine {

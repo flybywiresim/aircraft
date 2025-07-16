@@ -428,55 +428,42 @@ export class ProcedureLinesGenerator {
         let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
         let text = item.level ? '\xa0'.repeat(item.level) : '';
         const itemComplete = this.checklistState.itemsChecked[itemIndex];
+        let isCondition = false;
         if (isChecklistAction(item)) {
-          text += clStyle !== ChecklistLineStyle.SubHeadline ? '-' : '';
-          text += item.name;
+          text = ProcedureLinesGenerator.getChecklistActionText(
+            item,
+            clStyle,
+            itemIndex,
+            itemComplete,
+            this.checklistState,
+          );
           if (
             (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
             clStyle === ChecklistLineStyle.ChecklistItem
           ) {
             clStyle = ChecklistLineStyle.ChecklistItemInactive;
           }
-          if (itemComplete && item.labelCompleted) {
-            text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
-          } else if (itemComplete && item.labelNotCompleted) {
-            text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
-          } else if (!itemComplete && item.labelNotCompleted) {
-            text += this.getTimedItemLineText(item, this.checklistState, itemIndex);
-            // Pad to 39 characters max
-            const paddingNeeded = Math.max(
-              0,
-              39 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2),
-            );
-
-            text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
-          }
         } else if (isChecklistCondition(item)) {
+          isCondition = true;
           clStyle = ChecklistLineStyle.ChecklistCondition;
-          if (item.name.substring(0, 4) === 'WHEN') {
-            text += `.${item.name}`;
-          } else {
-            text += itemComplete
-              ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
-              : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}` +
-                this.getTimedItemLineText(item, this.checklistState, itemIndex);
-            text += item.name;
-          }
+          text = ProcedureLinesGenerator.getChecklistConditionText(item, itemIndex, itemComplete, this.checklistState);
         }
 
         lineData.push({
+          procedureId: this.procedureId,
           abnormalProcedure: isAbnormalOrDeferred,
           activeProcedure: this.procedureIsActive.get(),
-          sensed: isChecklistCondition(item) ? true : item.sensed,
+          sensed: isCondition ? true : item.sensed,
           checked: this.checklistState.itemsChecked[itemIndex],
           text: text.substring(0, 39),
           style: clStyle,
           firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
-          originalItemIndex: isChecklistCondition(item) ? undefined : itemIndex,
+          originalItemIndex: isCondition ? undefined : itemIndex,
+          procedureItemIndex: itemIndex,
         });
 
-        if (isChecklistCondition(item) && !item.sensed) {
+        if (isCondition && !item.sensed && !item.time) {
           // Insert CONFIRM <condition>
           const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
           lineData.push({
@@ -583,33 +570,79 @@ export class ProcedureLinesGenerator {
     return lineData;
   }
 
-  private getTimedItemLineText(
+  public static getChecklistActionText(
+    item: ChecklistAction,
+    style: ChecklistLineStyle | undefined,
+    itemIndex: number,
+    itemComplete: boolean,
+    checklistState: ChecklistState,
+  ) {
+    let text = item.level ? '\xa0'.repeat(item.level) : '';
+    text += style == undefined || style !== ChecklistLineStyle.SubHeadline ? '-' : '';
+    text += item.name;
+    if (itemComplete && item.labelCompleted) {
+      text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
+    } else if (itemComplete && item.labelNotCompleted) {
+      text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
+    } else if (!itemComplete && item.labelNotCompleted) {
+      text += this.getTimedItemLineText(item, checklistState, itemIndex) ?? '';
+      // Pad to 39 characters max
+      const paddingNeeded = Math.max(0, 39 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2));
+
+      text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
+    }
+    return text;
+  }
+
+  public static getChecklistConditionText(
+    item: ChecklistCondition,
+    itemIndex: number,
+    itemComplete: boolean,
+    checklistState: ChecklistState,
+  ) {
+    let text = item.level ? '\xa0'.repeat(item.level) : '';
+    if (item.name.substring(0, 4) === 'WHEN') {
+      text += `.${item.name}`;
+    } else {
+      let timedText: string | null = null;
+      timedText = ProcedureLinesGenerator.getTimedItemLineText(item, checklistState, itemIndex);
+
+      text +=
+        itemComplete || (timedText === null && item.time !== undefined)
+          ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
+          : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}` + (timedText ?? '');
+    }
+
+    return text;
+  }
+
+  private static getTimedItemLineText(
     item: ChecklistCondition | ChecklistAction,
     checklistState: ChecklistState,
     itemIndex: number,
-  ): string {
+  ): string | null {
     if (item.time !== undefined) {
       const timestampArray = checklistState.itemsTimeStamp;
       if (timestampArray) {
         const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
         let seconds: number;
         if (Number.isFinite(startTimeStamp)) {
-          const diffSeconds = Math.round(Date.now() - startTimeStamp) / 1000;
+          const diffSeconds = Math.round((Date.now() - startTimeStamp) / 1000);
           if (diffSeconds < item.time) {
             seconds = item.time - diffSeconds;
           } else {
-            return '';
+            return null;
           }
         } else {
           seconds = item.time;
         }
-        return `AFTER ${seconds} S`;
+        return ` AFTER ${seconds} S`;
       } else {
         console.warn(
           `Timestamp collection missing found on a timed item ${item.name} of checklist ${checklistState.id}`,
         );
       }
     }
-    return '';
+    return null;
   }
 }
