@@ -56,7 +56,7 @@ const DELAY_REFUEL_RESTART = 2000;
 const DELAY_RATE_RESTORE = DELAY_REFUEL_RESTART + 1000;
 const DELAY_FUEL_START = 500;
 const DEFUEL_DIFF_TARGET_A320 = 125;
-const DEFUEL_DIFF_TARGET_A380 = 250;
+const DEFUEL_DIFF_TARGET_A380 = 1500;
 
 abstract class GsxSync implements Instrument {
   protected readonly sub = this.bus.getSubscriber<GroundSupportEvents & GsxSimVarEvents & MsfsFlightModelEvents>();
