@@ -112,6 +112,7 @@
 
 .oit-header-row {
   display: flex;
+  width: 100%;
   flex-direction: row;
   justify-content: space-between;
 }
@@ -175,6 +176,24 @@
   justify-content: center;
   align-items: center;
   flex-direction: row;
+}
+
+.oit-avncs-sub-header-title {
+  font-size: 28px;
+  color: $display-white;
+  width: 250px;
+  padding: 13px;
+  align-items: center;
+  text-align: center;
+}
+
+.oit-avncs-header-flt-nbr {
+  flex-grow: 1;
+  font-size: 28px;
+  color: $display-white;
+  padding: 13px;
+  align-items: center;
+  text-align: center;
 }
 
 $font-file-path: '/Fonts/fbw-a380x/EFB';

@@ -6,6 +6,7 @@ import {
   EventBus,
   FSComponent,
   MappedSubject,
+  MappedSubscribable,
   NodeReference,
   SimVarValueType,
   Subject,
@@ -66,25 +67,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
   private readonly showOfpSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`;
 
   // Don't add this to the subscriptions, as it is used while container is hidden.
-  private readonly overlaySub = MappedSubject.create(
-    ([uri, displayFailed, displayPowered, operationMode]) => {
-      // Activate EFB overlay if on charts or flt-folder page
-      SimVar.SetSimVarValue(
-        this.showChartsSimvar,
-        SimVarValueType.Bool,
-        uri.uri === 'flt-ops/charts' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
-      );
-      SimVar.SetSimVarValue(
-        this.showOfpSimvar,
-        SimVarValueType.Bool,
-        uri.uri === 'flt-ops/flt-folder' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
-      );
-    },
-    this.uiService.activeUri,
-    this.props.displayUnitRef.instance.failed,
-    this.props.displayUnitRef.instance.powered,
-    this.props.avncsOrFltOps,
-  );
+  private overlaySub: MappedSubscribable<void> | undefined = undefined;
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -100,6 +83,26 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
         }
       }
     });
+
+    this.overlaySub = MappedSubject.create(
+      ([uri, displayFailed, displayPowered, operationMode]) => {
+        // Activate EFB overlay if on charts or flt-folder page
+        SimVar.SetSimVarValue(
+          this.showChartsSimvar,
+          SimVarValueType.Bool,
+          uri.uri === 'flt-ops/charts' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
+        );
+        SimVar.SetSimVarValue(
+          this.showOfpSimvar,
+          SimVarValueType.Bool,
+          uri.uri === 'flt-ops/flt-folder' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
+        );
+      },
+      this.uiService.activeUri,
+      this.props.displayUnitRef.instance.failed,
+      this.props.displayUnitRef.instance.powered,
+      this.props.avncsOrFltOps,
+    );
 
     this.subscriptions.push(
       this.uiService.activeUri.sub((uri) => {
@@ -138,7 +141,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
     }
 
     this.hideContainer.destroy();
-    this.overlaySub.destroy();
+    this.overlaySub?.destroy();
 
     super.destroy();
   }

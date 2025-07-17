@@ -38,7 +38,7 @@ export abstract class OitAvncsFooter extends DisplayComponent<OitAvncsFooterProp
         <IconButton icon={'single-left'} containerStyle="width: 60px; height: 50px; padding: 17.5px;" />
         <Button
           label={'COMPANY COM'}
-          onClick={() => this.props.uiService.navigateTo('avncs/company-com')}
+          onClick={() => this.props.uiService.navigateTo('nss-avncs/company-com')}
           buttonStyle="width: 225px; font-size: 28px; height: 50px;"
         />
         <div style="flex-grow: 1" />

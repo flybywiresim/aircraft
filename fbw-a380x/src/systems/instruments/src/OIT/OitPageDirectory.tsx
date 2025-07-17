@@ -10,6 +10,8 @@ import { OitNotFound } from './Pages/OitNotFound';
 import { OitUiService } from './OitUiService';
 import { OitFltOpsContainer } from './OitFltOpsContainer';
 import { OitAvncsContainer } from './OitAvncsContainer';
+import { OitAvncsCompanyCom } from './Pages/nss-avncs/OitAvncsCompanyCom';
+import { OitAvncsMenu } from './Pages/nss-avncs/OitAvncsMenu';
 
 // Page imports
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -43,12 +45,13 @@ export function avncsPageForUrl(
   url: string,
   bus: EventBus,
   uiService: OitUiService,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   container: OitAvncsContainer,
 ): VNode {
   switch (url) {
-    case 'avncs':
-      return <OitNotFound uiService={uiService} />;
+    case 'nss-avncs':
+      return <OitAvncsMenu bus={bus} uiService={uiService} container={container} />;
+    case 'nss-avncs/company-com':
+      return <OitAvncsCompanyCom bus={bus} uiService={uiService} container={container} />;
 
     default:
       return <OitNotFound uiService={uiService} />;

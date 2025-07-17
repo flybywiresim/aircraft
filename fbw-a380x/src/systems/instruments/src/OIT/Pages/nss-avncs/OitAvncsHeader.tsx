@@ -37,24 +37,28 @@ export abstract class OitAvncsHeader extends DisplayComponent<OitAvncsHeaderProp
       <div class="oit-header-row">
         <Button
           label={'NSS AVNCS MENU'}
-          onClick={() => this.props.uiService.navigateTo('avncs')}
-          buttonStyle="width: 300px; font-size: 28px; height: 60px;"
+          onClick={() => this.props.uiService.navigateTo('nss-avncs')}
+          buttonStyle="width: 250px; font-size: 28px; height: 50px;"
         />
-        <Button label={'MAXIMIZE'} onClick={() => {}} buttonStyle="width: 125px; font-size: 28px; height: 60px;" />
+        <Button
+          label={'MAXIMIZE'}
+          onClick={() => {}}
+          buttonStyle="width: 125px; font-size: 28px; height: 50px; margin-left: 5px;"
+        />
         <div class="oit-msg-header">0 MSG</div>
         <div class="oit-msg-box"></div>
         <IconButton
           icon={'flat-single-down'}
-          containerStyle="width: 60px; height: 60px;"
+          containerStyle="width: 60px; height: 50px; margin-left: 5px;"
           disabled={Subject.create(true)}
         />
         <Button
           label={'CLEAR'}
           onClick={() => {}}
-          buttonStyle="font-size: 28px; height: 60px;"
+          buttonStyle="font-size: 28px; height: 50px; margin-left: 15px;"
           disabled={Subject.create(true)}
         />
-        <div class="oit-msg-header">FLT NBR</div>
+        <div class="oit-avncs-header-flt-nbr">FLT NBR</div>
       </div>
     );
   }
