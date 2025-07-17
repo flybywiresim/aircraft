@@ -1,5 +1,4 @@
 // Copyright (c) 2025 FlyByWire Simulations
-//
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -22,8 +21,7 @@ import { AcElectricalBus, DcElectricalBus } from '@shared/electrical';
 import './oit-display-unit.scss';
 import { OitSimvars } from './OitSimvarPublisher';
 import { A380Failure } from '@failures';
-import { OisOperationMode } from './OIT';
-import { OisLaptop } from './OisLaptop';
+import { OisDomain } from './OIT';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -53,8 +51,7 @@ interface DisplayUnitProps {
   readonly bus: EventBus;
   readonly displayUnitId: OitDisplayUnitID;
   readonly failuresConsumer: FailuresConsumer;
-  readonly nssOrFltOps: Subscribable<OisOperationMode>;
-  readonly laptop: OisLaptop;
+  readonly avncsOrFltOps: Subscribable<OisDomain>;
   readonly test?: Subscribable<number>;
 }
 
@@ -134,7 +131,7 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
   public readonly failed = MappedSubject.create(
     ([opMode, state, nssFail, fltOpsFail]) =>
       state === DisplayUnitState.On && ((opMode === 'nss-avncs' && nssFail) || (opMode === 'flt-ops' && fltOpsFail)),
-    this.props.nssOrFltOps,
+    this.props.avncsOrFltOps,
     this.state,
     this.allNssAnsuFailed,
     this.fltOpsFailed,

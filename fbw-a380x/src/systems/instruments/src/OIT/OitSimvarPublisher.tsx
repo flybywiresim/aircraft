@@ -9,6 +9,8 @@ export type OitSimvars = {
   elecFo: boolean;
   potentiometerCaptain: number;
   potentiometerFo: number;
+  oisDomainSwitchCapt: boolean;
+  oisDomainSwitchFo: boolean;
   nssAnsu1Healthy: boolean;
   nssAnsu2Healthy: boolean;
   fltOpsAnsu1Healthy: boolean;
@@ -26,6 +28,8 @@ export enum OitVars {
   elecFo = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
   potentiometerCaptain = 'LIGHT POTENTIOMETER:78',
   potentiometerFo = 'LIGHT POTENTIOMETER:79',
+  oisDomainSwitchCapt = 'L:A380X_SWITCH_OIT_SIDE_LEFT',
+  oisDomainSwitchFo = 'L:A380X_SWITCH_OIT_SIDE_RIGHT',
   nssAnsu1Healthy = 'L:A32NX_NSS_ANSU_1_IS_HEALTHY',
   nssAnsu2Healthy = 'L:A32NX_NSS_ANSU_2_IS_HEALTHY',
   fltOpsAnsu1Healthy = 'L:A32NX_FLTOPS_ANSU_1_IS_HEALTHY',
@@ -40,6 +44,8 @@ export class OitSimvarPublisher extends SimVarPublisher<OitSimvars> {
     ['elecFo', { name: OitVars.elecFo, type: SimVarValueType.Bool }],
     ['potentiometerCaptain', { name: OitVars.potentiometerCaptain, type: SimVarValueType.Number }],
     ['potentiometerFo', { name: OitVars.potentiometerFo, type: SimVarValueType.Number }],
+    ['oisDomainSwitchCapt', { name: OitVars.oisDomainSwitchCapt, type: SimVarValueType.Bool }],
+    ['oisDomainSwitchFo', { name: OitVars.oisDomainSwitchFo, type: SimVarValueType.Bool }],
     ['nssAnsu1Healthy', { name: OitVars.nssAnsu1Healthy, type: SimVarValueType.Bool }],
     ['nssAnsu2Healthy', { name: OitVars.nssAnsu2Healthy, type: SimVarValueType.Bool }],
     ['fltOpsAnsu1Healthy', { name: OitVars.fltOpsAnsu1Healthy, type: SimVarValueType.Bool }],
