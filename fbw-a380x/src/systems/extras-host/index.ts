@@ -148,6 +148,7 @@ class ExtrasHost extends BaseInstrument {
   public connectedCallback(): void {
     super.connectedCallback();
 
+    this.versionCheck.connectedCallback();
     this.pushbuttonCheck.connectedCallback();
     this.aircraftSync.connectedCallback();
 
