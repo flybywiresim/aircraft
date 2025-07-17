@@ -61,13 +61,13 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
   );
   private readonly lineSelected = Array.from(Array(WD_NUM_LINES), () => Subject.create<boolean>(false));
 
-  public updateChecklists(timedUpdate?: boolean) {
+  public updateChecklists(notifyIndexes?: number[]) {
     let lineIdx = 0;
     this.totalLines.set(this.lineData.length);
 
     this.lineData.forEach((ld, index) => {
       if (index >= this.showFromLine.get() && lineIdx < WD_NUM_LINES) {
-        if (timedUpdate) {
+        if (notifyIndexes && notifyIndexes.findIndex((i) => i === index) !== -1) {
           this.lineDataSubject[lineIdx].notify();
         }
         this.lineDataSubject[lineIdx].set(ld);

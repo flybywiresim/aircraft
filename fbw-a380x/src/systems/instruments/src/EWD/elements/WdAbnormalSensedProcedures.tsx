@@ -94,7 +94,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
     if (this.props.fwsAvail?.get()) {
       if (Date.now() - (this.lastProcUpdate ?? 0) > 1000) {
         // Only run if last procedure update was more than 1 second ago
-        let textChanged = false;
+        let changedIdx: number[] | undefined = undefined;
         this.procedures.get().forEach((p) => {
           const proc = EcamAbnormalProcedures[p.id];
           proc.items.forEach((it, idx) => {
@@ -112,15 +112,18 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
                   const oldLine = this.lineData[lineIdx];
                   if (oldLine.text !== newText) {
                     oldLine.text = newText;
-                    textChanged = true;
+                    if (changedIdx === undefined) {
+                      changedIdx = [];
+                    }
+                    changedIdx.push(lineIdx);
                   }
                 }
               }
             }
           });
         });
-        if (textChanged) {
-          super.updateChecklists(true);
+        if (changedIdx) {
+          super.updateChecklists(changedIdx);
         }
       }
     }

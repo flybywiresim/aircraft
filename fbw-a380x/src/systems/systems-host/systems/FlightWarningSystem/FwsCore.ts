@@ -4324,7 +4324,7 @@ export class FwsCore {
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
         const itemsTimer = value.whichItemsTimer ? value.whichItemsTimer() : undefined;
-        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
+        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive, itemsTimer);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -4403,14 +4403,17 @@ export class FwsCore {
           const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
-          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
+          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive, itemsTimer);
           this.abnormalUpdatedItems.set(key, []);
           proc.items.forEach((item, idx) => {
             if (
               prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
               prevEl.itemsActive[idx] !== itemsActive[idx] ||
               (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
-              (item.time !== undefined && prevEl.itemsTimeStamp[idx] !== itemsTimer[idx])
+              (item.time !== undefined &&
+                itemsTimer !== undefined &&
+                prevEl.itemsTimeStamp !== undefined &&
+                prevEl.itemsTimeStamp[idx] !== itemsTimer[idx])
             ) {
               this.abnormalUpdatedItems.get(key).push(idx);
             }

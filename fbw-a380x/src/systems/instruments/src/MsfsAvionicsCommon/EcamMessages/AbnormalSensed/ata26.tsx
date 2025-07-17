@@ -83,11 +83,10 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       {
         name: 'APU BLEED : DO NOT USE',
         sensed: false,
-        style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'AGENT 1',
-        time: 30,
+        name: 'ENG 1 AGENT 1',
+        time: 10,
         sensed: true,
         labelNotCompleted: 'DISCH',
       },
@@ -103,7 +102,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         condition: true,
       },
       {
-        name: 'AGENT 2',
+        name: 'ENG 1 AGENT 2',
         sensed: true,
         labelNotCompleted: 'DISCH',
         level: 1,
@@ -131,7 +130,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        name: 'AGENT 1',
+        name: 'ENG 2 AGENT 1',
         sensed: true,
         time: 10,
         labelNotCompleted: 'DISCH',
@@ -148,7 +147,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         time: 30,
       },
       {
-        name: 'AGENT 2',
+        name: 'ENG 2 AGENT 2',
         sensed: true,
         labelNotCompleted: 'DISCH',
         level: 1,
@@ -176,7 +175,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        name: 'AGENT 1',
+        name: 'ENG 3 AGENT 1',
         time: 10,
         sensed: true,
         labelNotCompleted: 'DISCH',
@@ -193,7 +192,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         time: 30,
       },
       {
-        name: 'AGENT 2',
+        name: 'ENG 3 AGENT 2',
         sensed: true,
         labelNotCompleted: 'DISCH',
         level: 1,
@@ -221,7 +220,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        name: 'AGENT 1',
+        name: 'ENG 4 AGENT 1',
         sensed: true,
         time: 10,
         labelNotCompleted: 'DISCH',
@@ -238,7 +237,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         condition: true,
       },
       {
-        name: 'AGENT 2',
+        name: 'ENG 4 AGENT 2',
         sensed: true,
         labelNotCompleted: 'DISCH',
         level: 1,

@@ -84,6 +84,7 @@ export class ProcedureLinesGenerator {
     proc: AbnormalProcedure | DeferredProcedure | NormalProcedure,
     itemsChecked: boolean[],
     itemsActive: boolean[],
+    itemsTimed?: number[],
   ) {
     // Additional logic for conditions: Modify itemsActive based on condition activation status
     if (proc.items && proc.items.some((v) => isChecklistCondition(v))) {
@@ -92,8 +93,16 @@ export class ProcedureLinesGenerator {
           // Look for parent condition(s)
           let active = true;
           for (let recI = i; recI >= 0; recI--) {
-            const isParentCondition = (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI]);
-            active = isParentCondition ? active && itemsChecked[recI] : active;
+            const parent = proc.items[recI];
+            const isParentCondition = (parent.level ?? 0) < v.level && isChecklistCondition(parent);
+            active = isParentCondition
+              ? active &&
+                (itemsChecked[recI] ||
+                  (parent.time !== undefined &&
+                    itemsTimed !== undefined &&
+                    itemsTimed[recI] != undefined &&
+                    (Date.now() - itemsTimed[recI]) / 1000 > parent.time))
+              : active;
 
             if (isParentCondition) {
               break;
@@ -249,6 +258,8 @@ export class ProcedureLinesGenerator {
       itemsToShow: [...this.checklistState.itemsToShow],
       itemsChecked: [...this.checklistState.itemsChecked],
       itemsActive: [...this.checklistState.itemsActive],
+      itemsTimeStamp:
+        this.checklistState.itemsTimeStamp !== undefined ? [...this.checklistState.itemsTimeStamp] : undefined,
     };
     const shownItemsNoSpecial = this.getActualShownItems().filter((v) => !isNaN(v) && v > HIGHEST_SPECIAL_INDEX);
     const lastItemIndex = shownItemsNoSpecial[shownItemsNoSpecial.length - 1];
@@ -623,15 +634,18 @@ export class ProcedureLinesGenerator {
       if (timestampArray) {
         const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
         let seconds: number;
-        if (Number.isFinite(startTimeStamp)) {
+        if (startTimeStamp === undefined) {
+          console.warn(`No timestamp entry for timed item on index ${itemIndex} of checklist ${checklistState.id}`);
+          seconds = item.time;
+        } else if (startTimeStamp === null) {
+          seconds = item.time;
+        } else {
           const diffSeconds = Math.round((Date.now() - startTimeStamp) / 1000);
           if (diffSeconds < item.time) {
             seconds = item.time - diffSeconds;
           } else {
             return null;
           }
-        } else {
-          seconds = item.time;
         }
         return ` AFTER ${seconds} S`;
       } else {
