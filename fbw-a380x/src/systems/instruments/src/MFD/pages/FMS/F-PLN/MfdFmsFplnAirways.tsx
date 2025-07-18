@@ -186,7 +186,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
 
   public readonly toField = Subject.create<string | null>(null);
 
-  private readonly toFieldDisabled = Subject.create(this.props.isFirstLine);
+  private readonly toFieldDisabled = Subject.create(false);
 
   render(): VNode {
     return (
@@ -198,7 +198,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
           <InputField<string>
             dataEntryFormat={new AirwayFormat()}
             dataHandlerDuringValidation={async (v) => {
-              if (!v) {
+              if (!v || this.viaFieldDisabled.get()) {
                 return false;
               }
 
@@ -225,9 +225,8 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             }}
             canBeCleared={Subject.create(false)}
             value={this.viaField}
-            disabled={this.viaFieldDisabled}
             alignText="center"
-            tmpyActive={this.props.tmpyActive}
+            tmpyActive={this.viaFieldDisabled}
             errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
@@ -240,7 +239,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
           <InputField<string>
             dataEntryFormat={new WaypointFormat()}
             dataHandlerDuringValidation={async (v) => {
-              if (!v) {
+              if (!v || this.toFieldDisabled.get()) {
                 return false;
               }
 
@@ -293,9 +292,8 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             }}
             canBeCleared={Subject.create(false)}
             value={this.toField}
-            disabled={this.toFieldDisabled}
             alignText="center"
-            tmpyActive={this.props.tmpyActive}
+            tmpyActive={this.toFieldDisabled}
             errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
