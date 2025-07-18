@@ -16,6 +16,8 @@ export type OitSimvars = {
   fltOpsAnsu1Healthy: boolean;
   laptopCaptHealthy: boolean;
   laptopFoHealthy: boolean;
+  laptopCaptPowered: boolean;
+  laptopFoPowered: boolean;
 };
 
 export type InternalKbdKeyEvent = {
@@ -35,6 +37,8 @@ export enum OitVars {
   fltOpsAnsu1Healthy = 'L:A32NX_FLTOPS_ANSU_1_IS_HEALTHY',
   laptopCaptHealthy = 'L:A32NX_FLTOPS_LAPTOP_1_IS_HEALTHY',
   laptopFoHealthy = 'L:A32NX_FLTOPS_LAPTOP_2_IS_HEALTHY',
+  laptopCaptPowered = 'L:A380X_SWITCH_LAPTOP_POWER_LEFT',
+  laptopFoPowered = 'L:A380X_SWITCH_LAPTOP_POWER_RIGHT',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -51,6 +55,8 @@ export class OitSimvarPublisher extends SimVarPublisher<OitSimvars> {
     ['fltOpsAnsu1Healthy', { name: OitVars.fltOpsAnsu1Healthy, type: SimVarValueType.Bool }],
     ['laptopCaptHealthy', { name: OitVars.laptopCaptHealthy, type: SimVarValueType.Bool }],
     ['laptopFoHealthy', { name: OitVars.laptopFoHealthy, type: SimVarValueType.Bool }],
+    ['laptopCaptPowered', { name: OitVars.laptopCaptPowered, type: SimVarValueType.Bool }],
+    ['laptopFoPowered', { name: OitVars.laptopFoPowered, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

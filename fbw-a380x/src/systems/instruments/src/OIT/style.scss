@@ -39,7 +39,7 @@
   padding: 10px;
 }
 
-.oit-main.hidden {
+.hidden {
   display: none;
 }
 
@@ -194,6 +194,21 @@
   padding: 13px;
   align-items: center;
   text-align: center;
+}
+
+.oit-flt-ops-loading-screen-container {
+  display: block;
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: $display-background;
+}
+
+.oit-flt-ops-loading-screen-container.hidden {
+  display: none;
 }
 
 $font-file-path: '/Fonts/fbw-a380x/EFB';

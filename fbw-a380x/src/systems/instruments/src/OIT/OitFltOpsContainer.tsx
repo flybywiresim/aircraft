@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -22,8 +23,9 @@ import { OitFltOpsHeader } from './Pages/flt-ops/OitFltOpsHeader';
 import { OitNotFound } from './Pages/OitNotFound';
 import { OitFltOpsFooter } from './Pages/flt-ops/OitFltOpsFooter';
 import { OisLaptop } from './OisLaptop';
-import { InternalKbdKeyEvent } from './OitSimvarPublisher';
+import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { OitFltOpsLoadingScreen } from './Pages/flt-ops/OitFltOpsLoadingScreen';
 
 interface OitFltOpsContainerProps {
   readonly bus: EventBus;
@@ -36,6 +38,8 @@ interface OitFltOpsContainerProps {
 export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsContainerProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subscriptions = [] as Subscription[];
+
+  private readonly sub = this.props.bus.getSubscriber<OitSimvars>();
 
   #uiService = new OitUiService(this.props.captOrFo, this.props.bus);
 
@@ -56,8 +60,18 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
 
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  // Don't add this to the subscriptions, as it is used while container is hidden.
-  private readonly hideContainer = this.props.avncsOrFltOps.map((mode) => mode === 'nss-avncs');
+  private readonly laptopPowered = ConsumerSubject.create(
+    this.sub.on(this.props.captOrFo === 'CAPT' ? 'laptopCaptPowered' : 'laptopFoPowered'),
+    false,
+  );
+
+  private readonly hideContent = MappedSubject.create(
+    ([mode, powered]) => mode === 'nss-avncs' || !powered,
+    this.props.avncsOrFltOps,
+    this.laptopPowered,
+  );
+
+  private readonly hideContainer = MappedSubject.create(([mode]) => mode === 'nss-avncs', this.props.avncsOrFltOps);
 
   private readonly activePageRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -66,41 +80,37 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
   private readonly showChartsSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_CHARTS`;
   private readonly showOfpSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`;
 
-  // Don't add this to the subscriptions, as it is used while container is hidden.
-  private overlaySub: MappedSubscribable<void> | undefined = undefined;
+  private overlaySub: MappedSubscribable<void> | undefined;
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.hideContainer.sub((hidden) => {
-      if (hidden) {
-        for (const s of this.subscriptions) {
-          s.pause();
-        }
-      } else {
-        for (const s of this.subscriptions) {
-          s.resume();
-        }
-      }
-    });
-
     this.overlaySub = MappedSubject.create(
-      ([uri, displayFailed, displayPowered, operationMode]) => {
+      ([uri, displayFailed, displayPowered, laptopPowered, operationMode]) => {
         // Activate EFB overlay if on charts or flt-folder page
         SimVar.SetSimVarValue(
           this.showChartsSimvar,
           SimVarValueType.Bool,
-          uri.uri === 'flt-ops/charts' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
+          uri.uri === 'flt-ops/charts' &&
+            operationMode === 'flt-ops' &&
+            !displayFailed &&
+            displayPowered &&
+            laptopPowered,
         );
         SimVar.SetSimVarValue(
           this.showOfpSimvar,
           SimVarValueType.Bool,
-          uri.uri === 'flt-ops/flt-folder' && operationMode === 'flt-ops' && !displayFailed && displayPowered,
+          uri.uri === 'flt-ops/flt-folder' &&
+            operationMode === 'flt-ops' &&
+            !displayFailed &&
+            displayPowered &&
+            laptopPowered,
         );
       },
       this.uiService.activeUri,
       this.props.displayUnitRef.instance.failed,
       this.props.displayUnitRef.instance.powered,
+      this.laptopPowered,
       this.props.avncsOrFltOps,
     );
 
@@ -108,6 +118,10 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
       this.uiService.activeUri.sub((uri) => {
         this.activeUriChanged(uri);
       }),
+      this.overlaySub,
+      this.laptopPowered,
+      this.hideContent,
+      this.hideContainer,
     );
 
     this.uiService.navigateTo('flt-ops/sts');
@@ -140,7 +154,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
       s.destroy();
     }
 
-    this.hideContainer.destroy();
+    this.hideContent.destroy();
     this.overlaySub?.destroy();
 
     super.destroy();
@@ -148,11 +162,16 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
 
   render(): VNode {
     return (
-      <div ref={this.topRef} class={{ 'oit-main': true, hidden: this.hideContainer }}>
-        <OitFltOpsHeader uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
-        <div ref={this.activePageRef} class="mfd-navigator-container" />
-        <OitFltOpsFooter uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
-      </div>
+      <>
+        <div ref={this.topRef} class={{ 'oit-main': true, hidden: this.hideContainer }}>
+          <div class={{ 'oit-page-container': true, hidden: this.hideContent }}>
+            <OitFltOpsHeader uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
+            <div ref={this.activePageRef} class="mfd-navigator-container" />
+            <OitFltOpsFooter uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
+          </div>
+          <OitFltOpsLoadingScreen bus={this.props.bus} captOrFo={this.props.captOrFo} />
+        </div>
+      </>
     );
   }
 }
