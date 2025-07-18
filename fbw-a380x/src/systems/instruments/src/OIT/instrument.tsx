@@ -26,7 +26,7 @@ class OitInstrument implements FsInstrument {
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   private readonly laptop = new OisLaptop(
     this.bus,
