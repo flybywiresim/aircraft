@@ -542,6 +542,7 @@ export class VnavDriver implements GuidanceComponent {
 
     // Invalidate MCDU profile, so the FPLAN page shows blank predictions
     this.profileManager.mcduProfile?.invalidate();
+    this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
   }
 
   // Only used to check whether T/D PWP should be displayed despite not being in lat auto control
