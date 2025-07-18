@@ -38,7 +38,7 @@ import {
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode, LateralMode } from '@shared/autopilot';
-import { VhfComManagerDataEvents } from '@flybywiresim/rmp';
+import { RmpState, VhfComManagerDataEvents } from '@flybywiresim/rmp';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {
   EcamAbnormalProcedures,
@@ -3510,14 +3510,17 @@ export class FwsCore {
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
 
     /* 23 - COMMUNICATION */
-    this.rmp1Fault.set(false); // Don't want to use failure consumer here, rather use health signal
-    this.rmp1Off.set(SimVar.GetSimVarValue('L:A380X_RMP_1_BRIGHTNESS_KNOB', 'number') === 0);
+    const rmp1State = SimVar.GetSimVarValue('L:A380X_RMP_1_STATE', 'number');
+    this.rmp1Fault.set(rmp1State === RmpState.OffFailed || rmp1State === RmpState.OnFailed);
+    this.rmp1Off.set(rmp1State === RmpState.OffStandby || rmp1State === RmpState.OffFailed);
 
-    this.rmp2Fault.set(false);
-    this.rmp2Off.set(SimVar.GetSimVarValue('L:A380X_RMP_2_BRIGHTNESS_KNOB', 'number') === 0);
+    const rmp2State = SimVar.GetSimVarValue('L:A380X_RMP_2_STATE', 'number');
+    this.rmp2Fault.set(rmp2State === RmpState.OffFailed || rmp2State === RmpState.OnFailed);
+    this.rmp2Off.set(rmp2State === RmpState.OffStandby || rmp2State === RmpState.OffFailed);
 
-    this.rmp3Fault.set(false);
-    this.rmp3Off.set(SimVar.GetSimVarValue('L:A380X_RMP_3_BRIGHTNESS_KNOB', 'number') === 0);
+    const rmp3State = SimVar.GetSimVarValue('L:A380X_RMP_3_STATE', 'number');
+    this.rmp3Fault.set(rmp3State === RmpState.OffFailed || rmp3State === RmpState.OnFailed);
+    this.rmp3Off.set(rmp3State === RmpState.OffStandby || rmp3State === RmpState.OffFailed);
 
     /* 24 - Electrical */
     this.extPwrConnected.set(

@@ -37,11 +37,15 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
   sysPage: SdPages;
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
-  /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for ALL PHASES.
+  /**
+   * @deprecated Use FwsInopSys instead to display INOP SYS on STS page
+   * Optional for now: Message IDs of INOP SYS to be displayed on STS page for ALL PHASES.
    * Ideally they're not triggered from faults but rather taken from the system's health status.
    * checked allows access to the status of all items */
   inopSysAllPhases?: (checked?: boolean[]) => string[];
-  /** Optional for now: Message IDs of INOP SYS to be displayed on STS page for APPR&LDG.
+  /**
+   * @deprecated Use FwsInopSys instead to display INOP SYS on STS page
+   * Optional for now: Message IDs of INOP SYS to be displayed on STS page for APPR&LDG.
    * Ideally they're not triggered from faults but rather taken from the system's health status */
   inopSysApprLdg?: (checked?: boolean[]) => string[];
   /**
@@ -1781,7 +1785,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [this.fws.rmp1Off.get()],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => ['230300009'],
     },
     230800013: {
       // RMP 2 FAULT
@@ -1792,7 +1795,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [this.fws.rmp2Off.get()],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => ['230300010'],
     },
     230800014: {
       // RMP 3 FAULT
@@ -1803,7 +1805,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [this.fws.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => ['230300011'],
     },
     230800015: {
       // RMP 1+2 FAULT
@@ -1814,7 +1815,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [this.fws.rmp1Off.get(), this.fws.rmp2Off.get()],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => ['230300012', '230300015'],
     },
     230800016: {
       // RMP 1+3 FAULT
@@ -1825,7 +1825,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [this.fws.rmp1Off.get(), this.fws.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => ['230300013'],
     },
     230800017: {
       // RMP 2+3 FAULT
@@ -1836,7 +1835,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [this.fws.rmp2Off.get(), this.fws.rmp3Off.get()],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => ['230300014'],
     },
     230800018: {
       // RMP 1+2+3 FAULT
@@ -1859,8 +1857,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => ['230300016', '230300017', '230300018', '230300019', '230300006', '230300015'],
-      limitationsAllPhases: () => ['230400001'],
     },
     // 26 - FIRE PROTECTION
     260800001: {

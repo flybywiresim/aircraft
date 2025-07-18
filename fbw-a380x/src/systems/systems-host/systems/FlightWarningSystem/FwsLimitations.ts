@@ -16,7 +16,7 @@ export interface FwsLimitationsItem extends FwsSuppressableItem {
   /** Relevant phase shown on SD/EWD: ALL PHASES or APPR & LDG */
   phase: FwsLimitationsPhases;
   /** Shown on PFD */
-  pfd: boolean;
+  pfd?: boolean;
 }
 
 export interface FwsLimitationsDict {
@@ -28,7 +28,12 @@ export class FwsLimitations {
 
   constructor(private fws: FwsCore) {}
   /** LIMITATIONS shown on SD */
-  limitations: FwsLimitationsDict = {};
+  limitations: FwsLimitationsDict = {
+    230400001: {
+      simVarIsActive: this.fws.allRmpFault,
+      phase: FwsLimitationsPhases.AllPhases,
+    },
+  };
 
   public destroy(): void {
     this.subscriptions.forEach((sub) => sub.destroy());

@@ -87,31 +87,37 @@ export class FwsInopSys {
       // RMP 1
       simVarIsActive: this.fws.rmp1Fault,
       phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['230300012', '230300013', '230300016'],
     },
     230300010: {
       // RMP 2
       simVarIsActive: this.fws.rmp2Fault,
       phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['230300012', '230300014', '230300016'],
     },
     230300011: {
       // RMP 3
       simVarIsActive: this.fws.rmp3Fault,
       phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['230300013', '230300014', '230300016'],
     },
     230300012: {
       // RMP 1+2
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp1Fault, this.fws.rmp2Fault),
       phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['230300016'],
     },
     230300013: {
       // RMP 1+3
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp1Fault, this.fws.rmp3Fault),
       phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['230300016'],
     },
     230300014: {
       // RMP 2+3
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.rmp2Fault, this.fws.rmp3Fault),
       phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['230300016'],
     },
     230300016: {
       // RMP 1+2+3
