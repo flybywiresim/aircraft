@@ -51,7 +51,6 @@ export class CDUDirectToPage {
       mcdu.onRightInput[5] = () => {
         mcdu.insertTemporaryFlightPlan(() => {
           SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
-          mcdu.guidanceController?.vnavDriver.invalidateFlightPlanProfile();
 
           CDUFlightPlanPage.ShowPage(mcdu);
         });
