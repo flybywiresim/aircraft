@@ -46,6 +46,7 @@ import {
   EcamDeferredProcedures,
   EcamLimitations,
   EcamMemos,
+  IsTimedItem,
   pfdMemoDisplay,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { ProcedureLinesGenerator } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
@@ -228,6 +229,8 @@ export class FwsCore {
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
 
   /* PSEUDO FWC VARIABLES */
+
+  private readonly publisher = this.bus.getPublisher<FwsEwdEvents>();
 
   /** Keys/IDs of all failures currently active, irrespective they are already cleared or not */
   public readonly allCurrentFailures: string[] = [];
@@ -1548,6 +1551,31 @@ export class FwsCore {
     this.HPNEng4,
   );
 
+  public readonly eng1StartOrCrank = Subject.create(false);
+  public readonly eng1AbnormalParams = Subject.create(false);
+  public readonly eng2StartOrCrank = Subject.create(false);
+  public readonly eng2AbnormalParams = Subject.create(false);
+  public readonly eng3StartOrCrank = Subject.create(false);
+  public readonly eng3AbnormalParams = Subject.create(false);
+  public readonly eng4StartOrCrank = Subject.create(false);
+  public readonly eng4AbnormalParams = Subject.create(false);
+
+  private readonly attentionGetterNormalCollection = MappedSubject.create(
+    ([eng1, eng2, eng3, eng4]) => Array.of(eng1, eng2, eng3, eng4),
+    this.eng1StartOrCrank,
+    this.eng2StartOrCrank,
+    this.eng3StartOrCrank,
+    this.eng4StartOrCrank,
+  );
+
+  private readonly attentionGetterAbnormalCollection = MappedSubject.create(
+    ([eng1, eng2, eng3, eng4]) => Array.of(eng1, eng2, eng3, eng4),
+    this.eng1AbnormalParams,
+    this.eng2AbnormalParams,
+    this.eng3AbnormalParams,
+    this.eng4AbnormalParams,
+  );
+
   public readonly allEngFault = Subject.create(false);
 
   public readonly engine1Generator = Subject.create(false);
@@ -1824,6 +1852,14 @@ export class FwsCore {
     );
 
     this.subs.push(
+      this.attentionGetterNormalCollection.sub((v) => this.publisher.pub('fws_normal_attention_getter_eng', v)),
+    );
+
+    this.subs.push(
+      this.attentionGetterAbnormalCollection.sub((v) => this.publisher.pub('fws_normal_attention_getter_eng', v)),
+    );
+
+    this.subs.push(
       this.auralCrcActive.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true),
     );
 
@@ -1941,15 +1977,12 @@ export class FwsCore {
     this.subs.push(this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true));
 
     this.subs.push(
-      this.ecamEwdShowStsIndication.sub(
-        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
-        true,
-      ),
+      this.ecamEwdShowStsIndication.sub((s) => this.publisher.pub('fws_show_sts_indication', s, true), true),
     );
 
     this.subs.push(
       this.ecamEwdShowFailurePendingIndication.sub(
-        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
+        (s) => this.publisher.pub('fws_show_failure_pending', s, true),
         true,
       ),
     );
@@ -4183,6 +4216,26 @@ export class FwsCore {
       SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'bool', 1);
     }
 
+    /** ATA 70- Engines */
+    //FIXme add more conditions EGT exceedance, N1 overlimit, oil temp etc
+    this.eng1AbnormalParams.set(this.eng1FireDetected.get());
+    this.eng2AbnormalParams.set(this.eng2FireDetected.get());
+    this.eng3AbnormalParams.set(this.eng3FireDetected.get());
+    this.eng4AbnormalParams.set(this.eng4FireDetected.get());
+
+    this.eng1StartOrCrank.set(
+      !this.eng1AbnormalParams.get() && this.N1Eng1.get() < this.N1IdleEng.get() - 1 && this.engine1State.get() == 2,
+    );
+    this.eng2StartOrCrank.set(
+      !this.eng2AbnormalParams.get() && this.N1Eng2.get() < this.N1IdleEng.get() - 1 && this.engine2State.get() == 2,
+    );
+    this.eng3StartOrCrank.set(
+      !this.eng3AbnormalParams.get() && this.N1Eng3.get() < this.N1IdleEng.get() - 1 && this.engine3State.get() == 2,
+    );
+    this.eng4StartOrCrank.set(
+      !this.eng4AbnormalParams.get() && this.N1Eng4.get() < this.N1IdleEng.get() - 1 && this.engine4State.get() == 2,
+    );
+
     /* MASTER CAUT/WARN BUTTONS */
     if (masterCautionButtonLeft || masterCautionButtonRight) {
       this.auralSingleChimePending = false;
@@ -4410,7 +4463,7 @@ export class FwsCore {
               prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
               prevEl.itemsActive[idx] !== itemsActive[idx] ||
               (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
-              (item.time !== undefined &&
+              (IsTimedItem(item) !== undefined &&
                 itemsTimer !== undefined &&
                 prevEl.itemsTimeStamp !== undefined &&
                 prevEl.itemsTimeStamp[idx] !== itemsTimer[idx])
@@ -4761,15 +4814,14 @@ export class FwsCore {
     this.updateRowRopWarnings();
 
     // Orchestrate display of normal or abnormal proc display
-    const pub = this.bus.getPublisher<FwsEwdEvents>();
     if (this.abnormalNonSensed.showAbnProcRequested.get()) {
       // ABN PROC always shown
       this.abnormalNonSensed.abnProcShown.set(true);
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(false);
 
-      pub.pub('fws_active_item', this.abnormalNonSensed.selectedItem.get(), true);
-      pub.pub('fws_show_from_line', this.abnormalNonSensed.showFromLine.get(), true);
+      this.publisher.pub('fws_active_item', this.abnormalNonSensed.selectedItem.get(), true);
+      this.publisher.pub('fws_show_from_line', this.abnormalNonSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else if (this.normalChecklists.showChecklistRequested.get()) {
       // ECL always shown
@@ -4777,18 +4829,18 @@ export class FwsCore {
       this.normalChecklists.checklistShown.set(true);
       this.abnormalSensed.abnormalShown.set(false);
 
-      pub.pub('fws_active_item', this.normalChecklists.selectedLine.get(), true);
-      pub.pub('fws_active_procedure', this.normalChecklists.activeDeferredProcedureId.get(), true);
-      pub.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
+      this.publisher.pub('fws_active_item', this.normalChecklists.selectedLine.get(), true);
+      this.publisher.pub('fws_active_procedure', this.normalChecklists.activeDeferredProcedureId.get(), true);
+      this.publisher.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(this.abnormalSensed.showAbnormalSensedRequested.get());
     } else if (this.abnormalSensed.showAbnormalSensedRequested.get()) {
       this.abnormalNonSensed.abnProcShown.set(false);
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(true);
 
-      pub.pub('fws_active_item', this.abnormalSensed.selectedItemIndex.get(), true);
-      pub.pub('fws_active_procedure', this.abnormalSensed.activeProcedureId.get(), true);
-      pub.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
+      this.publisher.pub('fws_active_item', this.abnormalSensed.selectedItemIndex.get(), true);
+      this.publisher.pub('fws_active_procedure', this.abnormalSensed.activeProcedureId.get(), true);
+      this.publisher.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else {
       this.abnormalNonSensed.abnProcShown.set(false);
@@ -4796,9 +4848,9 @@ export class FwsCore {
       this.abnormalSensed.abnormalShown.set(false);
       this.ecamEwdShowFailurePendingIndication.set(false);
     }
-    pub.pub('fws_show_abn_non_sensed', this.abnormalNonSensed.abnProcShown.get(), true);
-    pub.pub('fws_show_abn_sensed', this.abnormalSensed.abnormalShown.get(), true);
-    pub.pub('fws_show_normal_checklists', this.normalChecklists.checklistShown.get(), true);
+    this.publisher.pub('fws_show_abn_non_sensed', this.abnormalNonSensed.abnProcShown.get(), true);
+    this.publisher.pub('fws_show_abn_sensed', this.abnormalSensed.abnormalShown.get(), true);
+    this.publisher.pub('fws_show_normal_checklists', this.normalChecklists.checklistShown.get(), true);
 
     // Reset all buffered inputs
     this.toConfigInputBuffer.write(false, true);
@@ -4900,8 +4952,11 @@ export class FwsCore {
     ar.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126');
     ar.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_126');
 
-    bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', false, true);
-    bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', false, true);
+    const publisher = bus.getPublisher<FwsEwdEvents>();
+    publisher.pub('fws_show_sts_indication', false, true);
+    publisher.pub('fws_show_failure_pending', false, true);
+    publisher.pub('fws_abnormal_attention_getter_eng', [false, false, false, false]);
+    publisher.pub('fws_normal_attention_getter_eng', [false, false, false, false]);
   }
 
   destroy() {

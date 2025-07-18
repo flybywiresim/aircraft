@@ -14,7 +14,11 @@ import {
   isChecklistAction,
   isChecklistCondition,
   isChecklistHeadline,
+  isChecklistTimedCondition,
+  isNonTimedChecklistCondition,
   NormalProcedure,
+  TimedChecklistAction,
+  TimedChecklistCondition,
   WdLineData,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
@@ -47,7 +51,13 @@ export class ProcedureLinesGenerator {
   public readonly selectedItemIndex = Subject.create(0);
 
   private procedure: AbnormalProcedure | NormalProcedure | DeferredProcedure;
-  private items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  private items: (
+    | ChecklistAction
+    | ChecklistCondition
+    | ChecklistSpecialItem
+    | TimedChecklistAction
+    | TimedChecklistCondition
+  )[];
 
   constructor(
     public procedureId: string,
@@ -98,13 +108,13 @@ export class ProcedureLinesGenerator {
             active = isParentCondition
               ? active &&
                 (itemsChecked[recI] ||
-                  (parent.time !== undefined &&
+                  (isChecklistTimedCondition(parent) &&
                     itemsTimed !== undefined &&
                     ProcedureLinesGenerator.hasTimedItemElapsed(itemsTimed[recI], parent)))
               : active;
 
             if (isParentCondition) {
-              if (parent.time !== undefined) {
+              if (isChecklistTimedCondition(parent)) {
                 itemsChecked[recI] = true; // Enforce checked on the timed condition
               }
               break;
@@ -356,8 +366,8 @@ export class ProcedureLinesGenerator {
         this.checklistState.itemsActive[itemIndex] &&
         this.checklistState.itemsToShow[itemIndex] &&
         !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style)) ||
-      (item.time === undefined && isChecklistCondition(item)) ||
-      (item.time !== undefined &&
+      isNonTimedChecklistCondition(item) ||
+      (isChecklistTimedCondition(item) &&
         this.checklistState.itemsTimeStamp &&
         !ProcedureLinesGenerator.hasTimedItemElapsed(this.checklistState.itemsTimeStamp[itemIndex], item))
     );
@@ -478,7 +488,7 @@ export class ProcedureLinesGenerator {
           procedureItemIndex: itemIndex,
         });
 
-        if (isCondition && !item.sensed && !item.time) {
+        if (isCondition && !item.sensed && !isChecklistTimedCondition(item)) {
           // Insert CONFIRM <condition>, remove trailing colon
           const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
           const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${itemName.substring(0, 2) === 'IF' ? itemName.substring(2) : itemName}`;
@@ -611,7 +621,7 @@ export class ProcedureLinesGenerator {
   }
 
   public static getChecklistConditionText(
-    item: ChecklistCondition,
+    item: ChecklistCondition | TimedChecklistCondition,
     itemIndex: number,
     itemComplete: boolean,
     checklistState: ChecklistState,
@@ -622,11 +632,18 @@ export class ProcedureLinesGenerator {
     } else {
       let timedText: string | null = null;
       timedText = ProcedureLinesGenerator.getTimedItemLineText(item, checklistState, itemIndex);
+      let appendText = '';
+      if (isChecklistTimedCondition(item)) {
+        if (item.appendTimeIfElapsed) {
+          appendText += `AFTER ${item.time} S`;
+        }
+      }
+      appendText += ' : ';
 
       text +=
-        itemComplete || (timedText === null && item.time !== undefined)
-          ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? ' :'}`
-          : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? ' :'}`;
+        itemComplete || timedText === null
+          ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`
+          : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`;
     }
 
     return text;
@@ -637,7 +654,7 @@ export class ProcedureLinesGenerator {
     checklistState: ChecklistState,
     itemIndex: number,
   ): string | null {
-    if (item.time !== undefined) {
+    if (isChecklistTimedCondition(item) || isChecklistTimedCondition(item)) {
       const timestampArray = checklistState.itemsTimeStamp;
       if (timestampArray) {
         const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
@@ -652,7 +669,7 @@ export class ProcedureLinesGenerator {
           if (diffSeconds < item.time) {
             seconds = item.time - diffSeconds;
           } else {
-            seconds = item.time;
+            return null;
           }
         }
         return ` AFTER ${seconds} S :`;
@@ -665,7 +682,7 @@ export class ProcedureLinesGenerator {
     return null;
   }
 
-  private static hasTimedItemElapsed(timeStamp: number, item: ChecklistCondition): boolean {
+  private static hasTimedItemElapsed(timeStamp: number, item: TimedChecklistCondition | TimedChecklistAction): boolean {
     return timeStamp !== undefined && (Date.now() - timeStamp) / 1000 > item.time;
   }
 }

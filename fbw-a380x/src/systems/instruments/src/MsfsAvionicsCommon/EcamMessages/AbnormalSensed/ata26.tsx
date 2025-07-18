@@ -100,6 +100,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         time: 30,
         sensed: true,
         condition: true,
+        appendTimeIfElapsed: false,
       },
       {
         name: 'ENG 1 AGENT 2',
@@ -144,6 +145,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         name: 'STILL FIRE',
         sensed: true,
         condition: true,
+        appendTimeIfElapsed: false,
         time: 30,
       },
       {
@@ -190,6 +192,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         sensed: true,
         condition: true,
         time: 30,
+        appendTimeIfElapsed: false,
       },
       {
         name: 'ENG 3 AGENT 2',
@@ -235,6 +238,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         sensed: true,
         time: 30,
         condition: true,
+        appendTimeIfElapsed: false,
       },
       {
         name: 'ENG 4 AGENT 2',

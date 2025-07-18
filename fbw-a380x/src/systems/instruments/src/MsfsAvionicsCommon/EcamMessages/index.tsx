@@ -607,9 +607,6 @@ interface AbstractChecklistItem {
   level?: number;
   /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   style?: ChecklistLineStyle;
-
-  /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
-  time?: number;
 }
 
 export interface ChecklistAction extends AbstractChecklistItem {
@@ -621,9 +618,21 @@ export interface ChecklistAction extends AbstractChecklistItem {
   colonIfCompleted?: boolean;
 }
 
+export interface TimedChecklistAction extends ChecklistAction {
+  /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
+  time: number;
+}
+
 export interface ChecklistCondition extends AbstractChecklistItem {
   /** If this line is a condition. Can be sensed or not sensed (i.e. manually activated). */
   condition: true;
+}
+
+export interface TimedChecklistCondition extends ChecklistCondition {
+  /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
+  time: number;
+  /** Wheter to append the time after completed. Only relevant if time is specified */
+  appendTimeIfElapsed: boolean;
 }
 
 export interface ChecklistSpecialItem extends AbstractChecklistItem {}
@@ -632,12 +641,28 @@ export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistActio
   return (c as ChecklistAction)?.labelNotCompleted !== undefined;
 }
 
+export function isTimedCheckListAction(c: AbstractChecklistItem): c is TimedChecklistAction {
+  return isChecklistAction(c) && (c as TimedChecklistAction)?.time !== undefined;
+}
+
 export function isChecklistHeadline(c: AbstractChecklistItem) {
   return [ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline].includes(c.style);
 }
 
 export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
   return (c as ChecklistCondition)?.condition !== undefined;
+}
+
+export function isNonTimedChecklistCondition(c: ChecklistCondition): boolean {
+  return !isChecklistTimedCondition(c);
+}
+
+export function isChecklistTimedCondition(c: AbstractChecklistItem): c is TimedChecklistCondition {
+  return isChecklistCondition(c) && (c as TimedChecklistCondition)?.time !== undefined;
+}
+
+export function IsTimedItem(c: AbstractChecklistItem): boolean {
+  return isTimedCheckListAction(c) || isChecklistTimedCondition(c);
 }
 
 export function isAbnormalSensedProcedure(
@@ -652,7 +677,13 @@ export interface AbnormalProcedure {
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
   /** An array of possible checklist items. */
-  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  items: (
+    | ChecklistAction
+    | ChecklistCondition
+    | ChecklistSpecialItem
+    | TimedChecklistAction
+    | TimedChecklistCondition
+  )[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
 }

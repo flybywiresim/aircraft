@@ -58,4 +58,10 @@ export interface FwsEwdEvents {
   fws_show_sts_indication: boolean;
   /** (FWS -> EWD) Show ADV indication at bottom of page */
   fws_show_adv_indication: boolean;
+
+  /** Show normal (white) attention getter */
+  fws_normal_attention_getter_eng: boolean[];
+
+  /** Abnormal engine parameters detected */
+  fws_abnormal_attention_getter_eng: boolean[];
 }
