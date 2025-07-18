@@ -100,11 +100,13 @@ export class ProcedureLinesGenerator {
                 (itemsChecked[recI] ||
                   (parent.time !== undefined &&
                     itemsTimed !== undefined &&
-                    itemsTimed[recI] != undefined &&
-                    (Date.now() - itemsTimed[recI]) / 1000 > parent.time))
+                    ProcedureLinesGenerator.hasTimedItemElapsed(itemsTimed[recI], parent)))
               : active;
 
             if (isParentCondition) {
+              if (parent.time !== undefined) {
+                itemsChecked[recI] = true; // Enforce checked on the timed condition
+              }
               break;
             }
           }
@@ -333,7 +335,9 @@ export class ProcedureLinesGenerator {
 
   private selectableItems(skipCompletedSensed: boolean) {
     return this.procedure.items
-      .map((_, index: number) => (this.itemIsSelectable(index, skipCompletedSensed) ? index : null))
+      .map((item, index: number) =>
+        this.itemIsSelectable(index, skipCompletedSensed, isChecklistCondition(item) ? item : undefined) ? index : null,
+      )
       .filter((v) => v !== null);
   }
 
@@ -346,12 +350,16 @@ export class ProcedureLinesGenerator {
    * @param skipCompletedSensed Whether sensed item is only selectable if unchecked. Not sensed items can't be skipped.
    * @returns Procedure item is selectable with arrow keys
    */
-  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean): boolean {
+  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean, item?: ChecklistCondition): boolean {
     return (
-      (!this.items[itemIndex].sensed || (!skipCompletedSensed && !this.checklistState.itemsChecked[itemIndex])) &&
-      this.checklistState.itemsActive[itemIndex] &&
-      this.checklistState.itemsToShow[itemIndex] &&
-      !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style)
+      ((!this.items[itemIndex].sensed || (!skipCompletedSensed && !this.checklistState.itemsChecked[itemIndex])) &&
+        this.checklistState.itemsActive[itemIndex] &&
+        this.checklistState.itemsToShow[itemIndex] &&
+        !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style)) ||
+      (item.time === undefined && isChecklistCondition(item)) ||
+      (item.time !== undefined &&
+        this.checklistState.itemsTimeStamp &&
+        !ProcedureLinesGenerator.hasTimedItemElapsed(this.checklistState.itemsTimeStamp[itemIndex], item))
     );
   }
 
@@ -610,15 +618,15 @@ export class ProcedureLinesGenerator {
   ) {
     let text = item.level ? '\xa0'.repeat(item.level) : '';
     if (item.name.substring(0, 4) === 'WHEN') {
-      text += `.${item.name}`;
+      text += `.${item.name} :`;
     } else {
       let timedText: string | null = null;
       timedText = ProcedureLinesGenerator.getTimedItemLineText(item, checklistState, itemIndex);
 
       text +=
         itemComplete || (timedText === null && item.time !== undefined)
-          ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
-          : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}` + (timedText ?? '');
+          ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? ' :'}`
+          : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? ' :'}`;
     }
 
     return text;
@@ -640,14 +648,14 @@ export class ProcedureLinesGenerator {
         } else if (startTimeStamp === null) {
           seconds = item.time;
         } else {
-          const diffSeconds = Math.round((Date.now() - startTimeStamp) / 1000);
+          const diffSeconds = Math.floor((Date.now() - startTimeStamp) / 1000);
           if (diffSeconds < item.time) {
             seconds = item.time - diffSeconds;
           } else {
-            return null;
+            seconds = item.time;
           }
         }
-        return ` AFTER ${seconds} S`;
+        return ` AFTER ${seconds} S :`;
       } else {
         console.warn(
           `Timestamp collection missing found on a timed item ${item.name} of checklist ${checklistState.id}`,
@@ -655,5 +663,9 @@ export class ProcedureLinesGenerator {
       }
     }
     return null;
+  }
+
+  private static hasTimedItemElapsed(timeStamp: number, item: ChecklistCondition): boolean {
+    return timeStamp !== undefined && (Date.now() - timeStamp) / 1000 > item.time;
   }
 }
