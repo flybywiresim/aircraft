@@ -71,7 +71,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
     this.laptopPowered,
   );
 
-  private readonly hideContainer = MappedSubject.create(([mode]) => mode === 'nss-avncs', this.props.avncsOrFltOps);
+  private readonly hideContainer = this.props.avncsOrFltOps.map((mode) => mode === 'nss-avncs');
 
   private readonly activePageRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -153,9 +153,6 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
     for (const s of this.subscriptions) {
       s.destroy();
     }
-
-    this.hideContent.destroy();
-    this.overlaySub?.destroy();
 
     super.destroy();
   }

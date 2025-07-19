@@ -2,9 +2,11 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   NodeReference,
   Subject,
   Subscribable,
@@ -16,10 +18,11 @@ import { OitUiService, OitUriInformation } from './OitUiService';
 import { OitDisplayUnit } from './OitDisplayUnit';
 import { avncsPageForUrl } from './OitPageDirectory';
 import { OitNotFound } from './Pages/OitNotFound';
-import { InternalKbdKeyEvent } from './OitSimvarPublisher';
+import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { OitAvncsHeader } from './Pages/nss-avncs/OitAvncsHeader';
 import { OitAvncsFooter } from './Pages/nss-avncs/OitAvncsFooter';
+import { OitAvncsLoadingScreen } from './Pages/nss-avncs/OitAvncsLoadingScreen';
 
 interface OitAvncsContainerProps {
   readonly bus: EventBus;
@@ -32,6 +35,8 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subscriptions = [] as Subscription[];
 
+  private readonly sub = this.props.bus.getSubscriber<OitSimvars>();
+
   #uiService = new OitUiService(this.props.captOrFo, this.props.bus);
 
   get uiService() {
@@ -43,7 +48,14 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
 
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  // Don't add this to the subscriptions, as it is used while container is hidden.
+  private readonly ansuPowered = ConsumerSubject.create(this.sub.on('nssAnsu1Healthy'), false);
+
+  private readonly hideContent = MappedSubject.create(
+    ([mode, powered]) => mode === 'flt-ops' || !powered,
+    this.props.avncsOrFltOps,
+    this.ansuPowered,
+  );
+
   private readonly hideContainer = this.props.avncsOrFltOps.map((mode) => mode === 'flt-ops');
 
   private readonly activePageRef = FSComponent.createRef<HTMLDivElement>();
@@ -53,22 +65,13 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.hideContainer.sub((hidden) => {
-      if (hidden) {
-        for (const s of this.subscriptions) {
-          s.pause();
-        }
-      } else {
-        for (const s of this.subscriptions) {
-          s.resume();
-        }
-      }
-    });
-
     this.subscriptions.push(
       this.uiService.activeUri.sub((uri) => {
         this.activeUriChanged(uri);
       }),
+      this.ansuPowered,
+      this.hideContent,
+      this.hideContainer,
     );
 
     this.uiService.navigateTo('nss-avncs');
@@ -101,17 +104,18 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
       s.destroy();
     }
 
-    this.hideContainer.destroy();
-
     super.destroy();
   }
 
   render(): VNode {
     return (
       <div ref={this.topRef} class={{ 'oit-main': true, hidden: this.hideContainer }}>
-        <OitAvncsHeader uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
-        <div ref={this.activePageRef} class="mfd-navigator-container" />
-        <OitAvncsFooter uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
+        <div class={{ 'oit-page-container': true, hidden: this.hideContent }}>
+          <OitAvncsHeader uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
+          <div ref={this.activePageRef} class="mfd-navigator-container" />
+          <OitAvncsFooter uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
+        </div>
+        <OitAvncsLoadingScreen bus={this.props.bus} captOrFo={this.props.captOrFo} />
       </div>
     );
   }

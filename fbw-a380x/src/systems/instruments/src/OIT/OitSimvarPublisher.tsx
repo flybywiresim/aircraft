@@ -18,6 +18,7 @@ export type OitSimvars = {
   laptopFoHealthy: boolean;
   laptopCaptPowered: boolean;
   laptopFoPowered: boolean;
+  nssMasterOff: boolean;
 };
 
 export type InternalKbdKeyEvent = {
@@ -39,6 +40,7 @@ export enum OitVars {
   laptopFoHealthy = 'L:A32NX_FLTOPS_LAPTOP_2_IS_HEALTHY',
   laptopCaptPowered = 'L:A380X_SWITCH_LAPTOP_POWER_LEFT',
   laptopFoPowered = 'L:A380X_SWITCH_LAPTOP_POWER_RIGHT',
+  nssMasterOff = 'L:A32NX_NSS_MASTER_OFF',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -57,6 +59,7 @@ export class OitSimvarPublisher extends SimVarPublisher<OitSimvars> {
     ['laptopFoHealthy', { name: OitVars.laptopFoHealthy, type: SimVarValueType.Bool }],
     ['laptopCaptPowered', { name: OitVars.laptopCaptPowered, type: SimVarValueType.Bool }],
     ['laptopFoPowered', { name: OitVars.laptopFoPowered, type: SimVarValueType.Bool }],
+    ['nssMasterOff', { name: OitVars.nssMasterOff, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
