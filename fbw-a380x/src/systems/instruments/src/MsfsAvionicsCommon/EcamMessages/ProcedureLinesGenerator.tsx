@@ -16,6 +16,7 @@ import {
   isChecklistHeadline,
   isChecklistTimedCondition,
   isNonTimedChecklistCondition,
+  isTimedCheckListAction,
   NormalProcedure,
   TimedChecklistAction,
   TimedChecklistCondition,
@@ -115,8 +116,9 @@ export class ProcedureLinesGenerator {
 
             if (isParentCondition) {
               if (isChecklistTimedCondition(parent)) {
-                itemsChecked[recI] = true; // Enforce checked on the timed condition
+                itemsChecked[recI] = active; // Enforce checked on the timed condition
               }
+
               break;
             }
           }
@@ -362,14 +364,13 @@ export class ProcedureLinesGenerator {
    */
   private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean, item?: ChecklistCondition): boolean {
     return (
-      ((!this.items[itemIndex].sensed || (!skipCompletedSensed && !this.checklistState.itemsChecked[itemIndex])) &&
-        this.checklistState.itemsActive[itemIndex] &&
-        this.checklistState.itemsToShow[itemIndex] &&
-        !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style)) ||
-      isNonTimedChecklistCondition(item) ||
-      (isChecklistTimedCondition(item) &&
-        this.checklistState.itemsTimeStamp &&
-        !ProcedureLinesGenerator.hasTimedItemElapsed(this.checklistState.itemsTimeStamp[itemIndex], item))
+      this.checklistState.itemsToShow[itemIndex] &&
+      (isNonTimedChecklistCondition(item) ||
+        ((!this.items[itemIndex].sensed ||
+          ((isChecklistTimedCondition(item) || skipCompletedSensed) && !this.checklistState.itemsChecked[itemIndex])) &&
+          this.checklistState.itemsActive[itemIndex] &&
+          this.checklistState.itemsToShow[itemIndex] &&
+          !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style)))
     );
   }
 
@@ -611,7 +612,9 @@ export class ProcedureLinesGenerator {
     } else if (itemComplete && item.labelNotCompleted) {
       text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
     } else if (!itemComplete && item.labelNotCompleted) {
-      text += this.getTimedItemLineText(item, checklistState, itemIndex) ?? '';
+      if (isTimedCheckListAction(item)) {
+        text += this.getTimedItemLineText(item, checklistState, itemIndex) ?? '';
+      }
       // Pad to 39 characters max
       const paddingNeeded = Math.max(0, 39 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2));
 
@@ -630,16 +633,18 @@ export class ProcedureLinesGenerator {
     if (item.name.substring(0, 4) === 'WHEN') {
       text += `.${item.name} :`;
     } else {
-      let timedText: string | null = null;
-      timedText = ProcedureLinesGenerator.getTimedItemLineText(item, checklistState, itemIndex);
-      let appendText = '';
-      if (isChecklistTimedCondition(item)) {
+      let timedText: string | null = undefined;
+      const booleanisTimed = isChecklistTimedCondition(item) || isChecklistTimedCondition(item);
+      if (booleanisTimed) {
+        timedText = ProcedureLinesGenerator.getTimedItemLineText(item, checklistState, itemIndex);
+      }
+      const appendText = ' :';
+
+      if (isChecklistTimedCondition(item) && timedText === null) {
         if (item.appendTimeIfElapsed) {
-          appendText += `AFTER ${item.time} S`;
+          timedText += `AFTER ${item.time} S :`;
         }
       }
-      appendText += ' :';
-
       text +=
         itemComplete || timedText === null
           ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`
@@ -650,35 +655,32 @@ export class ProcedureLinesGenerator {
   }
 
   private static getTimedItemLineText(
-    item: ChecklistCondition | ChecklistAction,
+    item: TimedChecklistAction | TimedChecklistCondition,
     checklistState: ChecklistState,
     itemIndex: number,
   ): string | null {
-    if (isChecklistTimedCondition(item) || isChecklistTimedCondition(item)) {
-      const timestampArray = checklistState.itemsTimeStamp;
-      if (timestampArray) {
-        const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
-        let seconds: number;
-        if (startTimeStamp === undefined) {
-          console.warn(`No timestamp entry for timed item on index ${itemIndex} of checklist ${checklistState.id}`);
-          seconds = item.time;
-        } else if (startTimeStamp === null) {
-          seconds = item.time;
-        } else {
-          const diffSeconds = Math.floor((Date.now() - startTimeStamp) / 1000);
-          if (diffSeconds < item.time) {
-            seconds = item.time - diffSeconds;
-          } else {
-            return null;
-          }
-        }
-        return ` AFTER ${seconds} S :`;
+    const timestampArray = checklistState.itemsTimeStamp;
+    if (timestampArray) {
+      const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
+      let seconds: number;
+      if (startTimeStamp === undefined) {
+        console.warn(`No timestamp entry for timed item on index ${itemIndex} of checklist ${checklistState.id}`);
+        seconds = item.time;
+      } else if (startTimeStamp === null) {
+        seconds = item.time;
       } else {
-        console.warn(
-          `Timestamp collection missing found on a timed item ${item.name} of checklist ${checklistState.id}`,
-        );
+        const diffSeconds = Math.floor((Date.now() - startTimeStamp) / 1000);
+        if (diffSeconds < item.time) {
+          seconds = item.time - diffSeconds;
+        } else {
+          return null;
+        }
       }
+      return ` AFTER ${seconds} S :`;
+    } else {
+      console.warn(`Timestamp collection missing found on a timed item ${item.name} of checklist ${checklistState.id}`);
     }
+
     return null;
   }
 

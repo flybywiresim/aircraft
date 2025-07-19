@@ -1891,11 +1891,13 @@ export class FwsCore {
     );
 
     this.subs.push(
-      this.attentionGetterNormalCollection.sub((v) => this.publisher.pub('fws_normal_attention_getter_eng', v)),
+      this.attentionGetterNormalCollection.sub((v) => this.publisher.pub('fws_normal_attention_getter_eng', v, true)),
     );
 
     this.subs.push(
-      this.attentionGetterAbnormalCollection.sub((v) => this.publisher.pub('fws_normal_attention_getter_eng', v)),
+      this.attentionGetterAbnormalCollection.sub((v) =>
+        this.publisher.pub('fws_abnormal_attention_getter_eng', v, true),
+      ),
     );
 
     this.subs.push(

@@ -560,7 +560,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800109: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm1 SHUT DOWN\x1bm",
+    title: "\x1b<4m\x1B4mENG 1\x1bm \x1b'mSHUT DOWN\x1Bm",
     sensed: true,
     items: [
       {
@@ -603,7 +603,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     ],
   },
   701800110: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm2 SHUT DOWN\x1bm",
+    title: "\x1b<4m\x1B4mENG 2\x1bm \x1b'mSHUT DOWN\x1Bm",
     sensed: true,
     items: [
       {
@@ -650,7 +650,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     ],
   },
   701800111: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm3 SHUT DOWN\x1bm",
+    title: "\x1b<4m\x1B4mENG 3\x1bm \x1b'mSHUT DOWN\x1Bm",
     sensed: true,
     items: [
       {
@@ -697,7 +697,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     ],
   },
   701800112: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm4 SHUT DOWN\x1bm",
+    title: "\x1b<4m\x1B4mENG 4\x1bm \x1b'mSHUT DOWN\x1Bm",
     sensed: true,
     items: [
       {
