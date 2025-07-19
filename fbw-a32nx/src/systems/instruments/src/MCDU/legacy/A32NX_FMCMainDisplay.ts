@@ -2254,7 +2254,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public async tryUpdateAltDestination(altDestIdent: string, forPlan: FlightPlanIndex): Promise<boolean> {
     if (!altDestIdent || altDestIdent === 'NONE' || altDestIdent === Keypad.clrValue) {
       this.atsu.resetAtisAutoUpdate();
-      this.flightPlanService.setAlternate(undefined, forPlan);
+      await this.flightPlanService.setAlternate(undefined, forPlan);
 
       return true;
     }
