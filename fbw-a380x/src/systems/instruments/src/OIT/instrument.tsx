@@ -14,6 +14,7 @@ import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OIT } from './OIT';
 import { OitSimvarPublisher } from './OitSimvarPublisher';
 import { OisLaptop } from './OisLaptop';
+import { AircraftNetworkServerUnit } from './System/AircraftNetworkServerUnit';
 
 class OitInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -26,13 +27,17 @@ class OitInstrument implements FsInstrument {
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   private readonly laptop = new OisLaptop(
     this.bus,
     this.instrument.instrumentIndex === 1 ? 1 : 2,
     this.failuresConsumer,
   );
+
+  // For now, pass ATSU to the ANSUs. In our target architecture, there should be no ATSU
+  private readonly avncsAnsu = new AircraftNetworkServerUnit(this.bus, 1, 'nss-avncs', this.failuresConsumer);
+  private readonly fltOpsAnsu = new AircraftNetworkServerUnit(this.bus, 1, 'flt-ops', this.failuresConsumer);
 
   constructor(public readonly instrument: BaseInstrument) {
     this.hEventPublisher = new HEventPublisher(this.bus);
@@ -41,6 +46,8 @@ class OitInstrument implements FsInstrument {
     this.backplane.addPublisher('clock', this.clockPublisher);
     this.backplane.addPublisher('oitSimvar', this.oitSimvarPublisher);
     this.backplane.addInstrument('Laptop', this.laptop);
+    this.backplane.addInstrument('nssAnsu', this.avncsAnsu, true);
+    this.backplane.addInstrument('fltOpsAnsu', this.fltOpsAnsu, true);
 
     this.doInit();
   }

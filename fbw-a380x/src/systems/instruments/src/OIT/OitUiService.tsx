@@ -5,7 +5,7 @@ import { EventBus, Subject } from '@microsoft/msfs-sdk';
 
 export enum OitSystem {
   None = '',
-  Nss = 'nss',
+  NssAvncs = 'nss-avncs',
   FltOps = 'flt-ops',
 }
 

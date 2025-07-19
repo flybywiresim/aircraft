@@ -3,9 +3,9 @@
 
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { AbstractOitPageProps } from '../../OIT';
+import { AbstractOitFltOpsPageProps } from '../../OIT';
 
-interface OitFltOpsMenuPageProps extends AbstractOitPageProps {}
+interface OitFltOpsMenuPageProps extends AbstractOitFltOpsPageProps {}
 
 export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -35,12 +35,12 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
               <Button
                 label={'FLT FOLDER'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/flt-folder')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/flt-folder')}
               />
               <Button
                 label={'CHARTS'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/charts')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/charts')}
               />
             </div>
             <div class="oit-flt-ops-menu-column">
@@ -48,7 +48,7 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
               <Button
                 label={'OPS LIBRARY'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/ops-library')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/ops-library')}
                 disabled={Subject.create(true)}
               />
             </div>
@@ -57,25 +57,25 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
               <Button
                 label={'T.O PERF'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/to-perf')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/to-perf')}
                 disabled={Subject.create(true)}
               />
               <Button
                 label={'LOADSHEET'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/loadsheet')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/loadsheet')}
                 disabled={Subject.create(true)}
               />
               <Button
                 label={'LDG PERF'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/ldg-perf')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/ldg-perf')}
                 disabled={Subject.create(true)}
               />
               <Button
                 label={'IN-FLT PERF'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/in-flt-perf')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/in-flt-perf')}
                 disabled={Subject.create(true)}
               />
             </div>
@@ -84,18 +84,18 @@ export class OitFltOpsMenuPage extends DisplayComponent<OitFltOpsMenuPageProps> 
               <Button
                 label={'FLT OPS STS'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/sts')}
               />
               <Button
                 label={'LOAD BOX'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/load-box')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/load-box')}
                 disabled={Subject.create(true)}
               />
               <Button
                 label={'EXPORT BOX'}
                 containerStyle="width: 300px; margin-bottom: 20px"
-                onClick={() => this.props.oit.uiService.navigateTo('flt-ops/export-box')}
+                onClick={() => this.props.uiService.navigateTo('flt-ops/export-box')}
                 disabled={Subject.create(true)}
               />
             </div>

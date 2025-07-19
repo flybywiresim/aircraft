@@ -1,18 +1,21 @@
-import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
+//  Copyright (c) 2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
+import { DisplayComponent, FSComponent, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { OIT } from './OIT';
-import { OitUiService } from './OitUiService';
+import { OitUiService } from '../../OitUiService';
+import { OisDomain } from '../../OIT';
 
-interface OiFooterHeaderProps {
-  uiService: OitUiService;
-  oit: OIT;
+interface OitAvncsFooterProps {
+  readonly uiService: OitUiService;
+  readonly avncsOrFltOps: Subscribable<OisDomain>;
 }
 
 /*
  * Complete header for the ATCCOM system
  */
-export abstract class OitFooter extends DisplayComponent<OiFooterHeaderProps> {
+export abstract class OitAvncsFooter extends DisplayComponent<OitAvncsFooterProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
@@ -34,18 +37,8 @@ export abstract class OitFooter extends DisplayComponent<OiFooterHeaderProps> {
       <div class="oit-header-row">
         <IconButton icon={'single-left'} containerStyle="width: 60px; height: 50px; padding: 17.5px;" />
         <Button
-          label={'FLT OPS STS'}
-          onClick={() => this.props.oit.uiService.navigateTo('flt-ops/sts')}
-          buttonStyle="width: 225px; font-size: 28px; height: 50px;"
-        />
-        <Button
-          label={'CHARTS'}
-          onClick={() => this.props.oit.uiService.navigateTo('flt-ops/charts')}
-          buttonStyle="width: 225px; font-size: 28px; height: 50px;"
-        />
-        <Button
-          label={'FLT FOLDER'}
-          onClick={() => this.props.oit.uiService.navigateTo('flt-ops/flt-folder')}
+          label={'COMPANY COM'}
+          onClick={() => this.props.uiService.navigateTo('nss-avncs/company-com')}
           buttonStyle="width: 225px; font-size: 28px; height: 50px;"
         />
         <div style="flex-grow: 1" />

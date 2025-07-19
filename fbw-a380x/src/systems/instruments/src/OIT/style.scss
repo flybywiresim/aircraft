@@ -39,6 +39,10 @@
   padding: 10px;
 }
 
+.hidden {
+  display: none;
+}
+
 .oit-page-container {
   display: flex;
   flex: 1 1 auto;
@@ -108,6 +112,7 @@
 
 .oit-header-row {
   display: flex;
+  width: 100%;
   flex-direction: row;
   justify-content: space-between;
 }
@@ -171,6 +176,78 @@
   justify-content: center;
   align-items: center;
   flex-direction: row;
+}
+
+.oit-avncs-sub-header-title {
+  font-size: 28px;
+  color: $display-white;
+  width: 250px;
+  padding: 13px;
+  align-items: center;
+  text-align: center;
+}
+
+.oit-avncs-header-flt-nbr {
+  flex-grow: 1;
+  font-size: 28px;
+  color: $display-white;
+  padding: 13px;
+  align-items: center;
+  text-align: center;
+}
+
+.oit-flt-ops-loading-screen-container {
+  display: block;
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: $display-background;
+}
+
+.oit-flt-ops-loading-screen-container.hidden {
+  display: none;
+}
+
+.LoadingProgressBarBackground {
+  position: absolute;
+  width: 40%;
+  height: 25px;
+  left: 30%;
+  top: 597.5px;
+  border: 1px solid #ffffff;
+}
+
+.LoadingProgressBarFill {
+  position: absolute;
+  width: 0%;
+  height: 25px;
+  left: 30%;
+  top: 597.5px;
+  border: 1px solid #ffffff;
+  background-color: rgb(0, 224, 254);
+}
+
+.FbwTail {
+  position: absolute;
+  top: 377.5px;
+  left: 591.5px;
+  background-image: url('/Images/fbw-a380x/Common/fbw-tail.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 160px;
+  height: 150px;
+}
+
+.LoadingTextTopLeft {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+  color: $display-white;
+  font-family: "OIT";
 }
 
 $font-file-path: '/Fonts/fbw-a380x/EFB';
