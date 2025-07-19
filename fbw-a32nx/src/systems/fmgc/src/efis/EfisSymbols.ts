@@ -407,8 +407,8 @@ export class EfisSymbols<T extends number> {
     }
 
     const formatConstraintAlt = (alt: number, descent: boolean, prefix: string = '') => {
-      const transAlt = this.flightPlanService.active?.performanceData.transitionAltitude;
-      const transFl = this.flightPlanService.active?.performanceData.transitionLevel;
+      const transAlt = this.flightPlanService.active?.performanceData.transitionAltitude.get();
+      const transFl = this.flightPlanService.active?.performanceData.transitionLevel.get();
 
       if (descent) {
         const fl = Math.round(alt / 100);
