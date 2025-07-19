@@ -557,6 +557,16 @@ export class PseudoFWC {
 
   private readonly dc2BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_2_bus_is_powered'), false);
 
+  private readonly bat1PbOff = Subject.create(false);
+
+  private readonly bat2PbOff = Subject.create(false);
+
+  private readonly phase6For60Seconds = new NXLogicConfirmNode(60, true);
+
+  private readonly bat1Off = Subject.create(false);
+
+  private readonly bat2Off = Subject.create(false);
+
   /* 27 - FLIGHT CONTROLS */
 
   private readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
@@ -1636,6 +1646,11 @@ export class PseudoFWC {
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
     const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
     const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
+
+    /* ELEC acquisition */
+
+    this.bat1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO', 'bool'));
+    this.bat2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO', 'bool'));
 
     /* HYDRAULICS acquisition */
 
@@ -3065,6 +3080,11 @@ export class PseudoFWC {
 
     this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfighalfSecondTriggeredNode.read()));
 
+    /* ELECTRICAL */
+    this.phase6For60Seconds.write(this.fwcFlightPhase.get() === 6, deltaTime);
+    this.bat1Off.set(this.bat1PbOff.get() && (this.phase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
+    this.bat2Off.set(this.bat2PbOff.get() && (this.phase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
+
     /* CLEAR AND RECALL */
     if (this.ecpClearPulseUp) {
       // delete the first failure
@@ -3636,6 +3656,29 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
+      side: 'LEFT',
+    },
+    // 24 - ELECTRICAL
+    2400600: {
+      // BAT 1 OFF
+      flightPhaseInhib: [1, 3, 4, 5, 7, 8, 9, 10],
+      simVarIsActive: this.bat1Off,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['240060001'],
+      memoInhibit: () => false,
+      failure: 1,
+      sysPage: 3,
+      side: 'LEFT',
+    },
+    2400610: {
+      // BAT 2 OFF
+      flightPhaseInhib: [1, 3, 4, 5, 7, 8, 9, 10],
+      simVarIsActive: this.bat2Off,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['240061001'],
+      memoInhibit: () => false,
+      failure: 1,
+      sysPage: 3,
       side: 'LEFT',
     },
     // 34 - NAVIGATION & SURVEILLANCE
