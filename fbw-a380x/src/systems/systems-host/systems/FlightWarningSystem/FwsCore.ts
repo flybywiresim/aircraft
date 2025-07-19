@@ -1607,7 +1607,7 @@ export class FwsCore {
 
   public readonly apuMasterSwitch = Subject.create(0);
 
-  public readonly apuAvail = Subject.create(0);
+  public readonly apuAvail = Subject.create(false);
 
   public readonly radioHeight1 = Arinc429Register.empty();
 
@@ -2374,8 +2374,8 @@ export class FwsCore {
 
     this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
 
-    this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool'));
-    this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
+    this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
+    this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
 
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
@@ -4297,11 +4297,26 @@ export class FwsCore {
 
     const firePbShutDownPreCond = !this.aircraftOnGround.get() || this.flightPhase12Or1112.get();
 
-    //TODO add engine master off condition
-    this.eng1ShutDown.set(!this.allEngFault.get() && this.fireButtonEng1.get() && firePbShutDownPreCond);
-    this.eng2ShutDown.set(!this.allEngFault.get() && this.fireButtonEng2.get() && firePbShutDownPreCond);
-    this.eng3ShutDown.set(!this.allEngFault.get() && this.fireButtonEng3.get() && firePbShutDownPreCond);
-    this.eng4ShutDown.set(!this.allEngFault.get() && this.fireButtonEng4.get() && firePbShutDownPreCond);
+    this.eng1ShutDown.set(
+      !this.allEngFault.get() &&
+        ((this.fireButtonEng1.get() && firePbShutDownPreCond) ||
+          (!this.engine1Master.get() && this.flightPhase12Or1112.get())),
+    );
+    this.eng2ShutDown.set(
+      !this.allEngFault.get() &&
+        ((this.fireButtonEng2.get() && firePbShutDownPreCond) ||
+          (!this.engine2Master.get() && this.flightPhase12Or1112.get())),
+    );
+    this.eng3ShutDown.set(
+      !this.allEngFault.get() &&
+        ((this.fireButtonEng3.get() && firePbShutDownPreCond) ||
+          (!this.engine3Master.get() && this.flightPhase12Or1112.get())),
+    );
+    this.eng4ShutDown.set(
+      !this.allEngFault.get() &&
+        ((this.fireButtonEng4.get() && firePbShutDownPreCond) ||
+          (!this.engine4Master.get() && this.flightPhase12Or1112.get())),
+    );
 
     /* MASTER CAUT/WARN BUTTONS */
     if (masterCautionButtonLeft || masterCautionButtonRight) {

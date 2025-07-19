@@ -530,17 +530,20 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
       // in flight
       {
-        name: 'IF PERF PERMIT:',
+        name: 'PERF PERMIT',
         sensed: false,
-      },
-      {
-        name: 'MAX SPEED : 250/.55',
-        sensed: false,
+        condition: true,
       },
       {
         name: 'L/G',
         sensed: false,
         labelNotCompleted: 'DOWN FOR COOLG',
+        level: 1,
+      },
+      {
+        name: 'MAX SPEED : 250/.55',
+        sensed: false,
+        level: 1,
       },
     ],
   },

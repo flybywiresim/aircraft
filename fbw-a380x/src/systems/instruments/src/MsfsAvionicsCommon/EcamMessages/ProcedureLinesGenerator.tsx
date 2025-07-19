@@ -336,7 +336,7 @@ export class ProcedureLinesGenerator {
       return;
     }
 
-    const selectableAndNotChecked = this.selectableItems(false);
+    const selectableAndNotChecked = this.selectableItems(true);
     this.selectedItemIndex.set(
       selectableAndNotChecked[0] !== undefined
         ? selectableAndNotChecked[0] - 1

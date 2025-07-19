@@ -748,7 +748,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'WHEN ACFT STOPPED',
-        sensed: false,
+        sensed: true,
         condition: true,
       },
       {

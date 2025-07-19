@@ -1835,7 +1835,17 @@ export class FwsAbnormalSensed {
       ),
       auralWarning: this.fws.eng1FireDetectedAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       notActiveWhenFaults: [],
-      whichItemsToShow: () => [true, true, true, true, this.fws.fireButtonEng1.get(), true, true, true, true],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        this.fws.apuAvail.get(),
+        this.fws.fireButtonEng1.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.throttle1Position.get() == 0 && !this.fws.fireButtonEng1.get(),
@@ -3259,7 +3269,7 @@ export class FwsAbnormalSensed {
     },
     320800018: {
       // BRAKES HOT
-      flightPhaseInhib: [4, 5, 9, 10, 11, 12],
+      flightPhaseInhib: [4, 5, 9, 10],
       simVarIsActive: this.fws.brakesHot,
       whichItemsToShow: () => [
         this.fws.phase112.get(),
