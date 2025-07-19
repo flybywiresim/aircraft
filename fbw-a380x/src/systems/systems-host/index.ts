@@ -58,7 +58,6 @@ import { EfisTawsBridge } from './systems/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 CpiomAvailableSimvarPublisher;
-import { AircraftNetworkServerUnit } from 'systems-host/systems/InformationSystems/AircraftNetworkServerUnit';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -170,16 +169,6 @@ class SystemsHost extends BaseInstrument {
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
-  // For now, pass ATSU to the ANSUs. In our target architecture, there should be no ATSU
-  private readonly avncsAnsu = new AircraftNetworkServerUnit(
-    this.bus,
-    1,
-    'nss-avncs',
-    this.failuresConsumer,
-    this.atsu,
-  );
-  private readonly fltOpsAnsu = new AircraftNetworkServerUnit(this.bus, 1, 'flt-ops', this.failuresConsumer, this.atsu);
-
   // FIXME delete this when PRIM gets the THS auto trim
   private readonly autoThsTrimmer = new AutoThsTrimmer(this.bus, this);
 
@@ -224,8 +213,6 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
-    this.backplane.addInstrument('nssAnsu', this.avncsAnsu, true);
-    this.backplane.addInstrument('fltOpsAnsu', this.fltOpsAnsu, true);
     this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);

@@ -12,7 +12,6 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
-import { AtsuSystem } from 'systems-host/systems/atsu';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 
 type AnsuIndex = 1 | 2;
@@ -47,7 +46,6 @@ export class AircraftNetworkServerUnit implements Instrument {
     private readonly index: AnsuIndex, // use only one ANSU index per type for now
     private readonly type: AnsuType,
     private readonly failuresConsumer: FailuresConsumer,
-    private readonly atsu: AtsuSystem,
   ) {}
 
   /** @inheritdoc */
