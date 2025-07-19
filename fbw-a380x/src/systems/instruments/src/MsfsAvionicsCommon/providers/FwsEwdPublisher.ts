@@ -62,6 +62,6 @@ export interface FwsEwdEvents {
   /** Show normal (white) attention getter */
   fws_normal_attention_getter_eng: boolean[];
 
-  /** Abnormal engine parameters detected */
+  /** Show abnormal (amber) attention getter */
   fws_abnormal_attention_getter_eng: boolean[];
 }

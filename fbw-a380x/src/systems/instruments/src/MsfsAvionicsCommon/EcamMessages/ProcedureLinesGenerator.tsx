@@ -638,7 +638,7 @@ export class ProcedureLinesGenerator {
           appendText += `AFTER ${item.time} S`;
         }
       }
-      appendText += ' : ';
+      appendText += ' :';
 
       text +=
         itemComplete || timedText === null
