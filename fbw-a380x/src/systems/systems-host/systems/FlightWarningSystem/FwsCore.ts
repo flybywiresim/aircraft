@@ -1013,7 +1013,8 @@ export class FwsCore {
 
   public readonly fmsZfwOrZfwCgNotSet = Subject.create(false);
 
-  private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board'), 0);
+  // TODO signals should come from FQMS
+  private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board').whenChangedBy(100), 0);
 
   private readonly refuelPanel = ConsumerSubject.create(this.sub.on('msfs_interactive_point_open_18'), 0);
 
@@ -1452,6 +1453,8 @@ export class FwsCore {
 
   public readonly xpdrAltReporting = Subject.create(false);
 
+  public readonly tcasInop = Subject.create(false);
+
   public readonly tcas1Fault = Subject.create(false);
 
   private readonly tcas1FaultCond = Subject.create(false);
@@ -1477,6 +1480,8 @@ export class FwsCore {
   private readonly tcasStandbyMemo3sConfNode = new NXLogicConfirmNode(3);
 
   public readonly tcasStandbyMemo = Subject.create(false);
+
+  public readonly tcasTaOnly = Subject.create(false);
 
   public readonly terrSys1Failed = Subject.create(false);
   public readonly terrSys2Failed = Subject.create(false);
@@ -1550,6 +1555,20 @@ export class FwsCore {
     ([n2]) => n2 >= (100 * 10630) / 16645,
     this.HPNEng4,
   );
+
+  public readonly eng1Fail = Subject.create(false);
+  public readonly eng2Fail = Subject.create(false);
+  public readonly eng3Fail = Subject.create(false);
+  public readonly eng4Fail = Subject.create(false);
+
+  public readonly eng1ShutDown = Subject.create(false);
+  public readonly eng2ShutDown = Subject.create(false);
+  public readonly eng3ShutDown = Subject.create(false);
+  public readonly eng4ShutDown = Subject.create(false);
+
+  public readonly fwdCargoTempRegulatorOff = Subject.create(false);
+
+  public readonly fuelOnBoardBetween55And95T = this.fuelOnBoard.map((v) => v >= 55000 && v <= 95000);
 
   public readonly eng1StartOrCrank = Subject.create(false);
   public readonly eng1AbnormalParams = Subject.create(false);
@@ -1665,6 +1684,24 @@ export class FwsCore {
   public readonly iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
+
+  /** Secondary Failures */
+
+  public readonly elecAcSecondaryFailure = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.eng1ShutDown,
+    this.eng2ShutDown,
+    this.eng3ShutDown,
+    this.eng4ShutDown,
+  );
+
+  public readonly bleedSecondaryFailure = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.eng1ShutDown,
+    this.eng2ShutDown,
+    this.eng3ShutDown,
+    this.eng4ShutDown,
+  );
 
   private static pushKeyUnique(val: (state?: boolean[]) => string[] | undefined, pushTo: string[], state?: boolean[]) {
     if (val) {
@@ -1808,6 +1845,8 @@ export class FwsCore {
       this.engine2AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
+      this.elecAcSecondaryFailure,
+      this.bleedSecondaryFailure,
     );
   }
 
@@ -2161,10 +2200,24 @@ export class FwsCore {
       return;
     }
 
-    if (!this.fuelingInitiated.get()) {
+    if (
+      !this.fuelingInitiated.get() ||
+      !this.eng1ShutDown.get() ||
+      !this.eng2ShutDown.get() ||
+      !this.eng3ShutDown.get() ||
+      !this.eng4ShutDown.get()
+    ) {
       this.fuelOnBoard.pause();
     } else {
       this.fuelOnBoard.resume();
+    }
+
+    if (!this.aircraftOnGround.get()) {
+      this.fuelingTarget.pause();
+      this.fuelingInitiated.pause();
+    } else {
+      this.fuelingTarget.resume();
+      this.fuelingInitiated.resume();
     }
 
     // A380X hack: Inject healthy messages for some systems which are not yet implemented
@@ -3980,8 +4033,12 @@ export class FwsCore {
         : transponder1State === 5 || transponder1State === 4,
     ); // mode S or mode C
 
+    this.tcasInop.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     const tcasFaulty = SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool');
-    const tcasStandby = !SimVar.GetSimVarValue('L:A32NX_TCAS_MODE', 'Enum');
+    const tcasMode = SimVar.GetSimVarValue('L:A32NX_TCAS_MODE', 'Enum');
+
+    this.tcasTaOnly.set(tcasMode === 1);
+    const tcasStandby = tcasMode === 0;
 
     // FIX ME Verify no XPDR fault once implemented
     this.tcasStandby3sConfNode.write(!tcasFaulty && tcasStandby, deltaTime);
@@ -4235,6 +4292,14 @@ export class FwsCore {
     this.eng4StartOrCrank.set(
       !this.eng4AbnormalParams.get() && this.N1Eng4.get() < this.N1IdleEng.get() - 1 && this.engine4State.get() == 2,
     );
+
+    const firePbShutDownPreCond = !this.aircraftOnGround.get() || this.flightPhase12Or1112.get();
+
+    //TODO add engine master off condition
+    this.eng1ShutDown.set(!this.allEngFault.get() && this.fireButtonEng1.get() && firePbShutDownPreCond);
+    this.eng2ShutDown.set(!this.allEngFault.get() && this.fireButtonEng2.get() && firePbShutDownPreCond);
+    this.eng3ShutDown.set(!this.allEngFault.get() && this.fireButtonEng3.get() && firePbShutDownPreCond);
+    this.eng4ShutDown.set(!this.allEngFault.get() && this.fireButtonEng4.get() && firePbShutDownPreCond);
 
     /* MASTER CAUT/WARN BUTTONS */
     if (masterCautionButtonLeft || masterCautionButtonRight) {
@@ -4536,22 +4601,24 @@ export class FwsCore {
         }
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
-        if (!this.auralCrcKeys.includes(key)) {
-          this.auralCrcActive.set(true);
+      if (newWarning) {
+        if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
+          if (!this.auralCrcKeys.includes(key)) {
+            this.auralCrcActive.set(true);
+          }
+          auralCrcKeys.push(key);
         }
-        auralCrcKeys.push(key);
-      }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
-        if (!this.auralScKeys.includes(key)) {
-          this.auralSingleChimePending = true;
+        if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
+          if (!this.auralScKeys.includes(key)) {
+            this.auralSingleChimePending = true;
+          }
+          auralScKeys.push(key);
         }
-        auralScKeys.push(key);
-      }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
-        this.soundManager.enqueueSound('cavalryChargeCont');
+        if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
+          this.soundManager.enqueueSound('cavalryChargeCont');
+        }
       }
     }
 

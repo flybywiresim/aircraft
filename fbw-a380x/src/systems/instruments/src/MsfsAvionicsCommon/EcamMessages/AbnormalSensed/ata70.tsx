@@ -562,22 +562,182 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
   701800109: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'm1 SHUT DOWN\x1bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA ONLY',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'NO FUEL LEAK',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 1',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'MAX THR RQRD',
+        condition: true,
+        sensed: false,
+      },
+      { name: 'AIR FLOW', labelNotCompleted: 'LO', sensed: true, level: 1 },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'FOR GA: TOGA ONLY',
+        sensed: false,
+      },
+    ],
   },
   701800110: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'm2 SHUT DOWN\x1bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA ONLY',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'NO FUEL LEAK',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 2',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'MAX THR RQRD',
+        condition: true,
+        sensed: false,
+      },
+      { name: 'AIR FLOW', labelNotCompleted: 'LO', sensed: true, level: 1 },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+      {
+        name: 'FOR GA: TOGA ONLY',
+        sensed: false,
+      },
+    ],
   },
   701800111: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'm3 SHUT DOWN\x1bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA ONLY',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'NO FUEL LEAK',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'MAX THR RQRD',
+        condition: true,
+        sensed: false,
+      },
+      { name: 'AIR FLOW', labelNotCompleted: 'LO', sensed: true, level: 1 },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+      {
+        name: 'FOR GA: TOGA ONLY',
+        sensed: false,
+      },
+    ],
   },
   701800112: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'm4 SHUT DOWN\x1bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA ONLY',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'NO FUEL LEAK',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'MAX THR RQRD',
+        condition: true,
+        sensed: false,
+      },
+      { name: 'AIR FLOW', labelNotCompleted: 'LO', sensed: true, level: 1 },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'FOR GA: TOGA ONLY',
+        sensed: false,
+      },
+    ],
   },
   701800113: {
     title: '\x1b<4m\x1b4mENG\x1bm 1 STALL',
