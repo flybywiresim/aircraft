@@ -4300,22 +4300,22 @@ export class FwsCore {
     this.eng1ShutDown.set(
       !this.allEngFault.get() &&
         ((this.fireButtonEng1.get() && firePbShutDownPreCond) ||
-          (!this.engine1Master.get() && this.flightPhase12Or1112.get())),
+          (!this.engine1Master.get() && !this.flightPhase12Or1112.get())),
     );
     this.eng2ShutDown.set(
       !this.allEngFault.get() &&
         ((this.fireButtonEng2.get() && firePbShutDownPreCond) ||
-          (!this.engine2Master.get() && this.flightPhase12Or1112.get())),
+          (!this.engine2Master.get() && !this.flightPhase12Or1112.get())),
     );
     this.eng3ShutDown.set(
       !this.allEngFault.get() &&
         ((this.fireButtonEng3.get() && firePbShutDownPreCond) ||
-          (!this.engine3Master.get() && this.flightPhase12Or1112.get())),
+          (!this.engine3Master.get() && !this.flightPhase12Or1112.get())),
     );
     this.eng4ShutDown.set(
       !this.allEngFault.get() &&
         ((this.fireButtonEng4.get() && firePbShutDownPreCond) ||
-          (!this.engine4Master.get() && this.flightPhase12Or1112.get())),
+          (!this.engine4Master.get() && !this.flightPhase12Or1112.get())),
     );
 
     /* MASTER CAUT/WARN BUTTONS */
