@@ -895,6 +895,7 @@
       | 29  | SEC 3 Fault                              |
 
 - A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
     - Arinc429<Discrete>
     - | Bit |      Description A380X, if different     |

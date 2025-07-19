@@ -100,15 +100,11 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn generate_configuration(
-        &self,
-        csu_monitor: &CSUMonitor,
-        context: &UpdateContext,
-    ) -> FlapsConf {
+    fn generate_configuration(&self, context: &UpdateContext) -> FlapsConf {
         // Ignored `CSU::OutOfDetent` and `CSU::Fault` positions due to simplified SFCC.
         match (
-            csu_monitor.get_previous_detent(),
-            csu_monitor.get_current_detent(),
+            self.csu_monitor.get_previous_detent(),
+            self.csu_monitor.get_current_detent(),
         ) {
             (CSU::Conf0, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
@@ -151,7 +147,7 @@ impl SlatFlapControlComputer {
     ) {
         self.csu_monitor.update(context);
 
-        self.flaps_conf = self.generate_configuration(&self.csu_monitor, context);
+        self.flaps_conf = self.generate_configuration(context);
 
         self.flaps_demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf);
         self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
