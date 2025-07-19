@@ -4055,8 +4055,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
-
-    7018001012: {
+    701800112: {
       // ENG 4 SHUTDOWN
       auralWarning: this.fws.eng4Fail.map((v) => (v ? FwcAuralWarning.None : FwcAuralWarning.SingleChime)),
       flightPhaseInhib: [5, 6],

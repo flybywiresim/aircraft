@@ -621,6 +621,8 @@ export interface ChecklistAction extends AbstractChecklistItem {
 export interface TimedChecklistAction extends ChecklistAction {
   /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
   time: number;
+
+  sensed: true;
 }
 
 export interface ChecklistCondition extends AbstractChecklistItem {
@@ -631,8 +633,11 @@ export interface ChecklistCondition extends AbstractChecklistItem {
 export interface TimedChecklistCondition extends ChecklistCondition {
   /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
   time: number;
-  /** Wheter to append the time after completed. Only relevant if time is specified */
+
+  /** Wheter to append the time to the name of the item after it elapses*/
   appendTimeIfElapsed: boolean;
+
+  sensed: true;
 }
 
 export interface ChecklistSpecialItem extends AbstractChecklistItem {}
@@ -762,7 +767,6 @@ export interface WdLineData {
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
   originalItemIndex?: number;
-  procedureItemIndex?: number;
   inactive?: boolean;
 }
 

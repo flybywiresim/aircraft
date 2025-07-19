@@ -108,7 +108,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
               }
 
               if (newText != null) {
-                const lineIdx = this.lineData.findIndex((v) => v.procedureId === p.id && v.procedureItemIndex === idx);
+                const lineIdx = this.lineData.findIndex((v) => v.procedureId === p.id && v.originalItemIndex === idx);
                 if (lineIdx !== -1) {
                   const oldLine = this.lineData[lineIdx];
                   if (oldLine.text !== newText) {

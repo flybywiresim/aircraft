@@ -4450,6 +4450,11 @@ export class FwsCore {
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
       const proc = EcamAbnormalProcedures[key];
 
+      if (proc === undefined) {
+        console.warn(`Procedure of id${key} does not exist`);
+        continue;
+      }
+
       if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
       }

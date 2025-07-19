@@ -364,13 +364,12 @@ export class ProcedureLinesGenerator {
    */
   private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean, item?: ChecklistCondition): boolean {
     return (
+      this.checklistState.itemsActive[itemIndex] &&
       this.checklistState.itemsToShow[itemIndex] &&
+      !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style) &&
       (isNonTimedChecklistCondition(item) ||
-        ((!this.items[itemIndex].sensed ||
-          ((isChecklistTimedCondition(item) || skipCompletedSensed) && !this.checklistState.itemsChecked[itemIndex])) &&
-          this.checklistState.itemsActive[itemIndex] &&
-          this.checklistState.itemsToShow[itemIndex] &&
-          !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style)))
+        !this.items[itemIndex].sensed ||
+        ((isChecklistTimedCondition(item) || skipCompletedSensed) && !this.checklistState.itemsChecked[itemIndex]))
     );
   }
 
@@ -484,12 +483,11 @@ export class ProcedureLinesGenerator {
           style: clStyle,
           firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
-          originalItemIndex: isCondition ? undefined : itemIndex,
+          originalItemIndex: !isCondition || (isCondition && item.sensed) ? itemIndex : undefined, // FIXME It should be possible to scroll to non sensed conditions
           inactive: inactive,
-          procedureItemIndex: itemIndex,
         });
 
-        if (isCondition && !item.sensed && !isChecklistTimedCondition(item)) {
+        if (isCondition && !item.sensed) {
           // Insert CONFIRM <condition>, remove trailing colon
           const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
           const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${itemName.substring(0, 2) === 'IF' ? itemName.substring(2) : itemName}`;
@@ -684,6 +682,6 @@ export class ProcedureLinesGenerator {
   }
 
   private static hasTimedItemElapsed(timeStamp: number, item: TimedChecklistCondition | TimedChecklistAction): boolean {
-    return timeStamp !== undefined && (Date.now() - timeStamp) / 1000 > item.time;
+    return timeStamp !== undefined && timeStamp !== null && (Date.now() - timeStamp) / 1000 > item.time;
   }
 }
