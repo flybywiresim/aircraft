@@ -338,10 +338,10 @@ export class PseudoWaypoints implements GuidanceComponent {
             );
           }
 
-          lla = outboundTrans.getPseudoWaypointLocation(distanceBeforeTerminator);
+          lla = outboundTrans.getPseudoWaypointLocation(outboundTransLength + distanceBeforeTerminator);
         } else if (
           distanceFromEndOfLeg >= outboundTransLength &&
-          distanceFromEndOfLeg < outboundTransLength + legPartLength
+          distanceFromEndOfLeg <= outboundTransLength + legPartLength
         ) {
           // Point is in leg segment
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength;
