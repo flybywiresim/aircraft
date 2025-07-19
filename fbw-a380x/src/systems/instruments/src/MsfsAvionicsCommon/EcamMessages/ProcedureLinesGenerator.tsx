@@ -634,17 +634,12 @@ export class ProcedureLinesGenerator {
       text += `.${item.name} :`;
     } else {
       let timedText: string | null = undefined;
-      const booleanisTimed = isChecklistTimedCondition(item) || isChecklistTimedCondition(item);
-      if (booleanisTimed) {
+      const isTimedItem = isChecklistTimedCondition(item) || isChecklistTimedCondition(item);
+      if (isTimedItem) {
         timedText = ProcedureLinesGenerator.getTimedItemLineText(item, checklistState, itemIndex);
       }
-      const appendText = ' :';
 
-      if (isChecklistTimedCondition(item) && timedText === null) {
-        if (item.appendTimeIfElapsed) {
-          timedText += `AFTER ${item.time} S :`;
-        }
-      }
+      const appendText = ' :';
       text +=
         itemComplete || timedText === null
           ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`
@@ -673,7 +668,11 @@ export class ProcedureLinesGenerator {
         if (diffSeconds < item.time) {
           seconds = item.time - diffSeconds;
         } else {
-          return null;
+          if (isChecklistTimedCondition(item) && item.appendTimeIfElapsed) {
+            seconds = item.time;
+          } else {
+            return null;
+          }
         }
       }
       return ` AFTER ${seconds} S :`;

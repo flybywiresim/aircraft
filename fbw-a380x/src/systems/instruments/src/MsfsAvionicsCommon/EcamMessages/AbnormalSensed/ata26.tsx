@@ -259,7 +259,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'IDLE',
       },
       {
-        name: 'WHEN ACFT STOPPED :',
+        name: 'WHEN ACFT STOPPED',
         sensed: true,
         condition: true,
       },
@@ -336,7 +336,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 2,
       },
       {
-        name: 'EVAC NOT RQRD :',
+        name: 'EVAC NOT RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -512,7 +512,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'EVAC RQRD :',
+        name: 'EVAC RQRD',
         sensed: false,
         condition: true,
         level: 1,

@@ -12,6 +12,7 @@ import {
   EcamAbnormalSensedProcedures,
   isChecklistAction,
   isChecklistCondition,
+  IsTimedItem,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
 
@@ -98,7 +99,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         this.procedures.get().forEach((p) => {
           const proc = EcamAbnormalProcedures[p.id];
           proc.items.forEach((it, idx) => {
-            if (it.time !== undefined) {
+            if (IsTimedItem(it)) {
               let newText: string | null = null;
               if (isChecklistAction(it)) {
                 newText = ProcedureLinesGenerator.getChecklistActionText(it, idx, p.itemsChecked[idx], p);
