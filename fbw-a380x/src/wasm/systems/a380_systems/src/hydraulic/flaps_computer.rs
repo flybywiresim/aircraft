@@ -116,14 +116,13 @@ impl SlatFlapControlComputer {
 
     fn generate_configuration(
         &self,
-        csu_monitor: &CSUMonitor,
         context: &UpdateContext,
         adirs: &impl AdirsMeasurementOutputs,
     ) -> FlapsConf {
         // Ignored `CSU::OutOfDetent` and `CSU::Fault` positions due to simplified SFCC.
         match (
-            csu_monitor.get_previous_detent(),
-            csu_monitor.get_current_detent(),
+            self.csu_monitor.get_previous_detent(),
+            self.csu_monitor.get_current_detent(),
         ) {
             (CSU::Conf0 | CSU::Conf1, CSU::Conf1)
                 if context.indicated_airspeed().get::<knot>()
@@ -238,20 +237,21 @@ impl SlatFlapControlComputer {
         }
     }
 
-    fn flap_load_relief_active(&self, flaps_handle: &CSUMonitor) -> bool {
-        flaps_handle.get_current_detent() == CSU::Conf2 && self.flaps_conf != FlapsConf::Conf2
-            || flaps_handle.get_current_detent() == CSU::Conf3
-                && self.flaps_conf != FlapsConf::Conf3
-            || flaps_handle.get_current_detent() == CSU::ConfFull
-                && self.flaps_conf != FlapsConf::ConfFull
+    fn flap_load_relief_active(&self) -> bool {
+        let handle_position = self.csu_monitor.get_current_detent();
+        handle_position == CSU::Conf2 && self.flaps_conf != FlapsConf::Conf2
+            || handle_position == CSU::Conf3 && self.flaps_conf != FlapsConf::Conf3
+            || handle_position == CSU::ConfFull && self.flaps_conf != FlapsConf::ConfFull
     }
 
-    fn cruise_baulk_active(&self, flaps_handle: &CSUMonitor) -> bool {
-        flaps_handle.get_current_detent() == CSU::Conf1 && self.flaps_conf == FlapsConf::Conf0
+    fn cruise_baulk_active(&self) -> bool {
+        let handle_position = self.csu_monitor.get_current_detent();
+        handle_position == CSU::Conf1 && self.flaps_conf == FlapsConf::Conf0
     }
 
-    fn alpha_speed_lock_active(&self, flaps_handle: &CSUMonitor) -> bool {
-        flaps_handle.get_current_detent() == CSU::Conf0
+    fn alpha_speed_lock_active(&self) -> bool {
+        let handle_position = self.csu_monitor.get_current_detent();
+        handle_position == CSU::Conf0
             && (self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F)
     }
 
@@ -276,10 +276,10 @@ impl SlatFlapControlComputer {
         self.csu_monitor.update(context);
 
         self.flaps_handle_position = self.csu_monitor.get_current_detent();
-        self.flaps_conf = self.generate_configuration(&self.csu_monitor, context, adirs);
-        self.flap_load_relief_active = self.flap_load_relief_active(&self.csu_monitor);
-        self.cruise_baulk_active = self.cruise_baulk_active(&self.csu_monitor);
-        self.alpha_speed_lock_active = self.alpha_speed_lock_active(&self.csu_monitor);
+        self.flaps_conf = self.generate_configuration(context, adirs);
+        self.flap_load_relief_active = self.flap_load_relief_active();
+        self.cruise_baulk_active = self.cruise_baulk_active();
+        self.alpha_speed_lock_active = self.alpha_speed_lock_active();
 
         self.flaps_demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf);
         self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
