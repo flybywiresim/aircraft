@@ -250,6 +250,30 @@
   font-family: "OIT";
 }
 
+.oit-login-page-heading {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  font-size: 26px;
+  text-align: center;
+}
+
+.oit-login-page-sub-heading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 24px;
+  text-align: center;
+}
+
+.oit-login-page-button-container {
+  position: absolute;
+  top: 65%;
+  left: 30%;
+  display: flex;
+  flex-direction: column
+}
+
 $font-file-path: '/Fonts/fbw-a380x/EFB';
 
 @import "../../../../../../fbw-common/src/systems/instruments/src/EFB/Assets/Efb.scss";
