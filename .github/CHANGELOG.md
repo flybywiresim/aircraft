@@ -94,8 +94,11 @@
 1. [A32NX/FMS] Consider pilot-entered tropopause for automatic cruise temperature calculation - @BlueberryKing (BlueberryKing)
 1. [FMS] Make sure radials of CR/VR legs use the station declination as magvar - @BlueberryKing (BlueberryKing)
 1. [A32NX/FWS] Implement BAT 1(2) OFF ECAM warning - @BlueberryKing (BlueberryKing)
+1. [A380X] Fixed pink textures in 2024 SU3 caused by invalid texture size - @heclak (Heclak)
+1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
+1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
 1. [A380X/FWS] Implement ENG SHUTDOWN abnornal sensed & timer countdown to timed items - @BravoMike99 (bruno_pt99)
-1. [A380X/FWS] Implement abnormal paramters attention getter on the EWD - @BravoMike99 (bruno_pt99)
+1. [A380X/CDS] Implement abnormal engine parameters amber attention getting box on the EWD - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
