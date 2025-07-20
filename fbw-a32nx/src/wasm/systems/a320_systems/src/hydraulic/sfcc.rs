@@ -8,7 +8,7 @@ use systems::simulation::{
     VariableIdentifier, Write,
 };
 
-use std::panic;
+// use std::panic;
 use uom::si::{angle::degree, f64::*};
 
 use super::flaps_channel::FlapsChannel;
@@ -36,8 +36,6 @@ struct SlatFlapControlComputer {
 }
 
 impl SlatFlapControlComputer {
-    const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
-
     fn new(context: &mut InitContext, num: u8) -> Self {
         Self {
             config_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
@@ -50,10 +48,6 @@ impl SlatFlapControlComputer {
             slats_channel: SlatsChannel::new(context, num),
             config: FlapsConf::Conf0,
         }
-    }
-
-    fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
-        (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
     pub fn calculate_config(&self) -> FlapsConf {
@@ -183,35 +177,6 @@ impl SlatFlapControlComputer {
     }
 }
 
-trait SlatFlapLane {
-    fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle>;
-}
-
-impl SlatFlapLane for SlatFlapControlComputer {
-    fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle> {
-        match surface_type {
-            "FLAPS"
-                if Self::surface_movement_required(
-                    self.flaps_channel.get_demanded_angle(),
-                    self.flaps_channel.get_feedback_angle(),
-                ) =>
-            {
-                Some(self.flaps_channel.get_demanded_angle())
-            }
-            "SLATS"
-                if Self::surface_movement_required(
-                    self.slats_channel.get_demanded_angle(),
-                    self.slats_channel.get_feedback_angle(),
-                ) =>
-            {
-                Some(self.slats_channel.get_demanded_angle())
-            }
-            "FLAPS" | "SLATS" => None,
-            _ => panic!("Not a valid slat/flap surface"),
-        }
-    }
-}
-
 impl SimulationElement for SlatFlapControlComputer {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.flaps_channel.accept(visitor);
@@ -257,18 +222,6 @@ impl SlatFlapComplex {
     ) {
         self.sfcc[0].update(context, flaps_feedback, slats_feedback);
         self.sfcc[1].update(context, flaps_feedback, slats_feedback);
-    }
-
-    // `idx` 0 is for SFCC1
-    // `idx` 1 is for SFCC2
-    pub fn flap_demand(&self, idx: usize) -> Option<Angle> {
-        self.sfcc[idx].signal_demanded_angle("FLAPS")
-    }
-
-    // `idx` 0 is for SFCC1
-    // `idx` 1 is for SFCC2
-    pub fn slat_demand(&self, idx: usize) -> Option<Angle> {
-        self.sfcc[idx].signal_demanded_angle("SLATS")
     }
 
     fn is_approaching_requested_position(
@@ -343,7 +296,6 @@ mod tests {
         right_position_percent_id: VariableIdentifier,
         left_position_angle_id: VariableIdentifier,
         right_position_angle_id: VariableIdentifier,
-        surface_type: String,
     }
     impl PositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
@@ -374,22 +326,20 @@ mod tests {
                     .get_identifier(format!("LEFT_{}_ANGLE", surface_type)),
                 right_position_angle_id: context
                     .get_identifier(format!("RIGHT_{}_ANGLE", surface_type)),
-
-                surface_type: surface_type.to_string(),
             }
         }
 
         fn update(
             &mut self,
             context: &UpdateContext,
-            sfcc: &impl SlatFlapLane,
+            demanded_angle: Option<Angle>,
             hydraulic_pressure_left_side: Pressure,
             hydraulic_pressure_right_side: Pressure,
         ) {
             if hydraulic_pressure_left_side.get::<psi>() > 1500.
                 || hydraulic_pressure_right_side.get::<psi>() > 1500.
             {
-                if let Some(demanded_angle) = sfcc.signal_demanded_angle(&self.surface_type) {
+                if let Some(demanded_angle) = demanded_angle {
                     let actual_minus_target_ffpu = demanded_angle - self.angle();
 
                     let fppu_angle = self.angle();
@@ -444,6 +394,8 @@ mod tests {
     }
 
     impl A320FlapsTestAircraft {
+        const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.177;
+
         fn new(context: &mut InitContext) -> Self {
             Self {
                 green_hydraulic_pressure_id: context
@@ -472,21 +424,51 @@ mod tests {
                 yellow_pressure: Pressure::new::<psi>(0.),
             }
         }
+
+        fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
+            (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
+        }
+
+        fn signal_demanded_angle(&self, idx: usize, surface_type: &str) -> Option<Angle> {
+            let sfcc = &self.slat_flap_complex.sfcc[idx];
+            match surface_type {
+                "FLAPS"
+                    if Self::surface_movement_required(
+                        sfcc.flaps_channel.get_demanded_angle(),
+                        sfcc.flaps_channel.get_feedback_angle(),
+                    ) =>
+                {
+                    Some(sfcc.flaps_channel.get_demanded_angle())
+                }
+                "SLATS"
+                    if Self::surface_movement_required(
+                        sfcc.slats_channel.get_demanded_angle(),
+                        sfcc.slats_channel.get_feedback_angle(),
+                    ) =>
+                {
+                    Some(sfcc.slats_channel.get_demanded_angle())
+                }
+                "FLAPS" | "SLATS" => None,
+                _ => panic!("Not a valid slat/flap surface"),
+            }
+        }
     }
 
     impl Aircraft for A320FlapsTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.slat_flap_complex
                 .update(context, &self.flap_gear, &self.slat_gear);
+            let flaps_demanded_angle = self.signal_demanded_angle(0, "FLAPS");
             self.flap_gear.update(
                 context,
-                &self.slat_flap_complex.sfcc[0],
+                flaps_demanded_angle,
                 self.green_pressure,
                 self.yellow_pressure,
             );
+            let slats_demanded_angle = self.signal_demanded_angle(0, "SLATS");
             self.slat_gear.update(
                 context,
-                &self.slat_flap_complex.sfcc[0],
+                slats_demanded_angle,
                 self.blue_pressure,
                 self.green_pressure,
             );
