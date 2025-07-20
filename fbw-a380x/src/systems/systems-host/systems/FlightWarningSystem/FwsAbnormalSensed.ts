@@ -3999,7 +3999,7 @@ export class FwsAbnormalSensed {
       // ENG 2 SHUTDOWN
       auralWarning: this.fws.eng2Fail.map((v) => (v ? FwcAuralWarning.None : FwcAuralWarning.SingleChime)),
       flightPhaseInhib: [5, 6],
-      simVarIsActive: this.fws.eng3ShutDown,
+      simVarIsActive: this.fws.eng2ShutDown,
       notActiveWhenFaults: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),
@@ -4015,7 +4015,7 @@ export class FwsAbnormalSensed {
         this.fws.tcasTaOnly.get(),
         this.fws.gearLeverPos.get(),
         false,
-        this.fws.crossFeed1ValveOpen.get(),
+        this.fws.crossFeed2ValveOpen.get(),
         false,
         this.fws.flowSelectorKnob.get() === 1,
         this.fws.fwdCargoTempRegulatorOff.get(),
