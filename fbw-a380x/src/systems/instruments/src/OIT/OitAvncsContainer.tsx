@@ -23,6 +23,7 @@ import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/In
 import { OitAvncsHeader } from './Pages/nss-avncs/OitAvncsHeader';
 import { OitAvncsFooter } from './Pages/nss-avncs/OitAvncsFooter';
 import { OitAvncsLoadingScreen } from './Pages/nss-avncs/OitAvncsLoadingScreen';
+import { OitAvncsLogin } from './Pages/nss-avncs/OitAvncsLogin';
 
 interface OitAvncsContainerProps {
   readonly bus: EventBus;
@@ -115,6 +116,7 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
           <div ref={this.activePageRef} class="mfd-navigator-container" />
           <OitAvncsFooter uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
         </div>
+        <OitAvncsLogin bus={this.props.bus} uiService={this.uiService} captOrFo={this.props.captOrFo} />
         <OitAvncsLoadingScreen bus={this.props.bus} captOrFo={this.props.captOrFo} />
       </div>
     );

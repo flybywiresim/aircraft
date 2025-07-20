@@ -45,7 +45,9 @@ export abstract class OitAvncsHeader extends DisplayComponent<OitAvncsHeaderProp
           onClick={() => {}}
           buttonStyle="width: 125px; font-size: 28px; height: 50px; margin-left: 5px;"
         />
-        <div class="oit-msg-header">0 MSG</div>
+        <div class="oit-msg-header" style="padding: 11px;">
+          0 MSG
+        </div>
         <div class="oit-msg-box"></div>
         <IconButton
           icon={'flat-single-down'}

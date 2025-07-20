@@ -37,6 +37,9 @@ export class OitUiService {
 
   private navigationStack: string[] = [];
 
+  public readonly fltOpsLoginScreenVisible = Subject.create(true);
+  public readonly nssAvncsLoginScreenVisible = Subject.create(true);
+
   public parseUri(uri: string): OitUriInformation {
     const uriParts = uri.split('/');
     return {

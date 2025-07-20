@@ -179,7 +179,7 @@
 }
 
 .oit-avncs-sub-header-title {
-  font-size: 28px;
+  font-size: 22px;
   color: $display-white;
   width: 250px;
   padding: 13px;
@@ -191,7 +191,7 @@
   flex-grow: 1;
   font-size: 28px;
   color: $display-white;
-  padding: 13px;
+  padding: 11px;
   align-items: center;
   text-align: center;
 }
@@ -253,39 +253,50 @@
 .oit-login-page-heading {
   position: absolute;
   top: 25%;
-  left: 50%;
-  font-size: 26px;
-  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: bold;
 }
 
 .oit-login-page-sub-heading {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 32%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
   font-size: 24px;
-  text-align: center;
 }
 
 .oit-login-page-sub-sub-heading {
   position: absolute;
-  top: 55%;
-  left: 50%;
+  top: 39%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
   font-size: 24px;
-  text-align: center;
 }
 
 .oit-login-page-button-container {
   position: absolute;
   top: 65%;
-  left: 30%;
+  left: 20%;
   display: flex;
   flex-direction: column;
+  gap: 10px;
 }
 
 .oit-login-page-bottom-left-text {
   position: absolute;
-  top: 95%;
-  left: 1%;
+  bottom: 28px;
+  left: 5px;
+}
+
+.oit-login-page-bottom-left-button {
+  position: absolute;
+  bottom: 40px;
+  left: 10px;
 }
 
 $font-file-path: '/Fonts/fbw-a380x/EFB';

@@ -91,8 +91,11 @@ export abstract class OitFltOpsHeader extends DisplayComponent<OitFltOpsHeaderPr
             },
             {
               label: 'EXIT SESSION',
-              action: () => this.props.uiService.navigateTo('flt-ops/exit-session'),
-              disabled: true,
+              action: () => {
+                this.props.uiService.navigateTo('flt-ops');
+                this.props.uiService.fltOpsLoginScreenVisible.set(true);
+              },
+              disabled: false,
             },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_menu`}

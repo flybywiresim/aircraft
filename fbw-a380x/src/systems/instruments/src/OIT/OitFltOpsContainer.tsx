@@ -26,6 +26,7 @@ import { OisLaptop } from './OisLaptop';
 import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { OitFltOpsLoadingScreen } from './Pages/flt-ops/OitFltOpsLoadingScreen';
+import { OitFltOpsLogin } from './Pages/flt-ops/OitFltOpsLogin';
 
 interface OitFltOpsContainerProps {
   readonly bus: EventBus;
@@ -124,7 +125,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
       this.hideContainer,
     );
 
-    this.uiService.navigateTo('flt-ops/sts');
+    this.uiService.navigateTo('flt-ops');
   }
 
   private activeUriChanged(uri: OitUriInformation) {
@@ -166,6 +167,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
             <div ref={this.activePageRef} class="mfd-navigator-container" />
             <OitFltOpsFooter uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
           </div>
+          <OitFltOpsLogin bus={this.props.bus} uiService={this.uiService} captOrFo={this.props.captOrFo} />
           <OitFltOpsLoadingScreen bus={this.props.bus} captOrFo={this.props.captOrFo} />
         </div>
       </>
