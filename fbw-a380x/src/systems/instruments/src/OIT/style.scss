@@ -266,12 +266,26 @@
   text-align: center;
 }
 
+.oit-login-page-sub-sub-heading {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  font-size: 24px;
+  text-align: center;
+}
+
 .oit-login-page-button-container {
   position: absolute;
   top: 65%;
   left: 30%;
   display: flex;
-  flex-direction: column
+  flex-direction: column;
+}
+
+.oit-login-page-bottom-left-text {
+  position: absolute;
+  top: 95%;
+  left: 1%;
 }
 
 $font-file-path: '/Fonts/fbw-a380x/EFB';

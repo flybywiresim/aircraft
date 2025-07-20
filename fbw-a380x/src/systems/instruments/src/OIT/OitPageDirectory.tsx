@@ -12,6 +12,8 @@ import { OitFltOpsContainer } from './OitFltOpsContainer';
 import { OitAvncsContainer } from './OitAvncsContainer';
 import { OitAvncsCompanyCom } from './Pages/nss-avncs/OitAvncsCompanyCom';
 import { OitAvncsMenu } from './Pages/nss-avncs/OitAvncsMenu';
+import { OitFltOpsLogin } from './Pages/flt-ops/OitFltOpsLogin';
+import { OitAvncsLogin } from './Pages/nss-avncs/OitAvncsLogin';
 
 // Page imports
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -20,10 +22,13 @@ export function fltOpsPageForUrl(
   bus: EventBus,
   uiService: OitUiService,
   container: OitFltOpsContainer,
+  captOrFo: 'CAPT' | 'FO' = 'CAPT',
 ): VNode {
   switch (url) {
     case 'flt-ops':
       return <OitFltOpsMenuPage bus={bus} uiService={uiService} container={container} />;
+    case 'flt-ops/login':
+      return <OitFltOpsLogin bus={bus} uiService={uiService} container={container} captOrFo={captOrFo} />;
     case 'flt-ops/sts':
       return <OitFltOpsStatus bus={bus} uiService={uiService} container={container} />;
     case 'flt-ops/to-perf':
@@ -50,6 +55,8 @@ export function avncsPageForUrl(
   switch (url) {
     case 'nss-avncs':
       return <OitAvncsMenu bus={bus} uiService={uiService} container={container} />;
+    case 'nss-avncs/login':
+      return <OitAvncsLogin bus={bus} uiService={uiService} container={container} />;
     case 'nss-avncs/company-com':
       return <OitAvncsCompanyCom bus={bus} uiService={uiService} container={container} />;
 
