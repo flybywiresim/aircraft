@@ -207,13 +207,13 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
   public update() {
     const poweredByBus1 = DisplayUnitToDCBus[this.props.displayUnitId][0]
       ? SimVar.GetSimVarValue(this.bus1Simvar, 'Bool')
-      : true;
+      : false;
     const poweredByBus2 = DisplayUnitToDCBus[this.props.displayUnitId][1]
       ? SimVar.GetSimVarValue(this.bus2Simvar, 'Bool')
-      : true;
+      : false;
     const poweredByBus3 = DisplayUnitToDCBus[this.props.displayUnitId][2]
       ? SimVar.GetSimVarValue(this.bus3Simvar, 'Bool')
-      : true;
+      : false;
     this.powered.set(
       (poweredByBus1 || poweredByBus2 || poweredByBus3) && !this.props.failuresConsumer.isActive(this.failureKey),
     );
