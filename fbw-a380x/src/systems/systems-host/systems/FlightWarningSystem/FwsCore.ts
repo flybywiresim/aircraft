@@ -4177,8 +4177,7 @@ export class FwsCore {
       !this.aircraftOnGround.get() &&
         this.fireButtonEng1.get() &&
         this.eng1FireDetected.get() &&
-        this.eng1Agent1Discharged.get() &&
-        !this.eng1Agent2Discharged.get(),
+        this.eng1Agent1Discharged.get(),
     );
     this.fireEng2Agent1InFlight10SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
@@ -4190,8 +4189,7 @@ export class FwsCore {
       !this.aircraftOnGround.get() &&
         this.fireButtonEng2.get() &&
         this.eng2FireDetected.get() &&
-        this.eng2Agent1Discharged.get() &&
-        !this.eng2Agent2Discharged.get(),
+        this.eng2Agent1Discharged.get(),
     );
     this.fireEng3Agent1InFlight10SecondsDischClock.set(
       !this.aircraftOnGround.get() &&
@@ -4203,8 +4201,7 @@ export class FwsCore {
       !this.aircraftOnGround.get() &&
         this.fireButtonEng3.get() &&
         this.eng3FireDetected.get() &&
-        this.eng3Agent1Discharged.get() &&
-        !this.eng3Agent2Discharged.get(),
+        this.eng3Agent1Discharged.get(),
     );
 
     this.fireEng4Agent1InFlight10SecondsDischClock.set(
@@ -4217,8 +4214,7 @@ export class FwsCore {
       !this.aircraftOnGround.get() &&
         this.fireButtonEng4.get() &&
         this.eng4FireDetected.get() &&
-        this.eng4Agent1Discharged.get() &&
-        !this.eng4Agent2Discharged.get(),
+        this.eng4Agent1Discharged.get(),
     );
 
     this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
