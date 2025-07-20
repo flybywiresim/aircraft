@@ -243,6 +243,19 @@ export const A320Fuel: React.FC<FuelProps> = ({
     return 'text-theme-accent';
   }, [totalTarget, LInnCurrent, LOutCurrent, RInnCurrent, ROutCurrent, centerCurrent, refuelStartedByUser]);
 
+  const formatRefuelRateStatusClass = useCallback(
+    (rate) => {
+      if (onlyInstantRefuelAllowed()) {
+        if (rate === refuelRate) {
+          return 'bg-theme-highlight opacity-40 text-theme-highlight';
+        } else {
+          return 'opacity-20';
+        }
+      }
+    },
+    [refuelRate, eng1Running, eng2Running, isOnGround],
+  );
+
   const getFuelMultiplier = () => galToKg * convertUnit;
 
   const formatFuelFilling = (curr: number, max: number) => {
@@ -585,8 +598,8 @@ export const A320Fuel: React.FC<FuelProps> = ({
             >
               <div>
                 <SelectItem
-                  className={`${!isRefuelAllowed() && 'opacity-20'}`}
-                  disabled={!isRefuelAllowed()}
+                  className={`${formatRefuelRateStatusClass(RefuelRateSetting.FAST)}`}
+                  disabled={onlyInstantRefuelAllowed()}
                   selected={refuelRate === RefuelRateSetting.FAST}
                   onSelect={() => setRefuelRate(RefuelRateSetting.FAST)}
                 >
@@ -600,8 +613,8 @@ export const A320Fuel: React.FC<FuelProps> = ({
             >
               <div>
                 <SelectItem
-                  className={`${!isRefuelAllowed() && 'opacity-20'}`}
-                  disabled={!isRefuelAllowed()}
+                  className={`${formatRefuelRateStatusClass(RefuelRateSetting.REAL)}`}
+                  disabled={onlyInstantRefuelAllowed()}
                   selected={refuelRate === RefuelRateSetting.REAL}
                   onSelect={() => setRefuelRate(RefuelRateSetting.REAL)}
                 >

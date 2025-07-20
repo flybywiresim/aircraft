@@ -322,6 +322,19 @@ export const A380Fuel: React.FC<FuelProps> = ({
     return 'text-theme-accent';
   }, [fuelDesiredKg, totalFuelWeightKg, refuelStartedByUser]);
 
+  const formatRefuelRateStatusClass = useCallback(
+    (rate) => {
+      if (onlyInstantRefuelAllowed()) {
+        if (rate === refuelRate) {
+          return 'bg-theme-highlight opacity-40 text-theme-highlight';
+        } else {
+          return 'opacity-20';
+        }
+      }
+    },
+    [refuelRate, eng1Running, eng2Running, eng3Running, eng4Running, isOnGround],
+  );
+
   return (
     <div className="relative flex flex-col justify-center">
       <Card
@@ -691,8 +704,8 @@ export const A380Fuel: React.FC<FuelProps> = ({
           >
             <div>
               <SelectItem
-                className={`${!isRefuelAllowed() && 'opacity-20'}`}
-                disabled={!isRefuelAllowed()}
+                className={`${formatRefuelRateStatusClass(RefuelRateSetting.FAST)}`}
+                disabled={onlyInstantRefuelAllowed()}
                 selected={refuelRate === RefuelRateSetting.FAST}
                 onSelect={() => setRefuelRate(RefuelRateSetting.FAST)}
               >
@@ -705,8 +718,8 @@ export const A380Fuel: React.FC<FuelProps> = ({
           >
             <div>
               <SelectItem
-                className={`${!isRefuelAllowed() && 'opacity-20'}`}
-                disabled={!isRefuelAllowed()}
+                className={`${formatRefuelRateStatusClass(RefuelRateSetting.REAL)}`}
+                disabled={onlyInstantRefuelAllowed()}
                 selected={refuelRate === RefuelRateSetting.REAL}
                 onSelect={() => setRefuelRate(RefuelRateSetting.REAL)}
               >
