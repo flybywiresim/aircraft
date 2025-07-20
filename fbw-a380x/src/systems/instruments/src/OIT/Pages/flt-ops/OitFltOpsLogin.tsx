@@ -40,11 +40,6 @@ export class OitFltOpsLogin extends DestroyableComponent<OitFltOpsLoginPageProps
               onClick={() => this.props.uiService.fltOpsLoginScreenVisible.set(false)}
               containerStyle="margin-top: 10px;"
             />
-            <Button
-              label="ADMINISTRATOR"
-              onClick={() => this.props.uiService.fltOpsLoginScreenVisible.set(false)}
-              containerStyle="margin-top: 10px;"
-            />
           </div>
           <div class="oit-login-page-bottom-left-button">
             <Button
