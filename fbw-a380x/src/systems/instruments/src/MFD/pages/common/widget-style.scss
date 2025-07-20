@@ -542,6 +542,10 @@
   color: $display-dark-grey;
 }
 
+div.yellow-when-disabled > div > div > .mfd-input-field-text-input.disabled {
+  color: $display-yellow;
+}
+
 .mfd-input-field-text-input.mandatory {
   color: $display-amber;
 }
