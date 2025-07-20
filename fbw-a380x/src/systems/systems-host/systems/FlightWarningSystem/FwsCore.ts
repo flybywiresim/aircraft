@@ -4272,7 +4272,7 @@ export class FwsCore {
     }
 
     /** ATA 70- Engines */
-    //FIXme add more conditions EGT exceedance, N1 overlimit, oil temp etc
+    //TODO add more conditions: ENG FAIL, EGT exceedance, N1 overlimit, oil temp etc
     this.eng1AbnormalParams.set(this.eng1FireDetected.get());
     this.eng2AbnormalParams.set(this.eng2FireDetected.get());
     this.eng3AbnormalParams.set(this.eng3FireDetected.get());

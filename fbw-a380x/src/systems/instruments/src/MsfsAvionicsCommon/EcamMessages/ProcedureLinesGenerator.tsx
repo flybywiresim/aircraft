@@ -629,6 +629,7 @@ export class ProcedureLinesGenerator {
     if (item.name.substring(0, 4) === 'WHEN') {
       text += `.${item.name} :`;
     } else {
+      // TODO suport time only text in the future e.g. AFTER 30S
       let timedText: string | null = undefined;
       const isTimedItem = isChecklistTimedCondition(item) || isChecklistTimedCondition(item);
       if (isTimedItem) {

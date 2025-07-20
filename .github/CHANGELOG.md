@@ -94,6 +94,8 @@
 1. [A32NX/FMS] Consider pilot-entered tropopause for automatic cruise temperature calculation - @BlueberryKing (BlueberryKing)
 1. [FMS] Make sure radials of CR/VR legs use the station declination as magvar - @BlueberryKing (BlueberryKing)
 1. [A32NX/FWS] Implement BAT 1(2) OFF ECAM warning - @BlueberryKing (BlueberryKing)
+1. [A380X/FWS] Implement ENG SHUTDOWN abnornal sensed & timer countdown to timed items - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Implement abnormal paramters attention getter on the EWD - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
