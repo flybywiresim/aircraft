@@ -15,12 +15,12 @@ import {
   isChecklistCondition,
   isChecklistHeadline,
   isChecklistTimedCondition,
-  isNonTimedChecklistCondition,
   isTimedCheckListAction,
   NormalProcedure,
   TimedChecklistAction,
   TimedChecklistCondition,
   WdLineData,
+  AbstractChecklistItem,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -347,8 +347,8 @@ export class ProcedureLinesGenerator {
 
   private selectableItems(skipCompletedSensed: boolean) {
     return this.procedure.items
-      .map((item, index: number) =>
-        this.itemIsSelectable(index, skipCompletedSensed, isChecklistCondition(item) ? item : undefined) ? index : null,
+      .map((item: AbstractChecklistItem, index: number) =>
+        this.itemIsSelectable(index, skipCompletedSensed, item) ? index : null,
       )
       .filter((v) => v !== null);
   }
@@ -362,14 +362,12 @@ export class ProcedureLinesGenerator {
    * @param skipCompletedSensed Whether sensed item is only selectable if unchecked. Not sensed items can't be skipped.
    * @returns Procedure item is selectable with arrow keys
    */
-  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean, item?: ChecklistCondition): boolean {
+  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean, item: AbstractChecklistItem): boolean {
     return (
       this.checklistState.itemsActive[itemIndex] &&
       this.checklistState.itemsToShow[itemIndex] &&
-      !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style) &&
-      (isNonTimedChecklistCondition(item) ||
-        !this.items[itemIndex].sensed ||
-        ((isChecklistTimedCondition(item) || skipCompletedSensed) && !this.checklistState.itemsChecked[itemIndex]))
+      !ProcedureLinesGenerator.nonSelectableItemStyles.includes(item.style) &&
+      (!item.sensed || !skipCompletedSensed || (skipCompletedSensed && !this.checklistState.itemsChecked[itemIndex]))
     );
   }
 

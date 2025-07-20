@@ -598,7 +598,7 @@ export enum ChecklistLineStyle {
   ChecklistItemInactive = 'ChecklistItemInactive',
 }
 
-interface AbstractChecklistItem {
+export interface AbstractChecklistItem {
   /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. For conditions, don't include the leading "IF" */
   name: string;
   /** Sensed or not sensed item. Sensed items are automatically checked. Non-sensed items will have a checkbox drawn in front of them on the EWD */
