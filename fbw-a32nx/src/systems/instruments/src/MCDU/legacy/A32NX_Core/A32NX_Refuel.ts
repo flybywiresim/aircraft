@@ -174,11 +174,11 @@ export class A32NX_Refuel {
     }
 
     if (
-      parseInt(centerCurrent) == parseInt(centerTarget) &&
-      parseInt(LInnCurrent) == parseInt(LInnTarget) &&
-      parseInt(LOutCurrent) == parseInt(LOutTarget) &&
-      parseInt(RInnCurrent) == parseInt(RInnTarget) &&
-      parseInt(ROutCurrent) == parseInt(ROutTarget)
+      parseInt(centerCurrent) === parseInt(centerTarget) &&
+      parseInt(LInnCurrent) === parseInt(LInnTarget) &&
+      parseInt(LOutCurrent) === parseInt(LOutTarget) &&
+      parseInt(RInnCurrent) === parseInt(RInnTarget) &&
+      parseInt(ROutCurrent) === parseInt(ROutTarget)
     ) {
       // DONE FUELING
       SimVar.SetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'Bool', false);
