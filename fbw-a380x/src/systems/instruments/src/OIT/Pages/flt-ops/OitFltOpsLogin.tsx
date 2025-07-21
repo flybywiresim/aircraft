@@ -39,6 +39,7 @@ export class OitFltOpsLogin extends DestroyableComponent<OitFltOpsLoginPageProps
               label="MAINTAINER"
               onClick={() => this.props.uiService.fltOpsLoginScreenVisible.set(false)}
               containerStyle="margin-top: 10px;"
+              disabled={true}
             />
           </div>
           <div class="oit-login-page-bottom-left-button">

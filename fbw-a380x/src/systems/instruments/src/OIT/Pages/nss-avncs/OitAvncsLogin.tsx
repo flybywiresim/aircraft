@@ -38,11 +38,13 @@ export class OitAvncsLogin extends DestroyableComponent<OitAvncsLoginPageProps> 
               label="MAINTAINER"
               onClick={() => this.props.uiService.nssAvncsLoginScreenVisible.set(false)}
               containerStyle="margin-top: 10px;"
+              disabled={true}
             />
             <Button
               label="ADMINISTRATOR"
               onClick={() => this.props.uiService.nssAvncsLoginScreenVisible.set(false)}
               containerStyle="margin-top: 10px;"
+              disabled={true}
             />
           </div>
           <div class="oit-login-page-bottom-left-text">Connected.</div>
