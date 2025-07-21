@@ -59,9 +59,12 @@ export interface FwsEwdEvents {
   /** (FWS -> EWD) Show ADV indication at bottom of page */
   fws_show_adv_indication: boolean;
 
-  /** Show normal (white) attention getter */
+  /** Show normal (white) attention getter for each engine*/
   fws_normal_attention_getter_eng: boolean[];
 
-  /** Show abnormal (amber) attention getter */
-  fws_abnormal_attention_getter_eng: boolean[];
+  /** Show abnormal (amber) attention getter on upper EWD for each engine*/
+  fws_abnormal_primary_engine_parameters_attention_getter: boolean[];
+
+  /** Show abnormal (amber) attention getter on engine SD for each engine Unused for now */
+  fws_abnormal_secondary_engine_parameters_attention_getter: boolean[];
 }

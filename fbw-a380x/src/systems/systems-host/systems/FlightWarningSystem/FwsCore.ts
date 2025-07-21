@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -86,6 +86,13 @@ export enum FwcAuralWarning {
   SingleChime,
   Crc,
   CavalryCharge,
+}
+
+enum engineState {
+  OFF = 0,
+  ON = 1,
+  STARTING = 2,
+  SHUTTING = 3,
 }
 
 export class FwsCore {
@@ -1557,9 +1564,14 @@ export class FwsCore {
   );
 
   public readonly eng1Fail = Subject.create(false);
+  private readonly eng1FailMemoryNode = new NXLogicMemoryNode();
   public readonly eng2Fail = Subject.create(false);
+  private readonly eng2FailMemoryNode = new NXLogicMemoryNode();
+
   public readonly eng3Fail = Subject.create(false);
+  private readonly eng3FailMemoryNode = new NXLogicMemoryNode();
   public readonly eng4Fail = Subject.create(false);
+  private readonly eng4FailMemoryNode = new NXLogicMemoryNode();
 
   public readonly eng1ShutDown = Subject.create(false);
   public readonly eng2ShutDown = Subject.create(false);
@@ -1571,13 +1583,13 @@ export class FwsCore {
   public readonly fuelOnBoardBetween55And95T = this.fuelOnBoard.map((v) => v >= 55000 && v <= 95000);
 
   public readonly eng1StartOrCrank = Subject.create(false);
-  public readonly eng1AbnormalParams = Subject.create(false);
+  public readonly eng1PrimaryAbnormalParams = Subject.create(false);
   public readonly eng2StartOrCrank = Subject.create(false);
-  public readonly eng2AbnormalParams = Subject.create(false);
+  public readonly eng2PrimaryAbnormalParams = Subject.create(false);
   public readonly eng3StartOrCrank = Subject.create(false);
-  public readonly eng3AbnormalParams = Subject.create(false);
+  public readonly eng3PrimaryAbnormalParams = Subject.create(false);
   public readonly eng4StartOrCrank = Subject.create(false);
-  public readonly eng4AbnormalParams = Subject.create(false);
+  public readonly eng4PrimaryAbnormalParams = Subject.create(false);
 
   private readonly attentionGetterNormalCollection = MappedSubject.create(
     ([eng1, eng2, eng3, eng4]) => Array.of(eng1, eng2, eng3, eng4),
@@ -1587,12 +1599,12 @@ export class FwsCore {
     this.eng4StartOrCrank,
   );
 
-  private readonly attentionGetterAbnormalCollection = MappedSubject.create(
+  private readonly attentionGetterAbnormalPrimaryParams = MappedSubject.create(
     ([eng1, eng2, eng3, eng4]) => Array.of(eng1, eng2, eng3, eng4),
-    this.eng1AbnormalParams,
-    this.eng2AbnormalParams,
-    this.eng3AbnormalParams,
-    this.eng4AbnormalParams,
+    this.eng1PrimaryAbnormalParams,
+    this.eng2PrimaryAbnormalParams,
+    this.eng3PrimaryAbnormalParams,
+    this.eng4PrimaryAbnormalParams,
   );
 
   public readonly allEngFault = Subject.create(false);
@@ -1895,8 +1907,8 @@ export class FwsCore {
     );
 
     this.subs.push(
-      this.attentionGetterAbnormalCollection.sub((v) =>
-        this.publisher.pub('fws_abnormal_attention_getter_eng', v, true),
+      this.attentionGetterAbnormalPrimaryParams.sub((v) =>
+        this.publisher.pub('fws_abnormal_primary_engine_parameters_attention_getter', v, true),
       ),
     );
 
@@ -4272,27 +4284,78 @@ export class FwsCore {
     }
 
     /** ATA 70- Engines */
-    //TODO add more conditions: ENG FAIL, EGT exceedance, N1 overlimit, oil temp etc
-    this.eng1AbnormalParams.set(this.eng1FireDetected.get());
-    this.eng2AbnormalParams.set(this.eng2FireDetected.get());
-    this.eng3AbnormalParams.set(this.eng3FireDetected.get());
-    this.eng4AbnormalParams.set(this.eng4FireDetected.get());
 
+    // ENG FAIL
+    this.eng1Fail.set(
+      !this.allEngFault.get() &&
+        this.eng1FailMemoryNode.write(
+          this.engine1Master.get() &&
+            this.engine1State.get() !== engineState.STARTING &&
+            !this.fireButtonEng1.get() &&
+            this.HPNEng1.get() < 50,
+          this.engine1State.get() === engineState.ON ||
+            (this.HPNEng1.get() > 50 && this.engine1State.get() === engineState.STARTING),
+        ),
+    );
+
+    this.eng2Fail.set(
+      !this.allEngFault.get() &&
+        this.eng2FailMemoryNode.write(
+          this.engine2Master.get() &&
+            this.engine2State.get() !== engineState.STARTING &&
+            !this.fireButtonEng2.get() &&
+            this.HPNEng2.get() < 50,
+          this.engine2State.get() === engineState.ON ||
+            (this.HPNEng2.get() > 50 && this.engine2State.get() === engineState.STARTING),
+        ),
+    );
+
+    this.eng3Fail.set(
+      !this.allEngFault.get() &&
+        this.eng3FailMemoryNode.write(
+          this.engine3Master.get() &&
+            this.engine3State.get() !== engineState.STARTING &&
+            !this.fireButtonEng3.get() &&
+            this.HPNEng3.get() < 50,
+          this.engine3State.get() === engineState.ON ||
+            (this.HPNEng3.get() > 50 && this.engine3State.get() === engineState.STARTING),
+        ),
+    );
+    this.eng4Fail.set(
+      !this.allEngFault.get() &&
+        this.eng4FailMemoryNode.write(
+          this.engine4Master.get() &&
+            this.engine4State.get() !== engineState.STARTING &&
+            !this.fireButtonEng4.get() &&
+            this.HPNEng4.get() < 50,
+          this.engine4State.get() === engineState.ON ||
+            (this.HPNEng4.get() > 50 && this.engine4State.get() === engineState.STARTING),
+        ),
+    );
+
+    // Attnetion getting box
     this.eng1StartOrCrank.set(
-      !this.eng1AbnormalParams.get() && this.N1Eng1.get() < this.N1IdleEng.get() - 1 && this.engine1State.get() == 2,
+      this.N1Eng1.get() < this.N1IdleEng.get() - 1 && this.engine1State.get() === engineState.STARTING,
     );
     this.eng2StartOrCrank.set(
-      !this.eng2AbnormalParams.get() && this.N1Eng2.get() < this.N1IdleEng.get() - 1 && this.engine2State.get() == 2,
+      this.N1Eng2.get() < this.N1IdleEng.get() - 1 && this.engine2State.get() === engineState.STARTING,
     );
     this.eng3StartOrCrank.set(
-      !this.eng3AbnormalParams.get() && this.N1Eng3.get() < this.N1IdleEng.get() - 1 && this.engine3State.get() == 2,
+      this.N1Eng3.get() < this.N1IdleEng.get() - 1 && this.engine3State.get() === engineState.STARTING,
     );
     this.eng4StartOrCrank.set(
-      !this.eng4AbnormalParams.get() && this.N1Eng4.get() < this.N1IdleEng.get() - 1 && this.engine4State.get() == 2,
+      this.N1Eng4.get() < this.N1IdleEng.get() - 1 && this.engine4State.get() === engineState.STARTING,
     );
+
+    //TODO add more conditions
+    this.eng1PrimaryAbnormalParams.set(!this.eng1StartOrCrank.get() && this.engine1Master.get() && this.eng1Fail.get());
+    this.eng2PrimaryAbnormalParams.set(!this.eng2StartOrCrank.get() && this.engine2Master.get() && this.eng2Fail.get());
+    this.eng3PrimaryAbnormalParams.set(!this.eng3StartOrCrank.get() && this.engine3Master.get() && this.eng3Fail.get());
+    this.eng4PrimaryAbnormalParams.set(!this.eng4StartOrCrank.get() && this.engine4Master.get() && this.eng4Fail.get());
 
     const firePbShutDownPreCond = !this.aircraftOnGround.get() || this.flightPhase12Or1112.get();
 
+    // ENG SHUTDOWN
     this.eng1ShutDown.set(
       !this.allEngFault.get() &&
         ((this.fireButtonEng1.get() && firePbShutDownPreCond) ||
@@ -5040,7 +5103,7 @@ export class FwsCore {
     const publisher = bus.getPublisher<FwsEwdEvents>();
     publisher.pub('fws_show_sts_indication', false, true);
     publisher.pub('fws_show_failure_pending', false, true);
-    publisher.pub('fws_abnormal_attention_getter_eng', [false, false, false, false]);
+    publisher.pub('fws_abnormal_primary_engine_parameters_attention_getter', [false, false, false, false]);
     publisher.pub('fws_normal_attention_getter_eng', [false, false, false, false]);
   }
 

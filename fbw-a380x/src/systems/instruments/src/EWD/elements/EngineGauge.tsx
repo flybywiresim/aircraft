@@ -13,8 +13,8 @@ interface EngineGaugeProps {
   engine: number;
   active: Subscribable<boolean>;
   n1Degraded: Subscribable<boolean>;
-  engineStartorCrank: Subscribable<boolean>;
-  engineParametersAbnormal: Subscribable<boolean>;
+  engineNormalAttentionGettingBox: Subscribable<boolean>;
+  engineAbnormalAttentionGettingBox: Subscribable<boolean>;
 }
 
 export class EngineGauge extends DisplayComponent<EngineGaugeProps> {
@@ -31,8 +31,8 @@ export class EngineGauge extends DisplayComponent<EngineGaugeProps> {
           y={this.props.y}
           engine={this.props.engine}
           active={this.props.active}
-          normal={this.props.engineStartorCrank}
-          abnormal={this.props.engineParametersAbnormal}
+          normal={this.props.engineNormalAttentionGettingBox}
+          abnormal={this.props.engineAbnormalAttentionGettingBox}
         />
         <ThrustGauge
           bus={this.props.bus}

@@ -3968,7 +3968,6 @@ export class FwsAbnormalSensed {
     },
     701800109: {
       // ENG 1 SHUTDOWN
-      auralWarning: this.fws.eng1Fail.map((v) => (v ? FwcAuralWarning.None : FwcAuralWarning.SingleChime)),
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.eng1ShutDown,
       notActiveWhenFaults: [],
@@ -3997,7 +3996,6 @@ export class FwsAbnormalSensed {
     },
     701800110: {
       // ENG 2 SHUTDOWN
-      auralWarning: this.fws.eng2Fail.map((v) => (v ? FwcAuralWarning.None : FwcAuralWarning.SingleChime)),
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.eng2ShutDown,
       notActiveWhenFaults: [],
@@ -4006,6 +4004,7 @@ export class FwsAbnormalSensed {
         this.fws.flightPhase.get() === 7,
         this.fws.fuelOnBoardBetween55And95T.get(),
         this.fws.fuelOnBoardBetween55And95T.get(),
+        true,
         true,
         true,
         true,
@@ -4020,13 +4019,13 @@ export class FwsAbnormalSensed {
         this.fws.flowSelectorKnob.get() === 1,
         this.fws.fwdCargoTempRegulatorOff.get(),
         false,
+        false,
       ],
       failure: 2,
       sysPage: -1,
     },
     701800111: {
       // ENG 3 SHUTDOWN
-      auralWarning: this.fws.eng3Fail.map((v) => (v ? FwcAuralWarning.None : FwcAuralWarning.SingleChime)),
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.eng3ShutDown,
       notActiveWhenFaults: [],
@@ -4057,7 +4056,6 @@ export class FwsAbnormalSensed {
     },
     701800112: {
       // ENG 4 SHUTDOWN
-      auralWarning: this.fws.eng4Fail.map((v) => (v ? FwcAuralWarning.None : FwcAuralWarning.SingleChime)),
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.eng4ShutDown,
       notActiveWhenFaults: [],
@@ -4083,6 +4081,47 @@ export class FwsAbnormalSensed {
       ],
       failure: 2,
       sysPage: -1,
+    },
+
+    701800029: {
+      // ENG 1 FAIL
+      simVarIsActive: this.fws.eng1Fail,
+      flightPhaseInhib: [],
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 2,
+    },
+    701800030: {
+      // ENG 2 FAIL
+      simVarIsActive: this.fws.eng2Fail,
+      flightPhaseInhib: [],
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 2,
+    },
+    701800031: {
+      // ENG 3 FAIL
+      simVarIsActive: this.fws.eng3Fail,
+      flightPhaseInhib: [],
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 2,
+    },
+    701800032: {
+      // ENG 4 FAIL
+      simVarIsActive: this.fws.eng4Fail,
+      flightPhaseInhib: [],
+      notActiveWhenFaults: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 2,
     },
     // SECONDARY FAILURES
     999800001: {

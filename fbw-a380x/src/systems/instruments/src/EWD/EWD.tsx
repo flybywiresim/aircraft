@@ -69,10 +69,13 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
 
   private readonly abnormalNonSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_non_sensed'), false);
 
-  private readonly engineStartOrCrank = ConsumerSubject.create(this.sub.on('fws_normal_attention_getter_eng'), []);
+  private readonly enginesNormalAttentionGettingBox = ConsumerSubject.create(
+    this.sub.on('fws_normal_attention_getter_eng'),
+    [],
+  );
 
-  private readonly enginesAbnormalParameters = ConsumerSubject.create(
-    this.sub.on('fws_abnormal_attention_getter_eng'),
+  private readonly enginesAbnormalParametersAttentionGettingBox = ConsumerSubject.create(
+    this.sub.on('fws_abnormal_primary_engine_parameters_attention_getter'),
     [],
   );
 
@@ -138,8 +141,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   this.engineRunningOrIgnitionOn,
                   this.engFirePb[0],
                 )}
-                engineStartorCrank={this.engineStartOrCrank.map((v) => v[0])}
-                engineParametersAbnormal={this.enginesAbnormalParameters.map((v) => v[0])}
+                engineNormalAttentionGettingBox={this.enginesNormalAttentionGettingBox.map((v) => v[0])}
+                engineAbnormalAttentionGettingBox={this.enginesAbnormalParametersAttentionGettingBox.map((v) => v[0])}
                 n1Degraded={this.n1Degraded[0]}
               />
               <EngineGauge
@@ -153,8 +156,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   this.engFirePb[1],
                 )}
                 n1Degraded={this.n1Degraded[1]}
-                engineStartorCrank={this.engineStartOrCrank.map((v) => v[1])}
-                engineParametersAbnormal={this.enginesAbnormalParameters.map((v) => v[1])}
+                engineNormalAttentionGettingBox={this.enginesNormalAttentionGettingBox.map((v) => v[1])}
+                engineAbnormalAttentionGettingBox={this.enginesAbnormalParametersAttentionGettingBox.map((v) => v[1])}
               />
               <EngineGauge
                 bus={this.props.bus}
@@ -167,8 +170,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   this.engFirePb[2],
                 )}
                 n1Degraded={this.n1Degraded[2]}
-                engineStartorCrank={this.engineStartOrCrank.map((v) => v[2])}
-                engineParametersAbnormal={this.enginesAbnormalParameters.map((v) => v[2])}
+                engineNormalAttentionGettingBox={this.enginesNormalAttentionGettingBox.map((v) => v[2])}
+                engineAbnormalAttentionGettingBox={this.enginesAbnormalParametersAttentionGettingBox.map((v) => v[2])}
               />
               <EngineGauge
                 bus={this.props.bus}
@@ -181,8 +184,8 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   this.engFirePb[3],
                 )}
                 n1Degraded={this.n1Degraded[3]}
-                engineStartorCrank={this.engineStartOrCrank.map((v) => v[3])}
-                engineParametersAbnormal={this.enginesAbnormalParameters.map((v) => v[3])}
+                engineNormalAttentionGettingBox={this.enginesNormalAttentionGettingBox.map((v) => v[3])}
+                engineAbnormalAttentionGettingBox={this.enginesAbnormalParametersAttentionGettingBox.map((v) => v[3])}
               />
 
               <Idle bus={this.props.bus} x={386} y={90} />
