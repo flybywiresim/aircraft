@@ -84,7 +84,8 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly timeHHMM = this.zuluTime.map((seconds) => getCurrentHHMMSS(seconds).substring(0, 6));
   private readonly timeSS = this.zuluTime.map((seconds) => getCurrentHHMMSS(seconds).substring(6));
 
-  private readonly userWeight = Subject.create<'KG' | 'LBS'>('KG');
+  // This call to NXUnits ensures that metricWeightVal is set early on
+  private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());
 
   private readonly configMetricUnitsSub = NXDataStore.getAndSubscribe(
     'CONFIG_USING_METRIC_UNIT',
@@ -133,13 +134,6 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
     this.grossWeightCg,
     this.grossWeight,
   );
-
-  constructor(props: PermanentDataProps) {
-    super(props);
-
-    // This call seems superfluous, but it ensures that metricWeight is set early on
-    this.userWeight.set(NXUnits.metricWeight ? 'KG' : 'LBS');
-  }
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
