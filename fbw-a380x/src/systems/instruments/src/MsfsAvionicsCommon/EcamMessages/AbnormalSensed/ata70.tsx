@@ -160,22 +160,22 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800029: {
-    title: '\x1b<4m\x1b4mENG\x1bm 1 FAIL',
+    title: '\x1b<4m\x1b4mENG 1\x1bm FAIL',
     sensed: true,
     items: [], // TODO
   },
   701800030: {
-    title: '\x1b<4m\x1b4mENG\x1bm 2 FAIL',
+    title: '\x1b<4m\x1b4mENG 2\x1bm FAIL',
     sensed: true,
     items: [], // TODO
   },
   701800031: {
-    title: '\x1b<4m\x1b4mENG\x1bm 3 FAIL',
+    title: '\x1b<4m\x1b4mENG 3\x1bm FAIL',
     sensed: true,
     items: [], // TODO
   },
   701800032: {
-    title: '\x1b<4m\x1b4mENG\x1bm 4 FAIL',
+    title: '\x1b<4m\x1b4mENG 4\x1bm FAIL',
     sensed: true,
     items: [], // TODO
   },
