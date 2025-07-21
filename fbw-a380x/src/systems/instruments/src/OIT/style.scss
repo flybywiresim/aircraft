@@ -189,11 +189,11 @@
 
 .oit-avncs-header-flt-nbr {
   flex-grow: 1;
-  font-size: 28px;
-  color: $display-white;
+  font-size: 24px;
+  color: $display-magenta;
   padding: 11px;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  margin-left: 10px;
 }
 
 .oit-flt-ops-loading-screen-container {

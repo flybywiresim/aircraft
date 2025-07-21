@@ -1,13 +1,24 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  Subject,
+  Subscribable,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
+import { FmsData } from '@flybywiresim/fbw-sdk';
 
 interface OitAvncsHeaderProps {
+  readonly bus: EventBus;
   readonly uiService: OitUiService;
   readonly avncsOrFltOps: Subscribable<OisDomain>;
 }
@@ -17,15 +28,23 @@ interface OitAvncsHeaderProps {
  */
 export abstract class OitAvncsHeader extends DisplayComponent<OitAvncsHeaderProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  protected readonly subs = [] as Subscription[];
+  protected readonly subscriptions = [] as Subscription[];
+
+  private readonly sub = this.props.bus.getSubscriber<FmsData>();
+
+  // FIXME maybe this should come from the ATC/ATSU when it's integrated
+  private readonly fltNumber = ConsumerSubject.create(this.sub.on('fmsFlightNumber'), null);
+  private readonly fltNumberText = this.fltNumber.map((number) => (number ? number : ''));
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subscriptions.push(this.fltNumber, this.fltNumberText);
   }
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
-    for (const s of this.subs) {
+    for (const s of this.subscriptions) {
       s.destroy();
     }
 
@@ -60,7 +79,7 @@ export abstract class OitAvncsHeader extends DisplayComponent<OitAvncsHeaderProp
           buttonStyle="font-size: 28px; height: 50px; margin-left: 15px;"
           disabled={Subject.create(true)}
         />
-        <div class="oit-avncs-header-flt-nbr">FLT NBR</div>
+        <div class="oit-avncs-header-flt-nbr">{this.fltNumberText}</div>
       </div>
     );
   }

@@ -112,7 +112,7 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
     return (
       <div ref={this.topRef} class={{ 'oit-main': true, hidden: this.hideContainer }}>
         <div class={{ 'oit-page-container': true, hidden: this.hideContent }}>
-          <OitAvncsHeader uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
+          <OitAvncsHeader bus={this.props.bus} uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
           <div ref={this.activePageRef} class="mfd-navigator-container" />
           <OitAvncsFooter uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
         </div>
