@@ -100,7 +100,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
   private readonly fuelWeightPerGallon = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
   private readonly fuelWeight = MappedSubject.create(
-    ([qt, weightPerGallon]) => NXUnits.kgToUser(qt * weightPerGallon),
+    ([qt, weightPerGallon]) => qt * weightPerGallon,
     this.fuelQuantity,
     this.fuelWeightPerGallon,
     this.userWeight,
@@ -133,6 +133,13 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
     this.grossWeightCg,
     this.grossWeight,
   );
+
+  constructor(props: PermanentDataProps) {
+    super(props);
+
+    // This call seems superfluous, but it ensures that metricWeight is set early on
+    this.userWeight.set(NXUnits.metricWeight ? 'KG' : 'LBS');
+  }
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
