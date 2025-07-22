@@ -1759,10 +1759,8 @@ export class FwsCore {
       this.registerKeyEvents();
     });
 
-    this.sub
-      .on('key_intercept')
-      .atFrequency(50)
-      .handle((keyData) => {
+    this.subs.push(
+      this.sub.on('key_intercept').handle((keyData) => {
         switch (keyData.key) {
           case 'A32NX.AUTO_THROTTLE_DISCONNECT':
             this.autoThrottleInstinctiveDisconnect();
@@ -1773,7 +1771,8 @@ export class FwsCore {
             this.autoPilotInstinctiveDisconnect();
             break;
         }
-      });
+      }),
+    );
 
     this.subs.push(
       this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal)),
@@ -1834,7 +1833,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1842,7 +1841,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsRight[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1850,7 +1849,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.pfdMemoSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1858,7 +1857,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInfoSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1866,7 +1865,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInopAllPhasesSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1874,7 +1873,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1882,7 +1881,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.pfdLimitationsSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1890,7 +1889,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdLimitationsAllPhasesSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1898,7 +1897,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
