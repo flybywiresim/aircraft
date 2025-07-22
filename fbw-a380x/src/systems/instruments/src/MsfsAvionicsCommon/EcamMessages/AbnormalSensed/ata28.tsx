@@ -768,7 +768,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         condition: true,
       },
       {
-        name: 'ALL CROSSFEEDs',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
         level: 1,
@@ -815,7 +815,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         condition: true,
       },
       {
-        name: 'ALL CROSSFEEDs',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
         level: 1,
