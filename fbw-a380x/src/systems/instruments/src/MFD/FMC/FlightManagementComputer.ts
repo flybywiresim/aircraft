@@ -1011,11 +1011,14 @@ export class FlightManagementComputer implements FmcInterface {
 
         const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
         if (destPred) {
-          this.acInterface.updateMinimums(destPred.distanceFromAircraft);
+          this.acInterface.updateDestinationPredictions(destPred);
+        } else {
+          this.acInterface.resetDestinationPredictions();
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
         this.fmgc.data.alternateExists.set(this.flightPlanService.active.alternateDestinationAirport !== undefined);
       } else {
+        this.acInterface.resetDestinationPredictions();
         this.fmgc.data.alternateExists.set(false);
         this.fmgc.data.alternateFuelPilotEntry.set(null);
       }
