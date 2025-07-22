@@ -313,6 +313,20 @@
   border: 2px solid #c4c6cf;
   margin-bottom: 10px;
   margin-top: 10px;
+  overflow: auto;
+  max-height: 795px;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar {
+  width: 20px;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-track {
+  background: $display-mfd-darker-grey;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-thumb {
+  background: $display-light-grey;
 }
 
 .oit-avncs-navigator-right {

@@ -27,10 +27,18 @@ export class OitAvncsMenu extends DestroyableComponent<OitAvncsMenuPageProps> {
             <div class="oit-avncs-navigator-left">
               <OitFolder name={Subject.create('OIS MENU')} initExpanded={true}>
                 <OitFolder name={Subject.create('NSS AVNCS MENU')} initExpanded={true}>
-                  <OitFile name={Subject.create('COMPANY COM')} />
-                  <OitFile name={Subject.create('REFUEL')} />
+                  <OitFile
+                    name={Subject.create('COMPANY COM')}
+                    uiService={this.props.uiService}
+                    navigationTarget="nss-avncs/company-com"
+                  />
+                  <OitFile
+                    name={Subject.create('REFUEL')}
+                    uiService={this.props.uiService}
+                    navigationTarget="nss-avncs/refuel"
+                  />
                 </OitFolder>
-                <OitFile name={Subject.create('UTILITIES')} />
+                <OitFile name={Subject.create('UTILITIES')} uiService={this.props.uiService} />
               </OitFolder>
             </div>
             <div class="it-avncs-navigator-right">

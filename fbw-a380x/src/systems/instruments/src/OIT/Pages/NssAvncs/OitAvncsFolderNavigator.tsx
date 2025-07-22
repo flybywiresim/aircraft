@@ -3,6 +3,7 @@
 
 import { FSComponent, VNode, Subscribable, Subject } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { OitUiService } from '../../OitUiService';
 
 interface OitNavigatorItemProps {
   readonly name: Subscribable<string>;
@@ -55,13 +56,19 @@ export class OitFolder extends DestroyableComponent<OitFolderProps> {
   }
 }
 
-interface OitFileProps extends OitNavigatorItemProps {}
+interface OitFileProps extends OitNavigatorItemProps {
+  readonly uiService: OitUiService;
+  readonly navigationTarget?: string;
+}
 
 export class OitFile extends DestroyableComponent<OitFileProps> {
   private readonly fileRef = FSComponent.createRef<HTMLSpanElement>();
 
   private onClick(event?: MouseEvent): void {
-    console.log('file.selected', this.props.name);
+    if (this.props.navigationTarget) {
+      // Navigate to the target page if specified
+      this.props.uiService.navigateTo(this.props.navigationTarget);
+    }
     event?.stopPropagation();
   }
   private onClickHandler = this.onClick.bind(this);
