@@ -299,6 +299,74 @@
   left: 10px;
 }
 
+.oit-avncs-navigator-container {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  width: 100%;
+}
+
+.oit-avncs-navigator-left {
+  flex: 0.25;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #c4c6cf;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.oit-avncs-navigator-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.oit-avncs-navigator-folder-container {
+  display: block;
+  padding: 5px 5px 5px 15px;
+}
+
+.oit-avncs-navigator-folder {
+  display: block;
+}
+
+.oit-avncs-navigator-folder-children {
+  display: block;
+}
+
+.oit-avncs-navigator-file {
+  display: block;
+  padding: 5px 5px 5px 25px;
+}
+
+.oit-avncs-navigator-right-exit-ois {
+  position: relative;
+  left: 10px;
+  top: 10px;
+}
+
+.oit-avncs-navigator-right-center-buttons {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  display: flex;
+  flex-direction: column;
+}
+
+.oit-avncs-icon-folder {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid $display-light-grey;
+  background-color: $display-white;
+  color: $display-background;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  font-size: 10px;
+  margin-right: 7px;
+}
+
 $font-file-path: '/Fonts/fbw-a380x/EFB';
 
 @import "../../../../../../fbw-common/src/systems/instruments/src/EFB/Assets/Efb.scss";
