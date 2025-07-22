@@ -20,10 +20,10 @@ import { avncsPageForUrl } from './OitPageDirectory';
 import { OitNotFound } from './Pages/OitNotFound';
 import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { OitAvncsHeader } from './Pages/nss-avncs/OitAvncsHeader';
-import { OitAvncsFooter } from './Pages/nss-avncs/OitAvncsFooter';
-import { OitAvncsLoadingScreen } from './Pages/nss-avncs/OitAvncsLoadingScreen';
-import { OitAvncsLogin } from './Pages/nss-avncs/OitAvncsLogin';
+import { OitAvncsHeader } from './Pages/NssAvncs/OitAvncsHeader';
+import { OitAvncsFooter } from './Pages/NssAvncs/OitAvncsFooter';
+import { OitAvncsLoadingScreen } from './Pages/NssAvncs/OitAvncsLoadingScreen';
+import { OitAvncsLogin } from './Pages/NssAvncs/OitAvncsLogin';
 
 interface OitAvncsContainerProps {
   readonly bus: EventBus;

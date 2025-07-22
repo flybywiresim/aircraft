@@ -2,16 +2,16 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { OitFltOpsEfbOverlay } from './Pages/flt-ops/OitFltOpsEfbOverlay';
-import { OitFltOpsMenuPage } from './Pages/flt-ops/OitFltOpsMenuPage';
-import { OitFltOpsPerformance } from './Pages/flt-ops/OitFltOpsPerformance';
-import { OitFltOpsStatus } from './Pages/flt-ops/OitFltOpsStatus';
+import { OitFltOpsEfbOverlay } from './Pages/FltOps/OitFltOpsEfbOverlay';
+import { OitFltOpsMenuPage } from './Pages/FltOps/OitFltOpsMenuPage';
+import { OitFltOpsPerformance } from './Pages/FltOps/OitFltOpsPerformance';
+import { OitFltOpsStatus } from './Pages/FltOps/OitFltOpsStatus';
 import { OitNotFound } from './Pages/OitNotFound';
 import { OitUiService } from './OitUiService';
 import { OitFltOpsContainer } from './OitFltOpsContainer';
 import { OitAvncsContainer } from './OitAvncsContainer';
-import { OitAvncsCompanyCom } from './Pages/nss-avncs/OitAvncsCompanyCom';
-import { OitAvncsMenu } from './Pages/nss-avncs/OitAvncsMenu';
+import { OitAvncsCompanyCom } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyCom';
+import { OitAvncsMenu } from './Pages/NssAvncs/OitAvncsMenu';
 
 // Page imports
 // eslint-disable-next-line jsdoc/require-jsdoc

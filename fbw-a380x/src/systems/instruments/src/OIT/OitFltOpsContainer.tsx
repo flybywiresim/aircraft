@@ -19,14 +19,14 @@ import { OisDomain } from './OIT';
 import { OitUiService, OitUriInformation } from './OitUiService';
 import { getDisplayIndex, OitDisplayUnit } from './OitDisplayUnit';
 import { fltOpsPageForUrl } from './OitPageDirectory';
-import { OitFltOpsHeader } from './Pages/flt-ops/OitFltOpsHeader';
+import { OitFltOpsHeader } from './Pages/FltOps/OitFltOpsHeader';
 import { OitNotFound } from './Pages/OitNotFound';
-import { OitFltOpsFooter } from './Pages/flt-ops/OitFltOpsFooter';
+import { OitFltOpsFooter } from './Pages/FltOps/OitFltOpsFooter';
 import { OisLaptop } from './OisLaptop';
 import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { OitFltOpsLoadingScreen } from './Pages/flt-ops/OitFltOpsLoadingScreen';
-import { OitFltOpsLogin } from './Pages/flt-ops/OitFltOpsLogin';
+import { OitFltOpsLoadingScreen } from './Pages/FltOps/OitFltOpsLoadingScreen';
+import { OitFltOpsLogin } from './Pages/FltOps/OitFltOpsLogin';
 
 interface OitFltOpsContainerProps {
   readonly bus: EventBus;
